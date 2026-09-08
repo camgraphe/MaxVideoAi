@@ -111,6 +111,7 @@ async function mount({
   let authRequests = 0;
   let accountId: string | null = 'a',
     accessToken: string | null = 'token-a';
+  let recoverySetup: { modelId: string; updatedAt: number; setup: WorkspaceModelSetup } | null = null;
   let current!: ReturnType<typeof useWorkspaceModelReview>;
   const authRenders: Array<{
     authStatus: string;
@@ -132,6 +133,8 @@ async function mount({
   function Fixture() {
     const [, rerender] = React.useReducer((v) => v + 1, 0);
     current = useReview({
+      recoverySetup,
+      onRemoveRecovery: () => { recoverySetup = null; rerender(); },
       current: setup,
       authStatus,
       onRequestAuth: () => {
@@ -231,6 +234,10 @@ async function mount({
       await act(async () =>
         requests[index].resolve(new Response(JSON.stringify({ ok: true, total, currency: 'USD' }))),
       );
+    },
+    async recovery(value: WorkspaceModelSetup) {
+      recoverySetup = { modelId: value.form.engineId, updatedAt: Date.now(), setup: value };
+      await render();
     },
     async edit(patch: Partial<WorkspaceModelSetup>) {
       setup = { ...setup, ...patch };
@@ -790,4 +797,37 @@ test('Apply releases only replaced temporary previews after saving durable origi
     await f.dispose();
     URL.revokeObjectURL = originalRevoke;
   }
+});
+
+test('displaced active draft is visible through rendered Configurations and Cancel/Apply retain exact fields', async () => {
+  const f = await mount();
+  try {
+    const previous = structuredClone(f.setup);
+    const previousEngine = listFalEngines().find((engine) => engine.id === 'kling-3-pro')!.engine;
+    previous.form = coerceFormState(previousEngine, 't2v', previous.form);
+    previous.prompt = 'Recover active draft';
+    previous.negativePrompt = 'No motion blur';
+    previous.cfgScale = 0.65;
+    previous.voiceIdsInput = 'voice-kept';
+    await f.recovery(previous);
+    await act(async () => f.current.open('saved'));
+    assert.equal(f.current.savedSetups[0].saved?.setup.prompt, previous.prompt);
+    assert.ok(f.dom.window.document.body.textContent?.includes('Kling'));
+    await act(async () => f.current.selectSavedSetup(previous.form.engineId));
+    const untouched = structuredClone(f.setup);
+    await f.click('Cancel');
+    assert.deepEqual(f.setup, untouched);
+    await act(async () => f.current.selectSavedSetup(previous.form.engineId));
+    await f.tick();
+    await f.respond(f.requests.length - 1);
+    assert.equal(f.current.configurationOnly, false);
+    assert.equal(f.current.canApply, true);
+    await f.click('Apply model');
+    assert.equal(f.setup.prompt, previous.prompt);
+    assert.equal(f.setup.negativePrompt, previous.negativePrompt);
+    assert.equal(f.setup.cfgScale, previous.cfgScale);
+    assert.equal(f.setup.voiceIdsInput, previous.voiceIdsInput);
+    await act(async () => f.current.removeSavedSetup(previous.form.engineId));
+    assert.notEqual(f.current.savedSetups[0]?.saved?.setup.prompt, previous.prompt);
+  } finally { await f.dispose(); }
 });

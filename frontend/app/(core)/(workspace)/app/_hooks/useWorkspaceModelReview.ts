@@ -1,8 +1,13 @@
 'use client';
 
+import { applyWorkspacePreparedSetup } from '../_lib/workspace-apply-prepared-setup';
+import type { WorkspaceSavedModelSetup } from '../_lib/workspace-model-setups';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
-import { prepareWorkspaceModelCandidate, type WorkspaceModelSetup } from '../_lib/workspace-model-candidate';
+import {
+  prepareWorkspaceModelCandidate,
+  type WorkspaceModelSetup,
+} from '../_lib/workspace-model-candidate';
 import { buildWorkspacePreflightRequest } from '../_lib/workspace-preflight-request';
 import {
   decodeWorkspaceModelSetups,
@@ -19,9 +24,13 @@ import { revokeKlingAssetPreview } from '../_lib/workspace-assets';
 import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
 
 type Setters = {
-  [K in keyof WorkspaceModelSetup as `set${Capitalize<K>}`]: (value: WorkspaceModelSetup[K]) => void;
+  [K in keyof WorkspaceModelSetup as `set${Capitalize<K>}`]: (
+    value: WorkspaceModelSetup[K],
+  ) => void;
 };
 export type WorkspaceModelReviewOptions = Omit<Setters, 'setForm'> & {
+  recoverySetup?: WorkspaceSavedModelSetup | null;
+  onRemoveRecovery?: () => void;
   authStatus: 'unknown' | 'refreshing' | 'authed' | 'loggedOut';
   onGuestEngineChange: (engineId: string) => void;
   onRequestAuth: () => void;
@@ -47,7 +56,11 @@ type Store = {
 function setupPreviewUrls(setup: WorkspaceModelSetup) {
   const assets = [
     ...Object.values(setup.inputAssets).flat(),
-    ...setup.klingElements.flatMap((element) => [element.frontal, element.video, ...element.references]),
+    ...setup.klingElements.flatMap((element) => [
+      element.frontal,
+      element.video,
+      ...element.references,
+    ]),
   ];
   return new Set(assets.flatMap((asset) => (asset ? [asset.previewUrl] : [])));
 }
@@ -67,7 +80,9 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   const eligibleAccount = authStatus === 'authed' && accountId && accessToken ? accountId : null;
   const waitingForAccount = !eligibleAccount && authStatus !== 'loggedOut';
   const selectorDisabledReasons = waitingForAccount
-    ? Object.fromEntries(engines.map((engine) => [engine.id, workspaceModelReviewCopy(locale).authPending]))
+    ? Object.fromEntries(
+        engines.map((engine) => [engine.id, workspaceModelReviewCopy(locale).authPending]),
+      )
     : options.disabledEngineReasons;
   const [store, setStore] = useState<Store>({
     scope: eligibleAccount,
@@ -78,7 +93,11 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   const [panel, setPanel] = useState<'compare' | 'saved' | null>(null);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [error, setError] = useState<WorkspaceModelSetupError | 'account' | null>(null);
-  const [authScope, setAuthScope] = useState({ accountId: eligibleAccount, accessToken, authStatus });
+  const [authScope, setAuthScope] = useState({
+    accountId: eligibleAccount,
+    accessToken,
+    authStatus,
+  });
   const scopeMatches =
     authScope.accountId === eligibleAccount &&
     authScope.accessToken === accessToken &&
@@ -91,7 +110,12 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     // Pending auth masks the last confirmed store without losing its memory-only snapshots.
     // Only a confirmed replacement account or logout retires that store.
     if (!waitingForAccount && store.scope !== eligibleAccount)
-      setStore({ scope: eligibleAccount, entries: {}, loaded: false, memoryOnly: false });
+      setStore({
+        scope: eligibleAccount,
+        entries: {},
+        loaded: false,
+        memoryOnly: false,
+      });
   }
   const signature = workspaceModelSetupSignature(current);
   const mounted = useRef(true);
@@ -123,7 +147,9 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   }, [eligibleAccount, store]);
   const target =
     active && selection
-      ? engines.find((engine) => engine.id === selection.engineId && engine.availability !== 'paused')
+      ? engines.find(
+          (engine) => engine.id === selection.engineId && engine.availability !== 'paused',
+        )
       : null;
   const candidate = useMemo(
     () =>
@@ -206,7 +232,14 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
       setPanel('compare');
       setError(null);
     },
-    [validScope, engines, options.disabledEngineReasons, onGuestEngineChange, authScope, authStatus],
+    [
+      validScope,
+      engines,
+      options.disabledEngineReasons,
+      onGuestEngineChange,
+      authScope,
+      authStatus,
+    ],
   );
   const open = useCallback(
     (next: 'compare' | 'saved') => {
@@ -226,18 +259,28 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   const savedSetups = useMemo(
     () =>
       active && store.loaded
-        ? Object.entries(store.entries).map(([modelId, value]) => ({
+        ? Object.entries({
+            ...store.entries,
+            ...(options.recoverySetup
+              ? { [options.recoverySetup.modelId]: options.recoverySetup }
+              : {}),
+          }).map(([modelId, value]) => ({
             modelId,
             saved: parseWorkspaceSavedModelSetup(value, modelId),
             engine: engines.find((engine) => engine.id === modelId),
           }))
         : [],
-    [active, store.loaded, store.entries, engines],
+    [active, store.loaded, store.entries, engines, options.recoverySetup],
   );
   const selectSavedSetup = useCallback(
     (modelId: string) => {
       if (!validScope()) return;
-      const saved = parseWorkspaceSavedModelSetup(latest.current.store.entries[modelId], modelId);
+      const saved = parseWorkspaceSavedModelSetup(
+        latest.current.options.recoverySetup?.modelId === modelId
+          ? latest.current.options.recoverySetup
+          : latest.current.store.entries[modelId],
+        modelId,
+      );
       if (
         !saved ||
         !engines.some((engine) => engine.id === modelId && engine.availability !== 'paused') ||
@@ -276,6 +319,10 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   };
   const removeSavedSetup = (modelId: string) => {
     if (!validScope()) return;
+    if (latest.current.options.recoverySetup?.modelId === modelId) {
+      latest.current.options.onRemoveRecovery?.();
+      return;
+    }
     const entries = { ...latest.current.store.entries };
     delete entries[modelId];
     persist(entries);
@@ -323,16 +370,10 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     )
       return;
     // All owners receive the already prepared values in the same React event, before schema effects run.
-    options.setInputAssets(committed.inputAssets);
-    options.setKlingElements(committed.klingElements);
-    options.setPrompt(committed.prompt);
-    options.setNegativePrompt(committed.negativePrompt);
-    options.setMultiPromptEnabled(committed.multiPromptEnabled);
-    options.setMultiPromptScenes(committed.multiPromptScenes);
-    options.setShotType(committed.shotType);
-    options.setVoiceIdsInput(committed.voiceIdsInput);
-    options.setCfgScale(committed.cfgScale);
-    options.applyPreparedForm(committed.form);
+    applyWorkspacePreparedSetup(committed, {
+      ...options,
+      setForm: options.applyPreparedForm,
+    });
     // The snapshot has durable originals. Release only temporary previews no longer used by the live setup.
     const retainedPreviews = setupPreviewUrls(committed);
     for (const previewUrl of setupPreviewUrls(current)) {
@@ -344,7 +385,11 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   };
   // Captured quote retries are guarded too; the quote hook creates a fresh scoped observation.
   const retry = () => {
-    if (validScope() && latest.current.signature === signature && latest.current.selection === selection) {
+    if (
+      validScope() &&
+      latest.current.signature === signature &&
+      latest.current.selection === selection
+    ) {
       latestQuote.current = null;
       quote.retry();
     }

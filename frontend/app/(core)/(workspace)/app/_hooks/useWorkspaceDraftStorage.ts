@@ -61,28 +61,32 @@ export function useWorkspaceDraftStorage({
   const storageScope = useMemo(() => userId ?? 'anon', [userId]);
   const readScopedStorage = useCallback(
     (base: string): string | null => readScopedWorkspaceStorage(base, storageScope),
-    [storageScope]
+    [storageScope],
   );
   const readStorage = useCallback(
-    (base: string): string | null => readWorkspaceStorage(base, storageScope),
-    [storageScope]
+    (base: string): string | null =>
+      authStatus === 'authed'
+        ? readScopedWorkspaceStorage(base, storageScope)
+        : readWorkspaceStorage(base, storageScope),
+    [authStatus, storageScope],
   );
   const writeScopedStorage = useCallback(
     (base: string, value: string | null) => {
       writeScopedWorkspaceStorage(base, storageScope, value);
     },
-    [storageScope]
+    [storageScope],
   );
   const writeStorage = useCallback(
     (base: string, value: string | null) => {
-      writeWorkspaceStorage(base, storageScope, value);
+      if (authStatus === 'authed') writeScopedWorkspaceStorage(base, storageScope, value);
+      else if (authStatus === 'loggedOut') writeWorkspaceStorage(base, storageScope, value);
     },
-    [storageScope]
+    [authStatus, storageScope],
   );
 
   const workspaceRequest = useMemo(
     () => resolveWorkspaceRequestParams(searchParams, pathname),
-    [pathname, searchParams]
+    [pathname, searchParams],
   );
   const {
     fromVideoId,
@@ -108,8 +112,10 @@ export function useWorkspaceDraftStorage({
     requestedModeOverrideRef.current = requestedMode;
   }, [resolvedRequestedEngineId, requestedEngineToken, requestedMode]);
 
-  const effectiveRequestedEngineId = resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
-  const effectiveRequestedEngineToken = requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
+  const effectiveRequestedEngineId =
+    resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
+  const effectiveRequestedEngineToken =
+    requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
   const effectiveRequestedMode = requestedMode ?? requestedModeOverrideRef.current;
 
   useEffect(() => {
@@ -128,7 +134,9 @@ export function useWorkspaceDraftStorage({
         });
       }
       if (skipIntent.fromVideoId) {
-        console.log('[app] skip onboarding due to fromVideoId', { fromVideoId: skipIntent.fromVideoId });
+        console.log('[app] skip onboarding due to fromVideoId', {
+          fromVideoId: skipIntent.fromVideoId,
+        });
       }
     }
   }, [fromVideoId]);

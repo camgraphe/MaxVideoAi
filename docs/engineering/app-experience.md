@@ -112,7 +112,31 @@ The version-1 record lives in `sessionStorage` under `maxvideoai:model-setups:v1
 
 Only the selected candidate uses `buildWorkspacePreflightRequest` and `useWorkspacePreflightQuote`. A retry creates a fresh observation identity for the unchanged commercial request; superseded replies and old callbacks cannot install or apply a quote. Draft/account/target changes invalidate stale Apply closures. Valid generation inputs require a current candidate quote before Apply. Missing required inputs instead show a clearly labelled configuration-only action with no invented price; existing generation guards remain authoritative. Adapted conditions are labelled without a cheaper ranking or percentage saving.
 
-Saving configurations on a model switch does not persist the active reference draft during Video → Image → Video navigation. That follow-up belongs in draft hydration and private asset lifecycle owners, using the validated serialization boundary above and preserving explicit job/engine request precedence.
+The complete active video setup persists independently from saved model configurations during
+same-tab Video → Image/Audio/Tools → Video navigation and refresh. `useWorkspaceActiveDraft`
+owns the version-1, 1 MiB-bounded `sessionStorage` record under
+`maxvideoai:active-video-draft:v1:<encoded confirmed account id>`; draft hydration coordinates
+its atomic restoration before input-schema reconciliation. The record retains validated form and
+specialized settings, prompt fields, sparse media roles and order, original media identity and
+duration metadata, and Kling subjects. It never contains an authentication token. Private setup
+access requires authenticated status, the matching user ID and a session token; pending auth,
+logout and account replacement mask the previous account synchronously and invalidate late asset
+callbacks.
+
+Persistence has no navigation debounce, so a committed final edit is written before route
+departure. Incomplete, malformed or oversized serialization leaves the previous valid record
+untouched and exposes a compact status instead of silently saving a partial setup. If browser
+storage is unavailable, one last confirmed account can retain the complete setup in module memory
+for the current document and same-account route navigation only; this does not promise reload
+recovery. Legacy public prompt/form compatibility remains a separate local-storage owner and is
+never proof that private references belong to the active account.
+
+Explicit job reuse and requested engine/mode flows retain precedence over the stored active draft.
+Before an explicit request replaces a complete setup, the previous setup becomes a recoverable
+snapshot in Configurations. Failed or obsolete requests cannot erase that recovery or overwrite a
+newer edit. A draft whose model is unavailable remains visible and removable rather than being
+reinterpreted as another model. Returning newly generated Image or Audio media automatically to a
+Video slot remains a separate contextual handoff workflow.
 
 Confirmed logged-out visitors retain the existing model-selection callback without a private snapshot. Compare/Configurations opens the existing authentication gate. During unknown/refreshing authentication, selection reasons and the named account-checking state make the temporary block explicit; neither last-known account data nor an old guest callback can bypass confirmation.
 

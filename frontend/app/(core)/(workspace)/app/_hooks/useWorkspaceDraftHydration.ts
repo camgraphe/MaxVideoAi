@@ -1,3 +1,5 @@
+import { useWorkspaceActiveDraft } from './useWorkspaceActiveDraft';
+import type { WorkspaceModelSetup } from '../_lib/workspace-model-candidate';
 import { useEffect } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
@@ -11,16 +13,23 @@ import {
   parseStoredMultiPromptScenes,
   readStoredWorkspaceForm,
 } from '../_lib/workspace-hydration';
-import {
-  createLocalId,
-  createMultiPromptScene,
-} from '../_lib/workspace-input-helpers';
+import { createLocalId, createMultiPromptScene } from '../_lib/workspace-input-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 
 type ShotType = 'customize' | 'intelligent';
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 
 type UseWorkspaceDraftHydrationOptions = {
+  authStatus: string;
+  accountId: string | null;
+  accessToken: string | null;
+  locale: string;
+  inputAssets: WorkspaceModelSetup['inputAssets'];
+  klingElements: WorkspaceModelSetup['klingElements'];
+  cfgScale: WorkspaceModelSetup['cfgScale'];
+  setInputAssets: Dispatch<SetStateAction<WorkspaceModelSetup['inputAssets']>>;
+  setKlingElements: Dispatch<SetStateAction<WorkspaceModelSetup['klingElements']>>;
+  setCfgScale: Dispatch<SetStateAction<WorkspaceModelSetup['cfgScale']>>;
   engines: EngineCaps[];
   requestedJobId: string | null;
   fromVideoId: string | null;
@@ -60,6 +69,16 @@ type UseWorkspaceDraftHydrationOptions = {
 };
 
 export function useWorkspaceDraftHydration({
+  authStatus,
+  accountId,
+  accessToken,
+  locale,
+  inputAssets,
+  klingElements,
+  cfgScale,
+  setInputAssets,
+  setKlingElements,
+  setCfgScale,
   engines,
   requestedJobId,
   fromVideoId,
@@ -96,12 +115,64 @@ export function useWorkspaceDraftHydration({
   setSelectedPreview,
   hydratePendingRendersFromStorage,
   resetRenderState,
-}: UseWorkspaceDraftHydrationOptions): void {
+}: UseWorkspaceDraftHydrationOptions) {
+  const activeDraft = useWorkspaceActiveDraft({
+    authStatus,
+    accountId,
+    accessToken,
+    locale,
+    engines,
+    current: form
+      ? {
+          form,
+          inputAssets,
+          klingElements,
+          cfgScale,
+          prompt,
+          negativePrompt,
+          multiPromptEnabled,
+          multiPromptScenes,
+          shotType,
+          voiceIdsInput,
+        }
+      : null,
+    setForm,
+    setInputAssets,
+    setKlingElements,
+    setCfgScale,
+    setPrompt,
+    setNegativePrompt,
+    setMultiPromptEnabled,
+    setMultiPromptScenes,
+    setShotType,
+    setVoiceIdsInput,
+    requestKey:
+      requestedJobId ||
+      fromVideoId ||
+      effectiveRequestedEngineId ||
+      effectiveRequestedEngineToken ||
+      effectiveRequestedMode
+        ? JSON.stringify([
+            requestedJobId,
+            fromVideoId,
+            effectiveRequestedEngineId,
+            effectiveRequestedEngineToken,
+            effectiveRequestedMode,
+          ])
+        : '',
+    storageReady: accountId === storageScope,
+    legacyReady: hydratedForScope === storageScope,
+    markLegacyReady: () => {
+      hasStoredFormRef.current = true;
+      preserveStoredDraftRef.current = false;
+      setHydratedForScope(storageScope);
+    },
+  });
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!engines.length) return;
-    if (requestedJobId) return;
-    if (hydratedForScope === storageScope) return;
+    if (!activeDraft.allowLegacy || (authStatus === 'loggedOut' && storageScope !== 'anon')) return;
+    if (hydratedForScope === storageScope && form) return;
     setHydratedForScope(null);
 
     resetRenderState();
@@ -116,7 +187,11 @@ export function useWorkspaceDraftHydration({
       const storedMultiPromptEnabled = readStorage(STORAGE_KEYS.multiPromptEnabled);
       setMultiPromptEnabled(storedMultiPromptEnabled === 'true');
       setMultiPromptScenes(
-        parseStoredMultiPromptScenes(readStorage(STORAGE_KEYS.multiPromptScenes), createLocalId, createMultiPromptScene)
+        parseStoredMultiPromptScenes(
+          readStorage(STORAGE_KEYS.multiPromptScenes),
+          createLocalId,
+          createMultiPromptScene,
+        ),
       );
 
       const storedShotType = readStorage(STORAGE_KEYS.shotType);
@@ -142,7 +217,10 @@ export function useWorkspaceDraftHydration({
         setForm(initialForm.form);
       }
       if (initialForm.debugEngineOverride && process.env.NODE_ENV !== 'production') {
-        console.log('[generate] engine override from storage hydrate', initialForm.debugEngineOverride);
+        console.log(
+          '[generate] engine override from storage hydrate',
+          initialForm.debugEngineOverride,
+        );
       }
       if (initialForm.formToPersist) {
         const formToPersist = initialForm.formToPersist;
@@ -168,6 +246,9 @@ export function useWorkspaceDraftHydration({
       setHydratedForScope(storageScope);
     }
   }, [
+    activeDraft.allowLegacy,
+    authStatus,
+    form,
     engines,
     hydratePendingRendersFromStorage,
     readScopedStorage,
@@ -195,6 +276,7 @@ export function useWorkspaceDraftHydration({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (!form) return;
     if (preserveStoredDraftRef.current) return;
@@ -203,10 +285,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [form, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    form,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -214,10 +304,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [prompt, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    prompt,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -225,10 +323,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [negativePrompt, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    negativePrompt,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -236,10 +342,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [multiPromptEnabled, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    multiPromptEnabled,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -247,10 +361,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [multiPromptScenes, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    multiPromptScenes,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -258,10 +380,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [shotType, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    shotType,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -269,10 +399,18 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [voiceIdsInput, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    voiceIdsInput,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!activeDraft.ready) return;
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
@@ -280,7 +418,14 @@ export function useWorkspaceDraftHydration({
     } catch {
       // noop
     }
-  }, [memberTier, hydratedForScope, storageScope, writeStorage, preserveStoredDraftRef]);
+  }, [
+    activeDraft.ready,
+    memberTier,
+    hydratedForScope,
+    storageScope,
+    writeStorage,
+    preserveStoredDraftRef,
+  ]);
 
   useEffect(() => {
     if (selectedPreview || rendersLength > 0) return;
@@ -296,7 +441,8 @@ export function useWorkspaceDraftHydration({
       previewVideoUrl: latestJobWithMedia.previewVideoUrl ?? undefined,
       aspectRatio: latestJobWithMedia.aspectRatio ?? undefined,
       thumbUrl: latestJobWithMedia.thumbUrl ?? undefined,
-      priceCents: latestJobWithMedia.finalPriceCents ?? latestJobWithMedia.pricingSnapshot?.totalCents,
+      priceCents:
+        latestJobWithMedia.finalPriceCents ?? latestJobWithMedia.pricingSnapshot?.totalCents,
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
       prompt: latestJobWithMedia.prompt ?? undefined,
     });
@@ -312,4 +458,5 @@ export function useWorkspaceDraftHydration({
     selectedPreview,
     setSelectedPreview,
   ]);
+  return activeDraft;
 }

@@ -139,6 +139,19 @@ test('model review owns account-scoped snapshots and atomic application outside 
   assert.match(controller, /buildWorkspacePreflightRequest/);
   assert.match(controller, /useWorkspacePreflightQuote/);
   assert.match(controller, /serializeWorkspaceModelSetup\(current\)/);
-  assert.match(controller, /options\.applyPreparedForm\(committed.form\)/);
+  assert.match(controller, /applyWorkspacePreparedSetup\(committed,\s*\{\s*\.\.\.options,\s*setForm: options\.applyPreparedForm,?\s*\}\)/);
   assert.doesNotMatch(serializer, /\b(sessionStorage|localStorage|window|document)\./);
+});
+
+test('active drafts reuse bounded setup serialization and gate schema reconciliation by committed account generation', () => {
+  const active = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceActiveDraft.ts', 'utf8');
+  const schema = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceInputSchemaState.ts', 'utf8');
+  const account = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLifetime.ts', 'utf8');
+  const application = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-apply-prepared-setup.ts', 'utf8');
+  assert.match(active, /serializeWorkspaceModelSetup/);
+  assert.match(active, /phase\?\.generation === valid/);
+  assert.match(active, /applyWorkspacePreparedSetup/);
+  assert.match(schema, /if \(!hydrationReady \|\| !selectedEngine\) return/);
+  assert.match(account, /current\.current === generation/);
+  assert.ok(application.indexOf('setters.setInputAssets') < application.indexOf('setters.setForm'));
 });

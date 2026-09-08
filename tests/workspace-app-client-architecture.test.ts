@@ -99,7 +99,7 @@ test('workspace app client delegates route form state to a route-local hook', ()
   const appLines = appSource.split('\n').length;
 
   assert.match(appSource, /import \{ useWorkspaceRouteFormState \} from '\.\/_hooks\/useWorkspaceRouteFormState';/);
-  assert.match(appSource, /useWorkspaceRouteFormState\(\)/);
+  assert.match(appSource, /useWorkspaceRouteFormState\(draftOwner\)/);
   assert.doesNotMatch(appSource, /const \[prompt, setPrompt\] = useState/);
   assert.doesNotMatch(appSource, /const \[multiPromptScenes, setMultiPromptScenes\] = useState/);
   assert.doesNotMatch(appSource, /const \[klingElements, setKlingElements\] = useState/);

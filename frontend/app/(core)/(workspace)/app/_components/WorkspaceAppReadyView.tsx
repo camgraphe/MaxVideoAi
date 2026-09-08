@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
+import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
 import { WorkspaceModelReviewCommands } from './WorkspaceModelReviewCommands';
 import { WorkspaceAppShell } from './WorkspaceAppShell';
@@ -26,6 +28,8 @@ import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
 const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
 type WorkspaceAppReadyViewProps = {
+  suspended: boolean;
+  activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
   assets: ReturnType<typeof useWorkspaceAssets>;
   composer: ReturnType<typeof useWorkspaceComposerState>;
@@ -42,6 +46,8 @@ type WorkspaceAppReadyViewProps = {
 };
 
 export function WorkspaceAppReadyView({
+  suspended,
+  activeDraft,
   app,
   assets,
   composer,
@@ -197,6 +203,8 @@ export function WorkspaceAppReadyView({
   } = gallery;
 
   const modelReview = useWorkspaceModelReview({
+    recoverySetup: activeDraft.recoverySetup,
+    onRemoveRecovery: activeDraft.removeRecovery,
     current: form ? {form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale} : null,
     engines, locale: uiLocale, authStatus: app.authStatus,
     onGuestEngineChange: composer.handleEngineChange, onRequestAuth: () => setAuthModalOpen(true),
@@ -207,7 +215,7 @@ export function WorkspaceAppReadyView({
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
-  if (!selectedEngine || !form) return null;
+  if (suspended || !selectedEngine || !form) return null;
 
   return (
     <>
@@ -250,7 +258,12 @@ export function WorkspaceAppReadyView({
         engineModeOptions={engineModeOptions}
         modeLabelLocale={uiLocale}
         handleEngineChange={modelReview.requestModel}
-        modelReviewCommands={<WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />}
+        modelReviewCommands={
+          <>
+            <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+            <WorkspaceActiveDraftStatus draft={activeDraft} locale={uiLocale} openRecovery={() => modelReview.open('saved')} />
+          </>
+        }
         handleModeChange={handleModeChange}
         disabledEngineReasons={modelReview.selectorDisabledReasons}
         engineScores={engineScores}
