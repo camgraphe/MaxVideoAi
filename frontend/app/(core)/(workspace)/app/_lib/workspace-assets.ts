@@ -75,19 +75,25 @@ export type AssetPickerTarget =
 
 export const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
 export const PRIMARY_VIDEO_SLOT_IDS = ['video_url', 'input_video', 'video'] as const;
+export const ASSET_LIBRARY_PAGE_SIZE = 30;
 
 export function buildAssetLibraryCacheKey(kind: AssetLibraryKind, source: AssetLibrarySource): string {
   return `${kind}:${source}`;
 }
 
-export function buildAssetLibraryUrl(kind: AssetLibraryKind, source: AssetLibrarySource): string {
+export function buildAssetLibraryUrl(
+  kind: AssetLibraryKind,
+  source: AssetLibrarySource,
+  cursor?: string | null
+): string {
+  const cursorQuery = cursor ? `&cursor=${encodeURIComponent(cursor)}` : '';
   if (source === 'recent') {
-    return `/api/media-library/recent-outputs?limit=60&kind=${encodeURIComponent(kind)}`;
+    return `/api/media-library/recent-outputs?limit=${ASSET_LIBRARY_PAGE_SIZE}&kind=${encodeURIComponent(kind)}${cursorQuery}`;
   }
   if (source === 'all') {
-    return `/api/media-library/assets?limit=60&kind=${encodeURIComponent(kind)}`;
+    return `/api/media-library/assets?limit=${ASSET_LIBRARY_PAGE_SIZE}&kind=${encodeURIComponent(kind)}${cursorQuery}`;
   }
-  return `/api/media-library/assets?limit=60&kind=${encodeURIComponent(kind)}&source=${encodeURIComponent(source)}`;
+  return `/api/media-library/assets?limit=${ASSET_LIBRARY_PAGE_SIZE}&kind=${encodeURIComponent(kind)}&source=${encodeURIComponent(source)}${cursorQuery}`;
 }
 
 export function normalizeAssetLibraryPayload(
@@ -142,10 +148,10 @@ export function getAssetLibrarySourceForField(field: EngineInputField): AssetLib
 
 export function getLibraryAssetFieldMismatchMessage(field: EngineInputField, asset: UserAsset): string | null {
   if (field.type === 'video' && asset.kind !== 'video') {
-    return 'This slot requires a video source. Pick a video from the video library or import an MP4/MOV clip.';
+    return 'This slot requires a video source. Pick a video from Media or import an MP4/MOV clip.';
   }
   if (field.type === 'image' && asset.kind !== 'image') {
-    return 'This slot requires an image source. Pick an image from the library or import one.';
+    return 'This slot requires an image source. Pick an image from Media or import one.';
   }
   if (field.type === 'audio' && asset.kind !== 'audio') {
     return 'This slot requires an audio source. Pick audio from recent media or import an audio file.';

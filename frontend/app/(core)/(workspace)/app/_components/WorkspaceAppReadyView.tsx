@@ -68,11 +68,13 @@ export function WorkspaceAppReadyView({
   const {
     assetDeletePendingId,
     assetLibraryError,
+    assetLibraryHasMore,
     assetLibraryKind,
     assetLibrarySource,
     assetPickerTarget,
     closeAssetLibrary,
     fetchAssetLibrary,
+    loadMoreAssetLibrary,
     handleAssetAdd,
     handleAssetLibrarySourceChange,
     handleAssetRemove,
@@ -87,6 +89,7 @@ export function WorkspaceAppReadyView({
     handleSelectLibraryAsset,
     inputAssets,
     isAssetLibraryLoading,
+    isAssetLibraryLoadingMore,
     visibleAssetLibrary,
   } = assets;
   const {
@@ -386,12 +389,15 @@ export function WorkspaceAppReadyView({
         assetLibrarySource={assetLibrarySource}
         visibleAssetLibrary={visibleAssetLibrary}
         isAssetLibraryLoading={isAssetLibraryLoading}
+        isAssetLibraryLoadingMore={isAssetLibraryLoadingMore}
+        assetLibraryHasMore={assetLibraryHasMore}
         assetLibraryError={assetLibraryError}
         assetDeletePendingId={assetDeletePendingId}
         fieldFallbackLabel={workspaceCopy.assetLibrary.fieldFallback}
         onAssetLibrarySourceChange={handleAssetLibrarySourceChange}
         onCloseAssetLibrary={closeAssetLibrary}
         onRefreshAssets={fetchAssetLibrary}
+        onLoadMoreAssets={loadMoreAssetLibrary}
         onSelectFieldAsset={handleSelectLibraryAsset}
         onSelectKlingAsset={handleSelectKlingLibraryAsset}
         onDeleteAsset={handleDeleteLibraryAsset}

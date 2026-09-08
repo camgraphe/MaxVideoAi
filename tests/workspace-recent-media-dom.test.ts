@@ -47,7 +47,7 @@ test('actual SWR recents deduplicate the shared page and suppress old account/fi
     await h.flush(); assert.match(h.dom.window.document.body.textContent ?? '', /audio-b/);
     await h.render(view('owner-b', 'image')); assert.doesNotMatch(h.dom.window.document.body.textContent ?? '', /audio-b|out1/);
     await h.render(view(null, 'image')); assert.doesNotMatch(h.dom.window.document.body.textContent ?? '', /audio-b|out1/);
-    assert.match(requests[0].url, /limit=60&kind=image/);
+    assert.match(requests[0].url, /limit=30&kind=image/);
   } finally { globalThis.fetch = oldFetch; await h.close(); }
 });
 

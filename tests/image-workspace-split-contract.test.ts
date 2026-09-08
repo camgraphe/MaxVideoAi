@@ -228,7 +228,11 @@ test('image library presentation delegates account-scoped listing to its route-l
   const data = readFileSync(path.join(imageDir, '_hooks/useImageLibraryData.ts'), 'utf8');
   assert.match(modal, /useImageLibraryData/);
   assert.doesNotMatch(modal, /useSWR/);
-  assert.match(data, /\['image-reference-library', userId, url\]/);
+  assert.match(data, /buildMediaLibraryAssetsKey/);
+  assert.match(data, /fetchMediaLibraryAssets/);
+  assert.match(data, /useSWRInfinite<MediaLibraryAssetsResponse>/);
   assert.match(data, /keepPreviousData: false/);
-  assert.match(data, /kind=image/);
+  assert.match(data, /kind: 'image'/);
+  assert.match(data, /\/api\/character-references\?limit=60/);
+  assert.doesNotMatch(data, /\/api\/user-assets/);
 });

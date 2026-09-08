@@ -4,6 +4,7 @@ import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import {
   deleteLibraryAsset,
   ensureReusableAsset,
+  findLibraryAssetByOrigin,
   listLibraryAssets,
   type MediaKind,
 } from '@/server/media-library';
@@ -25,13 +26,24 @@ export async function GET(req: NextRequest) {
   }
 
   const requestedKind = req.nextUrl.searchParams.get('kind');
-  const assets = await listLibraryAssets({
+  const listParams: Parameters<typeof listLibraryAssets>[0] = {
     userId,
     kind: requestedKind === 'image' || requestedKind === 'video' || requestedKind === 'audio' ? requestedKind : null,
     source: req.nextUrl.searchParams.get('source'),
     originUrl: req.nextUrl.searchParams.get('originUrl'),
     limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
-  });
+  };
+  const exactOriginMatch = listParams.originUrl && listParams.limit === 1
+    ? await findLibraryAssetByOrigin({
+        userId: listParams.userId,
+        kind: listParams.kind,
+        source: listParams.source,
+        originUrl: listParams.originUrl,
+      })
+    : null;
+  const assets = listParams.originUrl && listParams.limit === 1
+    ? exactOriginMatch ? [exactOriginMatch] : []
+    : await listLibraryAssets(listParams);
 
   return NextResponse.json({
     ok: true,

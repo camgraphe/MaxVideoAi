@@ -104,7 +104,8 @@ test('image workspace hydrates storyboard tool query and keeps result actions ro
 
   assert.match(previewActionsHookSource, /librarySource/);
   assert.match(previewActionsHookSource, /source:\s*librarySource/);
-  assert.match(previewActionsHookSource, /source=\$\{encodeURIComponent\(librarySource\)\}/);
+  assert.match(previewActionsHookSource, /buildMediaLibraryAssetsKey\(\{/);
+  assert.match(previewActionsHookSource, /originUrl:\s*selectedPreviewUrl/);
   assert.match(displayStateHookSource, /suppressDefaultPreview/);
   assert.match(displayStateHookSource, /if \(suppressDefaultPreview && !selectedPreviewEntryId\) return undefined;/);
 

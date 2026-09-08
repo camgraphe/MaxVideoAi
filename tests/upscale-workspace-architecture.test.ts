@@ -124,7 +124,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
 
   assert.match(copySource, /export const DEFAULT_UPSCALE_COPY =/, 'copy module should export default copy');
 
-  for (const typeName of ['UploadedAsset', 'PreviewMode', 'PreviewZoom', 'RecentUpscaleMedia', 'BillingProductResponse', 'UserAssetsResponse', 'JobDetailResponse', 'JobsLibraryResponse']) {
+  for (const typeName of ['UploadedAsset', 'PreviewMode', 'PreviewZoom', 'RecentUpscaleMedia', 'BillingProductResponse', 'JobDetailResponse', 'JobsLibraryResponse']) {
     assert.match(typesSource, new RegExp(`export type ${typeName}`), `${typeName} should be exported`);
   }
 
@@ -150,7 +150,8 @@ test('upscale helper modules expose the expected workspace contract', () => {
 
   assert.match(libraryHookSource, /export function useUpscaleLibraryAssets/, 'library hook should be exported');
   assert.match(libraryHookSource, /buildLibraryCacheKey/, 'library hook should own cache key usage');
-  assert.match(libraryHookSource, /UserAssetsResponse/, 'library hook should parse saved asset responses');
+  assert.match(libraryHookSource, /fetchMediaLibraryAssets/, 'library hook should use canonical paginated saved assets');
+  assert.match(libraryHookSource, /loadMoreLibraryAssets/, 'library hook should expose progressive pagination');
   assert.match(libraryHookSource, /JobsLibraryResponse/, 'library hook should merge generated video jobs');
   assert.match(pricingHookSource, /useToolQuote/, 'pricing uses the account and input bound server quote');
   assert.match(pricingHookSource, /export function useUpscalePricingPreview/, 'pricing hook should be exported');

@@ -174,6 +174,41 @@ test('video library owner hides prior account immediately, reopens empty and rej
   } finally { globalThis.fetch = oldFetch; await h.close(); }
 });
 
+test('video reference Media picker appends cursor pages without replacing the first page', async () => {
+  const { useWorkspaceAssetLibrary } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLibrary');
+  const h = await harness();
+  const oldFetch = globalThis.fetch;
+  const requests: string[] = [];
+  globalThis.fetch = async input => {
+    const url = String(input);
+    requests.push(url);
+    return url.includes('cursor=page-2')
+      ? Response.json({ ok: true, assets: [{ ...asset, id: 'page-2', url: `${asset.url}?page=2` }], hasMore: false })
+      : Response.json({ ok: true, assets: [asset], hasMore: true, nextCursor: 'page-2' });
+  };
+  let library!: ReturnType<typeof useWorkspaceAssetLibrary>;
+  const target = { kind: 'field' as const, field: { id: 'image_urls', label: 'References', type: 'image' as const, maxCount: 10 } };
+  function Owner() {
+    library = useWorkspaceAssetLibrary({ userId: 'owner', showNotice() {}, setInputAssets() {} });
+    return React.createElement('output', {}, library.visibleAssetLibrary.map(item => item.id).join(','));
+  }
+  try {
+    await h.render(React.createElement(Owner));
+    await act(async () => library.setAssetPickerTarget(target));
+    assert.equal(library.assetLibraryHasMore, true);
+    await act(async () => library.loadMoreAssetLibrary());
+    assert.deepEqual(requests, [
+      '/api/media-library/assets?limit=30&kind=image',
+      '/api/media-library/assets?limit=30&kind=image&cursor=page-2',
+    ]);
+    assert.deepEqual(library.visibleAssetLibrary.map(item => item.id), [asset.id, 'page-2']);
+    assert.equal(library.assetLibraryHasMore, false);
+  } finally {
+    globalThis.fetch = oldFetch;
+    await h.close();
+  }
+});
+
 test('image and character library SWR caches are account scoped across reopen and late responses', async () => {
   const { useImageLibraryData } = await import('../frontend/app/(core)/(workspace)/app/image/_hooks/useImageLibraryData');
   const h = await harness(); const oldFetch = globalThis.fetch;

@@ -1,28 +1,91 @@
 'use client';
 
+import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
-import { authFetch } from '@/lib/authFetch';
+import useSWRInfinite from 'swr/infinite';
 import type { AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
+import { authFetch } from '@/lib/authFetch';
+import {
+  buildMediaLibraryAssetsKey,
+  fetchMediaLibraryAssets,
+  type MediaLibraryAssetsResponse,
+} from '@/lib/media-library-client';
 import type { CharacterReferenceSelection, CharacterReferencesResponse } from '@/types/image-generation';
-import type { AssetsResponse, LibraryAsset } from '../_lib/image-workspace-types';
+import type { LibraryAsset } from '../_lib/image-workspace-types';
 
-/** Account is part of the cache identity; prior-account responses cannot populate a new picker. */
+export const IMAGE_LIBRARY_PAGE_SIZE = 30;
+
+/** Account is part of every cache identity; canonical first pages are shared with the Media page. */
 export function useImageLibraryData({ userId, source, isCharacterMode }: {
   userId: string | null;
   source: AssetLibrarySource;
   isCharacterMode: boolean;
 }) {
-  const url = isCharacterMode ? '/api/character-references?limit=60'
-    : source === 'all' ? '/api/user-assets?limit=60&kind=image'
-    : `/api/user-assets?limit=60&kind=image&source=${encodeURIComponent(source)}`;
-  const key = userId ? ['image-reference-library', userId, url] : null;
-  return useSWR<LibraryAsset[] | CharacterReferenceSelection[]>(key, async ([, , requestUrl]: string[]) => {
-    const response = await authFetch(requestUrl);
-    const payload = (await response.json().catch(() => null)) as AssetsResponse | CharacterReferencesResponse | null;
-    if (!response.ok || !payload?.ok) {
-      const message = payload && 'error' in payload && typeof payload.error === 'string' ? payload.error : 'Failed to load library';
-      throw new Error(message);
+  const assetsQuery = useSWRInfinite<MediaLibraryAssetsResponse>(
+    (pageIndex, previousPageData) => {
+      if (isCharacterMode || (previousPageData && !previousPageData.nextCursor)) return null;
+      return buildMediaLibraryAssetsKey({
+        userId,
+        kind: 'image',
+        source,
+        limit: IMAGE_LIBRARY_PAGE_SIZE,
+        cursor: pageIndex === 0 ? null : previousPageData?.nextCursor,
+      });
+    },
+    fetchMediaLibraryAssets,
+    {
+      keepPreviousData: false,
+      persistSize: false,
     }
-    return 'characters' in payload ? payload.characters : payload.assets;
+  );
+  const characterKey = userId && isCharacterMode
+    ? ['/api/character-references?limit=60', userId] as const
+    : null;
+  const characterQuery = useSWR<CharacterReferencesResponse>(characterKey, async ([url]: readonly [string, string]) => {
+    const response = await authFetch(url);
+    const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.error ?? 'Failed to load Media');
+    }
+    return payload;
   }, { keepPreviousData: false });
+
+  const assets = useMemo<LibraryAsset[] | undefined>(() => {
+    if (!assetsQuery.data) return undefined;
+    const seen = new Set<string>();
+    return assetsQuery.data.flatMap((page) =>
+      page.assets.filter((asset) => !seen.has(asset.id) && Boolean(seen.add(asset.id)))
+    );
+  }, [assetsQuery.data]);
+  const lastAssetPage = assetsQuery.data?.at(-1);
+  const isLoadingMore = Boolean(
+    assetsQuery.isValidating && assetsQuery.data && assetsQuery.size > assetsQuery.data.length
+  );
+  const loadMore = useCallback(() => {
+    if (!isCharacterMode && lastAssetPage?.nextCursor && !isLoadingMore) {
+      void assetsQuery.setSize((size) => size + 1);
+    }
+  }, [assetsQuery, isCharacterMode, isLoadingMore, lastAssetPage?.nextCursor]);
+
+  if (isCharacterMode) {
+    return {
+      data: characterQuery.data?.characters as CharacterReferenceSelection[] | undefined,
+      error: characterQuery.error,
+      hasMore: false,
+      isLoading: characterQuery.isLoading,
+      isLoadingMore: false,
+      loadMore,
+      mutate: characterQuery.mutate,
+    };
+  }
+
+  return {
+    data: assets,
+    error: assetsQuery.error,
+    hasMore: Boolean(lastAssetPage?.nextCursor),
+    isLoading: assetsQuery.isLoading,
+    isLoadingMore,
+    loadMore,
+    mutate: assetsQuery.mutate,
+  };
 }

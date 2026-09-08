@@ -29,6 +29,7 @@ export {
 export {
   deleteLibraryAsset,
   ensureReusableAsset,
+  findLibraryAssetByOrigin,
   listLibraryAssets,
   listLibraryAssetPage,
   saveJobOutputToLibrary,

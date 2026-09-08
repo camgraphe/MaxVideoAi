@@ -78,8 +78,8 @@ export function ImageCompositePreviewDock({
   const downloadLabel = t('workspace.image.preview.download', 'Download');
   const editImageLabel = t('workspace.image.preview.editImage', 'Edit this image');
   const modalLabel = t('workspace.image.preview.openModal', 'Open full preview');
-  const addToLibraryLabel = t('workspace.jobs.actions.addToLibrary', 'Add to Library');
-  const removeFromLibraryLabel = t('workspace.jobs.actions.removeFromLibrary', 'Remove from Library');
+  const addToLibraryLabel = t('workspace.jobs.actions.addToLibrary', 'Add to Media');
+  const removeFromLibraryLabel = t('workspace.jobs.actions.removeFromLibrary', 'Remove from Media');
   const savingLabel = t('workspace.jobs.actions.saving', 'Saving…');
   const removingLabel = t('workspace.jobs.actions.removing', 'Removing…');
 

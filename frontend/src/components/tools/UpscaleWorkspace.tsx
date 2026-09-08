@@ -79,10 +79,13 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
   const {
     fetchLibraryAssets,
     libraryError,
+    libraryHasMore,
     libraryLoading,
+    libraryLoadingMore,
     libraryModalOpen,
     librarySource,
     librarySourceOptions,
+    loadMoreLibraryAssets,
     openLibraryModal,
     resetLibraryState,
     setLibraryModalOpen,
@@ -420,9 +423,12 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
         assets={visibleLibraryAssets}
         copy={copy}
         error={libraryError}
+        hasMore={libraryHasMore}
         isLoading={libraryLoading}
+        isLoadingMore={libraryLoadingMore}
         mediaType={mediaType}
         onClose={() => setLibraryModalOpen(false)}
+        onLoadMore={loadMoreLibraryAssets}
         onRefresh={fetchLibraryAssets}
         onSelectAsset={selectLibraryAsset}
         onSourceChange={resetLibraryState}

@@ -20,7 +20,7 @@ export type ReferencePickerSelection = {
 
 /** Selection is scoped by the caller's actual destination and source, never by display labels. */
 export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selection: ReferencePickerSelection }) {
-  const { assets, selection, locale = 'en', source, sourceLabels, availableSources, onSourceChange, onClose, closeLabel, title, subtitle, headerActions, error, isLoading, emptyLabel, emptySearchLabel, renderAssetMeta } = props;
+  const { assets, selection, locale = 'en', source, sourceLabels, availableSources, onSourceChange, onClose, closeLabel, title, subtitle, headerActions, error, isLoading, emptyLabel, emptySearchLabel, renderAssetMeta, hasMore, isLoadingMore, loadMoreLabel = 'Load more', onLoadMore } = props;
   const copy = referencePickerCopy(locale);
   const [query, setQuery] = useState('');
   const [chosen, setChosen] = useState<{ id: string; url: string } | null>(null);
@@ -33,6 +33,7 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
   const immediate = Boolean(selection.onToggle);
   const filtered = assets.filter(asset => [asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
   const selected = assets.find(asset => asset.id === chosen?.id && asset.url === chosen.url);
+  const loadMoreControl = hasMore && !query.trim() && onLoadMore ? <div className="flex justify-center pt-4"><button type="button" className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-secondary hover:bg-surface-2 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-60" disabled={busy || isLoadingMore} onClick={onLoadMore}>{isLoadingMore ? copy.busy : loadMoreLabel}</button></div> : null;
   useEffect(() => {
     if (chosen && !assets.some(asset => asset.id === chosen.id && asset.url === chosen.url)) setChosen(null);
   }, [assets, chosen]);
@@ -69,20 +70,23 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
     <div className="app-picker-body app-scroll-surface">
       {props.selectionGuidance ? <details className="app-picker-guidance"><summary>{workspaceReferenceCopy(locale).details}</summary><p>{props.selectionGuidance}</p></details> : null}
       {error || failure ? <p role="alert" className="app-picker-error">{error ?? failure}</p> : null}
-      {isLoading ? <div className="app-picker-grid" aria-label={copy.busy}>{Array.from({ length: 6 }, (_, index) => <div key={index} className="app-picker-skeleton skeleton" />)}</div> : filtered.length ? <div className="app-picker-grid">
-        {filtered.map((asset, index) => {
-          const active = immediate ? selection.selectedIds?.has(asset.id) : selected?.id === asset.id;
-          return <button key={asset.id} type="button" className="app-picker-card" aria-pressed={Boolean(active)} disabled={busy || selection.isDisabled?.(asset)}
-            aria-label={`${active ? copy.selected : copy.choose} · ${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
-            onClick={() => { setFailure(null); if (immediate) selection.onToggle?.(asset); else setChosen({ id: asset.id, url: asset.url }); }}>
-            <span className="app-picker-cover">
-              {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
-              <span className="app-picker-check" aria-hidden>{active ? '✓' : '+'}</span>
-            </span>
-            <span className="app-picker-card-meta"><span>{asset.width && asset.height ? `${asset.width} × ${asset.height}` : compactMediaSource((asset.source ?? source) as typeof source, locale, sourceLabels[source] ?? '')}</span>{renderAssetMeta?.(asset)}</span>
-          </button>;
-        })}
-      </div> : <p className="app-picker-empty">{query.trim() ? emptySearchLabel : emptyLabel}</p>}
+      {isLoading ? <div className="app-picker-grid" aria-label={copy.busy}>{Array.from({ length: 6 }, (_, index) => <div key={index} className="app-picker-skeleton skeleton" />)}</div> : filtered.length ? <>
+        <div className="app-picker-grid">
+          {filtered.map((asset, index) => {
+            const active = immediate ? selection.selectedIds?.has(asset.id) : selected?.id === asset.id;
+            return <button key={asset.id} type="button" className="app-picker-card" aria-pressed={Boolean(active)} disabled={busy || selection.isDisabled?.(asset)}
+              aria-label={`${active ? copy.selected : copy.choose} · ${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
+              onClick={() => { setFailure(null); if (immediate) selection.onToggle?.(asset); else setChosen({ id: asset.id, url: asset.url }); }}>
+              <span className="app-picker-cover">
+                {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
+                <span className="app-picker-check" aria-hidden>{active ? '✓' : '+'}</span>
+              </span>
+              <span className="app-picker-card-meta"><span>{asset.width && asset.height ? `${asset.width} × ${asset.height}` : compactMediaSource((asset.source ?? source) as typeof source, locale, sourceLabels[source] ?? '')}</span>{renderAssetMeta?.(asset)}</span>
+            </button>;
+          })}
+        </div>
+        {loadMoreControl}
+      </> : <><p className="app-picker-empty">{query.trim() ? emptySearchLabel : emptyLabel}</p>{loadMoreControl}</>}
     </div>
     <footer className="app-picker-footer">
       <div className="app-picker-selection" aria-live="polite">{immediate ? <span>{selection.selectedIds?.size ?? 0} · {copy.instant}</span> : selected ? <><span>{copy.selected} · {selected.width && selected.height ? `${selected.width} × ${selected.height}` : workspaceReferenceCopy(locale).kinds[selected.kind]}</span><button type="button" disabled={busy} onClick={() => setChosen(null)}>{copy.clear}</button></> : <span>{copy.empty}</span>}</div>

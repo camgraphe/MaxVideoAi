@@ -145,7 +145,7 @@ test('rendered sparse references retain upload/library/remove indices and native
     assert.deepEqual(removed, [['refs', 49]]);
     await act(async () => doc.querySelector<HTMLButtonElement>('[data-asset-index="0"] .app-reference-add-target')!.click());
     assert.equal(fileSelections, 1);
-    await act(async () => filled.querySelector<HTMLButtonElement>('button[aria-label^="Biblioteca"]')!.click());
+    await act(async () => filled.querySelector<HTMLButtonElement>('button[aria-label^="Elegir en Medios"]')!.click());
     assert.deepEqual(library, [['refs', 49]]);
     assert.equal(doc.querySelector('[role="dialog"]'), null);
     assert.equal(doc.activeElement, command);
@@ -153,7 +153,7 @@ test('rendered sparse references retain upload/library/remove indices and native
 });
 
 
-test('direct frame commands order Start before End, preserve exact uploads and safely hand off to Library', async () => {
+test('direct frame commands order Start before End, preserve exact uploads and safely hand off to Media', async () => {
   const { WorkspaceReferenceSection } = await loadReferenceSection();
   const baseEngine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
   const engine = { ...baseEngine, inputSchema: { constraints: { supportedFormats: ['png'] } } };
@@ -175,8 +175,8 @@ test('direct frame commands order Start before End, preserve exact uploads and s
       assets: { image_url: [asset] }, referenceWarning: '',
       onAssetAdd: (...args) => uploads.push(args), onAssetRemove: (...args) => removals.push(args),
       onOpenLibrary: (...args) => {
-        assert.equal(document.querySelector('[role="dialog"]'), null, 'reference dialog is gone before the Library callback');
-        assert.equal(document.body.style.overflow, '', 'the popup body lock is released before Library mounts');
+        assert.equal(document.querySelector('[role="dialog"]'), null, 'reference dialog is gone before the Media callback');
+        assert.equal(document.body.style.overflow, '', 'the popup body lock is released before Media mounts');
         libraryOpener = document.activeElement;
         handoffs.push(args); setLibrary(true);
       },
@@ -215,7 +215,7 @@ test('direct frame commands order Start before End, preserve exact uploads and s
     await act(async () => replaceInput.dispatchEvent(new fixture.dom.window.Event('change', { bubbles: true })));
     assert.equal(uploads.length, 1, 'cancelled replacement does not mutate the existing asset');
     assert.equal(doc.querySelector('.app-reference-media img')?.getAttribute('src'), '/existing.png');
-    await click(doc.querySelector<HTMLButtonElement>('button[aria-label^="Biblioteca"]')!);
+    await click(doc.querySelector<HTMLButtonElement>('button[aria-label^="Elegir en Medios"]')!);
     assert.deepEqual(handoffs, [[start, 0]]); assert.equal(libraryOpener, commands[0]);
     assert.equal(doc.querySelectorAll('[role="dialog"]').length, 1); assert.equal(doc.body.style.overflow, 'hidden');
     await click([...doc.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Cancel library')!);
@@ -290,7 +290,7 @@ test('image source, mask and custom roles retain distinct names and original upl
       Object.defineProperty(input, 'files', { configurable: true, value: [file] });
       await act(async () => input.dispatchEvent(new fixture.dom.window.Event('change', { bubbles: true })));
       assert.deepEqual(uploads[position], [entry.field, file, index]);
-      await act(async () => slot.querySelector<HTMLButtonElement>('button[aria-label^="Biblioteca"]')!.click());
+      await act(async () => slot.querySelector<HTMLButtonElement>('button[aria-label^="Elegir en Medios"]')!.click());
       assert.deepEqual(library[position], [entry.field, index]);
       assert.equal(doc.querySelector('[role="dialog"]'), null); assert.equal(doc.activeElement, command);
     }
@@ -298,7 +298,7 @@ test('image source, mask and custom roles retain distinct names and original upl
 });
 
 
-test('actual image Library owns focus, Escape and body lock and restores its connected command', async () => {
+test('actual image Media picker owns focus, Escape and body lock and restores its connected command', async () => {
   const { ImageLibraryModal } = await import('../frontend/app/(core)/(workspace)/app/image/_components/ImageLibraryModal');
   const { DEFAULT_COPY } = await import('../frontend/app/(core)/(workspace)/app/image/_lib/image-workspace-copy');
   function Fixture() {

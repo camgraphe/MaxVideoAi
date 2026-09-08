@@ -16,7 +16,10 @@ import {
   type MediaAssetRecord,
   type MediaKind,
 } from '../media-library-records';
-import { listLibraryAssetPage as listLibraryAssetPageFromListing } from './asset-listing';
+import {
+  findLibraryAssetByOrigin as findLibraryAssetByOriginFromListing,
+  listLibraryAssetPage as listLibraryAssetPageFromListing,
+} from './asset-listing';
 import { copyRemoteMedia, createRemoteVideoAssetThumbnail } from './asset-media';
 import { resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
 import type { MediaLibraryPage } from './pagination';
@@ -55,6 +58,15 @@ export async function listLibraryAssetPage(params: {
   q?: string | null;
 }): Promise<MediaLibraryPage<MediaAssetRecord>> {
   return listLibraryAssetPageFromListing(params);
+}
+
+export async function findLibraryAssetByOrigin(params: {
+  userId: string;
+  originUrl: string;
+  kind?: MediaKind | null;
+  source?: string | null;
+}): Promise<MediaAssetRecord | null> {
+  return findLibraryAssetByOriginFromListing(params);
 }
 
 export async function ensureReusableAsset(params: {

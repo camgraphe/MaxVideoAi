@@ -28,7 +28,7 @@ test('workspace library exposes storyboard as a saved image source', async () =>
       activeKind: 'image',
       activeSource: 'storyboard',
     }),
-    ['/api/media-library/assets?limit=60&kind=image&source=storyboard', 'user_1']
+    ['/api/media-library/assets?limit=30&kind=image&source=storyboard', 'user_1']
   );
 });
 

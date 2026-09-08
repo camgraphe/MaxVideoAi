@@ -132,14 +132,14 @@ test('model review owns account-scoped snapshots and atomic application outside 
   const controller = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceModelReview.ts', 'utf8');
   const serializer = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups.ts', 'utf8');
   assert.match(ready, /useWorkspaceModelReview/);
-  assert.match(ready, /handleEngineChange=\{modelReview.requestModel\}/);
+  assert.match(ready, /handleEngineChange=\{modelReview.switchModel\}/);
   assert.match(ready, /onGuestEngineChange: composer.handleEngineChange/);
   assert.doesNotMatch(app + ready, /sessionStorage\.(getItem|setItem).*model-setups/);
   assert.match(controller, /prepareWorkspaceModelCandidate/);
   assert.match(controller, /buildWorkspacePreflightRequest/);
   assert.match(controller, /useWorkspacePreflightQuote/);
-  assert.match(controller, /serializeWorkspaceModelSetup\(current\)/);
-  assert.match(controller, /applyWorkspacePreparedSetup\(committed,\s*\{\s*\.\.\.options,\s*setForm: options\.applyPreparedForm,?\s*\}\)/);
+  assert.match(controller, /serializeWorkspaceModelSetup\(source\)/);
+  assert.match(controller, /applyWorkspacePreparedSetup\(committed,\s*\{\s*\.\.\.latest\.current\.options,\s*setForm: latest\.current\.options\.applyPreparedForm,?\s*\}\)/);
   assert.doesNotMatch(serializer, /\b(sessionStorage|localStorage|window|document)\./);
 });
 

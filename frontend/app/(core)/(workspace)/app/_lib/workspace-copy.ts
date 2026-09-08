@@ -51,7 +51,7 @@ export const DEFAULT_WORKSPACE_COPY = {
     refresh: 'Refresh',
     close: 'Close',
     fieldFallback: 'Asset',
-    sourcesTitle: 'Library',
+    sourcesTitle: 'Media',
     toolsTitle: 'Create or transform',
     toolsDescription: 'Open another workspace to prepare a better source before importing it here.',
     emptySearch: 'No assets match this search.',

@@ -44,7 +44,7 @@ export function useBackgroundRemovalRecentActions(params: {
           sourceOutputId: `${item.job.jobId}:video:0`,
           thumbUrl: item.thumbUrl ?? null,
         });
-        params.setMessage('Saved to library.');
+        params.setMessage('Saved to Media.');
       } catch (error) {
         params.setError(error instanceof Error ? error.message : 'Could not save this result.');
       } finally {

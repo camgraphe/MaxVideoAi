@@ -133,26 +133,43 @@ for (const tool of ['angle', 'character'] as const) {
     const f = browserFixture();
     const previousFetch = globalThis.fetch;
     const requests: string[] = [];
-    const asset = { id: 'image', kind: 'image' as const, url: 'https://private.example/original.png?sig=original', thumbUrl: 'https://private.example/thumb.webp?sig=thumb' };
+    const asset = { id: 'image', kind: 'image' as const, url: 'https://private.example/original.png?sig=original', thumbUrl: 'https://private.example/thumb.webp?sig=thumb', source: 'saved_job_output' };
+    const secondAsset = { id: 'image-2', kind: 'image' as const, url: 'https://private.example/second.png?sig=original', thumbUrl: 'https://private.example/second.webp?sig=thumb' };
     let selected: unknown;
     globalThis.fetch = async (input) => {
-      requests.push(String(input));
-      return Response.json({ ok: true, assets: [asset, { id: 'video', kind: 'video', url: '/large.mp4', thumbUrl: '/video.jpg' }] });
+      const url = String(input);
+      requests.push(url);
+      return url.includes('cursor=page-2')
+        ? Response.json({ ok: true, assets: [secondAsset], hasMore: false, nextCursor: null })
+        : Response.json({
+            ok: true,
+            assets: [asset, { id: 'video', kind: 'video', url: '/large.mp4', thumbUrl: '/video.jpg' }],
+            hasMore: true,
+            nextCursor: 'page-2',
+          });
     };
     try {
-      const props = { open: true, onClose() {}, onSelect: (value: unknown) => { selected = value; } };
+      const props = { open: true, userId: 'owner', onClose() {}, onSelect: (value: unknown) => { selected = value; } };
       const modal = tool === 'angle'
         ? React.createElement(AngleImageLibraryModal, { ...props, copy: DEFAULT_ANGLE_COPY })
         : React.createElement(CharacterReferenceLibraryModal, { ...props, copy: DEFAULT_CHARACTER_COPY });
       await act(async () => f.root.render(React.createElement(SWRConfig, { value: { provider: () => new Map(), dedupingInterval: 0 } }, modal)));
-      assert.equal(requests[0], '/api/user-assets?kind=image&limit=60');
+      assert.deepEqual(requests, ['/api/media-library/assets?limit=30&kind=image']);
       assert.equal(f.container.querySelectorAll('img').length, 1);
+      const loadMore = [...f.container.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Load more');
+      assert.ok(loadMore, 'A cursor-backed page exposes the localized load-more control');
+      await act(async () => loadMore.click());
+      assert.deepEqual(requests, [
+        '/api/media-library/assets?limit=30&kind=image',
+        '/api/media-library/assets?limit=30&kind=image&cursor=page-2',
+      ]);
+      assert.equal(f.container.querySelectorAll('img').length, 2);
       const image = f.container.querySelector('img')!;
       assert.equal(image.src, asset.thumbUrl);
       assert.equal(image.getAttribute('loading'), 'lazy');
       assert.equal(image.getAttribute('referrerPolicy'), 'no-referrer');
       await act(async () => image.closest('button')!.click());
-      assert.deepEqual(selected, asset);
+      assert.deepEqual(selected, { ...asset, source: 'generated' });
       await act(async () => image.dispatchEvent(new f.dom.window.Event('error')));
       assert.equal(image.src, asset.url, 'A broken stored thumbnail retains exact-original fallback');
       await act(async () => image.dispatchEvent(new f.dom.window.Event('error')));

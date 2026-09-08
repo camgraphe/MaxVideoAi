@@ -113,7 +113,11 @@ function OpenImageLibraryModal({
         ? 'La importación falló. Inténtalo de nuevo.'
         : 'Import failed. Please try again.'
   ) as string;
-  const { data, error, isLoading, mutate } = useImageLibraryData({ userId, source: activeSource, isCharacterMode });
+  const { data, error, hasMore, isLoading, isLoadingMore, loadMore, mutate } = useImageLibraryData({
+    userId,
+    source: activeSource,
+    isCharacterMode,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -281,7 +285,11 @@ function OpenImageLibraryModal({
       ? formatTemplate(copy.supportedFormats, { formats: supportedFormatsLabel })
       : null;
   const searchPlaceholder = t('workspace.library.browser.searchPlaceholder', 'Search assets…') as string;
-  const sourcesTitle = t('workspace.library.browser.sourcesTitle', 'Library') as string;
+  const sourcesTitle = t('workspace.library.browser.sourcesTitle', 'Media') as string;
+  const loadMoreLabel = t(
+    'workspace.library.browser.loadMore',
+    uiLocale === 'fr' ? 'Afficher plus' : uiLocale === 'es' ? 'Mostrar más' : 'Load more'
+  ) as string;
   const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       handleClose();
@@ -361,6 +369,10 @@ function OpenImageLibraryModal({
           sourcesTitle={sourcesTitle}
           emptyLabel={emptyLabel}
           emptySearchLabel={copy.modal.empty}
+          hasMore={!isCharacterMode && hasMore}
+          isLoadingMore={isLoadingMore}
+          loadMoreLabel={loadMoreLabel}
+          onLoadMore={loadMore}
           renderAssetActions={() => null}
           renderAssetMeta={(asset) =>
             isCharacterMode ? (

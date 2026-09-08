@@ -17,6 +17,7 @@ type UpscaleLibraryModalCopy = {
   libraryEmptyImages: string;
   libraryEmptySearch: string;
   libraryEmptyVideos: string;
+  libraryLoadMore: string;
   libraryRefresh: string;
   librarySearch: string;
   librarySourcesTitle: string;
@@ -29,9 +30,12 @@ interface UpscaleLibraryModalProps {
   assets: AssetBrowserAsset[];
   copy: UpscaleLibraryModalCopy;
   error: string | null;
+  hasMore: boolean;
   isLoading: boolean;
+  isLoadingMore: boolean;
   mediaType: UpscaleMediaType;
   onClose: () => void;
+  onLoadMore: () => void;
   onRefresh: (options: { kind: UpscaleMediaType; source: AssetLibrarySource }) => void;
   onSelectAsset: (asset: AssetBrowserAsset) => void;
   onSourceChange: (source: AssetLibrarySource) => void;
@@ -48,9 +52,12 @@ function UpscaleLibraryDialog({
   assets,
   copy,
   error,
+  hasMore,
   isLoading,
+  isLoadingMore,
   mediaType,
   onClose,
+  onLoadMore,
   onRefresh,
   onSelectAsset,
   onSourceChange,
@@ -75,6 +82,10 @@ function UpscaleLibraryDialog({
         assets={assets}
         isLoading={isLoading}
         error={error}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadMoreLabel={copy.libraryLoadMore}
+        onLoadMore={onLoadMore}
         source={source}
         availableSources={[...sourceOptions]}
         sourceLabels={copy.libraryTabs}

@@ -37,6 +37,7 @@ export function ImageWorkspaceGalleryRail({
       engine={selectedEngineCaps}
       engineRegistry={engineCapsList}
       feedType="image"
+      feedSurface="image"
       activeGroups={activeGroups}
       jobFilter={isImageJob}
       onOpenGroup={onOpenGroup}

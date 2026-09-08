@@ -2,7 +2,7 @@
 
 The video workspace offers separate Activity and Recents views. Activity keeps its existing `GalleryRail` mounted, including job history, batch actions and polling. The named mobile Recents action opens the same bounded list and restores focus on Escape/Close.
 
-`useWorkspaceRecentMedia` reuses Library's `buildRecentOutputsKey` and `recentOutputsFetcher`, including the account identity, media kind and first-page limit of 60. It projects at most 12 ready originals, has no polling timer, and does not retain previous account/filter data. Opening Recents from Activity (desktop or mobile) revalidates the same current SWR key. A visible Refresh action also revalidates an open successful/empty list, so outputs completed since its initial request become discoverable without remounting. Image, video and audio filters are supported. Original URLs, output ids and job ids survive projection; thumbnails are display-only. Video/audio readers are never mounted in the recent list. Stored image thumbnails use `LibraryImageThumbnail`, preserving private/signed sources outside the public optimizer.
+`useWorkspaceRecentMedia` reuses Media's `buildRecentOutputsKey` and `recentOutputsFetcher`, including the account identity, media kind and first-page limit of 30. It projects at most 12 ready originals, has no polling timer, and does not retain previous account/filter data. Opening Recents from Activity (desktop or mobile) revalidates the same current SWR key. A visible Refresh action also revalidates an open successful/empty list, so outputs completed since its initial request become discoverable without remounting. Image, video and audio filters are supported. Original URLs, output ids and job ids survive projection; thumbnails are display-only. Video/audio readers are never mounted in the recent list. Stored image thumbnails use `LibraryImageThumbnail`, preserving private/signed sources outside the public optimizer.
 
 `getWorkspaceReferenceFields` is the shared composer/recents availability owner. The recent-reference adapter retains the actual `EngineInputField` and selected slot index. Both explicit selection and internal desktop drag open the same role chooser. Drag data contains an ephemeral local token, not a URL or a caller-selected media id; the adapter re-resolves the current owned feed identity at drop time. External drags remain in the existing upload owner.
 
@@ -18,7 +18,7 @@ The endpoint is private/no-store and combines request cancellation with an eight
 
 `RecentMediaList` accepts a destination callback and optional `actionLabel`; it owns neither reference mutation nor project membership. A future Studio adapter must provide its own authorized project/canvas command and validate its destination. No Studio route, success action or timeline mutation is implemented here.
 
-This integration covers image/video/audio sources in the video workspace. Specialized Luma/Omni inputs retain their dedicated selectors, as do Kling element assets. Image and audio creator routes retain their existing library/insertion owners; the shared list is reusable but is not wired into those creators in this lot.
+This integration covers image/video/audio sources in the video workspace. Specialized Luma/Omni inputs retain their dedicated selectors, as do Kling element assets. Image creation uses the canonical paginated Media asset feed while retaining its route-local insertion owner and dedicated Character source. Audio retains its existing source picker and insertion owner.
 
 ## Verification limits
 

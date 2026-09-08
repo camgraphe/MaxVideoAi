@@ -120,7 +120,7 @@ export function GroupedJobCardMenu({
             onClick={() => handleAction('save-image')}
             className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
           >
-            <span>Add to Library</span>
+            <span>Add to Media</span>
           </Button>
           <Button
             type="button"
@@ -215,7 +215,7 @@ export function GroupedJobCardMenu({
           className={clsx('mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left', savingToLibrary ? 'opacity-60' : '')}
           disabled={savingToLibrary}
         >
-          <span>{savingToLibrary ? 'Saving…' : 'Add to Library'}</span>
+          <span>{savingToLibrary ? 'Saving…' : 'Add to Media'}</span>
         </Button>
       )}
       {allowRemove && group.count <= 1 && (

@@ -61,7 +61,7 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
   process.env.DATABASE_URL = database.databaseUrl;
   try {
     const { listRecentOutputPage } = await import('../frontend/server/media-library/job-outputs');
-    const { listLibraryAssetPage } = await import('../frontend/server/media-library/assets');
+    const { findLibraryAssetByOrigin, listLibraryAssetPage } = await import('../frontend/server/media-library/assets');
     const { ensureAssetSchema } = await import('../frontend/src/lib/schema');
     await ensureAssetSchema();
 
@@ -110,7 +110,7 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
           (id,user_id,kind,url,mime_type,source,status,metadata,created_at)
          VALUES ($1,'user-a','image',$2,'image/png','upload','ready',$3::jsonb,$4)`,
         [
-          `asset-a-${suffix}`,
+          index === 100 ? `url:user-a:image:${originUrl}` : `asset-a-${suffix}`,
           `https://example.test/asset-a-${suffix}.png`,
           JSON.stringify({
             label: index === 118 ? 'saved 50%_literal\\ name' : `saved ${suffix}`,
@@ -169,6 +169,30 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
       userId: 'user-a', kind: 'image', source: 'upload', q: 'legacy needle', limit: 60,
     });
     assert.deepEqual(legacySearch.items.map((item) => item.id), ['legacy-old']);
+
+    const canonicalOriginMatch = await findLibraryAssetByOrigin({
+      userId: 'user-a',
+      kind: 'image',
+      source: 'upload',
+      originUrl: 'https://origin.example.test/cross-boundary.png',
+    });
+    assert.equal(canonicalOriginMatch?.id, 'url:user-a:image:https://origin.example.test/cross-boundary.png');
+
+    const legacyOriginMatch = await findLibraryAssetByOrigin({
+      userId: 'user-a',
+      kind: 'image',
+      source: 'upload',
+      originUrl: 'https://example.test/legacy.png',
+    });
+    assert.equal(legacyOriginMatch?.id, 'legacy-old');
+
+    const accountIsolatedOriginMatch = await findLibraryAssetByOrigin({
+      userId: 'user-b',
+      kind: 'image',
+      source: 'upload',
+      originUrl: 'https://example.test/legacy.png',
+    });
+    assert.equal(accountIsolatedOriginMatch, null);
 
     const providerUrl = 'https://provider.example.test/user-a-job-004.png';
     const durableUrl = 'https://storage.example.test/user-a-job-004.png';

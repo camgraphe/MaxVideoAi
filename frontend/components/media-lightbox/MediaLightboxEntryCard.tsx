@@ -303,7 +303,7 @@ export function MediaLightboxEntryCard({
                     ? t('workspace.result.saved', 'Saved') ?? 'Saved'
                     : libraryState?.error
                       ? t('workspace.result.retrySave', 'Retry save') ?? 'Retry save'
-                      : t('workspace.result.save', 'Save to library') ?? 'Save to library'
+                      : t('workspace.result.save', 'Save to Media') ?? 'Save to Media'
               }
               disabled={!mediaUrl || libraryState?.loading}
               onClick={() => onSaveEntryToLibrary(entry, mediaUrl)}

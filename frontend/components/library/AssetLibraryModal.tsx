@@ -50,12 +50,15 @@ export type AssetLibraryModalProps = {
   assetType: AssetLibraryKind;
   assets: UserAsset[];
   isLoading: boolean;
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
   error: string | null;
   onClose: () => void;
   onSelect: (asset: UserAsset) => void | string | Promise<void | string>;
   source: AssetLibrarySource;
   onSourceChange: (source: AssetLibrarySource) => void;
   onRefresh: (source?: AssetLibrarySource) => void;
+  onLoadMore?: () => void;
   onDelete: (asset: UserAsset) => Promise<void> | void;
   deletingAssetId: string | null;
 };
@@ -77,7 +80,7 @@ const DEFAULT_ASSET_LIBRARY_COPY = {
   refresh: 'Refresh',
   close: 'Close',
   fieldFallback: 'Asset',
-  sourcesTitle: 'Library',
+  sourcesTitle: 'Media',
   toolsTitle: 'Create or transform',
   toolsDescription: 'Open another workspace to prepare a better source before importing it here.',
   emptySearch: 'No assets match this search.',
@@ -223,12 +226,15 @@ export function AssetLibraryModal({
   assetType,
   assets,
   isLoading,
+  isLoadingMore = false,
+  hasMore = false,
   error,
   onClose,
   onSelect,
   source,
   onSourceChange,
   onRefresh,
+  onLoadMore,
 }: AssetLibraryModalProps) {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
@@ -384,7 +390,11 @@ export function AssetLibraryModal({
     copyAssetLibrary.searchPlaceholder ??
     (uiLocale === 'fr' ? 'Rechercher des assets...' : uiLocale === 'es' ? 'Buscar assets...' : 'Search assets...');
   const sourcesTitle =
-    copyAssetLibrary.sourcesTitle ?? (uiLocale === 'fr' ? 'Bibliotheque' : uiLocale === 'es' ? 'Biblioteca' : 'Library');
+    copyAssetLibrary.sourcesTitle ?? (uiLocale === 'fr' ? 'Médias' : uiLocale === 'es' ? 'Medios' : 'Media');
+  const loadMoreLabel = t(
+    'workspace.library.browser.loadMore',
+    uiLocale === 'fr' ? 'Afficher plus' : uiLocale === 'es' ? 'Mostrar más' : 'Load more'
+  ) as string;
   const emptySearchLabel =
     copyAssetLibrary.emptySearch ??
     (uiLocale === 'fr' ? 'Aucun asset ne correspond a cette recherche.' : uiLocale === 'es' ? 'Ningun asset coincide con esta busqueda.' : 'No assets match this search.');
@@ -411,11 +421,15 @@ export function AssetLibraryModal({
         assetType={assetType}
         assets={assets}
         isLoading={isLoading}
+        isLoadingMore={isLoadingMore}
+        hasMore={hasMore}
         error={importError ?? (error ? actionCopy.loadError : null)}
         source={source}
         availableSources={[...sourceOptions]}
         sourceLabels={copyAssetLibrary.tabs}
         onSourceChange={onSourceChange}
+        onLoadMore={onLoadMore}
+        loadMoreLabel={loadMoreLabel}
         searchPlaceholder={searchPlaceholder}
         sourcesTitle={sourcesTitle}
         emptyLabel={emptyLabel ?? (assetType === 'video' ? 'No saved videos yet.' : 'No saved images yet.')}

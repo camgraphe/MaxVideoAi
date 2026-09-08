@@ -426,6 +426,7 @@ export default function AngleToolPage() {
       />
       <AngleImageLibraryModal
         open={libraryModalOpen}
+        userId={user?.id ?? null}
         onClose={() => setLibraryModalOpen(false)}
         onSelect={handleLibrarySelect}
         copy={copy}

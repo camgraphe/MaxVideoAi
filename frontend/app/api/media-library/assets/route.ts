@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canonicalMediaAssetFields, readMediaFacts } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { deleteLibraryAsset, listLibraryAssetPage, type MediaKind } from '@/server/media-library';
-
+import {
+  deleteLibraryAsset,
+  findLibraryAssetByOrigin,
+  listLibraryAssetPage,
+  type MediaKind,
+} from '@/server/media-library';
 export const runtime = 'nodejs';
 
 function normalizeKind(value: string | null): MediaKind | null {
@@ -18,14 +22,25 @@ export async function GET(req: NextRequest) {
 
   let page: Awaited<ReturnType<typeof listLibraryAssetPage>>;
   try {
-    page = await listLibraryAssetPage({
-      userId,
-      kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
-      source: req.nextUrl.searchParams.get('source'),
-      limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
-      cursor: req.nextUrl.searchParams.get('cursor'),
-      q: req.nextUrl.searchParams.get('q'),
-    });
+    const originUrl = req.nextUrl.searchParams.get('originUrl');
+    if (originUrl) {
+      const asset = await findLibraryAssetByOrigin({
+        userId,
+        originUrl,
+        kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
+        source: req.nextUrl.searchParams.get('source'),
+      });
+      page = { items: asset ? [asset] : [], nextCursor: null, hasMore: false };
+    } else {
+      page = await listLibraryAssetPage({
+        userId,
+        kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
+        source: req.nextUrl.searchParams.get('source'),
+        limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+        cursor: req.nextUrl.searchParams.get('cursor'),
+        q: req.nextUrl.searchParams.get('q'),
+      });
+    }
   } catch (error) {
     console.error('[media-library] failed to list assets', error);
     return NextResponse.json({ ok: false, assets: [], error: 'LOAD_FAILED' }, { status: 500 });

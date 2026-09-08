@@ -40,4 +40,5 @@ test('image workspace prioritizes the composer before the secondary gallery rail
   assert.match(source, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('@\/components\/GalleryRail'\)/);
   assert.match(source, /loading: \(\) => <GalleryRailSkeleton \/>/);
   assert.doesNotMatch(source, /import \{ GalleryRail \} from/);
+  assert.match(source, /feedSurface="image"/);
 });

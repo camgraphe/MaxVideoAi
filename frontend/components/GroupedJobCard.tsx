@@ -60,7 +60,7 @@ export function GroupedJobCard({
   showImageCta = false,
   imageCtaHref = '/app/image',
   imageCtaLabel = 'Generate images',
-  imageLibraryLabel = 'Add to Library',
+  imageLibraryLabel = 'Add to Media',
   imageLibrarySavingLabel = 'Saving…',
   showLibraryCta = false,
   recreateHref,

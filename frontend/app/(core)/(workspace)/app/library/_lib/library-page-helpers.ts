@@ -1,6 +1,12 @@
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
 import { translateError } from '@/lib/error-messages';
+import {
+  buildMediaLibraryAssetsKey,
+  fetchMediaLibraryAssets,
+  type MediaLibraryAsset,
+  type MediaLibraryAssetsResponse,
+} from '@/lib/media-library-client';
 
 export type LibraryView = 'saved' | 'review';
 export type LibraryKind = 'image' | 'video' | 'audio';
@@ -27,21 +33,7 @@ export function resolveLibraryEntry(params: Pick<URLSearchParams, 'get'> | null)
   return { view, kind, jobId };
 }
 
-export type UserAsset = {
-  id: string;
-  url: string;
-  thumbUrl?: string | null;
-  previewUrl?: string | null;
-  kind?: 'image' | 'video' | 'audio';
-  mime?: string | null;
-  width?: number | null;
-  height?: number | null;
-  size?: number | null;
-  source?: string | null;
-  jobId?: string | null;
-  sourceOutputId?: string | null;
-  createdAt?: string;
-};
+export type UserAsset = MediaLibraryAsset;
 
 export type RecentOutput = {
   id: string;
@@ -61,13 +53,7 @@ export type RecentOutput = {
   savedAssetId?: string | null;
 };
 
-export type AssetsResponse = {
-  ok: boolean;
-  error?: string;
-  assets: UserAsset[];
-  nextCursor?: string | null;
-  hasMore?: boolean;
-};
+export type AssetsResponse = MediaLibraryAssetsResponse;
 
 export type RecentOutputsResponse = {
   ok: boolean;
@@ -166,7 +152,7 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     signIn: 'Sign in',
   },
   hero: {
-    title: 'Library',
+    title: 'Media',
     subtitle: 'Saved media you can reuse across generations.',
     ctas: {
       image: 'Generate image',
@@ -184,7 +170,7 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
   },
   browser: {
     searchPlaceholder: 'Search assets…',
-    sourcesTitle: 'Saved Library',
+    sourcesTitle: 'Media',
     toolsTitle: 'Create or transform',
     toolsDescription: 'Open another workspace to prepare a better source before importing it here.',
     emptySearch: 'No assets match this search.',
@@ -205,22 +191,22 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     upscale: 'Upscale assets',
   },
   review: {
-    subtitle: 'Choose recent renders to save as reusable Library assets.',
+    subtitle: 'Choose recent renders to save as reusable media.',
     sourcesTitle: 'History',
-    helper: 'Choose recent renders to save as reusable Library assets.',
+    helper: 'Choose recent renders to save as reusable media.',
     empty: 'No recent renders yet. Generate something first, then save the outputs you want to reuse.',
     loadError: 'Unable to load recent renders.',
-    saveButton: 'Save to Library',
+    saveButton: 'Save to Media',
     saving: 'Saving…',
     saved: 'Saved',
-    saveError: 'Unable to save this render to Library.',
+    saveError: 'Unable to save this render to Media.',
     openRender: 'Open render',
   },
   assets: {
-    title: 'Library assets',
+    title: 'Media',
     countLabel: '{count}',
     loadError: 'Unable to load saved assets.',
-    empty: 'Your Library is empty. Import media or review recent renders to save reusable assets.',
+    empty: 'Media is empty. Import media or review recent renders to save reusable assets.',
     emptyUploads: 'No uploaded media yet. Import media from your device to see it here.',
     emptyGenerated: 'No saved renders yet. Review recent renders and save the outputs you want to reuse.',
     emptyStoryboard: 'No storyboard assets saved yet. Save a storyboard image to see it here.',
@@ -237,7 +223,7 @@ export const DEFAULT_LIBRARY_COPY: LibraryCopy = {
   },
 };
 
-export const LIBRARY_PAGE_SIZE = 60;
+export const LIBRARY_PAGE_SIZE = 30;
 
 export function buildSavedAssetsKey({
   userId,
@@ -255,17 +241,14 @@ export function buildSavedAssetsKey({
   activeView?: LibraryView;
 }) {
   if (!userId || activeView !== 'saved') return null;
-  const params = new URLSearchParams({
-    limit: String(LIBRARY_PAGE_SIZE),
+  return buildMediaLibraryAssetsKey({
+    userId,
+    limit: LIBRARY_PAGE_SIZE,
     kind: activeKind,
+    source: activeSource,
+    cursor,
+    searchQuery,
   });
-  if (activeSource !== 'all') {
-    params.set('source', activeSource);
-  }
-  if (cursor) params.set('cursor', cursor);
-  const q = searchQuery?.trim().slice(0, 200);
-  if (q) params.set('q', q);
-  return [`/api/media-library/assets?${params.toString()}`, userId] as const;
 }
 
 export function buildRecentOutputsKey({
@@ -301,14 +284,7 @@ export function formatTemplate(template: string, values: Record<string, string |
   }, template);
 }
 
-export const assetsFetcher = async ([url]: readonly [string, string]): Promise<AssetsResponse> => {
-  const res = await authFetch(url);
-  const json = (await res.json().catch(() => null)) as AssetsResponse | null;
-  if (!res.ok || !json) {
-    throw new Error(json && typeof json.error === 'string' ? json.error : 'Failed to load assets');
-  }
-  return json;
-};
+export const assetsFetcher = fetchMediaLibraryAssets;
 
 export const recentOutputsFetcher = async ([url]: readonly [string, string]): Promise<RecentOutputsResponse> => {
   const res = await authFetch(url);

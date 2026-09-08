@@ -3,7 +3,13 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { HeaderWalletStatus } from '../frontend/components/header/HeaderWalletStatus';
-import { getAppNavigation, getAppMenuItems, getAppNavigationSelection } from '../frontend/components/app/app-navigation';
+import {
+  NAV_ITEMS,
+  appNavLabel,
+  getAppNavigation,
+  getAppMenuItems,
+  getAppNavigationSelection,
+} from '../frontend/components/app/app-navigation';
 
 test('creation activities select Create together without selecting unrelated app pages', () => {
   for (const [path, activity] of [['/app', 'video'], ['/app/', 'video'], ['/app/image', 'image'], ['/app/audio', 'audio']]) {
@@ -32,6 +38,18 @@ test('every existing destination keeps a named complete-menu path and tools obey
   assert.deepEqual(getAppNavigationSelection('/app/tools/angle', false), { primary: null, activity: null });
   assert.ok(menu.some((item) => item.id === 'studio' && item.href === '/app/studio/projects'));
   assert.ok(getAppMenuItems(true, false).every((item) => item.id !== 'studio'));
+});
+
+test('the global media destination keeps the same product name across navigation surfaces', () => {
+  const primaryMedia = getAppNavigation(true, true).find((item) => item.id === 'media');
+  const completeMenuMedia = getAppMenuItems(true, true).find((item) => item.href === '/app/library');
+  const accountMenuMedia = NAV_ITEMS.find((item) => item.href === '/app/library');
+
+  assert.equal(primaryMedia?.label, 'Media');
+  assert.equal(completeMenuMedia?.label, 'Media');
+  assert.equal(accountMenuMedia?.label, 'Media');
+  assert.equal(appNavLabel(completeMenuMedia!, 'fr'), 'Médias');
+  assert.equal(appNavLabel(completeMenuMedia!, 'es'), 'Medios');
 });
 
 test('app shell keeps account authority, localized separate public links, and native dialog focus', async () => {

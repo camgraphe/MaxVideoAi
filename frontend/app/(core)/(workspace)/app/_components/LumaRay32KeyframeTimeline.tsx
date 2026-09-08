@@ -195,8 +195,8 @@ export function LumaRay32KeyframeTimeline({
                   }}
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={(event) => onDrop(event, slot)}
-                  aria-label={`Open library or upload keyframe ${index + 1}`}
-                  title={keyframesUploadDisabledReason ?? `Open library or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}`}
+                  aria-label={`Choose from Media or upload keyframe ${index + 1}`}
+                  title={keyframesUploadDisabledReason ?? `Choose from Media or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}`}
                 >
                   {slotAsset?.kind === 'image' ? (
                     <img src={slotAsset.previewUrl} alt={slotAsset.name} className="h-full w-full object-cover" />
@@ -235,7 +235,7 @@ export function LumaRay32KeyframeTimeline({
                       onOpenLibrary(slot);
                     }}
                     disabled={Boolean(keyframesUploadDisabledReason)}
-                    aria-label={`Open library for keyframe ${index + 1}`}
+                    aria-label={`Choose from Media for keyframe ${index + 1}`}
                   >
                     <Library className="h-3.5 w-3.5" aria-hidden />
                   </button>

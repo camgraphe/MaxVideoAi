@@ -45,22 +45,6 @@ export type BillingProductResponse = {
   error?: string;
 };
 
-export type UserAssetsResponse = {
-  ok: boolean;
-  assets?: Array<{
-    id: string;
-    url: string;
-    thumbUrl?: string | null;
-    mime?: string | null;
-    width?: number | null;
-    height?: number | null;
-    size?: number | null;
-    source?: string | null;
-    createdAt?: string;
-  }>;
-  error?: string;
-};
-
 export type JobDetailResponse = Partial<Job> & {
   ok?: boolean;
   pricing?: Job['pricingSnapshot'];

@@ -42,7 +42,7 @@ export const DEFAULT_JOBS_COPY = {
   loadMore: 'Load more',
   loading: 'Loading…',
   actions: {
-    addToLibrary: 'Add to Library',
+    addToLibrary: 'Add to Media',
     saving: 'Saving…',
     recreate: 'Generate same settings',
     openDetails: 'View details',

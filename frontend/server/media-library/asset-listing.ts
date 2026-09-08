@@ -4,6 +4,7 @@ import {
   mapAssetRow,
   normalizeMediaAssetSource,
   normalizeString,
+  resolveLibraryAssetIdentity,
   type DbMediaAssetRow,
   type MediaAssetRecord,
   type MediaKind,
@@ -15,6 +16,155 @@ import {
   sliceMediaLibraryPage,
   type MediaLibraryPage,
 } from './pagination';
+
+export async function findLibraryAssetByOrigin(params: {
+  userId: string;
+  originUrl: string;
+  kind?: MediaKind | null;
+  source?: string | null;
+}): Promise<MediaAssetRecord | null> {
+  const originUrl = normalizeString(params.originUrl);
+  if (!originUrl) return null;
+
+  await ensureMediaLibrarySchema();
+  await ensureAssetSchema();
+
+  const source = params.source && params.source !== 'all' ? normalizeMediaAssetSource(params.source) : null;
+  const queryParams = [params.userId, params.kind ?? null, source, originUrl];
+  if (params.kind) {
+    const identity = resolveLibraryAssetIdentity({
+      userId: params.userId,
+      kind: params.kind,
+      url: originUrl,
+      source: source ?? 'import',
+    });
+    const identityRows = await query<DbMediaAssetRow>(
+      `/* media-library:exact-origin:identity */
+       SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
+              source, source_job_id, source_output_id, status, metadata, created_at
+         FROM media_assets
+        WHERE id = $1
+          AND user_id = $2
+          AND deleted_at IS NULL
+          AND kind = $3
+          AND (
+            $4::text IS NULL
+            OR source = $4
+            OR (
+              $4 = 'saved_job_output'
+              AND source = 'import'
+              AND (
+                source_job_id IS NOT NULL
+                OR metadata->>'jobId' IS NOT NULL
+                OR metadata->>'sourceJobId' IS NOT NULL
+              )
+            )
+          )
+        LIMIT 1`,
+      [identity, params.userId, params.kind, source]
+    );
+    if (identityRows[0]) return mapAssetRow(identityRows[0]);
+  }
+
+  const canonicalRows = await query<DbMediaAssetRow>(
+    `/* media-library:exact-origin:canonical */
+     SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
+            source, source_job_id, source_output_id, status, metadata, created_at
+       FROM (
+         SELECT
+           a.id,
+           a.public_id,
+           a.user_id,
+           a.kind,
+           a.url,
+           a.thumb_url,
+           a.preview_url,
+           a.mime_type,
+           a.width,
+           a.height,
+           a.size_bytes,
+           CASE
+             WHEN a.source = 'import'
+               AND (
+                 a.source_job_id IS NOT NULL
+                 OR a.metadata->>'jobId' IS NOT NULL
+                 OR a.metadata->>'sourceJobId' IS NOT NULL
+               )
+               THEN 'saved_job_output'
+             ELSE a.source
+           END AS source,
+           a.source_job_id,
+           a.source_output_id,
+           a.status,
+           COALESCE(a.metadata, '{}'::jsonb) AS metadata,
+           a.created_at
+         FROM media_assets a
+         WHERE a.user_id = $1
+           AND a.deleted_at IS NULL
+           AND COALESCE(a.source, '') <> 'storyboard_template_reference'
+           AND (a.url = $4 OR a.metadata->>'originUrl' = $4)
+       ) AS candidate
+      WHERE ($2::text IS NULL OR kind = $2::text)
+        AND ($3::text IS NULL OR source = $3::text)
+      ORDER BY created_at DESC, id DESC
+      LIMIT 1`,
+    queryParams
+  );
+  if (canonicalRows[0]) return mapAssetRow(canonicalRows[0]);
+
+  const legacyRows = await query<DbMediaAssetRow>(
+    `/* media-library:exact-origin:legacy */
+     SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
+            source, source_job_id, source_output_id, status, metadata, created_at
+       FROM (
+         SELECT
+           u.asset_id AS id,
+           NULL::text AS public_id,
+           u.user_id,
+           CASE
+             WHEN COALESCE(u.mime_type, '') LIKE 'video/%'
+               OR u.url ~* '\\.(mp4|webm|mov|m4v|avi|mkv)([?#].*)?$' THEN 'video'
+             WHEN COALESCE(u.mime_type, '') LIKE 'audio/%'
+               OR u.url ~* '\\.(mp3|wav|ogg|m4a|aac|flac)([?#].*)?$' THEN 'audio'
+             ELSE 'image'
+           END AS kind,
+           u.url,
+           u.metadata->>'thumbUrl' AS thumb_url,
+           u.metadata->>'previewUrl' AS preview_url,
+           u.mime_type,
+           u.width,
+           u.height,
+           u.size_bytes,
+           CASE
+             WHEN u.source IN ('upload', 'storyboard', 'character', 'angle', 'upscale', 'background-removal')
+               THEN u.source
+             WHEN u.source = 'generated'
+               OR (
+                 u.source = 'import'
+                 AND (u.metadata->>'jobId' IS NOT NULL OR u.metadata->>'sourceJobId' IS NOT NULL)
+               )
+               THEN 'saved_job_output'
+             ELSE 'import'
+           END AS source,
+           COALESCE(u.metadata->>'jobId', u.metadata->>'sourceJobId') AS source_job_id,
+           NULL::text AS source_output_id,
+           'ready'::text AS status,
+           COALESCE(u.metadata, '{}'::jsonb) AS metadata,
+           u.created_at
+         FROM user_assets u
+         WHERE u.user_id = $1
+           AND COALESCE(u.source, '') <> 'storyboard_template_reference'
+           AND (u.url = $4 OR u.metadata->>'originUrl' = $4)
+       ) AS candidate
+      WHERE ($2::text IS NULL OR kind = $2::text)
+        AND ($3::text IS NULL OR source = $3::text)
+      ORDER BY created_at DESC, id DESC
+      LIMIT 1`,
+    queryParams
+  );
+
+  return legacyRows[0] ? mapAssetRow(legacyRows[0]) : null;
+}
 
 export async function listLibraryAssetPage(params: {
   userId: string;

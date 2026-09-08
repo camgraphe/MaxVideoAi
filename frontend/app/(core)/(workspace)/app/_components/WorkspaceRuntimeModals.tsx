@@ -64,12 +64,15 @@ export function WorkspaceRuntimeModals({
   assetLibrarySource,
   visibleAssetLibrary,
   isAssetLibraryLoading,
+  isAssetLibraryLoadingMore,
+  assetLibraryHasMore,
   assetLibraryError,
   assetDeletePendingId,
   fieldFallbackLabel,
   onAssetLibrarySourceChange,
   onCloseAssetLibrary,
   onRefreshAssets,
+  onLoadMoreAssets,
   onSelectFieldAsset,
   onSelectKlingAsset,
   onDeleteAsset,
@@ -102,12 +105,15 @@ export function WorkspaceRuntimeModals({
   assetLibrarySource: AssetLibrarySource;
   visibleAssetLibrary: UserAsset[];
   isAssetLibraryLoading: boolean;
+  isAssetLibraryLoadingMore: boolean;
+  assetLibraryHasMore: boolean;
   assetLibraryError: string | null;
   assetDeletePendingId: string | null;
   fieldFallbackLabel: string;
   onAssetLibrarySourceChange: (source: AssetLibrarySource) => void;
   onCloseAssetLibrary: () => void;
   onRefreshAssets: (options: { source: AssetLibrarySource; kind: AssetLibraryKind }) => void | Promise<void>;
+  onLoadMoreAssets: () => void | Promise<void>;
   onSelectFieldAsset: (field: EngineInputField, asset: UserAsset, slotIndex?: number) => void | string | Promise<void | string>;
   onSelectKlingAsset: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => void;
   onDeleteAsset: (asset: UserAsset) => void | Promise<void>;
@@ -171,6 +177,8 @@ export function WorkspaceRuntimeModals({
           assetType={assetLibraryKind}
           assets={visibleAssetLibrary}
           isLoading={isAssetLibraryLoading}
+          isLoadingMore={isAssetLibraryLoadingMore}
+          hasMore={assetLibraryHasMore}
           error={assetLibraryError}
           source={assetLibrarySource}
           onSourceChange={onAssetLibrarySourceChange}
@@ -178,6 +186,7 @@ export function WorkspaceRuntimeModals({
           onRefresh={(sourceOverride) =>
             onRefreshAssets({ source: sourceOverride ?? assetLibrarySource, kind: assetLibraryKind })
           }
+          onLoadMore={onLoadMoreAssets}
           onSelect={(asset) => {
             if (assetPickerTarget.kind === 'field') {
               return onSelectFieldAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);

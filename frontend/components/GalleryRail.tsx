@@ -43,6 +43,7 @@ export interface GalleryRailProps {
   engine: EngineCaps;
   engineRegistry?: EngineCaps[];
   feedType?: GalleryFeedType;
+  feedSurface?: GalleryFeedType;
   activeGroups?: GroupSummary[];
   selectedGroupId?: string | null;
   onOpenGroup?: (group: GroupSummary) => void;
@@ -52,12 +53,11 @@ export interface GalleryRailProps {
   variant?: GalleryVariant;
 }
 
-const BACKGROUND_WARM_START_DELAY_MS = 200;
-const BACKGROUND_WARM_STEP_DELAY_MS = 900;
+const BACKGROUND_WARM_START_DELAY_MS = 200, BACKGROUND_WARM_STEP_DELAY_MS = 900;
 export function GalleryRail({
   engine,
   engineRegistry,
-  feedType = 'video',
+  feedType = 'video', feedSurface,
   activeGroups = [],
   selectedGroupId = null,
   onOpenGroup,
@@ -83,7 +83,7 @@ export function GalleryRail({
   }, [responsiveVariant]);
   const isDesktopVariant = variant === 'desktop' || (responsiveVariant && responsiveDesktop);
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
-  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
+  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, feedSurface ? { surface: feedSurface } : { type: feedType });
   const [backgroundWarmCount, setBackgroundWarmCount] = useState(INITIAL_EAGER_PREVIEW_COUNT);
   const hasEngineRegistry = Array.isArray(engineRegistry) && engineRegistry.length > 0;
   const { data: enginesData } = useEngines('video', { includeAverages: false, enabled: !hasEngineRegistry });

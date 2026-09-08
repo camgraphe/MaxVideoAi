@@ -46,6 +46,9 @@ export function useWorkspaceAssetLibrary({
   const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
   const [assetLibrarySource, setAssetLibrarySource] = useState<AssetLibrarySource>('all');
   const [assetLibraryLoadedKey, setAssetLibraryLoadedKey] = useState<string | null>(null);
+  const [assetLibraryNextCursor, setAssetLibraryNextCursor] = useState<string | null>(null);
+  const [assetLibraryHasMore, setAssetLibraryHasMore] = useState(false);
+  const [isAssetLibraryLoadingMore, setIsAssetLibraryLoadingMore] = useState(false);
   const [assetDeletePendingId, setAssetDeletePendingId] = useState<string | null>(null);
 
   const assetLibraryKind = useMemo<AssetLibraryKind>(() => {
@@ -73,6 +76,9 @@ export function useWorkspaceAssetLibrary({
     setAssetLibrary([]);
     setAssetLibraryError(null);
     setAssetLibraryLoadedKey(null);
+    setAssetLibraryNextCursor(null);
+    setAssetLibraryHasMore(false);
+    setIsAssetLibraryLoadingMore(false);
   }, []);
 
   useEffect(() => {
@@ -80,8 +86,11 @@ export function useWorkspaceAssetLibrary({
     setAssetPickerTarget(null);
     setAssetLibrary([]);
     setAssetLibraryLoadedKey(null);
+    setAssetLibraryNextCursor(null);
+    setAssetLibraryHasMore(false);
     setAssetLibraryError(null);
     setIsAssetLibraryLoading(false);
+    setIsAssetLibraryLoadingMore(false);
   }, [userId]);
 
   useEffect(() => () => { requestVersion.current += 1; }, []);
@@ -95,15 +104,16 @@ export function useWorkspaceAssetLibrary({
     const kind = options?.kind ?? assetLibraryKind;
     const requestKey = `${userId}:${buildAssetLibraryCacheKey(kind, source)}`;
     setIsAssetLibraryLoading(true);
+    setIsAssetLibraryLoadingMore(false);
     setAssetLibraryError(null);
+    setAssetLibraryNextCursor(null);
+    setAssetLibraryHasMore(false);
     try {
       const assetResponse = await authFetch(buildAssetLibraryUrl(kind, source));
       if (!isCurrent()) return;
       if (assetResponse.status === 401) {
         setAssetLibrary([]);
-        setAssetLibraryError(
-          kind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.'
-        );
+        setAssetLibraryError('Sign in to access Media.');
         setAssetLibraryLoadedKey(requestKey);
         return;
       }
@@ -118,7 +128,10 @@ export function useWorkspaceAssetLibrary({
               : 'Failed to load images';
         throw new Error(message);
       }
+      const nextCursor = typeof payload.nextCursor === 'string' ? payload.nextCursor : null;
       setAssetLibrary(normalizeAssetLibraryPayload(payload, source, kind));
+      setAssetLibraryNextCursor(nextCursor);
+      setAssetLibraryHasMore(Boolean(payload.hasMore && nextCursor));
       setAssetLibraryLoadedKey(requestKey);
     } catch (error) {
       if (!isCurrent()) return;
@@ -135,6 +148,41 @@ export function useWorkspaceAssetLibrary({
       if (isCurrent()) setIsAssetLibraryLoading(false);
     }
   }, [assetLibraryKind, assetLibrarySource, userId]);
+
+  const loadMoreAssetLibrary = useCallback(async () => {
+    if (!userId || owner.current.userId !== userId || !assetLibraryNextCursor || isAssetLibraryLoadingMore) return;
+    const scope = owner.current;
+    const request = ++requestVersion.current;
+    const isCurrent = () => owner.current === scope && requestVersion.current === request;
+    const source = assetLibrarySource;
+    const kind = assetLibraryKind;
+    const requestKey = `${userId}:${buildAssetLibraryCacheKey(kind, source)}`;
+    if (assetLibraryLoadedKey !== requestKey) return;
+
+    setIsAssetLibraryLoadingMore(true);
+    setAssetLibraryError(null);
+    try {
+      const response = await authFetch(buildAssetLibraryUrl(kind, source, assetLibraryNextCursor));
+      const payload = await response.json().catch(() => null);
+      if (!isCurrent()) return;
+      if (!response.ok || !payload?.ok) {
+        throw new Error(typeof payload?.error === 'string' ? payload.error : 'Failed to load more media');
+      }
+      const nextAssets = normalizeAssetLibraryPayload(payload, source, kind);
+      setAssetLibrary((previous) => {
+        const urls = new Set(previous.map((asset) => asset.url));
+        return [...previous, ...nextAssets.filter((asset) => !urls.has(asset.url) && Boolean(urls.add(asset.url)))];
+      });
+      const nextCursor = typeof payload.nextCursor === 'string' ? payload.nextCursor : null;
+      setAssetLibraryNextCursor(nextCursor);
+      setAssetLibraryHasMore(Boolean(payload.hasMore && nextCursor));
+    } catch (error) {
+      if (!isCurrent()) return;
+      setAssetLibraryError(error instanceof Error ? error.message : 'Failed to load more media');
+    } finally {
+      if (isCurrent()) setIsAssetLibraryLoadingMore(false);
+    }
+  }, [assetLibraryKind, assetLibraryLoadedKey, assetLibraryNextCursor, assetLibrarySource, isAssetLibraryLoadingMore, userId]);
 
   useEffect(() => {
     if (!userId || libraryOwnerId !== userId || !assetPickerTarget || !assetLibraryRequestKey || isAssetLibraryLoading) return;
@@ -159,10 +207,8 @@ export function useWorkspaceAssetLibrary({
       if (!asset?.id) return;
       setAssetDeletePendingId(asset.id);
       try {
-        const response = await authFetch('/api/user-assets', {
+        const response = await authFetch(`/api/media-library/assets/${encodeURIComponent(asset.id)}`, {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: asset.id }),
         });
         const payload = await response.json().catch(() => null);
         const success = response.ok && Boolean(payload?.ok);
@@ -223,8 +269,11 @@ export function useWorkspaceAssetLibrary({
     visibleAssetLibrary,
     isAssetLibraryLoading,
     assetLibraryError,
+    assetLibraryHasMore,
+    isAssetLibraryLoadingMore,
     assetDeletePendingId,
     fetchAssetLibrary,
+    loadMoreAssetLibrary,
     handleAssetLibrarySourceChange,
     closeAssetLibrary,
     handleDeleteLibraryAsset,

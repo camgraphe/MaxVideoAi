@@ -66,7 +66,7 @@ export const DEFAULT_DASHBOARD_COPY = {
     title: 'Quick starts',
     empty: 'Save a render as a template to reuse it here.',
     use: 'Use',
-    manage: 'Open Library',
+    manage: 'Open Media',
     remove: 'Remove',
     defaultTitle: 'Template',
     meta: {

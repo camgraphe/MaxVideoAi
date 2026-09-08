@@ -142,7 +142,7 @@ test('workspace engine and variant controls stay together without a Browse row',
   )?.[0] ?? '';
 
   assert.match(workspaceBranch, /flex w-full max-w-full min-w-0 flex-col items-stretch gap-1\.5 min-\[360px\]:flex-row min-\[360px\]:items-end min-\[360px\]:gap-2 sm:gap-3/);
-  assert.match(workspaceBranch, /<div className="w-full min-w-0 min-\[360px\]:flex-1 sm:w-\[320px\] sm:flex-none">/);
+  assert.match(workspaceBranch, /<div className="w-full min-w-0 min-\[360px\]:flex-1 min-\[1088px\]:w-\[320px\] min-\[1088px\]:flex-none">/);
   assert.match(engineSelectSource, /controlPresentation === 'workspace' && 'w-full min-w-0'/);
   assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'min-h-11 w-full/);
   assert.match(engineSelectSource, /break-words whitespace-normal/);
