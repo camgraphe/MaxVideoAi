@@ -1158,6 +1158,28 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
   }
 });
 
+test('MiniMax reference geometry is rejected before pricing or quote creation', async () => {
+  const candidate = registryCapability('minimax-h3');
+  const { deps } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => [{
+      assetId: 'wide-image', role: 'reference', mediaKind: 'image',
+      storageUrl: 'https://assets.example.com/wide.png', mimeType: 'image/png',
+      originalName: 'wide.png', sizeBytes: 1000, width: 1920, height: 548, durationSec: null,
+    }],
+    priceGeneration: async () => { throw new Error('Invalid geometry reached pricing'); },
+  });
+  await assert.rejects(prepareGeneration({
+    surface: 'video', engineId: 'minimax-h3', mode: 'ref2v', prompt: 'Test reference',
+    settings: { durationSec: 5, resolution: '2K', aspectRatio: '16:9' },
+    references: [{ kind: 'asset', assetId: 'wide-image', role: 'reference' }], outputCount: 1,
+  }, principal, deps), (error: unknown) => {
+    assert.ok(error instanceof AgentApiError);
+    assert.equal(error.code, 'REFERENCE_INVALID');
+    return true;
+  });
+});
+
 test('generation pricing forwards resolved LTX source-audio duration to prepare and confirmation pricing', async () => {
   const candidate = registryCapability('ltx-2-5-fast');
   const request: CanonicalGenerationRequest = {

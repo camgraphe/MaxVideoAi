@@ -1010,5 +1010,7 @@ test('production release keeps the disabled trial unscheduled and documents safe
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
   });
 });

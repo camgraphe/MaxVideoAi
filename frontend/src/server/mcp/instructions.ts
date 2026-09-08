@@ -3,6 +3,7 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   referenceUploads: boolean;
   montagePreparation?: boolean;
   audioGeneration?: boolean;
+  studioMontageCreation?: boolean;
 };
 
 export function buildMaxVideoAiMcpInstructions(
@@ -59,6 +60,12 @@ export function buildMaxVideoAiMcpInstructions(
     );
   }
 
+  if (capabilities.studioMontageCreation) {
+    instructions.push(
+      'Use create_studio_montage to save one editable Studio project from a caller-supplied semantic ordering of 2–12 owned ready videos. It validates measured frame-aligned trims, preserves the requested order, and returns the exact Studio destination. Reuse the exact same idempotencyKey only for an exact retry of the same request; changed content requires a new key.',
+    );
+  }
+
   if (capabilities.audioGeneration) {
     instructions.push(
       'For Audio work, call list_audio_capabilities first and use only a currently available mode and its exact settings and owned reference roles.',
@@ -97,4 +104,5 @@ export const MAXVIDEOAI_MCP_INSTRUCTIONS = buildMaxVideoAiMcpInstructions({
   referenceUploads: false,
   montagePreparation: false,
   audioGeneration: false,
+  studioMontageCreation: false,
 });

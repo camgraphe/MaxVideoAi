@@ -72,6 +72,8 @@ function createFixture(): string {
       trial: false,
       referenceUploads: false,
       montagePreparation: false,
+      audioGeneration: false,
+      studioMontageCreation: false,
     }, null, 2)}\n`,
   );
   const fixtureVercelPath = join(fixture, 'frontend/vercel.json');
@@ -183,6 +185,8 @@ function setReleasePublication(fixture: string): void {
       trial: false,
       referenceUploads: true,
       montagePreparation: false,
+      audioGeneration: false,
+      studioMontageCreation: false,
     }, null, 2)}\n`,
   );
   const vercelPath = join(fixture, 'frontend/vercel.json');
@@ -310,7 +314,7 @@ test('production Vercel preflight fails closed when neither FAL credential alias
   }
 });
 
-test('production Vercel preflight requires the first candidate to keep all nine flags false', () => {
+test('production Vercel preflight requires the first candidate to keep all eleven flags false', () => {
   const fixture = createFixture();
   try {
     const publicationPath = join(fixture, 'frontend/config/mcp-publication.json');
@@ -320,7 +324,7 @@ test('production Vercel preflight requires the first candidate to keep all nine 
 
     const result = runPreflight(fixture);
     assert.equal(result.status, 67, result.stderr);
-    assert.equal(result.stderr, 'PUBLICATION_BLOCKED expected=all-nine-false\n');
+    assert.equal(result.stderr, 'PUBLICATION_BLOCKED expected=all-eleven-false\n');
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(SECRET_SENTINEL));
   } finally {
     rmSync(fixture, { recursive: true, force: true });
@@ -344,7 +348,7 @@ test('production Vercel preflight refuses MCP schedules while the dark-candidate
 
     const result = runPreflight(fixture);
     assert.equal(result.status, 70, result.stderr);
-    assert.equal(result.stderr, 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-nine-false\n');
+    assert.equal(result.stderr, 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eleven-false\n');
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

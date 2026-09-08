@@ -550,6 +550,8 @@ test('public fixture corpus covers every approved intent with strict labels and 
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
   });
 });
 

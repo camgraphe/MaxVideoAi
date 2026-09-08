@@ -1,0 +1,388 @@
+.settingsPanel {
+  min-height: 0;
+  overflow: hidden;
+  padding: 14px;
+  border-left: 1px solid var(--studio-border);
+  background: var(--studio-surface);
+}
+
+.settingsBody {
+  display: flex;
+  height: calc(100% - 42px);
+  flex-direction: column;
+  gap: 13px;
+  margin-top: 16px;
+  overflow: auto;
+  padding-right: 3px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.settingsBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.settingsLabel {
+  display: grid;
+  gap: 6px;
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settingsInput,
+.settingsTextarea {
+  width: 100%;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-select-text);
+  outline: none;
+}
+
+.settingsInput {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.settingsTextarea {
+  min-height: 130px;
+  padding: 10px;
+  resize: vertical;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.timelineInspectorGroup {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+}
+
+.timelineInspectorControl {
+  display: grid;
+  gap: 7px;
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.timelineInspectorControl > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.timelineInspectorControl strong {
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timelineInspectorControlRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 68px;
+  gap: 8px;
+  align-items: center;
+}
+
+.timelineInspectorInlineButton {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-control-bg);
+  color: var(--studio-text);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 10px;
+}
+
+.timelineInspectorInlineButton strong {
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timelineInspectorInlineButton:hover:not(:disabled) {
+  border-color: rgba(129, 140, 248, 0.55);
+  color: var(--studio-text-strong);
+}
+
+.timelineInspectorInlineButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.settingsRange {
+  width: 100%;
+  accent-color: var(--studio-primary);
+}
+
+.timelineInspectorCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.timelineInspectorCheckbox input {
+  accent-color: var(--studio-primary);
+}
+
+.timelineInspectorResetButton {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.timelineInspectorResetButton:hover {
+  border-color: rgba(129, 140, 248, 0.5);
+  color: var(--studio-text-strong);
+}
+
+.toggleRow,
+.validationBox,
+.connectedRow {
+  display: flex;
+  align-items: center;
+}
+
+.toggleRow {
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font-size: 12px;
+}
+
+.toggleRow button {
+  min-width: 48px;
+  min-height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--studio-control-bg-hover);
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.toggleRow .toggleActive {
+  background: rgba(34, 197, 94, 0.24);
+  color: var(--studio-success-text);
+}
+
+.optionStateBadge {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 9px;
+  background: rgba(59, 130, 246, 0.16);
+  color: var(--studio-info-text);
+  font-size: 10px;
+  font-weight: 780;
+}
+
+.pricingActionSummary {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 9px;
+  background: rgba(88, 28, 135, 0.18);
+}
+
+.pricingActionSummary span {
+  color: var(--studio-accent-text);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.pricingActionSummary strong {
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.validationBox {
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+}
+
+.validationBox p,
+.connectedRow p {
+  margin: 0;
+}
+
+.validationBox p {
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.validationBox span,
+.mutedText {
+  display: block;
+  margin-top: 3px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.connectedList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.connectedRow {
+  gap: 9px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--studio-surface);
+}
+
+.connectedRow > span {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.connectedRow p {
+  flex: 1;
+  color: var(--studio-text-strong);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.connectedRow small {
+  color: var(--studio-text-muted);
+  font-size: 10px;
+}
+
+.inspectorPreview {
+  display: grid;
+  height: 148px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--studio-bg);
+  place-items: center;
+}
+
+.inspectorPreview audio {
+  width: calc(100% - 24px);
+}
+
+.inspectorPreview img,
+.inspectorPreview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inspectorPreview video {
+  object-fit: contain;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 8px 10px;
+  padding: 10px;
+  border-radius: 9px;
+  background: var(--studio-surface);
+}
+
+.infoGrid span {
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}
+
+.infoGrid strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1120px) {
+  .settingsPanel {
+    height: 100%;
+    overflow: hidden;
+    border-left: 0;
+    background: var(--studio-surface-strong);
+    padding: 12px;
+  }
+
+  .settingsBody {
+    height: calc(100% - 38px);
+    padding-right: 0;
+  }
+
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .settingsInput {
+    min-height: 40px;
+  }
+
+  .timelineInspectorInlineButton {
+    min-height: 40px;
+  }
+
+  .timelineInspectorResetButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toggleRow button {
+    min-width: 56px;
+    min-height: 40px;
+  }
+
+  .timelineInspectorControlRow {
+    grid-template-columns: minmax(0, 1fr) 58px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}

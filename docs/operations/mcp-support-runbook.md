@@ -33,6 +33,8 @@ covers the previous 13-tool profile rather than the new direct-file path.
 | `trial` | false | No promotional MCP trial is available. |
 | `referenceUploads` | true | Private reference-upload handoffs are public and use the production storage namespace. |
 | `montagePreparation` | false | Montage preparation remains unpublished and absent from default tool discovery. |
+| `audioGeneration` | false | Paid Audio generation remains unpublished pending qualification. |
+| `studioMontageCreation` | false | Persisted Studio montage creation remains unpublished pending qualification. |
 
 Post-cutover validation items:
 

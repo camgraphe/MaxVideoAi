@@ -7,6 +7,11 @@ import {
   type MontageEditPlan,
   type PrepareMontageInput,
 } from '@/server/agent-api/montage-plan';
+import type { CreateStudioMontageInput } from '@/lib/studio/montage-contract';
+import {
+  createStudioMontageProject,
+  type CreateStudioMontageResult,
+} from '@/server/studio/montage-command';
 import {
   createAgentAccountStatusService,
   type AgentAccountStatusWalletDeps,
@@ -106,6 +111,7 @@ import { registerGetModelDetailsTool } from '@/server/mcp/tools/get-model-detail
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
 import { registerPrepareMontageTool } from '@/server/mcp/tools/prepare-montage';
+import { registerCreateStudioMontageTool } from '@/server/mcp/tools/create-studio-montage';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerPresentGenerationTool } from '@/server/mcp/tools/present-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
@@ -175,6 +181,10 @@ export type MaxVideoAiMcpServices = {
     input: ConfirmAudioGenerationInput,
     principal: AgentPrincipal,
   ): Promise<AudioGenerationConfirmation>;
+  createStudioMontage?(
+    input: CreateStudioMontageInput,
+    principal: AgentPrincipal,
+  ): Promise<CreateStudioMontageResult>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
@@ -182,6 +192,7 @@ export type MaxVideoAiMcpServerOptions = {
   referenceUploads?: boolean;
   montagePreparation?: boolean;
   audioGeneration?: boolean;
+  studioMontageCreation?: boolean;
 };
 
 export function createDefaultMaxVideoAiMcpServices(
@@ -279,6 +290,11 @@ export function createDefaultMaxVideoAiMcpServices(
       config.accountUrl,
       { paidGenerationEnabled: () => capabilities.paidGeneration },
     )(input, principal),
+    createStudioMontage: (input, principal) => createStudioMontageProject(
+      { userId: principal.userId },
+      input,
+      { featureEnabled: true },
+    ),
   };
 }
 
@@ -291,6 +307,7 @@ export function createMaxVideoAiMcpServer(
   const paidGeneration = options.paidGeneration ?? mcpPublication.paidGeneration;
   const montagePreparation = options.montagePreparation ?? mcpPublication.montagePreparation;
   const audioGeneration = paidGeneration && (options.audioGeneration ?? mcpPublication.audioGeneration);
+  const studioMontageCreation = options.studioMontageCreation ?? mcpPublication.studioMontageCreation;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -298,7 +315,13 @@ export function createMaxVideoAiMcpServer(
       websiteUrl: 'https://maxvideoai.com/mcp',
     },
     {
-      instructions: buildMaxVideoAiMcpInstructions({ paidGeneration, referenceUploads, montagePreparation, audioGeneration }),
+      instructions: buildMaxVideoAiMcpInstructions({
+        paidGeneration,
+        referenceUploads,
+        montagePreparation,
+        audioGeneration,
+        studioMontageCreation,
+      }),
       capabilities: { tools: {} },
     }
   );
@@ -316,6 +339,9 @@ export function createMaxVideoAiMcpServer(
   }
   if (montagePreparation) {
     registerPrepareMontageTool(server, principal, services);
+  }
+  if (studioMontageCreation) {
+    registerCreateStudioMontageTool(server, principal, services);
   }
   if (audioGeneration) {
     registerListAudioCapabilitiesTool(server, principal, services);

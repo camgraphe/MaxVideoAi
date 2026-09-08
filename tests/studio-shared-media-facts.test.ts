@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readMediaFacts, canonicalMediaAssetFields } from '../frontend/lib/media-identity';
+import { resolveProbedMediaMetadata } from '../frontend/server/media/detect-has-audio';
+
+test('the existing full-stream probe retains positive and negative embedded audio evidence', () => {
+  for (const hasAudio of [true, false]) {
+    const measured = resolveProbedMediaMetadata({ streams: [{ codec_type: 'video' }, ...(hasAudio ? [{ codec_type: 'audio' }] : [])], format: { format_name: 'mp4', duration: '6.25' } });
+    assert.equal(measured?.hasAudio, hasAudio);
+  }
+});
 
 test('only measured facts survive; negative audio evidence and fractional duration survive', () => {
   assert.equal(readMediaFacts({ durationSec: 8 }), undefined);

@@ -75,7 +75,17 @@ async function executePaidVideoContinuation(
     requestStartedAt,
     metricState: metric.state,
     logMetric: metric.log,
-    adapters: videoGenerationAdapters,
+    adapters: {
+      ...videoGenerationAdapters,
+      // The MCP route has a 120s lifetime; Fal rendering belongs to webhook/poll recovery.
+      submitGenerateProviderTask: (params: Parameters<typeof videoGenerationAdapters.submitGenerateProviderTask>[0]) =>
+        videoGenerationAdapters.submitGenerateProviderTask({
+          ...params,
+          falPayload: params.providerRoutingPlan.kind === 'fal_only'
+            ? { ...params.falPayload, submissionMode: 'enqueue' }
+            : params.falPayload,
+        }),
+    },
   };
   if ('funding' in options) {
     return executeVideoGeneration({

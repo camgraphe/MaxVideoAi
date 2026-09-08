@@ -21,6 +21,8 @@ test('the owner-approved production launch publishes MCP while keeping the trial
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
   });
 });
 
@@ -93,6 +95,8 @@ test('tracked fixture config and runner reproduce all launch modes without mutat
       trial: false,
       referenceUploads: false,
       montagePreparation: false,
+      audioGeneration: false,
+      studioMontageCreation: false,
     },
     preview: {
       publicMarketing: true,
@@ -104,6 +108,8 @@ test('tracked fixture config and runner reproduce all launch modes without mutat
       trial: false,
       referenceUploads: false,
       montagePreparation: false,
+      audioGeneration: false,
+      studioMontageCreation: false,
     },
     enabled: {
       publicMarketing: true,
@@ -115,6 +121,8 @@ test('tracked fixture config and runner reproduce all launch modes without mutat
       trial: true,
       referenceUploads: true,
       montagePreparation: false,
+      audioGeneration: false,
+      studioMontageCreation: false,
     },
   });
 

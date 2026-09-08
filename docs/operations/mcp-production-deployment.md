@@ -84,7 +84,7 @@ The first production candidate must contain exactly this checked-in state:
 Production does not have environment overrides for these publication gates.
 Changing a capability requires a reviewed change to
 `frontend/config/mcp-publication.json` and a new deployment. An unaliased
-`--skip-domain` candidate with all nine flags false is the only acceptable
+`--skip-domain` candidate with all eleven flags false is the only acceptable
 first candidate. It is not a launch: the MCP routes, marketing surface, and
 indexing remain closed.
 
@@ -154,7 +154,7 @@ cron inventory is not updated reliably.
 
 | Gate | Pass evidence | Failure / rollback |
 | --- | --- | --- |
-| Repository | Clean approved revision; focused tests pass; all nine flags false | Stop before candidate creation |
+| Repository | Clean approved revision; focused tests pass; all eleven flags false | Stop before candidate creation |
 | Vercel identity and environment metadata | Read-only preflight passes for project `maxvideoai`, scope `camgraphes-projects`, root `frontend`, and Production targets | Add or retarget names through an independently approved secret-management action; rerun preflight |
 | Neon schema | Migrations 29–38 rehearsed on a Neon branch, backed up, applied in order, and verified in production | Keep every flag false; restore/branch from the approved recovery point if the migration owner directs it |
 | Supabase OAuth 2.1 | Production server enabled, asymmetric signing key/JWKS, PKCE, exact redirects, consent, refresh, revocation, and dynamic-registration controls verified | Keep `oauth`, `transport`, and `discovery` false; revoke disposable clients and investigate |
@@ -384,7 +384,7 @@ Each layer requires a new approved revision, a candidate inspection, promotion,
 smoke tests, and an evidence entry before the next layer. `publicIndexing`
 stays false throughout layers 0–6.
 
-0. **Dark candidate:** all nine flags false; deploy unaliased with
+0. **Dark candidate:** all eleven flags false; deploy unaliased with
    `--skip-domain`; verify SHA, project, root, crons, noindex, and fail-closed
    routes. This is the only candidate shape permitted by the preflight.
 1. **Discovery only:** after production OAuth is healthy, set only

@@ -4,21 +4,27 @@ import {
   resolveOwnedReferenceAsset,
   type OwnedReferenceAsset,
 } from './reference-assets';
+import {
+  MONTAGE_ASPECT_RATIOS,
+  MONTAGE_AUDIO_MODES,
+  MONTAGE_FPS,
+  MONTAGE_MAX_CLIPS,
+  MONTAGE_MAX_DURATION_SECONDS,
+  MONTAGE_MIN_CLIPS,
+  MONTAGE_RESOLUTIONS,
+  type MontageSettings,
+} from '@/lib/studio/montage-contract';
 
-export const MONTAGE_FPS = [24, 25, 30, 60] as const;
-export const MONTAGE_ASPECT_RATIOS = ['16:9', '9:16', '1:1', '4:5', '21:9'] as const;
-export const MONTAGE_RESOLUTIONS = ['720p', '1080p'] as const;
-export const MONTAGE_AUDIO_MODES = ['preserve', 'mute'] as const;
-export const MONTAGE_MIN_CLIPS = 2;
-export const MONTAGE_MAX_CLIPS = 12;
-export const MONTAGE_MAX_DURATION_SECONDS = 180;
-
-export type MontageSettings = {
-  fps: (typeof MONTAGE_FPS)[number];
-  aspectRatio: (typeof MONTAGE_ASPECT_RATIOS)[number];
-  resolution: (typeof MONTAGE_RESOLUTIONS)[number];
-  audioMode: (typeof MONTAGE_AUDIO_MODES)[number];
+export {
+  MONTAGE_ASPECT_RATIOS,
+  MONTAGE_AUDIO_MODES,
+  MONTAGE_FPS,
+  MONTAGE_MAX_CLIPS,
+  MONTAGE_MAX_DURATION_SECONDS,
+  MONTAGE_MIN_CLIPS,
+  MONTAGE_RESOLUTIONS,
 };
+export type { MontageSettings };
 
 export type PrepareMontageInput = {
   title: string;

@@ -1,0 +1,32 @@
+import { expect, test } from '@playwright/test';
+import { openMinimalEditorWorkspace } from './editor-helpers';
+
+test('Chat card and inspector simulate locally and disable Live without losing the draft', async ({ page }) => {
+  let chatRequests = 0;
+  await page.route('**/api/studio/chat', async (route) => { chatRequests++; await route.abort(); });
+  await page.route('**/api/legal/cookies/version', (route) => route.fulfill({ json: { ok: true, version: 'studio-local-fixture', publishedAt: null } }));
+  await openMinimalEditorWorkspace(page);
+  const mode = page.getByRole('button', { name: 'Toggle mock generation' });
+  if ((await mode.textContent())?.includes('Live')) await mode.click();
+  await page.locator('[data-canvas-toolbar-menu-id="text"]').click();
+  await page.locator('[data-canvas-toolbar-preset-id="chat-box"]').click();
+  const chat = page.locator('.react-flow__node.selected');
+  await chat.getByRole('textbox', { name: 'Message', exact: true }).fill('Plan my scene');
+  await chat.getByRole('button', { name: 'Simulate', exact: true }).click();
+  await expect(chat).toContainText('Simulation — local echo, no model was called:');
+  await chat.getByRole('textbox', { name: 'Message', exact: true }).fill('Keep my next draft');
+  await mode.click();
+  await expect(chat.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
+  await expect(chat).toContainText('Live Chat unavailable');
+  await chat.getByRole('textbox', { name: 'Message', exact: true }).press('ControlOrMeta+Enter');
+  await expect(chat.getByRole('textbox', { name: 'Message', exact: true })).toHaveValue('Keep my next draft');
+  await page.locator('[data-canvas-selection-settings]').click();
+  const inspector = page.locator('[data-studio-canvas-inspector="true"]');
+  await expect(inspector.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
+  await expect(inspector).toContainText('Live Chat unavailable');
+  await mode.click();
+  await expect(inspector.getByRole('button', { name: 'Simulate', exact: true })).toBeEnabled();
+  await inspector.getByRole('button', { name: 'Simulate', exact: true }).click();
+  await expect(inspector).toContainText('Keep my next draft');
+  expect(chatRequests).toBe(0);
+});

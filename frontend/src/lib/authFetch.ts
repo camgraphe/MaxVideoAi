@@ -32,3 +32,6 @@ export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Re
     credentials,
   });
 }
+export function hasAuthFetchSessionHint(): boolean {
+  return Boolean(readLastKnownUserId() || hasSupabaseAuthCookie());
+}

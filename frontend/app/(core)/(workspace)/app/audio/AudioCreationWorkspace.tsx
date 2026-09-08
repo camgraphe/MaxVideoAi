@@ -49,6 +49,9 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const scope = useAudioCreationScope(userId);
   const restoreSequence = useRef(0);
+  const invalidateRestoreSequence = useCallback(() => {
+    restoreSequence.current += 1;
+  }, []);
   const submitting = useRef(new Set<string>());
   const { stableJobs: jobs, isLoading, error: historyError, mutate } = useInfiniteJobs(12, { surface: 'audio' });
   const stillOwned = scope.isCurrent;
@@ -69,8 +72,8 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const queryJob = params?.get('job');
   useEffect(() => {
     if (queryJob && requestedIntent !== 'video') void selectJob(queryJob);
-    return () => { restoreSequence.current++; };
-  }, [queryJob, requestedIntent, selectJob]);
+    return invalidateRestoreSequence;
+  }, [invalidateRestoreSequence, queryJob, requestedIntent, selectJob]);
   const chooseIntent = (next: AudioCreationIntent) => {
     // Next's native history integration updates useSearchParams without an RSC navigation.
     // Read the live URL so rapid choices cannot overwrite a newer history entry.
@@ -79,7 +82,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     url.searchParams.delete('job');
     url.searchParams.delete('reuse');
     if (url.href !== window.location.href) window.history.pushState(null, '', url);
-    restoreSequence.current++;
+    invalidateRestoreSequence();
     setNotice(null);
     setLibraryOpen(false);
   };

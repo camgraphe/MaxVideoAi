@@ -63,6 +63,8 @@ function mediaFixture(params: {
     mime_type: attachment.type,
     size_bytes: params.sizeMB * MB,
     duration_sec: params.durationSec ?? null,
+    width: params.kind === 'image' ? 1024 : null,
+    height: params.kind === 'image' ? 1024 : null,
   };
   return { attachment, reference, row };
 }
@@ -88,6 +90,23 @@ test('MiniMax H3 enforces exact stored media size boundaries', async () => {
   assert.equal((await validate([mediaFixture({ kind: 'video', sizeMB: 50 + 1 / MB, durationSec: 2 })])).ok, false);
   assert.equal((await validate([mediaFixture({ kind: 'audio', sizeMB: 15, durationSec: 15 })])).ok, true);
   assert.equal((await validate([mediaFixture({ kind: 'audio', sizeMB: 15 + 1 / MB, durationSec: 15 })])).ok, false);
+});
+
+test('MiniMax H3 rejects the incident reference ratio using stored dimensions, not client claims', async () => {
+  for (const [width, height, allowed] of [
+    [1920, 548, false], [399, 1000, false], [400, 1000, true],
+    [2500, 1000, true], [2501, 1000, false], [1672, 941, true],
+  ] as const) {
+    const fixture = mediaFixture({ kind: 'image', sizeMB: 1 });
+    Object.assign(fixture.row, { width, height });
+    Object.assign(fixture.attachment, { width: 1024, height: 1024 });
+    const result = await validate([fixture]);
+    assert.equal(result.ok, allowed, `${width} x ${height}`);
+    if (!result.ok) assert.equal(result.body.error, 'MEDIA_ASPECT_RATIO_UNSUPPORTED');
+  }
+  const missing = mediaFixture({ kind: 'image', sizeMB: 1 });
+  Object.assign(missing.row, { width: null, height: null });
+  assert.equal((await validate([missing])).ok, false);
 });
 
 test('MiniMax H3 enforces trusted individual video and audio durations', async () => {

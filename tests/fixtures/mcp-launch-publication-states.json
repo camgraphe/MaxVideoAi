@@ -8,7 +8,9 @@
     "paidGeneration": false,
     "trial": false,
     "referenceUploads": false,
-    "montagePreparation": false
+    "montagePreparation": false,
+    "audioGeneration": false,
+    "studioMontageCreation": false
   },
   "preview": {
     "publicMarketing": true,
@@ -19,7 +21,9 @@
     "paidGeneration": false,
     "trial": false,
     "referenceUploads": false,
-    "montagePreparation": false
+    "montagePreparation": false,
+    "audioGeneration": false,
+    "studioMontageCreation": false
   },
   "enabled": {
     "publicMarketing": true,
@@ -30,6 +34,8 @@
     "paidGeneration": true,
     "trial": true,
     "referenceUploads": true,
-    "montagePreparation": false
+    "montagePreparation": false,
+    "audioGeneration": false,
+    "studioMontageCreation": false
   }
 }

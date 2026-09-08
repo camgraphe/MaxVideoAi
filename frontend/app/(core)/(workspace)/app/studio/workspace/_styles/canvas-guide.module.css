@@ -1,0 +1,330 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.surfaceLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 82;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.callout,
+.badge,
+.guideMenuTrigger,
+.guideMenuItems button {
+  font: inherit;
+}
+
+.callout {
+  position: absolute;
+  display: grid;
+  box-sizing: border-box;
+  width: clamp(180px, 18vw, 210px);
+  min-height: 82px;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 7px;
+  padding: 10px 8px 10px 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  box-shadow: 0 7px 18px rgb(30 41 59 / 10%);
+  color: var(--studio-text);
+  pointer-events: auto;
+}
+
+.badge {
+  position: absolute;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--studio-border);
+  border-radius: 50%;
+  background: var(--studio-surface);
+  box-shadow: 0 5px 14px rgb(30 41 59 / 12%);
+  color: var(--studio-text-strong);
+  pointer-events: auto;
+}
+
+.callout:focus-visible,
+.badge:focus-visible,
+.annotationActions button:focus-visible,
+.guideMenuTrigger:focus-visible,
+.guideMenuItems button:focus-visible {
+  outline: 2px solid var(--studio-primary);
+  outline-offset: 2px;
+}
+
+.stepNumber {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 50%;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badge .stepNumber {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  background: transparent;
+}
+
+.annotationCopy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.annotationCopy strong {
+  color: var(--studio-text-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.annotationCopy p {
+  margin: 0;
+  color: var(--studio-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.38;
+}
+
+.annotationActions {
+  display: flex;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.annotationActions button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.annotationActions button:hover {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+}
+
+.annotationActions [data-guide-drag-handle] {
+  cursor: grab;
+}
+
+.annotationActions [data-guide-drag-handle]:active {
+  cursor: grabbing;
+}
+
+.badge .annotationActions {
+  position: absolute;
+  top: -1px;
+  left: 31px;
+  display: none;
+  padding: 1px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  box-shadow: 0 5px 14px rgb(30 41 59 / 12%);
+}
+
+.badge[data-guide-action-tray-side='left'] .annotationActions {
+  right: 31px;
+  left: auto;
+}
+
+.badge:hover .annotationActions,
+.badge:focus-within .annotationActions {
+  display: flex;
+}
+
+.leaderLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.surfaceLeaderLayer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.leader {
+  fill: none;
+  stroke: var(--studio-text-muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+}
+
+.surfaceCallout {
+  position: fixed;
+  z-index: 1;
+}
+
+.guideHighlighted {
+  outline: 2px solid var(--studio-primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--studio-primary) 18%, transparent);
+  transition: outline-color 140ms ease, box-shadow 140ms ease;
+}
+
+.guideControls {
+  position: absolute;
+  z-index: 2;
+  top: 16px;
+  left: 16px;
+  pointer-events: auto;
+}
+
+.guideMenu {
+  position: relative;
+}
+
+.guideMenuTrigger {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  box-shadow: 0 5px 14px rgb(30 41 59 / 10%);
+  color: var(--studio-text);
+  cursor: pointer;
+  font-size: 0.6875rem;
+}
+
+.guideMenuItems {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  width: 190px;
+  padding: 5px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  box-shadow: 0 8px 22px rgb(30 41 59 / 14%);
+}
+
+@media (max-width: 479px) {
+  .guideControls {
+    top: 190px;
+    right: 16px;
+    left: auto;
+  }
+
+  .guideMenuItems {
+    right: 0;
+    left: auto;
+  }
+}
+
+.guideMenuItems button {
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--studio-text);
+  cursor: pointer;
+  font-size: 0.6875rem;
+  text-align: left;
+}
+
+.guideMenuItems button:hover {
+  background: var(--studio-bg-soft);
+}
+
+.screenReaderGuide {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1120px) {
+  .mobileSurfacePanel {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    box-sizing: border-box;
+    width: min(210px, calc(100vw - 24px));
+    min-height: 82px;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--studio-border);
+    border-radius: 7px;
+    background: var(--studio-surface);
+    box-shadow: 0 7px 18px rgb(30 41 59 / 10%);
+    color: var(--studio-text);
+    pointer-events: none;
+  }
+
+  .mobileSurfaceBadge {
+    position: relative;
+  }
+
+  .mobileSurfacePanelCompact {
+    width: min(150px, calc(100vw - 24px));
+    min-height: 0;
+    padding-block: 7px;
+  }
+
+  .mobileSurfacePanelCompact .annotationCopy p {
+    display: none;
+  }
+
+  .mobileSurfacePanel .annotationCopy {
+    gap: 1px;
+  }
+
+  .mobileSurfacePanel .annotationCopy p {
+    line-height: 1.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .callout,
+  .badge,
+  .guideHighlighted {
+    transition: none;
+  }
+}

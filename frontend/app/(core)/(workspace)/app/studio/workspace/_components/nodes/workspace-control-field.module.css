@@ -1,0 +1,88 @@
+.field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.field > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select,
+.input,
+.toggle,
+.staticValue {
+  width: 100%;
+  min-width: 0;
+  min-height: 28px;
+  border: 1px solid color-mix(in srgb, var(--node-accent, var(--studio-primary)) 14%, var(--studio-border));
+  border-radius: 7px;
+  background: var(--studio-surface);
+  color: var(--studio-text-strong);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 640;
+}
+
+.select,
+.input {
+  padding: 0 8px;
+}
+
+.toggle {
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+.toggleActive {
+  background: color-mix(in srgb, var(--node-accent, var(--studio-primary)) 74%, transparent);
+  color: #ffffff;
+}
+
+.staticValue {
+  display: grid;
+  place-items: center;
+}
+
+.rangeControl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 7px;
+  align-items: center;
+  min-height: 28px;
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--node-accent, var(--studio-primary));
+}
+
+.rangeControl strong {
+  color: var(--studio-text-strong);
+  font-size: 10px;
+  font-weight: 680;
+}
+
+.inspectorField {
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.inspectorField .select,
+.inspectorField .input,
+.inspectorField .toggle,
+.inspectorField .staticValue {
+  min-height: 34px;
+  border-color: var(--studio-border);
+  font-size: 12px;
+}

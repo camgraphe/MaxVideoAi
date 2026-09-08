@@ -15,6 +15,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
   { id: 'generate-audio', label: 'Generate Audio', badge: null, icon: 'generate-audio', href: '/app/audio' },
+  ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', badge: null, icon: 'generate', href: '/app/studio/projects' }] : []),
   ...(FEATURES.workflows.toolsSection
     ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
@@ -54,6 +55,7 @@ export function getAppMenuItems(toolsEnabled: boolean = FEATURES.workflows.tools
   return [
     { id: 'dashboard', label: 'Dashboard', href: '/dashboard', glyph: 'library' },
     ...APP_ACTIVITIES,
+    ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', href: '/app/studio/projects', glyph: 'video' as const }] : []),
     ...(toolsEnabled ? [PRIMARY_ITEMS[2], ...TOOL_ITEMS] : []),
     { id: 'library', label: 'Library', href: '/app/library', glyph: 'library' },
     { id: 'jobs', label: 'History', href: '/jobs', glyph: 'prompt' },

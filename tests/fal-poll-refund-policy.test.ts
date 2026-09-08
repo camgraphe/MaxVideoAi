@@ -8,6 +8,7 @@ const falPollPath = join(root, 'frontend/server/fal-poll.ts');
 const falPollSource = readFileSync(falPollPath, 'utf8');
 
 test('Fal poll timeout failures remain wallet-refund eligible', () => {
+  assert.match(falPollSource, /getFalPollTiming\(job\.engine_id, job\.created_at, now\)/);
   assert.match(
     falPollSource,
     /const markRefundEligiblePollFailure = async \(reason: string\) => \{[\s\S]*autoRefundEligible: true,[\s\S]*failureOrigin: 'poll_internal'/,

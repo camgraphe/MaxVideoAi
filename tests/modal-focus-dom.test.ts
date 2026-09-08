@@ -29,7 +29,7 @@ test('modal enters, cycles past hidden controls, closes and restores the opener'
       React.createElement('button', {}, 'Download'),
       React.createElement('details', {},
         React.createElement('summary', { id: 'last', tabIndex: 0 }, 'Show more'),
-        React.createElement('button', { id: 'collapsed' }, 'Hidden in details')), 
+        React.createElement('button', { id: 'collapsed' }, 'Hidden in details')),
       React.createElement('div', { hidden: true }, React.createElement('button', { id: 'hidden' }, 'Hidden')));
   }
   const root = createRoot(dom.window.document.getElementById('root')!);

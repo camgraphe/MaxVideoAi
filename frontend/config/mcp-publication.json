@@ -8,5 +8,6 @@
   "trial": false,
   "referenceUploads": true,
   "montagePreparation": false,
-  "audioGeneration": false
+  "audioGeneration": false,
+  "studioMontageCreation": false
 }

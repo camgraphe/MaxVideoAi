@@ -43,6 +43,8 @@ Use these guides as context before changing the related areas:
 - `docs/engineering/stripe-webhook.md`: Stripe webhook security, idempotency, handler ownership, and validation gates.
 - `frontend/app/(core)/(workspace)/app/AGENTS.md`: authenticated video workspace boundaries.
 - `frontend/app/(core)/(workspace)/app/image/AGENTS.md`: image workspace boundaries.
+- `docs/engineering/studio-editor-architecture.md`: Studio canvas, timeline, media, certification and export ownership.
+- `frontend/app/(core)/(workspace)/app/studio/AGENTS.md`: Studio route-local guardrails.
 
 When instructions conflict, follow the nearest `AGENTS.md` for the files being edited, while preserving the root-level rules.
 

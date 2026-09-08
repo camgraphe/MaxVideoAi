@@ -21,6 +21,9 @@ export function canVisitorBrowseWorkspacePath(pathname: string): boolean {
     normalized === '/app/tools/denoise' ||
     normalized === '/app/tools/fix-blur' ||
     normalized === '/app/tools/smooth-motion' ||
+    normalized === '/app/studio/projects' ||
+    normalized === '/app/studio/workspace' ||
+    normalized.startsWith('/app/studio/workspace/') ||
     normalized === '/dashboard' ||
     normalized === '/jobs' ||
     normalized === '/app/image' ||

@@ -34,6 +34,8 @@ const expectedKeys = [
   'trial',
   'referenceUploads',
   'montagePreparation',
+  'audioGeneration',
+  'studioMontageCreation',
 ];
 
 for (const [state, publication] of Object.entries(fixtureStates)) {
