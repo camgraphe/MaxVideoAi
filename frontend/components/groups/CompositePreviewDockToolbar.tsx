@@ -102,16 +102,8 @@ export function CompositePreviewDockToolbar({
           title={isLooping ? controls.loop.on : controls.loop.off}
           aria-pressed={isLooping}
         >
-          <span className="relative inline-flex">
-            <span className="inline-flex h-4 w-4 items-center justify-center">
-              <UIIcon icon={Repeat} size={16} />
-            </span>
-            {!isLooping ? (
-              <span
-                aria-hidden="true"
-                className="absolute left-1/2 top-1/2 h-[2px] w-5 -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-current"
-              />
-            ) : null}
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={Repeat} size={16} />
           </span>
           <span className={clsx('text-xs', compact && 'sr-only')}>{isLooping ? controls.loop.on : controls.loop.off}</span>
         </Button>
