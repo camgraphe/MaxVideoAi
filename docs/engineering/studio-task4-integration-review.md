@@ -75,3 +75,13 @@ L’implémenteur rapporte12/12 tests MCP/prepare/config et TypeScript réussis.
 - `1c9eafa92` : GET workspace retourne `{ok:true,project,sequences}` sous verrou parent partagé ; writer CAS exclusif ; verrouillage/revalidation des sources et des anciens writers dans leur transaction. Tests PG concurrents, vérification data_directory exacte et nettoyage si initialisation échoue.
 
 Le test HTTP racine renforcé passe1/1 sur `1c9eafa92` (12,99s), avec lecture atomique, accès privé, tous les chemins séquences et erreurs attendues non génériques. Cela ne remplace pas la revue serveur ou le client connecté. Le premier navigateur réel sans localStorage ouvre bien les deux clips enregistrés, mais reste RED sur leur lecture privée avant le branchement client ; la capture a été inspectée. Les fixtures compte/consentement et l’indisponibilité de génération sont explicitement séparées de Studio/Auth/SQL réels.
+
+## Revue indépendante intermédiaire
+
+La revue Sol high du serveur/MCP figé demande trois corrections Important, aucun Critical :
+
+1. Refuser les éléments structurellement invalides dans nodes/edges/timelineItems avant sauvegarde. `[null]` est actuellement accepté mais fait échouer les normalizers à la réouverture. Ce finding ne demande pas d’interdire les chevauchements/multitracks ou de transformer les métadonnées de snapshot en faits canoniques ; ces derniers sont toujours revalidés dans la bibliothèque serveur.
+2. Conserver explicitement les trims d’entrée en frames et leur fps/ordre, au lieu de ne garder que les conversions en secondes et un hash irréversible.
+3. Rendre les erreurs DB/signature inattendues opaques avec500, au lieu d’exposer `Error.message` en400. Les erreurs métier validées gardent leurs statuts propres.
+
+La racine a confirmé le premier défaut via HTTP réel : le snapshot contenant `sequence.timelineItems:[null]` reçoit200 au lieu de400 (11,47s). Le test est donc de nouveau RED sur ce contrat renforcé. Il ajoute aussi une contrainte PostgreSQL uniquement dans sa base jetable pour exiger rollback complet et erreur opaque lors d’un échec du dernier write ; cette assertion n’est pas encore atteinte. Correctifs et re-revue en attente, sans qualification finale Task4.

@@ -105,6 +105,8 @@ Le premier parcours `connected-studio-montage-browser-integration.test.ts` ouvre
 
 La suite HTTP comprend aussi un second runtime vérifié avec seulement les migrations historiques26/29/41. Sans42, la création UI répond503 explicite, MCP retourne un refus retryable et la lecture connectée répond503 ; aucun reçu, champ revision/persistence_mode ou projet n’a été créé implicitement. Nouveau passage complet : **2/2 réussis (23,13s)**. Ce contrôle établit le refus sûr en environnement non migré, pas la migration d’un environnement distant.
 
+Après ce passage, la revue indépendante a demandé une validation structurelle des éléments sauvegardés, la provenance explicite des trims en frames et des erreurs techniques opaques. Le nouveau contrôle HTTP `timelineItems:[null]` est **RED confirmé** (réponse200 au lieu de400,11,47s). Les assertions de rollback sur panne SQL injectée, ajoutées à sa suite, n’ont pas encore été atteintes. Voir la section de revue intermédiaire de `studio-task4-integration-review.md` ; le passage2/2 antérieur n’est pas présenté comme preuve de ces nouveaux critères.
+
 ## Contrôles restant ouverts
 
 La matrice géométrique `editor-canvas-clarity.spec.ts` prépare la qualification finale (24 combinaisons EN/FR/ES, quatre viewports, deux thèmes). Trois passages de référence échouent actuellement pour la raison attendue : titre et réglages recouverts par le HUD après fit, sur desktop EN, portrait FR et paysage ES. Les captures ont été inspectées ; ce défaut doit être corrigé dans Task5 avant la remise, sans affaiblir les assertions. Les anciennes huit vérifications de boutons dans le viewport ne détectaient pas ce recouvrement interne du canevas.
