@@ -2,6 +2,19 @@
 
 Branche de revue `codex/studio-connected-editor`, worktree `dce6`. Ce document distingue les contrôles effectivement exécutés des travaux encore ouverts. Aucune qualification de déploiement n'est annoncée.
 
+## État actuel — Task 4 qualifiée, Task 5 en cours
+
+Les sections suivantes conservent la chronologie des contrôles et de leurs
+corrections, pas une liste de blocages tous encore ouverts. Task 4 est approuvée
+au produit `18bf21cad` : navigateur connecté réel6/6, brouillons locaux avec HTTP
+contrôlé6/6, suite Studio483/483 sans skip. Les détails et limites corrigés sont
+dans `studio-task4-integration-review.md`. Le build complet intermédiaire867/867
+pages est passé, mais devra être rejoué après le polish.
+
+Task 5 est en cours dans `studio-task5-integration-review.md` : les connexions
+optionnelles et leur focus sont vérifiés, le fit paysage reste bloquant, et les
+menus/Projects/Copy/Annuler/première présentation du montage suivent le brief.
+
 ## Socle
 
 Le socle composé au commit `e101e2840` conserve l'app qualifiée et le main récent, puis importe le Studio committé et ses travaux locaux avec les manifestes `studio-import/`. Les sources n'ont pas été modifiées.

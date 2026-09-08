@@ -95,6 +95,13 @@ export function assertNoEditorClientErrors(
 }
 
 async function mockEditorHeaderAccountApi(page: Page): Promise<void> {
+  // Legal/account owners are outside these controlled Studio UI fixtures.
+  // The safe preview has no DB; do not turn its expected legal 500 into a
+  // swallowed console error or an implicit remote database dependency.
+  await page.route('**/api/legal/cookies/version', (route) => route.fulfill({
+    json: { ok: true, version: 'studio-local-fixture', publishedAt: null },
+  }));
+  await page.route('**/api/legal/cookies', (route) => route.fulfill({ json: { ok: true } }));
   await page.route('**/api/member-status', async (route) => {
     await route.fulfill({
       status: 200,
