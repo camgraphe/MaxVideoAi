@@ -8,7 +8,7 @@ import { getPricingDetails } from '@/lib/fal-catalog';
 import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
 import { LIVE_MEMBERSHIP_POLICY, LIVE_MEMBERSHIP_DISCOUNTS } from '@/lib/membership-policy';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing-context';
 import {
   buildStoryboardPricingProjection,
@@ -88,7 +88,7 @@ export async function computeCanonicalAudioBillingSnapshot(input: AudioPricingIn
     resolution: 'audio',
   }, undefined, dependencies.pricingPolicy);
   const policyDocument = getVersionedPricingPolicy();
-  const profileId = policy.rule.compatibilityProfile ?? 'audio-tripled-rounded';
+  const profileId = resolveLiveAudioPricingProfile(policy.rule);
   const compatibilityProfile = policyDocument.compatibilityProfiles.find((profile) => profile.id === profileId);
   if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
   const presentation = buildAudioPricingPresentation(input);

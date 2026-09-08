@@ -5,6 +5,8 @@ import { computeCanonicalAudioBillingSnapshot } from '../frontend/server/pricing
 import { getVersionedPricingPolicy } from '../frontend/src/lib/pricing-policy-defaults';
 import { validatePricingPolicyDocument } from '../packages/pricing/src/policy';
 import type { AudioPricingInput } from '../frontend/src/lib/audio-generation';
+import { quoteCanonicalAdminScenarios, quoteHistoricalCanonicalAuditScenarios } from '../frontend/server/pricing-admin/canonical-scenarios';
+import { buildPricingAuditScenarios } from '../frontend/src/lib/pricing-audit/scenarios';
 
 const cases: Array<[string, AudioPricingInput, number]> = [
   ['shortest SFX', { pack: 'sfx_only', durationSec: 3 }, 5],
@@ -47,6 +49,22 @@ test('explicit database Audio overrides retain precedence over versioned default
   const rule = getVersionedPricingPolicy().rules.find(rule => rule.engineId === 'audio-generation')!;
   const snapshot = await computeCanonicalAudioBillingSnapshot({ pack: 'song', durationSec: 3 }, { pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [{ ...rule, id: 'db-audio-rule', marginPercent: 1 }], routingRules: [] }) } });
   assert.equal(snapshot.totalCents, 30);
+});
+
+test('Audio override without a profile has the same live admin and billed total while historical interpretation stays fixed', async () => {
+  const rule = { id: 'db-without-profile', engineId: 'audio-generation', marginPercent: 2, marginFlatCents: 0, surchargeAudioPercent: 0.2, surchargeUpscalePercent: 0.5, currency: 'USD' };
+  const scenario = buildPricingAuditScenarios().find(row => row.id === 'audio:music_only:30')!;
+  const [admin] = quoteCanonicalAdminScenarios({ databaseRules: [rule], scenarios: [scenario] });
+  const [historical] = quoteHistoricalCanonicalAuditScenarios({ databaseRules: [rule], scenarios: [scenario] });
+  const billed = await computeCanonicalAudioBillingSnapshot({ pack: 'music_only', durationSec: 30, musicModel: 'clip' }, { pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [rule], routingRules: [] }) } });
+  assert.equal(admin.status, 'quoted');
+  assert.equal(historical.status, 'quoted');
+  if (admin.status !== 'quoted' || historical.status !== 'quoted') throw new Error('Expected canonical quotes');
+  assert.equal(admin.customerTotalCents, 15);
+  assert.equal(admin.customerTotalCents, billed.totalCents);
+  assert.equal(admin.policyProvenance.compatibilityProfile, 'audio-tripled-rounded');
+  assert.equal(historical.customerTotalCents, 12);
+  assert.equal(historical.policyProvenance.compatibilityProfile, 'audio-current');
 });
 
 test('old Audio clients must refresh their price before the charge boundary', async () => {

@@ -10,7 +10,7 @@ import {
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
 import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 
 export type PublicPricingMembershipTier = 'member' | 'plus' | 'pro';
@@ -75,7 +75,7 @@ export function quotePublicPricing(input: QuotePublicPricingInput): CanonicalPri
     versionedRules: policyDocument.rules,
   });
   const profileId =
-    input.compatibilityProfileId ?? policy.rule.compatibilityProfile ?? 'standard';
+    input.compatibilityProfileId ?? (input.scenario.engineId === 'audio-generation' ? resolveLiveAudioPricingProfile(policy.rule) : policy.rule.compatibilityProfile ?? 'standard');
   const compatibilityProfile = policyDocument.compatibilityProfiles.find(
     (candidate) => candidate.id === profileId
   );

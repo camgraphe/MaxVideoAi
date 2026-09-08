@@ -9,7 +9,7 @@ import { listFalEngines } from '@/config/falEngines';
 import { buildCanonicalPricingFacts } from '@/lib/pricing-audit/canonical-facts';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingAuditScenario, PricingAuditSurface } from '@/lib/pricing-audit/types';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import { LIVE_MEMBERSHIP_DISCOUNTS, LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 
 import { PricingAdminError } from './errors';
@@ -181,7 +181,9 @@ function quoteCanonicalScenarios(
         ? policyDocument.rules.map(rule => rule.engineId === 'audio-generation' ? { ...rule, marginPercent: 1.5, compatibilityProfile: 'audio-current' } : rule)
         : policyDocument.rules;
       const policy = resolveScenarioPolicy(scenario, input.databaseRules, versionedRules);
-      const profileId = resolveCompatibilityProfileId(scenario, policy);
+      const profileId = projection === 'live' && scenario.engineId === 'audio-generation'
+        ? resolveLiveAudioPricingProfile(policy.rule)
+        : resolveCompatibilityProfileId(scenario, policy);
       const compatibilityProfile = profiles.get(profileId);
       if (!compatibilityProfile) {
         throw new PricingAdminError(

@@ -39,3 +39,10 @@ function clonePolicy(policy: PricingPolicyDocument): PricingPolicyDocument {
 export function getVersionedPricingPolicy(): PricingPolicyDocument {
   return clonePolicy(validatedPolicy);
 }
+
+/** Live Audio overrides may omit a profile; inherit the authored Audio default on every surface. */
+export function resolveLiveAudioPricingProfile(rule: { compatibilityProfile?: string }): string {
+  const profile = rule.compatibilityProfile ?? validatedPolicy.rules.find(candidate => candidate.engineId === 'audio-generation')?.compatibilityProfile;
+  if (!profile) throw new Error('Missing versioned Audio pricing profile.');
+  return profile;
+}
