@@ -1,16 +1,16 @@
 .projectsShell {
-  --studio-project-bg: #f7f8fa;
-  --studio-project-surface: #ffffff;
-  --studio-project-surface-soft: #f1f3f6;
-  --studio-project-surface-hover: #f8fafc;
-  --studio-project-border: #dde2e9;
-  --studio-project-border-strong: #b9c2cf;
-  --studio-project-text: #121927;
-  --studio-project-muted: #687386;
-  --studio-project-faint: #8e99aa;
-  --studio-project-accent: #4f46e5;
-  --studio-project-accent-soft: #eef0ff;
-  --studio-project-focus: rgba(79, 70, 229, 0.2);
+  --studio-project-bg: #eeeee6;
+  --studio-project-surface: #fafaf4;
+  --studio-project-surface-soft: #e7e8de;
+  --studio-project-surface-hover: #efefe6;
+  --studio-project-border: #cccec3;
+  --studio-project-border-strong: #aeb2a5;
+  --studio-project-text: #20261b;
+  --studio-project-muted: #666f5c;
+  --studio-project-faint: #7b8273;
+  --studio-project-accent: #d6ad5d;
+  --studio-project-accent-soft: #f3e3c3;
+  --studio-project-focus: rgba(214, 173, 93, 0.28);
   --studio-project-danger-bg: #fff1f2;
   --studio-project-danger-border: #fecdd3;
   --studio-project-danger-text: #991b1b;
@@ -28,18 +28,18 @@
 }
 
 :global([data-theme="dark"]) .projectsShell {
-  --studio-project-bg: #070b12;
-  --studio-project-surface: #0e1521;
-  --studio-project-surface-soft: #182130;
-  --studio-project-surface-hover: #151e2c;
-  --studio-project-border: #263143;
-  --studio-project-border-strong: #46556b;
-  --studio-project-text: #f8fafc;
-  --studio-project-muted: #a5b4c8;
-  --studio-project-faint: #64748b;
-  --studio-project-accent: #818cf8;
-  --studio-project-accent-soft: rgba(99, 102, 241, 0.16);
-  --studio-project-focus: rgba(129, 140, 248, 0.22);
+  --studio-project-bg: #171918;
+  --studio-project-surface: #292c29;
+  --studio-project-surface-soft: #202321;
+  --studio-project-surface-hover: #333730;
+  --studio-project-border: #454942;
+  --studio-project-border-strong: #696f64;
+  --studio-project-text: #faf9f1;
+  --studio-project-muted: #b5b9af;
+  --studio-project-faint: #8e9588;
+  --studio-project-accent: #e6bf76;
+  --studio-project-accent-soft: rgba(230, 191, 118, 0.16);
+  --studio-project-focus: rgba(230, 191, 118, 0.26);
   --studio-project-danger-bg: rgba(127, 29, 29, 0.18);
   --studio-project-danger-border: rgba(248, 113, 113, 0.28);
   --studio-project-danger-text: #fecaca;
@@ -424,8 +424,8 @@
 
 .projectActionButton {
   display: inline-flex;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   border: 0;
@@ -481,6 +481,21 @@
 .projectActionMenu button:focus-visible {
   background: var(--studio-project-surface-soft);
   outline: none;
+}
+
+.projectActionMenu button:disabled,
+.projectActionMenu button:disabled:hover {
+  background: transparent;
+  color: var(--studio-project-faint);
+  cursor: not-allowed;
+}
+
+.projectActionNotice {
+  display: block;
+  padding: 7px 10px 9px;
+  color: var(--studio-project-muted);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .projectActionMenu .projectActionDanger {
@@ -922,6 +937,11 @@
 
   .montageDialog {
     max-height: calc(100dvh - 24px);
+  }
+
+  .montageOrder ol {
+    max-height: none;
+    overflow: visible;
   }
 
   .montageSettings {

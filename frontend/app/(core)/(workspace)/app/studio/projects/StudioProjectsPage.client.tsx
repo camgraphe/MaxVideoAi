@@ -388,7 +388,6 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
           <span className={styles.sectionIcon} aria-hidden="true"><LayoutTemplate size={18} /></span>
           <div>
             <h1 id="studio-starter-title">{studioCopy.projects.starterTitle}</h1>
-            <p>{studioCopy.projects.starterSubtitle}</p>
           </div>
         </div>
 
@@ -426,7 +425,6 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
                     <ArrowRight size={17} aria-hidden="true" />
                   </span>
                   <span>{template.description}</span>
-                  {template.flow ? <small>{template.flow}</small> : null}
                 </span>
               </button>
             );
@@ -456,12 +454,13 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
             <span className={styles.sectionIcon} aria-hidden="true"><Film size={18} /></span>
             <div>
               <h2 id="studio-project-list-title">{studioCopy.projects.allProjects}</h2>
-              <p>{studioCopy.projects.recentSubtitle}</p>
             </div>
           </div>
           <div className={styles.projectGrid} id="studio-project-list">
             {projects.map((project) => {
               const projectActionsLabel = studioCopy.projects.projectActionsAria.replace('{name}', project.name);
+              const connectedProject = project.persistenceMode === 'connected';
+              const connectedActionsDescriptionId = `connected-project-actions-${project.id}`;
               const previewUrl = projectCanvasPreviews.get(project.id);
               return (
                 <div key={project.id} className={styles.projectCard}>
@@ -493,11 +492,28 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
                     </button>
                     {openProjectMenuId === project.id ? (
                       <span className={styles.projectActionMenu} role="menu" aria-label={projectActionsLabel}>
-                        <button type="button" role="menuitem" onClick={() => openRenameDialog(project)}>
+                        {connectedProject ? (
+                          <small id={connectedActionsDescriptionId} className={styles.projectActionNotice}>
+                            {studioCopy.projects.connectedActionsUnavailable}
+                          </small>
+                        ) : null}
+                        <button
+                          type="button"
+                          role="menuitem"
+                          disabled={connectedProject}
+                          aria-describedby={connectedProject ? connectedActionsDescriptionId : undefined}
+                          onClick={() => openRenameDialog(project)}
+                        >
                           <Pencil size={14} />
                           {studioCopy.projects.rename}
                         </button>
-                        <button type="button" role="menuitem" onClick={() => void duplicateProject(project)}>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          disabled={connectedProject}
+                          aria-describedby={connectedProject ? connectedActionsDescriptionId : undefined}
+                          onClick={() => void duplicateProject(project)}
+                        >
                           <Copy size={14} />
                           {studioCopy.projects.duplicate}
                         </button>
@@ -505,6 +521,8 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
                           type="button"
                           role="menuitem"
                           className={styles.projectActionDanger}
+                          disabled={connectedProject}
+                          aria-describedby={connectedProject ? connectedActionsDescriptionId : undefined}
                           onClick={() => requestDeleteProject(project)}
                         >
                           <Trash2 size={14} />

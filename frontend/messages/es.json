@@ -5205,6 +5205,7 @@
         "emptyRecent": "Aun no hay proyectos Studio.",
         "viewAllProjects": "Ver todos los proyectos",
         "projectActionsAria": "Acciones del proyecto para {name}",
+        "connectedActionsUnavailable": "Las acciones del montaje no están disponibles aquí. Abre el montaje para editarlo.",
         "rename": "Renombrar",
         "duplicate": "Duplicar",
         "duplicateSuffix": "copia",

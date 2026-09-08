@@ -216,6 +216,7 @@ export type StudioCopy = {
     emptyRecent: string;
     viewAllProjects: string;
     projectActionsAria: string;
+    connectedActionsUnavailable: string;
     rename: string;
     duplicate: string;
     duplicateSuffix: string;
@@ -525,6 +526,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     emptyRecent: 'No Studio projects yet.',
     viewAllProjects: 'View all projects',
     projectActionsAria: 'Project actions for {name}',
+    connectedActionsUnavailable: 'Montage actions are unavailable here. Open the montage to edit it.',
     rename: 'Rename',
     duplicate: 'Duplicate',
     duplicateSuffix: 'copy',

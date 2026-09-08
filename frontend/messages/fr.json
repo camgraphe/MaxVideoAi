@@ -5213,6 +5213,7 @@
         "emptyRecent": "Aucun projet Studio pour le moment.",
         "viewAllProjects": "Voir tous les projets",
         "projectActionsAria": "Actions du projet pour {name}",
+        "connectedActionsUnavailable": "Les actions du montage sont indisponibles ici. Ouvrez le montage pour le modifier.",
         "rename": "Renommer",
         "duplicate": "Dupliquer",
         "duplicateSuffix": "copie",
