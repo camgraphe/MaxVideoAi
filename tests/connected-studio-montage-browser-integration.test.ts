@@ -256,6 +256,43 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       assert.deepEqual(forbidden.errors, []);
     } finally { await forbidden.close(); }
 
+    await t.test('cross-tab Auth identity changes purge the prior private montage without navigating the editor', async () => {
+      for (const replacement of [sessionB, null]) {
+        const switched = await openFresh();
+        const peer = await switched.context.newPage();
+        try {
+          const oldVideo = switched.page.locator('video[data-playback-item-id="montage-clip-01"]');
+          await expect(oldVideo).toHaveCount(1);
+          await expect.poll(() => oldVideo.evaluate((element) => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
+          const editorUrl = switched.page.url();
+          await switched.page.evaluate(() => { (window as Window & { studioAuthPageMarker?: string }).studioAuthPageMarker = 'same-editor-document'; });
+          await peer.goto(`${runtime.browserOrigin}/api/legal/cookies/version`);
+          await switched.context.clearCookies();
+          if (replacement) {
+            await switched.context.addCookies(runtime.auth.cookiesFor(replacement).map((cookie) => ({ ...cookie, url: runtime.browserOrigin })));
+          }
+          // Inject the installed SDK's actual peer-tab notification contract after
+          // changing only this owned context's fixture cookies. The receiving SDK,
+          // React subscription, workspace routes and owner checks are not mocked.
+          // This is an Auth-event isolation proof, not a full interactive login.
+          await peer.evaluate((nextSession) => {
+            const channel = new BroadcastChannel('sb-127-auth-token');
+            channel.postMessage({ event: nextSession ? 'SIGNED_IN' : 'SIGNED_OUT', session: nextSession });
+            channel.close();
+          }, replacement);
+          await expect(switched.page.locator('[data-timeline-item="montage-clip-01"], [data-timeline-item="montage-clip-02"]')).toHaveCount(0);
+          await expect(switched.page.locator('video[data-playback-item-id], audio')).toHaveCount(0);
+          await expect(switched.page.getByText('A real browser edit', { exact: true })).toHaveCount(0);
+          assert.equal(switched.page.url(), editorUrl);
+          assert.equal(await switched.page.evaluate(() => (window as Window & { studioAuthPageMarker?: string }).studioAuthPageMarker), 'same-editor-document');
+          assert.deepEqual(switched.errors, []);
+        } catch (error) {
+          await switched.page.screenshot({ path: `output/playwright/studio-connected/auth-${replacement ? 'switch' : 'signout'}-failure.png`, fullPage: true }).catch(() => undefined);
+          throw error;
+        } finally { await switched.close(); }
+      }
+    });
+
     await t.test('a fresh context renews a retained private clip after its bin entry was removed', async () => {
     // The real removal contract keeps clips when their bin entry is removed.
     // Persist that state via CAS, then require a fresh reader to request access
@@ -324,7 +361,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       await expect(dialog.locator('[data-studio-montage-add]')).toHaveCount(2);
       await expect(dialog.locator(`[data-studio-montage-add="${STUDIO_CONNECTED_ASSET_IDS.unmeasured}"]`)).toHaveCount(0);
       await dialog.locator('[data-studio-montage-title-input="true"]').fill('Ordered from the Studio interface');
-      await dialog.getByLabel('Frame rate', { exact: true }).selectOption('30');
+      await dialog.getByRole('combobox', { name: 'Frame rate', exact: true }).selectOption('30');
       await expect(dialog.locator('[data-studio-montage-submit="true"]')).toBeDisabled();
       for (const assetId of [STUDIO_CONNECTED_ASSET_IDS.a, STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a]) {
         await dialog.locator(`[data-studio-montage-add="${assetId}"]`).click();
@@ -347,18 +384,58 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       const dialogBox = await dialog.boundingBox();
       assert.ok(dialogBox && dialogBox.x >= 0 && dialogBox.width <= 390 && dialogBox.y >= 0 && dialogBox.y + dialogBox.height <= 845, 'The ordered creation dialog must fit the mobile viewport.');
       await creator.page.screenshot({ path: 'output/playwright/studio-connected/mobile-ordered-creation.png', fullPage: true });
-      const creation = creator.page.waitForResponse((response) => response.url() === `${runtime.browserOrigin}/api/studio/montages` && response.request().method() === 'POST');
+      // The first real command commits, then its reply is lost. While the reply is
+      // pending, visible intent must stay frozen. Retrying the same visible intent
+      // must reuse its exact key and return the one committed project/receipt.
+      let releaseLostReply!: () => void;
+      const lostReply = new Promise<void>((resolve) => { releaseLostReply = resolve; });
+      let acknowledgeFirst!: (value: { projectId: string }) => void;
+      let rejectFirst!: (error: unknown) => void;
+      const firstCommitted = new Promise<{ projectId: string }>((resolve, reject) => { acknowledgeFirst = resolve; rejectFirst = reject; });
+      void firstCommitted.catch(() => undefined);
+      const attempts: unknown[] = [];
+      const montageEndpoint = `${runtime.browserOrigin}/api/studio/montages`;
+      await creator.page.route(montageEndpoint, async (route) => {
+        if (route.request().method() !== 'POST') { await route.continue(); return; }
+        attempts.push(route.request().postDataJSON());
+        if (attempts.length !== 1) { await route.continue(); return; }
+        try {
+          const committed = await route.fetch();
+          assert.equal(committed.status(), 200, (await committed.text()).slice(0, 1000));
+          const payload = await committed.json();
+          assert.equal(payload.montage.persisted, true);
+          acknowledgeFirst(payload.montage);
+          await lostReply;
+          await route.abort('failed');
+        } catch (error) { rejectFirst(error); await route.abort('failed').catch(() => undefined); }
+      });
+      let firstCreated: { projectId: string };
+      try {
+        await dialog.locator('[data-studio-montage-submit="true"]').click();
+        firstCreated = await firstCommitted;
+        for (const control of await dialog.locator('input, select, button').all()) {
+          await expect(control, 'Every visible creation control must preserve the in-flight command intent.').toBeDisabled();
+        }
+        await creator.page.keyboard.press('Escape');
+        await expect(dialog).toBeVisible();
+      } finally { releaseLostReply(); }
+      await expect(dialog.locator('[data-studio-montage-error="true"][role="alert"]')).toBeVisible();
+      await expect(dialog.locator('[data-studio-montage-submit="true"]')).toBeEnabled();
+      const creation = creator.page.waitForResponse((response) => response.url() === montageEndpoint && response.request().method() === 'POST');
       void creation.catch(() => undefined);
       await dialog.locator('[data-studio-montage-submit="true"]').click();
       const response = await creation;
       assert.equal(response.status(), 200, (await response.text()).slice(0, 1000));
       const input = response.request().postDataJSON();
+      assert.equal(attempts.length, 2);
+      assert.deepEqual(attempts[0], attempts[1], 'Lost replies must retry the identical business payload and idempotency key.');
       assert.deepEqual(input.clips, STUDIO_CONNECTED_MONTAGE_INPUT.clips);
       assert.deepEqual(input.settings, STUDIO_CONNECTED_MONTAGE_INPUT.settings);
       assert.match(input.idempotencyKey, /^studio-ui-/u);
       const uiMontage = (await response.json()).montage;
       assert.equal(uiMontage.persisted, true);
       assert.notEqual(uiMontage.projectId, montage.projectId);
+      assert.equal(uiMontage.projectId, firstCreated!.projectId);
       await expect(creator.page).toHaveURL(`${runtime.browserOrigin}${uiMontage.studioUrl}`);
       await expect(creator.page.locator('[data-timeline-item]')).toHaveCount(2);
       const uiReceipt = await runtime.database.pool.query('SELECT request_payload FROM studio_project_commands WHERE project_id=$1 AND user_id=$2', [uiMontage.projectId, STUDIO_FIXTURE_OWNERS[0]]);
