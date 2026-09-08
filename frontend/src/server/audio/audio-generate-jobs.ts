@@ -14,6 +14,7 @@ export type SourceJobRow = {
 };
 
 export type AudioJobPatch = {
+  durationSec?: number | null;
   progress?: number;
   status?: 'pending' | 'running' | 'completed' | 'failed';
   message?: string | null;
@@ -37,7 +38,7 @@ type InitialAudioJobParams = {
   vendorAccountId: string | null;
   engineId: string;
   engineLabel: string;
-  durationSec: number;
+  durationSec: number | null;
   promptSummary: string;
   initialThumb: string;
   aspectRatio: string | null;
@@ -60,6 +61,10 @@ export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promi
   const assignments: string[] = [];
   const params: unknown[] = [];
 
+  if (patch.durationSec !== undefined) {
+    params.push(patch.durationSec);
+    assignments.push(`duration_sec = $${params.length}`);
+  }
   if (typeof patch.progress === 'number') {
     params.push(Math.max(0, Math.min(100, Math.round(patch.progress))));
     assignments.push(`progress = $${params.length}`);

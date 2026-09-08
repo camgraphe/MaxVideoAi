@@ -22,6 +22,12 @@ export type GeneratedSourceVideo = {
 };
 
 export type AudioJobSettingsSnapshot = {
+  providers?: Record<string, unknown> | null;
+  voiceModel?: string | null;
+  minimaxVoiceId?: string | null;
+  lyrics?: string | null;
+  measuredDurationSec?: number | null;
+  requestedDurationSec?: number | null;
   pack?: string | null;
   prompt?: string | null;
   mood?: string | null;
@@ -52,6 +58,7 @@ export type AudioJobSettingsSnapshot = {
 };
 
 export type AudioJobDetail = {
+  mediaFacts?: { source: 'probe'; durationSec: number } | null;
   createdAt?: string;
   ok?: boolean;
   error?: string;

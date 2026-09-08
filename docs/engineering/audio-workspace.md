@@ -4,7 +4,7 @@ Audio owns standalone voice, instrumental music, songs, punctual sound effects a
 
 ## Decision and integration contract — 2026-09-08
 
-Five illustrated intention selectors lead to a compact editor and explicit model. Script is spoken text; lyrics preserve line breaks and are sent to the song model, never to TTS. Sound descriptions are separate. Video soundtrack and narration mixing remain available in the existing workflow. A single native result reader and original downloads accompany reusable settings. No procedural waveform represents a generated result.
+Five photographic intention selectors lead to a compact editor. The user explicitly rejected selling model names: the main choice is Standard / High quality. High quality stays unavailable until per-intent routing, live quality and customer pricing are qualified; the user is supplying target prices. Existing canonical quotes remain in place. Effective model identity stays in result details, stored snapshots and technical contracts. Script is spoken text; lyrics preserve line breaks and are sent to the song model, never to TTS. Sound descriptions are separate. Video soundtrack and narration mixing remain available in the existing workflow. A single native result reader and original downloads accompany reusable settings. No procedural waveform represents a generated result.
 
 `/app/audio?intent=voice|music|song|sfx|ambience|video` is the entry contract. Existing `?job=` restoration stays supported. Source/result identity follows `ToolAssetRef` from `src/lib/toolbox/contract.ts`: exact asset ID or exact job+output ID; no invented output IDs. Requested duration and measured output duration are distinct. A result may carry a real job ID before output identities have been resolved. Studio consumes persisted media through its own library adapter.
 
@@ -25,3 +25,22 @@ Checked 2026-09-08. These are vendor facts; existing canonical policy computes c
 - [MMAudio V2](https://fal.ai/models/fal-ai/mmaudio-v2/text-to-audio): $0.001/s; existing Studio adapter retained.
 
 Browser QA uses local fixtures with outbound generation, database and storage calls absent. Production provider entitlement, live quality and invoice reconciliation remain separate qualification.
+
+- [Lyria 3 official limits](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/lyria/lyria-3): Clip 30 s; Pro up to 184 s. Existing Vertex-only execution now fails before billing when unconfigured and never substitutes a Fal model after a failure.
+- [Mirelo v1.5 schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=mirelo-ai/sfx-v1.5/video-to-audio): duration 1–10 s, minimum two samples. [Published price](https://fal.ai/models/mirelo-ai/sfx-v1.5/video-to-audio): $0.01/s. The old 184 s cinematic acceptance was incompatible with the executed provider. Source-backed sound design is now bounded at 10 s before debit; no automatic chunking or silent substitution.
+
+## Delivery and validation
+
+The main selector sells creative intent; Standard is the existing offer, High quality is visibly unavailable pending the user's target tariffs and per-intent qualification. No fixed customer tariff was invented. The voice menu shows human presets; its exact adapter remains part of each quote and stored result. Reference voices use the reference-capable adapter. Instrumental duration selects Clip/Pro internally. The separate video soundtrack workflow and historical `?job=` source links remain available.
+
+The reference picker uses `kind=audio` before the library listing limit and retains the exact original URL plus `ToolAssetRef`. Unsupported or unverified reference formats, sizes and durations cannot be selected. Original native readers use `preload="none"`; there is no simulated waveform. Confirmed-account draft keys contain neither anonymous nor last-known-account fallback. Quote keys include account and all normalized inputs; expired, late and edited responses cannot enable generation.
+
+Validation on 2026-09-08:
+
+- Full `test:validate` equivalent: **4506 tests passed**, no failures or skips. Focused coverage includes billing authority, exact adapter inputs, no paid fallback, original-byte persistence, requested/probed duration, account isolation, draft continuity, quote edits/expiry and reference routing.
+- Frontend TypeScript, lint, public exposure and `git diff --check` passed. Full isolated production build passed, including registry/media prebuild gates and 862 static pages. `/app/audio` is 15.8 kB route / 273 kB first-load JS in that build. No before/after Core Web Vitals improvement is claimed.
+- Real local route: five selectors, FR desktop dark/light, mobile 390×844, no horizontal overflow (document width 378), guest auth entry and existing video auth entry. A single 116 kB WebP sprite supplies the new selection photography.
+- Browser fixture: actual workspace/editor/draft/quote/result components with local authentication and billing substitutes, FR/EN/ES, intent navigation, independent script/lyrics/durations, amount in CTA, generation pending/completed, account change masking, original download target, library selection and retained reference. Native reference playback was started with the keyboard and observed playing the one-second local WAV; the second unplayed reader stayed unloaded. A 45-second reference remained disabled.
+- Local evidence: `/tmp/audio-full-tests-final.log`, `/tmp/audio-build-final.log`, `/tmp/audio-lint-complete.log`, `/tmp/audio-exposure-final.log`, `/tmp/maxvideoai-audio-qa/audio-mobile-light.png`. The local fixture build/server live under `/tmp/maxvideoai-audio-qa`; they never call a real provider, database, wallet or storage service.
+
+Deferred explicitly: live provider quality/entitlement/invoice qualification, user-defined fixed prices, and the shared Studio upload/handoff runtime (Studio owner confirmed it is not yet implemented). No nonfunctional Studio handoff action is exposed. Existing upload URLs remain supported; the additive canonical upload contract will be integrated when its owner delivers it. This change does not add a durable background worker or cancellation promise to the synchronous audio endpoint. No push or deployment is included.

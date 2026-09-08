@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { detectHasAudioStream, detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { detectHasAudioStream, detectMediaBufferDuration, detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadFileBuffer } from '@/server/storage';
@@ -398,4 +398,21 @@ export async function uploadAudioRenderAudio(params: {
 
 export function resolveAudioAspectRatio(width: number | null, height: number | null): string | null {
   return resolveAspectRatio(width, height);
+}
+
+/** Persist unmodified standalone provider output and inspect the bytes, never an estimated script duration. */
+export async function persistOriginalAudio(params: { userId: string; jobId: string; url: string }, dependencies = {
+  fetchBuffer: fetchFileBuffer, detectDuration: detectMediaBufferDuration, upload: uploadFileBuffer,
+}) {
+  const audioBuffer = await dependencies.fetchBuffer(params.url);
+  const durationSec = await dependencies.detectDuration(audioBuffer, { streamSelector: 'audio' });
+  if (!durationSec) throw new Error('Unable to inspect generated audio.');
+  // Identify actual bytes instead of trusting a requested format or URL extension.
+  const wav = audioBuffer.subarray(0, 4).toString() === 'RIFF';
+  const flac = audioBuffer.subarray(0, 4).toString() === 'fLaC';
+  const ogg = audioBuffer.subarray(0, 4).toString() === 'OggS';
+  const extension = wav ? 'wav' : flac ? 'flac' : ogg ? 'ogg' : 'mp3';
+  const mime = wav ? 'audio/wav' : flac ? 'audio/flac' : ogg ? 'audio/ogg' : 'audio/mpeg';
+  const upload = await dependencies.upload({ data: audioBuffer, mime, fileName: `${params.jobId}.${extension}`, prefix: 'renders', userId: params.userId });
+  return { audioUrl: upload.url, durationSec };
 }

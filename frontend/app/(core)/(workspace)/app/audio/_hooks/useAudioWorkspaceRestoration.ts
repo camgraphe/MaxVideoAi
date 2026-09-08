@@ -368,7 +368,7 @@ export function useAudioWorkspaceRestoration({
           throw new Error(payload?.error ?? copy.messages.loadLatestJob);
         }
         const latestJob =
-          payload.jobs.find((job) => job.surface === 'audio' && Boolean(job.videoUrl || job.audioUrl)) ??
+          payload.jobs.find((job) => job.surface === 'audio' && Boolean(job.videoUrl)) ??
           null;
         if (!latestJob || cancelled) return;
         if (manualWorkspaceOverrideRef.current) return;

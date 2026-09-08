@@ -67,10 +67,17 @@ const AUDIO_PRICE_MIRELO_SFX_CENTS_PER_SECOND = 1;
 const AUDIO_PRICE_MMAUDIO_TEXT_CENTS_PER_SECOND = 0.1;
 const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 18.75;
 
-export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'cinematic', 'cinematic_voice'] as const;
+export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'song', 'ambience_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
+export type AudioVoiceModel = 'seed' | 'minimax';
+export const AUDIO_MINIMAX_SPEECH_MODEL_ID = 'fal-ai/minimax/speech-02-hd';
+export const AUDIO_SONG_MODEL_ID = 'fal-ai/minimax-music/v2.6';
+export const AUDIO_AMBIENCE_MODEL_ID = 'fal-ai/stable-audio-25/text-to-audio';
+export const AUDIO_LYRICS_MAX_LENGTH = 3500;
+
 export type AudioPricingInput = {
+  voiceModel?: AudioVoiceModel | null;
   pack: AudioPackId;
   durationSec: number;
   voiceMode?: AudioVoiceMode | null;
@@ -121,6 +128,18 @@ type AudioPackConfig = {
 };
 
 const AUDIO_PACK_CONFIG: Record<AudioPackId, AudioPackConfig> = {
+  song: {
+    engineId: 'audio-song', billingProductKey: 'audio-music-only', label: 'Song',
+    description: 'Sung lyrics and musical arrangement.', includesVoice: false, audioOnly: true,
+    requiresVideo: false, requiresMood: false, requiresScript: false,
+    supportsMusicToggle: false, supportsAudioExport: false, defaultMusicEnabled: false,
+  },
+  ambience_only: {
+    engineId: 'audio-ambience', billingProductKey: 'audio-music-only', label: 'Ambience',
+    description: 'Continuous environmental sound.', includesVoice: false, audioOnly: true,
+    requiresVideo: false, requiresMood: false, requiresScript: false,
+    supportsMusicToggle: false, supportsAudioExport: false, defaultMusicEnabled: false,
+  },
   music_only: {
     engineId: 'audio-music-only',
     billingProductKey: 'audio-music-only',
@@ -194,6 +213,10 @@ const AUDIO_PACK_CONFIG: Record<AudioPackId, AudioPackConfig> = {
 };
 
 export type AudioGenerateRequestBody = {
+  voiceModel?: AudioVoiceModel;
+  minimaxVoiceId?: string;
+  lyrics?: string;
+  expectedQuote?: { inputKey: string; totalCents: number; currency: string; expiresAt: number };
   sourceVideoUrl?: string;
   sourceJobId?: string;
   pack?: string;
@@ -220,6 +243,8 @@ export type AudioGenerateRequestBody = {
   locale?: string;
 };
 
+export const AUDIO_CINEMATIC_MAX_DURATION_SEC = 10;
+
 export type AudioGenerateResponse = {
   ok: true;
   jobId: string;
@@ -229,6 +254,10 @@ export type AudioGenerateResponse = {
   outputKind: AudioOutputKind;
   status: 'pending' | 'completed' | 'failed';
   progress: number;
+  durationSec?: number | null;
+  requestedDurationSec?: number | null;
+  mediaFacts?: { source: 'probe'; durationSec: number } | null;
+  providers?: Record<string, unknown>;
   pricing: PricingSnapshot;
   paymentStatus: string;
   sourceJobId?: string | null;
@@ -373,7 +402,12 @@ function buildMusicVendorCostComponent(input: { durationSec: number; musicModel?
   };
 }
 
-function buildVoiceVendorCostComponent(durationSec: number) {
+function buildVoiceVendorCostComponent(durationSec: number, script?: string | null, voiceModel?: AudioVoiceModel | null) {
+  if (voiceModel === 'minimax') {
+    const characters = Array.from(script?.trim() ?? '').length;
+    return { type: 'voice_minimax_speech_02_hd', label: 'MiniMax Speech-02 HD', model: AUDIO_MINIMAX_SPEECH_MODEL_ID,
+      unit: 'character', units: characters, amountCents: characters * 0.01 };
+  }
   const exactMinutes = normalizeAudioDuration(durationSec) / 60;
   const billedMinutes = Number(exactMinutes.toFixed(2));
   return {
@@ -387,6 +421,7 @@ function buildVoiceVendorCostComponent(durationSec: number) {
 }
 
 function buildAudioVendorCostComponents(input: {
+  voiceModel?: AudioVoiceModel | null;
   pack: AudioPackId;
   durationSec: number;
   voiceMode?: AudioVoiceMode | null;
@@ -394,6 +429,8 @@ function buildAudioVendorCostComponents(input: {
   musicModel?: AudioLyria3Model | null;
   musicEnabled?: boolean | null;
 }) {
+  if (input.pack === 'song') return [{ type: 'music_minimax_2_6', label: 'MiniMax Music 2.6', model: AUDIO_SONG_MODEL_ID, unit: 'audio', amountCents: 15 }];
+  if (input.pack === 'ambience_only') return [{ type: 'ambience_stable_audio_25', label: 'Stable Audio 2.5', model: AUDIO_AMBIENCE_MODEL_ID, unit: 'audio', amountCents: 20 }];
   const config = getAudioPackConfig(input.pack);
   const durationSec = normalizeAudioDuration(input.durationSec);
   const components: Array<{
@@ -437,7 +474,7 @@ function buildAudioVendorCostComponents(input: {
   }
 
   if (config.includesVoice) {
-    components.push(buildVoiceVendorCostComponent(durationSec));
+    components.push(buildVoiceVendorCostComponent(durationSec, input.script, input.voiceModel));
   }
 
   return components.length ? components : [buildMusicVendorCostComponent({
@@ -447,6 +484,7 @@ function buildAudioVendorCostComponents(input: {
 }
 
 export function buildAudioVendorCostFacts(input: {
+  voiceModel?: AudioVoiceModel | null;
   pack: AudioPackId;
   durationSec: number;
   voiceMode?: AudioVoiceMode | null;
@@ -483,6 +521,7 @@ export function buildAudioPricingPresentation(input: AudioPricingInput): {
     pack: input.pack,
     durationSec,
     voiceMode,
+    voiceModel: input.voiceModel,
     script: input.script,
     musicModel: input.musicModel,
     musicEnabled: input.musicEnabled,
@@ -510,6 +549,7 @@ export function buildAudioPricingPresentation(input: AudioPricingInput): {
       pack: input.pack,
       mood: input.mood ?? null,
       voiceMode,
+      ...(input.voiceModel ? { voiceModel: input.voiceModel } : {}),
       pricingModel: 'audio_provider_cost_plus_margin',
       vendorCostCents: vendorFacts.vendorSubtotalCents,
       musicModel: input.musicModel ?? null,

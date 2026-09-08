@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import AudioWorkspace from './AudioWorkspace';
+import AudioCreationWorkspace from './AudioCreationWorkspace';
 
 export const metadata: Metadata = {
   title: 'Generate Audio – MaxVideoAI Workspace',
@@ -21,7 +21,7 @@ export default function AudioGeneratePage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
-        <AudioWorkspace />
+        <AudioCreationWorkspace />
       </div>
     </div>
   );

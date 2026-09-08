@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import { useAudioCreationQuote } from './useAudioCreationQuote';
 import { runAudioGenerate } from '@/lib/api';
 import type {
   AudioIntensity,
@@ -27,6 +28,7 @@ import type { AudioWorkspaceCopy } from '../copy';
 
 interface UseAudioGenerationRunnerParams {
   canGenerate: boolean;
+  userId: string | null;
   copy: AudioWorkspaceCopy;
   exportAudioFile: boolean;
   intensity: AudioIntensity;
@@ -69,6 +71,7 @@ interface UseAudioGenerationRunnerParams {
 
 export function useAudioGenerationRunner({
   canGenerate,
+  userId,
   copy,
   exportAudioFile,
   intensity,
@@ -108,21 +111,7 @@ export function useAudioGenerationRunner({
   voiceProfile,
   voiceSample,
 }: UseAudioGenerationRunnerParams) {
-  return useCallback(async () => {
-    if (!canGenerate) return;
-    const startedAt = Date.now();
-    const pendingId = `aud_pending_${crypto.randomUUID()}`;
-    setPendingAudioGenerations((previous) => [
-      {
-        id: pendingId,
-        label: (copy.modes as Partial<Record<AudioPackId, { label: string }>>)[pack]?.label ?? pack,
-        startedAt: Date.now(),
-      },
-      ...previous,
-    ]);
-    setNotice(null);
-    try {
-      const response = await runAudioGenerate({
+  const request = {
         sourceVideoUrl: sourceVideo?.url ?? undefined,
         sourceJobId: sourceVideo?.jobId ?? undefined,
         pack,
@@ -147,7 +136,32 @@ export function useAudioGenerationRunner({
         musicEnabled: showMusicToggle ? musicEnabled : undefined,
         exportAudioFile: showExportToggle ? exportAudioFile : undefined,
         locale,
-      });
+  };
+  const owner = useRef(userId); owner.current = userId;
+  const alive = useRef(true);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  const { quote } = useAudioCreationQuote(request, userId, canGenerate);
+  const inFlight = useRef(new Set<string>());
+  const generate = async () => {
+    if (!canGenerate || !quote || quote.expiresAt <= Date.now() || inFlight.current.has(quote.inputKey)) return;
+    inFlight.current.add(quote.inputKey);
+    const startedAt = Date.now();
+    const pendingId = `aud_pending_${crypto.randomUUID()}`;
+    setPendingAudioGenerations((previous) => [
+      {
+        id: pendingId,
+        label: (copy.modes as Partial<Record<AudioPackId, { label: string }>>)[pack]?.label ?? pack,
+        startedAt: Date.now(),
+      },
+      ...previous,
+    ]);
+    setNotice(null);
+    try {
+      const response = await runAudioGenerate({ ...request, expectedQuote: {
+        inputKey: quote.inputKey, totalCents: quote.pricing.totalCents,
+        currency: quote.pricing.currency, expiresAt: quote.expiresAt,
+      } });
+      if (!alive.current || owner.current !== userId) return;
       const nextResult: AudioResultState = {
         jobId: response.jobId,
         videoUrl: response.videoUrl,
@@ -191,53 +205,11 @@ export function useAudioGenerationRunner({
       onGeneratedJobId(response.jobId);
       setNotice(copy.messages.renderComplete);
     } catch (error) {
-      setNotice(resolveUiErrorMessage(error, copy.messages.generationFailed));
+      if (alive.current && owner.current === userId) setNotice(resolveUiErrorMessage(error, copy.messages.generationFailed));
     } finally {
-      setPendingAudioGenerations((previous) => previous.filter((entry) => entry.id !== pendingId));
+      inFlight.current.delete(quote.inputKey);
+      if (alive.current && owner.current === userId) setPendingAudioGenerations((previous) => previous.filter((entry) => entry.id !== pendingId));
     }
-  }, [
-    canGenerate,
-    copy.messages.generationFailed,
-    copy.messages.processing.complete,
-    copy.messages.renderComplete,
-    copy.modes,
-    exportAudioFile,
-    intensity,
-    language,
-    locale,
-    manualDurationSec,
-    mood,
-    musicBpm,
-    musicEnabled,
-    musicModel,
-    onGeneratedJobId,
-    pack,
-    prompt,
-    requiresScript,
-    script,
-    seedAudioOutputFormat,
-    seedAudioPitch,
-    seedAudioSampleRate,
-    seedAudioSpeed,
-    seedAudioVoice,
-    seedAudioVolume,
-    setActiveJob,
-    setNotice,
-    setPendingAudioGenerations,
-    setResult,
-    showExportToggle,
-    showIntensity,
-    showMood,
-    showMusicBpm,
-    showMusicModel,
-    showMusicToggle,
-    showSeedAudioVoice,
-    showVoiceFields,
-    sourceVideo?.jobId,
-    sourceVideo?.url,
-    voiceDelivery,
-    voiceGender,
-    voiceProfile,
-    voiceSample?.url,
-  ]);
+  };
+  return { generate, quote, canSubmit: canGenerate && Boolean(quote) };
 }

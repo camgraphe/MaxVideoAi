@@ -35,6 +35,9 @@ test('audio validation allows voice-over-only without a source video', () => {
   } as any);
 
   assert.deepEqual(input, {
+    voiceModel: input.pack === 'sfx_only' ? null : 'seed',
+    minimaxVoiceId: null,
+    lyrics: null,
     sourceJobId: null,
     sourceVideoUrl: null,
     pack: 'voice_only',
@@ -140,6 +143,9 @@ test('audio validation accepts standalone SFX prompt renders', () => {
   });
 
   assert.deepEqual(input, {
+    voiceModel: input.pack === 'sfx_only' ? null : 'seed',
+    minimaxVoiceId: null,
+    lyrics: null,
     sourceJobId: null,
     sourceVideoUrl: null,
     pack: 'sfx_only',
@@ -243,6 +249,9 @@ test('audio validation normalizes cinematic voice settings', () => {
   });
 
   assert.deepEqual(input, {
+    voiceModel: input.pack === 'sfx_only' ? null : 'seed',
+    minimaxVoiceId: null,
+    lyrics: null,
     sourceJobId: 'job_123',
     sourceVideoUrl: 'https://example.com/source.mp4',
     pack: 'cinematic_voice',
@@ -317,17 +326,17 @@ test('audio duration resolution allows SFX-only without a source video', () => {
   assert.equal(duration, 8);
 });
 
-test('audio duration resolution accepts longer source-backed renders within provider limits', () => {
+test('audio duration resolution accepts source-backed renders within the exact ten-second provider limit', () => {
   const duration = resolveAudioRenderDuration({
     pack: 'cinematic',
     sourceVideoUrl: 'https://example.com/source.mp4',
     requiresVideo: true,
-    probedDurationSec: 120,
+    probedDurationSec: 10,
     requestedDurationSec: null,
     script: null,
   });
 
-  assert.equal(duration, 120);
+  assert.equal(duration, 10);
 });
 
 test('audio duration resolution rejects source videos above provider-aligned limits', () => {

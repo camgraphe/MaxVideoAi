@@ -1,0 +1,36 @@
+import type { AudioGenerateRequestBody, AudioPackId, AudioVoiceModel } from './audio-generation';
+import type { ToolAssetRef } from './toolbox/contract';
+
+export const AUDIO_CREATION_INTENTS = ['voice', 'music', 'song', 'sfx', 'ambience'] as const;
+export type AudioCreationIntent = typeof AUDIO_CREATION_INTENTS[number];
+export const AUDIO_INTENT_PACK: Record<AudioCreationIntent, AudioPackId> = {
+  voice: 'voice_only', music: 'music_only', song: 'song', sfx: 'sfx_only', ambience: 'ambience_only',
+};
+export type AudioCreationDraft = {
+  prompt: string; script: string; lyrics: string; durationSec: number;
+  voiceModel: AudioVoiceModel; voice: string; minimaxVoiceId: string; speed: number; volume: number; pitch: number;
+  language: string; musicModel: 'clip' | 'pro'; bpm: number; mood: string;
+  reference: { url: string; name: string; ref?: ToolAssetRef } | null;
+};
+export function newAudioDraft(intent: AudioCreationIntent): AudioCreationDraft {
+  return { prompt: '', script: '', lyrics: '', durationSec: intent === 'sfx' ? 8 : intent === 'ambience' ? 60 : 30,
+    voiceModel: 'minimax', voice: 'default', minimaxVoiceId: 'English_FriendlyPerson', speed: 1.06, volume: 1, pitch: 0,
+    language: 'auto', musicModel: 'clip', bpm: 110, mood: 'dreamy', reference: null };
+}
+export function isAudioIntent(value: unknown): value is AudioCreationIntent {
+  return typeof value === 'string' && (AUDIO_CREATION_INTENTS as readonly string[]).includes(value);
+}
+export function buildAudioCreationRequest(intent: AudioCreationIntent, draft: AudioCreationDraft, locale: string): AudioGenerateRequestBody {
+  const base = { pack: AUDIO_INTENT_PACK[intent], locale };
+  if (intent === 'voice') return { ...base, script: draft.script.trim(), voiceModel: draft.reference ? 'seed' : draft.voiceModel,
+    ...(!draft.reference && draft.voiceModel === 'minimax' ? { minimaxVoiceId: draft.minimaxVoiceId } : { seedAudioVoice: draft.voice, voiceSampleUrl: draft.reference?.url }),
+    seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language };
+  if (intent === 'song') return { ...base, prompt: draft.prompt.trim(), lyrics: draft.lyrics.trim() };
+  if (intent === 'music') return { ...base, prompt: draft.prompt.trim(), durationSec: draft.durationSec, musicModel: draft.durationSec <= 30 ? 'clip' : 'pro', musicBpm: draft.bpm, mood: draft.mood };
+  return { ...base, prompt: draft.prompt.trim(), durationSec: draft.durationSec };
+}
+export function isAudioDraftReady(intent: AudioCreationIntent, draft: AudioCreationDraft) {
+  if (intent === 'voice') return draft.script.trim().length > 0 && draft.script.length <= 5000;
+  if (intent === 'song') return draft.prompt.trim().length >= 10 && draft.prompt.length <= 2000 && draft.lyrics.trim().length > 0 && draft.lyrics.length <= 3500;
+  return draft.prompt.trim().length > 0 && draft.prompt.length <= 2000 && draft.durationSec >= 3 && draft.durationSec <= (intent === 'sfx' ? 30 : 184);
+}

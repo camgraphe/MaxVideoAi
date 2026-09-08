@@ -38,6 +38,8 @@ export const AUDIO_MODE_META: Record<
     providerKey: keyof AudioWorkspaceCopy['controls']['providers'];
   }
 > = {
+  song: { icon: Music2, providerKey: 'music' },
+  ambience_only: { icon: AudioLines, providerKey: 'sfx' },
   music_only: {
     icon: Music2,
     providerKey: 'music',
