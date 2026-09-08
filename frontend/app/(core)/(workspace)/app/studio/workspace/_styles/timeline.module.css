@@ -6,7 +6,6 @@
     100%,
     calc(var(--timeline-track-label-width) + var(--timeline-content-width) + (var(--timeline-track-lane-padding-x) * 2))
   );
-
   display: flex;
   position: relative;
   flex-direction: column;
@@ -146,7 +145,6 @@
   min-width: 0;
   padding: 0 var(--timeline-track-lane-padding-x);
 }
-
 .timelineRulerInner {
   position: relative;
   height: 100%;
@@ -163,10 +161,7 @@
   white-space: nowrap;
 }
 
-.timelineRulerInner [data-timeline-ruler-tick='0'] {
-  transform: none;
-}
-
+.timelineRulerInner [data-timeline-ruler-tick='0'] { transform: none; }
 .timelineRulerInner .timelineInOutRange {
   top: 6px;
   height: 22px;
