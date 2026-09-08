@@ -1,5 +1,6 @@
 import type { AudioGenerateRequestBody, AudioPackId, AudioVoiceModel } from './audio-generation';
 import type { ToolAssetRef } from './toolbox/contract';
+import type { MediaFacts } from '@/lib/media-identity';
 
 export const AUDIO_CREATION_INTENTS = ['voice', 'music', 'song', 'sfx', 'ambience'] as const;
 export type AudioCreationIntent = typeof AUDIO_CREATION_INTENTS[number];
@@ -11,7 +12,7 @@ export type AudioCreationDraft = {
   voiceModel: AudioVoiceModel; voice: string; minimaxVoiceId: string; speed: number; volume: number; pitch: number;
   outputFormat: string; sampleRate: number; voiceDelivery: string; voiceProfile: string; voiceGender: string;
   language: string; musicModel: 'clip' | 'pro'; bpm: number; mood: string;
-  reference: { url: string; name: string; ref?: ToolAssetRef } | null;
+  reference: { url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts } | null;
 };
 export function newAudioDraft(intent: AudioCreationIntent): AudioCreationDraft {
   return { prompt: '', script: '', lyrics: '', durationSec: intent === 'sfx' ? 8 : intent === 'ambience' ? 60 : 30,
