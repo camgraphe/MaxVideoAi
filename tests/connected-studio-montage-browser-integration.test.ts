@@ -54,8 +54,14 @@ test('fresh authenticated Studio opens the MCP-persisted montage, decodes privat
         status: 503, json: { ok: false, error: 'GENERATION_NOT_PART_OF_PERSISTENCE_TEST' },
       }));
       const errors: string[] = [];
+      const workspaceWrites: Array<{ expectedRevision: number; snapshot: unknown }> = [];
       owned.page.on('pageerror', (error) => errors.push(error.message));
-      return { ...owned, errors };
+      owned.page.on('request', (request) => {
+        if (request.method() === 'PUT' && request.url() === `${runtime.browserOrigin}/api/studio/projects/${montage.projectId}/workspace`) {
+          workspaceWrites.push(request.postDataJSON());
+        }
+      });
+      return { ...owned, errors, workspaceWrites };
     };
     const openFresh = async () => {
       const owned = await prepareFresh();
@@ -78,11 +84,14 @@ test('fresh authenticated Studio opens the MCP-persisted montage, decodes privat
       const firstVideo = page.locator('video[data-playback-item-id="montage-clip-01"]');
       await expect(firstVideo).toHaveCount(1);
       await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).readyState), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
-      await page.locator('video[data-playback-item-id]').evaluateAll((elements) => {
+      // Keep this recursive browser-only callback outside tsx/esbuild's named-function
+      // transform; injected helpers such as __name do not exist in the page realm.
+      await page.evaluate(`(() => {
+        const elements = document.querySelectorAll('video[data-playback-item-id]');
         for (const element of elements) {
-          const video = element as HTMLVideoElement;
+          const video = element;
           video.dataset.proofFrames = '0';
-          const onFrame: VideoFrameRequestCallback = (_now, metadata) => {
+          const onFrame = (_now, metadata) => {
             video.dataset.proofFrames = String(Number(video.dataset.proofFrames) + 1);
             video.dataset.proofMediaTime = String(metadata.mediaTime);
             video.dataset.proofWidth = String(metadata.width);
@@ -91,7 +100,8 @@ test('fresh authenticated Studio opens the MCP-persisted montage, decodes privat
           };
           video.requestVideoFrameCallback(onFrame);
         }
-      });
+      })()`);
+      await expect(firstVideo).toHaveAttribute('data-proof-frames', /^\d+$/u);
       await page.getByRole('button', { name: 'Play timeline', exact: true }).click();
       await expect.poll(() => firstVideo.getAttribute('data-proof-frames').then(Number)).toBeGreaterThan(1);
       await expect.poll(() => firstVideo.getAttribute('data-proof-media-time').then(Number)).toBeGreaterThan(1.05);
@@ -154,6 +164,10 @@ test('fresh authenticated Studio opens the MCP-persisted montage, decodes privat
       assert.ok(await secondVideo.evaluate((element) => Number(getComputedStyle(element).opacity)) > 0.99);
 
       stale = await openFresh();
+      // Observe beyond the documented 900ms autosave debounce: merely opening the
+      // second tab or receiving private access must not create a competing revision.
+      await stale.page.waitForTimeout(1_200);
+      assert.equal(stale.workspaceWrites.length, 0, 'Hydration and private access alone must not autosave a fresh tab.');
       await page.locator('[data-timeline-item="montage-clip-01"]').click();
       await page.getByLabel('Clip name', { exact: true }).fill('A real browser edit');
       await expect.poll(async () => {
@@ -198,6 +212,14 @@ test('fresh authenticated Studio opens the MCP-persisted montage, decodes privat
       await page.screenshot({ path: 'output/playwright/studio-connected/failure.png', fullPage: true }).catch(() => undefined);
       t.diagnostic(`Owned runtime tail: ${runtime.readLogs().slice(-3500)}`);
       t.diagnostic(JSON.stringify({ pageErrors: first.errors, privateRequests: browserFixture.readPrivateRequests() }));
+      t.diagnostic(JSON.stringify({ firstWriteRevisions: first.workspaceWrites.map((write) => write.expectedRevision),
+        secondWriteRevisions: stale?.workspaceWrites.map((write) => write.expectedRevision) ?? [] }));
+      t.diagnostic(JSON.stringify({ nativeReaders: await page.locator('video[data-playback-item-id]').evaluateAll((elements) => elements.map((element) => {
+        const video = element as HTMLVideoElement;
+        return { id: video.dataset.playbackItemId, frames: video.dataset.proofFrames, mediaTime: video.dataset.proofMediaTime,
+          currentTime: video.currentTime, readyState: video.readyState, paused: video.paused, error: video.error?.code,
+          width: video.videoWidth, height: video.videoHeight, opacity: getComputedStyle(video).opacity };
+      })) }));
       throw error;
     } finally {
       try { await stale?.close(); } finally { await first.close(); }

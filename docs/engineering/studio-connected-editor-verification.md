@@ -113,6 +113,10 @@ Les projections MCP élargies ne sont pas encore toutes vertes :11 assertions de
 
 La re-revue a révélé un accès privé refusé après retrait du bin malgré un clip conservé, reproduit RED par HTTP. `de02e5825` le corrige et restaure les conflits409 historiques. Montage + routes réelles passent ensuite **3/3 (24,26s)** : renouvellement permis tant qu’une occurrence vivante demeure, refus après son retrait complet, collisions legacy exactes et ownership conservée. Le client `6fd412782` est maintenant figé ; son premier contrôle de frames privées a nécessité une correction de l’instrumentation tsx/Playwright racine et n’est pas encore déclaré vert.
 
+Le correctif partagé `c774f6a6e`, après `1c41f3d16` et `cdb716027`, remet les projections en cohérence : **81/81 tests MCP réussis (13,06s)**, neuf suites sérielles, aucun appel Vercel réel, gate toujoursfalse. Le correctif local `1e56fd2a5` retire aussi le fallback original vidéo des thumbnails de timeline, sans toucher les vrais posters ni le scale d’insertion existant.
+
+Le navigateur atteint désormais les preuves privées natives (frames/AAC/Pause/renouvellement réel avec nouvelle signature/seek), mais reste **RED** sur une ouverture du second onglet déclenchant indûment une sauvegarde puis un conflit du premier. Son brouillon est préservé, SQL non écrasé ; ce n’est néanmoins pas le comportement attendu sans édition concurrente. Le test ajoute un journal des révisions PUT par contexte et exige zéro autosave de simple hydratation au-delà du debounce900ms. Correctif client et re-revue en attente.
+
 ## Contrôles restant ouverts
 
 La matrice géométrique `editor-canvas-clarity.spec.ts` prépare la qualification finale (24 combinaisons EN/FR/ES, quatre viewports, deux thèmes). Trois passages de référence échouent actuellement pour la raison attendue : titre et réglages recouverts par le HUD après fit, sur desktop EN, portrait FR et paysage ES. Les captures ont été inspectées ; ce défaut doit être corrigé dans Task5 avant la remise, sans affaiblir les assertions. Les anciennes huit vérifications de boutons dans le viewport ne détectaient pas ce recouvrement interne du canevas.
