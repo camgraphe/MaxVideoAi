@@ -15,6 +15,7 @@ import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { toolboxCopy } from '@/components/tools/toolbox-copy';
 import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
 import { useLibraryPageData } from '../_hooks/useLibraryPageData';
 import {
@@ -35,6 +36,7 @@ export function LibraryPageClient() {
   const { t, locale } = useI18n();
   const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
+  const toolboxLabels = toolboxCopy(locale);
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
@@ -140,15 +142,25 @@ export function LibraryPageClient() {
               : activeSource === 'upscale'
                 ? copy.assets.emptyUpscale
                 : copy.assets.empty;
-  const toolLinks =
-    activeKind === 'image' && toolsEnabled
+  const toolLinks = activeKind === 'image' && toolsEnabled
       ? [
+          { href: '/app/tools', label: toolboxLabels.title },
           { href: '/app/image', label: copy.hero.ctas.image },
           { href: '/app/tools/storyboard', label: copy.tabs.storyboard.replace(/ assets?$/i, '') || 'Storyboard' },
           { href: '/app/tools/angle', label: copy.tabs.angle.replace(/ assets?$/i, '') || 'Angle' },
           { href: '/app/tools/character-builder', label: copy.tabs.character.replace(/ assets?$/i, '') || 'Character' },
-          { href: '/app/tools/upscale', label: copy.tabs.upscale.replace(/ assets?$/i, '') || 'Upscale' },
+          { href: '/app/tools/upscale?kind=image', label: toolboxLabels.tools['upscale-image'].title },
         ]
+      : activeKind === 'video' && toolsEnabled
+        ? [
+            { href: '/app/tools', label: toolboxLabels.title },
+            { href: '/app/tools/upscale?kind=video', label: toolboxLabels.tools['upscale-video'].title },
+            { href: '/app/tools/background-removal', label: toolboxLabels.tools['background-removal'].title },
+            { href: '/app/tools/restore-video', label: toolboxLabels.tools['restore-video'].title },
+            { href: '/app/tools/denoise', label: toolboxLabels.tools.denoise.title },
+            { href: '/app/tools/fix-blur', label: toolboxLabels.tools['fix-blur'].title },
+            { href: '/app/tools/smooth-motion', label: toolboxLabels.tools['smooth-motion'].title },
+          ]
       : activeKind === 'image'
         ? [{ href: '/app/image', label: copy.hero.ctas.image }]
         : [];

@@ -50,6 +50,10 @@ const TOOL_ITEMS: readonly AppNavItem[] = [
   { id: 'angle', label: 'Angle / Perspective', href: '/app/tools/angle', glyph: 'image' },
   { id: 'upscale', label: 'Upscale', href: '/app/tools/upscale', glyph: 'image' },
   { id: 'background-removal', label: 'Background Remover', href: '/app/tools/background-removal', glyph: 'video' },
+  { id: 'restore-video', label: 'Restore Video', href: '/app/tools/restore-video', glyph: 'video' },
+  { id: 'denoise', label: 'Denoise Video', href: '/app/tools/denoise', glyph: 'video' },
+  { id: 'fix-blur', label: 'Fix Motion Blur', href: '/app/tools/fix-blur', glyph: 'video' },
+  { id: 'smooth-motion', label: 'Smooth Motion', href: '/app/tools/smooth-motion', glyph: 'video' },
 ];
 export function canShowStudioNavigation(isAdmin: boolean): boolean {
   return FEATURES.studio.maxVideoAiEditor && (!FEATURES.studio.adminOnly || isAdmin);
@@ -101,6 +105,7 @@ const LOCAL_LABELS: Record<string, [string, string]> = {
   studio: ['Studio', 'Studio'],
   video: ['Vidéo', 'Vídeo'], image: ['Image', 'Imagen'], audio: ['Audio', 'Audio'], dashboard: ['Tableau de bord', 'Panel'], library: ['Médias', 'Medios'], jobs: ['Historique', 'Historial'], billing: ['Facturation', 'Facturación'], settings: ['Paramètres', 'Ajustes'], connections: ['Connexions', 'Conexiones'],
   'character-builder': ['Créateur de personnages', 'Creador de personajes'], storyboard: ['Storyboard', 'Guion gráfico'], angle: ['Angle / Perspective', 'Ángulo / Perspectiva'], upscale: ['Améliorer la résolution', 'Mejorar resolución'], 'background-removal': ['Supprimer le fond', 'Eliminar fondo'],
+  'restore-video': ['Restaurer une vidéo', 'Restaurar vídeo'], denoise: ['Débruiter une vidéo', 'Reducir ruido'], 'fix-blur': ['Corriger le flou', 'Corregir desenfoque'], 'smooth-motion': ['Fluidifier une vidéo', 'Suavizar movimiento'],
 };
 export function appNavLabel(item: Pick<AppNavItem, 'id' | 'label'>, locale: string): string {
   return (locale === 'fr' ? LOCAL_LABELS[item.id]?.[0] : locale === 'es' ? LOCAL_LABELS[item.id]?.[1] : undefined) ?? item.label;

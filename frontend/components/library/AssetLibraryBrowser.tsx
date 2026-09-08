@@ -174,7 +174,7 @@ function AssetLibraryCollection({
     setActivePreviewId(null);
   }, [assetType, source, title]);
 
-  const hasToolLinks = assetType === 'image' && Array.isArray(toolLinks) && toolLinks.length > 0;
+  const hasToolLinks = assetType !== 'audio' && Array.isArray(toolLinks) && toolLinks.length > 0;
 
   return (
     <div
@@ -308,8 +308,8 @@ function AssetLibraryCollection({
             </div>
           </div>
 
-          {hasToolLinks && !isPageLayout ? (
-            <div className="space-y-2">
+          {hasToolLinks ? (
+            <nav aria-label={toolsTitle} className="min-w-0 space-y-2">
               {toolsTitle || toolsDescription ? (
                 <div className="px-2">
                   {toolsTitle ? (
@@ -320,7 +320,7 @@ function AssetLibraryCollection({
                   ) : null}
                 </div>
               ) : null}
-              <div className="flex flex-wrap gap-2 lg:block lg:space-y-1">
+              <div className="scrollbar-rail -mx-1 flex max-w-full flex-nowrap gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 lg:mx-0 lg:block lg:overflow-visible lg:px-0 lg:pb-0 lg:space-y-1">
                 {(toolLinks ?? []).map((tool) => (
                   <ButtonLink
                     key={tool.href}
@@ -334,7 +334,7 @@ function AssetLibraryCollection({
                   </ButtonLink>
                 ))}
               </div>
-            </div>
+            </nav>
           ) : null}
         </aside>
 
