@@ -297,14 +297,9 @@ async function expectGuideTypographyScale(page: Page, textScale: number): Promis
     '[data-guide-step="3"][data-guide-collapsed="false"]',
     '[data-guide-surface-annotation="true"][data-guide-collapsed="false"]',
   ];
-  let expandedGuide = page.locator(preferredSelectors[0]!).first();
-  for (const selector of preferredSelectors) {
-    const candidate = page.locator(selector).first();
-    if (await candidate.count()) {
-      expandedGuide = candidate;
-      break;
-    }
-  }
+  const expandedGuide = page.locator(
+    preferredSelectors.map((selector) => `${selector}:visible`).join(', ')
+  ).first();
   await expect(expandedGuide).toBeVisible();
   const metrics = await expandedGuide.evaluate((annotation) => {
     const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
