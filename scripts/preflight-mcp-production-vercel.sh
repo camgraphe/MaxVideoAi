@@ -63,7 +63,8 @@ if [[ "$PREFLIGHT_MODE" == 'dark' ]]; then
       "paidGeneration": false,
       "trial": false,
       "referenceUploads": false,
-      "montagePreparation": false
+      "montagePreparation": false,
+      "studioMontageCreation": false
     }
   ' "$PUBLICATION_CONFIG" >/dev/null; then
     printf 'PUBLICATION_BLOCKED expected=all-nine-false\n' >&2
@@ -86,7 +87,8 @@ else
       "paidGeneration": true,
       "trial": false,
       "referenceUploads": true,
-      "montagePreparation": false
+      "montagePreparation": false,
+      "studioMontageCreation": false
     }
   ' "$PUBLICATION_CONFIG" >/dev/null; then
     printf 'PUBLICATION_BLOCKED expected=approved-release\n' >&2

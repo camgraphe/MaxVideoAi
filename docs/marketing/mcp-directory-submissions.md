@@ -28,7 +28,7 @@ for each claimed host before publishing host-specific compatibility copy.
 
 Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`,
 `discovery=true`, `paidGeneration=true`, `trial=false`, `referenceUploads=true`, and
-`montagePreparation=false`.
+`montagePreparation=false`, and `studioMontageCreation=false`.
 
 The launch product is a 13-tool conversational production profile: free model
 advice and project budgets, private image/video/audio references, exact quotes,
