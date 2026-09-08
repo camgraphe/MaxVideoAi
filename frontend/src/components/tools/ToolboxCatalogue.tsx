@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useId, useState } from 'react';
 import { TOOLBOX, type ToolMediaKind } from '@/lib/toolbox/catalogue';
 import { ToolboxScene } from './ToolboxScene';
+import { isQuickToolArtId, QUICK_TOOL_ART } from './toolbox-art';
 import { toolboxCopy, type ToolboxVisualId } from './toolbox-copy';
 import styles from './tools-catalogue.module.css';
 
@@ -29,8 +30,9 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
     </div>
     {quick.length ? <ul className={styles.quickGrid}>{quick.map(tool => {
       const text = copy.tools[tool.visual];
+      const artwork = isQuickToolArtId(tool.visual) ? QUICK_TOOL_ART[tool.visual] : null;
       const content = <>
-        <div className={styles.quickArt}><ToolboxScene kind={tool.visual} /><span className={styles.availability}>{copy.available}</span></div>
+        <div className={styles.quickArt}>{artwork ? <Image src={artwork} alt="" fill sizes="(max-width: 700px) 92vw, (max-width: 1050px) 44vw, 22vw" loading="lazy" /> : null}<span className={styles.availability}>{copy.available}</span></div>
         <div className={styles.quickCaption}>
           <span className={styles.kind}>{text.tag}</span>
           <h3>{text.title}<span aria-hidden="true">↗</span></h3>

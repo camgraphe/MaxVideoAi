@@ -16,7 +16,9 @@
 .quickTool { display: flex; flex-direction: column; position: relative; width: 100%; height: 100%; text-align: left; overflow: hidden; border: 1px solid var(--app-line, var(--border)); border-radius: 18px; color: inherit; background: var(--app-panel, var(--surface)); box-shadow: 0 12px 32px rgba(0,0,0,.035); text-decoration: none; transition: border-color 160ms, transform 160ms, box-shadow 160ms; }
 .quickTool:hover { border-color: color-mix(in srgb, var(--app-accent, var(--brand)) 65%, var(--app-line, var(--border))); box-shadow: 0 16px 38px rgba(0,0,0,.08); transform: translateY(-2px); }
 .quickArt { position: relative; aspect-ratio: 1.65; overflow: hidden; background: #253638; }
-.quickArt svg { object-fit: cover; transform: scale(1.035); }
+.quickArt::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 52%, rgba(5,10,11,.3)); }
+.quickArt img { object-fit: cover; transform: scale(1.015); transition: transform 240ms cubic-bezier(.2,.7,.2,1), filter 240ms ease; }
+.quickTool:hover .quickArt img { transform: scale(1.045); filter: saturate(1.05) contrast(1.02); }
 .availability { position: absolute; top: 10px; right: 10px; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(9,18,18,.7); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .04em; backdrop-filter: blur(8px); }
 .quickCaption { position: relative; flex: 1; padding: 15px 15px 17px; }
 .kind { font-size: 9px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; color: var(--app-muted, var(--text-secondary)); }
@@ -65,4 +67,4 @@
   .workshopCaption h3 { font-size: 23px; }
 }
 @media(min-width: 520px) and (max-width: 700px) { .quickGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media(prefers-reduced-motion: reduce) { .catalogue * { transition: none !important; }.quickTool:hover, .workshop:hover img { transform: none; } }
+@media(prefers-reduced-motion: reduce) { .catalogue * { transition: none !important; }.quickTool:hover, .quickTool:hover .quickArt img, .workshop:hover img { transform: none; } }
