@@ -29,6 +29,12 @@ test('connected montage cards do not promise legacy-only project mutations', () 
   }
 });
 
+test('the open project action menu raises its card above the following grid cards', () => {
+  assert.match(page, /openProjectMenuId === project\.id[\s\S]{0,180}styles\.projectCardMenuOpen/u);
+  assert.match(styles, /\.projectCardMenuOpen\s*\{[\s\S]*?z-index:\s*[1-9]\d*;/u);
+  assert.match(styles, /\.projectCard\s*\{[\s\S]*?overflow:\s*visible;/u);
+});
+
 test('Projects and montage dialog use the Studio matte palette and one mobile scroll surface', () => {
   assert.match(styles, /--studio-project-bg:\s*#eeeee6/u);
   assert.match(styles, /--studio-project-text:\s*#20261b/u);

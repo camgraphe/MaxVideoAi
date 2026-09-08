@@ -463,7 +463,10 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
               const connectedActionsDescriptionId = `connected-project-actions-${project.id}`;
               const previewUrl = projectCanvasPreviews.get(project.id);
               return (
-                <div key={project.id} className={styles.projectCard}>
+                <div
+                  key={project.id}
+                  className={`${styles.projectCard}${openProjectMenuId === project.id ? ` ${styles.projectCardMenuOpen}` : ''}`}
+                >
                   <button
                     type="button"
                     className={styles.projectCardMain}

@@ -349,6 +349,10 @@
   transform: translateY(-1px);
 }
 
+.projectCardMenuOpen {
+  z-index: 40;
+}
+
 .projectCardMain {
   display: grid;
   grid-template-rows: 132px auto;
