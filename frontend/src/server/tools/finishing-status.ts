@@ -14,7 +14,12 @@ export async function refreshFinishingTool(userId: string, jobId: string, depend
   const deps = { ...defaults, ...dependencies };
   const job = await deps.read(userId, jobId);
   if (!job) throw new Error('JOB_UNAVAILABLE');
-  if (job.status === 'completed' || job.status === 'failed') return deps.status(userId, jobId);
+  if (job.status === 'completed') return deps.status(userId, jobId);
+  if (job.status === 'failed') {
+    // Reconcile a paid failure left by an older polling owner without resubmitting.
+    if (job.payment_status === 'paid_wallet') await deps.fail(userId, jobId, 'Tool processing failed.', job.provider_job_id);
+    return deps.status(userId, jobId);
+  }
   if (!job.provider_job_id) {
     // An interrupted submission without a durable provider ID must not lock a wallet forever.
     if (Date.now() - new Date(job.updated_at).getTime() > 15 * 60_000) await deps.fail(userId, jobId, 'Submission interrupted.', null);

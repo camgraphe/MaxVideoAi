@@ -24,11 +24,20 @@ export async function persistFinishingOutput(userId: string, jobId: string, prep
 }
 
 export function validateFinishingOutputFacts(prepared: Pick<PreparedFinishingTool, 'block' | 'facts' | 'settings'>, actual: PreparedFinishingTool['facts']) {
+  if (![actual.width, actual.height, actual.durationSec, actual.fps].every(value => typeof value === 'number' && Number.isFinite(value) && value > 0)) throw new Error('Invalid output metadata.');
   if (Math.abs(actual.durationSec - prepared.facts.durationSec) > Math.max(0.25, prepared.facts.durationSec * 0.02)) throw new Error('Unexpected output duration.');
   if (typeof prepared.facts.hasAudio === 'boolean' && prepared.facts.hasAudio !== actual.hasAudio) throw new Error('Unexpected output audio presence.');
   const targetFps = 'fps' in prepared.settings ? prepared.settings.fps : prepared.facts.fps;
   if (!actual.fps || !targetFps || Math.abs(actual.fps - targetFps) > 0.1) throw new Error('Unexpected output frame rate.');
   if (prepared.block.toolId !== 'restore-video' && (actual.width !== prepared.facts.width || actual.height !== prepared.facts.height)) throw new Error('Unexpected output dimensions.');
+  if (prepared.block.toolId === 'restore-video') {
+    if (!('resolution' in prepared.settings)) throw new Error('Missing output resolution.');
+    // Use a 3840×2160 pixel budget for 4K, independent of orientation.
+    // The 1% acceptance envelope is our conservative rounding policy, not a
+    // claim of qualified provider output; the release registry remains gated.
+    const expectedPixels = prepared.settings.resolution === '4k' ? 3840 * 2160 : 1920 * 1080;
+    if (Math.abs(actual.width * actual.height - expectedPixels) / expectedPixels > 0.01) throw new Error('Unexpected output resolution.');
+  }
   const sourceRatio = prepared.facts.width / prepared.facts.height;
   if (Math.abs(actual.width / actual.height - sourceRatio) / sourceRatio > 0.01) throw new Error('Unexpected output aspect ratio.');
 }

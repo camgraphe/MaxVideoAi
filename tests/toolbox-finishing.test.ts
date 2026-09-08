@@ -121,7 +121,7 @@ test('output validation rejects changed duration, cadence, aspect ratio and unre
 test('pending results resume once; network failures never refund and competing polls cannot persist twice', async () => {
   const prepared = await preparedFixture();
   const calls: string[] = [];
-  const job = { status:'queued',provider_job_id:'stored-provider-id',updated_at:new Date().toISOString(),settings_snapshot:{preparedTool:prepared} };
+  const job = { status:'queued',payment_status:'paid_wallet',provider_job_id:'stored-provider-id',updated_at:new Date().toISOString(),settings_snapshot:{preparedTool:prepared} };
   const result: ToolResult = {toolId:'denoise',version:1,jobId:'job',sourceAssets:[source],outputs:[{asset:{type:'job-output',jobId:'job',outputId:'output',kind:'video'},originalUrl:url,kind:'video'}]};
   const deps = { read:async()=>job,status:async()=>({jobId:'job',status:job.status,result:null,error:null}),
     poll:async()=>({status:'COMPLETED'} as never),result:async()=>({data:{},requestId:'stored-provider-id'}),
@@ -140,4 +140,22 @@ test('visitors can inspect the four forms, while processing and unknown paths re
   for (const id of FINISHING_TOOL_IDS) assert.equal(canVisitorBrowseWorkspacePath(`/app/tools/${id}`),true);
   assert.equal(canVisitorBrowseWorkspacePath('/api/tools/run'),false);
   assert.equal(canVisitorBrowseWorkspacePath('/app/tools/unknown'),false);
+});
+
+
+test('Restore validates the selected pixel budget for landscape, portrait and rounded aspect outputs', () => {
+  for (const resolution of ['1080p', '4k'] as const) {
+    const settings = { quality: 'pro' as const, resolution };
+    for (const [width, height, sourceWidth, sourceHeight] of resolution === '4k'
+      ? [[3840,2160,1280,720],[2160,3840,720,1280],[2880,2880,720,720],[3336,2502,960,720],[4412,1892,1470,630]]
+      : [[1920,1080,1280,720],[1080,1920,720,1280],[1440,1440,720,720],[1664,1248,960,720],[2206,946,1470,630]]) {
+      const original = { ...facts, width: sourceWidth, height: sourceHeight, hasAudio: true };
+      const prepared = { block: validateToolBlock({ toolId:'restore-video',version:1,inputs:[source],settings }), settings, facts:original };
+      validateFinishingOutputFacts(prepared, { ...original, width, height });
+      assert.throws(() => validateFinishingOutputFacts(prepared, original), /resolution/);
+      assert.throws(() => validateFinishingOutputFacts(prepared, { ...original, width, height, hasAudio:false }), /audio/);
+      assert.throws(() => validateFinishingOutputFacts(prepared, { ...original, width, height, durationSec: 20 }), /duration/);
+      assert.throws(() => validateFinishingOutputFacts(prepared, { ...original, width:NaN, height }), /metadata/);
+    }
+  }
 });

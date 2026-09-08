@@ -39,10 +39,14 @@ async function reserveFinishingJob(userId: string, jobId: string, fingerprint: s
 
 async function completeFinishingJob(userId: string, jobId: string, result: ToolResult, requestId: string | null) {
   const output = result.outputs[0];
-  await query(`UPDATE app_jobs SET status='completed', progress=100, video_url=$3, thumb_url=$4, preview_frame=$4,
-    provider_job_id=$5, settings_snapshot=settings_snapshot || jsonb_build_object('toolResult',$6::jsonb),
-    provisional=FALSE, updated_at=NOW() WHERE job_id=$1 AND user_id=$2 AND status='processing' AND payment_status='paid_wallet'`,
-  [jobId, userId, output.originalUrl, output.thumbnailUrl ?? '/assets/frames/thumb-1x1.svg', requestId, JSON.stringify(result)]);
+  await withDbTransaction(async executor => {
+    await executor.query('SELECT pg_advisory_xact_lock(hashtext($1))', [jobId]);
+    await executor.query(`UPDATE app_jobs SET status='completed', progress=100, video_url=$3, thumb_url=$4, preview_frame=$4,
+      provider_job_id=$5, settings_snapshot=settings_snapshot || jsonb_build_object('toolResult',$6::jsonb),
+      provisional=FALSE, updated_at=NOW() WHERE job_id=$1 AND user_id=$2 AND surface='tool'
+        AND status='processing' AND payment_status='paid_wallet'`,
+    [jobId, userId, output.originalUrl, output.thumbnailUrl ?? '/assets/frames/thumb-1x1.svg', requestId, JSON.stringify(result)]);
+  });
 }
 
 async function failFinishingJob(userId: string, jobId: string, message: string, requestId: string | null) {
@@ -52,19 +56,22 @@ async function failFinishingJob(userId: string, jobId: string, message: string, 
     await executor.query(`INSERT INTO app_receipts
       (user_id,type,amount_cents,currency,description,job_id,surface,billing_product_key,pricing_snapshot)
       SELECT user_id,'refund',final_price_cents,currency,'Refund tool run',job_id,surface,billing_product_key,pricing_snapshot
-      FROM app_jobs WHERE job_id=$1 AND user_id=$2 AND status <> 'completed' AND payment_status='paid_wallet'
+      FROM app_jobs WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND status <> 'completed' AND payment_status='paid_wallet'
       ON CONFLICT DO NOTHING`, [jobId, userId]);
     await executor.query(`UPDATE app_jobs SET status='failed', progress=0, payment_status='refunded_wallet',
       provider_job_id=COALESCE($3,provider_job_id), message=$4, provisional=FALSE, updated_at=NOW()
-      WHERE job_id=$1 AND user_id=$2 AND status <> 'completed'`, [jobId, userId, requestId, message]);
+      WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND status <> 'completed' AND payment_status='paid_wallet'`, [jobId, userId, requestId, message]);
   });
 }
 
-async function readFinishingJob(userId: string, jobId: string) {
-  const rows = await query<{ status: string; settings_snapshot: { toolResult?: ToolResult }; message: string | null }>(
-    `SELECT status,settings_snapshot,message FROM app_jobs WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND hidden IS NOT TRUE`, [jobId, userId]);
+async function readFinishingJob(userId: string, jobId: string, options: { includeHidden?: boolean } = {}) {
+  const rows = await query<{ status: string; payment_status: string | null; settings_snapshot: { toolResult?: ToolResult }; message: string | null }>(
+    `SELECT status,payment_status,settings_snapshot,message FROM app_jobs
+      WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND (hidden IS NOT TRUE OR $3::boolean)`, [jobId, userId, options.includeHidden === true]);
   if (!rows[0]) throw new Error('JOB_UNAVAILABLE');
-  return { jobId, status: rows[0].status, result: rows[0].settings_snapshot.toolResult ?? null, error: rows[0].status === 'failed' ? 'Tool processing failed. The charge was refunded.' : null };
+  return { jobId, status: rows[0].status, result: rows[0].settings_snapshot.toolResult ?? null, error: rows[0].status === 'failed'
+    ? rows[0].payment_status === 'refunded_wallet' ? 'Tool processing failed. The charge was refunded.' : 'Tool processing failed. Payment reconciliation is pending.'
+    : null };
 }
 
 async function markFinishingSubmitted(userId: string, jobId: string, requestId: string) {
@@ -80,10 +87,10 @@ async function claimFinishingCompletion(userId: string, jobId: string) {
   return rows.length > 0;
 }
 
-async function readFinishingExecution(userId: string, jobId: string) {
-  const rows = await query<{status: string; provider_job_id: string | null; updated_at: string; settings_snapshot: {preparedTool: PreparedFinishingTool}}>(
-    `SELECT status,provider_job_id,updated_at,settings_snapshot FROM app_jobs
-     WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND hidden IS NOT TRUE`, [jobId, userId]);
+async function readFinishingExecution(userId: string, jobId: string, options: { includeHidden?: boolean } = {}) {
+  const rows = await query<{status: string; payment_status: string | null; provider_job_id: string | null; updated_at: string; settings_snapshot: {preparedTool: PreparedFinishingTool}}>(
+    `SELECT status,payment_status,provider_job_id,updated_at,settings_snapshot FROM app_jobs
+     WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND (hidden IS NOT TRUE OR $3::boolean)`, [jobId, userId, options.includeHidden === true]);
   return rows[0] ?? null;
 }
 
