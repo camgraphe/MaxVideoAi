@@ -25,7 +25,7 @@ export function workspaceCanvasFitViewOptions(params: {
       padding: {
         top: '128px',
         right: `${params.mapExpanded ? 204 : 20}px`,
-        bottom: '92px',
+        bottom: '128px',
         left: '20px',
       },
     };

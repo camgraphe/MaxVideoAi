@@ -341,11 +341,14 @@
 
 @media (max-width: 760px) {
   .canvasNavigator {
-    bottom: 64px;
+    top: 76px;
+    bottom: auto;
     left: 12px;
   }
 
   .navigatorPanel {
+    top: calc(100% + 8px);
+    bottom: auto;
     width: min(340px, calc(100vw - 24px));
     max-height: min(520px, calc(100vh - 260px));
   }
@@ -357,8 +360,9 @@
 
 @media(max-height:500px) and (min-width:621px) {
   .canvasNavigator {
-    right:208px;
-    bottom:8px;
-    left:auto;
+    top:70px;
+    right:auto;
+    bottom:auto;
+    left:8px;
   }
 }

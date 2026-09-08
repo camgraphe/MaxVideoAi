@@ -74,15 +74,15 @@ test('canvas fit reserves the shared useful surface and adapts the map inset wit
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 390, viewportHeight: 844, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: '128px', right: '20px', bottom: '92px', left: '20px' },
+    padding: { top: '128px', right: '20px', bottom: '128px', left: '20px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 601, viewportHeight: 844, mapExpanded: true }), {
     includeHiddenNodes: false,
-    padding: { top: '128px', right: '204px', bottom: '92px', left: '20px' },
+    padding: { top: '128px', right: '204px', bottom: '128px', left: '20px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 700, viewportHeight: 844, mapExpanded: true }), {
     includeHiddenNodes: false,
-    padding: { top: '128px', right: '204px', bottom: '92px', left: '20px' },
+    padding: { top: '128px', right: '204px', bottom: '128px', left: '20px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 844, viewportHeight: 390, mapExpanded: false }), {
     includeHiddenNodes: false,
@@ -114,7 +114,8 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \.mobilePanelRail \{ display:none; \}/);
   assert.match(actionStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.selectionActions \{[\s\S]*left:8px;[\s\S]*width:300px;/);
   assert.match(toolbarStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasToolbar \{[\s\S]*left:8px;[\s\S]*width:300px;/);
-  assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigator \{[\s\S]*right:208px;[\s\S]*left:auto;/);
+  assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigator \{[\s\S]*top:70px;[\s\S]*left:8px;/);
+  assert.match(navigatorStyles, /@media \(max-width: 760px\) \{[\s\S]*\.canvasNavigator \{[\s\S]*top:\s*76px;[\s\S]*bottom:\s*auto;/);
   assert.match(navigatorStyles, /\.navigatorTrigger \{[\s\S]*min-height: 44px;/);
   assert.match(map, /const collapseMapForFit = window\.innerWidth <= 600 \|\| window\.innerHeight <= 500/);
   assert.match(map, /setIsOpen\(false\)[\s\S]*mapExpanded: collapseMapForFit \? false : isOpen/);
