@@ -144,11 +144,12 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
 
   return (
     <div className={styles.dialogBackdrop}>
-      <form ref={dialogRef} tabIndex={-1} className={`${styles.projectDialog} ${styles.montageDialog}`} role="dialog" aria-modal="true" aria-labelledby="studio-montage-title" onKeyDown={onDialogKeyDown} onSubmit={submit} data-studio-montage-dialog="true">
+      <form ref={dialogRef} tabIndex={-1} className={`${styles.projectDialog} ${styles.montageDialog}`} role="dialog" aria-modal="true" aria-labelledby="studio-montage-title" aria-busy={submitting} onKeyDown={onDialogKeyDown} onSubmit={submit} data-studio-montage-dialog="true">
             <div className={styles.dialogTitleRow}>
               <div><h2 id="studio-montage-title">{copy.title}</h2><p>{copy.subtitle}</p></div>
               <button type="button" aria-label={copy.cancel} disabled={submitting} onClick={onClose}><X size={17} /></button>
             </div>
+            <fieldset className={styles.montageFields} disabled={submitting}>
             <label className={styles.projectField}><span>{copy.projectTitle}</span>
               <input value={title} maxLength={80} onChange={(event) => setTitle(event.target.value)} data-modal-initial-focus="true" data-studio-montage-title-input="true" />
             </label>
@@ -176,6 +177,7 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
             <div className={styles.montageSummary}>{copy.total.replace('{frames}', String(totalFrames)).replace('{seconds}', (totalFrames / settings.fps).toFixed(2))}</div>
             {error ? <div className={styles.deleteWarning} role="alert" data-studio-montage-error="true">{error}</div> : null}
             <div className={styles.dialogActions}><button type="button" className={styles.dialogSecondaryButton} disabled={submitting} onClick={onClose}>{copy.cancel}</button><button type="submit" className={styles.dialogPrimaryButton} disabled={submitting || Boolean(validationError)} data-studio-montage-submit="true">{submitting ? copy.creating : copy.create}</button></div>
+            </fieldset>
       </form>
     </div>
   );

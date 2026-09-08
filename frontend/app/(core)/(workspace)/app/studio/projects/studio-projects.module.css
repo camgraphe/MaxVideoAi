@@ -557,6 +557,15 @@
   opacity: 0.48;
 }
 
+.montageFields {
+  display: grid;
+  min-width: 0;
+  gap: 20px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
 .montageSettings {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

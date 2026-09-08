@@ -56,6 +56,7 @@ test('the projects route hides the creator behind the exact server gate and the 
   assert.match(client, /if \(!enabled\) return null/);
   assert.match(client, /useAccessibleModal<HTMLFormElement>/);
   assert.match(client, /closeDisabled: submitting/);
+  assert.match(client, /<fieldset className=\{styles\.montageFields\} disabled=\{submitting\}>/);
   assert.match(client, /data-modal-initial-focus="true"/);
   assert.match(client, /data-studio-montage-move-up=\{index\}/);
   assert.match(client, /data-studio-montage-move-down=\{index\}/);
