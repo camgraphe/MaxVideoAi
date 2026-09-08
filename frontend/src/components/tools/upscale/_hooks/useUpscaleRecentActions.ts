@@ -16,7 +16,6 @@ import type {
 } from '@/types/tools-upscale';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
-import { DEFAULT_UPSCALE_COPY } from '@/components/tools/upscale/_lib/upscale-workspace-copy';
 import {
   formatCurrency,
   parseRecentImageVariantIndex,
@@ -33,7 +32,7 @@ import type {
 } from '@/components/tools/upscale/_lib/upscale-workspace-types';
 
 type UseUpscaleRecentActionsOptions = {
-  copy: Pick<typeof DEFAULT_UPSCALE_COPY, 'saved' | 'saveFailed'>;
+  copy: { saved: string; saveFailed: string };
   hasSourcePreview: boolean;
   locale: string;
   mediaType: UpscaleMediaType;

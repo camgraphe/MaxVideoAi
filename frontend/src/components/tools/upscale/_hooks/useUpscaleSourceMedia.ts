@@ -125,7 +125,7 @@ export function useUpscaleSourceMedia({
         width: asset.width ?? null,
         height: asset.height ?? null,
         mime: asset.mime ?? (nextMediaType === 'video' ? 'video/mp4' : 'image/png'),
-        name: asset.source ? `${asset.source} asset` : copy.library,
+        name: copy.library,
       });
       setMediaUrl(asset.url);
       setResult(null);

@@ -32,6 +32,7 @@ import { UpscaleLibraryModal } from './upscale/_components/UpscaleLibraryModal';
 import { UpscalePreviewCard } from './upscale/_components/UpscalePreviewCard';
 import { UpscaleRecentRail } from './upscale/_components/UpscaleRecentRail';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
+import { upscaleWorkspaceLabels } from './upscale/_lib/upscale-workspace-labels';
 import { useUpscaleRecentActions } from './upscale/_hooks/useUpscaleRecentActions';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import { useUpscalePricingPreview } from './upscale/_hooks/useUpscalePricingPreview';
@@ -57,6 +58,7 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
   const copy = {
     ...DEFAULT_UPSCALE_COPY,
     ...((t('workspace.upscale') ?? {}) as Partial<typeof DEFAULT_UPSCALE_COPY>),
+    ...upscaleWorkspaceLabels(locale),
   };
   const [mediaType, setMediaType] = useState<UpscaleMediaType>(initialKind);
   const [engineId, setEngineId] = useState<UpscaleToolEngineId>(initialKind === 'video' ? DEFAULT_UPSCALE_VIDEO_ENGINE_ID : DEFAULT_UPSCALE_IMAGE_ENGINE_ID);

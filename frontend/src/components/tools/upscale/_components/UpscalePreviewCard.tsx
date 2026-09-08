@@ -137,7 +137,7 @@ export function UpscalePreviewCard({
                   : undefined
               }
               role={compareEnabled ? 'slider' : 'group'}
-              aria-label={compareEnabled ? 'Compare source and upscaled preview' : activePreviewMode === 'result' ? 'Upscaled result preview' : 'Source preview'}
+              aria-label={compareEnabled ? labels.compare : activePreviewMode === 'result' ? labels.result : labels.original}
               aria-valuemin={compareEnabled ? 8 : undefined}
               aria-valuemax={compareEnabled ? 92 : undefined}
               aria-valuenow={compareEnabled ? Math.round(comparePosition) : undefined}
