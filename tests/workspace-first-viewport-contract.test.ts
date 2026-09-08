@@ -95,7 +95,9 @@ test('workspace mobile settings wrap with touch targets and visible dropdown aff
   assert.match(coreSettingsSource, /formatCompactResolutionLabel/);
   assert.match(imageSettingsSource, /formatCompactResolutionLabel/);
   assert.match(coreSettingsSource, /const showIcon = !compact \|\| !\['iterations', 'fps'\]\.includes\(kind\)/);
-  assert.match(imageSettingsSource, /const showIcon = !compact \|\| !\['images', 'format'\]\.includes\(kind\)/);
+  assert.match(imageSettingsSource, /const icons: Record<InlineControlKind, LucideIcon>/);
+  assert.match(imageSettingsSource, /return <UIIcon icon=\{icons\[kind\]\}/);
+  assert.doesNotMatch(imageSettingsSource, /<svg\b/);
   assert.match(coreSettingsSource, /'inline-flex h-4 items-center leading-none'/);
   assert.match(imageSettingsSource, /'inline-flex h-4 items-center leading-none'/);
   assert.match(coreSettingsSource, /<span className="block truncate leading-none">\{label\}<\/span>/);
@@ -143,14 +145,14 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(compositePreviewHeaderSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewHeaderSource, /density === 'workspace' \? 'py-1' : 'py-3'/);
   assert.match(imageCompositePreviewSource, /density\?: 'default' \| 'workspace'/);
-  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'app-image-preview-body px-0 py-0' : 'px-4 py-4'/);
   assert.match(imageCompositePreviewSource, /workspaceDensity \? 'mt-0' : 'mt-3'/);
-  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-3 py-1' : 'rounded-card px-3 py-2 shadow-sm'/);
   assert.match(
     imageCompositePreviewSource,
-    /workspaceDensity \? 'max-h-\[220px\] sm:max-h-\[330px\]' : 'max-h-\[320px\] sm:max-h-\[420px\]'/
+    /workspaceDensity \? 'max-h-\[320px\] sm:max-h-\[390px\]' : 'max-h-\[320px\] sm:max-h-\[420px\]'/
   );
-  assert.match(imageSurfaceSource, /<div className="flex flex-col gap-1">/);
+  assert.match(imageSurfaceSource, /<div className="app-image-workspace-surface flex flex-col gap-1">/);
 });
 
 test('workspace video preview shares first-paint geometry with its boot skeleton', () => {

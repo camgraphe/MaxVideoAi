@@ -182,7 +182,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     copy: 'Copy link',
     copied: 'Copied',
     editImage: 'Edit this image',
-    openModal: 'Open modal',
+    openModal: 'Open full preview',
     cta: 'Generate image',
   },
   engine: {

@@ -198,6 +198,32 @@
 .app-experience .app-preview-toolbar-actions { gap: 4px; }
 .app-experience .app-preview-toolbar-action { width: 44px; padding-inline: 0; border-radius: 6px; }
 .app-experience .app-preview-toolbar-action[aria-pressed="true"] { color: var(--app-accent); background: var(--app-accent-soft); box-shadow: none; }
+
+/* Image creation follows the same open workbench grammar as video. */
+.app-experience .app-image-workspace-surface { container-type: inline-size; }
+.app-experience .app-image-model-strip { padding: 2px 0 8px; border: 0; border-bottom: 1px solid var(--app-line); background: transparent; box-shadow: none; }
+.app-experience .app-image-model-selector { width: min(100%, 680px); }
+.app-experience .app-image-preview-dock { overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.app-experience .app-image-preview-body { padding-top: 0; }
+.app-experience .app-image-preview-stack { width: 100%; }
+.app-experience .app-image-preview-stage { border-color: var(--app-line); border-bottom: 0; border-radius: 8px 8px 0 0; background: #101313; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .025); }
+.app-experience .app-image-preview-toolbar { min-height: 52px; border-color: var(--app-line); border-radius: 0 0 8px 8px; background: var(--app-panel); box-shadow: none; }
+.app-experience .app-image-preview-actions { gap: 3px; }
+.app-experience .app-image-preview-action { color: var(--app-muted); box-shadow: none; }
+.app-experience .app-image-preview-action:hover:not(:disabled) { color: var(--app-ink); background: var(--surface-2); }
+.app-experience .app-image-preview-actions > span:first-child .app-image-preview-action { color: var(--app-accent); background: var(--app-accent-soft); }
+.app-experience .app-image-variant-strip { justify-content: center; max-width: 100%; padding: 3px 2px 5px; scrollbar-gutter: auto; }
+.app-experience .app-image-variant-strip button { border-radius: 6px; box-shadow: none; }
+.app-experience .app-image-composer { margin-top: 8px; }
+.app-experience .app-image-composer .app-workspace-references { padding-top: 6px; }
+.app-experience .app-image-composer .app-composer-toolbar [aria-haspopup="listbox"] { border-radius: 7px; }
+.app-experience .app-image-composer .app-generation-action { min-width: 150px; }
+.app-experience .app-image-composer .app-generation-label { white-space: nowrap; overflow-wrap: normal; }
+@media (max-width: 767px) {
+  .app-experience .app-image-model-selector { width: 100%; }
+  .app-experience .app-image-preview-toolbar { min-height: 54px; }
+  .app-experience .app-image-composer { margin-top: 5px; }
+}
 .app-experience .app-mode-switch { margin-bottom: 6px; gap: 14px; }
 .app-experience .app-audio-workbench { padding-top: 14px; }
 .app-experience .app-audio-workbench > div:first-child { gap: 12px; padding-bottom: 230px; }

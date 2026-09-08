@@ -26,9 +26,12 @@ test('image toolbar shares the media center without collapsing below its actions
   assert.match(source, /const previewRef = useRef<HTMLDivElement \| null>\(null\)/);
   assert.match(source, /const toolbarRef = useRef<HTMLDivElement \| null>\(null\)/);
   assert.match(source, /new ResizeObserver/);
-  assert.match(source, /const toolbarWidth = Math\.min\(parent\.clientWidth, Math\.max\(width, 244\)\)/);
+  assert.match(source, /const toolbarWidth = parent\.clientWidth/);
+  assert.match(source, /const previewHeight = Math\.min\(maxHeight, width \/ ratio\)/);
   assert.match(source, /toolbar\.style\.width = `\$\{Math\.round\(toolbarWidth\)\}px`/);
   assert.match(source, /data-workspace-preview-media/);
   assert.match(source, /data-workspace-preview-toolbar/);
   assert.match(source, /ref=\{toolbarRef\}[\s\S]*?mx-auto flex w-full/s);
+  assert.match(source, /app-image-preview-stage/);
+  assert.match(source, /app-image-preview-toolbar/);
 });
