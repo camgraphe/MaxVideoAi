@@ -85,3 +85,11 @@ La revue Sol high du serveur/MCP figé demande trois corrections Important, aucu
 3. Rendre les erreurs DB/signature inattendues opaques avec500, au lieu d’exposer `Error.message` en400. Les erreurs métier validées gardent leurs statuts propres.
 
 La racine a confirmé le premier défaut via HTTP réel : le snapshot contenant `sequence.timelineItems:[null]` reçoit200 au lieu de400 (11,47s). Le test est donc de nouveau RED sur ce contrat renforcé. Il ajoute aussi une contrainte PostgreSQL uniquement dans sa base jetable pour exiger rollback complet et erreur opaque lors d’un échec du dernier write ; cette assertion n’est pas encore atteinte. Correctifs et re-revue en attente, sans qualification finale Task4.
+
+## Correctifs de revue : 7cf6a5b57
+
+Ce commit ajoute la validation structurelle avant normalisation/transaction, le payload initial dans le reçu et la provenance `montageSource` de chaque occurrence (ordre, asset canonique, trims en frames et fps). Le writer CAS conserve la provenance initiale et ne valide pas une provenance inventée par le client. Les erreurs techniques inattendues deviennent des500 opaques ; les erreurs métier gardent leurs codes validés.
+
+La racine a relancé le test HTTP réel renforcé sur ce snapshot : **2/2 réussis, 22,91s**. Le snapshot `[null]` est refusé en400 sans incrément ; une contrainte SQL ajoutée uniquement dans la base jetable provoque500 `STUDIO_WORKSPACE_SAVE_FAILED` et le rollback de la séquence déjà écrite. Le reçu `request_payload` et les `montageSource` restent identiques après CAS et rejeu UI/MCP. Les assertions MCP exigent maintenant les codes et `retryable` exacts, dont `REFERENCE_INVALID` pour l’absence de faits mesurés (contrat canonique existant), plutôt que seulement l’absence d’`INTERNAL_ERROR`.
+
+Une re-revue indépendante du serveur complet est en cours. Le client connecté et son parcours navigateur neuf ne sont pas encore qualifiés ; ces résultats HTTP ne les remplacent pas.

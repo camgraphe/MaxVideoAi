@@ -60,9 +60,15 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal(items.length, 2);
     assert.notEqual(items[0].id, items[1].id);
     assert.deepEqual(items.map((item: { startSec: number; sourceStartSec: number; durationSec: number }) => [item.startSec, item.sourceStartSec, item.durationSec]), [[0, 1, 2], [2, 0.5, 2]]);
+    const sourceFrames = STUDIO_CONNECTED_MONTAGE_INPUT.clips.map((clip, orderIndex) => ({
+      commandKind: 'create_studio_montage', commandVersion: 1, orderIndex,
+      ...clip, fps: STUDIO_CONNECTED_MONTAGE_INPUT.settings.fps,
+    }));
+    assert.deepEqual(items.map((item: { montageSource: unknown }) => item.montageSource), sourceFrames);
     assert.deepEqual(row.workspace_state.projectAssets.map((asset: { ref: { assetId: string } }) => asset.ref.assetId), [STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a]);
     assert.doesNotMatch(JSON.stringify(row), /X-Amz-Signature/u, 'Durable state must preserve identity rather than temporary access.');
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 1);
+    assert.deepEqual((await runtime.database.pool.query('SELECT request_payload FROM studio_project_commands')).rows[0].request_payload, STUDIO_CONNECTED_MONTAGE_INPUT);
 
     const path = `/api/studio/projects/${montage.projectId}`;
     assert.equal((await fetch(`${runtime.origin}${path}`)).status, 401);
@@ -109,6 +115,26 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal(stale.status, 409);
     const otherOwner = await route(`${path}/workspace`, { method: 'PUT', body: JSON.stringify({ expectedRevision: 1, snapshot }) }, ownerB.access_token);
     assert.equal(otherOwner.status, 404);
+    const malformed = structuredClone(snapshot);
+    malformed.workspaceState.sequences[0].timelineItems = [null];
+    const refusedMalformed = await route(`${path}/workspace`, { method: 'PUT', body: JSON.stringify({ expectedRevision: 1, snapshot: malformed }) });
+    assert.equal(refusedMalformed.status, 400, 'A malformed timeline must not be acknowledged or normalized away after saving.');
+    assert.equal(Number((await runtime.database.pool.query('SELECT revision FROM studio_projects WHERE id=$1', [montage.projectId])).rows[0].revision), 1);
+    // Inject a PostgreSQL write failure only into this already verified disposable cluster.
+    // Sequence writes precede the project write, so the failed transaction must roll both back.
+    await runtime.database.pool.query('ALTER TABLE studio_projects ADD CONSTRAINT studio_fixture_internal_detail CHECK (revision < 2) NOT VALID');
+    try {
+      const failedSnapshot = structuredClone(snapshot);
+      failedSnapshot.workspaceState.sequences[0].timelineItems[0].title = 'This write must roll back';
+      const failed = await route(`${path}/workspace`, { method: 'PUT', body: JSON.stringify({ expectedRevision: 1, snapshot: failedSnapshot }) });
+      assert.equal(failed.status, 500, 'An unexpected database failure is not invalid user input.');
+      assert.deepEqual(await failed.json(), { ok: false, error: 'STUDIO_WORKSPACE_SAVE_FAILED' });
+      const rolledBack = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
+      assert.equal(rolledBack.rows[0].timeline_state.timelineItems[0].title, items[0].title);
+      assert.equal(Number((await runtime.database.pool.query('SELECT revision FROM studio_projects WHERE id=$1', [montage.projectId])).rows[0].revision), 1);
+    } finally {
+      await runtime.database.pool.query('ALTER TABLE studio_projects DROP CONSTRAINT studio_fixture_internal_detail');
+    }
     for (const method of ['PUT', 'PATCH', 'DELETE']) {
       assert.equal((await route(path, { method, ...(method === 'DELETE' ? {} : { body: JSON.stringify({ name: 'Legacy writer must not win' }) }) })).status, 409);
       assert.equal((await route(`${path}/sequences/${montage.sequenceId}`, { method, ...(method === 'DELETE' ? {} : { body: JSON.stringify({ name: 'Legacy sequence must not win' }) }) })).status, 409);
@@ -123,6 +149,9 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     const kept = await runtime.database.pool.query('SELECT name, revision FROM studio_projects WHERE id = $1', [montage.projectId]);
     assert.equal(kept.rows[0].name, snapshot.name);
     assert.equal(Number(kept.rows[0].revision), 1);
+    const savedFrames = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
+    assert.deepEqual(savedFrames.rows[0].timeline_state.timelineItems.map((item: { montageSource: unknown }) => item.montageSource), sourceFrames);
+    assert.deepEqual((await runtime.database.pool.query('SELECT request_payload FROM studio_project_commands')).rows[0].request_payload, STUDIO_CONNECTED_MONTAGE_INPUT);
     const cookie = runtime.auth.cookiesFor(ownerA).map((item) => `${item.name}=${item.value}`).join('; ');
     assert.equal((await postStudioMontageUiRequest(runtime, STUDIO_CONNECTED_MONTAGE_INPUT)).status, 401);
     const uiReplay = await postStudioMontageUiRequest(runtime, STUDIO_CONNECTED_MONTAGE_INPUT, { cookie });
@@ -134,16 +163,19 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal(uiConflict.status, 409);
     const conflict = await call({ ...STUDIO_CONNECTED_MONTAGE_INPUT, clips: [...STUDIO_CONNECTED_MONTAGE_INPUT.clips].reverse() });
     assert.equal(conflict.result.isError, true, 'Same exact key with a new order must be rejected.');
-    assert.notEqual(conflict.result.structuredContent.error.code, 'INTERNAL_ERROR', 'An exact-key conflict is an actionable business refusal, not an unknown server incident.');
+    assert.equal(conflict.result.structuredContent.error.code, 'PARAMETER_INVALID');
+    assert.equal(conflict.result.structuredContent.error.retryable, false);
     const foreign = await call(STUDIO_CONNECTED_MONTAGE_INPUT, ownerB.access_token);
     assert.equal(foreign.result.isError, true);
-    assert.notEqual(foreign.result.structuredContent.error.code, 'INTERNAL_ERROR');
+    assert.equal(foreign.result.structuredContent.error.code, 'REFERENCE_NOT_FOUND');
+    assert.equal(foreign.result.structuredContent.error.retryable, false);
     const unknownFacts = await call({ ...STUDIO_CONNECTED_MONTAGE_INPUT, idempotencyKey: 'unmeasured-is-not-trim-proof', clips: [
       { assetId: STUDIO_CONNECTED_ASSET_IDS.unmeasured, sourceInFrame: 0, durationFrames: 30 },
       STUDIO_CONNECTED_MONTAGE_INPUT.clips[1],
     ] });
     assert.equal(unknownFacts.result.isError, true);
-    assert.notEqual(unknownFacts.result.structuredContent.error.code, 'INTERNAL_ERROR');
+    assert.equal(unknownFacts.result.structuredContent.error.code, 'REFERENCE_INVALID');
+    assert.equal(unknownFacts.result.structuredContent.error.retryable, false);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_sequences')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 1);
