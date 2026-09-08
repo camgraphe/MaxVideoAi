@@ -38,6 +38,7 @@ import {
   type StudioCopy,
 } from '../_lib/studio-copy';
 import {
+  mergeStudioProjectRecords,
   normalizeStudioProjectRecord,
   normalizeStudioProjectRecords,
   type StudioProjectRecord,
@@ -260,8 +261,9 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
         const nextNotice = studioProjectsApiNotice(serverResult.status, studioCopy.notices);
         setApiNotice(nextNotice);
         if (!serverResult.data) return;
-        setProjects(serverResult.data);
-        writeStudioProjects(serverResult.data);
+        const reconciledProjects = mergeStudioProjectRecords(serverResult.data, localProjects);
+        setProjects(reconciledProjects);
+        writeStudioProjects(reconciledProjects);
       })
       .finally(() => {
         if (!cancelled) setIsProjectsLoaded(true);

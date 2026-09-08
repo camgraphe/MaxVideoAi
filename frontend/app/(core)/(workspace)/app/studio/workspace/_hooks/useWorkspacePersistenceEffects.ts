@@ -398,7 +398,7 @@ export function useWorkspacePersistenceEffects({
         const initialProjectResult = await readStudioProjectFromApi(projectId, projectController.signal);
         if (cancelled) return;
         if (initialProjectResult.reason === 'not_found') {
-          setProjectAccessError(true);
+          setProjectAccessError(!startsLocalOnly);
           setLocalExitOnly(hasLocalWorkspace);
           setExitReady(hasLocalWorkspace);
           return;

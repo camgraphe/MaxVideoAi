@@ -60,3 +60,15 @@ export function normalizeStudioProjectRecords(
     .map((value) => normalizeStudioProjectRecord(value, { ...options, now }))
     .filter((project): project is StudioProjectRecord => project !== null);
 }
+
+export function mergeStudioProjectRecords(
+  serverProjects: StudioProjectRecord[],
+  cachedProjects: StudioProjectRecord[],
+  limit = 20,
+): StudioProjectRecord[] {
+  const serverIds = new Set(serverProjects.map((project) => project.id));
+  const unmatchedLocalProjects = cachedProjects.filter((project) => (
+    project.persistenceMode === 'local-only' && !serverIds.has(project.id)
+  ));
+  return [...serverProjects, ...unmatchedLocalProjects].slice(0, limit);
+}

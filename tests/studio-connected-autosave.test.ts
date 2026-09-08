@@ -13,7 +13,10 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-persistence';
 import { studioMediaAssetIdsForWorkspace } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceMediaAccess';
 import { completeStudioWorkspaceExit } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShellActions';
-import { normalizeStudioProjectRecord } from '../frontend/app/(core)/(workspace)/app/studio/projects/studio-project-records';
+import {
+  mergeStudioProjectRecords,
+  normalizeStudioProjectRecord,
+} from '../frontend/app/(core)/(workspace)/app/studio/projects/studio-project-records';
 
 test('connected autosave sends one request at a time, coalesces edits and chains ACK revisions', async () => {
   const releases: Array<(value: { status: 'ready'; revision: number }) => void> = [];
@@ -200,4 +203,18 @@ test('local-only project provenance survives both caches and bypasses server wor
   const persistence = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspacePersistenceEffects.ts'), 'utf8');
   assert.match(projects, /persistenceMode: 'local-only'/);
   assert.match(persistence, /if \(!projectId \|\| localExitOnly\) return 'ready'/);
+});
+
+test('an authoritative project listing preserves unmatched local-only projects without shadowing server rows', () => {
+  const project = (id: string, persistenceMode: 'local-only' | 'legacy' | 'connected') => ({
+    id, name: id, persistenceMode, settings: {}, canvasTemplateId: 'minimal-start' as const,
+    createdAt: '2026-09-08T00:00:00.000Z', updatedAt: '2026-09-08T00:00:00.000Z',
+  });
+  assert.deepEqual(
+    mergeStudioProjectRecords(
+      [project('shared', 'connected'), project('server', 'legacy')],
+      [project('shared', 'local-only'), project('local', 'local-only'), project('old', 'legacy')],
+    ).map(({ id, persistenceMode }) => [id, persistenceMode]),
+    [['shared', 'connected'], ['server', 'legacy'], ['local', 'local-only']],
+  );
 });
