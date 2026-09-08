@@ -89,6 +89,18 @@ test('workspace gallery cards keep their action launcher compact and accessible'
   assert.match(cardSource, /showCompactMenuButton \? \(\s*<>\s*<span>\{actionMenuLabel\}<\/span>/);
 });
 
+test('workspace preview prioritizes its first video cover in completed and pending states', () => {
+  const tileSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/groups/CompositePreviewDockTile.tsx'),
+    'utf8'
+  );
+  const priorityHints = tileSource.match(/priority=\{itemKey === activeVideoKey\}/g) ?? [];
+  const fetchPriorityHints = tileSource.match(/fetchPriority=\{itemKey === activeVideoKey \? 'high' : undefined\}/g) ?? [];
+
+  assert.equal(priorityHints.length, 2, 'both completed and pending first-video covers need the Next priority contract');
+  assert.equal(fetchPriorityHints.length, 2);
+});
+
 test('Seedance completion persists canonical video outputs before preview enrichment', () => {
   const pollSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/server/byteplus-poll.ts'),

@@ -49,5 +49,5 @@ export function ImageWorkspaceGalleryRail({
     return <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">{rail}</div>;
   }
 
-  return <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">{rail}</div>;
+  return <div className="app-image-results-rail border-t border-hairline bg-surface-glass-70 px-4 py-4">{rail}</div>;
 }

@@ -321,6 +321,7 @@ export function ImageCompositePreviewDock({
                 fill
                 sizes={previewSizes}
                 className="h-full w-full object-contain"
+                priority
                 loading="eager"
                 fetchPriority="high"
                 unoptimized={!canOptimizePreview || failedPreviewUrl === selectedPreviewUrl}

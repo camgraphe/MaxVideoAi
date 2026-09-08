@@ -6,6 +6,8 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { JSDOM } from 'jsdom';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ImageCompositePreviewDock } from '../frontend/components/groups/ImageCompositePreviewDock';
 import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 
@@ -39,6 +41,11 @@ test('the visible image preview requests a responsive optimized image immediatel
     assert.match(image.sizes, /220px/);
     assert.equal(image.getAttribute('loading'), 'eager');
     assert.equal(image.getAttribute('fetchpriority'), 'high');
+    const source = readFileSync(join(process.cwd(), 'frontend/components/groups/ImageCompositePreviewDock.tsx'), 'utf8');
+    assert.match(
+      source,
+      /data-workspace-preview-media[\s\S]*?<Image[\s\S]*?priority[\s\S]*?loading="eager"[\s\S]*?fetchPriority="high"/
+    );
     assert.ok(image.classList.contains('object-contain'));
   } finally {
     dom.window.close();
