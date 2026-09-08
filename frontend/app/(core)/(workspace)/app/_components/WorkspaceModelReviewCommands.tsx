@@ -16,10 +16,6 @@ export function WorkspaceModelReviewCommands({ review, locale }: { review: Revie
       >
         {review.waitingForAccount ? copy.authPending : copy.compare}
       </button>
-      <button type="button" disabled={!review.commandsAvailable} onClick={() => review.open('saved')}>
-        {copy.saved}
-        {review.savedSetups.length ? ` · ${review.savedSetups.length}` : ''}
-      </button>
       {review.memoryOnly ? (
         <span className={styles.status} role="status" title={copy.memory}>
           {copy.memoryShort}

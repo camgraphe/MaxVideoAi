@@ -266,6 +266,12 @@ async function mount({
 test('rendered Cancel and Escape leave every draft setter untouched and restore focus/scroll', async () => {
   const f = await mount();
   try {
+    assert.equal(
+      [...f.dom.window.document.querySelectorAll('button')].some(
+        (button) => button.textContent === 'Configurations',
+      ),
+      false,
+    );
     const opener = f.dom.window.document.querySelector('button')!;
     opener.focus();
     const before = structuredClone(f.setup);
@@ -430,7 +436,7 @@ test('memory-only configurations survive same-account refresh while every pendin
     assert.equal(f.current.memoryOnly, true);
     assert.equal(f.current.savedSetups.length, 1);
     assert.deepEqual(f.current.savedSetups[0].saved, snapshot);
-    await f.click('Configurations · 1');
+    await act(async () => f.current.open('saved'));
     await invokeRetired();
     assert.equal(f.current.panel, 'saved');
     assert.equal(f.current.savedSetups.length, 1);
@@ -630,7 +636,7 @@ test('unavailable and incomplete saved records remain visible and removable with
   });
   const f = await mount({ stored });
   try {
-    await f.click('Configurations · 2');
+    await act(async () => f.current.open('saved'));
     assert.match(f.dom.window.document.body.textContent ?? '', /Model unavailable/);
     assert.match(f.dom.window.document.body.textContent ?? '', /cannot be read/);
     const before = structuredClone(f.setup);
