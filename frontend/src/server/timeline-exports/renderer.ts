@@ -115,11 +115,12 @@ function parseAspectRatio(value: string | null | undefined): number {
 function baseHeightForResolution(resolution: string | null): number {
   const normalized = String(resolution ?? '').toLowerCase();
   if (normalized.includes('2160') || normalized.includes('4k')) return 2160;
+  if (normalized.includes('1440')) return 1440;
   if (normalized.includes('720')) return 720;
   return 1080;
 }
 
-function renderDimensions(manifest: WorkspaceTimelineRenderManifest, resolution: string | null): { width: number; height: number } {
+export function renderDimensions(manifest: WorkspaceTimelineRenderManifest, resolution: string | null): { width: number; height: number } {
   const height = baseHeightForResolution(resolution);
   const width = Math.round(height * parseAspectRatio(manifest.projectSettings?.aspectRatio));
   return { width, height };

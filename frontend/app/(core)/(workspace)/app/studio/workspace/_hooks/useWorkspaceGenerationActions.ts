@@ -24,10 +24,6 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import {
-  buildWorkspaceChatApiRequest,
-  workspaceChatContextSummariesForNode,
-} from '../_lib/workspace-tool-requests';
-import {
   localizeWorkspaceNodeTitle,
   workspaceOutputNodeTitleDataForShot,
 } from '../_lib/workspace-generated-copy';
@@ -349,6 +345,10 @@ export function useWorkspaceGenerationActions({
       const chat = chatNode?.data.chat;
       const draftMessage = chat?.draftMessage.trim();
       if (!chat || chat.status === 'running' || !draftMessage) return;
+      if (!mockMode) {
+        setNotice(studioCanvasNodeCopy.chatLiveUnavailable);
+        return;
+      }
 
       const createdAt = new Date().toISOString();
       const userMessage: WorkspaceChatMessage = {
@@ -358,16 +358,12 @@ export function useWorkspaceGenerationActions({
         createdAt,
       };
       const nextMessages = [...chat.messages, userMessage];
-      const chatRequest = buildWorkspaceChatApiRequest({
-        chat,
-        nextMessages,
-        contextSummaries: workspaceChatContextSummariesForNode({
-          nodes,
-          edges,
-          chatNodeId: nodeId,
-          canvasNodeCopy: studioCanvasNodeCopy,
-        }),
-      });
+      const assistantMessage: WorkspaceChatMessage = {
+        id: chatMessageId('chat-simulation'),
+        role: 'assistant',
+        content: `${studioCanvasNodeCopy.chatSimulationResponse}\n\n${draftMessage}`,
+        createdAt,
+      };
 
       setNodes((current) => current.map((node) => (
         node.id === nodeId && node.data.chat
@@ -375,69 +371,19 @@ export function useWorkspaceGenerationActions({
               ...node,
               data: {
                 ...node.data,
-                promptText: draftMessage,
+                promptText: assistantMessage.content,
                 chat: {
                   ...node.data.chat,
-                  messages: nextMessages,
+                  messages: [...nextMessages, assistantMessage],
                   draftMessage: '',
-                  status: 'running',
+                  status: 'idle',
                 },
               },
             }
           : node
       )));
-
-      try {
-        const response = await fetch('/api/studio/chat', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(chatRequest),
-        });
-        const data = await response.json().catch(() => null);
-        if (!response.ok || !data?.ok || typeof data.content !== 'string') {
-          throw new Error(data?.message ?? 'Chat failed.');
-        }
-        const assistantMessage: WorkspaceChatMessage = {
-          id: chatMessageId('chat-assistant'),
-          role: 'assistant',
-          content: data.content,
-          createdAt: new Date().toISOString(),
-        };
-        setNodes((current) => current.map((node) => (
-          node.id === nodeId && node.data.chat
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  promptText: data.content,
-                  chat: {
-                    ...node.data.chat,
-                    messages: [...nextMessages, assistantMessage],
-                    status: 'idle',
-                  },
-                },
-              }
-            : node
-        )));
-      } catch (error) {
-        setNodes((current) => current.map((node) => (
-          node.id === nodeId && node.data.chat
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  chat: {
-                    ...node.data.chat,
-                    status: 'failed',
-                  },
-                },
-              }
-            : node
-        )));
-        setNotice(error instanceof Error ? error.message : studioNotices.generationFailed);
-      }
     },
-    [edges, nodes, setNodes, setNotice, studioCanvasNodeCopy, studioNotices.generationFailed]
+    [mockMode, nodes, setNodes, setNotice, studioCanvasNodeCopy]
   );
 
   return { handleGenerateShot, handleRunChat };

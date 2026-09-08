@@ -10,6 +10,7 @@ import {
   type TimelineExportJobRecord,
 } from './repository';
 import { ensureTimelineExportSchema } from './schema';
+import { assertTimelineExportIdempotencyKey } from './idempotency';
 import {
   timelineExportManifestHash,
   verifyTimelineExportEstimateToken,
@@ -127,6 +128,7 @@ export async function createTimelineExportJobWithReservation(params: {
   estimateSecret: string;
   now?: number;
 }): Promise<TimelineExportJobReservationResult> {
+  assertTimelineExportIdempotencyKey(params.idempotencyKey);
   await ensureBillingSchema();
   await ensureTimelineExportSchema();
 
@@ -152,7 +154,7 @@ export async function createTimelineExportJobWithReservation(params: {
       return { job: existingJob, billing: null, reused: true };
     }
 
-    const exportId = timelineExportIdFromIdempotencyKey(params.idempotencyKey);
+    const exportId = timelineExportIdFromIdempotencyKey(params.idempotencyKey, params.userId);
     const usedFreeExports = await countUsedFreeTimelineExports(params.userId, executor);
     const quota = resolveTimelineExportQuota({ usedFreeExports });
     const estimate = estimateTimelineExportPrice({

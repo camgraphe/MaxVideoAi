@@ -1,4 +1,6 @@
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
+import { createHash } from 'node:crypto';
+import { assertTimelineExportIdempotencyKey } from './idempotency';
 import type {
   TimelineExportBillingKind,
   TimelineExportBillingStatus,
@@ -58,9 +60,10 @@ export function timelineExportJobResponse(job: TimelineExportJobRecord): Timelin
   };
 }
 
-export function timelineExportIdFromIdempotencyKey(idempotencyKey: string): string {
-  const safeKey = idempotencyKey.replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 80);
-  return `tlx_${safeKey || Date.now().toString(36)}`;
+export function timelineExportIdFromIdempotencyKey(idempotencyKey: string, userId: string): string {
+  assertTimelineExportIdempotencyKey(idempotencyKey);
+  if (typeof userId !== 'string' || !userId.length) throw new Error('EXPORT_USER_REQUIRED');
+  return `tlx_${createHash('sha256').update(JSON.stringify([userId, idempotencyKey]), 'utf8').digest('hex')}`;
 }
 
 export async function countUsedFreeTimelineExports(userId: string, executor: QueryExecutor = { query }): Promise<number> {
@@ -79,6 +82,7 @@ export async function readTimelineExportJobByIdempotencyKey(params: {
   userId: string;
   idempotencyKey: string;
 }): Promise<TimelineExportJobRecord | null> {
+  assertTimelineExportIdempotencyKey(params.idempotencyKey);
   await ensureTimelineExportSchema();
   const rows = await query<TimelineExportJobRecord>(
     `SELECT *
@@ -107,8 +111,9 @@ export async function createTimelineExportJob(params: {
   renderManifest: unknown;
   exportSettings: unknown;
 }): Promise<TimelineExportJobRecord> {
+  assertTimelineExportIdempotencyKey(params.idempotencyKey);
   await ensureTimelineExportSchema();
-  const id = params.id ?? timelineExportIdFromIdempotencyKey(params.idempotencyKey);
+  const id = params.id ?? timelineExportIdFromIdempotencyKey(params.idempotencyKey, params.userId);
   const rows = await query<TimelineExportJobRecord>(
     `INSERT INTO app_timeline_exports (
         id, user_id, idempotency_key, project_name, duration_sec, resolution, fps,

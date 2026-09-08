@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { timelineExportIdempotencyKeySchema } from './idempotency';
 import type {
   WorkspaceTimelineVideoExportRequest,
   WorkspaceTimelineVideoExportSettings,
@@ -123,7 +124,7 @@ const requestSchema = z.object({
   version: z.literal(1),
   source: z.literal('maxvideoai-editor'),
   projectId: ID,
-  idempotencyKey: z.string().trim().min(8).max(200).regex(/^[a-zA-Z0-9._:-]+$/),
+  idempotencyKey: timelineExportIdempotencyKeySchema,
   createdAt: z.string().datetime(),
   status: z.enum(['ready', 'blocked']),
   manifest: manifestSchema,

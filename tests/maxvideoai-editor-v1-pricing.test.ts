@@ -341,17 +341,15 @@ test('invalid ordinary blocks return a local blocked estimate before remote pric
   assert.match(hookSource, /\/api\/billing-products\?productKey=/);
 });
 
-test('chat pricing is explicitly unavailable without blocking chat send', () => {
+test('Chat keeps unavailable pricing separate from explicit local simulation', () => {
   const hookSource = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShotPricing.ts'), 'utf8');
   const renderNodesSource = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceRenderNodes.ts'), 'utf8');
   const chatNodeSource = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-chat-node.tsx'), 'utf8');
-  const chatNodeStyles = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-chat-node.module.css'), 'utf8');
 
   assert.match(hookSource, /node\.data\.kind === 'chat'[\s\S]*unavailableWorkspacePricingEstimate/);
   assert.match(renderNodesSource, /node\.data\.kind === 'chat'[\s\S]*pricingEstimate: pricingEstimates\[node\.id\]/);
-  assert.match(chatNodeSource, /pricingEstimate\.label/);
-  assert.match(chatNodeSource, /pricingEstimate\.error \? \(\s*<span className=\{chatStyles\.chatPricingDetail\}>\s*\{pricingEstimate\.error\}/);
-  assert.match(chatNodeStyles, /\.chatPricingDetail\s*\{[\s\S]*line-clamp:\s*2/);
+  assert.match(chatNodeSource, /chatLiveUnavailable/);
+  assert.match(chatNodeSource, /canSend = mockMode &&/);
   assert.match(chatNodeSource, /disabled=\{!canSend\}/);
 });
 

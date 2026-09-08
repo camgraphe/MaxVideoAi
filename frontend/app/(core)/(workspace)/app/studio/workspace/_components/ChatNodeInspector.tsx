@@ -60,6 +60,7 @@ function patchChat(chat: WorkspaceChatSettings | undefined, patch: Partial<Works
 
 export function ChatNodeInspector({ copy, controlCopy, node, onPatchNodeData, onRunChat }: ChatNodeInspectorProps) {
   const chat = patchChat(node.data.chat, {});
+  const mockMode = node.data.mockGeneration === true;
   const chatModels = getStudioChatModels(chat.provider);
   const policy = resolveWorkspaceBlockPolicy({
     settings: CHAT_POLICY_SETTINGS,
@@ -102,14 +103,15 @@ export function ChatNodeInspector({ copy, controlCopy, node, onPatchNodeData, on
           onPatchPromptText={(promptText) => onPatchNodeData(node.id, { promptText })}
         />
       ))}
+      <p>{mockMode ? copy.simulation : copy.chatLiveUnavailable}</p>
       <button
         type="button"
         className={styles.primaryPanelButton}
-        disabled={!chat.draftMessage.trim() || chat.status === 'running'}
+        disabled={!mockMode || !chat.draftMessage.trim() || chat.status === 'running'}
         onClick={() => onRunChat(node.id)}
       >
         <Send size={15} />
-        {chat.status === 'running' ? copy.running : copy.send}
+        {chat.status === 'running' ? copy.running : mockMode ? copy.chatSimulate : copy.send}
       </button>
       <div className={styles.connectedList} aria-label="Full chat transcript">
         {chat.messages.length ? chat.messages.map((message) => (

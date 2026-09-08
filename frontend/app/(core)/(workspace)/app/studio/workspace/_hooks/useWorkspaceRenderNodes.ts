@@ -183,7 +183,7 @@ export function useWorkspaceRenderNodes({
             onRunChat: (nodeId: string): void => {
               void onRunChat(nodeId);
             },
-            ...(node.data.kind === 'chat' ? { pricingEstimate: pricingEstimates[node.id] } : {}),
+            ...(node.data.kind === 'chat' ? { pricingEstimate: pricingEstimates[node.id], mockGeneration: mockMode } : {}),
             onOpenAssetLibrary,
             onSendOutputToTimeline,
             studioCanvasCopy,

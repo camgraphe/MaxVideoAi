@@ -31,8 +31,8 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
   const draft = chat?.draftMessage ?? props.data.promptText ?? '';
   const isChatbot = chat?.mode === 'chatbot';
   const isRunning = chat?.status === 'running';
-  const canSend = Boolean(draft.trim()) && !isRunning;
-  const pricingEstimate = props.data.pricingEstimate;
+  const mockMode = props.data.mockGeneration === true;
+  const canSend = mockMode && Boolean(draft.trim()) && !isRunning;
   const botName = chat?.botName?.trim() || copy?.chatbotDefaultName || 'Studio assistant';
   const model = resolveStudioChatModel(chat?.provider ?? 'openai', chat?.modelId);
   const assistantLabel = isChatbot ? botName : model.label;
@@ -100,21 +100,16 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
         <div className={chatStyles.chatMessageList} aria-label={copy?.messages ?? 'messages'}>
           {visibleMessages.length ? visibleMessages.map((message) => (
             <article key={message.id} className={`${chatStyles.chatMessage} ${message.role === 'assistant' ? chatStyles.chatMessageAssistant : chatStyles.chatMessageUser}`}>
-              <strong>{message.role === 'assistant' ? assistantLabel : messageRoleLabel(message, copy)}</strong>
+              <strong>{message.id.startsWith('chat-simulation-') ? copy?.simulation ?? 'Simulation' : message.role === 'assistant' ? assistantLabel : messageRoleLabel(message, copy)}</strong>
               <p>{message.content}</p>
             </article>
           )) : (
             <p className={chatStyles.chatEmpty}>{copy?.emptyChat ?? 'Start a conversation from this block.'}</p>
           )}
         </div>
-        {pricingEstimate ? (
-          <p className={chatStyles.chatPricing}>
-            <span>{pricingEstimate.label}</span>
-            {pricingEstimate.error ? (
-              <span className={chatStyles.chatPricingDetail}>{pricingEstimate.error}</span>
-            ) : null}
-          </p>
-        ) : null}
+        <p className={chatStyles.chatPricing}>
+          {mockMode ? copy?.simulation ?? 'Simulation' : copy?.chatLiveUnavailable ?? 'Live Chat unavailable: pricing authorization is not supported yet.'}
+        </p>
         <div className={chatStyles.chatUtilityBar}>
           <button
             type="button"
@@ -156,7 +151,7 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
             onChange={(event) => handleDraftChange(event.currentTarget.value)}
             onKeyDown={handleDraftKeyDown}
           />
-          <button type="submit" className={chatStyles.chatSendButton} disabled={!canSend} aria-label={copy?.send ?? 'Send'}>
+          <button type="submit" className={chatStyles.chatSendButton} disabled={!canSend} aria-label={mockMode ? copy?.chatSimulate ?? 'Simulate' : copy?.send ?? 'Send'}>
             <Send size={13} />
           </button>
         </form>

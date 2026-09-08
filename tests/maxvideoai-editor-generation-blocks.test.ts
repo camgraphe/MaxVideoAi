@@ -2089,16 +2089,19 @@ test('Studio chat context summaries format text context without binary media cla
   assert.doesNotMatch(formatted, /image reference/i);
 });
 
-test('Studio chat UI and API use the shared model registry instead of hardcoded model lists', () => {
+test('Studio chat keeps the shared model registry and delegates its closed API to the authenticated handler', () => {
   const inspectorSource = readFileSync(
     join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/ChatNodeInspector.tsx'),
     'utf8'
   );
   const routeSource = readFileSync(join(root, 'frontend/app/api/studio/chat/route.ts'), 'utf8');
   const serverSource = readFileSync(join(root, 'frontend/src/server/studio/chat.ts'), 'utf8');
+  const handlerSource = readFileSync(join(root, 'frontend/app/api/studio/_lib/studio-chat-handler.ts'), 'utf8');
 
   assert.match(inspectorSource, /getStudioChatModels/);
-  assert.match(routeSource, /isStudioChatModelAllowed/);
+  assert.match(routeSource, /handleStudioChatPost/);
+  assert.match(handlerSource, /getRouteAuthContext/);
+  assert.doesNotMatch(handlerSource, /runStudioChat|@\/server\/studio\/chat/);
   assert.match(serverSource, /resolveStudioChatModel/);
   assert.doesNotMatch(inspectorSource, /<option value="gemini-2\.5-flash">/);
 });
