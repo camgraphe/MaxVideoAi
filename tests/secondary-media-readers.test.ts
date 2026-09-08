@@ -17,6 +17,7 @@ import { CharacterReferenceLibraryModal } from '../frontend/src/components/tools
 import { DEFAULT_ANGLE_COPY } from '../frontend/src/components/tools/angle/_lib/angle-workspace-copy';
 import { DEFAULT_CHARACTER_COPY } from '../frontend/src/components/tools/character-builder/_lib/character-builder-copy';
 import { isLibraryImageAsset } from '../frontend/lib/library-image';
+import { usePaginatedMediaLibraryAssets } from '../frontend/hooks/usePaginatedMediaLibraryAssets';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 const nextConfig = createRequire(import.meta.url)('../frontend/next.config.js');
@@ -177,6 +178,59 @@ for (const tool of ['angle', 'character'] as const) {
     } finally { globalThis.fetch = previousFetch; await f.cleanup(); }
   });
 }
+
+test('shared contextual Media pages hide the previous account and ignore its late response', async () => {
+  const f = browserFixture();
+  const previousFetch = globalThis.fetch;
+  const requests: Array<{ url: string; resolve: (response: Response) => void }> = [];
+  const cache = new Map();
+  let library: ReturnType<typeof usePaginatedMediaLibraryAssets> | undefined;
+
+  function Owner({ userId }: { userId: string }) {
+    library = usePaginatedMediaLibraryAssets({ enabled: true, userId, kind: 'image' });
+    return React.createElement('output', null, library.assets.map((asset) => asset.id).join(','));
+  }
+
+  globalThis.fetch = async (input) => new Promise<Response>((resolve) => {
+    requests.push({ url: String(input), resolve });
+  });
+
+  const render = (userId: string) => act(async () => {
+    f.root.render(React.createElement(
+      SWRConfig,
+      { value: { provider: () => cache, dedupingInterval: 0 } },
+      React.createElement(Owner, { userId })
+    ));
+    await Promise.resolve();
+  });
+
+  try {
+    await render('account-a');
+    assert.equal(requests.length, 1);
+    await render('account-b');
+    assert.deepEqual(library?.assets, [], 'Account B never renders cached or pending Account A media');
+    assert.equal(requests.length, 2, 'The account-scoped SWR key starts a fresh canonical request');
+    assert.deepEqual(requests.map(({ url }) => url), [
+      '/api/media-library/assets?limit=30&kind=image',
+      '/api/media-library/assets?limit=30&kind=image',
+    ]);
+
+    await act(async () => {
+      requests[1]!.resolve(Response.json({ ok: true, assets: [{ id: 'account-b-image', kind: 'image', url: '/b.png' }], hasMore: false, nextCursor: null }));
+      await Promise.resolve();
+    });
+    assert.deepEqual(library?.assets.map((asset) => asset.id), ['account-b-image']);
+
+    await act(async () => {
+      requests[0]!.resolve(Response.json({ ok: true, assets: [{ id: 'account-a-image', kind: 'image', url: '/a.png' }], hasMore: false, nextCursor: null }));
+      await Promise.resolve();
+    });
+    assert.deepEqual(library?.assets.map((asset) => asset.id), ['account-b-image'], 'Late Account A data stays isolated in its own key');
+  } finally {
+    globalThis.fetch = previousFetch;
+    await f.cleanup();
+  }
+});
 
 test('image-kind filtering reaches the existing bounded user-owned query before its limit', () => {
   const route = readFileSync('frontend/app/api/user-assets/route.ts', 'utf8');

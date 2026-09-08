@@ -651,6 +651,29 @@ test('image upload and library routes return stable JSON errors for storage fail
   assert.match(recentRoute, /error:\s*'LOAD_FAILED'/);
 });
 
+test('canonical Media GET reads migrated tables without request-time schema DDL', () => {
+  const assetsRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/assets/route.ts'),
+    'utf8'
+  );
+  const listing = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
+    'utf8'
+  );
+
+  assert.match(
+    assetsRoute,
+    /findLibraryAssetByOrigin\([\s\S]*?\},\s*\{\s*ensureSchema:\s*false\s*\}\)/,
+    'exact saved-state checks should not wait for schema DDL'
+  );
+  assert.match(
+    assetsRoute,
+    /listLibraryAssetPage\([\s\S]*?\},\s*\{\s*ensureSchema:\s*false\s*\}\)/,
+    'paginated Media reads should not wait for schema DDL'
+  );
+  assert.match(listing, /options\.ensureSchema !== false/, 'non-route compatibility callers should retain schema setup by default');
+});
+
 test('storyboard recent outputs expose generator handoff metadata without leaking the full job prompt', () => {
   const recentRoute = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/media-library/recent-outputs/route.ts'),

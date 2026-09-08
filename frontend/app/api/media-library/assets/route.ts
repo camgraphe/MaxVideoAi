@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         originUrl,
         kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
         source: req.nextUrl.searchParams.get('source'),
-      });
+      }, { ensureSchema: false });
       page = { items: asset ? [asset] : [], nextCursor: null, hasMore: false };
     } else {
       page = await listLibraryAssetPage({
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
         cursor: req.nextUrl.searchParams.get('cursor'),
         q: req.nextUrl.searchParams.get('q'),
-      });
+      }, { ensureSchema: false });
     }
   } catch (error) {
     console.error('[media-library] failed to list assets', error);

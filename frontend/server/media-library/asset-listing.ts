@@ -17,17 +17,23 @@ import {
   type MediaLibraryPage,
 } from './pagination';
 
+export type MediaLibraryReadOptions = {
+  ensureSchema?: boolean;
+};
+
 export async function findLibraryAssetByOrigin(params: {
   userId: string;
   originUrl: string;
   kind?: MediaKind | null;
   source?: string | null;
-}): Promise<MediaAssetRecord | null> {
+}, options: MediaLibraryReadOptions = {}): Promise<MediaAssetRecord | null> {
   const originUrl = normalizeString(params.originUrl);
   if (!originUrl) return null;
 
-  await ensureMediaLibrarySchema();
-  await ensureAssetSchema();
+  if (options.ensureSchema !== false) {
+    await ensureMediaLibrarySchema();
+    await ensureAssetSchema();
+  }
 
   const source = params.source && params.source !== 'all' ? normalizeMediaAssetSource(params.source) : null;
   const queryParams = [params.userId, params.kind ?? null, source, originUrl];
@@ -175,9 +181,11 @@ export async function listLibraryAssetPage(params: {
   limit?: number;
   cursor?: string | null;
   q?: string | null;
-}): Promise<MediaLibraryPage<MediaAssetRecord>> {
-  await ensureMediaLibrarySchema();
-  await ensureAssetSchema();
+}, options: MediaLibraryReadOptions = {}): Promise<MediaLibraryPage<MediaAssetRecord>> {
+  if (options.ensureSchema !== false) {
+    await ensureMediaLibrarySchema();
+    await ensureAssetSchema();
+  }
 
   const limit = resolveMediaLibraryLimit(params.limit);
   const cursor = decodeMediaLibraryCursor(params.cursor);
