@@ -91,7 +91,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                     opacity: isDisabled ? 0.35 : 1,
                   } as CSSProperties}
                   title={disabledReason ?? connectorDescription}
-                  isConnectable={!isDisabled}
+                  isConnectable
                 />
                 <span className={styles.shotInputName}>
                   {label}

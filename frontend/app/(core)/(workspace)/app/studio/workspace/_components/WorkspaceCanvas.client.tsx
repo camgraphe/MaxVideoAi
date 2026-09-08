@@ -39,7 +39,9 @@ import {
 } from '../_controllers/useCanvasController';
 import {
   resolveWorkspaceHandleDropDraft,
+  workspaceConnectionFromHandleAttempt,
   type WorkspaceHandleDropDirection,
+  type WorkspaceHandleDropRequest,
 } from '../_lib/workspace-handle-drop';
 import { createWorkspaceGraphClipboardSnapshot } from '../_lib/workspace-graph-clipboard';
 import { shouldHandleCanvasKeyboardShortcut } from '../_lib/workspace-canvas-shortcuts';
@@ -78,16 +80,10 @@ export type {
   WorkspaceCanvasTextPasteRequest,
   WorkspacePaletteDropRequest,
 } from '../_controllers/useCanvasController';
+export type { WorkspaceHandleDropRequest } from '../_lib/workspace-handle-drop';
 
 const DEFAULT_CANVAS_NODE_CENTER_WIDTH = 210;
 const DEFAULT_CANVAS_NODE_CENTER_HEIGHT = 132;
-
-export type WorkspaceHandleDropRequest = {
-  sourceNodeId: string;
-  handleId: WorkspaceEdgeKind;
-  handleType: WorkspaceHandleDropDirection;
-  position: XYPosition;
-};
 
 type WorkspaceCanvasProps = {
   projectId?: string;
@@ -101,6 +97,7 @@ type WorkspaceCanvasProps = {
   onNodesChange: (changes: NodeChange<WorkspaceGraphNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<WorkspaceGraphEdge>[]) => void;
   onConnect: (connection: Connection) => void;
+  onInvalidConnection: (connection: Connection) => void;
   isValidConnection: (connection: Connection | WorkspaceGraphEdge) => boolean;
   onCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
@@ -138,6 +135,7 @@ export function WorkspaceCanvas({
   onNodesChange,
   onEdgesChange,
   onConnect,
+  onInvalidConnection,
   isValidConnection,
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
@@ -173,6 +171,7 @@ export function WorkspaceCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onInvalidConnection={onInvalidConnection}
         isValidConnection={isValidConnection}
         onCreateNodeFromHandleDrop={onCreateNodeFromHandleDrop}
         onCreateNodeFromPaletteDrop={onCreateNodeFromPaletteDrop}
@@ -310,6 +309,7 @@ function WorkspaceCanvasInner({
   onNodesChange,
   onEdgesChange,
   onConnect,
+  onInvalidConnection,
   isValidConnection,
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
@@ -732,6 +732,14 @@ function WorkspaceCanvasInner({
     (event, connectionState) => {
       const preview = handleDropPreviewRef.current;
       updateHandleDropPreview(null);
+      const attemptedConnection = workspaceConnectionFromHandleAttempt({
+        fromHandle: connectionState.fromHandle,
+        toHandle: connectionState.toHandle,
+      });
+      if (!connectionState.isValid && attemptedConnection) {
+        onInvalidConnection(attemptedConnection);
+        return;
+      }
       if (!preview) return;
       if (!preview.draft || connectionState.isValid || connectionState.toHandle || droppedOnExistingGraphElement(event)) return;
 
@@ -744,7 +752,7 @@ function WorkspaceCanvasInner({
         position: reactFlow.screenToFlowPosition(pointer),
       });
     },
-    [onCreateNodeFromHandleDrop, reactFlow, updateHandleDropPreview]
+    [onCreateNodeFromHandleDrop, onInvalidConnection, reactFlow, updateHandleDropPreview]
   );
 
   return (
@@ -878,6 +886,7 @@ function WorkspaceCanvasInner({
         copy={copy.nodes}
         isValidConnection={isValidConnection}
         onConnect={onConnect}
+        onCreateAndConnect={onCreateNodeFromHandleDrop}
         onDisconnect={(id) => onEdgesChange([{ id, type: 'remove' }])}
         onClose={() => setConnectionTarget(null)}
       /> : null}

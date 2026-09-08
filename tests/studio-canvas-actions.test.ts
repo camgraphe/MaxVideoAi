@@ -11,6 +11,30 @@ import { useWorkspaceGenerationActions } from '../frontend/app/(core)/(workspace
 import { useWorkspaceGraphActions } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGraphActions';
 import { getWorkspaceModelCapabilities } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
 import { DEFAULT_STUDIO_COPY } from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
+import { workspaceConnectionFromHandleAttempt } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-handle-drop';
+
+test('direct cable attempts resolve to canonical source-to-target connections', () => {
+  const sourceToTarget = workspaceConnectionFromHandleAttempt({
+    fromHandle: { nodeId: 'prompt', id: 'prompt', type: 'source' },
+    toHandle: { nodeId: 'shot', id: 'prompt', type: 'target' },
+  });
+  assert.deepEqual(sourceToTarget, {
+    source: 'prompt', sourceHandle: 'prompt', target: 'shot', targetHandle: 'prompt',
+  });
+
+  const targetToSource = workspaceConnectionFromHandleAttempt({
+    fromHandle: { nodeId: 'shot', id: 'start_image', type: 'target' },
+    toHandle: { nodeId: 'image', id: 'reference', type: 'source' },
+  });
+  assert.deepEqual(targetToSource, {
+    source: 'image', sourceHandle: 'reference', target: 'shot', targetHandle: 'start_image',
+  });
+
+  assert.equal(workspaceConnectionFromHandleAttempt({
+    fromHandle: { nodeId: 'shot', id: 'start_image', type: 'target' },
+    toHandle: null,
+  }), null);
+});
 
 test('source choices retain exact handles and apply the graph validator to every candidate', () => {
   const nodes: WorkspaceGraphNode[] = [

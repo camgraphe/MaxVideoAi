@@ -1,4 +1,4 @@
-import type { XYPosition } from '@xyflow/react';
+import type { Connection, HandleType, XYPosition } from '@xyflow/react';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGraphNode,
@@ -19,6 +19,30 @@ export type WorkspaceHandleDropRequest = {
   handleType: WorkspaceHandleDropDirection;
   position: XYPosition;
 };
+
+type WorkspaceConnectionAttemptHandle = {
+  id?: string | null;
+  nodeId: string;
+  type: HandleType;
+};
+
+export function workspaceConnectionFromHandleAttempt({
+  fromHandle,
+  toHandle,
+}: {
+  fromHandle: WorkspaceConnectionAttemptHandle | null;
+  toHandle: WorkspaceConnectionAttemptHandle | null;
+}): Connection | null {
+  if (!fromHandle || !toHandle || fromHandle.type === toHandle.type) return null;
+  const source = fromHandle.type === 'source' ? fromHandle : toHandle;
+  const target = fromHandle.type === 'target' ? fromHandle : toHandle;
+  return {
+    source: source.nodeId,
+    sourceHandle: source.id ?? null,
+    target: target.nodeId,
+    targetHandle: target.id ?? null,
+  };
+}
 
 export type WorkspaceHandleDropDraft = {
   kind: WorkspaceEdgeKind;

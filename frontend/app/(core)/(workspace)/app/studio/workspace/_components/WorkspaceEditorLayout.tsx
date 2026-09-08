@@ -271,6 +271,7 @@ export function WorkspaceEditorLayout({
             onNodesChange={canvas.onNodesChange}
             onEdgesChange={canvas.onEdgesChange}
             onConnect={canvas.onConnect}
+            onInvalidConnection={canvas.handleInvalidConnection}
             isValidConnection={canvas.isValidConnection}
             onCreateNodeFromHandleDrop={canvas.handleCreateNodeFromHandleDrop}
             onCreateNodeFromPaletteDrop={canvas.handleCreateNodeFromPaletteDrop}
