@@ -22,11 +22,13 @@ test('every existing destination keeps a named complete-menu path and tools obey
   const menu = getAppMenuItems(true);
   for (const href of expected) assert.ok(menu.some((item) => item.href === href && item.label.length), href);
   assert.equal(new Set(menu.map((item) => item.href)).size, menu.length);
-  assert.deepEqual(getAppNavigation(true).map((item) => item.id), ['create', 'media', 'tools', 'activity', 'account']);
-  assert.deepEqual(getAppNavigation(false).map((item) => item.id), ['create', 'media', 'activity', 'account']);
+  assert.deepEqual(getAppNavigation(true).map((item) => item.id), ['create', 'studio', 'media', 'tools', 'activity', 'account']);
+  assert.deepEqual(getAppNavigation(false).map((item) => item.id), ['create', 'studio', 'media', 'activity', 'account']);
+  assert.deepEqual(getAppNavigationSelection('/app/studio/projects'), { primary: 'studio', activity: null });
+  assert.deepEqual(getAppNavigationSelection('/app/studio/workspace/project_123'), { primary: 'studio', activity: null });
   assert.ok(getAppMenuItems(false).every((item) => !item.href.startsWith('/app/tools')));
   assert.deepEqual(getAppNavigationSelection('/app/tools/angle', false), { primary: null, activity: null });
-  assert.ok(menu.every((item) => !/studio/i.test(item.href + item.label)));
+  assert.ok(menu.some((item) => item.id === 'studio' && item.href === '/app/studio/projects'));
 });
 
 test('app shell keeps account authority, localized separate public links, and native dialog focus', async () => {

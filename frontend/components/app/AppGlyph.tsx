@@ -1,7 +1,8 @@
 import type { JSX } from 'react';
+import { Clapperboard } from 'lucide-react';
 
-export type AppGlyphName = 'create' | 'image' | 'video' | 'audio' | 'library' | 'tools' | 'settings' | 'wallet' | 'reference' | 'prompt' | 'connect' | 'menu' | 'external' | 'start' | 'end';
-const PATHS: Record<AppGlyphName, string> = {
+export type AppGlyphName = 'create' | 'studio' | 'image' | 'video' | 'audio' | 'library' | 'tools' | 'settings' | 'wallet' | 'reference' | 'prompt' | 'connect' | 'menu' | 'external' | 'start' | 'end';
+const PATHS: Record<Exclude<AppGlyphName, 'studio'>, string> = {
   start: 'M3 3h18v18H3V3zm2 2v14h14V5H5zm2 3h2v8H7zm4 0 6 4-6 4V8z',
   end: 'M3 3h18v18H3V3zm2 2v14h14V5H5zm10 3h2v8h-2zM7 8l6 4-6 4V8z',
   create: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM16 13h3v3h3v3h-3v3h-3v-3h-3v-3h3z',
@@ -19,5 +20,8 @@ const PATHS: Record<AppGlyphName, string> = {
   external: 'M12 3h9v9h-3V8l-8 8-2-2 8-8h-4V3zM3 7h6v3H6v8h8v-3h3v6H3V7z',
 };
 export function AppGlyph({ name, className }: { name: AppGlyphName; className?: string }): JSX.Element {
+  if (name === 'studio') {
+    return <Clapperboard className={className ?? 'app-glyph'} aria-hidden="true" focusable="false" strokeWidth={1.9} />;
+  }
   return <svg viewBox="0 0 24 24" className={className ?? 'app-glyph'} fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false"><path d={PATHS[name]} /></svg>;
 }

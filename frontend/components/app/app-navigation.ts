@@ -25,7 +25,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
 ];
 
-export type AppPrimary = 'create' | 'media' | 'tools' | 'activity' | 'account';
+export type AppPrimary = 'create' | 'studio' | 'media' | 'tools' | 'activity' | 'account';
 export type AppActivity = 'video' | 'image' | 'audio';
 export type AppNavItem = { id: string; label: string; href: string; glyph: AppGlyphName };
 
@@ -36,6 +36,9 @@ export const APP_ACTIVITIES: readonly AppNavItem[] = [
 ];
 const PRIMARY_ITEMS: readonly (AppNavItem & { id: AppPrimary })[] = [
   { id: 'create', label: 'Create', href: '/app', glyph: 'create' },
+  ...(FEATURES.studio.maxVideoAiEditor
+    ? [{ id: 'studio' as const, label: 'Studio', href: '/app/studio/projects', glyph: 'studio' as const }]
+    : []),
   { id: 'media', label: 'Media', href: '/app/library', glyph: 'library' },
   { id: 'tools', label: 'Tools', href: '/app/tools', glyph: 'tools' },
   { id: 'activity', label: 'Activity', href: '/jobs', glyph: 'prompt' },
@@ -56,7 +59,7 @@ export function getAppMenuItems(toolsEnabled: boolean = FEATURES.workflows.tools
     { id: 'dashboard', label: 'Dashboard', href: '/dashboard', glyph: 'library' },
     ...APP_ACTIVITIES,
     ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', href: '/app/studio/projects', glyph: 'video' as const }] : []),
-    ...(toolsEnabled ? [PRIMARY_ITEMS[2], ...TOOL_ITEMS] : []),
+    ...(toolsEnabled ? [...PRIMARY_ITEMS.filter((item) => item.id === 'tools'), ...TOOL_ITEMS] : []),
     { id: 'library', label: 'Library', href: '/app/library', glyph: 'library' },
     { id: 'jobs', label: 'History', href: '/jobs', glyph: 'prompt' },
     { id: 'billing', label: 'Billing', href: '/billing', glyph: 'wallet' },
@@ -67,6 +70,7 @@ export function getAppMenuItems(toolsEnabled: boolean = FEATURES.workflows.tools
 export function getAppNavigationSelection(pathname: string | null | undefined, toolsEnabled: boolean = FEATURES.workflows.toolsSection): { primary: AppPrimary | null; activity: AppActivity | null } {
   const path = pathname?.replace(/\/+$/, '') || '/';
   const matches = (href: string) => path === href || path.startsWith(`${href}/`);
+  if (matches('/app/studio')) return { primary: 'studio', activity: null };
   if (matches('/app/library')) return { primary: 'media', activity: null };
   if (matches('/app/tools')) return { primary: toolsEnabled ? 'tools' : null, activity: null };
   if (matches('/jobs')) return { primary: 'activity', activity: null };
@@ -77,6 +81,7 @@ export function getAppNavigationSelection(pathname: string | null | undefined, t
 
 const LOCAL_LABELS: Record<string, [string, string]> = {
   create: ['Créer', 'Crear'], media: ['Médias', 'Medios'], tools: ['Outils', 'Herramientas'], activity: ['Activité', 'Actividad'], account: ['Compte', 'Cuenta'],
+  studio: ['Studio', 'Studio'],
   video: ['Vidéo', 'Vídeo'], image: ['Image', 'Imagen'], audio: ['Audio', 'Audio'], dashboard: ['Tableau de bord', 'Panel'], library: ['Bibliothèque', 'Biblioteca'], jobs: ['Historique', 'Historial'], billing: ['Facturation', 'Facturación'], settings: ['Paramètres', 'Ajustes'], connections: ['Connexions', 'Conexiones'],
   'character-builder': ['Créateur de personnages', 'Creador de personajes'], storyboard: ['Storyboard', 'Guion gráfico'], angle: ['Angle / Perspective', 'Ángulo / Perspectiva'], upscale: ['Améliorer la résolution', 'Mejorar resolución'], 'background-removal': ['Supprimer le fond', 'Eliminar fondo'],
 };
