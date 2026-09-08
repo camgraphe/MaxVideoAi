@@ -1,6 +1,6 @@
 # Workspace Current Quote Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** A generation price belongs only to the current draft and account; stale, failed or pending quotes cannot remain actionable.
 
@@ -47,8 +47,8 @@ export function buildWorkspacePreflightRequest(options: WorkspacePreflightReques
 
 The builder moves the current payload construction literally: mode field support governs resolution/aspect ratio; audio/voice fields use the existing booleans; inputs preserve originals and unresolved IDs so the server can reject them; extra inputs and memberTier keep their contract. Do not put iterations into this one-output server request; current total multiplies the matching unit price by the live iterations.
 
-- [ ] Add meaningful request tests: unsupported fields absent, audio/voice optional fields, input original identity and unresolved asset behavior. Use actual engine/schema fixtures from existing tests where possible.
-- [ ] Add a JSDOM hook lifecycle test using deferred responses. Record hook outputs during render, not only after effects. Test exact outcomes:
+- [x] Add meaningful request tests: unsupported fields absent, audio/voice optional fields, input original identity and unresolved asset behavior. Use actual engine/schema fixtures from existing tests where possible.
+- [x] Add a JSDOM hook lifecycle test using deferred responses. Record hook outputs during render, not only after effects. Test exact outcomes:
 
 ```ts
 // A resolved request may expose its quote.
@@ -64,12 +64,16 @@ assert.equal(current.price, 3.75);
 
 Cover rapid A→B→A, logout/auth-not-ready, errors/retry, and empty form. Do not rely only on callback mocks or source-text assertions. If a focused request hook is necessary for testing and responsibility, extract it into _hooks/useWorkspacePreflightQuote.ts with explicit inputs and preserve useWorkspacePricingGate as the top-up/auth orchestrator. Keep request dependencies bounded and avoid loops on semantically equal payloads.
 
-- [ ] Run focused tests and capture the expected failing behavior before the fix. Use the sanitized local validation launcher; never call live generation.
-- [ ] Extract the payload builder and implement scoped quote observations. Derive current exposure synchronously from matching request identity plus access token/auth readiness; do not rely only on a cleanup effect to hide an old-account quote. Keep auth tokens only in transient equality checks, never persistent keys/logs. Ignore superseded completions. Pending must start on request mismatch before a debounce elapses. For invalid/failed quote, expose no actionable preflight or total. Preserve caller-set form/preflight errors and quote-derived errors correctly.
-- [ ] Read the existing submission guard and ensure no failed/stale/null quote can slip through the normal submit path during the recalculation window. Reuse the existing guard rather than creating parallel billing logic.
-- [ ] Update the architecture contract so it asserts the new builder ownership and unchanged wallet/auth responsibilities. Run focused request/lifecycle/contracts, frontend typecheck and lint; report exact commands and counts. The controller runs the full regression suite once for the combined creator increment.
-- [ ] Review the complete scoped diff, commit only Task 1 files and write the implementer report. Include actual red/green evidence, architecture changes and any residual limitations.
+- [x] Run focused tests and capture the expected failing behavior before the fix. Use the sanitized local validation launcher; never call live generation.
+- [x] Extract the payload builder and implement scoped quote observations. Derive current exposure synchronously from matching request identity plus access token/auth readiness; do not rely only on a cleanup effect to hide an old-account quote. Keep auth tokens only in transient equality checks, never persistent keys/logs. Ignore superseded completions. Pending must start on request mismatch before a debounce elapses. For invalid/failed quote, expose no actionable preflight or total. Preserve caller-set form/preflight errors and quote-derived errors correctly.
+- [x] Read the existing submission guard and ensure no failed/stale/null quote can slip through the normal submit path during the recalculation window. Reuse the existing guard rather than creating parallel billing logic.
+- [x] Update the architecture contract so it asserts the new builder ownership and unchanged wallet/auth responsibilities. Run focused request/lifecycle/contracts, frontend typecheck and lint; report exact commands and counts. The controller runs the full regression suite once for the combined creator increment.
+- [x] Review the complete scoped diff, commit only Task 1 files and write the implementer report. Include actual red/green evidence, architecture changes and any residual limitations.
 
 ## Validation and next increment
 
 The controller checks browser-visible recalculation after this task and performs the independent review. The next model-change work consumes buildWorkspacePreflightRequest instead of reproducing commercial requests. Image/audio pricing and a global billing migration are not folded into this bounded fix; their existing contracts are retained and will be checked in creator continuity qualification.
+
+## Implementation qualification — 8 September 2026
+
+Implemented in `a0faf2d49`, with the independently identified asynchronous submission race corrected in `fedc6306f`. The re-review passed. The correction preserves explicit Authorization semantics while removing an ignored session lookup before wallet/generation dispatch; implicit auth callers retain the existing lookup. Final targeted qualification: 67 tests, frontend types, lint, exposure and whitespace checks passed. Browser inspection confirmed immediate old-price removal and disabled generation while a changed request is priced, then the matching amount returned. Full combined regression/build remains scheduled with the model-review increment.
