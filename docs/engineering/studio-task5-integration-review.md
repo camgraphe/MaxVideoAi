@@ -157,3 +157,33 @@ timeline duration, save/reload and unrelated-media preservation remain asserted.
 
 Independent review of `f8e113534` (injective Copy selection scope) and `399b4cc09`
 (scoped actual media history availability) is **Approved**, with8/8 targeted tests.
+
+## Product review and frozen geometry gate at 26cbbed36
+
+The subsequent `a3f42bf48` and `26cbbed36` correct the menu offsets and bound the
+collapsed map width while preserving its full accessible name. Independent review
+also identified the first pixel of the short-landscape layout at621px: the final
+312px/152px horizontal insets leave157px for the620px starter graph, giving its
+260px card about65.8px rather than dropping below64px. The root matrix now includes
+621×375 in all three languages and both themes, for36 canvas cases.
+
+The final immutable product `26cbbed36a04c9f3dbf5c8260e2a6cf36e2818c0`, exported to
+`/private/tmp/studio-ui-qa.sYDyCR` on owned3040/3041, passes **41/41 in1.5min**:
+36 full-card/readability/command-hit-test cases and five real open-menu cases.
+Every saved `fitted.png` remains available under
+`output/playwright/studio-clarity-final-26cb/`. No assertions were relaxed.
+
+Independent product review through26cb, including smoke adaptation2266ab39c,
+is **Approved** with22/22 lightweight checks. Copy, media Undo, measured contain,
+Projects, native model capacities and the three retained Settings access paths
+are covered. The root's broader regressions, maximum-list connected browser and
+final build remain pending at this entry; this is not a full release approval.
+
+Source protection was rechecked again: all34 historic dirty-source hashes and
+the original editor HEAD match the import manifest exactly.
+
+One architecture correction is still required: Task5's e82 added44 connector
+styling lines to the previously503-line node module, exceeding its520-line
+contract at547. This is a Task5 regression, not an inherited failure. The writer
+is isolating the new connector styling responsibility without changing its CSS
+values, raising the limit or compressing source formatting to evade the guard.

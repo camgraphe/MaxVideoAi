@@ -4,6 +4,7 @@ import { openMinimalEditorWorkspace } from './editor-helpers';
 const viewports = [
   { width: 1440, height: 900 }, { width: 390, height: 844 },
   { width: 320, height: 844 }, { width: 844, height: 390 }, { width: 667, height: 375 },
+  { width: 621, height: 375 }, // First pixel of the compact landscape layout.
 ];
 const projectLabels = { en: 'Projects', fr: 'Projets', es: 'Proyectos' };
 
