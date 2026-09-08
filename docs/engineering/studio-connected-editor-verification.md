@@ -109,6 +109,8 @@ Après ce passage, la revue indépendante a demandé une validation structurelle
 
 Le correctif serveur `7cf6a5b57` rend cette suite renforcée **GREEN : 2/2, 22,91s**. Les éléments invalides sont refusés avant écriture, une panne SQL contrôlée retourne500 opaque et annule aussi la séquence, et la provenance initiale en frames/fps survit au CAS et aux rejeux. Les erreurs métier MCP ont leurs codes/retryability exacts. Une revue indépendante est relancée ; la lecture privée et la concurrence côté navigateur restent à qualifier après le lot client.
 
+Les projections MCP élargies ne sont pas encore toutes vertes :11 assertions de preflight simulé/support révèlent des lecteurs et une documentation restés sur l’ancien inventaire de flags, malgré le nouveau tool2/2. Le correctif est demandé dans un commit partagé isolé. La préparation offline de build passe, elle, intégralement : registre53 modèles/deux tombstones, projections runtime/catalogue/roster courantes, couverture de cinq heroes et deux posters immuables vérifiés. Ce passage ne constitue pas encore un build Next complet. Les34 empreintes et le HEAD de la copie source historique ont été revérifiés inchangés.
+
 ## Contrôles restant ouverts
 
 La matrice géométrique `editor-canvas-clarity.spec.ts` prépare la qualification finale (24 combinaisons EN/FR/ES, quatre viewports, deux thèmes). Trois passages de référence échouent actuellement pour la raison attendue : titre et réglages recouverts par le HUD après fit, sur desktop EN, portrait FR et paysage ES. Les captures ont été inspectées ; ce défaut doit être corrigé dans Task5 avant la remise, sans affaiblir les assertions. Les anciennes huit vérifications de boutons dans le viewport ne détectaient pas ce recouvrement interne du canevas.

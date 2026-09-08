@@ -93,3 +93,7 @@ Ce commit ajoute la validation structurelle avant normalisation/transaction, le 
 La racine a relancé le test HTTP réel renforcé sur ce snapshot : **2/2 réussis, 22,91s**. Le snapshot `[null]` est refusé en400 sans incrément ; une contrainte SQL ajoutée uniquement dans la base jetable provoque500 `STUDIO_WORKSPACE_SAVE_FAILED` et le rollback de la séquence déjà écrite. Le reçu `request_payload` et les `montageSource` restent identiques après CAS et rejeu UI/MCP. Les assertions MCP exigent maintenant les codes et `retryable` exacts, dont `REFERENCE_INVALID` pour l’absence de faits mesurés (contrat canonique existant), plutôt que seulement l’absence d’`INTERNAL_ERROR`.
 
 Une re-revue indépendante du serveur complet est en cours. Le client connecté et son parcours navigateur neuf ne sont pas encore qualifiés ; ces résultats HTTP ne les remplacent pas.
+
+## Vérification élargie des projections MCP
+
+La racine a aussi exécuté les contrats modifiés de publication/support. Après correction du `NODE_PATH` du runner, le nouveau tool passe2/2 mais11 assertions existantes restent RED : dix dans le preflight Vercel simulé (le script attend encore neuf flags exacts) et une dans le support (ligne `studioMontageCreation:false` absente). `scripts/run-mcp-launch-fixture.mjs` omet également le nouveau flag dans sa liste stricte. L’implémenteur corrige ces seuls points dans un nouveau commit partagé isolé ; aucun preflight Vercel réel, déploiement ou activation n’a été lancé.
