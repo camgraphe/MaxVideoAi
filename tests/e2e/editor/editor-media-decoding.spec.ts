@@ -101,16 +101,21 @@ test('real timeline readers decode trimmed frames, produce audio and seek into t
     audioRms,
   };
   // Linked audio owns sound; embedded video must not produce a second copy.
+  expect(await videoA.evaluate((element) => Number(getComputedStyle(element).opacity))).toBeGreaterThan(0.99);
   expect(await videoA.evaluate((element) => (element as HTMLVideoElement).muted)).toBe(true);
   await page.getByRole('button', { name: 'Pause timeline', exact: true }).click();
   await expect.poll(() => audioA.evaluate((element) => (element as HTMLAudioElement).paused)).toBe(true);
+  const framesBeforeSeek = Number(await videoB.getAttribute('data-proof-frames'));
   await page.getByLabel('Timeline scrubber').evaluate((element) => {
     const input = element as HTMLInputElement;
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, '2.5');
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
   });
+  await expect.poll(() => videoB.getAttribute('data-proof-frames').then(Number)).toBeGreaterThan(framesBeforeSeek);
   await expect.poll(() => videoB.getAttribute('data-proof-media-time').then(Number)).toBeCloseTo(1, 1);
+  expect(await videoB.evaluate((element) => (element as HTMLVideoElement).currentTime)).toBeCloseTo(1, 1);
+  expect(await videoB.evaluate((element) => Number(getComputedStyle(element).opacity))).toBeGreaterThan(0.99);
   expect(await videoB.evaluate((element) => (element as HTMLVideoElement).paused)).toBe(true);
   expect(requestedRanges.length).toBeGreaterThan(0);
   await audioA.evaluate(async (element) => {
