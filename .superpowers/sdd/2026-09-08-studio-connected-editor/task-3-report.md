@@ -108,3 +108,11 @@ Exit 0, zero errors, two preexisting exhaustive-deps warnings: WorkspaceAssetLib
 - Metadata inspection is bounded and may remain unknown when a source fails or blocks browser inspection. It does not retry indefinitely or create background probes.
 - The existing canvas node settings icon can be occluded by the selection toolbar; its keyboard/toolbar alternative works. Canvas polish remains out of this lot.
 - The two preexisting lint warnings and unrun broader production/full-E2E validation remain explicit. No performance improvement is claimed from functional tests alone.
+
+## Post-review Minor — accepted canvas upload cache refresh
+
+Independent Task3 review was Approved with no Critical/Important issue. The single Minor is fixed: after server resolution and the final current-intent guard, the canvas upload calls the existing shared library-cache invalidation before applying the asset. No alternate cache, route, provider or broader editor change.
+
+Targeted TDD: the real canvas modal + real account-scoped library hook test first failed because the accepted upload was missing after closing/reopening the same-account picker. It now shows the uploaded asset from a second listing request. Existing account/stale/close/unmount and handoff cancellation tests also remain green. API responses are test fixtures; no HTTP/DB integration claim is added.
+
+Command: `NODE_PATH="$PWD/frontend/node_modules" pnpm dlx node@22 node_modules/tsx/dist/cli.mjs --tsconfig frontend/tsconfig.json --test tests/studio-media-library-lifecycle-dom.test.ts`. RED: 4 pass/1 expected fail; GREEN: 5/5. Logs: `.superpowers/studio-task3-canvas-cache-{red,green}.log`. Targeted ESLint on `WorkspaceAssetLibraryModal.tsx` exited 0 without warnings; `git diff --check` passed. No combined429 suite, DB or global validation rerun. Root MCP QA helper/test edits were left untouched and unstaged.

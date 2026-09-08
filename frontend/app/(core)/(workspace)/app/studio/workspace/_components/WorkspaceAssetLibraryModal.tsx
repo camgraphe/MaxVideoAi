@@ -7,6 +7,7 @@ import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { resolveWorkspaceMediaSelection } from '../_lib/workspace-media-selection';
 import { useStudioMediaIntent } from '../_hooks/useStudioMediaIntent';
+import { invalidateWorkspaceEditorAssetLibraryCache } from '../_hooks/useWorkspaceEditorAssetLibrary';
 import styles from '../_styles/asset-library.module.css';
 import { createUploadFailure } from '../../../_lib/workspace-upload-errors';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
@@ -129,6 +130,7 @@ export function WorkspaceAssetLibraryModal({
         if (!isCurrent()) return;
         const resolved = await resolveWorkspaceMediaSelection([uploadedAsset]);
         if (!isCurrent()) return;
+        invalidateWorkspaceEditorAssetLibraryCache();
         onImportAssets(node.id, resolved);
       } catch {
         if (isCurrent()) setUploadError(fallback);

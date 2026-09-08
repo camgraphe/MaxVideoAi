@@ -119,3 +119,61 @@ test('handoff receiver requires confirmation, resolves exact ref and cancels a p
     await h.close();
   }
 });
+
+test('accepted canvas upload refreshes the library when reopened for the same account', async () => {
+  const require = createRequire(import.meta.url);
+  const previousCssLoader = require.extensions['.css'];
+  require.extensions['.css'] = (module) => { module.exports = {}; };
+  const h = harness(); const previousFetch = globalThis.fetch;
+  const ref = { type: 'asset' as const, assetId: `ma_${'c'.repeat(32)}`, kind: 'audio' as const };
+  const uploadedAsset = { id: 'uploaded-internal', ref, kind: 'audio', url: 'https://media.maxvideoai.com/new.wav', mime: 'audio/wav' };
+  let uploaded = false; let listingCalls = 0; let imports = 0;
+  let reopen!: () => void;
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    if (url.startsWith('/api/media-library/assets?')) {
+      listingCalls += 1;
+      return Response.json({ ok: true, assets: uploaded ? [uploadedAsset] : [], hasMore: false });
+    }
+    if (url === '/api/uploads/audio') {
+      uploaded = true;
+      return Response.json({ ok: true, asset: uploadedAsset });
+    }
+    assert.equal(url, '/api/studio/media/resolve');
+    assert.deepEqual(JSON.parse(String(init?.body)), { refs: [ref] });
+    return Response.json({ ok: true, assets: [uploadedAsset] });
+  };
+  try {
+    const { WorkspaceAssetLibraryModal } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryModal');
+    function Fixture() {
+      const [open, setOpen] = React.useState(true);
+      reopen = () => setOpen(true);
+      const library = useWorkspaceEditorAssetLibrary(open ? 'asset-audio' : undefined, DEFAULT_STUDIO_COPY.assetLibrary, 'owner-a');
+      return React.createElement(WorkspaceAssetLibraryModal, {
+        copy: DEFAULT_STUDIO_COPY.assetLibrary,
+        node: open ? { id: 'audio-node', type: 'asset-audio', position: { x: 0, y: 0 }, data: { kind: 'asset-audio', title: 'Audio', accent: '#fff' } } : null,
+        assets: library.assets, hasMore: library.hasMore, isLoading: library.isLoading, isLoadingMore: library.isLoadingMore,
+        error: library.error, usingFallback: library.usingFallback, source: library.source, sourceOptions: library.sourceOptions,
+        sourceLabels: library.sourceLabels, searchQuery: library.searchQuery, selectedAssetIds: library.selectedAssetIds,
+        onClose: () => setOpen(false), onLoadMore: library.loadMore, onImportAssets: (_nodeId, assets) => {
+          assert.deepEqual(assets[0].ref, ref); imports += 1; setOpen(false);
+        },
+        onSearchQueryChange: library.setSearchQuery, onSourceChange: library.setSource, onToggleAssetSelection: library.toggleAssetSelection,
+      });
+    }
+    await h.render(React.createElement(Fixture));
+    assert.equal(listingCalls, 1);
+    const input = h.dom.window.document.querySelector('input[type="file"]')!;
+    Object.defineProperty(input, 'files', { value: [new File(['fixture'], 'new.wav', { type: 'audio/wav' })] });
+    await act(async () => input.dispatchEvent(new h.dom.window.Event('change', { bubbles: true })));
+    assert.equal(imports, 1); assert.equal(h.dom.window.document.querySelector('[role="dialog"]'), null);
+    await act(async () => reopen());
+    assert.ok(h.dom.window.document.querySelector('button[aria-label="Select new.wav"]'), 'reopened same-account picker must show the accepted upload from a refreshed listing');
+    assert.equal(listingCalls, 2);
+  } finally {
+    globalThis.fetch = previousFetch;
+    invalidateWorkspaceEditorAssetLibraryCache();
+    if (previousCssLoader) require.extensions['.css'] = previousCssLoader; else delete require.extensions['.css'];
+    await h.close();
+  }
+});
