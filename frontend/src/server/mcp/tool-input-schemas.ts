@@ -2,6 +2,7 @@ import { calculateProjectBudgetInputSchema } from '@/server/mcp/tools/calculate-
 import { confirmGenerationInputSchema } from '@/server/mcp/tools/confirm-generation';
 import { createReferenceUploadLinkInputSchema } from '@/server/mcp/tools/create-reference-upload-link';
 import { createTopupLinkInputSchema } from '@/server/mcp/tools/create-topup-link';
+import { createStudioMontageToolInputSchema } from '@/server/mcp/tools/create-studio-montage';
 import { getAccountStatusInputSchema } from '@/server/mcp/tools/get-account-status';
 import { getGenerationStatusInputSchema } from '@/server/mcp/tools/get-generation-status';
 import { getModelDetailsInputSchema } from '@/server/mcp/tools/get-model-details';
@@ -23,6 +24,7 @@ export const MCP_TOOL_INPUT_SCHEMAS = {
   create_reference_upload_link: createReferenceUploadLinkInputSchema,
   import_reference_files: importReferenceFilesInputSchema,
   prepare_montage: prepareMontageInputSchema,
+  create_studio_montage: createStudioMontageToolInputSchema,
   prepare_generation: prepareGenerationInputSchema,
   confirm_generation: confirmGenerationInputSchema,
   get_generation_status: getGenerationStatusInputSchema,

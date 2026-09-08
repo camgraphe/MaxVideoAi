@@ -96,6 +96,7 @@ test('MCP acquisition is in Analytics navigation and publication matches the pro
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
+    studioMontageCreation: false,
   });
 });
 

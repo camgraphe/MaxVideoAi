@@ -72,6 +72,7 @@ function createFixture(): string {
       trial: false,
       referenceUploads: false,
       montagePreparation: false,
+      studioMontageCreation: false,
     }, null, 2)}\n`,
   );
   const fixtureVercelPath = join(fixture, 'frontend/vercel.json');
@@ -183,6 +184,7 @@ function setReleasePublication(fixture: string): void {
       trial: false,
       referenceUploads: true,
       montagePreparation: false,
+      studioMontageCreation: false,
     }, null, 2)}\n`,
   );
   const vercelPath = join(fixture, 'frontend/vercel.json');
