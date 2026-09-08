@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const composerHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState.ts';
 const engineModeHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts';
+const workflowProjectionPath = 'frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection.ts';
 const engineHelpersPath = 'frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers.ts';
 const clientHelpersPath = 'frontend/app/(core)/(workspace)/app/_lib/workspace-client-helpers.ts';
 const generationRunnerHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts';
@@ -15,6 +16,7 @@ test('workspace composer engine and mode orchestration is split from composer fi
 
   const composerSource = readFileSync(composerHookPath, 'utf8');
   const engineModeSource = readFileSync(engineModeHookPath, 'utf8');
+  const projectionSource = readFileSync(workflowProjectionPath, 'utf8');
   const engineHelpersSource = readFileSync(engineHelpersPath, 'utf8');
   const clientHelpersSource = readFileSync(clientHelpersPath, 'utf8');
 
@@ -34,20 +36,24 @@ test('workspace composer engine and mode orchestration is split from composer fi
   assert.doesNotMatch(composerSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
 
   assert.match(engineModeSource, /export function useWorkspaceEngineModeState/);
-  assert.match(engineModeSource, /getUnifiedSeedanceMode/);
-  assert.match(engineModeSource, /getUnifiedHappyHorseMode/);
-  assert.match(engineModeSource, /getReferenceInputStatus/);
-  assert.match(engineModeSource, /getModeCaps/);
-  assert.match(engineModeSource, /supportsModeAudioControl/);
-  assert.doesNotMatch(engineModeSource, /supportsAudioPricingToggle/);
-  assert.match(engineModeSource, /selectedEngine\.modes\.includes\('fl2v'\)/);
-  assert.match(engineModeSource, /const allowsUnifiedVeoFirstLast = useMemo/);
-  assert.match(engineModeSource, /const submissionMode = useMemo<Mode>/);
+  assert.match(engineModeSource, /resolveWorkspaceWorkflow\(\{/);
+  assert.doesNotMatch(engineModeSource, /getUnifiedSeedanceMode|getUnifiedHappyHorseMode|getModeCaps|supportsModeAudioControl/);
+  assert.doesNotMatch(projectionSource, /useEffect|useMemo|setForm|localStorage|sessionStorage/);
+  assert.match(composerSource, /resolveWorkspaceComposerFacts\(\{/);
+  assert.match(projectionSource, /getUnifiedSeedanceMode/);
+  assert.match(projectionSource, /getUnifiedHappyHorseMode/);
+  assert.match(projectionSource, /getReferenceInputStatus/);
+  assert.match(projectionSource, /getModeCaps/);
+  assert.match(projectionSource, /supportsModeAudioControl/);
+  assert.doesNotMatch(projectionSource, /supportsAudioPricingToggle/);
+  assert.match(projectionSource, /selectedEngine\.modes\.includes\('fl2v'\)/);
+  assert.match(projectionSource, /const allowsUnifiedVeoFirstLast =/);
+  assert.match(projectionSource, /const submissionMode =/);
   assert.match(
-    engineModeSource,
+    projectionSource,
     /allowsUnifiedVeoFirstLast && hasPrimaryImageInput && hasLastFrameInput[\s\S]*?return 'fl2v'/
   );
-  assert.doesNotMatch(engineModeSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
+  assert.doesNotMatch(projectionSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
   assert.doesNotMatch(engineHelpersSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
   assert.doesNotMatch(clientHelpersSource, /UNIFIED_VEO_FIRST_LAST_ENGINE_IDS/);
   assert.match(engineHelpersSource, /findGenerateAudioField/);
@@ -74,7 +80,7 @@ test('workspace generation wallet preflight is split from generation submission 
 
   assert.match(walletPreflightSource, /export function useWorkspaceWalletPreflight/);
   assert.match(walletPreflightSource, /CURRENCY_LOCALE/);
-  assert.match(walletPreflightSource, /authFetch\('\/api\/wallet'\)/);
+  assert.match(walletPreflightSource, /authFetch\('\/api\/wallet', accessToken \? \{ headers: \{ Authorization: `Bearer \$\{accessToken\}` \} \} : undefined\)/);
   assert.match(walletPreflightSource, /presentInsufficientFunds/);
   assert.match(walletPreflightSource, /verifyWalletBalance/);
   assert.match(generationIterationRunnerSource, /export async function runWorkspaceGenerationIteration/);

@@ -98,9 +98,10 @@ test('Gemini Omni unified workflow routes from media assets and refine state', (
 });
 
 test('Gemini Omni engine mode ignores stale stored manual modes', () => {
-  const source = readFileSync(engineModeHookPath, 'utf8');
+  assert.match(readFileSync(engineModeHookPath, 'utf8'), /resolveWorkspaceWorkflow/);
+  const source = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection.ts', 'utf8');
   const activeManualModeSource = source.slice(
-    source.indexOf('const activeManualMode = useMemo<Mode | null>'),
+    source.indexOf('const activeManualMode ='),
     source.indexOf('const activeMode: Mode')
   );
   const geminiGuardIndex = activeManualModeSource.indexOf('if (isUnifiedGeminiOmni) return null;');

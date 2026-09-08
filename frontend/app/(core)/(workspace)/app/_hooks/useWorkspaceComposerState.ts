@@ -5,16 +5,9 @@ import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
-import {
-  framesToSeconds,
-} from '../_lib/workspace-engine-helpers';
-import {
-  buildMultiPromptSummary,
-  createMultiPromptScene,
-  MULTI_PROMPT_MAX_SEC,
-  MULTI_PROMPT_MIN_SEC,
-} from '../_lib/workspace-input-helpers';
-import { getWorkspaceMultiPromptState } from '../_lib/workspace-multi-prompt-state';
+import { framesToSeconds } from '../_lib/workspace-engine-helpers';
+import { createMultiPromptScene } from '../_lib/workspace-input-helpers';
+import { resolveWorkspaceComposerFacts } from '../_lib/workspace-workflow-projection';
 import {
   useWorkspaceEngineModeState,
   type WorkspaceComposerModeToggles,
@@ -189,53 +182,44 @@ export function useWorkspaceComposerState({
     workflowCopy,
     showNotice,
   });
-
-  const multiPromptActive = Boolean(supportsKlingV3Controls && multiPromptEnabled);
-  const multiPromptState = useMemo(
-    () =>
-      getWorkspaceMultiPromptState({
-        active: multiPromptActive,
-        scenes: multiPromptScenes,
-        minDurationSec: MULTI_PROMPT_MIN_SEC,
-        maxDurationSec: MULTI_PROMPT_MAX_SEC,
-      }),
-    [multiPromptActive, multiPromptScenes]
+  const {
+    multiPromptActive,
+    multiPromptTotalSec,
+    multiPromptInvalid,
+    multiPromptError,
+    voiceIds,
+    voiceControlEnabled,
+    promptMaxChars,
+    promptCharLimitExceeded,
+    effectivePrompt,
+    effectiveDurationSec,
+  } = useMemo(
+    () => resolveWorkspaceComposerFacts({
+      engine: selectedEngine,
+      form,
+      workflow: {
+        supportsKlingV3Controls, supportsKlingV3VoiceControl, submissionMode,
+        primaryAudioDurationSec, primaryVideoDurationSec,
+      },
+      prompt, multiPromptEnabled, multiPromptScenes, voiceIdsInput,
+    }),
+    [
+      selectedEngine, form, supportsKlingV3Controls, supportsKlingV3VoiceControl,
+      submissionMode, primaryAudioDurationSec, primaryVideoDurationSec,
+      prompt, multiPromptEnabled, multiPromptScenes, voiceIdsInput,
+    ]
   );
-  const multiPromptTotalSec = multiPromptState.totalDurationSec;
-  const multiPromptInvalid = multiPromptState.invalid;
-  const multiPromptError = multiPromptState.error;
 
-  const voiceIds = useMemo(
-    () =>
-      voiceIdsInput
-        .split(',')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    [voiceIdsInput]
-  );
-  const voiceControlEnabled = Boolean(supportsKlingV3VoiceControl && voiceIds.length);
-  const promptMaxChars = !multiPromptActive ? (selectedEngine?.inputLimits.promptMaxChars ?? null) : null;
-  const promptCharLimitExceeded = typeof promptMaxChars === 'number' && prompt.length > promptMaxChars;
   const seedValue =
     typeof form?.seed === 'number' && Number.isFinite(form.seed) ? String(form.seed) : '';
   const cameraFixedValue = typeof form?.cameraFixed === 'boolean' ? form.cameraFixed : false;
   const safetyCheckerValue = typeof form?.safetyChecker === 'boolean' ? form.safetyChecker : true;
-  const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
 
   useEffect(() => {
     if (!supportsKlingV3Controls && multiPromptEnabled) {
       setMultiPromptEnabled(false);
     }
   }, [supportsKlingV3Controls, multiPromptEnabled, setMultiPromptEnabled]);
-
-  const effectiveDurationSec = useMemo(() => {
-    if (multiPromptActive) return multiPromptTotalSec;
-    if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
-    if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number') {
-      return primaryVideoDurationSec;
-    }
-    return form?.durationSec ?? 0;
-  }, [multiPromptActive, multiPromptTotalSec, submissionMode, primaryAudioDurationSec, primaryVideoDurationSec, form?.durationSec]);
 
   useEffect(() => {
     if (!voiceControlEnabled) return;
