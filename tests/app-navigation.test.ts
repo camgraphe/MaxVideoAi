@@ -52,6 +52,18 @@ test('the global media destination keeps the same product name across navigation
   assert.equal(appNavLabel(completeMenuMedia!, 'es'), 'Medios');
 });
 
+test('the jobs destination is named Activity on every app navigation surface', () => {
+  const primaryActivity = getAppNavigation(true, true).find((item) => item.href === '/jobs');
+  const completeMenuActivity = getAppMenuItems(true, true).find((item) => item.href === '/jobs');
+  const accountMenuActivity = NAV_ITEMS.find((item) => item.href === '/jobs');
+
+  assert.equal(primaryActivity?.label, 'Activity');
+  assert.equal(completeMenuActivity?.label, 'Activity');
+  assert.equal(accountMenuActivity?.label, 'Activity');
+  assert.equal(appNavLabel(completeMenuActivity!, 'fr'), 'Activité');
+  assert.equal(appNavLabel(completeMenuActivity!, 'es'), 'Actividad');
+});
+
 test('app shell keeps account authority, localized separate public links, and native dialog focus', async () => {
   const { readFileSync } = await import('node:fs');
   const header = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');

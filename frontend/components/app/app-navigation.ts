@@ -20,7 +20,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
     ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
   { id: 'library', label: 'Media', badge: null, icon: 'library', href: '/app/library' },
-  { id: 'jobs', label: 'History', badge: null, icon: 'jobs', href: '/jobs' },
+  { id: 'jobs', label: 'Activity', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
 ];
@@ -78,7 +78,7 @@ export function getAppMenuItems(
       : []),
     ...(toolsEnabled ? [...PRIMARY_ITEMS.filter((item) => item.id === 'tools'), ...TOOL_ITEMS] : []),
     { id: 'library', label: 'Media', href: '/app/library', glyph: 'library' },
-    { id: 'jobs', label: 'History', href: '/jobs', glyph: 'prompt' },
+    { id: 'jobs', label: 'Activity', href: '/jobs', glyph: 'prompt' },
     { id: 'billing', label: 'Billing', href: '/billing', glyph: 'wallet' },
     { id: 'settings', label: 'Settings', href: '/settings', glyph: 'settings' },
     { id: 'connections', label: 'Connections', href: '/account/connections', glyph: 'connect' },
@@ -103,7 +103,7 @@ export function getAppNavigationSelection(
 const LOCAL_LABELS: Record<string, [string, string]> = {
   create: ['Créer', 'Crear'], media: ['Médias', 'Medios'], tools: ['Outils', 'Herramientas'], activity: ['Activité', 'Actividad'], account: ['Compte', 'Cuenta'],
   studio: ['Studio', 'Studio'],
-  video: ['Vidéo', 'Vídeo'], image: ['Image', 'Imagen'], audio: ['Audio', 'Audio'], dashboard: ['Tableau de bord', 'Panel'], library: ['Médias', 'Medios'], jobs: ['Historique', 'Historial'], billing: ['Facturation', 'Facturación'], settings: ['Paramètres', 'Ajustes'], connections: ['Connexions', 'Conexiones'],
+  video: ['Vidéo', 'Vídeo'], image: ['Image', 'Imagen'], audio: ['Audio', 'Audio'], dashboard: ['Tableau de bord', 'Panel'], library: ['Médias', 'Medios'], jobs: ['Activité', 'Actividad'], billing: ['Facturation', 'Facturación'], settings: ['Paramètres', 'Ajustes'], connections: ['Connexions', 'Conexiones'],
   'character-builder': ['Créateur de personnages', 'Creador de personajes'], storyboard: ['Storyboard', 'Guion gráfico'], angle: ['Angle / Perspective', 'Ángulo / Perspectiva'], upscale: ['Améliorer la résolution', 'Mejorar resolución'], 'background-removal': ['Supprimer le fond', 'Eliminar fondo'],
   'restore-video': ['Restaurer une vidéo', 'Restaurar vídeo'], denoise: ['Débruiter une vidéo', 'Reducir ruido'], 'fix-blur': ['Corriger le flou', 'Corregir desenfoque'], 'smooth-motion': ['Fluidifier une vidéo', 'Suavizar movimiento'],
 };
