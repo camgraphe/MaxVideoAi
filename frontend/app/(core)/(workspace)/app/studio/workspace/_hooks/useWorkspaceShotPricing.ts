@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { validateShotConnections } from '../_lib/workspace-capabilities';
@@ -73,7 +73,16 @@ type UseWorkspaceShotPricingOptions = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   capabilities: WorkspaceModelCapability[];
+  mockMode: boolean;
 };
+
+function simulationPricingEstimate(): WorkspacePricingEstimate {
+  return { status: 'ready', label: 'Simulation', totalCents: 0, currency: 'USD' };
+}
+
+function hasUnpersistedPricingInput(request: WorkspacePricingRequest['request']): boolean {
+  return Boolean(request.inputs?.some((input) => !/^https?:\/\//i.test(input.url)));
+}
 
 function promptTextForNode(nodeId: string, nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): string {
   const promptKinds = new Set<WorkspaceEdgeKind>(['prompt', 'style', 'camera', 'dialogue', 'narration']);
@@ -114,6 +123,7 @@ export function useWorkspaceShotPricing({
   nodes,
   edges,
   capabilities,
+  mockMode,
 }: UseWorkspaceShotPricingOptions): Record<string, WorkspacePricingEstimate> {
   const [memberTier, setMemberTier] = useState('Member');
   const [estimates, setEstimates] = useState<Record<string, WorkspacePricingEstimate & { requestKey: string }>>({});
@@ -167,6 +177,15 @@ export function useWorkspaceShotPricing({
               settings,
               connectedInputs,
             }),
+          }];
+        }
+        if (mockMode) {
+          const estimate = simulationPricingEstimate();
+          return [{
+            kind: 'local' as const,
+            nodeId: node.id,
+            estimate,
+            key: JSON.stringify({ status: estimate.status, label: estimate.label, settings, connectedInputs }),
           }];
         }
         const toolEstimate = buildWorkspaceToolPricingEstimate({
@@ -233,6 +252,17 @@ export function useWorkspaceShotPricing({
             shotNodeId: node.id,
           }),
         });
+        if (hasUnpersistedPricingInput(request)) {
+          const estimate = unavailableWorkspacePricingEstimate(
+            'Import or replace local sample media before requesting a live price.'
+          );
+          return [{
+            kind: 'local' as const,
+            nodeId: node.id,
+            estimate,
+            key: JSON.stringify({ status: estimate.status, label: estimate.label, inputs: request.inputs }),
+          }];
+        }
         return [{
           kind: 'preflight' as const,
           nodeId: node.id,
@@ -240,18 +270,25 @@ export function useWorkspaceShotPricing({
           key: pricingRequestKey(request),
         }];
       });
-  }, [capabilities, edges, memberTier, nodes]);
+  }, [capabilities, edges, memberTier, mockMode, nodes]);
+  const pricingRequestSignature = useMemo(
+    () => JSON.stringify(pricingRequests.map(({ kind, nodeId, key }) => ({ kind, nodeId, key }))),
+    [pricingRequests]
+  );
+  const pricingRequestsRef = useRef(pricingRequests);
+  pricingRequestsRef.current = pricingRequests;
 
   useEffect(() => {
-    if (!pricingRequests.length) {
+    const currentPricingRequests = pricingRequestsRef.current;
+    if (!currentPricingRequests.length) {
       setEstimates({});
       return undefined;
     }
 
     let canceled = false;
-    const activeNodeIds = new Set(pricingRequests.map((request) => request.nodeId));
+    const activeNodeIds = new Set(currentPricingRequests.map((request) => request.nodeId));
     setEstimates(() =>
-      pricingRequests.reduce<Record<string, WorkspacePricingEstimate & { requestKey: string }>>((next, request) => {
+      currentPricingRequests.reduce<Record<string, WorkspacePricingEstimate & { requestKey: string }>>((next, request) => {
         const estimate = request.kind === 'local'
           ? request.estimate
           : loadingWorkspacePricingEstimate();
@@ -260,7 +297,7 @@ export function useWorkspaceShotPricing({
       }, {})
     );
 
-    const remoteRequests = pricingRequests.filter(
+    const remoteRequests = currentPricingRequests.filter(
       (request): request is WorkspacePricingRequest | WorkspaceImageEstimatePricingRequest | WorkspaceBillingProductPricingRequest => request.kind !== 'local'
     );
     if (!remoteRequests.length) {
@@ -314,7 +351,7 @@ export function useWorkspaceShotPricing({
         setEstimates((current) =>
           results.reduce<Record<string, WorkspacePricingEstimate & { requestKey: string }>>((next, [nodeId, estimate]) => {
             if (activeNodeIds.has(nodeId)) {
-              next[nodeId] = { ...estimate, requestKey: pricingRequests.find((request) => request.nodeId === nodeId)!.key };
+              next[nodeId] = { ...estimate, requestKey: currentPricingRequests.find((request) => request.nodeId === nodeId)!.key };
             }
             return next;
           }, { ...current })
@@ -326,7 +363,7 @@ export function useWorkspaceShotPricing({
       canceled = true;
       window.clearTimeout(timeout);
     };
-  }, [pricingRequests]);
+  }, [pricingRequestSignature]);
 
   // Projection happens during render: an old quote is never actionable for new settings,
   // even before effect cleanup or the next debounced request starts.

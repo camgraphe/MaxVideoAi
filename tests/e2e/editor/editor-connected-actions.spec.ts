@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { openMinimalEditorWorkspace } from './editor-helpers';
+import { canvasNodeControls, openMinimalEditorWorkspace } from './editor-helpers';
 
 test('keyboard creation completes once and explicit settings can close while preserving selection', async ({ page }) => {
   await openMinimalEditorWorkspace(page);
   const nodes = page.locator('.react-flow__node');
   const before = await nodes.count();
-  const trigger = page.locator('[data-canvas-toolbar-menu-id="video"]');
+  const trigger = page.locator('[data-canvas-toolbar-menu-id="add"]');
   await trigger.focus();
   await page.keyboard.press('Enter');
   const create = page.locator('[data-canvas-toolbar-preset-id="generate-video"]');
@@ -13,11 +13,12 @@ test('keyboard creation completes once and explicit settings can close while pre
   await page.keyboard.press('Enter');
   await expect(nodes).toHaveCount(before + 1);
   await expect(page.locator('.react-flow__node.selected')).toHaveCount(1);
-  await page.locator('[data-canvas-selection-settings]').click();
+  const settings = (await canvasNodeControls(page)).locator('[data-canvas-node-inspect-button]');
+  await settings.click();
   await expect(page.locator('[data-canvas-inspector-close]')).toBeVisible();
   await page.locator('[data-canvas-inspector-close]').click();
   await expect(page.locator('.react-flow__node.selected')).toHaveCount(1);
-  await expect(page.locator('[data-canvas-selection-settings]')).toBeFocused();
+  await expect(settings).toBeFocused();
 });
 
 test('track actions are reachable without a context click', async ({ page }) => {
@@ -30,17 +31,20 @@ test('track actions are reachable without a context click', async ({ page }) => 
 test('mobile settings opens the inspector immediately and preserves selection on close', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openMinimalEditorWorkspace(page);
-  await page.locator('[data-canvas-selection-settings]').click();
+  const settings = (await canvasNodeControls(page)).locator('[data-canvas-node-inspect-button]');
+  await settings.click();
   await expect(page.locator('[data-canvas-inspector-close]')).toBeVisible();
   await expect(page.locator('[data-studio-canvas-inspector="true"]')).toBeVisible();
   await page.locator('[data-canvas-inspector-close]').click();
   await expect(page.locator('.react-flow__node.selected')).toHaveCount(1);
-  await expect(page.locator('[data-canvas-selection-settings]')).toBeFocused();
+  await expect(settings).toBeFocused();
 });
 
 test('connection choices connect without dragging, disconnect and undo without removing sources', async ({ page }) => {
   await openMinimalEditorWorkspace(page);
-  await page.getByRole('toolbar', { name: /selection/i }).getByRole('button', { name: 'Connections', exact: true }).click();
+  const selectedNode = await canvasNodeControls(page);
+  await selectedNode.locator('[data-canvas-node-actions-button]').click();
+  await selectedNode.getByRole('menuitem', { name: 'Connections', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Connections', exact: true });
   await dialog.getByRole('button', { name: 'Disconnect', exact: true }).click();
   await expect(page.locator('.react-flow__edge')).toHaveCount(0);

@@ -12,16 +12,21 @@ import type { TimelineSelectionMode } from './TimelineClip';
 import type { TimelineContextMenuState, TimelineTrackContextMenuState } from './TimelineContextMenus';
 import type { TimelineTrackDefinition } from './timelineTrackDefinitions';
 
+const CLIP_CONTEXT_MENU_ESTIMATED_HEIGHT = 132;
+const TRACK_CONTEXT_MENU_ESTIMATED_HEIGHT = 188;
+
 type UseTimelineContextMenusOptions = {
   audioTrackCount: number;
   items: WorkspaceTimelineItem[];
   maxAudioTrackCount: number;
   maxVideoTrackCount: number;
   minAudioTrackCount: number;
+  lockedTrackSet: ReadonlySet<WorkspaceTimelineTrack>;
   onAddAudioTrack: () => void;
   onAddVideoTrack: () => void;
   onDeleteTrack: (track: WorkspaceTimelineTrack) => void;
   onLinkItems: (itemIds: string[]) => void;
+  onToggleTrackLock: (track: WorkspaceTimelineTrack) => void;
   onSelectItem: (itemId: string, mode?: TimelineSelectionMode) => void;
   onUnlinkItems: (itemIds: string[]) => void;
   selectedItemIds: string[];
@@ -35,10 +40,12 @@ export function useTimelineContextMenus({
   maxAudioTrackCount,
   maxVideoTrackCount,
   minAudioTrackCount,
+  lockedTrackSet,
   onAddAudioTrack,
   onAddVideoTrack,
   onDeleteTrack,
   onLinkItems,
+  onToggleTrackLock,
   onSelectItem,
   onUnlinkItems,
   selectedItemIds,
@@ -77,7 +84,7 @@ export function useTimelineContextMenus({
       itemIds: menuItemIds,
       selectedClipCount: menuItems.length,
       x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 224)) : event.clientX,
-      y: viewportHeight ? Math.max(12, Math.min(event.clientY, viewportHeight - 160)) : event.clientY,
+      y: viewportHeight ? Math.max(12, Math.min(event.clientY, viewportHeight - CLIP_CONTEXT_MENU_ESTIMATED_HEIGHT)) : event.clientY,
     });
   }, [items, onSelectItem, selectedItemIds, selectedKeys]);
 
@@ -97,24 +104,27 @@ export function useTimelineContextMenus({
     setTrackMenu({
       canAdd: track.kind === 'video' ? videoTrackCount < maxVideoTrackCount : audioTrackCount < maxAudioTrackCount,
       canDelete: track.kind === 'video' ? videoTrackCount > 1 : audioTrackCount > minAudioTrackCount,
+      isLocked: lockedTrackSet.has(track.id),
       kind: track.kind,
       label: track.label,
       trackId: track.id,
       x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 212)) : event.clientX,
-      y: viewportHeight ? Math.max(12, Math.min(event.clientY, viewportHeight - 160)) : event.clientY,
+      y: viewportHeight ? Math.max(12, Math.min(event.clientY, viewportHeight - TRACK_CONTEXT_MENU_ESTIMATED_HEIGHT)) : event.clientY,
     });
-  }, [audioTrackCount, maxAudioTrackCount, maxVideoTrackCount, minAudioTrackCount, videoTrackCount]);
+  }, [audioTrackCount, lockedTrackSet, maxAudioTrackCount, maxVideoTrackCount, minAudioTrackCount, videoTrackCount]);
 
-  const handleTrackContextMenuAction = useCallback((action: 'add' | 'delete') => {
+  const handleTrackContextMenuAction = useCallback((action: 'add' | 'delete' | 'toggle-lock') => {
     if (!trackMenu) return;
-    if (action === 'add') {
+    if (action === 'toggle-lock') {
+      onToggleTrackLock(trackMenu.trackId);
+    } else if (action === 'add') {
       if (trackMenu.kind === 'video') onAddVideoTrack();
       else onAddAudioTrack();
     } else {
       onDeleteTrack(trackMenu.trackId);
     }
     setTrackMenu(null);
-  }, [onAddAudioTrack, onAddVideoTrack, onDeleteTrack, trackMenu]);
+  }, [onAddAudioTrack, onAddVideoTrack, onDeleteTrack, onToggleTrackLock, trackMenu]);
 
   useEffect(() => {
     if (!clipMenu && !trackMenu) return undefined;

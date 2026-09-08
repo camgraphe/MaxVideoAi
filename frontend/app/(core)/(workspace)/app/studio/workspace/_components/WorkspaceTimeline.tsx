@@ -220,10 +220,12 @@ export function WorkspaceTimeline({
     maxAudioTrackCount,
     maxVideoTrackCount,
     minAudioTrackCount,
+    lockedTrackSet,
     onAddAudioTrack,
     onAddVideoTrack,
     onDeleteTrack,
     onLinkItems,
+    onToggleTrackLock,
     onSelectItem: handleSelectTimelineItem,
     onUnlinkItems,
     selectedItemIds,
@@ -439,6 +441,7 @@ export function WorkspaceTimeline({
       <div
         ref={timelineViewportRef}
         className={styles.timelineViewport}
+        data-timeline-viewport="true"
         onScroll={scheduleVisibleTimelineRangeUpdate}
       >
         <TimelineRuler

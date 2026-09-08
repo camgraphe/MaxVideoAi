@@ -7,6 +7,11 @@ export const STUDIO_FIXTURE_OWNERS = [
   '10000000-0000-4000-8000-000000000001',
   '10000000-0000-4000-8000-000000000002',
 ] as const;
+export const STUDIO_FIXTURE_NON_ADMIN = '10000000-0000-4000-8000-000000000003';
+const STUDIO_FIXTURE_USERS: readonly string[] = [
+  ...STUDIO_FIXTURE_OWNERS,
+  STUDIO_FIXTURE_NON_ADMIN,
+];
 
 type FixtureUser = {
   id: string; aud: string; role: string; email: string; email_confirmed_at: string;
@@ -32,7 +37,7 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
   let origin = '';
 
   function createSession(subject: string, settings: { expiresIn?: number; clientId?: string } = {}): FixtureSession {
-    if (!STUDIO_FIXTURE_OWNERS.some((owner) => owner === subject)) throw new Error('Unknown fixture owner.');
+    if (!STUDIO_FIXTURE_USERS.includes(subject)) throw new Error('Unknown fixture user.');
     const issuedAt = Math.floor(Date.now() / 1000);
     const expiresIn = settings.expiresIn ?? 3600;
     const sessionId = randomUUID();

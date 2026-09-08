@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   assertNoEditorClientErrors,
+  canvasNodeControls,
   clickTimelineTrackAtSecond,
   dragTimelineClipEnd,
   hasTimelineOverlap,
@@ -8,6 +9,7 @@ import {
   openFreshEditorWorkspace,
   timelineClipState,
   timelineItemCount,
+  timelinePixelsPerSecond,
   trackEditorClientErrors,
   type EditorClientErrors,
 } from './editor-helpers';
@@ -99,19 +101,25 @@ async function placeCanvasToolbarBlock({
   const existingIds = new Set(await page.locator('.react-flow__node').evaluateAll((nodes) => (
     nodes.map((node) => node.getAttribute('data-id')).filter((id): id is string => Boolean(id))
   )));
-  await page.getByRole('button', { name: menuLabel }).click();
+  await page.getByRole('button', { name: menuLabel, exact: true }).click();
   const menu = page.getByRole('menu', { name: menuLabel });
   await expect(menu).toBeVisible();
-  await menu.locator(`[data-canvas-toolbar-block-id="${blockId}"]`).click();
-
-  const pane = page.locator('.react-flow__pane');
-  const paneBox = await pane.boundingBox();
-  expect(paneBox).not.toBeNull();
-  if (!paneBox) throw new Error('Canvas pane is not measurable.');
-  await page.mouse.click(
-    paneBox.x + paneBox.width * xRatio,
-    paneBox.y + paneBox.height * yRatio
+  const block = menu.locator(`[data-canvas-toolbar-block-id="${blockId}"]`);
+  await block.scrollIntoViewIfNeeded();
+  const blockBox = await block.boundingBox();
+  const canvasBox = await page.locator('.react-flow').boundingBox();
+  expect(blockBox).not.toBeNull();
+  expect(canvasBox).not.toBeNull();
+  if (!blockBox) throw new Error(`Toolbar block ${blockId} is not measurable.`);
+  if (!canvasBox) throw new Error('Canvas is not measurable.');
+  await page.mouse.move(blockBox.x + blockBox.width / 2, blockBox.y + blockBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    canvasBox.x + canvasBox.width * xRatio,
+    canvasBox.y + canvasBox.height * yRatio,
+    { steps: 12 }
   );
+  await page.mouse.up();
 
   await expect.poll(() => page.locator('.react-flow__node').count()).toBe(existingIds.size + 1);
   const nextIds = await page.locator('.react-flow__node').evaluateAll((nodes) => (
@@ -170,7 +178,7 @@ test('blank project creates a connected multi-output image workflow and inserts 
 
   const promptNodeId = await placeCanvasToolbarBlock({
     page,
-    menuLabel: 'Text tools',
+    menuLabel: 'Add',
     blockId: 'free-text',
     xRatio: 0.12,
     yRatio: 0.4,
@@ -180,7 +188,7 @@ test('blank project creates a connected multi-output image workflow and inserts 
 
   const imageNodeId = await placeCanvasToolbarBlock({
     page,
-    menuLabel: 'Image tools',
+    menuLabel: 'Add',
     blockId: 'generate-image',
     xRatio: 0.82,
     yRatio: 0.58,
@@ -194,9 +202,14 @@ test('blank project creates a connected multi-output image workflow and inserts 
   });
   await expect(page.locator('.react-flow__edge')).toHaveCount(1);
 
-  const outputCountSelect = imageNode.locator('select:has(option[value="4"])');
+  const nodeControls = await canvasNodeControls(page, imageNode);
+  await nodeControls.locator('[data-canvas-node-inspect-button]').click();
+  const inspector = page.locator('[data-studio-canvas-inspector="true"]');
+  await expect(inspector).toBeVisible();
+  const outputCountSelect = inspector.locator('select:has(option[value="4"])');
   await outputCountSelect.selectOption('4');
   await expect(outputCountSelect).toHaveValue('4');
+  await page.locator('[data-canvas-inspector-close]').click();
 
   const generateButton = imageNode.locator('button:has([data-shot-generate-label="true"])');
   await expect(generateButton).toBeEnabled();
@@ -247,7 +260,7 @@ test('creator generates a fixture shot in mock mode and sends its output to the 
   await expect(page.locator('[data-editor-status="true"]')).toContainText('Seedance 2.0');
   const outputNode = page.locator('.react-flow__node[data-id^="output-shot-01-"]');
   await expect(outputNode).toHaveCount(1);
-  const sendToTimelineButton = outputNode.locator('button');
+  const sendToTimelineButton = outputNode.getByRole('button', { name: 'Insert at playhead' });
   await expect(sendToTimelineButton).toBeEnabled();
 
   await switchWorkspaceMode(page, 'viewer');
@@ -273,10 +286,12 @@ test('editor trims linked fixture clips and verifies active-sequence export read
   const audioClip = page.locator('[data-timeline-item="timeline-output-02-audio"]');
   await expect(videoClip).toHaveAttribute('data-linked-group', 'timeline-output-02');
   await expect(audioClip).toHaveAttribute('data-linked-group', 'timeline-output-02');
+  const initialDuration = (await timelineClipState(page, 'timeline-output-02')).duration;
+  expect(initialDuration).toBeGreaterThan(2);
 
-  await dragTimelineClipEnd(page, 'timeline-output-02', -68);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(6);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).duration).toBe(6);
+  await dragTimelineClipEnd(page, 'timeline-output-02', -2 * await timelinePixelsPerSecond(page));
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(initialDuration - 2);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).duration).toBe(initialDuration - 2);
   await expect.poll(() => hasTimelineOverlap(page, 'video')).toBe(false);
   await expect.poll(() => hasTimelineOverlap(page, 'audio')).toBe(false);
 

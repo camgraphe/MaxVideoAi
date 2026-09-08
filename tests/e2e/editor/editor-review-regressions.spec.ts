@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { createStarterWorkspaceTemplate } from '../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from '../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
-import { clickTimelineClip, dragTimelineClip, openEditorWorkspace, timelineClipStates } from './editor-helpers';
+import { canvasNodeControls, clickTimelineClip, dragTimelineClip, openEditorWorkspace, timelineClipStates } from './editor-helpers';
 
 const videoUrl = '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4';
 const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
@@ -43,12 +43,14 @@ async function activateTimelineWithHistory(page: Page) {
   return timelineClipStates(page);
 }
 
-for (const entry of ['selection actions', 'input connector']) {
+for (const entry of ['node actions', 'input connector']) {
   test(`connections from ${entry} restore the canvas undo target after timeline selection`, async ({ page }) => {
     await openReviewWorkspace(page);
     const timelineBefore = await activateTimelineWithHistory(page);
-    if (entry === 'selection actions') {
-      await page.getByRole('toolbar', { name: 'Selection actions' }).getByRole('button', { name: 'Connections', exact: true }).click();
+    if (entry === 'node actions') {
+      const node = await canvasNodeControls(page);
+      await node.locator('[data-canvas-node-actions-button]').click();
+      await node.getByRole('menuitem', { name: 'Connections', exact: true }).click();
     } else {
       // The Prompt slot is full; its management action must remain enabled.
       await page.locator('[data-canvas-connect-handle="prompt"]').click();
@@ -78,8 +80,9 @@ test(`selection Copy works with clipboard API ${clipboardMode} and targets canva
   }
   await openReviewWorkspace(page);
   const timelineBefore = await activateTimelineWithHistory(page);
-  await page.getByRole('toolbar', { name: 'Selection actions' }).getByRole('button', { name: 'Actions', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Copy', exact: true }).click();
+  const selectedNode = await canvasNodeControls(page);
+  await selectedNode.locator('[data-canvas-node-actions-button]').click();
+  await selectedNode.getByRole('menuitem', { name: 'Copy', exact: true }).click();
   await expect(page.locator('[data-active-editor-surface]')).toHaveAttribute('data-active-editor-surface', 'canvas');
   await expect(page.getByRole('menuitem', { name: 'Copy', exact: true })).toHaveCount(0);
   await page.keyboard.press(`${modifier}+v`);
@@ -96,9 +99,10 @@ test('selection Copy reports failure when both browser clipboard methods are blo
     document.execCommand = () => false;
   });
   await openReviewWorkspace(page);
-  await page.getByRole('toolbar', { name: 'Selection actions' }).getByRole('button', { name: 'Actions', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Copy', exact: true }).click();
-  await expect(page.getByRole('toolbar', { name: 'Selection actions' }).getByRole('alert')).toHaveText('Copy blocked. Select the block and press Ctrl/Cmd+C.');
+  const selectedNode = await canvasNodeControls(page);
+  await selectedNode.locator('[data-canvas-node-actions-button]').click();
+  await selectedNode.getByRole('menuitem', { name: 'Copy', exact: true }).click();
+  await expect(selectedNode.getByRole('alert')).toHaveText('Copy blocked. Select the block and press Ctrl/Cmd+C.');
   await expect(page.locator('.react-flow__node')).toHaveCount(4);
 });
 

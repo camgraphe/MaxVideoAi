@@ -39,7 +39,9 @@ import {
 } from '../_controllers/useCanvasController';
 import {
   resolveWorkspaceHandleDropDraft,
+  workspaceConnectionFromHandleAttempt,
   type WorkspaceHandleDropDirection,
+  type WorkspaceHandleDropRequest,
 } from '../_lib/workspace-handle-drop';
 import { createWorkspaceGraphClipboardSnapshot } from '../_lib/workspace-graph-clipboard';
 import { shouldHandleCanvasKeyboardShortcut } from '../_lib/workspace-canvas-shortcuts';
@@ -64,6 +66,7 @@ import {
 } from './canvas/CanvasNavigatorPanel';
 import { CanvasMap } from './canvas/CanvasMap';
 import { CanvasSelectionActions } from './canvas/CanvasSelectionActions';
+import { CanvasNodeActionsProvider } from './canvas/CanvasNodeActionsContext';
 import { CanvasConnectionPicker } from './canvas/CanvasConnectionPicker';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
@@ -77,16 +80,10 @@ export type {
   WorkspaceCanvasTextPasteRequest,
   WorkspacePaletteDropRequest,
 } from '../_controllers/useCanvasController';
+export type { WorkspaceHandleDropRequest } from '../_lib/workspace-handle-drop';
 
 const DEFAULT_CANVAS_NODE_CENTER_WIDTH = 210;
 const DEFAULT_CANVAS_NODE_CENTER_HEIGHT = 132;
-
-export type WorkspaceHandleDropRequest = {
-  sourceNodeId: string;
-  handleId: WorkspaceEdgeKind;
-  handleType: WorkspaceHandleDropDirection;
-  position: XYPosition;
-};
 
 type WorkspaceCanvasProps = {
   projectId?: string;
@@ -100,6 +97,7 @@ type WorkspaceCanvasProps = {
   onNodesChange: (changes: NodeChange<WorkspaceGraphNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<WorkspaceGraphEdge>[]) => void;
   onConnect: (connection: Connection) => void;
+  onInvalidConnection: (connection: Connection) => void;
   isValidConnection: (connection: Connection | WorkspaceGraphEdge) => boolean;
   onCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
@@ -114,7 +112,7 @@ type WorkspaceCanvasProps = {
   onInspectNode: (nodeId: string | null) => void;
   toolbar: Omit<
     CanvasFloatingToolbarProps,
-    'copy' | 'onCreateBlock' | 'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
+    'copy' | 'onCreateBlock' | 'onSelectionToolChange' | 'selectionTool'
   >;
   canvasNavigator: Omit<CanvasNavigatorPanelProps, 'copy'>;
   guide: WorkspaceGuideController;
@@ -137,6 +135,7 @@ export function WorkspaceCanvas({
   onNodesChange,
   onEdgesChange,
   onConnect,
+  onInvalidConnection,
   isValidConnection,
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
@@ -172,6 +171,7 @@ export function WorkspaceCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onInvalidConnection={onInvalidConnection}
         isValidConnection={isValidConnection}
         onCreateNodeFromHandleDrop={onCreateNodeFromHandleDrop}
         onCreateNodeFromPaletteDrop={onCreateNodeFromPaletteDrop}
@@ -309,6 +309,7 @@ function WorkspaceCanvasInner({
   onNodesChange,
   onEdgesChange,
   onConnect,
+  onInvalidConnection,
   isValidConnection,
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
@@ -667,6 +668,23 @@ function WorkspaceCanvasInner({
     onCanvasInteraction();
   }, [onCanvasInteraction, onSelectedNodeChange, onSelectedNodeSync, reactFlow, selectedNodeIds, syncSelectedNodeIds]);
 
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    void reactFlow.deleteElements({ nodes: [{ id: nodeId }] });
+    syncSelectedNodeIds(selectedNodeIds.filter((id) => id !== nodeId));
+    if (selectedNodeIdRef.current === nodeId) {
+      selectedNodeIdRef.current = null;
+      onSelectedNodeChange(null);
+      onSelectedNodeSync(null);
+    }
+    onCanvasInteraction();
+  }, [onCanvasInteraction, onSelectedNodeChange, onSelectedNodeSync, reactFlow, selectedNodeIds, syncSelectedNodeIds]);
+
+  const handleCopyNode = useCallback(async (nodeId: string) => {
+    onCanvasInteraction();
+    onCopySelectedNodes([nodeId]);
+    return writeCanvasClipboardMarker();
+  }, [onCanvasInteraction, onCopySelectedNodes]);
+
   const handleConnectStart = useCallback<OnConnectStart>(
     (event, params) => {
       onCanvasInteraction();
@@ -714,6 +732,14 @@ function WorkspaceCanvasInner({
     (event, connectionState) => {
       const preview = handleDropPreviewRef.current;
       updateHandleDropPreview(null);
+      const attemptedConnection = workspaceConnectionFromHandleAttempt({
+        fromHandle: connectionState.fromHandle,
+        toHandle: connectionState.toHandle,
+      });
+      if (!connectionState.isValid && attemptedConnection) {
+        onInvalidConnection(attemptedConnection);
+        return;
+      }
       if (!preview) return;
       if (!preview.draft || connectionState.isValid || connectionState.toHandle || droppedOnExistingGraphElement(event)) return;
 
@@ -726,7 +752,7 @@ function WorkspaceCanvasInner({
         position: reactFlow.screenToFlowPosition(pointer),
       });
     },
-    [onCreateNodeFromHandleDrop, reactFlow, updateHandleDropPreview]
+    [onCreateNodeFromHandleDrop, onInvalidConnection, reactFlow, updateHandleDropPreview]
   );
 
   return (
@@ -738,6 +764,15 @@ function WorkspaceCanvasInner({
       aria-label={copy.ariaLabel}
       onClickCapture={handleCanvasClickCapture}
     >
+      <CanvasNodeActionsProvider
+        isSingleSelection={selectedNodeIds.length === 1}
+        onConnections={(nodeId) => {
+          onCanvasInteraction();
+          setConnectionTarget({ id: nodeId });
+        }}
+        onCopyNode={handleCopyNode}
+        onDeleteNode={handleDeleteNode}
+      >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -802,6 +837,7 @@ function WorkspaceCanvasInner({
         {paletteDragPreview ? <CanvasPaletteDragPreview preview={paletteDragPreview} /> : null}
         <CanvasMap copy={copy.map} edges={edges} nodes={nodes} />
       </ReactFlow>
+      </CanvasNodeActionsProvider>
       <CanvasGuideLayer
         canvasShellRef={canvasShellRef}
         copy={copy.guide}
@@ -821,11 +857,6 @@ function WorkspaceCanvasInner({
           onCreateNodeFromPaletteDrop({ kind, presetId, position: canvasCenterFlowPosition() });
         }}
         selectionTool={selectionTool}
-        selectedNodeCount={selectedNodeIds.length}
-        onDeleteSelectedNodes={() => {
-          onCanvasInteraction();
-          handleDeleteSelectedNodes();
-        }}
         onSelectionToolChange={(tool) => {
           onCanvasInteraction();
           setSelectionTool(tool);
@@ -843,8 +874,6 @@ function WorkspaceCanvasInner({
         key={JSON.stringify(selectedNodeIds.slice().sort())}
         nodes={nodes.filter((node) => selectedNodeIds.includes(node.id))}
         copy={copy.nodes}
-        onSettings={onInspectNode}
-        onConnections={(id) => { onCanvasInteraction(); setConnectionTarget({ id }); }}
         onCopy={() => { onCanvasInteraction(); onCopySelectedNodes(selectedNodeIds); return writeCanvasClipboardMarker(); }}
         onDelete={handleDeleteSelectedNodes}
       />
@@ -857,6 +886,7 @@ function WorkspaceCanvasInner({
         copy={copy.nodes}
         isValidConnection={isValidConnection}
         onConnect={onConnect}
+        onCreateAndConnect={onCreateNodeFromHandleDrop}
         onDisconnect={(id) => onEdgesChange([{ id, type: 'remove' }])}
         onClose={() => setConnectionTarget(null)}
       /> : null}

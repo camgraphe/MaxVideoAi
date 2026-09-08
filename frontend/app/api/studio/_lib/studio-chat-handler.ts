@@ -1,29 +1,24 @@
 import type { NextRequest } from 'next/server';
-import { AdminAuthError, requireAdmin } from '@/server/admin';
+import {
+  resolveStudioApiAccess,
+  type StudioAccessDecision,
+} from '@/server/studio/access';
 import { studioJson } from './studio-route-utils';
-
-type StudioChatAccess = { userId: string | null; deniedStatus?: number };
-
-async function resolveStudioChatAdmin(request: NextRequest): Promise<StudioChatAccess> {
-  try {
-    return { userId: await requireAdmin(request) };
-  } catch (error) {
-    return {
-      userId: null,
-      deniedStatus: error instanceof AdminAuthError ? error.status : 500,
-    };
-  }
-}
 
 export async function handleStudioChatPost(
   req: NextRequest,
-  resolveAuth: (request: NextRequest) => Promise<StudioChatAccess> = resolveStudioChatAdmin
+  resolveAccess: (request: NextRequest) => Promise<StudioAccessDecision> = resolveStudioApiAccess,
 ) {
-  const { userId, deniedStatus } = await resolveAuth(req);
-  if (!userId) {
-    const status = deniedStatus ?? 401;
-    const error = status === 403 ? 'FORBIDDEN' : status === 401 ? 'UNAUTHORIZED' : 'ACCESS_CHECK_FAILED';
-    return studioJson({ ok: false, error, message: status === 403 ? 'Administrator access required.' : 'Authentication required.' }, { status });
+  const access = await resolveAccess(req);
+  if (!access.ok) {
+    const message = access.status === 403
+      ? 'Administrator access required.'
+      : access.status === 404
+        ? 'Studio is unavailable.'
+        : access.status === 500
+          ? 'Studio access could not be verified.'
+          : 'Authentication required.';
+    return studioJson({ ok: false, error: access.error, message }, { status: access.status });
   }
 
   // Chat has no canonical quote/reservation contract yet. Never trust a client

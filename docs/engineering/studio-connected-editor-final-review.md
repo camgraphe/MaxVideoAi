@@ -8,6 +8,11 @@ Les commits suivants ne contiennent que preuves et documentation de remise.
 Revue produit indépendante Sol high : **Approved**, aucun finding ouvert.
 Cela ne constitue pas une autorisation de lancement en production.
 
+> Complément après revue visuelle utilisateur : le lot compact postérieur au
+> produit ci-dessous est documenté dans
+> `docs/engineering/studio-feedback-refinement-review.md`. Il ne réécrit pas les
+> preuves historiques de ce manifeste.
+
 ## Ce qui fonctionne
 
 - Canevas et blocs refondus, sélection lisible, menus bornés, inspecteur explicite,

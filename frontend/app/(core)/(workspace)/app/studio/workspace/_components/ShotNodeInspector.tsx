@@ -127,7 +127,10 @@ export function ShotNodeInspector({
       )}
 
       <div className={styles.settingsGrid}>
-        {genericWorkspaceShotControlFields(policy.controlFields).map((field) => (
+        {genericWorkspaceShotControlFields(
+          policy.controlFields,
+          shot.toolKind !== 'character-builder' && shot.toolKind !== 'angle'
+        ).map((field) => (
           <WorkspaceControlField
             key={field}
             copy={controlCopy}

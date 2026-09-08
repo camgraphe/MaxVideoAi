@@ -90,6 +90,7 @@ const studioCanvasTemplatesApiPath = join(studioApiDir, 'canvas-templates/route.
 const studioCanvasTemplateApiPath = join(studioApiDir, 'canvas-templates/[templateId]/route.ts');
 const studioChatApiPath = join(studioApiDir, 'chat/route.ts');
 const studioRouteUtilsPath = join(studioApiDir, '_lib/studio-route-utils.ts');
+const studioAccessPath = join(studioServerDir, 'access.ts');
 const studioServerContractsPath = join(studioServerDir, 'contracts.ts');
 const studioChatServerPath = join(studioServerDir, 'chat.ts');
 const studioServerSchemaPath = join(studioServerDir, 'schema.ts');
@@ -136,6 +137,7 @@ const workspaceCanvasInspectorPanelPath = join(workspaceDir, '_components/Worksp
 const workspaceTimelineInspectorPanelPath = join(workspaceDir, '_components/WorkspaceTimelineInspectorPanel.tsx');
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
 const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
+const appSiteMenuPath = join(root, 'frontend/components/app/AppSiteMenu.client.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const shotNodeInspectorPath = join(workspaceDir, '_components/ShotNodeInspector.tsx');
 const chatInspectorPath = join(workspaceDir, '_components/ChatNodeInspector.tsx');
@@ -610,6 +612,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.equal(existsSync(studioCanvasTemplateApiPath), false, 'saved canvases should not expose a global mutation API');
   assert.ok(existsSync(studioChatApiPath), 'Studio chat should use an authenticated route handler');
   assert.ok(existsSync(studioRouteUtilsPath), 'studio route handlers should share auth/database response utilities');
+  assert.ok(existsSync(studioAccessPath), 'Studio page and API entry points should share one access policy');
   assert.ok(existsSync(studioServerContractsPath), 'studio server persistence contracts should live under frontend/src/server/studio');
   assert.ok(existsSync(studioChatServerPath), 'Studio chat provider calls should live in server-only Studio code');
   assert.ok(existsSync(studioServerSchemaPath), 'studio server schema helper should live under frontend/src/server/studio');
@@ -902,12 +905,13 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(styleSource, /\.studioSessionPill/, 'main editor CSS should no longer own account header styles after modularization');
   assert.doesNotMatch(styleSource, /\.viewerFocus \.librarySidebar/, 'main CSS should not own Viewer sidebar compatibility rules after sidebar style extraction');
   assert.doesNotMatch(styleSource, /\.viewerFocus \.panelSubtitle/, 'main CSS should not own Viewer panel subtitle compatibility rules after sidebar style extraction');
-  assert.match(studioHeaderSessionSource, /useHeaderAccountState/, 'Studio header session should reuse the shared account and wallet state hook');
+  assert.match(workspaceEditorTopbarSource, /useHeaderAccountState/, 'Studio topbar should resolve the shared account and wallet state once');
+  assert.match(workspaceEditorTopbarSource, /AppSiteMenuButton/, 'Studio topbar should reuse the main app menu instead of duplicating its destinations');
   assert.match(studioHeaderSessionSource, /walletPromptOpen/, 'Studio wallet status should open a top-up prompt inside the editor header');
   assert.match(studioHeaderSessionSource, /studioCopy\.topbar\.walletTopUpCta/, 'Studio wallet prompt should render route-local Studio copy from the topbar owner');
   assert.doesNotMatch(studioHeaderSessionSource, /useI18n\(/, 'Studio header session should not resolve localized copy independently of its topbar owner');
   assert.match(studioHeaderSessionSource, /href="\/billing"/, 'Studio wallet prompt CTA should link to billing top-up');
-  assert.match(studioHeaderSessionSource, /NAV_ITEMS\.map/, 'Studio session pill should expose the same account navigation menu as the main app');
+  assert.doesNotMatch(studioHeaderSessionSource, /NAV_ITEMS|primaryNavigation/, 'Studio account pill should not duplicate the main app navigation menu');
   assert.match(studioHeaderSessionSource, /handleSignOut/, 'Studio session menu should keep the shared sign-out action inside the account menu');
   assert.match(studioHeaderSessionSource, /aria-label=\{studioCopy\.topbar\.exitToProjects\}/, 'Studio header exit control should return to project selection instead of signing out');
   assert.match(workspaceEditorTopbarSource, /<StudioHeaderSession[\s\S]*studioCopy=\{studioCopy\}/, 'Studio header session should receive route-local Studio copy from the topbar owner');
@@ -917,7 +921,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceEditorLayoutSource, /onExitToProjects=\{shell\.handleExitToProjects\}/, 'editor layout should wire the save-and-return-to-projects action into the header');
   assert.match(workspaceSource, /useWorkspaceShellActions/, 'workspace should delegate shell-level actions to a route-local hook');
   assert.match(exportStateHookSource, /export function useWorkspaceExportState/, 'workspace export state hook should expose a focused orchestration boundary');
-  assert.match(shellActionsHookSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
+  assert.match(shellActionsHookSource, /handleNavigateFromStudio\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page through the saved navigation boundary');
+  assert.match(workspaceEditorLayoutSource, /onAppNavigate=\{shell\.handleNavigateFromStudio\}/, 'main app menu navigation should pass through the saved Studio navigation boundary');
   assert.match(shellActionsHookSource, /saveStudioWorkspaceToApi/, 'workspace shell action hook should save project plus sequences before returning to projects');
   assert.match(workspaceEditorLayoutSource, /focusMode === 'viewer'[\s\S]*WorkspaceProjectMediaPanel/, 'Viewer mode should own the project media panel');
   assert.match(workspaceEditorLayoutSource, /canvasEditorBody/, 'Canvas mode should use a widened body grid with no left template sidebar');
@@ -1057,9 +1062,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(shellStyleSource, /\.canvasEditorBodyInspectorOpen[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*340px/, 'Canvas body should expand the inspector column when a node is selected');
   assert.match(shellStyleSource, /\.canvasInspectorSlot[\s\S]*transition:/, 'Canvas inspector slot should animate open and close with lightweight transitions');
   assert.match(workspaceEditorLayoutSource, /WorkspaceTimeline/, 'editor layout should compose the bottom timeline');
-  assert.match(workspaceEditorTopbarSource, /\/assets\/branding\/logo-mark\.svg/, 'editor header should use the real MaxVideoAI logo mark');
+  assert.match(readFileSync(appSiteMenuPath, 'utf8'), /\/assets\/branding\/logo-mark\.svg/, 'shared app menu should provide the real MaxVideoAI logo mark to the editor header');
   assert.doesNotMatch(workspaceEditorTopbarSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
-  assert.match(shellStyleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor shell CSS');
+  assert.match(shellStyleSource, /:global\(\.app-site-trigger\)/, 'editor shell should adapt the shared app menu trigger without changing global app CSS');
   assert.match(workspaceEditorTopbarSource, /focusMode === 'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
   assert.match(workspaceEditorTopbarSource, /studioCopy\.topbar\.viewer/, 'top switch should label the montage surface from localized Studio copy');
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
@@ -1183,6 +1188,7 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
   const projectSequencesApiSource = source(studioProjectSequencesApiPath);
   const projectSequenceApiSource = source(studioProjectSequenceApiPath);
   const routeUtilsSource = source(studioRouteUtilsPath);
+  const accessSource = source(studioAccessPath);
   const schemaSource = source(studioServerSchemaPath);
   const repositorySource = source(studioServerRepositoryPath);
   const migrationSource = source(studioMigrationPath);
@@ -1199,7 +1205,9 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
   assert.match(projectSequenceApiSource, /STUDIO_SEQUENCE_LAST_SEQUENCE/, 'sequence deletion should reject deleting the final project sequence');
   assert.equal(existsSync(studioCanvasTemplatesApiPath), false, 'unused global canvas-template collection API should be removed');
   assert.equal(existsSync(studioCanvasTemplateApiPath), false, 'unused global canvas-template detail API should be removed');
-  assert.match(routeUtilsSource, /getRouteAuthContext/, 'studio APIs must require the existing route auth context');
+  assert.match(routeUtilsSource, /resolveStudioApiAccess/, 'studio APIs must use the shared Studio access policy');
+  assert.match(accessSource, /getRouteAuthContext/, 'the shared Studio access policy must retain bearer and cookie route authentication');
+  assert.match(accessSource, /isUserAdmin/, 'the shared Studio access policy must enforce the current admin gate');
   assert.match(routeUtilsSource, /isDatabaseConfigured/, 'studio APIs should return a clean unavailable response when DATABASE_URL is missing');
   assert.match(routeUtilsSource, /DATABASE_NOT_CONFIGURED/, 'database-missing responses should be explicit for client fallback logic');
   assert.match(schemaSource, /studio_projects/, 'server schema should create the studio_projects table');
@@ -1997,10 +2005,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(renderNodesHookSource, /workspaceConnectionCapacity/, 'render node hook should own connector capacity labels for rendered nodes');
   assert.match(nodeSource, /workspace-shot-input-dock/, 'generate block input handles should delegate to a focused dock component');
   assert.match(shotInputDockSource, /function ShotInputDock/, 'generate block input handles should render in a dedicated bottom dock');
-  assert.match(shotInputDockSource, /capacityLabel/, 'generate block input handles should render remaining/max counts for multi-reference connectors');
-  assert.match(shotInputDockSource, /connectorDescription/, 'generate block input handles should keep remaining capacity attached to the connector description');
-  assert.match(shotInputDockSource, /aria-label=\{disabledReason \?\? connectorDescription\}/, 'generate block input rows should expose remaining capacity when no disabled reason applies');
-  assert.match(shotInputDockSource, /remainingCount === 0/, 'generate block input handles should mark full connectors as unavailable');
+  assert.match(shotInputDockSource, /usedCapacity/, 'generate block input handles should render used/max counts for policy connectors');
+  assert.match(shotInputDockSource, /connectorDescription/, 'generate block input handles should keep used capacity attached to the connector description');
+  assert.match(shotInputDockSource, /aria-label=\{disabledReason \?\? connectorDescription\}/, 'generate block input rows should expose capacity when no disabled reason applies');
+  assert.match(shotInputDockSource, /status === 'full'/, 'generate block input handles should mark full connectors as unavailable');
   assert.match(nodeSource, /ShotNodeControls[\s\S]*ShotInputDock/, 'generate block connector dock should render below the inline generation controls');
   assert.match(shotInputDockSource, /styles\.shotInputDock/, 'generate block should place connector labels in a bottom dock, not over the preview');
   assert.match(shotInputDockSource, /outputHandles/, 'generate block output handles should render in the compact connector dock');
@@ -2612,7 +2620,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
   assert.doesNotMatch(workspaceEditorTopbarSource, /onOpenExportDialog|exportButton|studioCopy\.topbar\.export/, 'workspace topbar should not own timeline export actions');
-  assert.match(workspaceEditorTopbarSource, /<div className=\{styles\.topbarRight\}>[\s\S]*onClick=\{onToggleMockMode\}[\s\S]*<StudioHeaderSession/, 'workspace mock toggle should render to the left of the wallet/session cluster');
+  assert.doesNotMatch(workspaceEditorTopbarSource, /onToggleMockMode|mockAria/, 'workspace topbar should not expose a Mock mode control');
+  assert.match(workspaceSource, /useStudioGenerationMode\(\) === 'mock'/, 'workspace should resolve its hidden non-production test simulation through the focused generation mode boundary');
   assert.doesNotMatch(workspaceEditorLayoutSource, /<WorkspaceEditorTopbar(?:(?!\/>)[\s\S])*onOpenExportDialog=/, 'workspace layout should not wire export into the topbar');
   assert.match(workspaceEditorLayoutSource, /<WorkspaceTimeline[\s\S]*onOpenExportDialog=\{shell\.handleOpenExportDialog\}/, 'workspace layout should wire export into the timeline toolbar');
   assert.match(timelineSource, /onOpenExportDialog/, 'timeline should receive the export action from the workspace shell controller');

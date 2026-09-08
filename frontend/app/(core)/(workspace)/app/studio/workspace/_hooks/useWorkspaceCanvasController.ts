@@ -160,6 +160,7 @@ export function useWorkspaceCanvasController({
     handleCreateNodeFromHandleDrop,
     handleCreateNodeFromPaletteDrop,
     handleCopySelectedNodes,
+    handleInvalidConnection,
     handleOpenAssetLibrary,
     handlePasteCanvasClipboard,
     handleSelectLibraryAsset,
@@ -180,6 +181,7 @@ export function useWorkspaceCanvasController({
     setNotice,
     setSelectedNodeId,
     studioCanvasNodeCopy: studioCanvasCopy.nodes,
+    studioCanvasPolicyCopy: studioCanvasCopy.controls.policy,
     studioNotices,
   });
 
@@ -327,6 +329,7 @@ export function useWorkspaceCanvasController({
     handleDuplicateUserCanvasTemplate,
     handleGenerateShot,
     handleRunChat,
+    handleInvalidConnection,
     handleInvalidNodeDropToTimeline,
     handleOpenAssetLibrary,
     handlePasteCanvasClipboard,

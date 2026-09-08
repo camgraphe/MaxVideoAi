@@ -13,7 +13,7 @@ export function workspaceCanvasFitViewOptions(params: {
       padding: {
         top: '8px',
         right: '152px',
-        bottom: '8px',
+        bottom: '64px',
         left: '312px',
       },
     };

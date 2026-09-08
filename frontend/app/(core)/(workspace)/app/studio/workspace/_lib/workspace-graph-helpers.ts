@@ -26,9 +26,24 @@ type WorkspaceConnectionLike = {
 
 export type WorkspaceConnectionRejection =
   | { code: 'missing_endpoint' }
+  | { code: 'endpoint_not_found'; endpoint: 'source' | 'target' }
   | { code: 'self_link' }
-  | { code: 'incompatible_connectors' }
+  | { code: 'duplicate_connection' }
+  | { code: 'source_handle_missing' }
+  | { code: 'target_unsupported' }
+  | { code: 'model_unsupported' }
+  | { code: 'incompatible_family' }
+  | { code: 'connector_disabled'; connectorKind: WorkspaceEdgeKind; connectorLabel: string; reason?: string }
   | { code: 'connector_full'; connectorKind: WorkspaceEdgeKind; connectorLabel: string };
+
+export type WorkspaceConnectionSlotStatus = 'available' | 'connected' | 'full' | 'disabled' | 'missing_required';
+
+export type WorkspaceConnectionSlot = WorkspaceInputConnector & {
+  usedCount: number;
+  maxCount: number;
+  remainingCount: number;
+  status: WorkspaceConnectionSlotStatus;
+};
 
 function persistedInputKinds(edge: WorkspaceGraphEdge): WorkspaceEdgeKind[] {
   const semanticKind = edge.data?.kind ?? inferWorkspaceEdgeKind(edge.sourceHandle, edge.targetHandle);
@@ -154,11 +169,15 @@ export function connectorForTarget({
   targetHandle,
   capabilities,
   connectedInputs = [],
+  policyCopy,
+  edgeLabel,
 }: {
   targetNode: WorkspaceGraphNode | null;
   targetHandle: WorkspaceEdgeKind;
   capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
   connectedInputs?: WorkspaceEdgeKind[];
+  policyCopy?: StudioCopy['canvas']['controls']['policy'];
+  edgeLabel?: (kind: WorkspaceEdgeKind) => string;
 }): WorkspaceInputConnector | null {
   if (!targetNode) return null;
   if (targetNode.data.kind === 'shot' && targetNode.data.shot) {
@@ -167,7 +186,9 @@ export function connectorForTarget({
       settings: targetNode.data.shot,
       capability,
       connectedInputs,
-    }).inputConnectors.find((connector) => connector.kind === targetHandle && !connector.disabledReason) ?? null;
+      policyCopy,
+      edgeLabel,
+    }).inputConnectors.find((connector) => connector.kind === targetHandle) ?? null;
   }
   if (targetNode.data.kind === 'output' && targetHandle === 'generated_output') {
     return {
@@ -181,16 +202,76 @@ export function connectorForTarget({
   return null;
 }
 
+export function projectWorkspaceConnectionSlots({
+  targetNode,
+  edges,
+  capabilities,
+}: {
+  targetNode: WorkspaceGraphNode;
+  edges: WorkspaceGraphEdge[];
+  capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
+}): WorkspaceConnectionSlot[] {
+  const connectedKinds = connectedInputKinds(targetNode.id, edges);
+  const counts = connectedInputCounts(targetNode.id, edges);
+  let connectors: WorkspaceInputConnector[] = [];
+  if (targetNode.data.kind === 'shot' && targetNode.data.shot) {
+    const capability = getWorkspaceModelCapability(targetNode.data.shot.modelId, capabilities);
+    if (!capability) return [];
+    connectors = resolveWorkspaceBlockPolicy({
+      settings: targetNode.data.shot,
+      capability,
+      connectedInputs: connectedKinds,
+    }).inputConnectors;
+  } else if (targetNode.data.kind === 'output') {
+    connectors = [connectorForTarget({
+      targetNode,
+      targetHandle: 'generated_output',
+      capabilities,
+      connectedInputs: connectedKinds,
+    })].filter((connector): connector is WorkspaceInputConnector => Boolean(connector));
+  } else {
+    return [];
+  }
+
+  return connectors.map((connector) => {
+    const usedCount = counts.get(connector.kind) ?? 0;
+    const capacity = workspaceConnectionCapacity({ connector, connectedCount: usedCount });
+    const minimum = connector.minCount ?? (connector.required ? 1 : 0);
+    const status: WorkspaceConnectionSlotStatus = connector.disabledReason
+      ? 'disabled'
+      : capacity.isFull
+        ? 'full'
+        : usedCount > 0
+          ? 'connected'
+          : connector.required && usedCount < minimum
+            ? 'missing_required'
+            : 'available';
+    return {
+      ...connector,
+      connectedCount: usedCount,
+      usedCount,
+      maxCount: capacity.maxCount,
+      remainingCount: capacity.remainingCount,
+      capacityLabel: capacity.capacityLabel,
+      status,
+    };
+  });
+}
+
 export function workspaceConnectionRejectionReason({
   connection,
   nodes,
   edges,
   capabilities,
+  policyCopy,
+  edgeLabel,
 }: {
   connection: WorkspaceConnectionLike;
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
+  policyCopy?: StudioCopy['canvas']['controls']['policy'];
+  edgeLabel?: (kind: WorkspaceEdgeKind) => string;
 }): WorkspaceConnectionRejection | null {
   if (!connection.source || !connection.target || !connection.sourceHandle || !connection.targetHandle) {
     return { code: 'missing_endpoint' };
@@ -200,23 +281,49 @@ export function workspaceConnectionRejectionReason({
   }
   const sourceNode = nodes.find((node) => node.id === connection.source) ?? null;
   const targetNode = nodes.find((node) => node.id === connection.target) ?? null;
+  if (!sourceNode) return { code: 'endpoint_not_found', endpoint: 'source' };
+  if (!targetNode) return { code: 'endpoint_not_found', endpoint: 'target' };
+  if (edges.some((edge) => (
+    edge.source === connection.source
+    && edge.target === connection.target
+    && edge.sourceHandle === connection.sourceHandle
+    && edge.targetHandle === connection.targetHandle
+  ))) {
+    return { code: 'duplicate_connection' };
+  }
+  if (!sourceNode.data.sourceHandles?.includes(connection.sourceHandle as WorkspaceEdgeKind)) {
+    return { code: 'source_handle_missing' };
+  }
   const generatedOutputEdge =
     sourceNode?.data.kind === 'shot' &&
     targetNode?.data.kind === 'output' &&
     connection.targetHandle === GENERATED_OUTPUT_TARGET_HANDLE &&
     connection.sourceHandle === shotOutputSourceHandle(sourceNode.data.shot);
   if (!generatedOutputEdge && !isWorkspaceConnectionCompatible({ sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle })) {
-    return { code: 'incompatible_connectors' };
+    return { code: 'incompatible_family' };
   }
   const targetHandle = inferWorkspaceEdgeKind(connection.sourceHandle, connection.targetHandle);
+  if (targetNode.data.kind === 'shot' && targetNode.data.shot && !getWorkspaceModelCapability(targetNode.data.shot.modelId, capabilities)) {
+    return { code: 'model_unsupported' };
+  }
   const connector = connectorForTarget({
     targetNode,
     targetHandle,
     capabilities,
     connectedInputs: connectedInputKinds(connection.target, edges),
+    policyCopy,
+    edgeLabel,
   });
   if (!connector) {
-    return targetNode?.data.kind === 'shot' ? { code: 'incompatible_connectors' } : null;
+    return targetNode.data.kind === 'shot' ? { code: 'model_unsupported' } : { code: 'target_unsupported' };
+  }
+  if (connector.disabledReason) {
+    return {
+      code: 'connector_disabled',
+      connectorKind: connector.kind,
+      connectorLabel: connector.label,
+      reason: connector.disabledReason,
+    };
   }
   const capacity = workspaceConnectionCapacity({
     connector,

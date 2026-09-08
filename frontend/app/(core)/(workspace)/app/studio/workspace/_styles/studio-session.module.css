@@ -137,11 +137,18 @@
 }
 
 .studioSessionExit {
-  display: inline-grid;
-  width: 34px;
-  padding: 0;
-  place-items: center;
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
   cursor: pointer;
+}
+
+.studioSessionExit span {
+  font-size: 11px;
+  font-weight: 760;
 }
 
 .studioWalletPill:hover,
@@ -191,13 +198,6 @@
   font-weight: 760;
 }
 
-.studioSessionMenuNav {
-  display: grid;
-  gap: 2px;
-  margin-bottom: 8px;
-}
-
-.studioSessionMenuItem,
 .studioSessionMenuAction {
   display: flex;
   min-height: 34px;
@@ -216,13 +216,11 @@
   cursor: pointer;
 }
 
-.studioSessionMenuItem:hover,
 .studioSessionMenuAction:hover {
   background: var(--studio-control-bg-hover);
   color: var(--studio-text-strong);
 }
 
-.studioSessionMenuItem small,
 .studioSessionMenuAction kbd {
   border-radius: 999px;
   background: rgba(148, 163, 184, 0.11);
@@ -237,5 +235,9 @@
 @media (max-width: 760px) {
   .studioSessionCluster {
     flex: 0 0 auto;
+  }
+
+  .studioSessionExit span {
+    display: none;
   }
 }

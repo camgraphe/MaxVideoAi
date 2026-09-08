@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { isbot as detectBot } from 'isbot';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
 import mcpPublication from '@/config/mcp-publication.json';
+import { FEATURES } from '@/content/feature-flags';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 import { getMcpApiRewritePath } from '@/lib/mcp-host-routing';
 import { isMcpPublicSourcePath } from '@/lib/mcp-publication';
@@ -13,10 +14,10 @@ import {
   PROTECTED_PREFIXES,
   applyMarketingEdgeCacheHeaders,
   containsLocalePlaceholder,
+  canUseLocalAdminBypassForProtectedPath,
   finalizeResponse,
   handleI18nRouting,
   handleMarketingSlug,
-  hasLocalAdminBypass,
   hasLocalePrefix,
   isDottedLocalizedEnglishModelCompatibilityPath,
   isLoopbackHost,
@@ -217,7 +218,7 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
-  if (isAdminRoute && hasLocalAdminBypass(req)) {
+  if (canUseLocalAdminBypassForProtectedPath(req, pathname, FEATURES.studio.adminOnly)) {
     return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 

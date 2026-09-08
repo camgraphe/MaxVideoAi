@@ -10,20 +10,27 @@
   bottom: 18px;
   left: 50%;
   display: inline-flex;
+  height: 44px;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 5px;
+  gap: 2px;
   max-width: calc(100% - 32px);
-  padding: 6px;
+  padding: 0;
   transform: translateX(-50%);
-  border: 1px solid var(--studio-border);
-  border-radius: 10px;
-  background: var(--studio-bg);
+  border: 0;
+  border-radius: 12px;
+  background: var(--studio-surface-strong);
   box-shadow:
-    0 22px 58px var(--studio-node-shadow),
+    0 8px 24px var(--studio-node-shadow),
+    0 0 0 1px var(--studio-border),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(18px);
   color: var(--studio-text);
   user-select: none;
+}
+
+.canvasToolbar[data-canvas-toolbar-popover-open='true'] {
+  z-index: 140;
 }
 
 .toolbarButton {
@@ -66,6 +73,8 @@
 }
 
 .toolbarButton:focus-visible,
+.selectionOption:focus-visible,
+.workbenchLink:focus-visible,
 .blockOption:focus-visible,
 .saveActionButton:focus-visible,
 .templateSaveForm input:focus-visible,
@@ -75,9 +84,8 @@
 }
 
 .toolbarButtonActive {
-  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  background: var(--studio-primary);
   color: var(--studio-on-primary);
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.34);
 }
 
 .toolbarSeparator {
@@ -93,32 +101,91 @@
 
 .toolbarPopover {
   position: absolute;
+  box-sizing: border-box;
   bottom: calc(100% + 12px);
   left: 50%;
   display: grid;
   width: min(340px, calc(100vw - 24px));
   min-height: 0;
-  max-height: clamp(220px, calc(100vh - 430px), 360px);
+  max-height: min(55dvh, 420px);
   gap: 10px;
   padding: 12px;
   transform: translateX(-50%);
   overflow: auto;
   border: 1px solid var(--studio-border);
   border-radius: 10px;
-  background:
-    linear-gradient(180deg, var(--studio-surface), var(--studio-bg)),
-    var(--studio-bg);
+  background: var(--studio-popover-bg);
   box-shadow: 0 28px 84px var(--studio-node-shadow);
-  scrollbar-width: none;
-}
-
-.toolbarPopover::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
 }
 
 .toolbarPopoverWide {
   width: min(430px, calc(100vw - 40px));
+}
+
+.addPalette {
+  width: min(540px, calc(100vw - 32px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.paletteGroup,
+.workbenchGroup {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.workbenchGroup {
+  grid-column: 1 / -1;
+}
+
+.workbenchList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.selectionOption,
+.workbenchLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--studio-text);
+  text-align: left;
+  text-decoration: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.selectionOption:hover,
+.selectionOption[aria-checked='true'],
+.workbenchLink:hover {
+  background: var(--studio-bg-soft);
+}
+
+.workbenchLink > span {
+  flex: 1;
+}
+
+.workbenchLink svg {
+  flex: none;
+}
+
+.validationBadge {
+  padding: 2px 4px;
+  border: 1px solid var(--studio-border);
+  border-radius: 4px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-style: normal;
 }
 
 .popoverHeader {
@@ -151,8 +218,8 @@
   grid-template-columns: 30px minmax(0, 1fr);
   gap: 8px;
   align-items: center;
-  min-height: 48px;
-  padding: 8px;
+  min-height: 44px;
+  padding: 4px;
   border: 0;
   border-radius: 8px;
   background: var(--studio-surface);
@@ -167,7 +234,7 @@
 
 .blockOption:hover,
 .blockOption:focus-visible {
-  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 52%, rgba(226, 232, 240, 0.18));
+  background: var(--studio-bg-soft);
 }
 
 .blockOptionIcon {
@@ -288,7 +355,7 @@
 
 .templateSaveForm input {
   min-width: 0;
-  height: 34px;
+  height: 44px;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: var(--studio-surface);
@@ -302,7 +369,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 34px;
+  min-height: 44px;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: var(--studio-bg-soft);
@@ -324,9 +391,7 @@
 @media (max-width: 760px) {
   .canvasToolbar {
     bottom: 12px;
-    width:calc(100% - 16px);
     max-width:calc(100% - 16px);
-    flex-wrap:wrap;
     justify-content:center;
     gap:2px;
     overflow:visible;
@@ -341,20 +406,28 @@
     width: min(340px, calc(100vw - 24px));
     height:auto;
     min-height:0;
-    max-height:min(50dvh,360px);
+    max-height:min(40dvh,340px);
   }
 
   .blockOptionList {
     grid-template-columns: 1fr;
   }
+
+  .addPalette,
+  .workbenchList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toolbarSeparator {
+    display: none;
+  }
 }
 
 .toolbarButton span { font-size:12px; white-space:nowrap; }
 .blockOptionContent small { display:none; }
-.toolbarPopover { background:var(--studio-popover-bg); border-radius:14px; }
-.canvasToolbar { border-radius:16px; background:var(--studio-surface-strong); }
-@media(max-width:760px) { .toolbarSeparator { display:none; } }
-@media(max-height:500px) and (min-width:621px) {
-  .canvasToolbar { left:8px; bottom:8px; width:300px; max-width:300px; flex-wrap:wrap; justify-content:center; gap:2px; transform:none; }
-  .toolbarSeparator { display:none; }
+@media (max-height: 500px) {
+  .canvasToolbar { bottom: 8px; }
+  .toolbarPopover {
+    max-height: min(37dvh, 144px);
+  }
 }

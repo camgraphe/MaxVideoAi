@@ -6,7 +6,6 @@
     100%,
     calc(var(--timeline-track-label-width) + var(--timeline-content-width) + (var(--timeline-track-lane-padding-x) * 2))
   );
-
   display: flex;
   position: relative;
   flex-direction: column;
@@ -146,10 +145,9 @@
   min-width: 0;
   padding: 0 var(--timeline-track-lane-padding-x);
 }
-
 .timelineRulerInner {
   position: relative;
-  height: 30px;
+  height: 100%;
   cursor: ew-resize;
   touch-action: none;
 }
@@ -163,6 +161,7 @@
   white-space: nowrap;
 }
 
+.timelineRulerInner [data-timeline-ruler-tick='0'] { transform: none; }
 .timelineRulerInner .timelineInOutRange {
   top: 6px;
   height: 22px;
@@ -349,6 +348,7 @@
 
 .trackLaneContent {
   position: relative;
+  height: 100%;
   min-height: 34px;
   cursor: crosshair;
   touch-action: none;
@@ -552,26 +552,28 @@
 @media (max-width: 1120px) {
   .timelinePanel { --timeline-track-lane-padding-x: 8px; }
   .timelineViewport { overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
-  .timelineRuler { height: 28px; }
+  .timelineRuler { height: 48px; }
   .timelineRulerToolSlot { gap: 4px; padding: 0 8px; }
   .timelineRulerToolButton { width: 40px; height: 40px; }
   .trackLane { padding-inline: var(--timeline-track-lane-padding-x); }
   .timelinePanel :global([class*="timelineTopbar"]) { height: auto; min-height: 52px; grid-template-columns: auto minmax(max-content, 1fr); overflow-x: auto; overscroll-behavior-x: contain; padding: 6px 8px; scrollbar-width: none; }
   .timelinePanel :global([class*="timelineTopbar"]::-webkit-scrollbar) { width: 0; height: 0; }
   .timelinePanel :global([class*="timelineZoomSlot"]) { min-width: max-content; }
+  .trackLockButton { display: none; }
 }
 
 .timelinePanel { --timeline-track-label-width:200px; }
-.trackLabel { flex-wrap:wrap; gap:2px; padding:4px 8px; }
+.trackLabel { flex-wrap:nowrap; gap:2px; padding:4px 8px; }
 .trackLabelMain { min-width:56px; }
 .trackLabelControls { width:auto; padding-right:0; gap:2px; }
 .trackIconButton { width:44px; height:44px; border:0; background:var(--studio-control-bg); color:var(--studio-text); }
 .trackAddButton { width:24px; height:24px; right:0; background:var(--studio-control-bg); color:var(--studio-text); }
-.timelineTrack { min-height:58px; }
+.timelineTrack { height:64px; min-height:64px; }
 .timelinePanel :global([class*="timelineTopbar"]) { min-width:0; overflow:auto; overscroll-behavior:contain; }
 .timelinePanel :global([class*="timelineTransport"] button),.timelinePanel :global([class*="timelineZoomControl"] button),.timelinePanel :global([class*="timelineExportButton"]) { width:44px; min-width:44px; height:44px; min-height:44px; }
 .timelinePanel :global([class*="timelineExportButton"]) { width:auto; padding:0 12px; color:var(--studio-on-primary); }
 .timelinePanel :global([class*="timelineExportButton"] span) { display:inline; }
 .timelinePanel :global([class*="timelineZoomControl"]) { height:44px; }
 .timelinePanel :global([class*="timelineTopbar"]) { flex-basis:56px; height:56px; padding:6px 10px; }
-@media(max-width:620px) { .timelinePanel { --timeline-track-label-width:150px; } .trackLabelMain { flex:1 1 60px; } .trackLabelControls { width:100%; justify-content:flex-start; } .timelineTrack { min-height:94px; } }
+@media(max-width:620px) { .timelinePanel { --timeline-track-label-width:176px; } .trackLabelMain { flex:1 1 60px; } .trackLabelControls { width:auto; justify-content:flex-start; } .timelineTrack { height:64px; min-height:64px; } }
+@media(max-height:500px) and (min-width:621px) { .timelineViewport { scrollbar-width:none; } .timelineViewport::-webkit-scrollbar { width:0; height:0; } .timelineRuler { position:relative; } }

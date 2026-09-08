@@ -67,6 +67,25 @@ test('shot connector presentation preserves distinct semantic handles and every 
   }
 });
 
+test('shot connector presentation exposes used capacity and status without interpreting model names', () => {
+  const projected = projectWorkspaceShotConnectorPresentation(
+    ['prompt', 'video_reference', 'reference', 'audio'],
+    [
+      connector('prompt', { required: true, connectedCount: 0, remainingCount: 1, maxCount: 1, capacityLabel: null }),
+      connector('video_reference', { connectedCount: 2, remainingCount: 1, maxCount: 3, capacityLabel: '1/3' }),
+      connector('reference', { connectedCount: 1, remainingCount: 0, maxCount: 1, capacityLabel: null }),
+      connector('audio', { connectedCount: 0, remainingCount: 1, maxCount: 1, disabledReason: 'Unavailable for current mode' }),
+    ],
+  );
+  const entries = [...projected.visible, ...projected.optionalEmpty];
+  assert.deepEqual(entries.map(({ handle, usedCount, maxCount, status }) => ({ handle, usedCount, maxCount, status })), [
+    { handle: 'prompt', usedCount: 0, maxCount: 1, status: 'missing_required' },
+    { handle: 'video_reference', usedCount: 2, maxCount: 3, status: 'connected' },
+    { handle: 'reference', usedCount: 1, maxCount: 1, status: 'full' },
+    { handle: 'audio', usedCount: 0, maxCount: 1, status: 'disabled' },
+  ]);
+});
+
 test('canvas fit reserves the shared useful surface and adapts the map inset without overwriting viewport policy', () => {
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 1440, viewportHeight: 900, mapExpanded: true }), {
     includeHiddenNodes: false,
@@ -86,15 +105,15 @@ test('canvas fit reserves the shared useful surface and adapts the map inset wit
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 844, viewportHeight: 390, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: '8px', right: '152px', bottom: '8px', left: '312px' },
+    padding: { top: '8px', right: '152px', bottom: '64px', left: '312px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 667, viewportHeight: 375, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: '8px', right: '152px', bottom: '8px', left: '312px' },
+    padding: { top: '8px', right: '152px', bottom: '64px', left: '312px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 621, viewportHeight: 375, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: '8px', right: '152px', bottom: '8px', left: '312px' },
+    padding: { top: '8px', right: '152px', bottom: '64px', left: '312px' },
   });
 });
 
@@ -117,8 +136,8 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(dock, /data-shot-hidden-connector-anchor/);
   assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \{ padding-top:0; \}/);
   assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \.mobilePanelRail \{ display:none; \}/);
-  assert.match(actionStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.selectionActions \{[\s\S]*left:8px;[\s\S]*width:300px;/);
-  assert.match(toolbarStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasToolbar \{[\s\S]*left:8px;[\s\S]*width:300px;/);
+  assert.doesNotMatch(actionStyles, /\.selectionActions\s*\{[^}]*top:12px;[^}]*left:50%/s, 'selection commands must not cover the canvas as a wide floating bar');
+  assert.match(toolbarStyles, /\.canvasToolbar\s*\{[^}]*height:\s*44px;/s);
   assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigator \{[\s\S]*top:70px;[\s\S]*left:8px;/);
   assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.navigatorPanel \{[\s\S]*position:fixed;[\s\S]*top:8px;[\s\S]*bottom:8px;/);
   assert.match(navigatorStyles, /@media \(max-width: 760px\) \{[\s\S]*\.canvasNavigator \{[\s\S]*top:\s*76px;[\s\S]*bottom:\s*auto;/);
@@ -131,24 +150,41 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(map, /setIsOpen\(false\)[\s\S]*mapExpanded: collapseMapForFit \? false : isOpen/);
 });
 
-test('Connections explains separate remaining capacity and restores focus to its persistent card command', () => {
+test('Connections explains used capacity per slot and restores focus to its persistent card command', () => {
   const picker = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasConnectionPicker.tsx'), 'utf8');
 
-  assert.match(picker, /copy\.remainingCapacity/);
-  assert.match(picker, /connector\.remainingCount/);
+  assert.match(picker, /copy\.usedCapacity/);
+  assert.match(picker, /connector\.connectedCount/);
   assert.match(picker, /connector\.maxCount/);
+  assert.match(picker, /data-connection-slot/);
   assert.match(picker, /data-canvas-connections-fallback/);
   assert.match(picker, /data-studio-canvas-shell/);
 });
 
-test('Settings keeps explicit screen-sized, card and keyboard access without a duplicate full-width card row', () => {
+test('Settings keeps card and keyboard access while actions stay in the selected card', () => {
   const canvas = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'), 'utf8');
   const selectionActions = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasSelectionActions.tsx'), 'utf8');
+  const selectionHook = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceSelectionActions.ts'), 'utf8');
   const nodeFrame = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-frame.tsx'), 'utf8');
   const shotControls = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx'), 'utf8');
 
-  assert.match(selectionActions, /data-canvas-selection-settings[\s\S]*onSettings\(node\.id\)/u);
+  assert.doesNotMatch(selectionActions, /data-canvas-selection-settings/u);
   assert.match(nodeFrame, /data-canvas-node-inspect-button=\{nodeId\}[\s\S]*aria-label=/u);
+  assert.match(nodeFrame, /CanvasNodeActionsMenu/u);
   assert.match(canvas, /event\.key\.toLowerCase\(\) !== 'i'[\s\S]*onInspectNode\(selectedNodeId\)/u);
+  assert.match(selectionHook, /lastInspectedCanvasNodeIdRef[\s\S]*data-canvas-node-inspect-button/u);
+  assert.doesNotMatch(selectionHook, /data-canvas-selection-settings/u);
   assert.doesNotMatch(shotControls, /shotOptionsButton/u);
+});
+
+test('compact add palette stays above the editor shell and inside short landscape viewports', () => {
+  const toolbarStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-toolbar.module.css'), 'utf8');
+  const shellStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/shell.module.css'), 'utf8');
+
+  assert.match(toolbarStyles, /data-canvas-toolbar-popover-open='true'[\s\S]*z-index:\s*140/u);
+  assert.match(toolbarStyles, /\.toolbarPopover\s*\{[\s\S]*box-sizing:\s*border-box/u);
+  assert.match(toolbarStyles, /@media \(max-width: 760px\)[\s\S]*max-height:min\(40dvh,340px\)/u);
+  assert.match(shellStyles, /toolbarPopover[\s\S]*navigatorPanel[\s\S]*max-height:\s*min\(40dvh, 340px\)/u);
+  assert.match(toolbarStyles, /@media \(max-height: 500px\)[\s\S]*max-height:\s*min\(37dvh, 144px\)/u);
+  assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*toolbarPopover[\s\S]*max-height:min\(37dvh,144px\)/u);
 });

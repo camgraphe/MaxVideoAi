@@ -8,8 +8,33 @@ import { loadingWorkspacePricingEstimate } from '../frontend/app/(core)/(workspa
 import { createStarterWorkspaceTemplate } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 import { submitWorkspaceShotGeneration } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation';
 import { useWorkspaceGenerationActions } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGenerationActions';
+import { useWorkspaceGraphActions } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGraphActions';
 import { getWorkspaceModelCapabilities } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
 import { DEFAULT_STUDIO_COPY } from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
+import { workspaceConnectionFromHandleAttempt } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-handle-drop';
+
+test('direct cable attempts resolve to canonical source-to-target connections', () => {
+  const sourceToTarget = workspaceConnectionFromHandleAttempt({
+    fromHandle: { nodeId: 'prompt', id: 'prompt', type: 'source' },
+    toHandle: { nodeId: 'shot', id: 'prompt', type: 'target' },
+  });
+  assert.deepEqual(sourceToTarget, {
+    source: 'prompt', sourceHandle: 'prompt', target: 'shot', targetHandle: 'prompt',
+  });
+
+  const targetToSource = workspaceConnectionFromHandleAttempt({
+    fromHandle: { nodeId: 'shot', id: 'start_image', type: 'target' },
+    toHandle: { nodeId: 'image', id: 'reference', type: 'source' },
+  });
+  assert.deepEqual(targetToSource, {
+    source: 'image', sourceHandle: 'reference', target: 'shot', targetHandle: 'start_image',
+  });
+
+  assert.equal(workspaceConnectionFromHandleAttempt({
+    fromHandle: { nodeId: 'shot', id: 'start_image', type: 'target' },
+    toHandle: null,
+  }), null);
+});
 
 test('source choices retain exact handles and apply the graph validator to every candidate', () => {
   const nodes: WorkspaceGraphNode[] = [
@@ -102,4 +127,184 @@ test('generation callback rejects a missing Live quote before creating pending o
   assert.deepEqual(notices, [DEFAULT_STUDIO_COPY.canvas.nodes.estimating]);
   assert.equal(writes, 0);
   assert.equal(fetch.mock.callCount(), 0);
+});
+
+function graphActionFixture() {
+  const template = createStarterWorkspaceTemplate('minimal-start');
+  const shot = template.nodes.find((node) => node.data.kind === 'shot')!;
+  const firstPrompt = template.nodes.find((node) => node.data.kind === 'text-prompt')!;
+  const secondPrompt: WorkspaceGraphNode = {
+    ...firstPrompt,
+    id: 'second-prompt',
+    position: { x: firstPrompt.position.x - 120, y: firstPrompt.position.y + 180 },
+    data: { ...firstPrompt.data, title: 'Second prompt' },
+  };
+  const fullEdge = {
+    id: 'current-prompt-edge',
+    source: firstPrompt.id,
+    target: shot.id,
+    sourceHandle: 'prompt' as const,
+    targetHandle: 'prompt' as const,
+    data: { kind: 'prompt' as const },
+  };
+  return { shot, firstPrompt, secondPrompt, fullEdge };
+}
+
+test('connection callback validates capacity against the current commit snapshot', () => {
+  const { shot, firstPrompt, secondPrompt, fullEdge } = graphActionFixture();
+  let current = { nodes: [firstPrompt, secondPrompt, shot], edges: [fullEdge] };
+  const notices: Array<string | null> = [];
+  let actions: ReturnType<typeof useWorkspaceGraphActions>;
+  function Probe() {
+    actions = useWorkspaceGraphActions({
+      capabilities: getWorkspaceModelCapabilities(),
+      commitCanvasGraph(updater) { current = updater(current); },
+      defaultModelId: shot.data.shot!.modelId,
+      edges: [],
+      nodes: current.nodes,
+      setActiveEditorSurface() {},
+      setAssetPickerNodeId() {},
+      setNotice: (notice) => notices.push(notice),
+      setSelectedNodeId() {},
+      studioCanvasNodeCopy: DEFAULT_STUDIO_COPY.canvas.nodes,
+      studioNotices: DEFAULT_STUDIO_COPY.notices,
+    });
+    return null;
+  }
+  renderToStaticMarkup(createElement(Probe));
+
+  actions!.onConnect({
+    source: secondPrompt.id,
+    target: shot.id,
+    sourceHandle: 'prompt',
+    targetHandle: 'prompt',
+  });
+
+  assert.equal(current.edges.length, 1, 'a stale render cannot overfill a slot');
+  assert.deepEqual(notices, [DEFAULT_STUDIO_COPY.notices.connectorFull.replace('{connector}', 'Prompt')]);
+});
+
+test('create-and-connect callback is atomic when the current target slot became full', () => {
+  const { shot, firstPrompt, fullEdge } = graphActionFixture();
+  let current = { nodes: [firstPrompt, shot], edges: [fullEdge] };
+  const notices: Array<string | null> = [];
+  let actions: ReturnType<typeof useWorkspaceGraphActions>;
+  function Probe() {
+    actions = useWorkspaceGraphActions({
+      capabilities: getWorkspaceModelCapabilities(),
+      commitCanvasGraph(updater) { current = updater(current); },
+      defaultModelId: shot.data.shot!.modelId,
+      edges: [],
+      nodes: current.nodes,
+      setActiveEditorSurface() {},
+      setAssetPickerNodeId() {},
+      setNotice: (notice) => notices.push(notice),
+      setSelectedNodeId() {},
+      studioCanvasNodeCopy: DEFAULT_STUDIO_COPY.canvas.nodes,
+      studioNotices: DEFAULT_STUDIO_COPY.notices,
+    });
+    return null;
+  }
+  renderToStaticMarkup(createElement(Probe));
+
+  actions!.handleCreateNodeFromHandleDrop({
+    sourceNodeId: shot.id,
+    handleId: 'prompt',
+    handleType: 'target',
+    position: { x: 100, y: 100 },
+  });
+
+  assert.equal(current.nodes.length, 2, 'a rejected create-and-connect leaves no orphan block');
+  assert.equal(current.edges.length, 1, 'a rejected create-and-connect leaves no edge');
+  assert.deepEqual(notices, [DEFAULT_STUDIO_COPY.notices.connectorFull.replace('{connector}', 'Prompt')]);
+});
+
+test('invalid cable callback exposes the precise admission reason to non-drag paths', () => {
+  const { shot, firstPrompt, fullEdge } = graphActionFixture();
+  const notices: Array<string | null> = [];
+  let actions: ReturnType<typeof useWorkspaceGraphActions>;
+  function Probe() {
+    actions = useWorkspaceGraphActions({
+      capabilities: getWorkspaceModelCapabilities(),
+      commitCanvasGraph() {},
+      defaultModelId: shot.data.shot!.modelId,
+      edges: [fullEdge],
+      nodes: [firstPrompt, shot],
+      setActiveEditorSurface() {},
+      setAssetPickerNodeId() {},
+      setNotice: (notice) => notices.push(notice),
+      setSelectedNodeId() {},
+      studioCanvasNodeCopy: DEFAULT_STUDIO_COPY.canvas.nodes,
+      studioNotices: DEFAULT_STUDIO_COPY.notices,
+    });
+    return null;
+  }
+  renderToStaticMarkup(createElement(Probe));
+  const handleInvalidConnection = (actions! as unknown as {
+    handleInvalidConnection?: (connection: typeof fullEdge) => void;
+  }).handleInvalidConnection;
+  assert.equal(typeof handleInvalidConnection, 'function');
+  handleInvalidConnection?.(fullEdge);
+  assert.deepEqual(notices, [DEFAULT_STUDIO_COPY.notices.duplicateGraphLink]);
+});
+
+test('invalid cable callback preserves the policy reason for a disabled connector', () => {
+  const { shot, firstPrompt } = graphActionFixture();
+  const startImage: WorkspaceGraphNode = {
+    id: 'start-image', type: 'asset-image', position: { x: 0, y: 0 },
+    data: { kind: 'asset-image', title: 'Start image', sourceHandles: ['reference'] },
+  };
+  const referenceImage: WorkspaceGraphNode = {
+    ...startImage,
+    id: 'reference-image',
+    data: { ...startImage.data, title: 'Reference image' },
+  };
+  const configuredShot: WorkspaceGraphNode = {
+    ...shot,
+    data: {
+      ...shot.data,
+      shot: { ...shot.data.shot!, modelId: 'seedance-2-0' },
+    },
+  };
+  const startImageEdge = {
+    id: 'start-image-edge',
+    source: startImage.id,
+    target: configuredShot.id,
+    sourceHandle: 'reference' as const,
+    targetHandle: 'start_image' as const,
+    data: { kind: 'start_image' as const },
+  };
+  const localizedPolicyCopy = {
+    ...DEFAULT_STUDIO_COPY.canvas.controls.policy,
+    startImageDisablesReference: 'Localized start image exclusion.',
+  };
+  const notices: Array<string | null> = [];
+  let actions: ReturnType<typeof useWorkspaceGraphActions>;
+  function Probe() {
+    actions = useWorkspaceGraphActions({
+      capabilities: getWorkspaceModelCapabilities(),
+      commitCanvasGraph() {},
+      defaultModelId: configuredShot.data.shot!.modelId,
+      edges: [startImageEdge],
+      nodes: [firstPrompt, startImage, referenceImage, configuredShot],
+      setActiveEditorSurface() {},
+      setAssetPickerNodeId() {},
+      setNotice: (notice) => notices.push(notice),
+      setSelectedNodeId() {},
+      studioCanvasNodeCopy: DEFAULT_STUDIO_COPY.canvas.nodes,
+      studioCanvasPolicyCopy: localizedPolicyCopy,
+      studioNotices: DEFAULT_STUDIO_COPY.notices,
+    });
+    return null;
+  }
+  renderToStaticMarkup(createElement(Probe));
+
+  actions!.handleInvalidConnection({
+    source: referenceImage.id,
+    target: configuredShot.id,
+    sourceHandle: 'reference',
+    targetHandle: 'reference',
+  });
+
+  assert.deepEqual(notices, [localizedPolicyCopy.startImageDisablesReference]);
 });

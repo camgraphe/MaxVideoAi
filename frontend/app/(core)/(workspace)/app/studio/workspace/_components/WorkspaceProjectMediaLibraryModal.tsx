@@ -5,6 +5,7 @@ import type { ChangeEvent, MouseEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import styles from '../_styles/asset-library.module.css';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
+import { StudioDialog } from './ui/StudioDialog';
 import { patchWorkspaceEditorAssetLibraryCache } from '../_hooks/useWorkspaceEditorAssetLibrary';
 import { resolveWorkspaceMediaSelection } from '../_lib/workspace-media-selection';
 import { useStudioMediaIntent } from '../_hooks/useStudioMediaIntent';
@@ -185,19 +186,15 @@ export function WorkspaceProjectMediaLibraryModal({
     [copy, intent, onSelectAsset]
   );
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className={styles.assetLibraryOverlay}
-      role="dialog"
-      aria-modal="true"
-      aria-label={copy.importProjectMedia}
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) closeAndResetSelection();
-      }}
+    <StudioDialog
+      open={isOpen}
+      onClose={closeAndResetSelection}
+      overlayClassName={styles.assetLibraryOverlay}
+      dialogClassName={styles.assetLibraryModal}
+      ariaLabel={copy.importProjectMedia}
+      initialFocusSelector="[data-project-media-dialog-close='true']"
     >
-      <section className={styles.assetLibraryModal}>
         <input
           ref={uploadInputRef}
           type="file"
@@ -206,7 +203,13 @@ export function WorkspaceProjectMediaLibraryModal({
           hidden
           onChange={handleUploadChange}
         />
-        <button type="button" className={styles.assetLibraryClose} onClick={closeAndResetSelection} aria-label={copy.closeProjectMediaLibrary}>
+        <button
+          type="button"
+          className={styles.assetLibraryClose}
+          onClick={closeAndResetSelection}
+          aria-label={copy.closeProjectMediaLibrary}
+          data-project-media-dialog-close="true"
+        >
           <X size={16} />
         </button>
         <WorkspaceAssetLibraryBrowser
@@ -263,7 +266,6 @@ export function WorkspaceProjectMediaLibraryModal({
           }
           emptyLabel={copy.noProjectMedia}
         />
-      </section>
-    </div>
+    </StudioDialog>
   );
 }

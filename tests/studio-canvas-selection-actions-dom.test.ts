@@ -19,12 +19,17 @@ function renderedText(value: unknown): string {
   return value.map(renderedText).join('');
 }
 
-test('WorkspaceCanvas remounts selection feedback when the selected node set changes', () => {
+test('WorkspaceCanvas keeps only multi-selection feedback in the canvas chrome and delegates single-node actions to cards', () => {
   const canvas = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'), 'utf8');
   assert.match(canvas, /<CanvasSelectionActions\s+key=\{JSON\.stringify\(selectedNodeIds\.slice\(\)\.sort\(\)\)\}/);
+  assert.match(canvas, /<CanvasNodeActionsProvider/);
+  assert.match(canvas, /onCopyNode=/);
+  assert.match(canvas, /onDeleteNode=/);
+  assert.doesNotMatch(canvas, /<CanvasSelectionActions[\s\S]*onSettings=/);
+  assert.doesNotMatch(canvas, /<CanvasSelectionActions[\s\S]*onConnections=/);
 });
 
-test('copy feedback belongs to the current selection and the latest attempt', async () => {
+test('multi-selection copy feedback belongs to the current selection and the latest attempt', async () => {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions['.css'];
   require.extensions['.css'] = (module) => { module.exports = {}; };
@@ -55,7 +60,7 @@ test('copy feedback belongs to the current selection and the latest attempt', as
         key: JSON.stringify(ids.slice().sort()),
         nodes: ids.map(graphNode),
         copy: DEFAULT_STUDIO_COPY.canvas.nodes,
-        onSettings() {}, onConnections() {}, onCopy, onDelete() {},
+        onCopy, onDelete() {},
       });
       await act(async () => {
         if (renderer) renderer.update(element);
@@ -71,17 +76,17 @@ test('copy feedback belongs to the current selection and the latest attempt', as
     };
     const alerts = () => renderer!.root.findAll(({ props }) => props.role === 'alert');
 
-    await render(['a|b']);
+    await render(['a|b', 'c']);
     await copy();
     const delimiterAttempt = attempts.at(-1)!;
-    await render(['a', 'b']);
+    await render(['a', 'b|c']);
     await act(async () => delimiterAttempt.resolve(false));
     assert.equal(alerts().length, 0, 'injectively distinct selection sets cannot share late feedback');
 
-    await render(['A']);
+    await render(['A', 'A-peer']);
     await copy();
     const firstSelectionAttempt = attempts.at(-1)!;
-    await render(['B']);
+    await render(['B', 'B-peer']);
     await act(async () => firstSelectionAttempt.resolve(false));
     assert.equal(alerts().length, 0, 'late A failure cannot pollute B');
 
@@ -108,7 +113,7 @@ test('copy feedback belongs to the current selection and the latest attempt', as
     assert.equal(alerts().length, 0, 'reopening Actions clears feedback');
 
     await render([]);
-    await render(['B']);
+    await render(['B', 'B-peer']);
     assert.equal(alerts().length, 0, 'clearing selection resets feedback');
   } finally {
     if (renderer) await act(async () => renderer?.unmount());
@@ -119,4 +124,19 @@ test('copy feedback belongs to the current selection and the latest attempt', as
     if (previousCssLoader) require.extensions['.css'] = previousCssLoader;
     else delete require.extensions['.css'];
   }
+});
+
+test('a single selected node exposes a compact card menu while the canvas overlay stays absent', () => {
+  const selectionActions = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasSelectionActions.tsx'), 'utf8');
+  const nodeFrame = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-frame.tsx'), 'utf8');
+  const nodeMenu = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/CanvasNodeActionsMenu.tsx'), 'utf8');
+
+  assert.match(selectionActions, /if \(nodes\.length < 2\) return null/);
+  assert.match(nodeFrame, /<CanvasNodeActionsMenu\s+nodeId=\{nodeId\}\s+data=\{data\}/);
+  assert.match(nodeMenu, /data-canvas-node-actions-button=\{nodeId\}/);
+  assert.match(nodeMenu, /copy\.replaceMedia/);
+  assert.match(nodeMenu, /copy\.insertAtPlayhead/);
+  assert.match(nodeMenu, /copy\.connections/);
+  assert.match(nodeMenu, /copy\.copySelection/);
+  assert.match(nodeMenu, /copy\.deleteSelection/);
 });

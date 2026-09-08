@@ -88,6 +88,7 @@ export function useWorkspaceShellActions({
 }: UseWorkspaceShellActionsParams): {
   exitToProjectsDisabled: boolean;
   handleExitToProjects: () => void;
+  handleNavigateFromStudio: (href: string) => void;
   handleExportQualityPresetChange: (preset: WorkspaceTimelineExportQualityPreset) => void;
   handleExportRangeModeChange: (mode: WorkspaceTimelineExportRangeMode) => void;
   handleOpenExportDialog: () => void;
@@ -105,7 +106,7 @@ export function useWorkspaceShellActions({
     openExportDialog();
   }, [hasValidTimelineInOut, openExportDialog, setExportRangeMode]);
 
-  const handleExitToProjects = useCallback(() => {
+  const handleNavigateFromStudio = useCallback((href: string) => {
     if (typeof window === 'undefined') return;
     if (!exitReady) {
       setNotice(studioNotices.studioApiUnavailable);
@@ -114,8 +115,9 @@ export function useWorkspaceShellActions({
     const state = buildPersistedWorkspaceState();
     if (persistWorkspaceLocally) persistWorkspaceLocally(state);
     else window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
-    const navigateToProjects = () => {
-      window.location.assign('/app/studio/projects');
+    const safeHref = href.startsWith('/') && !href.startsWith('//') ? href : '/app/studio/projects';
+    const navigate = () => {
+      window.location.assign(safeHref);
     };
 
     const save = () => !projectId
@@ -134,9 +136,13 @@ export function useWorkspaceShellActions({
       save,
       notices: studioNotices,
       setNotice,
-      navigate: navigateToProjects,
+      navigate,
     });
   }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, connected, exitReady, persistWorkspaceLocally, projectId, saveWorkspace, setNotice, studioNotices, workspaceStorageKey]);
+
+  const handleExitToProjects = useCallback(() => {
+    handleNavigateFromStudio('/app/studio/projects');
+  }, [handleNavigateFromStudio]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
     resetExportSession();
@@ -155,6 +161,7 @@ export function useWorkspaceShellActions({
   return {
     exitToProjectsDisabled: !exitReady,
     handleExitToProjects,
+    handleNavigateFromStudio,
     handleExportQualityPresetChange,
     handleExportRangeModeChange,
     handleOpenExportDialog,
