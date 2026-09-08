@@ -222,6 +222,7 @@ export function useWorkspacePersistenceEffects({
   const [connectedConflict, setConnectedConflict] = useState(false);
   const [projectAccessError, setProjectAccessError] = useState(false);
   const [exitReady, setExitReady] = useState(!projectId);
+  const [localExitOnly, setLocalExitOnly] = useState(false);
   const [autosaveReadiness, setAutosaveReadiness] = useState({
     api: false,
     local: false,
@@ -240,6 +241,7 @@ export function useWorkspacePersistenceEffects({
     setConnectedConflict(false);
     setProjectAccessError(false);
     setExitReady(!projectId);
+    setLocalExitOnly(false);
     notifiedAutosaveFallbackStatusesRef.current.clear();
     setAutosaveReadiness({ api: false, local: false, workspaceStorageKey });
 
@@ -376,6 +378,10 @@ export function useWorkspacePersistenceEffects({
     const persisted = accountChanged
       ? null
       : readPersistedWorkspaceState(workspaceStorageKey, normalizePersistedWorkspaceState);
+    const hasLocalWorkspace = Boolean(storedProject || persisted);
+    const startsLocalOnly = storedProject?.persistenceMode === 'local-only';
+    setLocalExitOnly(startsLocalOnly);
+    setExitReady(!projectId || startsLocalOnly);
     if (persisted) {
       applyPersistedWorkspace(persisted);
     } else if (storedProject) {
@@ -393,7 +399,8 @@ export function useWorkspacePersistenceEffects({
         if (cancelled) return;
         if (initialProjectResult.reason === 'not_found') {
           setProjectAccessError(true);
-          setExitReady(true);
+          setLocalExitOnly(hasLocalWorkspace);
+          setExitReady(hasLocalWorkspace);
           return;
         }
         let serverProjectResult = initialProjectResult;
@@ -403,7 +410,8 @@ export function useWorkspacePersistenceEffects({
           const atomic = await readStudioConnectedWorkspaceFromApiResult(projectId, projectController.signal);
           if (atomic.reason === 'not_found') {
             setProjectAccessError(true);
-            setExitReady(true);
+            setLocalExitOnly(hasLocalWorkspace);
+            setExitReady(hasLocalWorkspace);
             return;
           }
           serverProjectResult = { data: atomic.data?.project ?? null, status: atomic.status };
@@ -425,9 +433,12 @@ export function useWorkspacePersistenceEffects({
             || serverProjectResult.status === 'error';
           if (projectApiUnavailable) {
             setAutosaveReadiness({ api: false, local: !accountChanged, workspaceStorageKey });
+            setLocalExitOnly(hasLocalWorkspace);
+            setExitReady(hasLocalWorkspace);
           }
           return;
         }
+        setLocalExitOnly(false);
         setStoredProjectName(serverProject.name);
         const serverWorkspaceSnapshotKind = classifyStudioProjectWorkspaceSnapshot(serverProject.workspaceState);
         const serverPersistedBase = shouldApplyStudioProjectWorkspaceState(serverProject.workspaceState, serverSequences)
@@ -524,7 +535,11 @@ export function useWorkspacePersistenceEffects({
         // sequence hydration failed. Keep autosave blocked for this mount.
         setAutosaveReadiness({ api: false, local: false, workspaceStorageKey });
       })().catch(() => {
-        if (!cancelled) setAutosaveReadiness({ api: false, local: true, workspaceStorageKey });
+        if (!cancelled) {
+          setAutosaveReadiness({ api: false, local: !accountChanged, workspaceStorageKey });
+          setLocalExitOnly(hasLocalWorkspace);
+          setExitReady(hasLocalWorkspace);
+        }
       });
     } else {
       setAutosaveReadiness({ api: false, local: true, workspaceStorageKey });
@@ -672,7 +687,7 @@ export function useWorkspacePersistenceEffects({
   ]);
 
   const saveNow = async (state: PersistedWorkspaceState): Promise<StudioApiSyncStatus> => {
-    if (!projectId) return 'ready';
+    if (!projectId || localExitOnly) return 'ready';
     const queue = connectedQueueRef.current;
     const payload = {
       name: activeTemplateName,

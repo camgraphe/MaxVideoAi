@@ -6,12 +6,14 @@ import test from 'node:test';
 import { createStudioConnectedSaveQueue } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/studio-connected-save-queue';
 import { buildWorkspaceActiveSequenceSnapshot } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-snapshot';
 import {
+  normalizeStudioProjectStorageRecord,
   readStudioConnectedWorkspaceDraft,
   resolveStudioConnectedWorkspaceHydration,
   shouldClearStudioWorkspaceForAccountChange,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-persistence';
 import { studioMediaAssetIdsForWorkspace } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceMediaAccess';
 import { completeStudioWorkspaceExit } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShellActions';
+import { normalizeStudioProjectRecord } from '../frontend/app/(core)/(workspace)/app/studio/projects/studio-project-records';
 
 test('connected autosave sends one request at a time, coalesces edits and chains ACK revisions', async () => {
   const releases: Array<(value: { status: 'ready'; revision: number }) => void> = [];
@@ -185,4 +187,17 @@ test('both Projects exits stay disabled until a project persistence mode is reso
   assert.match(layout, /exitToProjectsDisabled=\{shell\.exitToProjectsDisabled\}/);
   assert.match(topbar, /disabled=\{exitToProjectsDisabled\}[\s\S]*StudioHeaderSession[\s\S]*exitToProjectsDisabled=\{exitToProjectsDisabled\}/);
   assert.match(session, /disabled=\{exitToProjectsDisabled\}/);
+});
+
+test('local-only project provenance survives both caches and bypasses server workspace writers', () => {
+  const input = {
+    id: 'project-local', name: 'Local', canvasTemplateId: 'minimal-start',
+    persistenceMode: 'local-only', createdAt: '2026-09-08T00:00:00.000Z', updatedAt: '2026-09-08T00:00:00.000Z',
+  } as const;
+  assert.equal(normalizeStudioProjectRecord(input, { untitledProject: 'Untitled' })?.persistenceMode, 'local-only');
+  assert.equal(normalizeStudioProjectStorageRecord(input)?.persistenceMode, 'local-only');
+  const projects = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/projects/StudioProjectsPage.client.tsx'), 'utf8');
+  const persistence = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspacePersistenceEffects.ts'), 'utf8');
+  assert.match(projects, /persistenceMode: 'local-only'/);
+  assert.match(persistence, /if \(!projectId \|\| localExitOnly\) return 'ready'/);
 });

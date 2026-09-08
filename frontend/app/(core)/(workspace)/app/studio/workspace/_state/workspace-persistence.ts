@@ -22,7 +22,13 @@ export function normalizeStudioProjectStorageRecord(value: unknown): StudioProje
     canvasTemplateId: isWorkspaceTemplateId(record.canvasTemplateId) ? record.canvasTemplateId : 'product-ad',
     workspaceState: record.workspaceState,
     revision: Number.isSafeInteger(record.revision) && (record.revision ?? -1) >= 0 ? record.revision : undefined,
-    persistenceMode: record.persistenceMode === 'connected' ? 'connected' : record.persistenceMode === 'legacy' ? 'legacy' : undefined,
+    persistenceMode: record.persistenceMode === 'local-only'
+      ? 'local-only'
+      : record.persistenceMode === 'connected'
+        ? 'connected'
+        : record.persistenceMode === 'legacy'
+          ? 'legacy'
+          : undefined,
   };
 }
 

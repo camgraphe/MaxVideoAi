@@ -14,6 +14,7 @@ export type StudioProjectRecord = {
   updatedAt: string;
   settings: WorkspaceProjectSettings;
   canvasTemplateId: WorkspaceTemplateId;
+  persistenceMode?: 'local-only' | 'legacy' | 'connected';
 };
 
 type StudioProjectNormalizationOptions = {
@@ -40,6 +41,13 @@ export function normalizeStudioProjectRecord(
     updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : now,
     settings: coerceWorkspaceProjectSettings(record.settings),
     canvasTemplateId: normalizeStudioProjectTemplateId(record.canvasTemplateId),
+    persistenceMode: record.persistenceMode === 'local-only'
+      ? 'local-only'
+      : record.persistenceMode === 'connected'
+        ? 'connected'
+        : record.persistenceMode === 'legacy'
+          ? 'legacy'
+          : undefined,
   };
 }
 

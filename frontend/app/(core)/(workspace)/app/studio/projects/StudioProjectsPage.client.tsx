@@ -283,6 +283,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
       updatedAt: now,
       settings: { ...DEFAULT_WORKSPACE_PROJECT_SETTINGS },
       canvasTemplateId: templateId,
+      persistenceMode: 'local-only',
     };
     const nextProjects = [project, ...projects].slice(0, 20);
     setProjects(nextProjects);
@@ -346,6 +347,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
       name: `${project.name} ${studioCopy.projects.duplicateSuffix}`,
       createdAt: now,
       updatedAt: now,
+      persistenceMode: 'local-only',
     };
     const nextProjects = [duplicate, ...projects].slice(0, 20);
     persistProjects(nextProjects);
