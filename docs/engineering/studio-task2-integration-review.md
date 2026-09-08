@@ -24,6 +24,10 @@ Si le Studio composé n'existe pas encore dans la branche d'intégration, la ref
 
 Le merge de composition `3bb6188e0` est propre à cette branche (app fixe `ef3393c0d` + main `ab2cb9fbd`). Il n'est pas une instruction de fusion dans la branche app. Les manifestes `docs/engineering/studio-import/` décrivent les importations et exclusions ; aucune source n'a été modifiée.
 
+## Interfaces médias déjà reprises par la tâche principale
+
+Coordination confirmée le 8 septembre : ne pas réappliquer `8a74ab753` (contrat), `4c986b84e` (uploads/refs/faits) ni l'adaptation Audio `746a0cf49`. Leurs équivalents sont déjà intégrés à la racine dans `1830bf652`, `f55401ad7`, `9c9bc9ea4`. Les changements ultérieurs Studio restent à présenter séparément, notamment `cf525e7df` (transfert compte/projet) et `9d7bb92d4` (validateur URL existant exporté). Le runtime médias n'est pas qualifié par ces seules interfaces.
+
 Documentation et QA auxiliaires, à prendre selon besoin : `998a8e611` (lanceur de preview sans secrets), `332bf4abf` (limite export 512 MiB), `8288609e7` (fixture performance corrigée), `2d566c4d3` (rapport Task 2), `9c5aef823` (mesures avant/après). Le rapport de correctif figure aussi dans `957c593b6`. `8a74ab753` reste le **contrat additif médias**, séparé de tout runtime futur. Les tests DB/auth `df7031c60`, `b9d392faa`, `dcb8eaa4b` préparent les tâches suivantes ; ils ne prouvent pas encore un montage persisté.
 
 ## Revue et preuves
