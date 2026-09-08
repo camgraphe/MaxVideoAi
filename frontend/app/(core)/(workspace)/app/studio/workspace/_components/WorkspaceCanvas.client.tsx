@@ -258,6 +258,30 @@ function canvasHistoryShortcut(event: KeyboardEvent): 'redo' | 'undo' | null {
   return null;
 }
 
+async function writeCanvasClipboardMarker(): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(WORKSPACE_GRAPH_CLIPBOARD_TEXT);
+      return true;
+    }
+  } catch { /* Browser permission can deny the async API; try native copy below. */ }
+  const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const field = document.createElement('textarea');
+  field.value = WORKSPACE_GRAPH_CLIPBOARD_TEXT;
+  field.tabIndex = -1;
+  field.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+  document.body.appendChild(field);
+  try {
+    field.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    field.remove();
+    if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+  }
+}
+
 function renderedNodeDimension(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
 }
@@ -607,6 +631,7 @@ function WorkspaceCanvasInner({
         const nodeId = connectButton.closest('.react-flow__node')?.getAttribute('data-id');
         if (nodeId) {
           event.preventDefault(); event.stopPropagation();
+          onCanvasInteraction();
           setConnectionTarget({ id: nodeId, handle: connectButton.dataset.canvasConnectHandle as WorkspaceEdgeKind });
         }
         return;
@@ -620,7 +645,7 @@ function WorkspaceCanvasInner({
       selectedNodeIdRef.current = nodeId;
       onInspectNode(nodeId);
     },
-    [onInspectNode]
+    [onCanvasInteraction, onInspectNode]
   );
 
   const syncSelectedNodeIds = useCallback((nextSelectedNodeIds: string[]) => {
@@ -812,8 +837,8 @@ function WorkspaceCanvasInner({
         nodes={nodes.filter((node) => selectedNodeIds.includes(node.id))}
         copy={copy.nodes}
         onSettings={onInspectNode}
-        onConnections={(id) => setConnectionTarget({ id })}
-        onCopy={() => onCopySelectedNodes(selectedNodeIds)}
+        onConnections={(id) => { onCanvasInteraction(); setConnectionTarget({ id }); }}
+        onCopy={() => { onCanvasInteraction(); onCopySelectedNodes(selectedNodeIds); return writeCanvasClipboardMarker(); }}
         onDelete={handleDeleteSelectedNodes}
       />
       {connectionTarget && nodes.find((node) => node.id === connectionTarget.id) ? <CanvasConnectionPicker

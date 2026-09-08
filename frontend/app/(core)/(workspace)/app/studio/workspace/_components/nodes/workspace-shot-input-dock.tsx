@@ -68,7 +68,6 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                 key={`shot-input-${handle}`}
                 className={`${styles.shotInputRow} ${isDisabled ? styles.shotInputRowDisabled : ''}`}
                 aria-label={disabledReason ?? connectorDescription}
-                aria-disabled={isDisabled}
                 title={disabledReason ?? connectorDescription}
                 data-shot-connector-kind={handle}
                 data-shot-connector-row="input"
@@ -77,6 +76,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                   id={handle}
                   type="target"
                   position={Position.Left}
+                  aria-disabled={isDisabled}
                   className={`${styles.graphHandle} ${styles.shotInputRowHandle}`}
                   style={{
                     top: '50%',

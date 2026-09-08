@@ -45,3 +45,28 @@ Vérification finale de l'implémentation :
 - Les tests ne prouvent pas une génération provider réelle, toutes les combinaisons modèle/paramètres en navigateur, ni l'ensemble des matrices appareil/thème. Les contrats automatisés couvrent le catalogue existant et les gestes principaux ; la revue indépendante et la matrice visuelle finale appartiennent au parent.
 - Mesure stress AFTER du parent : 150 requêtes média initiales inchangées, 178 requêtes totales contre 203 BEFORE ; Play 291ms, scrub 49ms, drag 326ms, zoom 98ms, pan 161ms. Un seul passage développement, pas une qualification CWV ni une démonstration causale de gain.
 - TDD a guidé les commandes et régressions comportementales ; le guide d'architecture/contrats a conservé les propriétaires existants et évité un second catalogue ou moteur de validation.
+
+## Revue corrective — historique, focus et Copy
+
+Revue de `603f45a4b`, correctif séparé après la qualification responsive parent `8cf596d54`. Aucun fichier de qualification responsive ou d'auth du parent n'est inclus dans ce correctif.
+
+- `WorkspaceCanvas.client.tsx` réactive le canevas depuis les deux entrées Connections (bande et lanceur de port), ainsi que Copy. Les chemins adjacents Settings, Delete et Replace activaient déjà le canevas ; Insert vise intentionnellement la timeline.
+- `workspace-shot-input-dock.tsx` porte désormais `aria-disabled` sur la poignée d'ajout seulement, pas sur toute la ligne : un slot plein peut ouvrir sa gestion et être déconnecté. `isConnectable` et le validateur d'ajout restent inchangés.
+- `workspace-node-media-preview.tsx` transfère le focus au lecteur natif vidéo/audio lors de son montage, via une ref stable et `tabIndex=0`. Modifier ensuite un autre champ ne lui reprend pas le focus. Aucun changement aux URLs, aux adaptateurs média, aux requêtes provider ni aux couches timeline.
+- Copy conserve le snapshot canonique et écrit le marqueur texte déjà compris par le paste canonique. En cas de refus ou d'absence de Clipboard API, le repli natif `execCommand('copy')` utilise un champ éphémère retiré immédiatement, avec restauration du focus. Si les deux moyens échouent, une alerte ponctuelle localisée invite au raccourci clavier ; aucun faux succès n'est annoncé.
+
+RED constatés dans les composants réels : Undo laisse zéro lien au lieu d'un après sélection/mouvement d'un clip ; les lecteurs vidéo/audio restent inactifs pour le focus ; Copy garde quatre blocs au lieu de cinq après paste ; aucun message d'échec de copie quand les deux APIs sont bloquées. Les tests de menu attendent sa fermeture effective avant le raccourci, sans sommeil arbitraire.
+
+Vérification finale du correctif :
+
+```sh
+PLAYWRIGHT_EDITOR_BASE_URL=http://127.0.0.1:3032 PLAYWRIGHT_EDITOR_SKIP_WEB_SERVER=1 pnpm dlx node@22 node_modules/@playwright/test/cli.js test -c playwright.editor.config.ts editor-review-regressions.spec.ts editor-connected-actions.spec.ts --output=.superpowers/studio-visuals/review-results
+pnpm dlx node@22 frontend/node_modules/tsx/dist/cli.mjs --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-*.test.ts tests/studio-*.test.ts tests/timeline-export-*.test.ts
+pnpm dlx node@22 frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.json
+npm --prefix frontend run lint
+git diff --check
+```
+
+Résultats : **12/12 e2e**, **397/397 tests Studio**, **TypeScript 0 erreur**, lint **0 erreur / 2 avertissements préexistants** et diff-check propre. E2E couvre les deux lanceurs Connections après un vrai mouvement/sélection timeline, Undo sans modification de la timeline, Copy avec API disponible/refusée/absente et double refus, puis focus vidéo/audio y compris après rerender. Logs : `.superpowers/studio-visuals/task2-review-{red,red-corrected,clipboard-red,green,unit,typecheck,lint}.log` ; artefacts finaux isolés dans `review-results`. Qualification Chromium sur le serveur existant 3032, aucun nouveau serveur ou DB.
+
+Allègement visuel proposé, **non implémenté dans ce correctif** : garder les entrées obligatoires et connectées visibles sur la carte ; déplacer les entrées optionnelles vides et leurs compteurs dans Connections, sans supprimer rôles/handles/slots/capacités ni changer la validation. Vérifier ensuite l'accès tactile/clavier à tous les ports et la hauteur des cartes. Le constat du parent sur les répétitions et compteurs n'est pas présenté comme résolu ici.

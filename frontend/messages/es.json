@@ -5915,6 +5915,7 @@
           "selectionActions": "Acciones de selección",
           "blocks": "bloques",
           "copySelection": "Copiar",
+          "copyFailed": "Copia bloqueada. Selecciona el bloque y pulsa Ctrl/Cmd+C.",
           "deleteSelection": "Eliminar",
           "connectSource": "Conectar",
           "noCompatibleSources": "No hay fuentes compatibles disponibles. Añade una fuente o desconecta una entrada ocupada.",

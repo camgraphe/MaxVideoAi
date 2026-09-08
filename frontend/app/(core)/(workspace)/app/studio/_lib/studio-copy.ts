@@ -1075,6 +1075,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       selectionActions: 'Selection actions',
       blocks: 'blocks',
       copySelection: 'Copy',
+      copyFailed: 'Copy blocked. Select the block and press Ctrl/Cmd+C.',
       deleteSelection: 'Delete',
       connectSource: 'Connect',
       noCompatibleSources: 'No compatible source available. Add a source or disconnect an occupied input.',

@@ -1,5 +1,6 @@
 .selectionActions { position:absolute; z-index:46; top:12px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:4px; max-width:calc(100% - 32px); padding:6px; border:1px solid var(--studio-border); border-radius:14px; background:var(--studio-surface-strong); box-shadow:0 12px 35px var(--studio-node-shadow); }
 .selectionMenuRoot { position:relative; }
+.copyFailure { position:absolute; top:calc(100% + 8px); right:0; width:min(300px,100%); padding:12px; border:1px solid var(--studio-border); border-radius:10px; background:var(--studio-surface-strong); color:var(--studio-text); font-size:12px; }
 .selectionMenu { position:absolute; right:0; top:calc(100% + 8px); width:220px; padding:6px; border:1px solid var(--studio-border); border-radius:12px; background:var(--studio-popover-bg); box-shadow:0 16px 45px var(--studio-node-shadow); }
 .selectionMenu button { width:100%; justify-content:flex-start; }
 .selectionTitle { max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px; font-size:12px; font-weight:700; }

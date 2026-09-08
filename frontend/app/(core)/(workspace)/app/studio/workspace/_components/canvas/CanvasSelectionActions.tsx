@@ -13,10 +13,16 @@ export function CanvasSelectionActions({ nodes, copy, onSettings, onConnections,
   copy: StudioCopy['canvas']['nodes'];
   onSettings: (id: string) => void;
   onConnections: (id: string) => void;
-  onCopy: () => void;
+  onCopy: () => Promise<boolean>;
   onDelete: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const copySelection = async () => {
+    setCopyFailed(false);
+    setMenuOpen(false);
+    setCopyFailed(!(await onCopy()));
+  };
   if (!nodes.length) return null;
   const node = nodes.length === 1 ? nodes[0] : null;
   const media = node?.data.asset ?? node?.data.output;
@@ -35,8 +41,9 @@ export function CanvasSelectionActions({ nodes, copy, onSettings, onConnections,
     <StudioMenu open={menuOpen} onOpenChange={setMenuOpen} label={copy.selectionActions} className={styles.selectionMenuRoot} menuClassName={styles.selectionMenu} trigger={(triggerProps) => <button type="button" {...triggerProps}><MoreHorizontal size={16} />{copy.actions}</button>}>
       {node?.data.kind.startsWith('asset-') ? <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); node.data.onOpenAssetLibrary?.(node.id); }}><Replace size={16} />{copy.replaceMedia}</button> : null}
       {node && insertable ? <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); node.data.onSendOutputToTimeline?.(node.id); }}><Send size={16} />{copy.insertAtPlayhead}</button> : null}
-      <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); onCopy(); }}><Copy size={16} />{copy.copySelection}</button>
+      <button type="button" role="menuitem" onClick={() => void copySelection()}><Copy size={16} />{copy.copySelection}</button>
       <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); onDelete(); }}><Trash2 size={16} />{copy.deleteSelection}</button>
     </StudioMenu>
+    {copyFailed ? <span className={styles.copyFailure} role="alert">{copy.copyFailed}</span> : null}
   </div>;
 }

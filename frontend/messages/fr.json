@@ -5923,6 +5923,7 @@
           "selectionActions": "Actions de sélection",
           "blocks": "blocs",
           "copySelection": "Copier",
+          "copyFailed": "Copie bloquée. Sélectionnez le bloc puis Ctrl/Cmd+C.",
           "deleteSelection": "Supprimer",
           "connectSource": "Connecter",
           "noCompatibleSources": "Aucune source compatible disponible. Ajoutez une source ou déconnectez une entrée occupée.",
