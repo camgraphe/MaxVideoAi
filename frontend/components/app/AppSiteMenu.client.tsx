@@ -9,7 +9,7 @@ import { getPathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { AppGlyph } from './AppGlyph';
 import { AppAssistantConnections, AppAssistantMarks } from './AppAssistantConnections';
-import { appNavLabel, getAppMenuItems } from './app-navigation';
+import { appNavLabel, canShowStudioNavigation, getAppMenuItems } from './app-navigation';
 
 type Props = {
   children: ReactNode;
@@ -74,7 +74,7 @@ export function AppSiteMenu({ children, email, authResolved, isAdmin, signinHref
           <AppAssistantConnections locale={locale} onNavigate={close} />
           <section aria-labelledby={`${titleId}-app`}><h3 id={`${titleId}-app`}>{copy.app}</h3>
             <nav className="app-complete-menu" aria-label={copy.app}>
-              {getAppMenuItems().map((item) => <Link key={item.id} href={item.href} prefetch={false} onClick={close}><AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span></Link>)}
+              {getAppMenuItems(undefined, canShowStudioNavigation(isAdmin)).map((item) => <Link key={item.id} href={item.href} prefetch={false} onClick={close}><AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span></Link>)}
               {isAdmin ? <Link href="/admin" prefetch={false} onClick={(event) => { event.preventDefault(); close(); window.location.assign('/admin'); }}><AppGlyph name="settings" /><span>Admin</span></Link> : null}
             </nav>
           </section>

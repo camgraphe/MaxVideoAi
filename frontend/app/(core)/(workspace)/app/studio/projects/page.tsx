@@ -5,6 +5,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { FEATURES } from '@/content/feature-flags';
 import { headers } from 'next/headers';
 import { isStudioMontageCreationEnabled } from '@/server/studio/feature-access';
+import { requireAdmin } from '@/server/admin';
 import StudioProjectsPageClient from './StudioProjectsPage.client';
 import { resolveStudioMarketingStarter } from './studio-project-marketing-entry';
 
@@ -23,6 +24,13 @@ export default async function StudioProjectsPage({ searchParams }: {
 }) {
   if (!FEATURES.studio.maxVideoAiEditor) {
     notFound();
+  }
+  if (FEATURES.studio.adminOnly) {
+    try {
+      await requireAdmin();
+    } catch {
+      notFound();
+    }
   }
   const query = await searchParams;
   const initialStarterTemplateId = resolveStudioMarketingStarter(query.starter);

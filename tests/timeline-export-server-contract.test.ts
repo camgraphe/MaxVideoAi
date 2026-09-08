@@ -147,7 +147,7 @@ for (const routePath of [
     const absolute = join(root, routePath);
     assert.ok(existsSync(absolute), `${routePath} should exist`);
     const source = readFileSync(absolute, 'utf8');
-    assert.match(source, /getRouteAuthContext/, `${routePath} should require workspace auth`);
+    assert.match(source, /resolveStudioRouteContext/, `${routePath} should use the Studio admin preview access boundary`);
     assert.match(source, /Cache-Control/, `${routePath} should disable response caching`);
   });
 }

@@ -1,7 +1,10 @@
 import mcpPublication from '../config/mcp-publication.json';
 
 export const FEATURES = {
-  studio: { maxVideoAiEditor: true },
+  studio: {
+    maxVideoAiEditor: true,
+    adminOnly: true,
+  },
   delivery: {
     drive: true,
     onedrive: true,

@@ -1,7 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { resolveStudioRouteContext } from '../../_lib/studio-route-utils';
 import { readTimelineExportJob, timelineExportJobResponse } from '@/server/timeline-exports/repository';
 
 function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
@@ -11,8 +11,9 @@ function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
 }
 
 export async function GET(req: NextRequest, props: { params: Promise<{ exportId: string }> }) {
-  const { userId } = await getRouteAuthContext(req);
-  if (!userId) return json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+  const context = await resolveStudioRouteContext(req);
+  if (context.response) return context.response;
+  const { userId } = context;
   const { exportId } = await props.params;
   const job = await readTimelineExportJob({ userId, exportId });
   if (!job) return json({ ok: false, error: 'EXPORT_NOT_FOUND' }, { status: 404 });

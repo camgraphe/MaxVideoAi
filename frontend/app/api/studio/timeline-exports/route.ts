@@ -1,7 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { resolveStudioRouteContext } from '../_lib/studio-route-utils';
 import { createTimelineExportJobWithReservation, releaseFailedTimelineExportBilling } from '@/server/timeline-exports/billing';
 import { assertTimelineExportWorkerLauncherConfigured, launchTimelineExportWorkerTask } from '@/server/timeline-exports/ecs-runner';
 import {
@@ -45,8 +45,9 @@ async function markWorkerLaunchFailed(params: {
 }
 
 export async function POST(req: NextRequest) {
-  const { userId } = await getRouteAuthContext(req);
-  if (!userId) return json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+  const context = await resolveStudioRouteContext(req);
+  if (context.response) return context.response;
+  const { userId } = context;
   const payload = await req.json().catch(() => null);
 
   try {

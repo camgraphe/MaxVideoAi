@@ -2,6 +2,6 @@
 
 import { AppNavigation } from '@/components/app/AppNavigation.client';
 
-export function WorkspaceMobileNav() {
-  return <AppNavigation variant="mobile" />;
+export function WorkspaceMobileNav({ studioVisible = false }: { studioVisible?: boolean }) {
+  return <AppNavigation variant="mobile" studioVisible={studioVisible} />;
 }

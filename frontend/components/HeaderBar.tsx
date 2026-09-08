@@ -31,6 +31,7 @@ import {
 } from '@/components/header/header-nav-helpers';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
 import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
+import { canShowStudioNavigation } from '@/components/app/app-navigation';
 
 export function HeaderBar() {
   const { locale, t } = useI18n();
@@ -449,7 +450,7 @@ export function HeaderBar() {
           </div>
         </div>
       </header>}
-      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav /> : null}
+      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav studioVisible={canShowStudioNavigation(isAdmin)} /> : null}
       {isAppExperiencePath(pathname) ? <AppNavigation variant="activities" /> : null}
       {mobileMenuOpen ? (
         <HeaderMobileMenu

@@ -51,14 +51,27 @@ const TOOL_ITEMS: readonly AppNavItem[] = [
   { id: 'upscale', label: 'Upscale', href: '/app/tools/upscale', glyph: 'image' },
   { id: 'background-removal', label: 'Background Remover', href: '/app/tools/background-removal', glyph: 'video' },
 ];
-export function getAppNavigation(toolsEnabled: boolean = FEATURES.workflows.toolsSection) {
-  return PRIMARY_ITEMS.filter((item) => toolsEnabled || item.id !== 'tools');
+export function canShowStudioNavigation(isAdmin: boolean): boolean {
+  return FEATURES.studio.maxVideoAiEditor && (!FEATURES.studio.adminOnly || isAdmin);
 }
-export function getAppMenuItems(toolsEnabled: boolean = FEATURES.workflows.toolsSection): readonly AppNavItem[] {
+export function getAppNavigation(
+  toolsEnabled: boolean = FEATURES.workflows.toolsSection,
+  studioVisible: boolean = canShowStudioNavigation(false),
+) {
+  return PRIMARY_ITEMS.filter((item) => (
+    (toolsEnabled || item.id !== 'tools') && (studioVisible || item.id !== 'studio')
+  ));
+}
+export function getAppMenuItems(
+  toolsEnabled: boolean = FEATURES.workflows.toolsSection,
+  studioVisible: boolean = canShowStudioNavigation(false),
+): readonly AppNavItem[] {
   return [
     { id: 'dashboard', label: 'Dashboard', href: '/dashboard', glyph: 'library' },
     ...APP_ACTIVITIES,
-    ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', href: '/app/studio/projects', glyph: 'video' as const }] : []),
+    ...(studioVisible && FEATURES.studio.maxVideoAiEditor
+      ? [{ id: 'studio', label: 'Studio', href: '/app/studio/projects', glyph: 'studio' as const }]
+      : []),
     ...(toolsEnabled ? [...PRIMARY_ITEMS.filter((item) => item.id === 'tools'), ...TOOL_ITEMS] : []),
     { id: 'library', label: 'Library', href: '/app/library', glyph: 'library' },
     { id: 'jobs', label: 'History', href: '/jobs', glyph: 'prompt' },
@@ -67,10 +80,14 @@ export function getAppMenuItems(toolsEnabled: boolean = FEATURES.workflows.tools
     { id: 'connections', label: 'Connections', href: '/account/connections', glyph: 'connect' },
   ];
 }
-export function getAppNavigationSelection(pathname: string | null | undefined, toolsEnabled: boolean = FEATURES.workflows.toolsSection): { primary: AppPrimary | null; activity: AppActivity | null } {
+export function getAppNavigationSelection(
+  pathname: string | null | undefined,
+  toolsEnabled: boolean = FEATURES.workflows.toolsSection,
+  studioVisible: boolean = canShowStudioNavigation(false),
+): { primary: AppPrimary | null; activity: AppActivity | null } {
   const path = pathname?.replace(/\/+$/, '') || '/';
   const matches = (href: string) => path === href || path.startsWith(`${href}/`);
-  if (matches('/app/studio')) return { primary: 'studio', activity: null };
+  if (matches('/app/studio')) return { primary: studioVisible ? 'studio' : null, activity: null };
   if (matches('/app/library')) return { primary: 'media', activity: null };
   if (matches('/app/tools')) return { primary: toolsEnabled ? 'tools' : null, activity: null };
   if (matches('/jobs')) return { primary: 'activity', activity: null };

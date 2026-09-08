@@ -1077,9 +1077,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(canvasStyleSource, /react-flow__handle-right/, 'focused canvas CSS should position right handles without inheriting React Flow global CSS');
 
   const visitorAccessSource = source(visitorAccessPath);
-  assert.match(visitorAccessSource, /normalized === '\/app\/studio\/workspace'/, 'editor route should follow existing visitor workspace browse access');
-  assert.match(visitorAccessSource, /normalized === '\/app\/studio\/projects'/, 'studio projects route should be available through visitor workspace browse access');
-  assert.match(visitorAccessSource, /normalized\.startsWith\('\/app\/studio\/workspace\/'\)/, 'project-scoped studio workspaces should be available through visitor workspace browse access');
+  assert.doesNotMatch(visitorAccessSource, /normalized === '\/app\/studio\/workspace'/, 'admin-only editor routes must not inherit visitor workspace browse access');
+  assert.doesNotMatch(visitorAccessSource, /normalized === '\/app\/studio\/projects'/, 'admin-only studio projects must not inherit visitor workspace browse access');
+  assert.doesNotMatch(visitorAccessSource, /normalized\.startsWith\('\/app\/studio\/workspace\/'\)/, 'admin-only project workspaces must not inherit visitor workspace browse access');
 });
 
 test('MaxVideoAI Studio owns route-local copy and theme boundaries', () => {

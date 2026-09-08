@@ -19,6 +19,9 @@ import {
 
 export { NAV_ITEMS } from '@/components/app/app-navigation';
 import { AppNavigation } from '@/components/app/AppNavigation.client';
+import { canShowStudioNavigation } from '@/components/app/app-navigation';
+import { useAdminNavigationAccess } from '@/components/app/useAdminNavigationAccess';
+import { FEATURES } from '@/content/feature-flags';
 
 export const NAV_ICON_MAP: Record<string, LucideIcon> = {
   dashboard: Home,
@@ -128,5 +131,6 @@ export function AssistantConnectionsCard({ t }: { t: SidebarTranslate }) {
 }
 
 export function AppSidebar() {
-  return <aside className="app-sidebar sticky top-[var(--header-height)] hidden h-[calc(100dvh-var(--header-height))] shrink-0 md:flex"><AppNavigation variant="rail" /></aside>;
+  const isAdmin = useAdminNavigationAccess(FEATURES.studio.adminOnly);
+  return <aside className="app-sidebar sticky top-[var(--header-height)] hidden h-[calc(100dvh-var(--header-height))] shrink-0 md:flex"><AppNavigation variant="rail" studioVisible={canShowStudioNavigation(isAdmin)} /></aside>;
 }
