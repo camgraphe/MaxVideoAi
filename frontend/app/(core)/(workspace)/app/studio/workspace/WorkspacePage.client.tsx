@@ -240,8 +240,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setTimelineInPointSec: timelinePlayback.setTimelineInPointSec,
     setTimelineItems,
     setTimelineOutPointSec: timelinePlayback.setTimelineOutPointSec,
-    setTimelinePanelHeight,
-    setTimelinePreview,
+    setTimelinePanelHeight, setTimelinePreview,
     setVideoTrackCount,
     snapshotActiveSequence: sequenceSnapshots.snapshotActiveSequence,
     studioCommonCopy: studioCopy.common,
@@ -275,6 +274,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setTimelineItems,
     setTimelineOutPointSec: timelinePlayback.setTimelineOutPointSec,
     setTimelinePanelHeight,
+    setTimelinePreview,
     setUserCanvasTemplates,
     setVideoTrackCount,
     studioNotices: studioCopy.notices,
@@ -283,7 +283,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   });
 
   const handleMediaAccessError = useWorkspaceMediaAccess({
-    accountId: mediaAccountId, enabled: persistence.connected, projectAssets, projectId,
+    accountId: mediaAccountId, enabled: persistence.connected, projectAssets, projectId, sequences, timelineItems,
     setProjectAssets, setSequences, setTimelineItems, timelineItemsRef,
   });
 
@@ -420,6 +420,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     activeTemplateId,
     activeTemplateName,
     buildPersistedWorkspaceState: sequenceSnapshots.buildPersistedWorkspaceState,
+    connected: persistence.connected,
     hasValidTimelineInOut: exportState.hasValidTimelineInOut,
     openExportDialog: exportController.openExportDialog,
     projectId,
@@ -491,7 +492,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       timelineInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
       timelineItems={timelineItems} timelinePanelHeight={timelinePanelHeight}
       userCanvasTemplates={userCanvasTemplates} videoTrackCount={videoTrackCount}
-      onMediaAccessError={handleMediaAccessError} connectedConflict={persistence.connectedConflict}
+      onMediaAccessError={handleMediaAccessError} connectedConflict={persistence.connectedConflict} onReloadServerVersion={persistence.reloadServerVersion}
       projectAccessError={persistence.projectAccessError}
     />
   );

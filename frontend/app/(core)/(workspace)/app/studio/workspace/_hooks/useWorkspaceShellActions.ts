@@ -9,7 +9,7 @@ import type {
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
 } from '../_lib/workspace-types';
-import { saveStudioWorkspaceToApi } from '../_state/workspace-api-persistence';
+import { saveStudioWorkspaceToApi, type StudioApiSyncStatus } from '../_state/workspace-api-persistence';
 import {
   coerceTimelinePanelHeight,
   type PersistedWorkspaceState,
@@ -20,6 +20,7 @@ type UseWorkspaceShellActionsParams = {
   activeTemplateId: WorkspaceTemplateId;
   activeTemplateName: string;
   buildPersistedWorkspaceState: () => PersistedWorkspaceState;
+  connected: boolean;
   hasValidTimelineInOut: boolean;
   openExportDialog: () => void;
   projectId?: string;
@@ -32,13 +33,43 @@ type UseWorkspaceShellActionsParams = {
   studioNotices: StudioCopy['notices'];
   workspaceStorageKey: string;
   persistWorkspaceLocally?: (state: PersistedWorkspaceState) => void;
-  saveWorkspace?: (state: PersistedWorkspaceState) => Promise<unknown>;
+  saveWorkspace?: (state: PersistedWorkspaceState) => Promise<StudioApiSyncStatus>;
 };
+
+type WorkspaceExitNotices = Pick<StudioCopy['notices'],
+  'studioApiUnauthorized' | 'studioApiUnavailable' | 'workspaceConflict' | 'workspaceSavedReturningToProjects'>;
+
+export async function completeStudioWorkspaceExit(params: {
+  connected: boolean;
+  save: () => Promise<StudioApiSyncStatus>;
+  notices: WorkspaceExitNotices;
+  setNotice: (notice: string) => void;
+  navigate: () => void;
+}): Promise<void> {
+  if (!params.connected) {
+    params.setNotice(params.notices.workspaceSavedReturningToProjects);
+    await params.save().catch(() => 'error' as const);
+    params.navigate();
+    return;
+  }
+  const status = await params.save().catch(() => 'error' as const);
+  if (status === 'ready') {
+    params.setNotice(params.notices.workspaceSavedReturningToProjects);
+    params.navigate();
+    return;
+  }
+  params.setNotice(status === 'conflict'
+    ? params.notices.workspaceConflict
+    : status === 'unauthorized'
+      ? params.notices.studioApiUnauthorized
+      : params.notices.studioApiUnavailable);
+}
 
 export function useWorkspaceShellActions({
   activeTemplateId,
   activeTemplateName,
   buildPersistedWorkspaceState,
+  connected,
   hasValidTimelineInOut,
   openExportDialog,
   projectId,
@@ -76,28 +107,29 @@ export function useWorkspaceShellActions({
     const state = buildPersistedWorkspaceState();
     if (persistWorkspaceLocally) persistWorkspaceLocally(state);
     else window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
-    setNotice(studioNotices.workspaceSavedReturningToProjects);
-
     const navigateToProjects = () => {
       window.location.assign('/app/studio/projects');
     };
 
-    if (!projectId) {
-      navigateToProjects();
-      return;
-    }
-
-    const saving = saveWorkspace
-      ? saveWorkspace(state)
-      : saveStudioWorkspaceToApi({
+    const save = () => !projectId
+      ? Promise.resolve('ready' as const)
+      : saveWorkspace
+        ? saveWorkspace(state)
+        : saveStudioWorkspaceToApi({
           projectId,
           name: activeTemplateName,
           canvasTemplateId: activeTemplateId,
           settings: state.projectSettings,
           workspaceState: state,
-        });
-    void saving.finally(navigateToProjects);
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, persistWorkspaceLocally, projectId, saveWorkspace, setNotice, studioNotices.workspaceSavedReturningToProjects, workspaceStorageKey]);
+        }).then(({ status }) => status);
+    void completeStudioWorkspaceExit({
+      connected,
+      save,
+      notices: studioNotices,
+      setNotice,
+      navigate: navigateToProjects,
+    });
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, connected, persistWorkspaceLocally, projectId, saveWorkspace, setNotice, studioNotices, workspaceStorageKey]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
     resetExportSession();

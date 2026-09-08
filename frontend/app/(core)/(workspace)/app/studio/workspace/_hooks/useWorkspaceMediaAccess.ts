@@ -26,10 +26,24 @@ async function requestStudioMediaAccess(projectId: string, assetIds: string[]): 
   });
 }
 
+export function studioMediaAssetIdsForWorkspace(params: {
+  projectAssets: Array<{ ref?: unknown }>;
+  timelineItems: Array<{ ref?: unknown }>;
+  sequences: Array<{ timelineItems: Array<{ ref?: unknown }> }>;
+}): string[] {
+  return [...new Set([
+    ...params.projectAssets,
+    ...params.timelineItems,
+    ...params.sequences.flatMap((sequence) => sequence.timelineItems),
+  ].map(studioMediaAssetId).filter((assetId): assetId is string => Boolean(assetId)))];
+}
+
 export function useWorkspaceMediaAccess(params: {
   accountId: string | null;
   enabled: boolean;
   projectAssets: WorkspaceAssetRecord[];
+  sequences: WorkspaceSequenceRecord[];
+  timelineItems: WorkspaceTimelineItem[];
   projectId?: string;
   setProjectAssets: React.Dispatch<React.SetStateAction<WorkspaceAssetRecord[]>>;
   setSequences: React.Dispatch<React.SetStateAction<WorkspaceSequenceRecord[]>>;
@@ -37,7 +51,7 @@ export function useWorkspaceMediaAccess(params: {
   timelineItemsRef: React.MutableRefObject<WorkspaceTimelineItem[]>;
 }) {
   const {
-    accountId, enabled, projectAssets, projectId,
+    accountId, enabled, projectAssets, projectId, sequences, timelineItems,
     setProjectAssets, setSequences, setTimelineItems, timelineItemsRef,
   } = params;
   const failedUrlsRef = useRef(new Set<string>());
@@ -45,9 +59,9 @@ export function useWorkspaceMediaAccess(params: {
   const pendingAssetIdsRef = useRef(new Set<string>());
   const renewLatestRef = useRef<(assetIds: string[]) => Promise<void>>(() => Promise.resolve());
   const scopeRef = useRef('');
-  const assetIds = useMemo(() => [...new Set(projectAssets
-    .map(studioMediaAssetId)
-    .filter((assetId): assetId is string => Boolean(assetId)))], [params.projectAssets]);
+  const assetIds = useMemo(() => studioMediaAssetIdsForWorkspace({
+    projectAssets, sequences, timelineItems,
+  }), [projectAssets, sequences, timelineItems]);
   const assetKey = assetIds.join('|');
 
   const renew = useCallback((requestedIds: string[]) => {

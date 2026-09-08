@@ -17,7 +17,7 @@ import type {
   WorkspaceTimelineTrack,
   WorkspaceTimelineVideoTrack,
 } from '../_lib/workspace-types';
-import { createStarterWorkspaceTemplate } from '../_lib/workspace-templates';
+import { createStarterWorkspaceTemplate, MINIMAL_START_WORKSPACE_TEMPLATE_ID } from '../_lib/workspace-templates';
 import {
   createWorkspaceCanvasGuideState,
   EMPTY_WORKSPACE_CANVAS_GUIDE_STATE,
@@ -36,8 +36,11 @@ import {
 import { createStudioConnectedSaveQueue, type StudioConnectedSaveQueue } from '../_state/studio-connected-save-queue';
 import { stripStudioMediaAccess, studioWorkspaceSnapshotFingerprint } from '../_state/workspace-media-access';
 import {
+  readStudioConnectedWorkspaceDraft,
   readPersistedWorkspaceState,
   readStudioProject,
+  resolveStudioConnectedWorkspaceHydration,
+  shouldClearStudioWorkspaceForAccountChange,
   workspaceStorageKeyForConnectedProject,
 } from '../_state/workspace-persistence';
 import {
@@ -64,11 +67,11 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
   );
 }
 
-function workspaceApiNotice(status: StudioApiSyncStatus, notices: StudioCopy['notices']): string | null {
+export function workspaceApiNotice(status: StudioApiSyncStatus, notices: StudioCopy['notices']): string | null {
   if (status === 'ready') return null;
   if (status === 'unauthorized') return notices.studioApiUnauthorized;
-  if (status === 'unavailable') return notices.studioApiUnavailable;
-  return null;
+  if (status === 'conflict') return notices.workspaceConflict;
+  return notices.studioApiUnavailable;
 }
 
 type UseWorkspacePersistenceEffectsParams = {
@@ -108,6 +111,7 @@ type UseWorkspacePersistenceEffectsParams = {
   setTimelineItems: Dispatch<SetStateAction<WorkspaceTimelineItem[]>>;
   setTimelineOutPointSec: Dispatch<SetStateAction<number | null>>;
   setTimelinePanelHeight: Dispatch<SetStateAction<number | null>>;
+  setTimelinePreview: Dispatch<SetStateAction<{ items: WorkspaceTimelineItem[]; playheadSec: number } | null>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
   setVideoTrackCount: Dispatch<SetStateAction<number>>;
   studioNotices: StudioCopy['notices'];
@@ -189,6 +193,7 @@ export function useWorkspacePersistenceEffects({
   setTimelineItems,
   setTimelineOutPointSec,
   setTimelinePanelHeight,
+  setTimelinePreview,
   setUserCanvasTemplates,
   setVideoTrackCount,
   studioNotices,
@@ -199,6 +204,7 @@ export function useWorkspacePersistenceEffects({
   connected: boolean;
   projectAccessError: boolean;
   persistLocal: (state: PersistedWorkspaceState) => void;
+  reloadServerVersion: () => void;
   saveNow: (state: PersistedWorkspaceState) => Promise<StudioApiSyncStatus>;
   storageKey: string;
 } {
@@ -211,6 +217,7 @@ export function useWorkspacePersistenceEffects({
   };
   const connectedQueueRef = useRef<StudioConnectedSaveQueue<SavePayload> | null>(null);
   const baselineRef = useRef<string | null>(null);
+  const previousMediaAccountIdRef = useRef<string | null | undefined>(undefined);
   const [connectedConflict, setConnectedConflict] = useState(false);
   const [projectAccessError, setProjectAccessError] = useState(false);
   const [autosaveReadiness, setAutosaveReadiness] = useState({
@@ -221,11 +228,16 @@ export function useWorkspacePersistenceEffects({
 
   useEffect(() => {
     let cancelled = false;
+    const previousMediaAccountId = previousMediaAccountIdRef.current;
+    previousMediaAccountIdRef.current = mediaAccountId;
+    const accountChanged = previousMediaAccountId !== undefined
+      && shouldClearStudioWorkspaceForAccountChange(previousMediaAccountId, mediaAccountId, projectId);
     connectedQueueRef.current?.dispose();
     connectedQueueRef.current = null;
     baselineRef.current = null;
     setConnectedConflict(false);
     setProjectAccessError(false);
+    notifiedAutosaveFallbackStatusesRef.current.clear();
     setAutosaveReadiness({ api: false, local: false, workspaceStorageKey });
 
     const applyPersistedWorkspace = (persisted: PersistedWorkspaceState) => {
@@ -329,9 +341,38 @@ export function useWorkspacePersistenceEffects({
       setNotice(formatNotice(studioNotices.projectLoadedCleanSequence, { name: project.name }));
     };
 
-    const storedProject = readStudioProject(projectId);
+    if (accountChanged) {
+      const template = createStarterWorkspaceTemplate(MINIMAL_START_WORKSPACE_TEMPLATE_ID);
+      const emptyTimelineItems: WorkspaceTimelineItem[] = [];
+      const cleanSequence = createWorkspaceSequenceRecord({
+        id: DEFAULT_WORKSPACE_SEQUENCE_ID,
+        name: sequenceNameForIndex(1),
+        timelineItems: emptyTimelineItems,
+        projectSettings: DEFAULT_WORKSPACE_PROJECT_SETTINGS,
+      });
+      applyPersistedWorkspace({
+        nodes: template.nodes,
+        edges: template.edges,
+        guideState: createWorkspaceCanvasGuideState(template),
+        projectAssets: [],
+        projectMediaFolders: [],
+        timelineItems: emptyTimelineItems,
+        activeSequenceId: cleanSequence.id,
+        sequences: [cleanSequence],
+        activeTemplateId: template.id,
+        projectSettings: DEFAULT_WORKSPACE_PROJECT_SETTINGS,
+        focusMode: 'canvas',
+      });
+      setSelectedNodeId(null);
+      setStoredProjectName(null);
+      setTimelinePreview(null);
+    }
+
+    const storedProject = accountChanged ? null : readStudioProject(projectId);
     setStoredProjectName(storedProject?.name ?? null);
-    const persisted = readPersistedWorkspaceState(workspaceStorageKey, normalizePersistedWorkspaceState);
+    const persisted = accountChanged
+      ? null
+      : readPersistedWorkspaceState(workspaceStorageKey, normalizePersistedWorkspaceState);
     if (persisted) {
       applyPersistedWorkspace(persisted);
     } else if (storedProject) {
@@ -378,7 +419,7 @@ export function useWorkspacePersistenceEffects({
             || serverProjectResult.status === 'unavailable'
             || serverProjectResult.status === 'error';
           if (projectApiUnavailable) {
-            setAutosaveReadiness({ api: false, local: true, workspaceStorageKey });
+            setAutosaveReadiness({ api: false, local: !accountChanged, workspaceStorageKey });
           }
           return;
         }
@@ -391,16 +432,33 @@ export function useWorkspacePersistenceEffects({
           ? mergePersistedWorkspaceWithServerSequences(serverPersistedBase, serverSequences)
           : null;
         if (serverPersisted) {
-          applyPersistedWorkspace(serverPersisted);
           const connected = serverProject.persistenceMode === 'connected' && typeof serverProject.revision === 'number';
           const activeStorageKey = connected && mediaAccountId
             ? workspaceStorageKeyForConnectedProject(mediaAccountId, projectId)
             : workspaceStorageKey;
+          const connectedDraft = connected && mediaAccountId && typeof window !== 'undefined'
+            ? readStudioConnectedWorkspaceDraft(window.localStorage, activeStorageKey, normalizePersistedWorkspaceState)
+            : null;
+          const hydration = connected
+            ? resolveStudioConnectedWorkspaceHydration({
+                serverRevision: serverProject.revision!,
+                serverState: serverPersisted,
+                draft: connectedDraft,
+              })
+            : { state: serverPersisted, conflict: false, source: 'server' as const };
+          applyPersistedWorkspace(hydration.state);
           if (connected && mediaAccountId) {
             const scope = `${mediaAccountId}:${projectId}`;
-            const queue = createStudioConnectedSaveQueue<SavePayload>({
+            let queue: StudioConnectedSaveQueue<SavePayload>;
+            queue = createStudioConnectedSaveQueue<SavePayload>({
               scope,
               initialRevision: serverProject.revision!,
+              initialConflictDraft: hydration.conflict ? {
+                name: serverProject.name,
+                canvasTemplateId: serverProject.canvasTemplateId,
+                settings: hydration.state.projectSettings,
+                workspaceState: hydration.state,
+              } : undefined,
               save: async ({ expectedRevision, snapshot }) => {
                 return saveStudioWorkspaceToApi({
                   projectId,
@@ -408,24 +466,35 @@ export function useWorkspacePersistenceEffects({
                   expectedRevision,
                 });
               },
-              onSaved: (snapshot) => {
+              onSaved: (snapshot, revision) => {
                 baselineRef.current = studioWorkspaceSnapshotFingerprint(snapshot.workspaceState);
+                const latest = queue.draft();
+                if (typeof window !== 'undefined' && (!latest || studioWorkspaceSnapshotFingerprint(latest.workspaceState)
+                  === studioWorkspaceSnapshotFingerprint(snapshot.workspaceState))) {
+                  window.localStorage.setItem(activeStorageKey, JSON.stringify({
+                    dirty: false,
+                    revision,
+                    state: stripStudioMediaAccess(snapshot.workspaceState),
+                  }));
+                }
               },
-              onConflict: (draft) => {
+              onConflict: (draft, revision) => {
                 if (cancelled || typeof window === 'undefined') return;
                 setConnectedConflict(true);
                 window.localStorage.setItem(activeStorageKey, JSON.stringify({
-                  revision: serverProject.revision,
+                  dirty: true,
+                  revision,
                   state: stripStudioMediaAccess(draft.workspaceState),
                 }));
               },
             });
             connectedQueueRef.current = queue;
             baselineRef.current = studioWorkspaceSnapshotFingerprint(serverPersisted);
+            setConnectedConflict(hydration.conflict);
           }
-          if (typeof window !== 'undefined') {
+          if (typeof window !== 'undefined' && hydration.source === 'server') {
             window.localStorage.setItem(activeStorageKey, connected
-              ? JSON.stringify({ revision: serverProject.revision, state: stripStudioMediaAccess(serverPersisted) })
+              ? JSON.stringify({ dirty: false, revision: serverProject.revision, state: stripStudioMediaAccess(serverPersisted) })
               : JSON.stringify(serverPersisted));
           }
           setAutosaveReadiness({ api: true, local: true, workspaceStorageKey: activeStorageKey });
@@ -493,6 +562,7 @@ export function useWorkspacePersistenceEffects({
     setTimelineItems,
     setTimelineOutPointSec,
     setTimelinePanelHeight,
+    setTimelinePreview,
     setUserCanvasTemplates,
     setVideoTrackCount,
     studioNotices,
@@ -514,7 +584,11 @@ export function useWorkspacePersistenceEffects({
     const state = buildPersistedWorkspaceState();
     const queue = connectedQueueRef.current;
     window.localStorage.setItem(autosaveReadiness.workspaceStorageKey, queue
-      ? JSON.stringify({ revision: queue.state().revision, state: stripStudioMediaAccess(state) })
+      ? JSON.stringify({
+          dirty: studioWorkspaceSnapshotFingerprint(state) !== baselineRef.current,
+          revision: queue.state().revision,
+          state: stripStudioMediaAccess(state),
+        })
       : JSON.stringify(stripStudioMediaAccess(state)));
   }, [
     autosaveReadiness.local,
@@ -544,7 +618,16 @@ export function useWorkspacePersistenceEffects({
       if (queue) {
         queue.enqueue(payload);
         void queue.whenIdle().then((status) => {
-          if (status === 'ready') notifiedAutosaveFallbackStatusesRef.current.clear();
+          if (status === 'ready') {
+            notifiedAutosaveFallbackStatusesRef.current.clear();
+            return;
+          }
+          if (notifiedAutosaveFallbackStatusesRef.current.has(status)) return;
+          const notice = workspaceApiNotice(status, studioNotices);
+          if (notice) {
+            notifiedAutosaveFallbackStatusesRef.current.add(status);
+            setNotice(notice);
+          }
         });
         return;
       }
@@ -602,8 +685,18 @@ export function useWorkspacePersistenceEffects({
     const queue = connectedQueueRef.current;
     const stripped = stripStudioMediaAccess(state);
     window.localStorage.setItem(autosaveReadiness.workspaceStorageKey, queue
-      ? JSON.stringify({ revision: queue.state().revision, state: stripped })
+      ? JSON.stringify({
+          dirty: studioWorkspaceSnapshotFingerprint(state) !== baselineRef.current,
+          revision: queue.state().revision,
+          state: stripped,
+        })
       : JSON.stringify(stripped));
+  };
+
+  const reloadServerVersion = (): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(autosaveReadiness.workspaceStorageKey);
+    window.location.reload();
   };
 
   return {
@@ -611,6 +704,7 @@ export function useWorkspacePersistenceEffects({
     connectedConflict,
     persistLocal,
     projectAccessError,
+    reloadServerVersion,
     saveNow,
     storageKey: autosaveReadiness.workspaceStorageKey,
   };

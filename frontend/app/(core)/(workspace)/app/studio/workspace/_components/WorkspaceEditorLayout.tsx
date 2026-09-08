@@ -107,7 +107,7 @@ type WorkspaceEditorLayoutProps = {
   timelinePanelHeight: number | null;
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
   videoTrackCount: number;
-  onMediaAccessError?: (item: WorkspaceTimelineItem) => void;
+  onMediaAccessError?: (item: WorkspaceTimelineItem) => void; onReloadServerVersion: () => void;
   connectedConflict: boolean; projectAccessError: boolean;
 };
 export function WorkspaceEditorLayout({
@@ -155,8 +155,7 @@ export function WorkspaceEditorLayout({
   timelineItems,
   timelinePanelHeight,
   userCanvasTemplates,
-  videoTrackCount,
-  onMediaAccessError,
+  videoTrackCount, onMediaAccessError, onReloadServerVersion,
   connectedConflict, projectAccessError,
 }: WorkspaceEditorLayoutProps) {
   const editorShellStyle = timelinePanelHeight ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties) : undefined;
@@ -208,7 +207,7 @@ export function WorkspaceEditorLayout({
           {notice}
         </div>
       ) : null}
-      <WorkspaceConnectedStatus conflict={connectedConflict} projectAccessError={projectAccessError} notices={studioCopy.notices} />
+      <WorkspaceConnectedStatus conflict={connectedConflict} projectAccessError={projectAccessError} notices={studioCopy.notices} onReloadServerVersion={onReloadServerVersion} />
       <div
         className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : ''} ${
           shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''

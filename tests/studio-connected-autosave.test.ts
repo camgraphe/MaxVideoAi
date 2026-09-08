@@ -3,6 +3,13 @@ import test from 'node:test';
 
 import { createStudioConnectedSaveQueue } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/studio-connected-save-queue';
 import { buildWorkspaceActiveSequenceSnapshot } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-snapshot';
+import {
+  readStudioConnectedWorkspaceDraft,
+  resolveStudioConnectedWorkspaceHydration,
+  shouldClearStudioWorkspaceForAccountChange,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-persistence';
+import { studioMediaAssetIdsForWorkspace } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceMediaAccess';
+import { completeStudioWorkspaceExit } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShellActions';
 
 test('connected autosave sends one request at a time, coalesces edits and chains ACK revisions', async () => {
   const releases: Array<(value: { status: 'ready'; revision: number }) => void> = [];
@@ -68,4 +75,73 @@ test('connected hydration snapshots keep the stored timestamp until a real seque
     sequences: [sequence], preserveStoredUpdatedAt: true,
   });
   assert.equal(snapshot.updatedAt, updatedAt);
+});
+
+test('a recovered connected draft is resumed only at its exact server revision', () => {
+  const server = { title: 'server' } as never;
+  const draftState = { title: 'draft' } as never;
+  const storage = {
+    getItem: () => JSON.stringify({ revision: 4, state: draftState }),
+  };
+  const draft = readStudioConnectedWorkspaceDraft(storage, 'scope-key', (value) => value as never);
+  assert.deepEqual(draft, { dirty: true, revision: 4, state: draftState });
+  assert.deepEqual(resolveStudioConnectedWorkspaceHydration({ serverRevision: 4, serverState: server, draft }), {
+    state: draftState, conflict: false, source: 'draft',
+  });
+  assert.deepEqual(resolveStudioConnectedWorkspaceHydration({ serverRevision: 5, serverState: server, draft }), {
+    state: draftState, conflict: true, source: 'draft',
+  });
+  const identical = { dirty: true, revision: 5, state: server };
+  assert.deepEqual(resolveStudioConnectedWorkspaceHydration({ serverRevision: 5, serverState: server, draft: identical }), {
+    state: server, conflict: false, source: 'server',
+  });
+  assert.deepEqual(resolveStudioConnectedWorkspaceHydration({
+    serverRevision: 6, serverState: server, draft: { dirty: false, revision: 5, state: draftState },
+  }), { state: server, conflict: false, source: 'server' });
+});
+
+test('a reopened stale draft starts blocked without issuing a write', async () => {
+  const calls: unknown[] = [];
+  const queue = createStudioConnectedSaveQueue<{ value: string }>({
+    scope: 'owner-a:project-a', initialRevision: 8,
+    initialConflictDraft: { value: 'local draft' },
+    save: async (request) => { calls.push(request); return { status: 'ready', revision: 9 }; },
+  });
+  assert.deepEqual(queue.state(), { blockedByConflict: true, inFlight: false, revision: 8 });
+  assert.deepEqual(queue.draft(), { value: 'local draft' });
+  assert.equal(await queue.whenIdle(), 'conflict');
+  assert.deepEqual(calls, []);
+});
+
+test('private access requests include bin, active timeline, and every live sequence reference', () => {
+  const ref = (letter: string) => ({ type: 'asset' as const, kind: 'video' as const, assetId: `ma_${letter.repeat(32)}` });
+  const item = (id: string, letter: string) => ({ id, ref: ref(letter) }) as never;
+  assert.deepEqual(studioMediaAssetIdsForWorkspace({
+    projectAssets: [item('asset-a', 'a')],
+    timelineItems: [item('active-b', 'b')],
+    sequences: [
+      { timelineItems: [item('sequence-b', 'b'), item('sequence-c', 'c')] },
+      { timelineItems: [item('sequence-d', 'd')] },
+    ],
+  }), [`ma_${'a'.repeat(32)}`, `ma_${'b'.repeat(32)}`, `ma_${'c'.repeat(32)}`, `ma_${'d'.repeat(32)}`]);
+});
+
+test('account changes clear project media and connected exits wait for a real ACK', async () => {
+  assert.equal(shouldClearStudioWorkspaceForAccountChange('owner-a', 'owner-b', 'project-a'), true);
+  assert.equal(shouldClearStudioWorkspaceForAccountChange(null, 'owner-a', 'project-a'), true);
+  assert.equal(shouldClearStudioWorkspaceForAccountChange('owner-a', 'owner-a', 'project-a'), false);
+  assert.equal(shouldClearStudioWorkspaceForAccountChange('owner-a', 'owner-b', undefined), false);
+
+  const navigations: string[] = [];
+  const notices: string[] = [];
+  const copy = {
+    studioApiUnauthorized: 'unauthorized', studioApiUnavailable: 'unavailable',
+    workspaceConflict: 'conflict', workspaceSavedReturningToProjects: 'saved',
+  };
+  await completeStudioWorkspaceExit({ connected: true, save: async () => 'conflict', notices: copy, setNotice: (notice) => notices.push(notice), navigate: () => navigations.push('go') });
+  assert.deepEqual({ navigations, notices }, { navigations: [], notices: ['conflict'] });
+  await completeStudioWorkspaceExit({ connected: true, save: async () => 'ready', notices: copy, setNotice: (notice) => notices.push(notice), navigate: () => navigations.push('go') });
+  assert.deepEqual({ navigations, notices }, { navigations: ['go'], notices: ['conflict', 'saved'] });
+  await completeStudioWorkspaceExit({ connected: false, save: async () => 'error', notices: copy, setNotice: (notice) => notices.push(notice), navigate: () => navigations.push('go') });
+  assert.deepEqual({ navigations, notices }, { navigations: ['go', 'go'], notices: ['conflict', 'saved', 'saved'] });
 });

@@ -5,18 +5,19 @@ type SaveResult = { status: StudioConnectedSaveStatus; revision?: number };
 export function createStudioConnectedSaveQueue<TSnapshot>(options: {
   scope: string;
   initialRevision: number;
+  initialConflictDraft?: TSnapshot;
   save(request: { scope: string; expectedRevision: number; snapshot: TSnapshot }): Promise<SaveResult>;
   onRevision?: (revision: number) => void;
   onSaved?: (snapshot: TSnapshot, revision: number) => void;
-  onConflict?: (draft: TSnapshot) => void;
+  onConflict?: (draft: TSnapshot, revision: number) => void;
 }) {
   let revision = options.initialRevision;
-  let pending: TSnapshot | null = null;
-  let latestDraft: TSnapshot | null = null;
+  let pending: TSnapshot | null = options.initialConflictDraft ?? null;
+  let latestDraft: TSnapshot | null = options.initialConflictDraft ?? null;
   let inFlight = false;
-  let blockedByConflict = false;
+  let blockedByConflict = options.initialConflictDraft !== undefined;
   let disposed = false;
-  let lastStatus: StudioConnectedSaveStatus = 'ready';
+  let lastStatus: StudioConnectedSaveStatus = blockedByConflict ? 'conflict' : 'ready';
   let waiters: Array<(status: StudioConnectedSaveStatus) => void> = [];
 
   const settle = (status: StudioConnectedSaveStatus) => {
@@ -45,7 +46,7 @@ export function createStudioConnectedSaveQueue<TSnapshot>(options: {
     if (result.status === 'conflict') {
       blockedByConflict = true;
       pending = latestDraft ?? snapshot;
-      options.onConflict?.(pending);
+      options.onConflict?.(pending, revision);
       settle('conflict');
       return;
     }
