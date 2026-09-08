@@ -207,3 +207,58 @@ case did not call the common local-dependency fixture helper. The correction mus
 mock these absent consent services explicitly, not ignore errors. All other
 model/capacity, clipboard, keyboard, responsive inspector, audio and local-recovery
 cases pass. The corrected Projects case still needs a fresh run.
+
+## Final technical gates at 4a119520a
+
+`df2d32c9e` extracts the unchanged connection styles into a43-line local module:
+the node owner is503/520 lines again, with explicit import/ownership contracts.
+`490977173` replaces the three starter inventories with actual outcome sentences
+in EN/FR/ES and fallback copy; the generation disclaimer is unchanged.
+`4a119520a` isolates the two consent fixtures in the Projects smoke only.
+All three commits and the root12-clip/frontier QA are independently **Approved**.
+
+On final product `4a119520ac3b2ad5529890bae932599ad9651737`:
+
+- Studio/exports unit, contract, DOM and disposable-PostgreSQL suites:
+  **496/496**, zero skips,24.65s; log `/private/tmp/studio-editor-final.GePDea`.
+- Modified MCP gates/contracts plus original montage planning contracts:
+  **87/87**, zero skips,12.36s; log `/private/tmp/studio-mcp-final.50AkWe`.
+- Clean-environment production build in `/private/tmp/studio-build.HTFEnx`:
+  prebuild registry/catalog/media gates, optimized build, lint/types,
+  **867/867 pages**, traces and sitemap postbuild all succeed.
+- Exposure and `git diff --check` succeed. Two inherited exhaustive-deps warnings
+  remain in WorkspaceAssetLibraryBrowser and WorkspaceRuntimeModals; the installed
+  Supabase SDK also emits its inherited Edge `process.version` warning.
+
+No DB/provider/payment/storage environment is inherited by the build. The normal
+3032 preview and new immutable4a preview3040/3041 remain anonymous local drafts.
+
+## Comparable interaction measurements, not a CWV claim
+
+Three fresh Chromium contexts per version,1280×720, identical byte-for-byte
+`editor-performance.spec.ts`,80 nodes/150 timeline items, same local media and
+mocked account/persistence/consent. Baseline332bf4abf remains on3034; final4a runs
+on3040. Each run succeeds. Both development servers are warmed before gestures;
+no parallel heavy work runs during measurement.
+
+| Measure | Baseline median (range) | Final median (range) |
+| --- | ---: | ---: |
+| Media requests before first Play | 150 (150–150) | 150 (150–150) |
+| Play to playhead progression | 270ms (270–271) | 275ms (259–282) |
+| Scrub to expected position | 41ms (40–41) | 43ms (40–44) |
+| Automated clip drag | 224ms (224–228) | 268ms (250–272) |
+| Two timeline zoom increments | 70ms (69–72) | 86ms (86–87) |
+| Automated canvas pan | 420ms (417–433) | 176ms (160–193) |
+
+The final drag/zoom measurements are modestly slower (+44ms/+16ms median), while
+pan is faster. Do not describe this as a universal speedup, production benchmark
+or CWV improvement. The150 preloaded readers remain an explicit unchanged debt.
+The stress test observes editor-clock progression/gestures; native media decoding
+and sound are established by the separate frame/RMS and private-browser tests.
+
+The first attempted baseline rerun incorrectly used the new header-readiness
+helper against the old header and failed before measurement3/3. The corrected
+run uses the baseline's existing helper and the verified identical stress test;
+no baseline product or files were modified. Raw reports:
+`.superpowers/studio-visuals/final-baseline-performance-corrected.json` and
+`final-studio-performance.json` (three passes each).
