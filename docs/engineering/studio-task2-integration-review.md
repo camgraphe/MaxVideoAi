@@ -20,6 +20,7 @@ Si le Studio composé n'existe pas encore dans la branche d'intégration, la ref
 | 10 | `603f45a4b` | Guides compacts par défaut, sans migration des projets existants. |
 | 11 | `957c593b6` | Correctif revu : portée d'Annuler, gestion d'un port plein, focus des lecteurs et Copy réel avec refus explicite. |
 | 12 | `8cf596d54` | Qualification responsive des actions : huit combinaisons viewport/thème. |
+| 13 | `eb791a266` | Correctifs de composition revus : Mock Chat local, Live Chat fermé sans contrat tarifaire, dimensions 1440p réelles et identité export par compte/clé exacte avec rejeu historique. |
 
 Le merge de composition `3bb6188e0` est propre à cette branche (app fixe `ef3393c0d` + main `ab2cb9fbd`). Il n'est pas une instruction de fusion dans la branche app. Les manifestes `docs/engineering/studio-import/` décrivent les importations et exclusions ; aucune source n'a été modifiée.
 
@@ -31,6 +32,8 @@ Socle `e101e2840` : 413 tests ciblés, QA Studio 388 tests + TypeScript + lint ;
 
 Task 2 finale `957c593b6` : 397 tests Studio, 12 E2E, TypeScript sans erreur, lint sans erreur/deux warnings hérités, diff-check propre. Revue initiale : deux problèmes concrets (Undo visant timeline après Connections ; focus perdu après Play/Listen). Revue corrective : les deux corrigés, aucun nouveau Critical/Important. Mineur restant : effacer l'alerte Copy à la réouverture d'Actions pour éviter un message périmé.
 
+Revue de composition `eb791a266` : trois findings hérités corrigés, revue indépendante **Approved**, aucun Critical/Important. 93 tests ciblés, un E2E Chat, TypeScript sans erreur. Le run global au milieu de Task3 donne 412/418, six échecs liés aux changements médias non committés : ne pas le présenter comme une qualification globale finale. Vérification indépendante `07b1e3c42` via le runtime `5303c6f8b` : vrai Next exporté depuis Git, auth signée locale, PostgreSQL17 socket-only ; Chat répond401 sans session et503 en cookie/Bearer, sans chemin fournisseur. La fixture ne certifie ni PKCE ni l'infrastructure Supabase de production.
+
 Qualification responsive parent `8cf596d54` : 8/8, 1440×900, 390×844, 320×844, 844×390, clair et sombre, reduced-motion ; actions de sélection/inspection/création dans le viewport, cibles 44 px, retour du focus. Cela ne vérifie pas chaque combinaison modèle/paramètre ni tous les navigateurs.
 
 Mesure stress avant/après documentée dans `studio-connected-editor-verification.md` : 80 blocs, 150 items, mêmes fixtures, un passage Next dev par version. Les requêtes média initiales restent à 150 ; aucun gain de chargement initial/CWV revendiqué. Les couches timeline préchargées restent une dette à qualifier.
@@ -41,7 +44,9 @@ Mesure stress avant/après documentée dans `studio-connected-editor-verificatio
 - MCP : `prepare_montage` reste désactivé par défaut, read-only, `persisted:false`. Nouveau projet transactionnel et autosave révisionné : Task 4 à implémenter.
 - Preview 3032 : authentification anonyme locale et brouillons locaux ; aucune DB ni génération/paiement/stockage configurés. Ce n'est pas une preuve de sauvegarde serveur.
 - Export réel, concurrence financière inter-créateurs, worker et stockage distants non qualifiés. Aucun appel payant ou écriture distante.
+- Live Chat reste explicitement indisponible faute de contrat canonique de devis/autorisation ; la simulation locale est identifiée comme telle. Les messages et projets historiques restent conservés.
+- Tarification export1440p héritée à arbitrer avant activation : multiplicateur1 par défaut contre1.5 pour1080p. Le correctif de dimensions ne modifie pas cette politique commerciale ; aucun export/débit exécuté.
 - Allègement final des ports optionnels et texte des cartes à réaliser sans retirer capacités, audio, modèles ou budgets.
 - Build complet final et qualification de la composition avec les derniers lots Audio/Toolbox/app restent nécessaires avant intégration finale.
 
-MCP Audio appartient à la tâche Audio, selon attribution confirmée par coordination. Studio conserve la commande de montage vidéo persisté et les adaptateurs de projet, sans deuxième fournisseur, devis ni multiplicateur de marge.
+Depuis le recentrage demandé par l'utilisateur, la tâche principale reprend Audio/Toolbox/Billing, dont MCP Audio. Studio conserve la commande de montage vidéo persisté et les adaptateurs de projet, sans deuxième fournisseur, devis ni multiplicateur de marge. Les anciens commits Audio/Toolbox restent consultables via Git ; leurs anciennes worktrees ne sont plus des points d'intégration.
