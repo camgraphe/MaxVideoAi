@@ -38,32 +38,32 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
     const prepareFresh = async (browserSession = session) => {
       const owned = await browserFixture!.newContext(browserSession, { viewport: { width: 1440, height: 900 }, locale: 'en-US', colorScheme: 'light', reducedMotion: 'reduce' });
       try {
-      assert.deepEqual((await owned.context.storageState()).origins, [], 'No Studio draft, global localStorage or previous browser cache seeds this context.');
-      // These unrelated account/consent readers are outside this minimal SQL fixture.
-      // Project, sequence, workspace, media access, montage and Auth requests remain real.
-      const auxiliary = new Map<string, unknown>([
-        ['/api/member-status', { tier: 'Member' }],
-        ['/api/wallet', { balance: 42.5, balanceCents: 4250, currency: 'USD' }],
-        ['/api/admin/access', { ok: false }],
-        ['/api/legal/cookies/version', { ok: true, version: 'studio-connected-browser', publishedAt: null }],
-        ['/api/legal/cookies', { ok: true, version: 'studio-connected-browser' }],
-      ]);
-      for (const [path, json] of auxiliary) {
-        await owned.page.route(`${runtime.browserOrigin}${path}`, (route) => route.fulfill({ json }));
-      }
-      // No generation is submitted or priced in this persistence-only fixture.
-      await owned.page.route(`${runtime.browserOrigin}/api/preflight`, (route) => route.fulfill({
-        status: 503, json: { ok: false, error: 'GENERATION_NOT_PART_OF_PERSISTENCE_TEST' },
-      }));
-      const errors: string[] = [];
-      const workspaceWrites: Array<{ expectedRevision: number; snapshot: unknown }> = [];
-      owned.page.on('pageerror', (error) => errors.push(error.message));
-      owned.page.on('request', (request) => {
-        if (request.method() === 'PUT' && request.url() === `${runtime.browserOrigin}/api/studio/projects/${montage.projectId}/workspace`) {
-          workspaceWrites.push(request.postDataJSON());
+        assert.deepEqual((await owned.context.storageState()).origins, [], 'No Studio draft, global localStorage or previous browser cache seeds this context.');
+        // These unrelated account/consent readers are outside this minimal SQL fixture.
+        // Project, sequence, workspace, media access, montage and Auth requests remain real.
+        const auxiliary = new Map<string, unknown>([
+          ['/api/member-status', { tier: 'Member' }],
+          ['/api/wallet', { balance: 42.5, balanceCents: 4250, currency: 'USD' }],
+          ['/api/admin/access', { ok: false }],
+          ['/api/legal/cookies/version', { ok: true, version: 'studio-connected-browser', publishedAt: null }],
+          ['/api/legal/cookies', { ok: true, version: 'studio-connected-browser' }],
+        ]);
+        for (const [path, json] of auxiliary) {
+          await owned.page.route(`${runtime.browserOrigin}${path}`, (route) => route.fulfill({ json }));
         }
-      });
-      return { ...owned, errors, workspaceWrites };
+        // No generation is submitted or priced in this persistence-only fixture.
+        await owned.page.route(`${runtime.browserOrigin}/api/preflight`, (route) => route.fulfill({
+          status: 503, json: { ok: false, error: 'GENERATION_NOT_PART_OF_PERSISTENCE_TEST' },
+        }));
+        const errors: string[] = [];
+        const workspaceWrites: Array<{ expectedRevision: number; snapshot: unknown }> = [];
+        owned.page.on('pageerror', (error) => errors.push(error.message));
+        owned.page.on('request', (request) => {
+          if (request.method() === 'PUT' && request.url() === `${runtime.browserOrigin}/api/studio/projects/${montage.projectId}/workspace`) {
+            workspaceWrites.push(request.postDataJSON());
+          }
+        });
+        return { ...owned, errors, workspaceWrites };
       } catch (error) {
         await owned.close();
         throw error;
@@ -489,22 +489,41 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         await creator.page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
         const library = await runtime.database.pool.query(`SELECT public_id, kind, url, mime_type, metadata
           FROM media_assets WHERE user_id=$1 ORDER BY public_id`, [STUDIO_FIXTURE_OWNERS[0]]);
-        await creator.page.route(`${runtime.browserOrigin}/api/media-library/assets?**`, (route) => route.fulfill({ json: {
+        let libraryAttempts = 0;
+        await creator.page.route(`${runtime.browserOrigin}/api/media-library/assets?**`, (route) => {
+          libraryAttempts += 1;
+          if (libraryAttempts === 1) return route.fulfill({ status: 503, json: { ok: false } });
+          return route.fulfill({ json: {
           ok: true, hasMore: false, nextCursor: null,
           assets: library.rows.map((asset) => ({
             id: asset.public_id, ref: { type: 'asset', assetId: asset.public_id, kind: asset.kind },
             kind: asset.kind, url: asset.url, mime: asset.mime_type, mediaFacts: asset.metadata.mediaFacts,
           })),
-        } }));
+          } });
+        });
         await creator.page.goto(`${runtime.browserOrigin}/app/studio/projects`, { waitUntil: 'domcontentloaded' });
         await creator.page.getByRole('button', { name: 'Reject all', exact: true }).click();
+        await creator.page.getByRole('button', { name: 'MaxVideoAI Menu', exact: true }).click();
+        await creator.page.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
+        await creator.page.getByRole('button', { name: 'Close ×', exact: true }).click();
+        await expect(creator.page.locator('html')).toHaveAttribute('data-theme', 'dark');
         const open = creator.page.locator('[data-studio-montage-open="true"]');
         await expect(open).toBeVisible();
         await open.click();
         const dialog = creator.page.locator('[data-studio-montage-dialog="true"]');
         await expect(dialog).toBeVisible();
-        await expect(dialog.locator('[data-studio-montage-error="true"]')).toBeVisible();
+        await expect(dialog.locator('[data-studio-montage-validation-error="true"]')).toBeVisible();
         await expect(dialog.locator('[data-studio-montage-title-input="true"]')).toBeFocused();
+        await expect(dialog.locator('[data-studio-montage-library-error="true"][role="alert"]')).toContainText('The video library could not be loaded.');
+        await dialog.locator('[data-studio-montage-title-input="true"]').fill('Preserved during library retry');
+        await dialog.getByRole('combobox', { name: 'Frame rate', exact: true }).selectOption('30');
+        await dialog.getByRole('button', { name: 'Retry video library', exact: true }).click();
+        await expect(dialog.locator('[data-studio-montage-add]')).toHaveCount(2);
+        await expect(dialog.locator('[data-studio-montage-library-error="true"]')).toHaveCount(0);
+        await expect(dialog.locator('[data-studio-montage-title-input="true"]')).toHaveValue('Preserved during library retry');
+        await expect(dialog.getByRole('combobox', { name: 'Frame rate', exact: true })).toHaveValue('30');
+        await expect.poll(() => dialog.evaluate((element) => element.contains(document.activeElement)), 'Retry must retain keyboard ownership when its trigger is removed.').toBe(true);
+        assert.equal(libraryAttempts, 2, 'Retry must relaunch the listing inside the same dialog without resetting its intent.');
         await creator.page.keyboard.press('Escape');
         await expect(dialog).toHaveCount(0);
         await expect(open).toBeFocused();
@@ -514,7 +533,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         await dialog.locator('[data-studio-montage-title-input="true"]').fill('Ordered from the Studio interface');
         await dialog.getByRole('combobox', { name: 'Frame rate', exact: true }).selectOption('30');
         await expect(dialog.locator('[data-studio-montage-submit="true"]')).toBeDisabled();
-        await expect(dialog.locator('[data-studio-montage-error="true"]')).toContainText(/2.*12/u);
+        await expect(dialog.locator('[data-studio-montage-validation-error="true"]')).toContainText(/2.*12/u);
         for (const assetId of [STUDIO_CONNECTED_ASSET_IDS.a, STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a]) {
           await dialog.locator(`[data-studio-montage-add="${assetId}"]`).click();
         }
@@ -540,7 +559,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         await expect(ordered.nth(0).getByLabel('Duration in frames', { exact: true })).toHaveValue('137');
         await expect(dialog.locator('[data-studio-montage-submit="true"]')).toBeEnabled();
         await ordered.nth(0).getByLabel('Duration in frames', { exact: true }).fill('138');
-        await expect(dialog.locator('[data-studio-montage-error="true"]')).toBeVisible();
+        await expect(dialog.locator('[data-studio-montage-validation-error="true"]')).toBeVisible();
         await expect(dialog.locator('[data-studio-montage-submit="true"]')).toBeDisabled();
         await ordered.nth(0).getByLabel('Duration in frames', { exact: true }).fill('137');
         await dialog.getByRole('combobox', { name: 'Frame rate', exact: true }).selectOption('30');
