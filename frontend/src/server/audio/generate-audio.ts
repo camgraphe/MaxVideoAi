@@ -27,7 +27,9 @@ import {
   AudioGenerationError,
 } from '@/server/audio/audio-generate-validation';
 import {
+  completeAudioJob,
   createInitialAudioJob,
+  failAudioJob,
   updateAudioJob,
 } from '@/server/audio/audio-generate-jobs';
 import { refundAudioCharge } from '@/server/audio/audio-generate-receipts';
@@ -294,8 +296,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
       } : null,
     });
 
-    await updateAudioJob(jobId, {
-      status: 'completed',
+    const completionWon = await completeAudioJob(jobId, {
       durationSec: measuredDurationSec ?? durationSec,
       progress: 100,
       message: 'Audio render complete.',
@@ -303,9 +304,14 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
       audioUrl: uploadedAudioUrl,
       thumbUrl: uploadedThumbUrl ?? initialThumb,
       hasAudio: true,
-      paymentStatus: 'paid_wallet',
       settingsSnapshotJson: finalSettingsSnapshotJson,
     });
+    if (!completionWon) {
+      throw new AudioGenerationError('Audio job already reached a terminal state.', {
+        status: 409,
+        code: 'audio_terminal_transition_lost',
+      });
+    }
 
     await upsertLegacyJobOutputs({
       job_id: jobId,
@@ -340,6 +346,9 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
       sourceJobId: sourceJob?.job_id ?? null,
     };
   } catch (error) {
+    if (error instanceof AudioGenerationError && error.code === 'audio_terminal_transition_lost') {
+      throw error;
+    }
     const providerFailures = parseProviderFailures(error);
     const message =
       error instanceof AudioGenerationError
@@ -348,18 +357,24 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
           ? error.message
           : 'Audio generation failed.';
 
-    await updateAudioJob(jobId, {
-      status: 'failed',
+    const failureWon = await failAudioJob(jobId, {
       progress: 0,
       message,
-      // A failed job remains visibly charged until exact receipt reconciliation
-      // commits. Existing readers treat this as a recoverable pending refund.
-      paymentStatus: 'paid_wallet',
       settingsSnapshotJson:
         providerFailures && providerFailures.length
           ? buildProviderSnapshot(initialSettingsSnapshot, { failures: providerFailures })
           : JSON.stringify(initialSettingsSnapshot),
     });
+    if (!failureWon) {
+      if (error instanceof AudioGenerationError) {
+        throw error;
+      }
+      throw new AudioGenerationError(message, {
+        status: 502,
+        code: 'audio_generation_failed',
+        providerFailures,
+      });
+    }
     try {
       await refundAudioCharge({ userId: params.userId, jobId });
     } catch (refundError) {

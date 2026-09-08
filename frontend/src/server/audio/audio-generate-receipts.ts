@@ -75,8 +75,9 @@ export async function refundAudioCharge(params: {
       throw new Error('Audio job and wallet charge are inconsistent.');
     }
 
-    const inserted = await executor.query<{ id: string }>(
-      `INSERT INTO app_receipts (
+    const inserted = job.payment_status === 'paid_wallet'
+      ? await executor.query<{ id: string }>(
+        `INSERT INTO app_receipts (
          user_id, type, amount_cents, currency, description, job_id, surface,
          billing_product_key, pricing_snapshot, application_fee_cents,
          vendor_account_id, stripe_payment_intent_id, stripe_charge_id,
@@ -92,8 +93,9 @@ export async function refundAudioCharge(params: {
           AND type = 'charge'
        ON CONFLICT DO NOTHING
        RETURNING id`,
-      [charge.id]
-    );
+        [charge.id]
+      )
+      : [];
 
     const refunds = await executor.query<{
       id: string;

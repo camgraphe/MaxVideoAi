@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import { getDb } from '../frontend/src/lib/db';
 import { refundAudioCharge } from '../frontend/src/server/audio/audio-generate-receipts';
+import { completeAudioJob, failAudioJob } from '../frontend/src/server/audio/audio-generate-jobs';
 import { createPaidGenerationTestSchema, missingDisposablePostgresCommand, startDisposablePostgres } from './helpers/disposable-postgres';
 
 const userId = 'audio-refund-owner';
@@ -82,11 +84,54 @@ test('Audio refunds reconcile the exact persisted charge transactionally on disp
     });
   });
 
+  await t.test('refunded status without an exact receipt is rejected instead of creating one', async () => {
+    await seed('false-refunded-state');
+    await database.pool.query("UPDATE app_jobs SET payment_status='refunded_wallet' WHERE job_id='false-refunded-state'");
+    await assert.rejects(reconcileAudioCharge({ userId, jobId: 'false-refunded-state' }), /missing or inconsistent/i);
+    assert.deepEqual(await state('false-refunded-state'), {
+      status: 'failed', payment_status: 'refunded_wallet', message: 'Fixture provider failure', refunds: 0,
+    });
+  });
+
   await t.test('a completed job wins before refund reconciliation and remains charged', async () => {
-    await seed('completed-first', { jobStatus: 'completed' });
+    await seed('completed-first', { jobStatus: 'running' });
+    const completionWon = await completeAudioJob('completed-first', {
+      progress: 100, message: 'Completed',
+    });
+    assert.equal(completionWon, true);
     await assert.rejects(reconcileAudioCharge({ userId, jobId: 'completed-first' }), /completed/i);
+    const failureWon = await failAudioJob('completed-first', {
+      progress: 0, message: 'Late provider failure',
+    });
+    assert.equal(failureWon, false);
     assert.deepEqual(await state('completed-first'), {
-      status: 'completed', payment_status: 'paid_wallet', message: 'Fixture provider failure', refunds: 0,
+      status: 'completed', payment_status: 'paid_wallet', message: 'Completed', refunds: 0,
+    });
+  });
+
+  await t.test('a committed refund remains terminal when completion was already waiting', async () => {
+    await seed('refund-first');
+    await database.pool.query(`
+      CREATE FUNCTION hold_refund_first() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN
+        IF NEW.job_id = 'refund-first' AND NEW.type = 'refund' THEN
+          PERFORM pg_sleep(0.4);
+        END IF;
+        RETURN NEW;
+      END;
+      $$;
+      CREATE TRIGGER hold_refund_first BEFORE INSERT ON app_receipts
+      FOR EACH ROW EXECUTE FUNCTION hold_refund_first();
+    `);
+    const refund = reconcileAudioCharge({ userId, jobId: 'refund-first' });
+    await delay(100);
+    const completion = completeAudioJob('refund-first', {
+      progress: 100, message: 'Late completion',
+    });
+    const [, completionWon] = await Promise.all([refund, completion]);
+    assert.equal(completionWon, false);
+    assert.deepEqual(await state('refund-first'), {
+      status: 'failed', payment_status: 'refunded_wallet', message: 'Fixture provider failure', refunds: 1,
     });
   });
 });

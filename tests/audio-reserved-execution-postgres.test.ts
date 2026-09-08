@@ -20,7 +20,15 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   const prepared = await prepareAudioRun({ pack: 'song', prompt: 'Warm acoustic folk', lyrics: '[Verse]\nKeep these words' }, userId, {
     env: { FAL_KEY: 'fixture' }, pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }) },
   });
-  const fixture = { prepared, assertExpectedAudioQuote, submitted: 0, persistCalls: 0, failed: false };
+  const fixture = {
+    prepared,
+    assertExpectedAudioQuote,
+    submitted: 0,
+    persistCalls: 0,
+    outputCalls: 0,
+    failed: false,
+    beforePersist: null as null | ((jobId: string) => Promise<void>),
+  };
   const globals = globalThis as typeof globalThis & { __audioWebFixture?: typeof fixture };
   globals.__audioWebFixture = fixture;
   let end: (() => Promise<void>) | undefined;
@@ -36,12 +44,12 @@ test('web Audio still reserves once then executes the same runtime, preserving o
     './prepare-audio': `export const assertExpectedAudioQuote=globalThis.__audioWebFixture.assertExpectedAudioQuote; export async function prepareAudioRun(){ return globalThis.__audioWebFixture.prepared; }`,
     '@/lib/schema': `export async function ensureBillingSchema(){}`,
     './providers/standalone': `export async function generateSongTrack(input){ const f=globalThis.__audioWebFixture; f.submitted++; if(f.failed) throw new Error('Fixture provider failure'); if(input.lyrics!==f.prepared.normalized.lyrics) throw new Error('Lyrics changed'); return {url:'https://fixture.example/original.mp3',model:'fixture-song',providerKey:'fixture',providerLabel:'Fixture'}; } export const generateAmbienceTrack=()=>{throw new Error('Wrong provider')}; export const generateMinimaxVoiceTrack=generateAmbienceTrack;`,
-    '@/server/audio/media': `export async function persistOriginalAudio(input){const f=globalThis.__audioWebFixture;f.persistCalls++;if(input.url!=='https://fixture.example/original.mp3')throw new Error('Original changed');return {audioUrl:'https://fixture.example/stored-original.mp3',durationSec:123.4};} export const mixAudioTracks=()=>{throw new Error('Unexpected transcode')}; export const mixAudioIntoVideo=mixAudioTracks; export const uploadAudioRenderAudio=mixAudioTracks; export const uploadAudioRenderVideo=mixAudioTracks;`,
+    '@/server/audio/media': `export async function persistOriginalAudio(input){const f=globalThis.__audioWebFixture;f.persistCalls++;if(input.url!=='https://fixture.example/original.mp3')throw new Error('Original changed');if(f.beforePersist)await f.beforePersist(input.jobId);return {audioUrl:'https://fixture.example/stored-original.mp3',durationSec:123.4};} export const mixAudioTracks=()=>{throw new Error('Unexpected transcode')}; export const mixAudioIntoVideo=mixAudioTracks; export const uploadAudioRenderAudio=mixAudioTracks; export const uploadAudioRenderVideo=mixAudioTracks;`,
     '@/server/audio/providers': `export const generateClonedVoiceTrack=()=>{throw new Error('Wrong provider')};export const generateMusicTrack=generateClonedVoiceTrack;export const generateSoundDesignTrack=generateClonedVoiceTrack;export const generateStandardVoiceTrack=generateClonedVoiceTrack;`,
     '@/server/media/detect-has-audio': `export const detectMediaBufferDuration=()=>{throw new Error('Unexpected transcode probe')};`,
-    '@/server/media-library': `export async function upsertLegacyJobOutputs(){}`,
+    '@/server/media-library': `export async function upsertLegacyJobOutputs(){globalThis.__audioWebFixture.outputCalls++;}`,
   };
-  await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `export {generateAudioRun} from './frontend/src/server/audio/generate-audio'; export {getDb} from '@/lib/db';` },
+  await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `export {generateAudioRun} from './frontend/src/server/audio/generate-audio'; export {refundAudioCharge} from './frontend/src/server/audio/audio-generate-receipts'; export {failAudioJob} from './frontend/src/server/audio/audio-generate-jobs'; export {getDb} from '@/lib/db';` },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'audio-seam-boundaries', setup(builder) {
       builder.onResolve({ filter: /.*/ }, args => args.path in mocks ? { path: args.path, namespace: 'fixture' } : /^(pg|stripe|next\/server)$/.test(args.path) ? { path: requireFrontend.resolve(args.path), external: true } : undefined);
@@ -49,21 +57,40 @@ test('web Audio still reserves once then executes the same runtime, preserving o
     } }],
   });
   process.env.DATABASE_URL = database.databaseUrl;
-  const runtime = requireFrontend(output) as { generateAudioRun: typeof import('../frontend/src/server/audio/generate-audio').generateAudioRun; getDb(): { end(): Promise<void> } };
+  const runtime = requireFrontend(output) as {
+    generateAudioRun: typeof import('../frontend/src/server/audio/generate-audio').generateAudioRun;
+    refundAudioCharge: typeof import('../frontend/src/server/audio/audio-generate-receipts').refundAudioCharge;
+    failAudioJob: typeof import('../frontend/src/server/audio/audio-generate-jobs').failAudioJob;
+    getDb(): { end(): Promise<void> };
+  };
   end = () => runtime.getDb().end();
   const response = await runtime.generateAudioRun({ userId, body: { expectedQuote: { inputKey: prepared.inputKey, totalCents: 45, currency: 'USD', expiresAt: Date.now() + 60_000 } } });
   assert.equal(response.status, 'completed'); assert.equal(response.durationSec, 123.4); assert.equal(response.audioUrl, 'https://fixture.example/stored-original.mp3');
-  assert.equal(fixture.submitted, 1); assert.equal(fixture.persistCalls, 1);
+  assert.equal(fixture.submitted, 1); assert.equal(fixture.persistCalls, 1); assert.equal(fixture.outputCalls, 1);
   assert.deepEqual((await database.pool.query("SELECT type,amount_cents FROM app_receipts WHERE job_id=$1", [response.jobId])).rows, [{ type: 'charge', amount_cents: 45 }]);
   const job = (await database.pool.query('SELECT duration_sec,settings_snapshot,status FROM app_jobs WHERE job_id=$1', [response.jobId])).rows[0];
   assert.equal(Number(job.duration_sec), 124); assert.equal(job.settings_snapshot.measuredDurationSec, 123.4); assert.deepEqual(job.settings_snapshot.mediaFacts, { source: 'probe', durationSec: 123.4 }); assert.equal(job.settings_snapshot.lyrics, prepared.normalized.lyrics); assert.equal(job.status, 'completed');
   await assert.rejects(runtime.generateAudioRun({ userId, body: { expectedQuote: { inputKey: prepared.inputKey, totalCents: 44, currency: 'USD', expiresAt: Date.now() + 60_000 } } }), /quote changed/);
   assert.equal(fixture.submitted, 1);
+  fixture.beforePersist = async jobId => {
+    assert.equal(await runtime.failAudioJob(jobId, { progress: 0, message: 'Concurrent terminal failure' }), true);
+    await runtime.refundAudioCharge({ userId, jobId });
+  };
+  await assert.rejects(runtime.generateAudioRun({ userId, body: {} }), /already reached a terminal state/);
+  fixture.beforePersist = null;
+  assert.equal(fixture.submitted, 2); assert.equal(fixture.persistCalls, 2); assert.equal(fixture.outputCalls, 1);
+  const completionLoser = (await database.pool.query(`SELECT status,payment_status,
+    (SELECT count(*)::int FROM app_receipts r WHERE r.job_id=j.job_id AND r.type='refund') AS refunds
+    FROM app_jobs j WHERE message='Concurrent terminal failure'`)).rows[0];
+  assert.deepEqual(completionLoser, { status: 'failed', payment_status: 'refunded_wallet', refunds: 1 });
   fixture.failed = true;
   await assert.rejects(runtime.generateAudioRun({ userId, body: {} }), /Fixture provider failure/);
-  assert.equal(fixture.submitted, 2); assert.equal(fixture.persistCalls, 1);
+  assert.equal(fixture.submitted, 3); assert.equal(fixture.persistCalls, 2); assert.equal(fixture.outputCalls, 1);
   assert.deepEqual((await database.pool.query("SELECT type,amount_cents FROM app_receipts WHERE job_id <> $1 AND type IN ('charge','refund') ORDER BY id", [response.jobId])).rows,
-    [{ type: 'charge', amount_cents: 45 }, { type: 'refund', amount_cents: 45 }]);
+    [
+      { type: 'charge', amount_cents: 45 }, { type: 'refund', amount_cents: 45 },
+      { type: 'charge', amount_cents: 45 }, { type: 'refund', amount_cents: 45 },
+    ]);
   await database.pool.query("ALTER TABLE app_receipts ADD CONSTRAINT reject_runner_refund CHECK (type <> 'refund') NOT VALID");
   const originalConsoleError = console.error;
   console.error = () => undefined;

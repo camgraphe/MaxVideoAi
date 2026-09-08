@@ -16,14 +16,18 @@ export type SourceJobRow = {
 export type AudioJobPatch = {
   durationSec?: number | null;
   progress?: number;
-  status?: 'pending' | 'running' | 'completed' | 'failed';
+  status?: 'pending' | 'running';
   message?: string | null;
   videoUrl?: string | null;
   audioUrl?: string | null;
   thumbUrl?: string | null;
   hasAudio?: boolean;
-  paymentStatus?: string;
   settingsSnapshotJson?: string | null;
+};
+
+type PersistedAudioJobPatch = Omit<AudioJobPatch, 'status'> & {
+  status?: 'pending' | 'running' | 'completed' | 'failed';
+  paymentStatus?: 'paid_wallet';
 };
 
 export type InitialAudioJobParams = {
@@ -57,7 +61,7 @@ export async function loadSourceJob(userId: string, sourceJobId: string): Promis
   return rows[0] ?? null;
 }
 
-export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promise<void> {
+async function persistActiveAudioJobPatch(jobId: string, patch: PersistedAudioJobPatch): Promise<boolean> {
   const assignments: string[] = [];
   const params: unknown[] = [];
 
@@ -105,10 +109,36 @@ export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promi
     assignments.push(`settings_snapshot = $${params.length}::jsonb`);
   }
 
-  if (!assignments.length) return;
+  if (!assignments.length) return false;
 
   params.push(jobId);
-  await query(`UPDATE app_jobs SET ${assignments.join(', ')}, updated_at = NOW() WHERE job_id = $${params.length}`, params);
+  const jobIdParam = params.length;
+  params.push(AUDIO_SURFACE);
+  const rows = await query<{ job_id: string }>(
+    `UPDATE app_jobs
+        SET ${assignments.join(', ')}, updated_at = NOW()
+      WHERE job_id = $${jobIdParam}
+        AND surface = $${params.length}
+        AND status IN ('pending', 'running')
+        AND payment_status = 'paid_wallet'
+    RETURNING job_id`,
+    params
+  );
+  return Boolean(rows[0]);
+}
+
+export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promise<boolean> {
+  return persistActiveAudioJobPatch(jobId, patch);
+}
+
+type AudioTerminalJobPatch = Omit<AudioJobPatch, 'status'>;
+
+export function completeAudioJob(jobId: string, patch: AudioTerminalJobPatch): Promise<boolean> {
+  return persistActiveAudioJobPatch(jobId, { ...patch, status: 'completed', paymentStatus: 'paid_wallet' });
+}
+
+export function failAudioJob(jobId: string, patch: AudioTerminalJobPatch): Promise<boolean> {
+  return persistActiveAudioJobPatch(jobId, { ...patch, status: 'failed', paymentStatus: 'paid_wallet' });
 }
 
 async function insertInitialAudioJob(executor: QueryExecutor, params: InitialAudioJobParams): Promise<void> {
