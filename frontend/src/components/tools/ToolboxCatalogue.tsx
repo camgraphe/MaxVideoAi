@@ -33,12 +33,12 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
         <div className={styles.quickArt}>{artwork ? <Image src={artwork} alt="" fill sizes="(max-width: 700px) 92vw, (max-width: 1050px) 44vw, 22vw" loading="lazy" /> : null}</div>
         <div className={styles.quickCaption}>
           <span className={styles.kind}>{text.tag}</span>
-          <h3>{text.title}<span aria-hidden="true">↗</span></h3>
+          <h3>{text.title}</h3>
           <p>{text.body}</p>
         </div>
       </>;
       return <li key={tool.visual}>{onSelect ? <button type="button" className={styles.quickTool} onClick={() => onSelect(tool.id, tool.mediaKind)}>{content}</button> : <Link prefetch={false} className={styles.quickTool} href={`${tool.href}${tool.id === 'upscale' ? `?kind=${tool.mediaKind}` : ''}`} aria-label={`${text.title} — ${copy.open}`}>{content}</Link>}</li>;
-    })}</ul> : <div className={styles.empty}><span aria-hidden="true" className={styles.sound}>▂ ▅ ▃ ▇ ▄ ▆ ▂</span><h3>{copy.noAudio}</h3><p>{copy.audioHint}</p><Link href="/app/audio" prefetch={false}>{copy.audioOpen} <span aria-hidden="true">↗</span></Link></div>}
+    })}</ul> : <div className={styles.empty}><span aria-hidden="true" className={styles.sound}>▂ ▅ ▃ ▇ ▄ ▆ ▂</span><h3>{copy.noAudio}</h3><p>{copy.audioHint}</p><Link href="/app/audio" prefetch={false}>{copy.audioOpen}</Link></div>}
     {workshops.length > 0 ? <section className={styles.workshopSection} aria-labelledby={`${id}-workshops`}>
       <div className={styles.sectionBar}><h2 id={`${id}-workshops`}>{copy.workshops}</h2></div>
       <ul className={styles.workshopGrid}>{workshops.map(tool => {
@@ -47,7 +47,7 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
           <div className={`${styles.workshopArt} ${tool.id === 'angle' ? styles.angleArt : ''}`}>
             {tool.id === 'storyboard' ? <ToolboxScene kind="storyboard" /> : tool.id === 'character-builder' ? <Image src="/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp" alt="" fill sizes="(max-width: 700px) 90vw, 30vw" loading="lazy" /> : <><div className={styles.angleImage}><Image src="/assets/tools/angle-orbit-product-source.webp" alt="" fill sizes="(max-width: 700px) 45vw, 15vw" loading="lazy" /></div><div className={styles.angleImage}><Image src="/assets/tools/angle-orbit-product-45.webp" alt="" fill sizes="(max-width: 700px) 45vw, 15vw" loading="lazy" /></div><span className={styles.orbit} aria-hidden="true">↻</span></>}
           </div>
-          <div className={styles.workshopCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}<span aria-hidden="true">↗</span></h3><p>{text.body}</p></div>
+          <div className={styles.workshopCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}</h3><p>{text.body}</p></div>
         </Link></li>;
       })}</ul>
     </section> : null}
