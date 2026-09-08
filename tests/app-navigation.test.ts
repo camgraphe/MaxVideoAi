@@ -15,19 +15,21 @@ test('creation activities select Create together without selecting unrelated app
   for (const [path, activity] of [['/app', 'video'], ['/app/', 'video'], ['/app/image', 'image'], ['/app/audio', 'audio']]) {
     assert.deepEqual(getAppNavigationSelection(path), { primary: 'create', activity });
   }
-  for (const [path, primary] of [['/app/library', 'media'], ['/app/tools/angle', 'tools'], ['/jobs', 'activity'], ['/dashboard', 'account'], ['/settings', 'account'], ['/account/connections', 'account'], ['/billing', 'account']]) {
+  for (const [path, primary] of [['/app/library', 'media'], ['/app/tools/angle', 'tools'], ['/jobs', 'activity'], ['/settings', 'account'], ['/account/connections', 'account'], ['/billing', 'account']]) {
     assert.deepEqual(getAppNavigationSelection(path), { primary, activity: null });
   }
-  for (const path of [null, undefined, '/', '/fr', '/login', '/admin', '/mcp', '/application', '/settings-other', '/app/unknown']) {
+  for (const path of [null, undefined, '/', '/fr', '/login', '/admin', '/mcp', '/application', '/dashboard', '/settings-other', '/app/unknown']) {
     assert.deepEqual(getAppNavigationSelection(path), { primary: null, activity: null });
   }
 });
 
 test('every existing destination keeps a named complete-menu path and tools obey their flag', () => {
-  const expected = ['/app', '/app/image', '/app/audio', '/app/library', '/jobs', '/dashboard', '/settings', '/account/connections', '/billing', '/app/tools', '/app/tools/character-builder', '/app/tools/storyboard', '/app/tools/angle', '/app/tools/upscale', '/app/tools/background-removal', '/app/tools/restore-video', '/app/tools/denoise', '/app/tools/fix-blur', '/app/tools/smooth-motion'];
+  const expected = ['/app', '/app/image', '/app/audio', '/app/library', '/jobs', '/settings', '/account/connections', '/billing', '/app/tools', '/app/tools/character-builder', '/app/tools/storyboard', '/app/tools/angle', '/app/tools/upscale', '/app/tools/background-removal', '/app/tools/restore-video', '/app/tools/denoise', '/app/tools/fix-blur', '/app/tools/smooth-motion'];
   const menu = getAppMenuItems(true, true);
   for (const href of expected) assert.ok(menu.some((item) => item.href === href && item.label.length), href);
   assert.equal(new Set(menu.map((item) => item.href)).size, menu.length);
+  assert.ok(menu.every((item) => item.href !== '/dashboard'));
+  assert.ok(NAV_ITEMS.every((item) => item.href !== '/dashboard'));
   assert.deepEqual(getAppNavigation(true).map((item) => item.id), ['create', 'media', 'tools', 'activity', 'account']);
   assert.deepEqual(getAppNavigation(true, true).map((item) => item.id), ['create', 'studio', 'media', 'tools', 'activity', 'account']);
   assert.deepEqual(getAppNavigation(false, true).map((item) => item.id), ['create', 'studio', 'media', 'activity', 'account']);
