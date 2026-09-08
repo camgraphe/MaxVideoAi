@@ -22,6 +22,7 @@ import {
 import { workspaceModelReviewCopy } from '../_lib/workspace-model-review-copy';
 import { revokeKlingAssetPreview } from '../_lib/workspace-assets';
 import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
+import { useWorkspaceModelAlternatives } from './useWorkspaceModelAlternatives';
 
 type Setters = {
   [K in keyof WorkspaceModelSetup as `set${Capitalize<K>}`]: (
@@ -34,6 +35,7 @@ export type WorkspaceModelReviewOptions = Omit<Setters, 'setForm'> & {
   authStatus: 'unknown' | 'refreshing' | 'authed' | 'loggedOut';
   onGuestEngineChange: (engineId: string) => void;
   onRequestAuth: () => void;
+  onModelSwitchNotice: (message: string) => void;
   current: WorkspaceModelSetup | null;
   applyPreparedForm: (form: WorkspaceModelSetup['form']) => void;
   engines: EngineCaps[];
@@ -43,6 +45,7 @@ export type WorkspaceModelReviewOptions = Omit<Setters, 'setForm'> & {
   accessToken: string | null;
   memberTier: 'Member' | 'Plus' | 'Pro';
   disabledEngineReasons?: Record<string, string>;
+  engineScores?: Record<string, number | null | undefined>;
 };
 type Selection = { engineId: string; saved?: WorkspaceModelSetup };
 type Store = {
@@ -76,6 +79,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     authStatus,
     onGuestEngineChange,
     onRequestAuth,
+    onModelSwitchNotice,
   } = options;
   const eligibleAccount = authStatus === 'authed' && accountId && accessToken ? accountId : null;
   const waitingForAccount = !eligibleAccount && authStatus !== 'loggedOut';
@@ -190,6 +194,16 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     iterations: candidate?.setup.form.iterations ?? 1,
     accessToken: eligibleAccount ? accessToken : null,
     authChecked: Boolean(eligibleAccount),
+  });
+  const alternatives = useWorkspaceModelAlternatives({
+    enabled: active && panel === 'compare' && !selection,
+    current,
+    engines,
+    locale,
+    memberTier,
+    disabledEngineReasons: options.disabledEngineReasons,
+    engineScores: options.engineScores,
+    accessToken: eligibleAccount ? accessToken : null,
   });
   const latestQuote = useRef(quote.preflight);
   latestQuote.current = quote.preflight;
@@ -330,6 +344,90 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   const clearUnreadableStore = () => {
     if (validScope() && latest.current.store.error) persist({});
   };
+  const commitPreparedSetup = (
+    source: WorkspaceModelSetup,
+    prepared: WorkspaceModelSetup,
+  ) => {
+    const snapshot = serializeWorkspaceModelSetup(source);
+    if (!snapshot.ok) {
+      setError(snapshot.error);
+      return false;
+    }
+    const committed = structuredClone(prepared);
+    if (
+      !persist({
+        ...latest.current.store.entries,
+        [source.form.engineId]: {
+          modelId: source.form.engineId,
+          updatedAt: Date.now(),
+          setup: snapshot.setup,
+        },
+      })
+    )
+      return false;
+    // All owners receive the already prepared values in the same React event, before schema effects run.
+    applyWorkspacePreparedSetup(committed, {
+      ...latest.current.options,
+      setForm: latest.current.options.applyPreparedForm,
+    });
+    // The snapshot has durable originals. Release only temporary previews no longer used by the live setup.
+    const retainedPreviews = setupPreviewUrls(committed);
+    for (const previewUrl of setupPreviewUrls(source)) {
+      if (!retainedPreviews.has(previewUrl)) revokeKlingAssetPreview({ previewUrl });
+    }
+    latest.current.selection = null;
+    setPanel(null);
+    setSelection(null);
+    return true;
+  };
+  const switchModel = (engineId: string) => {
+    if (!mounted.current || latest.current.authScope !== authScope) return;
+    const engine = engines.find(
+      (entry) => entry.id === engineId && entry.availability !== 'paused',
+    );
+    if (!engine || options.disabledEngineReasons?.[engineId]) return;
+    if (authStatus === 'loggedOut') {
+      onGuestEngineChange(engineId);
+      return;
+    }
+    if (!validScope()) return;
+    const source = latest.current.options.current;
+    if (!source || source.form.engineId === engineId) {
+      setPanel(null);
+      latest.current.selection = null;
+      setSelection(null);
+      return;
+    }
+    if (!latest.current.store.loaded || latest.current.store.error) {
+      const key = latest.current.store.error ?? 'incomplete';
+      setError(key);
+      onModelSwitchNotice(workspaceModelReviewCopy(locale)[key]);
+      return;
+    }
+    const prepared = prepareWorkspaceModelCandidate({
+      engine,
+      current: source,
+      locale,
+      currentEngine: engines.find((entry) => entry.id === source.form.engineId),
+    });
+    const blockingReason = prepared.blockingReasons.find(({ scope }) => scope === 'apply');
+    if (!prepared.applicable || blockingReason) {
+      onModelSwitchNotice(
+        blockingReason
+          ? workspaceModelReviewCopy(locale).reasons[blockingReason.code]
+          : workspaceModelReviewCopy(locale).incomplete,
+      );
+      return;
+    }
+    if (!commitPreparedSetup(source, prepared.setup)) {
+      onModelSwitchNotice(workspaceModelReviewCopy(locale).incomplete);
+      return;
+    }
+    if (prepared.removedReferences.length)
+      onModelSwitchNotice(
+        workspaceModelReviewCopy(locale).switchPreserved(prepared.removedReferences.length),
+      );
+  };
   const canApply = Boolean(
     active &&
       eligibleAccount &&
@@ -352,36 +450,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
       !candidate
     )
       return;
-    const snapshot = serializeWorkspaceModelSetup(current);
-    if (!snapshot.ok) {
-      setError(snapshot.error);
-      return;
-    }
-    const committed = structuredClone(candidate.setup);
-    if (
-      !persist({
-        ...latest.current.store.entries,
-        [current.form.engineId]: {
-          modelId: current.form.engineId,
-          updatedAt: Date.now(),
-          setup: snapshot.setup,
-        },
-      })
-    )
-      return;
-    // All owners receive the already prepared values in the same React event, before schema effects run.
-    applyWorkspacePreparedSetup(committed, {
-      ...options,
-      setForm: options.applyPreparedForm,
-    });
-    // The snapshot has durable originals. Release only temporary previews no longer used by the live setup.
-    const retainedPreviews = setupPreviewUrls(committed);
-    for (const previewUrl of setupPreviewUrls(current)) {
-      if (!retainedPreviews.has(previewUrl)) revokeKlingAssetPreview({ previewUrl });
-    }
-    latest.current.selection = null;
-    setPanel(null);
-    setSelection(null);
+    commitPreparedSetup(current, candidate.setup);
   };
   // Captured quote retries are guarded too; the quote hook creates a fresh scoped observation.
   const retry = () => {
@@ -403,6 +472,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     configurationOnly,
     canApply,
     requestModel,
+    switchModel,
     close,
     apply,
     selectSavedSetup,
@@ -410,6 +480,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     clearUnreadableStore,
     open,
     retry,
+    alternatives,
     savedSetups,
     error: active ? (error ?? store.error) : null,
     storageError: active ? store.error : undefined,

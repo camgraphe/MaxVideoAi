@@ -3,7 +3,6 @@
 import { useEffect, useId, type KeyboardEvent } from 'react';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import { EngineSelect } from '@/components/ui/EngineSelect';
 import { useAccessibleModal, resolveModalTabTarget } from '@/components/ui/useAccessibleModal';
 import type { EngineCaps } from '@/types/engines';
 import type { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
@@ -18,6 +17,7 @@ import {
 } from '../_lib/workspace-workflow-projection';
 import type { WorkspaceModelSetup } from '../_lib/workspace-model-candidate';
 import styles from './workspace-model-review.module.css';
+import { WorkspaceModelAlternatives } from './WorkspaceModelAlternatives';
 
 type Review = ReturnType<typeof useWorkspaceModelReview>;
 
@@ -119,6 +119,7 @@ function Summary({
     </section>
   );
 }
+
 export function WorkspaceModelReview({
   review,
   engines,
@@ -187,22 +188,24 @@ export function WorkspaceModelReview({
           </button>
         </header>
         <div className={styles.body}>
-          <div className={styles.tabs}>
-            <button
-              type="button"
-              aria-pressed={review.panel === 'compare'}
-              onClick={() => review.open('compare')}
-            >
-              {copy.compare}
-            </button>
-            <button
-              type="button"
-              aria-pressed={review.panel === 'saved'}
-              onClick={() => review.open('saved')}
-            >
-              {copy.saved}
-            </button>
-          </div>
+          {review.savedSetups.length || review.panel === 'saved' ? (
+            <div className={styles.tabs}>
+              <button
+                type="button"
+                aria-pressed={review.panel === 'compare'}
+                onClick={() => review.open('compare')}
+              >
+                {copy.compare}
+              </button>
+              <button
+                type="button"
+                aria-pressed={review.panel === 'saved'}
+                onClick={() => review.open('saved')}
+              >
+                {copy.saved}
+              </button>
+            </div>
+          ) : null}
           {review.error ? (
             <div role="alert">
               <p className={styles.status}>{copy[review.error]}</p>
@@ -260,21 +263,21 @@ export function WorkspaceModelReview({
             </>
           ) : (
             <>
-              {current ? (
-                <EngineSelect
+              {!candidate ? (
+                <WorkspaceModelAlternatives
+                  review={review}
                   engines={engines}
-                  engineId={target?.id ?? current.form.engineId}
-                  onEngineChange={review.requestModel}
-                  mode={candidate?.workflow.activeMode ?? current.form.mode}
-                  onModeChange={() => {}}
-                  showModeSelect={false}
-                  showBillingNote={false}
-                  disabledEngineReasons={review.disabledEngineReasons}
-                  controlPresentation="workspace"
-                  density="compact"
-                  variant="bar"
+                  locale={locale}
+                  currentPrice={currentPrice}
+                  currentCurrency={currentCurrency}
+                  currentPricing={currentPricing}
+                  currentError={currentError}
                 />
-              ) : null}
+              ) : (
+                <button type="button" className={styles.back} onClick={() => review.open('compare')}>
+                  ← {copy.backToAlternatives}
+                </button>
+              )}
               {candidate && current && target ? (
                 <>
                   <div className={styles.columns}>

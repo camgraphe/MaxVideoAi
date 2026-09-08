@@ -208,9 +208,10 @@ export function WorkspaceAppReadyView({
     current: form ? {form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale} : null,
     engines, locale: uiLocale, authStatus: app.authStatus,
     onGuestEngineChange: composer.handleEngineChange, onRequestAuth: () => setAuthModalOpen(true),
+    onModelSwitchNotice: showNotice,
     accountId: app.authStatus === 'authed' && app.session?.access_token ? app.user?.id ?? null : null,
     accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null,
-    memberTier: routeForm.memberTier, disabledEngineReasons: klingO3DisabledEngineReasons,
+    memberTier: routeForm.memberTier, disabledEngineReasons: klingO3DisabledEngineReasons, engineScores,
     applyPreparedForm: composer.applyPreparedForm, setInputAssets: assets.setInputAssets,
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
@@ -257,7 +258,7 @@ export function WorkspaceAppReadyView({
         activeMode={activeMode}
         engineModeOptions={engineModeOptions}
         modeLabelLocale={uiLocale}
-        handleEngineChange={modelReview.requestModel}
+        handleEngineChange={modelReview.switchModel}
         modelReviewCommands={
           <>
             <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />

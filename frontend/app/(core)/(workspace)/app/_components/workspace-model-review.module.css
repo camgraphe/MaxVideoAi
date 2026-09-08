@@ -1,7 +1,7 @@
 .modelStrip {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: end;
   gap: 8px;
 }
 .modelSelector {
@@ -22,7 +22,7 @@
 .commands {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   gap: 4px;
 }
 .commands button,
@@ -95,6 +95,20 @@
   overflow-x: hidden;
   overscroll-behavior: contain;
   padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-accent, var(--brand)) transparent;
+}
+.body::-webkit-scrollbar {
+  width: 8px;
+}
+.body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.body::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--app-accent, var(--brand));
+  background-clip: padding-box;
 }
 .tabs {
   display: flex;
@@ -323,4 +337,176 @@
   text-overflow: ellipsis;
   color: var(--app-muted, var(--text-muted));
   font-size: 11px;
+}
+
+.compareIntro {
+  max-width: 620px;
+  margin: 0 0 18px;
+  color: var(--app-muted, var(--text-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+.currentSetup {
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--app-line, var(--border));
+}
+.currentSetupBody {
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+}
+.currentSetupBody .identity {
+  margin: 8px 0 0;
+}
+.currentPrice {
+  color: var(--app-ink, var(--text-primary));
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+.alternativesHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 8px;
+}
+.alternativesHeading h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+.alternativesHeading span {
+  display: inline-grid;
+  min-width: 22px;
+  min-height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--app-accent-soft, var(--brand-soft));
+  color: var(--app-accent, var(--brand));
+  font-size: 11px;
+  font-weight: 700;
+}
+.alternativeList {
+  border-top: 1px solid var(--app-line, var(--border));
+}
+.dialog .alternative {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 72px;
+  grid-template-columns: 34px minmax(130px, 1.2fr) minmax(105px, 0.8fr) auto minmax(78px, auto) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--app-line, var(--border));
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition: background-color 140ms ease, padding 140ms ease;
+}
+.dialog .alternative::before {
+  position: absolute;
+  inset: 9px auto 9px 0;
+  width: 2px;
+  border-radius: 999px;
+  background: transparent;
+  content: '';
+}
+.dialog .alternative:hover {
+  padding-inline: 10px;
+  background: var(--app-accent-soft, var(--brand-soft));
+}
+.dialog .alternative:hover::before {
+  background: var(--app-accent, var(--brand));
+}
+.alternativeIdentity,
+.alternativeFit {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.alternativeIdentity strong,
+.alternativeFit strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alternativeIdentity small,
+.alternativeFit small {
+  overflow: hidden;
+  color: var(--app-muted, var(--text-muted));
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alternativeFit strong {
+  color: var(--app-accent, var(--brand));
+  font-size: 11px;
+}
+.alternativeFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.alternativeFacts span {
+  padding: 2px 5px;
+  border: 1px solid var(--app-line, var(--border));
+  border-radius: 4px;
+  color: var(--app-muted, var(--text-muted));
+  font-size: 10px;
+}
+.alternativePrice {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.alternativeAction {
+  color: var(--app-accent, var(--brand));
+  font-size: 11px;
+  font-weight: 650;
+}
+.allModels {
+  margin-top: 12px;
+}
+.allModelsControl {
+  padding: 6px 0 12px;
+}
+.dialog .back {
+  min-height: 36px;
+  margin-bottom: 10px;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--app-accent, var(--brand));
+}
+
+@media (max-width: 680px) {
+  .currentSetupBody {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .currentSetupBody .chips {
+    grid-column: 1 / -1;
+  }
+  .dialog .alternative {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .alternativeFit,
+  .alternativeFacts {
+    grid-column: 2 / -1;
+  }
+  .alternativePrice {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .alternativeAction {
+    display: none;
+  }
 }

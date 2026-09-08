@@ -109,6 +109,7 @@ async function mount({
   };
   let authStatus: 'unknown' | 'refreshing' | 'authed' | 'loggedOut' = 'authed';
   let authRequests = 0;
+  const notices: string[] = [];
   let accountId: string | null = 'a',
     accessToken: string | null = 'token-a';
   let recoverySetup: { modelId: string; updatedAt: number; setup: WorkspaceModelSetup } | null = null;
@@ -140,6 +141,7 @@ async function mount({
       onRequestAuth: () => {
         authRequests += 1;
       },
+      onModelSwitchNotice: (message: string) => notices.push(message),
       onGuestEngineChange: (id: string) => {
         setup = { ...setup, form: coerceFormState(engines.find((e) => e.id === id)!, 't2v', setup.form) };
         rerender();
@@ -185,6 +187,8 @@ async function mount({
         null,
         React.createElement('button', { onClick: () => current.requestModel('veo-3-1') }, 'Choose Veo'),
         React.createElement('button', { onClick: () => current.requestModel('kling-3-pro') }, 'Choose Kling'),
+        React.createElement('button', { onClick: () => current.switchModel('veo-3-1') }, 'Switch Veo'),
+        React.createElement('button', { onClick: () => current.switchModel('kling-3-pro') }, 'Switch Kling'),
         React.createElement(WorkspaceModelReviewCommands, { review: current, locale }),
         current.panel
           ? React.createElement(WorkspaceModelReview, {
@@ -208,6 +212,7 @@ async function mount({
     storage,
     requests,
     writes,
+    notices,
     authRenders,
     get setup() {
       return setup;
@@ -290,6 +295,89 @@ test('rendered Cancel and Escape leave every draft setter untouched and restore 
         .dispatchEvent(new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
     );
     assert.deepEqual(f.writes, []);
+  } finally {
+    await f.dispose();
+  }
+});
+test('Compare immediately quotes a bounded alternative shortlist without touching the draft', async () => {
+  const f = await mount();
+  try {
+    const before = structuredClone(f.setup);
+    await f.click('Compare');
+    await f.tick();
+    const alternatives = [
+      ...f.dom.window.document.querySelectorAll<HTMLButtonElement>('[role="listitem"]'),
+    ];
+    assert.ok(alternatives.length > 0);
+    assert.ok(alternatives.length <= 3);
+    assert.equal(f.requests.length, alternatives.length);
+    assert.match(f.dom.window.document.body.textContent ?? '', /Compatible alternatives/);
+    for (let index = 0; index < alternatives.length; index += 1) {
+      await f.respond(index, (index + 1) * 100);
+    }
+    assert.match(f.dom.window.document.body.textContent ?? '', /\$1\.00/);
+    if (alternatives.length > 1)
+      assert.match(f.dom.window.document.body.textContent ?? '', /\$2\.00/);
+    assert.deepEqual(f.setup, before);
+    assert.equal(f.writes.length, 0);
+    await act(async () => alternatives[0].click());
+    assert.ok(f.current.candidate);
+    assert.equal(f.current.panel, 'compare');
+    assert.deepEqual(f.setup, before);
+  } finally {
+    await f.dispose();
+  }
+});
+test('Choose Model switches immediately while Compare remains the only review and quote flow', async () => {
+  const f = await mount();
+  try {
+    const sourceModelId = f.setup.form.engineId;
+    await f.click('Switch Veo');
+    assert.equal(f.setup.form.engineId, 'veo-3-1');
+    assert.equal(f.current.panel, null);
+    assert.equal(f.current.candidate, null);
+    assert.equal(f.requests.length, 0);
+    assert.equal(f.writes.length, 10);
+    const entries = decodeWorkspaceModelSetups(
+      f.storage.getItem(workspaceModelSetupsKey('a')),
+      'a',
+    ).entries;
+    assert.ok(entries[sourceModelId]);
+
+    await f.click('Compare');
+    assert.equal(f.current.panel, 'compare');
+    await f.tick();
+    assert.ok(f.requests.length > 0);
+  } finally {
+    await f.dispose();
+  }
+});
+test('quick switching keeps the live draft intact while a reference upload is pending', async () => {
+  const f = await mount();
+  try {
+    await f.edit({
+      inputAssets: {
+        image_url: [
+          {
+            id: 'pending',
+            fieldId: 'image_url',
+            kind: 'image',
+            name: 'pending',
+            type: 'image/png',
+            size: 1,
+            previewUrl: 'blob:pending',
+            status: 'uploading',
+          },
+        ],
+      },
+    });
+    const before = structuredClone(f.setup);
+    await f.click('Switch Veo');
+    assert.deepEqual(f.setup, before);
+    assert.equal(f.current.panel, null);
+    assert.equal(f.requests.length, 0);
+    assert.equal(f.writes.length, 0);
+    assert.match(f.notices.at(-1) ?? '', /uploads/i);
   } finally {
     await f.dispose();
   }
