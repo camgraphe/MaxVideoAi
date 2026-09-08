@@ -75,6 +75,14 @@ test('canvas fit reserves the shared useful surface and adapts the map inset wit
     includeHiddenNodes: false,
     padding: { top: '128px', right: '20px', bottom: '92px', left: '20px' },
   });
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 601, mapExpanded: true }), {
+    includeHiddenNodes: false,
+    padding: { top: '128px', right: '204px', bottom: '92px', left: '20px' },
+  });
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 700, mapExpanded: true }), {
+    includeHiddenNodes: false,
+    padding: { top: '128px', right: '204px', bottom: '92px', left: '20px' },
+  });
 });
 
 test('both initial and explicit fit consume the same useful-surface helper and handles refresh their React Flow internals', () => {

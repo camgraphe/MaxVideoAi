@@ -11,7 +11,7 @@ export function workspaceCanvasFitViewOptions(params: {
       includeHiddenNodes: false,
       padding: {
         top: '128px',
-        right: '20px',
+        right: `${params.mapExpanded ? 204 : 20}px`,
         bottom: '92px',
         left: '20px',
       },
