@@ -1,6 +1,16 @@
 'use client';
 import { useRef } from 'react';
-import { AUDIO_SEED_AUDIO_VOICE_VALUES, AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES, AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES } from '@/lib/audio-generation';
+import {
+  AUDIO_AMBIENCE_DURATION_OPTIONS_SEC,
+  AUDIO_LYRIA3_BPM_VALUES,
+  AUDIO_LYRIA3_CLIP_DURATION_OPTIONS_SEC,
+  AUDIO_LYRIA3_PRO_DURATION_OPTIONS_SEC,
+  AUDIO_MINIMAX_VOICE_VALUES,
+  AUDIO_SEED_AUDIO_VOICE_VALUES,
+  AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES,
+  AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES,
+  AUDIO_SFX_DURATION_OPTIONS_SEC,
+} from '@/lib/audio-generation';
 import type { AudioCreationDraft, AudioCreationIntent } from '@/lib/audio-creation';
 import type { AudioCreationCopy } from '../_lib/audio-creation-copy';
 import styles from './audio-creation.module.css';
@@ -19,6 +29,7 @@ export function AudioCreationEditor({ intent, draft, copy, onChange, onFile, upl
     : intent === 'song' ? copy.models.song
       : intent === 'sfx' ? copy.models.sfx
         : copy.models.ambience;
+  const minimaxVoiceLabel = (voice: typeof AUDIO_MINIMAX_VOICE_VALUES[number]) => voice === 'English_FriendlyPerson' ? 'Friendly Person · EN' : 'Wise Woman';
   return <div className={styles.editor}>
     <div className={styles.modelRow}>
       <strong>{copy.intents[intent][0]}</strong>
@@ -42,15 +53,15 @@ export function AudioCreationEditor({ intent, draft, copy, onChange, onFile, upl
       {spoken ? <>
         <label>{copy.voice}<select disabled={Boolean(draft.reference)} value={draft.reference ? 'reference' : draft.voiceModel === 'minimax' ? `minimax:${draft.minimaxVoiceId}` : `seed:${draft.voice}`} onChange={event => { const [provider, voice] = event.target.value.split(':'); onChange(provider === 'minimax' ? { voiceModel: 'minimax', minimaxVoiceId: voice } : { voiceModel: 'seed', voice }); }}>
           {draft.reference ? <option value="reference">{copy.reference}</option> : null}
-          <option value="minimax:English_FriendlyPerson">Friendly Person · EN</option><option value="minimax:Wise_Woman">Wise Woman</option>{AUDIO_SEED_AUDIO_VOICE_VALUES.map(voice => <option key={voice} value={`seed:${voice}`}>{voice === 'default' ? copy.auto : voice.split('_')[0].replace(/^./, letter => letter.toUpperCase())}</option>)}
+          {AUDIO_MINIMAX_VOICE_VALUES.map(voice => <option key={voice} value={`minimax:${voice}`}>{minimaxVoiceLabel(voice)}</option>)}{AUDIO_SEED_AUDIO_VOICE_VALUES.map(voice => <option key={voice} value={`seed:${voice}`}>{voice === 'default' ? copy.auto : voice.split('_')[0].replace(/^./, letter => letter.toUpperCase())}</option>)}
         </select></label>
         <label>{copy.language}<select value={draft.language} onChange={event => onChange({ language: event.target.value })}>
           <option value="auto">{copy.auto}</option><option value="english">English</option><option value="french">Français</option><option value="spanish">Español</option><option value="german">Deutsch</option>
         </select></label>
       </> : song ? <p className={styles.durationNote}>{copy.fullSong}</p> : <label>{copy.duration}<select value={draft.durationSec} onChange={event => { const durationSec = Number(event.target.value); onChange({ durationSec, ...(intent === 'music' && durationSec > 30 ? { musicModel: 'pro' as const } : {}) }); }}>
-        {(intent === 'sfx' ? [3, 5, 8, 10, 15, 20, 30] : intent === 'music' ? draft.musicModel === 'clip' ? [30] : [30, 45, 60, 90, 120, 180, 184] : [10, 15, 30, 45, 60, 90, 120, 180, 184]).map(value => <option key={value} value={value}>{value} s</option>)}
+        {(intent === 'sfx' ? AUDIO_SFX_DURATION_OPTIONS_SEC : intent === 'music' ? draft.musicModel === 'clip' ? AUDIO_LYRIA3_CLIP_DURATION_OPTIONS_SEC : AUDIO_LYRIA3_PRO_DURATION_OPTIONS_SEC : AUDIO_AMBIENCE_DURATION_OPTIONS_SEC).map(value => <option key={value} value={value}>{value} s</option>)}
       </select></label>}
-      {intent === 'music' ? <label>{copy.tempo}<select value={draft.bpm} onChange={event => onChange({ bpm: Number(event.target.value) })}>{[70, 90, 110, 130, 150].map(bpm => <option key={bpm} value={bpm}>{bpm} BPM</option>)}</select></label> : null}
+      {intent === 'music' ? <label>{copy.tempo}<select value={draft.bpm} onChange={event => onChange({ bpm: Number(event.target.value) })}>{AUDIO_LYRIA3_BPM_VALUES.map(bpm => <option key={bpm} value={bpm}>{bpm} BPM</option>)}</select></label> : null}
     </div>
     {spoken && draft.voiceModel === 'seed' && draft.voice !== 'default' && !draft.reference ? <div className={styles.voicePreview}><span>{copy.preview}</span><audio key={draft.voice} controls preload="none" src={`/assets/audio/seed-audio/${draft.voice}.mp3`} /></div> : null}
     {spoken ? <>

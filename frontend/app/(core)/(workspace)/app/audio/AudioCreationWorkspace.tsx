@@ -162,7 +162,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     {notice ? <div className={styles.status} role="alert">{notice}</div> : null}
     <div className={styles.layout}><div>
       <AudioCreationEditor intent={intent} draft={draft} copy={copy} onChange={update} onFile={file => void addReference(file)} uploading={uploading} onLibrary={() => userId ? setLibraryOpen(true) : setNotice(copy.signIn)} />
-      <div className={styles.action}><div className={styles.price} aria-live="polite"><span>{loading ? copy.quoteLoading : quoteError ? copy.quoteError : !quote ? copy.quoteIdle : saved ? copy.saved : copy.unsaved}</span></div>
+      <div className={styles.action}><div className={styles.price} aria-live="polite"><span>{loading ? copy.quoteLoading : quoteError ? quoteError.message : !quote ? copy.quoteIdle : saved ? copy.saved : copy.unsaved}</span>{quoteError ? <small>{quoteError.code}</small> : null}</div>
         {quoteError ? <button type="button" className={styles.retry} onClick={retry}>{copy.retry}</button> : null}
         {userId ? <button type="button" className={styles.generate} disabled={!quote || pending.includes(quote.inputKey) || uploading} onClick={() => void generate()}>{copy.generate}{price ? ` · ${price}` : ''}<span aria-hidden>↗</span></button> : <a className={styles.generate} href={buildLoginHref({ mode: 'signin', nextPath: `${pathname}?intent=${intent}` })}>{copy.signIn}</a>}
       </div>
@@ -177,18 +177,21 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
           const isFailed = job.status === 'failed';
           const isPlayable = Boolean(job.audioUrl || job.videoUrl);
           const RowIcon = isSelecting ? LoaderCircle : isSelected ? AudioLines : isFailed ? CircleAlert : Play;
-          return <button
-            type="button"
-            className={styles.historyItem}
-            key={job.jobId}
-            aria-pressed={isSelected}
-            aria-busy={isSelecting}
-            onClick={() => void selectJob(job.jobId)}
-          >
-            <span className={styles.historyIcon} aria-hidden><RowIcon size={17} /></span>
-            <span className={styles.historyCopy}><strong>{job.prompt || job.engineLabel}</strong><small>{new Date(job.createdAt).toLocaleDateString(locale)} · {isFailed ? copy.failed : isPlayable ? copy.listen : copy.generating}</small></span>
-            {isSelected ? <span className={styles.historySelected}>{copy.selected}</span> : <span className="sr-only">{copy.select}</span>}
-          </button>;
+          const label = job.prompt || job.engineLabel;
+          return <div className={styles.historyEntry} data-active={isSelected || undefined} key={job.jobId}>
+            <button
+              type="button"
+              className={styles.historyItem}
+              aria-pressed={isSelected}
+              aria-busy={isSelecting}
+              onClick={() => void selectJob(job.jobId)}
+            >
+              <span className={styles.historyIcon} aria-hidden><RowIcon size={17} /></span>
+              <span className={styles.historyCopy}><strong>{label}</strong><small>{new Date(job.createdAt).toLocaleDateString(locale)} · {isFailed ? copy.failed : isPlayable ? copy.listen : copy.generating}</small></span>
+              {isSelected ? <span className={styles.historySelected}>{copy.selected}</span> : <span className="sr-only">{copy.select}</span>}
+            </button>
+            {job.audioUrl && !isFailed ? <audio className={styles.historyAudio} controls preload="none" src={job.audioUrl} aria-label={`${copy.listen}: ${label}`} onPlay={() => { if (!isSelected) void selectJob(job.jobId); }} /> : null}
+          </div>;
         }) : null}
       </section>
     </AudioCreationResults></div>

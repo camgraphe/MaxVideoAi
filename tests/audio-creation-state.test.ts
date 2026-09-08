@@ -9,7 +9,7 @@ import { useAudioCreationQuote } from '../frontend/app/(core)/(workspace)/app/au
 import { audioCreationReusePatch } from '../frontend/app/(core)/(workspace)/app/audio/_lib/audio-creation-reuse';
 import { validateAudioGenerateRequest } from '../frontend/src/server/audio/audio-generate-validation';
 import { useAudioCreationScope } from '../frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioCreationScope';
-import { buildAudioCreationRequest, newAudioDraft, type AudioCreationIntent } from '../frontend/src/lib/audio-creation';
+import { buildAudioCreationRequest, newAudioDraft, repairAudioCreationDraft, type AudioCreationIntent } from '../frontend/src/lib/audio-creation';
 
 function environment(fetchImpl?: typeof fetch) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app/audio' });
@@ -61,6 +61,87 @@ test('long music drafts saved before the model picker hydrate as Lyria Pro', asy
     await act(async () => env.root.render(React.createElement(Fixture)));
     assert.equal(state.draft.durationSec, 120);
     assert.equal(state.draft.musicModel, 'pro');
+  } finally { await env.close(); }
+});
+
+test('persisted audio drafts repair retired model settings before they can poison a quote', async () => {
+  const env = environment();
+  let state!: ReturnType<typeof useAudioCreationDraft>;
+  function Fixture({ intent }: { intent: AudioCreationIntent }) { state = useAudioCreationDraft('a', intent); return null; }
+  try {
+    localStorage.setItem('maxvideoai.audio.creation.v1:a', JSON.stringify({
+      version: 1,
+      drafts: {
+        voice: {
+          ...newAudioDraft('voice'), script: 'Keep this narration', voiceModel: 'retired-provider', minimaxVoiceId: 'Retired_Voice',
+          voice: 'retired_voice', speed: 9, volume: -1, pitch: 24, outputFormat: 'aac', sampleRate: 96000,
+          voiceDelivery: 'dramatic', voiceProfile: 'velvet', voiceGender: 'robot', language: 'italian',
+        },
+        music: {
+          ...newAudioDraft('music'), prompt: 'Keep this instrumental direction', durationSec: 120,
+          musicModel: 'lyria-2', bpm: 999, mood: 'nostalgic',
+        },
+        sfx: { ...newAudioDraft('sfx'), prompt: 'Keep this impact', durationSec: 120 },
+        ambience: { ...newAudioDraft('ambience'), prompt: 'Keep this room tone', durationSec: 2 },
+      },
+    }));
+
+    await act(async () => env.root.render(React.createElement(Fixture, { intent: 'voice' })));
+    assert.equal(state.draft.script, 'Keep this narration');
+    assert.deepEqual({
+      voiceModel: state.draft.voiceModel, minimaxVoiceId: state.draft.minimaxVoiceId, voice: state.draft.voice,
+      speed: state.draft.speed, volume: state.draft.volume, pitch: state.draft.pitch, outputFormat: state.draft.outputFormat,
+      sampleRate: state.draft.sampleRate, voiceDelivery: state.draft.voiceDelivery, voiceProfile: state.draft.voiceProfile,
+      voiceGender: state.draft.voiceGender, language: state.draft.language,
+    }, {
+      voiceModel: 'minimax', minimaxVoiceId: 'English_FriendlyPerson', voice: 'default', speed: 1.06, volume: 1,
+      pitch: 0, outputFormat: 'mp3', sampleRate: 24000, voiceDelivery: 'cinematic', voiceProfile: 'balanced',
+      voiceGender: 'female', language: 'auto',
+    });
+
+    await act(async () => env.root.render(React.createElement(Fixture, { intent: 'music' })));
+    assert.deepEqual({ prompt: state.draft.prompt, durationSec: state.draft.durationSec, musicModel: state.draft.musicModel, bpm: state.draft.bpm, mood: state.draft.mood },
+      { prompt: 'Keep this instrumental direction', durationSec: 120, musicModel: 'pro', bpm: 110, mood: 'dreamy' });
+    await act(async () => env.root.render(React.createElement(Fixture, { intent: 'sfx' })));
+    assert.deepEqual({ prompt: state.draft.prompt, durationSec: state.draft.durationSec }, { prompt: 'Keep this impact', durationSec: 8 });
+    await act(async () => env.root.render(React.createElement(Fixture, { intent: 'ambience' })));
+    assert.deepEqual({ prompt: state.draft.prompt, durationSec: state.draft.durationSec }, { prompt: 'Keep this room tone', durationSec: 60 });
+
+    const repairedCases = [
+      { intent: 'music' as const, input: { musicModel: 'clip' as const, durationSec: 15 }, expected: { musicModel: 'clip', durationSec: 30 } },
+      { intent: 'music' as const, input: { musicModel: 'pro' as const, durationSec: 50 }, expected: { musicModel: 'pro', durationSec: 30 } },
+      { intent: 'music' as const, input: { musicModel: 'pro' as const, durationSec: 120 }, expected: { musicModel: 'pro', durationSec: 120 } },
+      { intent: 'sfx' as const, input: { durationSec: 12 }, expected: { durationSec: 8 } },
+      { intent: 'ambience' as const, input: { durationSec: 12 }, expected: { durationSec: 60 } },
+    ];
+    for (const { intent, input, expected } of repairedCases) {
+      const repaired = repairAudioCreationDraft(intent, {
+        ...newAudioDraft(intent),
+        prompt: 'A directly quotable audio idea',
+        ...input,
+      });
+      assert.deepEqual(Object.fromEntries(Object.keys(expected).map(key => [key, repaired[key as keyof typeof repaired]])), expected);
+      assert.doesNotThrow(() => validateAudioGenerateRequest(buildAudioCreationRequest(intent, repaired, 'en')));
+    }
+  } finally { await env.close(); }
+});
+
+test('quote errors preserve the route code and message while Retry uses the current payload', async () => {
+  const requests: Array<{ body: any; resolve: (response: Response) => void }> = [];
+  const env = environment(async (_input, init) => new Promise<Response>(resolve => requests.push({ body: JSON.parse(String(init?.body)), resolve })));
+  let state!: ReturnType<typeof useAudioCreationQuote>;
+  function Fixture({ prompt }: { prompt: string }) { state = useAudioCreationQuote({ pack: 'music_only', prompt, durationSec: 30, musicModel: 'clip', musicBpm: 110, mood: 'dreamy' }, 'a', true); return null; }
+  const render = (prompt: string) => act(async () => env.root.render(React.createElement(Fixture, { prompt })));
+  const tick = () => act(async () => { await new Promise(resolve => setTimeout(resolve, 380)); });
+  try {
+    await render('Warm synths'); await tick();
+    await act(async () => requests[0].resolve(new Response(JSON.stringify({ ok: false, error: 'music_model_invalid', message: 'This music quality is no longer available.' }), { status: 400 })));
+    assert.deepEqual(state.error, { code: 'music_model_invalid', message: 'This music quality is no longer available.', status: 400 });
+    await render('Warm synths with a slower build');
+    await act(async () => state.retry()); await tick();
+    assert.equal(requests.at(-1)?.body.prompt, 'Warm synths with a slower build');
+    await act(async () => requests.at(-1)!.resolve(new Response(JSON.stringify({ ok: true, inputKey: 'current', pricing: { totalCents: 20, currency: 'USD' }, expiresAt: Date.now() + 60_000 }))));
+    assert.equal(state.quote?.inputKey, 'current');
   } finally { await env.close(); }
 });
 

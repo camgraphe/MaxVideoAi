@@ -18,7 +18,7 @@ const mocks: Record<string, string> = {
   'next/dynamic': `export default ()=>()=>null;`,
   '@/hooks/useRequireAuth': `export const useRequireAuth=()=>({user:{id:globalThis.audioReview.owner}});`,
   '@/lib/i18n/I18nProvider': `export const useI18n=()=>({locale:'en'});`,
-  '@/lib/api': `export const runAudioGenerate=body=>new Promise(resolve=>globalThis.audioReview.runs.push({body,resolve}));export const useInfiniteJobs=()=>({stableJobs:[{jobId:'old-job',prompt:'Restore previous job',createdAt:'2026-09-08'}],mutate:()=>{globalThis.audioReview.refreshes++},isLoading:false});`,
+  '@/lib/api': `export const runAudioGenerate=body=>new Promise(resolve=>globalThis.audioReview.runs.push({body,resolve}));export const useInfiniteJobs=()=>({stableJobs:[{jobId:'old-job',prompt:'Restore previous job',createdAt:'2026-09-08',status:'completed',audioUrl:'https://fixture.example/old-job.mp3',engineLabel:'MMAudio V2',pricing:{currency:'USD',totalCents:5}}],mutate:()=>{globalThis.audioReview.refreshes++},isLoading:false});`,
   './_lib/audio-workspace-helpers': `export const uploadAsset=()=>new Promise(resolve=>globalThis.audioReview.uploads.push(resolve));export const fetchJobDetail=()=>new Promise(resolve=>globalThis.audioReview.restores.push(resolve));`,
 };
 
@@ -59,6 +59,7 @@ test('actual workspace handles local intent history and retires stale asynchrono
     }}));
     dom.window.history.replaceState(null,'','?intent=voice&job=linked-job&reuse=1&context=studio');
     await render('a');await tick();
+    assert.equal(dom.window.document.querySelector('section audio')?.getAttribute('src'),'https://fixture.example/old-job.mp3','recent completed audio is directly playable with compact controls');
     const linkedRestore=review.restores.at(-1);
     const intent = () => dom.window.document.querySelector('main')?.getAttribute('data-audio-creation');
     const choose = (name:string) => act(async()=>{
@@ -72,7 +73,7 @@ test('actual workspace handles local intent history and retires stale asynchrono
     assert.equal(dom.window.location.search,'?intent=sfx&context=studio','manual choice retires job/reuse while preserving unrelated context');
     assert.ok(generateButton().disabled,'old voice quote is invalidated immediately');
     await act(async()=>linkedRestore({jobId:'linked-job',status:'completed',audioUrl:'https://fixture.example/stale.mp3',settingsSnapshot:{pack:'voice_only',script:'Wrong restoration'}}));
-    assert.equal(dom.window.document.querySelector('audio'),null,'retired query-job callback cannot change current result');
+    assert.equal(dom.window.document.querySelector('aside > article audio'),null,'retired query-job callback cannot change current result');
     await choose('Ambiences');await choose('Sound effects');
     assert.equal(intent(),'sfx');
     const traverse = (direction:'back'|'forward') => act(async()=>{
@@ -95,13 +96,13 @@ test('actual workspace handles local intent history and retires stale asynchrono
       await click('Restore previous job');const oldRestore=review.restores.at(-1);
       if(transition==='roundtrip')await render('b');else await act(async()=>root.render(null));
       await render('a');await tick();
-      assert.equal(dom.window.document.querySelector('audio'),null,'no retired result or reference displayed');
+      assert.equal(dom.window.document.querySelector('aside > article audio'),null,'no retired result or reference displayed');
       await click('Generate');const currentRun=review.runs.at(-1);assert.notEqual(currentRun,oldRun);
       await act(async()=>currentRun.resolve(generateResult('current-'+transition)));
       const notificationsBefore=notifications;
       await act(async()=>{oldRun.resolve(generateResult('retired'));oldUpload({url:'https://fixture.example/retired.wav',name:'Retired reference'});oldRestore(generateResult('retired-job'));});
       assert.equal(notifications,notificationsBefore,'retired run cannot announce into current history');
-      assert.equal(dom.window.document.querySelector('audio')?.getAttribute('src'),`https://fixture.example/current-${transition}.mp3`);
+      assert.equal(dom.window.document.querySelector('aside > article audio')?.getAttribute('src'),`https://fixture.example/current-${transition}.mp3`);
       assert.equal(JSON.parse(localStorage.getItem('maxvideoai.audio.creation.v1:a')!).drafts.voice.reference,null,'late upload cannot overwrite fresh draft');
       await act(async()=>root.render(null));
     }

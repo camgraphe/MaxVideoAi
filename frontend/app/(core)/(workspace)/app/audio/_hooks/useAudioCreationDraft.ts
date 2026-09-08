@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAudioCreationScope } from './useAudioCreationScope';
-import { AUDIO_CREATION_INTENTS, newAudioDraft, type AudioCreationIntent, type AudioCreationDraft } from '@/lib/audio-creation';
+import { AUDIO_CREATION_INTENTS, newAudioDraft, repairAudioCreationDraft, type AudioCreationIntent, type AudioCreationDraft } from '@/lib/audio-creation';
 
 type Drafts = Record<AudioCreationIntent, AudioCreationDraft>;
 const defaults = () => Object.fromEntries(AUDIO_CREATION_INTENTS.map(intent => [intent, newAudioDraft(intent)])) as Drafts;
@@ -25,9 +25,7 @@ export function useAudioCreationDraft(userId: string | null, intent: AudioCreati
             } else if (typeof value[field] === typeof drafts[key][field]) Object.assign(drafts[key], { [field]: value[field] });
           }
         }
-        // Drafts saved before the model picker inferred Lyria Pro from duration.
-        // Preserve that intent when hydrating the new explicit model field.
-        if (drafts.music.durationSec > 30) drafts.music.musicModel = 'pro';
+        for (const key of AUDIO_CREATION_INTENTS) drafts[key] = repairAudioCreationDraft(key, drafts[key]);
       } catch { /* Corrupt or unavailable storage must not block creation. */ }
     }
     if (scope.isCurrent()) { setState({ owner: scope, drafts }); setSaved(false); }
