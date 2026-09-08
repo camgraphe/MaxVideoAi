@@ -2,16 +2,18 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import type { ModelFamilyId } from '@/config/model-families';
 
 export const ENGINE_SELECT_FAMILY_PRIORITY: readonly ModelFamilyId[] = [
-  'seedance',
-  'kling',
-  'veo',
-  'happy-horse',
-  'luma',
-  'sora',
-  'ltx',
-  'wan',
-  'pika',
   'hailuo',
+  'grok',
+  'seedance',
+  'veo',
+  'kling',
+  'wan',
+  'happy-horse',
+  'ltx',
+  'sora',
+  'luma',
+  'pika',
+  'flux',
 ] as const;
 
 const ENGINE_SELECT_FAMILY_RANK = new Map(
