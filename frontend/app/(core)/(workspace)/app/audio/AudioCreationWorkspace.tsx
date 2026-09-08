@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { AudioLines, CircleAlert, LoaderCircle, Play } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { buildLoginHref } from '@/lib/auth-entry-href';
@@ -44,6 +45,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const setResult = useCallback((job: AudioJobDetail | null) => setSelection({ owner: userId, result: job }), [userId]);
   useAudioCreationPolling(userId, result, setResult);
   const [notice, setNotice] = useState<string | null>(null);
+  const [selectingJobId, setSelectingJobId] = useState<string | null>(null);
   const [pending, setPending] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -58,6 +60,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const selectJob = useCallback(async (jobId: string) => {
     if (!userId || !stillOwned()) return;
     const sequence = ++restoreSequence.current;
+    setSelectingJobId(jobId);
     try {
       const job = await fetchJobDetail(jobId);
       if (stillOwned() && sequence === restoreSequence.current) {
@@ -68,6 +71,11 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
         setResult(job);
       }
     } catch { if (stillOwned() && sequence === restoreSequence.current) setNotice(copy.error); }
+    finally {
+      if (stillOwned() && sequence === restoreSequence.current) {
+        setSelectingJobId(current => current === jobId ? null : current);
+      }
+    }
   }, [copy.error, stillOwned, userId, setResult, router, pathname]);
   const queryJob = params?.get('job');
   useEffect(() => {
@@ -84,6 +92,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     if (url.href !== window.location.href) window.history.pushState(null, '', url);
     invalidateRestoreSequence();
     setNotice(null);
+    setSelectingJobId(null);
     setLibraryOpen(false);
   };
 
@@ -158,11 +167,29 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
         {userId ? <button type="button" className={styles.generate} disabled={!quote || pending.includes(quote.inputKey) || uploading} onClick={() => void generate()}>{copy.generate}{price ? ` · ${price}` : ''}<span aria-hidden>↗</span></button> : <a className={styles.generate} href={buildLoginHref({ mode: 'signin', nextPath: `${pathname}?intent=${intent}` })}>{copy.signIn}</a>}
       </div>
     </div><AudioCreationResults intent={intent} copy={copy} result={result} pending={pending.length} onReuse={reuse}>
-      <section className={styles.history}><h2>{copy.history}</h2>
+      <section className={styles.history}><h2>{copy.history}</h2><p className={styles.historyHint}>{copy.historyHint}</p>
         {userId && isLoading ? <p>{copy.loadingHistory}</p> : null}
         {userId && historyError ? <button type="button" onClick={() => void mutate()}>{copy.retry}</button> : null}
         {!userId || (!isLoading && !jobs.length) ? <p>{copy.emptyHistory}</p> : null}
-        {userId ? jobs.map(job => <button type="button" key={job.jobId} onClick={() => void selectJob(job.jobId)}><span><strong>{job.prompt || job.engineLabel}</strong><small>{new Date(job.createdAt).toLocaleDateString(locale)} · {job.status === 'failed' ? copy.failed : job.audioUrl || job.videoUrl ? copy.listen : copy.generating}</small></span><span aria-hidden>↗</span></button>) : null}
+        {userId ? jobs.map(job => {
+          const isSelected = result?.jobId === job.jobId;
+          const isSelecting = selectingJobId === job.jobId;
+          const isFailed = job.status === 'failed';
+          const isPlayable = Boolean(job.audioUrl || job.videoUrl);
+          const RowIcon = isSelecting ? LoaderCircle : isSelected ? AudioLines : isFailed ? CircleAlert : Play;
+          return <button
+            type="button"
+            className={styles.historyItem}
+            key={job.jobId}
+            aria-pressed={isSelected}
+            aria-busy={isSelecting}
+            onClick={() => void selectJob(job.jobId)}
+          >
+            <span className={styles.historyIcon} aria-hidden><RowIcon size={17} /></span>
+            <span className={styles.historyCopy}><strong>{job.prompt || job.engineLabel}</strong><small>{new Date(job.createdAt).toLocaleDateString(locale)} · {isFailed ? copy.failed : isPlayable ? copy.listen : copy.generating}</small></span>
+            {isSelected ? <span className={styles.historySelected}>{copy.selected}</span> : <span className="sr-only">{copy.select}</span>}
+          </button>;
+        }) : null}
       </section>
     </AudioCreationResults></div>
     {libraryOpen && userId ? <ReferenceLibrary key={userId} copy={copy} onClose={() => setLibraryOpen(false)} onSelect={reference => { update({ reference }); setLibraryOpen(false); }} /> : null}
