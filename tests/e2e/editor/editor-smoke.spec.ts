@@ -846,7 +846,7 @@ test('unauthenticated Studio API responses keep local draft mode quiet', async (
   await page.goto('/app/studio/workspace/project_unauthorized', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toBeVisible();
   await expect(page.getByText(/local draft mode/i)).toBeVisible();
   await expect.poll(() => page.evaluate(() => {
@@ -1727,7 +1727,7 @@ test('viewer mode can create and switch between multiple sequences', async ({ pa
   await expect.poll(() => timelineItemCount(page)).toBe(0);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await switchEditorFocus(page, 'Viewer');
   await expect(page.locator('[data-project-sequence-id]')).toHaveCount(2);
   await expect(page.locator('[data-project-sequence-id]', { hasText: 'Sequence 2' })).toHaveAttribute('aria-pressed', 'true');
@@ -2162,7 +2162,7 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   await createProjectButton.click();
 
   await expect(page).toHaveURL(/\/app\/studio\/workspace\/project_/);
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(0);
   await expect(page.locator('.react-flow__node')).toHaveCount(2);
   await expect(page.locator('.react-flow__node-text-prompt')).toBeVisible();
@@ -2771,7 +2771,7 @@ test('legacy Product Ad hydration preserves matching-ID user edits and remains u
 
   await page.goto(`/app/studio/workspace/${projectId}`, { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await expect(page.locator('.react-flow__node')).toHaveCount(workspaceState.nodes.length);
   await expect(page.locator('.react-flow__node[data-id="prompt-camera"] textarea')).toHaveValue(
     'Keep this browser-authored orbit and rack-focus prompt.',
@@ -3456,7 +3456,7 @@ test('Studio waits for delayed API hydration before autosaving an existing proje
   await page.goto(`/app/studio/workspace/${projectId}`, { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await page.waitForTimeout(1_100);
   expect(mutations, 'autosave must not mutate project or sequence APIs while hydration reads are pending').toEqual([]);
 
@@ -3497,7 +3497,7 @@ test('Studio persists edits after production-shaped empty workspace hydration', 
   await page.goto(`/app/studio/workspace/${projectId}`, { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await page.waitForTimeout(1_100);
   expect(mutations, 'autosave must remain blocked while the empty workspace read is pending').toEqual([]);
   expect(await page.evaluate((storageKey) => window.localStorage.getItem(storageKey), workspaceStorageKey)).toBeNull();
@@ -3546,7 +3546,7 @@ test('Studio partial sequence hydration never autosaves the bootstrap over an AP
   await page.goto(`/app/studio/workspace/${projectId}`, { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await page.waitForTimeout(1_100);
   expect(mutations, 'autosave must remain blocked while partial hydration reads are pending').toEqual([]);
   releaseHydration();

@@ -33,7 +33,7 @@ export type TimelineClipFullState = TimelineClipState & {
 };
 
 const EDITOR_STARTUP_LABELS = {
-  productName: /^(?:MaxVideoAI Editor|Editeur MaxVideoAI|Editor MaxVideoAI)$/,
+  projects: /^(?:Projects|Projets|Proyectos)$/,
   canvas: /^(?:Canvas|Canevas|Lienzo)$/,
   viewer: /^(?:Viewer|Visionneuse|Visor)$/,
   videoTimeline: /^(?:Video timeline|Timeline vidéo|Línea de tiempo de video)$/,
@@ -195,7 +195,7 @@ export async function openEditorWorkspace(page: Page): Promise<void> {
   await mockEditorHeaderAccountApi(page);
   await mockEditorStudioPersistenceApi(page);
   await page.goto('/app/studio/workspace', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('header').getByText(EDITOR_STARTUP_LABELS.productName)).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: EDITOR_STARTUP_LABELS.projects, exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: EDITOR_STARTUP_LABELS.canvas })).toBeVisible();
   await expect(page.getByRole('button', { name: EDITOR_STARTUP_LABELS.viewer })).toBeVisible();
   await expect(page.getByLabel(EDITOR_STARTUP_LABELS.videoTimeline)).toBeVisible();
@@ -216,7 +216,7 @@ export async function openFreshEditorWorkspace(page: Page): Promise<void> {
     window.localStorage.setItem('maxvideoai.editor.workspace.v1', JSON.stringify(workspaceState));
   }, PRODUCT_AD_REGRESSION_WORKSPACE_STATE);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('header').getByText(EDITOR_STARTUP_LABELS.productName)).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: EDITOR_STARTUP_LABELS.projects, exact: true })).toBeVisible();
   await expect(page.getByLabel(EDITOR_STARTUP_LABELS.videoTimeline)).toBeVisible();
   await expect(page.locator('.react-flow__node[data-id="asset-product-image"]')).toBeVisible();
   await expect(page.locator('[data-timeline-item]')).toHaveCount(productAdRegressionFixture.timelineItems.length);

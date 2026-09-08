@@ -598,7 +598,7 @@ test('timeline panel height can be resized with the top drag handle and persists
   })).toBeCloseTo(reducedHeight, 0);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Projects', exact: true })).toBeVisible();
   await switchEditorFocus(page, 'Viewer');
   await expect.poll(async () => timelinePanelHeight(page)).toBeCloseTo(reducedHeight, 0);
 
