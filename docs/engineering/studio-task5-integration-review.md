@@ -116,3 +116,15 @@ After three identical30-second actionability failures, the remaining matrix was
 stopped explicitly; it is not a complete pass. The owned3040/3041 processes were
 then stopped, and the snapshot remains at `/private/tmp/studio-ui-qa.inkcrz`.
 The normal3032 preview and baseline3034/3035 were not touched.
+
+The later435c3cc00 layout passes the earlier command hit-tests in both landscape
+sizes, but complete-card inspection still finds Canvas overlapping its output
+area (13.95×44px), and the320px creation toolbar covers the bottom24px of the card.
+The root matrix now includes the **whole selected card** in its collision check,
+as required by the original brief's hidden-output finding. Both counterexamples
+are reproduced in `output/playwright/studio-clarity-whole-card-red/`.
+
+The sole product writer has the targeted UI runtime slot to iterate using this
+root-owned test read-only and inspect the saved screenshots. Root runs no heavy
+suite during that slot, then independently reruns the full frozen matrix. This
+does not transfer ownership of assertions or waive the remaining findings.

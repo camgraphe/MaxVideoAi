@@ -44,9 +44,11 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 
         const violations = await node.evaluate((element) => {
-          const essential = Array.from(element.querySelectorAll<HTMLElement>(
+          // Fit includes the complete selected card: its output port and persistent
+          // Connections launcher must not disappear beneath a floating control.
+          const essential = [element as HTMLElement, ...Array.from(element.querySelectorAll<HTMLElement>(
             '[class*="nodeHeader"], [data-shot-generation-action], [data-canvas-node-inspect-button]',
-          ));
+          ))];
           const overlays = Array.from(document.querySelectorAll<HTMLElement>(
             '[data-canvas-selection-actions], [data-canvas-floating-toolbar="true"], [data-canvas-navigator="true"], [data-studio-mobile-panel-controls="true"]',
           ));
