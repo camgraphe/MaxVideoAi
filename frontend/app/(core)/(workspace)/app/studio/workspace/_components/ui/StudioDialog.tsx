@@ -34,10 +34,13 @@ const FOCUSABLE_SELECTOR = [
 
 function focusableElements(root: HTMLElement | null): HTMLElement[] {
   if (!root) return [];
-  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((element) => (
-    element.getAttribute('aria-hidden') !== 'true' &&
-    getComputedStyle(element).visibility !== 'hidden'
-  ));
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((element) => {
+    const style = getComputedStyle(element);
+    return element.getAttribute('aria-hidden') !== 'true' &&
+      style.display !== 'none' &&
+      style.visibility !== 'hidden' &&
+      element.getClientRects().length > 0;
+  });
 }
 
 export function StudioDialog({

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openMinimalEditorWorkspace } from './editor-helpers';
+import { canvasNodeControls, openMinimalEditorWorkspace } from './editor-helpers';
 
 test('Chat card and inspector simulate locally and disable Live without losing the draft', async ({ page }) => {
   let chatRequests = 0;
@@ -8,7 +8,7 @@ test('Chat card and inspector simulate locally and disable Live without losing t
   await openMinimalEditorWorkspace(page);
   const mode = page.getByRole('button', { name: 'Toggle mock generation' });
   if ((await mode.textContent())?.includes('Live')) await mode.click();
-  await page.locator('[data-canvas-toolbar-menu-id="text"]').click();
+  await page.locator('[data-canvas-toolbar-menu-id="add"]').click();
   await page.locator('[data-canvas-toolbar-preset-id="chat-box"]').click();
   const chat = page.locator('.react-flow__node.selected');
   await chat.getByRole('textbox', { name: 'Message', exact: true }).fill('Plan my scene');
@@ -20,7 +20,7 @@ test('Chat card and inspector simulate locally and disable Live without losing t
   await expect(chat).toContainText('Live Chat unavailable');
   await chat.getByRole('textbox', { name: 'Message', exact: true }).press('ControlOrMeta+Enter');
   await expect(chat.getByRole('textbox', { name: 'Message', exact: true })).toHaveValue('Keep my next draft');
-  await page.locator('[data-canvas-selection-settings]').click();
+  await (await canvasNodeControls(page, chat)).locator('[data-canvas-node-inspect-button]').click();
   const inspector = page.locator('[data-studio-canvas-inspector="true"]');
   await expect(inspector.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
   await expect(inspector).toContainText('Live Chat unavailable');

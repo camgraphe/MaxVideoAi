@@ -120,7 +120,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     activeUserCanvasTemplate?.name ??
     (activeRegistryTemplate ? localizeStudioTemplateSummary(activeRegistryTemplate, studioCopy).name : null) ??
     'Workspace';
-  const pricingEstimates = useWorkspaceShotPricing({ nodes, edges, capabilities });
+  const pricingEstimates = useWorkspaceShotPricing({ nodes, edges, capabilities, mockMode });
   const timelineDurationSec = useMemo(() => workspaceTimelineDurationSec(timelineItems), [timelineItems]);
   const previewTimelineItems = timelinePreview?.items ?? timelineItems;
   const timelineCutPoints = useMemo(() => workspaceTimelineCutPoints(previewTimelineItems), [previewTimelineItems]);
