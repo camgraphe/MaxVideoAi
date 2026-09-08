@@ -4,7 +4,9 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { detectHasAudioStream, detectMediaBufferDuration, detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
+import { downloadAudioSourceVideo } from './source-video-probe';
+export { inspectSourceVideo } from './source-video-probe';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadFileBuffer } from '@/server/storage';
@@ -39,13 +41,6 @@ function getFfmpegPath(): string | null {
   }
 }
 
-type SourceVideoProbe = {
-  durationSec: number | null;
-  width: number | null;
-  height: number | null;
-  hasAudio: boolean | null;
-};
-
 type StemPresence = {
   hasSoundDesign: boolean;
   hasMusic: boolean;
@@ -65,21 +60,6 @@ type MixAudioTracksParams = {
 type MixAudioIntoVideoParams = MixAudioTracksParams & {
   sourceVideoUrl: string;
 };
-
-export async function inspectSourceVideo(videoUrl: string): Promise<SourceVideoProbe> {
-  const [durationSec, dimensions, hasAudio] = await Promise.all([
-    detectMediaDuration(videoUrl, {}, 'v'),
-    detectVideoDimensions(videoUrl),
-    detectHasAudioStream(videoUrl),
-  ]);
-
-  return {
-    durationSec,
-    width: dimensions?.width ?? null,
-    height: dimensions?.height ?? null,
-    hasAudio,
-  };
-}
 
 async function fetchFileBuffer(url: string): Promise<Buffer> {
   const response = await fetch(url);
@@ -293,11 +273,16 @@ export async function muxAudioBufferIntoVideo(params: {
   const outputPath = path.join(tempDir, 'output.mp4');
 
   try {
-    await writeFetchedFile(params.sourceVideoUrl, sourcePath);
+    const source = await downloadAudioSourceVideo({ file_id: 'audio-mux-source', download_url: params.sourceVideoUrl });
+    await writeFile(sourcePath, source.bytes);
     await writeFile(audioPath, params.audioBuffer);
 
     const args = [
       '-y',
+      '-protocol_whitelist',
+      'file,pipe',
+      '-format_whitelist',
+      'mov,matroska,webm',
       '-i',
       sourcePath,
       '-i',

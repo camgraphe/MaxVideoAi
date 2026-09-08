@@ -7,12 +7,14 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { runAudioGenerate, useInfiniteJobs } from '@/lib/api';
 import { AUDIO_CREATION_INTENTS, AUDIO_INTENT_PACK, buildAudioCreationRequest, isAudioDraftReady, isAudioIntent, type AudioCreationIntent } from '@/lib/audio-creation';
+import { audioCreationReusePatch } from './_lib/audio-creation-reuse';
 import { audioCreationCopy } from './_lib/audio-creation-copy';
 import { fetchJobDetail, uploadAsset } from './_lib/audio-workspace-helpers';
 import type { AudioJobDetail } from './_lib/audio-workspace-types';
 import { useAudioCreationDraft } from './_hooks/useAudioCreationDraft';
 import { useAudioCreationQuote } from './_hooks/useAudioCreationQuote';
 import { useAudioCreationPolling } from './_hooks/useAudioCreationPolling';
+import { useAudioCreationScope } from './_hooks/useAudioCreationScope';
 import { AudioCreationEditor } from './_components/AudioCreationEditor';
 import { AudioCreationResults } from './_components/AudioCreationResults';
 import styles from './_components/audio-creation.module.css';
@@ -20,18 +22,23 @@ const ReferenceLibrary = dynamic(() => import('./_components/AudioReferenceLibra
 const VideoSoundtrack = dynamic(() => import('./AudioWorkspace'));
 
 export default function AudioCreationWorkspace() {
+  const { user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const userId = user?.id ?? null;
+  // Account transitions retire the entire observation surface before displaying the next account.
+  return <OwnedAudioCreationWorkspace key={userId ?? 'guest'} userId={userId} />;
+}
+
+function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const params = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const { locale } = useI18n();
-  const { user } = useRequireAuth({ redirectIfLoggedOut: false });
   const requestedIntent = params?.get('intent');
   const intent: AudioCreationIntent = isAudioIntent(requestedIntent) ? requestedIntent : 'voice';
-  const userId = user?.id ?? null;
   const copy = audioCreationCopy(locale);
   const { draft, update, saved } = useAudioCreationDraft(userId, intent);
   const body = useMemo(() => buildAudioCreationRequest(intent, draft, locale), [intent, draft, locale]);
-  const { quote, loading, error: quoteError, retry } = useAudioCreationQuote(body, userId, isAudioDraftReady(intent, draft) && requestedIntent !== 'video');
+  const { quote, loading, error: quoteError, retry, isCurrent: isCurrentQuote } = useAudioCreationQuote(body, userId, isAudioDraftReady(intent, draft) && requestedIntent !== 'video');
   const [selection, setSelection] = useState<{ owner: string | null; result: AudioJobDetail | null }>({ owner: null, result: null });
   const result = selection.owner === userId ? selection.result : null;
   const setResult = useCallback((job: AudioJobDetail | null) => setSelection({ owner: userId, result: job }), [userId]);
@@ -40,48 +47,46 @@ export default function AudioCreationWorkspace() {
   const [pending, setPending] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
-  const scope = useRef({ userId, alive: true }); scope.current.userId = userId;
+  const scope = useAudioCreationScope(userId);
   const restoreSequence = useRef(0);
   const submitting = useRef(new Set<string>());
   const { stableJobs: jobs, isLoading, error: historyError, mutate } = useInfiniteJobs(12, { surface: 'audio' });
-  useEffect(() => { const current = scope.current; current.alive = true; return () => { current.alive = false; }; }, []);
-  useEffect(() => { setResult(null); setLibraryOpen(false); setNotice(null); setPending([]); setUploading(false); submitting.current.clear(); restoreSequence.current++; }, [userId, setResult]);
-  const stillOwned = useCallback((owner: string | null) => scope.current.alive && scope.current.userId === owner, []);
+  const stillOwned = scope.isCurrent;
   const selectJob = useCallback(async (jobId: string) => {
-    if (!userId) return;
+    if (!userId || !stillOwned()) return;
     const sequence = ++restoreSequence.current;
     try {
       const job = await fetchJobDetail(jobId);
-      if (stillOwned(userId) && sequence === restoreSequence.current) {
+      if (stillOwned() && sequence === restoreSequence.current) {
         if (job.videoUrl && job.surface !== 'audio') {
           router.replace(`${pathname}?intent=video&job=${encodeURIComponent(jobId)}`, { scroll: false });
           return;
         }
         setResult(job);
       }
-    } catch { if (stillOwned(userId) && sequence === restoreSequence.current) setNotice(copy.error); }
+    } catch { if (stillOwned() && sequence === restoreSequence.current) setNotice(copy.error); }
   }, [copy.error, stillOwned, userId, setResult, router, pathname]);
   const queryJob = params?.get('job');
   useEffect(() => { if (queryJob && requestedIntent !== 'video') void selectJob(queryJob); }, [queryJob, requestedIntent, selectJob]);
   const chooseIntent = (next: AudioCreationIntent) => { router.replace(`${pathname}?intent=${next}`, { scroll: false }); setNotice(null); setLibraryOpen(false); };
 
   const generate = async () => {
-    if (!quote || !userId || quote.expiresAt <= Date.now() || submitting.current.has(quote.inputKey)) return;
-    const owner = userId; const submitted = { ...body }; const inputKey = quote.inputKey;
+    if (!stillOwned() || !isCurrentQuote() || !quote || !userId || quote.expiresAt <= Date.now() || submitting.current.has(quote.inputKey)) return;
+    const submitted = { ...body }; const inputKey = quote.inputKey;
     const sequence = ++restoreSequence.current;
     submitting.current.add(inputKey); setPending(previous => [...previous, inputKey]); setNotice(null);
     try {
       const response = await runAudioGenerate({ ...submitted, expectedQuote: { inputKey, totalCents: quote.pricing.totalCents, currency: quote.pricing.currency, expiresAt: quote.expiresAt } });
-      if (!stillOwned(owner)) return;
-      if (sequence === restoreSequence.current) setResult({ ...response, engineLabel: copy.intents[intent][0], settingsSnapshot: { pack: submitted.pack, script: submitted.script, prompt: submitted.prompt, lyrics: submitted.lyrics, providers: response.providers, voiceModel: submitted.voiceModel, minimaxVoiceId: submitted.minimaxVoiceId, seedAudioVoice: draft.voice, seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language, musicModel: submitted.musicModel, musicBpm: draft.bpm, refs: { voiceSampleUrl: draft.reference?.url }, measuredDurationSec: response.durationSec, requestedDurationSec: response.requestedDurationSec } });
+      if (!stillOwned()) return;
+      if (sequence === restoreSequence.current) setResult({ ...response, engineLabel: copy.intents[intent][0], settingsSnapshot: { pack: submitted.pack, script: submitted.script, prompt: submitted.prompt, lyrics: submitted.lyrics, providers: response.providers, voiceModel: submitted.voiceModel, minimaxVoiceId: submitted.minimaxVoiceId, seedAudioVoice: submitted.seedAudioVoice, seedAudioOutputFormat: submitted.seedAudioOutputFormat, seedAudioSampleRate: Number(submitted.seedAudioSampleRate) || null, voiceDelivery: submitted.voiceDelivery, voiceProfile: submitted.voiceProfile, voiceGender: submitted.voiceGender, seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language, musicModel: submitted.musicModel, musicBpm: draft.bpm, refs: { voiceSampleUrl: draft.reference?.url }, measuredDurationSec: response.durationSec, requestedDurationSec: response.requestedDurationSec } });
       window.dispatchEvent(new CustomEvent('jobs:status', { detail: { ...response, finalPriceCents: response.pricing.totalCents } }));
       void mutate();
-    } catch { if (stillOwned(owner)) { setNotice(copy.error); retry(); } }
-    finally { if (stillOwned(owner)) { submitting.current.delete(inputKey); setPending(previous => previous.filter(key => key !== inputKey)); } }
+    } catch { if (stillOwned()) { setNotice(copy.error); retry(); } }
+    finally { if (stillOwned()) { submitting.current.delete(inputKey); setPending(previous => previous.filter(key => key !== inputKey)); } }
   };
   const addReference = async (file: File) => {
     if (!userId) { setNotice(copy.signIn); return; }
-    const owner = userId;
+    if (!stillOwned()) return;
     if (file.size > 10 * 1024 * 1024 || !/\.(mp3|wav)$/i.test(file.name)) { setNotice(copy.uploadError); return; }
     setUploading(true);
     try {
@@ -94,11 +99,11 @@ export default function AudioCreationWorkspace() {
           audio.onerror = () => finish(false); audio.src = url;
         });
       } finally { URL.revokeObjectURL(url); }
-      if (!stillOwned(owner)) return;
+      if (!stillOwned()) return;
       const reference = await uploadAsset(file, 'audio');
-      if (stillOwned(owner)) update({ reference });
-    } catch { if (stillOwned(owner)) setNotice(copy.uploadError); }
-    finally { if (stillOwned(owner)) setUploading(false); }
+      if (stillOwned()) update({ reference });
+    } catch { if (stillOwned()) setNotice(copy.uploadError); }
+    finally { if (stillOwned()) setUploading(false); }
   };
   const reuse = () => {
     const snapshot = result?.settingsSnapshot;
@@ -107,12 +112,7 @@ export default function AudioCreationWorkspace() {
     if (!next) { router.push(`${pathname}?intent=video&job=${encodeURIComponent(result!.jobId)}`); return; }
     // Reuse targets the actual intent before applying the snapshot through the dedicated link.
     if (next !== intent) { router.replace(`${pathname}?intent=${next}&job=${encodeURIComponent(result!.jobId)}&reuse=1`, { scroll: false }); return; }
-    update({ prompt: snapshot.prompt ?? '', script: snapshot.script ?? '', lyrics: snapshot.lyrics ?? '',
-      voiceModel: snapshot.voiceModel === 'minimax' ? 'minimax' : 'seed', minimaxVoiceId: snapshot.minimaxVoiceId ?? 'English_FriendlyPerson',
-      voice: snapshot.seedAudioVoice ?? 'default', speed: snapshot.seedAudioSpeed ?? 1, volume: snapshot.seedAudioVolume ?? 1, pitch: snapshot.seedAudioPitch ?? 0,
-      language: snapshot.language ?? 'auto', mood: snapshot.mood ?? 'dreamy',
-      durationSec: snapshot.requestedDurationSec ?? snapshot.durationSec ?? draft.durationSec, musicModel: snapshot.musicModel === 'pro' ? 'pro' : 'clip', bpm: snapshot.musicBpm ?? 110,
-      reference: snapshot.refs?.voiceSampleUrl ? { url: snapshot.refs.voiceSampleUrl, name: copy.reference } : null });
+    update(audioCreationReusePatch(snapshot, draft, copy.reference));
   };
   // Cross-intent reuse waits for navigation and an owned job read, then applies once.
   const reuseRef = useRef('');

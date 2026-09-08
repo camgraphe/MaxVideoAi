@@ -1,6 +1,6 @@
 'use client';
 import { useRef } from 'react';
-import { AUDIO_SEED_AUDIO_VOICE_VALUES } from '@/lib/audio-generation';
+import { AUDIO_SEED_AUDIO_VOICE_VALUES, AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES, AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES } from '@/lib/audio-generation';
 import type { AudioCreationDraft, AudioCreationIntent } from '@/lib/audio-creation';
 import type { AudioCreationCopy } from '../_lib/audio-creation-copy';
 import styles from './audio-creation.module.css';
@@ -56,6 +56,11 @@ export function AudioCreationEditor({ intent, draft, copy, onChange, onFile, upl
         <label>{copy.speed}<input type="number" min="0.5" max="2" step="0.01" value={draft.speed} onChange={event => onChange({ speed: Number(event.target.value) })} /></label>
         <label>{copy.volume}<input type="number" min="0.5" max="2" step="0.1" value={draft.volume} onChange={event => onChange({ volume: Number(event.target.value) })} /></label>
         <label>{copy.pitch}<input type="number" min="-12" max="12" step="1" value={draft.pitch} onChange={event => onChange({ pitch: Number(event.target.value) })} /></label>
+        {draft.reference || draft.voiceModel === 'seed' ? <>
+          <label>{copy.format}<select value={draft.outputFormat} onChange={event => onChange({ outputFormat: event.target.value })}>{AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES.map(value => <option key={value} value={value}>{value.toUpperCase()}</option>)}</select></label>
+          <label>{copy.sampleRate}<select value={draft.sampleRate} onChange={event => onChange({ sampleRate: Number(event.target.value) })}>{AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES.map(value => <option key={value} value={value}>{value / 1000} kHz</option>)}</select></label>
+          {([{ field: 'voiceDelivery', label: copy.delivery, options: copy.deliveryLabels }, { field: 'voiceProfile', label: copy.voiceProfile, options: copy.profileLabels }, { field: 'voiceGender', label: copy.voiceGender, options: copy.genderLabels }] as const).map(({ field, label, options }) => <label key={field}>{label}<select value={draft[field]} onChange={event => onChange({ [field]: event.target.value })}>{Object.entries(options).map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label>)}
+        </> : null}
       </div></details>
       <div className={styles.reference}>
         <input ref={input} type="file" accept="audio/mpeg,audio/wav,.mp3,.wav" hidden tabIndex={-1} onChange={event => { const file = event.target.files?.[0]; if (file) onFile(file); event.target.value = ''; }} />

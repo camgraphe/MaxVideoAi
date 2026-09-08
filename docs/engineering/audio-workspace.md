@@ -44,3 +44,11 @@ Validation on 2026-09-08:
 - Local evidence: `/tmp/audio-full-tests-final.log`, `/tmp/audio-build-final.log`, `/tmp/audio-lint-complete.log`, `/tmp/audio-exposure-final.log`, `/tmp/maxvideoai-audio-qa/audio-mobile-light.png`. The local fixture build/server live under `/tmp/maxvideoai-audio-qa`; they never call a real provider, database, wallet or storage service.
 
 Deferred explicitly: live provider quality/entitlement/invoice qualification, user-defined fixed prices, and the shared Studio upload/handoff runtime (Studio owner confirmed it is not yet implemented). No nonfunctional Studio handoff action is exposed. Existing upload URLs remain supported; the additive canonical upload contract will be integrated when its owner delivers it. This change does not add a durable background worker or cancellation promise to the synchronous audio endpoint. No push or deployment is included.
+
+## Integration review corrections
+
+Source video inspection now downloads through the shared public-DNS-pinned, redirect-validated and byte-limited media downloader. A single ffprobe invocation reads a temporary local file with restricted protocols/formats, a 15-second timeout and unconditional cleanup. Both quote and execution use the same preparation owner; muxing revalidates the source download as well. Original signed URLs remain unchanged in provider inputs and snapshots.
+
+Each account transition retires the Audio observation surface. Draft and quote callbacks also carry a fresh session identity, so A → B → A never revives an old callback, and unmount invalidates uploads, restoration, submission, polling and retries. Advanced Seed output format, sample rate, delivery, profile and voice type roundtrip through historical reuse and are editable under voice settings.
+
+Review validation: 101 targeted Audio, downloader and billing-authority tests passed, including actual React workspace deferred upload/restoration/generation responses through account roundtrip and unmount/recreate. TypeScript, frontend lint and exposure checks passed. These corrections do not change commercial policy.

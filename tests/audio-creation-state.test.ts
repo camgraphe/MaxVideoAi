@@ -6,6 +6,9 @@ import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 import { useAudioCreationDraft } from '../frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioCreationDraft';
 import { useAudioCreationQuote } from '../frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioCreationQuote';
+import { audioCreationReusePatch } from '../frontend/app/(core)/(workspace)/app/audio/_lib/audio-creation-reuse';
+import { validateAudioGenerateRequest } from '../frontend/src/server/audio/audio-generate-validation';
+import { useAudioCreationScope } from '../frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioCreationScope';
 import { buildAudioCreationRequest, newAudioDraft, type AudioCreationIntent } from '../frontend/src/lib/audio-creation';
 
 function environment(fetchImpl?: typeof fetch) {
@@ -98,4 +101,77 @@ test('expired quote is removed and refreshed without reusing the confirmed amoun
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 380)); });
     assert.equal(state.quote?.pricing.totalCents, 20);
   } finally { await env.close(); }
+});
+
+
+test('retired draft updaters stay retired after A → B → A and unmount/recreate', async () => {
+  const env = environment();
+  let state!: ReturnType<typeof useAudioCreationDraft>;
+  const observations: string[] = [];
+  function Fixture({ owner }: { owner: string }) { state = useAudioCreationDraft(owner, 'voice'); observations.push(state.draft.script); return null; }
+  const render = (owner: string) => act(async () => env.root.render(React.createElement(Fixture, { owner })));
+  try {
+    await render('a');
+    await act(async () => state.update({ script: 'Initial A' }));
+    const retired = state.update;
+    await render('b');
+    observations.length = 0;
+    await render('a');
+    assert.equal(observations[0], '', 'old observations hidden before hydration effects');
+    await act(async () => state.update({ script: 'New A' }));
+    await act(async () => retired({ script: 'Late upload under old A' }));
+    assert.equal(state.draft.script, 'New A');
+    const beforeUnmount = state.update;
+    await act(async () => env.root.render(null));
+    await render('a');
+    await act(async () => state.update({ script: 'Recreated A' }));
+    await act(async () => beforeUnmount({ script: 'Late unmounted setter' }));
+    assert.equal(state.draft.script, 'Recreated A');
+    assert.equal(JSON.parse(localStorage.getItem('maxvideoai.audio.creation.v1:a')!).drafts.voice.script, 'Recreated A');
+  } finally { await env.close(); }
+});
+
+test('async scope callbacks cannot regain ownership on return to account or remount', async () => {
+  const env = environment();
+  let scope!: ReturnType<typeof useAudioCreationScope>;
+  function Fixture({ owner }: { owner: string }) { scope = useAudioCreationScope(owner); return null; }
+  const render = (owner: string) => act(async () => env.root.render(React.createElement(Fixture, { owner })));
+  try {
+    await render('a'); const first = scope;
+    await render('b'); await render('a');
+    assert.equal(first.isCurrent(), false); assert.equal(scope.isCurrent(), true);
+    const beforeUnmount = scope;
+    await act(async () => env.root.render(null)); await render('a');
+    assert.equal(beforeUnmount.isCurrent(), false); assert.notEqual(scope, beforeUnmount);
+  } finally { await env.close(); }
+});
+
+test('late quote and retry from earlier A cannot replace or clear a fresh A quote', async () => {
+  const requests: Array<(response: Response) => void> = [];
+  const env = environment(async () => new Promise(resolve => requests.push(resolve)));
+  let state!: ReturnType<typeof useAudioCreationQuote>;
+  function Fixture({ owner }: { owner: string }) { state = useAudioCreationQuote({ pack: 'voice_only', script: 'Same script' }, owner, true); return null; }
+  const render = (owner: string) => act(async () => env.root.render(React.createElement(Fixture, { owner })));
+  const tick = () => act(async () => { await new Promise(resolve => setTimeout(resolve, 380)); });
+  const respond = (index: number) => act(async () => requests[index](new Response(JSON.stringify({ ok: true, inputKey: `quote-${index}`, pricing: { totalCents: 20, currency: 'USD' }, expiresAt: Date.now() + 60000 }))));
+  try {
+    await render('a'); await tick(); const old = state;
+    await render('b'); await render('a'); await tick(); await respond(1);
+    assert.equal(state.quote?.inputKey, 'quote-1'); assert.equal(old.isCurrent(), false);
+    await respond(0); await act(async () => old.retry());
+    assert.equal(state.quote?.inputKey, 'quote-1');
+    const beforeUnmount = state;
+    await act(async () => env.root.render(null)); await render('a'); await tick(); await respond(2);
+    await act(async () => beforeUnmount.retry());
+    assert.equal(state.quote?.inputKey, 'quote-2');
+  } finally { await env.close(); }
+});
+
+test('historical Seed voice settings roundtrip through reuse, draft and validated request', () => {
+  const initial = newAudioDraft('voice');
+  const patch = audioCreationReusePatch({ pack: 'voice_only', script: 'Hello again', seedAudioOutputFormat: 'wav', seedAudioSampleRate: 48000, voiceDelivery: 'intimate', voiceProfile: 'deep', voiceGender: 'male', seedAudioSpeed: 0.85 }, initial, 'Reference');
+  const result = validateAudioGenerateRequest(buildAudioCreationRequest('voice', { ...initial, ...patch }, 'fr'));
+  assert.equal(result.voiceModel, 'seed'); assert.equal(result.seedAudioOutputFormat, 'wav'); assert.equal(result.seedAudioSampleRate, 48000);
+  assert.equal(result.voiceDelivery, 'intimate'); assert.equal(result.voiceProfile, 'deep'); assert.equal(result.voiceGender, 'male'); assert.equal(result.seedAudioSpeed, 0.85);
+  assert.equal(buildAudioCreationRequest('voice', initial, 'fr').seedAudioSampleRate, undefined, 'MiniMax does not receive unsupported Seed options');
 });

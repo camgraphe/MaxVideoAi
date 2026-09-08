@@ -1,4 +1,6 @@
 const en = {
+  format: 'Format', sampleRate: 'Sample rate', delivery: 'Delivery', voiceProfile: 'Tone', voiceGender: 'Voice type',
+  deliveryLabels: { natural: 'Natural', cinematic: 'Cinematic', trailer: 'Trailer', intimate: 'Intimate' }, profileLabels: { balanced: 'Balanced', warm: 'Warm', bright: 'Bright', deep: 'Deep' }, genderLabels: { female: 'Feminine', male: 'Masculine', neutral: 'Neutral' },
   library: 'Library', close: 'Close', select: 'Select', emptyLibrary: 'No saved audio.', import: 'Import',
   quality: 'Quality', highQuality: 'High quality', soon: 'Coming soon', qualityPending: 'This offer is being qualified. Pricing will be announced before it opens.',
   title: 'Audio', subtitle: 'Give your idea a sound.',
@@ -13,6 +15,8 @@ const en = {
 };
 type Copy = typeof en;
 const fr: Copy = { ...en,
+  format: 'Format', sampleRate: 'Fréquence', delivery: 'Interprétation', voiceProfile: 'Timbre', voiceGender: 'Type de voix',
+  deliveryLabels: { natural: 'Naturelle', cinematic: 'Cinéma', trailer: 'Bande-annonce', intimate: 'Intime' }, profileLabels: { balanced: 'Équilibré', warm: 'Chaleureux', bright: 'Clair', deep: 'Profond' }, genderLabels: { female: 'Féminine', male: 'Masculine', neutral: 'Neutre' },
   library: 'Bibliothèque', close: 'Fermer', select: 'Sélectionner', emptyLibrary: 'Aucun audio enregistré.', import: 'Importer',
   quality: 'Qualité', highQuality: 'Haute qualité', soon: 'À venir', qualityPending: 'Cette offre est en qualification. Le tarif sera annoncé avant son ouverture.',
   title: 'Audio', subtitle: 'Donnez un son à votre idée.',
@@ -22,6 +26,8 @@ const fr: Copy = { ...en,
   model: 'Modèle', voice: 'Voix', language: 'Langue', duration: 'Durée', tempo: 'Tempo', options: 'Réglages de voix', speed: 'Vitesse', volume: 'Volume', pitch: 'Hauteur', reference: 'Référence vocale', addReference: 'Ajouter une référence audio', remove: 'Retirer', referenceHint: 'MP3 ou WAV · 30 s / 10 Mo maximum', auto: 'Automatique', fullSong: 'Morceau complet · la durée suit les paroles', ambienceHint: 'Fond continu. Une boucle parfaite n’est pas garantie.', seedHint: 'Voix prédéfinies et référence audio.', minimaxHint: 'Lecture de votre script. Tarif par caractère.', generate: 'Générer', quoteLoading: 'Actualisation du prix…', quoteIdle: 'Complétez votre idée pour voir le prix', quoteError: 'Prix indisponible', retry: 'Réessayer', currentPrice: 'Prix actuel', signIn: 'Se connecter pour générer', saved: 'Brouillon enregistré sur cet appareil', unsaved: 'Brouillon conservé dans cette session', listen: 'Écouter', empty: 'Votre prochain son commence ici', emptyHint: 'Créez, écoutez, puis ajoutez-le à votre projet.', generating: 'Création de votre audio…', generatingHint: 'Vous pouvez continuer à écrire.', failed: 'La création audio a échoué', download: 'Télécharger l’original', reuse: 'Réutiliser les réglages', history: 'Créations récentes', details: 'Détails', measured: 'Durée mesurée', requested: 'Durée demandée', output: 'Audio original', preview: 'Écouter la voix', stop: 'Arrêter', loading: 'Chargement…', error: 'Une erreur est survenue. Réessayez.', uploadError: 'Choisissez un MP3 ou WAV de 30 secondes et 10 Mo maximum.', loadingHistory: 'Chargement des créations…', emptyHistory: 'Vos créations audio apparaîtront ici.',
 };
 const es: Copy = { ...en,
+  format: 'Formato', sampleRate: 'Frecuencia', delivery: 'Interpretación', voiceProfile: 'Timbre', voiceGender: 'Tipo de voz',
+  deliveryLabels: { natural: 'Natural', cinematic: 'Cine', trailer: 'Tráiler', intimate: 'Íntima' }, profileLabels: { balanced: 'Equilibrado', warm: 'Cálido', bright: 'Brillante', deep: 'Profundo' }, genderLabels: { female: 'Femenina', male: 'Masculina', neutral: 'Neutra' },
   library: 'Biblioteca', close: 'Cerrar', select: 'Seleccionar', emptyLibrary: 'No hay audio guardado.', import: 'Importar',
   quality: 'Calidad', highQuality: 'Alta calidad', soon: 'Próximamente', qualityPending: 'Esta oferta está en evaluación. El precio se anunciará antes de abrirla.',
   title: 'Audio', subtitle: 'Dale sonido a tu idea.', intents: { voice: ['Voz en off', 'Una voz para tus palabras'], music: ['Instrumental', 'Música sin voces'], song: ['Canción', 'Tu letra hecha música'], sfx: ['Efectos sonoros', 'Un impacto. Un gesto. Un detalle.'], ambience: ['Ambientes', 'Un lugar que se escucha'] },

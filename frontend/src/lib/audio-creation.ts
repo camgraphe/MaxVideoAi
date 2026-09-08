@@ -9,12 +9,14 @@ export const AUDIO_INTENT_PACK: Record<AudioCreationIntent, AudioPackId> = {
 export type AudioCreationDraft = {
   prompt: string; script: string; lyrics: string; durationSec: number;
   voiceModel: AudioVoiceModel; voice: string; minimaxVoiceId: string; speed: number; volume: number; pitch: number;
+  outputFormat: string; sampleRate: number; voiceDelivery: string; voiceProfile: string; voiceGender: string;
   language: string; musicModel: 'clip' | 'pro'; bpm: number; mood: string;
   reference: { url: string; name: string; ref?: ToolAssetRef } | null;
 };
 export function newAudioDraft(intent: AudioCreationIntent): AudioCreationDraft {
   return { prompt: '', script: '', lyrics: '', durationSec: intent === 'sfx' ? 8 : intent === 'ambience' ? 60 : 30,
     voiceModel: 'minimax', voice: 'default', minimaxVoiceId: 'English_FriendlyPerson', speed: 1.06, volume: 1, pitch: 0,
+    outputFormat: 'mp3', sampleRate: 24000, voiceDelivery: 'cinematic', voiceProfile: 'balanced', voiceGender: 'female',
     language: 'auto', musicModel: 'clip', bpm: 110, mood: 'dreamy', reference: null };
 }
 export function isAudioIntent(value: unknown): value is AudioCreationIntent {
@@ -23,7 +25,10 @@ export function isAudioIntent(value: unknown): value is AudioCreationIntent {
 export function buildAudioCreationRequest(intent: AudioCreationIntent, draft: AudioCreationDraft, locale: string): AudioGenerateRequestBody {
   const base = { pack: AUDIO_INTENT_PACK[intent], locale };
   if (intent === 'voice') return { ...base, script: draft.script.trim(), voiceModel: draft.reference ? 'seed' : draft.voiceModel,
-    ...(!draft.reference && draft.voiceModel === 'minimax' ? { minimaxVoiceId: draft.minimaxVoiceId } : { seedAudioVoice: draft.voice, voiceSampleUrl: draft.reference?.url }),
+    ...(!draft.reference && draft.voiceModel === 'minimax' ? { minimaxVoiceId: draft.minimaxVoiceId } : {
+      seedAudioVoice: draft.voice, voiceSampleUrl: draft.reference?.url, seedAudioOutputFormat: draft.outputFormat,
+      seedAudioSampleRate: draft.sampleRate, voiceDelivery: draft.voiceDelivery, voiceProfile: draft.voiceProfile, voiceGender: draft.voiceGender,
+    }),
     seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language };
   if (intent === 'song') return { ...base, prompt: draft.prompt.trim(), lyrics: draft.lyrics.trim() };
   if (intent === 'music') return { ...base, prompt: draft.prompt.trim(), durationSec: draft.durationSec, musicModel: draft.durationSec <= 30 ? 'clip' : 'pro', musicBpm: draft.bpm, mood: draft.mood };
