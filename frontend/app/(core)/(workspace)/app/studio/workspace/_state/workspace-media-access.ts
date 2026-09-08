@@ -44,3 +44,16 @@ export function stripStudioMediaAccess(value: unknown): unknown {
     .filter(([key]) => key !== 'mediaAccessUrl' && key !== 'mediaAccessExpiresAt')
     .map(([key, nested]) => [key, stripStudioMediaAccess(nested)]));
 }
+
+function canonicalWorkspaceValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalWorkspaceValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>)
+    .filter(([key]) => key !== 'compatibilityAdjustmentCount')
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, nested]) => [key, canonicalWorkspaceValue(nested)]));
+}
+
+export function studioWorkspaceSnapshotFingerprint(value: unknown): string {
+  return JSON.stringify(canonicalWorkspaceValue(stripStudioMediaAccess(value)));
+}

@@ -5,6 +5,7 @@ import {
   applyStudioMediaAccess,
   stripStudioMediaAccess,
   studioMediaAssetId,
+  studioWorkspaceSnapshotFingerprint,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-media-access';
 import { workspaceSequencePreviewUrl } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-selectors';
 
@@ -40,6 +41,17 @@ test('transient access URLs and expiries are recursively excluded from local and
   });
   assert.doesNotMatch(JSON.stringify(stripped), /signed|mediaAccessUrl|mediaAccessExpiresAt/u);
   assert.equal((stripped as { nested: { keep: boolean } }).nested.keep, true);
+});
+
+test('autosave fingerprints ignore object key order, transient access and hydration-only compatibility notices', () => {
+  assert.equal(
+    studioWorkspaceSnapshotFingerprint({ b: 2, a: { mediaAccessUrl: 'signed', value: 1 }, compatibilityAdjustmentCount: 2 }),
+    studioWorkspaceSnapshotFingerprint({ a: { value: 1 }, b: 2 }),
+  );
+  assert.notEqual(
+    studioWorkspaceSnapshotFingerprint({ a: { value: 1 }, b: 2 }),
+    studioWorkspaceSnapshotFingerprint({ a: { value: 3 }, b: 2 }),
+  );
 });
 
 test('sequence cards never send a video original through an image reader', () => {

@@ -200,7 +200,7 @@ export function useWorkspaceSequenceSnapshots({
         timelinePanelHeight,
         videoTrackCount,
       },
-      snapshotActiveSequence()
+      liveActiveSequence
     );
   }, [
     activeCanvasId,
@@ -219,7 +219,7 @@ export function useWorkspaceSequenceSnapshots({
     projectSettings,
     savedCanvases,
     sequences,
-    snapshotActiveSequence,
+    liveActiveSequence,
     timelineInPointSec,
     timelineItems,
     timelineOutPointSec,

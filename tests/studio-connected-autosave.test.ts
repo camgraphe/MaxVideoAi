@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createStudioConnectedSaveQueue } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/studio-connected-save-queue';
+import { buildWorkspaceActiveSequenceSnapshot } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-snapshot';
 
 test('connected autosave sends one request at a time, coalesces edits and chains ACK revisions', async () => {
   const releases: Array<(value: { status: 'ready'; revision: number }) => void> = [];
@@ -47,4 +48,21 @@ test('a conflict blocks retries, preserves the latest draft and a disposed conte
   conflict.enqueue({ value: 'newest draft' });
   assert.deepEqual(conflict.draft(), { value: 'newest draft' });
   assert.deepEqual(conflict.state(), { blockedByConflict: true, inFlight: false, revision: 7 });
+});
+
+test('connected hydration snapshots keep the stored timestamp until a real sequence action', () => {
+  const updatedAt = '2026-09-08T10:00:00.000Z';
+  const sequence = {
+    id: 'main', name: 'Main', timelineItems: [], projectSettings: { fps: 24, aspectRatio: '16:9', resolution: '1080p' },
+    audioTrackCount: 2, hiddenVideoTracks: [], lockedTimelineTracks: [], mutedAudioTracks: [], videoTrackCount: 1,
+    timelinePanelHeight: null, timelineInPointSec: null, timelineOutPointSec: null,
+    createdAt: updatedAt, updatedAt,
+  } as const;
+  const snapshot = buildWorkspaceActiveSequenceSnapshot({
+    activeSequenceId: 'main', timelineItems: [], projectSettings: sequence.projectSettings,
+    audioTrackCount: 2, hiddenVideoTracks: [], lockedTimelineTracks: [], mutedAudioTracks: [], videoTrackCount: 1,
+    timelinePanelHeight: null, timelineInPointSec: null, timelineOutPointSec: null,
+    sequences: [sequence], preserveStoredUpdatedAt: true,
+  });
+  assert.equal(snapshot.updatedAt, updatedAt);
 });
