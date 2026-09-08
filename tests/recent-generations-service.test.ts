@@ -404,3 +404,19 @@ test('web recent mapper reuses a legacy video preview frame as its thumbnail wit
   assert.equal(payload.videoUrl, 'https://cdn.maxvideoai.com/video.mp4');
   assert.equal('outputId' in payload, false);
 });
+
+test('web recent mapper keeps a stored image render thumbnail ahead of a legacy preview frame', () => {
+  const payload = mapRecentGenerationRecordToWeb(
+    recentRecord({
+      surface: 'image',
+      thumb_url: '',
+      preview_frame: 'https://cdn.maxvideoai.com/legacy-preview.webp',
+      render_ids: [{
+        url: 'https://cdn.maxvideoai.com/render.png',
+        thumb_url: 'https://cdn.maxvideoai.com/render-thumb.webp',
+      }],
+    })
+  );
+
+  assert.equal(payload.thumbUrl, 'https://cdn.maxvideoai.com/render-thumb.webp');
+});

@@ -28,6 +28,24 @@ const allowLocalPostgresTest =
   process.env.NODE_ENV === 'test'
   && process.argv.includes('--allow-local-postgres-test')
   && (hostname === 'localhost' || hostname === '127.0.0.1');
+const targetOverrideParameters = new Set([
+  'database',
+  'dbname',
+  'host',
+  'hostaddr',
+  'password',
+  'port',
+  'service',
+  'servicefile',
+  'user',
+  'username',
+]);
+if (
+  !allowLocalPostgresTest
+  && [...parsed.searchParams.keys()].some((key) => targetOverrideParameters.has(key.toLowerCase()))
+) {
+  throw new Error('APPLICATION_DATABASE_URL must not contain target override query parameters.');
+}
 
 if (!isDirectNeon && !allowLocalPostgresTest) {
   throw new Error('Application schema bootstrap requires an explicit direct Neon target.');

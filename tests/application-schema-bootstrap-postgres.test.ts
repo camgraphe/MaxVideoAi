@@ -115,3 +115,24 @@ test('schema bootstrap refuses inherited database URLs and unconfirmed local tar
   assert.notEqual(local.status, 0);
   assert.match(commandOutput(local), /direct Neon target/);
 });
+
+test('schema bootstrap rejects query parameters that override the validated Neon host', () => {
+  for (const overriddenHost of ['127.0.0.1', 'ep-other-pooler.neon.tech']) {
+    const result = spawnSync(
+      'frontend/node_modules/.bin/tsx',
+      ['--tsconfig', 'frontend/tsconfig.json', 'scripts/bootstrap-application-schema.ts'],
+      {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        env: {
+          PATH: process.env.PATH,
+          APPLICATION_DATABASE_URL:
+            `postgresql://review_user@ep-review.neon.tech/review_db?host=${overriddenHost}`,
+        },
+      },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(commandOutput(result), /target override query parameters/);
+    assert.doesNotMatch(commandOutput(result), /ECONNREFUSED|getaddrinfo|ENOTFOUND/);
+  }
+});

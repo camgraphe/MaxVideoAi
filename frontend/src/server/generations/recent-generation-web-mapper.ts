@@ -30,9 +30,9 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
     prompt: record.prompt,
     thumbUrl:
       normalizeMediaUrl(record.thumb_url)
-      ?? normalizeMediaUrl(record.preview_frame)
       ?? primaryThumb
       ?? primaryImage
+      ?? normalizeMediaUrl(record.preview_frame)
       ?? undefined,
     videoUrl: normalizeMediaUrl(record.video_url) ?? undefined,
     previewVideoUrl: normalizeMediaUrl(record.preview_video_url) ?? undefined,
