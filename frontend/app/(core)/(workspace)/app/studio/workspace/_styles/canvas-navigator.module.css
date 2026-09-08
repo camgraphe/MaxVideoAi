@@ -61,13 +61,15 @@
 }
 
 .navigatorPanel {
-  position: absolute;
-  bottom: calc(100% + 12px);
-  left: 0;
+  position: fixed;
+  top:60px;
+  right:auto;
+  bottom:auto;
+  left:18px;
   display: grid;
   box-sizing:border-box;
   width: min(460px, calc(100vw - 36px));
-  max-height: min(620px, calc(100vh - 300px));
+  max-height:calc(100dvh - 72px);
   gap: 12px;
   padding: 14px;
   overflow: auto;

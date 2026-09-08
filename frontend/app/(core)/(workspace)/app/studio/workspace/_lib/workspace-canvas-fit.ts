@@ -12,9 +12,9 @@ export function workspaceCanvasFitViewOptions(params: {
       includeHiddenNodes: false,
       padding: {
         top: '8px',
-        right: '160px',
+        right: '152px',
         bottom: '8px',
-        left: '320px',
+        left: '312px',
       },
     };
   }
