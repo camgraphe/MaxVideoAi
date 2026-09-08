@@ -34,3 +34,19 @@ Base merge `059a5f0fa` combined initial `ab2cb9fbd` with app socle `cf5acc60f`; 
 No Studio commits were imported into this Toolbox worktree. Studio owns placement/canvas/timeline/persistence and keeps legacy adapters; main owns final convergence and release validation. Long legacy URL-derived media IDs still require canonical public-ID resolution by the media owner before using v1 blocks.
 
 Preview: `http://localhost:3036/app/tools` on branch `codex/connected-toolbox`.
+
+
+## Selected finishing tools checkpoint — 8 September
+
+Code commit: `b6ea6b36a`. Adds Restore Video, Denoise, Fix Blur and Smooth Motion, with compact shared forms and Standard/Pro candidates. All four are explicitly in validation; no paid run or commercial activation occurred.
+
+- Full suite: **4,503 passed, 0 failed, 0 skipped** (`pnpm test:validate`, exit 0).
+- Final targeted corrections: **43 passed**, including disposable PostgreSQL ownership, exact output lineage, concurrent idempotency, transaction rollback, completion claim, exact refund and migration42 pricing behavior.
+- Final frontend TypeScript, lint (including explicit server pricing lint), public exposure and diff checks: exit 0.
+- Final isolated production build: exit 0; optimized compilation, types, static generation and pre/postbuild gates completed. Existing Supabase Edge-runtime/cache/type-stripping warnings remain; no new lint warning.
+- Browser review: compact catalogue at 320/390/1440 widths; real visitor form at 390/768; no horizontal overflow. Standard/Pro, localized library selection, stale quote invalidation, locked processing, simulated Denoise result and reuse verified in the local transport fixture. Restore reconstruction notice, Fix Blur's single mode and Smooth Motion's 60/120fps controls verified. No live account login, provider fidelity or real invoice was tested.
+- Fixture cleaned before final validation/commit. The dedicated 3036 preview was stopped at the user's consolidation request.
+
+The first full runs exposed stale auth ownership and pricing-order assumptions, then a real database default overriding the new target. The final tests cover the corrected shared auth owner and an explicit engine pricing migration with a missing-policy refusal. No production policy was changed.
+
+Logs remain at `/tmp/toolbox-finishing-full-tests-verified.log`, `/tmp/toolbox-finishing-corrections.log`, `/tmp/toolbox-finishing-build-final.log`, `/tmp/toolbox-finishing-final-types.log`, `/tmp/toolbox-finishing-final-lint.log`. The isolated build checkout is `/tmp/maxvideoai-toolbox-finishing-build-20260908` and contains only a copy of this committed implementation plus build artifacts, without copied environment files.
