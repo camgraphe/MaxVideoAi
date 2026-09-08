@@ -36,6 +36,18 @@
 .canvasNavigatorCollapsed { height:44px; width:auto; }
 @media(max-width:600px) { .canvasNavigator { top:76px; right:8px; } }
 
+@media(max-height:500px) and (min-width:621px) {
+  .canvasNavigatorCollapsed {
+    width:132px;
+  }
+
+  .canvasNavigatorHeader {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+}
+
 .canvasNavigatorControls {
   position: absolute;
   right: 9px;

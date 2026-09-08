@@ -86,11 +86,11 @@ test('canvas fit reserves the shared useful surface and adapts the map inset wit
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 844, viewportHeight: 390, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: '8px', right: '130px', bottom: '8px', left: '320px' },
+    padding: { top: '8px', right: '160px', bottom: '8px', left: '320px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 667, viewportHeight: 375, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: '8px', right: '130px', bottom: '8px', left: '320px' },
+    padding: { top: '8px', right: '160px', bottom: '8px', left: '320px' },
   });
 });
 
@@ -99,6 +99,7 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   const map = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasMap.tsx'), 'utf8');
   const dock = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-input-dock.tsx'), 'utf8');
   const actionStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-actions.module.css'), 'utf8');
+  const mapStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-map.module.css'), 'utf8');
   const navigatorStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-navigator.module.css'), 'utf8');
   const toolbarStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-toolbar.module.css'), 'utf8');
   const shellStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/shell.module.css'), 'utf8');
@@ -115,7 +116,11 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(actionStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.selectionActions \{[\s\S]*left:8px;[\s\S]*width:300px;/);
   assert.match(toolbarStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasToolbar \{[\s\S]*left:8px;[\s\S]*width:300px;/);
   assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigator \{[\s\S]*top:70px;[\s\S]*left:8px;/);
+  assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.navigatorPanel \{[\s\S]*position:fixed;[\s\S]*top:8px;[\s\S]*bottom:8px;/);
   assert.match(navigatorStyles, /@media \(max-width: 760px\) \{[\s\S]*\.canvasNavigator \{[\s\S]*top:\s*76px;[\s\S]*bottom:\s*auto;/);
+  assert.match(navigatorStyles, /\.navigatorPanel \{[\s\S]*box-sizing:border-box;[\s\S]*overflow:\s*auto;/);
+  assert.match(navigatorStyles, /@media \(max-width: 760px\) \{[\s\S]*\.navigatorPanel \{[\s\S]*position:fixed;[\s\S]*bottom:12px;/);
+  assert.match(mapStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigatorCollapsed \{[\s\S]*width:132px;/);
   assert.match(navigatorStyles, /\.navigatorTrigger \{[\s\S]*min-height: 44px;/);
   assert.match(map, /const collapseMapForFit = window\.innerWidth <= 600 \|\| window\.innerHeight <= 500/);
   assert.match(map, /setIsOpen\(false\)[\s\S]*mapExpanded: collapseMapForFit \? false : isOpen/);

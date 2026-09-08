@@ -65,6 +65,7 @@
   bottom: calc(100% + 12px);
   left: 0;
   display: grid;
+  box-sizing:border-box;
   width: min(460px, calc(100vw - 36px));
   max-height: min(620px, calc(100vh - 300px));
   gap: 12px;
@@ -347,10 +348,14 @@
   }
 
   .navigatorPanel {
-    top: calc(100% + 8px);
-    bottom: auto;
+    position:fixed;
+    top:auto;
+    right:auto;
+    bottom:12px;
+    left:12px;
+    height:min(620px, calc(100dvh - 24px));
     width: min(340px, calc(100vw - 24px));
-    max-height: min(520px, calc(100vh - 260px));
+    max-height:none;
   }
 
   .templateGrid {
@@ -364,5 +369,16 @@
     right:auto;
     bottom:auto;
     left:8px;
+  }
+
+  .navigatorPanel {
+    position:fixed;
+    top:8px;
+    right:auto;
+    bottom:8px;
+    left:8px;
+    width:min(460px, calc(100vw - 16px));
+    height:auto;
+    max-height:none;
   }
 }
