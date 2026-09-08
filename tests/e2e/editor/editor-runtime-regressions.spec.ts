@@ -5,7 +5,7 @@ import { createStarterWorkspaceTemplate } from '../../../frontend/app/(core)/(wo
 const STUDIO_DEMO_VIDEO_PATH = '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4';
 const guidedProductAd = createStarterWorkspaceTemplate('guided-product-ad');
 
-test('Canvas pricing settles after invalid preflight instead of repeating on measurement feedback', async ({ page }) => {
+test('Canvas simulation never requests a billable preflight on measurement feedback', async ({ page }) => {
   const preflightBodies: string[] = [];
   await page.route('**/api/preflight', async (route) => {
     preflightBodies.push(route.request().postData() ?? '');
@@ -21,11 +21,10 @@ test('Canvas pricing settles after invalid preflight instead of repeating on mea
 
   await openFreshEditorWorkspace(page);
   await page.waitForTimeout(900);
-  expect(preflightBodies.length).toBeGreaterThan(0);
-  const settledRequestCount = preflightBodies.length;
+  expect(preflightBodies).toHaveLength(0);
 
   await page.waitForTimeout(1_200);
-  expect(preflightBodies).toHaveLength(settledRequestCount);
+  expect(preflightBodies).toHaveLength(0);
 });
 
 test('a generated mock video loads in the Viewer after Insert at playhead', async ({ page }) => {

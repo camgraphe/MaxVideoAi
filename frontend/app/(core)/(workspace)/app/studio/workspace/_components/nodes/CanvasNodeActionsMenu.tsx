@@ -62,7 +62,7 @@ export function CanvasNodeActionsPortal({ children, accent }: { children: ReactN
         { x: rightAligned, y: nodeBounds.bottom - bounds.top + CANVAS_COMMAND_GAP },
         { x: nodeBounds.right - bounds.left + CANVAS_COMMAND_GAP, y: nodeBounds.top - bounds.top },
         { x: nodeBounds.left - bounds.left - controls.width - CANVAS_COMMAND_GAP, y: nodeBounds.top - bounds.top },
-      ].map(({ x, y }) => ({ x: clampX(x), y: clampY(y) }));
+      ].map(({ x, y }) => ({ x: clampX(x), y: clampY(y), score: 0 }));
       const obstacleScope = canvas.closest<HTMLElement>('[data-studio-canvas-shell]') ?? canvas.parentElement ?? canvas;
       const obstacles = [
         nodeBounds,

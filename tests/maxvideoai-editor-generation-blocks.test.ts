@@ -57,6 +57,7 @@ import {
 } from '../frontend/lib/studio-chat-models';
 import {
   compatibleCapabilitiesForShot,
+  genericWorkspaceShotControlFields,
   isToolOnlyPreset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers';
 import {
@@ -604,6 +605,17 @@ test('shot inspector model filtering delegates to the block capability policy', 
 
   assert.match(helperSource, /getWorkspaceBlockCompatibleCapabilities/);
   assert.match(helperSource, /return getWorkspaceBlockCompatibleCapabilities\(\{/);
+});
+
+test('generic generation inspector keeps output count reachable off-canvas', () => {
+  assert.deepEqual(
+    genericWorkspaceShotControlFields(['model', 'aspectRatio', 'outputCount'], true),
+    ['aspectRatio', 'outputCount']
+  );
+  assert.deepEqual(
+    genericWorkspaceShotControlFields(['model', 'outputCount'], false),
+    []
+  );
 });
 
 test('Studio block capability policy separates generate and modify image/video intent', () => {

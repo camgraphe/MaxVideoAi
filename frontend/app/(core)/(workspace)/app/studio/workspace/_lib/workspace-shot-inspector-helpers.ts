@@ -74,7 +74,12 @@ export function isWorkspaceToolControlField(field: WorkspacePolicyControlField):
 }
 
 export function genericWorkspaceShotControlFields(
-  fields: WorkspacePolicyControlField[]
+  fields: WorkspacePolicyControlField[],
+  includeOutputCount = false
 ): WorkspacePolicyControlField[] {
-  return fields.filter((field) => field !== 'model' && !field.startsWith('chat') && !isWorkspaceToolControlField(field));
+  return fields.filter((field) => (
+    field !== 'model' &&
+    !field.startsWith('chat') &&
+    (field === 'outputCount' ? includeOutputCount : !isWorkspaceToolControlField(field))
+  ));
 }

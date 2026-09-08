@@ -18,15 +18,17 @@ test('the expanded track menu stays fully reachable in short landscape view', as
   await page.setViewportSize({ width: 844, height: 390 });
   await openMinimalEditorWorkspace(page);
 
-  const viewport = page.locator('[data-timeline-viewport="true"]');
-  await viewport.hover();
-  await page.mouse.wheel(0, 500);
   const actions = page.locator('[data-timeline-track-actions="audio-2"]');
+  await actions.scrollIntoViewIfNeeded();
+  await expect(actions).toBeVisible();
   await actions.focus();
   await page.keyboard.press('Enter');
   const menu = page.getByRole('menu').filter({ has: page.locator('[data-timeline-menu-toggle-lock="audio-2"]') });
   await expect(menu.getByRole('menuitem')).toHaveCount(3);
-  const box = (await menu.boundingBox())!;
+  await expect(menu).toBeVisible();
+  const box = await menu.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) return;
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(390);
   await expect(menu.getByRole('menuitem', { name: /Delete/i })).toBeVisible();

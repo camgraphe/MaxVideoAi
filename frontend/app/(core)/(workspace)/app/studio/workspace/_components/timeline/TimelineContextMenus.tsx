@@ -55,8 +55,8 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
   useEffect(() => {
     if (!clipMenu && !trackMenu) return;
     const launcher = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    rootRef.current?.querySelector<HTMLElement>('button:not(:disabled)')?.focus();
-    return () => { if (launcher?.isConnected) launcher.focus(); };
+    rootRef.current?.querySelector<HTMLElement>('button:not(:disabled)')?.focus({ preventScroll: true });
+    return () => { if (launcher?.isConnected) launcher.focus({ preventScroll: true }); };
   }, [clipMenu, trackMenu]);
   const navigateMenu = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
