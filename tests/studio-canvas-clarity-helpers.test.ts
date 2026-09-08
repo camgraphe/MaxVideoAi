@@ -69,11 +69,11 @@ test('shot connector presentation preserves distinct semantic handles and every 
 test('canvas fit reserves the shared useful surface and adapts the map inset without overwriting viewport policy', () => {
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 1440, mapExpanded: true }), {
     includeHiddenNodes: false,
-    padding: { top: 76, right: 204, bottom: 86, left: 24 },
+    padding: { top: '76px', right: '204px', bottom: '86px', left: '24px' },
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 390, mapExpanded: false }), {
     includeHiddenNodes: false,
-    padding: { top: 128, right: 20, bottom: 92, left: 20 },
+    padding: { top: '128px', right: '20px', bottom: '92px', left: '20px' },
   });
 });
 
