@@ -12,6 +12,8 @@ import { resolveStudioMedia } from './media-resolver';
 import { assertStudioConnectedSchemaReady } from './connected-schema';
 import { withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { buildWorkspaceTimelineItemsForAsset } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders';
+import { buildWorkspaceClipComposition } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
+import { workspaceProjectDimensions } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
 import { projectAssetTimelineNodeId } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-drops';
 import type {
   WorkspaceAssetRecord,
@@ -148,6 +150,12 @@ export function buildStudioMontageProjectState(params: {
     }
   });
   const projectAssets = Array.from(projectAssetsByCanonicalId.values());
+  const projectSettings = {
+    fps: input.settings.fps,
+    aspectRatio: input.settings.aspectRatio,
+    resolution: input.settings.resolution,
+  };
+  const programDimensions = workspaceProjectDimensions(projectSettings);
   const timelineItems: WorkspaceTimelineItem[] = plan.clips.map((clip, index) => {
     const projectAsset = projectAssetsByCanonicalId.get(clip.assetId);
     if (!projectAsset) throw new Error('Every montage clip must resolve to owned media.');
@@ -159,6 +167,23 @@ export function buildStudioMontageProjectState(params: {
       idSeed: `montage-${index + 1}`,
     });
     if (!draft || draft.mediaKind !== 'video') throw new Error('Every montage clip must resolve to owned video media.');
+    const sourceWidth = projectAsset.mediaFacts?.width;
+    const sourceHeight = projectAsset.mediaFacts?.height;
+    const transform = sourceWidth && sourceHeight
+      ? {
+        opacity: 1,
+        positionX: 0,
+        positionY: 0,
+        rotation: 0,
+        scale: buildWorkspaceClipComposition({
+          sequenceHeight: programDimensions.height,
+          sequenceWidth: programDimensions.width,
+          sourceHeight,
+          sourceWidth,
+          transform: { opacity: 1, rotation: 0, scale: 1, x: 0, y: 0 },
+        }).fitScale,
+      }
+      : undefined;
     return {
       ...draft,
       id: `montage-clip-${String(index + 1).padStart(2, '0')}`,
@@ -169,6 +194,7 @@ export function buildStudioMontageProjectState(params: {
       sourceStartSec: clip.sourceInFrame / input.settings.fps,
       durationSec: clip.durationFrames / input.settings.fps,
       sourceDurationSec: projectAsset.mediaFacts?.durationSec,
+      transform,
       audioMix: { volume: 100, muted: input.settings.audioMode === 'mute' },
       montageSource: {
         commandKind: STUDIO_MONTAGE_COMMAND_KIND,
@@ -182,11 +208,6 @@ export function buildStudioMontageProjectState(params: {
     };
   });
   const now = params.now ?? new Date().toISOString();
-  const projectSettings = {
-    fps: input.settings.fps,
-    aspectRatio: input.settings.aspectRatio,
-    resolution: input.settings.resolution,
-  };
   const sequence = createWorkspaceSequenceRecord({
     id: params.sequenceId,
     name: 'Main sequence',

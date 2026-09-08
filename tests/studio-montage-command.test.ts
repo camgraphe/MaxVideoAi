@@ -138,6 +138,46 @@ test('mute is explicit while unknown audio remains unknown and client duration-l
   );
 });
 
+test('new connected montages contain measured video in the program while missing dimensions keep the legacy transform fallback', () => {
+  const asset = (
+    assetId: string,
+    index: number,
+    dimensions?: { width: number; height: number },
+  ) => ({
+    id: `internal-${index}`,
+    ref: { type: 'asset' as const, assetId, kind: 'video' as const },
+    kind: 'video' as const,
+    url: `https://cdn.maxvideoai.com/${index}.mp4`,
+    thumbUrl: null,
+    previewUrl: null,
+    mime: 'video/mp4',
+    mediaFacts: { source: 'probe' as const, durationSec: 6, ...dimensions },
+    originalAccess: { type: 'external' as const },
+    originalName: `clip-${index}.mp4`,
+  });
+  const measured = buildStudioMontageProjectState({
+    input: validInput,
+    projectId: 'project-measured',
+    sequenceId: 'sequence-measured',
+    now: '2026-09-08T10:00:00.000Z',
+    assets: [asset(firstAssetId, 0, { width: 320, height: 180 }), asset(secondAssetId, 1, { width: 180, height: 320 })],
+  });
+
+  assert.deepEqual(measured.sequence.timelineItems.map(({ transform }) => transform), [
+    { scale: 6, positionX: 0, positionY: 0, rotation: 0, opacity: 1 },
+    { scale: 3.375, positionX: 0, positionY: 0, rotation: 0, opacity: 1 },
+  ]);
+
+  const unknown = buildStudioMontageProjectState({
+    input: validInput,
+    projectId: 'project-unknown',
+    sequenceId: 'sequence-unknown',
+    now: '2026-09-08T10:00:00.000Z',
+    assets: [asset(firstAssetId, 0), asset(secondAssetId, 1)],
+  });
+  assert.deepEqual(unknown.sequence.timelineItems.map(({ transform }) => transform), [undefined, undefined]);
+});
+
 test('the request hash includes command version, clip order and the full validated business payload but not owner', () => {
   const original = canonicalStudioMontageRequestHash(validInput);
   assert.equal(original, canonicalStudioMontageRequestHash({ ...validInput }));
