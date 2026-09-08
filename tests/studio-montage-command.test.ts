@@ -106,6 +106,10 @@ test('the persisted montage mapping keeps caller order, repeated occurrences, me
       hasEmbeddedAudio: true, audioProvenance: 'embedded', audioMix: { volume: 100, muted: false },
     },
   ]);
+  assert.deepEqual(state.sequence.timelineItems.map((clip) => clip.montageSource), [
+    { commandKind: 'create_studio_montage', commandVersion: 1, orderIndex: 0, assetId: firstAssetId, sourceInFrame: 12, durationFrames: 24, fps: 24 },
+    { commandKind: 'create_studio_montage', commandVersion: 1, orderIndex: 1, assetId: firstAssetId, sourceInFrame: 48, durationFrames: 12, fps: 24 },
+  ]);
 });
 
 test('mute is explicit while unknown audio remains unknown and client duration-like fields never qualify trims', () => {

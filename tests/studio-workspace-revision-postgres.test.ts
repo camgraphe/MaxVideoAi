@@ -130,7 +130,59 @@ test('the atomic save replaces the connected aggregate only after validation and
       projectId: 'connected-project', expectedRevision: 1,
       snapshot: { ...snapshot('Invalid'), workspaceState: { ...snapshot('Invalid').workspaceState, sequences: [] } },
     }, { withTransaction: transactionFor(database.pool) }), /at least one sequence/u);
+    const malformedStates = [
+      { ...snapshot('Invalid nodes').workspaceState, nodes: [null] },
+      { ...snapshot('Invalid edges').workspaceState, edges: [null] },
+      { ...snapshot('Invalid root timeline').workspaceState, timelineItems: [null] },
+      {
+        ...snapshot('Invalid sequence timeline').workspaceState,
+        sequences: [{ ...snapshot('Invalid sequence timeline').workspaceState.sequences[0], timelineItems: [null] }],
+      },
+    ];
+    for (const workspaceState of malformedStates) {
+      await assert.rejects(saveStudioWorkspace({ userId: owner }, {
+        projectId: 'connected-project', expectedRevision: 1,
+        snapshot: { ...snapshot('Invalid structure'), workspaceState },
+      }, { withTransaction: transactionFor(database.pool) }), /Invalid Studio workspace/u);
+    }
     assert.equal((await database.pool.query("SELECT revision FROM studio_projects WHERE id='connected-project'")).rows[0].revision, '1');
+  } finally {
+    delete process.env.DATABASE_URL;
+    await database.cleanup();
+  }
+});
+
+test('CAS saves preserve immutable montage frame provenance and discard invented client provenance', async () => {
+  const database = await verifiedDatabase();
+  const originalSource = {
+    commandKind: 'create_studio_montage', commandVersion: 1, orderIndex: 0,
+    assetId: `ma_${'a'.repeat(32)}`, sourceInFrame: 12, durationFrames: 24, fps: 24,
+  };
+  const item = {
+    id: 'montage-clip-01', outputNodeId: 'studio-media-a', track: 'video', title: 'A',
+    mediaKind: 'video', startSec: 0, sourceStartSec: 0.5, durationSec: 1,
+    montageSource: originalSource,
+  };
+  try {
+    await database.pool.query(
+      "UPDATE studio_sequences SET timeline_state=$1::jsonb WHERE id='sequence-main'",
+      [JSON.stringify({ timelineItems: [item], audioTrackCount: 2, videoTrackCount: 1 })],
+    );
+    const edited = snapshot('Edited');
+    edited.workspaceState.sequences[0].timelineItems = [
+      { ...item, durationSec: 0.75, montageSource: { ...originalSource, sourceInFrame: 999 } },
+      { ...item, id: 'user-item', montageSource: { ...originalSource, sourceInFrame: 777 } },
+    ];
+    await saveStudioWorkspace({ userId: owner }, {
+      projectId: 'connected-project', expectedRevision: 0, snapshot: edited,
+    }, { withTransaction: transactionFor(database.pool) });
+
+    const stored = (await database.pool.query(
+      "SELECT timeline_state FROM studio_sequences WHERE id='sequence-main'",
+    )).rows[0].timeline_state;
+    assert.deepEqual(stored.timelineItems[0].montageSource, originalSource);
+    assert.equal(stored.timelineItems[0].durationSec, 0.75, 'ordinary UI trims remain editable');
+    assert.equal(stored.timelineItems[1].montageSource, undefined, 'clients cannot mint trusted montage provenance');
   } finally {
     delete process.env.DATABASE_URL;
     await database.cleanup();

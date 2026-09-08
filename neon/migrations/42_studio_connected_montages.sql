@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS studio_project_commands (
   request_hash TEXT NOT NULL CHECK (request_hash ~ '^[a-f0-9]{64}$'),
   project_id TEXT NOT NULL REFERENCES studio_projects(id),
   sequence_id TEXT NOT NULL REFERENCES studio_sequences(id),
+  request_payload JSONB NOT NULL,
   safe_result JSONB NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (user_id, command_kind, command_version, idempotency_key)

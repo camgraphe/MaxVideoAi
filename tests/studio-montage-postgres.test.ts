@@ -128,6 +128,12 @@ test('one transaction persists the ordered montage and exact idempotency receipt
       { assetId: firstAssetId, startSec: 0, sourceStartSec: 0.5, durationSec: 1 },
       { assetId: secondAssetId, startSec: 1, sourceStartSec: 0, durationSec: 2 },
     ]);
+    assert.deepEqual(timeline.map((clip: { montageSource: unknown }) => clip.montageSource), [
+      { commandKind: 'create_studio_montage', commandVersion: 1, orderIndex: 0, assetId: firstAssetId, sourceInFrame: 12, durationFrames: 24, fps: 24 },
+      { commandKind: 'create_studio_montage', commandVersion: 1, orderIndex: 1, assetId: secondAssetId, sourceInFrame: 0, durationFrames: 48, fps: 24 },
+    ]);
+    const receipt = (await database.pool.query('SELECT request_payload FROM studio_project_commands')).rows[0];
+    assert.deepEqual(receipt.request_payload, input);
     assert.equal((await database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 1);
   } finally {
     await database.cleanup();

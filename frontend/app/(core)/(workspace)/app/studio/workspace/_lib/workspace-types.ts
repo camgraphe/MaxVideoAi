@@ -548,6 +548,15 @@ export type WorkspaceTimelineItem = {
   mediaAccessUrl?: string;
   mediaAccessExpiresAt?: string | null;
   mediaAccessRequired?: boolean;
+  montageSource?: {
+    commandKind: 'create_studio_montage';
+    commandVersion: 1;
+    orderIndex: number;
+    assetId: string;
+    sourceInFrame: number;
+    durationFrames: number;
+    fps: 24 | 25 | 30 | 60;
+  };
   id: string;
   assetId?: string | null;
   outputNodeId: string;

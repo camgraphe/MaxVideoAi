@@ -10,5 +10,9 @@ export function connectedStudioError(error: unknown, fallback: string): { error:
   if (message === 'STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED' || message === 'STUDIO_CONNECTED_PROJECT_REQUIRED') {
     return { error: message, status: 409 };
   }
-  return { error: message, status: 400 };
+  if (message.startsWith('Invalid Studio workspace') || message === 'Invalid Studio montage input.'
+    || message === 'Invalid Studio media access input.') {
+    return { error: message, status: 400 };
+  }
+  return { error: fallback, status: 500 };
 }

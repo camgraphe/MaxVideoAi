@@ -170,6 +170,15 @@ export function buildStudioMontageProjectState(params: {
       durationSec: clip.durationFrames / input.settings.fps,
       sourceDurationSec: projectAsset.mediaFacts?.durationSec,
       audioMix: { volume: 100, muted: input.settings.audioMode === 'mute' },
+      montageSource: {
+        commandKind: STUDIO_MONTAGE_COMMAND_KIND,
+        commandVersion: STUDIO_MONTAGE_COMMAND_VERSION,
+        orderIndex: index,
+        assetId: clip.assetId,
+        sourceInFrame: clip.sourceInFrame,
+        durationFrames: clip.durationFrames,
+        fps: input.settings.fps,
+      },
     };
   });
   const now = params.now ?? new Date().toISOString();
@@ -345,8 +354,8 @@ export async function createStudioMontageProject(
     await executor.query(`
       INSERT INTO studio_project_commands (
         user_id, command_kind, command_version, idempotency_key, request_hash,
-        project_id, sequence_id, safe_result
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+        project_id, sequence_id, request_payload, safe_result
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb)
     `, [
       actor.userId,
       STUDIO_MONTAGE_COMMAND_KIND,
@@ -355,6 +364,7 @@ export async function createStudioMontageProject(
       requestHash,
       ids.projectId,
       ids.sequenceId,
+      JSON.stringify(input),
       JSON.stringify(result),
     ]);
     dependencies.afterStage?.('receipt');
