@@ -14,12 +14,12 @@ test('toolbox exposes implemented capabilities and keeps later candidates closed
   for (const candidate of TOOLBOX_CANDIDATES) assert.throws(() => validateToolBlock({ ...block, toolId: candidate.id }));
 });
 
-test('toolbox catalogue hides tools that are not released to users', () => {
+test('toolbox catalogue exposes every implemented tool', () => {
   const catalogueSource = readFileSync(
     join(process.cwd(), 'frontend/src/components/tools/ToolboxCatalogue.tsx'),
     'utf8'
   );
-  assert.match(catalogueSource, /TOOLBOX\.filter\(tool => !tool\.qualificationRequired\)/);
+  assert.doesNotMatch(catalogueSource, /qualificationRequired/);
   assert.doesNotMatch(catalogueSource, /finishingCopy\(locale\)\.validation/);
 });
 test('versioned blocks preserve exact typed IDs and reject ambiguous references and provider settings', () => {

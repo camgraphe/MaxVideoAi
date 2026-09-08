@@ -1,6 +1,6 @@
 import { lookup } from 'node:dns/promises';
 import { request as httpsRequest } from 'node:https';
-import { BlockList, isIP } from 'node:net';
+import { BlockList, isIP, type LookupFunction } from 'node:net';
 
 import { AgentApiError } from './errors';
 import { getReferenceUploadPolicy } from './create-reference-upload-link';
@@ -214,6 +214,18 @@ async function lookupPublicHost(hostname: string): Promise<ResolvedReferenceAddr
   }));
 }
 
+/** Keep the validated DNS address pinned while honoring Node's single-address and
+ * `all: true` lookup callback contracts (used by newer auto-family selection). */
+export function createPinnedLookup(address: ResolvedReferenceAddress): LookupFunction {
+  return (_hostname, options, callback) => {
+    if (options.all) {
+      callback(null, [{ address: address.address, family: address.family }]);
+      return;
+    }
+    callback(null, address.address, address.family);
+  };
+}
+
 async function openPinnedHttps(
   url: URL,
   address: ResolvedReferenceAddress,
@@ -229,9 +241,7 @@ async function openPinnedHttps(
         'User-Agent': 'MaxVideoAI-MCP/1.0',
       },
       maxHeaderSize: 16 * 1024,
-      lookup: (_hostname, _options, callback) => {
-        callback(null, address.address, address.family);
-      },
+      lookup: createPinnedLookup(address),
     }, (response) => {
       responseBody = response;
       settled = true;

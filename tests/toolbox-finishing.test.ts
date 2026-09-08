@@ -39,6 +39,7 @@ test('provider mappings preserve source size/cadence except the explicit request
   assert.equal(restore.input.target_fps, 29.97);
   assert.equal(restore.input.enhancement_tier, 'standard');
   assert.equal(restore.input.fidelity, 'high');
+  assert.equal(restore.input.bit_depth, 8);
   assert.equal(prepareFinishingProvider('restore-video', { quality: 'pro' }, url, facts).profile.generative, true);
   for (const invalid of [{ ...facts, fps: 0 }, { ...facts, durationSec: 61 }, { ...facts, width: 8000 }, { ...facts, fps: 120 }]) {
     assert.throws(() => prepareFinishingProvider('denoise', {}, url, invalid));
@@ -71,13 +72,18 @@ async function preparedFixture(): Promise<PreparedFinishingTool> {
   const pricing = await computeCanonicalFinishingBillingSnapshot({ toolId, quality: 'standard', vendorBudgetUsd: 0.1, durationSec: 10, profileId: provider.profile.id, pricingSource: provider.profile.pricingSource });
   return { block: validateToolBlock({ toolId, version: 1, inputs: [source], settings }), source: { source, url }, facts, ...provider, pricing, released: false };
 }
-test('unqualified profiles cannot charge or submit, even with a valid accepted price', async () => {
+test('owner-approved profiles are released while unknown profiles remain blocked', async () => {
   const prepared = await preparedFixture();
+  for (const candidates of Object.values(FINISHING_PROFILES)) {
+    for (const [quality, profile] of Object.entries(candidates)) {
+      assert.equal(isFinishingProfileReleased(profile!, quality as 'standard' | 'pro'), true);
+    }
+  }
+  const unapproved = { ...prepared, profile: { ...prepared.profile, id: 'unapproved-test-profile' } };
   let reserved = false;
   const request = { block: prepared.block, requestId: 'f11b7f5c-18a4-4b31-845a-a64eaab89b30', acceptedQuote: { totalCents: 25, currency: 'USD' } };
-  await assert.rejects(runFinishingTool(request, 'owner', { prepare: async () => prepared, reserve: async () => { reserved = true; throw new Error('must not reserve'); } }), /TOOL_QUALIFICATION_REQUIRED/);
+  await assert.rejects(runFinishingTool(request, 'owner', { prepare: async () => unapproved, reserve: async () => { reserved = true; throw new Error('must not reserve'); } }), /TOOL_QUALIFICATION_REQUIRED/);
   assert.equal(reserved, false);
-  for (const candidates of Object.values(FINISHING_PROFILES)) for (const [quality, profile] of Object.entries(candidates)) assert.equal(isFinishingProfileReleased(profile!, quality as 'standard' | 'pro'), false);
 });
 
 test('stale quotes fail before a debit; duplicate attempts never call the provider twice; failures refund', async () => {

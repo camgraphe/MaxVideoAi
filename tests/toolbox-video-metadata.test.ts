@@ -29,6 +29,19 @@ test('tool download policy adds WebM without broadening MCP imports or removing 
   await assert.rejects(createReferenceFileDownloader({ ...deps, lookupHost: async () => [{ address: '127.0.0.1', family: 4 as const }] }, { accepted: ['video/webm'], maxBytes: 4 })(file));
 });
 
+test('pinned DNS lookup supports Node single and all-address callbacks', async () => {
+  const { createPinnedLookup } = await import('../frontend/src/server/agent-api/reference-file-download');
+  const lookup = createPinnedLookup({ address: '8.8.8.8', family: 4 });
+  const single = await new Promise<{ address: string | import('node:dns').LookupAddress[]; family?: number }>((resolve, reject) => {
+    lookup('media.example', { all: false }, (error, address, family) => error ? reject(error) : resolve({ address, family }));
+  });
+  assert.deepEqual(single, { address: '8.8.8.8', family: 4 });
+  const all = await new Promise<string | import('node:dns').LookupAddress[]>((resolve, reject) => {
+    lookup('media.example', { all: true }, (error, addresses) => error ? reject(error) : resolve(addresses));
+  });
+  assert.deepEqual(all, [{ address: '8.8.8.8', family: 4 }]);
+});
+
 
 test('video facts never invent 30 fps and measure audio presence', () => {
   assert.throws(() => parseToolVideoMetadata({streams:[{width:1920,height:1080,r_frame_rate:'0/0'}],format:{duration:'10'}}));

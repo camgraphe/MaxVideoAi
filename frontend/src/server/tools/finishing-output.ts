@@ -34,7 +34,7 @@ export function validateFinishingOutputFacts(prepared: Pick<PreparedFinishingToo
     if (!('resolution' in prepared.settings)) throw new Error('Missing output resolution.');
     // Use a 3840×2160 pixel budget for 4K, independent of orientation.
     // The 1% acceptance envelope is our conservative rounding policy, not a
-    // claim of qualified provider output; the release registry remains gated.
+    // claim of provider quality; the owner-approved pilot still validates output.
     const expectedPixels = prepared.settings.resolution === '4k' ? 3840 * 2160 : 1920 * 1080;
     if (Math.abs(actual.width * actual.height - expectedPixels) / expectedPixels > 0.01) throw new Error('Unexpected output resolution.');
   }

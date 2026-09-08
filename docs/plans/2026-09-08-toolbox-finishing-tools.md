@@ -6,7 +6,7 @@ The user clarified on 8 September that the Toolbox delivery includes the tools s
 
 Small cover + name tiles; one source; zero to two adjustments; quality only where another candidate exists; one action with the current price. Standard is the initial selection. No provider selector. Existing IDs, tool blocks and job routes remain valid. New blocks have their own IDs and version 1. Editor/MCP reuse the service contract; neither receives automatic new execution permissions.
 
-Standard/Pro are candidate comparisons until reviewed. In particular, Nyx Fast must not become Standard merely because it is cheaper; it must pass texture, identity, audio and temporal checks. If it fails, promote the qualified Nyx route to Standard and omit Pro. Themis has only one qualified-candidate slot. ByteDance Pro is reconstruction and must be disclosed. Aion must demonstrate a useful improvement before Pro is activated.
+Standard/Pro use the selected routes below. The product owner approved a production pilot on 8 September 2026 before a paid comparison corpus was run. ByteDance Pro remains disclosed as reconstruction. The release registry records that explicit pilot decision without presenting it as quality or invoice evidence.
 
 ## Sources checked on 8 September
 
@@ -15,7 +15,7 @@ Standard/Pro are candidate comparisons until reviewed. In particular, Nyx Fast m
 - [Motion deblur API](https://fal.ai/models/topaz/deblur/video/api): Themis 2, source resolution and cadence, H264; no model or blur-type control. [Prices](https://fal.ai/models/topaz/deblur/video): examples at 10s and 60s prove that a flat per-second interpolation would be inaccurate.
 - [Interpolation API](https://fal.ai/models/topaz/interpolate/video/api): Apollo/Aion, target FPS, slowdown factor fixed to 1, H264. [Prices](https://fal.ai/models/topaz/interpolate/video): billing depends on newly generated frames when slowdown is 1.
 
-Topaz's public examples are vendor budget inputs, not exact invoice formulas. The candidate estimator rounds to complete 300-frame example blocks. It must be reconciled with actual billing before activation. No assertion of benchmark superiority is inferred from these sources.
+Topaz's public examples are vendor budget inputs, not exact invoice formulas. The pilot estimator rounds to complete 300-frame example blocks and must be reconciled with actual billing from the first production runs. No assertion of benchmark superiority is inferred from these sources.
 
 ## Implementation and validation
 
@@ -23,13 +23,13 @@ Topaz's public examples are vendor budget inputs, not exact invoice formulas. Th
 - [x] Implement server-owned routing, strict limits, read-only preparation and canonical customer quote.
 - [x] Implement authenticated execution, source ownership, idempotency, wallet/job persistence and exact result lineage.
 - [x] Test contracts, quote/tier/source changes, failures, mobile/desktop and result reuse with isolated transports.
-- [ ] Compare candidates on owned test media; reconcile provider invoices and approve eligible Standard/Pro profiles before commercial activation. No paid generation is authorized in this delivery yet.
+- [ ] Compare candidates on owned test media and reconcile provider invoices after the production pilot begins. The owner explicitly authorized activation before that paid comparison on 8 September 2026.
 
-The commercial target is provider cost ×2.5, as explicitly confirmed in the source user messages. New policy must use the canonical pricing owner; existing Upscale/Background Removal prices are unchanged. No deployment or production mutation is authorized.
+The commercial target is provider cost ×2.5, as explicitly confirmed in the source user messages. New policy uses the canonical pricing owner; existing Upscale/Background Removal prices are unchanged. The product owner authorized the production pilot on 8 September 2026.
 
 
-## Commercial qualification still required
+## Pilot follow-up
 
 Suggested corpus: six owned, 10-second, 1080p/30fps clips covering a compressed face, low light, fine texture, moving text, camera pan and a cut with dialogue. Compare seven candidate profiles on the same exact originals; inspect identity, text, grain/texture, temporal stability, cut handling, source audio and duration. Compare Standard/Pro blind before choosing the public labels. The published-example vendor estimate for this 42-run comparison is approximately $11.95 (motion at 60fps), excluding taxes and invoice discrepancies; it is not a verified bill or execution authorization. Any real run requires the owner to authorize the corpus and a hard budget first. No credentials, provider submission or paid test is part of this implementation.
 
-The release review also covers interrupted submissions, output finalization and invoice reconciliation. A session can resume a stored job after reload, but this increment has no background sweeper or new webhook. Final persistence/refund occurs when the status owner is read again. Cross-device history reopening and scheduled orphan reconciliation should be agreed before public activation. User-facing cards and buttons disclose the current validation state.
+The release review also covers interrupted submissions, output finalization and invoice reconciliation. The existing bounded Fal cron now delegates paid finishing jobs to their dedicated finalization owner; session polling still gives immediate UI updates. Cross-device history reopening remains a later product improvement. The owner-approved pilot exposes the cards and permits the selected known profiles while unknown profile IDs stay blocked.

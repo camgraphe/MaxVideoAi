@@ -1,5 +1,7 @@
 # Toolbox validation — 8 September 2026
 
+> Historical validation record. The four finishing tools were subsequently activated under the owner-approved production pilot recorded on 8 September 2026 in `frontend/src/server/tools/finishing-release.ts`.
+
 ## Delivered scope
 
 Compact visual catalogue, simplified Upscale image/video and video background-removal workbenches, reusable presentation slots, typed identities/eligibility/results, read-only canonical quotes and accepted-price guards. Character Builder, Storyboard and Angle retain their existing rich workflows and routes. Candidate tools stay excluded pending qualification. No Studio project migration, new MCP quick-tool execution, provider activation, deployment or paid generation.

@@ -36,7 +36,7 @@ export function prepareFinishingProvider(toolId: FinishingToolId, rawSettings: u
   const input: Record<string, unknown> = { video_url: sourceUrl };
   if (toolId === 'restore-video' && 'resolution' in settings) {
     // Keep the measured source cadence; never apply the provider's default 30 fps silently.
-    Object.assign(input, { target_resolution: settings.resolution, target_fps: facts.fps, enhancement_preset: 'general', enhancement_tier: settings.quality, fidelity: 'high', bit_depth: '8' });
+    Object.assign(input, { target_resolution: settings.resolution, target_fps: facts.fps, enhancement_preset: 'general', enhancement_tier: settings.quality, fidelity: 'high', bit_depth: 8 });
   } else {
     input.H264_output = true;
     if (profile.model) input.model = profile.model;

@@ -1,5 +1,7 @@
 # Finish the Toolbox P0 integration
 
+> Historical corrective plan. Its no-activation constraint applied to that tranche and was superseded by the owner-approved production pilot recorded on 8 September 2026 in `frontend/src/server/tools/finishing-release.ts`.
+
 Requirements: the preserved source document `b6ea6b36a:docs/plans/2026-09-08-toolbox-finishing-tools.md` and independent root review `.superpowers/artifacts/2026-09-08-toolbox-p0-integration-review.md`. Import the disabled checkpoint `b6ea6b36a`, then documentation `2d55db286`, preserving the separate current Audio pricing policy. The review's three findings must be fixed before execution-quality acceptance.
 
 ## Global Constraints

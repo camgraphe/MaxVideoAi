@@ -1,5 +1,7 @@
 # Toolbox consolidation handoff
 
+> Historical checkpoint. Its activation restrictions were superseded by the owner-approved production pilot recorded on 8 September 2026 in `frontend/src/server/tools/finishing-release.ts` and `docs/engineering/toolbox-integration.md`.
+
 The user asked to retain only the principal app task and Studio. This task stops after preserving the selected-tool increment; no new qualification or feature work is authorized by this checkpoint.
 
 ## Recovery

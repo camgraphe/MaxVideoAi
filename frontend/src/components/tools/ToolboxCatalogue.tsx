@@ -12,9 +12,8 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
   const [filter, setFilter] = useState<ToolMediaKind | 'all'>(mediaKind ?? 'all');
   const copy = toolboxCopy(locale);
   const id = useId();
-  const releasedTools = TOOLBOX.filter(tool => !tool.qualificationRequired);
-  const quick = releasedTools.filter(tool => tool.group === 'quick').flatMap(tool => tool.inputKinds.map(kind => ({ ...tool, mediaKind: kind, visual: (tool.id === 'upscale' ? `upscale-${kind}` : tool.id) as ToolboxVisualId }))).filter(tool => filter === 'all' || tool.mediaKind === filter);
-  const workshops = releasedTools.filter(tool => tool.group === 'workshop' && (filter === 'all' || tool.inputKinds.includes(filter)));
+  const quick = TOOLBOX.filter(tool => tool.group === 'quick').flatMap(tool => tool.inputKinds.map(kind => ({ ...tool, mediaKind: kind, visual: (tool.id === 'upscale' ? `upscale-${kind}` : tool.id) as ToolboxVisualId }))).filter(tool => filter === 'all' || tool.mediaKind === filter);
+  const workshops = TOOLBOX.filter(tool => tool.group === 'workshop' && (filter === 'all' || tool.inputKinds.includes(filter)));
   return <div className={styles.catalogue}>
     <header className={styles.heading}><h1>{copy.title}</h1></header>
     <div className={styles.sectionBar}><h2>{copy.quick}</h2><div className={styles.filters} aria-label={copy.all}>
