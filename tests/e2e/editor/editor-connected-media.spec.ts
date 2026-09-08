@@ -18,6 +18,8 @@ test('connected audio imports, inserts, creates a canvas source and survives loc
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Viewer');
   const bin = page.getByRole('complementary', { name: 'Project media library' });
+  const undo = bin.getByRole('button', { name: 'Undo media change', exact: true });
+  await expect(undo, 'Hydrating project media is not an undoable user edit.').toBeDisabled();
   await bin.getByRole('button', { name: 'Import media', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Import project media' });
   await expect(dialog).toBeVisible();
@@ -25,6 +27,7 @@ test('connected audio imports, inserts, creates a canvas source and survives loc
   await dialog.getByRole('button', { name: 'Import selected (1)', exact: true }).click();
   const card = bin.locator('[data-project-media-asset-id]', { hasText: 'station-ambience.wav' });
   await expect(card).toBeVisible();
+  await expect(undo).toBeEnabled();
   await card.getByRole('button', { name: 'Insert in timeline' }).click();
   await card.getByRole('button', { name: 'Add to canvas' }).click();
   await expect.poll(() => page.evaluate(() => {
@@ -34,6 +37,7 @@ test('connected audio imports, inserts, creates a canvas source and survives loc
   await page.reload();
   await switchEditorFocus(page, 'Viewer');
   await expect(card).toBeVisible();
+  await expect(undo, 'Reloading the saved media does not invent undo history.').toBeDisabled();
   const state = await page.evaluate(() => JSON.parse(localStorage.getItem('maxvideoai.editor.workspace.v1') ?? '{}'));
   const imported = state.projectAssets.find((asset: { ref?: { assetId?: string } }) => asset.ref?.assetId === assetId);
   expect(imported.ref).toEqual(audio.ref);
@@ -43,8 +47,10 @@ test('connected audio imports, inserts, creates a canvas source and survives loc
   page.once('dialog', (dialog) => dialog.accept());
   await bin.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(card).toHaveCount(0);
-  await bin.getByRole('button', { name: 'Undo media change' }).click();
+  await expect(undo).toBeEnabled();
+  await undo.click();
   await expect(card).toBeVisible();
+  await expect(undo, 'The sole removal has been undone, so no media action remains.').toBeDisabled();
 });
 
 test('closing a slow upload does not apply its eventual success', async ({ page }) => {

@@ -128,3 +128,32 @@ The sole product writer has the targeted UI runtime slot to iterate using this
 root-owned test read-only and inspect the saved screenshots. Root runs no heavy
 suite during that slot, then independently reruns the full frozen matrix. This
 does not transfer ownership of assertions or waive the remaining findings.
+
+## Independent snapshot 0ba7bfba9: remaining menu geometry
+
+The writer's EN/light five-viewport run passed; the root then exported immutable
+`0ba7bfba9` to `/private/tmp/studio-ui-qa.MotLZz` on owned3040/3041. The full
+three-language/two-theme matrix returns **28/30 in1.2min**. Both667×375 French
+cases still fail: the wider collapsed map overlaps the selected card/title by
+about10px. English and Spanish pass at the same size. This is a translated-control
+geometry defect, not a reason to shorten the qualification matrix.
+
+A new root-owned open-menu check clicks Canvas, inspects the actual panel bounds,
+opens Templates, scrolls to the last action, checks actionability without executing
+it, and closes with Escape/focus restoration. It returns **1/5** on this snapshot:
+portrait390/320 panels end at882px in844px viewports;667 landscape ends at413px
+in375px. Desktop initially opens correctly, but the Templates panel extends to
+top−26px and is visibly clipped behind the header. Only844 landscape passes.
+Screenshots and traces are retained in `output/playwright/studio-task5-menu-media`.
+The writer receives these exact findings and the targeted UI runtime slot again;
+no broad build or PostgreSQL suite runs concurrently.
+
+The same independent run keeps all six non-menu scenarios green: media3/3,
+optional-connector2/2, and native decoded-frame/audio-RMS/seek1/1. The audio-bin
+scenario now checks the real Undo lifecycle: disabled after hydration, enabled
+after import, disabled after reload, enabled after removal, and disabled after
+restoring that sole post-reload removal. Canonical references, original media,
+timeline duration, save/reload and unrelated-media preservation remain asserted.
+
+Independent review of `f8e113534` (injective Copy selection scope) and `399b4cc09`
+(scoped actual media history availability) is **Approved**, with8/8 targeted tests.
