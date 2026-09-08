@@ -95,3 +95,24 @@ need adaptation from always-visible optional rows to the Connections/inspector
 presentation while retaining their exact model capacities. A cold development
 run also timed out on initial canvas hydration; final stable-snapshot qualification
 remains required.
+
+## Connected montage presentation qualified at b321928d3
+
+The complete real connected browser suite passes **7/7, zero skips,64.81s** on
+the immutable product `b321928d3158a2c73d6f34ecdfc8141a13a0dd14`. The new first-frame
+contain assertion is now green with intrinsic/frame aspect guards. All previous
+native video/audio, exact ordered creation, SQL acknowledgement, stale conflict,
+offline local recovery, account-change purge, retained-reference renewal, mobile
+retry and lost-response idempotency scenarios remain green. This uses only the
+owned verified disposable PostgreSQL17/Auth/private-bytes fixtures, not production.
+
+## Frozen UI qualification remains in progress
+
+An exported `681b75f38` snapshot ran separately on3040/3041 with the existing safe
+anonymous launcher; no DB/provider/storage/payment environment was inherited.
+Its first six desktop/portrait cases pass, including320px. However, moving Canvas
+to the right now covers the expanded map's Fit control in both landscape sizes.
+After three identical30-second actionability failures, the remaining matrix was
+stopped explicitly; it is not a complete pass. The owned3040/3041 processes were
+then stopped, and the snapshot remains at `/private/tmp/studio-ui-qa.inkcrz`.
+The normal3032 preview and baseline3034/3035 were not touched.

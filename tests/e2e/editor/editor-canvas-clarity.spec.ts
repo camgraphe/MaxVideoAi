@@ -38,7 +38,8 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         if (await mapToggle.getAttribute('aria-expanded') !== 'true') await mapToggle.click();
         // The existing three-button zoom group is minus / fit / plus in every locale.
         await navigator.getByRole('group').getByRole('button').nth(1).click();
-        await mapToggle.click();
+        // Compact Fit dismisses the map itself, returning the space to the canvas.
+        if (await mapToggle.getAttribute('aria-expanded') === 'true') await mapToggle.click();
         await expect(mapToggle).toHaveAttribute('aria-expanded', 'false');
         await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 
