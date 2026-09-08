@@ -9,13 +9,13 @@ export function WorkspaceConnectedStatus({ conflict, projectAccessError, notices
   return (
     <>
       {conflict ? (
-        <div className={styles.editorToast} role="alert" data-studio-revision-conflict="true">
+        <div className={`${styles.editorToast} ${styles.connectedStatus}`} role="alert" data-studio-revision-conflict="true">
           <span>{notices.workspaceConflict}</span>{' '}
           <button type="button" onClick={() => window.location.reload()}>{notices.reloadServerVersion}</button>
         </div>
       ) : null}
       {projectAccessError ? (
-        <div className={styles.editorToast} role="alert" data-studio-project-access-error="true">
+        <div className={`${styles.editorToast} ${styles.connectedStatus}`} role="alert" data-studio-project-access-error="true">
           {notices.projectAccessError}
         </div>
       ) : null}

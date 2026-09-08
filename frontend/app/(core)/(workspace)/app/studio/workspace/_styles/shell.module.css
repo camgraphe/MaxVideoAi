@@ -435,6 +435,30 @@
   top: 62px;
 }
 
+.connectedStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.connectedStatus button {
+  min-height: 44px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface-soft);
+  color: var(--studio-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+  padding: 0 12px;
+}
+
+.connectedStatus button:focus-visible {
+  box-shadow: 0 0 0 3px var(--studio-focus-ring);
+  outline: none;
+}
+
 .editorBody {
   position: relative;
   display: grid;
