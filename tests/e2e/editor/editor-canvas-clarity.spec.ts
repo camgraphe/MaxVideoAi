@@ -3,7 +3,7 @@ import { openMinimalEditorWorkspace } from './editor-helpers';
 
 const viewports = [
   { width: 1440, height: 900 }, { width: 390, height: 844 },
-  { width: 320, height: 844 }, { width: 844, height: 390 },
+  { width: 320, height: 844 }, { width: 844, height: 390 }, { width: 667, height: 375 },
 ];
 const projectLabels = { en: 'Projects', fr: 'Projets', es: 'Proyectos' };
 
@@ -67,8 +67,10 @@ for (const locale of ['en', 'fr', 'es'] as const) {
             return !box.width || !box.height || outside || collisions.length ? [{ name, outside, collisions }] : [];
           });
         });
+        const screenshotPath = testInfo.outputPath('fitted.png');
+        await page.screenshot({ path: screenshotPath });
         await testInfo.attach(`fitted-${viewport.width}-${viewport.height}-${theme}-${locale}`, {
-          body: await page.screenshot(), contentType: 'image/png',
+          path: screenshotPath, contentType: 'image/png',
         });
         // Containment alone also accepts a broken fit clamped to minimum zoom.
         // Compact screens retain an overview plus unscaled selection commands;
@@ -76,6 +78,19 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         expect((await node.boundingBox())?.width, 'Fit must not reduce the starter to a postage stamp.')
           .toBeGreaterThanOrEqual(viewport.width >= 1000 ? 160 : 64);
         expect(violations, 'Fit must keep titles and essential actions inside usable canvas, outside floating controls.').toEqual([]);
+        const blockedCommands = await page.evaluate(() => Array.from(document.querySelectorAll<HTMLButtonElement>(
+          '[data-canvas-floating-toolbar="true"] button, [data-canvas-selection-actions] button, button[data-canvas-navigator="true"], [data-canvas-navigator="true"] button',
+        )).flatMap((button) => {
+          const box = button.getBoundingClientRect();
+          const style = getComputedStyle(button);
+          if (button.disabled || !box.width || !box.height || style.visibility === 'hidden' || style.display === 'none') return [];
+          const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          const outside = box.left < -1 || box.right > innerWidth + 1 || box.top < -1 || box.bottom > innerHeight + 1;
+          return outside || box.width < 43 || box.height < 43 || !hit || !button.contains(hit)
+            ? [{ name: button.getAttribute('aria-label') ?? button.textContent?.trim(), width: box.width, height: box.height, outside, blockedBy: hit?.getAttribute('aria-label') ?? hit?.textContent?.trim().slice(0, 80) }]
+            : [];
+        }));
+        expect(blockedCommands, 'Screen-sized canvas commands must retain touch targets and not cover each other.').toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
       });
     }

@@ -56,3 +56,42 @@ and keyboard Undo restores the edge. The initial endpoint probe incorrectly
 expected the handle center; inspection of installed XYFlow `getHandlePosition`
 confirmed that a left target ends at its left boundary, and the assertion was
 corrected to that contract rather than widening its tolerance.
+
+## Remaining responsive corners after dda228de1
+
+The landscape column correction makes 844×390 pass the node geometry and scale
+checks, but real screenshot inspection finds the floating Canvas navigator covering
+the Video creation button. A root hit-test now checks the center of each enabled
+screen-sized command with `elementFromPoint`, plus a 44px target (1px tolerance).
+It reproduces Video blocked by Canvas; the Canvas launcher itself is only40px high.
+
+The subsequent 24-case run returns **17 passes / 7 failures**: six320px cases are
+clamped again because Fit runs while the expanded map reserves204px; one390px ES
+dark case times out before its theme finishes hydrating. The latter must be rerun
+on the final stable snapshot, not silently counted as a geometry pass.
+
+Independent review also identifies inconsistent short-layout breakpoints between
+621 and700px. The matrix therefore adds the common667×375 landscape viewport
+(**30 combinations** total). Its causal first run cannot click Fit because the
+Save canvas button intercepts it. These are still the same responsive/action
+clarity scope, and neither fit thresholds nor hit-testing are waived.
+
+Screenshots are now retained as `fitted.png` even for passing cases, so geometry
+assertions are accompanied by actual visual inspection. Output directory names
+do not establish qualification; the counts and findings in this report do.
+
+## Integration review and fixture independence
+
+The intermediate `studio-import/integration-order.json` is independently Approved:
+all113 entries match Git first-parent order through `d754057a9`, including full
+hashes and subjects; stable patch-id SKIPs and the two mixed/shared bundle counts
+were rechecked. The final manifest will supersede this snapshot after Task5.
+
+The common local UI fixture now mocks the out-of-scope consent service explicitly
+alongside account services, rather than ignoring console errors from its absent
+database. The engine-picker keyboard/search/disabled-model test then passes1/1
+in3.0s; the density test also passes. Two historical connector assertions still
+need adaptation from always-visible optional rows to the Connections/inspector
+presentation while retaining their exact model capacities. A cold development
+run also timed out on initial canvas hydration; final stable-snapshot qualification
+remains required.
