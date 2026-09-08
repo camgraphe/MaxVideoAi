@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 import { TOOLBOX, TOOLBOX_CANDIDATES, toolsForMedia } from '../frontend/src/lib/toolbox/catalogue';
 import { toolAssetRefSchema, validateToolBlock } from '../frontend/src/lib/toolbox/contract';
@@ -10,6 +12,15 @@ test('toolbox exposes implemented capabilities and keeps later candidates closed
   assert.equal(new Set(TOOLBOX.map(tool => tool.id)).size, TOOLBOX.length);
   assert.ok(TOOLBOX.every(tool => !tool.mcpExecution));
   for (const candidate of TOOLBOX_CANDIDATES) assert.throws(() => validateToolBlock({ ...block, toolId: candidate.id }));
+});
+
+test('toolbox catalogue hides tools that are not released to users', () => {
+  const catalogueSource = readFileSync(
+    join(process.cwd(), 'frontend/src/components/tools/ToolboxCatalogue.tsx'),
+    'utf8'
+  );
+  assert.match(catalogueSource, /TOOLBOX\.filter\(tool => !tool\.qualificationRequired\)/);
+  assert.doesNotMatch(catalogueSource, /finishingCopy\(locale\)\.validation/);
 });
 test('versioned blocks preserve exact typed IDs and reject ambiguous references and provider settings', () => {
   assert.deepEqual(validateToolBlock(block), block);
