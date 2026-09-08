@@ -102,22 +102,28 @@ test('a delayed server listing preserves a local project created after that list
   const creationStarted = new Promise<void>((resolve) => { markCreationStarted = resolve; });
   let listings = 0;
   let serverProjects: Array<Record<string, unknown>> = [];
+  const pendingRoutes = new Set<Promise<void>>();
   await page.route('**/api/member-status', (route) => route.fulfill({ json: { tier: 'Member' } }));
   await page.route('**/api/wallet', (route) => route.fulfill({ json: { balance: 42.5, currency: 'USD' } }));
   await page.route('**/api/admin/access', (route) => route.fulfill({ json: { ok: false } }));
   await page.route('**/api/legal/cookies/version', (route) => route.fulfill({ json: { ok: true, version: 'studio-local-fixture', publishedAt: null } }));
   await page.route('**/api/legal/cookies', (route) => route.fulfill({ json: { ok: true } }));
-  await page.route('**/api/studio/**', async (route) => {
-    const collection = new URL(route.request().url()).pathname === '/api/studio/projects';
-    if (collection && route.request().method() === 'GET') {
-      listings += 1;
-      if (listings === 1) { markListingStarted(); await listingGate; }
-      await route.fulfill({ json: { ok: true, projects: serverProjects } });
-    } else if (collection && route.request().method() === 'POST') {
-      markCreationStarted();
-      await creationGate;
-      await route.fulfill({ status: 503, json: { ok: false } });
-    } else await route.fulfill({ status: 404, json: { ok: false } });
+  await page.route('**/api/studio/**', (route) => {
+    const pending = (async () => {
+      const collection = new URL(route.request().url()).pathname === '/api/studio/projects';
+      if (collection && route.request().method() === 'GET') {
+        listings += 1;
+        if (listings === 1) { markListingStarted(); await listingGate; }
+        await route.fulfill({ json: { ok: true, projects: serverProjects } });
+      } else if (collection && route.request().method() === 'POST') {
+        markCreationStarted();
+        await creationGate;
+        await route.fulfill({ status: 503, json: { ok: false } });
+      } else await route.fulfill({ status: 404, json: { ok: false } });
+    })();
+    pendingRoutes.add(pending);
+    void pending.then(() => pendingRoutes.delete(pending), () => pendingRoutes.delete(pending));
+    return pending;
   });
   try {
     await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
@@ -145,5 +151,6 @@ test('a delayed server listing preserves a local project created after that list
   } finally {
     releaseListing();
     releaseCreation();
+    await Promise.allSettled([...pendingRoutes]);
   }
 });

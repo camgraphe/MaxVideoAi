@@ -97,9 +97,12 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).readyState), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
       await t.test('a newly created connected montage fits the whole measured image to its program frame', async () => {
         const geometry = await firstVideo.evaluate((element) => {
-          const frame = element.closest('[data-testid="editor-program-frame"]')!.getBoundingClientRect();
+          const frameElement = element.closest('[data-testid="editor-program-frame"]') as HTMLElement;
+          const frame = frameElement.getBoundingClientRect();
           const video = element.getBoundingClientRect();
           return {
+            sourceAspectRatio: (element as HTMLVideoElement).videoWidth / (element as HTMLVideoElement).videoHeight,
+            frameAspectRatio: frameElement.clientWidth / frameElement.clientHeight,
             widthRatio: video.width / frame.width,
             heightRatio: video.height / frame.height,
             centerXOffset: Math.abs((video.left + video.right - frame.left - frame.right) / 2),
@@ -108,6 +111,8 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
           };
         });
         assert.equal(geometry.fit, 'contain');
+        assert.ok(Math.abs(geometry.sourceAspectRatio - 16 / 9) < 0.001, 'The native source must really be 16:9, not merely its CSS box.');
+        assert.ok(Math.abs(geometry.frameAspectRatio - 16 / 9) < 0.02, 'The program content frame must really be 16:9; a filled but letterboxed box is not proof.');
         assert.ok(geometry.widthRatio >= 0.98 && geometry.widthRatio <= 1.02, `The matching 16:9 source must fill the frame width without crop: ${JSON.stringify(geometry)}`);
         assert.ok(geometry.heightRatio >= 0.98 && geometry.heightRatio <= 1.02, `The matching 16:9 source must fill the frame height without crop: ${JSON.stringify(geometry)}`);
         assert.ok(geometry.centerXOffset <= 1 && geometry.centerYOffset <= 1, 'The newly initialized image must remain centered.');
