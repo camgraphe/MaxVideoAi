@@ -486,14 +486,14 @@
 @media (max-width: 639px) {
   .app-experience .app-media-collection { gap: 10px; }
   .app-experience .app-media-collection .app-library-heading { gap: 6px; padding-bottom: 6px; }
-  .app-experience .app-media-collection .app-library-heading > div:first-child { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .app-experience .app-media-collection .app-library-heading > div:first-of-type { flex-direction: column; align-items: stretch; gap: 8px; }
   .app-experience .app-media-heading-actions { margin-left: auto; gap: 4px; }
   .app-experience .app-media-heading-actions > * { padding-inline: 8px; font-size: 12px; }
   .app-experience .app-media-collection .app-library-heading h2 { font-size: 25px; }
   .app-experience .app-media-collection .app-library-view-switch { width: 100%; gap: 20px; }
-  .app-experience .app-media-collection .app-library-heading > div:last-child { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
-  .app-experience .app-media-collection .app-library-types { gap: 4px; flex-wrap: nowrap; }
-  .app-experience .app-media-collection .app-library-types button { padding-inline: 9px; font-size: 12px; }
+  .app-experience .app-media-collection .app-library-types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .app-experience .app-media-collection .app-library-types button { min-width: 0; justify-content: center; padding-inline: 7px; font-size: 12px; }
+  .app-experience .app-media-collection .app-library-heading > div:first-of-type > div:last-child { justify-content: flex-end; }
   .app-experience .app-media-filters { grid-template-columns: minmax(0, 1fr) minmax(100px, .65fr); gap: 8px; }
   .app-experience .app-media-filters input { font-size: 12px; }
 }

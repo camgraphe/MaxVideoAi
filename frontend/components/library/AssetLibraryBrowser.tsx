@@ -54,6 +54,7 @@ export interface AssetLibraryBrowserProps {
   assetType: 'image' | 'video' | 'audio';
   layout?: 'modal' | 'page';
   title: string;
+  hideTitle?: boolean;
   headingId?: string;
   subtitle?: string;
   countLabel?: string | null;
@@ -110,6 +111,7 @@ function AssetLibraryCollection({
   assetType,
   layout = 'modal',
   title,
+  hideTitle = false,
   subtitle,
   countLabel,
   onClose,
@@ -208,7 +210,7 @@ function AssetLibraryCollection({
             : 'border-b border-border/70 bg-surface-glass-90 px-4 py-4 pr-16 lg:px-6 lg:py-5 lg:pr-20'
         )}
       >
-        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        {hideTitle ? <h1 className="sr-only">{title}</h1> : <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -224,7 +226,7 @@ function AssetLibraryCollection({
               {titleActions}
             </div>
           ) : null}
-        </div>
+        </div>}
         {headerLeadingActions || headerActions ? (
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             {headerLeadingActions ? (

@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
-import { AudioWaveform, Clapperboard, Images, CheckCircle2, History, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
+import { AudioWaveform, Clapperboard, Images, CheckCircle2, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -201,7 +201,7 @@ export function LibraryPageClient() {
                 locale={locale}
                 renderContinuation={(asset) => <MediaDestinationActions asset={asset} userId={user?.id} locale={locale} />}
                 title={locale === 'fr' ? 'Médias' : locale === 'es' ? 'Medios' : 'Media'}
-                subtitle={activeView === 'review' ? copy.review.subtitle : copy.hero.subtitle}
+                hideTitle
                 assetType={activeKind}
                 assets={currentAssets}
                 isLoading={
@@ -222,15 +222,23 @@ export function LibraryPageClient() {
                       : null)
                 }
                 source={activeView === 'review' ? 'recent' : activeSource}
-                availableSources={activeView === 'review' ? ['recent'] : [...availableSources]}
-                sourceLabels={activeView === 'review' ? { recent: copy.tabs.recent } : sourceLabels}
+                availableSources={[...availableSources, 'recent']}
+                sourceLabels={sourceLabels}
                 onSourceChange={(source) => {
-                  if (source === 'recent') return;
+                  clearMutationErrors();
+                  if (source === 'recent') {
+                    setActiveView('review');
+                    setDeleteError(null);
+                    setImportError(null);
+                    return;
+                  }
+                  setActiveView('saved');
+                  setSaveError(null);
                   setActiveSource(source as SavedAssetSource);
                   resetSourceMutationState();
                 }}
                 searchPlaceholder={activeView === 'review' ? t('workspace.library.browser.searchRenders', 'Search prompts or render IDs…') ?? 'Search prompts or render IDs…' : t('workspace.library.browser.searchSaved', 'Search names or render IDs…') ?? 'Search names or render IDs…'}
-                sourcesTitle={activeView === 'review' ? copy.review.sourcesTitle : copy.browser.sourcesTitle}
+                sourcesTitle={copy.browser.sourcesTitle}
                 emptyLabel={emptyLabel || copy.assets.empty}
                 emptySearchLabel={copy.browser.emptySearch}
                 getAssetHref={(asset) => (asset.kind === 'audio' ? null : getAssetJobHref(asset))}
@@ -248,38 +256,6 @@ export function LibraryPageClient() {
                   void (activeView === 'review' ? mutateRecentOutputs() : mutateAssets());
                 }}
                 retryLabel={copy.browser.refresh}
-                titleActions={
-                  <>
-                    <Button
-                      type="button"
-                      variant={activeView === 'saved' ? 'primary' : 'outline'}
-                      aria-pressed={activeView === 'saved'}
-                      size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
-                      onClick={() => {
-                        setActiveView('saved');
-                        setSaveError(null);
-                      }}
-                    >
-                      {copy.views.saved}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === 'review' ? 'primary' : 'outline'}
-                      aria-pressed={activeView === 'review'}
-                      size="sm"
-                      className="!min-h-11 gap-2 rounded-full px-3 text-sm"
-                      onClick={() => {
-                        setActiveView('review');
-                        setDeleteError(null);
-                        setImportError(null);
-                      }}
-                    >
-                      <History className="h-3.5 w-3.5" aria-hidden />
-                      {copy.views.review}
-                    </Button>
-                  </>
-                }
                 headerLeadingActions={
                   <>
                     <Button
@@ -317,7 +293,7 @@ export function LibraryPageClient() {
                     </Button>
                   </>
                 }
-                headingActions={<>
+                headerActions={<>
                     <Button
                         type="button"
                         variant="outline"
@@ -329,13 +305,6 @@ export function LibraryPageClient() {
                         <Upload className="h-4 w-4" aria-hidden />
                         {isImporting ? copy.browser.importing : copy.browser.import}
                       </Button>
-                    <ButtonLink href={activeKind === 'video' ? '/app' : activeKind === 'audio' ? '/app/audio' : '/app/image'} prefetch={false} variant="outline" size="sm" className="!min-h-11 gap-2 rounded-full px-3 text-sm">
-                      <Plus className="h-4 w-4" aria-hidden />
-                      {t('workspace.library.browser.create', 'Create')}
-                    </ButtonLink>
-                  </>}
-                headerActions={
-                  <>
                     <Button
                       type="button"
                       variant="outline"
@@ -354,8 +323,7 @@ export function LibraryPageClient() {
                       <RefreshCw className="h-4 w-4" aria-hidden />
                       <span className="sr-only">{copy.browser.refresh}</span>
                     </Button>
-                  </>
-                }
+                  </>}
                 renderAssetMeta={(asset) =>
                   asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span> : null
                 }
