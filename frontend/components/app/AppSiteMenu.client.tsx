@@ -114,16 +114,16 @@ export function AppSiteMenu({ children, ...props }: Props) {
   const { locale, t } = useI18n();
   const controllerRef = useRef<AppSiteMenuController | null>(null);
   const copy = locale === 'fr'
-    ? { assistants: 'Assistants', account: 'Compte', signIn: 'Connexion' }
+    ? { connect: 'Connexions', account: 'Compte', signIn: 'Connexion' }
     : locale === 'es'
-      ? { assistants: 'Asistentes', account: 'Cuenta', signIn: 'Entrar' }
-      : { assistants: 'Assistants', account: 'Account', signIn: 'Sign in' };
+      ? { connect: 'Conectar', account: 'Cuenta', signIn: 'Entrar' }
+      : { connect: 'Connect', account: 'Account', signIn: 'Sign in' };
   return (
     <>
       <AppSiteMenuButton {...props} controllerRef={controllerRef} />
       <div className="app-header-actions">
         <button className="app-assistant-shortcut" type="button" aria-haspopup="dialog" onClick={(event) => controllerRef.current?.open(event.currentTarget)}>
-          <AppAssistantMarks /><span>{copy.assistants}</span>
+          <AppAssistantMarks /><span>{copy.connect}</span>
         </button>
         {children}
         <div className="app-header-account">

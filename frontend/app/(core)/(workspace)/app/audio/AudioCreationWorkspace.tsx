@@ -8,6 +8,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { runAudioGenerate, useInfiniteJobs } from '@/lib/api';
 import { AUDIO_CREATION_INTENTS, AUDIO_INTENT_PACK, buildAudioCreationRequest, isAudioDraftReady, isAudioIntent, type AudioCreationIntent } from '@/lib/audio-creation';
+import type { Job } from '@/types/jobs';
 import { audioCreationReusePatch } from './_lib/audio-creation-reuse';
 import { audioCreationCopy } from './_lib/audio-creation-copy';
 import { fetchJobDetail, uploadAsset } from './_lib/audio-workspace-helpers';
@@ -57,10 +58,29 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const submitting = useRef(new Set<string>());
   const { stableJobs: jobs, isLoading, error: historyError, mutate } = useInfiniteJobs(12, { surface: 'audio' });
   const stillOwned = scope.isCurrent;
-  const selectJob = useCallback(async (jobId: string) => {
+  const selectJob = useCallback(async (jobId: string, preview?: Job) => {
     if (!userId || !stillOwned()) return;
+    if (preview?.videoUrl && preview.surface !== 'audio') {
+      router.replace(`${pathname}?intent=video&job=${encodeURIComponent(jobId)}`, { scroll: false });
+      return;
+    }
     const sequence = ++restoreSequence.current;
     setSelectingJobId(jobId);
+    // The feed already owns the playable media URLs. Show that result immediately while
+    // the detail request enriches settings and provider metadata in the background.
+    if (preview?.audioUrl || preview?.videoUrl) {
+      setResult({
+        jobId: preview.jobId,
+        surface: preview.surface,
+        videoUrl: preview.videoUrl ?? null,
+        audioUrl: preview.audioUrl ?? null,
+        thumbUrl: preview.thumbUrl ?? null,
+        aspectRatio: preview.aspectRatio ?? null,
+        engineLabel: preview.engineLabel,
+        durationSec: preview.durationSec,
+        createdAt: preview.createdAt,
+      });
+    }
     try {
       const job = await fetchJobDetail(jobId);
       if (stillOwned() && sequence === restoreSequence.current) {
@@ -184,13 +204,13 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
               className={styles.historyItem}
               aria-pressed={isSelected}
               aria-busy={isSelecting}
-              onClick={() => void selectJob(job.jobId)}
+              onClick={() => void selectJob(job.jobId, job)}
             >
               <span className={styles.historyIcon} aria-hidden><RowIcon size={17} /></span>
               <span className={styles.historyCopy}><strong>{label}</strong><small>{new Date(job.createdAt).toLocaleDateString(locale)} · {isFailed ? copy.failed : isPlayable ? copy.listen : copy.generating}</small></span>
               {isSelected ? <span className={styles.historySelected}>{copy.selected}</span> : <span className="sr-only">{copy.select}</span>}
             </button>
-            {job.audioUrl && !isFailed ? <audio className={styles.historyAudio} controls preload="none" src={job.audioUrl} aria-label={`${copy.listen}: ${label}`} onPlay={() => { if (!isSelected) void selectJob(job.jobId); }} /> : null}
+            {job.audioUrl && !isFailed ? <audio className={styles.historyAudio} controls preload="none" src={job.audioUrl} aria-label={`${copy.listen}: ${label}`} onPlay={() => { if (!isSelected) void selectJob(job.jobId, job); }} /> : null}
           </div>;
         }) : null}
       </section>
