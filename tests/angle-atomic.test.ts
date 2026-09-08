@@ -33,6 +33,9 @@ test('createAngleInitialJobInExecutor reserves wallet charge and inserts provisi
   const executor = {
     async query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>) {
       calls.push({ text, params });
+      if (text.includes('FOR UPDATE')) {
+        return [{ id: 'angle-account-lock' } as TRecord];
+      }
       if (text.includes('INSERT INTO app_receipts')) {
         return [
           {
@@ -68,16 +71,20 @@ test('createAngleInitialJobInExecutor reserves wallet charge and inserts provisi
 
   restoreDatabaseUrl();
 
-  assert.equal(calls.length, 2);
-  assert.match(calls[0]?.text ?? '', /INSERT INTO app_receipts/);
-  assert.match(calls[1]?.text ?? '', /INSERT INTO app_jobs/);
+  assert.equal(calls.length, 3);
+  assert.match(calls[0]?.text ?? '', /FOR UPDATE/);
+  assert.match(calls[1]?.text ?? '', /INSERT INTO app_receipts/);
+  assert.match(calls[2]?.text ?? '', /INSERT INTO app_jobs/);
 });
 
 test('createAngleInitialJobInExecutor surfaces insufficient wallet funds', async () => {
   withDatabaseUrl();
   const { AngleToolError, createAngleInitialJobInExecutor } = await loadAngleAtomicModule();
   const executor = {
-    async query<TRecord = unknown>() {
+    async query<TRecord = unknown>(text: string) {
+      if (text.includes('FOR UPDATE')) {
+        return [{ id: 'angle-account-lock' } as TRecord];
+      }
       return [
         {
           balance_cents: 8,
