@@ -53,6 +53,8 @@ Le test `connected-studio-mcp-route-integration.test.ts` exerce désormais le vr
 
 L'option de runtime `mcp` fixe elle-même host/resource et les seules gates locales autorisées. Next15 normalise les URL loopback de rewrite vers `localhost` ; le helper HTTP envoie cette autorité mais se connecte directement au port IPv4 du processus possédé. Il ne réutilise ni DNS, ni un autre serveur, ni une injection de principal ou de service. Le contrôle initial a échoué avant cette correction du harness. Aucun changement de middleware produit ou de publication MCP n'a été nécessaire.
 
+La revue indépendante Sol high de `4d40827cd` est Approved, sans finding Critical/Important. Le seul Minor a conduit à muter de façon garantie le premier caractère de la signature de test, au lieu d'un suffixe aléatoire pouvant exceptionnellement rester identique. Nouveau passage réussi :1/1 (9,33s). Ce contrôle reste un test d'authentification, pas une mesure de performance.
+
 ## Référence visuelle et mesures comparables
 
 Le contrôle réel desktop 1440×900 et mobile 390×844, clair et sombre, constate des blocs trop miniaturisés, des actions non nommées et un débordement mobile. Les captures de référence sont des artefacts locaux de travail ; elles ne constituent pas une mesure de performance.

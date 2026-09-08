@@ -25,7 +25,9 @@ test('real loopback MCP authenticates signed bearer, discovers gated tools and w
     assert.equal(anonymous.headers.get('www-authenticate'), `Bearer resource_metadata="http://${runtime.mcpHost}/.well-known/oauth-protected-resource/mcp"`);
     const cookie = runtime.auth.cookiesFor(session).map((item) => `${item.name}=${item.value}`).join('; ');
     assert.equal((await request(initialize, undefined, cookie)).status, 401, 'MCP requires bearer, not a Studio session cookie.');
-    assert.equal((await request(initialize, `${session.access_token.slice(0, -4)}AAAA`)).status, 401);
+    const forged = session.access_token.split('.');
+    forged[2] = `${forged[2][0] === 'A' ? 'B' : 'A'}${forged[2].slice(1)}`;
+    assert.equal((await request(initialize, forged.join('.'))).status, 401);
     const initialized = await readStudioMcpResponse(await request(initialize, session.access_token));
     assert.equal(initialized.id, 1);
     assert.equal(initialized.result.serverInfo.name, 'maxvideoai');
