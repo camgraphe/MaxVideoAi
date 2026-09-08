@@ -159,3 +159,23 @@ test('Restore validates the selected pixel budget for landscape, portrait and ro
     }
   }
 });
+
+test('a late provider result after the observation deadline never claims or persists a finishing job', async () => {
+  const { refreshFinishingTool } = await import('../frontend/src/server/tools/finishing-status');
+  const controller = new AbortController();
+  let claims = 0;
+  let persists = 0;
+  let refunds = 0;
+  const job = { status: 'queued', payment_status: 'paid_wallet', provider_job_id: 'stored-request', updated_at: new Date().toISOString(),
+    settings_snapshot: { preparedTool: { profile: { endpoint: 'topaz/denoise/video' } } as never } };
+  const status = { jobId: 'job', status: 'queued', result: null, error: null };
+  const result = await refreshFinishingTool('owner', 'job', {
+    read: async () => job, status: async () => status,
+    poll: async (_endpoint, _id, signal) => { assert.equal(signal, controller.signal); return { status: 'COMPLETED' } as never; },
+    result: async (_endpoint, _id, signal) => { assert.equal(signal, controller.signal); controller.abort(); return { data: {} } as never; },
+    claim: async () => { claims++; return true; }, persist: async () => { persists++; throw new Error('Unexpected persistence'); },
+    fail: async () => { refunds++; },
+  }, { signal: controller.signal });
+  assert.equal(result, status);
+  assert.deepEqual({ claims, persists, refunds }, { claims: 0, persists: 0, refunds: 0 });
+});

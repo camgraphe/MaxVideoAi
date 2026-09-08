@@ -29,13 +29,6 @@ const defaults = { query, getFalClient, linkFalJob, updateJobFromFalWebhook, bac
 
 export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
   const { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs } = { ...defaults, ...dependencies };
-  let finishing = { checked: 0, reconciled: 0, failures: 0 };
-  try {
-    finishing = await reconcileFinishingJobs();
-  } catch {
-    finishing.failures = 1;
-    console.warn('[fal-poll] finishing reconciliation deferred');
-  }
   const rows = await query<FalPendingJob>(
     `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
 	     FROM app_jobs
@@ -429,6 +422,13 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
     }
   }
 
+  let finishing = { checked: 0, reconciled: 0, failures: 0 };
+  try {
+    finishing = await reconcileFinishingJobs();
+  } catch {
+    finishing.failures = 1;
+    console.warn('[fal-poll] finishing reconciliation deferred');
+  }
   return NextResponse.json({
     ok: true,
     checked: rows.length,

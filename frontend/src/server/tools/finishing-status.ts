@@ -5,12 +5,12 @@ import { persistFinishingOutput } from './finishing-output';
 const defaults = {
   read: readFinishingExecution, status: readFinishingJob, claim: claimFinishingCompletion,
   complete: completeFinishingJob, fail: failFinishingJob, persist: persistFinishingOutput,
-  poll: async (endpoint: string, requestId: string) => getFalClient().queue.status(endpoint, { requestId, logs: false }),
-  result: async (endpoint: string, requestId: string) => getFalClient().queue.result(endpoint, { requestId }),
+  poll: async (endpoint: string, requestId: string, signal?: AbortSignal) => getFalClient().queue.status(endpoint, { requestId, logs: false, abortSignal: signal }),
+  result: async (endpoint: string, requestId: string, signal?: AbortSignal) => getFalClient().queue.result(endpoint, { requestId, abortSignal: signal }),
 };
 
 /** Resume the stored provider request; polling never submits or charges again. */
-export async function refreshFinishingTool(userId: string, jobId: string, dependencies: Partial<typeof defaults> = {}) {
+export async function refreshFinishingTool(userId: string, jobId: string, dependencies: Partial<typeof defaults> = {}, options: { signal?: AbortSignal } = {}) {
   const deps = { ...defaults, ...dependencies };
   const job = await deps.read(userId, jobId);
   if (!job) throw new Error('JOB_UNAVAILABLE');
@@ -25,12 +25,13 @@ export async function refreshFinishingTool(userId: string, jobId: string, depend
     if (Date.now() - new Date(job.updated_at).getTime() > 15 * 60_000) await deps.fail(userId, jobId, 'Submission interrupted.', null);
     return deps.status(userId, jobId);
   }
+  const signal = options.signal ?? AbortSignal.timeout(10_000);
   const prepared = job.settings_snapshot.preparedTool;
   let output: unknown;
   try {
-    const polled = await deps.poll(prepared.profile.endpoint, job.provider_job_id);
+    const polled = await deps.poll(prepared.profile.endpoint, job.provider_job_id, signal);
     if (polled.status !== 'COMPLETED') return deps.status(userId, jobId);
-    output = (await deps.result(prepared.profile.endpoint, job.provider_job_id)).data;
+    output = (await deps.result(prepared.profile.endpoint, job.provider_job_id, signal)).data;
   } catch (error) {
     // A transport outage is not a failed generation. fal uses 422 for failed results.
     if (typeof error === 'object' && error !== null && 'status' in error && error.status === 422) {
@@ -38,6 +39,9 @@ export async function refreshFinishingTool(userId: string, jobId: string, depend
     }
     return deps.status(userId, jobId);
   }
+  // An observation deadline is not a failed paid generation. Never start persistence
+  // after it; once claimed, await the existing finalizer without a detached timeout.
+  if (signal.aborted) return deps.status(userId, jobId);
   if (!await deps.claim(userId, jobId)) return deps.status(userId, jobId);
   try {
     const result = await deps.persist(userId, jobId, prepared, output);

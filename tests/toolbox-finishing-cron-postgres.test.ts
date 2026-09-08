@@ -67,6 +67,41 @@ test('the existing Fal cron delegates finishing jobs and settles interrupted res
   await runFalPoll(dependencies);
   assert.equal((await database.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='refund'")).rows[0].n, 3);
 
+  await t.test('a suspended provider observation is aborted before the next refund and video polling already ran', async () => {
+    await database.pool.query("UPDATE app_jobs SET status='completed' WHERE status='queued'");
+    await database.pool.query(`INSERT INTO app_jobs (job_id,user_id,surface,engine_id,provider_job_id,status,payment_status,final_price_cents,currency,created_at,updated_at,settings_snapshot) VALUES
+      ('a-suspended','owner','tool','toolbox-finishing','suspended-provider','queued','paid_wallet',15,'USD',now()-interval '30 minutes',now()-interval '30 minutes','{"preparedTool":{"profile":{"endpoint":"topaz/denoise/video"}}}'),
+      ('b-interrupted','owner','tool','toolbox-finishing',NULL,'pending','paid_wallet',16,'USD',now()-interval '20 minutes',now()-interval '20 minutes','{}'),
+      ('another-video','owner','video','sora-2',NULL,'pending',NULL,0,'USD',now()-interval '10 minutes',now()-interval '10 minutes','{}')`);
+    let aborted = false;
+    let videoProcessedBeforeObservation = false;
+    let liveRequests = 0;
+    const response = await runFalPoll({ ...dependencies, reconcileFinishingJobs: () => reconcileFinishingJobs({
+      refresh: (owner, jobId, signal) => refreshFinishingTool(owner, jobId, {
+        read: jobs.readFinishingExecution, status: jobs.readFinishingJob, fail: jobs.failFinishingJob,
+        poll: async (_endpoint, _requestId, forwardedSignal) => {
+          assert.equal(forwardedSignal, signal);
+          videoProcessedBeforeObservation = (await database.pool.query("SELECT status FROM app_jobs WHERE job_id='another-video'")).rows[0].status === 'failed';
+          liveRequests++;
+          try { await new Promise<void>((_resolve, reject) => {
+            if (signal.aborted) { aborted = true; reject(signal.reason); return; }
+            signal.addEventListener('abort', () => { aborted = true; reject(signal.reason); }, { once: true });
+          }); } finally { liveRequests--; }
+          throw new Error('Unreachable');
+        },
+      }, { signal }),
+    }, { observationTimeoutMs: 40 }) });
+    assert.equal((await response.json()).finishing.checked, 2);
+    assert.equal(aborted, true);
+    assert.equal(videoProcessedBeforeObservation, true);
+    assert.equal(liveRequests, 0, 'no detached request remains after the cron returns');
+    assert.equal((await jobs.readFinishingJob('owner', 'a-suspended')).status, 'queued');
+    assert.equal((await jobs.readFinishingJob('owner', 'b-interrupted')).status, 'failed');
+    assert.equal((await database.pool.query("SELECT amount_cents FROM app_receipts WHERE type='refund' AND job_id='b-interrupted'")).rows[0].amount_cents, 16);
+    assert.ok((await database.pool.query("SELECT settings_snapshot->>'lastFinishingPollAt' AS cursor FROM app_jobs WHERE job_id='a-suspended'")).rows[0].cursor);
+    await database.pool.query("UPDATE app_jobs SET status='completed' WHERE job_id='a-suspended'");
+  });
+
   await t.test('the bounded reconciliation rotates unfinished rows without extending their timeout', async () => {
     await database.pool.query("DELETE FROM app_jobs WHERE status IN ('queued','pending')");
     await database.pool.query(`INSERT INTO app_jobs (job_id,user_id,surface,engine_id,status,payment_status,updated_at,settings_snapshot)

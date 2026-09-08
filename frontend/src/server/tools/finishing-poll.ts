@@ -3,7 +3,7 @@ import { query } from '@/lib/db';
 type PendingFinishingJob = { job_id: string; user_id: string };
 const defaults = {
   query,
-  refresh: async (userId: string, jobId: string) => {
+  refresh: async (userId: string, jobId: string, signal: AbortSignal) => {
     const [{ refreshFinishingTool }, { readFinishingExecution, readFinishingJob }] = await Promise.all([
       import('./finishing-status'), import('./finishing-jobs'),
     ]);
@@ -11,13 +11,15 @@ const defaults = {
     return refreshFinishingTool(userId, jobId, {
       read: (owner, id) => readFinishingExecution(owner, id, { includeHidden: true }),
       status: (owner, id) => readFinishingJob(owner, id, { includeHidden: true }),
-    });
+    }, { signal });
   },
 };
 
 /** A bounded phase of the existing Fal cron, never a submission or a new scheduler. */
-export async function reconcileFinishingJobs(dependencies: Partial<typeof defaults> = {}) {
+export async function reconcileFinishingJobs(dependencies: Partial<typeof defaults> = {}, options: { observationTimeoutMs?: number } = {}) {
   const deps = { ...defaults, ...dependencies };
+  const observationTimeoutMs = options.observationTimeoutMs ?? 5_000;
+  if (!Number.isSafeInteger(observationTimeoutMs) || observationTimeoutMs < 1 || observationTimeoutMs > 10_000) throw new Error('Invalid finishing observation budget.');
   const rows = await deps.query<PendingFinishingJob>(`SELECT job_id, user_id FROM app_jobs
     WHERE surface='tool' AND engine_id='toolbox-finishing' AND user_id IS NOT NULL
       AND payment_status='paid_wallet' AND status IN ('pending','queued','running','processing','failed')
@@ -27,7 +29,7 @@ export async function reconcileFinishingJobs(dependencies: Partial<typeof defaul
   let failures = 0;
   for (const job of rows) {
     try {
-      await deps.refresh(job.user_id, job.job_id);
+      await deps.refresh(job.user_id, job.job_id, AbortSignal.timeout(observationTimeoutMs));
       reconciled += 1;
     } catch {
       failures += 1;
