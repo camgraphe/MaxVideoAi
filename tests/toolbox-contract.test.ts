@@ -4,9 +4,9 @@ import { TOOLBOX, TOOLBOX_CANDIDATES, toolsForMedia } from '../frontend/src/lib/
 import { toolAssetRefSchema, validateToolBlock } from '../frontend/src/lib/toolbox/contract';
 
 const block = { toolId: 'upscale', version: 1, inputs: [{ type: 'asset', assetId: 'actual-library-id', kind: 'image' }], settings: { mode: 'factor', factor: 2, targetResolution: '1080p', outputFormat: 'png' } };
-test('toolbox exposes only existing media capabilities and keeps candidates closed', () => {
+test('toolbox exposes implemented capabilities and keeps later candidates closed', () => {
   assert.deepEqual(toolsForMedia('audio'), []);
-  assert.deepEqual(toolsForMedia('video').map(tool => tool.id), ['upscale', 'background-removal']);
+  assert.deepEqual(toolsForMedia('video').map(tool => tool.id), ['upscale', 'background-removal', 'restore-video', 'denoise', 'fix-blur', 'smooth-motion']);
   assert.equal(new Set(TOOLBOX.map(tool => tool.id)).size, TOOLBOX.length);
   assert.ok(TOOLBOX.every(tool => !tool.mcpExecution));
   for (const candidate of TOOLBOX_CANDIDATES) assert.throws(() => validateToolBlock({ ...block, toolId: candidate.id }));

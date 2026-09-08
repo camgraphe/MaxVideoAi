@@ -6,6 +6,8 @@ import { resolveOutputCodec, validateBackgroundRemovalDuration } from '@/lib/too
 import { readToolVideoMetadata } from './toolbox-video-metadata';
 import { resolveUpscalePricingContext } from './upscale-pricing-context';
 import { resolveBackgroundRemovalPricingContext } from './background-removal-pricing-context';
+import { isFinishingToolId } from '@/lib/toolbox/finishing';
+import { prepareFinishingTool } from './finishing-prepare';
 
 const number = z.number().finite().nonnegative().nullable().optional();
 const url = z.string().url().max(8192).refine(value => /^https?:\/\//i.test(value));
@@ -15,6 +17,10 @@ const quoteInput = z.discriminatedUnion('toolId', [
 ]);
 /** Read-only adapter. Uses the same pricing owners and normalization as execution. */
 export async function quoteToolboxRequest(value: unknown, account: string) {
+  if (value && typeof value === 'object' && 'toolId' in value && typeof value.toolId === 'string' && isFinishingToolId(value.toolId)) {
+    const prepared = await prepareFinishingTool(value, account);
+    return { totalCents: prepared.pricing.totalCents, currency: prepared.pricing.currency, released: prepared.released, generative: prepared.profile.generative };
+  }
   const input = quoteInput.parse(value);
   if (input.toolId === 'upscale') {
     const engine = getUpscaleToolEngine(input.engineId, input.mediaType);

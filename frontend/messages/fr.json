@@ -3567,7 +3567,8 @@
           "character": "Personnage",
           "angle": "Angle",
           "upscale": "Agrandissement",
-          "background-removal": "Suppression du fond"
+          "background-removal": "Suppression du fond",
+          "tool": "Outils"
         },
         "status": "Statut de l’activité chargée",
         "statuses": {
@@ -3665,7 +3666,8 @@
           "angle": "Angle",
           "upscale": "Upscale",
           "audio": "Audio",
-          "background-removal": "Suppression arrière-plan"
+          "background-removal": "Suppression arrière-plan",
+          "tool": "Outils"
         }
       },
       "insights": {

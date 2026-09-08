@@ -22,6 +22,25 @@ import {
   type ResolveServerPricingPolicyDependencies,
 } from './resolve-pricing-policy';
 
+/** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
+export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string }): Promise<PricingSnapshot> {
+  if (!Number.isFinite(input.vendorBudgetUsd) || input.vendorBudgetUsd <= 0) throw new Error('Invalid tool vendor budget.');
+  const engineId = 'toolbox-finishing';
+  const { policy, vendorAccountId } = await resolveServerBillingPolicy({ engineId, mode: `${input.toolId}:${input.quality}`, resolution: 'video' });
+  // A database-wide legacy default must not silently replace this product's policy.
+  if (policy.rule.engineId !== engineId) throw new Error('TOOL_PRICING_UNAVAILABLE');
+  if (policy.rule.currency !== 'USD') throw new Error('Tool pricing currency is unsupported.');
+  const compatibilityProfile = getVersionedPricingPolicy().compatibilityProfiles.find(profile => profile.id === 'standard');
+  if (!compatibilityProfile) throw new Error('Missing standard pricing profile.');
+  const quote = quoteCanonicalPricing({
+    facts: { engineId, currency: 'USD', vendorSubtotalExactCents: input.vendorBudgetUsd * 100, unit: 'video', quantity: 1 },
+    scenario: { id: `billing:tool:${input.toolId}:${input.quality}`, engineId, mode: `${input.toolId}:${input.quality}`, membershipTier: LIVE_MEMBERSHIP_POLICY.tier, discountPercent: 0 },
+    policy, compatibilityProfile,
+  });
+  return projectCanonicalQuoteToSnapshot({ quote, base: { seconds: input.durationSec, rate: input.vendorBudgetUsd, unit: 'video', amountCents: input.vendorBudgetUsd * 100 }, addons: [], vendorAccountId,
+    meta: { surface: 'tool', toolId: input.toolId, quality: input.quality, profileId: input.profileId, providerCostSource: input.pricingSource, providerCostKind: 'conservative-budget', vendorBudgetUsd: input.vendorBudgetUsd, ruleId: policy.sourceRuleId } });
+}
+
 export async function computeCanonicalBillingSnapshot(
   context: PricingContext,
   dependencies: {

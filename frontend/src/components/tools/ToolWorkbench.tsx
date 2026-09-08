@@ -24,13 +24,13 @@ export function ToolEmptyPreview({ locale, visual }: { locale: string; visual: T
   const copy = toolboxCopy(locale);
   return <div className={styles.emptyPreview}><div className={styles.scene}><ToolboxScene kind={visual} /><span>{copy.illustration}</span></div></div>;
 }
-export function ToolSourceInput({ locale, kind, onKindChange, url, name, disabled, uploading, onUpload, onLibrary, onUrlChange }: { locale: string; kind: 'image' | 'video'; onKindChange?: (kind: 'image' | 'video') => void; url: string; name?: string | null; disabled?: boolean; uploading?: boolean; onUpload: ChangeEventHandler<HTMLInputElement>; onLibrary: () => void; onUrlChange: (url: string) => void }) {
+export function ToolSourceInput({ locale, kind, onKindChange, url, name, disabled, uploading, onUpload, onLibrary, onUrlChange, allowUrl = true }: { locale: string; kind: 'image' | 'video'; onKindChange?: (kind: 'image' | 'video') => void; url: string; name?: string | null; disabled?: boolean; uploading?: boolean; onUpload: ChangeEventHandler<HTMLInputElement>; onLibrary: () => void; onUrlChange: (url: string) => void; allowUrl?: boolean }) {
   const copy = toolboxCopy(locale);
   return <section className={styles.source}><div className={styles.sourceHeading}><h2 className="sr-only">{copy.source}</h2>{onKindChange ? <div className={styles.segments}>{(['image', 'video'] as const).map(value => <button key={value} type="button" aria-pressed={kind === value} onClick={() => onKindChange(value)} disabled={disabled || uploading}>{copy[value]}</button>)}</div> : <span>{copy[kind]}</span>}</div>
     <div className={styles.sourceActions}><label className={styles.upload} aria-disabled={disabled || uploading}><input aria-label={copy.import} type="file" accept={`${kind}/*`} disabled={disabled || uploading} onChange={onUpload} /><span aria-hidden="true">↥</span><strong>{uploading ? '…' : copy.import}</strong></label>
     <button type="button" className={styles.library} onClick={onLibrary} disabled={disabled || uploading}><span aria-hidden="true">▦</span>{copy.library}</button></div>
     {name ? <p className={styles.sourceName} title={name}>{name}</p> : null}
-    <details className={styles.url}><summary>{copy.url}</summary><label><span className="sr-only">{copy.url}</span><input type="url" value={url} onChange={event => onUrlChange(event.target.value)} disabled={disabled || uploading} placeholder="https://…" /></label></details>
+    {allowUrl ? <details className={styles.url}><summary>{copy.url}</summary><label><span className="sr-only">{copy.url}</span><input type="url" value={url} onChange={event => onUrlChange(event.target.value)} disabled={disabled || uploading} placeholder="https://…" /></label></details> : null}
   </section>;
 }
 export function ToolProcessing({ locale }: { locale: string }) { const copy = toolboxCopy(locale); return <div role="status" className={styles.processing}><span aria-hidden="true">◌</span><div><strong>{copy.processing}</strong></div></div>; }

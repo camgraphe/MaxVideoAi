@@ -354,6 +354,7 @@ export function getAssetJobHref(asset: Pick<AssetBrowserAsset, 'jobId' | 'source
   if (!isMaxVideoGeneratedAsset(asset)) return null;
   const jobId = asset.jobId;
   if (!jobId) return null;
+  if (jobId.startsWith('tool_finish_')) return '/app/tools';
   const source = normalizeSourceForHref(asset.source);
   if (source === 'angle') return null;
   if (source === 'character') {

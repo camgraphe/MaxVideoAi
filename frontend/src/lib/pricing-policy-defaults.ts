@@ -3,7 +3,7 @@ import policySource from '@/config/pricing-policy.json';
 import { listFalEngines } from '@/config/falEngines';
 
 const entries = listFalEngines();
-const engineIds = new Set<string>(['audio-generation', 'angle', 'background-removal', 'storyboarder', 'upscale']);
+const engineIds = new Set<string>(['audio-generation', 'angle', 'background-removal', 'storyboarder', 'upscale', 'toolbox-finishing']);
 const modesByEngineId = new Map<string, ReadonlySet<string>>();
 const resolutionsByEngineId = new Map<string, ReadonlySet<string>>();
 

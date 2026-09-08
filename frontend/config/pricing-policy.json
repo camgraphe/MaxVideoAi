@@ -77,6 +77,16 @@
       "currency": "USD"
     },
     {
+      "id": "toolbox-finishing",
+      "engineId": "toolbox-finishing",
+      "marginPercent": 1.5,
+      "marginFlatCents": 0,
+      "surchargeAudioPercent": 0,
+      "surchargeUpscalePercent": 0,
+      "currency": "USD",
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "audio-current",
       "engineId": "audio-generation",
       "marginPercent": 2,

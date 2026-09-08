@@ -17,7 +17,8 @@ export type RecentGenerationSurface =
   | 'angle'
   | 'audio'
   | 'upscale'
-  | 'background-removal';
+  | 'background-removal'
+  | 'tool';
 
 export type RecentGenerationQueryParam = string | number | Date | string[];
 
@@ -152,8 +153,8 @@ export function buildRecentGenerationSurfaceFilterClause(
           OR render_ids IS NOT NULL
           OR COALESCE(engine_id, '') = ANY($${aliasesIndex}::text[])
         )
-        AND COALESCE(surface, '') NOT IN ('storyboard', 'character', 'angle', 'upscale', 'background-removal')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard', 'character-builder', 'angle', 'upscale', 'background-removal', 'video')
+        AND COALESCE(surface, '') NOT IN ('storyboard', 'character', 'angle', 'upscale', 'background-removal', 'tool')
+        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard', 'character-builder', 'angle', 'upscale', 'background-removal', 'video', 'tool')
         AND job_id NOT LIKE 'tool_angle_%'
         AND job_id NOT LIKE 'tool_upscale_%'
         AND job_id NOT LIKE 'tool_background_removal_%'
@@ -171,8 +172,8 @@ export function buildRecentGenerationSurfaceFilterClause(
         OR settings_snapshot->>'surface' = 'video'
       )
       AND NOT (
-        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal')
-        OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal')
+        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
+        OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
         OR job_id LIKE 'tool_angle_%'
         OR job_id LIKE 'tool_upscale_%'
         OR job_id LIKE 'tool_background_removal_%'
@@ -210,8 +211,8 @@ function addFeedFilter(
     return;
   }
   conditions.push(`NOT (
-    surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal')
-    OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal')
+    surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
+    OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
     OR job_id LIKE 'tool_angle_%'
     OR job_id LIKE 'tool_upscale_%'
     OR job_id LIKE 'tool_background_removal_%'

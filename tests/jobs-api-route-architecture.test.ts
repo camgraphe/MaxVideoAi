@@ -71,12 +71,12 @@ test('jobs API route helper modules expose expected contracts', () => {
 test('jobs API keeps storyboard renders out of generic video and image feeds', () => {
   assert.match(
     recentServiceSource,
-    /surface IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'\)/,
+    /surface IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'type=video should explicitly exclude storyboard jobs by surface'
   );
   assert.match(
     recentServiceSource,
-    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal'\)/,
+    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'type=video should explicitly exclude storyboard jobs by snapshot surface'
   );
   assert.match(recentServiceSource, /job_id LIKE 'storyboard_%'/, 'type=video should exclude legacy storyboard job ids');
@@ -87,7 +87,7 @@ test('jobs API keeps storyboard renders out of generic video and image feeds', (
   );
   assert.match(
     recentServiceSource,
-    /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'\)/,
+    /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'surface=video should explicitly reject storyboard jobs'
   );
 });

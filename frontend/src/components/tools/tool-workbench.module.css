@@ -18,6 +18,7 @@
 
 /* Compact source actions keep the media visible on small screens. */
 .sourceActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.finishingSettings { width: 100%; order: 3; }
 .sourceHeading { justify-content: flex-end; margin-bottom: 10px; }
 .sourceHeading>span { display: none; }
 .upload { flex-direction: row; min-height: 48px; padding: 10px; gap: 7px; border-style: solid; border-radius: 9px; }

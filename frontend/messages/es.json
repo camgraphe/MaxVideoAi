@@ -3559,7 +3559,8 @@
           "character": "Personaje",
           "angle": "Ángulo",
           "upscale": "Ampliación",
-          "background-removal": "Eliminar fondo"
+          "background-removal": "Eliminar fondo",
+          "tool": "Herramientas"
         },
         "status": "Estado de la actividad cargada",
         "statuses": {
@@ -3657,7 +3658,8 @@
           "angle": "Ángulo",
           "upscale": "Upscale",
           "audio": "Audio",
-          "background-removal": "Eliminación de fondo"
+          "background-removal": "Eliminación de fondo",
+          "tool": "Herramientas"
         }
       },
       "insights": {

@@ -3700,7 +3700,8 @@
           "character": "Character",
           "angle": "Angle",
           "upscale": "Upscale",
-          "background-removal": "Background removal"
+          "background-removal": "Background removal",
+          "tool": "Tools"
         },
         "status": "Status of loaded activity",
         "statuses": {
@@ -3798,7 +3799,8 @@
           "angle": "Angle",
           "upscale": "Upscale",
           "audio": "Audio",
-          "background-removal": "Background removal"
+          "background-removal": "Background removal",
+          "tool": "Tools"
         }
       },
       "insights": {

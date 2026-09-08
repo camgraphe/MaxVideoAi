@@ -100,7 +100,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     options?.surface === 'character' ||
     options?.surface === 'angle' ||
     options?.surface === 'upscale' ||
-    options?.surface === 'background-removal'
+    options?.surface === 'background-removal' ||
+    options?.surface === 'tool'
       ? options.surface
       : 'all';
   const feedScope = JSON.stringify([cacheKey, pageSize, feedType, feedSurface]);

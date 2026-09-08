@@ -1,10 +1,13 @@
 'use client';
 import { useId } from 'react';
 import type { ToolboxVisualId } from './toolbox-copy';
+import { isFinishingToolId } from '@/lib/toolbox/finishing';
+import { FinishingScene } from './FinishingScene';
 
 /** Authored explanatory art. No generated output or benchmark is depicted. */
 export function ToolboxScene({ kind }: { kind: ToolboxVisualId }) {
   const uid = useId().replace(/:/g, '');
+  if (isFinishingToolId(kind)) return <FinishingScene kind={kind} />;
   const ref = (name: string) => `url(#${uid}-${name})`;
   return <svg viewBox="0 0 600 340" fill="none" aria-hidden="true" focusable="false" style={{ width: '100%', height: '100%', display: 'block' }}>
     <defs>

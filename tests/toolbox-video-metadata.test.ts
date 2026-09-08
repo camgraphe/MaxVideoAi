@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { parseToolVideoMetadata } from '../frontend/src/server/tools/toolbox-video-metadata';
 test('quote metadata accepts measured finite dimensions/duration and fractional frame rate', () => {
-  assert.deepEqual(parseToolVideoMetadata({ streams: [{ width: 1920, height: 1080, r_frame_rate: '30000/1001' }], format: { duration: '2.25' } }), { width: 1920, height: 1080, fps: 30000 / 1001, durationSec: 2.25 });
+  assert.deepEqual(parseToolVideoMetadata({ streams: [{ width: 1920, height: 1080, r_frame_rate: '30000/1001' }], format: { duration: '2.25' } }), { width: 1920, height: 1080, fps: 30000 / 1001, durationSec: 2.25, hasAudio: false });
   for (const input of [null, {}, { streams: [{ width: 0, height: 20 }], format: { duration: '2' } }, { streams: [{ width: 20, height: 20 }], format: { duration: 'NaN' } }]) assert.throws(() => parseToolVideoMetadata(input));
 });
 test('quote probes only a bounded local download and removes temporary media', () => {
@@ -27,4 +27,12 @@ test('tool download policy adds WebM without broadening MCP imports or removing 
   assert.equal(result.mimeType, 'video/webm'); assert.equal(result.bytes.length, 4);
   await assert.rejects(createReferenceFileDownloader(deps, { accepted: ['video/webm'], maxBytes: 3 })(file));
   await assert.rejects(createReferenceFileDownloader({ ...deps, lookupHost: async () => [{ address: '127.0.0.1', family: 4 as const }] }, { accepted: ['video/webm'], maxBytes: 4 })(file));
+});
+
+
+test('video facts never invent 30 fps and measure audio presence', () => {
+  assert.throws(() => parseToolVideoMetadata({streams:[{width:1920,height:1080,r_frame_rate:'0/0'}],format:{duration:'10'}}));
+  const parsed = parseToolVideoMetadata({streams:[{codec_type:'video',width:1920,height:1080,avg_frame_rate:'24000/1001',r_frame_rate:'24/1'},{codec_type:'audio'}],format:{duration:'10'}});
+  assert.equal(parsed.fps,24000/1001);
+  assert.equal(parsed.hasAudio,true);
 });

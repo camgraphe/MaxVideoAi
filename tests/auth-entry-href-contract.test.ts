@@ -19,7 +19,7 @@ const explicitAuthEntrySources = [
   'frontend/src/components/tools/angle/_components/angle-auth-gate-modal.tsx',
   'frontend/src/components/tools/character-builder/_components/character-builder-page-shell.tsx',
   'frontend/src/components/tools/StoryboardWorkspace.tsx',
-  'frontend/src/components/tools/BackgroundRemovalWorkspace.tsx',
+  'frontend/src/components/tools/ToolWorkbench.tsx',
   'frontend/src/hooks/useRequireAuth.ts',
   'frontend/app/(core)/admin/layout.tsx',
 ].map((path) => ({ path, source: readFileSync(path, 'utf8') }));
@@ -73,5 +73,14 @@ test('auth gates use the shared builder instead of rebuilding ambiguous login UR
   for (const { path, source } of explicitAuthEntrySources) {
     assert.match(source, /buildLoginHref/, `${path} should use the shared auth-entry builder`);
     assert.doesNotMatch(source, /\/login\?/, `${path} should not rebuild login query strings`);
+  }
+});
+
+
+test('quick tool workspaces delegate sign-in to the shared localized auth notice', () => {
+  for (const name of ['UpscaleWorkspace', 'BackgroundRemovalWorkspace', 'FinishingWorkspace']) {
+    const source = readFileSync(`frontend/src/components/tools/${name}.tsx`, 'utf8');
+    assert.match(source, /<ToolAuthNotice/);
+    assert.doesNotMatch(source, /\/login\?/);
   }
 });

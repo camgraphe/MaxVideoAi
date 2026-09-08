@@ -138,6 +138,8 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   if (!job) {
     return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
+  // Finishing tools own their original output and provider reconciliation.
+  if (job.surface === 'tool') return json(mapGenerationStatusRecordToWeb(job));
   let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   let normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);
   let normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
@@ -200,6 +202,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   // Optionally poll FAL once if pending and we have provider job id
   if (
     surface !== 'audio' &&
+    surface !== 'tool' &&
     shouldUseFalApis() &&
     (job.provider ?? 'fal') === 'fal' &&
     job.provider_job_id &&

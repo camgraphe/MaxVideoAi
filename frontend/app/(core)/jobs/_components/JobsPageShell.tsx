@@ -95,7 +95,7 @@ export function JobsPageShell({
                     onOpen={onGroupOpen} onAction={onGroupAction} allowRemove={allowRemove(group)}
                     isImageGroup={isImageGroup} savingToLibrary={savingImageGroupIds.has(group.id)}
                     imageLibraryLabel={copy.actions.addToLibrary} imageLibrarySavingLabel={copy.actions.saving}
-                    recreateHref={heroJobId && surface !== 'background-removal' ? resolveWorkspaceJobHref(heroJobId, surface, isImageGroup) : undefined}
+                    recreateHref={heroJobId && surface !== 'background-removal' && surface !== 'tool' ? resolveWorkspaceJobHref(heroJobId, surface, isImageGroup) : undefined}
                     recreateLabel={copy.actions.recreate} openLabel={copy.actions.openDetails}
                     actionMenuLabel={copy.actions.actions} menuVariant="activity"
                   />

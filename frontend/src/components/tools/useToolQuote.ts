@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import type { AcceptedToolQuote } from '@/lib/toolbox/quote';
 
-type QuoteState = { key: string | null; quote?: AcceptedToolQuote; error?: string };
+type QuoteState = { key: string | null; quote?: AcceptedToolQuote & { released?: boolean; generative?: boolean }; error?: string };
 /** Invalidate during render, including account/source round trips; never submit an old quote. */
 export function useToolQuote(request: Record<string, unknown> | null, userId: string | null | undefined) {
   const [attempt, setAttempt] = useState(0);

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useId, useState } from 'react';
 import { TOOLBOX, type ToolMediaKind } from '@/lib/toolbox/catalogue';
+import { finishingCopy } from './finishing-copy';
 import { ToolboxScene } from './ToolboxScene';
 import { toolboxCopy, type ToolboxVisualId } from './toolbox-copy';
 import styles from './tools-catalogue.module.css';
@@ -21,8 +22,8 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
     </div></div>
     {quick.length ? <ul className={styles.quickGrid}>{quick.map(tool => {
       const text = copy.tools[tool.visual];
-      const content = <><div className={styles.quickArt}><ToolboxScene kind={tool.visual} /></div><div className={styles.quickCaption}><h3>{text.title}</h3></div></>;
-      return <li key={tool.visual}>{onSelect ? <button type="button" className={styles.quickTool} onClick={() => onSelect(tool.id, tool.mediaKind)}>{content}</button> : <Link prefetch={false} className={styles.quickTool} href={`${tool.href}${tool.id === 'upscale' ? `?kind=${tool.mediaKind}` : ''}`} aria-label={`${text.title} — ${copy.open}`}>{content}</Link>}</li>;
+      const content = <><div className={styles.quickArt}><ToolboxScene kind={tool.visual} />{tool.qualificationRequired ? <span className="absolute right-2 top-2 rounded-full bg-surface px-2 py-1 text-[10px] font-medium text-text-primary">{finishingCopy(locale).validation}</span> : null}</div><div className={styles.quickCaption}><h3>{text.title}</h3></div></>;
+      return <li key={tool.visual}>{onSelect ? <button type="button" className={styles.quickTool} onClick={() => onSelect(tool.id, tool.mediaKind)}>{content}</button> : <Link prefetch={false} className={styles.quickTool} href={`${tool.href}${tool.id === 'upscale' ? `?kind=${tool.mediaKind}` : ''}`} aria-label={`${text.title} — ${tool.qualificationRequired ? finishingCopy(locale).validation : copy.open}`}>{content}</Link>}</li>;
     })}</ul> : <div className={styles.empty}><span aria-hidden="true" className={styles.sound}>▂ ▅ ▃ ▇ ▄ ▆ ▂</span><h3>{copy.noAudio}</h3><Link href="/app/audio" prefetch={false}>{copy.audioOpen} <span aria-hidden="true">↗</span></Link></div>}
     {workshops.length > 0 ? <section className={styles.workshopSection} aria-labelledby={`${id}-workshops`}>
       <div className={styles.sectionBar}><h2 id={`${id}-workshops`}>{copy.workshops}</h2></div>

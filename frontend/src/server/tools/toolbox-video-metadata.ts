@@ -13,14 +13,14 @@ const activeAccounts = new Set<string>();
 const probes = new Map<string, { expires: number; pending: Promise<VideoMetadata> }>();
 
 export function parseToolVideoMetadata(value: unknown): VideoMetadata {
-  const data = value as { streams?: Array<{ width?: number; height?: number; r_frame_rate?: string }>; format?: { duration?: string } };
-  const stream = data?.streams?.[0];
+  const data = value as { streams?: Array<{ codec_type?: string; width?: number; height?: number; r_frame_rate?: string; avg_frame_rate?: string }>; format?: { duration?: string } };
+  const stream = data?.streams?.find(entry => entry.codec_type === 'video') ?? data?.streams?.[0];
   const width = Number(stream?.width), height = Number(stream?.height), durationSec = Number(data?.format?.duration);
-  const [numerator, denominator] = (stream?.r_frame_rate ?? '').split('/').map(Number);
+  const [numerator, denominator] = (stream?.avg_frame_rate && stream.avg_frame_rate !== '0/0' ? stream.avg_frame_rate : stream?.r_frame_rate ?? '').split('/').map(Number);
   const rate = denominator ? numerator / denominator : numerator;
-  const fps = Number.isFinite(rate) && rate > 0 ? rate : 30;
-  if (![width, height, durationSec].every(value => Number.isFinite(value) && value > 0)) throw new Error('Video metadata unavailable.');
-  return { width, height, durationSec, fps };
+  const fps = rate;
+  if (![width, height, durationSec, fps].every(value => Number.isFinite(value) && value > 0)) throw new Error('Video metadata unavailable.');
+  return { width, height, durationSec, fps, hasAudio: Boolean(data.streams?.some(entry => entry.codec_type === 'audio')) };
 }
 async function probe(url: string): Promise<VideoMetadata> {
   // Shared downloader pins public DNS and revalidates redirects; never feed an untrusted URL to ffprobe.
@@ -30,7 +30,7 @@ async function probe(url: string): Promise<VideoMetadata> {
   try {
     const path = join(directory, 'source');
     await writeFile(path, file.bytes);
-    const { stdout } = await execFileAsync(ffprobe.path!, ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,r_frame_rate:format=duration', '-of', 'json', path], { timeout: 15_000, maxBuffer: 1024 * 1024 });
+    const { stdout } = await execFileAsync(ffprobe.path!, ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-show_entries', 'stream=codec_type,width,height,r_frame_rate,avg_frame_rate:format=duration', '-of', 'json', path], { timeout: 15_000, maxBuffer: 1024 * 1024 });
     return parseToolVideoMetadata(JSON.parse(stdout));
   } finally { await rm(directory, { recursive: true, force: true }); }
 }

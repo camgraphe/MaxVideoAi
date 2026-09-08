@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { UpscaleSession } from '@/components/tools/UpscaleWorkspace';
 import { BackgroundRemovalSession } from '@/components/tools/BackgroundRemovalWorkspace';
+import { FinishingSession } from '@/components/tools/FinishingWorkspace';
+import { FINISHING_TOOL_IDS, isFinishingToolId } from '@/lib/toolbox/finishing';
 import { ToolboxCatalogue } from '@/components/tools/ToolboxCatalogue';
 import { I18nProvider, useI18n } from '@/lib/i18n/I18nProvider';
 import { useThemePreference } from '@/hooks/useThemePreference';
@@ -29,7 +31,13 @@ export default function Fixture() {
         await new Promise(resolve => setTimeout(resolve, 450));
         if (nextFailure.current) { nextFailure.current = false; return json({ ok: false }, 422); }
         const body = JSON.parse(String(init?.body));
-        return json({ ok: true, quote: { totalCents: body.upscaleFactor === 4 ? 24 : 12, currency: 'USD' } });
+        return json({ ok: true, quote: { totalCents: body.settings?.quality === 'pro' ? 50 : body.upscaleFactor === 4 ? 24 : 12, currency: 'USD', released: true, generative: body.toolId === 'restore-video' && body.settings?.quality === 'pro' } });
+      }
+      if (url.pathname === '/api/tools/source') return json({ ok: true, source: { type: 'asset', assetId: 'fixture-owned-video', kind: 'video' }, url: asset('video').url });
+      if (url.pathname === '/api/tools/run') {
+        const body = JSON.parse(String(init?.body));
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        return json({ ok: true, jobId: 'fixture-tool-job', status: 'completed', result: { toolId: body.block.toolId, version: 1, jobId: 'fixture-tool-job', sourceAssets: body.block.inputs, outputs: [{ asset: { type: 'job-output', jobId: 'fixture-tool-job', outputId: 'fixture-tool-job:video:0', kind: 'video' }, originalUrl: asset('video').url, kind: 'video', thumbnailUrl: asset('video').thumbUrl }] } });
       }
       if (url.pathname.startsWith('/api/tools/')) {
         const body = JSON.parse(String(init?.body));
@@ -46,5 +54,5 @@ export default function Fixture() {
     return () => { window.fetch = originalFetch; };
   }, []);
   const auth = { loading: false, user: { id: account } } as ReturnType<typeof useRequireAuth>;
-  return <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}><div className="border-b border-border bg-surface p-3 text-xs"><strong>LOCAL SIMULATION · no processing, payment or save · outputs are sample assets</strong><div className="flex flex-wrap gap-3">{['catalogue','image','video','background'].map(value => <button key={value} className="min-h-11 underline" onClick={() => setMode(value)}>{value}</button>)}<button className="min-h-11 underline" onClick={() => setAccount(value => value === 'fixture-a' ? 'fixture-b' : 'fixture-a')}>Switch account</button><button className="min-h-11 underline" onClick={() => { nextFailure.current = true; }}>Fail next quote</button><button className="min-h-11 underline" onClick={toggleTheme}>Toggle theme</button><select value={locale} onChange={event => setLocale(event.target.value as typeof locale)}><option>fr</option><option>en</option><option>es</option></select></div><output>{calls.join(' · ')}</output></div>{ready ? mode === 'catalogue' ? <ToolboxCatalogue locale={locale} /> : mode === 'background' ? <BackgroundRemovalSession key={`${account}:${mode}`} auth={auth} /> : <UpscaleSession key={`${account}:${mode}`} auth={auth} initialKind={mode === 'video' ? 'video' : 'image'} /> : null}</I18nProvider>;
+  return <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}><div className="border-b border-border bg-surface p-3 text-xs"><strong>LOCAL SIMULATION · no processing, payment or save · outputs are sample assets</strong><div className="flex flex-wrap gap-3">{['catalogue','image','video','background',...FINISHING_TOOL_IDS].map(value => <button key={value} className="min-h-11 underline" onClick={() => setMode(value)}>{value}</button>)}<button className="min-h-11 underline" onClick={() => setAccount(value => value === 'fixture-a' ? 'fixture-b' : 'fixture-a')}>Switch account</button><button className="min-h-11 underline" onClick={() => { nextFailure.current = true; }}>Fail next quote</button><button className="min-h-11 underline" onClick={toggleTheme}>Toggle theme</button><select value={locale} onChange={event => setLocale(event.target.value as typeof locale)}><option>fr</option><option>en</option><option>es</option></select></div><output>{calls.join(' · ')}</output></div>{ready ? mode === 'catalogue' ? <ToolboxCatalogue locale={locale} /> : isFinishingToolId(mode) ? <FinishingSession key={`${account}:${mode}`} auth={auth} toolId={mode} releasedQualities={['standard','pro']} /> : mode === 'background' ? <BackgroundRemovalSession key={`${account}:${mode}`} auth={auth} /> : <UpscaleSession key={`${account}:${mode}`} auth={auth} initialKind={mode === 'video' ? 'video' : 'image'} /> : null}</I18nProvider>;
 }

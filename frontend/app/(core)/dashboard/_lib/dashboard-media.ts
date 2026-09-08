@@ -8,6 +8,7 @@ import type { Job } from '@/types/jobs';
 const DASHBOARD_PREVIEW_RATIO = 16 / 9;
 
 export function resolveWorkspaceJobHref(jobId: string, surface?: JobSurface | null): string {
+  if (surface === 'tool') return '/app/tools';
   return surface === 'audio'
     ? `/app/audio?job=${encodeURIComponent(jobId)}`
     : surface === 'background-removal'

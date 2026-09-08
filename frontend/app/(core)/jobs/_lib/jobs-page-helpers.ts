@@ -36,6 +36,7 @@ export function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forc
   if (forceImageGroup || surface === 'image') {
     return `/app/image?job=${encodeURIComponent(jobId)}`;
   }
+  if (surface === 'tool') return '/app/tools';
   if (surface === 'upscale') {
     return `/app/tools/upscale?job=${encodeURIComponent(jobId)}`;
   }

@@ -84,8 +84,8 @@ async function resolveUserInitialPreview(userId: string): Promise<InitialPreview
         AND hidden IS NOT TRUE
         AND NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')
         AND NOT (
-          surface IN ('image', 'character', 'angle', 'audio', 'upscale')
-          OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
+          surface IN ('image', 'character', 'angle', 'audio', 'upscale', 'tool')
+          OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale', 'tool')
           OR job_id LIKE 'tool_angle_%'
           OR job_id LIKE 'tool_upscale_%'
           OR render_ids IS NOT NULL

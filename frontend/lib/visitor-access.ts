@@ -17,6 +17,10 @@ export function canVisitorBrowseWorkspacePath(pathname: string): boolean {
     normalized === '/app/tools/character-builder' ||
     normalized === '/app/tools/upscale' ||
     normalized === '/app/tools/background-removal' ||
+    normalized === '/app/tools/restore-video' ||
+    normalized === '/app/tools/denoise' ||
+    normalized === '/app/tools/fix-blur' ||
+    normalized === '/app/tools/smooth-motion' ||
     normalized === '/dashboard' ||
     normalized === '/jobs' ||
     normalized === '/app/image' ||
