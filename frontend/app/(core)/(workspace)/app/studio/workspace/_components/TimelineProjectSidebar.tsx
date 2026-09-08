@@ -32,6 +32,7 @@ export type { WorkspaceProjectSequenceSummary };
 const styles = { ...baseStyles, ...mediaStyles };
 
 type TimelineProjectSidebarProps = {
+  canUndoProjectMedia: boolean;
   studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   copy: StudioCopy['viewer']['projectMedia'];
   nodes: WorkspaceGraphNode[];
@@ -487,6 +488,7 @@ function ProjectMediaFooterAction({
 }
 
 export function TimelineProjectSidebar({
+  canUndoProjectMedia,
   studioCanvasNodeCopy,
   copy,
   nodes,
@@ -626,7 +628,16 @@ export function TimelineProjectSidebar({
         </button>
       </div>
       <div className={styles.projectMediaControls}>
-        {onUndoProjectMedia ? <button type="button" className={styles.projectMediaActionButton} onClick={onUndoProjectMedia}>{copy.undoMediaChange}</button> : null}
+        {onUndoProjectMedia ? (
+          <button
+            type="button"
+            className={styles.projectMediaActionButton}
+            disabled={!canUndoProjectMedia}
+            onClick={onUndoProjectMedia}
+          >
+            {copy.undoMediaChange}
+          </button>
+        ) : null}
         <label className={styles.projectMediaSearch}>
           <Search size={14} />
           <span>{copy.searchLabel}</span>

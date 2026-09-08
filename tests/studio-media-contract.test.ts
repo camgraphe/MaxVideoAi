@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 import { workspaceLibraryAssetFromRecentOutput, workspaceLibraryAssetFromUploadedAsset, workspaceAssetRecordFromLibraryAsset, normalizeWorkspaceUserLibraryPage, buildWorkspaceUserLibraryUrl } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets';
 import { buildWorkspaceTimelineItemsForAsset } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders';
-import { mergeProjectMedia, projectMediaUndoEntry, undoProjectMedia } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-commands';
+import { hasProjectMediaUndo, mergeProjectMedia, projectMediaUndoEntry, undoProjectMedia } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-commands';
 import { workspaceProjectAssetMetadataSource } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-metadata';
 import { normalizePersistedWorkspaceState } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-api-persistence';
 
@@ -46,6 +48,22 @@ test('reimport and undo preserve renamed media, folders, facts and unrelated ass
   const entry = projectMediaUndoEntry([old], []);
   const unrelated = { ...old, id: 'other' };
   assert.deepEqual(undoProjectMedia([unrelated], entry), [old, unrelated]);
+});
+
+test('Undo media is enabled only for real history in the current project scope', () => {
+  const previous = { id: 'local', kind: 'audio' as const, filename: 'before', subtitle: 'Audio', url };
+  const entry = projectMediaUndoEntry([previous], [{ ...previous, filename: 'after' }]);
+  assert.equal(hasProjectMediaUndo('project-a', 'project-a', [entry]), true);
+  assert.equal(hasProjectMediaUndo('project-a', 'project-b', [entry]), false);
+  assert.equal(hasProjectMediaUndo('project-a', 'project-a', []), false);
+
+  const workspaceRoot = join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace');
+  const hookSource = readFileSync(join(workspaceRoot, '_hooks/useWorkspaceProjectMediaActions.ts'), 'utf8');
+  const panelSource = readFileSync(join(workspaceRoot, '_components/WorkspaceProjectMediaPanel.tsx'), 'utf8');
+  const sidebarSource = readFileSync(join(workspaceRoot, '_components/TimelineProjectSidebar.tsx'), 'utf8');
+  assert.match(hookSource, /canUndoProjectMedia:\s*hasProjectMediaUndo\(mediaScope, historyScope\.current, mediaHistory\.current\)/u);
+  assert.match(panelSource, /canUndoProjectMedia=\{projectMedia\.canUndoProjectMedia\}/u);
+  assert.match(sidebarSource, /disabled=\{!canUndoProjectMedia\}[\s\S]*onClick=\{onUndoProjectMedia\}/u);
 });
 
 test('actual workspace normalizer roundtrips bin/canvas/timeline references and preserves legacy unknown identity', () => {

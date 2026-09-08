@@ -36,6 +36,7 @@ export function WorkspaceProjectMediaPanel({
 }: WorkspaceProjectMediaPanelProps) {
   return (
     <TimelineProjectSidebar
+      canUndoProjectMedia={projectMedia.canUndoProjectMedia}
       studioCanvasNodeCopy={studioCopy.canvas.nodes}
       copy={studioCopy.viewer.projectMedia}
       nodes={canvas.renderNodes}

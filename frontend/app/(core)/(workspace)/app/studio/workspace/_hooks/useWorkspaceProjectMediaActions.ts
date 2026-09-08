@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { mergeProjectMedia, projectMediaUndoEntry, undoProjectMedia, type ProjectMediaUndo } from '../_lib/workspace-project-media-commands';
+import { hasProjectMediaUndo, mergeProjectMedia, projectMediaUndoEntry, undoProjectMedia, type ProjectMediaUndo } from '../_lib/workspace-project-media-commands';
 import { createAdHocWorkspaceNode } from '../_lib/workspace-canvas-imports';
 import type { CanvasGraphHistorySnapshot } from '../_state/workspace-state';
 import { useStudioMediaIntent } from './useStudioMediaIntent';
@@ -112,6 +112,7 @@ export function useWorkspaceProjectMediaActions({
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
 }: UseWorkspaceProjectMediaActionsParams): {
+  canUndoProjectMedia: boolean;
   mediaPickerEpoch: number;
   handleAddProjectAssetToCanvas: (assetId: string) => void;
   handleUndoProjectMedia: () => void;
@@ -655,6 +656,7 @@ export function useWorkspaceProjectMediaActions({
   );
 
   return {
+    canUndoProjectMedia: hasProjectMediaUndo(mediaScope, historyScope.current, mediaHistory.current),
     mediaPickerEpoch,
     handleAddProjectAssetToCanvas,
     handleUndoProjectMedia,

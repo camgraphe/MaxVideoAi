@@ -16,6 +16,13 @@ export function mergeProjectMedia(current: WorkspaceAssetRecord[], incoming: Wor
 }
 
 export type ProjectMediaUndo = { before: WorkspaceAssetRecord[]; affectedIds: string[] };
+export function hasProjectMediaUndo(
+  mediaScope: string | undefined,
+  historyScope: string | undefined,
+  history: readonly ProjectMediaUndo[],
+): boolean {
+  return mediaScope === historyScope && history.length > 0;
+}
 export function projectMediaUndoEntry(before: WorkspaceAssetRecord[], after: WorkspaceAssetRecord[]): ProjectMediaUndo {
   const previous = new Map(before.map((asset) => [asset.id, asset]));
   const next = new Map(after.map((asset) => [asset.id, asset]));
