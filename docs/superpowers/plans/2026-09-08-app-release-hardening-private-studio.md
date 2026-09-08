@@ -47,11 +47,11 @@
 
 ## Lot 6 — Wallet, Billing, Settings, and connections
 
-- [ ] Remove membership-pricing presentation from application surfaces while preserving ledger, wallet, and Stripe correctness.
-- [ ] Redesign wallet and billing hierarchy for balance, top-up, usage, receipts, and payment actions on desktop/mobile.
-- [ ] Keep System as the default appearance when no device preference exists.
-- [ ] Present ChatGPT and Claude connections with credible existing brand assets and clear connected/disconnected actions.
-- [ ] Fix overlaps, inert controls, loading, empty, and error states.
+- [x] Remove membership-pricing presentation from application surfaces while preserving ledger, wallet, and Stripe correctness.
+- [x] Redesign wallet and billing hierarchy for balance, top-up, usage, receipts, and payment actions on desktop/mobile.
+- [x] Keep System as the default appearance when no device preference exists.
+- [x] Present ChatGPT and Claude connections with credible existing brand assets and clear connected/disconnected actions.
+- [x] Fix overlaps, inert controls, loading, empty, and error states.
 
 ## Final review
 
