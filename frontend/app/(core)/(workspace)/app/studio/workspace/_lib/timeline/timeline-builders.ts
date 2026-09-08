@@ -115,7 +115,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
         : false,
     generatedCopy: params.generatedCopy,
     mediaUrl,
-    thumbnailUrl: params.asset.thumbUrl ?? mediaUrl,
+    thumbnailUrl: params.asset.thumbUrl ?? (params.asset.kind === 'image' ? mediaUrl : null),
   };
   const sourceDimensions = parseWorkspaceMediaDimensions(params.asset.dimensions);
   if (sourceDimensions) {
@@ -209,7 +209,7 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
         : false,
     generatedCopy: params.generatedCopy,
     mediaUrl: params.output.url ?? null,
-    thumbnailUrl: params.output.thumbUrl ?? params.output.url ?? null,
+    thumbnailUrl: params.output.thumbUrl ?? (params.output.kind === 'image' ? params.output.url : null) ?? null,
   };
   const sourceDimensions = params.output.sourceMetadata?.measurementStatus === 'measured' &&
     params.output.sourceMetadata.width &&
