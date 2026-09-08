@@ -32,6 +32,7 @@ Use these guides as context before changing the related areas:
 
 - `docs/engineering/project-structure.md`: where new code should live.
 - `docs/engineering/page-architecture.md`: how route files, metadata, data builders, and page sections should be split.
+- `docs/engineering/activity-feed.md`: Activity pagination, account isolation, read-path latency, and output enrichment contracts.
 - `docs/engineering/media-delivery.md`: media ownership, original/preview contracts, image optimizer settings, safe repairs, and Core Web Vitals validation.
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
