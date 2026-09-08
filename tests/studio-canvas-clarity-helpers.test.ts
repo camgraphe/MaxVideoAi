@@ -86,7 +86,7 @@ test('canvas fit reserves the shared useful surface and adapts the map inset wit
   });
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 844, viewportHeight: 390, mapExpanded: true }), {
     includeHiddenNodes: false,
-    padding: { top: '70px', right: '204px', bottom: '76px', left: '20px' },
+    padding: { top: '8px', right: '204px', bottom: '8px', left: '320px' },
   });
 });
 
@@ -94,6 +94,8 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   const canvas = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'), 'utf8');
   const map = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasMap.tsx'), 'utf8');
   const dock = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-input-dock.tsx'), 'utf8');
+  const actionStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-actions.module.css'), 'utf8');
+  const toolbarStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-toolbar.module.css'), 'utf8');
   const shellStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/shell.module.css'), 'utf8');
 
   assert.match(canvas, /fitViewOptions=\{workspaceCanvasFitViewOptions\(/);
@@ -104,6 +106,8 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(dock, /data-shot-hidden-connector-anchor/);
   assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \{ padding-top:0; \}/);
   assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \.mobilePanelRail \{ display:none; \}/);
+  assert.match(actionStyles, /@media\(max-height:500px\) and \(min-width:701px\)[\s\S]*\.selectionActions \{[\s\S]*left:8px;[\s\S]*width:300px;/);
+  assert.match(toolbarStyles, /@media\(max-height:500px\) and \(min-width:701px\)[\s\S]*\.canvasToolbar \{[\s\S]*left:8px;[\s\S]*width:300px;/);
 });
 
 test('Connections explains separate remaining capacity and restores focus to its persistent card command', () => {

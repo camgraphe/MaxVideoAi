@@ -11,10 +11,10 @@ export function workspaceCanvasFitViewOptions(params: {
     return {
       includeHiddenNodes: false,
       padding: {
-        top: '70px',
+        top: '8px',
         right: `${params.mapExpanded ? 204 : 20}px`,
-        bottom: '76px',
-        left: '20px',
+        bottom: '8px',
+        left: '320px',
       },
     };
   }
