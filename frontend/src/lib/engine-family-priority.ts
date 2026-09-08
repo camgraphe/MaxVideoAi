@@ -2,14 +2,14 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import type { ModelFamilyId } from '@/config/model-families';
 
 export const ENGINE_SELECT_FAMILY_PRIORITY: readonly ModelFamilyId[] = [
-  'hailuo',
-  'grok',
   'seedance',
-  'veo',
   'kling',
+  'hailuo',
+  'veo',
   'wan',
   'happy-horse',
   'ltx',
+  'grok',
   'sora',
   'luma',
   'pika',

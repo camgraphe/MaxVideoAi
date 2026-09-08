@@ -535,14 +535,14 @@ test('Examples family current model groups do not classify new delivery models a
 
 test('Engine select keeps its app-specific family priority stable', () => {
   const expectedPriority = [
-    'hailuo',
-    'grok',
     'seedance',
-    'veo',
     'kling',
+    'hailuo',
+    'veo',
     'wan',
     'happy-horse',
     'ltx',
+    'grok',
     'sora',
     'luma',
     'pika',

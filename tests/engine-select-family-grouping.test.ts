@@ -100,10 +100,10 @@ test('buildEngineFamilyGroups keeps strategic families first and models ordered 
   });
 
   assert.deepEqual(groups.map((group) => group.id), [
-    'hailuo',
     'seedance',
-    'veo',
     'kling',
+    'hailuo',
+    'veo',
     'wan',
     'happy-horse',
     'ltx',
@@ -115,8 +115,8 @@ test('buildEngineFamilyGroups keeps strategic families first and models ordered 
     'veo-3-1',
     'veo-3-1-fast',
   ]);
-  assert.equal(groups[0].label, 'MiniMax');
-  assert.equal(groups[0].brandId, 'minimax');
+  assert.equal(groups[0].label, 'Seedance');
+  assert.equal(groups[0].brandId, 'bytedance');
 });
 
 test('buildEngineFamilyGroups orders models by score when score data is available', () => {
@@ -210,7 +210,7 @@ test('family priority reorders the displayed groups without changing the source 
   });
 
   assert.equal(engines[0]?.id, 'seedance-2-5');
-  assert.deepEqual(groups[0]?.engines.map(({ id }) => id).slice(0, 3), [
+  assert.deepEqual(groups.find((group) => group.id === 'hailuo')?.engines.map(({ id }) => id).slice(0, 3), [
     'minimax-h3',
     'minimax-hailuo-02-text',
     'minimax-h3-max',
