@@ -55,6 +55,8 @@ type TimelineProjectSidebarProps = {
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
+  onAddProjectAssetToCanvas?: (assetId: string) => void;
+  onUndoProjectMedia?: () => void;
   onMoveGeneratedClipToFolder: (nodeId: string, folderId: string | null) => void;
   onMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
   onNewFolder: (requestedName?: string) => void;
@@ -507,6 +509,8 @@ export function TimelineProjectSidebar({
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
+  onAddProjectAssetToCanvas,
+  onUndoProjectMedia,
   onMoveGeneratedClipToFolder,
   onMoveProjectAssetToFolder,
   onNewFolder,
@@ -622,6 +626,7 @@ export function TimelineProjectSidebar({
         </button>
       </div>
       <div className={styles.projectMediaControls}>
+        {onUndoProjectMedia ? <button type="button" className={styles.projectMediaActionButton} onClick={onUndoProjectMedia}>{copy.undoMediaChange}</button> : null}
         <label className={styles.projectMediaSearch}>
           <Search size={14} />
           <span>{copy.searchLabel}</span>
@@ -747,6 +752,10 @@ export function TimelineProjectSidebar({
                 thumbnailUrl={thumbnailUrl}
                 title={asset.filename}
               />
+              {mediaKind ? <div>
+                <button type="button" className={styles.projectMediaActionButton} onClick={() => onInsertProjectAsset(asset.id)}>{copy.insertInTimeline}</button>
+                {onAddProjectAssetToCanvas ? <button type="button" className={styles.projectMediaActionButton} onClick={() => onAddProjectAssetToCanvas(asset.id)}>{copy.addToCanvas}</button> : null}
+              </div> : null}
             </div>
           );
         })}

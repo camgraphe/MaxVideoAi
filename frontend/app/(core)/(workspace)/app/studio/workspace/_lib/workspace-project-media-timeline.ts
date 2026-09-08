@@ -41,7 +41,7 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
 function projectAssetCanInsertIntoTimeline(asset: WorkspaceAssetRecord): boolean {
   if (asset.kind === 'video') return isPlayableVideoUrl(asset.url);
   if (asset.kind === 'audio') return isPlayableAudioUrl(asset.url);
-  if (asset.kind === 'image' || asset.kind === 'logo') return isPlayableImageUrl(asset.url ?? asset.thumbUrl ?? null);
+  if (asset.kind === 'image' || asset.kind === 'logo') return isPlayableImageUrl(asset.url ?? null);
   return false;
 }
 

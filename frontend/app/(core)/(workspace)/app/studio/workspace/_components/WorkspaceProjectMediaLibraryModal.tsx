@@ -6,6 +6,8 @@ import { Upload, X } from 'lucide-react';
 import styles from '../_styles/asset-library.module.css';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
 import { patchWorkspaceEditorAssetLibraryCache } from '../_hooks/useWorkspaceEditorAssetLibrary';
+import { resolveWorkspaceMediaSelection } from '../_lib/workspace-media-selection';
+import { useStudioMediaIntent } from '../_hooks/useStudioMediaIntent';
 import type {
   WorkspaceLibraryAsset,
   WorkspaceLibraryKind,
@@ -25,6 +27,8 @@ import type { StudioCopy } from '../../_lib/studio-copy';
 type WorkspaceLibraryKindFilter = 'all' | WorkspaceLibraryKind;
 
 type WorkspaceProjectMediaLibraryModalProps = {
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
   copy: StudioCopy['assetLibrary'];
   assets: WorkspaceLibraryAsset[];
   error: string | null;
@@ -39,6 +43,7 @@ type WorkspaceProjectMediaLibraryModalProps = {
   usingFallback: boolean;
   onClose: () => void;
   onLoadMore: () => void;
+  onRetry?: () => void;
   onMediaKindFilterChange: (kind: WorkspaceLibraryKindFilter) => void;
   onSelectAsset: (asset: WorkspaceLibraryAsset) => void;
   onSelectAssets: (assets: WorkspaceLibraryAsset[]) => void;
@@ -53,6 +58,8 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
 }
 
 export function WorkspaceProjectMediaLibraryModal({
+  searchQuery,
+  onSearchQueryChange,
   copy,
   assets,
   error,
@@ -67,6 +74,7 @@ export function WorkspaceProjectMediaLibraryModal({
   usingFallback,
   onClose,
   onLoadMore,
+  onRetry,
   onMediaKindFilterChange,
   onSelectAsset,
   onSelectAssets,
@@ -76,6 +84,8 @@ export function WorkspaceProjectMediaLibraryModal({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [selection, setSelection] = useState(resetWorkspaceAssetSelection);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const mediaScope = JSON.stringify([isOpen, mediaKindFilter, source, searchQuery]);
+  const intent = useStudioMediaIntent(mediaScope);
   const assetById = useMemo(() => new Map(assets.map((asset) => [asset.id, asset])), [assets]);
   const selectedAssets = useMemo(
     () => selection.selectedAssetIds.map((assetId) => assetById.get(assetId)).filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset)),
@@ -90,12 +100,15 @@ export function WorkspaceProjectMediaLibraryModal({
 
   useEffect(() => {
     setSelection(resetWorkspaceAssetSelection());
-  }, [mediaKindFilter, source]);
+    setIsUploading(false);
+    setUploadError(null);
+  }, [mediaScope]);
 
   const closeAndResetSelection = useCallback(() => {
+    intent.cancel();
     setSelection(resetWorkspaceAssetSelection());
     onClose();
-  }, [onClose]);
+  }, [intent, onClose]);
 
   const handleToggleAssetSelection = useCallback(
     (
@@ -114,11 +127,16 @@ export function WorkspaceProjectMediaLibraryModal({
     []
   );
 
-  const handleImportSelectedAssets = useCallback(() => {
+  const handleImportSelectedAssets = useCallback(async () => {
     if (!selectedAssets.length) return;
-    onSelectAssets(selectedAssets);
-    setSelection(resetWorkspaceAssetSelection());
-  }, [onSelectAssets, selectedAssets]);
+    const isCurrent = intent.begin();
+    try {
+      const resolved = await resolveWorkspaceMediaSelection(selectedAssets);
+      if (!isCurrent()) return;
+      onSelectAssets(resolved);
+      setSelection(resetWorkspaceAssetSelection());
+    } catch { if (isCurrent()) setUploadError(copy.unableToLoadLibrary); }
+  }, [copy.unableToLoadLibrary, intent, onSelectAssets, selectedAssets]);
 
   const handleUploadChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -135,18 +153,21 @@ export function WorkspaceProjectMediaLibraryModal({
       const fallback = formatCopyValue(copy.uploadFailed, { kind: uploadKind });
       setUploadError(null);
       setIsUploading(true);
+      const isCurrent = intent.begin();
       try {
         const uploadedAsset = await uploadWorkspaceProjectMediaFile(file, fallback);
+        if (!isCurrent()) return;
+        const [resolved] = await resolveWorkspaceMediaSelection([uploadedAsset]);
+        if (!isCurrent()) return;
         patchWorkspaceEditorAssetLibraryCache(uploadedAsset);
-        onSourceChange('upload');
-        onSelectAsset(uploadedAsset);
+        onSelectAsset(resolved);
       } catch {
-        setUploadError(fallback);
+        if (isCurrent()) setUploadError(fallback);
       } finally {
-        setIsUploading(false);
+        if (isCurrent()) setIsUploading(false);
       }
     },
-    [copy, onSelectAsset, onSourceChange]
+    [copy, intent, onSelectAsset]
   );
 
   if (!isOpen) return null;
@@ -174,6 +195,8 @@ export function WorkspaceProjectMediaLibraryModal({
           <X size={16} />
         </button>
         <WorkspaceAssetLibraryBrowser
+          searchQuery={searchQuery}
+          onSearchQueryChange={onSearchQueryChange}
           copy={copy}
           title={copy.library}
           subtitle={copy.importProjectMediaSubtitle}
@@ -195,6 +218,7 @@ export function WorkspaceProjectMediaLibraryModal({
           onLoadMore={onLoadMore}
           headerActions={
             <>
+              {error && onRetry ? <button type="button" onClick={onRetry}>{copy.retryLibrary}</button> : null}
               <button
                 type="button"
                 className={styles.assetLibraryImportSelectedButton}

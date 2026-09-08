@@ -1,4 +1,9 @@
-import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { useCallback, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { mergeProjectMedia, projectMediaUndoEntry, undoProjectMedia, type ProjectMediaUndo } from '../_lib/workspace-project-media-commands';
+import { createAdHocWorkspaceNode } from '../_lib/workspace-canvas-imports';
+import type { CanvasGraphHistorySnapshot } from '../_state/workspace-state';
+import { useStudioMediaIntent } from './useStudioMediaIntent';
+import { resolveWorkspaceMediaSelection } from '../_lib/workspace-media-selection';
 import {
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
@@ -53,6 +58,9 @@ export function generatedClipProjectMediaTitle(
 }
 
 type UseWorkspaceProjectMediaActionsParams = {
+  mediaScope?: string;
+  commitCanvasGraph: (updater: (current: CanvasGraphHistorySnapshot) => CanvasGraphHistorySnapshot) => void;
+  defaultModelId: string;
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
   nodes: WorkspaceGraphNode[];
@@ -78,6 +86,9 @@ type UseWorkspaceProjectMediaActionsParams = {
 };
 
 export function useWorkspaceProjectMediaActions({
+  mediaScope,
+  commitCanvasGraph,
+  defaultModelId,
   commitTimelineItems,
   lockedTimelineTracks,
   nodes,
@@ -101,6 +112,9 @@ export function useWorkspaceProjectMediaActions({
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
 }: UseWorkspaceProjectMediaActionsParams): {
+  mediaPickerEpoch: number;
+  handleAddProjectAssetToCanvas: (assetId: string) => void;
+  handleUndoProjectMedia: () => void;
   handleCreateProjectMediaFolder: (requestedName?: string) => void;
   handleDeleteGeneratedClip: (nodeId: string) => void;
   handleDeleteGeneratedClips: (nodeIds: string[]) => void;
@@ -118,8 +132,39 @@ export function useWorkspaceProjectMediaActions({
   handleRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
   handleSelectProjectMediaAssets: (assets: WorkspaceLibraryAsset[]) => void;
+  handleReceiveProjectMediaHandoff: (assets: WorkspaceLibraryAsset[]) => void;
 } {
   const pendingImportFolderIdRef = useRef<string | null>(null);
+  const mediaIntent = useStudioMediaIntent(mediaScope);
+  const mediaHistory = useRef<ProjectMediaUndo[]>([]);
+  const historyScope = useRef(mediaScope);
+  if (historyScope.current !== mediaScope) { historyScope.current = mediaScope; mediaHistory.current = []; }
+  const mediaState = useRef(projectAssets);
+  mediaState.current = projectAssets;
+  const foldersState = useRef(projectMediaFolders);
+  foldersState.current = projectMediaFolders;
+  const [mediaPickerEpoch, setMediaPickerEpoch] = useState(0);
+  const commitMedia = useCallback((update: (current: WorkspaceAssetRecord[]) => WorkspaceAssetRecord[]) => {
+    const current = mediaState.current;
+    const next = update(current);
+    mediaHistory.current = [...mediaHistory.current, projectMediaUndoEntry(current, next)].slice(-30);
+    mediaState.current = next;
+    setProjectAssets(next);
+  }, [setProjectAssets]);
+  const handleUndoProjectMedia = useCallback(() => {
+    mediaIntent.cancel();
+    const entry = mediaHistory.current.pop();
+    if (entry) { mediaState.current = undoProjectMedia(mediaState.current, entry); setProjectAssets(mediaState.current); }
+  }, [mediaIntent, setProjectAssets]);
+  const handleAddProjectAssetToCanvas = useCallback((assetId: string) => {
+    const asset = projectAssets.find((candidate) => candidate.id === assetId);
+    if (!asset?.url || !['image', 'video', 'audio'].includes(asset.kind)) return;
+    commitCanvasGraph((current) => {
+      const node = createAdHocWorkspaceNode(`asset-${asset.kind}` as 'asset-image' | 'asset-video' | 'asset-audio', current.nodes.length, defaultModelId, studioNotices, undefined, undefined, studioCanvasNodeCopy);
+      return { ...current, nodes: [...current.nodes, { ...node, data: { ...node.data, subtitle: asset.filename, asset: { ...asset } } }] };
+    });
+    setActiveEditorSurface('canvas');
+  }, [commitCanvasGraph, defaultModelId, projectAssets, setActiveEditorSurface, studioCanvasNodeCopy, studioNotices]);
 
   const insertProjectAssetIntoTimeline = useCallback(
     (assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
@@ -167,10 +212,12 @@ export function useWorkspaceProjectMediaActions({
   );
 
   const handleImportProjectMedia = useCallback((folderId?: string | null) => {
+    mediaIntent.cancel();
+    setMediaPickerEpoch((value) => value + 1);
     pendingImportFolderIdRef.current = folderId ?? null;
     setIsProjectMediaPickerOpen(true);
     setActiveEditorSurface('timeline');
-  }, [setActiveEditorSurface, setIsProjectMediaPickerOpen]);
+  }, [mediaIntent, setActiveEditorSurface, setIsProjectMediaPickerOpen]);
 
   const resolveProjectMediaFolderName = useCallback(
     (folderId: string | null) => {
@@ -183,18 +230,15 @@ export function useWorkspaceProjectMediaActions({
 
   const addProjectMediaAssets = useCallback(
     (assets: WorkspaceLibraryAsset[], folderId: string | null) => {
+      if (folderId && !foldersState.current.some((candidateFolder) => candidateFolder.id === folderId)) return;
       const assetRecords = assets.map((asset) => ({
         ...workspaceAssetRecordFromLibraryAsset(asset),
         folderId,
       }));
       if (!assetRecords.length) return;
-      const assetRecordIds = new Set(assetRecords.map((asset) => asset.id));
-      setProjectAssets((current) => [
-        ...assetRecords,
-        ...current.filter((candidate) => !assetRecordIds.has(candidate.id)),
-      ]);
+      commitMedia((current) => mergeProjectMedia(current, assetRecords));
     },
-    [setProjectAssets]
+    [commitMedia]
   );
 
   const handleSelectProjectMediaAssets = useCallback((assets: WorkspaceLibraryAsset[]) => {
@@ -228,8 +272,15 @@ export function useWorkspaceProjectMediaActions({
     handleSelectProjectMediaAssets([asset]);
   }, [handleSelectProjectMediaAssets]);
 
+  const handleReceiveProjectMediaHandoff = useCallback((assets: WorkspaceLibraryAsset[]) => {
+    // A project handoff never inherits a cancelled picker's destination.
+    pendingImportFolderIdRef.current = null;
+    handleSelectProjectMediaAssets(assets);
+  }, [handleSelectProjectMediaAssets]);
+
   const handleImportLocalProjectMediaFiles = useCallback(
     async (files: File[], folderId?: string | null) => {
+      const isCurrent = mediaIntent.begin();
       const targetFolderId = folderId ?? null;
       const compatibleFiles = files.filter((file) => Boolean(workspaceProjectMediaUploadKindForFile(file)));
       if (!compatibleFiles.length) {
@@ -256,7 +307,10 @@ export function useWorkspaceProjectMediaActions({
         return;
       }
 
-      addProjectMediaAssets(importedAssets, targetFolderId);
+      if (!isCurrent()) return;
+      const resolved = await resolveWorkspaceMediaSelection(importedAssets).catch(() => null);
+      if (!isCurrent() || !resolved) return;
+      addProjectMediaAssets(resolved, targetFolderId);
       const folderName = resolveProjectMediaFolderName(targetFolderId);
       const filename = importedAssets.length === 1
         ? importedAssets[0].name
@@ -272,6 +326,7 @@ export function useWorkspaceProjectMediaActions({
     },
     [
       addProjectMediaAssets,
+      mediaIntent,
       resolveProjectMediaFolderName,
       setActiveEditorSurface,
       setNotice,
@@ -296,10 +351,11 @@ export function useWorkspaceProjectMediaActions({
         typeof window !== 'undefined' &&
         !window.confirm(formatNotice(studioNotices.deleteProjectAssetConfirm, { filename: asset.filename }))
       ) return;
-      setProjectAssets((current) => current.filter((candidate) => candidate.id !== assetId));
+      mediaIntent.cancel();
+      commitMedia((current) => current.filter((candidate) => candidate.id !== assetId));
       setNotice(formatNotice(studioNotices.projectAssetRemoved, { filename: asset.filename }));
     },
-    [projectAssets, setNotice, setProjectAssets, studioNotices]
+    [commitMedia, mediaIntent, projectAssets, setNotice, studioNotices]
   );
 
   const handleDeleteProjectAssets = useCallback(
@@ -321,10 +377,11 @@ export function useWorkspaceProjectMediaActions({
         typeof window !== 'undefined' &&
         !window.confirm(formatNotice(studioNotices.deleteProjectAssetConfirm, { filename: label }))
       ) return;
-      setProjectAssets((current) => current.filter((candidate) => !assetIdSet.has(candidate.id)));
+      mediaIntent.cancel();
+      commitMedia((current) => current.filter((candidate) => !assetIdSet.has(candidate.id)));
       setNotice(formatNotice(studioNotices.projectAssetRemoved, { filename: label }));
     },
-    [projectAssets, setNotice, setProjectAssets, studioCommonCopy, studioNotices]
+    [commitMedia, mediaIntent, projectAssets, setNotice, studioCommonCopy, studioNotices]
   );
 
   const handleDeleteGeneratedClip = useCallback(
@@ -598,6 +655,9 @@ export function useWorkspaceProjectMediaActions({
   );
 
   return {
+    mediaPickerEpoch,
+    handleAddProjectAssetToCanvas,
+    handleUndoProjectMedia,
     handleCreateProjectMediaFolder,
     handleDeleteGeneratedClip,
     handleDeleteGeneratedClips,
@@ -615,5 +675,6 @@ export function useWorkspaceProjectMediaActions({
     handleRenameProjectMediaFolder,
     handleSelectProjectMediaAsset,
     handleSelectProjectMediaAssets,
+    handleReceiveProjectMediaHandoff,
   };
 }

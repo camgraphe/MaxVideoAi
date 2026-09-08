@@ -13,6 +13,7 @@ type WorkspaceExportDialogProps = ComponentProps<typeof WorkspaceExportDialog>;
 type WorkspaceProjectMediaLibraryModalProps = ComponentProps<typeof WorkspaceProjectMediaLibraryModal>;
 
 type WorkspaceRuntimeModalsProps = {
+  mediaPickerEpoch?: number;
   assetLibraryCopy: StudioCopy['assetLibrary'];
   exportDialogCopy: StudioCopy['exportDialog'];
   activeExportJob: WorkspaceExportDialogProps['activeExportJob'];
@@ -48,6 +49,7 @@ type WorkspaceRuntimeModalsProps = {
 };
 
 export function WorkspaceRuntimeModals({
+  mediaPickerEpoch,
   assetLibraryCopy,
   exportDialogCopy,
   activeExportJob,
@@ -122,6 +124,7 @@ export function WorkspaceRuntimeModals({
         onRangeModeChange={onRangeModeChange}
       />
       <WorkspaceAssetLibraryModal
+        key={`canvas-${assetPickerLibrary.scopeKey}-${assetPickerNode?.id ?? 'closed'}`}
         copy={assetLibraryCopy}
         node={assetPickerNode}
         assets={assetPickerLibrary.assets}
@@ -137,12 +140,16 @@ export function WorkspaceRuntimeModals({
         selectedAssetIds={assetPickerLibrary.selectedAssetIds}
         onClose={handleAssetPickerClose}
         onLoadMore={assetPickerLibrary.loadMore}
+        onRetry={assetPickerLibrary.retry}
         onImportAssets={handleSelectAsset}
         onSearchQueryChange={assetPickerLibrary.setSearchQuery}
         onSourceChange={assetPickerLibrary.setSource}
         onToggleAssetSelection={assetPickerLibrary.toggleAssetSelection}
       />
       <WorkspaceProjectMediaLibraryModal
+        key={`project-${projectMediaLibrary.scopeKey}-${mediaPickerEpoch}`}
+        searchQuery={projectMediaLibrary.searchQuery}
+        onSearchQueryChange={projectMediaLibrary.setSearchQuery}
         copy={assetLibraryCopy}
         isOpen={isProjectMediaPickerOpen}
         assets={projectMediaLibrary.assets}
@@ -157,6 +164,7 @@ export function WorkspaceRuntimeModals({
         sourceLabels={projectMediaLibrary.sourceLabels}
         onClose={onProjectMediaPickerClose}
         onLoadMore={projectMediaLibrary.loadMore}
+        onRetry={projectMediaLibrary.retry}
         onMediaKindFilterChange={projectMediaLibrary.setKindFilter}
         onSelectAsset={onSelectProjectMediaAsset}
         onSelectAssets={onSelectProjectMediaAssets}

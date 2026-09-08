@@ -11,7 +11,25 @@ const transparentPng =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
 const transparentPngBody = Buffer.from(transparentPng.split(',')[1] ?? '', 'base64');
 
+// Contract fixtures only: the production resolver is qualified separately on disposable PostgreSQL.
+async function qualifyFixtureAssets<T extends { id: string; kind: string; url: string }>(page: Page, assets: T[]) {
+  const qualified = assets.map((asset, index) => {
+    const assetId = `ma_${(index + 1).toString(16).padStart(32, '0')}`;
+    return { ...asset, assetId, ref: { type: 'asset', assetId, kind: asset.kind } };
+  });
+  await page.route('**/api/studio/media/resolve', async (route) => {
+    const { refs } = route.request().postDataJSON() as { refs: unknown[] };
+    const resolved = refs.map((ref) => qualified.find((asset) => JSON.stringify(asset.ref) === JSON.stringify(ref)));
+    expect(resolved.every(Boolean)).toBe(true);
+    await route.fulfill({ json: { ok: true, assets: resolved } });
+  });
+  return qualified;
+}
+
 test.beforeEach(async ({ page }) => {
+  // This anonymous preview deliberately has no DB; consent persistence is outside media qualification.
+  await page.route('**/api/legal/cookies/version', (route) => route.fulfill({ json: { version: '2025-10-26' } }));
+  await page.route('**/api/legal/cookies', (route) => route.fulfill({ json: { ok: true } }));
   await page.route('https://cdn.maxvideoai.test/**', async (route) => {
     await route.fulfill({
       contentType: 'image/png',
@@ -56,7 +74,7 @@ test('asset library modal scrolls through a full app media library', async ({ pa
   await switchEditorFocus(page, 'Canvas');
 
   await clickCanvasNode(page, 'asset-product-image');
-  await page.getByRole('button', { name: 'Open Product Image settings' }).click();
+  await page.keyboard.press('i');
   await expect(page.getByRole('complementary', { name: 'Node settings' })).toBeVisible();
   await page.getByRole('button', { name: 'Replace media' }).click();
 
@@ -250,7 +268,7 @@ test('Project media import shows localized upload failure and retry path', async
 
 test('Project media import can add multiple library assets at once', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
-  const assets = [
+  const assets = await qualifyFixtureAssets(page, [
     {
       id: 'batch-image-0',
       url: 'https://cdn.maxvideoai.test/library/batch-image-0.png',
@@ -281,7 +299,7 @@ test('Project media import can add multiple library assets at once', async ({ pa
       source: 'upload',
       createdAt: '2026-06-13T12:00:00.000Z',
     },
-  ];
+  ]);
 
   await page.route('**/api/media-library/assets?**', async (route) => {
     await route.fulfill({
@@ -306,8 +324,8 @@ test('Project media import can add multiple library assets at once', async ({ pa
 
   await expect(dialog).toHaveCount(0);
   await expect(page.getByText('2 media assets imported into Project media.')).toBeVisible();
-  await expect(page.locator('[data-project-media-asset-id="batch-image-0"]')).toBeVisible();
-  await expect(page.locator('[data-project-media-asset-id="batch-video-1"]')).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id]', { hasText: 'batch-image-0.png' })).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id]', { hasText: 'batch-video-1.mp4' })).toBeVisible();
   assertNoEditorClientErrors(errors);
 });
 
@@ -402,9 +420,7 @@ test('Project media import pages through the app library and filters by media ki
   const dialog = page.getByRole('dialog', { name: 'Import project media' });
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('Search applies to loaded assets');
-  await expect.poll(() => Promise.resolve(
-    requests.some((search) => search.includes('includeOutputs=true'))
-  )).toBe(true);
+  expect(requests.every((search) => !search.includes('includeOutputs'))).toBe(true);
   await expect(dialog.getByRole('button', { name: 'Select image-0.png' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Load more' }).click();
   await expect(dialog.getByRole('button', { name: 'Select video-4.mp4' })).toBeVisible();
@@ -426,7 +442,7 @@ test('Project media import pages through the app library and filters by media ki
     requests.some((search) =>
       search.includes('kind=video') &&
       search.includes('source=generated') &&
-      search.includes('includeOutputs=true')
+      !search.includes('includeOutputs')
     )
   )).toBe(true);
   await expect(dialog.getByRole('button', { name: 'Load more' })).toBeVisible();
@@ -436,7 +452,7 @@ test('Project media import pages through the app library and filters by media ki
 
 test('Project media sidebar filters imported media by kind', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
-  const assets = [
+  const assets = await qualifyFixtureAssets(page, [
     {
       id: 'filter-image-0',
       url: 'https://cdn.maxvideoai.test/library/filter-image-0.png',
@@ -467,7 +483,7 @@ test('Project media sidebar filters imported media by kind', async ({ page }) =>
       source: 'upload',
       createdAt: '2026-06-13T12:00:00.000Z',
     },
-  ];
+  ]);
 
   await page.route('**/api/media-library/assets?**', async (route) => {
     await route.fulfill({
@@ -492,39 +508,44 @@ test('Project media sidebar filters imported media by kind', async ({ page }) =>
 
   const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
   const projectMediaGrid = projectMediaSidebar.locator('[data-project-media-grid="true"]');
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toBeVisible();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toBeVisible();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toBeVisible();
+  const imageCard = projectMediaGrid.locator('[data-project-media-asset-id]', { hasText: 'filter-image-0.png' });
+  const videoCard = projectMediaGrid.locator('[data-project-media-asset-id]', { hasText: 'filter-video-1.mp4' });
+  const audioCard = projectMediaGrid.locator('[data-project-media-asset-id]', { hasText: 'filter-audio-2.mp3' });
+  await expect(imageCard).toBeVisible();
+  await expect(videoCard).toBeVisible();
+  await expect(audioCard).toBeVisible();
 
   const kindFilters = projectMediaSidebar.getByRole('group', { name: 'Project media type filters' });
   await kindFilters.getByRole('button', { name: 'Image', exact: true }).click();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toBeVisible();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toHaveCount(0);
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toHaveCount(0);
+  await expect(imageCard).toBeVisible();
+  await expect(videoCard).toHaveCount(0);
+  await expect(audioCard).toHaveCount(0);
 
   await kindFilters.getByRole('button', { name: 'Video', exact: true }).click();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toHaveCount(0);
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toBeVisible();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toHaveCount(0);
+  await expect(imageCard).toHaveCount(0);
+  await expect(videoCard).toBeVisible();
+  await expect(audioCard).toHaveCount(0);
 
   await kindFilters.getByRole('button', { name: 'Audio', exact: true }).click();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toHaveCount(0);
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toHaveCount(0);
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toBeVisible();
+  await expect(imageCard).toHaveCount(0);
+  await expect(videoCard).toHaveCount(0);
+  await expect(audioCard).toBeVisible();
 
   await kindFilters.getByRole('button', { name: 'All media', exact: true }).click();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toBeVisible();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toBeVisible();
-  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toBeVisible();
+  await expect(imageCard).toBeVisible();
+  await expect(videoCard).toBeVisible();
+  await expect(audioCard).toBeVisible();
   await expect(projectMediaSidebar.getByLabel('Project media view tools')).toHaveCount(0);
 
   assertNoEditorClientErrors(errors);
 });
 
-test('Project media upload patches the Studio library cache for the next import', async ({ page }) => {
+test('Project media upload invalidates library cache and refreshes the current account listing', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
   const uploadedAsset = {
     id: 'uploaded-cache-image',
+    assetId: `ma_${'c'.repeat(32)}`,
+    ref: { type: 'asset', assetId: `ma_${'c'.repeat(32)}`, kind: 'image' },
     url: 'https://cdn.maxvideoai.test/library/uploaded-cache.png',
     thumbUrl: transparentPng,
     kind: 'image',
@@ -534,17 +555,22 @@ test('Project media upload patches the Studio library cache for the next import'
     source: 'upload',
     createdAt: '2026-06-13T12:04:00.000Z',
   };
-
+  let uploaded = false;
+  await page.route('**/api/studio/media/resolve', async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ refs: [uploadedAsset.ref] });
+    await route.fulfill({ json: { ok: true, assets: [uploadedAsset] } });
+  });
   await page.route('**/api/media-library/assets?**', async (route) => {
     await route.fulfill({
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, assets: [], nextCursor: null, hasMore: false }),
+      body: JSON.stringify({ ok: true, assets: uploaded ? [uploadedAsset] : [], nextCursor: null, hasMore: false }),
     });
   });
   await page.route('**/api/media-library/recent-outputs?**', async (route) => {
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, outputs: [] }) });
   });
   await page.route('**/api/uploads/image', async (route) => {
+    uploaded = true;
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify({ ok: true, asset: uploadedAsset }),
@@ -569,7 +595,7 @@ test('Project media upload patches the Studio library cache for the next import'
     ),
   });
   await expect(dialog).toHaveCount(0);
-  await expect(page.locator('[data-project-media-asset-id="uploaded-cache-image"]')).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id]', { hasText: 'uploaded-cache.png' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Import media' }).click();
   dialog = page.getByRole('dialog', { name: 'Import project media' });

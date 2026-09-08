@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
@@ -63,10 +62,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     [defaultTemplate.timelineItems]
   );
   const capabilities = useMemo(() => getWorkspaceModelCapabilities(), []);
-  const defaultModelId =
-    capabilities.find((capability) => capability.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID)?.id ??
-    capabilities[0]?.id ??
-    DEFAULT_WORKSPACE_SHOT_MODEL_ID;
+  const defaultModelId = capabilities.find((capability) => capability.id === DEFAULT_WORKSPACE_SHOT_MODEL_ID)?.id ??
+    capabilities[0]?.id ?? DEFAULT_WORKSPACE_SHOT_MODEL_ID;
   const timelineItemsRef = useRef<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
   const canvasGraph = useWorkspaceCanvasGraphState({
     defaultEdges: defaultTemplate.edges,
@@ -358,6 +355,9 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   });
 
   const projectMediaActions = useWorkspaceProjectMediaActions({
+    mediaScope: `${projectId ?? 'local'}:${canvasController.projectMediaLibrary.scopeKey}`,
+    commitCanvasGraph: canvasHistoryController.commitCanvasGraph,
+    defaultModelId,
     commitTimelineItems: timelineHistoryController.commitTimelineItems,
     lockedTimelineTracks,
     nodes,

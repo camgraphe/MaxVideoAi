@@ -2,6 +2,7 @@ import {
   WORKSPACE_DEMO_AUDIO_URL,
 } from '../_lib/workspace-library-assets';
 import { resolveStudioChatModel } from '@/lib/studio-chat-models';
+import { workspaceMediaContractFields } from '../_lib/workspace-media-contract';
 import { DEFAULT_STUDIO_COPY } from '../../_lib/studio-copy';
 import {
   workspaceMediaDimensionsForTimelineSource,
@@ -407,7 +408,7 @@ export function normalizeWorkspaceGraphNodes(nodes: WorkspaceGraphNode[]): Works
   return normalizePlaceholderOutputNodes(
     normalizeWorkspaceChatNodes(
       normalizeGeneratedOutputNodes(
-        normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(nodes).map(normalizeWorkspaceGenerationNode))
+        normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(nodes.map((node) => node.data.asset ? { ...node, data: { ...node.data, asset: { ...node.data.asset, ...workspaceMediaContractFields(node.data.asset, node.data.asset.kind) } } } : node)).map(normalizeWorkspaceGenerationNode))
       )
     )
   );
@@ -462,7 +463,7 @@ export function normalizeTimelineMediaUrls(nodes: WorkspaceGraphNode[], items: W
     const mediaUrl = itemWithSourceDimensions.mediaKind === 'audio'
       ? dedicatedAudioUrl ?? embeddedAudioUrl
       : itemWithSourceDimensions.mediaKind === 'image'
-        ? [output?.url, output?.thumbUrl, asset?.url, asset?.thumbUrl].find(isPlayableImageUrl) ?? null
+        ? [output?.url, asset?.url].find(isPlayableImageUrl) ?? null
         : [output?.url, asset?.url].find(isPlayableVideoUrl) ?? null;
     if (!mediaUrl) return itemWithSourceDimensions;
     return {

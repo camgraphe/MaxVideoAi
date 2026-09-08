@@ -51,3 +51,11 @@ Un handoff Audio/Toolbox vers Studio transmet une référence exacte et une inte
 - App : propriétaires généraux bibliothèque/réutilisation et CSS global.
 
 Tout delta partagé indispensable reste dans un commit distinct avec tests de compatibilité. Les tests de propriété/persistance utilisent seulement PostgreSQL local jetable vérifié, jamais une URL distante héritée.
+
+## Livraison Task 3 et limites de provenance
+
+Le raccord transporte les refs/faits disponibles des uploads image/vidéo/audio jusqu'au bin, canevas et timeline Studio. La sonde upload déjà exécutée conserve aussi son `hasAudio` positif ou négatif ; aucune sonde supplémentaire n'est ajoutée. Les uploads multipart n'acquièrent ni durée ni audio inventés.
+
+`ensureReusableAsset` ne fusionne pas génériquement `params.metadata` dans une ligne canonique déjà existante. Un réupload dédupliqué peut donc retourner des faits frais sans réécrire les faits historiques de cette ligne ; Studio revalide la référence et utilise seulement les faits réellement stockés renvoyés par le résolveur. Aucun backfill implicite n'est effectué. Les sorties anciennes sans faits serveur restent inconnues pour les futurs writers connectés, même si le navigateur mesure un original pour l'édition locale.
+
+Le récepteur handoff qualifié expose uniquement `intent: 'project'`, confirmation et bin racine du projet choisi. Les tests DOM couvrent confirmation/annulation et StrictMode ; les E2E bibliothèque/média utilisent des routes interceptées et prouvent les interactions locales, pas la persistance serveur. La résolution SQL réelle est qualifiée séparément sur PostgreSQL jetable. Aucun wrapper MCP Audio ni bouton producteur Audio/Toolbox n'est livré dans ce lot.

@@ -10,7 +10,7 @@ export type WorkspaceMeasuredMediaMetadata = Partial<WorkspaceMediaDimensions> &
 };
 
 export type WorkspaceProjectAssetMetadataSource = {
-  kind: 'image-preview' | 'video';
+  kind: 'image-preview' | 'video' | 'audio';
   url: string;
 };
 
@@ -46,6 +46,7 @@ function assetHasMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
 }
 
 export function workspaceAssetNeedsMetadataHydration(asset: WorkspaceAssetRecord): boolean {
+  if (asset.kind === 'audio') return !assetHasMeasuredDuration(asset);
   if (asset.kind === 'video') {
     return !assetHasMeasuredDimensions(asset) || !assetHasMeasuredDuration(asset);
   }
@@ -83,10 +84,11 @@ export function workspaceProjectAssetMetadataSource(
   items: WorkspaceTimelineItem[]
 ): WorkspaceProjectAssetMetadataSource | null {
   if (asset.kind === 'image' || asset.kind === 'logo') {
-    const imageUrl = asset.url ?? asset.thumbUrl ?? null;
+    const imageUrl = asset.url ?? null;
     return imageUrl ? { kind: 'image-preview', url: imageUrl } : null;
   }
 
+  if (asset.kind === 'audio') return asset.url ? { kind: 'audio', url: asset.url } : null;
   if (asset.kind !== 'video') return null;
 
   if (asset.url) return { kind: 'video', url: asset.url };
@@ -97,7 +99,6 @@ export function workspaceProjectAssetMetadataSource(
   );
   if (timelineSource?.mediaUrl) return { kind: 'video', url: timelineSource.mediaUrl };
 
-  if (asset.thumbUrl?.includes('/renders/')) return { kind: 'image-preview', url: asset.thumbUrl };
   return null;
 }
 
@@ -119,6 +120,8 @@ export function workspaceAssetWithMeasuredMetadata(
 
   return {
     ...asset,
+    width: dimensions?.width ?? asset.width,
+    height: dimensions?.height ?? asset.height,
     dimensions: dimensionsLabel,
     durationSec: nextDurationSec,
     subtitle: nextSubtitle,
@@ -137,6 +140,7 @@ export function applyWorkspaceProjectAssetMetadataToTimelineItems(
   let didChange = false;
   const nextItems = items.map((item) => {
     if (item.outputNodeId !== sourceNodeId) return item;
+    if (asset.url && item.mediaUrl && asset.url !== item.mediaUrl) return item;
     const nextSourceWidth = item.mediaKind === 'audio' ? item.sourceWidth : dimensions?.width ?? item.sourceWidth;
     const nextSourceHeight = item.mediaKind === 'audio' ? item.sourceHeight : dimensions?.height ?? item.sourceHeight;
     const nextSourceDurationSec = durationSec ?? item.sourceDurationSec;

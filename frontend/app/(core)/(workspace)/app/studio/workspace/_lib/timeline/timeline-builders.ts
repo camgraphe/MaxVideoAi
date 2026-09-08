@@ -66,10 +66,12 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
   const baseId = `timeline-${params.assetNodeId}-${idSuffix}`;
   const durationSec = workspaceAssetTimelineDuration(params.asset);
   const sourceDurationSec = workspaceAssetSourceDuration(params.asset);
-  const mediaUrl = params.asset.url ?? params.asset.thumbUrl ?? null;
+  const mediaUrl = params.asset.url ?? null;
   const audioProvenance = resolveWorkspaceAudioProvenance(params.asset);
   const common = {
     assetId: params.asset.id,
+    ref: params.asset.ref,
+    mediaFacts: params.asset.mediaFacts,
     outputNodeId: params.assetNodeId,
     title: params.title,
     durationSec,

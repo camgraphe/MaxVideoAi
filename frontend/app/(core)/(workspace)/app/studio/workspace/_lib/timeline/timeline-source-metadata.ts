@@ -1,10 +1,12 @@
 import type { WorkspaceTimelineItem } from '../workspace-types';
+import { workspaceMediaContractFields } from '../workspace-media-contract';
 
 function positiveNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
 export function normalizeWorkspaceTimelineSourceMetadata(item: WorkspaceTimelineItem): WorkspaceTimelineItem {
+  item = { ...item, ...workspaceMediaContractFields(item, item.mediaKind) };
   const measured = item.sourceMetadata?.measurementStatus === 'measured';
   if (measured) {
     return {

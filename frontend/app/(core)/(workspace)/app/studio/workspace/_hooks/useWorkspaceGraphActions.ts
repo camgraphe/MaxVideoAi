@@ -38,6 +38,7 @@ import {
 } from '../_lib/workspace-templates';
 import {
   workspaceAssetRecordFromLibraryAsset,
+  workspaceLibraryKindForNodeKind,
   type WorkspaceLibraryAsset,
 } from '../_lib/workspace-library-assets';
 import type { CanvasGraphHistorySnapshot, WorkspaceEditorSurface } from '../_state/workspace-state';
@@ -249,7 +250,7 @@ export function useWorkspaceGraphActions({
       commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
         edges: currentEdges,
         nodes: currentNodes.flatMap((node) =>
-          node.id === nodeId
+          node.id === nodeId && assets.every((asset) => asset.url && asset.kind === workspaceLibraryKindForNodeKind(node.data.kind))
             ? [
               {
                 ...node,

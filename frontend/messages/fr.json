@@ -6292,6 +6292,12 @@
           "emptyBody": "Envoyez une vidéo générée vers la timeline, puis sélectionnez-la pour l’aperçu."
         },
         "projectMedia": {
+          "addToCanvas": "Ajouter au canevas",
+          "insertInTimeline": "Insérer dans la timeline",
+          "undoMediaChange": "Annuler la modification des médias",
+          "handoffTitle": "Importer dans ce projet",
+          "handoffUnavailable": "Ce média n’est plus disponible pour ce compte.",
+          "handoffCancel": "Annuler",
           "sidebarLabel": "Bibliothèque de médias du projet",
           "title": "Médias du projet",
           "subtitle": "Ressources, séquences et clips générés",
@@ -6427,6 +6433,7 @@
         "selectForNode": "Sélectionner {type} pour {node}",
         "closeLibrary": "Fermer la bibliothèque",
         "closeProjectMediaLibrary": "Fermer la bibliothèque de médias du projet",
+        "retryLibrary": "Réessayer",
         "upload": "Importer",
         "uploading": "Import...",
         "uploadFailed": "L’import {kind} a échoué. Réessayez.",

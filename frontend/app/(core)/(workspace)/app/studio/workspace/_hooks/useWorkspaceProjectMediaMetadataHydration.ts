@@ -23,12 +23,17 @@ type UseWorkspaceProjectMediaMetadataHydrationParams = {
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
 };
 
-function loadImagePreviewMetadata(asset: WorkspaceAssetRecord, sourceUrl: string): Promise<WorkspaceAssetRecord> {
+function loadImagePreviewMetadata(asset: WorkspaceAssetRecord, sourceUrl: string, signal: AbortSignal): Promise<WorkspaceAssetRecord> {
   return new Promise((resolve, reject) => {
     const image = document.createElement('img');
+    const abort = () => { cleanup(); image.removeAttribute('src'); reject(new Error('Metadata cancelled')); };
+    const timer = setTimeout(abort, 8000);
+    signal.addEventListener('abort', abort, { once: true });
     const cleanup = (): void => {
       image.onload = null;
       image.onerror = null;
+      clearTimeout(timer);
+      signal.removeEventListener('abort', abort);
     };
     image.onload = () => {
       const hydratedAsset = workspaceAssetWithMeasuredMetadata(asset, {
@@ -46,12 +51,17 @@ function loadImagePreviewMetadata(asset: WorkspaceAssetRecord, sourceUrl: string
   });
 }
 
-function loadVideoMetadata(asset: WorkspaceAssetRecord, sourceUrl: string): Promise<WorkspaceAssetRecord> {
+function loadVideoMetadata(asset: WorkspaceAssetRecord, sourceUrl: string, signal: AbortSignal): Promise<WorkspaceAssetRecord> {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
+    const abort = () => { cleanup(); reject(new Error('Metadata cancelled')); };
+    const timer = setTimeout(abort, 8000);
+    signal.addEventListener('abort', abort, { once: true });
     const cleanup = (): void => {
       video.onloadedmetadata = null;
       video.onerror = null;
+      clearTimeout(timer);
+      signal.removeEventListener('abort', abort);
       video.removeAttribute('src');
       video.load();
     };
@@ -78,10 +88,11 @@ function loadVideoMetadata(asset: WorkspaceAssetRecord, sourceUrl: string): Prom
 
 function loadMediaMetadata(
   asset: WorkspaceAssetRecord,
-  source: WorkspaceProjectAssetMetadataSource
+  source: WorkspaceProjectAssetMetadataSource,
+  signal: AbortSignal
 ): Promise<WorkspaceAssetRecord> {
-  if (source.kind === 'image-preview') return loadImagePreviewMetadata(asset, source.url);
-  return loadVideoMetadata(asset, source.url);
+  if (source.kind === 'image-preview') return loadImagePreviewMetadata(asset, source.url, signal);
+  return loadVideoMetadata(asset, source.url, signal);
 }
 
 export function useWorkspaceProjectMediaMetadataHydration({
@@ -93,9 +104,12 @@ export function useWorkspaceProjectMediaMetadataHydration({
   timelineItemsRef,
 }: UseWorkspaceProjectMediaMetadataHydrationParams): void {
   const attemptedAssetKeysRef = useRef(new Set<string>());
+  const currentAssets = useRef(projectAssets);
+  currentAssets.current = projectAssets;
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
+    const attemptedKeys = attemptedAssetKeysRef.current;
     const candidates = projectAssets
       .map((asset) => ({
         asset,
@@ -105,17 +119,26 @@ export function useWorkspaceProjectMediaMetadataHydration({
     if (!candidates.length) return;
 
     let cancelled = false;
-    candidates.forEach(({ asset, source }) => {
+    const controller = new AbortController();
+    const activeKeys = new Set<string>();
+    const pending = candidates.filter(({ asset, source }) => source && !attemptedKeys.has(`${asset.id}:${source.kind}:${source.url}`));
+    const runNext = async (): Promise<void> => {
+      const candidate = pending.shift();
+      if (!candidate || cancelled) return;
+      const { asset, source } = candidate;
       if (!source) return;
       const assetKey = `${asset.id}:${source.kind}:${source.url}`;
-      if (attemptedAssetKeysRef.current.has(assetKey)) return;
-      attemptedAssetKeysRef.current.add(assetKey);
+      if (attemptedKeys.has(assetKey)) return;
+      attemptedKeys.add(assetKey);
+      activeKeys.add(assetKey);
 
-      void loadMediaMetadata(asset, source)
+      await loadMediaMetadata(asset, source, controller.signal)
         .then((hydratedAsset) => {
+          activeKeys.delete(assetKey);
           if (cancelled || hydratedAsset === asset) return;
+          if (!currentAssets.current.some((candidate) => candidate.id === asset.id && candidate.url === asset.url)) return;
           setProjectAssets((current) =>
-            current.map((candidate) => candidate.id === hydratedAsset.id ? hydratedAsset : candidate)
+            current.map((candidate) => candidate.id === hydratedAsset.id && candidate.url === asset.url ? { ...candidate, durationSec: hydratedAsset.durationSec, dimensions: hydratedAsset.dimensions, width: hydratedAsset.width, height: hydratedAsset.height } : candidate)
           );
           setTimelineItems((current) => {
             const nextItems = applyWorkspaceProjectAssetMetadataToTimelineItems(current, hydratedAsset);
@@ -130,12 +153,18 @@ export function useWorkspaceProjectMediaMetadataHydration({
           );
         })
         .catch(() => {
+          activeKeys.delete(assetKey);
           // Some remote media blocks metadata probing; unknown metadata remains unknown.
         });
-    });
+      if (!cancelled) await runNext();
+    };
+    void runNext();
+    void runNext();
 
     return () => {
       cancelled = true;
+      controller.abort();
+      for (const key of activeKeys) attemptedKeys.delete(key);
     };
   }, [projectAssets, setProjectAssets, setSequences, setTimelineItems, timelineItems, timelineItemsRef]);
 }

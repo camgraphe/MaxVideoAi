@@ -6284,6 +6284,12 @@
           "emptyBody": "Envía un video generado a la línea de tiempo y selecciónalo para previsualizarlo."
         },
         "projectMedia": {
+          "addToCanvas": "Añadir al lienzo",
+          "insertInTimeline": "Insertar en la línea de tiempo",
+          "undoMediaChange": "Deshacer el cambio de medios",
+          "handoffTitle": "Importar en este proyecto",
+          "handoffUnavailable": "Este medio ya no está disponible para esta cuenta.",
+          "handoffCancel": "Cancelar",
           "sidebarLabel": "Biblioteca de medios del proyecto",
           "title": "Medios del proyecto",
           "subtitle": "Recursos, secuencias y clips generados",
@@ -6419,6 +6425,7 @@
         "selectForNode": "Seleccionar {type} para {node}",
         "closeLibrary": "Cerrar biblioteca",
         "closeProjectMediaLibrary": "Cerrar biblioteca de medios del proyecto",
+        "retryLibrary": "Reintentar",
         "upload": "Subir",
         "uploading": "Subiendo...",
         "uploadFailed": "Falló la subida de {kind}. Inténtalo de nuevo.",

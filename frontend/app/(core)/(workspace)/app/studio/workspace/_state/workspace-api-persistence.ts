@@ -1,4 +1,5 @@
 import { authFetch, hasAuthFetchSessionHint } from '@/lib/authFetch';
+import { workspaceMediaContractFields } from '../_lib/workspace-media-contract';
 import {
   createStarterWorkspaceTemplate,
   isWorkspaceTemplateId,
@@ -419,6 +420,8 @@ function normalizePersistedProjectAsset(value: unknown): WorkspaceAssetRecord | 
   if (typeof record.filename !== 'string' || !record.filename.trim()) return null;
   return {
     id: record.id,
+    ...workspaceMediaContractFields(record, kind),
+    previewUrl: record.previewUrl,
     kind,
     filename: record.filename,
     subtitle: typeof record.subtitle === 'string' && record.subtitle.trim() ? record.subtitle : kind,

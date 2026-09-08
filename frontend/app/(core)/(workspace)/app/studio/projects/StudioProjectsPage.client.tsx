@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { studioProjectWithMediaHandoff } from '@/lib/studio-media-handoff';
 import {
   ArrowRight,
   Copy,
@@ -293,7 +294,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
       setProjects(serverProjects);
       writeStudioProjects(serverProjects);
     }
-    router.push(`/app/studio/workspace/${savedProject?.id ?? project.id}`);
+    router.push(studioProjectWithMediaHandoff(savedProject?.id ?? project.id, window.location.search));
   }, [projects, router, studioCopy]);
 
   const createProject = async (templateId: WorkspaceTemplateId = DEFAULT_STUDIO_PROJECT_TEMPLATE_ID) => (
@@ -460,7 +461,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
                   <button
                     type="button"
                     className={styles.projectCardMain}
-                    onClick={() => router.push(`/app/studio/workspace/${project.id}`)}
+                    onClick={() => router.push(studioProjectWithMediaHandoff(project.id, window.location.search))}
                   >
                     {previewUrl ? (
                       <img src={previewUrl} alt="" />

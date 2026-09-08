@@ -237,6 +237,9 @@ export type WorkspaceProjectSettings = {
 };
 
 export type WorkspaceAssetRecord = {
+  ref?: import('@/lib/toolbox/contract').ToolAssetRef;
+  mediaFacts?: import('@/lib/media-identity').MediaFacts;
+  previewUrl?: string;
   id: string;
   kind: WorkspaceAssetKind;
   filename: string;
@@ -535,6 +538,8 @@ export type WorkspaceTimelineAudioMix = {
 };
 
 export type WorkspaceTimelineItem = {
+  ref?: import('@/lib/toolbox/contract').ToolAssetRef;
+  mediaFacts?: import('@/lib/media-identity').MediaFacts;
   id: string;
   assetId?: string | null;
   outputNodeId: string;

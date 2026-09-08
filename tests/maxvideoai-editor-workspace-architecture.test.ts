@@ -822,7 +822,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(projectsClientSource, /STUDIO_PROJECTS_STORAGE_KEY/, 'projects client should keep a local draft fallback');
   assert.match(projectsClientSource, /\/api\/studio\/projects/, 'projects client should sync projects with the Studio API when available');
   assert.match(projectsClientSource, /authFetch/, 'projects client should use authenticated fetches for project sync');
-  assert.match(projectsClientSource, /router\.push\(`\/app\/studio\/workspace\/\$\{savedProject\?\.id \?\? project\.id\}`\)/, 'new projects should open a project-scoped workspace URL after API sync or local fallback');
+  assert.match(projectsClientSource, /router\.push\(studioProjectWithMediaHandoff\(savedProject\?\.id \?\? project\.id, window\.location\.search\)\)/, 'new projects should preserve the exact handoff token while opening the explicitly chosen project');
   assert.match(projectsClientSource, /DEFAULT_STUDIO_PROJECT_TEMPLATE_ID/, 'project creation should keep an internal minimal canvas default');
   assert.match(projectsClientSource, /STUDIO_PROJECT_STARTER_IDS[\s\S]*'product-ad'[\s\S]*'storyboard-to-video'[\s\S]*'cinematic-scene'/, 'first-run Studio should expose three purposeful workflow starters');
   assert.match(projectsClientSource, /STUDIO_PROJECT_STARTER_TEMPLATE_IDS[\s\S]*'guided-product-ad'[\s\S]*'guided-storyboard-to-video'[\s\S]*'guided-cinematic-scene'/, 'project cards should open compact guided starters instead of advanced canvas templates');
@@ -1874,7 +1874,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPage/, 'studio user library hook should normalize paginated API results before rendering');
   assert.match(editorAssetLibraryHookSource, /useState<WorkspaceLibrarySource>\('all'\)/, 'studio user library hook should own the active app-library source filter');
   assert.match(editorAssetLibraryHookSource, /WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE/, 'studio user library hook should cache loaded assets between picker openings');
-  assert.match(editorAssetLibraryHookSource, /shouldUseFallback[\s\S]*Boolean\(error\)/, 'studio user library hook should not show dev assets while a real user-library request is loading or merely empty');
+  assert.match(editorAssetLibraryHookSource, /const shouldUseFallback = false/, 'live library errors never become automatic demo assets');
   assert.match(editorAssetLibraryHookSource, /setSource/, 'studio user library hook should expose a source setter to the browser UI');
   assert.match(pricingHookSource, /runPreflight/, 'workspace pricing hook should call the existing generate video preflight API');
   assert.match(workspaceSource, /useWorkspaceShotPricing/, 'orchestrator should inject live shot pricing estimates into nodes');
@@ -1958,7 +1958,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /const handleAddTimelineVideoTrack = useCallback/, 'workspace orchestrator should not own video track creation internals');
   assert.doesNotMatch(workspaceSource, /const handleDeleteTimelineTrack = useCallback/, 'workspace orchestrator should not own timeline track deletion internals');
   assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary/, 'canvas controller should feed the picker from the signed-in user media library');
-  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined, studioAssetLibraryCopy\)/, 'canvas controller should load the signed-in media library only when the picker modal is open and pass localized library copy');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined, studioAssetLibraryCopy, mediaAccountId\)/, 'canvas controller should load the picker library with localized copy and the current authenticated account');
   assert.doesNotMatch(workspaceSource, /selectedMediaNodeKind/, 'selecting a media node should not preload the signed-in media library before the picker opens');
   assert.doesNotMatch(workspaceSource, /sidebarLibrary\s*=\s*useWorkspaceEditorAssetLibrary\(null\)/, 'orchestrator should not load the user media library directly in the sidebar');
   assert.match(workspaceSource, /assetPickerNodeId/, 'orchestrator should track which media node is being filled from the library');
@@ -2490,7 +2490,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(assetLibraryModalSource, /formData\.append\('file'/, 'asset picker modal should append the selected file to the upload payload');
   assert.match(assetLibraryModalSource, /type="file"/, 'asset picker modal should include a hidden file input');
   assert.match(assetLibraryModalSource, /headerActions=/, 'asset picker modal should place the upload action in the library header');
-  assert.match(assetLibraryModalSource, /onSourceChange\('upload'\)/, 'asset picker modal should switch to the Uploaded library source after upload');
+  assert.match(assetLibraryModalSource, /if \(!isCurrent\(\)\) return;[\s\S]*onImportAssets\(node.id, resolved\)/, 'asset picker should accept a resolved upload only while its node intent is current; acceptance closes the picker');
   assert.doesNotMatch(assetLibraryModalSource, /assets\.map/, 'asset picker modal should not keep a second ad-hoc asset grid');
   assert.match(assetLibraryBrowserSource, /_styles\/asset-library\.module\.css/, 'studio library browser should import focused asset library CSS');
   assert.match(assetLibraryModalSource, /_styles\/asset-library\.module\.css/, 'asset picker modal should import focused asset library CSS');
@@ -2613,7 +2613,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineToolbarSource, /onOpenExportDialog/, 'timeline toolbar should expose the export action beside timeline tools');
   assert.match(timelineToolbarSource, /copy\.exportAria/, 'timeline toolbar export button should keep the existing localized export aria label');
   assert.match(timelineControlStyleSource, /\.timelineExportButton/, 'timeline control CSS module should own timeline export button styling');
-  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined, studioAssetLibraryCopy\)/, 'project media import should load the signed-in library only while its modal is open and pass localized library copy');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined, studioAssetLibraryCopy, mediaAccountId\)/, 'project media import should load its modal library for the current account with localized copy');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');
   assert.match(projectMediaLibraryModalSource, /uploadWorkspaceProjectMediaFile/, 'project media library modal should delegate local file uploads to a shared helper');
   assert.match(projectMediaUploadSource, /WORKSPACE_PROJECT_MEDIA_UPLOAD_ENDPOINTS/, 'project media uploads should reuse the app media upload endpoints');
@@ -3141,7 +3141,7 @@ test('MaxVideoAI editor generation resolves connected output media references', 
 
   assert.deepEqual(
     mediaUrlsFromKinds(template.nodes, template.edges, 'shot-02', ['previous_shot']),
-    ['/hero/pika-22.mp4'],
+    ['/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4'],
     'generated output blocks connected as previous shots should route their video URL into generation inputs'
   );
 
@@ -4890,7 +4890,7 @@ test('MaxVideoAI editor timeline render manifest captures clips, assets, transit
     videoTrack?.clips.map((clip) => [clip.id, clip.startSec, clip.endSec, clip.sourceStartSec, clip.sourceEndSec]),
     [
       ['timeline-output-01', 0, 5, 0, 5],
-      ['timeline-output-02', 5, 13, 0, 8],
+      ['timeline-output-02', 5, 11, 0, 6],
     ],
     'video clips should export ordered sequence timing and source in/out timing'
   );
@@ -5141,12 +5141,12 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
     '/api/media-library/assets?limit=60&kind=image&cursor=cursor_2&source=generated'
   );
   assert.equal(
-    buildWorkspaceUserLibraryUrl('video', 'all', { includeOutputs: true }),
-    '/api/media-library/assets?limit=60&kind=video&includeOutputs=true'
+    buildWorkspaceUserLibraryUrl('video', 'all', { q: 'source' }),
+    '/api/media-library/assets?limit=60&kind=video&q=source'
   );
   assert.equal(
-    buildWorkspaceUserLibraryUrl('video', 'generated', { includeOutputs: true }),
-    '/api/media-library/assets?limit=60&kind=video&source=generated&includeOutputs=true'
+    buildWorkspaceUserLibraryUrl('video', 'generated', { q: 'source' }),
+    '/api/media-library/assets?limit=60&kind=video&q=source&source=generated'
   );
   assert.equal(buildWorkspaceUserLibraryUrl(null, 'all', { limit: 48 }), '/api/media-library/assets?limit=48');
   assert.equal(buildWorkspaceUserLibraryUrl(null), '/api/media-library/assets?limit=60');
@@ -5340,9 +5340,10 @@ test('studio editor asset library hook owns pagination and project media kind fi
   assert.match(editorAssetLibraryHookSource, /nextCursor/);
   assert.match(editorAssetLibraryHookSource, /setKindFilter/);
   assert.match(editorAssetLibraryHookSource, /WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION/);
-  assert.match(editorAssetLibraryHookSource, /return `\$\{WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION\}:\$\{kind \?\? 'all'\}:\$\{source\}`/);
+  assert.match(editorAssetLibraryHookSource, /JSON\.stringify\(\[WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION, accountId, kind, source, q\.trim\(\)\]\)/);
   assert.match(editorAssetLibraryHookSource, /buildWorkspaceUserLibraryUrl\(effectiveLibraryKind, activeSource,\s*\{/);
-  assert.match(editorAssetLibraryHookSource, /includeOutputs:\s*true/);
+  assert.doesNotMatch(editorAssetLibraryHookSource, /includeOutputs/);
+  assert.match(editorAssetLibraryHookSource, /q: searchQuery/);
   assert.match(editorAssetLibraryHookSource, /workspaceLibrarySourceOptionsForKind\(effectiveLibraryKind\)/);
   assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPage/);
   assert.match(editorAssetLibraryHookSource, /export function patchWorkspaceEditorAssetLibraryCache/, 'studio asset library cache should be patchable after uploads and saves');
@@ -5385,7 +5386,8 @@ test('studio asset picker defers multi-select import until its primary action', 
   assert.doesNotMatch(inspectorSource, /const resolutionLabel = asset\.dimensions/);
   assert.match(inspectorSource, /resolutionLabel \? \(/);
   assert.match(assetLibraryModalSource, /onImportAssets: \(nodeId: string, assets: WorkspaceLibraryAsset\[\]\) => void/);
-  assert.match(assetLibraryModalSource, /onImportAssets\(node\.id, selectedAssets\)/);
+  assert.match(assetLibraryModalSource, /resolveWorkspaceMediaSelection\(selectedAssets\)/);
+  assert.match(assetLibraryModalSource, /isCurrent\(\)\) onImportAssets\(node\.id, resolved\)/);
   assert.doesNotMatch(assetLibraryModalSource, /selectOnToggle/);
   assert.match(graphActionsSource, /handleImportLibraryAssets: \(nodeId: string, assets: WorkspaceLibraryAsset\[\]\) => void/);
   assert.match(graphActionsSource, /setAssetPickerNodeId\(null\)/);

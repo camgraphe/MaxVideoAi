@@ -110,6 +110,16 @@ Canvas `VideoPreview`/`AudioPreview` and `NodeInspectorMediaPreview` mount nativ
 
 The named track-actions button and selected-clip toolbar action invoke the existing timeline context-menu callbacks. Keep their 44px targets, keyboard navigation, constrained popovers and original edit/link/undo semantics.
 
+## Connected media boundaries
+
+`workspace-library-assets.ts` adapts Assets, Recent (exact job/output tuple), uploads and qualified tool results to `ToolAssetRef`; project-local IDs are separate. `workspace-media-selection.ts` resolves refs at acceptance through authenticated `/api/studio/media/resolve`. Its read-only server owner is `src/server/studio/media-resolver.ts`: ready/account/kind/deleted/hidden checks include source-output-linked jobs, existing reference URL/MIME policy and storage-object ownership. It returns exact originals and an `originalAccess` classification, not a new signed URL. Future signing must use the owned key or retain an allowed external original exactly.
+
+`useStudioMediaAccount`, `useStudioMediaIntent` and the account/kind/source/query-scoped library hook prevent stale responses and uploads from crossing modal/project/target/account lifetimes. Unauthorized/error states never populate the editor with demos. Browser metadata hydration reads originals only, has two concurrent workers and an eight-second timeout, and does not forge server probe facts.
+
+`workspace-project-media-commands.ts` owns ref-aware merge and bounded local import/removal undo. Bin removal never deletes remote assets or existing timeline clips. Bin buttons and drops delegate to existing compatible timeline insertion; source replacement uses canvas history. Structural refs/facts survive bin, canvas, timeline and the current serializer. Legacy local assets remain usable without fabricated refs.
+
+`lib/studio-media-handoff.ts` is a separate account/token/age-bound producer interface. Projects forwards its token to the explicitly chosen project; `StudioMediaHandoffReceiver` asks for confirmation to import into that project's root media bin. Canvas/timeline destinations are subsequent explicit bin commands, not advertised handoff intents. No producer UI or autonomous Audio/Toolbox owner is changed. This lot does not add revisioned montage persistence (Task 4).
+
 ## Guided Canvas Annotations
 
 - Guided annotations are per-canvas presentation state, not graph nodes.

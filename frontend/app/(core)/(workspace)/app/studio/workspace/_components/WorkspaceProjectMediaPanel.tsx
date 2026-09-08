@@ -59,6 +59,8 @@ export function WorkspaceProjectMediaPanel({
       onInspectSequence={selection.handleInspectSequence}
       onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
       onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}
+      onAddProjectAssetToCanvas={projectMedia.handleAddProjectAssetToCanvas}
+      onUndoProjectMedia={projectMedia.handleUndoProjectMedia}
       onMoveGeneratedClipToFolder={projectMedia.handleMoveGeneratedClipToFolder}
       onMoveProjectAssetToFolder={projectMedia.handleMoveProjectAssetToFolder}
       onNewFolder={projectMedia.handleCreateProjectMediaFolder}

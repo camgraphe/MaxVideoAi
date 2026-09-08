@@ -682,7 +682,7 @@ test('unknown imported duration stays unknown through insert, normalization, and
 
   const measuredAsset = workspaceAssetWithMeasuredMetadata(asset, { durationSec: 9.25 });
   const measuredItems = applyWorkspaceProjectAssetMetadataToTimelineItems(unmeasuredHydration, measuredAsset);
-  assert.deepEqual(measuredItems.map((item) => item.sourceDurationSec), [9.25, 9.25]);
+  assert.deepEqual(measuredItems.map((item) => item.sourceDurationSec), [9.25, undefined], 'measuring the video does not measure its distinct external audio URL');
 });
 
 test('project media timeline resolver rejects incompatible target tracks', () => {
@@ -839,11 +839,8 @@ test('project media measured video metadata hydrates assets and existing timelin
       },
       []
     ),
-    {
-      kind: 'image-preview',
-      url: 'https://media.maxvideoai.com/renders/user/render-preview.jpg',
-    },
-    'generated render previews can provide pixel dimensions when no video URL is still available'
+    null,
+    'render previews cannot certify original source dimensions when the original is missing'
   );
 
   assert.equal(

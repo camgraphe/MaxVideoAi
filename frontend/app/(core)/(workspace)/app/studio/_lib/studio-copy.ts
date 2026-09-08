@@ -1375,6 +1375,12 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       emptyBody: 'Send a generated video to the timeline, then select it for preview.',
     },
     projectMedia: {
+      addToCanvas: 'Add to canvas',
+      insertInTimeline: 'Insert in timeline',
+      undoMediaChange: 'Undo media change',
+      handoffTitle: 'Import into this project',
+      handoffUnavailable: 'This media is no longer available for this account.',
+      handoffCancel: 'Cancel',
       sidebarLabel: 'Project media library',
       title: 'Project media',
       subtitle: 'Assets, sequences and generated clips',
@@ -1505,6 +1511,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     exportJobInvalid: 'The export job response was invalid.',
   },
   assetLibrary: {
+    retryLibrary: 'Retry',
     library: 'Library',
     selectAsset: 'Select {type}',
     selectForNode: 'Select {type} for {node}',

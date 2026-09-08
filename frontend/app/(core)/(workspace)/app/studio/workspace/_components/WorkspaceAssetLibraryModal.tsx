@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, MouseEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
+import { resolveWorkspaceMediaSelection } from '../_lib/workspace-media-selection';
+import { useStudioMediaIntent } from '../_hooks/useStudioMediaIntent';
 import styles from '../_styles/asset-library.module.css';
 import { createUploadFailure } from '../../../_lib/workspace-upload-errors';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
@@ -37,6 +39,7 @@ type WorkspaceAssetLibraryModalProps = {
   selectedAssetIds: readonly string[];
   onClose: () => void;
   onLoadMore: () => void;
+  onRetry?: () => void;
   onImportAssets: (nodeId: string, assets: WorkspaceLibraryAsset[]) => void;
   onSearchQueryChange: (query: string) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
@@ -73,6 +76,7 @@ export function WorkspaceAssetLibraryModal({
   selectedAssetIds,
   onClose,
   onLoadMore,
+  onRetry,
   onImportAssets,
   onSearchQueryChange,
   onSourceChange,
@@ -85,6 +89,10 @@ export function WorkspaceAssetLibraryModal({
   const uploadKind = nodeKind ? workspaceLibraryKindForNodeKind(nodeKind) : null;
   const uploadEndpoint = nodeKind ? workspaceUploadEndpointForNodeKind(nodeKind) : null;
   const uploadAccept = nodeKind ? workspaceUploadAcceptForNodeKind(nodeKind) : undefined;
+  const mediaScope = JSON.stringify([node?.id, nodeKind, source, searchQuery]);
+  const intent = useStudioMediaIntent(mediaScope);
+  useEffect(() => { setIsUploading(false); setUploadError(null); }, [mediaScope]);
+  const close = () => { intent.cancel(); onClose(); };
 
   const handleUploadChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +103,7 @@ export function WorkspaceAssetLibraryModal({
       const fallback = formatCopyValue(copy.uploadFailed, { kind: uploadKind });
       setUploadError(null);
       setIsUploading(true);
+      const isCurrent = intent.begin();
       try {
         const preparedFile =
           uploadKind === 'image'
@@ -117,15 +126,17 @@ export function WorkspaceAssetLibraryModal({
           throw createUploadFailure(uploadKind, response.status, payload, fallback);
         }
 
-        onSourceChange('upload');
-        onImportAssets(node.id, [uploadedAsset]);
+        if (!isCurrent()) return;
+        const resolved = await resolveWorkspaceMediaSelection([uploadedAsset]);
+        if (!isCurrent()) return;
+        onImportAssets(node.id, resolved);
       } catch {
-        setUploadError(fallback);
+        if (isCurrent()) setUploadError(fallback);
       } finally {
-        setIsUploading(false);
+        if (isCurrent()) setIsUploading(false);
       }
     },
-    [copy.uploadFailed, node, onImportAssets, onSourceChange, uploadEndpoint, uploadKind]
+    [copy.uploadFailed, intent, node, onImportAssets, uploadEndpoint, uploadKind]
   );
 
   if (!node) return null;
@@ -137,9 +148,13 @@ export function WorkspaceAssetLibraryModal({
     onToggleAssetSelection(asset.id, event.shiftKey ? 'range' : event.metaKey || event.ctrlKey ? 'toggle' : 'replace');
   };
   const selectedAssets = assets.filter((asset) => selectedAssetIds.includes(asset.id));
-  const handleImportSelectedAssets = () => {
+  const handleImportSelectedAssets = async () => {
     if (!selectedAssets.length) return;
-    onImportAssets(node.id, selectedAssets);
+    const isCurrent = intent.begin();
+    try {
+      const resolved = await resolveWorkspaceMediaSelection(selectedAssets);
+      if (isCurrent()) onImportAssets(node.id, resolved);
+    } catch { if (isCurrent()) setUploadError(copy.unableToLoadLibrary); }
   };
 
   return (
@@ -149,7 +164,7 @@ export function WorkspaceAssetLibraryModal({
       aria-modal="true"
       aria-label={formatCopyValue(copy.selectAsset, { type: typeLabel })}
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) close();
       }}
     >
       <section className={styles.assetLibraryModal}>
@@ -161,7 +176,7 @@ export function WorkspaceAssetLibraryModal({
           hidden
           onChange={handleUploadChange}
         />
-        <button type="button" className={styles.assetLibraryClose} onClick={onClose} aria-label={copy.closeLibrary}>
+        <button type="button" className={styles.assetLibraryClose} onClick={close} aria-label={copy.closeLibrary}>
           <X size={16} />
         </button>
 
@@ -187,6 +202,7 @@ export function WorkspaceAssetLibraryModal({
           onSearchQueryChange={onSearchQueryChange}
           headerActions={
             <>
+              {error && onRetry ? <button type="button" onClick={onRetry}>{copy.retryLibrary}</button> : null}
               <button
                 type="button"
                 className={styles.assetLibraryImportSelectedButton}

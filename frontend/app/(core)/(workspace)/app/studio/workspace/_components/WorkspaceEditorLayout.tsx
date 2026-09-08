@@ -20,18 +20,14 @@ import type { WorkspaceTimelineExportRangeMode } from '../_lib/workspace-timelin
 import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
 import { localizeStudioGeneratedSequenceDisplayName, localizeStudioTemplateSummaries, type StudioCopy } from '../../_lib/studio-copy';
 import type {
-  WorkspaceAssetRecord,
-  WorkspaceGraphEdge,
-  WorkspaceModelCapability,
+  WorkspaceAssetRecord, WorkspaceGraphEdge, WorkspaceModelCapability,
   WorkspaceProjectMediaFolder, WorkspaceProjectSettings,
-  WorkspaceTemplateId,
-  WorkspaceTimelineAudioTrack, WorkspaceTimelineItem,
+  WorkspaceTemplateId, WorkspaceTimelineAudioTrack, WorkspaceTimelineItem,
   WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack,
 } from '../_lib/workspace-types';
 import { WORKSPACE_TEMPLATE_SUMMARIES } from '../_lib/workspace-templates';
 import {
-  MAX_TIMELINE_AUDIO_TRACKS,
-  MAX_TIMELINE_PANEL_HEIGHT,
+  MAX_TIMELINE_AUDIO_TRACKS, MAX_TIMELINE_PANEL_HEIGHT,
   MAX_TIMELINE_VIDEO_TRACKS,
   MIN_TIMELINE_AUDIO_TRACKS,
   MIN_TIMELINE_PANEL_HEIGHT,
@@ -49,6 +45,7 @@ import { WorkspaceMobilePanelFrame } from './WorkspaceMobilePanelFrame';
 import { WorkspaceMobilePanelControls } from './WorkspaceMobilePanelControls';
 import { WorkspaceProjectMediaPanel } from './WorkspaceProjectMediaPanel';
 import { WorkspaceRuntimeModals } from './WorkspaceRuntimeModals';
+import { StudioMediaHandoffReceiver } from './StudioMediaHandoffReceiver';
 import { WorkspaceTimeline } from './WorkspaceTimeline';
 import { WorkspaceTimelineInspectorPanel } from './WorkspaceTimelineInspectorPanel';
 import { WorkspaceVideoViewer } from './WorkspaceVideoViewer';
@@ -461,6 +458,8 @@ export function WorkspaceEditorLayout({
         onUndo={timelineHistory.undoTimeline}
       />
       <WorkspaceRuntimeModals
+        mediaPickerEpoch={projectMedia.mediaPickerEpoch}
+        key={projectId ?? 'local'}
         assetLibraryCopy={studioCopy.assetLibrary}
         exportDialogCopy={studioCopy.exportDialog}
         activeExportJob={exportController.activeExportJob}
@@ -494,6 +493,7 @@ export function WorkspaceEditorLayout({
         onSelectProjectMediaAsset={projectMedia.handleSelectProjectMediaAsset}
         onSelectProjectMediaAssets={projectMedia.handleSelectProjectMediaAssets}
       />
+      <StudioMediaHandoffReceiver accountId={canvas.projectMediaLibrary.scopeKey} projectId={projectId} projectName={activeTemplateName} onImport={projectMedia.handleReceiveProjectMediaHandoff} copy={studioCopy.viewer.projectMedia} />
     </main>
   );
 }

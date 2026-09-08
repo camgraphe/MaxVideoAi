@@ -8,6 +8,7 @@ import { useWorkspaceCanvasImportActions } from './useWorkspaceCanvasImportActio
 import { useWorkspaceCanvasTemplateActions } from './useWorkspaceCanvasTemplateActions';
 import { useWorkspaceCanvasTimelineActions } from './useWorkspaceCanvasTimelineActions';
 import { useWorkspaceEditorAssetLibrary } from './useWorkspaceEditorAssetLibrary';
+import { useStudioMediaAccount } from './useStudioMediaAccount';
 import { useWorkspaceGenerationActions } from './useWorkspaceGenerationActions';
 import { useWorkspaceGraphActions } from './useWorkspaceGraphActions';
 import { useWorkspaceRenderNodes } from './useWorkspaceRenderNodes';
@@ -268,8 +269,9 @@ export function useWorkspaceCanvasController({
   }, [edges, renderNodes, studioCanvasCopy.nodes]);
   const selectedNode = renderNodes.find((node) => node.id === selectedNodeId) ?? null;
   const assetPickerNode = renderNodes.find((node) => node.id === assetPickerNodeId) ?? null;
-  const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined, studioAssetLibraryCopy);
-  const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined, studioAssetLibraryCopy);
+  const mediaAccountId = useStudioMediaAccount();
+  const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined, studioAssetLibraryCopy, mediaAccountId);
+  const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined, studioAssetLibraryCopy, mediaAccountId);
 
   const {
     handleAddCanvasTemplate,

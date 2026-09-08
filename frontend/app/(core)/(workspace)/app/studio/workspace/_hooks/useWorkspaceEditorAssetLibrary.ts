@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import { studioApiSyncStatusFromResponse } from '../_state/workspace-api-persistence';
 import type { WorkspaceNodeKind } from '../_lib/workspace-types';
@@ -33,14 +33,15 @@ type WorkspaceEditorAssetLibraryCacheEntry = WorkspaceUserLibraryPage & {
 };
 
 const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE = new Map<string, WorkspaceEditorAssetLibraryCacheEntry>();
-const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION = 'with-outputs-v1';
-const WORKSPACE_EDITOR_PATCH_SOURCES = ['all', 'upload'] as const satisfies readonly WorkspaceLibrarySource[];
+const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION = 'account-refs-v2';
 
 function buildWorkspaceEditorAssetLibraryCacheKey(
   kind: WorkspaceLibraryKind | null,
-  source: WorkspaceLibrarySource
+  source: WorkspaceLibrarySource,
+  accountId: string | null = null,
+  q = ''
 ): string {
-  return `${WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION}:${kind ?? 'all'}:${source}`;
+  return JSON.stringify([WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION, accountId, kind, source, q.trim()]);
 }
 
 function mergeWorkspaceLibraryAssets(
@@ -52,27 +53,12 @@ function mergeWorkspaceLibraryAssets(
   return Array.from(new Map(assets.map((asset) => [asset.id, asset])).values());
 }
 
-function cacheKindsForAsset(asset: WorkspaceLibraryAsset): Array<WorkspaceLibraryKind | null> {
-  if (asset.kind === 'image' || asset.kind === 'video' || asset.kind === 'audio') return [null, asset.kind];
-  return [null];
-}
-
 export function patchWorkspaceEditorAssetLibraryCache(
-  asset: WorkspaceLibraryAsset,
-  sources: readonly WorkspaceLibrarySource[] = WORKSPACE_EDITOR_PATCH_SOURCES
+  asset: WorkspaceLibraryAsset
 ): void {
-  for (const kind of cacheKindsForAsset(asset)) {
-    for (const source of sources) {
-      const cacheKey = buildWorkspaceEditorAssetLibraryCacheKey(kind, source);
-      const cached = WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.get(cacheKey);
-      WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(cacheKey, {
-        assets: mergeWorkspaceLibraryAssets([asset], cached?.assets ?? [], 'append'),
-        nextCursor: cached?.nextCursor ?? null,
-        hasMore: cached?.hasMore ?? false,
-        error: null,
-      });
-    }
-  }
+  // Uploads invalidate cached listings; a caller without a verified account cannot populate them.
+  if (!asset.id) return;
+  WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.clear();
 }
 
 export function invalidateWorkspaceEditorAssetLibraryCache(assetIds?: string | readonly string[]): void {
@@ -93,7 +79,8 @@ export function invalidateWorkspaceEditorAssetLibraryCache(assetIds?: string | r
 
 export function useWorkspaceEditorAssetLibrary(
   nodeKind: WorkspaceNodeKind | null | undefined,
-  copy: StudioCopy['assetLibrary']
+  copy: StudioCopy['assetLibrary'],
+  accountId: string | null = null
 ) {
   const isEnabled = nodeKind !== undefined;
   const libraryKind = nodeKind ? workspaceLibraryKindForNodeKind(nodeKind) : null;
@@ -124,15 +111,28 @@ export function useWorkspaceEditorAssetLibrary(
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const requestKey = isEnabled ? buildWorkspaceEditorAssetLibraryCacheKey(effectiveLibraryKind, activeSource) : null;
+  const requestKey = isEnabled ? buildWorkspaceEditorAssetLibraryCacheKey(effectiveLibraryKind, activeSource, accountId, searchQuery) : null;
+  const activeRequest = useRef<{ key: string | null; generation: number }>({ key: null, generation: 0 });
+  if (activeRequest.current.key !== requestKey) activeRequest.current = { key: requestKey, generation: activeRequest.current.generation + 1 };
+  const [retryVersion, setRetryVersion] = useState(0);
+  useEffect(() => {
+    setSelectedAssetIds([]);
+    setSelectionAnchorId(null);
+    return () => { activeRequest.current.generation += 1; };
+  }, [requestKey]);
+  useEffect(() => () => {
+    for (const key of WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.keys()) {
+      if (JSON.parse(key)[1] === accountId) WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.delete(key);
+    }
+  }, [accountId]);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
   const fetchLibraryPage = useCallback(
-    async (cursor: string | null): Promise<WorkspaceEditorAssetLibraryCacheEntry> => {
+    async (cursor: string | null, signal?: AbortSignal): Promise<WorkspaceEditorAssetLibraryCacheEntry> => {
       const response = await authFetch(buildWorkspaceUserLibraryUrl(effectiveLibraryKind, activeSource, {
         cursor,
-        includeOutputs: true,
-      }));
+        q: searchQuery,
+      }), { signal });
       const status = studioApiSyncStatusFromResponse(response);
       if (status === 'unauthorized') {
         return {
@@ -154,7 +154,7 @@ export function useWorkspaceEditorAssetLibrary(
         error: null,
       };
     },
-    [activeSource, copy.signInToAccessLibrary, copy.unableToLoadLibrary, effectiveLibraryKind]
+    [activeSource, copy.signInToAccessLibrary, copy.unableToLoadLibrary, effectiveLibraryKind, searchQuery]
   );
 
   useEffect(() => {
@@ -186,7 +186,7 @@ export function useWorkspaceEditorAssetLibrary(
 
     if (!requestKey) return;
     const currentRequestKey = requestKey;
-    const cached = WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.get(requestKey);
+    const cached = accountId ? WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.get(requestKey) : undefined;
     if (cached) {
       setUserAssets(cached.assets);
       setNextCursor(cached.nextCursor);
@@ -199,6 +199,7 @@ export function useWorkspaceEditorAssetLibrary(
     }
 
     let cancelled = false;
+    const controller = new AbortController();
     setUserAssets([]);
     setNextCursor(null);
     setHasMore(false);
@@ -209,9 +210,10 @@ export function useWorkspaceEditorAssetLibrary(
 
     async function loadInitialPage() {
       try {
-        const page = await fetchLibraryPage(null);
+        const page = await fetchLibraryPage(null, controller.signal);
         if (cancelled) return;
-        WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, page);
+        if (accountId && !page.error) WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, page);
+        while (WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.size > 24) WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.delete(WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.keys().next().value!);
         setUserAssets(page.assets);
         setNextCursor(page.nextCursor);
         setHasMore(page.hasMore);
@@ -219,13 +221,6 @@ export function useWorkspaceEditorAssetLibrary(
         setLoadedKey(currentRequestKey);
       } catch {
         if (cancelled) return;
-        const nextEntry: WorkspaceEditorAssetLibraryCacheEntry = {
-          assets: [],
-          nextCursor: null,
-          hasMore: false,
-          error: copy.unableToLoadLibrary,
-        };
-        WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, nextEntry);
         setUserAssets([]);
         setNextCursor(null);
         setHasMore(false);
@@ -240,20 +235,24 @@ export function useWorkspaceEditorAssetLibrary(
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
-  }, [copy.unableToLoadLibrary, fetchLibraryPage, isEnabled, requestKey]);
+  }, [accountId, copy.unableToLoadLibrary, fetchLibraryPage, isEnabled, requestKey, retryVersion]);
 
   const loadMore = useCallback(async (): Promise<void> => {
     if (!requestKey || !hasMore || isLoading || isLoadingMore || !nextCursor) return;
     const currentRequestKey = requestKey;
+    const generation = activeRequest.current.generation;
+    const isCurrent = () => activeRequest.current.key === currentRequestKey && activeRequest.current.generation === generation;
     const cursor = nextCursor;
     setIsLoadingMore(true);
     setError(null);
 
     try {
       const page = await fetchLibraryPage(cursor);
+      if (!isCurrent()) return;
       if (page.error) {
-        WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
+        if (accountId) WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
           assets: userAssets,
           nextCursor: null,
           hasMore: false,
@@ -267,7 +266,7 @@ export function useWorkspaceEditorAssetLibrary(
       }
       setUserAssets((currentAssets) => {
         const mergedAssets = mergeWorkspaceLibraryAssets(currentAssets, page.assets, 'append');
-        WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
+        if (accountId) WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
           assets: mergedAssets,
           nextCursor: page.nextCursor,
           hasMore: page.hasMore,
@@ -279,11 +278,12 @@ export function useWorkspaceEditorAssetLibrary(
       setHasMore(page.hasMore);
       setLoadedKey(currentRequestKey);
     } catch {
-      setError(copy.unableToLoadLibrary);
+      if (isCurrent()) setError(copy.unableToLoadLibrary);
     } finally {
-      setIsLoadingMore(false);
+      if (isCurrent()) setIsLoadingMore(false);
     }
   }, [
+    accountId,
     copy.unableToLoadLibrary,
     fetchLibraryPage,
     hasMore,
@@ -294,17 +294,10 @@ export function useWorkspaceEditorAssetLibrary(
     userAssets,
   ]);
 
-  const hasLoadedCurrentLibrary = Boolean(requestKey && loadedKey === requestKey);
-  const shouldUseFallback =
-    hasLoadedCurrentLibrary &&
-    !isLoading &&
-    userAssets.length === 0 &&
-    fallbackAssets.length > 0 &&
-    Boolean(error) &&
-    error !== copy.signInToAccessLibrary;
+  const shouldUseFallback = false;
   const assets = useMemo(
-    () => (userAssets.length ? userAssets : shouldUseFallback ? fallbackAssets : []),
-    [fallbackAssets, shouldUseFallback, userAssets]
+    () => (loadedKey === requestKey ? userAssets : []),
+    [loadedKey, requestKey, userAssets]
   );
 
   const toggleAssetSelection = useCallback((assetId: string, mode: 'replace' | 'toggle' | 'range') => {
@@ -341,6 +334,7 @@ export function useWorkspaceEditorAssetLibrary(
         : 'ready';
 
   return {
+    scopeKey: accountId ?? 'anonymous',
     assets,
     userAssets,
     fallbackAssets,
@@ -366,6 +360,7 @@ export function useWorkspaceEditorAssetLibrary(
     sourceLabels,
     hasMore,
     loadMore,
+    retry: () => { if (requestKey) WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.delete(requestKey); setRetryVersion((value) => value + 1); },
     nextCursor,
     usingFallback: shouldUseFallback,
   };
