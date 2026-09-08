@@ -38,7 +38,7 @@ Opened tools share a concise back/title row, a large central preview, compact in
 - [x] **Visual catalogue commit.** Replace hand-authored five-card list with capability projection and reusable `ToolboxCatalogue`; add original SVG scenes, localized labels, image/video/audio context and distinct workshop composition. Routes stay stable. Verify DOM actions and feature gate.
 - [x] **Connected workbench commit.** Recompose Upscale and Background Removal around a reusable surface. Retain provider-specific useful controls in advanced settings, input import/library, original/result/download/save/reuse. Guard concurrent source changes and account scope. Remove fictional playback/progress. Keep workshop workflows reachable and coherent.
 - [x] **Quote correctness commit.** Add a read-only server quote adapter using existing pricing owners and matching normalization. Bind displayed quote to exact inputs; disable run while stale/loading/error. Revalidate amount before charging for callers that supply an accepted quote. No multiplier/policy changes or job migration.
-- [ ] **Qualification and delivery.** Run relevant contracts, types, frontend lint/exposure and build. Use local fixture transport for paid actions, never real processing. Browser desktop/mobile light/dark, source selection, keyboard, result/reuse, errors and changing prices. Keep a usable isolated preview on a free port other than 3026/3032; document fixture limits. Send commits and evidence to Studio and parent task.
+- [x] **Qualification and delivery.** Run relevant contracts, types, frontend lint/exposure and build. Use local fixture transport for paid actions, never real processing. Browser desktop/mobile light/dark, source selection, keyboard, result/reuse, errors and changing prices. Keep a usable isolated preview on a free port other than 3026/3032; document fixture limits. Send commits and evidence to Studio and parent task.
 
 ## New tools and MCP
 
@@ -50,3 +50,5 @@ Current MCP has model discovery/generation, uploads/media and job status; it doe
 ## User simplification pass, 8 September
 
 Quick tools are approximately 180–210px wide on desktop and two columns on phones. The catalogue now shows covers and names only; workshop covers stay larger. Workbenches omit slogans, empty histories and repeated explanations. Import/Library are compact actions, one primary adjustment stays visible, Options contains secondary controls, and the price lives on the launch button. Save/download use accessible icon actions. No production action or paid generation was run.
+
+Validation and precise integration order: `2026-09-08-toolbox-validation.md`.
