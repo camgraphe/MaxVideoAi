@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 
 const page = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/projects/StudioProjectsPage.client.tsx'), 'utf8');
+const copy = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy.ts'), 'utf8');
 const styles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/projects/studio-projects.module.css'), 'utf8');
 
 test('Projects presents one outcome sentence per starter and keeps the single global generation disclaimer', () => {
@@ -14,6 +15,9 @@ test('Projects presents one outcome sentence per starter and keeps the single gl
   assert.match(page, /studioCopy\.projects\.starterDisclaimer/u);
   assert.match(page, /canvasPreviewLabel/u);
   assert.match(page, /resultPreviewLabel/u);
+  assert.match(copy, /description: 'Prepare a four-shot product ad from your image and brand\.'/u);
+  assert.match(copy, /description: 'Prepare video shots from your storyboard\.'/u);
+  assert.match(copy, /description: 'Prepare a trailer with a consistent visual style and sound mood\.'/u);
 });
 
 test('connected montage cards do not promise legacy-only project mutations', () => {

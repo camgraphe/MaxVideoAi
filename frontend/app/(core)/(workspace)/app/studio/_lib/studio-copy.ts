@@ -866,7 +866,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     templateSummaries: {
       'product-ad': {
         name: 'Product Ad',
-        description: 'Product image, logo, style, music, four shot blocks, and launch timeline.',
+        description: 'Prepare a four-shot product ad from your image and brand.',
         flow: 'Product ref -> style clip -> 4 shots',
         badge: 'Pro',
       },
@@ -884,7 +884,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       },
       'storyboard-to-video': {
         name: 'Storyboard Flow',
-        description: 'Board frames, camera notes, continuity links, and empty outputs.',
+        description: 'Prepare video shots from your storyboard.',
         flow: 'Panels -> shot plan -> sequence',
         badge: 'Pro',
       },
@@ -896,7 +896,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       },
       'cinematic-scene': {
         name: 'Cinematic Trailer',
-        description: 'Style plate, camera plan, scene prompts, sound design, and sequence.',
+        description: 'Prepare a trailer with a consistent visual style and sound mood.',
         flow: 'Mood plate -> camera -> trailer shots',
         badge: 'Pro',
       },

@@ -5793,7 +5793,7 @@
         "templateSummaries": {
           "product-ad": {
             "name": "Publicité produit",
-            "description": "Image produit, logo, style, musique, quatre blocs de plans et timeline de lancement.",
+            "description": "Préparez une publicité produit en quatre plans, à partir de votre image et de votre marque.",
             "flow": "Réf. produit -> clip style -> 4 plans",
             "badge": "Pro"
           },
@@ -5811,7 +5811,7 @@
           },
           "storyboard-to-video": {
             "name": "Flux storyboard",
-            "description": "Frames de storyboard, notes caméra, liens de continuité et sorties vides.",
+            "description": "Préparez les plans vidéo à partir de votre storyboard.",
             "flow": "Panneaux -> plan de tournage -> séquence",
             "badge": "Pro"
           },
@@ -5823,7 +5823,7 @@
           },
           "cinematic-scene": {
             "name": "Trailer cinématique",
-            "description": "Planche de style, plan caméra, prompts de scène, sound design et séquence.",
+            "description": "Préparez une bande-annonce avec un style visuel et une ambiance sonore cohérents.",
             "flow": "Planche mood -> caméra -> plans trailer",
             "badge": "Pro"
           }
