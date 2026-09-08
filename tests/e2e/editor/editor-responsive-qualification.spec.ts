@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { canvasNodeControls, openMinimalEditorWorkspace } from './editor-helpers';
+import { canvasNodeControls, openMinimalEditorWorkspace, switchStudioTheme } from './editor-helpers';
 
 const viewports = [
   { width: 1440, height: 900 },
@@ -27,8 +27,7 @@ for (const viewport of viewports) {
       await page.setViewportSize(viewport);
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await openMinimalEditorWorkspace(page);
-      const themeSwitch = page.getByRole('button', { name: `Switch Studio to ${theme} mode` });
-      if (await themeSwitch.isVisible()) await themeSwitch.click();
+      await switchStudioTheme(page, theme);
 
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
       const controls = await canvasNodeControls(page);

@@ -16,6 +16,24 @@ export async function canvasNodeControls(page: Page, node: Locator = page.locato
     has: page.locator(`[data-canvas-node-inspect-button=${JSON.stringify(nodeId)}]`),
   });
 }
+
+export async function openStudioAppMenu(page: Page): Promise<Locator> {
+  const trigger = page.getByRole('button', { name: /Open MaxVideoAI menu|Ouvrir le menu MaxVideoAI|Abrir el menú de MaxVideoAI/ });
+  const dialog = page.getByRole('dialog', { name: 'MaxVideoAI' });
+  if (!(await dialog.isVisible())) await trigger.click();
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
+export async function switchStudioTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
+  const shell = page.locator('[data-studio-theme]');
+  if (await shell.getAttribute('data-studio-theme') === theme) return;
+  const dialog = await openStudioAppMenu(page);
+  await dialog.getByRole('button', { name: `Switch Studio to ${theme} mode` }).click();
+  await expect(shell).toHaveAttribute('data-studio-theme', theme);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+}
 type EditorConsoleError = {
   text: string;
   url: string;
@@ -207,10 +225,15 @@ async function mockEditorStudioPersistenceApi(page: Page): Promise<void> {
   });
 }
 
-export async function openEditorWorkspace(page: Page): Promise<void> {
+type OpenEditorWorkspaceOptions = {
+  testSimulation?: boolean;
+};
+
+export async function openEditorWorkspace(page: Page, options: OpenEditorWorkspaceOptions = {}): Promise<void> {
   await mockEditorHeaderAccountApi(page);
   await mockEditorStudioPersistenceApi(page);
-  await page.goto('/app/studio/workspace', { waitUntil: 'domcontentloaded' });
+  const testSimulation = options.testSimulation ?? true;
+  await page.goto(`/app/studio/workspace${testSimulation ? '?__studio_test_simulation=1' : ''}`, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('header').getByRole('button', { name: EDITOR_STARTUP_LABELS.projects, exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: EDITOR_STARTUP_LABELS.canvas })).toBeVisible();
   await expect(page.getByRole('button', { name: EDITOR_STARTUP_LABELS.viewer })).toBeVisible();
@@ -223,8 +246,8 @@ export async function openEditorWorkspace(page: Page): Promise<void> {
   }
 }
 
-export async function openFreshEditorWorkspace(page: Page): Promise<void> {
-  await openEditorWorkspace(page);
+export async function openFreshEditorWorkspace(page: Page, options: OpenEditorWorkspaceOptions = {}): Promise<void> {
+  await openEditorWorkspace(page, options);
   await page.evaluate((workspaceState) => {
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1');
     window.localStorage.removeItem('maxvideoai.editor.timelineRender.v1');
@@ -238,13 +261,13 @@ export async function openFreshEditorWorkspace(page: Page): Promise<void> {
   await expect(page.locator('[data-timeline-item]')).toHaveCount(productAdRegressionFixture.timelineItems.length);
 }
 
-export async function openMinimalEditorWorkspace(page: Page): Promise<void> {
+export async function openMinimalEditorWorkspace(page: Page, options: OpenEditorWorkspaceOptions = {}): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1');
     window.localStorage.removeItem('maxvideoai.editor.timelineRender.v1');
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
   });
-  await openEditorWorkspace(page);
+  await openEditorWorkspace(page, options);
 }
 
 export async function switchEditorFocus(page: Page, focus: 'Canvas' | 'Viewer'): Promise<void> {

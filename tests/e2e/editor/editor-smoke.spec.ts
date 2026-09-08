@@ -10,7 +10,9 @@ import {
   openEditorWorkspace,
   openFreshEditorWorkspace,
   openMinimalEditorWorkspace,
+  openStudioAppMenu,
   switchEditorFocus,
+  switchStudioTheme,
   timelineClipState,
   timelineItemCount,
   trackEditorClientErrors,
@@ -1105,7 +1107,9 @@ test('Studio workspace dark theme keeps key editor surfaces readable', async ({ 
   const shell = page.locator('[data-studio-theme="dark"]');
   await expectDarkReadableSurface(shell, 'dark Studio workspace shell');
   await expectDarkReadableSurface(page.locator('[class*="editorTopbar"]').first(), 'dark Studio workspace topbar');
-  await expect(page.getByRole('button', { name: 'Switch Studio to light mode' })).toBeVisible();
+  const appMenu = await openStudioAppMenu(page);
+  await expect(appMenu.getByRole('button', { name: 'Switch Studio to light mode' })).toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Viewer', exact: true })).toBeVisible();
 
@@ -1138,15 +1142,10 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
   await openFreshEditorWorkspace(page);
   const shell = page.locator('[data-studio-theme]');
   await expect(shell).toHaveAttribute('data-studio-theme', 'light');
-  await expect(page.getByRole('button', { name: 'Switch Studio to dark mode' })).toBeVisible();
-
-  await page.getByRole('button', { name: 'Switch Studio to dark mode' }).click();
+  await switchStudioTheme(page, 'dark');
   await expect(shell).toHaveAttribute('data-studio-theme', 'dark');
-  await expect(page.getByRole('button', { name: 'Switch Studio to light mode' })).toBeVisible();
-
-  await page.getByRole('button', { name: 'Switch Studio to light mode' }).click();
+  await switchStudioTheme(page, 'light');
   await expect(shell).toHaveAttribute('data-studio-theme', 'light');
-  await expect(page.getByRole('button', { name: 'Switch Studio to dark mode' })).toBeVisible();
   const shellColors = await page.locator('[data-studio-theme="light"]').evaluate((element) => {
     const styles = getComputedStyle(element);
     return {
@@ -1158,7 +1157,9 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
   expect(shellColors.text).not.toBe('rgb(238, 242, 255)');
 
   await expectLightReadableSurface(page.locator('[data-studio-theme="light"]'), 'light Studio workspace shell');
-  await expectLightReadableSurface(page.getByRole('button', { name: 'Switch Studio to dark mode' }), 'light Studio theme toggle');
+  const lightAppMenu = await openStudioAppMenu(page);
+  await expectLightReadableSurface(lightAppMenu.getByRole('button', { name: 'Switch Studio to dark mode' }), 'light Studio theme toggle');
+  await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: 'Open export dialog' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
@@ -2901,8 +2902,6 @@ test('guide anchors survive validation and a mocked failed generation response w
   expect(guideStateBeforeFailureRaw).not.toBeNull();
   const guideStateBeforeFailure = JSON.parse(guideStateBeforeFailureRaw ?? 'null');
 
-  await page.getByRole('button', { name: 'Toggle mock generation' }).click();
-  await expect(page.getByRole('button', { name: 'Toggle mock generation' })).toContainText('Live');
   await generateButton.click();
   const failedStatus = page.locator('[data-generated-output-status="failed"]');
   await expect(failedStatus).toBeVisible();
@@ -2963,6 +2962,7 @@ test('guide anchors survive validation and a mocked failed generation response w
 test('Mock generation retargets the result guide and hands off to Viewer without forced mode switching', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
   await openProductAdGuideProject(page);
+  await page.goto(`${new URL(page.url()).pathname}?__studio_test_simulation=1`, { waitUntil: 'domcontentloaded' });
   const canvasButton = page.getByRole('button', { name: 'Canvas', exact: true });
   const viewerButton = page.locator('[data-studio-guide-anchor="viewer-tab"]');
   const timeline = page.locator('[data-studio-guide-anchor="timeline"]');
@@ -3617,9 +3617,7 @@ for (const scenario of [
       expect(familyRail.scrollWidth).toBeGreaterThan(familyRail.clientWidth);
 
       await page.keyboard.press('Escape');
-      const themeToggle = page.getByRole('button', { name: 'Switch Studio to light mode' });
-      await expect(themeToggle).toBeVisible();
-      await themeToggle.click();
+      await switchStudioTheme(page, 'light');
       await expect(page.locator('[data-studio-theme="light"]')).toBeVisible();
     }
 
@@ -3627,7 +3625,7 @@ for (const scenario of [
   });
 }
 
-test('Studio mobile theme toggle remains independently clickable beside language control', async ({ page }) => {
+test('Studio mobile app menu keeps language and appearance controls usable', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await page.addInitScript(() => {
@@ -3639,8 +3637,9 @@ test('Studio mobile theme toggle remains independently clickable beside language
 
   const shell = page.locator('[data-studio-theme="dark"]');
   await expect(shell).toBeVisible();
-  const languageToggle = page.getByRole('button', { name: 'Change workspace language' });
-  const themeToggle = page.getByRole('button', { name: 'Switch Studio to light mode' });
+  const appMenu = await openStudioAppMenu(page);
+  const languageToggle = appMenu.getByRole('button', { name: 'Change workspace language' });
+  const themeToggle = appMenu.getByRole('button', { name: 'Switch Studio to light mode' });
   await expect(languageToggle).toBeVisible();
   await expect(themeToggle).toBeVisible();
   await themeToggle.click();

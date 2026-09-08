@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { LogOut, UserRound, Wallet } from 'lucide-react';
-import { NAV_ITEMS } from '@/components/AppSidebar';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
 import styles from '../_styles/studio-session.module.css';
 import type { StudioCopy } from '../../_lib/studio-copy';
@@ -26,13 +25,14 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
 }
 
 type StudioHeaderSessionProps = {
+  account: ReturnType<typeof useHeaderAccountState>;
   exitToProjectsDisabled: boolean;
   onExitToProjects: () => void;
   studioCopy: StudioCopy;
 };
 
-export function StudioHeaderSession({ exitToProjectsDisabled, onExitToProjects, studioCopy }: StudioHeaderSessionProps) {
-  const { authResolved, email, wallet, isAdmin, signOut } = useHeaderAccountState();
+export function StudioHeaderSession({ account, exitToProjectsDisabled, onExitToProjects, studioCopy }: StudioHeaderSessionProps) {
+  const { authResolved, email, wallet, signOut } = account;
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const walletPromptId = useId();
@@ -70,12 +70,6 @@ export function StudioHeaderSession({ exitToProjectsDisabled, onExitToProjects, 
       document.removeEventListener('keydown', handleKey);
     };
   }, [accountMenuOpen, walletPromptOpen]);
-
-  const handleAdminNavigation = useCallback((event: ReactMouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    setAccountMenuOpen(false);
-    window.location.assign('/admin');
-  }, []);
 
   const handleSignOut = useCallback(() => {
     setAccountMenuOpen(false);
@@ -141,36 +135,6 @@ export function StudioHeaderSession({ exitToProjectsDisabled, onExitToProjects, 
               <span>{studioCopy.topbar.signedIn}</span>
               <strong>{email}</strong>
             </div>
-            <nav className={styles.studioSessionMenuNav} aria-label={studioCopy.topbar.primaryNavigation}>
-              {NAV_ITEMS.map((item) => {
-                const label = studioCopy.topbar.navigationLabels[item.id] ?? item.label;
-                const badgeLabel = item.badge ? studioCopy.topbar.navigationLabels[item.badgeKey ?? item.id] ?? item.badge : null;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    prefetch={false}
-                    role="menuitem"
-                    className={styles.studioSessionMenuItem}
-                    onClick={() => setAccountMenuOpen(false)}
-                  >
-                    <span>{label}</span>
-                    {badgeLabel ? <small>{badgeLabel}</small> : null}
-                  </Link>
-                );
-              })}
-              {isAdmin ? (
-                <Link
-                  href="/admin"
-                  prefetch={false}
-                  role="menuitem"
-                  className={styles.studioSessionMenuItem}
-                  onClick={handleAdminNavigation}
-                >
-                  <span>{studioCopy.topbar.admin}</span>
-                </Link>
-              ) : null}
-            </nav>
             <button type="button" className={styles.studioSessionMenuAction} onClick={handleSignOut}>
               <span>{studioCopy.topbar.signOut}</span>
               <kbd>⌘⇧Q</kbd>
@@ -178,18 +142,17 @@ export function StudioHeaderSession({ exitToProjectsDisabled, onExitToProjects, 
           </div>
         ) : null}
       </div>
-      {email ? (
-        <button
-          type="button"
-          className={styles.studioSessionExit}
-          disabled={exitToProjectsDisabled}
-          onClick={onExitToProjects}
-          aria-label={studioCopy.topbar.exitToProjects}
-          title={studioCopy.topbar.saveAndReturnToProjects}
-        >
-          <LogOut size={13} />
-        </button>
-      ) : null}
+      <button
+        type="button"
+        className={styles.studioSessionExit}
+        disabled={exitToProjectsDisabled}
+        onClick={onExitToProjects}
+        aria-label={studioCopy.topbar.exitToProjects}
+        title={studioCopy.topbar.saveAndReturnToProjects}
+      >
+        <LogOut size={13} />
+        <span>{studioCopy.topbar.breadcrumbProjects}</span>
+      </button>
     </div>
   );
 }

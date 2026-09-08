@@ -27,6 +27,7 @@ import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayb
 import { useWorkspaceTimelineSelectionSync } from './_hooks/useWorkspaceTimelineSelectionSync';
 import { getWorkspaceModelCapabilities } from './_lib/workspace-capabilities';
 import { upsertWorkspaceProjectAsset } from './_lib/workspace-generated-media';
+import { useStudioGenerationMode } from './_lib/studio-generation-mode';
 import { createWorkspaceCanvasGuideState } from './_lib/workspace-guide-state';
 import type { WorkspaceAssetRecord, WorkspaceGuideFocusRequest, WorkspaceProjectMediaFolder, WorkspaceProjectSettings, WorkspaceTemplateId, WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from './_lib/workspace-types';
 import { MINIMAL_START_WORKSPACE_TEMPLATE_ID, WORKSPACE_TEMPLATE_SUMMARIES, createStarterWorkspaceTemplate } from './_lib/workspace-templates';
@@ -106,7 +107,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [exportQualityPreset, setExportQualityPreset] = useState<WorkspaceTimelineExportQualityPreset>('standard');
   const [inspectedProjectAssetId, setInspectedProjectAssetId] = useState<string | null>(null);
   const [inspectedSequenceId, setInspectedSequenceId] = useState<string | null>(null);
-  const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
+  const mockMode = useStudioGenerationMode() === 'mock';
   const { notice, setNotice } = useWorkspaceEditorNotice();
   const [hydrated, setHydrated] = useState(false);
   const [canvasRevision, setCanvasRevision] = useState(0);
@@ -468,7 +469,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       isCanvasInspectorOpen={isCanvasInspectorOpen}
       isProjectMediaPickerOpen={isProjectMediaPickerOpen}
       lockedTimelineTracks={lockedTimelineTracks}
-      mockMode={mockMode}
       mutedAudioTracks={mutedAudioTracks}
       notice={notice}
       playheadSec={timelinePlayback.playheadSec}
@@ -484,7 +484,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       setAssetPickerNodeId={setAssetPickerNodeId}
       setFocusMode={setFocusMode}
       setIsProjectMediaPickerOpen={setIsProjectMediaPickerOpen}
-      setMockMode={setMockMode}
       setTimelineInsertIntoClipEnabled={setTimelineInsertIntoClipEnabled}
       studioCopy={studioCopy}
       studioTheme={studioTheme}

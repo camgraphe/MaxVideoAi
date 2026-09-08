@@ -81,7 +81,6 @@ type WorkspaceEditorLayoutProps = {
   isCanvasInspectorOpen: boolean;
   isProjectMediaPickerOpen: boolean;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
-  mockMode: boolean;
   mutedAudioTracks: WorkspaceTimelineAudioTrack[];
   notice: string | null;
   playheadSec: number;
@@ -97,7 +96,6 @@ type WorkspaceEditorLayoutProps = {
   setAssetPickerNodeId: Dispatch<SetStateAction<string | null>>;
   setFocusMode: Dispatch<SetStateAction<WorkspaceFocusMode>>;
   setIsProjectMediaPickerOpen: Dispatch<SetStateAction<boolean>>;
-  setMockMode: Dispatch<SetStateAction<boolean>>;
   setTimelineInsertIntoClipEnabled: Dispatch<SetStateAction<boolean>>;
   studioCopy: StudioCopy;
   studioTheme: ReturnType<typeof useStudioThemeMode>;
@@ -130,7 +128,6 @@ export function WorkspaceEditorLayout({
   isCanvasInspectorOpen,
   isProjectMediaPickerOpen,
   lockedTimelineTracks,
-  mockMode,
   mutedAudioTracks,
   notice,
   playheadSec,
@@ -146,7 +143,6 @@ export function WorkspaceEditorLayout({
   setAssetPickerNodeId,
   setFocusMode,
   setIsProjectMediaPickerOpen,
-  setMockMode,
   setTimelineInsertIntoClipEnabled,
   studioCopy,
   studioTheme,
@@ -197,10 +193,11 @@ export function WorkspaceEditorLayout({
       data-studio-theme={studioTheme.resolvedTheme}
     >
       <WorkspaceEditorTopbar
-        activeTemplateName={activeTemplateName} focusMode={focusMode} mockMode={mockMode}
+        activeTemplateName={activeTemplateName} focusMode={focusMode}
+        onAppNavigate={shell.handleNavigateFromStudio}
         onEditorSurfaceChange={setActiveEditorSurface} onExitToProjects={shell.handleExitToProjects}
         exitToProjectsDisabled={shell.exitToProjectsDisabled}
-        onFocusModeChange={setFocusMode} onToggleMockMode={() => setMockMode((value) => !value)}
+        onFocusModeChange={setFocusMode}
         studioCopy={studioCopy} studioTheme={studioTheme}
       />
       {notice ? (

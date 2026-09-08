@@ -1,10 +1,11 @@
 'use client';
 
-import { GitBranch, Moon, PanelRight, Settings, Sun } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { GitBranch, PanelRight } from 'lucide-react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { AppSiteMenuButton } from '@/components/app/AppSiteMenu.client';
+import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
+import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import { StudioHeaderSession } from './StudioHeaderSession';
-import { StudioLanguageToggle } from './StudioLanguageToggle';
 import type { WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
 import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
 import { localizeStudioGeneratedProjectDisplayName, type StudioCopy } from '../../_lib/studio-copy';
@@ -17,11 +18,10 @@ type WorkspaceEditorTopbarProps = {
   activeTemplateName: string;
   exitToProjectsDisabled: boolean;
   focusMode: WorkspaceFocusMode;
-  mockMode: boolean;
+  onAppNavigate: (href: string) => void;
   onEditorSurfaceChange: (surface: WorkspaceEditorSurface) => void;
   onExitToProjects: () => void;
   onFocusModeChange: (focusMode: WorkspaceFocusMode) => void;
-  onToggleMockMode: () => void;
   studioCopy: StudioCopy;
   studioTheme: ReturnType<typeof useStudioThemeMode>;
 };
@@ -30,34 +30,40 @@ export function WorkspaceEditorTopbar({
   activeTemplateName,
   exitToProjectsDisabled,
   focusMode,
-  mockMode,
+  onAppNavigate,
   onEditorSurfaceChange,
   onExitToProjects,
   onFocusModeChange,
-  onToggleMockMode,
   studioCopy,
   studioTheme,
 }: WorkspaceEditorTopbarProps) {
-  const [isHydrated, setIsHydrated] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const account = useHeaderAccountState();
   const displayTemplateName = localizeStudioGeneratedProjectDisplayName(activeTemplateName, studioCopy);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  const authReturnTarget = buildAuthReturnTarget(pathname, searchParams);
+  const signinHref = buildLoginHref({ mode: 'signin', nextPath: authReturnTarget });
+  const signupHref = buildLoginHref({ mode: 'signup', nextPath: authReturnTarget });
+  const themeToggleLabel = studioTheme.resolvedTheme === 'light'
+    ? studioCopy.topbar.switchToDark
+    : studioCopy.topbar.switchToLight;
 
   return (
     <header className={styles.editorTopbar}>
       <div className={styles.brandCluster}>
-        <Image
-          src="/assets/branding/logo-mark.svg"
-          alt=""
-          aria-hidden="true"
-          width={28}
-          height={28}
-          className={styles.brandLogo}
-          priority
+        <AppSiteMenuButton
+          email={account.email}
+          authResolved={account.authResolved}
+          isAdmin={account.isAdmin}
+          signinHref={signinHref}
+          signupHref={signupHref}
+          themeToggleLabel={themeToggleLabel}
+          onToggleTheme={studioTheme.toggleResolvedTheme}
+          onSignOut={account.signOut}
+          onAppNavigate={onAppNavigate}
+          studioVisible
         />
-        <div>
+        <div className={styles.projectIdentity}>
           <button type="button" className={styles.projectsButton} disabled={exitToProjectsDisabled} onClick={onExitToProjects}>{studioCopy.topbar.breadcrumbProjects}</button>
           <p title={displayTemplateName}>{displayTemplateName}</p>
         </div>
@@ -90,25 +96,12 @@ export function WorkspaceEditorTopbar({
         </button>
       </div>
       <div className={styles.topbarRight}>
-        <button type="button" className={styles.iconButton} onClick={onToggleMockMode} aria-label={studioCopy.topbar.mockAria}>
-          <Settings size={15} />
-          <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
-        </button>
-        <StudioHeaderSession exitToProjectsDisabled={exitToProjectsDisabled} onExitToProjects={onExitToProjects} studioCopy={studioCopy} />
-        <div className={styles.topbarActions}>
-          <StudioLanguageToggle />
-          {isHydrated ? (
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={studioTheme.toggleResolvedTheme}
-              aria-label={studioTheme.resolvedTheme === 'light' ? studioCopy.topbar.switchToDark : studioCopy.topbar.switchToLight}
-              title={studioTheme.resolvedTheme === 'light' ? studioCopy.topbar.switchToDark : studioCopy.topbar.switchToLight}
-            >
-              {studioTheme.resolvedTheme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
-            </button>
-          ) : null}
-        </div>
+        <StudioHeaderSession
+          account={account}
+          exitToProjectsDisabled={exitToProjectsDisabled}
+          onExitToProjects={onExitToProjects}
+          studioCopy={studioCopy}
+        />
       </div>
     </header>
   );

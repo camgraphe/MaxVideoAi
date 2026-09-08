@@ -137,6 +137,7 @@ const workspaceCanvasInspectorPanelPath = join(workspaceDir, '_components/Worksp
 const workspaceTimelineInspectorPanelPath = join(workspaceDir, '_components/WorkspaceTimelineInspectorPanel.tsx');
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
 const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
+const appSiteMenuPath = join(root, 'frontend/components/app/AppSiteMenu.client.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const shotNodeInspectorPath = join(workspaceDir, '_components/ShotNodeInspector.tsx');
 const chatInspectorPath = join(workspaceDir, '_components/ChatNodeInspector.tsx');
@@ -904,12 +905,13 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(styleSource, /\.studioSessionPill/, 'main editor CSS should no longer own account header styles after modularization');
   assert.doesNotMatch(styleSource, /\.viewerFocus \.librarySidebar/, 'main CSS should not own Viewer sidebar compatibility rules after sidebar style extraction');
   assert.doesNotMatch(styleSource, /\.viewerFocus \.panelSubtitle/, 'main CSS should not own Viewer panel subtitle compatibility rules after sidebar style extraction');
-  assert.match(studioHeaderSessionSource, /useHeaderAccountState/, 'Studio header session should reuse the shared account and wallet state hook');
+  assert.match(workspaceEditorTopbarSource, /useHeaderAccountState/, 'Studio topbar should resolve the shared account and wallet state once');
+  assert.match(workspaceEditorTopbarSource, /AppSiteMenuButton/, 'Studio topbar should reuse the main app menu instead of duplicating its destinations');
   assert.match(studioHeaderSessionSource, /walletPromptOpen/, 'Studio wallet status should open a top-up prompt inside the editor header');
   assert.match(studioHeaderSessionSource, /studioCopy\.topbar\.walletTopUpCta/, 'Studio wallet prompt should render route-local Studio copy from the topbar owner');
   assert.doesNotMatch(studioHeaderSessionSource, /useI18n\(/, 'Studio header session should not resolve localized copy independently of its topbar owner');
   assert.match(studioHeaderSessionSource, /href="\/billing"/, 'Studio wallet prompt CTA should link to billing top-up');
-  assert.match(studioHeaderSessionSource, /NAV_ITEMS\.map/, 'Studio session pill should expose the same account navigation menu as the main app');
+  assert.doesNotMatch(studioHeaderSessionSource, /NAV_ITEMS|primaryNavigation/, 'Studio account pill should not duplicate the main app navigation menu');
   assert.match(studioHeaderSessionSource, /handleSignOut/, 'Studio session menu should keep the shared sign-out action inside the account menu');
   assert.match(studioHeaderSessionSource, /aria-label=\{studioCopy\.topbar\.exitToProjects\}/, 'Studio header exit control should return to project selection instead of signing out');
   assert.match(workspaceEditorTopbarSource, /<StudioHeaderSession[\s\S]*studioCopy=\{studioCopy\}/, 'Studio header session should receive route-local Studio copy from the topbar owner');
@@ -919,7 +921,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(workspaceEditorLayoutSource, /onExitToProjects=\{shell\.handleExitToProjects\}/, 'editor layout should wire the save-and-return-to-projects action into the header');
   assert.match(workspaceSource, /useWorkspaceShellActions/, 'workspace should delegate shell-level actions to a route-local hook');
   assert.match(exportStateHookSource, /export function useWorkspaceExportState/, 'workspace export state hook should expose a focused orchestration boundary');
-  assert.match(shellActionsHookSource, /window\.location\.assign\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page');
+  assert.match(shellActionsHookSource, /handleNavigateFromStudio\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page through the saved navigation boundary');
+  assert.match(workspaceEditorLayoutSource, /onAppNavigate=\{shell\.handleNavigateFromStudio\}/, 'main app menu navigation should pass through the saved Studio navigation boundary');
   assert.match(shellActionsHookSource, /saveStudioWorkspaceToApi/, 'workspace shell action hook should save project plus sequences before returning to projects');
   assert.match(workspaceEditorLayoutSource, /focusMode === 'viewer'[\s\S]*WorkspaceProjectMediaPanel/, 'Viewer mode should own the project media panel');
   assert.match(workspaceEditorLayoutSource, /canvasEditorBody/, 'Canvas mode should use a widened body grid with no left template sidebar');
@@ -1059,9 +1062,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(shellStyleSource, /\.canvasEditorBodyInspectorOpen[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*340px/, 'Canvas body should expand the inspector column when a node is selected');
   assert.match(shellStyleSource, /\.canvasInspectorSlot[\s\S]*transition:/, 'Canvas inspector slot should animate open and close with lightweight transitions');
   assert.match(workspaceEditorLayoutSource, /WorkspaceTimeline/, 'editor layout should compose the bottom timeline');
-  assert.match(workspaceEditorTopbarSource, /\/assets\/branding\/logo-mark\.svg/, 'editor header should use the real MaxVideoAI logo mark');
+  assert.match(readFileSync(appSiteMenuPath, 'utf8'), /\/assets\/branding\/logo-mark\.svg/, 'shared app menu should provide the real MaxVideoAI logo mark to the editor header');
   assert.doesNotMatch(workspaceEditorTopbarSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
-  assert.match(shellStyleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor shell CSS');
+  assert.match(shellStyleSource, /:global\(\.app-site-trigger\)/, 'editor shell should adapt the shared app menu trigger without changing global app CSS');
   assert.match(workspaceEditorTopbarSource, /focusMode === 'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
   assert.match(workspaceEditorTopbarSource, /studioCopy\.topbar\.viewer/, 'top switch should label the montage surface from localized Studio copy');
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
@@ -2613,7 +2616,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
   assert.doesNotMatch(workspaceEditorTopbarSource, /onOpenExportDialog|exportButton|studioCopy\.topbar\.export/, 'workspace topbar should not own timeline export actions');
-  assert.match(workspaceEditorTopbarSource, /<div className=\{styles\.topbarRight\}>[\s\S]*onClick=\{onToggleMockMode\}[\s\S]*<StudioHeaderSession/, 'workspace mock toggle should render to the left of the wallet/session cluster');
+  assert.doesNotMatch(workspaceEditorTopbarSource, /onToggleMockMode|mockAria/, 'workspace topbar should not expose a Mock mode control');
+  assert.match(workspaceSource, /useStudioGenerationMode\(\) === 'mock'/, 'workspace should resolve its hidden non-production test simulation through the focused generation mode boundary');
   assert.doesNotMatch(workspaceEditorLayoutSource, /<WorkspaceEditorTopbar(?:(?!\/>)[\s\S])*onOpenExportDialog=/, 'workspace layout should not wire export into the topbar');
   assert.match(workspaceEditorLayoutSource, /<WorkspaceTimeline[\s\S]*onOpenExportDialog=\{shell\.handleOpenExportDialog\}/, 'workspace layout should wire export into the timeline toolbar');
   assert.match(timelineSource, /onOpenExportDialog/, 'timeline should receive the export action from the workspace shell controller');
