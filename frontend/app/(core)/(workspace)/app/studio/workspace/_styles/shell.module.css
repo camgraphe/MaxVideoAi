@@ -428,6 +428,71 @@
   grid-template-columns: 420px minmax(0, 1fr) 340px;
 }
 
+.viewerPanelControls {
+  display: none;
+}
+
+@media (min-width: 1121px) {
+  .viewerEditorBody {
+    transition: grid-template-columns 180ms ease;
+  }
+
+  .viewerMediaCollapsed {
+    grid-template-columns: 0 minmax(0, 1fr) 340px !important;
+  }
+
+  .viewerInspectorCollapsed {
+    grid-template-columns: 420px minmax(0, 1fr) 0 !important;
+  }
+
+  .viewerMediaCollapsed.viewerInspectorCollapsed,
+  .viewerPresentationFocus {
+    grid-template-columns: 0 minmax(0, 1fr) 0 !important;
+  }
+
+  .viewerMediaCollapsed .projectMediaPanelSlot,
+  .viewerInspectorCollapsed .inspectorPanelSlot {
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .viewerPanelControls {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: 115;
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--studio-border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--studio-surface-strong) 88%, transparent);
+    box-shadow: 0 10px 28px var(--studio-node-shadow);
+    transform: translateX(-50%);
+    backdrop-filter: blur(10px);
+  }
+
+  .viewerPanelToggle {
+    display: grid;
+    min-width: 44px;
+    min-height: 44px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--studio-text-muted);
+    cursor: pointer;
+  }
+
+  .viewerPanelToggle:hover,
+  .viewerPanelToggle:focus-visible,
+  .viewerPanelToggle[aria-pressed="true"] {
+    background: var(--studio-control-bg-hover);
+    color: var(--studio-text-strong);
+  }
+}
+
 @media (max-width: 1120px) {
   .editorShell {
     --timeline-panel-fallback-height: 220px;

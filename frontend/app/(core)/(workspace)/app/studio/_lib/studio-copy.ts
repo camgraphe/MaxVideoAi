@@ -1396,6 +1396,13 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       clearTitle: 'Clear In and Out marks',
       clearAria: 'Clear In and Out',
       clear: 'Clear',
+      viewerLayout: 'Viewer layout',
+      hideProjectMedia: 'Hide Project media',
+      showProjectMedia: 'Show Project media',
+      hideInspector: 'Hide inspector',
+      showInspector: 'Show inspector',
+      focusViewer: 'Focus viewer',
+      exitViewerFocus: 'Exit viewer focus (Escape)',
     },
     monitor: {
       viewerLabel: 'Montage video viewer',

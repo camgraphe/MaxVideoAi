@@ -6343,7 +6343,14 @@
           "snapshot": "Captura",
           "clearTitle": "Borrar marcas de entrada y salida",
           "clearAria": "Borrar Entrada y Salida",
-          "clear": "Borrar"
+          "clear": "Borrar",
+          "viewerLayout": "Disposición del visor",
+          "hideProjectMedia": "Ocultar medios del proyecto",
+          "showProjectMedia": "Mostrar medios del proyecto",
+          "hideInspector": "Ocultar inspector",
+          "showInspector": "Mostrar inspector",
+          "focusViewer": "Ampliar visor",
+          "exitViewerFocus": "Salir del modo ampliado (Escape)"
         },
         "monitor": {
           "viewerLabel": "Visor de video del montaje",

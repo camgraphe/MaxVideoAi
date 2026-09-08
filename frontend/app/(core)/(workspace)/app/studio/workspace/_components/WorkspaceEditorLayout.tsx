@@ -4,6 +4,7 @@ import type { useExportController } from '../_controllers/useExportController';
 import type { useWorkspaceCanvasController } from '../_hooks/useWorkspaceCanvasController';
 import type { useWorkspaceExportState } from '../_hooks/useWorkspaceExportState';
 import { useWorkspaceMobilePanels } from '../_hooks/useWorkspaceMobilePanels';
+import { useWorkspaceViewerPanels } from '../_hooks/useWorkspaceViewerPanels';
 import { useWorkspaceCanvasGuideViewport } from '../_hooks/useWorkspaceCanvasGuideViewport';
 import { useWorkspaceGuidePresentationController } from '../_hooks/useWorkspaceGuidePresentationController';
 import type { useWorkspaceProjectMediaActions } from '../_hooks/useWorkspaceProjectMediaActions';
@@ -50,6 +51,7 @@ import { StudioMediaHandoffReceiver } from './StudioMediaHandoffReceiver';
 import { WorkspaceTimeline } from './WorkspaceTimeline';
 import { WorkspaceTimelineInspectorPanel } from './WorkspaceTimelineInspectorPanel';
 import { WorkspaceVideoViewer } from './WorkspaceVideoViewer';
+import { WorkspaceViewerPanelControls } from './WorkspaceViewerPanelControls';
 const styles = { ...baseStyles, ...shellStyles };
 type WorkspaceEditorLayoutControllers = {
   canvas: ReturnType<typeof useWorkspaceCanvasController>;
@@ -155,18 +157,8 @@ export function WorkspaceEditorLayout({
   connectedConflict, projectAccessError,
 }: WorkspaceEditorLayoutProps) {
   const editorShellStyle = timelinePanelHeight ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties) : undefined;
-  const {
-    canvas,
-    export: exportController,
-    projectMedia,
-    selection,
-    sequence,
-    shell,
-    timelineClip,
-    timelineHistory,
-    timelinePlayback,
-    timelineTrack,
-  } = controllers;
+  const { canvas, export: exportController, projectMedia, selection, sequence, shell,
+    timelineClip, timelineHistory, timelinePlayback, timelineTrack } = controllers;
   const localizedTemplateSummaries = localizeStudioTemplateSummaries(WORKSPACE_TEMPLATE_SUMMARIES, studioCopy);
   const exportManifest = {
     ...exportState.exportManifest,
@@ -183,6 +175,7 @@ export function WorkspaceEditorLayout({
     onInspectCanvasNode: selection.handleInspectCanvasNode,
     focusMode,
   });
+  const viewerPanels = useWorkspaceViewerPanels(focusMode === 'viewer');
   const canvasGuideViewport = useWorkspaceCanvasGuideViewport({ activeTemplateId, activeUserCanvasTemplateId, canvasRevision, sourceTemplateId: canvas.guide.state.sourceTemplateId });
   const guidePresentation = useWorkspaceGuidePresentationController(canvas.guide);
   return (
@@ -207,9 +200,8 @@ export function WorkspaceEditorLayout({
       ) : null}
       <WorkspaceConnectedStatus conflict={connectedConflict} projectAccessError={projectAccessError} notices={studioCopy.notices} onReloadServerVersion={onReloadServerVersion} />
       <div
-        className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : ''} ${
-          shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''
-        }`}
+        className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : styles.viewerEditorBody} ${shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''}
+          ${focusMode === 'viewer' && !viewerPanels.mediaVisible ? styles.viewerMediaCollapsed : ''} ${focusMode === 'viewer' && !viewerPanels.inspectorVisible ? styles.viewerInspectorCollapsed : ''} ${viewerPanels.isViewerFocused ? styles.viewerPresentationFocus : ''}`}
         data-mobile-panel={mobilePanels.activePanel ?? 'closed'}
       >
         {mobilePanels.activePanel ? (
@@ -229,13 +221,15 @@ export function WorkspaceEditorLayout({
           showMedia={focusMode === 'viewer'}
           onTogglePanel={mobilePanels.togglePanel}
         />
+        {focusMode === 'viewer' ? <WorkspaceViewerPanelControls copy={studioCopy.viewer.controls} panels={viewerPanels} /> : null}
         {focusMode === 'viewer' ? (
           <div
             ref={mobilePanels.projectMediaPanelRef}
             id="studio-project-media-panel"
             className={`${styles.projectMediaPanelSlot} ${mobilePanels.activePanel === 'media' ? styles.mobilePanelOpen : ''}`}
             role="region"
-            aria-label={studioCopy.viewer.projectMedia.title}
+            aria-label={studioCopy.viewer.projectMedia.title} aria-hidden={!viewerPanels.mediaVisible && mobilePanels.activePanel !== 'media'}
+            inert={!viewerPanels.mediaVisible && mobilePanels.activePanel !== 'media'}
             tabIndex={mobilePanels.activePanel === 'media' ? -1 : undefined}
           >
             <WorkspaceMobilePanelFrame
@@ -376,7 +370,8 @@ export function WorkspaceEditorLayout({
             id="studio-inspector-panel"
             className={`${styles.inspectorPanelSlot} ${mobilePanels.activePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
             role="region"
-            aria-label={mobileInspectorLabel}
+            aria-label={mobileInspectorLabel} aria-hidden={!viewerPanels.inspectorVisible && mobilePanels.activePanel !== 'inspector'}
+            inert={!viewerPanels.inspectorVisible && mobilePanels.activePanel !== 'inspector'}
             tabIndex={mobilePanels.activePanel === 'inspector' ? -1 : undefined}
           >
             <WorkspaceMobilePanelFrame

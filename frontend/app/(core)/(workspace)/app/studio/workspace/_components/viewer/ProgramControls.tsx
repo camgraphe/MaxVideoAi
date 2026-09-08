@@ -116,18 +116,18 @@ export function ProgramControls({
           aria-label={copy.snapshotAria}
         >
           <Camera size={16} />
-          {copy.snapshot}
         </button>
-        <button
-          type="button"
-          className={styles.viewerMarkClearButton}
-          onClick={onClearInOut}
-          disabled={!hasInOutMarks}
-          title={copy.clearTitle}
-          aria-label={copy.clearAria}
-        >
-          {copy.clear}
-        </button>
+        {hasInOutMarks ? (
+          <button
+            type="button"
+            className={styles.viewerMarkClearButton}
+            onClick={onClearInOut}
+            title={copy.clearTitle}
+            aria-label={copy.clearAria}
+          >
+            {copy.clear}
+          </button>
+        ) : null}
       </div>
     </div>
   );
