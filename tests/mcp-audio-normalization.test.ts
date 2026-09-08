@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getAudioPackConfig, type AudioPackId } from '../frontend/src/lib/audio-generation';
 import { normalizeAudioGenerationRequest, hashCanonicalAudioRequest, audioRequestToGenerationBody } from '../frontend/src/server/agent-api/audio-normalization';
-import { listAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
+import { isAudioRunCapabilityAvailable, listAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
+import { validateAudioGenerateRequest } from '../frontend/src/server/audio/audio-generate-validation';
 
 function request(mode: AudioPackId, settings: Record<string, unknown> = {}, references: unknown[] = []) {
   return { schemaVersion: 1, surface: 'audio', engineId: getAudioPackConfig(mode).engineId, mode, prompt: 'A quiet forest at dawn', settings, references, outputCount: 1 };
@@ -69,4 +70,16 @@ test('capability discovery projects all packs and actual configured routes witho
   assert.notEqual(fal.revision, off.revision);
   assert.equal(fal.revision, listAudioCapabilities({ FAL_KEY: 'different-secret' }).revision);
   assert.doesNotMatch(JSON.stringify(fal), /not-a-real-key|different-secret/);
+});
+
+test('exact Audio variant availability cannot be inferred from another available variant in the same mode', () => {
+  const falOnly = listAudioCapabilities({ FAL_KEY: 'fixture' });
+  const withMusic = validateAudioGenerateRequest({
+    pack: 'cinematic', prompt: 'Cinematic soundscape', sourceVideoUrl: 'owned-video', mood: 'dark', musicEnabled: true,
+  });
+  const withoutMusic = validateAudioGenerateRequest({
+    pack: 'cinematic', prompt: 'Cinematic soundscape', sourceVideoUrl: 'owned-video', mood: 'dark', musicEnabled: false,
+  });
+  assert.equal(isAudioRunCapabilityAvailable(falOnly, withMusic), false);
+  assert.equal(isAudioRunCapabilityAvailable(falOnly, withoutMusic), true);
 });

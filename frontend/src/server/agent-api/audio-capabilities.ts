@@ -11,6 +11,7 @@ import { assertAudioProviderConfigured } from '@/server/audio/prepare-audio';
 import { validateAudioGenerateRequest } from '@/server/audio/audio-generate-validation';
 import { assertFalModelAllowed } from '@/lib/fal-model-policy';
 import { AUDIO_PRICING_POLICY_REVISION } from '@/lib/audio-pricing-policy';
+import type { ValidatedAudioGenerateRequest } from '@/server/audio/audio-generate-validation';
 
 function variantRequests(pack: AudioPackId): AudioGenerateRequestBody[] {
   const config = getAudioPackConfig(pack);
@@ -64,4 +65,15 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
     confirmation: { required: true, prepareTool: 'prepare_audio_generation', confirmTool: 'confirm_audio_generation', automaticRetry: false },
     pricingPolicyRevision: AUDIO_PRICING_POLICY_REVISION };
   return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
+}
+
+export function isAudioRunCapabilityAvailable(
+  capabilities: ReturnType<typeof listAudioCapabilities>,
+  run: ValidatedAudioGenerateRequest,
+): boolean {
+  const mode = capabilities.modes.find(candidate =>
+    candidate.mode === run.pack && candidate.engineId === getAudioPackConfig(run.pack).engineId);
+  return Boolean(mode?.variants.some(variant => variant.available
+    && Object.entries(variant.settings).every(([key, value]) =>
+      run[key as keyof ValidatedAudioGenerateRequest] === value)));
 }
