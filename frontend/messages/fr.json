@@ -5958,6 +5958,7 @@
           "settings": "Réglages",
           "closeSettings": "Fermer les réglages",
           "closeConnections": "Fermer les connexions",
+          "remainingCapacity": "{remaining} restante(s) / {maximum} maximum",
           "selectionActions": "Actions de sélection",
           "blocks": "blocs",
           "copySelection": "Copier",

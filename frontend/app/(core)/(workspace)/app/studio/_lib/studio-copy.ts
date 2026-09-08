@@ -1102,6 +1102,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       settings: 'Settings',
       closeSettings: 'Close settings',
       closeConnections: 'Close connections',
+      remainingCapacity: '{remaining} remaining / {maximum} maximum',
       selectionActions: 'Selection actions',
       blocks: 'blocks',
       copySelection: 'Copy',

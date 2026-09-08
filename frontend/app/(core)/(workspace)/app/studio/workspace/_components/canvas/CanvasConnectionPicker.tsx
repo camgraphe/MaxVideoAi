@@ -8,6 +8,18 @@ import type { WorkspaceEdgeKind, WorkspaceGraphEdge, WorkspaceGraphNode } from '
 import { localizeStudioEdgeKindLabel, type StudioCopy } from '../../../_lib/studio-copy';
 import styles from '../../_styles/canvas-actions.module.css';
 
+function restoreConnectionLauncherFocus(launcher: HTMLElement | null, nodeId: string): void {
+  if (launcher?.isConnected) {
+    launcher.focus();
+    return;
+  }
+  const nodeElement = Array.from(document.querySelectorAll<HTMLElement>('.react-flow__node'))
+    .find((candidate) => candidate.dataset.id === nodeId);
+  const fallback = nodeElement?.querySelector<HTMLElement>('[data-canvas-connections-fallback]')
+    ?? document.querySelector<HTMLElement>('[data-studio-canvas-shell]');
+  fallback?.focus();
+}
+
 export function CanvasConnectionPicker({ node, initialHandle, nodes, edges, copy, onConnect, onDisconnect, isValidConnection, onClose }: {
   node: WorkspaceGraphNode;
   initialHandle?: WorkspaceEdgeKind;
@@ -24,12 +36,21 @@ export function CanvasConnectionPicker({ node, initialHandle, nodes, edges, copy
   const incoming = edges.filter((edge) => edge.target === node.id || edge.source === node.id);
   const connector = node.data.inputConnectors?.find((item) => item.kind === handle);
   const candidates = handle ? workspaceConnectionCandidates(nodes, node.id, handle, isValidConnection) : [];
+  const capacity = connector && typeof connector.remainingCount === 'number' && typeof connector.maxCount === 'number'
+    ? copy.remainingCapacity
+      .replace('{remaining}', String(connector.remainingCount))
+      .replace('{maximum}', String(connector.maxCount))
+    : null;
   const restorePanelFocus = () => requestAnimationFrame(() => panelRef.current?.focus());
   useEffect(() => {
     const launcher = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     panelRef.current?.focus();
-    return () => { if (launcher?.isConnected) launcher.focus(); };
-  }, []);
+    return () => restoreConnectionLauncherFocus(launcher, node.id);
+  }, [node.id]);
+  useEffect(() => {
+    if (!handle || node.data.targetHandles?.includes(handle)) return;
+    setHandle(node.data.targetHandles?.[0]);
+  }, [handle, node.data.targetHandles]);
   return <div className={styles.connectionBackdrop} onClick={onClose}>
     <div ref={panelRef} tabIndex={-1} className={styles.connectionPicker} role="dialog" aria-modal="true" aria-labelledby="canvas-connections-title" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); }
@@ -43,6 +64,7 @@ export function CanvasConnectionPicker({ node, initialHandle, nodes, edges, copy
       <header><div><small>{node.data.title}</small><h2 id="canvas-connections-title">{copy.connections}</h2></div><button type="button" aria-label={copy.closeConnections} onClick={onClose}><X size={18} /></button></header>
       <div className={styles.connectionContent}>
         {node.data.targetHandles?.length ? <label>{copy.inputs}<select value={handle} onChange={(event) => setHandle(event.target.value as WorkspaceEdgeKind)}>{node.data.targetHandles.map((kind) => <option key={kind} value={kind}>{localizeStudioEdgeKindLabel(kind, copy)}</option>)}</select></label> : null}
+        {connector ? <p data-canvas-connector-capacity="true">{connector.required ? copy.required : copy.optional}{capacity ? ` · ${capacity}` : ''}</p> : null}
         {connector?.disabledReason ? <p role="status">{connector.disabledReason}</p> : null}
         {handle ? <section aria-label={copy.connectSource}>
           <h3>{copy.connectSource}</h3>

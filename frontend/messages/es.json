@@ -5950,6 +5950,7 @@
           "settings": "Ajustes",
           "closeSettings": "Cerrar ajustes",
           "closeConnections": "Cerrar conexiones",
+          "remainingCapacity": "{remaining} restante(s) / {maximum} máximo",
           "selectionActions": "Acciones de selección",
           "blocks": "bloques",
           "copySelection": "Copiar",

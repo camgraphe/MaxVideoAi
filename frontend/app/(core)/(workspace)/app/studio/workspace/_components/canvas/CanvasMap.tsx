@@ -7,6 +7,7 @@ import { useReactFlow, useStore, type XYPosition } from '@xyflow/react';
 import styles from '../../_styles/canvas-map.module.css';
 import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceNodeKind } from '../../_lib/workspace-types';
 import type { StudioCopy } from '../../../_lib/studio-copy';
+import { workspaceCanvasFitViewOptions } from '../../_lib/workspace-canvas-fit';
 
 const CANVAS_MINI_MAP_WIDTH = 164;
 const CANVAS_MINI_MAP_HEIGHT = 82;
@@ -433,9 +434,12 @@ export function CanvasMap({
   const handleFitView = useCallback(
     (event: ReactMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      void reactFlow.fitView({ duration: motionDuration(), padding: 0.18, includeHiddenNodes: false });
+      void reactFlow.fitView({
+        ...workspaceCanvasFitViewOptions({ mapExpanded: isOpen, viewportWidth: window.innerWidth }),
+        duration: motionDuration(),
+      });
     },
-    [reactFlow]
+    [isOpen, reactFlow]
   );
 
   const handleZoomIn = useCallback(

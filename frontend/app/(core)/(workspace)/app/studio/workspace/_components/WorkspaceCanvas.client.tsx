@@ -70,6 +70,7 @@ import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
 import { workspaceNodeTypes } from './nodes/workspace-node-types';
 import type { StudioCopy } from '../../_lib/studio-copy';
 import { writeStudioProjectCanvasPreview } from '../../projects/studio-project-preview-storage';
+import { workspaceCanvasFitViewOptions } from '../_lib/workspace-canvas-fit';
 
 export type {
   WorkspaceCanvasFileDropRequest,
@@ -731,6 +732,7 @@ function WorkspaceCanvasInner({
   return (
     <section
       ref={canvasShellRef}
+      tabIndex={-1}
       className={styles.canvasShell}
       data-studio-canvas-shell="true"
       aria-label={copy.ariaLabel}
@@ -780,7 +782,10 @@ function WorkspaceCanvasInner({
         maxZoom={1.65}
         defaultViewport={initialViewport ?? undefined}
         fitView={!initialViewport}
-        fitViewOptions={{ padding: 0.18, includeHiddenNodes: false }}
+        fitViewOptions={workspaceCanvasFitViewOptions({
+          mapExpanded: typeof window === 'undefined' || window.innerWidth > 600,
+          viewportWidth: typeof window === 'undefined' ? 1440 : window.innerWidth,
+        })}
         onMoveEnd={(_, viewport) => onViewportChange(viewport)}
         deleteKeyCode={isKeyboardDeleteEnabled ? ['Backspace', 'Delete'] : null}
         multiSelectionKeyCode={['Meta', 'Shift']}

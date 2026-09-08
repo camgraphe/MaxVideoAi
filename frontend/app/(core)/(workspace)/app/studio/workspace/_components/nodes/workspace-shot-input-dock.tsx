@@ -1,12 +1,13 @@
 'use client';
 
-import { Handle, Position } from '@xyflow/react';
-import type { CSSProperties } from 'react';
+import { Handle, Position, useNodeId, useUpdateNodeInternals } from '@xyflow/react';
+import { useEffect, type CSSProperties } from 'react';
 import { inputHandles, outputHandles } from './workspace-node-frame';
 import styles from '../../_styles/canvas-nodes.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector } from '../../_lib/workspace-types';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
 import { DEFAULT_STUDIO_COPY, localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
+import { projectWorkspaceShotConnectorPresentation } from '../../_lib/workspace-shot-connector-presentation';
 
 const CONNECTOR_HANDLE_EDGE_OFFSET = -14;
 
@@ -44,17 +45,24 @@ function connectorCapacity(
 }
 
 export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
+  const nodeId = useNodeId();
+  const updateNodeInternals = useUpdateNodeInternals();
   const handles = inputHandles(data);
   const outputs = outputHandles(data);
   const connectors = Array.isArray(data.inputConnectors) ? data.inputConnectors : [];
   const copy = nodeCopy(data);
+  const presentation = projectWorkspaceShotConnectorPresentation(handles, connectors);
+  const layoutSignal = `${presentation.visible.map(({ handle }) => handle).join('|')}::${presentation.optionalEmpty.map(({ handle }) => handle).join('|')}::${outputs.join('|')}`;
+  useEffect(() => {
+    if (nodeId) updateNodeInternals(nodeId);
+  }, [layoutSignal, nodeId, updateNodeInternals]);
   if (!handles.length && !outputs.length) return null;
   return (
     <div className={styles.shotInputDock} data-shot-connector-dock="true">
       {handles.length ? (
         <div className={styles.shotConnectorGroup}>
           <span className={styles.shotInputLabel}>{copy.inputs}</span>
-          {handles.map((handle) => {
+          {presentation.visible.map(({ handle }) => {
             const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
             const label = connectorLabel(handle, connectors, copy);
             const { capacityLabel, remainingCount } = connectorCapacity(handle, connectors);
@@ -94,10 +102,43 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                   {required ? ' *' : ''}
                 </span>
                 {capacityLabel ? <span className={styles.shotInputCapacity}>{capacityLabel}</span> : null}
-                <button type="button" className={`${styles.connectorAction} nodrag`} data-canvas-connect-handle={handle} aria-label={`${copy.connections}: ${label}`}>{copy.connectSource}</button>
+                <button type="button" className={`${styles.connectorAction} nodrag`} data-canvas-connect-handle={handle} aria-label={`${copy.connections}: ${label}`}>{(connectors.find((connector) => connector.kind === handle)?.connectedCount ?? 0) > 0 ? copy.connections : copy.connectSource}</button>
               </div>
             );
           })}
+          {presentation.optionalEmpty.length ? (
+            <div className={styles.shotHiddenConnectorAnchors} aria-hidden="true">
+              {presentation.optionalEmpty.map(({ handle, connector }) => {
+                const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
+                const isDisabled = connector?.remainingCount === 0 || Boolean(connector?.disabledReason);
+                return (
+                  <span key={`shot-hidden-input-${handle}`} className={styles.shotHiddenConnectorAnchor} data-shot-hidden-connector-anchor={handle}>
+                    <Handle
+                      id={handle}
+                      type="target"
+                      position={Position.Left}
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      className={`${styles.graphHandle} ${styles.shotHiddenHandle}`}
+                      style={{
+                        borderColor: color,
+                        '--workspace-handle-color': color,
+                      } as CSSProperties}
+                      isConnectable={!isDisabled}
+                    />
+                  </span>
+                );
+              })}
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className={`${styles.shotConnectionsButton} nodrag`}
+            data-canvas-connect-handle={presentation.optionalEmpty[0]?.handle ?? presentation.visible[0]?.handle}
+            data-canvas-connections-fallback="true"
+          >
+            {copy.connections}{presentation.optionalEmpty.length ? ` · +${presentation.optionalEmpty.length}` : ''}
+          </button>
         </div>
       ) : null}
       {outputs.length ? (
