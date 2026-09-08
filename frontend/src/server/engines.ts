@@ -144,17 +144,32 @@ export type TrustedPreflightMediaPricingFacts = Readonly<{
 export type ComputeConfiguredPreflightOptions = Readonly<{
   resolvedEngine?: EngineCaps;
   trustedMediaPricingFacts?: TrustedPreflightMediaPricingFacts;
+  bootstrap?: boolean;
 }>;
+
+async function getConfiguredEngineForPreflight(
+  engineId: string,
+  includeDisabled: boolean,
+  bootstrap: boolean,
+): Promise<EngineCaps | undefined> {
+  if (bootstrap) return getConfiguredEngine(engineId, includeDisabled);
+  const base = getBaseEngines().find((engine) => engine.id === engineId);
+  if (!base) return undefined;
+  const [configured] = await getConfiguredEnginesForBase([base], includeDisabled, { bootstrap: false });
+  return configured;
+}
 
 export async function computeConfiguredPreflight(
   request: PreflightRequest,
   options: ComputeConfiguredPreflightOptions = {},
 ): Promise<PreflightResponse> {
   const engineId = typeof request.engine === 'string' ? request.engine : '';
-  const resolvedEngine = options.resolvedEngine ?? await getConfiguredEngine(engineId);
+  const bootstrap = options.bootstrap !== false;
+  const resolvedEngine = options.resolvedEngine
+    ?? await getConfiguredEngineForPreflight(engineId, false, bootstrap);
   const engine = resolvedEngine?.id === engineId ? resolvedEngine : undefined;
   if (!engine) {
-    const disabledEngine = await getConfiguredEngine(engineId, true);
+    const disabledEngine = await getConfiguredEngineForPreflight(engineId, true, bootstrap);
     if (disabledEngine) {
       return {
         ok: false,

@@ -131,13 +131,6 @@ export async function GET(req: NextRequest) {
   if (!databaseConfigured) {
     return json({ error: 'Database unavailable' }, { status: 503 });
   }
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[wallet] schema init failed', error);
-    return json({ error: 'Database unavailable' }, { status: 503 });
-  }
-
   let preferredCurrency: Currency | null = null;
   try {
     preferredCurrency = await getUserPreferredCurrency(userId);

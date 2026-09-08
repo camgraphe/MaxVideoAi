@@ -1,6 +1,7 @@
 import {
   cloneEngine,
   getBaseEngineIncludingHidden,
+  getBaseEngines,
   getBaseEnginesByCategory,
   type EngineCategory,
 } from '@/lib/engines';
@@ -18,6 +19,7 @@ import {
   projectConfiguredEngine,
 } from '@/server/engine-configuration-projection';
 import type { EngineCaps } from '@/types/engines';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 
 export type ReadOnlyEngineCatalogDependencies = Readonly<{
   databaseConfigured(): boolean;
@@ -55,6 +57,18 @@ export function getReadOnlyConfiguredEnginesByCategory(
   return projectReadOnlyEngines(getBaseEnginesByCategory(category), includeDisabled, dependencies);
 }
 
+export async function getReadOnlyConfiguredEngine(
+  engineId: string,
+  includeDisabled = false,
+  dependencies: ReadOnlyEngineCatalogDependencies = defaultDependencies,
+): Promise<EngineCaps | undefined> {
+  if (!engineId) return undefined;
+  const base = getBaseEngines().find((engine) => engine.id === engineId);
+  if (!base) return undefined;
+  const [configured] = await projectReadOnlyEngines([base], includeDisabled, dependencies);
+  return configured;
+}
+
 export async function getReadOnlyConfiguredEngineIncludingHidden(
   engineId: string,
   includeDisabled = false,
@@ -62,6 +76,18 @@ export async function getReadOnlyConfiguredEngineIncludingHidden(
 ): Promise<EngineCaps | undefined> {
   if (!engineId) return undefined;
   const base = getBaseEngineIncludingHidden(engineId);
+  if (!base) return undefined;
+  const [configured] = await projectReadOnlyEngines([base], includeDisabled, dependencies);
+  return configured;
+}
+
+export async function getReadOnlyConfiguredEngineIncludingRuntimePrivate(
+  engineId: string,
+  includeDisabled = false,
+  dependencies: ReadOnlyEngineCatalogDependencies = defaultDependencies,
+): Promise<EngineCaps | undefined> {
+  if (!engineId) return undefined;
+  const base = getBaseEngineIncludingHidden(engineId) ?? getPrivateRuntimeEngineById(engineId);
   if (!base) return undefined;
   const [configured] = await projectReadOnlyEngines([base], includeDisabled, dependencies);
   return configured;
