@@ -21,6 +21,7 @@ import {
 import {
   mediaSubtitleForAsset,
   mediaSubtitleForGeneratedNode,
+  projectMediaContextMenuPosition,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useProjectMediaController';
 import {
   synchronizeGeneratedOutputNodeProjectMediaFolder,
@@ -61,6 +62,11 @@ const baseTimelineItem: WorkspaceTimelineItem = {
   sourceDurationSec: 5,
   status: 'completed',
 };
+
+test('project media context menus stay inside the visible viewport', () => {
+  assert.deepEqual(projectMediaContextMenuPosition(1190, 790, 1200, 800), { x: 1002, y: 472 });
+  assert.deepEqual(projectMediaContextMenuPosition(-20, -30, 320, 480), { x: 8, y: 8 });
+});
 
 function imageAsset(overrides: Partial<WorkspaceAssetRecord> = {}): WorkspaceAssetRecord {
   return {

@@ -66,10 +66,8 @@ type WorkspaceEditorLayoutControllers = {
 type WorkspaceEditorLayoutProps = {
   activeEditorSurface: WorkspaceEditorSurface; activeTemplateId: WorkspaceTemplateId;
   activeTemplateName: string; activeUserCanvasTemplateId: string | null;
-  audioTrackCount: number;
-  canvasRevision: number;
-  canGoToNextTimelineCut: boolean;
-  canGoToPreviousTimelineCut: boolean;
+  audioTrackCount: number; canvasRevision: number;
+  canGoToNextTimelineCut: boolean; canGoToPreviousTimelineCut: boolean;
   capabilities: WorkspaceModelCapability[];
   controllers: WorkspaceEditorLayoutControllers;
   edges: WorkspaceGraphEdge[];
@@ -471,6 +469,7 @@ export function WorkspaceEditorLayout({
         exportQualityPreset={exportQualityPreset}
         exportVideoFeedback={exportController.exportVideoFeedback}
         inPointSec={timelinePlayback.timelineInPointSec}
+        insertAtPlayheadLabel={studioCopy.viewer.projectMedia.insertAtPlayhead}
         isExportDialogOpen={exportController.isExportDialogOpen}
         isExportEstimateLoading={exportController.isExportEstimateLoading}
         isExportEstimateReady={exportController.isExportEstimateReady}
@@ -490,6 +489,7 @@ export function WorkspaceEditorLayout({
         onQualityPresetChange={shell.handleExportQualityPresetChange}
         onRangeModeChange={shell.handleExportRangeModeChange}
         onSelectAsset={canvas.handleSelectLibraryAsset}
+        onInsertProjectMediaAsset={projectMedia.handleInsertProjectMediaAsset}
         onSelectProjectMediaAsset={projectMedia.handleSelectProjectMediaAsset}
         onSelectProjectMediaAssets={projectMedia.handleSelectProjectMediaAssets}
       />

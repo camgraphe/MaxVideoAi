@@ -131,6 +131,7 @@ export function useWorkspaceProjectMediaActions({
   handleMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
   handleRenameProjectAsset: (assetId: string, requestedName: string) => void;
   handleRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
+  handleInsertProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
   handleSelectProjectMediaAssets: (assets: WorkspaceLibraryAsset[]) => void;
   handleReceiveProjectMediaHandoff: (assets: WorkspaceLibraryAsset[]) => void;
@@ -168,11 +169,16 @@ export function useWorkspaceProjectMediaActions({
   }, [commitCanvasGraph, defaultModelId, projectAssets, setActiveEditorSurface, studioCanvasNodeCopy, studioNotices]);
 
   const insertProjectAssetIntoTimeline = useCallback(
-    (assetId: string, startSec: number, targetTrack?: WorkspaceTimelineTrack) => {
+    (
+      assetId: string,
+      startSec: number,
+      targetTrack?: WorkspaceTimelineTrack,
+      availableProjectAssets: WorkspaceAssetRecord[] = mediaState.current
+    ) => {
       const timelineSeed = Date.now().toString(36);
       const result = resolveProjectAssetTimelineInsert({
         assetId,
-        projectAssets,
+        projectAssets: availableProjectAssets,
         currentItems: timelineItemsRef.current,
         startSec,
         targetTrack,
@@ -198,7 +204,6 @@ export function useWorkspaceProjectMediaActions({
     [
       commitTimelineItems,
       lockedTimelineTracks,
-      projectAssets,
       setActiveEditorSurface,
       setIsTimelinePlaying,
       setNotice,
@@ -231,13 +236,23 @@ export function useWorkspaceProjectMediaActions({
 
   const addProjectMediaAssets = useCallback(
     (assets: WorkspaceLibraryAsset[], folderId: string | null) => {
-      if (folderId && !foldersState.current.some((candidateFolder) => candidateFolder.id === folderId)) return;
+      if (folderId && !foldersState.current.some((candidateFolder) => candidateFolder.id === folderId)) return [];
       const assetRecords = assets.map((asset) => ({
         ...workspaceAssetRecordFromLibraryAsset(asset),
         folderId,
       }));
-      if (!assetRecords.length) return;
-      commitMedia((current) => mergeProjectMedia(current, assetRecords));
+      if (!assetRecords.length) return [];
+      let importedRecords: WorkspaceAssetRecord[] = [];
+      commitMedia((current) => {
+        const next = mergeProjectMedia(current, assetRecords);
+        importedRecords = assetRecords
+          .map((asset) => next.find((candidate) => (
+            candidate.id === asset.id || (asset.ref && JSON.stringify(candidate.ref) === JSON.stringify(asset.ref))
+          )))
+          .filter((asset): asset is WorkspaceAssetRecord => Boolean(asset));
+        return next;
+      });
+      return importedRecords;
     },
     [commitMedia]
   );
@@ -272,6 +287,15 @@ export function useWorkspaceProjectMediaActions({
   const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
     handleSelectProjectMediaAssets([asset]);
   }, [handleSelectProjectMediaAssets]);
+
+  const handleInsertProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
+    const folderId = pendingImportFolderIdRef.current;
+    const [projectAsset] = addProjectMediaAssets([asset], folderId);
+    if (!projectAsset) return;
+    pendingImportFolderIdRef.current = null;
+    setIsProjectMediaPickerOpen(false);
+    insertProjectAssetIntoTimeline(projectAsset.id, playheadSec, undefined, mediaState.current);
+  }, [addProjectMediaAssets, insertProjectAssetIntoTimeline, playheadSec, setIsProjectMediaPickerOpen]);
 
   const handleReceiveProjectMediaHandoff = useCallback((assets: WorkspaceLibraryAsset[]) => {
     // A project handoff never inherits a cancelled picker's destination.
@@ -675,6 +699,7 @@ export function useWorkspaceProjectMediaActions({
     handleMoveProjectAssetToFolder,
     handleRenameProjectAsset,
     handleRenameProjectMediaFolder,
+    handleInsertProjectMediaAsset,
     handleSelectProjectMediaAsset,
     handleSelectProjectMediaAssets,
     handleReceiveProjectMediaHandoff,

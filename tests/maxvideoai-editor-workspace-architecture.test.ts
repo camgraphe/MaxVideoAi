@@ -1966,6 +1966,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceSource, /assetPickerNodeId/, 'orchestrator should track which media node is being filled from the library');
   assert.match(graphActionsHookSource, /workspaceAssetRecordFromLibraryAsset/, 'graph action hook should store selected library assets on media nodes');
   assert.match(projectMediaActionsHookSource, /handleSelectProjectMediaAsset/, 'project media action hook should own library asset selection into Project media');
+  assert.match(projectMediaActionsHookSource, /handleInsertProjectMediaAsset/, 'project media action hook should import one library asset and insert it through the shared timeline contract');
+  assert.match(projectMediaActionsHookSource, /insertProjectAssetIntoTimeline\(projectAsset\.id, playheadSec, undefined, mediaState\.current\)/, 'quick Media insertion should use the just-imported project media state instead of a stale render');
+  assert.match(workspaceEditorLayoutSource, /onInsertProjectMediaAsset=\{projectMedia\.handleInsertProjectMediaAsset\}/, 'editor layout should wire quick Media insertion through project media actions');
+  assert.match(projectMediaLibraryModalSource, /insertAtPlayheadLabel/, 'project media picker should expose a direct insert-at-playhead action');
   assert.match(projectMediaActionsHookSource, /workspaceAssetRecordFromLibraryAsset/, 'project media action hook should normalize selected library assets before storing them in the project bin');
   assert.doesNotMatch(workspaceSource, /workspaceAssetRecordFromLibraryAsset/, 'workspace orchestrator should not convert library assets inline');
   assert.match(renderEdgesSource, /filterRenderableWorkspaceEdges/, 'renderable edge helper should omit edges whose handles are unavailable');
@@ -2761,6 +2765,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineStyleSource, /\.timelineScrubber/, 'timeline scrubber should be styled in focused timeline CSS');
   assert.match(timelineClipStyleSource, /\.trimHandle/, 'timeline trim handles should be styled in focused timeline clip CSS');
   assert.match(assetLibraryStyleSource, /\.assetLibraryOverlay/, 'asset library modal overlay should be styled in focused asset library CSS');
+  assert.match(assetLibraryStyleSource, /\.assetLibraryOverlay[\s\S]*z-index:\s*240/, 'asset library dialogs should cover Studio topbar menus');
   assert.match(assetLibraryStyleSource, /\.assetLibraryModal/, 'asset library modal shell should be styled in focused asset library CSS');
   assert.ok(lineCount(assetLibraryStyleSource) <= 420, 'asset library CSS module should stay small and focused');
   for (const nodeType of ["type: 'asset-image'", "type: 'asset-video'", "type: 'asset-audio'", "type: 'text-prompt'", "type: 'shot'", "type: 'output'"]) {

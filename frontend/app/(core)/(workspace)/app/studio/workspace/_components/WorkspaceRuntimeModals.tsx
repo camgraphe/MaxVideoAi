@@ -25,6 +25,7 @@ type WorkspaceRuntimeModalsProps = {
   exportRangeMode: WorkspaceExportDialogProps['exportRangeMode'];
   exportVideoFeedback: string | null;
   inPointSec: number | null;
+  insertAtPlayheadLabel: string;
   isExportDialogOpen: boolean;
   isExportEstimateLoading: boolean;
   isExportEstimateReady: boolean;
@@ -44,6 +45,7 @@ type WorkspaceRuntimeModalsProps = {
   onQualityPresetChange: WorkspaceExportDialogProps['onQualityPresetChange'];
   onRangeModeChange: WorkspaceExportDialogProps['onRangeModeChange'];
   onSelectAsset: ComponentProps<typeof WorkspaceAssetLibraryModal>['onImportAssets'];
+  onInsertProjectMediaAsset: WorkspaceProjectMediaLibraryModalProps['onInsertAsset'];
   onSelectProjectMediaAsset: WorkspaceProjectMediaLibraryModalProps['onSelectAsset'];
   onSelectProjectMediaAssets: WorkspaceProjectMediaLibraryModalProps['onSelectAssets'];
 };
@@ -61,6 +63,7 @@ export function WorkspaceRuntimeModals({
   exportRangeMode,
   exportVideoFeedback,
   inPointSec,
+  insertAtPlayheadLabel,
   isExportDialogOpen,
   isExportEstimateLoading,
   isExportEstimateReady,
@@ -80,6 +83,7 @@ export function WorkspaceRuntimeModals({
   onQualityPresetChange,
   onRangeModeChange,
   onSelectAsset,
+  onInsertProjectMediaAsset,
   onSelectProjectMediaAsset,
   onSelectProjectMediaAssets,
 }: WorkspaceRuntimeModalsProps) {
@@ -153,6 +157,7 @@ export function WorkspaceRuntimeModals({
         searchQuery={projectMediaLibrary.searchQuery}
         onSearchQueryChange={projectMediaLibrary.setSearchQuery}
         copy={assetLibraryCopy}
+        insertAtPlayheadLabel={insertAtPlayheadLabel}
         isOpen={isProjectMediaPickerOpen}
         assets={projectMediaLibrary.assets}
         hasMore={projectMediaLibrary.hasMore}
@@ -168,6 +173,7 @@ export function WorkspaceRuntimeModals({
         onLoadMore={projectMediaLibrary.loadMore}
         onRetry={projectMediaLibrary.retry}
         onMediaKindFilterChange={projectMediaLibrary.setKindFilter}
+        onInsertAsset={onInsertProjectMediaAsset}
         onSelectAsset={onSelectProjectMediaAsset}
         onSelectAssets={onSelectProjectMediaAssets}
         onSourceChange={projectMediaLibrary.setSource}

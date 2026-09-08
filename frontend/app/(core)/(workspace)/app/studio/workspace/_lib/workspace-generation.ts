@@ -24,7 +24,7 @@ import {
   localizeWorkspaceShotOutputName,
   workspaceOutputNodeTitleDataForShot,
 } from './workspace-generated-copy';
-import { WORKSPACE_DEMO_AUDIO_URL } from './workspace-library-assets';
+import { WORKSPACE_DEMO_AUDIO_URL, WORKSPACE_DEMO_VIDEO_URL } from './workspace-library-assets';
 import { resolveWorkspaceSelectedOutputCount } from './workspace-output-count';
 
 type WorkspaceGenerationMode = 'real' | 'mock';
@@ -441,7 +441,7 @@ export function createMockWorkspaceOutput(params: {
   const submissionId = params.submissionId ?? createWorkspaceGenerationSubmissionId(params.shotNode.id);
   const outputUrl =
     outputKind === 'video'
-      ? '/hero/veo3.mp4'
+      ? WORKSPACE_DEMO_VIDEO_URL
       : outputKind === 'audio'
         ? WORKSPACE_DEMO_AUDIO_URL
         : sourceImage;

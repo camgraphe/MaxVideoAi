@@ -27,7 +27,7 @@ const STORYBOARD_TO_VIDEO_TEMPLATE_CONFIG: WorkspaceTemplateVariantConfig = {
     audioFilename: 'storyboard_temp_score.mp3',
     shotSubtitles: ['Panel 01 Establish', 'Panel 02 Action', 'Panel 03 Insert', 'Panel 04 End Frame'],
     shotSubtitleCopyKeys: ['templatePanel01Establish', 'templatePanel02Action', 'templatePanel03Insert', 'templatePanel04EndFrame'],
-    outputThumbs: ['/storyboard/templates/storyboard-template-6.png', '/hero/showcase-seedance-2-0.webp'],
+    outputThumbs: ['/storyboard/templates/storyboard-template-6.png', '/assets/studio/starters/storyboard-to-video-canvas.webp'],
     timelineTitles: ['Storyboard Beat 01', 'Storyboard Beat 02'],
     timelineTitleCopyKeys: ['templateStoryboardBeat01', 'templateStoryboardBeat02'],
   };

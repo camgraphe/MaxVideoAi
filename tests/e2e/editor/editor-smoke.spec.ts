@@ -1769,14 +1769,10 @@ test('viewer project media import inserts a library asset into the timeline', as
   await page.getByRole('button', { name: 'Import media' }).click();
   await expect(page.getByRole('dialog', { name: 'Import project media' })).toBeVisible();
   await page.getByRole('button', { name: 'Select storyboarder-product-reference.jpg' }).click();
-  await page.getByRole('button', { name: /Import selected.*1/ }).click();
-  await expect(page.getByText('storyboarder-product-reference.jpg imported into Project media.')).toBeVisible();
+  await page.getByRole('button', { name: 'Insert at playhead', exact: true }).click();
 
   const importedCard = page.locator('[data-project-media-asset-id]', { hasText: 'storyboarder-product-reference.jpg' });
   await expect(importedCard).toBeVisible();
-  await importedCard.click({ button: 'right' });
-  await page.getByRole('menuitem', { name: 'Insert at playhead' }).click();
-
   await expect(page.getByText('storyboarder-product-reference.jpg inserted at the playhead')).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 1);
   await expect(page.getByRole('button', { name: 'Viewer', exact: true })).toHaveAttribute('aria-pressed', 'true');

@@ -45,6 +45,8 @@ type WorkspaceProjectMediaLibraryModalProps = {
   onLoadMore: () => void;
   onRetry?: () => void;
   onMediaKindFilterChange: (kind: WorkspaceLibraryKindFilter) => void;
+  insertAtPlayheadLabel: string;
+  onInsertAsset: (asset: WorkspaceLibraryAsset) => void;
   onSelectAsset: (asset: WorkspaceLibraryAsset) => void;
   onSelectAssets: (assets: WorkspaceLibraryAsset[]) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
@@ -76,6 +78,8 @@ export function WorkspaceProjectMediaLibraryModal({
   onLoadMore,
   onRetry,
   onMediaKindFilterChange,
+  insertAtPlayheadLabel,
+  onInsertAsset,
   onSelectAsset,
   onSelectAssets,
   onSourceChange,
@@ -137,6 +141,17 @@ export function WorkspaceProjectMediaLibraryModal({
       setSelection(resetWorkspaceAssetSelection());
     } catch { if (isCurrent()) setUploadError(copy.unableToLoadLibrary); }
   }, [copy.unableToLoadLibrary, intent, onSelectAssets, selectedAssets]);
+
+  const handleInsertSelectedAsset = useCallback(async () => {
+    if (selectedAssets.length !== 1) return;
+    const isCurrent = intent.begin();
+    try {
+      const [resolved] = await resolveWorkspaceMediaSelection(selectedAssets);
+      if (!isCurrent() || !resolved) return;
+      onInsertAsset(resolved);
+      setSelection(resetWorkspaceAssetSelection());
+    } catch { if (isCurrent()) setUploadError(copy.unableToLoadLibrary); }
+  }, [copy.unableToLoadLibrary, intent, onInsertAsset, selectedAssets]);
 
   const handleUploadChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -219,6 +234,14 @@ export function WorkspaceProjectMediaLibraryModal({
           headerActions={
             <>
               {error && onRetry ? <button type="button" onClick={onRetry}>{copy.retryLibrary}</button> : null}
+              <button
+                type="button"
+                className={styles.assetLibraryImportSelectedButton}
+                disabled={selectedAssets.length !== 1}
+                onClick={handleInsertSelectedAsset}
+              >
+                {insertAtPlayheadLabel}
+              </button>
               <button
                 type="button"
                 className={styles.assetLibraryImportSelectedButton}

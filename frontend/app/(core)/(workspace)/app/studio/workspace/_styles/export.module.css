@@ -1,19 +1,20 @@
 .exportOverlay {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 240;
   display: grid;
   place-items: center;
   padding: 24px;
   background: var(--studio-bg);
   backdrop-filter: blur(14px);
+  overscroll-behavior: contain;
 }
 
 .exportDialogShell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   width: min(420px, 100%);
-  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow: hidden;
   border: 1px solid var(--studio-border);
   border-radius: 12px;
@@ -414,4 +415,14 @@
   display: flex;
   gap: 8px;
   margin-top: 10px;
+}
+
+@media (max-width: 640px) {
+  .exportOverlay {
+    padding: 8px;
+  }
+
+  .exportDialogShell {
+    max-height: calc(100dvh - 16px);
+  }
 }

@@ -311,12 +311,13 @@ button.assetBrowserCard {
 .assetLibraryOverlay {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 240;
   display: grid;
   place-items: center;
   padding: 24px;
   background: var(--studio-bg);
   backdrop-filter: blur(16px);
+  overscroll-behavior: contain;
 }
 
 .assetLibraryModal {
@@ -324,8 +325,8 @@ button.assetBrowserCard {
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   width: min(760px, 100%);
-  height: min(620px, calc(100vh - 48px));
-  max-height: min(620px, calc(100vh - 48px));
+  height: min(620px, calc(100dvh - 48px));
+  max-height: min(620px, calc(100dvh - 48px));
   overflow: hidden;
   border: 1px solid var(--studio-border);
   border-radius: 12px;
@@ -396,4 +397,23 @@ button.assetBrowserCard {
 
 .assetBrowserModal .assetBrowserHeader {
   padding-right: 44px;
+}
+@media (max-width: 640px) {
+  .assetLibraryOverlay {
+    padding: 8px;
+  }
+
+  .assetLibraryModal {
+    height: calc(100dvh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .assetBrowserModal .assetBrowserHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .assetBrowserModal .assetBrowserHeaderActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }

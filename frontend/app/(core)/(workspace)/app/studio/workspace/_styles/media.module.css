@@ -397,7 +397,7 @@
 
 .projectMediaContextMenu {
   position: fixed;
-  z-index: 90;
+  z-index: 180;
   width: 190px;
   padding: 7px;
   border: 1px solid var(--studio-border);
@@ -450,12 +450,13 @@
 .projectMediaDialogOverlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 240;
   display: grid;
   place-items: center;
   padding: 18px;
   background: var(--studio-bg);
   backdrop-filter: blur(8px);
+  overscroll-behavior: contain;
 }
 
 .projectMediaDialog {
@@ -712,6 +713,15 @@
 }
 
 @media (max-width: 1120px) {
+  .projectMediaDialogOverlay {
+    padding: 8px;
+  }
+
+  .projectMediaDialog {
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
+  }
+
   .timelineProjectSidebar {
     display: flex;
     height: 100%;

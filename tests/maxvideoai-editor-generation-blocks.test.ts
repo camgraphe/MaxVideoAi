@@ -2100,7 +2100,8 @@ test('Studio chat keeps the shared model registry and delegates its closed API t
 
   assert.match(inspectorSource, /getStudioChatModels/);
   assert.match(routeSource, /handleStudioChatPost/);
-  assert.match(handlerSource, /getRouteAuthContext/);
+  assert.match(handlerSource, /requireAdmin/);
+  assert.doesNotMatch(handlerSource, /getRouteAuthContext/);
   assert.doesNotMatch(handlerSource, /runStudioChat|@\/server\/studio\/chat/);
   assert.match(serverSource, /resolveStudioChatModel/);
   assert.doesNotMatch(inspectorSource, /<option value="gemini-2\.5-flash">/);

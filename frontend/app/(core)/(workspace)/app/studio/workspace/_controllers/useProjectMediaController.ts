@@ -29,6 +29,27 @@ import { clearTimelineNodeDragPayload } from '../_lib/timeline/timeline-external
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 const MEDIA_DETAIL_SEPARATOR = ' • ';
+const PROJECT_MEDIA_CONTEXT_MENU_GUTTER = 8;
+const PROJECT_MEDIA_CONTEXT_MENU_WIDTH = 190;
+const PROJECT_MEDIA_CONTEXT_MENU_MAX_HEIGHT = 320;
+
+export function projectMediaContextMenuPosition(
+  clientX: number,
+  clientY: number,
+  viewportWidth: number,
+  viewportHeight: number
+): { x: number; y: number } {
+  return {
+    x: Math.max(
+      PROJECT_MEDIA_CONTEXT_MENU_GUTTER,
+      Math.min(clientX, viewportWidth - PROJECT_MEDIA_CONTEXT_MENU_WIDTH - PROJECT_MEDIA_CONTEXT_MENU_GUTTER)
+    ),
+    y: Math.max(
+      PROJECT_MEDIA_CONTEXT_MENU_GUTTER,
+      Math.min(clientY, viewportHeight - PROJECT_MEDIA_CONTEXT_MENU_MAX_HEIGHT - PROJECT_MEDIA_CONTEXT_MENU_GUTTER)
+    ),
+  };
+}
 
 export type ProjectMediaSelection =
   | { id: string; type: 'asset' | 'folder' | 'generated' | 'sequence' }
@@ -472,10 +493,15 @@ export function useProjectMediaController({
       return [menuSelection];
     });
     setSelectionAnchorKey(menuSelectionKey);
+    const position = projectMediaContextMenuPosition(
+      event.clientX,
+      event.clientY,
+      window.innerWidth,
+      window.innerHeight
+    );
     setContextMenu({
       ...menu,
-      x: event.clientX,
-      y: event.clientY,
+      ...position,
     });
   }, []);
 
