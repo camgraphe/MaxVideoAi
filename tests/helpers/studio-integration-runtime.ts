@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdtemp, rm, symlink } from 'node:fs/promises';
+import { mkdtemp, realpath, rm, symlink } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -30,8 +30,8 @@ async function archiveSnapshot(root: string, target: string, revision: string) {
     child.once('exit', (code) => code === 0 ? resolve() : reject(new Error(`Snapshot process exited ${code}.`)));
   });
   await Promise.all([completed(archive), completed(extract)]);
-  await symlink(join(root, 'node_modules'), join(target, 'node_modules'), 'dir');
-  await symlink(join(root, 'frontend/node_modules'), join(target, 'frontend/node_modules'), 'dir');
+  await symlink(await realpath(join(root, 'node_modules')), join(target, 'node_modules'), 'dir');
+  await symlink(await realpath(join(root, 'frontend/node_modules')), join(target, 'frontend/node_modules'), 'dir');
 }
 
 /** Owns a committed Next snapshot, fresh local DB and test-only Auth, never an existing server. */
@@ -126,7 +126,8 @@ export async function startStudioIntegrationRuntime(options: {
     childExit = new Promise<void>((resolve, reject) => { child!.once('exit', () => resolve()); child!.once('error', reject); });
     child.stdout!.on('data', (value) => { logs = (logs + value.toString()).slice(-100_000); });
     child.stderr!.on('data', (value) => { logs = (logs + value.toString()).slice(-100_000); });
-    const deadline = Date.now() + 90_000;
+    const readinessTimeoutMs = Number(process.env.STUDIO_INTEGRATION_READY_TIMEOUT_MS ?? 90_000);
+    const deadline = Date.now() + readinessTimeoutMs;
     while (Date.now() < deadline) {
       if (child.exitCode !== null || child.signalCode !== null) throw new Error(`Isolated Next exited before readiness. ${logs.slice(-4000)}`);
       // A failed bind must never let an unrelated HTTP listener satisfy readiness.
@@ -134,6 +135,8 @@ export async function startStudioIntegrationRuntime(options: {
       try {
         const response = await fetch(`${origin}/api/studio/projects`, { signal: AbortSignal.timeout(2000) });
         if (response.status === 401) return { origin, browserOrigin, mcpHost, revision, database, auth, close, readLogs: () => logs };
+        const body = await response.text().catch(() => '');
+        logs = `${logs}\n[readiness] ${response.status} ${body}`.slice(-100_000);
       } catch { /* No existing server is reused; wait for this exact child to become ready. */ }
       await delay(200);
     }
