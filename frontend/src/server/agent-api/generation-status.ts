@@ -298,14 +298,23 @@ export function buildGenerationResourceLinks(
     ];
   }
   if (recovery.result.surface === 'audio') {
-    const originalUrl = recovery.result.audioUrl ?? recovery.result.videoUrl;
     return [
-      ...(originalUrl ? [{
-        uri: originalUrl,
+      ...(recovery.result.audioUrl ? [{
+        uri: recovery.result.audioUrl,
         name: 'MaxVideoAI output',
         description: `output for generation ${recovery.jobId}`,
         mimeType: recovery.result.mimeType,
       }] : []),
+      ...(recovery.result.videoUrl ? [
+        recovery.result.audioUrl
+          ? resource(recovery, recovery.result.videoUrl, 'output')
+          : {
+              uri: recovery.result.videoUrl,
+              name: 'MaxVideoAI output',
+              description: `output for generation ${recovery.jobId}`,
+              mimeType: recovery.result.mimeType,
+            },
+      ] : []),
       ...(recovery.result.thumbnailUrl ? [resource(recovery, recovery.result.thumbnailUrl, 'thumbnail')] : []),
     ];
   }

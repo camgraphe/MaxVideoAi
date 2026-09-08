@@ -338,6 +338,47 @@ test('completed Audio recovery targets the Audio workspace and exposes the exact
     description: 'output for generation audio-job-1',
     mimeType: 'audio/wav',
   }]);
+
+  const videoFallback = buildAgentGenerationRecovery({
+    ...recovery,
+    jobId: 'audio-video-fallback',
+    result: recovery.result?.surface === 'audio' ? {
+      ...recovery.result,
+      audioUrl: null,
+      videoUrl: 'https://media.maxvideoai.com/generated/audio-fallback',
+      mimeType: 'audio/mpeg',
+    } : null,
+  });
+  assert.deepEqual(buildGenerationResourceLinks(videoFallback).map(({ uri, mimeType }) => ({ uri, mimeType })), [{
+    uri: 'https://media.maxvideoai.com/generated/audio-fallback',
+    mimeType: 'audio/mpeg',
+  }]);
+
+  const both = buildAgentGenerationRecovery({
+    ...recovery,
+    jobId: 'audio-with-video',
+    result: recovery.result?.surface === 'audio' ? {
+      ...recovery.result,
+      audioUrl: 'https://cdn.maxvideoai.com/generated/audio-with-video.flac',
+      videoUrl: 'https://media.maxvideoai.com/generated/audio-with-video.mp4',
+      mimeType: 'audio/flac',
+    } : null,
+  });
+  assert.deepEqual(buildGenerationResourceLinks(both).map(({ uri, mimeType }) => ({ uri, mimeType })), [
+    { uri: 'https://cdn.maxvideoai.com/generated/audio-with-video.flac', mimeType: 'audio/flac' },
+    { uri: 'https://media.maxvideoai.com/generated/audio-with-video.mp4', mimeType: 'video/mp4' },
+  ]);
+
+  const duplicate = buildAgentGenerationRecovery({
+    ...recovery,
+    result: recovery.result?.surface === 'audio' ? {
+      ...recovery.result,
+      audioUrl: 'https://MEDIA.MAXVIDEOAI.COM:443/generated/same.m4a',
+      videoUrl: 'https://media.maxvideoai.com/generated/same.m4a',
+      mimeType: 'audio/mp4',
+    } : null,
+  });
+  assert.equal(buildGenerationResourceLinks(duplicate).length, 1);
 });
 
 test('failed recovery gives Claude and Codex a stable actionable code without provider details', async (t) => {

@@ -54,6 +54,8 @@ The current MCP App is the immutable `generation-result-v5.html`; legacy v1-v4 r
 
 The shared `job_outputs` upsert requires the same `(job_id,user_id)` in `app_jobs`, permits conflict updates only for the same output owner and fails on an ownership mismatch; video and image callers use the same guard.
 
+For soundtrack results that contain both an Audio original and a rendered video, non-App recovery returns both resources: the Audio link keeps the persisted Audio MIME and the video link uses its video MIME. Audio-only and legacy video-column-only results retain their single-resource behavior, and canonical duplicate URLs remain collapsed.
+
 Standalone original persistence recognizes WAV, FLAC, Ogg and MP3 from the bytes. MP3 requires a valid ID3 header or MPEG audio frame header; an analyzable stream with an unknown container is rejected before upload.
 
 ## Verification

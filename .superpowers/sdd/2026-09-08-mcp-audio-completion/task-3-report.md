@@ -8,6 +8,8 @@ The post-review compatibility correction keeps cinematic soundtrack outputs read
 
 The same correction binds every `job_outputs` insert and conflict update to the owning `(job_id,user_id)` in `app_jobs`; a different owner cannot replace URL, MIME, duration or metadata. Standalone Audio persistence now accepts MP3 only with a valid ID3 or MPEG frame header and rejects unknown analyzed containers before upload.
 
+The final recovery correction retains both resources for soundtrack jobs that have distinct `audioUrl` and `videoUrl` values. Audio-only and legacy video-column-only fallbacks still return one exact resource, while canonically equivalent URLs remain deduplicated.
+
 The immutable generation-result v5 App adds a compact native manual Audio player without autoplay. Pending and failed states have no media source. Completed results offer signed download, safe settings reuse and the owned workspace destination. Legacy v1-v4 resources still serve the v4 document. Browser fixtures cover desktop light/dark, 390-pixel mobile layout and keyboard focus; the accepted capture files are `/tmp/maxvideoai-mcp-audio-v5-reviewed3-light.png`, `/tmp/maxvideoai-mcp-audio-v5-reviewed3-dark.png` and `/tmp/maxvideoai-mcp-audio-v5-reviewed3-mobile.png`.
 
 The composed test command runs from the repository root with the frontend dependency tree:
