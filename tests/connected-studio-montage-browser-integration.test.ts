@@ -563,6 +563,33 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         await expect(ordered).toHaveCount(3);
         await ordered.nth(2).getByRole('button', { name: 'Remove 3', exact: true }).click();
         await expect(ordered).toHaveCount(2);
+        // Qualify the maximum mobile list without submitting a second montage.
+        // Repeated occurrences remain distinct; only the dialog scrolls vertically.
+        for (let index = 2; index < 12; index += 1) {
+          await dialog.locator(`[data-studio-montage-add="${STUDIO_CONNECTED_ASSET_IDS.a}"]`).click();
+        }
+        await expect(ordered).toHaveCount(12);
+        for (const add of await dialog.locator('[data-studio-montage-add]').all()) await expect(add).toBeDisabled();
+        const lastTrim = ordered.nth(11).getByLabel('Duration in frames', { exact: true });
+        await lastTrim.scrollIntoViewIfNeeded();
+        await lastTrim.click({ trial: true });
+        const mobileScroll = await dialog.evaluate((element) => {
+          const list = element.querySelector('[data-studio-montage-clip]')!.parentElement!;
+          return { listOverflow: getComputedStyle(list).overflowY, listExcess: list.scrollHeight - list.clientHeight,
+            dialogExcess: element.scrollHeight - element.clientHeight };
+        });
+        assert.equal(mobileScroll.listOverflow, 'visible');
+        assert.ok(mobileScroll.listExcess <= 1, 'The ordered list must not become a nested mobile scroll box.');
+        assert.ok(mobileScroll.dialogExcess > 0, 'The dialog must own scrolling for twelve clips.');
+        const maxListSubmit = dialog.locator('[data-studio-montage-submit="true"]');
+        await expect(maxListSubmit).toBeEnabled();
+        await maxListSubmit.scrollIntoViewIfNeeded();
+        await maxListSubmit.click({ trial: true });
+        await creator.page.screenshot({ path: 'output/playwright/studio-connected/mobile-twelve-clips-submit.png' });
+        for (let index = 11; index >= 2; index -= 1) {
+          await dialog.locator(`[data-studio-montage-remove="${index}"]`).click();
+        }
+        await expect(ordered).toHaveCount(2);
         await dialog.locator('[data-studio-montage-move-up="1"]').click();
         await expect(ordered.nth(0)).toHaveAttribute('data-studio-montage-asset-id', STUDIO_CONNECTED_ASSET_IDS.b);
         await dialog.locator('[data-studio-montage-move-down="0"]').focus();

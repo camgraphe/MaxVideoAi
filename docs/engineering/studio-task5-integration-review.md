@@ -187,3 +187,23 @@ styling lines to the previously503-line node module, exceeding its520-line
 contract at547. This is a Task5 regression, not an inherited failure. The writer
 is isolating the new connector styling responsibility without changing its CSS
 values, raising the limit or compressing source formatting to evade the guard.
+
+## Connected browser and regression rerun
+
+The full private connected browser suite on26cb passes **7/7, zero skips,65.67s**.
+The mobile builder now also exercises all12 ordered occurrences: add controls
+disable at the limit, the final trim and submit remain actionable, the ordered
+list has visible overflow without an inner scroll range, and the dialog owns
+scrolling. The ten extra occurrences are then removed before the existing real
+two-clip B/A creation, lost-response replay and SQL receipt assertions. No extra
+twelve-clip server command is submitted. All native frame/audio, media renewal,
+ownership, revision conflict, local draft recovery and save-and-exit tests pass.
+
+The independent39-case UI regression run returns38 passes and one fixture error.
+The Projects legacy Rename/Duplicate/Delete assertions all pass, but its final
+console guard correctly catches two500s. The saved trace identifies only
+`/api/legal/cookies/version` and `/api/legal/cookies`: unlike workspace tests, this
+case did not call the common local-dependency fixture helper. The correction must
+mock these absent consent services explicitly, not ignore errors. All other
+model/capacity, clipboard, keyboard, responsive inspector, audio and local-recovery
+cases pass. The corrected Projects case still needs a fresh run.
