@@ -58,7 +58,10 @@ test('quote identity covers account and complete normalized settings; amount and
 
 test('standalone persistence uploads the exact original bytes and records probe duration', async () => {
   const { persistOriginalAudio } = await import('../frontend/src/server/audio/media');
-  const bytes = Buffer.from('ID3-original-provider-audio-longer-than-estimate');
+  const bytes = Buffer.concat([
+    Buffer.from([0x49, 0x44, 0x33, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+    Buffer.from('original-provider-audio-longer-than-estimate'),
+  ]);
   let uploaded: Buffer | null = null;
   const result = await persistOriginalAudio({ userId: 'owner', jobId: 'aud_original', url: 'https://fixture.example/original.mp3' }, {
     fetchBuffer: async () => bytes,
@@ -69,4 +72,21 @@ test('standalone persistence uploads the exact original bytes and records probe 
   assert.equal(result.durationSec, 37.4);
   assert.equal(result.audioUrl, 'https://fixture.example/stored.mp3');
   assert.equal(result.mimeType, 'audio/mpeg');
+});
+
+test('standalone persistence rejects analyzed bytes without a known audio container', async () => {
+  const { persistOriginalAudio } = await import('../frontend/src/server/audio/media');
+  let uploadCalls = 0;
+  await assert.rejects(
+    persistOriginalAudio({ userId: 'owner', jobId: 'aud_unknown', url: 'https://fixture.example/unknown.bin' }, {
+      fetchBuffer: async () => Buffer.from('analyzable-but-not-an-audio-container'),
+      detectDuration: async () => 3.5,
+      upload: async () => {
+        uploadCalls += 1;
+        return { url: 'https://fixture.example/should-not-upload' } as never;
+      },
+    }),
+    /unsupported generated audio container/i,
+  );
+  assert.equal(uploadCalls, 0);
 });

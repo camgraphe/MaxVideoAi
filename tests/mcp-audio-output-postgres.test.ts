@@ -22,6 +22,16 @@ test('Audio job output projection is exact and idempotent on disposable PostgreS
     import('../frontend/src/lib/db'),
   ]);
   closeDb = () => getDb().end();
+  await database.pool.query(`
+    CREATE TABLE app_jobs (
+      job_id text PRIMARY KEY,
+      user_id text
+    )
+  `);
+  await database.pool.query(
+    `INSERT INTO app_jobs (job_id, user_id) VALUES ($1, $2)`,
+    ['audio-job-1', 'audio-owner'],
+  );
   const output = {
     id: 'audio-job-1:audio:0',
     jobId: 'audio-job-1',
@@ -42,14 +52,27 @@ test('Audio job output projection is exact and idempotent on disposable PostgreS
 
   await upsertJobOutputs([output]);
   await upsertJobOutputs([output]);
+  await assert.rejects(
+    upsertJobOutputs([{
+      ...output,
+      id: 'attacker-output-id',
+      userId: 'other-owner',
+      url: 'https://attacker.example/replaced.mp3',
+      mimeType: 'audio/mpeg',
+      durationSec: 999,
+      metadata: { surface: 'audio', measuredDurationSec: 999 },
+    }]),
+    /ownership/i,
+  );
   const rows = (await database.pool.query(
-    `SELECT id, kind, url, mime_type, duration_sec, metadata
+    `SELECT id, user_id, kind, url, mime_type, duration_sec, metadata
        FROM job_outputs
       WHERE job_id = $1`,
     [output.jobId],
   )).rows;
   assert.deepEqual(rows, [{
     id: output.id,
+    user_id: output.userId,
     kind: 'audio',
     url: output.url,
     mime_type: 'audio/flac',

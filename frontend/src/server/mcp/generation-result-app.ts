@@ -633,7 +633,7 @@ export function buildGenerationResultAppHtml(): string {
     )
     .replace(
       "const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)",
-      "const audioUrl = media?.surface === 'audio' ? safeUrl(media.audioUrl) : null;\n        const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)",
+      "const audioUrl = media?.surface === 'audio' ? (safeUrl(media.audioUrl) || safeUrl(media.videoUrl)) : null;\n        const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)",
     )
     .replace(
       "surface.textContent = result?.surface === 'image' ? 'Image' : 'Video';",

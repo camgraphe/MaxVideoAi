@@ -5,7 +5,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { JSDOM } from 'jsdom';
 
-import { buildAgentGenerationRecovery } from '../frontend/src/server/agent-api/generation-status';
+import {
+  buildAgentGenerationRecovery,
+  buildGenerationResourceLinks,
+} from '../frontend/src/server/agent-api/generation-status';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import type { AgentGenerationStatus } from '../frontend/src/server/generations/generation-status';
 import { buildGenerationResultAppHtml } from '../frontend/src/server/mcp/generation-result-app';
@@ -70,6 +73,20 @@ function audioStatus(status: AgentGenerationStatus['status'] = 'completed'): Age
       durationSec: 12.375,
     } : null,
     retryAfterSeconds: status === 'running' ? 5 : null,
+  };
+}
+
+function soundtrackAudioStatus(): AgentGenerationStatus {
+  const status = audioStatus();
+  return {
+    ...status,
+    jobId: 'cinematic-soundtrack-job',
+    result: status.result?.surface === 'audio' ? {
+      ...status.result,
+      audioUrl: null,
+      videoUrl: 'https://media.maxvideoai.com/generated/cinematic-soundtrack',
+      mimeType: 'audio/mpeg',
+    } : null,
   };
 }
 
@@ -434,6 +451,16 @@ test('v5 Audio fixture renders one manual player, measured duration, and keyboar
   ]);
   completed.window.close();
 
+  const soundtrack = createDom(soundtrackAudioStatus());
+  const soundtrackAudio = soundtrack.window.document.getElementById('audio') as HTMLAudioElement;
+  assert.equal(soundtrackAudio.hidden, false);
+  assert.equal(
+    soundtrackAudio.src,
+    'https://media.maxvideoai.com/generated/cinematic-soundtrack',
+  );
+  assert.equal((soundtrack.window.document.getElementById('video') as HTMLVideoElement).hidden, true);
+  soundtrack.window.close();
+
   for (const terminal of ['running', 'failed'] as const) {
     const incomplete = createDom(audioStatus(terminal));
     const incompleteAudio = incomplete.window.document.getElementById('audio') as HTMLAudioElement;
@@ -504,6 +531,36 @@ test('generation presenter signs the original Audio output with its durable exte
   assert.deepEqual(descriptor, {
     url: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-audio.m4a?signature=fresh',
     filename: 'maxvideoai-completed-audio-job.m4a',
+    expiresAt: '2026-09-08T10:00:00.000Z',
+  });
+});
+
+test('Audio soundtrack fallback keeps its durable MIME and filename extension', async () => {
+  const recovery = buildAgentGenerationRecovery(soundtrackAudioStatus());
+  assert.deepEqual(buildGenerationResourceLinks(recovery), [{
+    uri: 'https://media.maxvideoai.com/generated/cinematic-soundtrack',
+    name: 'MaxVideoAI output',
+    description: 'output for generation cinematic-soundtrack-job',
+    mimeType: 'audio/mpeg',
+  }]);
+
+  const calls: Array<{ key: string; downloadFilename?: string }> = [];
+  const descriptor = await presentGenerationModule.createGenerationDownloadDescriptor(recovery, {
+    now: () => new Date('2026-09-08T09:00:00.000Z'),
+    extractStorageKeyFromUrl: () => 'renders/audio-owner/cinematic-soundtrack',
+    createSignedDownloadUrl: async (key, options) => {
+      calls.push({ key, downloadFilename: options.downloadFilename });
+      return 'https://videohub-uploads-us.s3.amazonaws.com/signed/cinematic-soundtrack?signature=fresh';
+    },
+  });
+
+  assert.deepEqual(calls, [{
+    key: 'renders/audio-owner/cinematic-soundtrack',
+    downloadFilename: 'maxvideoai-cinematic-soundtrack-job.mp3',
+  }]);
+  assert.deepEqual(descriptor, {
+    url: 'https://videohub-uploads-us.s3.amazonaws.com/signed/cinematic-soundtrack?signature=fresh',
+    filename: 'maxvideoai-cinematic-soundtrack-job.mp3',
     expiresAt: '2026-09-08T10:00:00.000Z',
   });
 });

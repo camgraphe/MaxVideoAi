@@ -21,12 +21,18 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
   if (!outputs.length) return;
   await ensureMediaLibrarySchema();
   for (const output of outputs) {
-    await query(
+    const persisted = await query<{ id: string }>(
       `INSERT INTO job_outputs (
          id, job_id, user_id, kind, url, storage_url, thumb_url, preview_url, mime_type, width, height,
          duration_sec, position, status, metadata
        )
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb)
+       SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb
+        WHERE EXISTS (
+          SELECT 1
+            FROM app_jobs
+           WHERE job_id = $2
+             AND user_id IS NOT DISTINCT FROM $3
+        )
        ON CONFLICT (job_id, kind, position)
        DO UPDATE SET
          url = EXCLUDED.url,
@@ -39,7 +45,9 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
          duration_sec = COALESCE(EXCLUDED.duration_sec, job_outputs.duration_sec),
          status = EXCLUDED.status,
          metadata = COALESCE(job_outputs.metadata, '{}'::jsonb) || EXCLUDED.metadata,
-         updated_at = NOW()`,
+         updated_at = NOW()
+       WHERE job_outputs.user_id IS NOT DISTINCT FROM EXCLUDED.user_id
+       RETURNING id`,
       [
         output.id,
         output.jobId,
@@ -58,6 +66,9 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
         JSON.stringify(output.metadata ?? {}),
       ]
     );
+    if (persisted.length !== 1) {
+      throw new Error('Job output ownership does not match the owning job.');
+    }
   }
 }
 

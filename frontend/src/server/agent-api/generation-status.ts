@@ -298,14 +298,14 @@ export function buildGenerationResourceLinks(
     ];
   }
   if (recovery.result.surface === 'audio') {
+    const originalUrl = recovery.result.audioUrl ?? recovery.result.videoUrl;
     return [
-      ...(recovery.result.audioUrl ? [{
-        uri: recovery.result.audioUrl,
+      ...(originalUrl ? [{
+        uri: originalUrl,
         name: 'MaxVideoAI output',
         description: `output for generation ${recovery.jobId}`,
         mimeType: recovery.result.mimeType,
       }] : []),
-      ...(recovery.result.videoUrl ? [resource(recovery, recovery.result.videoUrl, 'output')] : []),
       ...(recovery.result.thumbnailUrl ? [resource(recovery, recovery.result.thumbnailUrl, 'thumbnail')] : []),
     ];
   }

@@ -42,13 +42,19 @@ Audio progress and terminal writes are conditional on the job still being `pendi
 
 The historical `app_jobs.duration_sec` contract is integer and non-null. Unknown song duration starts at zero in that column; it is not an output estimate. Completion stores the ceiling integer there and the exact probe value in `settings_snapshot.measuredDurationSec`, `settings_snapshot.mediaFacts` and the response. The original audio file remains untrimmed. Downstream timeline code must consume verified original-media facts, not this rounded column.
 
+Standalone persistence recognizes WAV only with its RIFF/WAVE signature, FLAC, Ogg, and MP3 with a valid ID3 header or MPEG audio frame header. Analyzable bytes in any unknown container are rejected before upload.
+
 ## Public MCP registration and results
 
 `mcp-publication.json` owns the separate `audioGeneration` kill switch and keeps it false by default. Audio tools register only when both `paidGeneration` and `audioGeneration` are effective. The HTTP runtime applies the same conjunction and its audit allowlist recognizes the three exact names without retaining arguments. `list_audio_capabilities` is read-only and closed-world; preparation is non-destructive and closed-world; confirmation is destructive, idempotent and open-world because it can debit the wallet and invoke a provider after the reservation commits. Each adapter passes the authenticated OAuth user/client identity into its qualified service and rejects extra input keys.
 
-Completed Audio recovery continues to read the owned `app_jobs` state machine. Status and recent-generation readers classify `surface=audio`, prefer the stable original Audio URL, preserve the exact persisted MIME type and project decimal `settings_snapshot.mediaFacts.durationSec` or `measuredDurationSec`. `job_outputs` remains the durable download record: completion upserts the original at `(job_id, kind, position)`, stores its byte-derived MIME type, the ceiling database duration and the decimal measured duration in metadata. Replaying the projection cannot duplicate the output. No schema migration is required.
+Completed Audio recovery continues to read the owned `app_jobs` state machine. Status and recent-generation readers classify `surface=audio`, prefer the stable original Audio URL and fall back to the legacy `video_url` column used by soundtrack packs while preserving the Audio surface and exact persisted MIME type. They project decimal `settings_snapshot.mediaFacts.durationSec` or `measuredDurationSec`. `job_outputs` remains the durable download record: completion upserts the original at `(job_id, kind, position)`, stores its byte-derived MIME type, the ceiling database duration and the decimal measured duration in metadata. Replaying the projection cannot duplicate the output. Result resources, the native Audio reader and signed-download filenames all preserve that durable Audio MIME even when the original came from the legacy column. No schema migration is required.
 
 The current MCP App is the immutable `generation-result-v5.html`; legacy v1-v4 resources continue to serve the v4 document. Version 5 adds only the Audio result behavior. Pending and failed results never receive a media source. A completed result renders a compact editorial header and native manual `<audio controls>` without autoplay, shows measured duration and provides Download, Reuse settings and Open in MaxVideoAI actions. Reuse builds only an allowlisted `/app/audio?job=…&reuse=1` destination from the owned workspace URL. Mobile actions keep 44-pixel targets with Open on a full-width second row. Light, dark and 390-pixel fixtures are captured through `scripts/qa/render-mcp-audio-result.ts`.
+
+The shared `job_outputs` upsert requires the same `(job_id,user_id)` in `app_jobs`, permits conflict updates only for the same output owner and fails on an ownership mismatch; video and image callers use the same guard.
+
+Standalone original persistence recognizes WAV, FLAC, Ogg and MP3 from the bytes. MP3 requires a valid ID3 header or MPEG audio frame header; an analyzable stream with an unknown container is rejected before upload.
 
 ## Verification
 
