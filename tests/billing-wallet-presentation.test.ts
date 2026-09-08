@@ -17,11 +17,12 @@ async function loadBillingPresentation() {
     module.exports = { __esModule: true, default: classes };
   };
   try {
-    const [{ BillingWalletOverview }, { WalletCheckoutSummary }] = await Promise.all([
+    const [{ BillingWalletOverview }, { WalletCheckoutSummary }, { ReceiptsPanel }] = await Promise.all([
       import('../frontend/app/(core)/billing/_components/BillingWalletOverview'),
       import('../frontend/app/(core)/billing/_components/WalletCheckoutSummary'),
+      import('../frontend/app/(core)/billing/_components/ReceiptsPanel'),
     ]);
-    return { BillingWalletOverview, WalletCheckoutSummary };
+    return { BillingWalletOverview, WalletCheckoutSummary, ReceiptsPanel };
   } finally {
     if (previousCssLoader) require.extensions['.css'] = previousCssLoader;
     else delete require.extensions['.css'];
@@ -81,6 +82,39 @@ test('billing copy exposes the paid-versus-received distinction in every locale'
     assert.ok(wallet.creditsReceived.length > 0);
     assert.notEqual(wallet.paymentAmount, wallet.creditsReceived);
   }
+});
+
+test('payment history renders ledger movements with expandable document details', async () => {
+  const { ReceiptsPanel } = await loadBillingPresentation();
+  const markup = renderToStaticMarkup(React.createElement(ReceiptsPanel, {
+    copy: DEFAULT_BILLING_COPY,
+    dateFormatter: new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }),
+    formatMoney: (amountCents: number, currency: string) => `${currency} ${(amountCents / 100).toFixed(2)}`,
+    onExportCsv() {},
+    onLoadMoreReceipts() {},
+    onToggleReceipts() {},
+    receipts: { items: [], nextCursor: null, loading: false, error: null },
+    receiptsCollapsed: false,
+    visibleReceipts: [{
+      id: 7,
+      type: 'topup',
+      amount_cents: 2500,
+      currency: 'USD',
+      description: 'Wallet top-up',
+      created_at: '2026-09-08T09:30:00.000Z',
+      job_id: null,
+      tax_amount_cents: null,
+      discount_amount_cents: null,
+      document_type: 'receipt',
+      document_label: 'Stripe receipt',
+      document_url: 'https://pay.example.test/receipt/7',
+    }],
+  }));
+  const document = new JSDOM(markup).window.document;
+
+  assert.equal(document.querySelectorAll('details').length, 1);
+  assert.match(document.querySelector('summary')?.textContent ?? '', /USD 25\.00/);
+  assert.equal(document.querySelector('a[href="https://pay.example.test/receipt/7"]')?.getAttribute('target'), '_blank');
 });
 
 test('billing local styles preserve touch targets and reduced-motion behavior', () => {

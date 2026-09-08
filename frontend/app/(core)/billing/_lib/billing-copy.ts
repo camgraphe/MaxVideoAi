@@ -95,6 +95,7 @@ export const DEFAULT_BILLING_COPY = {
     statusSoon: 'Coming soon',
   },
   receipts: {
+    ledgerLabel: 'Wallet activity',
     title: 'Payment history',
     subtitle: 'Wallet top-ups, render charges, refunds, and Stripe receipts where available.',
     empty: 'No receipts yet.',
@@ -110,6 +111,7 @@ export const DEFAULT_BILLING_COPY = {
     },
     fields: {
       total: 'Total',
+      walletMovement: 'Wallet movement',
       tax: 'Tax',
       discount: 'Discount',
       document: 'Document',
@@ -119,6 +121,14 @@ export const DEFAULT_BILLING_COPY = {
     receiptLabel: 'Receipt',
     invoiceLabel: 'Invoice',
     contactSupport: 'Contact support',
+  },
+  checkoutReturn: {
+    successTitle: 'Payment returned',
+    cancelledTitle: 'Checkout cancelled',
+    refreshingDetail: 'Refreshing your balance and payment history…',
+    refreshedDetail: 'Latest wallet and payment history loaded.',
+    delayedDetail: 'Payment returned. Account updates may still be processing; refresh again shortly.',
+    cancelledDetail: 'No charge was completed. Your selected amount has been kept.',
   },
   refunds: {
     title: 'Protections',

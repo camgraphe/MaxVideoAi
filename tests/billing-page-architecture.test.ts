@@ -13,6 +13,8 @@ const receiptsPanelPath = 'frontend/app/(core)/billing/_components/ReceiptsPanel
 const expressCheckoutPath = 'frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx';
 const currencyHookPath = 'frontend/app/(core)/billing/_hooks/useBillingCurrencyState.ts';
 const receiptsHookPath = 'frontend/app/(core)/billing/_hooks/useBillingReceipts.ts';
+const reconciliationHookPath = 'frontend/app/(core)/billing/_hooks/useBillingCheckoutReconciliation.ts';
+const reconciliationLibPath = 'frontend/app/(core)/billing/_lib/billing-checkout-reconciliation.ts';
 const sessionHookPath = 'frontend/app/(core)/billing/_hooks/useBillingSessionState.ts';
 const analyticsHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupAnalytics.ts';
 const quotesHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupQuotes.ts';
@@ -37,6 +39,8 @@ test('billing page delegates client billing behavior to route-local modules', ()
     expressCheckoutPath,
     currencyHookPath,
     receiptsHookPath,
+    reconciliationHookPath,
+    reconciliationLibPath,
     sessionHookPath,
     analyticsHookPath,
     quotesHookPath,
@@ -72,6 +76,7 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.match(clientSource, /from '\.\/BillingWalletOverview';/);
   assert.match(clientSource, /useBillingCurrencyState\(\{/);
   assert.match(clientSource, /useBillingReceipts\(\{/);
+  assert.match(clientSource, /useBillingCheckoutReconciliation\(\{/);
   assert.match(clientSource, /useBillingSessionState\(\{/);
   assert.match(clientSource, /useBillingTopupQuotes\(\{/);
   assert.match(clientSource, /useBillingTopupAnalytics\(topupQuotes\)/);
@@ -118,6 +123,7 @@ test('billing feature modules own their explicit responsibilities', () => {
   const expressCheckoutSource = readFileSync(expressCheckoutPath, 'utf8');
   const currencyHookSource = readFileSync(currencyHookPath, 'utf8');
   const receiptsHookSource = readFileSync(receiptsHookPath, 'utf8');
+  const reconciliationHookSource = readFileSync(reconciliationHookPath, 'utf8');
   const sessionHookSource = readFileSync(sessionHookPath, 'utf8');
   const analyticsHookSource = readFileSync(analyticsHookPath, 'utf8');
   const quotesHookSource = readFileSync(quotesHookPath, 'utf8');
@@ -135,6 +141,7 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(walletPanelSource, /<TurnstileChallenge/);
   assert.match(receiptsPanelSource, /export function ReceiptsPanel/);
   assert.match(receiptsPanelSource, /formatReceiptSurfaceLabel/);
+  assert.match(receiptsPanelSource, /<details/);
   assert.match(walletOverviewSource, /export function BillingWalletOverview/);
   assert.match(amountPickerSource, /export function WalletAmountPicker/);
   assert.match(checkoutSummarySource, /export function WalletCheckoutSummary/);
@@ -146,6 +153,8 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(receiptsHookSource, /\/api\/receipts/);
   assert.match(receiptsHookSource, /exportCSV/);
   assert.match(receiptsHookSource, /receiptsCollapsed/);
+  assert.match(receiptsHookSource, /refreshReceipts/);
+  assert.match(reconciliationHookSource, /runBillingCheckoutReconciliation/);
   assert.match(sessionHookSource, /export function useBillingSessionState/);
   assert.match(sessionHookSource, /\/api\/wallet/);
   assert.doesNotMatch(sessionHookSource, /\/api\/member-status/);

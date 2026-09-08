@@ -20,6 +20,7 @@ import { WalletTopupPanel } from './WalletTopupPanel';
 import { useBillingCurrencyState } from '../_hooks/useBillingCurrencyState';
 import { useBillingReceipts } from '../_hooks/useBillingReceipts';
 import { useBillingCheckoutReturnToast } from '../_hooks/useBillingCheckoutReturnToast';
+import { useBillingCheckoutReconciliation } from '../_hooks/useBillingCheckoutReconciliation';
 import { useBillingSessionState } from '../_hooks/useBillingSessionState';
 import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
@@ -69,6 +70,7 @@ export function BillingClient({
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [expressRequested, setExpressRequested] = useState(false);
   const [checkoutReturnTarget, setCheckoutReturnTarget] = useState<WalletCheckoutReturnTarget | null>(null);
+  const [checkoutReturnStatus, setCheckoutReturnStatus] = useState<'success' | 'cancelled' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const billingIntlLocale = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : CURRENCY_LOCALE;
 
@@ -172,12 +174,21 @@ export function BillingClient({
     visibleReceipts,
     toggleReceipts,
     loadMoreReceipts,
+    refreshReceipts,
     exportCSV,
   } = useBillingReceipts({
     authLoading,
     session,
     loadReceiptsError: copy.errors.loadReceipts,
     loadMoreError: copy.errors.loadMore,
+  });
+  const {
+    reconcile: reconcileCheckoutReturn,
+    status: checkoutReconciliationStatus,
+  } = useBillingCheckoutReconciliation({
+    accountId: session?.user?.id ?? null,
+    refreshWallet,
+    refreshReceipts,
   });
 
   useEffect(() => {
@@ -196,6 +207,8 @@ export function BillingClient({
     onCancelled: triggerTopupCancelled,
     onGoogleAdsConversion: triggerGoogleAdsConversion,
     onReturnTarget: setCheckoutReturnTarget,
+    onStatus: setCheckoutReturnStatus,
+    onSuccess: reconcileCheckoutReturn,
     onToast: setToast,
     successMessage: copy.toasts.success,
   });
@@ -301,10 +314,12 @@ export function BillingClient({
               wallet={wallet}
               walletStatus={walletStatus}
             />
-            {checkoutReturnTarget ? (
+            {checkoutReturnStatus ? (
               <BillingCheckoutReturnNotice
+                copy={copy}
                 href={checkoutReturnTarget}
-                label={copy.toasts.returnToWorkspace}
+                reconciliationStatus={checkoutReconciliationStatus}
+                status={checkoutReturnStatus}
               />
             ) : null}
 

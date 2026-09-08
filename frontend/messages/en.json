@@ -3978,8 +3978,9 @@
         "memberChipSavings": "Member price — You save {percent}%",
         "memberChipBase": "Member price"
       },
-      "receipts": {
-        "title": "Payment history",
+    "receipts": {
+      "ledgerLabel": "Wallet activity",
+      "title": "Payment history",
         "subtitle": "Wallet top-ups, render charges, refunds, and Stripe receipts where available.",
         "empty": "No receipts yet.",
         "loading": "Loading…",
@@ -3990,13 +3991,22 @@
           "refund": "Refund",
           "topup": "Top-up"
         },
-        "fields": {
-          "total": "Total",
+      "fields": {
+        "total": "Total",
+        "walletMovement": "Wallet movement",
           "tax": "Tax",
           "discount": "Discount"
-        }
-      },
-      "refunds": {
+      }
+    },
+    "checkoutReturn": {
+      "successTitle": "Payment returned",
+      "cancelledTitle": "Checkout cancelled",
+      "refreshingDetail": "Refreshing your balance and payment history…",
+      "refreshedDetail": "Latest wallet and payment history loaded.",
+      "delayedDetail": "Payment returned. Account updates may still be processing; refresh again shortly.",
+      "cancelledDetail": "No charge was completed. Your selected amount has been kept."
+    },
+    "refunds": {
         "title": "Protections",
         "points": [
           "Failed generations are refunded automatically.",

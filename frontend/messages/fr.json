@@ -3845,8 +3845,9 @@
         "memberChipSavings": "Tarif membre — Vous économisez {percent} %",
         "memberChipBase": "Tarif membre"
       },
-      "receipts": {
-        "title": "Historique de paiement",
+    "receipts": {
+      "ledgerLabel": "Activité du portefeuille",
+      "title": "Historique de paiement",
         "subtitle": "Recharges du portefeuille, débits de rendu, remboursements et reçus Stripe disponibles.",
         "empty": "Pas encore de reçus.",
         "loading": "Chargement…",
@@ -3857,13 +3858,22 @@
           "refund": "Remboursement",
           "topup": "Recharge"
         },
-        "fields": {
-          "total": "Total",
+      "fields": {
+        "total": "Total",
+        "walletMovement": "Mouvement du portefeuille",
           "tax": "Taxe",
           "discount": "Remise"
-        }
-      },
-      "refunds": {
+      }
+    },
+    "checkoutReturn": {
+      "successTitle": "Retour du paiement",
+      "cancelledTitle": "Checkout annulé",
+      "refreshingDetail": "Actualisation du solde et de l’historique…",
+      "refreshedDetail": "Derniers solde et historique chargés.",
+      "delayedDetail": "Le paiement est revenu. La mise à jour du compte peut encore être en cours ; actualisez dans un instant.",
+      "cancelledDetail": "Aucun débit n’a été finalisé. Le montant sélectionné est conservé."
+    },
+    "refunds": {
         "title": "Protections",
         "points": [
           "Les rendus échoués sont remboursés automatiquement.",

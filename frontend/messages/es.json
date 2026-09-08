@@ -3837,8 +3837,9 @@
         "memberChipSavings": "Precio miembro — Ahorra {percent} %",
         "memberChipBase": "Precio miembro"
       },
-      "receipts": {
-        "title": "Historial de pagos",
+    "receipts": {
+      "ledgerLabel": "Actividad de la billetera",
+      "title": "Historial de pagos",
         "subtitle": "Recargas de billetera, cargos de render, reembolsos y recibos de Stripe disponibles.",
         "empty": "Aún no hay recibos.",
         "loading": "Cargando…",
@@ -3849,13 +3850,22 @@
           "refund": "Reembolso",
           "topup": "Recarga"
         },
-        "fields": {
-          "total": "Total",
+      "fields": {
+        "total": "Total",
+        "walletMovement": "Movimiento de la billetera",
           "tax": "Impuestos",
           "discount": "Descuento"
-        }
-      },
-      "refunds": {
+      }
+    },
+    "checkoutReturn": {
+      "successTitle": "Regreso del pago",
+      "cancelledTitle": "Checkout cancelado",
+      "refreshingDetail": "Actualizando el saldo y el historial…",
+      "refreshedDetail": "Se cargaron el saldo y el historial más recientes.",
+      "delayedDetail": "El pago ha regresado. La cuenta puede seguir actualizándose; vuelve a actualizar en unos instantes.",
+      "cancelledDetail": "No se completó ningún cargo. Se conservó el importe seleccionado."
+    },
+    "refunds": {
         "title": "Protecciones",
         "points": [
           "Los renders fallidos se reembolsan automáticamente.",
