@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-for (const status of [401, 503]) {
-  test(`locally created legacy project remains escapable and recoverable after API ${status}`, async ({ page }) => {
+const cases = [401, 503].flatMap((status) => [false, true].map((historical) => ({ status, historical })));
+for (const { status, historical } of cases) {
+  test(`${historical ? 'unmarked historical' : 'locally created'} legacy project remains escapable and recoverable after API ${status}`, async ({ page }) => {
     // This is the explicit local-draft UI, not evidence of server persistence.
     const writes: string[] = [];
     page.on('request', (request) => {
@@ -26,6 +27,19 @@ for (const status of [401, 503]) {
       const projects = JSON.parse(localStorage.getItem('maxvideoai.editor.projects.v1') ?? '[]');
       return Array.isArray(projects) && projects.some((project) => project.id === id);
     }, projectId)).toBe(true);
+    if (historical) {
+      // Recreate the exact pre-marker record shape from this context's own UI data.
+      // Keep the actual user-edited workspace snapshot and reload it unchanged.
+      await page.evaluate((id) => {
+        const projects = JSON.parse(localStorage.getItem('maxvideoai.editor.projects.v1') ?? '[]');
+        localStorage.setItem('maxvideoai.editor.projects.v1', JSON.stringify(projects.map((project) => project.id !== id ? project : {
+          id: project.id, name: project.name, createdAt: project.createdAt, updatedAt: project.updatedAt,
+          settings: project.settings, canvasTemplateId: project.canvasTemplateId,
+        })));
+      }, projectId);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(prompt).toHaveValue(`Local edit survives ${status}`);
+    }
     const exit = page.locator('header').getByRole('button', { name: 'Projects', exact: true });
     await expect(exit, 'Known local projects must not remain trapped behind unresolved connected hydration.').toBeEnabled();
     const writesBeforeExit = writes.length;
