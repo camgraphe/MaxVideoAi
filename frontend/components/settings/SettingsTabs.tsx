@@ -30,7 +30,7 @@ export function SettingsTabs({
   notificationsSoonLabel?: string;
 }) {
   return (
-    <nav className="app-settings-tabs -mx-1 mb-5 flex max-w-full flex-nowrap gap-2 overflow-x-auto px-1 pb-1" aria-label="Settings tabs">
+    <nav className="app-settings-tabs scrollbar-rail -mx-1 mb-5 flex max-w-full flex-nowrap gap-2 overflow-x-auto px-1 pb-1" aria-label="Settings tabs">
       {SETTINGS_TAB_ITEMS.map((item) => {
         const active = activeTab === item.id;
         return (
