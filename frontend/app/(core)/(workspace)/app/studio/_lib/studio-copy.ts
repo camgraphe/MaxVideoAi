@@ -230,6 +230,14 @@ export type StudioCopy = {
     untitledProject: string;
     localDraft: string;
     customCanvas: string;
+    montage: {
+      open: string; title: string; subtitle: string; projectTitle: string;
+      library: string; loading: string; empty: string; add: string; ineligible: string; orderedClips: string;
+      moveUp: string; moveDown: string; remove: string; sourceInFrame: string; durationFrames: string;
+      fps: string; aspectRatio: string; resolution: string; audio: string; preserveAudio: string; muteAudio: string;
+      total: string; cancel: string; create: string; creating: string;
+      errorTitle: string; errorCount: string; errorTrim: string; errorDuration: string; errorRequest: string;
+    };
   };
   topbar: {
     productName: string;
@@ -530,6 +538,20 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     untitledProject: 'Untitled edit',
     localDraft: 'Local draft',
     customCanvas: 'Custom canvas',
+    montage: {
+      open: 'Create montage from media',
+      title: 'New media montage',
+      subtitle: 'Choose measured videos, repeat or reorder them, then set exact frame trims.',
+      projectTitle: 'Project title', library: 'Eligible video library', loading: 'Loading videos…',
+      empty: 'No video is available yet.', add: 'Add clip', ineligible: 'Measured original required', orderedClips: 'Ordered clips',
+      moveUp: 'Move up', moveDown: 'Move down', remove: 'Remove', sourceInFrame: 'Source in frame',
+      durationFrames: 'Duration in frames', fps: 'Frame rate', aspectRatio: 'Aspect ratio',
+      resolution: 'Resolution', audio: 'Audio', preserveAudio: 'Preserve embedded audio', muteAudio: 'Mute audio',
+      total: '{frames} frames · {seconds}s', cancel: 'Cancel', create: 'Create montage', creating: 'Creating montage…',
+      errorTitle: 'Enter a project title without leading or trailing spaces.',
+      errorCount: 'Add between 2 and 12 clips.', errorTrim: 'Every trim must stay within its measured source.',
+      errorDuration: 'The montage cannot exceed 180 seconds.', errorRequest: 'The montage could not be created. Try again.',
+    },
   },
   topbar: {
     productName: 'MaxVideoAI Editor',

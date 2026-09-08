@@ -44,6 +44,7 @@ import {
 } from './studio-project-records';
 import { readStudioProjectCanvasPreview } from './studio-project-preview-storage';
 import styles from './studio-projects.module.css';
+import { StudioMontageBuilder } from './StudioMontageBuilder.client';
 
 const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
 const DEFAULT_STUDIO_PROJECT_TEMPLATE_ID: WorkspaceTemplateId = MINIMAL_START_WORKSPACE_TEMPLATE_ID;
@@ -202,8 +203,9 @@ function starterCanvasImageForTemplate(templateId: WorkspaceTemplateId): string 
   return starterId ? STUDIO_PROJECT_STARTER_CANVAS_IMAGES[starterId] : null;
 }
 
-export default function StudioProjectsPageClient({ initialStarterTemplateId = null }: {
+export default function StudioProjectsPageClient({ initialStarterTemplateId = null, montageCreationEnabled = false }: {
   initialStarterTemplateId?: WorkspaceTemplateId | null;
+  montageCreationEnabled?: boolean;
 }) {
   const router = useRouter();
   const { locale, dictionary } = useI18n();
@@ -440,6 +442,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
           </span>
           <ArrowRight size={17} aria-hidden="true" />
         </button>
+        <StudioMontageBuilder copy={studioCopy.projects.montage} enabled={montageCreationEnabled} />
         <p className={styles.starterDisclaimer}>{studioCopy.projects.starterDisclaimer}</p>
       </section>
 
