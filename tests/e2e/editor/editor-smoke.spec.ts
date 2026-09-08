@@ -835,7 +835,6 @@ test('unauthenticated Studio API responses keep local draft mode quiet', async (
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1.project_unauthorized');
   });
-
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
@@ -3769,6 +3768,10 @@ test('studio projects page keeps template choices compact and supports recent pr
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
     window.sessionStorage.setItem('last-known:user-id', 'studio-smoke-user');
   });
+  await page.route('**/api/legal/cookies/version', (route) => route.fulfill({
+    json: { ok: true, version: 'studio-projects-smoke', publishedAt: null },
+  }));
+  await page.route('**/api/legal/cookies', (route) => route.fulfill({ json: { ok: true } }));
 
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
