@@ -29,6 +29,22 @@ PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" pnpm dlx node@22 frontend/node_
 
 Ce test démontre la disponibilité de l'environnement, pas encore la commande de montage ni sa concurrence.
 
+## Authentification et routes réelles de test
+
+Le helper `tests/helpers/studio-auth-fixture.ts` crée deux identités de test connues, signe réellement les sessions en ES256 et publie les seules clés publiques via JWKS. `/auth/v1/user` contrôle aussi signature, issuer, audience, expiration et session active. Le SDK Supabase installé, son transport de cookies SSR et l'adaptateur OAuth MCP réel sont exercés. Faux jetons et appel MCP sans Bearer sont refusés ; le cookie renouvelé est relu par un nouveau client SSR puis authentifié. Trois tests passent. Revue statique indépendante : aucun défaut bloquant ; le fixture de refresh invalide l'ancien identifiant de session immédiatement, comportement volontairement plus strict qui ne doit pas servir à conclure sur la concurrence du vrai service Auth.
+
+Les mécanismes ont été vérifiés contre la documentation officielle de [getClaims](https://supabase.com/docs/reference/javascript/auth-getclaims) et du [transport SSR](https://supabase.com/docs/guides/auth/server-side/advanced-guide), ainsi que le code du SDK installé. Aucun changement d'authentification production ni login/PKCE complet n'est couvert par cette fixture.
+
+`tests/helpers/studio-integration-runtime.ts` ajoute un snapshot Git committé et exporté dans un nouveau répertoire temporaire, son propre build Next, un port loopback libre, Auth local et PostgreSQL 17 jetable vérifié avant toute migration. La liste de variables du processus est explicite ; aucun fichier d'environnement ni URL DB héritée. La readiness attend le démarrage du processus possédé, pas seulement une réponse HTTP d'un serveur préexistant. L'arrêt du processus précède le nettoyage Auth/DB et du snapshot unique. Les prévisualisations 3032 et 3034 restent intactes.
+
+`tests/connected-studio-route-integration.test.ts` utilise les vraies routes et le vrai repository : création sous A même si le payload affirme B, relecture par cookie de A, refus de lecture par B, liste B vide, assertion SQL de la propriété et redirection de page sans session avec accès visiteur désactivé. Aucun mock des routes Studio ni de l'authentification de l'app. Suite routes + Auth : **4/4 réussis**.
+
+```sh
+PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" pnpm dlx node@22 frontend/node_modules/tsx/dist/cli.mjs --tsconfig frontend/tsconfig.json --test tests/connected-studio-route-integration.test.ts tests/studio-disposable-auth.test.ts
+```
+
+Cette preuve concerne le socle de test et les routes historiques, **pas encore la commande de montage, le navigateur authentifié, l'idempotence, la concurrence autosave ni la lecture privée S3**. Elle prépare leur qualification sans accès distant.
+
 ## Référence visuelle et mesures comparables
 
 Le contrôle réel desktop 1440×900 et mobile 390×844, clair et sombre, constate des blocs trop miniaturisés, des actions non nommées et un débordement mobile. Les captures de référence sont des artefacts locaux de travail ; elles ne constituent pas une mesure de performance.

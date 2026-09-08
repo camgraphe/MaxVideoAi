@@ -41,6 +41,7 @@ test('fixture cookies use actual SSR session encoding and expired sessions refre
   try {
     const session = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], { expiresIn: -60 });
     let cookies = fixture.cookiesFor(session);
+    const previousCookieValues = JSON.stringify(cookies);
     const client = createServerClient(fixture.origin, fixture.anonKey, {
       cookies: {
         getAll: () => cookies,
@@ -57,6 +58,16 @@ test('fixture cookies use actual SSR session encoding and expired sessions refre
     assert.equal(claims.error, null);
     assert.equal(claims.data.claims.sub, STUDIO_FIXTURE_OWNERS[0]);
     assert.ok(cookies.some((cookie) => cookie.name.startsWith('sb-127-auth-token')));
+    assert.notEqual(JSON.stringify(cookies), previousCookieValues);
+    const reopened = createServerClient(fixture.origin, fixture.anonKey, {
+      cookies: { getAll: () => cookies, setAll: () => assert.fail('A fresh valid cookie must not need another refresh.') },
+    });
+    const restored = await reopened.auth.getSession();
+    assert.equal(restored.error, null);
+    assert.equal(restored.data.session.access_token, result.data.session.access_token);
+    const restoredUser = await reopened.auth.getUser();
+    assert.equal(restoredUser.error, null);
+    assert.equal(restoredUser.data.user.id, STUDIO_FIXTURE_OWNERS[0]);
   } finally {
     await fixture.close();
   }
