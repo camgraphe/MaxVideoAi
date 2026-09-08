@@ -21,7 +21,7 @@ function renderedText(value: unknown): string {
 
 test('WorkspaceCanvas remounts selection feedback when the selected node set changes', () => {
   const canvas = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'), 'utf8');
-  assert.match(canvas, /<CanvasSelectionActions\s+key=\{selectedNodeIds\.slice\(\)\.sort\(\)\.join\('\|'\)\}/);
+  assert.match(canvas, /<CanvasSelectionActions\s+key=\{JSON\.stringify\(selectedNodeIds\.slice\(\)\.sort\(\)\)\}/);
 });
 
 test('copy feedback belongs to the current selection and the latest attempt', async () => {
@@ -52,7 +52,7 @@ test('copy feedback belongs to the current selection and the latest attempt', as
     const { CanvasSelectionActions } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasSelectionActions');
     const render = async (ids: string[]) => {
       const element = React.createElement(CanvasSelectionActions, {
-        key: ids.slice().sort().join('|'),
+        key: JSON.stringify(ids.slice().sort()),
         nodes: ids.map(graphNode),
         copy: DEFAULT_STUDIO_COPY.canvas.nodes,
         onSettings() {}, onConnections() {}, onCopy, onDelete() {},
@@ -71,22 +71,33 @@ test('copy feedback belongs to the current selection and the latest attempt', as
     };
     const alerts = () => renderer!.root.findAll(({ props }) => props.role === 'alert');
 
+    await render(['a|b']);
+    await copy();
+    const delimiterAttempt = attempts.at(-1)!;
+    await render(['a', 'b']);
+    await act(async () => delimiterAttempt.resolve(false));
+    assert.equal(alerts().length, 0, 'injectively distinct selection sets cannot share late feedback');
+
     await render(['A']);
     await copy();
+    const firstSelectionAttempt = attempts.at(-1)!;
     await render(['B']);
-    await act(async () => attempts[0].resolve(false));
+    await act(async () => firstSelectionAttempt.resolve(false));
     assert.equal(alerts().length, 0, 'late A failure cannot pollute B');
 
     await copy();
+    const olderAttempt = attempts.at(-1)!;
     await copy();
-    await act(async () => attempts[2].resolve(true));
-    await act(async () => attempts[1].resolve(false));
+    const newerAttempt = attempts.at(-1)!;
+    await act(async () => newerAttempt.resolve(true));
+    await act(async () => olderAttempt.resolve(false));
     assert.equal(alerts().length, 0, 'older B failure cannot overwrite newer success');
 
     await copy();
+    const rejectedAttempt = attempts.at(-1)!;
     let rejection: unknown;
     try {
-      await act(async () => attempts[3].reject(new Error('clipboard denied')));
+      await act(async () => rejectedAttempt.reject(new Error('clipboard denied')));
     } catch (error) {
       rejection = error;
     }
