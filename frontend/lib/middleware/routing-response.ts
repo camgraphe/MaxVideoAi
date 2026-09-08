@@ -37,9 +37,21 @@ export function isLoopbackHost(host: string | null | undefined): boolean {
 }
 
 export function hasLocalAdminBypass(req: NextRequest): boolean {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') return false;
   if ((process.env.LOCAL_ADMIN_BYPASS ?? '').trim() !== '1') return false;
   if (!isLoopbackHost(req.headers.get('x-forwarded-host') ?? req.headers.get('host'))) return false;
   return req.cookies.get(LOCAL_ADMIN_BYPASS_COOKIE)?.value === '1';
+}
+
+export function canUseLocalAdminBypassForProtectedPath(
+  req: NextRequest,
+  pathname: string,
+  studioAdminOnly: boolean,
+): boolean {
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  const isAdminPath = normalized === '/admin' || normalized.startsWith('/admin/');
+  const isStudioPath = normalized === '/app/studio' || normalized.startsWith('/app/studio/');
+  return (isAdminPath || (studioAdminOnly && isStudioPath)) && hasLocalAdminBypass(req);
 }
 
 export function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, trackingNoindex = false, appNoindex = false) {

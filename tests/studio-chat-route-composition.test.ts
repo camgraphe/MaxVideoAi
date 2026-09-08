@@ -18,7 +18,7 @@ test('authenticated Chat rejects legacy, forged quote and Mock payloads before a
   ]) {
     const response = await handleStudioChatPost(new NextRequest('http://localhost/api/studio/chat', {
       method: 'POST', body: JSON.stringify(payload),
-    }), async () => ({ userId: 'authenticated-owner' }));
+    }), async () => ({ ok: true, userId: 'authenticated-owner' }));
     assert.equal(response.status, 503);
     assert.equal((await response.json()).error, 'STUDIO_CHAT_LIVE_UNAVAILABLE');
     assert.equal(response.headers.get('cache-control'), 'private, no-store');
@@ -27,7 +27,22 @@ test('authenticated Chat rejects legacy, forged quote and Mock payloads before a
 });
 
 test('Chat retains authentication even when Live is unavailable', async () => {
-  const response = await handleStudioChatPost(new NextRequest('http://localhost/api/studio/chat', { method: 'POST' }), async () => ({ userId: null }));
+  const response = await handleStudioChatPost(new NextRequest('http://localhost/api/studio/chat', { method: 'POST' }), async () => ({ ok: false, status: 401, error: 'UNAUTHORIZED' }));
   assert.equal(response.status, 401);
   assert.equal((await response.json()).error, 'UNAUTHORIZED');
+});
+
+test('Chat shares Studio disabled and non-admin access decisions', async () => {
+  for (const [access, expectedStatus, expectedError] of [
+    [{ ok: false, status: 404, error: 'NOT_FOUND' }, 404, 'NOT_FOUND'],
+    [{ ok: false, status: 403, error: 'FORBIDDEN' }, 403, 'FORBIDDEN'],
+    [{ ok: false, status: 500, error: 'ACCESS_CHECK_FAILED' }, 500, 'ACCESS_CHECK_FAILED'],
+  ] as const) {
+    const response = await handleStudioChatPost(
+      new NextRequest('http://localhost/api/studio/chat', { method: 'POST' }),
+      async () => access,
+    );
+    assert.equal(response.status, expectedStatus);
+    assert.equal((await response.json()).error, expectedError);
+  }
 });

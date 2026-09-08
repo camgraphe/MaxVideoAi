@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 const read = (path: string) => readFileSync(path, 'utf8');
+
+function routeFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return routeFiles(path);
+    return entry.name === 'route.ts' ? [path] : [];
+  });
+}
 
 test('Studio preview is admin-only across navigation, pages, APIs, and visitor access', () => {
   const flags = read('frontend/content/feature-flags.ts');
@@ -11,6 +20,7 @@ test('Studio preview is admin-only across navigation, pages, APIs, and visitor a
   const header = read('frontend/components/HeaderBar.tsx');
   const siteMenu = read('frontend/components/app/AppSiteMenu.client.tsx');
   const visitorAccess = read('frontend/lib/visitor-access.ts');
+  const middleware = read('frontend/middleware.ts');
 
   assert.match(flags, /studio:\s*\{[\s\S]*maxVideoAiEditor:\s*true,[\s\S]*adminOnly:\s*true/);
   assert.match(navigation, /canShowStudioNavigation\(isAdmin:\s*boolean\)/);
@@ -18,6 +28,7 @@ test('Studio preview is admin-only across navigation, pages, APIs, and visitor a
   assert.match(header, /WorkspaceMobileNav studioVisible=\{canShowStudioNavigation\(isAdmin\)\}/);
   assert.match(siteMenu, /getAppMenuItems\(undefined, canShowStudioNavigation\(isAdmin\)\)/);
   assert.doesNotMatch(visitorAccess, /normalized\.startsWith\('\/app\/studio/);
+  assert.match(middleware, /canUseLocalAdminBypassForProtectedPath\(req, pathname, FEATURES\.studio\.adminOnly\)/);
 
   for (const path of [
     'frontend/app/(core)/(workspace)/app/studio/projects/page.tsx',
@@ -30,18 +41,25 @@ test('Studio preview is admin-only across navigation, pages, APIs, and visitor a
     assert.match(source, /notFound\(\)/);
   }
 
-  const routeAccess = read('frontend/app/api/studio/_lib/studio-route-utils.ts');
-  assert.match(routeAccess, /FEATURES\.studio\.adminOnly/);
-  assert.match(routeAccess, /userId = await requireAdmin\(req\)/);
-  assert.match(routeAccess, /error: code/);
+  const access = read('frontend/src/server/studio/access.ts');
+  assert.match(access, /getRouteAuthContext\(request\)/);
+  assert.match(access, /isAdmin:\s*isUserAdmin/);
+  assert.match(access, /resolveLocalBypassUserId:\s*resolveLocalAdminBypassUserId/);
 
-  for (const path of [
-    'frontend/app/api/studio/timeline-exports/route.ts',
-    'frontend/app/api/studio/timeline-exports/estimate/route.ts',
-    'frontend/app/api/studio/timeline-exports/[exportId]/route.ts',
-  ]) {
+  const routeAccess = read('frontend/app/api/studio/_lib/studio-route-utils.ts');
+  assert.match(routeAccess, /resolveStudioApiAccess\(req\)/);
+  assert.match(routeAccess, /error: access\.error/);
+
+  const specialRoutes = new Set([
+    'frontend/app/api/studio/chat/route.ts',
+    'frontend/app/api/studio/marketing-entry/route.ts',
+  ]);
+  const routes = routeFiles('frontend/app/api/studio');
+  assert.ok(routes.length >= 13, 'every current and future Studio route should be included by discovery');
+  for (const path of routes.filter((candidate) => !specialRoutes.has(candidate))) {
     assert.match(read(path), /resolveStudioRouteContext\(req\)/);
   }
-  assert.match(read('frontend/app/api/studio/_lib/studio-chat-handler.ts'), /requireAdmin\(request\)/);
-  assert.match(read('frontend/app/api/studio/marketing-entry/route.ts'), /await requireAdmin\(request\)/);
+  assert.match(read('frontend/app/api/studio/_lib/studio-chat-handler.ts'), /resolveStudioApiAccess/);
+  assert.match(read('frontend/app/api/studio/marketing-entry/route.ts'), /handleStudioMarketingEntry/);
+  assert.match(read('frontend/app/api/studio/marketing-entry/_lib/handle-studio-marketing-entry.ts'), /resolveStudioApiAccess/);
 });

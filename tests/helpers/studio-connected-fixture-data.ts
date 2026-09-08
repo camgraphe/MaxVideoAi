@@ -21,11 +21,17 @@ export const STUDIO_CONNECTED_MONTAGE_INPUT = {
 /** Invoke ONLY as initializeDatabase of the verified, newly created Studio test runtime. */
 export async function initializeStudioConnectedFixture(database: DisposablePostgres): Promise<void> {
   for (const name of [
-    '26_studio_projects.sql', '29_mcp_audit_events.sql', '41_mcp_client_family.sql',
+    '08_admin_controls.sql', '26_studio_projects.sql', '29_mcp_audit_events.sql', '41_mcp_client_family.sql',
     '42_studio_connected_montages.sql',
   ]) {
     await database.pool.query(await readFile(`neon/migrations/${name}`, 'utf8'));
   }
+  await database.pool.query(
+    `INSERT INTO app_admins (user_id, notes) VALUES
+      ($1, 'Studio connected fixture owner A'),
+      ($2, 'Studio connected fixture owner B')`,
+    [...STUDIO_FIXTURE_OWNERS],
+  );
   // Exact media-reader shapes only. This does not claim the full app/library/funnel schema.
   await database.pool.query(`
     CREATE TABLE app_jobs(job_id text PRIMARY KEY, user_id text NOT NULL, hidden boolean NOT NULL DEFAULT false);
