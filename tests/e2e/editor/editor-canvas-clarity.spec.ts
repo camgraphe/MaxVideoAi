@@ -70,6 +70,11 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         await testInfo.attach(`fitted-${viewport.width}-${viewport.height}-${theme}-${locale}`, {
           body: await page.screenshot(), contentType: 'image/png',
         });
+        // Containment alone also accepts a broken fit clamped to minimum zoom.
+        // Compact screens retain an overview plus unscaled selection commands;
+        // desktop must leave the two-node starter large enough to inspect directly.
+        expect((await node.boundingBox())?.width, 'Fit must not reduce the starter to a postage stamp.')
+          .toBeGreaterThanOrEqual(viewport.width >= 1000 ? 160 : 64);
         expect(violations, 'Fit must keep titles and essential actions inside usable canvas, outside floating controls.').toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
       });
