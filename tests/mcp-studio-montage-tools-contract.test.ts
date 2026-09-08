@@ -6,6 +6,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import { createMaxVideoAiMcpServer, type MaxVideoAiMcpServices } from '../frontend/src/server/mcp/server';
+import { StudioConnectedPersistenceError } from '../frontend/src/server/studio/montage-command';
 
 const principal: AgentPrincipal = { userId: 'owner', clientId: 'client', emailVerified: true, authMethod: 'oauth' };
 const firstId = `ma_${'1'.repeat(32)}`;
@@ -89,4 +90,40 @@ test('create_studio_montage is separately gated, strict, persisted and explicitl
   });
   assert.equal(rejected.isError, true);
   assert.equal(calls.length, 1);
+});
+
+test('expected Studio persistence and media failures stay actionable without internal details', async (t) => {
+  const failureServices = services([]);
+  failureServices.createStudioMontage = async (input) => {
+    if (input.title === 'Conflict') throw new StudioConnectedPersistenceError('STUDIO_IDEMPOTENCY_CONFLICT', 409);
+    if (input.title === 'Unavailable') throw new Error('MEDIA_NOT_AVAILABLE');
+    throw new Error('STUDIO_CONNECTED_SCHEMA_UNAVAILABLE');
+  };
+  const server = createMaxVideoAiMcpServer(principal, failureServices, {
+    paidGeneration: false, referenceUploads: false, studioMontageCreation: true,
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const client = new Client({ name: 'failures', version: '1' });
+  await server.connect(serverTransport); await client.connect(clientTransport);
+  t.after(async () => { await client.close(); await server.close(); });
+  const base = {
+    settings: { fps: 24, aspectRatio: '16:9', resolution: '1080p', audioMode: 'preserve' },
+    clips: [
+      { assetId: firstId, sourceInFrame: 0, durationFrames: 24 },
+      { assetId: secondId, sourceInFrame: 0, durationFrames: 24 },
+    ],
+    idempotencyKey: 'retry-errors',
+  };
+  for (const [title, code, retryable] of [
+    ['Conflict', 'PARAMETER_INVALID', false],
+    ['Unavailable', 'REFERENCE_NOT_FOUND', false],
+    ['Schema', 'RATE_LIMITED', true],
+  ] as const) {
+    const result = await client.callTool({ name: 'create_studio_montage', arguments: { ...base, title } });
+    const error = (result.structuredContent as { error?: { code?: unknown; retryable?: unknown } }).error;
+    assert.equal(error?.code, code);
+    assert.equal(error?.retryable, retryable);
+    assert.notEqual(error?.code, 'INTERNAL_ERROR');
+    assert.doesNotMatch(JSON.stringify(result.structuredContent), /owner|database|postgres|https?:\/\//iu);
+  }
 });
