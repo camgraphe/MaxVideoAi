@@ -145,6 +145,8 @@ function createStoreMediaUploadService(
     if (!duration.valid || duration.durationSec === null) {
       throw new MediaUploadError('METADATA_UNVERIFIED', 'The uploaded media metadata could not be verified.');
     }
+    const mediaFacts: MediaFacts = { source: 'probe', durationSec: duration.durationSec,
+      ...(typeof probe.hasAudio === 'boolean' ? { hasAudio: probe.hasAudio } : {}) };
 
     let upload: Awaited<ReturnType<typeof uploadFileBuffer>>;
     let producerClaim: StorageObjectProducerClaim | null = null;
@@ -242,7 +244,7 @@ function createStoreMediaUploadService(
       await renewProducerClaim();
       producerCheckpoint();
       const metadata = {
-        mediaFacts: { source: 'probe', durationSec: duration.durationSec },
+        mediaFacts,
         originalName: input.fileName,
         kind: mediaKind,
         durationSec: duration.durationSec,
@@ -271,7 +273,7 @@ function createStoreMediaUploadService(
         sizeBytes: input.bytes.length,
         durationSec: duration.durationSec,
         thumbUrl: previewUrl,
-        metadata: { originalName: input.fileName, mediaFacts: { source: 'probe', durationSec: duration.durationSec } },
+        metadata: { originalName: input.fileName, mediaFacts },
       });
       producerCheckpoint();
       await renewProducerClaim();
@@ -293,7 +295,7 @@ function createStoreMediaUploadService(
       producerClaim = null;
       return {
         assetId: canonicalAsset.publicId,
-        mediaFacts: { source: 'probe', durationSec: duration.durationSec },
+        mediaFacts,
         legacyAssetId,
         width: null,
         height: null,
