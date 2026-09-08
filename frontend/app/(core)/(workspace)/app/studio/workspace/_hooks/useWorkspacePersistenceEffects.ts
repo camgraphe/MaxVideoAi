@@ -34,7 +34,7 @@ import {
   type StudioApiSyncStatus,
 } from '../_state/workspace-api-persistence';
 import { createStudioConnectedSaveQueue, type StudioConnectedSaveQueue } from '../_state/studio-connected-save-queue';
-import { stripStudioMediaAccess } from '../_state/workspace-media-access';
+import { stripStudioMediaAccess, studioWorkspaceSnapshotFingerprint } from '../_state/workspace-media-access';
 import {
   readPersistedWorkspaceState,
   readStudioProject,
@@ -408,7 +408,7 @@ export function useWorkspacePersistenceEffects({
                   expectedRevision,
                 });
                 if (result.status === 'ready') {
-                  baselineRef.current = JSON.stringify(stripStudioMediaAccess(snapshot.workspaceState));
+                  baselineRef.current = studioWorkspaceSnapshotFingerprint(snapshot.workspaceState);
                 }
                 return result;
               },
@@ -422,7 +422,7 @@ export function useWorkspacePersistenceEffects({
               },
             });
             connectedQueueRef.current = queue;
-            baselineRef.current = JSON.stringify(stripStudioMediaAccess(serverPersisted));
+            baselineRef.current = studioWorkspaceSnapshotFingerprint(serverPersisted);
           }
           if (typeof window !== 'undefined') {
             window.localStorage.setItem(activeStorageKey, connected
@@ -534,7 +534,7 @@ export function useWorkspacePersistenceEffects({
     ) return undefined;
     const state = buildPersistedWorkspaceState();
     const queue = connectedQueueRef.current;
-    if (queue && JSON.stringify(stripStudioMediaAccess(state)) === baselineRef.current) return undefined;
+    if (queue && studioWorkspaceSnapshotFingerprint(state) === baselineRef.current) return undefined;
     const saveTimer = window.setTimeout(() => {
       const payload = {
         name: activeTemplateName,
