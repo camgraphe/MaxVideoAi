@@ -44,6 +44,7 @@ import {
   connectedInputKinds,
   workspaceConnectionRejectionReason,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-helpers';
+import * as workspaceGraphHelpers from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-helpers';
 import {
   localizeWorkspaceNodeSubtitle,
   localizeWorkspaceNodeTitle,
@@ -1072,7 +1073,7 @@ test('Generate Video rejects Veo video_reference admission when policy omits the
     nodes: [shotNode, sourceNode],
     edges: [],
     capabilities,
-  })?.code, 'incompatible_connectors');
+  })?.code, 'model_unsupported');
 });
 
 test('Generate Video rejects new connections to a disabled compatibility anchor', () => {
@@ -1122,7 +1123,7 @@ test('Generate Video rejects new connections to a disabled compatibility anchor'
     nodes: [shotNode, ...sourceNodes],
     edges,
     capabilities,
-  })?.code, 'incompatible_connectors');
+  })?.code, 'connector_disabled');
 });
 
 test('Generate Video rejects a mutually excluded reference after start_image is connected', () => {
@@ -1172,7 +1173,165 @@ test('Generate Video rejects a mutually excluded reference after start_image is 
     nodes: [shotNode, ...sourceNodes],
     edges,
     capabilities,
-  })?.code, 'incompatible_connectors');
+  })?.code, 'connector_disabled');
+});
+
+test('connection admission explains missing nodes, duplicates, missing handles, incompatible families and unsupported model slots', () => {
+  const settings = defaultShotForPreset('generate-video');
+  const capabilities = getWorkspaceModelCapabilities();
+  const shotNode: WorkspaceGraphNode = {
+    id: 'admission-shot',
+    type: 'shot',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'shot',
+      title: 'Admission shot',
+      subtitle: '',
+      sourceHandles: ['video_reference'],
+      targetHandles: ['prompt'],
+      shot: { ...settings, modelId: 'veo-3-1' },
+    },
+  };
+  const promptSource: WorkspaceGraphNode = {
+    id: 'prompt-source',
+    type: 'text-prompt',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'text-prompt',
+      title: 'Prompt source',
+      subtitle: '',
+      sourceHandles: ['prompt'],
+      targetHandles: [],
+    },
+  };
+  const imageSource: WorkspaceGraphNode = {
+    id: 'image-source',
+    type: 'asset-image',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'asset-image',
+      title: 'Image source',
+      subtitle: '',
+      sourceHandles: ['reference'],
+      targetHandles: [],
+    },
+  };
+  const videoSource: WorkspaceGraphNode = {
+    ...imageSource,
+    id: 'video-source',
+    type: 'asset-video',
+    data: {
+      ...imageSource.data,
+      kind: 'asset-video',
+      title: 'Video source',
+      sourceHandles: ['video_reference'],
+    },
+  };
+  const promptConnection = {
+    source: promptSource.id,
+    target: shotNode.id,
+    sourceHandle: 'prompt',
+    targetHandle: 'prompt',
+  } as const;
+
+  assert.equal(workspaceConnectionRejectionReason({
+    connection: { ...promptConnection, source: 'missing-source' },
+    nodes: [shotNode, promptSource, imageSource],
+    edges: [],
+    capabilities,
+  })?.code, 'endpoint_not_found');
+  assert.equal(workspaceConnectionRejectionReason({
+    connection: promptConnection,
+    nodes: [shotNode, promptSource, imageSource],
+    edges: [{ id: 'same-link', ...promptConnection, data: { kind: 'prompt' } }],
+    capabilities,
+  })?.code, 'duplicate_connection');
+  assert.equal(workspaceConnectionRejectionReason({
+    connection: { ...promptConnection, sourceHandle: 'camera' },
+    nodes: [shotNode, promptSource, imageSource],
+    edges: [],
+    capabilities,
+  })?.code, 'source_handle_missing');
+  assert.equal(workspaceConnectionRejectionReason({
+    connection: {
+      source: promptSource.id,
+      target: shotNode.id,
+      sourceHandle: 'prompt',
+      targetHandle: 'reference',
+    },
+    nodes: [shotNode, promptSource, imageSource],
+    edges: [],
+    capabilities,
+  })?.code, 'incompatible_family');
+  assert.equal(workspaceConnectionRejectionReason({
+    connection: {
+      source: videoSource.id,
+      target: shotNode.id,
+      sourceHandle: 'video_reference',
+      targetHandle: 'video_reference',
+    },
+    nodes: [shotNode, promptSource, imageSource, videoSource],
+    edges: [],
+    capabilities,
+  })?.code, 'model_unsupported');
+});
+
+test('connection slot board preserves policy order and field identity while projecting live capacity and status', () => {
+  const projectSlots = (workspaceGraphHelpers as unknown as {
+    projectWorkspaceConnectionSlots?: (input: {
+      targetNode: WorkspaceGraphNode;
+      edges: WorkspaceGraphEdge[];
+      capabilities: WorkspaceModelCapability[];
+    }) => Array<{
+      kind: WorkspaceEdgeKind;
+      fieldId?: string;
+      usedCount: number;
+      maxCount: number;
+      remainingCount: number;
+      status: string;
+    }>;
+  }).projectWorkspaceConnectionSlots;
+  assert.equal(typeof projectSlots, 'function', 'slot board projection should be exported from the graph policy boundary');
+  if (!projectSlots) return;
+
+  const settings = defaultShotForPreset('generate-video');
+  const capabilities = getWorkspaceModelCapabilities();
+  const shotNode: WorkspaceGraphNode = {
+    id: 'slot-shot',
+    type: 'shot',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'shot',
+      title: 'Slot shot',
+      subtitle: '',
+      sourceHandles: ['video_reference'],
+      targetHandles: ['prompt', 'video_reference'],
+      shot: { ...settings, modelId: 'seedance-2-0' },
+    },
+  };
+  const edges: WorkspaceGraphEdge[] = [
+    { id: 'prompt-link', source: 'prompt', target: shotNode.id, sourceHandle: 'prompt', targetHandle: 'prompt', data: { kind: 'prompt' } },
+    { id: 'video-link-1', source: 'video-1', target: shotNode.id, sourceHandle: 'video_reference', targetHandle: 'video_reference', data: { kind: 'video_reference' } },
+    { id: 'video-link-2', source: 'video-2', target: shotNode.id, sourceHandle: 'video_reference', targetHandle: 'video_reference', data: { kind: 'video_reference' } },
+  ];
+
+  const slots = projectSlots({ targetNode: shotNode, edges, capabilities });
+  const prompt = slots.find((slot) => slot.kind === 'prompt');
+  const video = slots.find((slot) => slot.kind === 'video_reference');
+  assert.equal(slots[0]?.kind, 'prompt');
+  assert.deepEqual(prompt && {
+    usedCount: prompt.usedCount,
+    maxCount: prompt.maxCount,
+    remainingCount: prompt.remainingCount,
+    status: prompt.status,
+  }, { usedCount: 1, maxCount: 1, remainingCount: 0, status: 'full' });
+  assert.deepEqual(video && {
+    fieldId: video.fieldId,
+    usedCount: video.usedCount,
+    maxCount: video.maxCount,
+    remainingCount: video.remainingCount,
+    status: video.status,
+  }, { fieldId: 'video_urls', usedCount: 2, maxCount: 3, remainingCount: 1, status: 'connected' });
 });
 
 test('Generate Video does not send inactive mode media fields in a text-to-video request', () => {
@@ -1712,8 +1871,9 @@ test('Studio shot input dock disables compatibility-only connector handles indep
     'utf8'
   );
 
-  assert.match(dockSource, /const disabledReason = connectors\.find\(\(connector\) => connector\.kind === handle\)\?\.disabledReason;/);
-  assert.match(dockSource, /const isDisabled = isFull \|\| Boolean\(disabledReason\);/);
+  assert.match(dockSource, /const disabledReason = connector\?\.disabledReason;/);
+  assert.match(dockSource, /const isDisabled = status === 'full' \|\| status === 'disabled';/);
+  assert.match(dockSource, /data-shot-connector-status=\{status\}/);
   assert.match(dockSource, /isDisabled \? styles\.shotInputRowDisabled : ''/);
   assert.match(dockSource, /aria-label=\{disabledReason \?\? connectorDescription\}/);
   assert.match(dockSource, /title=\{disabledReason \?\? connectorDescription\}/);

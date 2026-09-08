@@ -1276,7 +1276,7 @@ test('Studio canvas notices localize connection, media, and track labels by acti
     'utf8'
   );
   assert.match(graphActionsSource, /studioCanvasNodeCopy: StudioCopy\['canvas'\]\['nodes'\]/);
-  assert.match(graphActionsSource, /localizeStudioEdgeKindLabel\(edge\.data\?\.kind \?\? kind, studioCanvasNodeCopy\)/);
+  assert.match(graphActionsSource, /localizeStudioEdgeKindLabel\(connectedKind, studioCanvasNodeCopy\)/);
   assert.match(graphActionsSource, /localizeStudioEdgeKindLabel\(edge\.data\?\.kind \?\? request\.handleId, studioCanvasNodeCopy\)/);
   assert.doesNotMatch(graphActionsSource, /(label|connector): edge\.data\?\.label/);
 
@@ -1417,9 +1417,9 @@ test('Studio full-connector rejection notices localize connector labels by kind'
   const rejection = workspaceConnectionRejectionReason({
     capabilities: getWorkspaceModelCapabilities(),
     connection: {
-      source: 'shot-01',
+      source: 'shot-02',
       target: 'output-01',
-      sourceHandle: 'generated_output',
+      sourceHandle: 'video_reference',
       targetHandle: 'generated_output',
     },
     edges: template.edges,

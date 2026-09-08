@@ -468,8 +468,14 @@ export type StudioCopy = {
     nodeCreatedFromConnector: string;
     nodeDroppedOntoCanvas: string;
     linkNeedsSourceAndTarget: string;
+    graphEndpointNotFound: string;
     blockCannotLinkToItself: string;
+    duplicateGraphLink: string;
+    sourceHandleUnavailable: string;
+    targetDoesNotAcceptConnections: string;
+    modelDoesNotSupportConnector: string;
     connectorsNotCompatible: string;
+    connectorDisabled: string;
     connectorFull: string;
     selectGeneratedOutputOrMedia: string;
     outputNotReadyForTimeline: string;
@@ -1109,6 +1115,13 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       closeSettings: 'Close settings',
       closeConnections: 'Close connections',
       remainingCapacity: '{remaining} remaining / {maximum} maximum',
+      usedCapacity: '{used} used / {maximum} maximum',
+      slotAvailable: 'Available',
+      slotConnected: 'Connected',
+      slotFull: 'Full',
+      slotDisabled: 'Unavailable',
+      slotMissingRequired: 'Required input missing',
+      createAndConnect: 'Create and connect',
       selectionActions: 'Selection actions',
       blocks: 'blocks',
       copySelection: 'Copy',
@@ -1741,8 +1754,14 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     nodeCreatedFromConnector: '{title} created from the {connector} connector.',
     nodeDroppedOntoCanvas: '{title} dropped onto the canvas.',
     linkNeedsSourceAndTarget: 'This link needs a source and a target connector.',
+    graphEndpointNotFound: 'The source or target block is no longer available.',
     blockCannotLinkToItself: 'A block cannot link to itself.',
+    duplicateGraphLink: 'These blocks are already connected through this input.',
+    sourceHandleUnavailable: 'This source no longer exposes that connector.',
+    targetDoesNotAcceptConnections: 'This target does not accept that connector.',
+    modelDoesNotSupportConnector: 'The selected model does not support this input.',
     connectorsNotCompatible: 'These block connectors are not compatible.',
+    connectorDisabled: '{connector} is unavailable with the current inputs.',
     connectorFull: '{connector} is full.',
     selectGeneratedOutputOrMedia: 'Select a generated output or media block before sending it to the timeline.',
     outputNotReadyForTimeline: 'This output is not ready for the timeline yet.',

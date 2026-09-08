@@ -34,15 +34,10 @@ function formatConnectorDescription(label: string, required: boolean, capacityLa
   return capacityLabel ? `${requiredLabel} · ${capacityLabel}` : requiredLabel;
 }
 
-function connectorCapacity(
-  handle: WorkspaceEdgeKind,
-  connectors: WorkspaceInputConnector[]
-): { capacityLabel: string | null; remainingCount: number | undefined } {
-  const connector = connectors.find((candidate) => candidate.kind === handle);
-  return {
-    capacityLabel: connector?.capacityLabel ?? null,
-    remainingCount: connector?.remainingCount,
-  };
+function connectorCapacityLabel(usedCount: number, maxCount: number, copy: ReturnType<typeof nodeCopy>): string {
+  return copy.usedCapacity
+    .replace('{used}', String(usedCount))
+    .replace('{maximum}', String(maxCount));
 }
 
 export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
@@ -63,15 +58,14 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
       {handles.length ? (
         <div className={styles.shotConnectorGroup}>
           <span className={styles.shotInputLabel}>{copy.inputs}</span>
-          {presentation.visible.map(({ handle }) => {
+          {presentation.visible.map(({ handle, connector, usedCount, maxCount, status }) => {
             const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
             const label = connectorLabel(handle, connectors, copy);
-            const { capacityLabel, remainingCount } = connectorCapacity(handle, connectors);
+            const capacityLabel = connectorCapacityLabel(usedCount, maxCount, copy);
             const required = connectorRequired(handle, connectors);
             const connectorDescription = formatConnectorDescription(label, required, capacityLabel);
-            const isFull = remainingCount === 0;
-            const disabledReason = connectors.find((connector) => connector.kind === handle)?.disabledReason;
-            const isDisabled = isFull || Boolean(disabledReason);
+            const disabledReason = connector?.disabledReason;
+            const isDisabled = status === 'full' || status === 'disabled';
             return (
               <div
                 key={`shot-input-${handle}`}
@@ -80,6 +74,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                 title={disabledReason ?? connectorDescription}
                 data-shot-connector-kind={handle}
                 data-shot-connector-row="input"
+                data-shot-connector-status={status}
               >
                 <Handle
                   id={handle}
@@ -102,16 +97,16 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                   {label}
                   {required ? ' *' : ''}
                 </span>
-                {capacityLabel ? <span className={styles.shotInputCapacity}>{capacityLabel}</span> : null}
-                <button type="button" className={`${styles.connectorAction} nodrag`} data-canvas-connect-handle={handle} aria-label={`${copy.connections}: ${label}`}>{(connectors.find((connector) => connector.kind === handle)?.connectedCount ?? 0) > 0 ? copy.connections : copy.connectSource}</button>
+                <span className={styles.shotInputCapacity}>{capacityLabel}</span>
+                <button type="button" className={`${styles.connectorAction} nodrag`} data-canvas-connect-handle={handle} aria-label={`${copy.connections}: ${label}`}>{usedCount > 0 ? copy.connections : copy.connectSource}</button>
               </div>
             );
           })}
           {presentation.optionalEmpty.length ? (
             <div className={connectionStyles.shotHiddenConnectorAnchors} aria-hidden="true">
-              {presentation.optionalEmpty.map(({ handle, connector }) => {
+              {presentation.optionalEmpty.map(({ handle, status }) => {
                 const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
-                const isDisabled = connector?.remainingCount === 0 || Boolean(connector?.disabledReason);
+                const isDisabled = status === 'full' || status === 'disabled';
                 return (
                   <span key={`shot-hidden-input-${handle}`} className={connectionStyles.shotHiddenConnectorAnchor} data-shot-hidden-connector-anchor={handle}>
                     <Handle

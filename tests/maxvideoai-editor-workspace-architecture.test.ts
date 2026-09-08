@@ -2001,10 +2001,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(renderNodesHookSource, /workspaceConnectionCapacity/, 'render node hook should own connector capacity labels for rendered nodes');
   assert.match(nodeSource, /workspace-shot-input-dock/, 'generate block input handles should delegate to a focused dock component');
   assert.match(shotInputDockSource, /function ShotInputDock/, 'generate block input handles should render in a dedicated bottom dock');
-  assert.match(shotInputDockSource, /capacityLabel/, 'generate block input handles should render remaining/max counts for multi-reference connectors');
-  assert.match(shotInputDockSource, /connectorDescription/, 'generate block input handles should keep remaining capacity attached to the connector description');
-  assert.match(shotInputDockSource, /aria-label=\{disabledReason \?\? connectorDescription\}/, 'generate block input rows should expose remaining capacity when no disabled reason applies');
-  assert.match(shotInputDockSource, /remainingCount === 0/, 'generate block input handles should mark full connectors as unavailable');
+  assert.match(shotInputDockSource, /usedCapacity/, 'generate block input handles should render used/max counts for policy connectors');
+  assert.match(shotInputDockSource, /connectorDescription/, 'generate block input handles should keep used capacity attached to the connector description');
+  assert.match(shotInputDockSource, /aria-label=\{disabledReason \?\? connectorDescription\}/, 'generate block input rows should expose capacity when no disabled reason applies');
+  assert.match(shotInputDockSource, /status === 'full'/, 'generate block input handles should mark full connectors as unavailable');
   assert.match(nodeSource, /ShotNodeControls[\s\S]*ShotInputDock/, 'generate block connector dock should render below the inline generation controls');
   assert.match(shotInputDockSource, /styles\.shotInputDock/, 'generate block should place connector labels in a bottom dock, not over the preview');
   assert.match(shotInputDockSource, /outputHandles/, 'generate block output handles should render in the compact connector dock');

@@ -67,6 +67,25 @@ test('shot connector presentation preserves distinct semantic handles and every 
   }
 });
 
+test('shot connector presentation exposes used capacity and status without interpreting model names', () => {
+  const projected = projectWorkspaceShotConnectorPresentation(
+    ['prompt', 'video_reference', 'reference', 'audio'],
+    [
+      connector('prompt', { required: true, connectedCount: 0, remainingCount: 1, maxCount: 1, capacityLabel: null }),
+      connector('video_reference', { connectedCount: 2, remainingCount: 1, maxCount: 3, capacityLabel: '1/3' }),
+      connector('reference', { connectedCount: 1, remainingCount: 0, maxCount: 1, capacityLabel: null }),
+      connector('audio', { connectedCount: 0, remainingCount: 1, maxCount: 1, disabledReason: 'Unavailable for current mode' }),
+    ],
+  );
+  const entries = [...projected.visible, ...projected.optionalEmpty];
+  assert.deepEqual(entries.map(({ handle, usedCount, maxCount, status }) => ({ handle, usedCount, maxCount, status })), [
+    { handle: 'prompt', usedCount: 0, maxCount: 1, status: 'missing_required' },
+    { handle: 'video_reference', usedCount: 2, maxCount: 3, status: 'connected' },
+    { handle: 'reference', usedCount: 1, maxCount: 1, status: 'full' },
+    { handle: 'audio', usedCount: 0, maxCount: 1, status: 'disabled' },
+  ]);
+});
+
 test('canvas fit reserves the shared useful surface and adapts the map inset without overwriting viewport policy', () => {
   assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 1440, viewportHeight: 900, mapExpanded: true }), {
     includeHiddenNodes: false,
@@ -131,12 +150,13 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(map, /setIsOpen\(false\)[\s\S]*mapExpanded: collapseMapForFit \? false : isOpen/);
 });
 
-test('Connections explains separate remaining capacity and restores focus to its persistent card command', () => {
+test('Connections explains used capacity per slot and restores focus to its persistent card command', () => {
   const picker = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasConnectionPicker.tsx'), 'utf8');
 
-  assert.match(picker, /copy\.remainingCapacity/);
-  assert.match(picker, /connector\.remainingCount/);
+  assert.match(picker, /copy\.usedCapacity/);
+  assert.match(picker, /connector\.connectedCount/);
   assert.match(picker, /connector\.maxCount/);
+  assert.match(picker, /data-connection-slot/);
   assert.match(picker, /data-canvas-connections-fallback/);
   assert.match(picker, /data-studio-canvas-shell/);
 });

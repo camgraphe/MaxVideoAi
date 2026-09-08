@@ -13,6 +13,13 @@ import { DEFAULT_STUDIO_COPY, localizeStudioEdgeKindLabel, type StudioCopy } fro
 
 export type WorkspaceHandleDropDirection = 'source' | 'target';
 
+export type WorkspaceHandleDropRequest = {
+  sourceNodeId: string;
+  handleId: WorkspaceEdgeKind;
+  handleType: WorkspaceHandleDropDirection;
+  position: XYPosition;
+};
+
 export type WorkspaceHandleDropDraft = {
   kind: WorkspaceEdgeKind;
   nodeKind: WorkspaceNodeKind;
