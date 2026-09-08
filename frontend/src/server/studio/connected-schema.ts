@@ -20,4 +20,3 @@ export async function assertStudioConnectedSchemaReady(
     throw new Error('STUDIO_CONNECTED_SCHEMA_UNAVAILABLE');
   }
 }
-

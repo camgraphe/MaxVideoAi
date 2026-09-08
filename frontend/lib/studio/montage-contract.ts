@@ -46,4 +46,3 @@ export function parseCreateStudioMontageInput(input: unknown): CreateStudioMonta
   if (!parsed.success) throw new Error('Invalid Studio montage input.');
   return parsed.data;
 }
-
