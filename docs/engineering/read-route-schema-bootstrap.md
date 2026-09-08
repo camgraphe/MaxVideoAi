@@ -18,6 +18,19 @@ configuration as part of a customer request.
   `engine_overrides` without global schema DDL or default-engine seed writes,
   including unknown/disabled-engine error resolution.
 
+Preflight must match generation's effective system configuration even when the
+stored system row predates the deployed catalog. `engine-settings-defaults.ts`
+owns the pure payload transformation shared by the generation seed writer and
+preflight: for the `getBaseEngines()` seed population only, missing/system-owned
+rows (`updated_by IS NULL`) receive current catalog options and pricing in
+memory, with the same JSON normalization and legacy pricing fallback as the
+persisted seed. Explicit administrator rows remain authoritative, and active /
+disabled overrides are applied afterward as before. The private-capable lookup
+uses this policy for public models too; hidden/image/private models outside the
+seed population keep their stored settings. Canary authorization and mode
+executability remain prerequisites for private resolution. Existing MCP catalog
+and transactional readers do not opt into this preflight policy.
+
 These responses remain account/private scoped where applicable. Do not add a
 cross-account server cache or return stale wallet, export, engine, or job data to
 hide database latency.
@@ -43,6 +56,11 @@ build, or deploy hook.
   bootstrap while preserving POST initialization.
 - `tests/preflight-media-pricing.test.ts` and pricing authority tests preserve
   exact canonical price/error behavior.
+- `tests/preflight-system-settings-postgres.test.ts` compares read-only preflight
+  against the actual generation seed on disposable PostgreSQL, including stale
+  system prices/capabilities, administrator rows, missing rows and disabled /
+  unknown engines. `tests/engine-settings-defaults.test.ts` covers the pure
+  transformation, seed population, and private-canary boundaries.
 - `tests/mcp-read-only-engine-resolution.test.ts` protects the shared read-only
   catalog from schema and seed dependencies.
 - `tests/application-schema-bootstrap-postgres.test.ts` qualifies new-database

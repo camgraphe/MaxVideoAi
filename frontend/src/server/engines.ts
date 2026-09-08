@@ -37,6 +37,7 @@ import {
 } from '@/server/engine-configuration-projection';
 import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
+import { getReadOnlyConfiguredEngine } from '@/server/agent-api/read-only-engine-catalog';
 
 async function getConfiguredEnginesForBase(
   baseEngines: EngineCaps[],
@@ -153,10 +154,7 @@ async function getConfiguredEngineForPreflight(
   bootstrap: boolean,
 ): Promise<EngineCaps | undefined> {
   if (bootstrap) return getConfiguredEngine(engineId, includeDisabled);
-  const base = getBaseEngines().find((engine) => engine.id === engineId);
-  if (!base) return undefined;
-  const [configured] = await getConfiguredEnginesForBase([base], includeDisabled, { bootstrap: false });
-  return configured;
+  return getReadOnlyConfiguredEngine(engineId, includeDisabled);
 }
 
 export async function computeConfiguredPreflight(

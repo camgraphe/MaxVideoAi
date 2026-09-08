@@ -95,3 +95,56 @@ explicitly bootstrapped and migrated schema qualified in the Activity lot.
 
 The local Node 23.9 runtime remains different from the repository's Node 22
 target and emits the existing non-blocking engine warning.
+
+## Integration-review correction: stale system engine settings
+
+Independent integration review identified that the removed generation seed also
+refreshes existing system-owned engine rows (`updated_by IS NULL`). Reading such
+rows directly could retain an old rate or capability limit until generation
+performed its refresh. The benchmark's prior baseline runs had already refreshed
+these rows, so the timing samples did not cover this divergent starting state.
+
+The regression was reproduced before the fix on isolated disposable PostgreSQL:
+a synthetic Sora 2 system row retaining a one-cent-per-second rate quoted 6 cents
+for five seconds before the persisted seed and 60 cents after it. These are local
+fixture totals, not customer prices. The fixture also includes H3 with a stale
+one-second limit and only 768P, plus a deliberately administrator-owned Sora 2 Pro
+row that must not be refreshed.
+
+`engine-settings-defaults.ts` now owns the pure transformation used by both the
+existing seed writer and read-only preflight. It reproduces persisted JSON
+normalization, default options, and pricing fallback only for the original
+`getBaseEngines()` seed population. Both public and private-capable preflight
+lookup, including the calculator's bootstrap-free fallback, use that effective
+projection. Administrator rows, disabled overrides, private-canary access and
+mode-executability checks remain intact. Hidden/image/private models outside the
+seed population and existing MCP catalog/transaction readers retain their prior
+settings behavior.
+
+The PostgreSQL regression compares all public engine projections, including
+missing rows, with the actual generation resolver after its persisted seed. It
+compares the complete normalized Sora, H3 and administrator preflight responses
+and fallback calculator results, verifies disabled/unknown errors, and checks
+stored rows remain identical during the read phase. That entire phase runs with
+`default_transaction_read_only=on`. Unit coverage separately checks no input
+mutation, legacy pricing conversion/fallback, database-free resolution, private
+lookup population, and denied/allowed/non-executable canary cases. A contract
+locks shared pure ownership; the existing transitive MCP contract still excludes
+schema and seed-writer dependencies.
+
+This correction adds no database statements or cache. The earlier latency table
+was not remeasured after this pure in-memory change; it remains evidence for the
+removed schema/seed I/O, not an exact timing of the corrected candidate.
+
+Fresh verification of the correction:
+
+- All five new behavioral tests passed, including actual disposable PostgreSQL
+  read-only enforcement and post-seed parity; the shared-owner contract passed.
+- Full sanitized repository suite: **4,486 passed, 0 failed, 0 skipped** in
+  166.7 seconds, including preflight request/media, P1 launch-canary, canonical
+  pricing, wallet/exports and MCP read-only contracts.
+- Frontend TypeScript, frontend lint, public-exposure lint and
+  `git diff --check`: passed.
+- Fresh sanitized production build: passed, including the model/media prebuild
+  gates and 861 generated static pages. The same Node 23.9 versus target Node 22
+  verification limitation remains.

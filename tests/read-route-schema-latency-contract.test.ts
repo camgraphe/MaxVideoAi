@@ -29,3 +29,14 @@ test('pricing preflight uses the read-only engine catalog and disables fallback 
   assert.doesNotMatch(mediaAwarePreflightSource, /getConfiguredEngineIncludingHidden,/);
   assert.match(mediaAwarePreflightSource, /bootstrap:\s*false/);
 });
+
+test('seed writer and read-only preflight share a pure system-defaults projection', () => {
+  const defaults = readFileSync('frontend/src/server/engine-settings-defaults.ts', 'utf8');
+  const writer = readFileSync('frontend/src/server/engine-settings.ts', 'utf8');
+  const catalog = readFileSync('frontend/src/server/agent-api/read-only-engine-catalog.ts', 'utf8');
+  const preflight = readFileSync('frontend/src/server/engines.ts', 'utf8');
+  assert.match(writer, /from '@\/server\/engine-settings-defaults'/);
+  assert.match(catalog, /from '@\/server\/engine-settings-defaults'/);
+  assert.doesNotMatch(defaults, /\b(?:async|await|query|process)\b/);
+  assert.match(preflight, /if \(bootstrap\) return getConfiguredEngine\(engineId, includeDisabled\);\s*return getReadOnlyConfiguredEngine\(engineId, includeDisabled\);/);
+});
