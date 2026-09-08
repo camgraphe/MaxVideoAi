@@ -21,7 +21,7 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
     </div></div>
     {quick.length ? <ul className={styles.quickGrid}>{quick.map(tool => {
       const text = copy.tools[tool.visual];
-      const content = <><div className={styles.quickArt}><ToolboxScene kind={tool.visual} /><span className={styles.artLabel}>{copy.illustration}</span></div><div className={styles.quickCaption}><h3>{text.title}</h3></div></>;
+      const content = <><div className={styles.quickArt}><ToolboxScene kind={tool.visual} /></div><div className={styles.quickCaption}><h3>{text.title}</h3></div></>;
       return <li key={tool.visual}>{onSelect ? <button type="button" className={styles.quickTool} onClick={() => onSelect(tool.id, tool.mediaKind)}>{content}</button> : <Link prefetch={false} className={styles.quickTool} href={`${tool.href}${tool.id === 'upscale' ? `?kind=${tool.mediaKind}` : ''}`} aria-label={`${text.title} — ${copy.open}`}>{content}</Link>}</li>;
     })}</ul> : <div className={styles.empty}><span aria-hidden="true" className={styles.sound}>▂ ▅ ▃ ▇ ▄ ▆ ▂</span><h3>{copy.noAudio}</h3><Link href="/app/audio" prefetch={false}>{copy.audioOpen} <span aria-hidden="true">↗</span></Link></div>}
     {workshops.length > 0 ? <section className={styles.workshopSection} aria-labelledby={`${id}-workshops`}>
@@ -31,7 +31,6 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
         return <li key={tool.id}><Link prefetch={false} href={tool.href} className={styles.workshop}>
           <div className={`${styles.workshopArt} ${tool.id === 'angle' ? styles.angleArt : ''}`}>
             {tool.id === 'storyboard' ? <ToolboxScene kind="storyboard" /> : tool.id === 'character-builder' ? <Image src="/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp" alt="" fill sizes="(max-width: 700px) 90vw, 30vw" loading="lazy" /> : <><div className={styles.angleImage}><Image src="/assets/tools/angle-orbit-product-source.webp" alt="" fill sizes="(max-width: 700px) 45vw, 15vw" loading="lazy" /></div><div className={styles.angleImage}><Image src="/assets/tools/angle-orbit-product-45.webp" alt="" fill sizes="(max-width: 700px) 45vw, 15vw" loading="lazy" /></div><span className={styles.orbit} aria-hidden="true">↻</span></>}
-            {tool.id === 'storyboard' ? <span className={styles.artLabel}>{copy.illustration}</span> : null}
           </div>
           <div className={styles.workshopCaption}><h3>{text.title}<span aria-hidden="true">↗</span></h3></div>
         </Link></li>;
