@@ -37,6 +37,8 @@ async function archiveSnapshot(root: string, target: string, revision: string) {
 export async function startStudioIntegrationRuntime(options: {
   initializeDatabase(database: DisposablePostgres): Promise<void>;
   revision?: string;
+  /** Test-only opt-in; host/resource always derive from this owned loopback child. */
+  mcp?: { studioMontageCreation?: boolean };
 }) {
   assert.equal(process.versions.node.split('.')[0], '22', 'Use the project Node 22 runtime.');
   const root = resolve('.');
@@ -92,6 +94,9 @@ export async function startStudioIntegrationRuntime(options: {
     await archiveSnapshot(root, temporaryRoot, revision);
     const port = await freeLoopbackPort();
     const origin = `http://127.0.0.1:${port}`;
+    // NextURL normalizes loopback rewrites to localhost. Keep that authority while tests
+    // connect to our exact IPv4 child and explicitly send this Host (no DNS/IPv6 listener reuse).
+    const mcpHost = `localhost:${port}`;
     auth = await startStudioAuthFixture({ appOrigin: origin });
     const requireFrontend = createRequire(join(root, 'frontend/package.json'));
     const next = requireFrontend.resolve('next/dist/bin/next');
@@ -105,6 +110,10 @@ export async function startStudioIntegrationRuntime(options: {
       NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS: 'false',
       NEXT_PUBLIC_ENV_LABEL: 'Disposable Studio integration',
       DATABASE_URL: database.databaseUrl,
+      ...(options.mcp ? {
+        MCP_LOCAL_ENABLED: 'true', MCP_API_HOST: mcpHost, MCP_RESOURCE_URL: `http://${mcpHost}/mcp`,
+        STUDIO_MONTAGE_LOCAL_ENABLED: options.mcp.studioMontageCreation === true ? 'true' : 'false',
+      } : {}),
     };
     child = spawn(process.execPath, [next, 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
       cwd: join(temporaryRoot, 'frontend'), env: environment, stdio: ['ignore', 'pipe', 'pipe'], detached: true,
@@ -119,7 +128,7 @@ export async function startStudioIntegrationRuntime(options: {
       if (!/Ready in/u.test(logs)) { await delay(200); continue; }
       try {
         const response = await fetch(`${origin}/api/studio/projects`, { signal: AbortSignal.timeout(2000) });
-        if (response.status === 401) return { origin, revision, database, auth, close, readLogs: () => logs };
+        if (response.status === 401) return { origin, mcpHost, revision, database, auth, close, readLogs: () => logs };
       } catch { /* No existing server is reused; wait for this exact child to become ready. */ }
       await delay(200);
     }

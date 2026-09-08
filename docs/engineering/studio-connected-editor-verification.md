@@ -49,6 +49,10 @@ Cette preuve concerne le socle de test et les routes historiques, **pas encore l
 
 Le même parcours HTTP couvre désormais le résolveur médias Task3 au produit `bd7aeb3cb` : cookie et Bearer signés, références asset et job/output exactes, original signé conservé sans réécriture, durée mesurée et `hasAudio:false`, refus anonyme/intercompte/ID interne/mauvais job et job devenu caché. Les tables média sont des fixtures minimales créées seulement après vérification du nouveau cluster local ; ce n'est pas une migration complète de la bibliothèque. La suite augmentée passe1/1 (6,54s pour ce passage). Les URL médias ne sont pas téléchargées : cette preuve concerne l'autorisation HTTP et SQL, pas leur lecture.
 
+Le test `connected-studio-mcp-route-integration.test.ts` exerce désormais le vrai `/mcp` avec transport SSE et Bearer signé : refus anonyme, cookie seul et signature altérée ; initialisation et découverte réelles ; `prepare_montage` et `create_studio_montage` absents par défaut ; deux événements d'audit effectivement lus dans la base locale. Il passe1/1 (9,41s pour ce passage), sans appel de génération ni création de projet. L'acquisition/funnel complet n'est pas initialisé ou qualifié ; seul l'audit existant est migré avec29/41 dans le cluster vérifié.
+
+L'option de runtime `mcp` fixe elle-même host/resource et les seules gates locales autorisées. Next15 normalise les URL loopback de rewrite vers `localhost` ; le helper HTTP envoie cette autorité mais se connecte directement au port IPv4 du processus possédé. Il ne réutilise ni DNS, ni un autre serveur, ni une injection de principal ou de service. Le contrôle initial a échoué avant cette correction du harness. Aucun changement de middleware produit ou de publication MCP n'a été nécessaire.
+
 ## Référence visuelle et mesures comparables
 
 Le contrôle réel desktop 1440×900 et mobile 390×844, clair et sombre, constate des blocs trop miniaturisés, des actions non nommées et un débordement mobile. Les captures de référence sont des artefacts locaux de travail ; elles ne constituent pas une mesure de performance.
@@ -87,6 +91,6 @@ La revue indépendante a renforcé la causalité de cette preuve : exiger un **n
 
 ## Contrôles restant ouverts
 
-Le lot médias `bd7aeb3cb` est figé, avec rapport `28475b388` :429tests ciblés,45tests upload et11parcours navigateur réussis, TypeScript/exposure/diff sans erreur, lint sans erreur avec2warnings hérités. Les six contrats provisoirement en échec pendant Task3 passent dans ce dernier run. La revue indépendante reste en cours. Les parcours navigateur prouvent l'édition et la sauvegarde locale ; le test HTTP séparé ci-dessus qualifie le résolveur authentifié, sans confondre les deux environnements.
+Le lot médias `bd7aeb3cb` est figé, avec rapport `28475b388` :429tests ciblés,45tests upload et11parcours navigateur réussis, TypeScript/exposure/diff sans erreur, lint sans erreur avec2warnings hérités. Les six contrats provisoirement en échec pendant Task3 passent dans ce dernier run. Revue indépendante Approved, puis correctif du seul Minor cache upload canevas `f426be90c` avec5/5tests DOM et re-revue Approved. Les parcours navigateur prouvent l'édition et la sauvegarde locale ; le test HTTP séparé `7cbafa1db`, également revu Approved, qualifie le résolveur authentifié, sans confondre les deux environnements.
 
 Commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, polish de densité des blocs, qualification responsive du lot complet et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères ; les21tests MCP existants ciblés passent avant Task4, sans prétendre prouver une écriture.
