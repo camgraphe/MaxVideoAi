@@ -74,6 +74,7 @@ ou écriture distante n'a été effectué.
 | `bbcc50fca` | Timeline : règle, zéro, pistes et tête de lecture alignés sur desktop/mobile après scroll et redimensionnement. |
 | `a2ee16ddc` | Connexions : slots issus des capacités du modèle, compteurs, motifs de refus et création-connexion atomique. |
 | `f2116248b` | Couture UI/métier : le panneau appelle réellement créer-connecter et les câbles directs refusés remontent leur motif canonique. |
+| `2b9a821a6` | Correctif de revue : les câbles directs conservent le motif de politique localisé et le panneau projette la capacité réelle des blocs de sortie. |
 
 Le guide traite ce petit portail comme un obstacle de placement afin de préserver
 la lisibilité du canevas.
@@ -91,7 +92,7 @@ preuves PostgreSQL/Auth privées restent celles du manifeste principal.
 
 ## Qualification
 
-- 529/529 contrats Studio/éditeur réussis sous Node 22.23.2. Les contrats de
+- 530/530 contrats Studio/éditeur réussis sous Node 22.23.2. Les contrats de
   persistance démarrent PostgreSQL 17 en socket local jetable, vérifient sa
   version et son dossier de données, puis le détruisent.
 - TypeScript, lint frontend, contrôle d'exposition, audit d'architecture et
@@ -114,6 +115,9 @@ preuves PostgreSQL/Auth privées restent celles du manifeste principal.
   Viewer indépendants, Focus + Échap, HUD, règle et tête de lecture, desktop
   1440×1000, mobile 390×844 et thème sombre. Trois chemins SVG ont été comparés
   avant/après une attente de 900 ms et sont restés strictement identiques.
+- La revue indépendante SOL n'a relevé aucun point critique. Ses deux écarts de
+  cohérence ont été reproduits par tests puis corrigés : motif métier localisé
+  pour un slot désactivé et sortie déjà connectée affichée pleine à 1/1.
 - Build Next 15 de production réussi sous Node 22 : registre et projections
   modèles cohérents, contrôles médias réussis, compilation et génération de
   871/871 pages.
