@@ -25,7 +25,7 @@ export function GalleryRailSkeleton({ responsive = false }: { responsive?: boole
     <div
       className={
         responsive
-          ? 'flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:border-l min-[768px]:border-border min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3'
+          ? 'flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3'
           : 'w-full rounded-card border border-border bg-surface-glass-60 p-3'
       }
       aria-hidden

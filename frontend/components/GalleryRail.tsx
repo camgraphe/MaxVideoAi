@@ -481,11 +481,11 @@ export function GalleryRail({
   return (
     <>
       {responsiveVariant ? (
-        <aside className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:border-l min-[768px]:border-border min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
+        <aside className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
           {content}
         </aside>
       ) : isDesktopVariant ? (
-        <aside className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col border-l border-border bg-bg/80 px-3 pb-6 pt-4">
+        <aside className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col bg-bg/80 px-3 pb-6 pt-4">
           {content}
         </aside>
       ) : (
