@@ -35,4 +35,4 @@ export function ToolSourceInput({ locale, kind, onKindChange, url, name, disable
 }
 export function ToolProcessing({ locale }: { locale: string }) { const copy = toolboxCopy(locale); return <div role="status" className={styles.processing}><span aria-hidden="true">◌</span><div><strong>{copy.processing}</strong></div></div>; }
 
-export function ToolAuthNotice({ locale, path }: { locale: string; path: string }) { return <Link className="mb-5 block rounded-xl border border-border p-4 text-sm underline" href={buildLoginHref({ mode: 'signin', nextPath: path })}>{toolboxCopy(locale).signIn}</Link>; }
+export function ToolAuthNotice({ locale, path }: { locale: string; path: string }) { return <Link className="mb-4 inline-flex min-h-11 items-center text-sm underline" href={buildLoginHref({ mode: 'signin', nextPath: path })}>{toolboxCopy(locale).signIn}</Link>; }

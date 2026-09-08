@@ -1,19 +1,16 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
-import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS } from '@/config/tools-background-removal-engines';
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { saveAssetToLibrary } from '@/lib/api';
-import { buildLoginHref } from '@/lib/auth-entry-href';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { ToolWorkbench, ToolProcessing } from './ToolWorkbench';
+import { ToolWorkbench, ToolProcessing, ToolAuthNotice } from './ToolWorkbench';
 import { ToolboxVideoPreview } from './ToolboxVideoPreview';
 import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
 import type {
@@ -260,6 +257,6 @@ export function BackgroundRemovalSession({ auth }: { auth: ReturnType<typeof use
       {output?.url && output.assetId ? <MediaDestinationActions locale={locale} userId={user?.id} asset={{ id: output.assetId, url: output.url, kind: 'video', jobId: runner.result?.jobId, thumbUrl: output.thumbUrl }} /> : null}
     </>}
   >
-    {!user ? <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-border p-4"><p className="text-sm">{copy.authTitle}</p><ButtonLink href={buildLoginHref({ mode: 'signin', nextPath: '/app/tools/background-removal' })} linkComponent={Link} size="sm">Sign in</ButtonLink></div> : null}
+    {!user ? <ToolAuthNotice locale={locale} path="/app/tools/background-removal" /> : null}
   </ToolWorkbench>;
 }
