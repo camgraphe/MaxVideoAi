@@ -93,6 +93,36 @@ test('real Studio routes authenticate cookie and bearer owners against a fresh P
     assert.deepEqual((await foreignList.json()).projects, []);
     const rows = await runtime.database.pool.query('SELECT id, user_id FROM studio_projects');
     assert.deepEqual(rows.rows, [{ id: saved.project.id, user_id: STUDIO_FIXTURE_OWNERS[0] }]);
+
+    const writeAs = (url: string, method: string, payload: unknown, token: string) => fetch(url, {
+      method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload), signal: AbortSignal.timeout(30_000),
+    });
+    for (const method of ['POST', 'PUT', 'PATCH']) {
+      const collision = await writeAs(method === 'POST' ? endpoint : `${endpoint}/${saved.project.id}`, method, {
+        id: saved.project.id, name: 'Owner B must not replace A',
+      }, sessionB.access_token);
+      assert.equal(collision.status, 409, `Legacy project ${method} must retain its business conflict instead of a generic500.`);
+      assert.deepEqual(await collision.json(), { ok: false, error: 'STUDIO_PROJECT_CONFLICT' });
+    }
+    const sequenceA = await writeAs(`${endpoint}/${saved.project.id}/sequences`, 'POST', {
+      id: 'legacy-sequence-owned-by-a', name: 'Owner A sequence', timelineState: { timelineItems: [] },
+    }, sessionA.access_token);
+    assert.equal(sequenceA.status, 200, await sequenceA.clone().text());
+    const projectB = await writeAs(endpoint, 'POST', { name: 'Owner B project' }, sessionB.access_token);
+    assert.equal(projectB.status, 200);
+    const projectBId = (await projectB.json()).project.id;
+    for (const method of ['POST', 'PUT', 'PATCH']) {
+      const sequenceEndpoint = `${endpoint}/${projectBId}/sequences${method === 'POST' ? '' : '/legacy-sequence-owned-by-a'}`;
+      const collision = await writeAs(sequenceEndpoint, method, {
+        id: 'legacy-sequence-owned-by-a', name: 'Owner B must not replace A sequence',
+      }, sessionB.access_token);
+      assert.equal(collision.status, 409, `Legacy sequence ${method} must retain its business conflict instead of a generic500.`);
+      assert.deepEqual(await collision.json(), { ok: false, error: 'STUDIO_SEQUENCE_CONFLICT' });
+    }
+    const legacyOwner = await runtime.database.pool.query('SELECT user_id, project_id, name FROM studio_sequences WHERE id=$1', ['legacy-sequence-owned-by-a']);
+    assert.deepEqual(legacyOwner.rows, [{ user_id: STUDIO_FIXTURE_OWNERS[0], project_id: saved.project.id, name: 'Owner A sequence' }]);
+    assert.equal((await runtime.database.pool.query('SELECT name FROM studio_projects WHERE id=$1', [saved.project.id])).rows[0].name, 'Disposable route evidence');
     const anonymousPage = await fetch(`${runtime.origin}/app/studio/projects`, { redirect: 'manual' });
     assert.ok([302, 303, 307, 308].includes(anonymousPage.status));
     assert.match(anonymousPage.headers.get('location') ?? '', /login/);

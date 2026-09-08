@@ -97,3 +97,11 @@ Une re-revue indépendante du serveur complet est en cours. Le client connecté 
 ## Vérification élargie des projections MCP
 
 La racine a aussi exécuté les contrats modifiés de publication/support. Après correction du `NODE_PATH` du runner, le nouveau tool passe2/2 mais11 assertions existantes restent RED : dix dans le preflight Vercel simulé (le script attend encore neuf flags exacts) et une dans le support (ligne `studioMontageCreation:false` absente). `scripts/run-mcp-launch-fixture.mjs` omet également le nouveau flag dans sa liste stricte. L’implémenteur corrige ces seuls points dans un nouveau commit partagé isolé ; aucun preflight Vercel réel, déploiement ou activation n’a été lancé.
+
+## Re-revue des références vivantes et du legacy
+
+La revue indépendante a trouvé deux autres régressions : retirer du bin tout en conservant un clip rendait son renouvellement inaccessible, et l’opacification transformait deux conflits legacy explicites en500. La racine a reproduit le premier défaut par HTTP : CAS réussi, clip encore présent en SQL, accès404 au lieu de200 (13,42s).
+
+Le correctif Studio `de02e5825` autorise les références exactes du bin et des seules séquences vivantes du propriétaire/projet sous verrou parent ; le reçu initial ne sert pas d’autorisation. Il restaure aussi les codes409 `STUDIO_PROJECT_CONFLICT` et `STUDIO_SEQUENCE_CONFLICT`. Suite HTTP renforcée : **3/3 réussis (24,26s)**, comprenant montage2/2 et routes historiques1/1. Retrait du bin→signature valide, retrait de la dernière occurrence→404, owner étranger→404 ; collisions d’ID projet et séquence via POST/PUT/PATCH→409 exact et contenu/propriété SQL inchangés.
+
+Le sous-lot client `6fd412782` est figé séparément (22 chemins), avec42 tests ciblés et TypeScript rapportés verts. La preuve navigateur reste en cours : les lecteurs privés atteignent readyState avec206, mais deux premiers essais ont rencontré des erreurs d’instrumentation de test racine (helper tsx absent dans le contexte page, puis expression fonction non invoquée). Ces erreurs sont corrigées sans changement produit ni suppression des assertions de frames ; elles ne permettent pas de conclure à une régression de lecture.

@@ -176,6 +176,46 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal(unknownFacts.result.isError, true);
     assert.equal(unknownFacts.result.structuredContent.error.code, 'REFERENCE_INVALID');
     assert.equal(unknownFacts.result.structuredContent.error.retryable, false);
+
+    // Removing a bin entry deliberately keeps its existing timeline occurrences.
+    // Those live occurrences must remain authorized for renewable private playback.
+    const withoutBinEntry = structuredClone(snapshot);
+    withoutBinEntry.workspaceState.projectAssets = withoutBinEntry.workspaceState.projectAssets.filter(
+      (asset: { ref: { assetId: string } }) => asset.ref.assetId !== STUDIO_CONNECTED_ASSET_IDS.b,
+    );
+    const removeFromBin = await route(`${path}/workspace`, {
+      method: 'PUT', body: JSON.stringify({ expectedRevision: 1, snapshot: withoutBinEntry }),
+    });
+    assert.equal(removeFromBin.status, 200);
+    assert.equal((await removeFromBin.json()).revision, 2);
+    const binState = await runtime.database.pool.query('SELECT workspace_state FROM studio_projects WHERE id=$1', [montage.projectId]);
+    assert.deepEqual(binState.rows[0].workspace_state.projectAssets.map((asset: { ref: { assetId: string } }) => asset.ref.assetId), [STUDIO_CONNECTED_ASSET_IDS.a]);
+    const liveSequence = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
+    assert.equal(liveSequence.rows[0].timeline_state.timelineItems[0].ref.assetId, STUDIO_CONNECTED_ASSET_IDS.b);
+    const singleAccess = JSON.stringify({ assetIds: [STUDIO_CONNECTED_ASSET_IDS.b] });
+    const retainedAccess = await route(`${path}/media-access`, { method: 'POST', body: singleAccess });
+    assert.equal(retainedAccess.status, 200, 'A live timeline occurrence keeps its private access after removal from the bin.');
+    const retainedAsset = (await retainedAccess.json()).assets[0];
+    const retainedSignature = await validateStudioPrivateMediaRequest({ url: retainedAsset.url, method: 'GET' });
+    assert.equal(retainedSignature.ok, true);
+    if (retainedSignature.ok) assert.equal(retainedSignature.key, STUDIO_PRIVATE_MEDIA_KEYS.b);
+    assert.equal((await route(`${path}/media-access`, { method: 'POST', body: singleAccess }, ownerB.access_token)).status, 404);
+
+    const withoutAnyOccurrence = structuredClone(withoutBinEntry);
+    withoutAnyOccurrence.workspaceState.timelineItems = withoutAnyOccurrence.workspaceState.timelineItems.filter(
+      (item: { ref: { assetId: string } }) => item.ref.assetId !== STUDIO_CONNECTED_ASSET_IDS.b,
+    );
+    for (const sequence of withoutAnyOccurrence.workspaceState.sequences) {
+      sequence.timelineItems = sequence.timelineItems.filter(
+        (item: { ref: { assetId: string } }) => item.ref.assetId !== STUDIO_CONNECTED_ASSET_IDS.b,
+      );
+    }
+    const removeLastOccurrence = await route(`${path}/workspace`, {
+      method: 'PUT', body: JSON.stringify({ expectedRevision: 2, snapshot: withoutAnyOccurrence }),
+    });
+    assert.equal(removeLastOccurrence.status, 200);
+    assert.equal((await removeLastOccurrence.json()).revision, 3);
+    assert.equal((await route(`${path}/media-access`, { method: 'POST', body: singleAccess })).status, 404, 'The initial command receipt is provenance, not permanent playback authorization after all live refs are removed.');
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_sequences')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 1);
