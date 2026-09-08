@@ -240,6 +240,10 @@ export type WorkspaceAssetRecord = {
   ref?: import('@/lib/toolbox/contract').ToolAssetRef;
   mediaFacts?: import('@/lib/media-identity').MediaFacts;
   previewUrl?: string;
+  /** Ephemeral authenticated playback projection. Never persist this URL. */
+  mediaAccessUrl?: string;
+  mediaAccessExpiresAt?: string | null;
+  mediaAccessRequired?: boolean;
   id: string;
   kind: WorkspaceAssetKind;
   filename: string;
@@ -540,6 +544,10 @@ export type WorkspaceTimelineAudioMix = {
 export type WorkspaceTimelineItem = {
   ref?: import('@/lib/toolbox/contract').ToolAssetRef;
   mediaFacts?: import('@/lib/media-identity').MediaFacts;
+  /** Ephemeral authenticated playback projection. Never persist this URL. */
+  mediaAccessUrl?: string;
+  mediaAccessExpiresAt?: string | null;
+  mediaAccessRequired?: boolean;
   id: string;
   assetId?: string | null;
   outputNodeId: string;

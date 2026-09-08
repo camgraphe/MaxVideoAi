@@ -9,6 +9,7 @@ import { dirname, join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startDisposablePostgres, type DisposablePostgres } from './disposable-postgres';
 import { startStudioAuthFixture } from './studio-auth-fixture';
+import { STUDIO_PRIVATE_STORAGE_ENV } from './studio-private-storage-fixture';
 
 async function freeLoopbackPort(): Promise<number> {
   const probe = createServer();
@@ -39,6 +40,8 @@ export async function startStudioIntegrationRuntime(options: {
   revision?: string;
   /** Test-only opt-in; host/resource always derive from this owned loopback child. */
   mcp?: { studioMontageCreation?: boolean };
+  /** Local SDK signing only. The browser fixture must intercept the exact fake bucket. */
+  privateStorage?: boolean;
 }) {
   assert.equal(process.versions.node.split('.')[0], '22', 'Use the project Node 22 runtime.');
   const root = resolve('.');
@@ -97,7 +100,8 @@ export async function startStudioIntegrationRuntime(options: {
     // NextURL normalizes loopback rewrites to localhost. Keep that authority while tests
     // connect to our exact IPv4 child and explicitly send this Host (no DNS/IPv6 listener reuse).
     const mcpHost = `localhost:${port}`;
-    auth = await startStudioAuthFixture({ appOrigin: origin });
+    const browserOrigin = options.mcp ? `http://${mcpHost}` : origin;
+    auth = await startStudioAuthFixture({ appOrigin: browserOrigin });
     const requireFrontend = createRequire(join(root, 'frontend/package.json'));
     const next = requireFrontend.resolve('next/dist/bin/next');
     const environment = {
@@ -106,10 +110,11 @@ export async function startStudioIntegrationRuntime(options: {
       ...(process.env.TMPDIR ? { TMPDIR: process.env.TMPDIR } : {}),
       NODE_ENV: 'development', NEXT_TELEMETRY_DISABLED: '1',
       NEXT_PUBLIC_SUPABASE_URL: auth.origin, NEXT_PUBLIC_SUPABASE_ANON_KEY: auth.anonKey,
-      NEXT_PUBLIC_SITE_URL: origin, SITE_URL: origin,
+      NEXT_PUBLIC_SITE_URL: browserOrigin, SITE_URL: browserOrigin,
       NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS: 'false',
       NEXT_PUBLIC_ENV_LABEL: 'Disposable Studio integration',
       DATABASE_URL: database.databaseUrl,
+      ...(options.privateStorage === true ? { ...STUDIO_PRIVATE_STORAGE_ENV, AWS_EC2_METADATA_DISABLED: 'true' } : {}),
       ...(options.mcp ? {
         MCP_LOCAL_ENABLED: 'true', MCP_API_HOST: mcpHost, MCP_RESOURCE_URL: `http://${mcpHost}/mcp`,
         STUDIO_MONTAGE_LOCAL_ENABLED: options.mcp.studioMontageCreation === true ? 'true' : 'false',
@@ -128,7 +133,7 @@ export async function startStudioIntegrationRuntime(options: {
       if (!/Ready in/u.test(logs)) { await delay(200); continue; }
       try {
         const response = await fetch(`${origin}/api/studio/projects`, { signal: AbortSignal.timeout(2000) });
-        if (response.status === 401) return { origin, mcpHost, revision, database, auth, close, readLogs: () => logs };
+        if (response.status === 401) return { origin, browserOrigin, mcpHost, revision, database, auth, close, readLogs: () => logs };
       } catch { /* No existing server is reused; wait for this exact child to become ready. */ }
       await delay(200);
     }

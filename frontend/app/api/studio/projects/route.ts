@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { listStudioProjects, upsertStudioProject } from '@/server/studio/repository';
+import { connectedStudioError } from '../_lib/studio-connected-route-utils';
 import { payloadRecord, payloadString, resolveStudioRouteContext, studioJson } from '../_lib/studio-route-utils';
 
 function readProjectPayload(payload: unknown): Record<string, unknown> {
@@ -40,8 +41,8 @@ export async function POST(req: NextRequest) {
     });
     return studioJson({ ok: true, project: savedProject });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'STUDIO_PROJECT_SAVE_FAILED';
-    const status = message === 'STUDIO_PROJECT_CONFLICT' ? 409 : 400;
-    return studioJson({ ok: false, error: message }, { status });
+    const failure = connectedStudioError(error, 'STUDIO_PROJECT_SAVE_FAILED');
+    const status = failure.error === 'STUDIO_PROJECT_CONFLICT' ? 409 : failure.status;
+    return studioJson({ ok: false, error: failure.error }, { status });
   }
 }

@@ -12,6 +12,8 @@ type StudioProjectRow = {
   canvas_template_id: string;
   settings: unknown;
   workspace_state: unknown;
+  revision?: string | number | null;
+  persistence_mode?: string | null;
   created_at: Date | string;
   updated_at: Date | string;
 };
@@ -45,6 +47,8 @@ function mapProject(row: StudioProjectRow): StudioProjectRecord {
     canvasTemplateId: row.canvas_template_id,
     settings: row.settings,
     workspaceState: row.workspace_state,
+    revision: Math.max(0, Number(row.revision ?? 0) || 0),
+    persistenceMode: row.persistence_mode === 'connected' ? 'connected' : 'legacy',
     createdAt: isoDate(row.created_at),
     updatedAt: isoDate(row.updated_at),
   };
@@ -63,9 +67,9 @@ function mapSequence(row: StudioSequenceRow): StudioSequenceRecord {
   };
 }
 
-async function hasStudioProjectAccess(params: { userId: string; projectId: string }): Promise<boolean> {
-  const rows = await query<{ id: string }>(
-    `SELECT id
+async function studioProjectAccess(params: { userId: string; projectId: string }): Promise<'legacy' | 'connected' | null> {
+  const rows = await query<{ id: string; persistence_mode: string }>(
+    `SELECT id, COALESCE(to_jsonb(studio_projects)->>'persistence_mode', 'legacy') AS persistence_mode
        FROM studio_projects
       WHERE user_id = $1
         AND id = $2
@@ -73,7 +77,13 @@ async function hasStudioProjectAccess(params: { userId: string; projectId: strin
       LIMIT 1`,
     [params.userId, params.projectId]
   );
-  return Boolean(rows[0]);
+  return rows[0]?.persistence_mode === 'connected' ? 'connected' : rows[0] ? 'legacy' : null;
+}
+
+async function requireLegacyStudioProject(params: { userId: string; projectId: string }): Promise<void> {
+  const access = await studioProjectAccess(params);
+  if (access === 'connected') throw new Error('STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED');
+  if (!access) throw new Error('STUDIO_PROJECT_NOT_FOUND');
 }
 
 export async function listStudioProjects(params: {
@@ -83,7 +93,10 @@ export async function listStudioProjects(params: {
   await ensureStudioProjectSchema();
   const limit = Math.max(1, Math.min(params.limit ?? 40, 100));
   const rows = await query<StudioProjectRow>(
-    `SELECT id, user_id, name, canvas_template_id, settings, workspace_state, created_at, updated_at
+    `SELECT id, user_id, name, canvas_template_id, settings, workspace_state,
+            COALESCE((to_jsonb(studio_projects)->>'revision')::bigint, 0) AS revision,
+            COALESCE(to_jsonb(studio_projects)->>'persistence_mode', 'legacy') AS persistence_mode,
+            created_at, updated_at
        FROM studio_projects
       WHERE user_id = $1
         AND deleted_at IS NULL
@@ -142,7 +155,7 @@ export async function upsertStudioSequence(params: {
   timelineState?: unknown;
 }): Promise<StudioSequenceRecord> {
   await ensureStudioProjectSchema();
-  if (!(await hasStudioProjectAccess(params))) throw new Error('STUDIO_PROJECT_NOT_FOUND');
+  await requireLegacyStudioProject(params);
 
   const id = params.id?.trim() || studioId('sequence');
   const name = params.name.trim() || 'Untitled sequence';
@@ -180,6 +193,7 @@ export async function deleteStudioSequence(params: {
   sequenceId: string;
 }): Promise<{ ok: true } | { ok: false; reason: 'last_sequence' | 'not_found' }> {
   await ensureStudioProjectSchema();
+  await requireLegacyStudioProject(params);
   return withDbTransaction(async (executor) => {
     const targetRows = await executor.query<{ id: string }>(
       `SELECT id
@@ -224,7 +238,10 @@ export async function readStudioProject(params: {
 }): Promise<StudioProjectRecord | null> {
   await ensureStudioProjectSchema();
   const rows = await query<StudioProjectRow>(
-    `SELECT id, user_id, name, canvas_template_id, settings, workspace_state, created_at, updated_at
+    `SELECT id, user_id, name, canvas_template_id, settings, workspace_state,
+            COALESCE((to_jsonb(studio_projects)->>'revision')::bigint, 0) AS revision,
+            COALESCE(to_jsonb(studio_projects)->>'persistence_mode', 'legacy') AS persistence_mode,
+            created_at, updated_at
        FROM studio_projects
       WHERE user_id = $1
         AND id = $2
@@ -245,6 +262,10 @@ export async function upsertStudioProject(params: {
 }): Promise<StudioProjectRecord> {
   await ensureStudioProjectSchema();
   const id = params.id?.trim() || studioId('project');
+  if (params.id?.trim()) {
+    const access = await studioProjectAccess({ userId: params.userId, projectId: id });
+    if (access === 'connected') throw new Error('STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED');
+  }
   const name = params.name.trim() || 'Untitled edit';
   const canvasTemplateId = params.canvasTemplateId?.trim() || DEFAULT_STUDIO_PROJECT_CANVAS_TEMPLATE_ID;
   const rows = await query<StudioProjectRow>(
@@ -261,7 +282,11 @@ export async function upsertStudioProject(params: {
         updated_at = NOW(),
         deleted_at = NULL
       WHERE studio_projects.user_id = EXCLUDED.user_id
-      RETURNING id, user_id, name, canvas_template_id, settings, workspace_state, created_at, updated_at`,
+        AND COALESCE(to_jsonb(studio_projects)->>'persistence_mode', 'legacy') <> 'connected'
+      RETURNING id, user_id, name, canvas_template_id, settings, workspace_state,
+                COALESCE((to_jsonb(studio_projects)->>'revision')::bigint, 0) AS revision,
+                COALESCE(to_jsonb(studio_projects)->>'persistence_mode', 'legacy') AS persistence_mode,
+                created_at, updated_at`,
     [
       id,
       params.userId,
@@ -280,6 +305,7 @@ export async function deleteStudioProject(params: {
   projectId: string;
 }): Promise<boolean> {
   await ensureStudioProjectSchema();
+  await requireLegacyStudioProject(params);
   const rows = await query<{ id: string }>(
     `UPDATE studio_projects
         SET deleted_at = NOW(),

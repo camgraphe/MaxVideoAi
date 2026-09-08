@@ -5,6 +5,8 @@ export type StudioProjectRecord = {
   canvasTemplateId: string;
   settings: unknown;
   workspaceState: unknown;
+  revision: number;
+  persistenceMode: 'legacy' | 'connected';
   createdAt: string;
   updatedAt: string;
 };

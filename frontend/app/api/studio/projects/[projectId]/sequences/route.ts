@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { listStudioSequences, upsertStudioSequence } from '@/server/studio/repository';
+import { connectedStudioError } from '../../../_lib/studio-connected-route-utils';
 import { payloadRecord, payloadString, resolveStudioRouteContext, studioJson } from '../../../_lib/studio-route-utils';
 
 type ProjectSequencesRouteProps = {
@@ -46,8 +47,8 @@ export async function POST(req: NextRequest, props: ProjectSequencesRouteProps) 
     });
     return studioJson({ ok: true, sequence: savedSequence });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'STUDIO_SEQUENCE_SAVE_FAILED';
-    const status = message === 'STUDIO_PROJECT_NOT_FOUND' ? 404 : message === 'STUDIO_SEQUENCE_CONFLICT' ? 409 : 400;
-    return studioJson({ ok: false, error: message }, { status });
+    const failure = connectedStudioError(error, 'STUDIO_SEQUENCE_SAVE_FAILED');
+    const status = failure.error === 'STUDIO_SEQUENCE_CONFLICT' ? 409 : failure.status;
+    return studioJson({ ok: false, error: failure.error }, { status });
   }
 }
