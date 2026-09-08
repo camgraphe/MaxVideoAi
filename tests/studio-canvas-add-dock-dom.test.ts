@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom';
 import { DEFAULT_STUDIO_COPY } from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
 import type { CanvasFloatingToolbarProps } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasFloatingToolbar';
 
-test('compact canvas dock creates real presets, selects tools, preserves history and exposes qualified workbench links', async () => {
+test('compact canvas dock creates real presets, selects tools, preserves history and exposes active workbench links', async () => {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions['.css'];
   require.extensions['.css'] = (module) => { module.exports = new Proxy({}, { get: (_, key) => key === '__esModule' ? false : key }); };
@@ -62,8 +62,9 @@ test('compact canvas dock creates real presets, selects tools, preserves history
     assert.ok(standalone, 'standalone workshops must open their real workspace');
     assert.equal(standalone.target, '_blank', 'opening a workbench preserves the canvas');
     const denoise = menu.querySelector<HTMLAnchorElement>('a[href="/app/tools/denoise"]');
-    assert.match(denoise?.textContent ?? '', /Validation/);
-    assert.equal(menu.querySelector('[data-canvas-toolbar-preset-id="denoise"]'), null, 'unqualified finishing cannot create an executable node');
+    assert.match(denoise?.textContent ?? '', /Denoise video/);
+    assert.doesNotMatch(denoise?.textContent ?? '', /Validation/);
+    assert.equal(menu.querySelector('[data-canvas-toolbar-preset-id="denoise"]'), null, 'the finishing workbench stays a route instead of pretending to be a Studio node');
     await click('[data-canvas-toolbar-preset-id="generate-video"]');
     await settle();
     assert.deepEqual(creations, [['shot', 'generate-video']]);

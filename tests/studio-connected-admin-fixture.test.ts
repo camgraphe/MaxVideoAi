@@ -20,7 +20,7 @@ test('connected Studio fixture grants admin access to both owners but not the me
   await initializeStudioConnectedFixture(database);
 
   const seededAdmins = await database.pool.query<{ user_id: string }>(
-    'SELECT user_id FROM app_admins ORDER BY user_id',
+    "SELECT user_id FROM user_roles WHERE role = 'admin' ORDER BY user_id",
   );
   assert.deepEqual(
     seededAdmins.rows.map((row) => row.user_id),
