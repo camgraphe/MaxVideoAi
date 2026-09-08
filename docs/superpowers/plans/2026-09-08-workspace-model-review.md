@@ -101,6 +101,7 @@ Use the project's existing real engine fixtures/helpers and independently expect
 **Interfaces:**
 - Consumes WorkspaceModelSetup/WorkspaceModelCandidate and prepareWorkspaceModelCandidate from Task 1.
 - Consumes buildWorkspacePreflightRequest(options) from the current-quote prerequisite, and useWorkspacePreflightQuote({request, iterations, accessToken, authChecked}); quote observations must remain scope-bound.
+- The Retry action may add an explicit retry command to the scoped quote hook. A retry creates a fresh observation for the same request/account and invalidates the earlier response; never put a nonce into the commercial request or rely on a batched null→same request toggle. Cover retry after failure and superseded retry completion in the existing lifecycle test.
 - Review hook exposes requestModel(engineId), close, apply, selectSavedSetup and current panel/recovery state. It receives current form/assets/composer/auth/draft owners explicitly; the visual panel only renders and calls these commands.
 - Saved setup serialization is pure. Storage I/O is in the hook, exceptions contained. Store one last setup per engine for the confirmed account in sessionStorage, maximum serialized record 1 MiB; never silently evict references on overflow. Persist version, account, model ID, updatedAt and validated setup; no auth token, blob URLs, File objects or unscoped fallback. A ready asset with an HTTP(S) original can normalize its temporary preview to the original for recovery. Inputs still uploading block the switch, with a short visible reason.
 
