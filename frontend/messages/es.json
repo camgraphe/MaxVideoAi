@@ -3430,27 +3430,27 @@
         "avgDuration": "Prom. {value}",
         "choose": "Elegir modelo",
         "variant": "Variante",
-        "browse": "Explorar motores...",
-        "browseCompact": "Explorar motores",
+        "browse": "Explorar modelos",
+        "browseCompact": "Explorar modelos",
         "inputMode": "Modo de entrada",
-        "unsupportedMode": "No compatible con este motor",
+        "unsupportedMode": "No compatible con este modelo",
         "badges": {
           "new": "Nuevo"
         },
         "modal": {
           "close": "Cerrar",
-          "title": "Elige el motor adecuado para tu toma",
+          "title": "Elige el modelo adecuado para tu toma",
           "subtitle": "Cada modelo tiene sus ventajas: algunos son rápidos, otros más cinematográficos o experimentales. Encuentra el que se ajuste a tu proyecto y genera con confianza.",
-          "searchPlaceholder": "Busca por motor, proveedor o capacidad",
+          "searchPlaceholder": "Busca por modelo, proveedor o capacidad",
           "modeAll": "Modo: Todos",
           "modeValue": "Modo: {value}",
           "resolutionAll": "Resolución: Todas",
           "legacyToggleLabel": "Modelos antiguos",
           "viewModel": "Ver página del modelo",
           "viewExamples": "Ver ejemplos",
-          "empty": "Ningún motor coincide todavía con tus filtros. Ajusta los filtros o borra la búsqueda para explorar todo el catálogo.",
+          "empty": "Ningún modelo coincide todavía con tus filtros. Ajusta los filtros o borra la búsqueda para explorar todo el catálogo.",
           "disclaimer": "Los logotipos se usan solo con fines descriptivos. Las marcas pertenecen a sus respectivos dueños.",
-          "descriptionFallback": "Motor versátil listo para flujos «precio antes de generar». Revisa las especificaciones y lanza tus renders con confianza."
+          "descriptionFallback": "Consulta las entradas, los formatos y la resolución de este modelo antes de generar."
         },
         "guides": {
           "pika-text-to-video": {

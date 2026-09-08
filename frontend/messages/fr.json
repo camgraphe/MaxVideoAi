@@ -3458,7 +3458,7 @@
           "viewExamples": "Voir les exemples",
           "empty": "Aucun modèle ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",
           "disclaimer": "Les logos sont utilisés à titre descriptif uniquement. Les marques appartiennent à leurs propriétaires.",
-          "descriptionFallback": "Modèle polyvalent prêt pour les workflows « prix avant génération ». Consultez les spécifications et lancez vos rendus en toute confiance."
+          "descriptionFallback": "Consultez les entrées, les formats et la résolution de ce modèle avant de générer."
         },
         "guides": {
           "pika-text-to-video": {

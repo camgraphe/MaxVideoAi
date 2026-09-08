@@ -3401,29 +3401,29 @@
         "clearSearch": "Clear search",
         "observedTiming": "Observed completions",
         "avgDuration": "Avg {value}",
-        "choose": "Choose engine",
+        "choose": "Choose model",
         "variant": "Variant",
-        "browse": "Browse engines...",
-        "browseCompact": "Browse engines",
+        "browse": "Explore models",
+        "browseCompact": "Explore models",
         "inputMode": "Input mode",
-        "unsupportedMode": "Not supported by this engine",
+        "unsupportedMode": "Not supported by this model",
         "badges": {
           "new": "New"
         },
         "modal": {
           "close": "Close",
-          "title": "Choose the right engine for your shot",
+          "title": "Choose the right model for your shot",
           "subtitle": "Each model has its own strengths - some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.",
-          "searchPlaceholder": "Search by engine, provider, or capability",
+          "searchPlaceholder": "Search by model, provider, or capability",
           "modeAll": "Mode: All",
           "modeValue": "Mode: {value}",
           "resolutionAll": "Resolution: All",
           "legacyToggleLabel": "Legacy models",
           "viewModel": "View model page",
           "viewExamples": "View examples",
-          "empty": "No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
+          "empty": "No models match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
           "disclaimer": "Logos are used for descriptive purposes only. Trademarks belong to their respective owners.",
-          "descriptionFallback": "Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence."
+          "descriptionFallback": "Review this model’s inputs, formats and resolution before generating."
         },
         "guides": {
           "pika-text-to-video": {
