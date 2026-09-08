@@ -29,6 +29,7 @@ Après fit desktop/mobile/paysage, aucun bouton essentiel n'est sous un overlay.
 
 - Projects : titre et une phrase de résultat par starter ; retirer la chaîne de workflow redondante et le texte générique. Préserver aperçus, récents, sauvegarde, notice globale avant génération et transfert médias de Task 3. Ne pas réinventer les handlers.
 - Copy : erreur associée à la sélection actuelle, effacée à la réouverture d'Actions et au changement/vidage de sélection. Un échec tardif pour A ne doit pas polluer B ni écraser une nouvelle copie réussie. Promesse rejetée => message réel. Tester la durée de vie React avec promesses contrôlées.
+- Annuler média : le bouton actuel du chutier (`TimelineProjectSidebar.tsx`) est affiché actif dès qu’un callback existe, même avec `mediaHistory` vide dans `useWorkspaceProjectMediaActions.ts`. Exposer la disponibilité réelle de cette histoire et désactiver l’action sans entrée ; la rendre active après une vraie modification puis inactive après son annulation. Hydratation et renouvellement privé ne constituent pas une action utilisateur annulable. Conserver les opérations et la portée compte/projet existantes.
 
 ## Vérification du polish
 
