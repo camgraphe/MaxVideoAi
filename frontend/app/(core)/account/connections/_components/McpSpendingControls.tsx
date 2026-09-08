@@ -105,6 +105,8 @@ function MoneyControl({
 const toolLabels: Record<McpActivityItem['tool'], string> = {
   prepare_generation: 'Prepare generation',
   confirm_generation: 'Confirm generation',
+  prepare_audio_generation: 'Prepare audio',
+  confirm_audio_generation: 'Confirm audio',
 };
 
 const outcomeLabels: Record<McpActivityItem['outcome'], string> = {

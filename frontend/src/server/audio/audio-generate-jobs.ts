@@ -1,5 +1,5 @@
 import { AUDIO_SURFACE } from '@/lib/audio-generation';
-import { query, type QueryExecutor, withDbTransaction } from '@/lib/db';
+import { query, type QueryExecutor, type TransactionQueryExecutor, withDbTransaction } from '@/lib/db';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { AudioGenerationError } from './audio-generate-validation';
 
@@ -26,7 +26,7 @@ export type AudioJobPatch = {
   settingsSnapshotJson?: string | null;
 };
 
-type InitialAudioJobParams = {
+export type InitialAudioJobParams = {
   userId: string;
   jobId: string;
   amountCents: number;
@@ -62,7 +62,9 @@ export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promi
   const params: unknown[] = [];
 
   if (patch.durationSec !== undefined) {
-    params.push(patch.durationSec);
+    // The historical SQL column is INTEGER NOT NULL. Exact probe duration lives
+    // in settings_snapshot/mediaFacts; zero is the unknown-duration sentinel.
+    params.push(typeof patch.durationSec === 'number' && Number.isFinite(patch.durationSec) && patch.durationSec > 0 ? Math.ceil(patch.durationSec) : 0);
     assignments.push(`duration_sec = $${params.length}`);
   }
   if (typeof patch.progress === 'number') {
@@ -148,7 +150,7 @@ async function insertInitialAudioJob(executor: QueryExecutor, params: InitialAud
       params.billingProductKey,
       params.engineId,
       params.engineLabel,
-      params.durationSec,
+      params.durationSec ?? 0,
       params.promptSummary,
       params.initialThumb,
       params.aspectRatio,
@@ -162,35 +164,37 @@ async function insertInitialAudioJob(executor: QueryExecutor, params: InitialAud
 }
 
 export async function createInitialAudioJob(params: InitialAudioJobParams): Promise<void> {
-  await withDbTransaction(async (executor) => {
-    const reserveResult = await reserveWalletChargeInExecutor(executor, {
-      userId: params.userId,
-      amountCents: params.amountCents,
-      currency: params.currency,
-      description: params.description,
-      jobId: params.jobId,
-      surface: AUDIO_SURFACE,
-      billingProductKey: params.billingProductKey,
-      pricingSnapshotJson: params.pricingSnapshotJson,
-      applicationFeeCents: params.applicationFeeCents,
-      vendorAccountId: params.vendorAccountId,
-      stripePaymentIntentId: null,
-      stripeChargeId: null,
-    });
+  await withDbTransaction(executor => createInitialAudioJobInExecutor(executor, params));
+}
 
-    if (!reserveResult.ok) {
-      if (reserveResult.errorCode === 'currency_mismatch') {
-        throw new AudioGenerationError('Existing wallet balance uses a different currency.', {
-          status: 400,
-          code: 'wallet_currency_mismatch',
-        });
-      }
-      throw new AudioGenerationError('Insufficient wallet balance.', {
-        status: 402,
-        code: 'INSUFFICIENT_WALLET_FUNDS',
+export async function createInitialAudioJobInExecutor(executor: TransactionQueryExecutor, params: InitialAudioJobParams): Promise<void> {
+  const reserveResult = await reserveWalletChargeInExecutor(executor, {
+    userId: params.userId,
+    amountCents: params.amountCents,
+    currency: params.currency,
+    description: params.description,
+    jobId: params.jobId,
+    surface: AUDIO_SURFACE,
+    billingProductKey: params.billingProductKey,
+    pricingSnapshotJson: params.pricingSnapshotJson,
+    applicationFeeCents: params.applicationFeeCents,
+    vendorAccountId: params.vendorAccountId,
+    stripePaymentIntentId: null,
+    stripeChargeId: null,
+  });
+
+  if (!reserveResult.ok) {
+    if (reserveResult.errorCode === 'currency_mismatch') {
+      throw new AudioGenerationError('Existing wallet balance uses a different currency.', {
+        status: 400,
+        code: 'wallet_currency_mismatch',
       });
     }
+    throw new AudioGenerationError('Insufficient wallet balance.', {
+      status: 402,
+      code: 'INSUFFICIENT_WALLET_FUNDS',
+    });
+  }
 
-    await insertInitialAudioJob(executor, params);
-  });
+  await insertInitialAudioJob(executor, params);
 }

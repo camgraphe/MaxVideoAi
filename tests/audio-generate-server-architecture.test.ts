@@ -78,3 +78,15 @@ test('audio generation runner delegates job persistence, receipts, and snapshots
   assert.match(snapshotsSource, /export function parseProviderFailures/, 'audio snapshot helper should own provider failure extraction');
   assert.match(snapshotsSource, /export function isVideoBackedPack/, 'audio snapshot helper should own pack media classification');
 });
+
+test('Audio reservations can compose with MCP quote claims without duplicating the provider runner', () => {
+  const reservation = readFileSync(join(root, 'frontend/src/server/audio/audio-run-reservation.ts'), 'utf8');
+  assert.match(jobsSource, /createInitialAudioJobInExecutor\(executor: TransactionQueryExecutor/);
+  assert.match(runnerSource, /buildAudioRunReservation\(prepared, params.userId\)/);
+  assert.match(runnerSource, /await createInitialAudioJob\(reservation.initialJob\)/);
+  assert.match(runnerSource, /return executeReservedAudioRun\(reservation.execution\)/);
+  const executorSource = runnerSource.slice(runnerSource.indexOf('export async function executeReservedAudioRun'));
+  assert.doesNotMatch(executorSource, /createInitialAudioJob|reserveWalletCharge/);
+  assert.match(reservation, /buildInitialAudioSettingsSnapshot/);
+  assert.doesNotMatch(reservation, /generateSongTrack|generateMusicTrack|fetch\(/);
+});

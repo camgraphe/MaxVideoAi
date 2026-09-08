@@ -71,6 +71,7 @@ export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'song'
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
 export type AudioVoiceModel = 'seed' | 'minimax';
+export const AUDIO_MINIMAX_VOICE_VALUES = ['English_FriendlyPerson', 'Wise_Woman'] as const;
 export const AUDIO_MINIMAX_SPEECH_MODEL_ID = 'fal-ai/minimax/speech-02-hd';
 export const AUDIO_SONG_MODEL_ID = 'fal-ai/minimax-music/v2.6';
 export const AUDIO_AMBIENCE_MODEL_ID = 'fal-ai/stable-audio-25/text-to-audio';

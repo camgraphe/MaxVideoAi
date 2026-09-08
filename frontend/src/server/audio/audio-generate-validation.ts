@@ -1,5 +1,6 @@
 import {
   AUDIO_MAX_DURATION_SEC,
+  AUDIO_MINIMAX_VOICE_VALUES,
   AUDIO_CINEMATIC_MAX_DURATION_SEC,
   AUDIO_LYRICS_MAX_LENGTH,
   type AudioVoiceModel,
@@ -239,7 +240,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     throw new AudioGenerationError('Voice model is unsupported.', { status: 400, code: 'voice_model_invalid', field: 'voiceModel' });
   }
   const minimaxVoiceId = voiceModel === 'minimax' ? normalizeString(body.minimaxVoiceId) ?? 'English_FriendlyPerson' : null;
-  if (body.minimaxVoiceId && (voiceModel !== 'minimax' || !['English_FriendlyPerson', 'Wise_Woman'].includes(body.minimaxVoiceId))) {
+  if (body.minimaxVoiceId && (voiceModel !== 'minimax' || !(AUDIO_MINIMAX_VOICE_VALUES as readonly string[]).includes(body.minimaxVoiceId))) {
     throw new AudioGenerationError('Voice preset is unsupported.', { status: 400, code: 'voice_preset_invalid', field: 'minimaxVoiceId' });
   }
   if (voiceModel === 'minimax' && body.voiceSampleUrl) {

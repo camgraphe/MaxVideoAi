@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { buildAudioRunReservation, type ReservedAudioRun } from './audio-run-reservation';
 import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 
@@ -28,13 +28,10 @@ import {
 } from '@/server/audio/audio-generate-validation';
 import {
   createInitialAudioJob,
-  PLACEHOLDER_THUMB,
   updateAudioJob,
 } from '@/server/audio/audio-generate-jobs';
 import { refundAudioCharge } from '@/server/audio/audio-generate-receipts';
 import {
-  buildPromptSummary,
-  buildInitialAudioSettingsSnapshot,
   buildProviderSnapshot,
   parseProviderFailures,
 } from '@/server/audio/audio-generate-snapshots';
@@ -56,44 +53,18 @@ export async function generateAudioRun(params: {
 
   await ensureBillingSchema();
 
-  const { normalized, packConfig, sourceJob, sourceVideoUrl, sourceProbe, durationSec, aspectRatio, pricingSnapshot, inputKey } = await prepareAudioRun(params.body, params.userId);
-  assertExpectedAudioQuote(params.body.expectedQuote, { inputKey, pricing: pricingSnapshot });
-  const pricingSnapshotJson = JSON.stringify(pricingSnapshot);
-  const promptSummary = buildPromptSummary({
-    pack: normalized.pack,
-    prompt: normalized.prompt,
-    mood: normalized.mood,
-    script: normalized.script,
-  });
-  const initialSettingsSnapshot = buildInitialAudioSettingsSnapshot({
-    durationSec,
-    normalized,
-    sourceJobId: sourceJob?.job_id ?? null,
-    sourceVideoUrl,
-  });
+  const prepared = await prepareAudioRun(params.body, params.userId);
+  assertExpectedAudioQuote(params.body.expectedQuote, { inputKey: prepared.inputKey, pricing: prepared.pricingSnapshot });
+  const reservation = buildAudioRunReservation(prepared, params.userId);
+  await createInitialAudioJob(reservation.initialJob);
+  return executeReservedAudioRun(reservation.execution);
+}
 
-  const jobId = `aud_${randomUUID()}`;
+/** Shared provider execution after a committed wallet/job reservation. It never reserves a second charge. */
+export async function executeReservedAudioRun(params: ReservedAudioRun): Promise<AudioGenerateResponse> {
+  const { jobId, initialSettingsSnapshot, initialThumb, pricingSnapshotJson } = params;
+  const { normalized, packConfig, sourceJob, sourceVideoUrl, sourceProbe, durationSec, pricingSnapshot } = params.prepared;
   const amountCents = pricingSnapshot.totalCents;
-  const initialThumb = sourceJob?.thumb_url ?? PLACEHOLDER_THUMB;
-
-  await createInitialAudioJob({
-    userId: params.userId,
-    jobId,
-    amountCents,
-    currency: pricingSnapshot.currency,
-    description: packConfig.label,
-    billingProductKey: packConfig.billingProductKey,
-    pricingSnapshotJson,
-    applicationFeeCents: pricingSnapshot.platformFeeCents ?? pricingSnapshot.margin.amountCents,
-    vendorAccountId: pricingSnapshot.vendorAccountId ?? null,
-    engineId: packConfig.engineId,
-    engineLabel: packConfig.label,
-    durationSec: normalized.pack === 'song' ? null : durationSec,
-    promptSummary,
-    initialThumb,
-    aspectRatio,
-    settingsSnapshotJson: JSON.stringify(initialSettingsSnapshot),
-  });
 
   try {
     await updateAudioJob(jobId, {
@@ -281,7 +252,7 @@ export async function generateAudioRun(params: {
 
     const outputBuffer = audioBuffer ?? videoBuffer;
     const measuredDurationSec = persistedOriginal?.durationSec ?? (outputBuffer ? await detectMediaBufferDuration(outputBuffer, { streamSelector: 'audio' }) : null);
-    const finalSettingsSnapshotJson = buildProviderSnapshot({ ...initialSettingsSnapshot, measuredDurationSec, durationSec: measuredDurationSec ?? durationSec }, {
+    const finalSettingsSnapshotJson = buildProviderSnapshot({ ...initialSettingsSnapshot, measuredDurationSec, durationSec: measuredDurationSec ?? durationSec, mediaFacts: measuredDurationSec ? { source: 'probe', durationSec: measuredDurationSec } : null }, {
       soundDesign:
         soundDesign
           ? {
@@ -346,7 +317,7 @@ export async function generateAudioRun(params: {
       thumb_url: uploadedThumbUrl ?? initialThumb,
       preview_frame: uploadedThumbUrl ?? initialThumb,
       render_ids: null,
-      duration_sec: measuredDurationSec ?? durationSec,
+      duration_sec: Math.ceil(measuredDurationSec ?? durationSec),
       status: 'completed',
     }).catch((outputError) => {
       console.warn('[audio] failed to persist job outputs', { jobId }, outputError);

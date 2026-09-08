@@ -6,6 +6,7 @@ import { loadSourceJob } from './audio-generate-jobs';
 import { AudioGenerationError, resolveAudioRenderDuration, validateAudioGenerateRequest } from './audio-generate-validation';
 import { isVideoBackedPack } from './audio-generate-snapshots';
 import { isGoogleVertexLyria3Configured } from './providers/google-vertex-lyria';
+import type { ResolveServerPricingPolicyDependencies } from '@/server/pricing/resolve-pricing-policy';
 
 export function assertAudioProviderConfigured(normalized: ReturnType<typeof validateAudioGenerateRequest>, env = process.env) {
   const music = normalized.pack === 'music_only' || normalized.musicEnabled;
@@ -24,9 +25,9 @@ export function assertExpectedAudioQuote(expected: AudioGenerateRequestBody['exp
   }
 }
 
-export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: string) {
+export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: string, dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies; env?: NodeJS.ProcessEnv } = {}) {
   const normalized = validateAudioGenerateRequest(body);
-  assertAudioProviderConfigured(normalized);
+  assertAudioProviderConfigured(normalized, dependencies.env);
   const packConfig = getAudioPackConfig(normalized.pack);
   const sourceJob =
     normalized.sourceJobId
@@ -76,7 +77,7 @@ export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: st
     musicModel: normalized.musicModel,
     musicBpm: normalized.musicBpm,
     musicEnabled: normalized.musicEnabled,
-  });
+  }, { pricingPolicy: dependencies.pricingPolicy });
   const inputKey = audioQuoteInputKey(userId, normalized, durationSec);
   return { normalized, packConfig, sourceJob, sourceVideoUrl, sourceProbe, durationSec, aspectRatio, pricingSnapshot, inputKey };
 }
