@@ -2,14 +2,10 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import {
-  ArrowLeft,
-} from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useMemo, useRef, useState } from 'react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
-import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { runUpscaleTool, saveAssetToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
@@ -30,7 +26,8 @@ import type {
   UpscaleToolResponse,
 } from '@/types/tools-upscale';
 import { UpscaleRecipePanel, UpscaleSourcePanel } from './upscale/_components/UpscaleInputPanels';
-import { UpscaleHeroSummaryCard } from './upscale/_components/UpscaleHeroSummaryCard';
+import { ToolWorkbench, ToolEmptyPreview, ToolProcessing, ToolAuthNotice } from './ToolWorkbench';
+import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
 import { UpscaleLibraryModal } from './upscale/_components/UpscaleLibraryModal';
 import { UpscalePreviewCard } from './upscale/_components/UpscalePreviewCard';
 import { UpscaleRecentRail } from './upscale/_components/UpscaleRecentRail';
@@ -49,21 +46,28 @@ import type {
 } from './upscale/_lib/upscale-workspace-types';
 
 export default function UpscaleWorkspace() {
-  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const auth = useRequireAuth({ redirectIfLoggedOut: false });
+  const params = useSearchParams();
+  const initialKind = params?.get('kind') === 'video' ? 'video' : 'image';
+  return <UpscaleSession key={`${auth.user?.id ?? 'guest'}:${initialKind}`} auth={auth} initialKind={initialKind} />;
+}
+export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof useRequireAuth>; initialKind: UpscaleMediaType }) {
+  const { loading: authLoading, user } = auth;
   const { locale, t } = useI18n();
   const copy = {
     ...DEFAULT_UPSCALE_COPY,
     ...((t('workspace.upscale') ?? {}) as Partial<typeof DEFAULT_UPSCALE_COPY>),
   };
-  const [mediaType, setMediaType] = useState<UpscaleMediaType>('image');
-  const [engineId, setEngineId] = useState<UpscaleToolEngineId>(DEFAULT_UPSCALE_IMAGE_ENGINE_ID);
+  const [mediaType, setMediaType] = useState<UpscaleMediaType>(initialKind);
+  const [engineId, setEngineId] = useState<UpscaleToolEngineId>(initialKind === 'video' ? DEFAULT_UPSCALE_VIDEO_ENGINE_ID : DEFAULT_UPSCALE_IMAGE_ENGINE_ID);
   const [source, setSource] = useState<UploadedAsset | null>(null);
   const [mediaUrl, setMediaUrl] = useState('');
-  const [mode, setMode] = useState<UpscaleMode>('factor');
+  const [mode, setMode] = useState<UpscaleMode>(initialKind === 'video' ? 'target' : 'factor');
   const [upscaleFactor, setUpscaleFactor] = useState(2);
   const [targetResolution, setTargetResolution] = useState<UpscaleTargetResolution>('1080p');
-  const [outputFormat, setOutputFormat] = useState<UpscaleOutputFormat>('jpg');
+  const [outputFormat, setOutputFormat] = useState<UpscaleOutputFormat>(initialKind === 'video' ? 'mp4' : 'jpg');
   const [uploading, setUploading] = useState(false);
+  const runningRef = useRef(false);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<UpscaleToolResponse | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -93,7 +97,14 @@ export default function UpscaleWorkspace() {
   const {
     priceHint,
     priceLabel,
+    pricePreview,
+    acceptedQuote,
+    quoteError,
+    priceLoading,
+    refreshQuote,
   } = useUpscalePricingPreview({
+    userId: user?.id,
+    outputFormat,
     copy,
     engine,
     locale,
@@ -104,7 +115,7 @@ export default function UpscaleWorkspace() {
     targetResolution,
     upscaleFactor,
   });
-  const canRun = Boolean(user && mediaUrl.trim() && engine && !running && !uploading);
+  const canRun = Boolean(user && mediaUrl.trim() && engine && pricePreview.ready && !running && !uploading);
   const {
     activePreviewMode,
     canCompare,
@@ -119,7 +130,6 @@ export default function UpscaleWorkspace() {
     hasSourcePreview,
     isPixelZoom,
     mediaFitClass,
-    mediaTypeLabel,
     output,
     outputSizeLabel,
     previewZoomScale,
@@ -234,12 +244,14 @@ export default function UpscaleWorkspace() {
   }
 
   async function handleRun() {
-    if (!canRun || !engine) return;
+    if (!canRun || !engine || runningRef.current) return;
+    runningRef.current = true;
     setRunning(true);
     setError(null);
     setMessage(null);
     try {
       const response = await runUpscaleTool({
+        acceptedQuote: acceptedQuote ?? undefined,
         mediaType,
         mediaUrl: mediaUrl.trim(),
         engineId: engine.id,
@@ -253,13 +265,15 @@ export default function UpscaleWorkspace() {
         imageHeight: source?.height ?? null,
       });
       setResult(response);
-      setPreviewMode('compare');
+      setPreviewMode(mediaType === 'video' ? 'result' : 'compare');
       setActiveRecentGroupId(response.jobId ?? null);
-      setMessage(`${response.engineLabel} · $${response.pricing.estimatedCostUsd.toFixed(2)}`);
+      setMessage(null);
       void mutate();
     } catch (runError) {
+      refreshQuote();
       setError(runError instanceof Error ? runError.message : 'Upscale failed.');
     } finally {
+      runningRef.current = false;
       setRunning(false);
     }
   }
@@ -317,53 +331,9 @@ export default function UpscaleWorkspace() {
     );
   }
 
-  return (
-    <div className="flex min-h-screen flex-col bg-bg text-text-primary">
-      <HeaderBar />
-      <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-        <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1500px] px-5 py-5 lg:px-8 lg:py-6">
-            <div className="mb-4">
-              <ButtonLink
-                href="/app/tools"
-                variant="ghost"
-                size="sm"
-                linkComponent={Link}
-                className="gap-2 text-text-secondary hover:text-text-primary"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                {copy.back}
-              </ButtonLink>
-            </div>
-            <section className="relative overflow-hidden rounded-[28px] border border-border bg-[radial-gradient(circle_at_22%_8%,var(--brand-soft),transparent_32%),linear-gradient(90deg,var(--surface)_0%,var(--surface-2)_58%,var(--bg)_100%)] px-6 py-7 lg:px-10 lg:py-9">
-              <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-                <div className="min-w-0 pt-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-text-primary">{copy.eyebrow}</p>
-                  <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-text-primary lg:text-[44px] lg:leading-[1.05]">
-                    {copy.title}
-                  </h1>
-                  <p className="mt-3 max-w-2xl text-base leading-7 text-text-secondary">{copy.subtitle}</p>
-                </div>
-
-                <UpscaleHeroSummaryCard
-                  canRun={canRun}
-                  engineLabel={engine?.label ?? 'Upscale engine'}
-                  mediaTypeLabel={mediaTypeLabel}
-                  modeLabel={mode === 'target' ? targetResolution : `${upscaleFactor}x`}
-                  onRun={handleRun}
-                  outputFormatLabel={outputFormat.toUpperCase()}
-                  priceLabel={priceLabel}
-                  runLabel={copy.run}
-                  running={running}
-                  runningLabel={copy.running}
-                />
-              </div>
-            </section>
-
-            <div className="mt-5 grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-              <section className="contents xl:sticky xl:top-5 xl:block xl:space-y-4 xl:self-start">
-                <UpscaleSourcePanel
+  return <>
+    <ToolWorkbench locale={locale} visual={mediaType === 'image' ? 'upscale-image' : 'upscale-video'}
+      source={<UpscaleSourcePanel
                   copy={copy}
                   isAuthenticated={Boolean(user)}
                   mediaType={mediaType}
@@ -375,9 +345,8 @@ export default function UpscaleWorkspace() {
                   running={running}
                   sourceName={source?.name}
                   uploading={uploading}
-                />
-
-                <UpscaleRecipePanel
+                />}
+      settings={<UpscaleRecipePanel
                   canRun={canRun}
                   copy={copy}
                   engine={engine}
@@ -393,16 +362,18 @@ export default function UpscaleWorkspace() {
                   onTargetResolutionChange={setTargetResolution}
                   onUpscaleFactorChange={setUpscaleFactor}
                   outputFormat={outputFormat}
+                  priceLoading={priceLoading}
+                  quoteError={quoteError}
+                  onRefreshQuote={refreshQuote}
                   priceHint={priceHint}
                   priceLabel={priceLabel}
                   running={running}
                   targetResolution={targetResolution}
                   upscaleFactor={upscaleFactor}
-                />
-              </section>
-
-              <section className="contents xl:block xl:space-y-4">
-                <UpscalePreviewCard
+                />}
+      preview={<>
+        {running ? <ToolProcessing locale={locale} /> : null}
+        {hasSourcePreview || hasResult ? <UpscalePreviewCard
                   activePreviewMode={activePreviewMode}
                   canCompare={canCompare}
                   compareDragging={compareDragging}
@@ -431,22 +402,19 @@ export default function UpscaleWorkspace() {
                   sourceSizeLabel={sourceSizeLabel}
                   zoomCanvasHeight={zoomCanvasHeight}
                   zoomCanvasWidth={zoomCanvasWidth}
-                />
-
-                <UpscaleRecentRail
+                /> : <ToolEmptyPreview locale={locale} visual={mediaType === 'image' ? 'upscale-image' : 'upscale-video'} />}
+        {output?.url && output.assetId ? <MediaDestinationActions locale={locale} userId={user?.id} asset={{ id: output.assetId, url: output.url, kind: result?.mediaType ?? mediaType, jobId: result?.jobId, thumbUrl: output.thumbUrl, width: output.width, height: output.height }} /> : null}
+      </>}
+      recent={recentGroups.length ? <UpscaleRecentRail
                   activeGroupId={activeRecentGroupId}
                   copy={copy}
                   groups={recentGroups}
-                  onAction={handleRecentGroupAction}
-                  onOpen={selectRecentUpscale}
+                  onAction={(group, action) => { if (!running && !uploading) void handleRecentGroupAction(group, action); }}
+                  onOpen={group => { if (!running && !uploading) selectRecentUpscale(group); }}
                   savingGroupId={savingRecentGroupId}
-                />
-              </section>
-            </div>
-          </div>
-        </main>
-      </div>
-      <UpscaleLibraryModal
+                /> : null}
+    >{!user ? <ToolAuthNotice locale={locale} path={`/app/tools/upscale?kind=${mediaType}`} /> : null}</ToolWorkbench>
+    <UpscaleLibraryModal
         assets={visibleLibraryAssets}
         copy={copy}
         error={libraryError}
@@ -460,6 +428,5 @@ export default function UpscaleWorkspace() {
         source={librarySource}
         sourceOptions={librarySourceOptions}
       />
-    </div>
-  );
+  </>;
 }

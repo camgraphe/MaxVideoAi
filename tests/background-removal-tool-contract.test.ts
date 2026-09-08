@@ -104,10 +104,9 @@ test('background removal workspace follows the tool workspace split', () => {
   assert.match(workspaceSource, /useBackgroundRemovalSourceMedia/);
   assert.match(workspaceSource, /useBackgroundRemovalPricingPreview/);
   assert.match(workspaceSource, /useBackgroundRemovalGenerationRunner/);
-  assert.match(workspaceSource, /copy\.subtitle/, 'workspace header should retain the tool subtitle');
-  assert.match(workspaceSource, /sourceSummary/, 'workspace header should summarize source readiness');
-  assert.match(workspaceSource, /formatBackgroundRemovalOutputCodecLabel\(outputCodec\)/, 'workspace header should summarize output format');
-  assert.match(workspaceSource, /copy\.priceBeforeGeneration/, 'workspace header should summarize price before generation');
+  assert.match(workspaceSource, /ToolWorkbench/, 'workspace should delegate the common frame');
+  assert.match(workspaceSource, /ToolboxVideoPreview/, 'workspace should delegate source/result playback');
+  assert.match(workspaceSource, /metadataLoading=\{sourceMedia.metadataLoading\}/, 'source panel should receive metadata readiness');
   assert.match(workspaceSource, /getBackgroundRemovalOutputDownloadExtension\(output\)/);
   assert.doesNotMatch(workspaceSource, /getBackgroundRemovalOutputExtension\(outputCodec\)/);
   assert.match(helpersSource, /getBackgroundRemovalOutputDownloadExtension/);
@@ -128,8 +127,12 @@ test('transparent web previews expose checkerboard behind alpha video', () => {
   const settingsPanelSource = readFileSync(settingsPanelPath, 'utf8');
   const previewCardSource = readFileSync(previewCardPath, 'utf8');
 
-  assert.match(settingsPanelSource, /canPreviewTransparentOutput/);
-  assert.match(settingsPanelSource, /transparent \? 'bg-transparent' : 'bg-black'/);
+  assert.match(settingsPanelSource, /fieldset disabled=\{props.running\}/);
+  const sharedPreview = readFileSync(join(root, 'frontend/src/components/tools/ToolboxVideoPreview.tsx'), 'utf8');
+  assert.match(sharedPreview, /conic-gradient/);
+  assert.match(sharedPreview, /preload="none"/);
+  assert.doesNotMatch(sharedPreview, /bg-black/);
+  assert.doesNotMatch(settingsPanelSource, /<video/);
   assert.doesNotMatch(settingsPanelSource, /border border-border bg-black object-contain/);
 
   assert.match(previewCardSource, /canPreviewTransparentOutput/);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type AssetBrowserAsset,
   type AssetLibrarySource,
@@ -22,6 +22,8 @@ export function useUpscaleLibraryAssets({
   mediaType,
   user,
 }: UseUpscaleLibraryAssetsParams) {
+  const requestRef = useRef(0);
+  useEffect(() => () => { requestRef.current += 1; }, []);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [libraryAssets, setLibraryAssets] = useState<AssetBrowserAsset[]>([]);
   const [libraryLoading, setLibraryLoading] = useState(false);
@@ -39,15 +41,17 @@ export function useUpscaleLibraryAssets({
   );
   const visibleLibraryAssets = useMemo(
     () =>
-      libraryAssets.filter((asset) =>
+      (libraryLoadedKey === buildLibraryCacheKey(mediaType, librarySource) ? libraryAssets : []).filter((asset) =>
         mediaType === 'video'
           ? asset.kind === 'video' || asset.mime?.startsWith('video/')
           : asset.kind === 'image' || !asset.mime || asset.mime.startsWith('image/')
       ),
-    [libraryAssets, mediaType]
+    [libraryAssets, mediaType, libraryLoadedKey, librarySource]
   );
 
   const resetLibraryState = useCallback((nextSource?: AssetLibrarySource) => {
+    requestRef.current += 1;
+    setLibraryLoading(false);
     setLibraryAssets([]);
     setLibraryError(null);
     setLibraryLoadedKey(null);
@@ -58,6 +62,7 @@ export function useUpscaleLibraryAssets({
 
   const fetchLibraryAssets = useCallback(
     async (options?: { source?: AssetLibrarySource; kind?: UpscaleMediaType }) => {
+      const requestId = ++requestRef.current;
       const sourceFilter = options?.source ?? librarySource;
       const kind = options?.kind ?? mediaType;
       const requestKey = buildLibraryCacheKey(kind, sourceFilter);
@@ -73,8 +78,8 @@ export function useUpscaleLibraryAssets({
 
         const assetUrl =
           sourceFilter === 'all'
-            ? '/api/user-assets?limit=80'
-            : `/api/user-assets?limit=80&source=${encodeURIComponent(sourceFilter)}`;
+            ? `/api/user-assets?limit=80&kind=${kind}`
+            : `/api/user-assets?limit=80&kind=${kind}&source=${encodeURIComponent(sourceFilter)}`;
         const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
         if (kind === 'video' && sourceFilter !== 'upload') {
           const jobsUrl = sourceFilter === 'upscale' ? '/api/jobs?limit=80&surface=upscale' : '/api/jobs?limit=80&type=video';
@@ -82,6 +87,7 @@ export function useUpscaleLibraryAssets({
         }
 
         const [assetsResponse, jobsResponse] = await Promise.all(requests);
+        if (requestId !== requestRef.current) return;
         if (assetsResponse.status === 401 || jobsResponse?.status === 401) {
           setLibraryAssets([]);
           setLibraryError(kind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.');
@@ -95,7 +101,7 @@ export function useUpscaleLibraryAssets({
         }
 
         const savedAssets = Array.isArray(assetsPayload.assets)
-          ? assetsPayload.assets.map((asset) => {
+          ? assetsPayload.assets.filter(asset => !asset.mime || asset.mime.startsWith(`${kind}/`)).map((asset) => {
               const mime = asset.mime ?? null;
               return {
                 id: asset.id,
@@ -148,15 +154,17 @@ export function useUpscaleLibraryAssets({
             assetsByUrl.set(asset.url, { ...existing, thumbUrl: asset.thumbUrl });
           }
         }
+        if (requestId !== requestRef.current) return;
         setLibraryAssets([...assetsByUrl.values()]);
         setLibraryLoadedKey(requestKey);
       } catch (libraryLoadError) {
+        if (requestId !== requestRef.current) return;
         console.error('[upscale] failed to load library assets', libraryLoadError);
         setLibraryAssets([]);
         setLibraryError(libraryLoadError instanceof Error ? libraryLoadError.message : libraryErrorCopy);
         setLibraryLoadedKey(requestKey);
       } finally {
-        setLibraryLoading(false);
+        if (requestId === requestRef.current) setLibraryLoading(false);
       }
     },
     [libraryErrorCopy, librarySource, mediaType, user]

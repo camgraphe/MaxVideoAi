@@ -97,9 +97,12 @@ function headerValue(
   return typeof value === 'string' ? value : null;
 }
 
-function supportedMime(value: unknown): string | null {
+type DownloadMediaPolicy = { accepted: readonly string[]; maxBytes: number };
+
+function supportedMime(value: unknown, policy?: DownloadMediaPolicy): string | null {
   if (typeof value !== 'string') return null;
   const normalized = value.split(';', 1)[0]?.trim().toLowerCase() ?? '';
+  if (policy) return policy.accepted.includes(normalized) ? normalized : null;
   for (const kind of ['image', 'video', 'audio'] as const) {
     if (getReferenceUploadPolicy(kind).accepted.includes(normalized as never)) return normalized;
   }
@@ -115,13 +118,14 @@ function mediaPolicy(mimeType: string): ReturnType<typeof getReferenceUploadPoli
 async function readBoundedResponse(
   response: ReferenceHttpsResponse,
   file: HostReferenceFile,
+  policy?: DownloadMediaPolicy,
 ): Promise<DownloadedReferenceFile> {
   try {
     if (response.statusCode !== 200) {
       throw new AgentApiError('REFERENCE_INVALID', 'The host file could not be downloaded.');
     }
-    const declaredMime = supportedMime(file.mime_type);
-    const responseMime = supportedMime(headerValue(response.headers, 'content-type'));
+    const declaredMime = supportedMime(file.mime_type, policy);
+    const responseMime = supportedMime(headerValue(response.headers, 'content-type'), policy);
     if (file.mime_type && !declaredMime) {
       throw new AgentApiError('REFERENCE_INVALID', 'The host file type is unsupported.');
     }
@@ -132,7 +136,7 @@ async function readBoundedResponse(
     if (!mimeType) {
       throw new AgentApiError('REFERENCE_INVALID', 'The host file type is missing or unsupported.');
     }
-    const maximumBytes = mediaPolicy(mimeType).maxBytes;
+    const maximumBytes = policy?.maxBytes ?? mediaPolicy(mimeType).maxBytes;
     const declaredLength = headerValue(response.headers, 'content-length');
     if (declaredLength !== null
       && (!/^\d+$/u.test(declaredLength) || Number(declaredLength) > maximumBytes)) {
@@ -167,7 +171,9 @@ async function readBoundedResponse(
 
 export function createReferenceFileDownloader(
   dependencies: ReferenceFileDownloaderDependencies,
+  policy?: DownloadMediaPolicy,
 ): (file: HostReferenceFile) => Promise<DownloadedReferenceFile> {
+  if (policy && (!Number.isSafeInteger(policy.maxBytes) || policy.maxBytes < 1 || !policy.accepted.length)) throw new Error('Invalid download policy.');
   const download = async (
     url: URL,
     file: HostReferenceFile,
@@ -195,7 +201,7 @@ export function createReferenceFileDownloader(
         response.cancel?.();
       }
     }
-    return readBoundedResponse(response, file);
+    return readBoundedResponse(response, file, policy);
   };
   return (file) => download(parseHttpsUrl(file.download_url), file, 3);
 }
@@ -264,3 +270,8 @@ export const downloadReferenceFile = createReferenceFileDownloader({
   lookupHost: lookupPublicHost,
   openPinnedHttps,
 });
+
+/** Server-owned policy extension; all DNS, redirect, byte and timeout guards remain shared. */
+export function createBoundedMediaDownloader(policy: DownloadMediaPolicy) {
+  return createReferenceFileDownloader({ lookupHost: lookupPublicHost, openPinnedHttps }, policy);
+}

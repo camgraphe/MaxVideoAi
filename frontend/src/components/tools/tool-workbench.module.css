@@ -1,0 +1,35 @@
+.workbench { padding: 24px 28px 32px; max-width: 1600px; margin: auto; color: var(--app-ink, var(--text-primary)); }
+.header { display: flex; align-items: center; gap: 22px; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--app-line, var(--border)); }
+.header>a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: var(--app-muted, var(--text-secondary)); white-space: nowrap; }
+.header h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.045em; font-weight: 550; }.header p { margin-top: 5px; font-size: 12px; color: var(--app-muted, var(--text-secondary)); }
+.preserved { margin-left: auto; font-size: 11px; color: var(--app-muted, var(--text-secondary)); white-space: nowrap; }
+.layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 28px; align-items: start; }.rail { min-width: 0; }.stage { min-width: 0; }.recent { margin-top: 30px; border-top: 1px solid var(--app-line, var(--border)); padding-top: 20px; }
+.source { padding: 0 0 24px; }.sourceHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }.sourceHeading h2 { font-size: 13px; font-weight: 600; }.sourceHeading>span { font-size: 11px; color: var(--app-muted, var(--text-secondary)); }
+.segments { display: flex; padding: 2px; gap: 2px; border-radius: 9px; border: 1px solid var(--app-line, var(--border)); }.segments button { min-height: 44px; padding: 0 14px; border-radius: 7px; font-size: 12px; }.segments button[aria-pressed=true] { background: var(--app-panel, var(--surface-2)); box-shadow: inset 0 0 0 1px var(--app-line, var(--border)); }
+.upload { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 145px; padding: 16px; border: 1px dashed var(--app-line, var(--border)); border-radius: 12px; background: var(--app-panel, var(--surface)); overflow: hidden; cursor: pointer; }.upload:hover { border-color: var(--app-accent, var(--brand)); }.upload:focus-within { outline: 2px solid var(--app-accent, var(--brand)); outline-offset: 3px; }.upload input { position: absolute; opacity: 0; inset: 0; cursor: pointer; width: 100%; height: 100%; }.upload>span { font-size: 29px; color: var(--app-accent, var(--brand)); margin-bottom: 5px; }.upload strong { font-size: 13px; font-weight: 550; }.upload small { margin-top: 6px; font-size: 11px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--app-muted, var(--text-secondary)); }.upload[aria-disabled=true] { opacity: .5; }
+.library { width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; margin-top: 9px; border: 1px solid var(--app-line, var(--border)); border-radius: 9px; font-size: 12px; }.library:hover { background: var(--app-panel, var(--surface)); }.library span { font-size: 21px; }
+.url { margin-top: 4px; }.url summary { min-height: 44px; display: flex; align-items: center; font-size: 11px; cursor: pointer; color: var(--app-muted, var(--text-secondary)); }.url summary::before { content: '+'; margin-right: 9px; }.url[open] summary::before { content: '−'; }.url input { width: 100%; min-height: 44px; padding: 0 10px; border: 1px solid var(--app-line, var(--border)); border-radius: 8px; font-size: 12px; background: var(--app-panel, var(--surface)); }
+.emptyPreview { border: 1px solid var(--app-line, var(--border)); border-radius: 16px; overflow: hidden; background: var(--app-panel, var(--surface)); }.scene { aspect-ratio: 600/340; position: relative; background: #253638; }.scene>span { position: absolute; left: 15px; bottom: 12px; font-size: 10px; background: #15292ecc; color: #f4e3c2; padding: 3px 7px; border-radius: 4px; }.emptyCaption { padding: 22px 24px; }.emptyCaption h2 { font-size: 23px; letter-spacing: -.035em; font-weight: 550; }.emptyCaption p { margin-top: 7px; font-size: 12px; color: var(--app-muted, var(--text-secondary)); }
+.processing { display: flex; align-items: center; gap: 16px; padding: 16px; margin-bottom: 16px; background: var(--app-panel, var(--surface)); border: 1px solid var(--app-accent, var(--brand)); border-radius: 12px; }.processing>span { font-size: 27px; }.processing strong { font-size: 13px; }.processing p { font-size: 12px; margin-top: 3px; color: var(--app-muted, var(--text-secondary)); }
+.workbench :is(button,select,input:not([type=checkbox]),summary) { min-height: 44px; }.workbench :is(button, a, select, summary):focus-visible { outline: 2px solid var(--app-accent, var(--brand)); outline-offset: 3px; }.workbench button:disabled { opacity: .45; cursor: not-allowed; }
+@media(max-width: 1050px) { .workbench { padding: 20px; }.layout { grid-template-columns: 260px minmax(0,1fr); gap: 18px; }.preserved { display: none; } }
+@media(max-width: 760px) { .workbench { padding: 16px; }.header { flex-wrap: wrap; gap: 4px 16px; margin-bottom: 18px; padding-bottom: 18px; }.header>div { width: 100%; }.header h1 { font-size: 27px; }.layout { display: flex; flex-direction: column; gap: 18px; }.rail,.stage { width: 100%; }.rail { display: contents; }.stage { order: 2; }.source { order: 1; padding-bottom: 0; width: 100%; }.upload { min-height: 110px; }.emptyCaption { padding: 18px; }.emptyCaption h2 { font-size: 21px; } }
+@media(prefers-reduced-motion: reduce) { .workbench * { animation: none !important; transition: none !important; } }
+
+/* Compact source actions keep the media visible on small screens. */
+.sourceActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sourceHeading { justify-content: flex-end; margin-bottom: 10px; }
+.sourceHeading>span { display: none; }
+.upload { flex-direction: row; min-height: 48px; padding: 10px; gap: 7px; border-style: solid; border-radius: 9px; }
+.upload>span { font-size: 23px; margin: 0; }
+.library { min-width: 0; margin: 0; min-height: 48px; }
+.sourceName { margin-top: 8px; font-size: 11px; color: var(--app-muted,var(--text-secondary)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media(max-width: 760px) {
+  .header { flex-wrap: nowrap; gap: 14px; padding-bottom: 14px; margin-bottom: 12px; }
+  .header>div { width: auto; min-width: 0; }
+  .header h1 { font-size: 21px; }
+  .header>a { flex-shrink: 0; }
+  .upload { min-height: 48px; }
+  .scene { aspect-ratio: 16/9; }
+  .stage { max-width: 100%; }
+}

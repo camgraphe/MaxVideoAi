@@ -41,7 +41,7 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
   const root = createRoot(dom.window.document.querySelector<HTMLElement>('#root')!);
   try {
     await act(async () => root.render(React.createElement(Fixture)));
-    await act(async () => library.fetchLibraryAssets({ kind: 'video', source: 'generated' }));
+    await act(async () => library.openLibraryModal());
     assert.equal(library.libraryError, null);
     const assets = library.visibleLibraryAssets;
     assert.equal(assets.length, 5, 'Exclude images, unfinished jobs, and duplicate video URLs');
@@ -54,7 +54,7 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
     assert.equal(assets.find((asset) => asset.id === 'job:frame')?.thumbUrl, '/renders/frame.jpg');
     assert.equal(assets.find((asset) => asset.id === 'upload')?.thumbUrl ?? null, null, 'No invented thumbnail for an import without one');
     assert.ok(assets.every((asset) => !asset.previewUrl), 'Opening the picker must not enable video downloads');
-    assert.deepEqual(requests, ['/api/user-assets?limit=80&source=generated', '/api/jobs?limit=80&type=video']);
+    assert.deepEqual(requests, ['/api/user-assets?limit=80&kind=video&source=generated', '/api/jobs?limit=80&type=video']);
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

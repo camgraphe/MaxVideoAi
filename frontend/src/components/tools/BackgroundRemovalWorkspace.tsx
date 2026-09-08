@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, FileVideo, MonitorUp, WalletCards } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
 import { ButtonLink } from '@/components/ui/Button';
@@ -14,7 +13,9 @@ import { saveAssetToLibrary } from '@/lib/api';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { formatBackgroundRemovalOutputCodecLabel } from '@/lib/tools-background-removal';
+import { ToolWorkbench, ToolProcessing } from './ToolWorkbench';
+import { ToolboxVideoPreview } from './ToolboxVideoPreview';
+import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
 import type {
   BackgroundRemovalOutputCodec,
   BackgroundRemovalStudioBackgroundColor,
@@ -35,7 +36,11 @@ import {
 } from './background-removal/_lib/background-removal-workspace-helpers';
 
 export default function BackgroundRemovalWorkspace() {
-  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const auth = useRequireAuth({ redirectIfLoggedOut: false });
+  return <BackgroundRemovalSession key={auth.user?.id ?? 'guest'} auth={auth} />;
+}
+export function BackgroundRemovalSession({ auth }: { auth: ReturnType<typeof useRequireAuth> }) {
+  const { loading: authLoading, user } = auth;
   const { locale, t } = useI18n();
   const copy = {
     ...DEFAULT_BACKGROUND_REMOVAL_COPY,
@@ -51,9 +56,15 @@ export default function BackgroundRemovalWorkspace() {
     maxDurationSeconds: BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS,
     onSourceChanged: () => {
       setViewMode('source');
+      // Original/result pairs must belong to the same source.
+      runner.clearResult();
     },
   });
   const pricing = useBackgroundRemovalPricingPreview({
+    userId: user?.id,
+    videoUrl: sourceMedia.videoUrl,
+    backgroundColor,
+    preserveAudio,
     copy,
     locale,
     metadata: sourceMedia.metadata,
@@ -61,6 +72,8 @@ export default function BackgroundRemovalWorkspace() {
   });
   const { mutate, recentResults } = useBackgroundRemovalRecentJobs(user);
   const runner = useBackgroundRemovalGenerationRunner({
+    acceptedQuote: pricing.acceptedQuote,
+    onQuoteInvalidated: pricing.refreshQuote,
     backgroundColor,
     outputCodec,
     preserveAudio,
@@ -101,7 +114,7 @@ export default function BackgroundRemovalWorkspace() {
   );
 
   useEffect(() => {
-    if (runnerResult || runnerRunning) return;
+    if (runnerResult || runnerRunning || sourceMedia.videoUrl) return;
     const latestCompleted = recentResults.find((item) => {
       const status = typeof item.job.status === 'string' ? item.job.status.toLowerCase() : '';
       return status === 'completed';
@@ -116,7 +129,7 @@ export default function BackgroundRemovalWorkspace() {
     setRunnerResult(backgroundRemovalRecentToResult(latestCompleted));
     setViewMode('result');
     autoSelectedResultJobIdRef.current = latestCompleted.job.jobId;
-  }, [recentResults, runnerResult, runnerRunning, setRunnerResult]);
+  }, [recentResults, runnerResult, runnerRunning, setRunnerResult, sourceMedia.videoUrl]);
   const canRun = Boolean(
     user &&
       sourceMedia.videoUrl.trim() &&
@@ -126,18 +139,6 @@ export default function BackgroundRemovalWorkspace() {
       !runner.running &&
       !sourceMedia.uploading
   );
-  const sourceSummary =
-    sourceMedia.metadataLoading
-      ? copy.metadataLoading
-      : sourceMedia.sourceError
-        ? sourceMedia.sourceError
-        : sourceMedia.metadata?.durationSec
-          ? `${copy.metadataReady} · ${Math.round(sourceMedia.metadata.durationSec)}s`
-          : copy.metadataRequired;
-  const outputSummary = `${formatBackgroundRemovalOutputCodecLabel(outputCodec)} · ${
-    preserveAudio ? copy.audioOn : copy.audioMuted
-  }`;
-
   async function handleSaveOutput() {
     const output = runner.result?.output;
     if (!output?.url) return;
@@ -201,57 +202,10 @@ export default function BackgroundRemovalWorkspace() {
     );
   }
 
-  return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#f7f8f4] text-text-primary dark:bg-bg">
-      <HeaderBar />
-      <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-        <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1580px] px-4 py-5 max-md:mx-4 max-md:w-auto max-md:max-w-[calc(100vw-2rem)] max-md:px-0 sm:px-5 lg:px-8 lg:py-6">
-            <div className="mb-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] lg:items-end">
-              <div className="min-w-0">
-                <ButtonLink
-                  className="gap-2 text-text-secondary hover:text-text-primary"
-                  href="/app/tools"
-                  linkComponent={Link}
-                  size="sm"
-                  variant="ghost"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  {copy.back}
-                </ButtonLink>
-                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">{copy.eyebrow}</p>
-                <h1 className="mt-2 whitespace-normal break-words text-3xl font-semibold leading-tight tracking-normal text-text-primary lg:text-4xl">
-                  {copy.title}
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">{copy.subtitle}</p>
-              </div>
-              <div className="grid min-w-0 gap-2 sm:grid-cols-3">
-                <HeaderSummaryCard icon={<FileVideo className="h-4 w-4" />} label={copy.sourceTitle} value={sourceSummary} />
-                <HeaderSummaryCard icon={<MonitorUp className="h-4 w-4" />} label={copy.outputCodec} value={outputSummary} />
-                <HeaderSummaryCard icon={<WalletCards className="h-4 w-4" />} label={copy.priceBeforeGeneration} value={pricing.priceLabel} />
-              </div>
-            </div>
-
-            {!user ? (
-              <Card className="mb-5 flex flex-wrap items-center justify-between gap-4 p-5">
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">{copy.authTitle}</h2>
-                  <p className="mt-1 text-sm text-text-secondary">{copy.authBody}</p>
-                </div>
-                <ButtonLink
-                  href={buildLoginHref({ mode: 'signin', nextPath: '/app/tools/background-removal' })}
-                  linkComponent={Link}
-                  size="sm"
-                >
-                  Sign in
-                </ButtonLink>
-              </Card>
-            ) : null}
-
-            <div className="grid gap-5 xl:grid-cols-[minmax(340px,0.85fr)_minmax(0,1.25fr)] 2xl:grid-cols-[minmax(340px,0.82fr)_minmax(560px,1.25fr)_minmax(280px,0.6fr)]">
-              <aside className="min-w-0 space-y-4 xl:sticky xl:top-5 xl:self-start">
-                <BackgroundRemovalSourcePanel
+  const output = runner.result?.output;
+  return <ToolWorkbench locale={locale} visual="background-removal"
+    source={<BackgroundRemovalSourcePanel
+                  running={runner.running}
                   copy={copy}
                   isAuthenticated={Boolean(user)}
                   libraryAssets={sourceMedia.libraryAssets}
@@ -272,74 +226,40 @@ export default function BackgroundRemovalWorkspace() {
                   sourceError={sourceMedia.sourceError}
                   uploading={sourceMedia.uploading}
                   videoUrl={sourceMedia.videoUrl}
-                />
-              </aside>
-
-              <section className="min-w-0 space-y-4">
-                <BackgroundRemovalSettingsPanel
+                />} settings={<BackgroundRemovalSettingsPanel
                   backgroundColor={backgroundColor}
                   canRun={canRun}
                   copy={copy}
                   error={runner.error}
                   message={runner.message}
                   onBackgroundColorChange={setBackgroundColor}
-                  onDownload={handleDownload}
                   onOutputCodecChange={setOutputCodec}
                   onPreserveAudioChange={setPreserveAudio}
-                  onRun={runner.run}
-                  onSave={handleSaveOutput}
-                  onViewModeChange={setViewMode}
+                  onRun={() => { if (canRun) void runner.run(); }}
                   outputCodec={outputCodec}
                   preserveAudio={preserveAudio}
+                  priceLoading={pricing.priceLoading}
+                  quoteError={pricing.quoteError}
+                  onRefreshQuote={pricing.refreshQuote}
                   priceHint={pricing.priceHint}
                   priceLabel={pricing.priceLabel}
-                  result={runner.result}
                   running={runner.running}
-                  sourceUrl={sourceMedia.videoUrl}
-                  viewMode={viewMode}
-                />
-              </section>
-
-              <aside className="min-w-0 xl:col-span-2 2xl:col-span-1 2xl:sticky 2xl:top-5 2xl:self-start">
-                <BackgroundRemovalRecentRail
+                />} recent={recentResults.length ? <BackgroundRemovalRecentRail
                   copy={copy}
                   items={recentResults}
                   locale={locale}
                   onCopy={recentActions.copyUrl}
                   onDownload={recentActions.downloadUrl}
                   onSave={recentActions.saveRecent}
-                  onSelect={recentActions.selectRecent}
+                  onSelect={item => { if (!runner.running && !sourceMedia.uploading) recentActions.selectRecent(item); }}
                   savingJobId={recentActions.savingJobId}
-                />
-              </aside>
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function HeaderSummaryCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="min-w-0 rounded-[12px] border border-border bg-surface/85 p-3 shadow-sm">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-slate-950 text-lime-300 dark:bg-white/[0.08]">
-          {icon}
-        </span>
-        <span className="truncate">{label}</span>
-      </div>
-      <p className="mt-2 truncate text-sm font-semibold text-text-primary" title={value}>
-        {value}
-      </p>
-    </div>
-  );
+                /> : null}
+    preview={<>
+      {runner.running ? <ToolProcessing locale={locale} /> : null}
+      <ToolboxVideoPreview locale={locale} sourceUrl={sourceMedia.videoUrl} result={runner.result} viewMode={viewMode} onViewModeChange={setViewMode} onSave={handleSaveOutput} onDownload={handleDownload} />
+      {output?.url && output.assetId ? <MediaDestinationActions locale={locale} userId={user?.id} asset={{ id: output.assetId, url: output.url, kind: 'video', jobId: runner.result?.jobId, thumbUrl: output.thumbUrl }} /> : null}
+    </>}
+  >
+    {!user ? <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-border p-4"><p className="text-sm">{copy.authTitle}</p><ButtonLink href={buildLoginHref({ mode: 'signin', nextPath: '/app/tools/background-removal' })} linkComponent={Link} size="sm">Sign in</ButtonLink></div> : null}
+  </ToolWorkbench>;
 }

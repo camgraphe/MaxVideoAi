@@ -91,7 +91,7 @@ export function useUpscaleSourceMedia({
         setMediaUrl(uploaded.url);
         setResult(null);
         setPreviewMode('source');
-        setMessage(uploaded.name ?? file.name);
+        setMessage(null);
       } catch (uploadError) {
         setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
       } finally {
@@ -131,7 +131,7 @@ export function useUpscaleSourceMedia({
       setResult(null);
       setPreviewMode('source');
       setError(null);
-      setMessage(asset.source ? `${copy.library}: ${asset.source}` : copy.library);
+      setMessage(null);
       setLibraryModalOpen(false);
     },
     [

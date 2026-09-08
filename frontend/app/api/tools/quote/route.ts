@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) return NextResponse.json({ ok: false, error: 'Authentication required.' }, { status: 401 });
   try {
-    const quote = await quoteToolboxRequest(await req.json());
+    const quote = await quoteToolboxRequest(await req.json(), userId);
     return NextResponse.json({ ok: true, quote }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch {
     return NextResponse.json({ ok: false, error: 'Unable to quote this source and settings.' }, { status: 422 });

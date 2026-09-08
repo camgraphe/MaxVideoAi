@@ -21,3 +21,14 @@ test('versioned blocks preserve exact typed IDs and reject ambiguous references 
   assert.throws(() => toolAssetRefSchema.parse({ type: 'asset', assetId: 'id', kind: 'image', url: 'https://untrusted.invalid' }));
   assert.deepEqual(toolAssetRefSchema.parse({ type: 'job-output', jobId: 'job', outputId: 'job:image:0', kind: 'image' }), { type: 'job-output', jobId: 'job', outputId: 'job:image:0', kind: 'image' });
 });
+
+test('result bridge preserves exact lineage and URLs and refuses to fabricate missing output IDs', async () => {
+  const { normalizeQuickToolResult } = await import('../frontend/src/lib/toolbox/result');
+  const response = { ok: true, jobId: 'job-1', mediaType: 'video', output: { assetId: 'output-exact', url: 'https://media.example/original.mp4?signature=exact', thumbUrl: 'https://media.example/thumb.webp' } } as import('../frontend/types/tools-upscale').UpscaleToolResponse;
+  const source = { type: 'job-output', jobId: 'source-job', outputId: 'exact-output-17', kind: 'video' } as const;
+  const result = normalizeQuickToolResult('upscale', [source], response);
+  assert.equal(result?.outputs[0].originalUrl, response.output!.url);
+  assert.deepEqual(result?.sourceAssets, [source]);
+  assert.equal(normalizeQuickToolResult('upscale', [source], { ...response, output: { url: response.output!.url } }), null);
+  assert.throws(() => normalizeQuickToolResult('upscale', [{ ...source, kind: 'image' }], response));
+});

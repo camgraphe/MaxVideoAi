@@ -1,57 +1,16 @@
-import { useMemo } from 'react';
-import useSWR from 'swr';
-import { authFetch } from '@/lib/authFetch';
-import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
-import type { BackgroundRemovalOutputCodec } from '@/types/tools-background-removal';
-import { formatCurrency } from '../_lib/background-removal-workspace-helpers';
+import { useToolQuote } from '../../useToolQuote';
 import type { BackgroundRemovalWorkspaceCopy } from '../_lib/background-removal-workspace-copy';
-import type {
-  BackgroundRemovalVideoMetadata,
-  BillingProductResponse,
-} from '../_lib/background-removal-workspace-types';
-
-export function useBackgroundRemovalPricingPreview(params: {
-  copy: BackgroundRemovalWorkspaceCopy;
-  locale: string;
-  metadata: BackgroundRemovalVideoMetadata | null;
-  outputCodec: BackgroundRemovalOutputCodec;
-}) {
-  const { data, error, isLoading } = useSWR(
-    '/api/billing-products?productKey=background-removal-video-v3',
-    async (url: string) => {
-      const response = await authFetch(url);
-      const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
-      if (!response.ok || !payload?.ok || !payload.product) {
-        throw new Error(payload?.error ?? params.copy.priceUnavailable);
-      }
-      return payload.product;
-    },
-    { keepPreviousData: true }
-  );
-
-  const preview = useMemo(
-    () =>
-      buildBackgroundRemovalPricingPreview({
-        unitPriceCents: data?.unitPriceCents ?? null,
-        currency: data?.currency ?? 'USD',
-        durationSec: params.metadata?.durationSec ?? null,
-        outputCodec: params.outputCodec,
-      }),
-    [data?.currency, data?.unitPriceCents, params.metadata?.durationSec, params.outputCodec]
-  );
-
-  const priceLabel = formatCurrency(preview.totalCents, preview.currency, params.locale);
-  const priceHint = isLoading
-    ? params.copy.priceLoading
-    : error
-      ? params.copy.priceUnavailable
-      : !preview.ready
-        ? params.copy.metadataRequired
-        : params.copy.priceReady;
-
+import type { BackgroundRemovalVideoMetadata } from '../_lib/background-removal-workspace-types';
+import type { BackgroundRemovalOutputCodec, BackgroundRemovalStudioBackgroundColor } from '@/types/tools-background-removal';
+export function useBackgroundRemovalPricingPreview(params: { copy: BackgroundRemovalWorkspaceCopy; locale: string; metadata: BackgroundRemovalVideoMetadata | null; outputCodec: BackgroundRemovalOutputCodec; videoUrl: string; backgroundColor: BackgroundRemovalStudioBackgroundColor; preserveAudio: boolean; userId?: string | null }) {
+  const quote = useToolQuote(params.metadata && params.videoUrl.trim() ? { toolId: 'background-removal', videoUrl: params.videoUrl.trim(), outputContainerAndCodec: params.outputCodec, backgroundColor: params.backgroundColor, preserveAudio: params.preserveAudio, videoWidth: params.metadata.width, videoHeight: params.metadata.height, durationSec: params.metadata.durationSec, fps: params.metadata.fps } : null, params.userId);
   return {
-    priceHint,
-    priceLabel,
-    pricePreview: preview,
+    priceLabel: quote.quote ? new Intl.NumberFormat(params.locale, { style: 'currency', currency: quote.quote.currency }).format(quote.quote.totalCents / 100) : '—',
+    priceHint: quote.error ? params.copy.priceUnavailable : quote.loading ? params.copy.priceLoading : quote.ready ? params.copy.priceReady : params.copy.metadataRequired,
+    pricePreview: { ready: quote.ready, totalCents: quote.quote?.totalCents ?? null, currency: quote.quote?.currency ?? 'USD' },
+    acceptedQuote: quote.quote,
+    quoteError: quote.error,
+    priceLoading: quote.loading,
+    refreshQuote: quote.refresh,
   };
 }

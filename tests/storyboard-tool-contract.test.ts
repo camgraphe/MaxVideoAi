@@ -189,8 +189,9 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.doesNotMatch(workspaceSource, /function BuilderStep|function ChoiceButton|function TierButton/);
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
-  assert.match(toolsPageSource, /storyboardTitle/);
-  assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
+  assert.match(toolsPageSource, /ToolboxCatalogue/);
+  const catalogueSource = readFileSync(join(process.cwd(), 'frontend/src/lib/toolbox/catalogue.ts'), 'utf8');
+  assert.match(catalogueSource, /id: 'storyboard'.*href: '\/app\/tools\/storyboard'/);
   assert.match(workspaceSource, /runImageGeneration/);
   assert.match(workspaceSource, /runStoryboard/);
   assert.match(workspaceSource, /saveImageToLibrary/);
