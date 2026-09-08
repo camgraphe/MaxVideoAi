@@ -3366,7 +3366,7 @@ test('Studio native video connectors follow engine switching', async ({ page }) 
     const nodeVideoReference = node.locator('[data-shot-connector-row="input"][data-shot-connector-kind="video_reference"]');
     const inspectorVideoReference = inspector.locator('[data-inspector-connector-kind="video_reference"]');
     if (selection.videoReferenceCapacity) {
-      await expect(nodeVideoReference).toContainText(selection.videoReferenceCapacity);
+      await expect(nodeVideoReference).toHaveCount(0);
       await expect(inspectorVideoReference).toHaveAttribute('data-inspector-connector-state', 'available');
       await expect(inspectorVideoReference).toContainText(selection.videoReferenceCapacity);
     } else {
@@ -4049,6 +4049,7 @@ test('canvas shot nodes keep compact row-aligned handles and generate controls',
 
     return {
       buttonHeight: buttonBox.height,
+      intrinsicButtonHeight: button.offsetHeight,
       labelRight: labelBox ? labelBox.right : 0,
       labelWidth: labelBox ? labelBox.width : 0,
       priceLeft: priceBox ? priceBox.left : 0,
@@ -4057,7 +4058,8 @@ test('canvas shot nodes keep compact row-aligned handles and generate controls',
     };
   });
 
-  expect(generateMetrics.buttonHeight).toBeLessThanOrEqual(38);
+  expect(generateMetrics.intrinsicButtonHeight).toBeGreaterThanOrEqual(44);
+  expect(generateMetrics.buttonHeight).toBeGreaterThan(0);
   expect(generateMetrics.labelWidth).toBeGreaterThan(32);
   expect(generateMetrics.priceText.length).toBeGreaterThan(0);
   expect(generateMetrics.priceWidth).toBeGreaterThan(0);
