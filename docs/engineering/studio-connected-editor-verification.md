@@ -39,6 +39,8 @@ Les mécanismes ont été vérifiés contre la documentation officielle de [getC
 
 `tests/connected-studio-route-integration.test.ts` utilise les vraies routes et le vrai repository : création sous A même si le payload affirme B, relecture par cookie de A, refus de lecture par B, liste B vide, assertion SQL de la propriété et redirection de page sans session avec accès visiteur désactivé. Aucun mock des routes Studio ni de l'authentification de l'app. Suite routes + Auth : **4/4 réussis**.
 
+Depuis `07b1e3c42`, le même test HTTP couvre aussi le refus réel du Chat :401 anonyme,503 avec cookie ou Bearer signé, y compris si le payload prétend Mock ou un prix nul. Le correctif `eb791a266` ferme Live faute de contrat canonique de devis/autorisation, tandis que Mock s'exécute uniquement dans le navigateur avec un libellé de simulation. La suite HTTP augmentée passe1/1 dans un nouveau runtime local jetable.
+
 ```sh
 PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" pnpm dlx node@22 frontend/node_modules/tsx/dist/cli.mjs --tsconfig frontend/tsconfig.json --test tests/connected-studio-route-integration.test.ts tests/studio-disposable-auth.test.ts
 ```
@@ -69,8 +71,18 @@ Ces temps comprennent les gestes et assertions du navigateur, ne sont ni des Cor
 
 Au commit `603f45a4b`, 397 tests Studio et TypeScript passent ; lint sans erreur, avec deux avertissements hérités. Quatre parcours Playwright passent : création unique au clavier, inspecteur explicite et retour de focus, actions de piste sans clic droit, inspecteur mobile immédiat et connexions annulables. Les générations de test restent explicitement simulées ; les erreurs Live ne deviennent plus des succès Mock.
 
-La revue indépendante a demandé un parcours supplémentaire : après sélection timeline, la gestion des connexions doit rendre à Annuler la portée canevas. Elle a également demandé le transfert du focus après activation d'un lecteur natif. Correctifs et tests de non-régression en cours ; ce lot n'est pas encore déclaré définitivement approuvé.
+La revue indépendante a demandé un parcours supplémentaire : après sélection timeline, la gestion des connexions doit rendre à Annuler la portée canevas. Elle a également demandé le transfert du focus après activation d'un lecteur natif. Ces correctifs, plus Copy réel/refus explicite, sont livrés dans `957c593b6`, revue approuvée :12/12E2E et397/397tests. La matrice parent `8cf596d54` passe8/8 (desktop,portraitmobile,320px,paysage;clair/sombre). Revue de composition `eb791a266` également approuvée :93tests ciblés et1E2E; prix1440p hérité et export distant restent réservés. Les six échecs du run global412/418 pendant le chantier médias ne sont pas masqués ni déclarés résolus.
+
+## Lecture native image et audio
+
+Les fixtures `tests/fixtures/studio-media/pattern-a.mp4` et `pattern-b.mp4` (`cb4a0bf8e`) sont des motifs animés locaux avec tons440/880Hz, H264320×180@30fps et AAC48kHz,6secondes mesurées. Leurs tailles et SHA-256 sont versionnés. Aucun contenu fournisseur ou utilisateur n'est employé.
+
+`tests/helpers/studio-media-byte-fixture.ts` (`51e286901`) fournit les octets de test avec GET/HEAD et plages simples206/416 ;3/3tests après RED module absent. Ce helper n'autorise aucun URL et ne valide aucune signature : un futur test d'accès privé doit effectuer ces contrôles avant de l'appeler. Sémantique bornée inspirée de [RFC9110, requêtes Range](https://www.rfc-editor.org/rfc/rfc9110.html#name-range-requests), pas une nouvelle route de stockage produit.
+
+Le nouveau `editor-media-decoding.spec.ts` passe1/1 sur le Studio local : le vrai lecteur vidéo émet des callbacks de frames décodées au point d'entrée attendu, le vrai lecteur audio fournit un signal RMS non nul via Web Audio, sa lecture avance, le son embarqué lié reste coupé pour éviter un doublage, Pause arrête l'audio et le scrub présente une frame de la seconde source à1seconde. Contrairement au test de stress, ces assertions ne lisent pas seulement l'horloge Studio. Les API compte/persistance et consentement sont simulées dans ce test précis ; les sources sont servies depuis les fichiers de test avec interception locale. Cela ne qualifie ni montage serveur, S3/CDN, matériel audio physique, tous codecs/navigateurs ni performance en production.
+
+La revue indépendante a renforcé la causalité de cette preuve : exiger un **nouveau** callback vidéo après le scrub, puis vérifier currentTime/mediaTime de B et sa visibilité ; confirmer que A est encore visible lors du contrôle de son lié. Nouveau passage réussi :4frames natives,mediaTime1.133333s,audioTime1.162943s,RMS0.071739,second source1s. Ce sont les valeurs d'un passage, pas des seuils de performance. Rapport brut local : `.superpowers/studio-visuals/native-decode-reviewed.json`.
 
 ## Contrôles restant ouverts
 
-Clôture de revue des interactions, parcours bibliothèque/récents avec identités canoniques, commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, matrice responsive complète et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères.
+Parcours bibliothèque/récents avec identités canoniques, commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, polish de densité des blocs, qualification responsive du lot complet et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères ; les21tests MCP existants ciblés passent avant Task4, sans prétendre prouver une écriture.
