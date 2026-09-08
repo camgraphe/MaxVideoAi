@@ -54,3 +54,33 @@ test('foreign project assets, non-connected projects and malformed access reques
     /Invalid Studio media access input/u,
   );
 });
+
+test('a live timeline occurrence remains renewable after its source leaves the project bin', async () => {
+  let resolved = false;
+  const result = await renewStudioProjectMediaAccess({ userId: owner }, {
+    projectId: 'project-1', assetIds: [assetB],
+  }, {
+    withTransaction: async (callback) => callback({
+      query: async (sql) => {
+        if (sql.includes('to_regclass')) return [{ ready: true }];
+        if (sql.includes('FROM studio_projects')) {
+          return [{ persistence_mode: 'connected', workspace_state: { projectAssets: [] } }];
+        }
+        if (sql.includes('FROM studio_sequences')) {
+          return [{ timeline_state: { timelineItems: [{ ref: { type: 'asset', assetId: assetB, kind: 'video' } }] } }];
+        }
+        return [];
+      },
+    }),
+    resolveMedia: async (_userId, ref) => {
+      resolved = true;
+      return {
+        id: ref.assetId, ref, kind: 'video', url: 'https://storage.invalid/b.mp4',
+        thumbUrl: null, previewUrl: null, mime: 'video/mp4', mediaFacts: undefined,
+        originalAccess: { type: 'external' },
+      };
+    },
+  } as never);
+  assert.equal(resolved, true);
+  assert.deepEqual(result.assets, [{ assetId: assetB, url: 'https://storage.invalid/b.mp4', expiresAt: null }]);
+});

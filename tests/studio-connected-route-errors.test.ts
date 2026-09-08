@@ -17,6 +17,14 @@ test('connected Studio routes expose only bounded business errors', () => {
     connectedStudioError(new StudioConnectedPersistenceError('STUDIO_REVISION_CONFLICT', 409), 'STUDIO_WORKSPACE_SAVE_FAILED'),
     { error: 'STUDIO_REVISION_CONFLICT', status: 409 },
   );
+  assert.deepEqual(
+    connectedStudioError(new Error('STUDIO_PROJECT_CONFLICT'), 'STUDIO_PROJECT_SAVE_FAILED'),
+    { error: 'STUDIO_PROJECT_CONFLICT', status: 409 },
+  );
+  assert.deepEqual(
+    connectedStudioError(new Error('STUDIO_SEQUENCE_CONFLICT'), 'STUDIO_SEQUENCE_SAVE_FAILED'),
+    { error: 'STUDIO_SEQUENCE_CONFLICT', status: 409 },
+  );
 });
 
 test('unexpected storage and database details become opaque route-specific failures', () => {

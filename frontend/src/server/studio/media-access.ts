@@ -23,11 +23,9 @@ export type StudioMediaAccessResult = {
   assets: Array<{ assetId: string; url: string; expiresAt: string | null }>;
 };
 
-function projectMemberAssetIds(workspaceState: unknown): Set<string> {
-  if (!workspaceState || typeof workspaceState !== 'object' || Array.isArray(workspaceState)) return new Set();
-  const assets = (workspaceState as Record<string, unknown>).projectAssets;
-  if (!Array.isArray(assets)) return new Set();
-  const ids = assets.flatMap((asset) => {
+function canonicalVideoAssetIds(values: unknown): string[] {
+  if (!Array.isArray(values)) return [];
+  return values.flatMap((asset) => {
     if (!asset || typeof asset !== 'object' || Array.isArray(asset)) return [];
     const ref = (asset as Record<string, unknown>).ref;
     if (!ref || typeof ref !== 'object' || Array.isArray(ref)) return [];
@@ -36,7 +34,16 @@ function projectMemberAssetIds(workspaceState: unknown): Set<string> {
       ? [record.assetId]
       : [];
   });
-  return new Set(ids);
+}
+
+function projectBinAssetIds(workspaceState: unknown): string[] {
+  if (!workspaceState || typeof workspaceState !== 'object' || Array.isArray(workspaceState)) return [];
+  return canonicalVideoAssetIds((workspaceState as Record<string, unknown>).projectAssets);
+}
+
+function sequenceAssetIds(timelineState: unknown): string[] {
+  if (!timelineState || typeof timelineState !== 'object' || Array.isArray(timelineState)) return [];
+  return canonicalVideoAssetIds((timelineState as Record<string, unknown>).timelineItems);
 }
 
 export async function renewStudioProjectMediaAccess(
@@ -70,7 +77,15 @@ export async function renewStudioProjectMediaAccess(
     const project = projects[0];
     if (!project) throw new Error('STUDIO_PROJECT_NOT_FOUND');
     if (project.persistence_mode !== 'connected') throw new Error('STUDIO_CONNECTED_PROJECT_REQUIRED');
-    const members = projectMemberAssetIds(project.workspace_state);
+    const sequenceRows = await executor.query<{ timeline_state: unknown }>(`
+      SELECT timeline_state
+        FROM studio_sequences
+       WHERE project_id = $1 AND user_id = $2 AND deleted_at IS NULL
+    `, [input.projectId, actor.userId]);
+    const members = new Set([
+      ...projectBinAssetIds(project.workspace_state),
+      ...sequenceRows.flatMap((sequence) => sequenceAssetIds(sequence.timeline_state)),
+    ]);
     if (assetIds.some((assetId) => !members.has(assetId))) throw new Error('MEDIA_NOT_AVAILABLE');
 
     const assets = [] as StudioMediaAccessResult['assets'];
