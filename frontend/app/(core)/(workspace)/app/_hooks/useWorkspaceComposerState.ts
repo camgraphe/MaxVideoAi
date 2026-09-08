@@ -94,6 +94,7 @@ type UseWorkspaceComposerStateResult = {
   handleCameraFixedChange: (value: boolean) => void;
   handleSafetyCheckerChange: (value: boolean) => void;
   handleEngineChange: (engineId: string) => void;
+  applyPreparedForm: (form: FormState) => void;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
   handleDurationChange: (raw: number | string) => void;
@@ -159,6 +160,7 @@ export function useWorkspaceComposerState({
     showRetakeWorkflowAction,
     composerWorkflowNotice,
     handleEngineChange,
+    applyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
   } = useWorkspaceEngineModeState({
@@ -413,6 +415,7 @@ export function useWorkspaceComposerState({
     handleCameraFixedChange,
     handleSafetyCheckerChange,
     handleEngineChange,
+    applyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
     handleDurationChange,

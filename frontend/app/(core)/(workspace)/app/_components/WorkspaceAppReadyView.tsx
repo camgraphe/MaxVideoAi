@@ -1,5 +1,8 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
+import { WorkspaceModelReviewCommands } from './WorkspaceModelReviewCommands';
 import { WorkspaceAppShell } from './WorkspaceAppShell';
 import { WorkspaceRecentReferences } from './WorkspaceRecentReferences.client';
 import { getKlingO3AssetState, supportsKlingO3VideoToVideo } from '../_lib/kling-o3-unified-workflow';
@@ -19,6 +22,8 @@ import type { useWorkspacePricingGate } from '../_hooks/useWorkspacePricingGate'
 import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState';
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
 import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
+
+const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
 type WorkspaceAppReadyViewProps = {
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -124,7 +129,6 @@ export function WorkspaceAppReadyView({
     handleCameraFixedChange,
     handleComposerModeToggle,
     handleDurationChange,
-    handleEngineChange,
     handleFpsChange,
     handleFramesChange,
     handleModeChange,
@@ -192,6 +196,17 @@ export function WorkspaceAppReadyView({
     previewAutoPlayRequestId,
   } = gallery;
 
+  const modelReview = useWorkspaceModelReview({
+    current: form ? {form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale} : null,
+    engines, locale: uiLocale, authStatus: app.authStatus,
+    onGuestEngineChange: composer.handleEngineChange, onRequestAuth: () => setAuthModalOpen(true),
+    accountId: app.authStatus === 'authed' && app.session?.access_token ? app.user?.id ?? null : null,
+    accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null,
+    memberTier: routeForm.memberTier, disabledEngineReasons: klingO3DisabledEngineReasons,
+    applyPreparedForm: composer.applyPreparedForm, setInputAssets: assets.setInputAssets,
+    setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
+    setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
+  });
   if (!selectedEngine || !form) return null;
 
   return (
@@ -234,9 +249,10 @@ export function WorkspaceAppReadyView({
         activeMode={activeMode}
         engineModeOptions={engineModeOptions}
         modeLabelLocale={uiLocale}
-        handleEngineChange={handleEngineChange}
+        handleEngineChange={modelReview.requestModel}
+        modelReviewCommands={<WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />}
         handleModeChange={handleModeChange}
-        disabledEngineReasons={klingO3DisabledEngineReasons}
+        disabledEngineReasons={modelReview.selectorDisabledReasons}
         engineScores={engineScores}
         renderGroups={renderGroups}
         compositeOverrideSummary={compositeOverrideSummary}
@@ -325,6 +341,8 @@ export function WorkspaceAppReadyView({
         }
       />}
       </WorkspaceRecentReferences>
+      {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
+        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError} /> : null}
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}

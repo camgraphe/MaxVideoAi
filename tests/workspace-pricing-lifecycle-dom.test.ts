@@ -149,3 +149,28 @@ test('a previous account response stays masked through logout and reauthenticati
     await f.respond(2); assert.equal(f.current.price, 1.25);
   } finally { await f.dispose(); }
 });
+
+test('explicit quote retry creates a fresh observation for identical wire input and ignores superseded completion', async () => {
+  const dom = new JSDOM('<div id="retry-root"></div>', { url: 'http://localhost/app' });
+  const previous = new Map<string, PropertyDescriptor | undefined>();
+  const requests: Array<{body: string; resolve: (response: Response) => void; reject: (error: Error) => void}> = [];
+  for (const [key, value] of Object.entries({ window:dom.window, document:dom.window.document,navigator:dom.window.navigator, IS_REACT_ACT_ENVIRONMENT:true, fetch:(_url:string, init:RequestInit) => new Promise<Response>((resolve,reject)=>requests.push({body:String(init.body),resolve,reject})) })) {
+    previous.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
+  }
+  const {useWorkspacePreflightQuote}=await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePreflightQuote');
+  let quote!: ReturnType<typeof useWorkspacePreflightQuote>;
+  const request={engine:'seedance-2-0',mode:'t2v',durationSec:5,fps:24,inputs:{},user:{memberTier:'Member'}} as Parameters<typeof useWorkspacePreflightQuote>[0]['request'];
+  function Fixture(){quote=useWorkspacePreflightQuote({request,iterations:1,accessToken:'retry-token',authChecked:true});return null;}
+  const root=createRoot(dom.window.document.getElementById('retry-root')!);
+  const tick=()=>act(async()=>{await new Promise(resolve=>setTimeout(resolve,230));});
+  try {
+    await act(async()=>root.render(React.createElement(Fixture)));await tick();
+    await act(async()=>requests[0].reject(new Error('Offline')));assert.equal(quote.preflightError,'Offline');
+    await act(async()=>quote.retry());assert.equal(quote.price,null);assert.equal(quote.preflightError,undefined);await tick();
+    const oldRetry=quote.retry;await act(async()=>quote.retry());await tick();
+    await act(async()=>requests[1].resolve(new Response(JSON.stringify({ok:true,total:999}))));assert.equal(quote.price,null);
+    await act(async()=>requests[2].resolve(new Response(JSON.stringify({ok:true,total:125}))));assert.equal(quote.price,1.25);
+    await act(async()=>oldRetry());assert.equal(quote.price,1.25);await tick();assert.equal(requests.length,3);
+    assert.ok(requests.every(entry=>entry.body===requests[0].body));assert.doesNotMatch(requests[0].body,/nonce|retry/);
+  } finally {await act(async()=>root.unmount());dom.window.close();for (const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
+});

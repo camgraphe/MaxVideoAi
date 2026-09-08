@@ -61,6 +61,7 @@ type WorkspaceAppShellProps = {
   compositeOverrideSummary: PreviewDockProps['compositeOverrideSummary'];
   setViewerTarget: PreviewDockProps['setViewerTarget'];
   composerSurface: ReactNode;
+  modelReviewCommands?: ReactNode;
   recentMedia?: ReactNode;
   onOpenRecentMedia?: () => void;
   recentDropProps?: RecentReferenceDropProps;
@@ -100,6 +101,7 @@ export function WorkspaceAppShell({
   compositeOverrideSummary,
   setViewerTarget,
   composerSurface,
+  modelReviewCommands,
   recentMedia,
   onOpenRecentMedia,
   recentDropProps,
@@ -186,6 +188,7 @@ export function WorkspaceAppShell({
           engineModeOptions={engineModeOptions}
           modeLabelLocale={modeLabelLocale}
           onEngineChange={handleEngineChange}
+          modelReviewCommands={modelReviewCommands}
           onModeChange={handleModeChange}
           disabledEngineReasons={disabledEngineReasons}
           engineScores={engineScores}

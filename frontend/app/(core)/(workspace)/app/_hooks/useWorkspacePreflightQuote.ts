@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
@@ -40,6 +40,14 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
   // Reset the request generation during render, so even A → B → A cannot revive A's quote.
   // The token is transient equality state, never part of a serialized key or persisted cache.
   if (!matches) setScope({ requestKey: key, accessToken, authChecked });
+  const scopeRef = useRef<Scope | null>(scope);
+  scopeRef.current = matches ? scope : null;
+  const retry = useCallback(() => {
+    if (scopeRef.current !== scope) return;
+    // A new observation identity; no retry nonce enters the commercial request.
+    scopeRef.current = null;
+    setScope({ ...scope });
+  }, [scope]);
   const eligible = Boolean(key && accessToken && authChecked);
   const current = eligible && matches && observation?.scope === scope ? observation : null;
 
@@ -63,6 +71,7 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
   const preflight = current?.response ?? null;
   const singlePrice = preflight ? preflight.total! / 100 : null;
   return {
+    retry,
     preflight,
     preflightError: composerError ?? current?.error,
     setPreflightError,

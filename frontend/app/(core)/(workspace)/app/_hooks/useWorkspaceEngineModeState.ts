@@ -85,6 +85,7 @@ type UseWorkspaceEngineModeStateResult = {
   showRetakeWorkflowAction: boolean;
   composerWorkflowNotice: string | null;
   handleEngineChange: (engineId: string) => void;
+  applyPreparedForm: (form: FormState) => void;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
 };
@@ -201,6 +202,14 @@ export function useWorkspaceEngineModeState({
       setShotType('customize');
     }
   }, [activeMode, setShotType, shotType, supportsKlingV3Controls]);
+
+  const applyPreparedForm = useCallback((prepared: FormState) => {
+    requestedEngineOverrideIdRef.current = null;
+    requestedEngineOverrideTokenRef.current = null;
+    requestedModeOverrideRef.current = null;
+    preserveStoredDraftRef.current = false;
+    setForm(prepared);
+  }, [requestedEngineOverrideIdRef, requestedEngineOverrideTokenRef, requestedModeOverrideRef, preserveStoredDraftRef, setForm]);
 
   const handleEngineChange = useCallback(
     (engineId: string) => {
@@ -396,6 +405,7 @@ export function useWorkspaceEngineModeState({
     showRetakeWorkflowAction,
     composerWorkflowNotice,
     handleEngineChange,
+    applyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
   };

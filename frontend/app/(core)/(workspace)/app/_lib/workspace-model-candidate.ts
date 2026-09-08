@@ -156,12 +156,14 @@ function validateCandidate(engine: EngineCaps, setup: WorkspaceModelSetup, workf
 }
 
 /** Build an isolated preview. Never applies state, releases media, writes storage or requests a quote. */
-export function prepareWorkspaceModelCandidate({ engine, current, locale, currentEngine }: {
+export function prepareWorkspaceModelCandidate({ engine, current, locale, currentEngine, restoreSetup }: {
   engine: EngineCaps;
   current: WorkspaceModelSetup;
   locale: string;
   /** Supply the exact live projection when it differs from the runtime catalogue. */
   currentEngine?: EngineCaps;
+  /** Validated saved seed; comparisons always remain relative to current. */
+  restoreSetup?: WorkspaceModelSetup;
 }): WorkspaceModelCandidate {
   const sourceEngine = currentEngine ?? getFalEngineById(current.form.engineId)?.engine ?? null;
   const sourceWorkflow = resolveWorkspaceWorkflow({ engine: sourceEngine, ...current });
@@ -172,15 +174,18 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
   for (const reference of originalReferences) {
     if (reference.asset.status === 'uploading') blockingReasons.push({ code: 'uploading-reference', scope: 'apply', fieldId: reference.fieldId, message: 'Wait for reference uploads to finish before changing models.' });
   }
+  const seed = restoreSetup ?? current;
+  if (restoreSetup && restoreSetup.form.engineId !== engine.id) blockingReasons.push({code: 'invalid-reference', scope: 'apply', message: 'Saved configuration belongs to another model.'});
+  const seedSummary = restoreSetup ? schemaFor(engine, resolveWorkspaceWorkflow({engine, ...restoreSetup}), locale) : sourceSummary;
   const requestedMode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: null, carryoverMode: current.form.mode });
-  let setup: WorkspaceModelSetup = structuredClone(current);
-  setup.form = coerceFormStateForEngineChange(engine, requestedMode, setup.form);
+  let setup: WorkspaceModelSetup = structuredClone(seed);
+  if (!restoreSetup) setup.form = coerceFormStateForEngineChange(engine, requestedMode, setup.form);
   const initialWorkflow = resolveWorkspaceWorkflow({ engine, ...setup });
   if (initialWorkflow.klingO3UnsupportedVideoReason) blockingReasons.push({ code: 'unsupported-workflow', scope: 'apply', message: initialWorkflow.klingO3UnsupportedVideoReason });
   let stable = false;
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const workflow = resolveWorkspaceWorkflow({ engine, ...setup });
-    const next = normalizedSetup(setup, engine, workflow, schemaFor(engine, workflow, locale), sourceSummary);
+    const next = normalizedSetup(setup, engine, workflow, schemaFor(engine, workflow, locale), seedSummary);
     if (JSON.stringify(next) === JSON.stringify(setup)) { setup = next; stable = true; break; }
     setup = next;
   }
@@ -191,12 +196,17 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
   const keptReferences = referencesFor(setup, inputSchemaSummary);
   const keptKeys = new Set(keptReferences.map(referenceKey));
   const removedReferences = originalReferences.filter((reference) => !keptKeys.has(referenceKey(reference))).map((reference) => structuredClone(reference));
+  if (restoreSetup) {
+    const restoredKeys = new Set(keptReferences.map(referenceKey));
+    if (referencesFor(restoreSetup, seedSummary).some(reference => !restoredKeys.has(referenceKey(reference)))) blockingReasons.push({code:'invalid-reference',scope:'apply',message:'Some saved references no longer fit this model.'});
+  }
   const validation = validateCandidate(engine, setup, workflow, composer, inputSchemaSummary);
   blockingReasons.push(...validation.reasons);
   const changes: WorkspaceModelSettingChange[] = [];
   function change(field: string, before: unknown, after: unknown, reason: WorkspaceModelSettingChange['reason'] = 'adapted') {
     if (JSON.stringify(before) !== JSON.stringify(after)) changes.push({ field, before: structuredClone(before), after: structuredClone(after), reason });
   }
+  for (const field of ['prompt', 'negativePrompt', 'voiceIdsInput', 'multiPromptScenes'] as const) change(field, current[field], setup[field]);
   change('mode', sourceWorkflow.submissionMode, workflow.submissionMode);
   change('effectiveDurationSec', sourceComposer.effectiveDurationSec, composer.effectiveDurationSec);
   for (const field of ['durationSec', 'durationOption', 'numFrames', 'resolution', 'aspectRatio', 'fps', 'iterations', 'seedLocked', 'seed', 'loop', 'audio', 'cameraFixed', 'safetyChecker'] as const) change(field, current.form[field], setup.form[field]);
@@ -233,6 +243,6 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
     supportsAudioToggle: workflow.supportsAudioToggle, voiceControlEnabled: composer.voiceControlEnabled,
     changes, keptReferences, removedReferences, blockingReasons,
     applicable: !blockingReasons.some(({ scope }) => scope === 'apply'),
-    comparable: Boolean(sourceEngine) && stable && changes.length === 0 && removedReferences.length === 0 && blockingReasons.length === 0,
+    comparable: Boolean(sourceEngine) && stable && changes.length === 0 && originalReferences.length === keptReferences.length && removedReferences.length === 0 && blockingReasons.length === 0,
   };
 }

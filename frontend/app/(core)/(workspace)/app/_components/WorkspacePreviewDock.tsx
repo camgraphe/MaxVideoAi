@@ -1,6 +1,6 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
@@ -9,6 +9,7 @@ import type { EngineCaps, Mode } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
 import { getEngineModeLabel } from '../_lib/workspace-engine-helpers';
+import styles from './workspace-model-review.module.css';
 import { CompositePreviewDockSkeleton } from './WorkspaceBootSkeletons';
 
 const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
@@ -42,6 +43,7 @@ export function WorkspacePreviewDock({
   onModeChange,
   disabledEngineReasons,
   engineScores,
+  modelReviewCommands,
   renderGroups,
   compositeOverrideSummary,
   setViewerTarget,
@@ -63,12 +65,14 @@ export function WorkspacePreviewDock({
   onModeChange: (mode: Mode) => void;
   disabledEngineReasons?: Record<string, string>;
   engineScores?: Record<string, number>;
+  modelReviewCommands?: ReactNode;
   renderGroups: ReadonlyMap<string, unknown>;
   compositeOverrideSummary: GroupSummary | null;
   setViewerTarget: Dispatch<SetStateAction<WorkspaceViewerTarget>>;
 }) {
   const engineSettings = (
-        <EngineSettingsBar
+    <div className={styles.modelStrip}>
+        <div className={styles.modelSelector}><EngineSettingsBar
           engines={engines}
           engineId={engineId}
           onEngineChange={onEngineChange}
@@ -81,7 +85,9 @@ export function WorkspacePreviewDock({
           showModeBadge={false}
           controlPresentation="workspace"
           density="compact"
-        />
+        /></div>
+      {modelReviewCommands}
+    </div>
   );
   // A local illustration reserves the result location without mounting a media reader.
   if (!group && !isLoading) {

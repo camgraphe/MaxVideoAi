@@ -183,3 +183,40 @@ test('candidate stabilizes the actual video catalogue without modifying the sour
     assert.deepEqual(current, before, target.id);
   }
 });
+
+test('saved recovery uses its own schema and settings but compares against the live draft', () => {
+ const current = setup('veo-3-1'); current.form.audio = true;
+ const saved = setup('seedance-2-0', {inputAssets:{image_url:[asset('image_url','image','saved-frame')]}, prompt:'Saved prompt'});
+ saved.form.durationSec = 10; saved.form.durationOption = 10; saved.form.audio = false;
+ const candidate = prepareWorkspaceModelCandidate({engine:engine('seedance-2-0'),current,restoreSetup:saved,locale:'en'});
+ assert.equal(candidate.setup.form.durationSec,10); assert.equal(candidate.setup.form.audio,false);
+ assert.equal(candidate.keptReferences[0].asset.id,'saved-frame'); assert.equal(candidate.setup.prompt,'Saved prompt');
+ assert.equal(candidate.comparable,false); assert.ok(candidate.changes.some(c=>c.field==='audio' && c.before===true && c.after===false));
+ assert.ok(candidate.changes.some(c=>c.field==='prompt' && c.before===current.prompt));
+});
+
+test('saved recovery blocks reference loss under a changed or unknown schema role', () => {
+  const current = setup('veo-3-1');
+  const saved = setup('seedance-2-0', {inputAssets:{retired_reference_role:[asset('retired_reference_role','image','original')]}});
+  const before = structuredClone(saved);
+  const candidate = prepareWorkspaceModelCandidate({engine:engine('seedance-2-0'),current,restoreSetup:saved,locale:'en'});
+  assert.equal(candidate.applicable,false);
+  assert.ok(candidate.blockingReasons.some(reason=>reason.code==='invalid-reference' && reason.scope==='apply'));
+  assert.deepEqual(saved,before);
+});
+
+test('review presentation groups duplicate durations and labels real frame roles without changing candidate facts', async () => {
+  const {describeWorkspaceModelReferences,workspaceModelReviewChangeRows}=await import('../frontend/app/(core)/(workspace)/app/_lib/workspace-model-review-presentation');
+  const current=setup('seedance-2-5',{inputAssets:{image_url:[asset('image_url','image','start')],end_image_url:[asset('end_image_url','image','end')]}});
+  current.form.durationSec=6;current.form.durationOption=6;current.form.resolution='480p';
+  const candidate=prepareWorkspaceModelCandidate({engine:engine('veo-3-1'),current,locale:'fr'});
+  // Presentation accepts the observed live-catalogue adaptations, independently of static fixture durations.
+  candidate.changes.push(...(['effectiveDurationSec','durationSec','durationOption'] as const).map(field=>({field,before:6,after:4,reason:'adapted' as const})));
+  const before=structuredClone(candidate.changes);
+  const rows=workspaceModelReviewChangeRows(candidate,engine('seedance-2-5'),engine('veo-3-1'),'fr');
+  assert.equal(rows.filter(row=>row.before==='6s'&&row.after==='4s').length,1,JSON.stringify(rows));
+  const references=describeWorkspaceModelReferences(current,engine('seedance-2-5'),'fr');
+  assert.equal(references.find(row=>row.fieldId==='end_image_url')?.label,'Image de fin');
+  assert.equal(references.find(row=>row.fieldId==='image_url')?.label,'Image de début');
+  assert.deepEqual(candidate.changes,before);
+});
