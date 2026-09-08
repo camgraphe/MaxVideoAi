@@ -28,6 +28,17 @@ test('real Studio routes authenticate cookie and bearer owners against a fresh P
     const saved = await created.json();
     assert.equal(saved.project.userId, STUDIO_FIXTURE_OWNERS[0]);
     const cookieA = runtime.auth.cookiesFor(sessionA).map((item) => `${item.name}=${item.value}`).join('; ');
+    const chatEndpoint = `${runtime.origin}/api/studio/chat`;
+    assert.equal((await fetch(chatEndpoint, { method: 'POST' })).status, 401);
+    for (const headers of [{ cookie: cookieA }, { Authorization: `Bearer ${sessionA.access_token}` }]) {
+      const chat = await fetch(chatEndpoint, {
+        method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'openai', mode: 'mock', quote: { totalCents: 0 }, messages: [{ role: 'user', content: 'Fixture only' }] }),
+      });
+      assert.equal(chat.status, 503);
+      assert.equal(chat.headers.get('cache-control'), 'private, no-store');
+      assert.equal((await chat.json()).error, 'STUDIO_CHAT_LIVE_UNAVAILABLE');
+    }
     const listed = await fetch(endpoint, { headers: { cookie: cookieA } });
     assert.equal(listed.status, 200);
     assert.equal((await listed.json()).projects[0].id, saved.project.id);
