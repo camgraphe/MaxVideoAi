@@ -66,9 +66,14 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     const path = `/api/studio/projects/${montage.projectId}`;
     assert.equal((await fetch(`${runtime.origin}${path}`)).status, 401);
     assert.equal((await route(path, {}, ownerB.access_token)).status, 404);
-    const projectResponse = await route(path);
+    assert.equal((await route(`${path}/workspace`, {}, ownerB.access_token)).status, 404);
+    assert.equal((await fetch(`${runtime.origin}${path}/workspace`)).status, 401);
+    const projectResponse = await route(`${path}/workspace`);
     assert.equal(projectResponse.status, 200);
-    const project = (await projectResponse.json()).project;
+    const aggregate = await projectResponse.json();
+    const project = aggregate.project;
+    assert.equal(project.revision, 0);
+    assert.equal(project.persistenceMode, 'connected');
     const accessPayload = JSON.stringify({ assetIds: [STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a] });
     assert.equal((await fetch(`${runtime.origin}${path}/media-access`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: accessPayload })).status, 401);
     assert.equal((await route(`${path}/media-access`, { method: 'POST', body: accessPayload }, ownerB.access_token)).status, 404);
@@ -87,9 +92,7 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
       assert.equal(new URL(asset.url).searchParams.get('X-Amz-Expires'), '300');
       assert.equal((await validateStudioPrivateMediaRequest({ url: asset.url, method: 'GET', now: new Date(Date.parse(asset.expiresAt) + 1000) })).ok, false);
     }
-    const sequencesResponse = await route(`${path}/sequences`);
-    assert.equal(sequencesResponse.status, 200);
-    const sequences = (await sequencesResponse.json()).sequences;
+    const sequences = aggregate.sequences;
     assert.equal(sequences.length, 1);
     const snapshot = {
       name: 'Owner A edited this montage', canvasTemplateId: project.canvasTemplateId,
@@ -107,7 +110,9 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal(otherOwner.status, 404);
     for (const method of ['PUT', 'PATCH', 'DELETE']) {
       assert.equal((await route(path, { method, ...(method === 'DELETE' ? {} : { body: JSON.stringify({ name: 'Legacy writer must not win' }) }) })).status, 409);
+      assert.equal((await route(`${path}/sequences/${montage.sequenceId}`, { method, ...(method === 'DELETE' ? {} : { body: JSON.stringify({ name: 'Legacy sequence must not win' }) }) })).status, 409);
     }
+    assert.equal((await route(`${path}/sequences`, { method: 'POST', body: JSON.stringify({ id: 'legacy-sequence-cannot-enter', name: 'Legacy insertion' }) })).status, 409);
     assert.equal((await route('/api/studio/projects', { method: 'POST', body: JSON.stringify({ id: montage.projectId, name: 'Legacy upsert must not win' }) })).status, 409);
 
     const replay = await call(STUDIO_CONNECTED_MONTAGE_INPUT);
