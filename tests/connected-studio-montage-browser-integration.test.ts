@@ -95,6 +95,23 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       const firstVideo = page.locator('video[data-playback-item-id="montage-clip-01"]');
       await expect(firstVideo).toHaveCount(1);
       await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).readyState), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
+      await t.test('a newly created connected montage fits the whole measured image to its program frame', async () => {
+        const geometry = await firstVideo.evaluate((element) => {
+          const frame = element.closest('[data-testid="editor-program-frame"]')!.getBoundingClientRect();
+          const video = element.getBoundingClientRect();
+          return {
+            widthRatio: video.width / frame.width,
+            heightRatio: video.height / frame.height,
+            centerXOffset: Math.abs((video.left + video.right - frame.left - frame.right) / 2),
+            centerYOffset: Math.abs((video.top + video.bottom - frame.top - frame.bottom) / 2),
+            fit: getComputedStyle(element).objectFit,
+          };
+        });
+        assert.equal(geometry.fit, 'contain');
+        assert.ok(geometry.widthRatio >= 0.98 && geometry.widthRatio <= 1.02, `The matching 16:9 source must fill the frame width without crop: ${JSON.stringify(geometry)}`);
+        assert.ok(geometry.heightRatio >= 0.98 && geometry.heightRatio <= 1.02, `The matching 16:9 source must fill the frame height without crop: ${JSON.stringify(geometry)}`);
+        assert.ok(geometry.centerXOffset <= 1 && geometry.centerYOffset <= 1, 'The newly initialized image must remain centered.');
+      });
       // Keep this recursive browser-only callback outside tsx/esbuild's named-function
       // transform; injected helpers such as __name do not exist in the page realm.
       await page.evaluate(`(() => {

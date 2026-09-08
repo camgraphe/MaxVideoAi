@@ -55,6 +55,8 @@ Le test `editor-media-decoding.spec.ts`, revu à `e1c1e1848`, vérifie des frame
 
 Le navigateur privé réel a révélé un défaut de première présentation : la fixture320×180 n’occupe qu’une petite vignette au centre du programme1080p, puisque la commande reprend le `scale:1` historique. Ce n’est pas une régression de décodage. Examiner le helper existant de composition/Fit et initialiser les seuls NOUVEAUX montages connectés avec un ajustement conservant le ratio et l’image entière, commun à UI et MCP. Ne pas modifier les transforms des projets enregistrés ni la sémantique générale des insertions historiques. Si les dimensions mesurées manquent, conserver le fallback existant explicite ; aucune mesure/probe distante implicite. Ajouter un test pur de cette initialisation et une vérification de géométrie réelle du programme, tout en conservant les assertions de lecture native.
 
+Le sous-test géométrique racine de `connected-studio-montage-browser-integration.test.ts` le reproduit sur le produit figé18bf21cad : largeur0,166 et hauteur0,165 du cadre, bien centrées avec object-fit contain. Il exige0,98–1,02 pour cette source et cette séquence de même ratio16:9 ; ce n’est pas une règle de crop pour des ratios différents. RED63,47s au total, les cinq autres sous-tests et le parcours natif continuent de passer. Le parent conserve ce test ; aucun refocus ou redimensionnement artificiel côté harness.
+
 ## Qualification complète adaptée
 
 - Ciblés, puis TypeScript, lint, exposure, registre, suites Studio et contrats MCP.
