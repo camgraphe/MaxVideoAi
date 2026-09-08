@@ -9,6 +9,24 @@ test('real Studio routes authenticate cookie and bearer owners against a fresh P
   const runtime = await startStudioIntegrationRuntime({
     initializeDatabase: async (database) => {
       await database.pool.query(await readFile('neon/migrations/26_studio_projects.sql', 'utf8'));
+      // Minimal media-reader schema, seeded only after the runtime verifies its fresh local cluster.
+      await database.pool.query(`
+        CREATE TABLE app_jobs(job_id text PRIMARY KEY, user_id text, hidden boolean);
+        CREATE TABLE job_outputs(id text PRIMARY KEY, job_id text, user_id text, kind text, url text,
+          storage_url text, mime_type text, status text, metadata jsonb);
+        CREATE TABLE media_assets(id text PRIMARY KEY, public_id text, user_id text, kind text, url text,
+          mime_type text, status text, deleted_at timestamptz, source_job_id text, source_output_id text, metadata jsonb);
+      `);
+      await database.pool.query("INSERT INTO app_jobs VALUES ('fixture-job', $1, false)", [STUDIO_FIXTURE_OWNERS[0]]);
+      await database.pool.query(`INSERT INTO job_outputs VALUES
+        ('fixture-output', 'fixture-job', $1, 'video', 'https://cdn.maxvideoai.com/legacy.mp4',
+         'https://cdn.maxvideoai.com/original.mp4?signature=exact%2F&value=+', 'video/mp4', 'ready',
+         '{"mediaFacts":{"source":"probe","durationSec":6,"hasAudio":false}}');`, [STUDIO_FIXTURE_OWNERS[0]]);
+      await database.pool.query(`INSERT INTO media_assets VALUES
+        ('fixture-internal', $1, $2, 'video', 'https://cdn.maxvideoai.com/original.mp4?signature=exact%2F&value=+',
+         'video/mp4', 'ready', null, 'fixture-job', 'fixture-output',
+         '{"mediaFacts":{"source":"probe","durationSec":6,"hasAudio":false}}');`,
+      [`ma_${'a'.repeat(32)}`, STUDIO_FIXTURE_OWNERS[0]]);
     },
   });
   try {
@@ -28,6 +46,33 @@ test('real Studio routes authenticate cookie and bearer owners against a fresh P
     const saved = await created.json();
     assert.equal(saved.project.userId, STUDIO_FIXTURE_OWNERS[0]);
     const cookieA = runtime.auth.cookiesFor(sessionA).map((item) => `${item.name}=${item.value}`).join('; ');
+    const mediaEndpoint = `${runtime.origin}/api/studio/media/resolve`;
+    const assetRef = { type: 'asset', assetId: `ma_${'a'.repeat(32)}`, kind: 'video' };
+    const outputRef = { type: 'job-output', jobId: 'fixture-job', outputId: 'fixture-output', kind: 'video' };
+    const resolveMedia = (refs: unknown[], authorization?: string, cookie?: string) => fetch(mediaEndpoint, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...(authorization ? { Authorization: authorization } : {}), ...(cookie ? { cookie } : {}) },
+      body: JSON.stringify({ refs, userId: STUDIO_FIXTURE_OWNERS[0] }),
+    });
+    assert.equal((await resolveMedia([assetRef])).status, 401);
+    for (const [bearer, cookie] of [[`Bearer ${sessionA.access_token}`, undefined], [undefined, cookieA]]) {
+      const media = await resolveMedia([assetRef, outputRef], bearer, cookie);
+      assert.equal(media.status, 200, await media.clone().text());
+      assert.equal(media.headers.get('cache-control'), 'private, no-store');
+      const resolved = (await media.json()).assets;
+      assert.deepEqual(resolved.map((item: { ref: unknown }) => item.ref), [assetRef, outputRef]);
+      for (const item of resolved) {
+        assert.equal(item.url, 'https://cdn.maxvideoai.com/original.mp4?signature=exact%2F&value=+');
+        assert.deepEqual(item.mediaFacts, { source: 'probe', durationSec: 6, hasAudio: false });
+        assert.deepEqual(item.originalAccess, { type: 'external' });
+      }
+    }
+    assert.equal((await resolveMedia([assetRef], `Bearer ${sessionB.access_token}`)).status, 404);
+    assert.equal((await resolveMedia([{ ...outputRef, jobId: 'wrong-job' }], `Bearer ${sessionA.access_token}`)).status, 404);
+    assert.equal((await resolveMedia([{ ...assetRef, assetId: 'fixture-internal' }], `Bearer ${sessionA.access_token}`)).status, 404);
+    assert.equal((await resolveMedia([], `Bearer ${sessionA.access_token}`)).status, 400);
+    await runtime.database.pool.query("UPDATE app_jobs SET hidden = true WHERE job_id = 'fixture-job'");
+    for (const ref of [assetRef, outputRef]) assert.equal((await resolveMedia([ref], `Bearer ${sessionA.access_token}`)).status, 404);
+    await runtime.database.pool.query("UPDATE app_jobs SET hidden = false WHERE job_id = 'fixture-job'");
     const chatEndpoint = `${runtime.origin}/api/studio/chat`;
     assert.equal((await fetch(chatEndpoint, { method: 'POST' })).status, 401);
     for (const headers of [{ cookie: cookieA }, { Authorization: `Bearer ${sessionA.access_token}` }]) {

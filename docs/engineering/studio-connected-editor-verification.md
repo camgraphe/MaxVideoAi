@@ -47,6 +47,8 @@ PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" pnpm dlx node@22 frontend/node_
 
 Cette preuve concerne le socle de test et les routes historiques, **pas encore la commande de montage, le navigateur authentifié, l'idempotence, la concurrence autosave ni la lecture privée S3**. Elle prépare leur qualification sans accès distant.
 
+Le même parcours HTTP couvre désormais le résolveur médias Task3 au produit `bd7aeb3cb` : cookie et Bearer signés, références asset et job/output exactes, original signé conservé sans réécriture, durée mesurée et `hasAudio:false`, refus anonyme/intercompte/ID interne/mauvais job et job devenu caché. Les tables média sont des fixtures minimales créées seulement après vérification du nouveau cluster local ; ce n'est pas une migration complète de la bibliothèque. La suite augmentée passe1/1 (6,54s pour ce passage). Les URL médias ne sont pas téléchargées : cette preuve concerne l'autorisation HTTP et SQL, pas leur lecture.
+
 ## Référence visuelle et mesures comparables
 
 Le contrôle réel desktop 1440×900 et mobile 390×844, clair et sombre, constate des blocs trop miniaturisés, des actions non nommées et un débordement mobile. Les captures de référence sont des artefacts locaux de travail ; elles ne constituent pas une mesure de performance.
@@ -85,4 +87,6 @@ La revue indépendante a renforcé la causalité de cette preuve : exiger un **n
 
 ## Contrôles restant ouverts
 
-Parcours bibliothèque/récents avec identités canoniques, commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, polish de densité des blocs, qualification responsive du lot complet et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères ; les21tests MCP existants ciblés passent avant Task4, sans prétendre prouver une écriture.
+Le lot médias `bd7aeb3cb` est figé, avec rapport `28475b388` :429tests ciblés,45tests upload et11parcours navigateur réussis, TypeScript/exposure/diff sans erreur, lint sans erreur avec2warnings hérités. Les six contrats provisoirement en échec pendant Task3 passent dans ce dernier run. La revue indépendante reste en cours. Les parcours navigateur prouvent l'édition et la sauvegarde locale ; le test HTTP séparé ci-dessus qualifie le résolveur authentifié, sans confondre les deux environnements.
+
+Commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, polish de densité des blocs, qualification responsive du lot complet et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères ; les21tests MCP existants ciblés passent avant Task4, sans prétendre prouver une écriture.
