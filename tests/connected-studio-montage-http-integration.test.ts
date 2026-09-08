@@ -4,6 +4,7 @@ import { startStudioIntegrationRuntime } from './helpers/studio-integration-runt
 import { STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
 import { initializeStudioConnectedFixture, STUDIO_CONNECTED_ASSET_IDS, STUDIO_CONNECTED_MONTAGE_INPUT } from './helpers/studio-connected-fixture-data';
 import { postStudioMcpRequest, readStudioMcpResponse } from './helpers/studio-mcp-http-fixture';
+import { STUDIO_PRIVATE_MEDIA_KEYS, validateStudioPrivateMediaRequest } from './helpers/studio-private-storage-fixture';
 
 test('real MCP persists caller-ordered videos, enforces owner and idempotency, and coexists with revisioned UI saves', { timeout: 180_000 }, async () => {
   const runtime = await startStudioIntegrationRuntime({
@@ -68,6 +69,24 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     const projectResponse = await route(path);
     assert.equal(projectResponse.status, 200);
     const project = (await projectResponse.json()).project;
+    const accessPayload = JSON.stringify({ assetIds: [STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a] });
+    assert.equal((await fetch(`${runtime.origin}${path}/media-access`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: accessPayload })).status, 401);
+    assert.equal((await route(`${path}/media-access`, { method: 'POST', body: accessPayload }, ownerB.access_token)).status, 404);
+    assert.equal((await route(`${path}/media-access`, { method: 'POST', body: JSON.stringify({ assetIds: [STUDIO_CONNECTED_ASSET_IDS.foreign] }) })).status, 404);
+    assert.equal((await route(`${path}/media-access`, { method: 'POST', body: JSON.stringify({ assetIds: [STUDIO_CONNECTED_ASSET_IDS.unmeasured] }) })).status, 404, 'Even owned assets must belong to this project before access is issued.');
+    const accessResponse = await route(`${path}/media-access`, { method: 'POST', body: accessPayload });
+    assert.equal(accessResponse.status, 200, (await accessResponse.clone().text()).slice(0, 1000));
+    assert.equal(accessResponse.headers.get('cache-control'), 'private, no-store');
+    const access = await accessResponse.json();
+    assert.equal(access.projectId, montage.projectId);
+    assert.deepEqual(access.assets.map((asset: { assetId: string }) => asset.assetId), [STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a]);
+    for (const [index, asset] of access.assets.entries()) {
+      const verified = await validateStudioPrivateMediaRequest({ url: asset.url, method: 'GET' });
+      assert.equal(verified.ok, true, 'The production signer must issue a valid GET token for the private fixture.');
+      if (verified.ok) assert.equal(verified.key, index === 0 ? STUDIO_PRIVATE_MEDIA_KEYS.b : STUDIO_PRIVATE_MEDIA_KEYS.a);
+      assert.equal(new URL(asset.url).searchParams.get('X-Amz-Expires'), '300');
+      assert.equal((await validateStudioPrivateMediaRequest({ url: asset.url, method: 'GET', now: new Date(Date.parse(asset.expiresAt) + 1000) })).ok, false);
+    }
     const sequencesResponse = await route(`${path}/sequences`);
     assert.equal(sequencesResponse.status, 200);
     const sequences = (await sequencesResponse.json()).sequences;
