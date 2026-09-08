@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import { ReferenceLibraryPicker, type ReferencePickerSelection } from './ReferenceLibraryPicker.client';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -399,13 +398,7 @@ function AssetLibraryCollection({
                           {asset.kind === 'video' ? (
                             <>
                               {asset.thumbUrl ? (
-                                isPageLayout ? <LibraryImageThumbnail asset={{ ...asset, url: asset.thumbUrl }} className="absolute inset-0 h-full w-full object-cover" /> : <Image
-                                  src={asset.thumbUrl}
-                                  alt=""
-                                  fill
-                                  className="object-cover"
-                                  sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 390px"
-                                />
+                                <LibraryImageThumbnail asset={{ ...asset, url: asset.thumbUrl }} className="absolute inset-0 h-full w-full object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center bg-surface-2 text-text-secondary">
                                   <Film className="h-8 w-8" aria-hidden />
@@ -435,13 +428,7 @@ function AssetLibraryCollection({
                               {!isPageLayout ? <audio src={asset.url} controls preload="none" className="w-full max-w-[260px]" /> : null}
                             </div>
                           ) : (
-                            isPageLayout ? <LibraryImageThumbnail asset={asset} className="absolute inset-0 h-full w-full object-cover" /> : <Image
-                              src={asset.thumbUrl ?? asset.url}
-                              alt=""
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 390px"
-                            />
+                            <LibraryImageThumbnail asset={asset} className="absolute inset-0 h-full w-full object-cover" />
                           )}
                           {isPageLayout ? <button type="button" className="app-media-card-open absolute inset-0 z-10" onClick={() => setSelectedId(asset.id)} aria-label={actionCopy.title}><span>{actionCopy.actions} ↗</span></button> : assetHref ? (
                             <Link
