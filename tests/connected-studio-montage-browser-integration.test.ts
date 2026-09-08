@@ -37,6 +37,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
 
     const prepareFresh = async (browserSession = session) => {
       const owned = await browserFixture!.newContext(browserSession, { viewport: { width: 1440, height: 900 }, locale: 'en-US', colorScheme: 'light', reducedMotion: 'reduce' });
+      try {
       assert.deepEqual((await owned.context.storageState()).origins, [], 'No Studio draft, global localStorage or previous browser cache seeds this context.');
       // These unrelated account/consent readers are outside this minimal SQL fixture.
       // Project, sequence, workspace, media access, montage and Auth requests remain real.
@@ -63,6 +64,10 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         }
       });
       return { ...owned, errors, workspaceWrites };
+      } catch (error) {
+        await owned.close();
+        throw error;
+      }
     };
     const openFresh = async () => {
       const owned = await prepareFresh();
@@ -282,10 +287,39 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       assert.deepEqual(forbidden.errors, []);
     } finally { await forbidden.close(); }
 
+    await t.test('initial unresolved hydration never exposes a successful save-and-exit action', async () => {
+      const loading = await prepareFresh();
+      let releaseRead!: () => void;
+      const held = new Promise<void>((resolve) => { releaseRead = resolve; });
+      let markReadStarted!: () => void;
+      const started = new Promise<void>((resolve) => { markReadStarted = resolve; });
+      const initialWrites: string[] = [];
+      const projectEndpoint = `${runtime.browserOrigin}/api/studio/projects/${montage.projectId}`;
+      try {
+        loading.page.on('request', (request) => {
+          if (request.url().startsWith(projectEndpoint) && ['PUT', 'PATCH', 'POST'].includes(request.method())) initialWrites.push(request.method());
+        });
+        await loading.page.route(projectEndpoint, async (route) => {
+          if (route.request().method() === 'GET') { markReadStarted(); await held; }
+          await route.continue().catch(() => undefined);
+        });
+        await loading.page.goto(`${runtime.browserOrigin}${montage.studioUrl}`, { waitUntil: 'domcontentloaded' });
+        await started;
+        await expect(loading.page.getByRole('button', { name: 'Projects', exact: true })).toBeDisabled();
+        await loading.page.waitForTimeout(1_200);
+        assert.deepEqual(initialWrites, [], 'An unresolved project must not persist a transient starter through a legacy writer.');
+        releaseRead();
+        await expect(loading.page.locator('[data-timeline-item]')).toHaveCount(2);
+        await expect(loading.page.getByRole('button', { name: 'Projects', exact: true })).toBeEnabled();
+        assert.deepEqual(loading.errors, []);
+      } finally { releaseRead(); await loading.close(); }
+    });
+
     await t.test('cross-tab Auth identity changes purge the prior private montage without navigating the editor', async () => {
       for (const replacement of [sessionB, null]) {
         const switched = await openFresh();
         const peer = await switched.context.newPage();
+        let releaseScopeReply = () => {};
         try {
           const oldVideo = switched.page.locator('video[data-playback-item-id="montage-clip-01"]');
           await expect(oldVideo).toHaveCount(1);
@@ -302,6 +336,21 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
           void ownerDenial?.catch(() => undefined);
           await switched.page.evaluate(() => { (window as Window & { studioAuthPageMarker?: string }).studioAuthPageMarker = 'same-editor-document'; });
           await peer.goto(`${runtime.browserOrigin}/api/legal/cookies/version`);
+          if (replacement) {
+            let markSaveStarted!: () => void;
+            const started = new Promise<void>((resolve) => { markSaveStarted = resolve; });
+            const held = new Promise<void>((resolve) => { releaseScopeReply = resolve; });
+            await switched.page.route(`${projectEndpoint}/workspace`, async (route) => {
+              if (route.request().method() !== 'PUT') { await route.continue(); return; }
+              markSaveStarted();
+              await held;
+              await route.fulfill({ status: 503, json: { ok: false, error: 'CONTROLLED_SCOPE_CHANGE_SAVE' } }).catch(() => undefined);
+            });
+            // No server ACK exists while this explicit exit is pending. Replacing
+            // the account must cancel the wait, never reinterpret it as Saved.
+            await switched.page.getByRole('button', { name: 'Projects', exact: true }).click();
+            await started;
+          }
           await switched.context.clearCookies();
           if (replacement) {
             await switched.context.addCookies(runtime.auth.cookiesFor(replacement).map((cookie) => ({ ...cookie, url: runtime.browserOrigin })));
@@ -336,7 +385,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         } catch (error) {
           await switched.page.screenshot({ path: `output/playwright/studio-connected/auth-${replacement ? 'switch' : 'signout'}-failure.png`, fullPage: true }).catch(() => undefined);
           throw error;
-        } finally { await switched.close(); }
+        } finally { releaseScopeReply(); await switched.close(); }
       }
     });
 
