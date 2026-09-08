@@ -3,8 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useId, useState } from 'react';
 import { TOOLBOX, type ToolMediaKind } from '@/lib/toolbox/catalogue';
-import { ToolboxScene } from './ToolboxScene';
-import { isQuickToolArtId, QUICK_TOOL_ART } from './toolbox-art';
+import { isQuickToolArtId, QUICK_TOOL_ART, WORKSHOP_ART } from './toolbox-art';
 import { toolboxCopy, type ToolboxVisualId } from './toolbox-copy';
 import styles from './tools-catalogue.module.css';
 
@@ -44,8 +43,8 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
       <ul className={styles.workshopGrid}>{workshops.map(tool => {
         const text = copy.tools[tool.id as ToolboxVisualId];
         return <li key={tool.id}><Link prefetch={false} href={tool.href} className={styles.workshop}>
-          <div className={`${styles.workshopArt} ${tool.id === 'angle' ? styles.angleArt : ''}`}>
-            {tool.id === 'storyboard' ? <ToolboxScene kind="storyboard" /> : tool.id === 'character-builder' ? <Image src="/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp" alt="" fill sizes="(max-width: 700px) 90vw, 30vw" loading="lazy" /> : <><div className={styles.angleImage}><Image src="/assets/tools/angle-orbit-product-source.webp" alt="" fill sizes="(max-width: 700px) 45vw, 15vw" loading="lazy" /></div><div className={styles.angleImage}><Image src="/assets/tools/angle-orbit-product-45.webp" alt="" fill sizes="(max-width: 700px) 45vw, 15vw" loading="lazy" /></div><span className={styles.orbit} aria-hidden="true">↻</span></>}
+          <div className={styles.workshopArt}>
+            <Image src={WORKSHOP_ART[tool.id as keyof typeof WORKSHOP_ART]} alt="" fill sizes="(max-width: 700px) 90vw, 30vw" loading="lazy" />
           </div>
           <div className={styles.workshopCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}</h3><p>{text.body}</p></div>
         </Link></li>;

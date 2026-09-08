@@ -31,3 +31,17 @@ test('every quick tool has its own production-ready artwork', async () => {
     assert.ok(statSync(diskPath).size > 20_000, `${assetPath} should be a finished raster asset`);
   }
 });
+
+test('every workshop has dedicated production artwork', async () => {
+  const { WORKSHOP_ART } = await import('../frontend/src/components/tools/toolbox-art.ts');
+  assert.deepEqual(Object.keys(WORKSHOP_ART).sort(), ['angle', 'character-builder', 'storyboard']);
+
+  const assetPaths = Object.values(WORKSHOP_ART) as string[];
+  assert.equal(new Set(assetPaths).size, 3, 'workshops should not share generic artwork');
+  for (const assetPath of assetPaths) {
+    assert.match(assetPath, /^\/assets\/tools\/catalogue\/workshop-[a-z-]+\.webp$/);
+    const diskPath = join(root, 'frontend/public', assetPath);
+    assert.equal(existsSync(diskPath), true, `${assetPath} should be shipped with the app`);
+    assert.ok(statSync(diskPath).size > 20_000, `${assetPath} should be a finished raster asset`);
+  }
+});

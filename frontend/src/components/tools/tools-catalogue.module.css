@@ -26,10 +26,6 @@
 .workshopArt { position: relative; display: flex; aspect-ratio: 16 / 10; overflow: hidden; background: #d6ccba; border-radius: 12px; }
 .workshopArt img { object-fit: cover; transition: transform 180ms; }
 .workshop:hover img { transform: scale(1.025); }
-.angleArt { background: #ededdf; }
-.angleImage { flex: 1; position: relative; min-width: 0; }
-.angleImage img { object-fit: contain; }
-.orbit { position: absolute; bottom: 18px; left: calc(50% - 22px); width: 44px; height: 44px; display: grid; place-content: center; font-size: 28px; color: #28382e; background: #f9f5e9df; border-radius: 50%; }
 .workshopCaption { padding: 15px 2px; }
 .workshopCaption h3 { display: flex; justify-content: space-between; gap: 10px; font-size: 21px; font-weight: 550; letter-spacing: -.035em; margin-top: 7px; }
 .workshopCaption p { margin-top: 5px; font-size: 12px; line-height: 1.5; color: var(--app-muted, var(--text-secondary)); }

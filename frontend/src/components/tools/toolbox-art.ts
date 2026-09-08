@@ -8,6 +8,12 @@ export const QUICK_TOOL_ART = {
   'smooth-motion': '/assets/tools/catalogue/smooth-motion.webp',
 } as const;
 
+export const WORKSHOP_ART = {
+  'character-builder': '/assets/tools/catalogue/workshop-character-builder.webp',
+  storyboard: '/assets/tools/catalogue/workshop-storyboard.webp',
+  angle: '/assets/tools/catalogue/workshop-angle.webp',
+} as const;
+
 export type QuickToolArtId = keyof typeof QUICK_TOOL_ART;
 
 export function isQuickToolArtId(value: string): value is QuickToolArtId {
