@@ -49,6 +49,21 @@ test('intent drafts retain references and lyrics across navigation, isolate acco
   } finally { await env.close(); }
 });
 
+test('long music drafts saved before the model picker hydrate as Lyria Pro', async () => {
+  const env = environment();
+  let state!: ReturnType<typeof useAudioCreationDraft>;
+  function Fixture() { state = useAudioCreationDraft('a', 'music'); return null; }
+  try {
+    localStorage.setItem('maxvideoai.audio.creation.v1:a', JSON.stringify({
+      version: 1,
+      drafts: { music: { ...newAudioDraft('music'), durationSec: 120, musicModel: 'clip' } },
+    }));
+    await act(async () => env.root.render(React.createElement(Fixture)));
+    assert.equal(state.draft.durationSec, 120);
+    assert.equal(state.draft.musicModel, 'pro');
+  } finally { await env.close(); }
+});
+
 test('edited and account-switched quotes cannot be displayed or submitted after late responses', async () => {
   const requests: Array<{ body: any; resolve: (response: Response) => void }> = [];
   const env = environment(async (_input, init) => new Promise<Response>(resolve => requests.push({ body: JSON.parse(String(init?.body)), resolve })));
@@ -84,7 +99,8 @@ test('intent request binds the actual model behind the human voice choice and re
   assert.equal(reference.voiceModel, 'seed');
   assert.equal(reference.minimaxVoiceId, undefined);
   assert.equal(reference.voiceSampleUrl, 'https://fixture.example/original.wav');
-  assert.equal(buildAudioCreationRequest('music', { ...draft, durationSec: 120 }, 'fr').musicModel, 'pro');
+  assert.equal(buildAudioCreationRequest('music', { ...draft, durationSec: 120, musicModel: 'pro' }, 'fr').musicModel, 'pro');
+  assert.equal(buildAudioCreationRequest('music', { ...draft, durationSec: 30, musicModel: 'pro' }, 'fr').musicModel, 'pro');
 });
 
 test('expired quote is removed and refreshed without reusing the confirmed amount', async () => {

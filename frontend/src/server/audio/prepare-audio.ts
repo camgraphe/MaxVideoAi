@@ -27,7 +27,6 @@ export function assertExpectedAudioQuote(expected: AudioGenerateRequestBody['exp
 
 export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: string, dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies; env?: NodeJS.ProcessEnv } = {}) {
   const normalized = validateAudioGenerateRequest(body);
-  assertAudioProviderConfigured(normalized, dependencies.env);
   const packConfig = getAudioPackConfig(normalized.pack);
   const sourceJob =
     normalized.sourceJobId

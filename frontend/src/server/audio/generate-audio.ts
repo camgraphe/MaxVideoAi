@@ -6,7 +6,7 @@ import {
   type AudioGenerateRequestBody,
   type AudioGenerateResponse,
 } from '@/lib/audio-generation';
-import { prepareAudioRun, assertExpectedAudioQuote } from './prepare-audio';
+import { prepareAudioRun, assertAudioProviderConfigured, assertExpectedAudioQuote } from './prepare-audio';
 import { generateSongTrack, generateAmbienceTrack, generateMinimaxVoiceTrack } from './providers/standalone';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -57,6 +57,7 @@ export async function generateAudioRun(params: {
 
   const prepared = await prepareAudioRun(params.body, params.userId);
   assertExpectedAudioQuote(params.body.expectedQuote, { inputKey: prepared.inputKey, pricing: prepared.pricingSnapshot });
+  assertAudioProviderConfigured(prepared.normalized);
   const reservation = buildAudioRunReservation(prepared, params.userId);
   await createInitialAudioJob(reservation.initialJob);
   return executeReservedAudioRun(reservation.execution);

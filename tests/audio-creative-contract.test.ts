@@ -3,7 +3,7 @@ import test from 'node:test';
 import { validateAudioGenerateRequest } from '../frontend/src/server/audio/audio-generate-validation';
 import { buildAudioVendorCostFacts } from '../frontend/src/lib/audio-generation';
 import { generateSongTrack, generateAmbienceTrack, generateMinimaxVoiceTrack } from '../frontend/src/server/audio/providers/standalone';
-import { assertExpectedAudioQuote, audioQuoteInputKey, assertAudioProviderConfigured } from '../frontend/src/server/audio/prepare-audio';
+import { assertExpectedAudioQuote, audioQuoteInputKey, assertAudioProviderConfigured, prepareAudioRun } from '../frontend/src/server/audio/prepare-audio';
 
 test('song lyrics keep structure and never become a narration script or exact duration promise', () => {
   const lyrics = '[Verse]\nFirst line\nSecond line';
@@ -54,6 +54,32 @@ test('quote identity covers account and complete normalized settings; amount and
   assert.doesNotThrow(() => assertExpectedAudioQuote(expected, actual, 1000));
   for (const patch of [{ inputKey: 'old' }, { totalCents: 24 }, { currency: 'EUR' }, { expiresAt: 999 }]) assert.throws(() => assertExpectedAudioQuote({ ...expected, ...patch }, actual, 1000));
   assert.throws(() => assertAudioProviderConfigured(normalized, {}));
+});
+
+test('audio quotes remain available when provider credentials are temporarily unavailable', async () => {
+  const requests = [
+    { pack: 'voice_only' as const, script: 'A clear voice introduces the next scene.', voiceModel: 'minimax' as const },
+    { pack: 'music_only' as const, prompt: 'Warm analog synths with a cinematic build', mood: 'dreamy' as const, durationSec: 120, musicModel: 'pro' as const, musicBpm: 110 as const },
+    { pack: 'song' as const, prompt: 'Intimate acoustic folk', lyrics: '[Verse]\nCarry the morning home' },
+    { pack: 'sfx_only' as const, prompt: 'A heavy metal door closes with a short echo.', durationSec: 8 },
+    { pack: 'ambience_only' as const, prompt: 'Steady rain on leaves with distant wind.', durationSec: 60 },
+  ];
+  const pricingPolicy = { loadOverrides: async () => ({ status: 'loaded' as const, rules: [], routingRules: [] }) };
+
+  for (const request of requests) {
+    const prepared = await prepareAudioRun(request, 'user-a', { env: {}, pricingPolicy });
+    assert.ok(prepared.pricingSnapshot.totalCents > 0, request.pack);
+    assert.throws(() => assertAudioProviderConfigured(prepared.normalized, {}), /unavailable/i);
+  }
+});
+
+test('generation checks provider readiness before reserving an audio charge', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const source = await readFile('frontend/src/server/audio/generate-audio.ts', 'utf8');
+  const readiness = source.indexOf('assertAudioProviderConfigured(prepared.normalized)');
+  const reservation = source.indexOf('buildAudioRunReservation(prepared, params.userId)');
+  const jobWrite = source.indexOf('createInitialAudioJob(reservation.initialJob)');
+  assert.ok(readiness >= 0 && readiness < reservation && reservation < jobWrite);
 });
 
 test('standalone persistence uploads the exact original bytes and records probe duration', async () => {

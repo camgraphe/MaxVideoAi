@@ -14,16 +14,18 @@ export function AudioCreationEditor({ intent, draft, copy, onChange, onFile, upl
   const title = spoken ? copy.script : song || intent === 'music' ? copy.style : copy.prompt;
   const hint = spoken ? copy.scriptHint : song ? copy.styleHint : copy.promptHint;
   const max = spoken ? 5000 : 2000;
+  const modelName = intent === 'voice'
+    ? draft.reference || draft.voiceModel === 'seed' ? copy.models.voiceSeed : copy.models.voiceMinimax
+    : intent === 'song' ? copy.models.song
+      : intent === 'sfx' ? copy.models.sfx
+        : copy.models.ambience;
   return <div className={styles.editor}>
     <div className={styles.modelRow}>
       <strong>{copy.intents[intent][0]}</strong>
-      <div className={styles.quality} aria-label={copy.quality}>
-        <button type="button" aria-pressed="true">Standard</button>
-        <details className={styles.qualityHelp}>
-          <summary aria-label={`${copy.highQuality} · ${copy.soon}`} aria-describedby="audio-quality-pending">{copy.highQuality}<span>{copy.soon}</span></summary>
-          <p id="audio-quality-pending">{copy.qualityPending}</p>
-        </details>
-      </div>
+      {intent === 'music' ? <div className={styles.quality} aria-label={copy.model}>
+        <button type="button" aria-pressed={draft.musicModel === 'clip'} onClick={() => onChange({ musicModel: 'clip', durationSec: 30 })}>{copy.musicClip}<span>{copy.musicClipMeta}</span></button>
+        <button type="button" aria-pressed={draft.musicModel === 'pro'} onClick={() => onChange({ musicModel: 'pro' })}>{copy.musicPro}<span>{copy.musicProMeta}</span></button>
+      </div> : <div className={styles.modelIdentity}><span>{copy.model}</span><strong>{modelName}</strong></div>}
     </div>
     <div className={styles.writing}>
       <div className={styles.fieldHeading}><label htmlFor="audio-creation-text">{title}</label><span>{draft[key].length}/{max}</span></div>
@@ -45,8 +47,8 @@ export function AudioCreationEditor({ intent, draft, copy, onChange, onFile, upl
         <label>{copy.language}<select value={draft.language} onChange={event => onChange({ language: event.target.value })}>
           <option value="auto">{copy.auto}</option><option value="english">English</option><option value="french">Français</option><option value="spanish">Español</option><option value="german">Deutsch</option>
         </select></label>
-      </> : song ? <p className={styles.durationNote}>{copy.fullSong}</p> : <label>{copy.duration}<select value={draft.durationSec} onChange={event => onChange({ durationSec: Number(event.target.value) })}>
-        {(intent === 'sfx' ? [3, 5, 8, 10, 15, 20, 30] : intent === 'music' ? [30, 45, 60, 90, 120, 180, 184] : [10, 15, 30, 45, 60, 90, 120, 180, 184]).map(value => <option key={value} value={value}>{value} s</option>)}
+      </> : song ? <p className={styles.durationNote}>{copy.fullSong}</p> : <label>{copy.duration}<select value={draft.durationSec} onChange={event => { const durationSec = Number(event.target.value); onChange({ durationSec, ...(intent === 'music' && durationSec > 30 ? { musicModel: 'pro' as const } : {}) }); }}>
+        {(intent === 'sfx' ? [3, 5, 8, 10, 15, 20, 30] : intent === 'music' ? draft.musicModel === 'clip' ? [30] : [30, 45, 60, 90, 120, 180, 184] : [10, 15, 30, 45, 60, 90, 120, 180, 184]).map(value => <option key={value} value={value}>{value} s</option>)}
       </select></label>}
       {intent === 'music' ? <label>{copy.tempo}<select value={draft.bpm} onChange={event => onChange({ bpm: Number(event.target.value) })}>{[70, 90, 110, 130, 150].map(bpm => <option key={bpm} value={bpm}>{bpm} BPM</option>)}</select></label> : null}
     </div>

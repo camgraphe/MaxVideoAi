@@ -32,7 +32,7 @@ export function buildAudioCreationRequest(intent: AudioCreationIntent, draft: Au
     }),
     seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language };
   if (intent === 'song') return { ...base, prompt: draft.prompt.trim(), lyrics: draft.lyrics.trim() };
-  if (intent === 'music') return { ...base, prompt: draft.prompt.trim(), durationSec: draft.durationSec, musicModel: draft.durationSec <= 30 ? 'clip' : 'pro', musicBpm: draft.bpm, mood: draft.mood };
+  if (intent === 'music') return { ...base, prompt: draft.prompt.trim(), durationSec: draft.durationSec, musicModel: draft.musicModel, musicBpm: draft.bpm, mood: draft.mood };
   return { ...base, prompt: draft.prompt.trim(), durationSec: draft.durationSec };
 }
 export function isAudioDraftReady(intent: AudioCreationIntent, draft: AudioCreationDraft) {
