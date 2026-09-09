@@ -12,6 +12,7 @@ import { JSDOM } from 'jsdom';
 import { newAudioDraft } from '../frontend/src/lib/audio-creation';
 
 const require = createRequire(import.meta.url);
+const frontendRequire = createRequire(resolve('frontend/package.json'));
 const mocks: Record<string, string> = {
   'next/navigation': `import {useSyncExternalStore} from 'react';const subscribe=fn=>{window.addEventListener('popstate',fn);window.addEventListener('audio-history',fn);return()=>{window.removeEventListener('popstate',fn);window.removeEventListener('audio-history',fn)}};export const useSearchParams=()=>new URLSearchParams(useSyncExternalStore(subscribe,()=>window.location.search));export const usePathname=()=>'/app/audio'; const router={replace(){throw Error('Unexpected RSC navigation')},push(){throw Error('Unexpected RSC navigation')}};export const useRouter=()=>router;`,
   './AudioWorkspace': `export default ()=>null;`,
@@ -26,7 +27,15 @@ test('actual workspace handles local intent history and retires stale asynchrono
   const directory = await mkdtemp(join(tmpdir(), 'audio-workspace-test-'));
   const output = join(directory, 'workspace.cjs');
   const compiled = await build({ entryPoints: [resolve('frontend/app/(core)/(workspace)/app/audio/AudioCreationWorkspace.tsx')], outfile: output, bundle: true, write: false, platform: 'node', format: 'cjs', jsx: 'automatic', tsconfig: 'frontend/tsconfig.json', packages: 'external', loader: { '.css': 'empty', '.module.css': 'empty' }, plugins: [{name:'audio-fixture',setup(builder) {
-    builder.onResolve({filter:/.*/}, args => args.path in mocks ? { path: args.path, namespace:'fixture' } : args.path === 'react' || args.path.startsWith('react/') ? { path: require.resolve(args.path), external: true } : undefined);
+    builder.onResolve({filter:/.*/}, args => {
+      if (args.path in mocks) return { path: args.path, namespace: 'fixture' };
+      if (args.path === 'react' || args.path.startsWith('react/')) return { path: require.resolve(args.path), external: true };
+      // The bundle lives in /tmp, outside pnpm's package resolution tree.
+      if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/')) {
+        return { path: frontendRequire.resolve(args.path), external: true };
+      }
+      return undefined;
+    });
     builder.onLoad({filter:/.*/,namespace:'fixture'},args=>({contents:mocks[args.path],loader:'js'}));
   }}] });
   await writeFile(output, compiled.outputFiles[0].contents);
