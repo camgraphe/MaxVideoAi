@@ -148,64 +148,30 @@ test.describe('admin critical flows', () => {
     assertNoClientErrors(errors);
   });
 
-  test('membership tiers preview and cancel without applying', async ({ page }) => {
+  test('retired membership tiers remain readable without editing or applying changes', async ({ page }) => {
     const errors = trackClientErrors(page);
-    let confirmRequests = 0;
+    const mutations: string[] = [];
     page.on('request', (request) => {
-      if (request.url().includes('/api/admin/membership/confirm') && request.method() === 'POST') {
-        confirmRequests += 1;
+      if (request.url().includes('/api/admin/membership') && !['GET', 'HEAD', 'OPTIONS'].includes(request.method())) {
+        mutations.push(request.method());
       }
     });
 
     await openAdminRoute(page, '/admin/membership');
+    await expect(page.getByRole('heading', { level: 1, name: 'Membership history' })).toBeVisible();
+    await expect(page.getByText('Membership discounts are retired.', { exact: false })).toBeVisible();
     const membershipState = await waitForMembershipState(page);
-    if (membershipState === 'timeout') {
-      throw new Error('Timed out waiting for the membership tier inventory to render.');
-    }
-    if (membershipState === 'unavailable') {
-      test.skip(true, 'requires configured membership database access');
-    }
-    if (membershipState === 'empty') {
-      test.skip(true, 'requires canonical membership tier data');
-    }
-
+    expect(membershipState).not.toBe('timeout');
     const inventory = page.getByTestId('membership-tier-inventory');
-    const discountInputs = ['member', 'plus', 'pro'].map((tier) =>
-      inventory.getByLabel(`${tier} discount fraction (0–1)`)
-    );
-    for (const input of discountInputs) {
-      const current = Number(await input.inputValue());
-      await input.fill(String(current + 0.01));
+    if (membershipState === 'rows') {
+      await expect(inventory.locator('dl')).toHaveCount(3);
+      await expect(inventory).toContainText('Historical discount:');
     }
-
-    let previewRequests = 0;
-    let releasePreview!: () => void;
-    const previewGate = new Promise<void>((resolve) => {
-      releasePreview = resolve;
-    });
-    await page.route('**/api/admin/membership/preview', async (route) => {
-      if (route.request().method() === 'POST') previewRequests += 1;
-      await previewGate;
-      await route.continue();
-    });
-
-    await page.getByRole('button', { name: 'Preview all tier changes' }).click();
-    try {
-      for (const input of discountInputs) await expect(input).toBeDisabled();
-      await expect(page.getByRole('button', { name: 'Previewing…' })).toBeDisabled();
-    } finally {
-      releasePreview();
-    }
-
-    const dialog = page.getByRole('dialog', { name: /update/i });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
-    expect(previewRequests).toBe(1);
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await expect(dialog).toBeHidden();
-    for (const input of discountInputs) await expect(input).toBeEnabled();
-    expect(confirmRequests).toBe(0);
-
+    await expect(inventory.locator('input, select, textarea')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /preview all tier changes|confirm and apply|rollback/i })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeEnabled();
+    expect(mutations).toEqual([]);
     assertNoClientErrors(errors);
   });
 
@@ -294,7 +260,7 @@ async function waitForMembershipState(page: Page) {
     if (await page.getByText(/membership database is unavailable/i).first().isVisible().catch(() => false)) {
       return 'unavailable' as const;
     }
-    if ((await inventory.locator('fieldset').count()) === 3) return 'rows' as const;
+    if ((await inventory.locator('dl').count()) === 3) return 'rows' as const;
     if (await page.getByText('No membership inventory is available.').isVisible().catch(() => false)) {
       return 'empty' as const;
     }
