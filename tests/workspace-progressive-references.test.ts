@@ -47,14 +47,17 @@ test('focused popup preserves format guidance and compact upload/library targets
   assert.match(slot, /aria-label=\{`\$\{copy\.library\} · \$\{slotLabel\}`\}/);
 });
 
-test('workspace Options is a separate entry and stale video quotes are suppressed', () => {
+test('workspace Options appears only for useful advanced controls and stale video quotes are suppressed', () => {
   const composer = readFileSync('frontend/components/Composer.tsx', 'utf8');
   const video = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx', 'utf8');
   const image = readFileSync('frontend/app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface.tsx', 'utf8');
   assert.match(composer, /price == null \|\| isPricing \|\| preflight\?\.ok === false/);
   assert.match(video, /isPricing=\{isPricing\}/);
-  assert.match(video, /trailingControl=\{<WorkspaceOptionsButton/);
-  assert.match(video, /advancedOpen=\{optionsOpen\}/);
+  assert.match(video, /const showOptionsControl = Boolean\(/);
+  assert.match(video, /selectedEngine\.params\?\.cfg_scale/);
+  assert.match(video, /advancedFields\.length/);
+  assert.match(video, /advancedOpen=\{showOptionsControl && optionsOpen\}/);
+  assert.match(video, /optionsControl=\{showOptionsControl \? <WorkspaceOptionsButton/);
   assert.match(image, /<ImageAdvancedSettings\s+open=\{optionsOpen\}/);
   assert.match(composer, /htmlFor=\{promptId\}/);
   assert.match(composer, /<textarea\s+id=\{promptId\}/);

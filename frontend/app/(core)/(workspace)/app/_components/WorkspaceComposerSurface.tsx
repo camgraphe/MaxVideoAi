@@ -395,6 +395,18 @@ export function WorkspaceComposerSurface({
   const durationManagedLabel = `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
   const audioControlNote = voiceControlEnabled ? 'Audio locked by voice control' : undefined;
   const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
+  const showOptionsControl = Boolean(
+    showLoopControl ||
+    supportsKlingV3Controls ||
+    supportsKlingV3VoiceControl ||
+    isSeedance ||
+    showSafetyCheckerControl ||
+    selectedEngine.params?.promptStrength ||
+    selectedEngine.params?.guidance ||
+    (submissionMode === 'i2v' && selectedEngine.params?.initInfluence) ||
+    selectedEngine.params?.cfg_scale ||
+    advancedFields.length
+  );
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
@@ -556,7 +568,7 @@ export function WorkspaceComposerSurface({
               />
             ) : null}
             <SettingsControls
-              advancedOpen={optionsOpen}
+              advancedOpen={showOptionsControl && optionsOpen}
               engine={selectedEngine}
               caps={capability}
               durationSec={durationSec}
@@ -608,7 +620,7 @@ export function WorkspaceComposerSurface({
             />
           </>
         }
-        optionsControl={<WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} />}
+        optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
         settingsBar={
           <CoreSettingsBar
             density="workspace"

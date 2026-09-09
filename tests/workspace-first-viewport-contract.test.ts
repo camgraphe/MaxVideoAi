@@ -72,7 +72,7 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex gap-3/);
   assert.match(composerSource, /\{settingsBar\}[\s\S]*<\/div>[\s\S]*\{optionsControl\}/, 'Options participates in the toolbar layout');
   assert.match(composerSource, /workspaceDensity \? 'app-composer-submit' : 'lg:items-end'/);
-  assert.match(videoComposerSource, /optionsControl=\{<WorkspaceOptionsButton[\s\S]*<CoreSettingsBar/);
+  assert.match(videoComposerSource, /optionsControl=\{showOptionsControl \? <WorkspaceOptionsButton[\s\S]*<CoreSettingsBar/);
   assert.match(imageSurfaceSource, /optionsControl=[\s\S]*<ImageSettingsBar/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
