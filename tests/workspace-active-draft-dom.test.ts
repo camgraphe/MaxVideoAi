@@ -104,7 +104,7 @@ async function mount({
     const route = useWorkspaceRouteFormState(
       confirmed ?? (authStatus === 'loggedOut' ? 'public' : null),
     );
-    const assets = useWorkspaceAssetState(confirmed);
+    const assets = useWorkspaceAssetState(confirmed ?? (authStatus === 'loggedOut' ? 'public' : null));
     const [hydratedForScope, setHydratedForScope] = React.useState<string | null>(null);
     const preserveStoredDraftRef = React.useRef(false),
       hasStoredFormRef = React.useRef(false);
@@ -182,7 +182,7 @@ async function mount({
     const videoSettings = useWorkspaceVideoSettings({
       ...route,
       ...assets,
-      accountScope: confirmed,
+      accountScope: confirmed ?? (authStatus === 'loggedOut' ? 'public' : null),
       activeDraftReady: hydration.ready,
       hasActiveSetup: hydration.hasActiveSetup,
       draftRevision: hydration.revision,
@@ -959,3 +959,57 @@ test('ready temporary preview is normalized to its valid original, without persi
     await view.close();
   }
 });
+
+for (const initialAuth of ['authed', 'loggedOut']) {
+  test(`gallery recall applies full settings after immediate tile commit (${initialAuth})`, async () => {
+    const view = await mount({ initialAuth });
+    try {
+      await act(async () => {
+        view.current.videoSettings.applyVideoSettingsFromTile({
+          id: 'job_gallery', engineId: 'kling-3-pro', prompt: 'Gallery prompt',
+          durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
+        });
+        void view.current.videoSettings.hydrateVideoSettingsFromJob('job_gallery');
+      });
+      assert.equal(view.current.prompt, 'Gallery prompt');
+      assert.equal(view.current.form.engineId, 'kling-3-pro');
+      await act(async () => view.requests.at(-1)!.resolve(new Response(JSON.stringify({
+        ok: true, settingsSnapshot: {
+          schemaVersion: 1, surface: 'video', engineId: 'kling-3-pro', inputMode: 't2v',
+          prompt: 'Full gallery prompt', core: { durationSec: 10, resolution: '1080p', audio: true },
+          refs: { inputs: [{ slotId: 'image_url', url: 'https://assets.test/frame.jpg', kind: 'image' }] },
+        },
+      }))));
+      assert.equal(view.current.prompt, 'Full gallery prompt');
+      assert.equal(view.current.form.durationSec, 10);
+      assert.equal(view.current.form.resolution, '1080p');
+      assert.equal(view.current.form.audio, true);
+      assert.ok(view.current.inputAssets.image_url?.length);
+    } finally { await view.close(); }
+  });
+}
+
+for (const departure of ['edit', 'selection', 'account'] as const) {
+  test(`gallery detail response cannot overwrite newer ${departure}`, async () => {
+    const view = await mount();
+    try {
+      const tile = { id: 'job_old', engineId: 'kling-3-pro', prompt: 'Old tile', durationSec: 5, aspectRatio: '16:9', iterationCount: 1 };
+      await act(async () => {
+        view.current.videoSettings.applyVideoSettingsFromTile(tile);
+        void view.current.videoSettings.hydrateVideoSettingsFromJob(tile.id);
+      });
+      const oldRequest = view.requests.at(-1)!;
+      if (departure === 'edit') await act(async () => view.current.setPrompt('My new edit'));
+      if (departure === 'account') await view.auth('authed', 'b');
+      if (departure === 'selection') await act(async () => {
+        view.current.videoSettings.applyVideoSettingsFromTile({ ...tile, id: 'job_new', prompt: 'New selection' });
+        void view.current.videoSettings.hydrateVideoSettingsFromJob('job_new');
+      });
+      const expected = view.current.prompt;
+      await act(async () => oldRequest.resolve(new Response(JSON.stringify({
+        ok: true, settingsSnapshot: { schemaVersion: 1, surface: 'video', engineId: 'kling-3-pro', inputMode: 't2v', prompt: 'Stale details' },
+      }))));
+      assert.equal(view.current.prompt, expected);
+    } finally { await view.close(); }
+  });
+}

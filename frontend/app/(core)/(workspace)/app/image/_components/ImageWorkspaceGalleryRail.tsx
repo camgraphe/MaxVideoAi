@@ -6,6 +6,8 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import { GalleryRailSkeleton } from '../../_components/WorkspaceBootSkeletons';
+import { useInfiniteJobs } from '@/lib/api';
+import { StarterMediaShelf } from '@/components/starters/StarterMediaShelf.client';
 
 const GalleryRail = dynamic<GalleryRailProps>(
   () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
@@ -22,6 +24,7 @@ type ImageWorkspaceGalleryRailProps = {
   onOpenGroup: (group: GroupSummary) => void;
   selectedEngineCaps: EngineCaps;
   variant: 'desktop' | 'mobile';
+  onUseStarterPrompt: (prompt: string) => void;
 };
 
 export function ImageWorkspaceGalleryRail({
@@ -31,8 +34,12 @@ export function ImageWorkspaceGalleryRail({
   onOpenGroup,
   selectedEngineCaps,
   variant,
+  onUseStarterPrompt,
 }: ImageWorkspaceGalleryRailProps) {
+  const { stableJobs, isLoading, error } = useInfiniteJobs(24, { surface: 'image' });
+  const showStarters = !isLoading && !error && !activeGroups.length && !stableJobs.some(job => !job.curated);
   const rail = (
+    showStarters ? <StarterMediaShelf surface="image" onUsePrompt={onUseStarterPrompt} /> :
     <GalleryRail
       engine={selectedEngineCaps}
       engineRegistry={engineCapsList}

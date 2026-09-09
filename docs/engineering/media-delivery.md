@@ -39,6 +39,7 @@ can make it the LCP element even when its weight is unchanged.
 | Model hero playback | `frontend/components/marketing/ModelHeroMedia.client.tsx` |
 | Shared public playback policy and observations | `frontend/lib/public-video-playback.ts` |
 | Shared browser attempt/fallback lifecycle | `frontend/components/media/usePublicVideoPlayback.ts` |
+| App curated demonstration cards / selected preview | `frontend/components/media/AppDemoCardMedia.client.tsx` / `AppDemoVideo.client.tsx` |
 | Manual watch/comparison controls | `frontend/components/media/usePublicVideoControls.ts` |
 | Watch / native comparison presentation | `frontend/components/watch/WatchVideoPlayer.tsx` / `frontend/components/media/PublicVideoPlayer.client.tsx` |
 | Optimized poster URLs | `frontend/lib/media-helpers.ts` and `frontend/config/image-optimizer.json` |
@@ -58,6 +59,32 @@ can make it the LCP element even when its weight is unchanged.
 | Image repair inventory, references and guarded transactions | `frontend/scripts/_lib/image-thumbnail-projections.ts` |
 
 Playback hooks stay client-side; encoding, storage and database work stay server-side. Pages compose these owners. Do not put provider, pricing, storage or encoding responsibilities in a playback component. Route-specific workspace behavior stays under its existing `_hooks`, `_lib` and `_components` boundaries.
+
+### Demonstration media inside the app
+
+Image and Audio newcomer samples use separate editorial starter collections and a
+bundled public fallback; see `app-starter-media.md` for ownership, preparation,
+playlist migration, original artwork provenance and validation limits.
+
+Curated workspace examples use `AppDemoCardMedia`: responsive lazy posters remain
+visible at rest, and a video element mounts only for visible hover playback intent.
+The existing `useExampleCardPlayback` owner applies hidden-tab, reduced-motion and
+Save-Data restrictions. A short preview takes precedence over the full source.
+Selecting Play in the main preview mounts `AppDemoVideo`, which consumes the shared
+public rendition selector and exact-original error fallback. Personal media retain
+their existing reader, and download/reuse/edit URLs remain originals.
+
+Replacing an app demonstration automatically retains these loading rules, but does
+not automatically encode the replacement. Verify the exact original selected by the
+app reader, register that source in `public-video-sources.json`, then use the explicit
+asset-scoped prepare/review/publish/HTTP-check/activate lifecycle below. Unknown or
+unprepared sources use the exact original. Do not infer app rendition coverage from
+the homepage coverage gate. Keep posters versioned when their bytes change.
+
+The no-idle-video boundary is covered by `tests/app-demo-media-contract.test.ts`.
+Browser smoke confirmed no mounted video on an idle app sample at desktop width;
+this is a loading-policy check, not a measured Core Web Vitals improvement. Comparable
+production cold/warm measurements and Safari/iOS playback remain rollout checks.
 
 ## Original, thumbnail and preview are different contracts
 

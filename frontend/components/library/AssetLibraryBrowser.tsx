@@ -78,6 +78,7 @@ export interface AssetLibraryBrowserProps {
   retryLabel?: string;
   sourcesTitle: string;
   emptyLabel: string;
+  emptyContent?: ReactNode;
   emptySearchLabel: string;
   toolsTitle?: string;
   toolsDescription?: string;
@@ -134,6 +135,7 @@ function AssetLibraryCollection({
   retryLabel = 'Retry',
   sourcesTitle,
   emptyLabel,
+  emptyContent,
   emptySearchLabel,
   toolsTitle,
   toolsDescription,
@@ -369,7 +371,7 @@ function AssetLibraryCollection({
               </div>
             ) : filteredAssets.length === 0 ? (
               <div className="rounded-input border border-border/70 bg-surface-glass-80 px-4 py-6 text-center text-sm text-text-secondary">
-                {searchQuery.trim().length ? emptySearchLabel : emptyLabel}
+                {searchQuery.trim().length ? emptySearchLabel : emptyContent ?? emptyLabel}
               </div>
             ) : (
               <div className="flex flex-col gap-4">

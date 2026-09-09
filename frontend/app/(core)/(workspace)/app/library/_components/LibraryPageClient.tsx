@@ -8,12 +8,14 @@ import deepmerge from 'deepmerge';
 import { AudioWaveform, Clapperboard, Images, CheckCircle2, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
+import { MediaVisitorIntro } from '@/components/library/MediaVisitorIntro.client';
+import { MediaEmptyState } from '@/components/library/MediaEmptyState';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { buildLoginHref } from '@/lib/auth-entry-href';
+import { buildAuthReturnTarget } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
 import { useLibraryPageData } from '../_hooks/useLibraryPageData';
@@ -28,11 +30,15 @@ import {
 } from '../_lib/library-page-helpers';
 
 export function LibraryPageClient() {
+  const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
+  return <OwnedLibraryPageClient key={user?.id ?? 'guest'} user={user} authLoading={authLoading} />;
+}
+
+function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | null; authLoading: boolean }) {
   const searchParams = useSearchParams();
   const libraryEntry = useMemo(() => resolveLibraryEntry(searchParams), [searchParams]);
   const toolsEnabled = FEATURES.workflows.toolsSection;
   const { t, locale } = useI18n();
-  const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
@@ -158,23 +164,7 @@ export function LibraryPageClient() {
               <div className="mt-3 h-4 w-full max-w-96 rounded bg-surface-2" />
             </div>
           ) : !user ? (
-            <section className="mx-auto max-w-3xl rounded-card border border-border bg-surface p-8 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.auth.eyebrow}</p>
-              <h1 className="mt-3 text-2xl font-semibold text-text-primary">{copy.auth.title}</h1>
-              <p className="mt-3 text-sm text-text-secondary">{copy.auth.body}</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <ButtonLink href={buildLoginHref({ mode: 'signup', nextPath: '/app/library' })} size="sm">
-                  {copy.auth.createAccount}
-                </ButtonLink>
-                <ButtonLink
-                  href={buildLoginHref({ mode: 'signin', nextPath: '/app/library' })}
-                  variant="outline"
-                  size="sm"
-                >
-                  {copy.auth.signIn}
-                </ButtonLink>
-              </div>
-            </section>
+            <MediaVisitorIntro locale={locale} nextPath={buildAuthReturnTarget('/app/library', searchParams)} />
           ) : (
             <div className="pb-8 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:pb-0">
               <input
@@ -240,6 +230,10 @@ export function LibraryPageClient() {
                 searchPlaceholder={activeView === 'review' ? t('workspace.library.browser.searchRenders', 'Search prompts or render IDs…') ?? 'Search prompts or render IDs…' : t('workspace.library.browser.searchSaved', 'Search names or render IDs…') ?? 'Search names or render IDs…'}
                 sourcesTitle={copy.browser.sourcesTitle}
                 emptyLabel={emptyLabel || copy.assets.empty}
+                emptyContent={activeSource === 'all' && !activeJobId && !hasMore ? <MediaEmptyState
+                  kind={activeKind} locale={locale} saved={activeView === 'saved'}
+                  onShowRenders={() => { clearMutationErrors(); setActiveView('review'); }}
+                /> : undefined}
                 emptySearchLabel={copy.browser.emptySearch}
                 getAssetHref={(asset) => (asset.kind === 'audio' ? null : getAssetJobHref(asset))}
                 getAssetHrefLabel={() =>

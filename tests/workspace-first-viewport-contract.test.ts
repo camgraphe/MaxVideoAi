@@ -95,7 +95,7 @@ test('workspace toolbars wrap settings naturally and keep generation aligned rig
   assert.match(appExperienceStyles, /app-composer-submit \{[^}]*flex: 0 0 auto;/);
   assert.match(appExperienceStyles, /app-generation-controls \{[^}]*flex-wrap: nowrap;/);
   assert.match(appExperienceStyles, /@container \(max-width: 520px\)/);
-  assert.match(appExperienceStyles, /@container \(max-width: 520px\)[\s\S]*app-composer-submit \{ order: -1; width: 100%; flex-basis: 100%; justify-content: flex-end; \}/);
+  assert.doesNotMatch(appExperienceStyles, /app-composer-submit \{[^}]*(?:order: -1|flex-basis: 100%)/);
   assert.doesNotMatch(appExperienceStyles, /app-composer-toolbar-layout \{ flex-direction: column;/);
   assert.match(videoComposerSource, /const showExtraFields = Boolean\([\s\S]*showOptionsControl && optionsOpen/);
   assert.match(videoComposerSource, /extraFields=\{showExtraFields \? \(/);

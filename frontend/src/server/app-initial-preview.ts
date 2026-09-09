@@ -40,7 +40,7 @@ function toVideoAspect(value?: string | null): VideoItem['aspect'] {
   }
 }
 
-function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvider = 'fal'): VideoGroup | null {
+function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvider = 'fal', curated = false): VideoGroup | null {
   const videoUrl = normalizeMediaUrl(preview.videoUrl) ?? null;
   const thumbUrl = normalizeMediaUrl(preview.thumbUrl) ?? null;
   const previewVideoUrl = normalizeMediaUrl(preview.previewVideoUrl) ?? undefined;
@@ -58,6 +58,7 @@ function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvi
     engineId: preview.engineId ?? undefined,
     meta: {
       mediaType: videoUrl ? 'video' : 'image',
+      curated,
       engineLabel: preview.engineLabel ?? undefined,
     },
   };
@@ -133,7 +134,7 @@ export async function resolveInitialAppPreviewGroup(): Promise<VideoGroup | null
   try {
     const { userId } = await getRouteAuthContext();
     const preview = userId ? await resolveUserInitialPreview(userId) : await resolveStarterInitialPreview();
-    return preview ? mapInitialPreviewToGroup(preview) : null;
+    return preview ? mapInitialPreviewToGroup(preview, 'fal', !userId) : null;
   } catch (error) {
     console.warn('[app] failed to resolve initial preview', error);
     return null;

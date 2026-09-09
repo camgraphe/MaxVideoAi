@@ -1,5 +1,6 @@
 'use client';
 
+import { AppDemoCardMedia } from '@/components/media/AppDemoCardMedia.client';
 import clsx from 'clsx';
 import Image from 'next/image';
 import type { GroupSummary } from '@/types/groups';
@@ -54,7 +55,9 @@ export function GroupedJobCardPreviewGrid({
             )}
           >
             <div className="absolute inset-0">
-              {isCompleted ? (
+              {isCompleted && group.hero.job?.curated ? (
+                <AppDemoCardMedia preview={preview} requested={hovered} />
+              ) : isCompleted ? (
                 <GroupPreviewMedia
                   preview={preview}
                   audioUrl={memberAudioUrl}

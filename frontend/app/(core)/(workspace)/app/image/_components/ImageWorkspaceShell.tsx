@@ -11,6 +11,7 @@ type ImageWorkspaceGalleryRailBaseProps = {
   isImageJob: (job: Job) => boolean;
   onOpenGroup: (group: GroupSummary) => void;
   selectedEngineCaps: EngineCaps;
+  onUseStarterPrompt: (prompt: string) => void;
 };
 
 type ImageWorkspaceShellProps = {

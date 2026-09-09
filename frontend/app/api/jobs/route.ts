@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
         );
         return json({ ok: true, jobs, nextCursor: null }, undefined, timing);
       }
-      if (shouldUseStarterFallback(feedType, cursor)) {
+      if (shouldUseStarterFallback(feedType, cursor, requestedSurface)) {
         const jobs = await listVisitorStarterJobs(limit);
         return json({ ok: true, jobs, nextCursor: null }, undefined, timing);
       }
@@ -176,7 +176,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    if (!mapped.length && shouldUseStarterFallback(feedType, cursor)) {
+    if (!mapped.length && shouldUseStarterFallback(feedType, cursor, requestedSurface)) {
       const starterVideos = await timing.measure('starter_fallback', () =>
         listStarterPlaylistVideos(limit)
       );

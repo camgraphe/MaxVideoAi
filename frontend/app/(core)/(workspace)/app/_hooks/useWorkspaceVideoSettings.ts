@@ -1,5 +1,5 @@
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
@@ -135,6 +135,17 @@ export function useWorkspaceVideoSettings({
   const valid = useWorkspaceAssetLifetime(accountScope);
   const revisionRef = useRef(draftRevision);
   revisionRef.current = draftRevision;
+  const pendingRecallRef = useRef<{ revision: string | undefined; awaitingCommit: boolean } | null>(null);
+  const snapshotCommitPendingRef = useRef(false);
+  // The immediate tile settings belong to this recall. Later user edits do not.
+  useLayoutEffect(() => {
+    snapshotCommitPendingRef.current = false;
+    const pending = pendingRecallRef.current;
+    if (pending?.awaitingCommit) {
+      pending.revision = draftRevision;
+      pending.awaitingCommit = false;
+    }
+  });
   const hydratedJobRef = useRef<string | null>(null);
   const restoredPreviewJobRef = useRef<string | null>(null);
   const appliedStoryboardHandoffRef = useRef<string | null>(null);
@@ -143,6 +154,7 @@ export function useWorkspaceVideoSettings({
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
       if (!valid()) return;
+      pendingRecallRef.current = null;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
           engines,
@@ -151,6 +163,7 @@ export function useWorkspaceVideoSettings({
           createFallbackScene: createMultiPromptScene,
           createFallbackKlingElement: createKlingElement,
         });
+        snapshotCommitPendingRef.current = true;
         setPrompt(resolved.prompt);
         setNegativePrompt(resolved.negativePrompt);
         if (resolved.memberTier) {
@@ -219,7 +232,8 @@ export function useWorkspaceVideoSettings({
   const hydrateVideoSettingsFromJob = useCallback(
     async (jobId: string | null | undefined) => {
       if (!jobId || !valid()) return;
-      const revision = revisionRef.current;
+      const recall = { revision: revisionRef.current, awaitingCommit: snapshotCommitPendingRef.current };
+      pendingRecallRef.current = recall;
       try {
         const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
         if (!response.ok) {
@@ -227,7 +241,7 @@ export function useWorkspaceVideoSettings({
           return;
         }
         const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
-        if (!payload?.ok || !valid() || revisionRef.current !== revision) return;
+        if (!payload?.ok || !valid() || pendingRecallRef.current !== recall || revisionRef.current !== recall.revision) return;
         if (payload.settingsSnapshot) {
           applyVideoSettingsSnapshot(payload.settingsSnapshot);
         }

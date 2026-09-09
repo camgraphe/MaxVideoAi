@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ButtonLink } from '@/components/ui/Button';
-import { buildLoginHref } from '@/lib/auth-entry-href';
+import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import {
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
@@ -345,11 +345,11 @@ export default function AudioWorkspace() {
           <h1 className="mt-3 text-2xl font-semibold text-text-primary">{copy.auth.title}</h1>
           <p className="mt-3 text-sm text-text-secondary">{copy.auth.body}</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href={buildLoginHref({ mode: 'signup', nextPath: '/app/audio' })} size="sm">
+            <ButtonLink href={buildLoginHref({ mode: 'signup', nextPath: buildAuthReturnTarget('/app/audio', searchParams) })} size="sm">
               {copy.auth.createAccount}
             </ButtonLink>
             <ButtonLink
-              href={buildLoginHref({ mode: 'signin', nextPath: '/app/audio' })}
+              href={buildLoginHref({ mode: 'signin', nextPath: buildAuthReturnTarget('/app/audio', searchParams) })}
               variant="outline"
               size="sm"
             >

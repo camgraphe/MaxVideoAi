@@ -27,9 +27,9 @@ test('workspace asset library, field assets, and Kling element assets are split 
   assert.equal(existsSync(assetStateHookPath), true);
   assert.match(assetStateSource, /export function useWorkspaceAssetState/);
   assert.match(assetStateSource, /commitInputAssetMutation/);
-  assert.match(appSource, /const assetState = useWorkspaceAssetState\(confirmedAccount\)/);
+  assert.match(appSource, /const assetState = useWorkspaceAssetState\(draftOwner\)/);
   assert.ok(
-    appSource.indexOf('useWorkspaceAssetState(confirmedAccount)') <
+    appSource.indexOf('useWorkspaceAssetState(draftOwner)') <
       appSource.indexOf('useWorkspaceComposerState({')
   );
   assert.ok(

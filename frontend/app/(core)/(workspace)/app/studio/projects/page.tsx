@@ -36,7 +36,7 @@ export default async function StudioProjectsPage({ searchParams }: {
         <div className="flex min-w-0 flex-1 flex-col md:flex-row">
           <AppSidebar />
           <main className="min-w-0 flex-1 overflow-y-auto">
-            <StudioPreviewAccess />
+            <StudioPreviewAccess visitor={!access.ok && access.status === 401} />
           </main>
         </div>
       </div>

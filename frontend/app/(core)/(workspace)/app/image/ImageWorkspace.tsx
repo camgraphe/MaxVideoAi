@@ -29,11 +29,9 @@ import { type HistoryEntry, type ImageEngineOption } from './_lib/image-workspac
 
 export type { ImageEngineOption } from './_lib/image-workspace-types';
 
-interface ImageWorkspaceProps {
-  engines: ImageEngineOption[];
-}
+type ImageWorkspaceProps = { accountId: string | null; engines: ImageEngineOption[] };
 
-export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
+export default function ImageWorkspace({ engines, accountId }: ImageWorkspaceProps) {
   const { advancedSettingsTitle, loginRedirectTarget, resolvedCopy, searchParams, toolsEnabled } = useImageWorkspaceRouteContext();
   const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
@@ -178,6 +176,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   });
 
   useImageComposerPersistence({
+    accountId,
     engines,
     engineId,
     mode,
@@ -411,6 +410,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           isImageJob,
           onOpenGroup: handleSelectGalleryGroup,
           selectedEngineCaps,
+          onUseStarterPrompt: setPrompt,
         }}
       >
         <ImageWorkspaceComposerSurface

@@ -30,7 +30,7 @@ test('workspace shell, notice, preview composition, and route navigation are own
   assert.match(appSource, /<WorkspaceAppReadyView/);
   assert.match(appSource, /useWorkspaceNotice\(\)/);
   assert.match(appSource, /useWorkspacePreviewState\(\{/);
-  assert.match(appSource, /useWorkspaceRouteNavigation\(\{/);
+  assert.match(appSource, /useWorkspaceRouteNavigation\(\)/);
 
   assert.doesNotMatch(appSource, /authFetch/);
   assert.doesNotMatch(appSource, /useRouter/);
@@ -61,7 +61,7 @@ test('workspace shell, notice, preview composition, and route navigation are own
   assert.match(previewHookSource, /normalizeGroupSummary/);
   assert.match(previewHookSource, /getCompositePreviewPosterSrc/);
 
-  assert.match(routeHookSource, /authFetch/);
+  assert.doesNotMatch(routeHookSource, /authFetch|exports\/summary|router\.replace\(`\/gallery/);
   assert.match(routeHookSource, /useRouter/);
   assert.match(routeHookSource, /onboarding/);
 });

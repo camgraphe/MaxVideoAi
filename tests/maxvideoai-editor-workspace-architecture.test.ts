@@ -1083,7 +1083,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
 
   const visitorAccessSource = source(visitorAccessPath);
   assert.doesNotMatch(visitorAccessSource, /normalized === '\/app\/studio\/workspace'/, 'admin-only editor routes must not inherit visitor workspace browse access');
-  assert.doesNotMatch(visitorAccessSource, /normalized === '\/app\/studio\/projects'/, 'admin-only studio projects must not inherit visitor workspace browse access');
+  assert.match(visitorAccessSource, /normalized === '\/app\/studio\/projects'/, 'Studio presentation is browsable; page access gates the owned project list');
   assert.doesNotMatch(visitorAccessSource, /normalized\.startsWith\('\/app\/studio\/workspace\/'\)/, 'admin-only project workspaces must not inherit visitor workspace browse access');
 });
 

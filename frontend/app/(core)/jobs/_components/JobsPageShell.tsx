@@ -1,5 +1,6 @@
 'use client';
 
+import { FirstCreationState } from '@/components/FirstCreationState.client';
 import dynamic from 'next/dynamic';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -82,7 +83,7 @@ export function JobsPageShell({
           {error ? <div role="alert" className={styles.notice}>{copy.error}<Button variant="outline" onClick={onRetry} disabled={isValidating}>{copy.retry}</Button></div> : null}
           <section aria-label={copy.activity.title} aria-busy={isValidating}>
             {isInitialLoading ? <><p role="status" className="sr-only">{copy.loading}</p><div className={styles.grid}>{renderSkeletonCards(4, 'activity')}</div></> : null}
-            {!isInitialLoading && !error && !visibleGroups.length ? <p role="status" className={styles.empty}>{status === 'all' ? copy.empty : copy.activity.filteredEmpty}</p> : null}
+            {!isInitialLoading && !error && !visibleGroups.length ? source === 'all' && status === 'all' && !hasMore ? <FirstCreationState /> : <p role="status" className={styles.empty}>{copy.activity.filteredEmpty}</p> : null}
             {visibleGroups.length ? <div className={styles.grid}>
               {visibleGroups.map((group) => {
                 const surface = group.hero.job ? resolveClientJobSurface(group.hero.job) : 'video';

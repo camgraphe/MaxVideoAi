@@ -2,6 +2,7 @@
 
 import { normalizeGenerationObservation } from '@/lib/generation-observation';
 
+import { AppDemoVideo } from '@/components/media/AppDemoVideo.client';
 import clsx from 'clsx';
 import Image from 'next/image';
 import type { VideoItem } from '@/types/video-groups';
@@ -83,7 +84,11 @@ export function CompositePreviewDockTile({
                 )}
               />
             ) : null}
-            {shouldPlayVideo ? (
+            {shouldPlayVideo && item.meta?.curated === true ? (
+              <AppDemoVideo src={inlinePreviewUrl!} muted={isMuted} loop={isLooping}
+                className={clsx('relative z-0 h-full w-full', mediaFitClass)} register={registerVideo(itemKey)}
+                onLoadedData={video => onVideoLoadedData(itemKey, video)} onCanPlay={video => onVideoCanPlay(itemKey, video)} />
+            ) : shouldPlayVideo ? (
               <video
                 ref={registerVideo(itemKey)}
                 data-preview-video="active"

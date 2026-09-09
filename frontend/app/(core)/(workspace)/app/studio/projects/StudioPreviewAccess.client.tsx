@@ -1,5 +1,7 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Film, GitBranch, LockKeyhole, Scissors, Sparkles } from 'lucide-react';
@@ -60,7 +62,9 @@ const SPANISH_COPY = {
   editBody: 'Combina imagen, vídeo y sonido.',
 };
 
-export default function StudioPreviewAccess() {
+export default function StudioPreviewAccess({ visitor = false }: { visitor?: boolean }) {
+  const searchParams = useSearchParams();
+  const nextPath = buildAuthReturnTarget('/app/studio/projects', searchParams);
   const { locale } = useI18n();
   const copy = locale === 'fr' ? FRENCH_COPY : locale === 'es' ? SPANISH_COPY : ENGLISH_COPY;
 
@@ -72,10 +76,10 @@ export default function StudioPreviewAccess() {
           <h1>{copy.title}</h1>
           <p className={styles.intro}>{copy.body}</p>
           <div className={styles.actions}>
-            <span className={styles.accessStatus}><LockKeyhole aria-hidden />{copy.status}</span>
-            <Link href="/app/tools" prefetch={false}>{copy.tools}</Link>
+            <Link className={styles.primaryAction} href="/app" prefetch={false}>{locale === 'fr' ? 'Créer une vidéo' : locale === 'es' ? 'Crear un vídeo' : 'Create a video'}</Link>
+            {visitor ? <Link href={buildLoginHref({ mode: 'signin', nextPath })} prefetch={false}>{locale === 'fr' ? 'Déjà invité ? Se connecter' : locale === 'es' ? '¿Ya tienes invitación? Inicia sesión' : 'Already invited? Sign in'}</Link> : null}
           </div>
-          <p className={styles.note}>{copy.note}</p>
+          <p className={styles.note}><LockKeyhole className="mr-1 inline h-3 w-3" aria-hidden />{copy.status}. {copy.note}</p>
         </div>
 
         <div className={styles.productPreview} aria-hidden>

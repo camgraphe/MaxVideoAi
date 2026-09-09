@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { listenForGuestCreationLogin, consumeGuestCreationFromLocation } from '@/lib/guest-creation-continuation';
 import type { EngineCaps } from '@/types/engines';
 import {
   prepareWorkspaceModelCandidate,
@@ -77,6 +78,14 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     account && store.account === account && phaseMatches && phase?.stage === 'ready',
   );
   const signature = workspaceModelSetupSignature(options.current);
+  useEffect(() => {
+    if (options.authStatus !== 'loggedOut') return;
+    return listenForGuestCreationLogin('/app', () => {
+      if (!options.current) return null;
+      const serialized = serializeWorkspaceModelSetup(options.current);
+      return serialized.ok ? JSON.stringify(serialized.setup) : null;
+    });
+  }, [options]);
 
   const save = useCallback(
     (next: Store) => {
@@ -144,6 +153,13 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
           loaded.memoryOnly = true;
         }
       }
+    }
+    const guestRaw = consumeGuestCreationFromLocation('/app');
+    if (guestRaw) {
+      try {
+        const guest = serializeWorkspaceModelSetup(JSON.parse(guestRaw));
+        if (guest.ok) loaded = { ...loaded, recovery: loaded.current, current: { modelId: guest.setup.form.engineId, updatedAt: Date.now(), setup: guest.setup } };
+      } catch { /* Invalid or expired continuation keeps the account draft. */ }
     }
     let restored = false;
     if (loaded.current && options.requestKey) {

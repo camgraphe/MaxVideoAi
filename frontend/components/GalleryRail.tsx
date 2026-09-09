@@ -66,7 +66,7 @@ export function GalleryRail({
   jobFilter,
   variant = 'desktop',
 }: GalleryRailProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const responsiveVariant = variant === 'responsive';
   const [responsiveDesktop, setResponsiveDesktop] = useState(false);
   useEffect(() => {
@@ -470,7 +470,7 @@ export function GalleryRail({
 
   const content = (
     <>
-      <GalleryRailHeader title={copy.title} viewAll={copy.viewAll} />
+      <GalleryRailHeader title={sampleOnly ? (locale === 'fr' ? 'Exemples à adapter' : locale === 'es' ? 'Ejemplos para adaptar' : 'Examples to make your own') : copy.title} viewAll={copy.viewAll} />
       <GalleryRailCuratedBanner copy={copy.curated} show={hasMounted && hasCuratedJobs} />
       <GalleryRailErrorBanner copy={copy.error} retryLabel={copy.retry} show={hasMounted && Boolean(error)} onRetry={retry} />
       {body}

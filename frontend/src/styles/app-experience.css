@@ -188,7 +188,7 @@
 .app-experience .app-composer-settings-inline > div,
 .app-experience .app-composer-settings-inline [data-settings-density="workspace"] { display: contents; }
 .app-experience .app-composer-settings-inline [data-settings-density="workspace"] > * { flex-shrink: 0; }
-.app-experience .app-composer-toolbar-layout > .app-options-button { align-self: center; }
+.app-experience .app-composer-toolbar .app-options-button { align-self: center; }
 .app-experience .app-composer-submit { min-width: 0; display: flex; flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; margin-inline-start: auto; max-width: 100%; }
 .app-experience .app-generation-controls { width: auto; min-width: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; }
 .app-experience .app-generation-controls > :not(.app-generation-action) { flex-shrink: 0; }
@@ -197,7 +197,6 @@
 .app-experience .app-composer-submit > .app-quote-status { flex-basis: 100%; max-width: none; text-align: right; }
 @container (max-width: 520px) {
   .app-experience .app-composer-toolbar > .app-composer-toolbar-layout { gap: 5px; }
-  .app-experience .app-composer-submit { order: -1; width: 100%; flex-basis: 100%; justify-content: flex-end; }
   .app-experience .app-generation-controls { gap: 4px; }
   .app-experience .app-generation-controls .app-generation-action { padding-inline: 9px; gap: 7px; }
   .app-experience .app-generation-controls :is(.app-generation-label, .app-generation-price) { font-size: 12px; }

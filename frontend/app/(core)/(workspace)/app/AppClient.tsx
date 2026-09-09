@@ -31,17 +31,14 @@ export default function AppClientPage({
     app.authStatus === 'authed' && app.user?.id && app.session?.access_token ? app.user.id : null;
   const draftOwner = confirmedAccount ?? (app.authStatus === 'loggedOut' ? 'public' : null);
   const routeForm = useWorkspaceRouteFormState(draftOwner);
-  const assetState = useWorkspaceAssetState(confirmedAccount);
+  const assetState = useWorkspaceAssetState(draftOwner);
   const noticeState = useWorkspaceNotice();
   const draft = useWorkspaceDraftStorage({
     authLoading: app.authLoading,
     authStatus: app.authStatus,
     authenticatedUserId: app.user?.id,
   });
-  const { replaceWorkspaceRoute } = useWorkspaceRouteNavigation({
-    authChecked: draft.authChecked,
-    skipOnboardingRef: draft.skipOnboardingRef,
-  });
+  const { replaceWorkspaceRoute } = useWorkspaceRouteNavigation();
   const renderState = useWorkspaceRenderState({
     recentJobs: app.recentJobs,
     engineIdByLabel: app.engineIdByLabel,
@@ -100,7 +97,7 @@ export default function AppClientPage({
   const videoSettings = useWorkspaceVideoSettings({
     ...routeForm,
     ...assetState,
-    accountScope: confirmedAccount,
+    accountScope: draftOwner,
     activeDraftReady: activeDraft.ready,
     hasActiveSetup: activeDraft.hasActiveSetup,
     draftRevision: activeDraft.revision,

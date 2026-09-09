@@ -153,8 +153,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(composerPersistenceHookSource, /export function useImageComposerPersistence/);
   assert.match(composerPersistenceHookSource, /parsePersistedImageComposerState/);
   assert.match(composerPersistenceHookSource, /IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS/);
-  assert.match(composerPersistenceHookSource, /localStorage\.getItem\(IMAGE_COMPOSER_STORAGE_KEY\)/);
-  assert.match(composerPersistenceHookSource, /localStorage\.setItem\(IMAGE_COMPOSER_STORAGE_KEY, serialized\)/);
+  assert.match(composerPersistenceHookSource, /localStorage\.getItem\(storageKey\)/);
+  assert.match(composerPersistenceHookSource, /localStorage\.setItem\(storageKey, serialized\)/);
   assert.match(queryHydrationHookSource, /export function useImageWorkspaceQueryHydration/);
   assert.match(queryHydrationHookSource, /const requestedJobId = useMemo/);
   assert.match(queryHydrationHookSource, /const requestedEngineId = useMemo/);

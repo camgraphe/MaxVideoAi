@@ -75,6 +75,7 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   if (member.prompt) {
     meta.prompt = member.prompt;
   }
+  if (member.job?.curated) meta.curated = true;
   meta.observation = member.observation;
   meta.startedAt = Date.parse(member.createdAt);
   meta.etaSource = member.etaSource;

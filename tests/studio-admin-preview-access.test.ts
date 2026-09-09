@@ -43,8 +43,8 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
     'frontend/app/(core)/(workspace)/app/studio/workspace/[projectId]/page.tsx',
   ]) {
     const source = read(path);
-    assert.match(source, /FEATURES\.studio\.adminOnly/);
-    assert.match(source, /await requireAdmin\(\)/);
+    assert.match(source, /resolveStudioPageAccess/);
+    assert.match(source, /if \(!access.ok\) notFound\(\)/);
     assert.match(source, /notFound\(\)/);
   }
 

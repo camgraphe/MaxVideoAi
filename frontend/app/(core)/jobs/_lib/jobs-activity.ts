@@ -15,5 +15,5 @@ export function filterActivityGroups(groups: GroupSummary[], status: JobsStatus)
 /** Retain explicitly paginated history beyond the bounded observation cache. */
 export function activityLoadedJobs(pages: import('@/types/jobs').JobsPage[] | undefined, stableJobs: import('@/types/jobs').Job[]) {
   const stableById = new Map(stableJobs.map((job) => [job.jobId, job]));
-  return pages?.flatMap((page) => page.jobs).map((job) => stableById.get(job.jobId) ?? job) ?? [];
+  return pages?.flatMap((page) => page.jobs).map((job) => stableById.get(job.jobId) ?? job).filter((job) => !job.curated) ?? [];
 }

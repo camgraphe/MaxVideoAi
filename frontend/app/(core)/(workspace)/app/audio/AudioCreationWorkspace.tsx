@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AudioLines, CircleAlert, LoaderCircle, Play } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { buildLoginHref } from '@/lib/auth-entry-href';
+import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import { runAudioGenerate, useInfiniteJobs } from '@/lib/api';
 import { AUDIO_CREATION_INTENTS, AUDIO_INTENT_PACK, buildAudioCreationRequest, isAudioDraftReady, isAudioIntent, type AudioCreationIntent } from '@/lib/audio-creation';
 import type { Job } from '@/types/jobs';
@@ -20,6 +20,7 @@ import { useAudioCreationScope } from './_hooks/useAudioCreationScope';
 import { AudioCreationEditor } from './_components/AudioCreationEditor';
 import { AudioCreationResults } from './_components/AudioCreationResults';
 import styles from './_components/audio-creation.module.css';
+import { StarterMediaShelf } from '@/components/starters/StarterMediaShelf.client';
 const ReferenceLibrary = dynamic(() => import('./_components/AudioReferenceLibrary'));
 const VideoSoundtrack = dynamic(() => import('./AudioWorkspace'));
 
@@ -184,9 +185,10 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
       <AudioCreationEditor intent={intent} draft={draft} copy={copy} onChange={update} onFile={file => void addReference(file)} uploading={uploading} onLibrary={() => userId ? setLibraryOpen(true) : setNotice(copy.signIn)} />
       <div className={styles.action}><div className={styles.price} aria-live="polite"><span>{loading ? copy.quoteLoading : quoteError ? quoteError.message : !quote ? copy.quoteIdle : saved ? copy.saved : copy.unsaved}</span>{quoteError ? <small>{quoteError.code}</small> : null}</div>
         {quoteError ? <button type="button" className={styles.retry} onClick={retry}>{copy.retry}</button> : null}
-        {userId ? <button type="button" className={styles.generate} disabled={!quote || pending.includes(quote.inputKey) || uploading} onClick={() => void generate()}>{copy.generate}{price ? ` · ${price}` : ''}<span aria-hidden>↗</span></button> : <a className={styles.generate} href={buildLoginHref({ mode: 'signin', nextPath: `${pathname}?intent=${intent}` })}>{copy.signIn}</a>}
+        {userId ? <button type="button" className={styles.generate} disabled={!quote || pending.includes(quote.inputKey) || uploading} onClick={() => void generate()}>{copy.generate}{price ? ` · ${price}` : ''}<span aria-hidden>↗</span></button> : <a className={styles.generate} href={buildLoginHref({ mode: 'signin', nextPath: buildAuthReturnTarget(pathname, params) })}>{copy.signIn}</a>}
       </div>
     </div><AudioCreationResults intent={intent} copy={copy} result={result} pending={pending.length} onReuse={reuse}>
+      {!pending.length && !result && (!userId || (!isLoading && !historyError && !jobs.length)) ? <StarterMediaShelf surface="audio" /> : null}
       <section className={styles.history}><h2>{copy.history}</h2><p className={styles.historyHint}>{copy.historyHint}</p>
         {userId && isLoading ? <p>{copy.loadingHistory}</p> : null}
         {userId && historyError ? <button type="button" onClick={() => void mutate()}>{copy.retry}</button> : null}

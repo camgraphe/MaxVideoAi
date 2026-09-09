@@ -63,8 +63,8 @@ test('workspace header carries pathname and query into desktop and mobile auth e
 });
 
 test('standalone Audio and Library account gates keep their feature route', () => {
-  assert.match(audioSource, /nextPath:\s*'\/app\/audio'/);
-  assert.match(librarySource, /nextPath:\s*'\/app\/library'/);
+  assert.match(audioSource, /buildAuthReturnTarget\('\/app\/audio', searchParams\)/);
+  assert.match(librarySource, /buildAuthReturnTarget\('\/app\/library', searchParams\)/);
   assert.doesNotMatch(audioSource, /href="\/login"/);
   assert.doesNotMatch(librarySource, /href="\/login"/);
 });

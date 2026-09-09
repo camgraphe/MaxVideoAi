@@ -4,7 +4,8 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
-import ImageWorkspace, { type ImageEngineOption } from './ImageWorkspace';
+import ImageWorkspaceSession from './_components/ImageWorkspaceSession.client';
+import type { ImageEngineOption } from './ImageWorkspace';
 import { sortImageWorkspaceEngineOptions } from './_lib/image-workspace-engine-options';
 
 export const metadata: Metadata = {
@@ -80,7 +81,7 @@ export default async function ImageGeneratePage({ searchParams }: ImageGenerateP
       <HeaderBar />
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
-        <ImageWorkspace engines={engines} />
+        <ImageWorkspaceSession engines={engines} />
       </div>
     </div>
   );

@@ -645,7 +645,7 @@ const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
   error_code: new Set(['generation_request_failed', 'INSUFFICIENT_WALLET_FUNDS', 'INSUFFICIENT_FUNDS', 'auth_required', 'UNAUTHORIZED']),
   asset_id: new Set(getPublicVideoRenditionAssetIds()),
   playback_profile: new Set(['original', 'mobile', 'desktop']),
-  playback_surface: new Set(['home', 'model', 'examples', 'watch', 'comparison', 'examples-card']),
+  playback_surface: new Set(['home', 'model', 'examples', 'watch', 'comparison', 'examples-card', 'workspace-preview']),
   playback_trigger: new Set(['user', 'automatic']),
   measurement_method: new Set(['video_frame_callback', 'playing_fallback']),
 };

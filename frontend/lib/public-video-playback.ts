@@ -3,7 +3,7 @@ import {
   type ResolvedPublicVideoRendition,
 } from '@/lib/public-video-renditions';
 
-export type PublicVideoPlaybackSurface = 'home' | 'model' | 'examples' | 'watch' | 'comparison' | 'examples-card';
+export type PublicVideoPlaybackSurface = 'home' | 'model' | 'examples' | 'watch' | 'comparison' | 'examples-card' | 'workspace-preview';
 export type PublicVideoQuality = 'auto' | 'original';
 export type PublicVideoPlaybackTrigger = 'user' | 'automatic';
 export type PublicVideoMeasurementMethod = 'video_frame_callback' | 'playing_fallback';
