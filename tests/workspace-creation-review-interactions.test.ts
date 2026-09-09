@@ -235,15 +235,20 @@ test('required audio and disabled explanations remain visible, while fifty refer
     { field: { id: 'references', type: 'image' as const, label: 'Images', maxCount: 50 }, required: false },
     { field: { id: 'audio_url', type: 'audio' as const, label: 'Source audio', minCount: 1, maxCount: 1 }, required: true, disabled: true, disabledReason: 'Sign in to upload audio' },
   ], assets: { references: assets }, referenceWarning: '' };
-  const fixture = await mount(React.createElement(WorkspaceReferenceSection, props));
+  const removals: Array<[string, number]> = [];
+  const fixture = await mount(React.createElement(WorkspaceReferenceSection, { ...props, onAssetRemove: (field, slotIndex) => removals.push([field.id, slotIndex]) }));
   const doc = fixture.dom.window.document;
   try {
     assert.match(fixture.container.textContent!, /Obligatorio · Source audio/);
-    assert.equal(fixture.container.querySelectorAll('.app-reference-selected-summary button').length, 3);
+    assert.equal(fixture.container.querySelectorAll('.app-reference-selected-manage').length, 3);
+    assert.equal(fixture.container.querySelectorAll('.app-reference-selected-remove').length, 3);
     assert.equal(fixture.container.querySelectorAll('img').length, 3);
     assert.equal(doc.querySelector('audio'), null);
     const command = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
-    await act(async () => fixture.container.querySelector<HTMLButtonElement>('.app-reference-selected-summary button')!.click());
+    await act(async () => fixture.container.querySelectorAll<HTMLButtonElement>('.app-reference-selected-remove')[1]!.click());
+    assert.deepEqual(removals, [['references', 1]]);
+    assert.equal(doc.querySelector('[role="dialog"]'), null, 'direct removal does not open the reference manager');
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('.app-reference-selected-manage')!.click());
     assert.equal(doc.querySelectorAll('[data-reference-field="references"] [data-asset-index]').length, 50);
     assert.ok(doc.querySelector('[data-reference-field="references"] [data-asset-index="49"]'));
     await act(async () => doc.querySelector<HTMLButtonElement>('[data-reference-role="audio_url"]')!.click());

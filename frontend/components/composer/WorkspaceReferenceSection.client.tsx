@@ -88,15 +88,20 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     </div> : null}
     {collectionRequired.length ? <p id={requiredId} className="app-reference-required">{copy.required} · {collectionRequired.map(({ field, role }) => resolveWorkspaceReferenceFieldTitle(field, role ?? 'generic', locale) || copy.kinds[field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image']).join(', ')}</p> : null}
     {selectedCollections.length ? <div className="app-reference-selected-summary">
-      {selectedCollections.slice(0, 3).map(({ entry, asset, slotIndex }) => <button key={`${entry.field.id}-${slotIndex}`} type="button"
-        onClick={() => {
-          const command = 'collections';
-          const trigger = commandRefs.current.get(command);
-          if (trigger) open(command, trigger);
-        }} aria-label={`${copy.manage} · ${asset.name}`}>
-        {asset.kind === 'image' ? <img src={asset.previewUrl} alt="" loading="lazy" /> : <AppGlyph name={asset.kind} />}
-        <span>{asset.name}</span>{asset.status === 'uploading' ? <small role="status">…</small> : asset.status === 'error' ? <small role="alert">{asset.error ?? '!'}</small> : null}
-      </button>)}
+      {selectedCollections.slice(0, 3).map(({ entry, asset, slotIndex }) => <div className="app-reference-selected-item" key={`${entry.field.id}-${slotIndex}`}>
+        <button className="app-reference-selected-manage" type="button"
+          onClick={() => {
+            const command = 'collections';
+            const trigger = commandRefs.current.get(command);
+            if (trigger) open(command, trigger);
+          }} aria-label={`${copy.manage} · ${asset.name}`}>
+          {asset.kind === 'image' ? <img src={asset.previewUrl} alt="" loading="lazy" /> : <AppGlyph name={asset.kind} />}
+          <span>{asset.name}</span>{asset.status === 'uploading' ? <small role="status">…</small> : asset.status === 'error' ? <small role="alert">{asset.error ?? '!'}</small> : null}
+        </button>
+        {onAssetRemove ? <button className="app-reference-selected-remove" type="button" onClick={() => removeAsset(entry.field, slotIndex)} aria-label={`${copy.remove} · ${asset.name}`} title={copy.remove}>
+          <span aria-hidden="true">×</span>
+        </button> : null}
+      </div>)}
       {selectedCollections.length > 3 ? <span>+{selectedCollections.length - 3}</span> : null}
     </div> : null}
     {popupFields.length ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame)} title={popupTitle} closeLabel={copy.close} onClose={close}>
