@@ -43,6 +43,11 @@ export function createHeroPlayer({mount,film,poster,playButton,soundButton,statu
   soundButton.innerHTML=video.muted?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4Zm5 5 6 6m0-6-6 6"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4Zm5 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>';
  });
  return {
+  move(next){
+   detach();observer.unobserve(film);
+   mount=next.mount;film=next.film;poster=next.poster;
+   visible=true;observer.observe(film);
+  },
   select(next,{user=true}={}){
    detach();item=next;failedOver=false;poster.src=item.src;poster.alt=item.alt;
    soundButton.setAttribute('aria-label',copy.sound);
@@ -55,4 +60,3 @@ export function createHeroPlayer({mount,film,poster,playButton,soundButton,statu
   pauseForPreference(){if(!canAuto()){wanted=false;video?.pause();}},
  };
 }
-

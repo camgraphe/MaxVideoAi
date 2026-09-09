@@ -18,7 +18,7 @@ function harness({auto=true,small=false}={}){
  }
  const nodes=[],doc=new Element();doc.hidden=false;doc.createElement=()=>{const v=new Element();nodes.push(v);return v;};
  let observer;
- const create=vm.runInNewContext(source,{document:doc,navigator:{},matchMedia:()=>({matches:small}),IntersectionObserver:class{constructor(fn){observer=fn;}observe(){}}});
+ const create=vm.runInNewContext(source,{document:doc,navigator:{},matchMedia:()=>({matches:small}),IntersectionObserver:class{constructor(fn){observer=fn;}observe(){}unobserve(){}}});
  const playButton=new Element(),soundButton=new Element(),status=new Element();
  const data={original:'https://media.example/original.mp4',desktop:'https://media.example/desktop.mp4',mobile:'https://media.example/mobile.mp4',src:'poster.webp',alt:'Poster'};
  const player=create({mount:{append(){}},film:new Element(),poster:new Element(),playButton,soundButton,status,data,copy:{play:'play',pause:'pause',sound:'sound',mute:'mute',loading:'loading',error:'error'},canAuto:()=>auto,onProgress(){}});
@@ -51,4 +51,13 @@ test('restricted autoplay stays idle; an explicit action selects the mobile rend
  h.player.reduce();assert.equal(h.nodes[0].paused,true);
  h.visibility(false);h.visibility(true);assert.equal(h.nodes[0].playCount,1);
 });
-
+test('moving the reader releases the old video and targets the selected panel',()=>{
+ const h=harness();h.player.auto();const old=h.nodes[0];old.emit('playing');
+ const mounted=[],poster={};
+ h.player.move({mount:{append(node){mounted.push(node);}},film:{classList:{add(){},remove(){}}},poster});
+ assert.equal(old.removed,true);assert.equal(old.paused,true);assert.equal(old.src,'');
+ h.player.select({...h.data,src:'second.webp',alt:'Second scene'});
+ assert.equal(mounted.length,1);assert.equal(mounted[0],h.nodes[1]);assert.equal(poster.src,'second.webp');
+ assert.equal(poster.alt,'Second scene');
+ old.emit('error');assert.equal(mounted[0].src,h.data.desktop);
+});

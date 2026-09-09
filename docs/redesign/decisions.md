@@ -40,7 +40,7 @@
 | D34 | Réécrire, simplifier, fusionner et améliorer le SEO, avec une destination et une raison pour chaque fonction modifiée | Autorisation utilisateur | « C'est remplacement de celle-là » ; inventaire de 40 destinations dans home-replacement-links.json |
 | D35 | Benchmark Higgsfield (correction de « XField »), InVideo et acteurs stock/création IA | Demande utilisateur ; trois références visuelles examinées | Higgsfield, InVideo, Freepik redirigé vers Magnific ; Artlist repéré seulement |
 | D36 | Présenter le MCP comme partie d'un parcours de valeur, sans exclusivité revendiquée | Correction stratégique après vérification | Higgsfield et Magnific exposent aussi une entrée MCP sur leurs pages |
-| D37 | Reprendre la page avec les effets réellement fonctionnels, après retour « template Envato » | Réalisé localement, jugement visuel en attente | Composition 02 : vidéo, sélection, ordinateur et fenêtres au scroll, mobile et modales |
+| D37 | Reprendre la page avec les effets réellement fonctionnels, après retour « template Envato » | Réalisé localement, direction jugée insuffisante | Composition 02 : vidéo, sélection, ordinateur et fenêtres au scroll, mobile et modales |
 
 ## Avancement
 
@@ -65,10 +65,16 @@
 - [x] Comparer la composition 01 à l’accueil en production et documenter ses pertes de contenu/liens.
 - [x] Examiner Higgsfield, InVideo et Freepik/Magnific, puis corriger le brief de remplacement.
 - [x] Recomposer l’accueil à partir du brief corrigé avec une proposition fonctionnelle (composition 02).
-- [ ] Valider la direction de la composition 02 et les assets à produire pour les séquences définitives.
+- [x] Acter le rejet de la direction 02 : effets trop décoratifs, finition et lien au produit insuffisants.
+- [x] Repartir de l’accueil réel : proposition 03, cinq films, Angle et preuve MCP.
+- [ ] Valider la composition 03 dans son ensemble avant intégration.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
+
+## Décision D38 — Repartir de l’accueil réel
+
+Demande explicite d’Adrien le 10 septembre 2026. Retirer de la nouvelle proposition la scène d’ordinateur et les effets dont l’utilité ne se voit pas. Conserver la valeur de l’accueil : choix, rendus, prix et création. La proposition 03 matérialise cette demande localement ; elle ne vaut pas validation artistique ni autorisation de publication.
 
 ## Vérification initiale
 
@@ -76,8 +82,8 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 
 ## Prochaine décision à présenter
 
-Le fil suivi et la méthode « pages avant effets » sont acquis, ainsi que la possibilité de réécrire et fusionner pour améliorer l'accueil. La composition 01 ne répond pas suffisamment au besoin de remplacement. La [composition 02 fonctionnelle](home-composition.md) répond au [brief corrigé](home-replacement-brief.md) : richesse produit, preuve, usages/comparaison, deux voies de création, prix et réponses.
+Le fil suivi et la méthode « pages avant effets » sont acquis, ainsi que la possibilité de réécrire et fusionner pour améliorer l'accueil. La composition 01 ne répond pas suffisamment au besoin de remplacement. La composition 02 a également été jugée insuffisante : le mouvement ne prouvait pas assez la valeur du produit. La [proposition 03](home-composition.md) repart des démonstrations et contenus de l’accueil réel, avec un mouvement lié à la sélection du modèle et aux cadrages Angle.
 
 L'inventaire [home-replacement-links.json](home-replacement-links.json) rend les choix de destination explicites, sans imposer de conserver chaque bloc ou lien à la même place. La lecture des concurrents ne valide pas une nouvelle palette ni leurs promesses pour MaxVideoAI. Le cadrage de conversion reste provisoire tant que l'audit des parcours et la mesure complémentaires sont incomplets.
 
-La [revue V1](review/index.html), la [planche illustrée](review/direction.html), l'[étude 3D](review/motion.html) et les [notes de la composition 01](home-composition-01.md) restent consultables avec leur statut historique. Les URLs de l’accueil affichent désormais la composition 02. Aucun de ces livrables ne vaut autorisation de mise en ligne.
+La [revue V1](review/index.html), la [planche illustrée](review/direction.html), l'[étude 3D](review/motion.html) et les [notes de la composition 01](home-composition-01.md) restent consultables avec leur statut historique. Les URLs de l’accueil affichent désormais la proposition 03. Aucun de ces livrables ne vaut autorisation de mise en ligne.

@@ -1,34 +1,48 @@
-# Accueil — composition 02, en mouvement
+# Accueil — proposition 03, repartir du produit
 
-10 septembre 2026. Proposition locale construite en réponse au retour « template Envato ». Elle remplace la composition 01 aux mêmes URLs, sans modifier le site de production. **À juger visuellement par Adrien ; non validée pour publication.**
+10 septembre 2026. **Proposition locale à examiner ; aucune intégration ni publication.** Le retour sur la proposition 02 est acté : ses effets paraissaient peu liés au produit et sa finition ne justifiait pas le remplacement de l’accueil.
 
-Ouvrir [FR](review/home.html), [EN](review/home-en.html) ou [es LATAM](review/home-es.html). Faire défiler la page dans les deux sens. Le bouton de revue « Vue mobile » montre les largeurs 320, 390 et 768 px ; « Limiter les animations » rend le parcours statique et coupe la lecture automatique.
+Ouvrir [l’accueil FR](review/home.html), [EN](review/home-en.html) ou [es LATAM](review/home-es.html).
 
-## Ce qui a changé
+## Ce qu’il faut regarder
 
-| Moment | Composition et interaction réellement présentes |
+1. **L’accueil et les cinq films.** Le fond clair et la logique de choix du site existant sont conservés. Le texte laisse la place aux rendus. Cliquer sur un modèle ouvre son panneau ; son film, sa durée, son mode, ses liens et son coût indicatif restent associés.
+2. **Les intentions.** Quatre entrées visuelles reprennent les guides actuels. Les comparatifs viennent ensuite, sans notes de performance inventées ni faux test de plusieurs moteurs sur un même prompt.
+3. **Angle.** Une vraie scène du site est présentée sous quatre cadrages générés. Sur ordinateur, le scroll fait passer de l’un à l’autre, dans les deux sens. Les boutons permettent de choisir librement. Sur petit écran, le bloc conserve une hauteur naturelle et se manipule par boutons. Ce sont quatre images, pas une caméra 3D continue.
+4. **Le MCP.** La proposition emploie une capture publique existante de Claude affichant une vidéo MaxVideoAI. Elle présente le parcours contexte → proposition et prix → création, avec liens Codex/Claude/ChatGPT. La capture s’agrandit. Aucune création MCP exécutée pour cette revue n’est revendiquée.
+5. **Le reste de l’accueil.** Création d’images, outils, tarifs, huit questions de l’accueil, liens de découverte et pied de page restent présents. Les longs arguments répétés deviennent des textes plus courts, des exemples et des liens utiles.
+
+Les fenêtres d’agrandissement ont un fond atténué, une fermeture native par Échap et un retour du focus. Le lecteur se met en pause quand une fenêtre s’ouvre ou quand son film sort de la zone visible.
+
+## Ce qui revient de l’accueil existant
+
+| Source actuelle | Nouvelle place |
 |---|---|
-| Ouverture | Film Kling 3 Pro en grand, titre et actions superposés sur desktop. Poster immédiat ; lecture différée sur desktop autorisé. Trois plans sélectionnables, commandes pause/son, progression de lecture et lecteur agrandi. Sur mobile : actions, poster, puis sélecteur et modèles. |
-| Choisir son projet | Quatre intentions, résultat contextualisé et accès permanent aux quatre guides. Comparatifs précis, familles d’exemples et catalogue accessibles en HTML. Aucun classement de performance inventé. |
-| MCP | Scène en CSS 3D : ordinateur qui s’ouvre, référence et proposition qui se détachent, validation du devis, résultat dans la bibliothèque. Construction et retour réversibles avec le scroll. Quatre étapes accessibles par boutons. Lecture du vrai film disponible dans le dernier état. |
-| Images et préparation | Trois images de départ, galerie qui se redresse au scroll, agrandissement natif en fenêtre modale. Composition mobile spécifique. Modèles image, personnage, angle, détourage, upscale et modes texte/image/vidéo vers vidéo reliés aux destinations produit. |
-| Prix et historique | Paiement à l’usage, prix avant génération, crédits en cas d’échec et historique regroupés. Aucun devis ou compteur fictif. |
-| Réponses et sortie | Huit réponses, liens utiles, pied de page étendu et dernière scène visuelle. |
+| Promesse de choix du modèle, exemples réels, prix avant génération | Titre, introduction, cinq films et informations de la sélection |
+| MiniMax H3 Max, Seedance 2.5, Wan 3 Prime, Kling 3 Pro, LTX 2.5 Pro | Même ordre et mêmes sources que le propriétaire de l’accueil |
+| Quatre guides par usage | Quatre grandes images sans cartes imbriquées |
+| Comparatifs et familles d’exemples | Liens explicites, comparatifs secondaires dans un accordéon HTML |
+| Références et outils de préparation | Démonstration Angle, image de départ Disco Motel, outils et modèles image |
+| Assistant MCP | Explication courte et capture réelle de l’intégration Claude |
+| Crédits, tarif préalable et remboursement des échecs | Bloc prix et historique |
+| Huit questions de recherche de l’accueil | Questions issues des dictionnaires actuels ; réponses raccourcies et localisées |
 
-La couleur, les fenêtres et la profondeur servent les étapes du produit. Il n’y a pas de bibliothèque 3D, GLB, nouvelle police distante ou animation qui bloque le contenu initial. Les scènes de l’essai chaussure restent des références historiques.
+Les cinq **coûts indicatifs** viennent des valeurs éditoriales de l’accueil : 1,19 / 1,46 / 0,70 / 2,63 / 0,72 USD. Ils ne sont ni recalculés dans le navigateur, ni présentés comme des devis actualisés ou des reçus de paiement. Le bouton d’information explique cette limite.
 
-## Vérité produit
+## Mobile et mouvement
 
-Le MCP reste une **illustration du parcours**, explicitement légendée. La vidéo Mars provient d’une démonstration Kling existante, pas d’une session MCP réalisée pour cette revue. Aucun devis dynamique, récupération automatique de site ou montage Studio n’est simulé. Codex, Claude et ChatGPT renvoient à leurs vraies pages d’intégration.
+Le poster principal est disponible dans le HTML et utilise les copies préparées existantes, dont la version mobile. La lecture automatique est réservée au desktop autorisé ; la lecture mobile demande une action. Une seule vidéo d’ambiance est montée à la fois. La vue mobile de la revue ne lance aucune lecture automatique.
 
-Les images Acid portrait, Disco Motel et Night Shift sont les starters de l’app. Elles ne sont attribuées à aucun moteur. Le lecteur agrandi montre la vidéo originale ; l’ambiance du hero utilise la projection de renditions publique déjà active.
+Le bloc Angle ne monopolise pas plusieurs écrans sur mobile, tablette, fenêtre très basse ou préférence de mouvement réduit. Les vues supplémentaires se préparent à l’approche de la section ; avec Save-Data, une vue est demandée au moment de la sélection.
 
-## Couverture et limites
+La page est une proposition de composition. **Aucun gain Core Web Vitals ni gain de conversion n’a été mesuré.** Les contrôles de largeur en iframe ne remplacent pas une recette sur téléphone.
 
-Les **40 destinations** du relevé précédent sont accessibles : 39 dans le contenu principal, Startup Fame dans le pied de page. La proposition contient 48 destinations distinctes dans le principal, dont de nouveaux accès aux intégrations et outils. Les trois comparatifs secondaires sont dans un accordéon HTML. Ce comptage confirme la présence de liens, pas une équivalence SEO ou une amélioration du trafic.
+## Référencement et intégration
 
-Cette itération n’intègre pas encore les propriétaires Next.js, les données de prix, metadata/hreflang/JSON-LD, consentement/analytics et les contrats de média de production. Les pages de revue restent noindex. Le code applicatif existant est intact.
+L’inventaire des 40 destinations de départ a été actualisé : toutes restent accessibles, certaines dans le pied de page. Les liens ne suffisent pas à démontrer une équivalence SEO. Les huit questions reprennent les intentions de recherche existantes ; les réponses raccourcies restent à valider avec les données et le contexte des pages.
 
-Restent à décider après examen de la page : direction artistique, dose et rythme des mouvements, puis qualité éditoriale et pertinence des preuves. La séquence image → outils → vidéo gagnera à recevoir des assets cohérents produits pour un cas précis ; la galerie actuelle ne prouve pas à elle seule cette transformation. Le choix éditorial des comparatifs anciens doit être réévalué avec les données avant intégration.
+Les pages de revue sont noindex. Les routes de production, metadata, hreflang, JSON-LD, sitemaps, consentement, Clarity, GA4, GSC et Zoho n’ont pas été modifiés. L’ES éditorial est LATAM ; les routes existantes restent en /es.
 
-[Recette et limites de vérification](home-composition-02-validation.md) · [Sources et exécution](review/home/README.md) · [Brief de remplacement](home-replacement-brief.md) · [Historique composition 01](home-composition-01.md)
+**Prochaine décision :** juger cette composition dans le contexte de l’accueil, surtout l’ouverture, la sélection et l’usage d’Angle. Ensuite seulement, intégrer le lot retenu dans les propriétaires Next.js existants et mesurer les médias, les parcours et le référencement avant mise en ligne.
+
+[Recette et limites](home-composition-03-validation.md) · [Exécution et sources](review/home/README.md) · [Brief de remplacement](home-replacement-brief.md) · [Notes historiques de la proposition 02](home-composition-02.md)

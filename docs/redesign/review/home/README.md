@@ -1,6 +1,6 @@
-# Composition locale de l'accueil
+# Revue locale de l’accueil — proposition 03
 
-Support de conception, sans API de génération ni route applicative modifiée. Entrée : [FR](../home.html), [EN](../home-en.html), [es LATAM](../home-es.html). Les actions produit ouvrent les destinations réelles dans un nouvel onglet.
+Entrées : [FR](../home.html), [EN](../home-en.html), [es LATAM](../home-es.html). Les pages sont des supports de conception noindex, sans génération, paiement, événements analytics ou modification des routes de production.
 
 Depuis la racine du worktree :
 
@@ -9,46 +9,58 @@ node docs/redesign/review/home/build.mjs
 python3 -m http.server 8775 --bind 127.0.0.1
 ```
 
-Ouvrir `http://127.0.0.1:8775/docs/redesign/review/home.html`. Réutiliser le serveur existant si le port est déjà occupé. La structure du dépôt est nécessaire pour les images et la police ; servir uniquement sur l'interface locale.
+Réutiliser le serveur déjà présent sur le port 8775. La structure du dépôt est nécessaire aux images et à la police.
 
 ## Propriétaires
 
-- `content.mjs` : socle éditorial, réponses, modèles et sources visuelles de la composition 01.
-- `editorial.mjs` : textes de la composition 02 en FR/EN/es-419.
-- `build.mjs` appelle `render.mjs` : génération des trois pages HTML, destinations localisées et lecture de la projection publique existante des renditions. Modifier le générateur ou les contenus, puis régénérer ; ne pas modifier les pages générées séparément.
-- `home.css` : composition responsive et états de focus/mouvement réduit.
-- `home.mjs` : sélections, scène au scroll, galerie, lecteurs agrandis, langue, menu et aperçu mobile.
-- `playback.mjs` : lecteur d’ambiance propre à cette revue ; gestion intention/visibilité, pause, erreur, original et vidéo différée. Il ne remplace pas les propriétaires React de production.
-- `playback.test.mjs` : quatre tests de comportement (pause explicite, visibilité, fallback, erreurs périmées et sélection mobile). Aucun framework ni dépendance ajouté.
+- `build.mjs` → `rebuild.mjs` : génération des trois pages, lecture des médias de l’accueil actuel, prix indicatifs éditoriaux, questions FAQ des dictionnaires et liens localisés. Le lecteur de sources est volontairement borné et échoue si l’ordre des cinq moteurs change ; réviser les attributions avant d’étendre la liste.
+- `rebuild-copy.mjs` : nouvelle rédaction FR/EN/es-419.
+- `content.mjs` : labels communs, réponses courtes déjà rédigées et source du starter Disco Motel.
+- `rebuild.css` : composition claire, panneaux de films, présentation Angle, responsive, focus et mouvement réduit.
+- `rebuild.client.mjs` : sélection, défilement Angle, boutons, fenêtres natives, langue et aperçu mobile.
+- `playback.mjs` : un lecteur d’ambiance local, déplacé entre les panneaux ; gestion visibilité, pause explicite, fin de tentative et fallback original.
+- `playback.test.mjs` : cinq tests du comportement du lecteur.
 
-Les FAQ et le premier exemple sont présents dans le HTML. Les images ont une géométrie déclarée ; seul le poster principal est prioritaire. Les autres couvertures sont différées. Le lecteur d’ambiance monte une seule vidéo à la fois. L’autoplay est différé et réservé au desktop visible, sans mouvement réduit ni Save-Data. Sur mobile, une action explicite peut lancer la lecture. Le film agrandi utilise l’original avec ses contrôles natifs. La scène articulée utilise des éléments HTML transformés en CSS 3D, sans charger le GLB ni le runtime de l’ancien essai.
+`render.mjs`, `editorial.mjs`, `home.css` et `home.mjs` sont les sources historiques de la proposition 02. Le générateur actif ne les charge plus. Ne pas exécuter l’ancien générateur sur les URLs courantes.
 
-## Provenance
+## Sources utilisées
 
-| Visuel | Source de vérité consultée | Usage dans la revue |
-|---|---|---|
-| Astronaute / Kling 3 Pro | `frontend/components/marketing/home/home-redesign-visuals.ts`, `KLING_3_PRO_HERO_RENDER` | Poster public exact, 12 s, image vers vidéo. Ouverture et choix Kling |
-| Ballons / Seedance 2.5 | Même fichier, `HERO_ENGINE_MEDIA` | Poster public exact, 10 s, texte vers vidéo. Choix Seedance |
-| Scène narrative / MiniMax H3 Max | Même fichier, affiche `showcase-minimax-h3-max-12s.webp` et sa projection dans `frontend/config/home-posters.generated.json` | Copie d'affichage préparée déjà existante, 12 s, texte vers vidéo. Choix MiniMax ; galerie famille `hailuo` |
-| Acid portrait, Disco motel, Night shift | `frontend/lib/starter-media.ts`, fichiers `frontend/public/assets/app-starters` | Images initiales de l'app, sans attribution à un moteur. La scène MCP emploie le visuel Mars de la démonstration Kling |
-| Marques des modèles | `frontend/src/lib/brand-partners.ts`, marques compactes de `frontend/public/brand/partners` | Identification des familles, pas endorsement ni partenariat revendiqué |
-| Claude et OpenAI avec Codex | Marques existantes du dépôt et convention du site | Identification des assistants. Une marque propre à Codex reste à vérifier avant publication |
-| MaxVideoAI | `frontend/public/assets/branding/logo-mark.svg` | Signe officiel existant associé au nom en texte |
-| Typographie | `frontend/app/(core)/_fonts/GeistLatin.woff2` | Aucun appel à un fournisseur externe de polices |
+| Contenu | Propriétaire consulté |
+|---|---|
+| Cinq films, posters, durée, ordre et coûts indicatifs | `frontend/components/marketing/home/home-redesign-visuals.ts` |
+| Copie prioritaire du poster MiniMax, desktop/mobile | `frontend/config/home-posters.generated.json`, lecture seule |
+| Vidéos d’ambiance préparées | `frontend/config/public-video-renditions.generated.json`, lecture seule ; original pour la vue agrandie |
+| Questions et intentions SEO de l’accueil | `frontend/messages/{fr,en,es}.json`, `home.redesign.faq` ; les réponses viennent de la rédaction courte locale, alignée sur les mêmes huit questions |
+| Quatre cadrages du dialogue | `frontend/src/components/tools/angle/landing/angle-landing-assets.ts`, images `angle-orbit-hero-dialogue-{source,field,reverse,elevated}.webp` |
+| Preuve d’intégration Claude | Capture publique existante `frontend/public/media/mcp/claude-inline-video-proof.jpg` ; anglais de l’interface conservé dans la capture |
+| Image Disco Motel | Starter existant de l’app ; pas d’attribution à un modèle |
+| Marques | Logo MaxVideoAI et marques compactes existantes dans `frontend/public/brand/partners` |
+| Police | Geist Latin locale, déjà présente dans le dépôt |
+| Publication MCP et absence de promesse Studio | `frontend/config/mcp-publication.json` |
+| Destinations | `frontend/i18n/routing.ts` et registre des modèles |
 
-Le catalogue, les slugs et la publication des modèles ont été vérifiés dans `frontend/config/model-registry.json`. Les destinations localisées suivent `frontend/i18n/routing.ts`. Le prix avant génération, le paiement à l'usage et les crédits rendus en cas d'échec reprennent les conditions affichées dans `frontend/messages/fr.json`. La disponibilité MCP/Studio reprend `frontend/config/mcp-publication.json` et [l'analyse produit](../../product-narrative.md).
+Les prix sont les **valeurs indicatives affichées par l’accueil existant**, pas des reçus vérifiés ni des devis actualisés. Le montant de la capture Claude reste propre à cette capture. Le choix du modèle change simultanément vidéo, libellé, durée, mode, estimation et liens.
 
-Aucune nouvelle génération d'image ou vidéo, dépense ou copie de média distant dans le dépôt. La préparation et l'activation de nouveaux médias de production restent régies par [le guide médias](../../../engineering/media-delivery.md).
+Aucune image/vidéo distante n’a été téléchargée dans le dépôt pour contourner l’affichage. Aucune nouvelle génération n’a été nécessaire pour cette itération.
 
-L'aperçu en iframe teste une largeur de composition. Il ne simule ni un téléphone physique, ni Safari, ni un réseau lent. Les pages sont `noindex,nofollow` et n'ont pas de canonical, hreflang ou schéma de production. Voir [la recette actuelle](../../home-composition-02-validation.md).
+## Média et mouvement
 
-## Vérifier
+Le poster initial est présent avant JavaScript. Les autres posters sont différés ; les panneaux mobiles masqués ne montent pas leur vidéo. La lecture mobile demande une action et la vue embarquée désactive l’autoplay. Le lecteur se déplace en libérant la source précédente. La sortie du champ, une fenêtre ouverte et l’onglet masqué suspendent la lecture ; une pause explicite reste respectée.
+
+Angle utilise quatre images existantes. Les vues additionnelles se chargent à l’approche de la section, ou sur sélection avec Save-Data. Le scroll est natif, sans détournement de molette. Les boutons prennent temporairement la main sur le scroll. Petit écran, faible hauteur ou mouvement réduit donnent un bloc de hauteur naturelle. Aucune animation d’entrée ne cache le contenu initial.
+
+Pour intégrer au site : réutiliser les propriétaires React de lecture vidéo et les URLs responsive de l’outil Angle. Ce prototype ne remplace ni `usePublicVideoPlayback`, ni `usePublicVideoControls`, ni la préparation des posters/renditions. Voir [le guide média](../../../engineering/media-delivery.md).
+
+## Contrôler
 
 ```bash
 node docs/redesign/review/home/build.mjs
+node --check docs/redesign/review/home/rebuild.mjs
+node --check docs/redesign/review/home/rebuild.client.mjs
 node --test docs/redesign/review/home/playback.test.mjs
-node --check docs/redesign/review/home/home.mjs
 git diff --check
 ```
 
-La revue ne déclenche aucune génération, n’effectue aucun paiement et n’envoie aucun événement analytics. Les captures de recette restent dans le dossier `output/` ignoré du checkout principal.
+L’aperçu en iframe sert à la composition à 320, 390 et 768 px ; il ne simule pas un vrai téléphone, Safari ou un réseau lent. Captures dans le dossier `output/redesign-composition-03-2026-09-10` ignoré du checkout principal.
+
+[Présentation](../../home-composition.md) · [Recette](../../home-composition-03-validation.md) · [Inventaire des destinations](../../home-replacement-links.json)
