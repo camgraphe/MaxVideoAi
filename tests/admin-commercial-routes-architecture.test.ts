@@ -239,20 +239,18 @@ test('billing product E2E scopes row discovery and selection to the live invento
   assert.doesNotMatch(state, /page\.locator\('tbody tr'\)/);
 });
 
-test('membership E2E previews all tiers, locks controls, cancels, and never confirms', () => {
+test('membership E2E preserves read-only history and rejects editing or mutations', () => {
   const source = read(adminCriticalFlowsPath);
-  const flow = source.match(/test\('membership tiers preview and cancel without applying'[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
+  const flow = source.match(/test\('retired membership tiers remain readable without editing or applying changes'[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
   const state = source.match(/async function waitForMembershipState[\s\S]*?\n\}/)?.[0] ?? '';
 
   assert.match(flow, /getByTestId\('membership-tier-inventory'\)/);
-  assert.match(flow, /\['member', 'plus', 'pro'\]\.map/);
-  assert.match(flow, /inventory\.getByLabel\(`\$\{tier\} discount fraction \(0–1\)`\)/);
-  assert.match(flow, /MEMBERSHIP_PREVIEW_ENDPOINT|\/api\/admin\/membership\/preview/);
-  assert.match(flow, /request\.method\(\) === 'POST'/);
-  assert.match(flow, /toBeDisabled\(\)/);
-  assert.match(flow, /getByRole\('button', \{ name: 'Cancel' \}\)\.click\(\)/);
-  assert.match(flow, /confirmRequests\)\.toBe\(0\)/);
+  assert.match(flow, /Membership history/);
+  assert.match(flow, /inventory\.locator\('dl'\)\)\.toHaveCount\(3\)/);
+  assert.match(flow, /inventory\.locator\('input, select, textarea'\)\)\.toHaveCount\(0\)/);
+  assert.match(flow, /!\['GET', 'HEAD', 'OPTIONS'\]\.includes\(request\.method\(\)\)/);
+  assert.match(flow, /expect\(mutations\)\.toEqual\(\[\]\)/);
   assert.doesNotMatch(flow, /getByRole\('button', \{ name: 'Confirm and apply now' \}\)\.click/);
   assert.match(state, /return 'timeout' as const/);
-  assert.match(flow, /if \(membershipState === 'timeout'\) \{\s*throw new Error/);
+  assert.match(flow, /expect\(membershipState\)\.not\.toBe\('timeout'\)/);
 });

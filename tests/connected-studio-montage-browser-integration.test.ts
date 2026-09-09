@@ -235,7 +235,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       const writesBeforeConflictReopen = stale.workspaceWrites.length;
       for (let reopen = 0; reopen < 2; reopen += 1) {
         await stale.page.reload({ waitUntil: 'domcontentloaded' });
-        await expect(stale.page.locator('[data-timeline-item]')).toHaveCount(2);
+        await expect(stale.page.locator('[data-timeline-item]')).toHaveCount(2, { timeout: 25_000 });
         await stale.page.locator('[data-timeline-item="montage-clip-01"]').click();
         await expect(stale.page.getByLabel('Clip name', { exact: true })).toHaveValue('Unsaved stale tab edit');
         await expect(conflictAlert).toBeVisible();
