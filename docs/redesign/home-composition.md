@@ -1,54 +1,34 @@
-# Accueil — composition 01
+# Accueil — composition 02, en mouvement
 
-9 septembre 2026. Première page complète après l'étude de mouvement. **Proposition à examiner**, distincte des routes de production.
+10 septembre 2026. Proposition locale construite en réponse au retour « template Envato ». Elle remplace la composition 01 aux mêmes URLs, sans modifier le site de production. **À juger visuellement par Adrien ; non validée pour publication.**
 
-**Retour du 10 septembre : à reprendre.** La proposition est trop légère et sa couverture ne suffit pas pour remplacer l'accueil actuel. La recette technique reste valable dans son périmètre ; voir [le diagnostic et le brief corrigé](home-replacement-brief.md) avant de poursuivre.
+Ouvrir [FR](review/home.html), [EN](review/home-en.html) ou [es LATAM](review/home-es.html). Faire défiler la page dans les deux sens. Le bouton de revue « Vue mobile » montre les largeurs 320, 390 et 768 px ; « Limiter les animations » rend le parcours statique et coupe la lecture automatique.
 
-Ouvrir [l'accueil FR](review/home.html). Le sélecteur propose aussi [EN](review/home-en.html) et [espagnol LATAM](review/home-es.html). « Vue mobile » présente la même page à 320, 390 ou 768 px. « Voir les effets prévus » affiche les intentions dans leur section ; ces annotations sont masquées à l'ouverture.
+## Ce qui a changé
 
-## Ce que cette page propose
+| Moment | Composition et interaction réellement présentes |
+|---|---|
+| Ouverture | Film Kling 3 Pro en grand, titre et actions superposés sur desktop. Poster immédiat ; lecture différée sur desktop autorisé. Trois plans sélectionnables, commandes pause/son, progression de lecture et lecteur agrandi. Sur mobile : actions, poster, puis sélecteur et modèles. |
+| Choisir son projet | Quatre intentions, résultat contextualisé et accès permanent aux quatre guides. Comparatifs précis, familles d’exemples et catalogue accessibles en HTML. Aucun classement de performance inventé. |
+| MCP | Scène en CSS 3D : ordinateur qui s’ouvre, référence et proposition qui se détachent, validation du devis, résultat dans la bibliothèque. Construction et retour réversibles avec le scroll. Quatre étapes accessibles par boutons. Lecture du vrai film disponible dans le dernier état. |
+| Images et préparation | Trois images de départ, galerie qui se redresse au scroll, agrandissement natif en fenêtre modale. Composition mobile spécifique. Modèles image, personnage, angle, détourage, upscale et modes texte/image/vidéo vers vidéo reliés aux destinations produit. |
+| Prix et historique | Paiement à l’usage, prix avant génération, crédits en cas d’échec et historique regroupés. Aucun devis ou compteur fictif. |
+| Réponses et sortie | Huit réponses, liens utiles, pied de page étendu et dernière scène visuelle. |
 
-| Moment | Message et action | Rôle du visuel |
-|---|---|---|
-| Ouverture | Créer une vidéo depuis du texte ou une image, prix connu avant génération | Grand poster d'une vidéo Kling 3 Pro existante. Actions avant le média sur mobile |
-| Workflow MCP | Contexte du projet → proposition et prix à valider → création dans la bibliothèque | Trois fenêtres indépendantes autour d'une même référence ; emplacement proposé pour le mouvement principal au scroll |
-| Images et outils | Créer la référence, explorer un angle, préparer la vidéo | Trois images de départ réellement disponibles dans l'app ; liens vers les modèles image et les outils |
-| Choix du modèle | Regarder des rendus et comparer les capacités | Sélecteur fonctionnel MiniMax / Seedance / Kling, posters et destinations propres à chaque modèle |
-| Prix | Paiement à l'usage, sans abonnement, crédits rendus en cas d'échec | Typographie et trois explications courtes, sans montant estimé inventé |
-| Réponses et action | Lever les huit questions principales et entrer dans l'app | FAQ native, liens d'approfondissement, pied de page |
+La couleur, les fenêtres et la profondeur servent les étapes du produit. Il n’y a pas de bibliothèque 3D, GLB, nouvelle police distante ou animation qui bloque le contenu initial. Les scènes de l’essai chaussure restent des références historiques.
 
-La palette claire, l'accent vert et la combinaison typographique sont une proposition. Les frontières de sections reposent sur l'espace et la composition. Les fenêtres du MCP représentent des étapes du produit ; elles ne servent pas de conteneurs décoratifs pour tout le site.
+## Vérité produit
 
-## Ce que nous retenons du dernier retour
+Le MCP reste une **illustration du parcours**, explicitement légendée. La vidéo Mars provient d’une démonstration Kling existante, pas d’une session MCP réalisée pour cette revue. Aucun devis dynamique, récupération automatique de site ou montage Studio n’est simulé. Codex, Claude et ChatGPT renvoient à leurs vraies pages d’intégration.
 
-- L'étude chaussure/ordinateur reste une référence de mouvement. Son sujet n'est pas retenu pour l'accueil.
-- Le défilement doit expliquer la progression réelle d'une création. L'ouverture d'ordinateur peut servir la section MCP si elle rend cette progression plus claire.
-- Aucun bouton « charger l'expérience » sur la page destinée au visiteur. Le premier état doit être présent ; les ressources nécessaires au mouvement se préparent avant son entrée en scène. Cela ne signifie pas charger toutes les vidéos du site au premier affichage.
-- L'aperçu vidéo qui accompagne la souris est proposé dans le sélecteur de modèles. Au toucher : sélection et média fixe au même emplacement, avec commandes de lecture appropriées.
-- La composition doit fonctionner avec ses images avant la fabrication de l'effet. Cette version ne contient donc ni vidéo automatique ni scène 3D.
+Les images Acid portrait, Disco Motel et Night Shift sont les starters de l’app. Elles ne sont attribuées à aucun moteur. Le lecteur agrandi montre la vidéo originale ; l’ambiance du hero utilise la projection de renditions publique déjà active.
 
-## Vérité produit et contenu
+## Couverture et limites
 
-Les fenêtres MCP sont une **illustration du parcours**, pas un transcript d'assistant ni une preuve d'une vidéo déjà créée. Le même visuel Disco Motel apparaît comme contexte et plan envisagé. La légende indique que le résultat vidéo reste à produire. Aucune promesse de récupération automatique d'un site, de reconstruction 3D ou de montage Studio.
+Les **40 destinations** du relevé précédent sont accessibles : 39 dans le contenu principal, Startup Fame dans le pied de page. La proposition contient 48 destinations distinctes dans le principal, dont de nouveaux accès aux intégrations et outils. Les trois comparatifs secondaires sont dans un accordéon HTML. Ce comptage confirme la présence de liens, pas une équivalence SEO ou une amélioration du trafic.
 
-Le MCP est visible tôt dans la page et mène à sa vraie entrée publique. Le Studio reste absent de l'action principale compte tenu de son accès actuel. Les marques proviennent du dépôt ; elles identifient modèles et assistants sans revendiquer de partenariat. Sources détaillées : [guide de la composition](review/home/README.md).
+Cette itération n’intègre pas encore les propriétaires Next.js, les données de prix, metadata/hreflang/JSON-LD, consentement/analytics et les contrats de média de production. Les pages de revue restent noindex. Le code applicatif existant est intact.
 
-Les huit thèmes de la FAQ actuelle sont conservés : création, choix du modèle, référence image, texte/image vers vidéo, exemples et prompts, coût, abonnement, limites. Les réponses ont été raccourcies et réécrites dans les trois langues. Il s'agit d'une proposition éditoriale, pas d'une amélioration SEO mesurée.
+Restent à décider après examen de la page : direction artistique, dose et rythme des mouvements, puis qualité éditoriale et pertinence des preuves. La séquence image → outils → vidéo gagnera à recevoir des assets cohérents produits pour un cas précis ; la galerie actuelle ne prouve pas à elle seule cette transformation. Le choix éditorial des comparatifs anciens doit être réévalué avec les données avant intégration.
 
-L'espagnol emploie le tutoiement, « video », « costo », « agrega » et « créditos » pour une cible LATAM. L'aperçu porte `lang="es-419"`. Les destinations produit gardent `/es/` et les slugs existants. Aucun changement de hreflang de production.
-
-## Points à reprendre lors de l'intégration
-
-Le [tableau des sections existantes](home-pilot.md#correspondance-avec-laccueil-existant) reste le contrat de migration. La composition ne justifie pas de supprimer silencieusement des contenus ou des liens. En particulier :
-
-- Replacer les liens vers les guides par usage du sélecteur actuel et vérifier les comparatifs précis, prompts/réglages et fonctions moins visibles dans cette proposition.
-- Comparer chaque réponse réécrite au contenu actuel et à ses données structurées avant remplacement.
-- Conserver les propriétaires existants pour les URLs, métadonnées, canonical, hreflang, schémas, prix et lecteurs vidéo. La structure de cette revue statique ne devient pas l'architecture Next.js.
-- Intégrer les visuels retenus par les contrats médias existants : poster prioritaire, variantes responsives, géométrie réservée, renditions et contrôle réseau. Les deux JPEG distants de cette revue ne constituent pas une stratégie de livraison mobile.
-- Conserver et vérifier les événements Clarity/GA4, la mesure GSC et les intégrations, dont le statut Zoho encore à confirmer. Cette composition locale n'envoie aucun nouvel événement aux comptes.
-
-## Prochaine décision concrète
-
-Juger l'accueil entier : hiérarchie, place donnée au MCP, qualité des visuels et lisibilité mobile. Retenir les sections et leur message, puis ajuster leurs images. Ensuite seulement : produire la séquence au scroll dans la section retenue et éprouver ce langage sur `/models`, une fiche et une page d'exemples. Le choix des effets n'est pas déduit de leur simple présence dans les annotations.
-
-Vérifications et limites : [recette de la composition](home-composition-validation.md).
+[Recette et limites de vérification](home-composition-02-validation.md) · [Sources et exécution](review/home/README.md) · [Brief de remplacement](home-replacement-brief.md) · [Historique composition 01](home-composition-01.md)

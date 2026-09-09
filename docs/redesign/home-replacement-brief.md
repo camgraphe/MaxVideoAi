@@ -2,6 +2,8 @@
 
 10 septembre 2026, relevés dans la nuit du 9 au 10. Référence : accueil de production anglais relu dans Chrome, composition 01 et retour d'Adrien. **La composition 01 ne remplit pas encore le rôle d'un remplacement de l'accueil.** Sa direction est à reprendre ; la recette technique précédente n'était pas une validation de sa richesse produit ou de sa couverture SEO.
 
+**Livrable du 10 septembre :** [composition 02 fonctionnelle](home-composition.md), avec scroll, vidéos et reprise des accès documentés. Elle constitue une réponse locale à ce brief, pas une validation de mise en production.
+
 ## Principe acquis
 
 Adrien autorise l'amélioration du SEO, les réécritures, simplifications et fusions. Le contrat porte sur la fonction rendue au visiteur et les intentions de recherche, pas sur la conservation mot à mot des textes ni le même nombre de sections. Chaque contenu ou destination retiré doit avoir une décision motivée : gardé, fusionné, déplacé ou supprimé avec justification. Le remplacement de la page n'implique pas de changer son URL.

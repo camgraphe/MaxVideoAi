@@ -21,7 +21,7 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 **Dernier retour :** la composition 01 paraît trop légère, générique et insuffisante pour remplacer l'accueil actuel. Adrien confirme qu'on peut améliorer le SEO, réécrire et fusionner ; il faut conserver la logique produit. Benchmark demandé : Higgsfield et InVideo, complétés par les acteurs stock devenus créatifs IA.
 
-**Référence actuelle : [le brief de remplacement corrigé](home-replacement-brief.md).** Comparaison directe avec la production, rôles des sections, [40 destinations documentées](home-replacement-links.json), nouvelle composition en six moments et observations sur Higgsfield, InVideo et Freepik/Magnific. La [composition 01](review/home.html) reste consultable comme version à reprendre ; elle n'est pas un candidat prêt à remplacer l'accueil.
+**Référence actuelle : [le brief de remplacement corrigé](home-replacement-brief.md).** Comparaison directe avec la production, rôles des sections, [40 destinations documentées](home-replacement-links.json), nouvelle composition en six moments et observations sur Higgsfield, InVideo et Freepik/Magnific. La [composition 02](review/home.html) est désormais construite avec les interactions et le mouvement ; [présentation et limites](home-composition.md). Elle reste à examiner avant intégration.
 
 ## Documents de travail
 
@@ -65,7 +65,7 @@ Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouve
 
 Le fil de création suivie a reçu un accord de direction. La hiérarchie complète, la place du MCP et les médias restent à préciser avant de clôturer V1. V2/V3 ne sont pas validés par défaut parce que le cadrage existe.
 
-La [composition 01](review/home.html) est à reprendre selon le [brief corrigé](home-replacement-brief.md). La [revue V1](review/index.html), la [planche de direction](review/direction.html) et l’essai 3D restent des explorations historiques. Leur existence ne valide pas le prototype intégré V3.
+La [composition 02](review/home.html) répond au [brief corrigé](home-replacement-brief.md) ; sa direction visuelle reste à valider. La [revue V1](review/index.html), la [planche de direction](review/direction.html) et l’essai 3D restent des explorations historiques. Leur existence ne valide pas le prototype intégré V3.
 
 ## Approfondissement avant implémentation
 
