@@ -28,3 +28,7 @@
 - Les liens Markdown sont des documents de travail servis par le serveur local ; leur présentation dépend du lecteur utilisé.
 
 Screenshots locaux, hors versionnement : `output/redesign-review-2026-09-09/` dans le checkout principal. La revue versionnée et ses médias référencés restent la source disponible dans le worktree.
+
+## Clarification après retour utilisateur
+
+Ajout de `review/direction.html` et d'une planche ImageGen en quatre états (2 220 224 octets). Fichier source copié sans modification, prompt conservé. Chargement et contenu de la nouvelle page vérifiés dans Chrome ; résolution des liens/médias locaux des deux HTML et `git diff --check` réussis. Aucun test d'animation 3D ou de rotation 360° : ces mouvements restent à réaliser. La planche est un document de conception, pas un média livré au site public.

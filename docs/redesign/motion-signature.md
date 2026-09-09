@@ -1,5 +1,7 @@
 # Proposition de mouvement — « La scène se construit »
 
+> **Réorientation après la revue V1 :** le découpage d'image en plans rectangulaires ne répond pas à l'ambition exprimée. Il est écarté comme effet signature. Les tableaux ci-dessous conservent l'historique ; la direction actuelle demande des objets aux contours indépendants, assemblage spatial et caméra/rotation. Voir [direction-reorientation.md](direction-reorientation.md) et [la planche en quatre états](review/direction.html).
+
 Statut : proposition à examiner avec V1/V2. Exigence utilisateur du 9 septembre : inclure au moins une direction ambitieuse dans laquelle des éléments se construisent et se déconstruisent à mesure que l'on avance ou remonte dans la page. Cette exigence ne vaut pas approbation du scénario détaillé ci-dessous.
 
 ## Effet signature proposé pour MaxVideoAI

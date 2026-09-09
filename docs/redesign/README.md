@@ -19,6 +19,8 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
+**Dernier retour :** la revue V1 est difficile à interpréter et son ambition visuelle insuffisante. Adrien n'est pas convaincu par la montre, le style ni le découpage d'une image en rectangles. Il demande des objets détourés et indépendants qui s'assemblent, des rotations de caméra/objet, une ouverture d'ordinateur ou un workflow qui progresse au scroll. La [nouvelle intention illustrée](review/direction.html) répond à ce retour ; elle n'est pas validée. Voir [la réorientation](direction-reorientation.md).
+
 ## Documents de travail
 
 | Document | Contenu | Statut |

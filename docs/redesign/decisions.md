@@ -30,6 +30,8 @@
 | D24 | Réconcilier l'attribution avant d'évaluer la conversion du reboot | Recommandation issue des données | GA4 : 94,07 % du revenu affiché dans Unassigned |
 | D25 | Vérifier performance terrain et plein écran dans la recette du pilote | Priorité d'investigation | Clarity agrégé : LCP 3,5 s / INP 260 ms / CLS 0,13 ; erreur requestfullscreen non localisée |
 | D26 | Réutiliser la montre comme preuve existante ; proposer une collection originale distincte | Proposition, aucune nouvelle génération | Médias inspectés et provenance du 6 septembre ; review/README.md |
+| D27 | Écarter la montre et le découpage rectangulaire comme base de la nouvelle direction | Réorientation après retour utilisateur | Revue jugée difficile à lire, trop simple ; demande d'objets indépendants, assemblage, rotation, ordinateur qui s'ouvre |
+| D28 | Distinguer ordre de page, direction artistique et mouvement ; montrer l'intention avant de demander une validation | Méthode corrigée | Nouvelle planche ImageGen en quatre états et explication en français dans review/direction.html |
 
 ## Avancement
 
@@ -62,4 +64,4 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 
 Le fil suivi est acquis comme direction ; ne pas redemander cet accord. Prochaine revue : storyboard complet intégrant le MCP et la place conditionnelle du Studio, avec références précises et planche des détails. Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
 
-Livrable désormais disponible : [review/index.html](review/index.html). La décision proposée porte sur l'ordre résultat → transformation → MCP → choix → usages → prix → réponses, et sur le brief de collection. Les couleurs de la revue et ses essais CSS ne valent pas validation V2/V3.
+Livrable historique : [review/index.html](review/index.html). **Le retour suivant n'a pas validé la direction.** Ne pas redemander d'approuver l'ordre global depuis ce support avant que l'intention soit suffisamment compréhensible. Livrable de clarification : [review/direction.html](review/direction.html), quatre images d'une scène sortant du cadre. Sujet, palette et chorégraphie restent des propositions. Aucun essai animé 3D encore réalisé.
