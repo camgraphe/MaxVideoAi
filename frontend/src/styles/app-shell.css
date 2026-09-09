@@ -44,13 +44,12 @@
 .app-experience .app-navigation-rail { width: 100%; flex-direction: column; gap: 10px; padding: 18px 6px; overflow-y: auto; }
 .app-experience .app-navigation-rail a { position: relative; flex-direction: column; min-height: 65px; gap: 7px; font-size: 10px; padding: 7px 2px; text-align: center; }
 .app-experience .app-navigation-rail a[aria-current="page"]::before { content: ''; position: absolute; left: -6px; width: 2px; height: 22px; background: var(--app-accent); }
-.app-experience .app-navigation-badged { position: relative; }
-.app-experience .app-navigation-badged::after {
-  content: attr(data-navigation-badge);
-  position: absolute; top: 4px; right: 2px; z-index: 1;
-  padding: 3px 6px 2px; color: #fff; background: linear-gradient(135deg, #a855f7, #6d28d9);
-  clip-path: polygon(9% 0, 100% 0, 91% 100%, 0 100%); transform: rotate(7deg);
-  font-size: 7px; font-weight: 800; line-height: 1; letter-spacing: .08em; text-transform: uppercase;
+.app-experience .app-navigation-label { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; }
+.app-experience .app-navigation-badge {
+  display: inline-flex; align-items: center; min-height: 12px; padding: 2px 4px 1px;
+  border-radius: 3px; color: #fff; background: linear-gradient(135deg, #a855f7, #6d28d9);
+  transform: rotate(-5deg); transform-origin: center;
+  font-size: 6px; font-weight: 800; line-height: 1; letter-spacing: .07em; text-transform: uppercase;
   box-shadow: 0 3px 9px rgb(91 33 182 / 30%); pointer-events: none;
 }
 .app-experience .app-navigation-rail a:last-child { margin-top: auto; }

@@ -24,10 +24,12 @@ export function AppNavigation({ variant, studioVisible = false }: {
           href={item.href}
           prefetch={false}
           aria-current={(activities ? selection.activity : selection.primary) === item.id ? 'page' : undefined}
-          className={item.badge ? 'app-navigation-badged' : undefined}
-          data-navigation-badge={item.badge}
         >
-          <AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span>
+          <AppGlyph name={item.glyph} />
+          <span className="app-navigation-label">
+            <span>{appNavLabel(item, locale)}</span>
+            {item.badge ? <span className="app-navigation-badge" aria-hidden="true">{item.badge}</span> : null}
+          </span>
         </Link>
       ))}
     </nav>
