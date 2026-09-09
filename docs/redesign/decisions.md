@@ -17,6 +17,9 @@
 | D11 | « La scène se construit » : plans → angles → vidéo → galerie | Proposition | motion-signature.md ; références repérées, qualification visuelle à faire |
 | D12 | Mobile et performance prioritaires, conçus dès le début | Exigence utilisateur | Ajout du 9 septembre pendant le cadrage |
 | D13 | Chaque jalon visuel présente mobile et desktop ; effet non retenu s'il dégrade l'usage mobile | Critère proposé | mobile-performance.md |
+| D14 | Inclure ImageGen, vidéos MaxVideoAI et pictogrammes propres dans le workflow | Exigence utilisateur, méthode documentée | creative-research.md ; aucune nouvelle génération lancée |
+| D15 | Conseil global SEO/GEO, contenu, conversion, acquisition et mesure | Exigence utilisateur, propositions rédigées | conseil-strategique.md et measurement.md |
+| D16 | Exploiter les onglets Chrome existants | Première lecture réalisée | GSC/Vercel/Semrush repérés ; métriques Vercel 24 h uniquement |
 
 ## Avancement
 
@@ -27,6 +30,9 @@
 - [x] Identifier les premières responsabilités de contenu et défauts de langue.
 - [x] Préparer les critères de migration/recette et les points de validation.
 - [x] Vérifier les contrats ciblés : 13/13 passent.
+- [x] Documenter la recherche d'effets avec sources et leur application au produit.
+- [x] Préparer le workflow d'assets et les recommandations par métier.
+- [x] Inspecter l'instrumentation existante et amorcer la lecture des comptes dans Chrome.
 - [ ] Valider V1 : scénario de l'accueil.
 - [ ] Acquérir crawl et données d'acquisition disponibles en lecture seule.
 - [ ] Inspecter et qualifier les assets du parcours suivi.

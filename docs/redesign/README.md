@@ -23,6 +23,9 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 | Document | Contenu | Statut |
 |---|---|---|
+| [Conseil stratégique](conseil-strategique.md) | Recommandations par métier et rôle de chaque famille de pages | Proposition directrice |
+| [Recherche créative et assets](creative-research.md) | Références, effets, ImageGen, vidéo et pictogrammes | Recherche sourcée ; effets à éprouver |
+| [Mesure et conversion](measurement.md) | Clarity, GSC, GA4, baseline et hypothèses | Code inspecté ; collecte complète à faire |
 | [Inventaire](inventory.md) | Gabarits publics et priorités initiales | Inventorié depuis le code ; trafic à mesurer |
 | [Scénario du pilote](home-pilot.md) | Proposition de parcours complet et mouvement | À valider au jalon V1 |
 | [Effet signature](motion-signature.md) | Construction/déconstruction au scroll, références et options techniques | Proposition ambitieuse à qualifier |
@@ -61,6 +64,7 @@ Les suppressions/fusions de pages, changements d'URL, nouvelles promesses commer
 - Le checkout principal et ses documents modifiés sont conservés.
 - 13 tests ciblés accueil/catalogue/hreflang passent avec le tsconfig frontend. Ce n'est pas une validation complète de l'application.
 - Aucune dépendance ajoutée, aucune page applicative modifiée, aucun déploiement.
+- Conseil global, workflow créatif et plan de mesure ajoutés ; onglets Chrome GSC/Vercel/Semrush repérés, première lecture Vercel réalisée. Aucun audit complet des comptes à ce stade.
 - Le premier audit de la conversation a couvert 14 états visuels. Ses artefacts restent dans `output/audits/2026-09-09-site-visual/` du checkout principal ; ce dossier local n'est pas un livrable versionné ni une preuve disponible automatiquement dans ce worktree.
 
 ## Règle d'entretien
