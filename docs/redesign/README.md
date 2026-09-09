@@ -23,8 +23,12 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 ## Documents de travail
 
+**Méthode actualisée :** terminer l'essai engagé, puis composer les vraies pages avec leurs contenus et des images d'attente pertinentes. Définir et valider les emplacements avant de produire les effets. Voir [la méthode et la carte initiale des emplacements](page-first-workflow.md). La fabrication d'autres démonstrations isolées n'est plus la prochaine étape.
+
 | Document | Contenu | Statut |
 |---|---|---|
+| [Pages avant effets](page-first-workflow.md) | Ordre de conception et emplacements proposés dans l'accueil | Méthode demandée par Adrien |
+| [Essai animé 3D](review/motion.html) | Ordinateur articulé, objet, assemblage, rotation et vue mobile | Étude locale ; sujet et usage non validés |
 | [Revue visuelle V1](review/index.html) | Storyboard complet, étude de mouvement, états MCP, six références et interactions manipulables | À examiner ; support local distinct du produit |
 | [Hypothèses et conseil](conseil-strategique.md) | Recommandations par métier et rôle de chaque famille de pages | Cadrage provisoire, audit incomplet |
 | [MCP, Studio et logos](product-narrative.md) | Deux voies de création, scénario MCP, disponibilité et crédibilité | Fil de création accepté ; placement proposé |

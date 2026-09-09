@@ -1,5 +1,7 @@
 # Revue visuelle V1
 
+La [scène animée](motion.html) complète désormais la planche. Après cet essai, la priorité est de composer une page complète avec des visuels d'attente et des emplacements d'effets à décider ; voir [la méthode actualisée](../page-first-workflow.md). Sources, compilation et limites de la scène : [motion/README.md](motion/README.md).
+
 Après retour d'Adrien, commencer par [la nouvelle intention illustrée](direction.html). La montre et le découpage rectangulaire ne sont plus la direction proposée. Le document ci-dessous décrit la première revue et ses limites historiques. La planche ImageGen, son prompt et sa provenance sont documentés dans [direction-reorientation.md](../direction-reorientation.md).
 
 Support de décision autonome, sans connexion aux API du produit. Entrée : [index.html](index.html). Les styles et interactions sont propres à la revue ; ce n'est pas le futur composant d'accueil.

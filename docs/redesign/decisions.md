@@ -32,6 +32,8 @@
 | D26 | Réutiliser la montre comme preuve existante ; proposer une collection originale distincte | Proposition, aucune nouvelle génération | Médias inspectés et provenance du 6 septembre ; review/README.md |
 | D27 | Écarter la montre et le découpage rectangulaire comme base de la nouvelle direction | Réorientation après retour utilisateur | Revue jugée difficile à lire, trop simple ; demande d'objets indépendants, assemblage, rotation, ordinateur qui s'ouvre |
 | D28 | Distinguer ordre de page, direction artistique et mouvement ; montrer l'intention avant de demander une validation | Méthode corrigée | Nouvelle planche ImageGen en quatre états et explication en français dans review/direction.html |
+| D29 | Terminer un court essai animé de la scène avec vue mobile | Autorisé par « ok », réalisé comme étude locale | review/motion.html ; ne valide pas le sujet ni son intégration |
+| D30 | Composer les pages avec visuels d'attente, réserver les emplacements et fabriquer les effets après choix des sections | Exigence de méthode utilisateur | Dernier retour ; page-first-workflow.md. Terminer D29 puis donner priorité à la page complète |
 
 ## Avancement
 
@@ -64,4 +66,4 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 
 Le fil suivi est acquis comme direction ; ne pas redemander cet accord. Prochaine revue : storyboard complet intégrant le MCP et la place conditionnelle du Studio, avec références précises et planche des détails. Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
 
-Livrable historique : [review/index.html](review/index.html). **Le retour suivant n'a pas validé la direction.** Ne pas redemander d'approuver l'ordre global depuis ce support avant que l'intention soit suffisamment compréhensible. Livrable de clarification : [review/direction.html](review/direction.html), quatre images d'une scène sortant du cadre. Sujet, palette et chorégraphie restent des propositions. Aucun essai animé 3D encore réalisé.
+Livrable historique : [review/index.html](review/index.html). **Le retour suivant n'a pas validé la direction.** Livrable de clarification : [review/direction.html](review/direction.html), quatre images d'une scène sortant du cadre, puis [essai 3D local](review/motion.html). Sujet, palette et usage restent des propositions. La prochaine revue porte sur une page complète avec contenus et images adaptés, accompagnée d'une carte courte des effets envisagés. Voir [la méthode actualisée](page-first-workflow.md).

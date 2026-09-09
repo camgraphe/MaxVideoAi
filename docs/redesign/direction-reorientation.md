@@ -20,6 +20,8 @@ Le MCP explique le passage du contexte partagé à une génération : assistant,
 
 ## Réalisation à éprouver
 
+**Actualisation :** l'accord suivant a autorisé [l'essai 3D](review/motion.html). Adrien a ensuite demandé de finir cet essai puis de concevoir les pages avec des images d'attente avant de fabriquer d'autres effets. Cette [méthode](page-first-workflow.md) prend désormais priorité sur la production de nouvelles démonstrations isolées.
+
 - Objets détourés pour des mouvements limités conservant leur point de vue ; décor en éléments séparés.
 - Modèle 3D ou séquence rendue cohérente pour changer réellement de point de vue et montrer des faces invisibles à l'image initiale. ImageGen ne constitue pas à lui seul une preuve de rotation cohérente.
 - Contrôle de l'assemblage, de la caméra et de la lumière avec une scène dédiée si nécessaire. Ne pas limiter par principe le chantier à des effets CSS sur des rectangles.

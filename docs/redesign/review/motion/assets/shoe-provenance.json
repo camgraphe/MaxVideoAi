@@ -1,0 +1,11 @@
+{
+  "commit": "81e8b567643b5166e6ff40024e4ff71ad4b18676",
+  "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/81e8b567643b5166e6ff40024e4ff71ad4b18676/Models/MaterialsVariantsShoe/",
+  "bytes": 7833592,
+  "author": "Shopify",
+  "license": "CC-BY-4.0",
+  "modification": "Keep Beach material only; remove unused variants and image buffers; geometry and retained image bytes unchanged.",
+  "original_sha256": "e1d7cb190382111e5a5b37b51e9a7f007f7eb2ab1b6185e0188e8d0a0d1265a7",
+  "derived_sha256": "2571b122e28cbd007322b31bd4d79c466ad38d69109e63392c0cfb97492ded2c",
+  "derived_bytes": 5375032
+}
