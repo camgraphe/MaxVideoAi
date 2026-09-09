@@ -1,6 +1,54 @@
 # Recherche créative et workflow média
 
-9 septembre 2026. Sources web consultées ; sélection documentaire, sans benchmark mobile des démos ni validation de licence pour réemploi. Les adaptations MaxVideoAI ci-dessous sont nos propositions.
+9 septembre 2026. Recherche élargie après retour d'Adrien : répertoires, dépôts, composants précis et discussions communautaires. Deux références Magic UI ouvertes dans Chrome ; autres niveaux de qualification explicités ci-dessous. Aucun benchmark mobile des démos. Les adaptations MaxVideoAI sont nos propositions, pas des choix déjà approuvés.
+
+## Recherche élargie : du répertoire au composant
+
+La première liste de six sites était un point de départ. Pour chaque sélection finale, conserver la référence précise, le code source s'il existe, la raison de son intérêt, les adaptations et les essais manquants. Un lien vers un répertoire seul n'est pas une qualification.
+
+| Ressource consultée | Nature / accès au code | Intérêt pour MaxVideoAI | Réserve / niveau atteint |
+|---|---|---|---|
+| [React Bits](https://github.com/DavidHDev/react-bits) | Dépôt et composants React à reprendre individuellement | Recomposition d'images, typographie ponctuelle, explorations de matière | README et licence consultés ; MIT + Commons Clause, pas MIT seul ; composants précis à mesurer |
+| [Motion Primitives](https://github.com/ibelick/motion-primitives) | Dépôt MIT, Motion/Tailwind, présenté en bêta | Continuité d'un média vers son détail, transitions d'interface | Dépôt et source Morphing Dialog consultés ; démo bloquée par contrôle navigateur |
+| [Magic UI](https://github.com/magicuidesign/magicui) | Dépôt MIT de composants ; offre Pro distincte | Liaison visuelle du MCP, lecteur agrandi | Dépôt, documentation et exemples de code consultés ; deux vues examinées dans Chrome |
+| [Aceternity UI](https://ui.aceternity.com/components) | Catalogue de composants React/Next | Étudier révélations, masques et images au scroll | Catalogue consulté ; vérifier source et conditions du composant précis, sans recopier ses mises en page |
+| [Uiverse](https://uiverse.io/) / [Galaxy](https://github.com/uiverse-io/galaxy) | Contributions communautaires CSS/Tailwind ; site indique MIT pour les éléments UI | États boutons, loaders et contrôles compacts | Site et dépôt consultés ; qualité et accessibilité variables selon contribution |
+| [21st.dev](https://21st.dev/) | Répertoire de composants, blocs et thèmes React | Trouver des variantes de menus, médias et interactions | Catalogue consulté ; auteur, source, dépendances et licence à vérifier par entrée |
+| [Codrops ScrollAnimationsGrid](https://github.com/codrops/ScrollAnimationsGrid) | Dépôt d'une exploration précise de grilles au scroll | Création unique qui se décompose puis rejoint les exemples | README consulté ; démo expérimentale à adapter, pas composant produit certifié |
+| [Anime.js](https://github.com/juliangarnier/anime) | Moteur d'animation JavaScript | Séquence DOM/SVG personnalisée | Dépôt consulté ; alternative technique, pas moteur supplémentaire décidé |
+| [React Three Fiber](https://github.com/pmndrs/react-three-fiber) | Rendu Three.js dans React | Option de scène en profondeur réellement utile | README consulté ; v8 associé à React 18, v9 à React 19 : compatibilité à respecter |
+| [React Spring](https://github.com/pmndrs/react-spring) | Animation physique React | Réponses gestuelles si elles servent l'usage | Dépôt consulté ; pas d'ajout conjoint automatique à Motion/GSAP |
+| [Theatre.js](https://github.com/theatre-js/theatre) | Éditeur de motion pour le web | Mise au point artistique d'une scène complexe | Dépôt consulté ; intérêt à justifier face à une timeline plus simple |
+| [Vaul](https://github.com/emilkowalski/vaul) | Drawer React | Référence de feuille mobile | Dépôt repéré ; maintenance et compatibilité non qualifiées, pas adoption proposée |
+| [Landing Love](https://www.landing.love/) | Enregistrements de sites entiers, catégories AI/film/3D | Évaluer rythme, transitions et composition au-delà du premier écran | Répertoire consulté ; ne donne pas automatiquement le code ni ses droits |
+| [Unicorn Studio](https://www.unicorn.studio/) | Outil de graphismes interactifs | Piste pour explorer une matière ou un effet visuel | Découvert dans la communauté ; page publique peu extractible, capacités/export/coût à qualifier |
+
+Ces ressources complètent Codrops Hub, GSAP Showcase, Awwwards, Hoverstat.es, Osmo et SiteInspire ci-dessous. Le nombre de liens ne valide pas la direction : la prochaine sélection sera plus courte et accompagnée d'états concrets.
+
+## Ce que les forums ont ajouté
+
+Deux discussions ont été lues : [planifier un site animé](https://www.reddit.com/r/webdev/comments/1mx20t1/how_do_you_plan_animated_websites/) et [ressources pour les animations](https://www.reddit.com/r/webdev/comments/1s1dzx7/learning_resources_for_stunning_page_animations/). Elles ont élargi la découverte à Landing Love et à des outils de prototypage. Les retours sont des témoignages, pas des benchmarks ni une preuve de compatibilité.
+
+La méthode retenue est notre recommandation : écrire l'intention, dessiner les états, puis éprouver les moments essentiels dans le navigateur. Les choix techniques reposent sur les documentations/dépôts des auteurs et les essais locaux, pas sur une affirmation de forum. Une vidéo courte peut révéler une idée ; remonter à sa démo et à son auteur avant de la sélectionner. Aucun Short particulier fourni par Adrien n'a encore été identifié.
+
+## Six pistes sélectionnées pour une qualification approfondie
+
+| Piste | Ce qu'on reprendrait | Adaptation nécessaire | Décision actuelle |
+|---|---|---|---|
+| Grille qui se recompose, Codrops | Passage d'une création à plusieurs résultats | Même sujet au départ, ordre lisible, images réelles et version mobile en flux | À storyboarder pour la signature |
+| [Animated Beam](https://magicui.design/docs/components/animated-beam) | Un trajet qui relie des étapes | Site → assistant → MaxVideoAI → résultat ; un seul trajet, noms explicites, pas de réseau abstrait | Documentation/code et composition desktop vus ; adaptation proposée |
+| [Morphing Dialog — source](https://github.com/ibelick/motion-primitives/blob/main/components/core/morphing-dialog.tsx) | Continuité entre vignette et détail | Préserver les lecteurs et le focus existants, éviter déplacement massif sur mobile | Source consultée ; rendu non testé |
+| [Hero Video Dialog](https://magicui.design/docs/components/hero-video-dialog) | Média centré, fond atténué, fermeture visible | Poster pendant attente, lecteur MaxVideoAI, fermeture clavier certaine | Ouverture essayée ; adoption directe non retenue sans recette |
+| Micro-interactions CSS, Uiverse | Réponse nette d'un contrôle | Une famille commune, états focus/disabled/error, aucun chargement inventé | Sélection d'éléments individuels à faire |
+| Matière/profondeur, React Bits ou Three.js | Relief et lumière localisés | Effet attaché à notre création, arrêt hors écran, repli statique | Option artistique à comparer à DOM/CSS |
+
+## Qualification avant reprise de code
+
+Consigner le commit/version retenu, auteur et licence exacte, imports, dépendances ajoutées, compatibilité React/Next/Tailwind, rendu serveur, démontage/nettoyage, interaction clavier/tactile et préférence de mouvement. Puis tester avec nos médias et mesurer le coût ajouté au gabarit. Aucune bibliothèque n'a été installée, aucun code tiers exécuté localement ou copié dans le produit durant cette recherche.
+
+L'application inspectée utilise React 18.3.1 / Next 15.5.18 et possède déjà Three.js, Lucide et des contrôles de modales/médias. Une démo construite pour React 19 n'est donc pas automatiquement compatible. Le choix doit partir de ces contraintes réelles et rester local à la séquence concernée.
+
+Pour passer à la direction artistique : une planche avec 6 références précises, leur usage proposé et ce qu'on écarte ; états desktop/mobile de la scène ; planche des détails décrite dans [interaction-details.md](interaction-details.md). Le choix repose sur la cohérence de cette composition, pas sur un effet isolé.
 
 ## Références à explorer
 

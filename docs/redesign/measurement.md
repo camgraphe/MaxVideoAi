@@ -1,6 +1,6 @@
 # Mesure et décision — Clarity, GSC, GA4
 
-9 septembre 2026. Inspection de code et première lecture Vercel réalisées ; baseline complète à acquérir. La présence d'une intégration dans le code ne prouve ni son activation en production ni la qualité de ses données.
+9 septembre 2026. Inspection de code, première lecture Vercel et relevés GSC Web/IA réalisés ; baseline complète à acquérir. La présence d'une intégration dans le code ne prouve ni son activation en production ni la qualité de ses données.
 
 ## Première lecture des onglets Chrome
 
@@ -10,7 +10,48 @@ Vercel, environnement Production, sélection « Last 24 Hours », période affic
 
 Conséquence méthodologique : segmenter marketing et app, contrôler le traitement des retours auth/paiement dans chaque outil et distinguer référent de navigation et attribution d'acquisition. La présence de ces domaines dans Vercel ne prouve pas un défaut GA4. Ne pas comparer directement ses visiteurs ou son rebond avec GA4 sans réconcilier leurs définitions.
 
-GSC : seule l'en-tête de l'interface était disponible dans la lecture AX puis DOM ; aucune métrique extraite. Semrush : onglet repéré, rapport non consulté. Aucun réglage des comptes modifié. Les lectures sur 28 jours complets et par segment restent à effectuer.
+Première tentative GSC : seule l'en-tête était disponible. La reprise après rechargement a permis les relevés ci-dessous. Semrush : onglet repéré, rapport non consulté. Aucun réglage de collecte des comptes modifié ; seuls les filtres de consultation GSC ont été utilisés.
+
+## Relevé GSC Web — 28 jours
+
+Source : interface Search Console de `maxvideoai.com`, Chrome, consultée le 9 septembre 2026. Période indiquée par le graphique : **10 août au 6 septembre 2026** ; recherche Web, tous pays et appareils, sans filtre de page. Interface indiquant dernière mise à jour il y a 9 heures. Valeurs arrondies du bandeau : 1,78 K clics, 97,2 K impressions, CTR 1,8 %, position moyenne 13,9. Aucune comparaison à la période précédente effectuée ici.
+
+| Appareil | Clics | Impressions |
+|---|---:|---:|
+| Desktop | 1 046 | 70 872 |
+| Mobile | 695 | 25 726 |
+| Tablette | 34 | 622 |
+
+Somme des trois lignes : 1 775 clics ; mobile ≈ 39,2 % de ce total. Ces clics de recherche ne sont ni des sessions GA4 ni des utilisateurs convertis.
+
+| Premières pages affichées | Clics | Impressions |
+|---|---:|---:|
+| `/` | 637 | 11 232 |
+| `/examples/ltx` | 285 | 6 136 |
+| `/examples/seedance` | 69 | 2 829 |
+| `/examples/kling` | 45 | 1 522 |
+| `/fr` | 39 | 632 |
+| `/tools/angle` | 32 | 753 |
+| `/models/veo-3-1` | 31 | 1 458 |
+| `/models/minimax-h3` | 29 | 1 287 |
+| `/models/seedance-2-5` | 28 | 904 |
+| `/es/herramientas/angle` | 25 | 459 |
+
+Premières requêtes affichées : marque et variantes, `seedance 2.5` (22 clics), `pay as you go ai video generator` (16), `ltx 2.3 prompt examples` (15). Le tableau de requêtes annonce 1 000 lignes ; seules les dix premières ont été lues. Les totaux de requêtes et de pages ne doivent pas être supposés exhaustifs ni interchangeables.
+
+Premiers pays affichés : États-Unis 253 clics, Inde 146, Royaume-Uni 98, France 79, Espagne 78, Allemagne 72, Pakistan 60, Canada 47, Indonésie 41, Italie 37. Dix lignes sur 208 : absence de pays LATAM dans cet extrait ne permet pas de conclure sur leur poids. L'espagnol LATAM reste l'orientation éditoriale demandée ; approfondir les pays cibles sans assimiler Espagne et LATAM.
+
+**Recommandations issues de ces relevés :** inclure les exemples dans la validation des gabarits ; préserver le contenu unique et les chemins des pages LTX/Seedance/Kling ; conserver une explication visible du paiement à l'usage ; traiter les parcours mobiles comme une part importante de l'acquisition. Ce sont des priorités de protection et d'investigation, pas une attribution causale au design actuel.
+
+## Relevé GSC — fonctionnalités IA
+
+L'interface du compte expose un rapport **« Generative AI features » en bêta**, ouvert depuis le lien de la page Performance. Sur la sélection 28 jours, le graphique indique également **10 août–6 septembre 2026**, avec **6,86 K impressions** (arrondi affiché).
+
+Parmi les premières pages : accueil 1 626 impressions ; comparaison `gemini-omni-flash-vs-veo-3-1` 646 ; `seedance-2-0-vs-seedance-2-0-fast` 582 ; `veo-3-1-fast-vs-veo-3-1-lite` 341 ; exemples LTX 216 ; tarifs 197. Ces impressions ne mesurent pas des clics, une conversion ou des citations dans tous les assistants.
+
+**Correction du premier cadrage :** ne pas affirmer qu'aucun rapport IA distinct n'est accessible. Ce compte en expose un. Vérifier sa définition, son périmètre bêta, les limites d'export et la comparaison de périodes avant de construire un indicateur stable. Ne pas additionner ces impressions au total Web sans vérifier leur relation. L'outil GSC interne inspecté reste une projection Web ; sa couverture de ce nouveau rapport n'a pas été établie.
+
+Les comparaisons apparaissent dans ce premier extrait IA : elles doivent faire partie de la revue de conservation du contenu, même si on simplifie visuellement le catalogue. Pas de refonte qui efface les distinctions factuelles entre modèles.
 
 ## Existant identifié
 
@@ -38,7 +79,7 @@ Les volumes ci-dessus sont une méthode proposée, pas des données déjà acqui
 
 **Garde-fous :** erreurs de génération/auth/paiement, LCP/INP/CLS, pages indexables, clics organiques par famille et pays, rebonds de parcours observés. Temps passé et profondeur de scroll sont diagnostiques : une animation peut les augmenter sans aider l'utilisateur.
 
-**GEO :** panel fixe de questions par langue et intention, dates et environnement d'observation, mentions/citations et exactitude des réponses ; trafic référent IA lorsqu'identifiable. Ce panel n'est pas une mesure exhaustive de visibilité. GSC agrège les fonctionnalités IA de Google dans les données Web et ne permet pas d'en déduire ici un compteur distinct de citations. [Google](https://developers.google.com/search/docs/appearance/ai-features).
+**GEO :** rapport IA bêta disponible dans ce compte, complété par un panel fixe de questions par langue et intention, dates et environnement d'observation, mentions/citations et exactitude des réponses ; trafic référent IA lorsqu'identifiable. Ces observations ne sont pas une mesure exhaustive de visibilité. Distinguer impressions du rapport GSC, visites référentes et citations observées dans les autres assistants. Les recommandations de contenu continuent de s'appuyer sur les fondamentaux de [Google](https://developers.google.com/search/docs/appearance/ai-features).
 
 ## Hypothèses à tester en premier
 

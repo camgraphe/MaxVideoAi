@@ -1,6 +1,8 @@
 # Pilote accueil — scénario proposé
 
-Statut : proposition V1, non validée. Ce document décrit une page entière avant dessin et implémentation.
+Statut : accord de direction sur le fil idée → référence → image → vidéo ; hiérarchie complète V1 encore à finaliser. Ce document décrit une page entière avant dessin et implémentation.
+
+Retour d'Adrien : mettre en avant la création à partir d'un site ou projet avec Codex/Claude via MCP ; calibrer le Studio selon sa disponibilité ; placer les logos avec une fonction précise. Voir [récit produit](product-narrative.md). Proposition : remonter la séquence 5 juste après la transformation, puis montrer comparaison et exemples. L'ordre complet reste à juger sur storyboard. Ajouter une page d'exemples au pilote de généralisation à la lumière des premiers relevés GSC.
 
 Complément demandé par Adrien : inclure une proposition de construction/déconstruction au scroll. Le scénario précis et les références sont dans [La scène se construit](motion-signature.md). Ce complément pousse la séquence 2 au-delà d'un simple fondu.
 
@@ -70,4 +72,4 @@ Une chaîne référence/angle/vidéo doit montrer le même sujet et un parcours 
 
 ## Validation V1
 
-Décider si l'accueil doit raconter une création suivie avec une transformation au scroll, ou privilégier les trois intentions indépendantes. Palette, médias définitifs et bibliothèque d'animation restent ouverts. Après V1 : références visuelles et états clés, puis validation V2 avant construction du prototype.
+Le fil de création suivie a reçu un accord de direction : ne pas redemander de choisir entre ce fil et trois intentions. Finaliser maintenant la place du MCP, le scénario démontré et la hiérarchie de page. Palette, médias définitifs et bibliothèque d'animation restent ouverts. Après V1 : références visuelles et états clés, puis validation V2 avant construction du prototype.

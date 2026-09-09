@@ -23,9 +23,11 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 | Document | Contenu | Statut |
 |---|---|---|
-| [Conseil stratégique](conseil-strategique.md) | Recommandations par métier et rôle de chaque famille de pages | Proposition directrice |
+| [Hypothèses et conseil](conseil-strategique.md) | Recommandations par métier et rôle de chaque famille de pages | Cadrage provisoire, audit incomplet |
+| [MCP, Studio et logos](product-narrative.md) | Deux voies de création, scénario MCP, disponibilité et crédibilité | Fil de création accepté ; placement proposé |
+| [Qualité des interactions](interaction-details.md) | Lecteurs, modales, filtres, menus, états et fermeture | Contrat proposé pour la revue de détails |
 | [Recherche créative et assets](creative-research.md) | Références, effets, ImageGen, vidéo et pictogrammes | Recherche sourcée ; effets à éprouver |
-| [Mesure et conversion](measurement.md) | Clarity, GSC, GA4, baseline et hypothèses | Code inspecté ; collecte complète à faire |
+| [Mesure et conversion](measurement.md) | Clarity, GSC, GA4, baseline et hypothèses | GSC Web/IA 28 jours relevé ; collecte complète à faire |
 | [Inventaire](inventory.md) | Gabarits publics et priorités initiales | Inventorié depuis le code ; trafic à mesurer |
 | [Scénario du pilote](home-pilot.md) | Proposition de parcours complet et mouvement | À valider au jalon V1 |
 | [Effet signature](motion-signature.md) | Construction/déconstruction au scroll, références et options techniques | Proposition ambitieuse à qualifier |
@@ -38,7 +40,7 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 **« Une idée, plusieurs façons de la créer. »** Une démonstration suivie relie référence, travail de l'image et animation ; un second moment montre comment choisir un modèle. On passe de l'inspiration à une décision de création. Voir le [scénario complet](home-pilot.md).
 
-Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouver le langage retenu sur le catalogue et une fiche. Le prototype est distinct de la production. Aucune image illustrative ne devient une preuve de sortie d'un modèle sans vérification de provenance.
+Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouver le langage retenu sur le catalogue, une fiche et une page d'exemples. Le prototype est distinct de la production. Aucune image illustrative ne devient une preuve de sortie d'un modèle sans vérification de provenance.
 
 ## Points de validation
 
@@ -49,7 +51,16 @@ Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouve
 | V3 | Prototype animé navigable, desktop/mobile et lecture sans mouvement | Valider le rythme, l'information et la généralisation |
 | V4 | Lot intégré avec comparaison visuelle, SEO et performances | Autoriser sa livraison quand elle est proposée |
 
-V1 est la prochaine décision. V2/V3 ne sont pas validés par défaut parce que le cadrage existe.
+Le fil de création suivie a reçu un accord de direction. La hiérarchie complète, la place du MCP et les médias restent à préciser avant de clôturer V1. V2/V3 ne sont pas validés par défaut parce que le cadrage existe.
+
+## Approfondissement avant implémentation
+
+1. **Données et vérité produit :** compléter comparaison de périodes GSC, pays LATAM, GA4/Clarity et état des intégrations. Sortie : pages à protéger et hypothèses étayées, limites explicites.
+2. **Références qualifiées :** retenir six interactions/compositions précises parmi la recherche élargie ; examiner rendu, source et adaptation mobile. Sortie : planche commentée, pas une nouvelle liste de liens seule.
+3. **Storyboard du site :** déroulé complet avec MCP, preuves, contenus et place conditionnelle du Studio. Sortie : décision de hiérarchie et brief des médias.
+4. **Direction et détails :** desktop/mobile, logos, planche des six interactions prioritaires et états d'erreur. Sortie : V2 avant prototype d'intégration.
+
+Les recherches réversibles avancent sans nouvelle autorisation. La qualité se juge aux preuves et livrables de chaque cycle ; aucun délai artificiel ne remplace ces critères. Les collectes manquantes et démos non testées gardent leur statut explicite.
 
 ## Ce que l'agent peut avancer sans nouvelle question
 

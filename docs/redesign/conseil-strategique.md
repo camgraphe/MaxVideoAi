@@ -1,6 +1,12 @@
-# Conseil global — refonte MaxVideoAI
+# Hypothèses et conseil global — refonte MaxVideoAI
 
-9 septembre 2026. Recommandations avant implémentation ; aucun gain chiffré annoncé. Lire avec le [plan directeur](README.md), la [recherche créative](creative-research.md) et le [plan de mesure](measurement.md).
+9 septembre 2026. Cadrage provisoire, pas une stratégie validée par un audit complet. Première lecture GSC 28 jours ajoutée après rédaction ; GA4 et Clarity restent à analyser. Aucun gain chiffré annoncé. Lire avec le [plan directeur](README.md), la [recherche créative](creative-research.md) et le [plan de mesure](measurement.md).
+
+## Ajustement après le retour d'Adrien
+
+Le fil idée → référence → image → vidéo est retenu comme direction de travail. La hiérarchie de l'accueil et les médias ne sont pas encore validés. La création depuis Codex ou Claude via MCP doit être une proposition visible ; le Studio ne doit pas être présenté comme disponible au public sur la seule base de son existence dans le code. Voir [récit MCP, Studio et logos](product-narrative.md).
+
+Premières conséquences de GSC : protéger les pages d'exemples, notamment `/examples/ltx` (285 clics sur les 28 jours observés), et inclure une page d'exemples dans le pilote de généralisation. Les 695 clics mobiles sur 1 775 clics répartis par appareil rendent le chantier mobile concret. Aucun de ces chiffres ne mesure encore la conversion. Les données et leurs limites sont dans [measurement.md](measurement.md).
 
 ## Position recommandée
 

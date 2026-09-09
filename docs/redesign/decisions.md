@@ -10,7 +10,7 @@
 | D04 | Worktree `.worktrees/site-redesign`, branche `codex/site-redesign`, base distante actualisée | Réalisé | fetch + création le 9 septembre, `bdd544e9f` |
 | D05 | Anciens concepts non validés ; palette ouverte | Acté par cadrage | Retour utilisateur demandant un changement d'expérience |
 | D06 | Accueil comme pilote d'expérience ; catalogue + fiche comme tests de généralisation | Proposition | Couvre narration et information dense |
-| D07 | « Une idée, plusieurs façons de la créer » avec une transformation suivie | Proposition V1 | Voir home-pilot.md |
+| D07 | Transformation suivie idée → référence → image → vidéo | Accord de direction utilisateur ; hiérarchie non finalisée | Retour après le premier dossier ; home-pilot.md |
 | D08 | Pas de scrub vidéo lourd par défaut ; essai borné si nécessaire | Recommandation technique | Poids/décodage à mesurer, aucun benchmark réalisé |
 | D09 | Priorité de livraison après pilote à recalibrer avec données SEO | Proposition | GSC/analytics non acquis |
 | D10 | Inclure au moins une proposition avancée de construction/déconstruction au scroll | Exigence utilisateur | Ajout du 9 septembre pendant le cadrage |
@@ -20,6 +20,12 @@
 | D14 | Inclure ImageGen, vidéos MaxVideoAI et pictogrammes propres dans le workflow | Exigence utilisateur, méthode documentée | creative-research.md ; aucune nouvelle génération lancée |
 | D15 | Conseil global SEO/GEO, contenu, conversion, acquisition et mesure | Exigence utilisateur, propositions rédigées | conseil-strategique.md et measurement.md |
 | D16 | Exploiter les onglets Chrome existants | Première lecture réalisée | GSC/Vercel/Semrush repérés ; métriques Vercel 24 h uniquement |
+| D17 | Donner une vraie place au MCP et au parcours site/projet → assistant → vidéo | Exigence utilisateur ; scénario proposé | product-narrative.md |
+| D18 | Adapter la promotion du Studio à sa disponibilité réelle | Proposition : retrait de la promesse principale en phase admin | Flags et politique d'accès inspectés ; product-narrative.md |
+| D19 | Soigner logos, modales, lecteurs, filtres et tous les états | Exigence utilisateur ; contrat de détail rédigé | interaction-details.md |
+| D20 | Approfondir références, forums et code avant d'intégrer | Recherche élargie réalisée ; qualification partielle | creative-research.md ; pas d'adoption technique |
+| D21 | Inclure une page d'exemples dans le pilote | Recommandation issue des premiers relevés GSC | /examples/ltx : 285 clics Web, période 10 août–6 septembre |
+| D22 | Intégrer le rapport GSC IA bêta disponible dans le compte | Constat dans Chrome et correction du cadrage initial | measurement.md ; impressions ≠ citations ni conversions |
 
 ## Avancement
 
@@ -34,7 +40,8 @@
 - [x] Préparer le workflow d'assets et les recommandations par métier.
 - [x] Inspecter l'instrumentation existante et amorcer la lecture des comptes dans Chrome.
 - [ ] Valider V1 : scénario de l'accueil.
-- [ ] Acquérir crawl et données d'acquisition disponibles en lecture seule.
+- [x] Relever GSC Web et IA sur 28 jours, premiers résultats pages/requêtes/appareils/pays.
+- [ ] Compléter crawl, comparaison de périodes, pays LATAM, GA4 et Clarity.
 - [ ] Inspecter et qualifier les assets du parcours suivi.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
@@ -46,4 +53,4 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 
 ## Prochaine décision à présenter
 
-V1 : faut-il privilégier une création suivie (référence → cadrage → vidéo, recommandé) ou trois intentions indépendantes (film/publicité/image) ? Exposer les avantages et le scénario concret, sans demander à Adrien de choisir une bibliothèque ou chaque animation.
+Le fil suivi est acquis comme direction ; ne pas redemander cet accord. Prochaine revue : storyboard complet intégrant le MCP et la place conditionnelle du Studio, avec références précises et planche des détails. Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
