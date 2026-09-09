@@ -22,6 +22,7 @@ import {
 import type { DropdownPosition, EngineRegistryMeta } from './engine-select-types';
 
 type EngineSelectDropdownProps = {
+  title?: string;
   activeOptionId?: string;
   contentRef: RefObject<HTMLDivElement>;
   copy: EngineSelectCopy;
@@ -43,6 +44,7 @@ type EngineSelectDropdownProps = {
   position: DropdownPosition;
   registryMeta: EngineRegistryMeta | null;
   selectedEngine: EngineCaps;
+  selectedIds?: string[];
   showLegacy: boolean;
   triggerId: string;
   visibleEngines: EngineCaps[];
@@ -74,6 +76,7 @@ export function getDropdownGeometry(position: DropdownPosition, viewport?: { wid
 }
 
 export function EngineSelectDropdown({
+  title,
   contentRef,
   copy,
   engines,
@@ -94,6 +97,7 @@ export function EngineSelectDropdown({
   position,
   registryMeta,
   selectedEngine,
+  selectedIds,
   showLegacy,
   triggerId,
   visibleEngines,
@@ -197,12 +201,12 @@ export function EngineSelectDropdown({
       ref={contentRef}
       className="fixed z-[9999]"
       role="dialog"
-      aria-label={copy.choose}
+      aria-label={title ?? copy.choose}
       style={{ top: geometry.top, left: geometry.left, width: geometry.width }}
     >
       <div style={{ height: geometry.maxHeight }} className="app-engine-browser flex flex-col overflow-hidden rounded-card border border-border bg-surface shadow-float">
         <div className="flex items-center justify-between border-b border-hairline px-3 py-1">
-          <span className="text-base font-semibold text-text-primary">{copy.choose}<span className="ml-2 text-xs font-normal text-text-muted">{catalogueSummary.visibleCount} {copy.models.toLowerCase()}</span></span>
+          <span className="text-base font-semibold text-text-primary">{title ?? copy.choose}<span className="ml-2 text-xs font-normal text-text-muted">{catalogueSummary.visibleCount} {copy.models.toLowerCase()}</span></span>
           <button type="button" onClick={onClose} className="inline-flex min-h-11 items-center gap-2 rounded-input px-2 text-xs font-medium text-text-primary hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring"><X className="h-4 w-4" aria-hidden />{copy.modal.close}</button>
         </div>
         <div className="flex flex-col gap-2 border-b border-hairline px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
@@ -301,7 +305,7 @@ export function EngineSelectDropdown({
             >
               {activeFamily?.engines.map((engine) => {
                 const index = engineIndexById.get(engine.id) ?? -1;
-                const active = engine.id === selectedEngine.id;
+                const active = selectedIds ? selectedIds.includes(engine.id) : engine.id === selectedEngine.id;
                 const highlighted = index === highlightedIndex;
                 const meta = registryMeta?.meta.get(engine.id);
                 const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);

@@ -27,7 +27,7 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
   const slotIndex = slot === 'add' ? undefined : Number(slot);
   const issue = entry ? getRecentReferenceIssue(asset, entry, inputAssets, inputSchema, mode, slotIndex, engine) : null;
   const disabledReason = entry?.disabled ? entry.disabledReason || copy.noRole : null;
-  return <MediaActionPanel asset={asset} locale={locale} onClose={onClose}>
+  return <MediaActionPanel title={locale.startsWith('fr') ? 'Utiliser comme référence' : locale.startsWith('es') ? 'Usar como referencia' : 'Use as reference'} asset={asset} locale={locale} onClose={onClose}>
     <div className="app-recent-role-dialog app-media-reference-body">
       {!compatible.length ? <p>{copy.noRole}</p> : <>
         {compatible.length <= 4 ? <fieldset className="app-recent-role-choices"><legend>{copy.role}</legend>

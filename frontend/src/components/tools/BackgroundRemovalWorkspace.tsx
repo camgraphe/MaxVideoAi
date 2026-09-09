@@ -1,5 +1,6 @@
 'use client';
 
+import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -258,5 +259,6 @@ export function BackgroundRemovalSession({ auth }: { auth: ReturnType<typeof use
     </>}
   >
     {!user ? <ToolAuthNotice locale={locale} path="/app/tools/background-removal" /> : null}
+    <ToolMediaHandoff userId={user?.id} destination="background-removal" locale={locale} onSelect={asset => sourceMedia.selectLibraryAsset({ ...asset, id: asset.savedAssetId ?? (asset.sourceOutputId || asset.source === 'recent' ? null : asset.id) })} disabled={runner.running || sourceMedia.uploading} />
   </ToolWorkbench>;
 }

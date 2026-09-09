@@ -41,8 +41,8 @@ export function useWorkspaceModelAlternatives({
   disabledEngineReasons?: Record<string, string>;
   engineScores?: Record<string, number | null | undefined>;
   accessToken: string | null;
-}): WorkspaceModelAlternative[] {
-  const alternatives = useMemo(
+}) {
+  const suggested = useMemo(
     () =>
       buildWorkspaceModelAlternatives({
         current,
@@ -54,9 +54,18 @@ export function useWorkspaceModelAlternatives({
       }),
     [current, engines, locale, memberTier, disabledEngineReasons, engineScores],
   );
+  const available = useMemo(() => buildWorkspaceModelAlternatives({ current, engines, locale, memberTier, disabledEngineReasons, engineScores, limit: engines.length, includeBlocked: true }), [current, engines, locale, memberTier, disabledEngineReasons, engineScores]);
+  const [selection, setSelection] = useState<{ account: string | null; ids: string[] } | null>(null);
+  const selectedIds = selection?.account === accessToken ? selection.ids : suggested.map(item => item.engine.id);
+  const alternatives = selectedIds.flatMap(id => { const match = available.find(item => item.engine.id === id); return match ? [match] : []; });
+  const [revision, setRevision] = useState(0);
+  const cache = useRef(new Map<string, { quote: Quote; at: number }>());
+  const cacheAccount = useRef(accessToken);
+  if (cacheAccount.current !== accessToken) { cacheAccount.current = accessToken; cache.current.clear(); }
+  const keyFor = (item: WorkspaceModelAlternativeCandidate) => JSON.stringify([accessToken, item.engine.id, item.request, item.candidate.setup.form.iterations]);
   const scope =
     enabled && accessToken && alternatives.length
-      ? JSON.stringify([accessToken, quoteScope(alternatives)])
+      ? JSON.stringify([accessToken, quoteScope(alternatives.filter(item => item.request))])
       : null;
   const [quotes, setQuotes] = useState<{ scope: string; values: Record<string, Quote> } | null>(null);
   const alternativesRef = useRef(alternatives);
@@ -65,11 +74,14 @@ export function useWorkspaceModelAlternatives({
   useEffect(() => {
     if (!scope || !accessToken) return;
     let canceled = false;
-    const activeAlternatives = alternativesRef.current;
-    setQuotes({ scope, values: {} });
+    const activeAlternatives = alternativesRef.current.filter(item => item.request);
+    const cached = Object.fromEntries(activeAlternatives.flatMap(item => { const value = cache.current.get(keyFor(item)); return value && Date.now() - value.at < 60_000 ? [[item.engine.id, value.quote]] : []; }));
+    setQuotes({ scope, values: cached });
     const timer = window.setTimeout(() => {
       for (const alternative of activeAlternatives) {
-        runPreflight(alternative.request, { accessToken })
+        if (cached[alternative.engine.id]) continue;
+        const key = keyFor(alternative);
+        runPreflight(alternative.request!, { accessToken })
         .then((response) => {
           if (canceled) return;
           const total = response.ok && typeof response.total === 'number' ? response.total : null;
@@ -80,6 +92,8 @@ export function useWorkspaceModelAlternatives({
                   currency: response.currency ?? 'USD',
                 }
               : { error: true };
+          if (cache.current.size >= 48) cache.current.delete(cache.current.keys().next().value!);
+          cache.current.set(key, { quote, at: Date.now() });
           setQuotes((currentQuotes) =>
             currentQuotes?.scope === scope
               ? {
@@ -106,17 +120,26 @@ export function useWorkspaceModelAlternatives({
       canceled = true;
       window.clearTimeout(timer);
     };
-  }, [scope, accessToken]);
+  // Scope contains each selected request, including all pricing inputs.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope, accessToken, revision]);
 
   const values = quotes?.scope === scope ? quotes.values : {};
-  return alternatives.map((alternative) => {
+  const priced: WorkspaceModelAlternative[] = alternatives.map((alternative) => {
     const quote = values[alternative.engine.id];
     return {
       ...alternative,
       price: quote && 'price' in quote ? quote.price : null,
       currency: quote && 'price' in quote ? quote.currency : 'USD',
-      isPricing: Boolean(scope && !quote),
+      isPricing: Boolean(alternative.request && scope && !quote),
       quoteError: Boolean(quote && 'error' in quote),
     };
   });
+  return {
+    alternatives: priced,
+    availableIds: available.map(item => item.engine.id),
+    add: (id: string) => { if (alternatives.length >= 6 || !available.some(item => item.engine.id === id)) return; setSelection({ account: accessToken, ids: [...new Set([...alternatives.map(item => item.engine.id), id])] }); },
+    remove: (id: string) => setSelection({ account: accessToken, ids: alternatives.filter(item => item.engine.id !== id).map(item => item.engine.id) }),
+    retry: () => { for (const item of alternatives) { const key = keyFor(item); if (cache.current.get(key) && 'error' in cache.current.get(key)!.quote) cache.current.delete(key); } setRevision(value => value + 1); },
+  };
 }

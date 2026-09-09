@@ -81,6 +81,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
         etaSource,
         message,
         engineLabel,
+        engineId: typeof item.meta?.engineId === 'string' ? item.meta.engineId : typeof group.paramsSnapshot?.engineId === 'string' ? group.paramsSnapshot.engineId : undefined,
         durationSec: item.durationSec,
         createdAt: group.createdAt,
         indexable: baseIndexable,

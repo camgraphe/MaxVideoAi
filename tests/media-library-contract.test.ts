@@ -428,7 +428,9 @@ test('library cards use icon actions and put source navigation on the visual', (
   assert.match(browserSource, /<MediaActionPanel/);
   assert.match(panelSource, /buildAppDownloadUrl\(asset\.url, suggestDownloadFilename/);
   assert.match(panelSource, /\{copy\.download\}/);
-  assert.match(panelSource, /useAccessibleModal/);
+  assert.match(panelSource, /<MediaDialog/);
+  const dialogSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaDialog.client.tsx'), 'utf8');
+  assert.match(dialogSource, /useAccessibleModal/);
   assert.match(clientSource, /<Trash2\s+className=/);
 });
 

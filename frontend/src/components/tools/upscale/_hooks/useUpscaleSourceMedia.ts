@@ -119,8 +119,8 @@ export function useUpscaleSourceMedia({
         changeMediaType(nextMediaType);
       }
       setSource({
-        id: asset.id.startsWith('job:') ? null : asset.id,
-        jobId: asset.id.startsWith('job:') ? asset.id.slice(4) : null,
+        id: asset.savedAssetId ?? (asset.sourceOutputId || asset.source === 'recent' || asset.id.startsWith('job:') ? null : asset.id),
+        jobId: asset.jobId ?? (asset.id.startsWith('job:') ? asset.id.slice(4) : null),
         url: asset.url,
         width: asset.width ?? null,
         height: asset.height ?? null,

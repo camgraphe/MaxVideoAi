@@ -85,7 +85,7 @@ test('role chooser uses visible exact fields, keeps sparse slot index, focuses c
   const opener = h.dom.window.document.getElementById('opener') as HTMLButtonElement; opener.focus();
   try {
     await h.render(React.createElement(WorkspaceRecentRoleDialog, { asset: image, fields, inputAssets: { refs: [null, null, { ...image, fieldId: 'refs', previewUrl: image.url, name: 'old image', size: 1000, type: 'image/png', status: 'ready' }] }, mode: 'i2v', locale: 'en', onClose: () => { closed = true; }, onInsert: async (entry, slot) => { inserted.push(entry.field, slot); } }));
-    await h.flush(); assert.equal(h.dom.window.document.activeElement?.textContent, 'Close');
+    await h.flush(); assert.equal(h.dom.window.document.activeElement?.getAttribute('aria-label'), 'Close');
     assert.match(h.dom.window.document.body.textContent ?? '', /source.png/); assert.doesNotMatch(h.dom.window.document.body.textContent ?? '', /signature=secret/);
     const choices = [...h.dom.window.document.querySelectorAll<HTMLButtonElement>('fieldset button')]; assert.equal(choices.length, 2);
     await act(async () => choices[1].click());

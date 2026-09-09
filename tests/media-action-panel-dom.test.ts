@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 import { MediaActionPanel } from '../frontend/components/library/MediaActionPanel.client';
 
-test('media panel mounts its original player only for explicit enlarged preview and restores actions/focus', async () => {
+test('media inspector keeps actions with one original reader and restores focus', async () => {
   const dom = new JSDOM('<button id="opener">Actions</button><div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
   const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, HTMLElement: dom.window.HTMLElement, React, IS_REACT_ACT_ENVIRONMENT: true };
   const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
@@ -18,18 +18,27 @@ test('media panel mounts its original player only for explicit enlarged preview 
   try {
     await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'original', url: original, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); });
-    assert.equal(dom.window.document.querySelector('video'), null);
     assert.doesNotMatch(dom.window.document.body.textContent ?? '', /aaaaa|signature|secret/);
-    const preview = [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === 'Aperçu')!;
-    await act(async () => preview.click());
+    assert.equal(dom.window.document.querySelector('video'), null);
+    await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Lire la vidéo"]')!.click());
+    assert.equal(dom.window.document.querySelectorAll('video').length, 1);
     assert.equal(dom.window.document.querySelector('video')?.getAttribute('src'), original);
     assert.equal(dom.window.document.querySelector('video')?.getAttribute('preload'), 'none');
-    assert.ok(dom.window.document.querySelector('.app-media-panel.is-preview'));
-    assert.equal(dom.window.document.querySelector('[data-destination]'), null);
-    await act(async () => [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === 'Retour')!.click());
-    assert.equal(dom.window.document.querySelector('video'), null);
+    assert.equal(dom.window.document.querySelector('video')?.hasAttribute('autoplay'), true);
     assert.ok(dom.window.document.querySelector('[data-destination]'));
-    await act(async () => [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === 'Fermer')!.click());
+    await act(async () => [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === 'Partager')!.click());
+    assert.match(dom.window.document.body.textContent ?? '', /Copier le lien du média/);
+    assert.ok(dom.window.document.querySelector('[data-destination]'));
+    const second = 'https://private.example/second.mp4';
+    await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'second', url: second, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
+    assert.equal(dom.window.document.querySelector('video'), null);
+    await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Lire la vidéo"]')!.click());
+    assert.equal(dom.window.document.querySelectorAll('video').length, 1);
+    assert.equal(dom.window.document.querySelector('video')?.getAttribute('src'), second);
+    const originalLink = dom.window.document.querySelector('a[aria-label="Ouvrir l’original"]');
+    assert.equal(originalLink?.getAttribute('href'), second);
+    assert.doesNotMatch(dom.window.document.body.textContent ?? '', /Copier le lien du média/);
+    await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Fermer"]')!.click());
     assert.equal(dom.window.document.activeElement, opener);
   } finally {
     await act(async () => root.unmount()); dom.window.close();

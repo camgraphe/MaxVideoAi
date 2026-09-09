@@ -1,4 +1,5 @@
 'use client';
+import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -155,5 +156,6 @@ export function FinishingSession({ auth, toolId, releasedQualities = [] }: { aut
     {!auth.loading && !auth.user ? <ToolAuthNotice locale={locale} path={`/app/tools/${toolId}`} /> : null}
     {error ? <p role="alert" className="mb-4 text-sm text-error">{error}</p> : null}{message ? <p role="status" className="mb-4 text-sm">{message}</p> : null}
     <UpscaleLibraryModal open={library.libraryModalOpen && !running} assets={library.visibleLibraryAssets} copy={libraryCopy} error={library.libraryError} hasMore={library.libraryHasMore} isLoading={library.libraryLoading} isLoadingMore={library.libraryLoadingMore} mediaType="video" onClose={() => library.setLibraryModalOpen(false)} onLoadMore={library.loadMoreLibraryAssets} onRefresh={library.fetchLibraryAssets} onSelectAsset={asset => void selectAsset(asset)} onSourceChange={next => void library.fetchLibraryAssets({ kind: 'video', source: next })} source={library.librarySource} sourceOptions={library.librarySourceOptions} />
+    <ToolMediaHandoff userId={userId} destination={toolId} locale={locale} onSelect={selectAsset} disabled={running || busy} />
   </ToolWorkbench>;
 }

@@ -2,17 +2,23 @@ import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser
 
 export const MEDIA_HANDOFF_KEY = 'maxvideoai:media-handoff:v1';
 const MAX_AGE = 10 * 60 * 1000;
-export type MediaDestination = 'image' | 'video';
+export const MEDIA_TOOL_DESTINATIONS = ['upscale', 'angle', 'background-removal', 'restore-video', 'denoise', 'fix-blur', 'smooth-motion'] as const;
+export type MediaToolDestination = typeof MEDIA_TOOL_DESTINATIONS[number];
+export type MediaDestination = 'image' | 'video' | MediaToolDestination;
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export function supportsMediaDestination(asset: Pick<AssetBrowserAsset, 'kind'>, destination: MediaDestination) {
-  return destination === 'video' || asset.kind === 'image';
+  if (destination === 'video') return true;
+  if (destination === 'image' || destination === 'angle') return asset.kind === 'image';
+  if (destination === 'upscale') return asset.kind === 'image' || asset.kind === 'video';
+  return MEDIA_TOOL_DESTINATIONS.includes(destination) && asset.kind === 'video';
 }
 export function stageMediaHandoff(storage: StorageLike, account: string, asset: AssetBrowserAsset, destination: MediaDestination, token: string, now = Date.now()) {
   if (!account || !supportsMediaDestination(asset, destination)) throw new Error('Invalid media destination');
   const value = JSON.stringify({ account, asset, destination, token, createdAt: now });
   if (value.length > 32_000) throw new Error('Media handoff too large');
   storage.setItem(MEDIA_HANDOFF_KEY, value);
-  return `${destination === 'image' ? '/app/image' : '/app'}?media=${encodeURIComponent(token)}`;
+  const path = destination === 'image' ? '/app/image' : destination === 'video' ? '/app' : `/app/tools/${destination}`;
+  return `${path}?media=${encodeURIComponent(token)}${destination === 'upscale' ? `&kind=${asset.kind}` : ''}`;
 }
 export function consumeMediaHandoff(storage: StorageLike, account: string, destination: MediaDestination, token: string, now = Date.now()): AssetBrowserAsset | null {
   const raw = storage.getItem(MEDIA_HANDOFF_KEY);

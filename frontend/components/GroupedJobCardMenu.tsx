@@ -48,7 +48,7 @@ export function GroupedJobCardMenu({
   const activityKind = group.hero.audioUrl ? 'audio' : isImageGroup || (!group.hero.videoUrl && group.hero.job?.renderIds?.length) ? 'image' : 'video';
   const assets = galleryMediaAssets(group, showActivityActions ? activityKind : showGalleryImageActions ? 'image' : 'video');
   if (showActivityActions && assets.length) return <GalleryMediaActionPanel
-    assets={assets} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
+    assets={assets} members={group.members} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
     onSave={() => handleAction('save-to-library')} saving={savingToLibrary}
     recreateHref={recreateHref} recreateLabel={recreateLabel}
     onRemove={allowRemove && group.count <= 1 ? () => handleAction('remove') : undefined} />;
@@ -58,7 +58,7 @@ export function GroupedJobCardMenu({
     recreateHref={recreateHref} recreateLabel={recreateLabel}
     onRemove={allowRemove && group.count <= 1 ? () => handleAction('remove') : undefined} />;
   if ((showGalleryActions || showGalleryImageActions) && assets.length) return <GalleryMediaActionPanel
-    assets={assets} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
+    assets={assets} members={group.members} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
     onRemake={showGalleryActions && onOpen ? handleRemake : undefined}
     onSave={showGalleryImageActions ? () => handleAction('save-image') : undefined}
     onCopy={showGalleryImageActions ? () => handleAction('copy') : undefined} />;

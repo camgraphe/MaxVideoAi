@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useMediaHandoff } from '@/components/library/useMediaHandoff';
 import { RecentMediaList } from '@/components/library/RecentMediaList.client';
 import { recentMediaCopy } from '@/components/library/recent-media-copy';
@@ -25,7 +26,12 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   onInsert: (field: EngineInputField, asset: UserAsset, index?: number) => Promise<unknown>;
   children: (surface: { recentMedia: ReactNode; recentDropProps: RecentReferenceDropProps; refreshRecentMedia: () => void }) => ReactNode;
 }) {
-  const handoff = useMediaHandoff(userId, 'video');
+  const searchParams = useSearchParams();
+  const incomingEngine = searchParams?.get('engine');
+  // Unified composers derive submissionMode from their inputs. Waiting for that
+  // mode before offering the incoming source would prevent the source being added.
+  const destinationReady = !incomingEngine || incomingEngine === engineId;
+  const handoff = useMediaHandoff(destinationReady ? userId : null, 'video');
   const [kind, setKind] = useState<'image' | 'video' | 'audio'>('image');
   const feed = useWorkspaceRecentMedia(userId, kind);
   const [selection, setSelection] = useState<Selection | null>(null);

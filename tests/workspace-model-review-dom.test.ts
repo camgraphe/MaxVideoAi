@@ -22,6 +22,8 @@ async function mount({
   readUnavailableOnly = false,
   stored = null as string | null,
   locale = 'en',
+  emptyPrompt = false,
+  mixedCatalogue = false,
 } = {}) {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
@@ -93,11 +95,11 @@ async function mount({
   );
   const { I18nProvider } = await import('../frontend/lib/i18n/I18nProvider');
   const engines = listFalEngines()
-    .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id))
+    .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id) || (mixedCatalogue && e.engine.modes.includes('t2i')))
     .map((e) => e.engine);
   let setup: WorkspaceModelSetup = {
     form: coerceFormState(engines.find((e) => e.id === 'seedance-2-0')!, 't2v', null),
-    prompt: 'A cinematic scene',
+    prompt: emptyPrompt ? '' : 'A cinematic scene',
     negativePrompt: '',
     inputAssets: {},
     klingElements: [],
@@ -316,7 +318,7 @@ test('Compare immediately quotes a bounded alternative shortlist without touchin
     assert.ok(alternatives.length > 0);
     assert.ok(alternatives.length <= 3);
     assert.equal(f.requests.length, alternatives.length);
-    assert.match(f.dom.window.document.body.textContent ?? '', /Compatible alternatives/);
+    assert.ok(f.dom.window.document.querySelector('[role="list"][aria-label="Compatible alternatives"]'));
     for (let index = 0; index < alternatives.length; index += 1) {
       await f.respond(index, (index + 1) * 100);
     }
@@ -325,7 +327,7 @@ test('Compare immediately quotes a bounded alternative shortlist without touchin
       assert.match(f.dom.window.document.body.textContent ?? '', /\$2\.00/);
     assert.deepEqual(f.setup, before);
     assert.equal(f.writes.length, 0);
-    await act(async () => alternatives[0].click());
+    await act(async () => [...alternatives[0].querySelectorAll('button')].find(button => button.textContent === 'Select')!.click());
     assert.ok(f.current.candidate);
     assert.equal(f.current.panel, 'compare');
     assert.deepEqual(f.setup, before);
@@ -804,42 +806,35 @@ test('Cancel, target replacement and Retry invalidate Apply immediately within o
   }
 });
 
-test('the real full catalogue browser stays keyboard-contained and Escape returns to the review', async () => {
+test('comparison family picker adds and removes models without mutating the draft or requoting unchanged choices', async () => {
   const f = await mount();
   try {
-    await f.click('Compare');
-    const dialog = f.dom.window.document.querySelector('[aria-modal=true]')!;
-    await act(async () => dialog.querySelector<HTMLButtonElement>('[aria-haspopup=dialog]')!.click());
-    const portal = f.dom.window.document.querySelector('[data-engine-select-portal]')!;
-    const buttons = [
-      ...portal.querySelectorAll<HTMLElement>(
-        'button:not([disabled]),input:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])',
-      ),
-    ].filter((e) => e.tabIndex >= 0);
-    assert.ok(buttons.length > 2);
-    buttons[0].focus();
-    await act(async () =>
-      buttons[0].dispatchEvent(
-        new f.dom.window.KeyboardEvent('keydown', {
-          key: 'Tab',
-          shiftKey: true,
-          bubbles: true,
-          cancelable: true,
-        }),
-      ),
-    );
-    assert.equal(f.dom.window.document.activeElement, buttons[buttons.length - 1]);
-    await act(async () =>
-      buttons[buttons.length - 1].dispatchEvent(
-        new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
-      ),
-    );
-    assert.ok(f.dom.window.document.querySelector('[aria-modal=true]'));
-    assert.equal(dialog.querySelector('[aria-haspopup=dialog]')?.getAttribute('aria-expanded'), 'false');
+    const before = structuredClone(f.setup);
+    await f.click('Compare'); await f.tick();
+    for (let index = 0; index < f.requests.length; index++) await f.respond(index);
+    const originalCount = f.requests.length;
+    const removed = f.current.alternatives[0];
+    await act(async () => f.current.comparison.remove(removed.engine.id));
+    await f.tick();
+    assert.equal(f.requests.length, originalCount);
+    await f.click('Add model');
+    const search = f.dom.window.document.querySelector<HTMLInputElement>('input[aria-label="Search models"]')!;
+    assert.ok(search);
+    const family = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('.app-engine-families button')].find(item => (item.textContent ?? '').includes(removed.engine.label.split(' ')[0]));
+    assert.ok(family);
+    await act(async () => family.click());
+    const button = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('[data-engine-option]')].find(item => item.id === `${removed.engine.id}-option`);
+    assert.ok(button);
+    await act(async () => button!.click()); await f.tick();
+    assert.ok(f.current.alternatives.some(item => item.engine.id === removed.engine.id));
+    assert.equal(f.current.candidate, null, "adding never starts the apply-model flow");
+    assert.equal(f.current.panel, "compare");
+    assert.equal(f.requests.length, originalCount, 'unchanged exact quotes remain cached');
+    assert.deepEqual(f.setup, before);
     assert.equal(f.writes.length, 0);
-  } finally {
-    await f.dispose();
-  }
+    await act(async () => f.dom.window.document.querySelector('[role=dialog]')!.dispatchEvent(new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(f.current.panel, null);
+  } finally { await f.dispose(); }
 });
 
 test('a storage read failure never overwrites the unknown existing record even when writes are allowed', async () => {
@@ -928,5 +923,32 @@ test('displaced active draft is visible through rendered Configurations and Canc
     assert.equal(f.setup.voiceIdsInput, previous.voiceIdsInput);
     await act(async () => f.current.removeSavedSetup(previous.form.engineId));
     assert.notEqual(f.current.savedSetups[0]?.saved?.setup.prompt, previous.prompt);
+  } finally { await f.dispose(); }
+});
+
+
+test('incomplete candidates stay in Compare as cards and the family picker excludes image engines', async () => {
+  const f = await mount({ emptyPrompt: true, mixedCatalogue: true });
+  try {
+    const before = structuredClone(f.setup);
+    await f.click('Compare');
+    await f.click('Add model');
+    const portal = f.dom.window.document.querySelector('[data-engine-select-portal]');
+    assert.ok(portal);
+    assert.doesNotMatch(portal.textContent ?? '', /Nano Banana|Flux|Recraft|Ideogram|Seedream/i);
+    const family = [...portal.querySelectorAll<HTMLButtonElement>('.app-engine-families button')].find(button => /Veo/.test(button.textContent ?? ''));
+    assert.ok(family);
+    await act(async () => family.click());
+    const option = f.dom.window.document.getElementById('veo-3-1-option') as HTMLButtonElement;
+    assert.ok(option);
+    await act(async () => option.click()); await f.tick();
+    assert.equal(f.current.panel, 'compare');
+    assert.equal(f.current.candidate, null);
+    assert.equal(f.current.alternatives.length, 1);
+    assert.equal(f.current.alternatives[0].engine.id, 'veo-3-1');
+    assert.equal(f.current.alternatives[0].request, null);
+    assert.equal(f.requests.length, 0, 'missing-input candidates are not quoted as valid jobs');
+    assert.match(f.dom.window.document.body.textContent ?? '', /References or settings needed/);
+    assert.deepEqual(f.setup, before); assert.equal(f.writes.length, 0);
   } finally { await f.dispose(); }
 });

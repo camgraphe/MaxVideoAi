@@ -1,5 +1,4 @@
 'use client';
-
 import clsx from 'clsx';
 import {
   useCallback,
@@ -26,7 +25,6 @@ import {
 import { useEngineSelectDropdownState } from './engine-select/useEngineSelectDropdownState';
 import { useEngineSelectRegistry } from './engine-select/useEngineSelectRegistry';
 import type { EngineSelectProps } from './engine-select/engine-select-types';
-
 export function EngineSelect({
   engines,
   engineId,
@@ -44,6 +42,8 @@ export function EngineSelect({
   density = 'default',
   controlPresentation = 'default',
   className,
+  trigger,
+  selectedIds,
 }: EngineSelectProps) {
   const { t, locale } = useI18n();
   const copy = mergeEngineSelectCopy(t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as Partial<EngineSelectCopy>);
@@ -62,12 +62,10 @@ export function EngineSelect({
     variantEngines,
     visibleEngines,
   } = useEngineSelectRegistry({ browseOpen, engineId, engineScores, engines, open });
-
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
     return String(engine.id || engine.label || '').replace(/\s+/g, '').toUpperCase();
   }, []);
-
   const getVariantLabel = useCallback(
     (entry: EngineCaps) => {
       const override = registryMeta?.meta.get(entry.id)?.surfaces.app.variantLabel ?? ENGINE_VARIANT_LABEL_OVERRIDES[entry.id];
@@ -77,16 +75,13 @@ export function EngineSelect({
     },
     [registryMeta]
   );
-
   const legacyToggleLabel = copy.modal.legacyToggleLabel ?? DEFAULT_ENGINE_SELECT_COPY.modal.legacyToggleLabel;
-
   useEffect(() => {
     if (!selectedEngine) return;
     if (!selectedEngine.modes.includes(mode)) {
       onModeChange(selectedEngine.modes[0]);
     }
   }, [mode, onModeChange, selectedEngine]);
-
   const displayedModeOptions = useMemo(() => {
     const base = modeOptions && modeOptions.length ? modeOptions : DEFAULT_MODE_OPTIONS;
     const deduped: Mode[] = [];
@@ -97,11 +92,8 @@ export function EngineSelect({
     });
     return deduped;
   }, [modeOptions]);
-
   const modeVariantOptions: Mode[] = [];
-
   const showModeVariantSelector = modeVariantOptions.length > 1;
-
   const {
     containerRef,
     contentRef,
@@ -120,24 +112,19 @@ export function EngineSelect({
     setOpen,
     visibleEngines,
   });
-
   if (!selectedEngine) {
     return null;
   }
-
   const isBarVariant = variant === 'bar';
   const isStackedMode = modeLayout === 'stacked';
   const isCompact = density === 'compact';
   const shouldShowModes = showModeSelect && displayedModeOptions.length > 0;
-
   const activeOptionId =
     highlightedIndex >= 0 && highlightedIndex < visibleEngines.length
       ? `${visibleEngines[highlightedIndex].id}-option`
       : undefined;
-
   itemRefs.current.length = visibleEngines.length;
   const selectedAvgDuration = formatAvgDuration(selectedEngine.avgDurationMs);
-
   const containerClassName = clsx(
     isBarVariant
       ? isStackedMode
@@ -146,7 +133,6 @@ export function EngineSelect({
       : 'relative stack-gap-lg p-5',
     className
   );
-
   const engineTrigger = (
     <button
       id={triggerId}
@@ -188,7 +174,6 @@ export function EngineSelect({
       </svg>
     </button>
   );
-
   const variantControl = showVariantSelector ? (
     <EngineVariantControl
       bar={isBarVariant}
@@ -202,7 +187,47 @@ export function EngineSelect({
       variants={variantEngines}
     />
   ) : null;
-
+  const dropdown = open && portalElement && position ? (
+            <EngineSelectDropdown
+              activeOptionId={activeOptionId}
+              contentRef={contentRef}
+              copy={copy}
+              title={trigger?.label}
+              engines={engines}
+              formatEngineShort={formatEngineShort}
+              hasLegacyEngines={hasLegacyEngines}
+              highlightedIndex={highlightedIndex}
+              legacyToggleId={legacyToggleId}
+              legacyToggleLabel={legacyToggleLabel}
+              disabledEngineReasons={disabledEngineReasons}
+              onBrowse={() => {
+                setOpen(false);
+                setHighlightedIndex(-1);
+                setBrowseOpen(true);
+              }}
+              onHighlight={setHighlightedIndex}
+              onItemRef={(index, node) => {
+                itemRefs.current[index] = node;
+              }}
+              onSelectEngine={(nextEngineId) => {
+                onEngineChange(nextEngineId);
+                setOpen(false);
+                setHighlightedIndex(-1);
+                triggerRef.current?.focus();
+              }}
+              onClose={() => { setOpen(false); triggerRef.current?.focus(); }}
+              onToggleLegacy={setShowLegacy}
+              portalElement={portalElement}
+              position={position}
+              registryMeta={registryMeta}
+              selectedEngine={selectedEngine}
+              selectedIds={selectedIds}
+              engineScores={engineScores}
+              showLegacy={showLegacy}
+              triggerId={triggerId}
+              visibleEngines={visibleEngines}
+            />
+          ) : null;
   const content = (
     <>
       {!isBarVariant && (
@@ -222,7 +247,6 @@ export function EngineSelect({
           </div>
         </div>
       )}
-
       <div
         className={clsx(
           'flex flex-wrap',
@@ -268,7 +292,6 @@ export function EngineSelect({
               {variantControl}
             </>
           )}
-
           {showModeVariantSelector && (
             <div className={clsx(isBarVariant ? (isCompact ? 'space-y-0.5' : 'space-y-1') : 'space-y-2')}>
               <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
@@ -297,54 +320,13 @@ export function EngineSelect({
               </div>
             </div>
           )}
-
           {showBillingNote && selectedMeta?.billingNote && (
             <p className={clsx('text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
               {selectedMeta.billingNote}
             </p>
           )}
-
-          {open && portalElement && position ? (
-            <EngineSelectDropdown
-              activeOptionId={activeOptionId}
-              contentRef={contentRef}
-              copy={copy}
-              engines={engines}
-              formatEngineShort={formatEngineShort}
-              hasLegacyEngines={hasLegacyEngines}
-              highlightedIndex={highlightedIndex}
-              legacyToggleId={legacyToggleId}
-              legacyToggleLabel={legacyToggleLabel}
-              disabledEngineReasons={disabledEngineReasons}
-              onBrowse={() => {
-                setOpen(false);
-                setHighlightedIndex(-1);
-                setBrowseOpen(true);
-              }}
-              onHighlight={setHighlightedIndex}
-              onItemRef={(index, node) => {
-                itemRefs.current[index] = node;
-              }}
-              onSelectEngine={(nextEngineId) => {
-                onEngineChange(nextEngineId);
-                setOpen(false);
-                setHighlightedIndex(-1);
-                triggerRef.current?.focus();
-              }}
-              onClose={() => { setOpen(false); triggerRef.current?.focus(); }}
-              onToggleLegacy={setShowLegacy}
-              portalElement={portalElement}
-              position={position}
-              registryMeta={registryMeta}
-              selectedEngine={selectedEngine}
-              engineScores={engineScores}
-              showLegacy={showLegacy}
-              triggerId={triggerId}
-              visibleEngines={visibleEngines}
-            />
-          ) : null}
+          {dropdown}
         </div>
-
         {shouldShowModes ? (
           <div
             className={clsx(
@@ -406,7 +388,16 @@ export function EngineSelect({
       )}
     </>
   );
-
+  if (trigger) return <div ref={containerRef} className={className}>
+    <button ref={triggerRef} id={triggerId} type="button" className={trigger.className} aria-label={trigger.label}
+      aria-haspopup="dialog" aria-expanded={open} onClick={toggleOpen} onKeyDown={handleTriggerKeyDown}>{trigger.content}</button>
+    {dropdown}
+    {browseOpen ? <BrowseEnginesModal engines={engines} selectedEngineId={selectedEngine.id} copy={copy}
+      onClose={() => { setBrowseOpen(false); triggerRef.current?.focus(); }}
+      onSelect={id => { if (!disabledEngineReasons?.[id]) { onEngineChange(id); setBrowseOpen(false); triggerRef.current?.focus(); } }}
+      disabledEngineReasons={disabledEngineReasons} engineMeta={registryMeta?.meta} showLegacy={showLegacy}
+      onToggleLegacy={() => setShowLegacy(previous => !previous)} /> : null}
+  </div>;
   if (isBarVariant) {
     return (
       <div ref={containerRef} className={containerClassName}>

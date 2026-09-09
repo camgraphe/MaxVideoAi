@@ -1,39 +1,68 @@
 'use client';
 
-import { createPortal } from 'react-dom';
-import { useId, useState, type ReactNode, type Ref } from 'react';
-import { AppGlyph } from '@/components/app/AppGlyph';
-import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { useState, type ReactNode, type Ref } from 'react';
+import { Download, Share2, Link2, Check, ExternalLink, Play, Film } from 'lucide-react';
 import { LibraryImageThumbnail } from './LibraryImageThumbnail.client';
+import { MediaDialog } from './MediaDialog.client';
 import { recentMediaCopy, recentMediaFilename } from './recent-media-copy';
 import { mediaActionCopy, meaningfulMediaLabel } from './media-action-copy';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 
-/** Presentation only: destination owners validate and insert the exact original. */
-export function MediaActionPanel({ asset, locale, onClose, children, title, boundaryRef }: {
-  asset: AssetBrowserAsset; locale: string; onClose: () => void; children?: ReactNode; title?: string; boundaryRef?: Ref<HTMLDivElement>;
+/** One original, one reader, and the same selected output for every action. */
+export function MediaActionPanel({ asset, locale, onClose, children, title, boundaryRef, navigation, details }: {
+  asset: AssetBrowserAsset; locale: string; onClose: () => void; children?: ReactNode; title?: string;
+  boundaryRef?: Ref<HTMLDivElement>; navigation?: ReactNode; details?: ReactNode;
 }) {
   const copy = mediaActionCopy(locale);
-  const id = useId();
-  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
-  const [preview, setPreview] = useState(false);
+  return <MediaDialog title={title ?? copy.title} closeLabel={copy.close} onClose={onClose} boundaryRef={boundaryRef} navigation={navigation}>
+    <MediaContent key={`${asset.id}:${asset.url}`} asset={asset} locale={locale} details={details}>{children}</MediaContent>
+  </MediaDialog>;
+}
+
+function MediaContent({ asset, locale, children, details }: { asset: AssetBrowserAsset; locale: string; children?: ReactNode; details?: ReactNode }) {
+  const copy = mediaActionCopy(locale);
+  const [playing, setPlaying] = useState(false);
+  const [playbackError, setPlaybackError] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState(false);
+  const fr = locale.startsWith('fr'), es = locale.startsWith('es');
+  const labels = fr ? ['Partager', 'Copier le lien du média', 'Lien copié', 'Ouvrir l’original', 'Détails', 'Impossible de copier le lien.', 'Le lien original peut expirer.'] : es ? ['Compartir', 'Copiar enlace del medio', 'Enlace copiado', 'Abrir original', 'Detalles', 'No se pudo copiar el enlace.', 'El enlace original puede caducar.'] : ['Share', 'Copy media link', 'Link copied', 'Open original', 'Details', 'Unable to copy link.', 'The original link may expire.'];
   const name = recentMediaFilename(asset.url, asset.kind);
-  const label = meaningfulMediaLabel(asset.url, [recentMediaCopy(locale)[asset.kind], asset.width && asset.height ? `${asset.width}×${asset.height}` : null].filter(Boolean).join(' · '));
-  if (typeof document === 'undefined') return null;
-  return createPortal(<div className="app-experience"><div ref={boundaryRef} className="app-media-panel-backdrop" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={id} tabIndex={-1} onKeyDown={onDialogKeyDown} className={`app-media-panel app-scroll-surface${preview ? ' is-preview' : ''}${asset.kind === 'image' ? ' is-image' : ''}`}>
-      <header><h2 id={id}>{title ?? copy.title}</h2><button type="button" data-modal-initial-focus="true" onClick={onClose}>{copy.close}</button></header>
-      <div className="app-media-panel-cover">
-        {preview && asset.kind === 'video' ? <video src={asset.url} controls playsInline preload="none" />
-          : preview && asset.kind === 'audio' ? <audio src={asset.url} controls preload="none" />
-          : asset.kind === 'image' ? <LibraryImageThumbnail asset={preview ? { ...asset, thumbUrl: null } : asset} />
-          : asset.thumbUrl ? <LibraryImageThumbnail asset={{ ...asset, url: asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
+  const label = meaningfulMediaLabel(asset.url, recentMediaCopy(locale)[asset.kind]);
+  const share = async () => {
+    if (typeof navigator.share !== 'function') { setSharing(value => !value); return; }
+    try { await navigator.share({ title: label, url: asset.url }); }
+    catch (failure) { if (!(failure instanceof Error && failure.name === 'AbortError')) setSharing(true); }
+  };
+  return <div className="app-media-detail-layout">
+    <div className="app-media-view">
+      <div className={`app-media-panel-cover is-${asset.kind}`}>
+        {asset.kind === 'video' ? playing ? <video key={asset.url} src={asset.url} poster={asset.thumbUrl || undefined} controls playsInline autoPlay preload="none" onError={() => setPlaybackError(true)} /> : <button type="button" className="app-media-play" aria-label={fr ? 'Lire la vidéo' : es ? 'Reproducir vídeo' : 'Play video'} onClick={() => { setPlaybackError(false); setPlaying(true); }}>
+          {asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbUrl }} alt={label} /> : <Film size={64} aria-hidden />}
+          <span><Play size={24} fill="currentColor" aria-hidden /></span>
+        </button>
+          : asset.kind === 'audio' ? <audio key={asset.url} src={asset.url} controls preload="none" />
+          : <LibraryImageThumbnail asset={{ ...asset, thumbUrl: null }} alt={label} />}
       </div>
-      <p className="app-media-panel-filename">{label}</p>
-      <div className="app-media-panel-transport"><button type="button" aria-pressed={preview} onClick={() => setPreview(!preview)}><AppGlyph name="video" />{preview ? copy.back : copy.preview}</button>
-        <a href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, name))}>{copy.download}</a></div>
-      {!preview ? <div className="app-media-panel-actions">{children}</div> : null}
-    </section>
-  </div></div>, document.body);
+      {playbackError ? <p role="alert">{fr ? 'Lecture indisponible.' : es ? 'Reproducción no disponible.' : 'Playback unavailable.'} <button type="button" onClick={() => { setPlaybackError(false); setPlaying(false); }}>{fr ? 'Réessayer' : es ? 'Reintentar' : 'Retry'}</button></p> : null}
+      <p className="app-media-panel-filename">{[label, asset.width && asset.height ? `${asset.width} × ${asset.height}` : null, asset.durationSec ? `${asset.durationSec}s` : null].filter(Boolean).join(' · ')}</p>
+      <div className="app-media-panel-transport">
+        <a href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, name))}><Download size={16} aria-hidden />{copy.download}</a>
+        <button type="button" aria-expanded={sharing} onClick={() => void share()}><Share2 size={16} aria-hidden />{labels[0]}</button>
+        <a href={asset.url} target="_blank" rel="noreferrer" aria-label={labels[3]} title={labels[3]}><ExternalLink size={16} aria-hidden /></a>
+      </div>
+      {sharing ? <div className="app-media-share">
+        <button type="button" onClick={async () => { const ok = await copyTextToClipboard(asset.url); setCopied(ok); setError(!ok); }}>{copied ? <Check size={16} aria-hidden /> : <Link2 size={16} aria-hidden />}{copied ? labels[2] : labels[1]}</button>
+        <small>{labels[6]}</small>
+        {error ? <p role="alert">{labels[5]}</p> : null}
+      </div> : null}
+    </div>
+    {children || details ? <aside className="app-media-panel-actions">
+      {children}
+      {details ? <details className="app-media-details"><summary>{labels[4]}</summary><div>{details}</div></details> : null}
+    </aside> : null}
+  </div>;
 }

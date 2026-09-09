@@ -188,24 +188,7 @@ export function WorkspaceModelReview({
           </button>
         </header>
         <div className={styles.body}>
-          {review.savedSetups.length || review.panel === 'saved' ? (
-            <div className={styles.tabs}>
-              <button
-                type="button"
-                aria-pressed={review.panel === 'compare'}
-                onClick={() => review.open('compare')}
-              >
-                {copy.compare}
-              </button>
-              <button
-                type="button"
-                aria-pressed={review.panel === 'saved'}
-                onClick={() => review.open('saved')}
-              >
-                {copy.saved}
-              </button>
-            </div>
-          ) : null}
+          {review.panel === 'saved' ? <button type="button" className={styles.back} onClick={() => review.open('compare')}>{copy.backToAlternatives}</button> : null}
           {review.error ? (
             <div role="alert">
               <p className={styles.status}>{copy[review.error]}</p>
@@ -223,6 +206,7 @@ export function WorkspaceModelReview({
           ) : null}
           {review.panel === 'saved' ? (
             <>
+              <p className={styles.muted}>{locale.startsWith('fr') ? 'Vos réglages sont conservés quand vous changez de modèle.' : locale.startsWith('es') ? 'Tus ajustes se guardan al cambiar de modelo.' : 'Your settings are saved when you switch models.'}</p>
               {!review.savedSetups.length ? <p className={styles.muted}>{copy.empty}</p> : null}
               {review.savedSetups.map(({ modelId, saved, engine }) => (
                 <div className={styles.saved} key={modelId}>

@@ -195,7 +195,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     accessToken: eligibleAccount ? accessToken : null,
     authChecked: Boolean(eligibleAccount),
   });
-  const alternatives = useWorkspaceModelAlternatives({
+  const comparison = useWorkspaceModelAlternatives({
     enabled: active && panel === 'compare' && !selection,
     current,
     engines,
@@ -480,7 +480,8 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     clearUnreadableStore,
     open,
     retry,
-    alternatives,
+    alternatives: comparison.alternatives,
+    comparison,
     savedSetups,
     error: active ? (error ?? store.error) : null,
     storageError: active ? store.error : undefined,

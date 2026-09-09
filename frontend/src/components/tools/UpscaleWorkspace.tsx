@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { useSearchParams } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -419,6 +420,7 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
                   savingGroupId={savingRecentGroupId}
                 /> : null}
     >{!user ? <ToolAuthNotice locale={locale} path={`/app/tools/upscale?kind=${mediaType}`} /> : null}</ToolWorkbench>
+    <ToolMediaHandoff userId={user?.id} destination="upscale" locale={locale} onSelect={selectLibraryAsset} disabled={running || uploading} />
     <UpscaleLibraryModal
         assets={visibleLibraryAssets}
         copy={copy}

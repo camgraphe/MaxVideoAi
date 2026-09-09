@@ -10,8 +10,13 @@ import {
 export type WorkspaceModelAlternativeCandidate = {
   engine: EngineCaps;
   candidate: WorkspaceModelCandidate;
-  request: PreflightRequest;
+  request: PreflightRequest | null;
 };
+
+export function isVideoComparisonEngine(engine: EngineCaps) {
+  const runtime = resolveRuntimeEngineInput(engine.id);
+  return runtime ? runtime.category === 'video' : engine.modes.some(mode => !['t2i', 'i2i'].includes(mode));
+}
 
 function familyKey(engine: EngineCaps) {
   return engine.brandId?.trim().toLowerCase() || engine.id.split('-')[0] || engine.id;
@@ -30,6 +35,7 @@ export function buildWorkspaceModelAlternatives({
   disabledEngineReasons,
   engineScores,
   limit = 3,
+  includeBlocked = false,
 }: {
   current: WorkspaceModelSetup | null;
   engines: EngineCaps[];
@@ -38,6 +44,7 @@ export function buildWorkspaceModelAlternatives({
   disabledEngineReasons?: Record<string, string>;
   engineScores?: Record<string, number | null | undefined>;
   limit?: number;
+  includeBlocked?: boolean;
 }): WorkspaceModelAlternativeCandidate[] {
   if (!current || limit <= 0) return [];
   const currentEngine = engines.find((engine) => engine.id === current.form.engineId);
@@ -45,6 +52,7 @@ export function buildWorkspaceModelAlternatives({
     .map((engine, index) => ({ engine, index }))
     .flatMap(({ engine, index }) => {
       if (
+        !isVideoComparisonEngine(engine) ||
         engine.id === current.form.engineId ||
         engine.availability === 'paused' ||
         disabledEngineReasons?.[engine.id]
@@ -58,8 +66,9 @@ export function buildWorkspaceModelAlternatives({
         locale,
         currentEngine,
       });
-      if (!candidate.applicable || candidate.blockingReasons.length) return [];
-      const request = buildWorkspacePreflightRequest({
+      const blocked = !candidate.applicable || candidate.blockingReasons.length > 0;
+      if (blocked && !includeBlocked) return [];
+      const request = blocked ? null : buildWorkspacePreflightRequest({
         form: candidate.setup.form,
         selectedEngine: engine,
         submissionMode: candidate.workflow.submissionMode,
