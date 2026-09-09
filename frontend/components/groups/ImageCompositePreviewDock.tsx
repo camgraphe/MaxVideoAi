@@ -5,7 +5,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Copy, Download, ExternalLink, Minus, Pencil, Plus } from 'lucide-react';
+import { BookmarkMinus, BookmarkPlus, Copy, Download, ExternalLink, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { getAspectRatioNumber, resolveCssAspectRatio } from '@/lib/aspect';
@@ -49,7 +49,7 @@ interface ImageCompositePreviewDockProps {
 }
 
 const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-surface-on-media-25 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
+  'flex items-center justify-center p-0 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
 
 export function ImageCompositePreviewDock({
   density = 'default',
@@ -77,9 +77,9 @@ export function ImageCompositePreviewDock({
   const copiedLabel = t('workspace.image.preview.copied', 'Copied');
   const downloadLabel = t('workspace.image.preview.download', 'Download');
   const editImageLabel = t('workspace.image.preview.editImage', 'Edit this image');
-  const modalLabel = t('workspace.image.preview.openModal', 'Open modal');
-  const addToLibraryLabel = t('workspace.jobs.actions.addToLibrary', 'Add to Library');
-  const removeFromLibraryLabel = t('workspace.jobs.actions.removeFromLibrary', 'Remove from Library');
+  const modalLabel = t('workspace.image.preview.openModal', 'Open full preview');
+  const addToLibraryLabel = t('workspace.jobs.actions.addToLibrary', 'Add to Media');
+  const removeFromLibraryLabel = t('workspace.jobs.actions.removeFromLibrary', 'Remove from Media');
   const savingLabel = t('workspace.jobs.actions.saving', 'Saving…');
   const removingLabel = t('workspace.jobs.actions.removing', 'Removing…');
 
@@ -96,7 +96,7 @@ export function ImageCompositePreviewDock({
     fallback: '1 / 1',
   });
   const previewRatio = getAspectRatioNumber(aspectRatioCss.replace(/\s/g, ''), 1);
-  const previewSizes = `(max-width: 639px) min(calc(100vw - 40px), ${Math.ceil((workspaceDensity ? 220 : 320) * previewRatio)}px), min(100vw, ${Math.ceil((workspaceDensity ? 330 : 420) * previewRatio)}px)`;
+  const previewSizes = `(max-width: 639px) min(calc(100vw - 40px), ${Math.ceil(320 * previewRatio)}px), min(100vw, ${Math.ceil((workspaceDensity ? 390 : 420) * previewRatio)}px)`;
   const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null);
   // Other sources may require browser credentials or a provider URL unsupported by the optimizer.
   const canOptimizePreview = Boolean(
@@ -121,13 +121,15 @@ export function ImageCompositePreviewDock({
         const ratio = Number.isFinite(rawWidth) && Number.isFinite(rawHeight) && rawWidth > 0 && rawHeight > 0
           ? rawWidth / rawHeight
           : 1;
-        const maxHeight = workspaceDensity ? (window.innerWidth < 640 ? 220 : 330) : 420;
-        const width = workspaceDensity
-          ? Math.min(parent.clientWidth, maxHeight * ratio)
-          : parent.clientWidth;
-        const toolbarWidth = Math.min(parent.clientWidth, Math.max(width, 244));
+        const maxHeight = workspaceDensity ? (window.innerWidth < 640 ? 320 : 390) : 420;
+        const width = parent.clientWidth;
+        const previewHeight = Math.min(maxHeight, width / ratio);
+        const toolbarWidth = parent.clientWidth;
         const widthPx = `${Math.round(width)}px`;
         if (preview.style.width !== widthPx) preview.style.width = widthPx;
+        if (workspaceDensity && preview.style.height !== `${Math.round(previewHeight)}px`) {
+          preview.style.height = `${Math.round(previewHeight)}px`;
+        }
         if (toolbar.style.width !== `${Math.round(toolbarWidth)}px`) {
           toolbar.style.width = `${Math.round(toolbarWidth)}px`;
         }
@@ -151,6 +153,12 @@ export function ImageCompositePreviewDock({
   const canEdit = Boolean(selectedActionUrl && onEditImage);
   const canAddToLibrary = Boolean(selectedActionUrl && onAddToLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && !isInLibrary;
   const canRemoveFromLibrary = Boolean(onRemoveFromLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && isInLibrary;
+  const actionClassName = clsx(
+    ICON_BUTTON_BASE,
+    workspaceDensity
+      ? 'app-image-preview-action h-11 w-11 rounded-md border-0 bg-transparent'
+      : 'h-9 w-9 rounded-lg border border-surface-on-media-25'
+  );
 
   const headerTitle = showTitle ? (
     <div>
@@ -160,7 +168,7 @@ export function ImageCompositePreviewDock({
   ) : null;
 
   const toolbarContent = (
-    <div className="flex flex-wrap items-center justify-center gap-2">
+    <div className="app-image-preview-actions flex flex-wrap items-center justify-center gap-1">
       <span title={editImageLabel}>
         <Button
           type="button"
@@ -168,7 +176,7 @@ export function ImageCompositePreviewDock({
           variant="ghost"
           onClick={() => (selectedActionUrl && onEditImage ? onEditImage(selectedActionUrl) : undefined)}
           disabled={!canEdit}
-          className={clsx(ICON_BUTTON_BASE, 'p-0 text-brand', 'disabled:opacity-50')}
+          className={clsx(actionClassName, 'text-brand', 'disabled:opacity-50')}
           aria-label={editImageLabel}
         >
           <span className="inline-flex h-4 w-4 items-center justify-center">
@@ -185,11 +193,11 @@ export function ImageCompositePreviewDock({
             variant="ghost"
             onClick={onRemoveFromLibrary}
             disabled={!canRemoveFromLibrary}
-            className={clsx(ICON_BUTTON_BASE, 'p-0 text-state-warning', 'disabled:opacity-50')}
+            className={clsx(actionClassName, 'text-state-warning', 'disabled:opacity-50')}
             aria-label={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}
           >
             <span className="inline-flex h-4 w-4 items-center justify-center">
-              <UIIcon icon={Minus} size={16} />
+              <UIIcon icon={BookmarkMinus} size={16} />
             </span>
             <span className="sr-only">{isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}</span>
           </Button>
@@ -202,11 +210,11 @@ export function ImageCompositePreviewDock({
             variant="ghost"
             onClick={() => (selectedActionUrl && onAddToLibrary ? onAddToLibrary(selectedActionUrl) : undefined)}
             disabled={!canAddToLibrary}
-            className={clsx(ICON_BUTTON_BASE, 'p-0 text-brand', 'disabled:opacity-50')}
+            className={clsx(actionClassName, 'text-brand', 'disabled:opacity-50')}
             aria-label={isSavingToLibrary ? savingLabel : addToLibraryLabel}
           >
             <span className="inline-flex h-4 w-4 items-center justify-center">
-              <UIIcon icon={Plus} size={16} />
+              <UIIcon icon={BookmarkPlus} size={16} />
             </span>
             <span className="sr-only">{isSavingToLibrary ? savingLabel : addToLibraryLabel}</span>
           </Button>
@@ -219,7 +227,7 @@ export function ImageCompositePreviewDock({
           variant="ghost"
           onClick={() => (selectedActionUrl && onDownload ? onDownload(selectedActionUrl) : undefined)}
           disabled={!canDownload}
-          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(actionClassName, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={downloadLabel}
         >
           <span className="inline-flex h-4 w-4 items-center justify-center">
@@ -235,7 +243,7 @@ export function ImageCompositePreviewDock({
           variant="ghost"
           onClick={() => (selectedActionUrl && onCopyLink ? onCopyLink(selectedActionUrl) : undefined)}
           disabled={!canCopy}
-          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(actionClassName, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={copyLabel}
         >
           <span className="inline-flex h-4 w-4 items-center justify-center">
@@ -251,7 +259,7 @@ export function ImageCompositePreviewDock({
           variant="ghost"
           onClick={onOpenModal}
           disabled={!canOpenModal}
-          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(actionClassName, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={modalLabel}
         >
           <span className="inline-flex h-4 w-4 items-center justify-center">
@@ -264,8 +272,19 @@ export function ImageCompositePreviewDock({
   );
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-surface-glass-80 shadow-card">
-      <header className={clsx('border-b border-hairline px-4', workspaceDensity ? 'py-1' : 'py-3')}>
+    <section
+      className={clsx(
+        'overflow-hidden',
+        workspaceDensity
+          ? 'app-image-preview-dock'
+          : 'rounded-card border border-border bg-surface-glass-80 shadow-card'
+      )}
+    >
+      <header
+        className={clsx(
+          workspaceDensity ? 'app-model-strip app-image-model-strip' : 'border-b border-hairline px-4 py-3'
+        )}
+      >
         {engineSettings ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -284,14 +303,14 @@ export function ImageCompositePreviewDock({
         )}
       </header>
 
-      <div className={workspaceDensity ? 'px-0 py-0' : 'px-4 py-4'}>
-        <div className="flex flex-col items-center">
+      <div className={workspaceDensity ? 'app-image-preview-body px-0 py-0' : 'px-4 py-4'}>
+        <div className="app-image-preview-stack flex flex-col items-center">
           <div
             ref={previewRef}
             data-workspace-preview-media={workspaceDensity ? '' : undefined}
             className={clsx(
-              'relative w-full overflow-hidden rounded-card border border-surface-on-media-25 bg-placeholder',
-              workspaceDensity ? 'max-h-[220px] sm:max-h-[330px]' : 'max-h-[320px] sm:max-h-[420px]'
+              'app-image-preview-stage relative w-full overflow-hidden border border-surface-on-media-25',
+              workspaceDensity ? 'max-h-[320px] sm:max-h-[390px]' : 'max-h-[320px] sm:max-h-[420px]'
             )}
             style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
           >
@@ -302,6 +321,7 @@ export function ImageCompositePreviewDock({
                 fill
                 sizes={previewSizes}
                 className="h-full w-full object-contain"
+                priority
                 loading="eager"
                 fetchPriority="high"
                 unoptimized={!canOptimizePreview || failedPreviewUrl === selectedPreviewUrl}
@@ -317,9 +337,9 @@ export function ImageCompositePreviewDock({
               ref={toolbarRef}
               data-workspace-preview-toolbar={workspaceDensity ? '' : undefined}
               className={clsx(
-              'mx-auto flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
-              workspaceDensity ? 'px-3 py-0' : 'px-3 py-2'
-            )}
+                'app-image-preview-toolbar mx-auto flex w-full items-center justify-center border border-surface-on-media-25 bg-surface-glass-80',
+                workspaceDensity ? 'px-3 py-1' : 'rounded-card px-3 py-2 shadow-sm'
+              )}
             >
               {toolbarContent}
             </div>
@@ -327,7 +347,7 @@ export function ImageCompositePreviewDock({
         </div>
 
         {images.length > 1 ? (
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <div className="app-scroll-surface app-image-variant-strip mt-3 flex gap-2 overflow-x-auto pb-1">
             {images.map((image, index) => {
               const isActive = index === safeIndex;
               const buttonLabel = `Take ${index + 1}`;

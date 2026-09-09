@@ -1,3 +1,4 @@
+import { degradedGenerationObservation } from '@/lib/generation-observation';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { getJobStatus, runGenerate } from '@/lib/api';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
@@ -56,6 +57,7 @@ type PresentInsufficientFunds = (options: {
 }) => void;
 
 type RunWorkspaceGenerationIterationOptions = {
+  isSubmissionCurrent: () => boolean;
   activeMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
   batchId: string;
@@ -106,6 +108,7 @@ type RunWorkspaceGenerationIterationOptions = {
 };
 
 export async function runWorkspaceGenerationIteration({
+  isSubmissionCurrent,
   activeMode,
   allowsUnifiedVeoFirstLast,
   batchId,
@@ -154,6 +157,7 @@ export async function runWorkspaceGenerationIteration({
   workspaceCopy,
   writeScopedStorage,
 }: RunWorkspaceGenerationIterationOptions) {
+  if (!isSubmissionCurrent()) return;
   const {
     inputsPayload,
     primaryAttachment,
@@ -209,59 +213,10 @@ export async function runWorkspaceGenerationIteration({
     etaSeconds,
     etaLabel,
     friendlyMessage,
-    startedAt,
-    minDurationMs,
     minReadyAt,
     initialRender,
     selectedPreview: initialSelectedPreview,
   } = localRender;
-
-  let progressMessage = friendlyMessage;
-  const totalMs = minDurationMs;
-  let progressInterval: number | null = null;
-  let progressTimeout: number | null = null;
-
-  const stopProgressTracking = () => {
-    if (typeof window === 'undefined') return;
-    if (progressInterval !== null) {
-      window.clearInterval(progressInterval);
-      progressInterval = null;
-    }
-    if (progressTimeout !== null) {
-      window.clearTimeout(progressTimeout);
-      progressTimeout = null;
-    }
-  };
-
-  const startProgressTracking = () => {
-    if (typeof window === 'undefined') return;
-    if (progressInterval !== null) return;
-    progressInterval = window.setInterval(() => {
-      const now = Date.now();
-      const elapsed = now - startedAt;
-      const pct = Math.min(95, Math.round((elapsed / totalMs) * 100));
-      setRenders((prev) =>
-        prev.map((render) =>
-          render.localKey === localKey && !render.videoUrl
-            ? {
-                ...render,
-                progress: pct < 5 ? 5 : pct,
-                message: progressMessage,
-              }
-            : render
-        )
-      );
-      setSelectedPreview((current) =>
-        current && current.localKey === localKey && !current.videoUrl
-          ? { ...current, progress: pct < 5 ? 5 : pct, message: progressMessage }
-          : current
-      );
-    }, 400);
-    const timeoutMs = Math.max(totalMs * 1.5, totalMs + 15000);
-    progressTimeout = window.setTimeout(() => {
-      stopProgressTracking();
-    }, timeoutMs);
-  };
 
   setRenders((prev) => [initialRender, ...prev]);
   setBatchHeroes((prev) => {
@@ -275,7 +230,6 @@ export async function runWorkspaceGenerationIteration({
   }
   setSelectedPreview(initialSelectedPreview);
 
-  startProgressTracking();
 
   try {
     const { payload: generatePayload, resolvedDurationSeconds } = buildWorkspaceGeneratePayload({
@@ -331,6 +285,7 @@ export async function runWorkspaceGenerationIteration({
       has_audio: Boolean(form.audio),
     });
 
+    if (!isSubmissionCurrent()) return;
     const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
     const acceptedResult = projectAcceptedGenerationResult({
@@ -367,7 +322,6 @@ export async function runWorkspaceGenerationIteration({
         render.localKey === localKey ? applyAcceptedGenerationResultToRender(render, acceptedResult) : render
       )
     );
-    progressMessage = acceptedResult.message;
     setSelectedPreview((current) => applyAcceptedGenerationResultToSelectedPreview(current, acceptedResult));
 
     if (acceptedResult.iterationCount > 1) {
@@ -380,9 +334,6 @@ export async function runWorkspaceGenerationIteration({
       return { ...prev, [acceptedResult.batchId]: localKey };
     });
 
-    if (acceptedResult.videoUrl || acceptedResult.status === 'completed') {
-      stopProgressTracking();
-    }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('jobs:status', { detail: acceptedResult.statusEventDetail }));
@@ -402,9 +353,6 @@ export async function runWorkspaceGenerationIteration({
           ...status,
           message: getWorkspaceGenerationFailureMessage(status, workspaceCopy),
         };
-        if (localizedStatus.message) {
-          progressMessage = localizedStatus.message;
-        }
         const target = rendersRef.current.find((render) => render.id === jobId);
         const pollProjection = projectGenerationPollStatus({
           status: localizedStatus,
@@ -427,20 +375,17 @@ export async function runWorkspaceGenerationIteration({
         if (pollProjection.shouldKeepPolling && pollProjection.nextPollDelayMs !== null) {
           window.setTimeout(poll, pollProjection.nextPollDelayMs);
         }
-        if (pollProjection.shouldStopProgressTracking) {
-          stopProgressTracking();
-        }
       } catch {
+        setRenders((prev) => prev.map((render) => render.jobId === jobId && render.status === 'pending'
+          ? { ...render, observation: degradedGenerationObservation(render.observation) } : render));
+        setSelectedPreview((current) => current?.id === jobId && current.status === 'pending'
+          ? { ...current, observation: degradedGenerationObservation(current.observation) } : current);
         window.setTimeout(poll, 3000);
       }
     };
     window.setTimeout(poll, 1500);
 
-    if (acceptedResult.videoUrl) {
-      stopProgressTracking();
-    }
   } catch (error) {
-    stopProgressTracking();
     emitClientMetric('generation_failed', {
       local_key: localKey,
       batch_id: batchId,

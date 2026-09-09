@@ -1,21 +1,47 @@
+import { CheckCircle2, CircleX, LoaderCircle } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
 import type { WalletCheckoutReturnTarget } from '@/lib/wallet/checkout-return';
+import type { BillingCheckoutReconciliationStatus } from '../_hooks/useBillingCheckoutReconciliation';
+import type { BillingCopy } from '../_lib/billing-copy';
+import styles from './billing-layout.module.css';
 
 export function BillingCheckoutReturnNotice({
+  copy,
   href,
-  label,
+  reconciliationStatus,
+  status,
 }: {
-  href: WalletCheckoutReturnTarget;
-  label: string;
+  copy: BillingCopy;
+  href: WalletCheckoutReturnTarget | null;
+  reconciliationStatus: BillingCheckoutReconciliationStatus;
+  status: 'success' | 'cancelled';
 }) {
+  const isSuccess = status === 'success';
+  const detail = !isSuccess
+    ? copy.checkoutReturn.cancelledDetail
+    : reconciliationStatus === 'refreshing' || reconciliationStatus === 'idle'
+      ? copy.checkoutReturn.refreshingDetail
+      : reconciliationStatus === 'delayed'
+        ? copy.checkoutReturn.delayedDetail
+        : copy.checkoutReturn.refreshedDetail;
+  const Icon = !isSuccess
+    ? CircleX
+    : reconciliationStatus === 'refreshing' || reconciliationStatus === 'idle'
+      ? LoaderCircle
+      : CheckCircle2;
+
   return (
-    <div
-      role="status"
-      className="mb-5 flex justify-end rounded-input border border-brand bg-surface-2 p-3"
-    >
-      <ButtonLink href={href} size="sm">
-        {label}
-      </ButtonLink>
-    </div>
+    <section className={styles.returnNotice} data-status={status} role="status" aria-live="polite">
+      <Icon
+        size={20}
+        aria-hidden="true"
+        className={reconciliationStatus === 'refreshing' ? styles.spinning : undefined}
+      />
+      <div>
+        <strong>{isSuccess ? copy.checkoutReturn.successTitle : copy.checkoutReturn.cancelledTitle}</strong>
+        <p>{detail}</p>
+      </div>
+      {href ? <ButtonLink href={href} size="sm">{copy.toasts.returnToWorkspace}</ButtonLink> : null}
+    </section>
   );
 }

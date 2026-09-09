@@ -1,0 +1,870 @@
+{
+  "schemaVersion": 1,
+  "status": "QUALIFIED_FOR_OWNER_REVIEW_NOT_INTEGRATED",
+  "snapshotHead": "4a119520ac3b2ad5529890bae932599ad9651737",
+  "branch": "codex/studio-connected-editor",
+  "defaultBranchBase": "ab2cb9fbd552e2eab7b07b8c519aff0f219e1d07",
+  "qualifiedAppSource": "ef3393c0d",
+  "historicalEditorSource": "6165afc34bb27b8b3dc2d05074b09cdcdb44c13f",
+  "rules": [
+    "This is a read-only integration review manifest, not permission to push, merge or deploy.",
+    "Preserve the current app, Activity, shared media, Audio, Toolbox, Billing, global CSS and MCP Audio owners.",
+    "Do not replay the composition merge. Apply Studio-owned changes only after resolving shared prerequisites against the receiving branch.",
+    "No automatic cherry-pick script is provided: mixed and shared commits require owner review.",
+    "This final product snapshot supersedes the intermediate manifest; subsequent root verification and handoff-only commits are recorded in the final review document."
+  ],
+  "additionalEquivalentOutsideThisHistory": {
+    "source": "746a0cf49",
+    "equivalentInApp": "9c9bc9ea4",
+    "action": "SKIP_IF_ENCOUNTERED",
+    "evidence": "Stable patch-id equality confirmed in studio-task4-integration-review.md."
+  },
+  "sharedMcpPrerequisites": [
+    "1c41f3d16",
+    "cdb716027",
+    "c774f6a6e"
+  ],
+  "studioServerPrerequisites": [
+    "20a181c35",
+    "87919e9d7",
+    "1c9eafa92",
+    "7cf6a5b57",
+    "de02e5825"
+  ],
+  "sourceProvenance": [
+    "committed-source.json",
+    "dirty-source.json",
+    "shared-source.json",
+    "interfaces.md"
+  ],
+  "commits": [
+    {
+      "order": 1,
+      "sha": "e9727c5c90cf94ba73e7a001f0b5c972f9b4de3e",
+      "subject": "docs(studio): version isolated implementation and provenance plan",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 2,
+      "sha": "3bb6188e0935ff0b0ac1c2d450539e799e24f329",
+      "subject": "merge(studio): compose qualified app with current main baseline",
+      "action": "DO_NOT_REPLAY_COMPOSITION_MERGE"
+    },
+    {
+      "order": 3,
+      "sha": "2975d7e3a674df3e45dc2921fdb5c9cfe5e28568",
+      "subject": "feat(studio): import traced committed editor runtime and export owners",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 4,
+      "sha": "11dc9213baec1edfa1f874010531692f8baab7d1",
+      "subject": "feat(studio): import traced local certification and generation facts",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 5,
+      "sha": "b736bd6b8351a6d74f525ee031968aeec8d1787e",
+      "subject": "feat(studio): adapt shared runtime interfaces without replacing current owners",
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "note": "24-path shared interface bundle: adapt against current app owners, never overwrite the global owner files."
+    },
+    {
+      "order": 6,
+      "sha": "652a32ef072a1ecca04f9024a6b9faa6e0a0852c",
+      "subject": "feat(audio): connect standalone Studio SFX to exact MMAudio pricing and routing",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 7,
+      "sha": "8e98acf4d075e6688684d7da3435b60799656c8e",
+      "subject": "fix(studio): align preflight and SFX contracts with current runtime",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 8,
+      "sha": "74a556b94e0f9a89f4b65a08496a4858d68841fe",
+      "subject": "test(studio): resolve frontend React dependencies explicitly on Node 22",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 9,
+      "sha": "e101e2840733ce71466eae68dea5c9c0e408b005",
+      "subject": "fix(studio): include traced product starter reference image",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 10,
+      "sha": "431d6977506aca60c90b35d0ee54fe1cef87a3a6",
+      "subject": "feat(toolbox): define shared product identities and versioned media contract",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 11,
+      "sha": "998a8e6118e1fd426b2c0582b77b0d1ee8a040bf",
+      "subject": "chore(studio): secure local preview and version interaction decisions",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 12,
+      "sha": "332bf4abf888f39bb61887909ff673a99019b41a",
+      "subject": "docs(studio): align documented export artifact limit",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 13,
+      "sha": "df7031c60bcad73eadce2c48f029a8f56877ece4",
+      "subject": "test(studio): verify socket-only disposable PostgreSQL boundary",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 14,
+      "sha": "8288609e775d0a2cd0c06f58d8a1764d34519efa",
+      "subject": "test(studio): establish reproducible interaction and media baseline",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 15,
+      "sha": "e9259e41d7cb040fb2414f4b5467f2f7fd0c3ceb",
+      "subject": "test(studio): anchor editor readiness on project navigation",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 16,
+      "sha": "0fe59592c3383410dfcd1db7e843cf15323593ac",
+      "subject": "feat(studio): connect clear canvas actions and responsive editing shell",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 17,
+      "sha": "2d566c4d3aa22f96b96eb42b951fc56d8c736b85",
+      "subject": "docs(studio): record connected editor implementation evidence",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 18,
+      "sha": "603f45a4b7244b1c5104e477c75bb6e8b42dc6e7",
+      "subject": "fix(studio): default guides to compact presentation",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 19,
+      "sha": "8a74ab7534a5bca7c4d819e4db97ad0474eb800d",
+      "subject": "docs(studio): agree additive media identity and measured-facts contract",
+      "action": "SKIP_EQUIVALENT_ALREADY_IN_APP",
+      "equivalentInApp": "1830bf652"
+    },
+    {
+      "order": 20,
+      "sha": "9c5aef8235fef5a6a8be28bd5a47b94a0d1dbde4",
+      "subject": "docs(studio): record comparable interaction measurements and review gaps",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 21,
+      "sha": "8cf596d54184e4fffd7eaac0098aa115ae27554f",
+      "subject": "test(studio): verify responsive actions across eight viewport theme cases",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 22,
+      "sha": "b9d392faa319207e436311703a20700ad2eb895d",
+      "subject": "test(studio): assert disposable PostgreSQL version and directory boundaries",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 23,
+      "sha": "957c593b6aa12691c880001160cd397481cb7734",
+      "subject": "fix(studio): preserve action history and native playback focus",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 24,
+      "sha": "dcb8eaa4b04786a2ad02a4d74ea6e46b36f9d2a1",
+      "subject": "test(studio): add isolated signed auth fixture for persistence verification",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 25,
+      "sha": "404319a87a64a6c8082884b528e727098bf287b3",
+      "subject": "docs(studio): hand off reviewed baseline and interaction commit order",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 26,
+      "sha": "4c986b84e16ecd44354101ce7cbbd9d8c53fdfc1",
+      "subject": "feat(media): expose canonical upload refs and measured facts additively",
+      "action": "SKIP_EQUIVALENT_ALREADY_IN_APP",
+      "equivalentInApp": "f55401ad7"
+    },
+    {
+      "order": 27,
+      "sha": "5303c6f8bc87dcde68824fce0e30ac203a7fa944",
+      "subject": "test(studio): verify real authenticated routes in a disposable isolated runtime",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 28,
+      "sha": "cf525e7df3f8cba39be86fe3e6027fde3c224d99",
+      "subject": "feat(media): add account-bound Studio project handoff interface",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 29,
+      "sha": "eb791a2660027790859fc23fdc70b3b5b54a41ba",
+      "subject": "fix(studio): close unpriced chat and preserve export identity",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 30,
+      "sha": "cb4a0bf8ed1840bc0ce6471f9e13d1b33c02189e",
+      "subject": "test(studio): add measured local moving video and audio fixtures",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 31,
+      "sha": "07b1e3c42e65909cbf4f151ce14c8adff9b99643",
+      "subject": "test(studio): verify Chat fail-closed through real cookie and bearer routes",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 32,
+      "sha": "96ff030e6242592e3a8e8021e40905739e20d712",
+      "subject": "docs(studio): qualify composition corrections and integration limits",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 33,
+      "sha": "9d7bb92d4ccfa920990bc23e54c503c278d722a5",
+      "subject": "refactor(media): expose existing reference URL admissibility for Studio",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 34,
+      "sha": "51e2869018d2cac34a0fb516609952d50cbb4b63",
+      "subject": "test(studio): prove native frame decoding audio signal and source seeking",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 35,
+      "sha": "e1c1e18488215d309cb0d92acf69941727012a4e",
+      "subject": "test(studio): require a fresh decoded frame after timeline seeking",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 36,
+      "sha": "d416b9e2b8d9bf1ac66d82fb990b067cb5058600",
+      "subject": "docs(studio): record reviewed interactions and real native playback evidence",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 37,
+      "sha": "719abf3ea37151af3c3c253b33d99ddb5914d36c",
+      "subject": "docs(studio): update isolated implementation plan and qualified checkpoints",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 38,
+      "sha": "c0bb418a403b00320ea55b59f55bc821ca744906",
+      "subject": "docs(studio): mark shared media contracts already integrated by coordinator",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 39,
+      "sha": "00c0cfa3b7bcfe17f4f0b4a282a723e25f1e0c30",
+      "subject": "feat(media): retain measured audio presence from existing upload probe",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 40,
+      "sha": "bd7aeb3cb4ee528ce2e01cc84b33450ace91793f",
+      "subject": "feat(studio): connect owned media refs to project canvas and timeline",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 41,
+      "sha": "28475b388a62e563d4c80b8c089278117eff2696",
+      "subject": "docs(studio): record qualified Task 3 media implementation and limits",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 42,
+      "sha": "7cbafa1db6574519c8658e6321bd802b24113258",
+      "subject": "test(studio): verify owned media resolution over authenticated HTTP",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 43,
+      "sha": "f426be90c9e6637771580bfce9d830c38d17b8ee",
+      "subject": "fix(studio): refresh library cache after accepted canvas upload",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 44,
+      "sha": "4d40827cd0551bba88e0447f9c4a1bdb2268598d",
+      "subject": "test(studio): qualify signed MCP transport in isolated local runtime",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 45,
+      "sha": "6fb1507ddd764993242e1ef4217f2825d45abd59",
+      "subject": "docs(studio): record approved media and Sol persistence handoff",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 46,
+      "sha": "98d69565d56fbe010d90f20833d701ade92f7ebb",
+      "subject": "test(studio): guarantee forged MCP signature differs from valid token",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 47,
+      "sha": "95cded58a610b5ff8df596e32930c0ca1bc79353",
+      "subject": "test(studio): capture fitted canvas overlaps before final polish",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 48,
+      "sha": "a940929ef28c5b51e30b7e8521dc557bbf631ead",
+      "subject": "test(studio): add private storage signature fixture",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 49,
+      "sha": "20a181c35a5c6430a032e6a498ad2689d6b8dd2d",
+      "subject": "test(studio): define persisted montage HTTP acceptance",
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "note": "Mixed historical commit: 25 product paths and 4 root QA paths. Preserve history; see Task 4 exact ownership table."
+    },
+    {
+      "order": 50,
+      "sha": "87919e9d74ee663acfa71b2f7a0bf5fc70cce75c",
+      "subject": "feat(studio): persist connected montage projects atomically",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 51,
+      "sha": "93c208ca9f7c97cc23bdc6fdb547e95623964abe",
+      "subject": "docs(studio): trace composed server and QA baseline",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 52,
+      "sha": "1c41f3d16fefb8ef9946a917d65858840bb80773",
+      "subject": "feat(mcp): register persisted Studio montage command",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 53,
+      "sha": "f7fefbd8c3294d4e6c1956ee8f1dd20d9068f5d4",
+      "subject": "test(studio): require actionable persisted command failures",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 54,
+      "sha": "3b5bfc06b52d24adb9d2f82c2b724b53e823f68a",
+      "subject": "test(studio): add isolated browser fixture",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 55,
+      "sha": "cdb716027b8b88127ad7afb496fce861eb1096c7",
+      "subject": "fix(mcp): expose actionable Studio command failures",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 56,
+      "sha": "1c9eafa920ad4a84211a875ffc17a5e19ec7d00c",
+      "subject": "fix(studio): serialize connected aggregate access",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 57,
+      "sha": "34d5cc04847e18244caa1478ef0e885180487b2e",
+      "subject": "test(studio): qualify atomic HTTP and fresh browser opening",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 58,
+      "sha": "52083fd2d2707952c4fce8d1e281dd9bdc723055",
+      "subject": "test(studio): verify unmigrated environments fail closed",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 59,
+      "sha": "1bb4e55b85c4fb7db359b3055eb221007ea16f90",
+      "subject": "docs(studio): record independent persistence review gaps",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 60,
+      "sha": "7cf6a5b57b058377d3a21b524412b83b592f1d7c",
+      "subject": "fix(studio): validate connected workspace writes",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 61,
+      "sha": "9871224d537182cf64758e765adee8fccf8d705c",
+      "subject": "test(studio): verify reviewed persistence safety boundaries",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 62,
+      "sha": "5cd4fe7c8e4ae13f879a3885fb82eca06c3d91c7",
+      "subject": "test(studio): require real private renewal and stale-tab recovery",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 63,
+      "sha": "bbd864872d4aad1974bc801655ee98ea36da54e9",
+      "subject": "docs(studio): record expanded publication validation gaps",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 64,
+      "sha": "6fd412782c9c0bfe1a19afd9c7632723f60b3b68",
+      "subject": "feat(studio): sync connected workspaces safely",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 65,
+      "sha": "de02e5825fab7bab8f3fd9105a4d4eeffba3c63d",
+      "subject": "fix(studio): renew media from live timeline refs",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 66,
+      "sha": "1e56fd2a54b609f2ed964969b5ae13d5c9f5fef3",
+      "subject": "fix(studio): keep video originals out of thumbnails",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 67,
+      "sha": "c774f6a6e230762558fb948b9c92d76977573410",
+      "subject": "fix(mcp): keep Studio creation gated in release checks",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 68,
+      "sha": "f51a0d99ecf653ac1dc845136d5d7b042a1a4e18",
+      "subject": "test(studio): preserve live clip access and legacy conflict contracts",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 69,
+      "sha": "19807443727b7e639373249bb55dea0a0c7b9189",
+      "subject": "test(studio): distinguish native decoding from hydration autosaves",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 70,
+      "sha": "704c9d974ea837cf348a629c550931505efca901",
+      "subject": "fix(studio): keep connected hydration revision-stable",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 71,
+      "sha": "909e37f6073d8bf88cb8ce61efb8df8e7dc3e968",
+      "subject": "fix(studio): apply canonical autosave fingerprint",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 72,
+      "sha": "4a72b3d04281e23ec2ac280ac6b20871d0912b06",
+      "subject": "fix(studio): suppress stale autosave acknowledgements",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 73,
+      "sha": "139bf2e0111d6bba22e061784e810a6067b924da",
+      "subject": "fix(studio): make conflict recovery actionable",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 74,
+      "sha": "db65603458cf5996eccd3ef7f4fd407cdc8e936b",
+      "subject": "docs(studio): record approved server and remaining client actions",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 75,
+      "sha": "3a380c1ab793a9f2c63af7636226b2d65adfb2bd",
+      "subject": "docs(studio): scope connected montage presentation polish",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 76,
+      "sha": "f0c211275ead35ddc30e260cfc0e565e6c0d6baa",
+      "subject": "docs(studio): require meaningful media undo availability",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 77,
+      "sha": "7caa7cea2480fd53f15dcbdb5e1a3b19409af949",
+      "subject": "docs(studio): qualify real private playback and concurrent browser saves",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 78,
+      "sha": "89af6924836ef8d688aa7d11b7188d85ab4e0926",
+      "subject": "feat(studio): create ordered media montages",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 79,
+      "sha": "c0c543a3552c3f2b77357c98b0d7be2e796716f0",
+      "subject": "test(studio): expose retained-clip and ordered UI browser contracts",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 80,
+      "sha": "fa48e19b48cecbef8a339a5273e1017774c7a0fa",
+      "subject": "fix(studio): freeze montage submission intent",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 81,
+      "sha": "fd7f518093216c2b21175cf2fb7e152dd0e4ebf9",
+      "subject": "test(studio): exercise lost creation replies and live account changes",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 82,
+      "sha": "8f62f179099627416489f51f0f0d4b4e96592dc1",
+      "subject": "test(studio): require recoverable drafts and truthful exit saves",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 83,
+      "sha": "bccd76266d681847c6d9c7b1722a9124f7cb4ba5",
+      "subject": "fix(studio): preserve connected drafts across failures",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 84,
+      "sha": "77d05b569265e4b7a42b33cf07ec8d17cb574302",
+      "subject": "fix(studio): retain stale draft base revision",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 85,
+      "sha": "adfe2f29c439a9dd7ccd360bd90fd0a4b525f03f",
+      "subject": "fix(studio): keep montage intent valid and actionable",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 86,
+      "sha": "d139cc922e8a94077bdf368dbba579dd162d31fa",
+      "subject": "test(studio): qualify repeated recovery and exact private media identity",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 87,
+      "sha": "4a1d7499de9263ee1adc80c8500f351d5dc09439",
+      "subject": "fix(studio): keep connected queue binding immutable",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 88,
+      "sha": "9deed7a2df2d2a97320ee74deba1f7efbff8fc3b",
+      "subject": "test(studio): guard unacknowledged and unresolved project exits",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 89,
+      "sha": "6475a3d3513b631fcad1e2c60e17a3b235d92bc4",
+      "subject": "fix(studio): keep unresolved saves honest",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 90,
+      "sha": "b2ee9f5001aa95523ef3df7201d1d418544b7313",
+      "subject": "fix(studio): retain workspace composition boundary",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 91,
+      "sha": "1da0a1fdf59bf93ff6e0bda7236ea94c85ec807e",
+      "subject": "test(studio): exercise library retry and keyboard ownership",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 92,
+      "sha": "827241cf485ef3a26343a1e4faf380989f026f5e",
+      "subject": "fix(studio): retain dialog focus through media retry",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 93,
+      "sha": "36176c871ec30571d1582e1c6901d52a9be71eed",
+      "subject": "test(studio): preserve local draft exit and recovery",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 94,
+      "sha": "b5de664d09a5c911d232c1dd4374086ef0ef81cd",
+      "subject": "docs(studio): record connected browser qualification and legacy guard",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 95,
+      "sha": "bdc14614f1e7ced9e780d3bef8201d5c6294db7d",
+      "subject": "fix(studio): preserve local-only project exits",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 96,
+      "sha": "1d763fe47c7b7c33c283ab9e2674a8c56396586b",
+      "subject": "test(studio): verify historical local drafts without provenance markers",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 97,
+      "sha": "eb0c7755c8176718349d1904f4764fff994dc933",
+      "subject": "fix(studio): retain local projects across recovery",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 98,
+      "sha": "112ee3b282912e37150e6fa3f2a3bfe9fbcb39e2",
+      "subject": "fix(studio): keep complete recovered project lists",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 99,
+      "sha": "18bf21cad7394b79dcc3e47f050851a011895e83",
+      "subject": "fix(studio): reconcile delayed project listings",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 100,
+      "sha": "16aa22d75b69234877e77e828f00d41d139f5dc4",
+      "subject": "test(studio): qualify local recovery against actual controlled responses",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 101,
+      "sha": "5b6b7d45d965b1e8d1e337327f568dfe257b6676",
+      "subject": "docs(studio): record exact-head persistence and full contract checks",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 102,
+      "sha": "fe6783bc182aac496afba86c9b55ee9b2d8168c7",
+      "subject": "docs(studio): report qualified persisted montage",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 103,
+      "sha": "959ee52b25a32ad2614b70055b095f3a02a07643",
+      "subject": "docs(studio): qualify persisted montage and open final clarity pass",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 104,
+      "sha": "55c55c6f70e1c158d7fbc68409b4c22ca5aa6e80",
+      "subject": "test(studio): require usable first-frame montage presentation",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 105,
+      "sha": "e82cc214fb284e302108b0b5aeb73091f3080f21",
+      "subject": "fix(studio): clarify canvas connections and fit",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 106,
+      "sha": "f1e25d1b22727f56e0b227b283791b1580e3b012",
+      "subject": "test(studio): tighten geometry and race fixture cleanup",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 107,
+      "sha": "83e9efd534d004f9acb35dea57d34834cd9cd2fd",
+      "subject": "test(studio): reject unreadable fitted canvas scale",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 108,
+      "sha": "5dec7888df6bfd30223d935ddf043839670fa486",
+      "subject": "fix(studio): use pixel canvas fit insets",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 109,
+      "sha": "c81c56d5013d8eaa3c554c7beb19e14b5a9ad770",
+      "subject": "fix(studio): reserve compact canvas map",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 110,
+      "sha": "819da60d6301a1b4c8d1ba93b806686e38d11166",
+      "subject": "test(studio): verify optional connector geometry and focus lifecycle",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 111,
+      "sha": "7d69ee653c0d7d2c1127327a808b9083d268e883",
+      "subject": "fix(studio): reclaim landscape canvas surface",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 112,
+      "sha": "9dcac061f637a294b386cd78f2f58cfe71a6ba5c",
+      "subject": "test(studio): complete connector fixture facts",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "order": 113,
+      "sha": "d754057a968205f7465fc2b0aa5247f51b1f1ee5",
+      "subject": "test(studio): isolate consent dependency in local UI fixtures",
+      "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 114,
+      "sha": "dda228de1d40d2e19ca63f62532d06af1a8e5a54",
+      "subject": "fix(studio): fit landscape canvas between controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 115,
+      "sha": "783ab3ea3f00da13092fb4294a6389c198d9a3bb",
+      "subject": "docs(studio): record reviewed integration order snapshot"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 116,
+      "sha": "eaec620b89d51b7774df573a81e86075e728d1be",
+      "subject": "test(studio): verify canvas command hit targets across phone landscapes"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 117,
+      "sha": "681b75f3877d24292b3cc01138d1b879dd03ac64",
+      "subject": "fix(studio): coordinate short canvas controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 118,
+      "sha": "6330d550571621cdd38d36c349137c94078c6d1b",
+      "subject": "fix(studio): scope copy feedback to selection"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 119,
+      "sha": "b321928d3158a2c73d6f34ecdfc8141a13a0dd14",
+      "subject": "fix(studio): contain measured montage clips"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 120,
+      "sha": "435c3cc00631e2d0e07da2db61b9b61220c57d73",
+      "subject": "fix(studio): avoid short canvas map controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 121,
+      "sha": "399b4cc090416cd2abf639cf44543b8ff322b771",
+      "subject": "fix(studio): expose actual media undo state"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 122,
+      "sha": "3e8ade2a62e97e830c38c7136221a5d316634098",
+      "subject": "docs(studio): qualify connected montage first-frame presentation"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 123,
+      "sha": "f8e11353489f9bb2fe2a303df7dd628a7a99db00",
+      "subject": "fix(studio): serialize canvas selection scope"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 124,
+      "sha": "420f43470d267f4a7a28e21cae484a61f7d10260",
+      "subject": "test(studio): include output area in fitted card containment"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 125,
+      "sha": "320fe48e3ed58260588f9fe9523466c832219328",
+      "subject": "fix(studio): keep canvas overlays outside fitted graph"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 126,
+      "sha": "0ba7bfba9ec21c156326fa41e4b935be68affd2c",
+      "subject": "fix(studio): clarify projects and montage actions",
+      "note": "Studio-scoped locale keys only; review these shared message-file hunks with the app owner rather than replacing the whole files."
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 127,
+      "sha": "ce89230cef1c49fa61b4d9be0e895e8d2e9ee227",
+      "subject": "test(studio): align smoke checks with canvas clarity"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 128,
+      "sha": "0e172e66a867bd62c85c93e3342e132fa4bf3744",
+      "subject": "fix(studio): remove duplicate card settings row"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 129,
+      "sha": "fb1a6c1f4c3e8a7da6a8e28bfc5d69ec1f5177ff",
+      "subject": "test(studio): verify open canvas menus and media undo state"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 130,
+      "sha": "a3f42bf48270fbc37b85e73b04ed5ae316b3cec3",
+      "subject": "fix(studio): contain compact canvas menus"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 131,
+      "sha": "2266ab39c69e8b47e3e9eab20e0a768356e028a7",
+      "subject": "test(studio): preserve model checks in inspector"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 132,
+      "sha": "26cbbed36a04c9f3dbf5c8260e2a6cf36e2818c0",
+      "subject": "fix(studio): bound canvas menu geometry"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 133,
+      "sha": "3ba2ebd8361efa7a54e008c23994c9f4e7365fcf",
+      "subject": "test(studio): qualify six viewport boundaries and open menus"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 134,
+      "sha": "927edf00c81a0307dc8e2a45a67d36c99a65fa07",
+      "subject": "test(studio): qualify twelve clip mobile creation controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 135,
+      "sha": "df2d32c9eb6f0e941161f2b48a5e54c39c84012b",
+      "subject": "refactor(studio): isolate shot connection styles"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 136,
+      "sha": "490977173a0dd69886772812564e05dc0770edb2",
+      "subject": "fix(studio): describe starter outcomes",
+      "note": "Studio-scoped locale keys only; review these shared message-file hunks with the app owner rather than replacing the whole files."
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 137,
+      "sha": "4a119520ac3b2ad5529890bae932599ad9651737",
+      "subject": "test(studio): isolate projects legal fixture"
+    }
+  ]
+}

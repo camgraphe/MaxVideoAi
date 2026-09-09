@@ -11,6 +11,12 @@ test('video feed uses starter fallback on first page', () => {
   assert.equal(shouldUseStarterFallback('video', null), true);
 });
 
+test('audio and image surfaces never receive video starter examples', () => {
+  assert.equal(shouldUseStarterFallback('all', null, 'audio'), false);
+  assert.equal(shouldUseStarterFallback('video', null, 'image'), false);
+  assert.equal(shouldUseStarterFallback('video', null, 'video'), true);
+});
+
 test('feed with cursor never uses starter fallback', () => {
   assert.equal(shouldUseStarterFallback('video', '2026-02-16T12:00:00.000Z|42'), false);
   assert.equal(shouldUseStarterFallback('image', '2026-02-16T12:00:00.000Z|42'), false);

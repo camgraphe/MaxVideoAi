@@ -18,6 +18,8 @@ import type {
   AudioVoiceProfile,
 } from '@/lib/audio-generation';
 import { uploadVideoFile } from '@/lib/client-video-upload';
+import { canonicalMediaAssetFields, readMediaFacts, type MediaFacts } from '@/lib/media-identity';
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { AudioJobDetail } from './audio-workspace-types';
 
@@ -38,9 +40,15 @@ export const AUDIO_MODE_META: Record<
     providerKey: keyof AudioWorkspaceCopy['controls']['providers'];
   }
 > = {
+  song: { icon: Music2, providerKey: 'music' },
+  ambience_only: { icon: AudioLines, providerKey: 'sfx' },
   music_only: {
     icon: Music2,
     providerKey: 'music',
+  },
+  sfx_only: {
+    icon: AudioLines,
+    providerKey: 'sfx',
   },
   voice_only: {
     icon: Mic2,
@@ -132,12 +140,14 @@ export async function probeVideoDuration(url: string): Promise<number | null> {
   });
 }
 
-export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<{ url: string; name: string }> {
+export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<{ url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts }> {
   if (kind === 'video') {
     const uploaded = await uploadVideoFile(file);
     return {
       url: uploaded.url,
       name: uploaded.name ?? file.name,
+      ref: uploaded.ref,
+      mediaFacts: uploaded.mediaFacts,
     };
   }
 
@@ -148,7 +158,7 @@ export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<
     body: formData,
   });
   const payload = (await response.json().catch(() => null)) as
-    | { ok?: boolean; error?: string; asset?: { url?: string; name?: string } }
+    | { ok?: boolean; error?: string; asset?: { url?: string; name?: string; assetId?: unknown; mediaFacts?: unknown } }
     | null;
   if (!response.ok || !payload?.ok || !payload.asset?.url) {
     throw new Error(payload?.error ?? 'Upload failed');
@@ -156,6 +166,8 @@ export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<
   return {
     url: payload.asset.url,
     name: payload.asset.name ?? file.name,
+    ref: canonicalMediaAssetFields(payload.asset.assetId, 'audio').ref,
+    mediaFacts: readMediaFacts(payload.asset.mediaFacts),
   };
 }
 

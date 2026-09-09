@@ -69,6 +69,8 @@ test('audio generation runner delegates job persistence, receipts, and snapshots
   assert.match(jobsSource, /export type SourceJobRow/, 'audio job helper should expose the source job row contract');
   assert.match(jobsSource, /export async function loadSourceJob/, 'audio job helper should own source job loading');
   assert.match(jobsSource, /export async function updateAudioJob/, 'audio job helper should own job patch persistence');
+  assert.match(jobsSource, /export function completeAudioJob/, 'audio job helper should own conditional completion');
+  assert.match(jobsSource, /export function failAudioJob/, 'audio job helper should own conditional failure');
   assert.match(jobsSource, /export async function createInitialAudioJob/, 'audio job helper should own initial job persistence');
   assert.match(jobsSource, /reserveWalletChargeInExecutor/, 'audio job helper should own wallet reservation');
   assert.match(jobsSource, /withDbTransaction/, 'audio job helper should own the initial job transaction boundary');
@@ -77,4 +79,20 @@ test('audio generation runner delegates job persistence, receipts, and snapshots
   assert.match(snapshotsSource, /export function buildProviderSnapshot/, 'audio snapshot helper should own provider snapshots');
   assert.match(snapshotsSource, /export function parseProviderFailures/, 'audio snapshot helper should own provider failure extraction');
   assert.match(snapshotsSource, /export function isVideoBackedPack/, 'audio snapshot helper should own pack media classification');
+});
+
+test('Audio reservations can compose with MCP quote claims without duplicating the provider runner', () => {
+  const reservation = readFileSync(join(root, 'frontend/src/server/audio/audio-run-reservation.ts'), 'utf8');
+  assert.match(jobsSource, /createInitialAudioJobInExecutor\(executor: TransactionQueryExecutor/);
+  assert.match(runnerSource, /buildAudioRunReservation\(prepared, params.userId\)/);
+  assert.match(runnerSource, /await createInitialAudioJob\(reservation.initialJob\)/);
+  assert.match(runnerSource, /return executeReservedAudioRun\(reservation.execution\)/);
+  const executorSource = runnerSource.slice(runnerSource.indexOf('export async function executeReservedAudioRun'));
+  assert.doesNotMatch(executorSource, /createInitialAudioJob|reserveWalletCharge/);
+  assert.match(reservation, /buildInitialAudioSettingsSnapshot/);
+  assert.doesNotMatch(reservation, /generateSongTrack|generateMusicTrack|fetch\(/);
+  assert.match(executorSource, /const completionWon = await completeAudioJob/);
+  assert.ok(executorSource.indexOf('if (!completionWon)') < executorSource.indexOf('await upsertLegacyJobOutputs'));
+  assert.match(executorSource, /const failureWon = await failAudioJob/);
+  assert.ok(executorSource.indexOf('if (!failureWon)') < executorSource.indexOf('await refundAudioCharge'));
 });

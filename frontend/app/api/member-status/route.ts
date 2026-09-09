@@ -1,3 +1,4 @@
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -56,6 +57,7 @@ export async function GET(req: NextRequest) {
   const savingsPct = Math.round(memberStatus.pricing.discountPercent * 100);
 
   const response: Record<string, unknown> = {
+    membershipStatus: LIVE_MEMBERSHIP_POLICY.status,
     tier: tierLabel,
     savingsPct,
     spent30: memberStatus.spent30Cents / 100,

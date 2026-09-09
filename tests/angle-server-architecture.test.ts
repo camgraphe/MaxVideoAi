@@ -97,7 +97,7 @@ test('angle request utils expose the expected pure helper contract', () => {
   ]) {
     assert.match(
       requestUtilsSource,
-      new RegExp(`export (const|function) ${exportName}`),
+      new RegExp(`export (?:(?:const|function) ${exportName}|\\{[^}]*\\b${exportName}\\b)`),
       `${exportName} should be exported by angle-request-utils.ts`
     );
   }

@@ -66,7 +66,7 @@ export type GetAgentGenerationStatusInput = { jobId: string };
 export type ListAgentRecentGenerationsInput = {
   cursor?: string;
   limit?: number;
-  surface?: 'video' | 'image';
+  surface?: 'video' | 'image' | 'audio';
   status?: AgentGenerationStatus['status'];
 };
 
@@ -182,6 +182,19 @@ function boundedResult(result: AgentGenerationResult | null): AgentGenerationRes
       thumbnailUrls: boundedUris(result.thumbnailUrls, MAX_THUMBNAILS, seen),
     };
   }
+  if (result.surface === 'audio') {
+    const audioUrl = boundedUris([result.audioUrl], 1, seen)[0] ?? null;
+    const videoUrl = boundedUris([result.videoUrl], 1, seen)[0] ?? null;
+    if (!audioUrl && !videoUrl) return null;
+    return {
+      surface: 'audio',
+      audioUrl,
+      videoUrl,
+      thumbnailUrl: boundedUris([result.thumbnailUrl], 1, seen)[0] ?? null,
+      mimeType: result.mimeType,
+      durationSec: result.durationSec,
+    };
+  }
   const videoUrl = boundedUris([result.videoUrl], 1, seen)[0];
   if (!videoUrl) return null;
   return {
@@ -239,7 +252,7 @@ export function buildAgentGenerationRecovery(
 function mimeType(
   uri: string,
   role: 'output' | 'thumbnail' | 'preview' | 'audio',
-  surface: 'video' | 'image',
+  surface: 'video' | 'image' | 'audio',
 ): string {
   const path = new URL(uri).pathname.toLowerCase();
   if (role === 'audio') {
@@ -282,6 +295,27 @@ export function buildGenerationResourceLinks(
     return [
       ...recovery.result.imageUrls.map((uri, index) => resource(recovery, uri, 'output', index)),
       ...recovery.result.thumbnailUrls.map((uri, index) => resource(recovery, uri, 'thumbnail', index)),
+    ];
+  }
+  if (recovery.result.surface === 'audio') {
+    return [
+      ...(recovery.result.audioUrl ? [{
+        uri: recovery.result.audioUrl,
+        name: 'MaxVideoAI output',
+        description: `output for generation ${recovery.jobId}`,
+        mimeType: recovery.result.mimeType,
+      }] : []),
+      ...(recovery.result.videoUrl ? [
+        recovery.result.audioUrl
+          ? resource(recovery, recovery.result.videoUrl, 'output')
+          : {
+              uri: recovery.result.videoUrl,
+              name: 'MaxVideoAI output',
+              description: `output for generation ${recovery.jobId}`,
+              mimeType: recovery.result.mimeType,
+            },
+      ] : []),
+      ...(recovery.result.thumbnailUrl ? [resource(recovery, recovery.result.thumbnailUrl, 'thumbnail')] : []),
     ];
   }
   return [
@@ -331,8 +365,8 @@ function normalizeRecentInput(input: ListAgentRecentGenerationsInput): Required<
   if (!Number.isSafeInteger(limit) || (limit as number) < 1 || (limit as number) > MAX_RECENT_LIMIT) {
     throw new AgentApiError('PARAMETER_INVALID', 'limit must be an integer from 1 to 20.');
   }
-  if (record.surface !== undefined && record.surface !== 'video' && record.surface !== 'image') {
-    throw new AgentApiError('PARAMETER_INVALID', 'surface must be video or image.');
+  if (record.surface !== undefined && record.surface !== 'video' && record.surface !== 'image' && record.surface !== 'audio') {
+    throw new AgentApiError('PARAMETER_INVALID', 'surface must be video, image, or audio.');
   }
   const statuses = new Set(['accepted', 'running', 'completed', 'failed']);
   if (record.status !== undefined && !statuses.has(String(record.status))) {
@@ -341,7 +375,7 @@ function normalizeRecentInput(input: ListAgentRecentGenerationsInput): Required<
   return {
     ...(cursor === undefined ? {} : { cursor }),
     limit: limit as number,
-    ...(record.surface === undefined ? {} : { surface: record.surface as 'video' | 'image' }),
+    ...(record.surface === undefined ? {} : { surface: record.surface as 'video' | 'image' | 'audio' }),
     ...(record.status === undefined
       ? {}
       : { status: record.status as AgentGenerationStatus['status'] }),

@@ -17,6 +17,9 @@ const FAST_DEFAULT_SECONDS = 18;
 const STANDARD_DEFAULT_SECONDS = 28;
 
 export function estimateRenderSeconds(engine: EngineCaps | null | undefined, durationSec: number | null | undefined): number {
+  if (typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0) {
+    return Math.max(1, Math.round(engine.avgDurationMs / 1000));
+  }
   const baseId = engine?.id?.toLowerCase().replace(/[^a-z0-9]/g, '') ?? null;
   const mapped = baseId ? ENGINE_RENDER_ETAS[baseId] : undefined;
   const baseSeconds =
@@ -47,7 +50,8 @@ export function formatEtaLabel(seconds: number): string {
   return `≈ ${seconds}s`;
 }
 
-export function getRenderEta(engine: EngineCaps | null | undefined, durationSec: number | null | undefined): { seconds: number; label: string } {
+export function getRenderEta(engine: EngineCaps | null | undefined, durationSec: number | null | undefined): { seconds: number; label: string; source: 'observed' | 'heuristic'; sampleCount: number | null } {
   const seconds = estimateRenderSeconds(engine, durationSec);
-  return { seconds, label: formatEtaLabel(seconds) };
+  const observed = typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0;
+  return { seconds, label: formatEtaLabel(seconds), source: observed ? 'observed' : 'heuristic', sampleCount: observed ? engine?.durationSampleCount ?? null : null };
 }

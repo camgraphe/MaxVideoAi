@@ -226,6 +226,72 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
   });
 });
 
+test('authenticated transport exposes Audio only through an explicit paid Audio capability override', async () => {
+  const response = await handleMcpHttpRequest(
+    protocolRequest({ jsonrpc: '2.0', id: 12, method: 'tools/list', params: {} }),
+    deps({
+      runtimeCapabilities: {
+        paidGeneration: true,
+        referenceUploads: false,
+        audioGeneration: true,
+      },
+    }),
+  );
+  const payload = await readProtocolPayload(response);
+  const tools = new Map(payload.result.tools.map((tool: { name: string; annotations?: unknown }) => [tool.name, tool]));
+  assert.deepEqual(
+    ['list_audio_capabilities', 'prepare_audio_generation', 'confirm_audio_generation']
+      .filter((name) => tools.has(name)),
+    ['list_audio_capabilities', 'prepare_audio_generation', 'confirm_audio_generation'],
+  );
+  assert.deepEqual((tools.get('list_audio_capabilities') as { annotations?: unknown }).annotations, {
+    readOnlyHint: true, destructiveHint: false, openWorldHint: false,
+  });
+  assert.deepEqual((tools.get('prepare_audio_generation') as { annotations?: unknown }).annotations, {
+    readOnlyHint: false, destructiveHint: false, openWorldHint: false,
+  });
+  assert.deepEqual((tools.get('confirm_audio_generation') as { annotations?: unknown }).annotations, {
+    readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true,
+  });
+});
+
+test('Audio operational calls pass through the HTTP audit allowlist without recording arguments', async () => {
+  const events: McpAuditEvent[] = [];
+  const audioTools = [
+    'list_audio_capabilities',
+    'prepare_audio_generation',
+    'confirm_audio_generation',
+  ];
+  for (const [index, name] of audioTools.entries()) {
+    const response = await handleMcpHttpRequest(
+      protocolRequest({
+        jsonrpc: '2.0',
+        id: 40 + index,
+        method: 'tools/call',
+        params: { name, arguments: { prompt: 'private Audio prompt', quoteId: 'private-quote' } },
+      }),
+      deps({
+        runtimeCapabilities: {
+          paidGeneration: true,
+          referenceUploads: false,
+          audioGeneration: true,
+        },
+        async recordEvent(event) {
+          events.push(event);
+          return true;
+        },
+      }),
+    );
+    assert.equal(response.status, 200);
+  }
+
+  assert.deepEqual(events.map(({ tool, outcome }) => ({ tool, outcome })), audioTools.map((tool) => ({
+    tool,
+    outcome: 'failure',
+  })));
+  assert.doesNotMatch(JSON.stringify(events), /private Audio prompt|private-quote|prompt|quoteId/i);
+});
+
 test('operational tool audit records only approved names and coarse failure outcomes', async () => {
   await withStagingEnvironment(async () => {
     const events: McpAuditEvent[] = [];

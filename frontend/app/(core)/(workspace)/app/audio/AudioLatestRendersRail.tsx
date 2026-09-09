@@ -67,31 +67,6 @@ function resolveJobLabel(job: Job, copy: AudioWorkspaceCopy): string {
   );
 }
 
-function WaveformBars({ seed }: { seed: string }) {
-  const bars = useMemo(() => {
-    let hash = 0;
-    for (let index = 0; index < seed.length; index += 1) {
-      hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
-    }
-    return Array.from({ length: 72 }, (_, index) => {
-      const value = Math.sin((hash + index * 17) * 0.19) + Math.cos((hash + index * 11) * 0.11);
-      return 18 + Math.abs(value) * 23 + ((index % 9) / 9) * 12;
-    });
-  }, [seed]);
-
-  return (
-    <div className="flex h-12 items-center gap-[2px]" aria-hidden>
-      {bars.map((height, index) => (
-        <span
-          key={`${seed}-wave-${index}`}
-          className="w-[2px] rounded-full bg-brand shadow-[0_0_12px_rgba(46,99,216,0.22)]"
-          style={{ height: `${Math.min(52, Math.max(8, height))}%` }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function resolveStatusLabel(job: Job, copy: AudioWorkspaceCopy): string {
   const status = job.status ?? (job.videoUrl || job.audioUrl ? 'completed' : 'pending');
   switch (status) {
@@ -133,7 +108,7 @@ function AudioJobCard({
           {resolveStatusLabel(job, copy)}
         </div>
         <div className="mt-3 rounded-[8px] bg-[linear-gradient(180deg,var(--surface),var(--bg))] px-3 py-2">
-          <WaveformBars seed={job.jobId} />
+          <span aria-hidden className="text-xl">♪</span>
         </div>
 
         <div className="mt-4 flex items-start justify-between gap-3">

@@ -1,6 +1,9 @@
 export type MaxVideoAiMcpInstructionCapabilities = {
   paidGeneration: boolean;
   referenceUploads: boolean;
+  montagePreparation?: boolean;
+  audioGeneration?: boolean;
+  studioMontageCreation?: boolean;
 };
 
 export function buildMaxVideoAiMcpInstructions(
@@ -51,6 +54,27 @@ export function buildMaxVideoAiMcpInstructions(
     );
   }
 
+  if (capabilities.montagePreparation) {
+    instructions.push(
+      'Use prepare_montage only for a caller-supplied semantic ordering of 2–12 owned ready videos. It validates frame-aligned trims and returns an edit plan; it does not inspect video contents, render, modify media, persist a Studio project, or return a Studio URL.',
+    );
+  }
+
+  if (capabilities.studioMontageCreation) {
+    instructions.push(
+      'Use create_studio_montage to save one editable Studio project from a caller-supplied semantic ordering of 2–12 owned ready videos. It validates measured frame-aligned trims, preserves the requested order, and returns the exact Studio destination. Reuse the exact same idempotencyKey only for an exact retry of the same request; changed content requires a new key.',
+    );
+  }
+
+  if (capabilities.audioGeneration) {
+    instructions.push(
+      'For Audio work, call list_audio_capabilities first and use only a currently available mode and its exact settings and owned reference roles.',
+      'Use prepare_audio_generation to validate the complete Audio request and display its exact cents, currency, expiry, balance, and top-up state. Wait for explicit approval of that exact quote before confirm_audio_generation.',
+      'Audio confirmation authorizes one paid attempt. A failed or refunded attempt cannot be replayed into a new generation: prepare a fresh quote and obtain new explicit approval. Never automatically retry an Audio provider failure.',
+      'Recover Audio jobs through get_generation_status or list_recent_generations with surface audio. Present completed original Audio with present_generation; use get_generation_download only from the result app.',
+    );
+  }
+
   if (capabilities.paidGeneration) {
     instructions.push(
       'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
@@ -61,7 +85,7 @@ export function buildMaxVideoAiMcpInstructions(
       'If an exact quote has insufficient credits, use create_topup_link with that quote. Payment happens only on the MaxVideoAI website through the exact returned destination, and the old quote becomes invalid.',
       'After the user says funding is complete, call get_account_status and then prepare_generation again. Display the fresh exact quote and wait for explicit user approval before confirm_generation.',
       'Do not automatically retry or generate. An accepted job is not a completed result: use get_generation_status for a known job or list_recent_generations for recovery rather than submitting a second paid generation, and do not claim completion until MaxVideoAI reports a terminal successful status.',
-      'After MaxVideoAI reports a completed job, use present_generation once when the user asks to view it or when the completed result should be delivered. This presents inline video or image in a compatible UI host. Use the returned resource link and MaxVideoAI library destination as the fallback when the host does not render MCP Apps UI.',
+      'After MaxVideoAI reports a completed job, use present_generation once when the user asks to view it or when the completed result should be delivered. This presents inline video, image, or audio in a compatible UI host. Use the returned resource link and MaxVideoAI library destination as the fallback when the host does not render MCP Apps UI.',
       'Never use present_generation to poll, generate, retry, confirm, or charge. It only re-reads and presents an owned generation.',
       'For a technical failure, inspect the returned failure and refund state and do not resubmit automatically. A creative retry is a new paid attempt: call prepare_generation and wait for explicit approval of its new exact quote.',
       'When a job is completed, explain that the result is saved in the same connected MaxVideoAI library and use only the returned library or workspace destination.',
@@ -78,4 +102,7 @@ export function buildMaxVideoAiMcpInstructions(
 export const MAXVIDEOAI_MCP_INSTRUCTIONS = buildMaxVideoAiMcpInstructions({
   paidGeneration: false,
   referenceUploads: false,
+  montagePreparation: false,
+  audioGeneration: false,
+  studioMontageCreation: false,
 });

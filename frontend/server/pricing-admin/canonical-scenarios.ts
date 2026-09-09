@@ -9,7 +9,8 @@ import { listFalEngines } from '@/config/falEngines';
 import { buildCanonicalPricingFacts } from '@/lib/pricing-audit/canonical-facts';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingAuditScenario, PricingAuditSurface } from '@/lib/pricing-audit/types';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
+import { LIVE_MEMBERSHIP_DISCOUNTS, LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 
 import { PricingAdminError } from './errors';
 
@@ -53,11 +54,6 @@ export type PricingChangePreviewRow = {
   compatibilityProfile: string;
 };
 
-const DEFAULT_MEMBERSHIP_DISCOUNTS: PricingMembershipDiscountMap = {
-  member: 0,
-  plus: 0.05,
-  pro: 0.1,
-};
 const engineCapabilitiesById = new Map(
   listFalEngines().flatMap((entry) => [
     [entry.id, entry.engine] as const,
@@ -152,15 +148,26 @@ export function resolveCanonicalAdminScenarioPolicy(input: {
   return resolveScenarioPolicy(input.scenario, input.databaseRules);
 }
 
-export function quoteCanonicalAdminScenarios(input: {
+type QuoteCanonicalScenariosInput = {
   databaseRules: PricingPolicyRule[];
   scenarios?: PricingAuditScenario[];
   membershipDiscounts?: Partial<PricingMembershipDiscountMap>;
   requestedSurcharges?: RequestedPricingSurcharge[];
-}): AdminCanonicalScenarioOutcome[] {
+};
+
+const HISTORICAL_MEMBERSHIP_DISCOUNTS: PricingMembershipDiscountMap = {
+  member: 0,
+  plus: 0.05,
+  pro: 0.1,
+};
+
+function quoteCanonicalScenarios(
+  input: QuoteCanonicalScenariosInput,
+  projection: 'live' | 'historical',
+): AdminCanonicalScenarioOutcome[] {
   const policyDocument = getVersionedPricingPolicy();
   const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
-  const membershipDiscounts = { ...DEFAULT_MEMBERSHIP_DISCOUNTS, ...input.membershipDiscounts };
+  const membershipDiscounts = projection === 'live' ? LIVE_MEMBERSHIP_DISCOUNTS : HISTORICAL_MEMBERSHIP_DISCOUNTS;
   const scenarios = input.scenarios ?? buildPricingAuditScenarios();
   const projectionScenarios = [
     ...scenarios,
@@ -169,8 +176,14 @@ export function quoteCanonicalAdminScenarios(input: {
 
   return projectionScenarios
     .map((scenario): AdminCanonicalScenarioOutcome => {
-      const policy = resolveScenarioPolicy(scenario, input.databaseRules, policyDocument.rules);
-      const profileId = resolveCompatibilityProfileId(scenario, policy);
+      // Frozen audit reproduction keeps the former Audio policy; active quotes and admin previews use the current rule.
+      const versionedRules = projection === 'historical'
+        ? policyDocument.rules.map(rule => rule.engineId === 'audio-generation' ? { ...rule, marginPercent: 1.5, compatibilityProfile: 'audio-current' } : rule)
+        : policyDocument.rules;
+      const policy = resolveScenarioPolicy(scenario, input.databaseRules, versionedRules);
+      const profileId = projection === 'live' && scenario.engineId === 'audio-generation'
+        ? resolveLiveAudioPricingProfile(policy.rule)
+        : resolveCompatibilityProfileId(scenario, policy);
       const compatibilityProfile = profiles.get(profileId);
       if (!compatibilityProfile) {
         throw new PricingAdminError(
@@ -225,7 +238,7 @@ export function quoteCanonicalAdminScenarios(input: {
           surcharge,
         };
       }
-      const facts = buildCanonicalPricingFacts(scenario);
+      const facts = buildCanonicalPricingFacts(scenario, projection === 'historical');
       if (!facts) {
         return {
           status: 'unsupported',
@@ -245,7 +258,9 @@ export function quoteCanonicalAdminScenarios(input: {
           ...(surcharge ? { surcharge } : {}),
         };
       }
-      const membershipTier = scenario.membershipTier ?? 'member';
+      const membershipTier = projection === 'live'
+        ? LIVE_MEMBERSHIP_POLICY.tier
+        : scenario.membershipTier ?? 'member';
       const quote = quoteCanonicalPricing({
         facts,
         scenario: {
@@ -269,6 +284,18 @@ export function quoteCanonicalAdminScenarios(input: {
       };
     })
     .sort((left, right) => left.scenarioId.localeCompare(right.scenarioId));
+}
+
+/** Active inventory and mutation previews always use the retired live membership policy. */
+export function quoteCanonicalAdminScenarios(input: QuoteCanonicalScenariosInput): AdminCanonicalScenarioOutcome[] {
+  return quoteCanonicalScenarios(input, 'live');
+}
+
+/** Frozen pre-retirement audit reproduction only; never use for an active quote or preview. */
+export function quoteHistoricalCanonicalAuditScenarios(
+  input: Omit<QuoteCanonicalScenariosInput, 'membershipDiscounts'>,
+): AdminCanonicalScenarioOutcome[] {
+  return quoteCanonicalScenarios(input, 'historical');
 }
 
 function quotesDiffer(current: AdminCanonicalScenarioQuote, proposed: AdminCanonicalScenarioQuote): boolean {

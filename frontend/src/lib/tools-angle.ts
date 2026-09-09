@@ -2,6 +2,12 @@ import { getAngleToolEngine } from '@/config/tools-angle-engines';
 import type { AngleToolEngineId, AngleToolNumericParams } from '@/types/tools-angle';
 
 export const ANGLE_ROTATION_MIN = 0;
+export const ANGLE_MULTI_OUTPUT_COUNT = 4;
+
+export function getAngleBillingProductKeyForEngine(engineId: AngleToolEngineId, generateBestAngles: boolean): string {
+  const family = engineId === 'qwen-multiple-angles' ? 'qwen' : 'flux';
+  return `angle-${family}-${generateBestAngles ? 'multi' : 'single'}`;
+}
 export const ANGLE_ROTATION_MAX = 360;
 export const ANGLE_TILT_MIN = -30;
 export const ANGLE_TILT_MAX = 30;

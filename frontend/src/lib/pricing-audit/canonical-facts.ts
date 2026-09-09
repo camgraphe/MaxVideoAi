@@ -124,10 +124,11 @@ function toolFacts(scenario: PricingAuditScenario): PricingFacts {
   };
 }
 
-export function buildCanonicalPricingFacts(scenario: PricingAuditScenario): PricingFacts | null {
+export function buildCanonicalPricingFacts(scenario: PricingAuditScenario, historical = false): PricingFacts | null {
   if (scenario.surface === 'audio') {
     const facts = buildAudioVendorCostFacts({
       pack: String(scenario.input.pack) as AudioPackId,
+      wholeCentEstimate: historical,
       durationSec: scenario.durationSec ?? 3,
       script: scenario.mode === 'voice_only' || scenario.mode === 'cinematic_voice' ? 'Audit voice script' : undefined,
     });

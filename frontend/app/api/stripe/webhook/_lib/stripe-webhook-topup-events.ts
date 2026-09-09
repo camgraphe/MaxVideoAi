@@ -16,6 +16,10 @@ export type CanonicalTopupBuildOptions = {
   resolvedReceiptUrl: string | null;
 };
 
+export function isPaidTopupCheckoutSession(session: Stripe.Checkout.Session): boolean {
+  return session.payment_status === 'paid';
+}
+
 export function buildCheckoutSessionTopupInput(
   session: Stripe.Checkout.Session,
   options: CanonicalTopupBuildOptions
@@ -162,6 +166,7 @@ export async function handleCheckoutSessionCompleted(
   if (!session.metadata || session.metadata.kind !== 'topup') {
     return;
   }
+  if (!isPaidTopupCheckoutSession(session)) return;
   const userId = session.metadata.user_id;
   if (!userId) return;
 

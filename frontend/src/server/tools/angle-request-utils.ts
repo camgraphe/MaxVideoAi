@@ -3,18 +3,12 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { mapTiltForEngine, normalizeRotation } from '@/lib/tools-angle';
 import type {
   AngleToolEngineDefinition,
-  AngleToolEngineId,
   AngleToolOutput,
   AngleToolRequest,
 } from '@/types/tools-angle';
 
 export const ANGLE_SURFACE = 'angle' as const;
-export const ANGLE_MULTI_OUTPUT_COUNT = 4;
-
-export function getAngleBillingProductKeyForEngine(engineId: AngleToolEngineId, generateBestAngles: boolean): string {
-  const family = engineId === 'qwen-multiple-angles' ? 'qwen' : 'flux';
-  return `angle-${family}-${generateBestAngles ? 'multi' : 'single'}`;
-}
+export { ANGLE_MULTI_OUTPUT_COUNT, getAngleBillingProductKeyForEngine } from '@/lib/tools-angle';
 
 export function buildAnglePromptSummary(params: { rotation: number; tilt: number; zoom: number }, outputCount: number): string {
   return `Angle tool · rotation ${Math.round(params.rotation)}° · tilt ${Math.round(params.tilt)}° · zoom ${params.zoom.toFixed(1)} · ${outputCount} output${outputCount > 1 ? 's' : ''}`;

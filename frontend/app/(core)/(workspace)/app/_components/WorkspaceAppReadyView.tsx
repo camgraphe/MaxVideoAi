@@ -1,6 +1,13 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
+import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
+import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
+import { WorkspaceModelReviewCommands } from './WorkspaceModelReviewCommands';
 import { WorkspaceAppShell } from './WorkspaceAppShell';
+import { WorkspaceRecentReferences } from './WorkspaceRecentReferences.client';
+import { getKlingO3AssetState, supportsKlingO3VideoToVideo } from '../_lib/kling-o3-unified-workflow';
 import { WorkspaceComposerSurface } from './WorkspaceComposerSurface';
 import { WorkspaceRuntimeModals } from './WorkspaceRuntimeModals';
 import type { useWorkspaceAppBootstrap } from '../_hooks/useWorkspaceAppBootstrap';
@@ -18,7 +25,11 @@ import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState'
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
 import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
 
+const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
+
 type WorkspaceAppReadyViewProps = {
+  suspended: boolean;
+  activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
   assets: ReturnType<typeof useWorkspaceAssets>;
   composer: ReturnType<typeof useWorkspaceComposerState>;
@@ -35,6 +46,8 @@ type WorkspaceAppReadyViewProps = {
 };
 
 export function WorkspaceAppReadyView({
+  suspended,
+  activeDraft,
   app,
   assets,
   composer,
@@ -55,11 +68,13 @@ export function WorkspaceAppReadyView({
   const {
     assetDeletePendingId,
     assetLibraryError,
+    assetLibraryHasMore,
     assetLibraryKind,
     assetLibrarySource,
     assetPickerTarget,
     closeAssetLibrary,
     fetchAssetLibrary,
+    loadMoreAssetLibrary,
     handleAssetAdd,
     handleAssetLibrarySourceChange,
     handleAssetRemove,
@@ -74,6 +89,7 @@ export function WorkspaceAppReadyView({
     handleSelectLibraryAsset,
     inputAssets,
     isAssetLibraryLoading,
+    isAssetLibraryLoadingMore,
     visibleAssetLibrary,
   } = assets;
   const {
@@ -122,7 +138,6 @@ export function WorkspaceAppReadyView({
     handleCameraFixedChange,
     handleComposerModeToggle,
     handleDurationChange,
-    handleEngineChange,
     handleFpsChange,
     handleFramesChange,
     handleModeChange,
@@ -190,11 +205,37 @@ export function WorkspaceAppReadyView({
     previewAutoPlayRequestId,
   } = gallery;
 
-  if (!selectedEngine || !form) return null;
+  const modelReview = useWorkspaceModelReview({
+    recoverySetup: activeDraft.recoverySetup,
+    onRemoveRecovery: activeDraft.removeRecovery,
+    current: form ? {form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale} : null,
+    engines, locale: uiLocale, authStatus: app.authStatus,
+    onGuestEngineChange: composer.handleEngineChange, onRequestAuth: () => setAuthModalOpen(true),
+    onModelSwitchNotice: showNotice,
+    accountId: app.authStatus === 'authed' && app.session?.access_token ? app.user?.id ?? null : null,
+    accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null,
+    memberTier: routeForm.memberTier, disabledEngineReasons: klingO3DisabledEngineReasons, engineScores,
+    applyPreparedForm: composer.applyPreparedForm, setInputAssets: assets.setInputAssets,
+    setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
+    setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
+  });
+  if (suspended || !selectedEngine || !form) return null;
 
   return (
     <>
-      <WorkspaceAppShell
+      <WorkspaceRecentReferences userId={app.user?.id} locale={uiLocale} engineId={selectedEngine.id} engine={selectedEngine}
+        fields={inputSchemaSummary.assetFields} inputAssets={inputAssets} inputSchema={selectedEngine.inputSchema}
+        mode={submissionMode} onInsert={handleSelectLibraryAsset} availability={{
+          inputAssets, isUnifiedSeedance, isUnifiedKlingO3, guestUploadLockedReason, workflowCopy,
+          klingO3VideoToVideoSupported: supportsKlingO3VideoToVideo(selectedEngine),
+          hasAnyVideoInput: getKlingO3AssetState({ inputAssets, klingElements }).hasAnyVideoInput,
+          showOmniStudioPanel: selectedEngine.id === 'gemini-omni-flash',
+          showLumaRay32KeyframeEditor: selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v',
+        }}>
+      {({ recentMedia, recentDropProps, refreshRecentMedia }) => <WorkspaceAppShell
+        recentMedia={recentMedia}
+        onOpenRecentMedia={refreshRecentMedia}
+        recentDropProps={recentDropProps}
         selectedEngine={selectedEngine}
         engines={engines}
         normalizedPendingGroups={normalizedPendingGroups}
@@ -220,9 +261,15 @@ export function WorkspaceAppReadyView({
         activeMode={activeMode}
         engineModeOptions={engineModeOptions}
         modeLabelLocale={uiLocale}
-        handleEngineChange={handleEngineChange}
+        handleEngineChange={modelReview.switchModel}
+        modelReviewCommands={
+          <>
+            <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+            <WorkspaceActiveDraftStatus draft={activeDraft} locale={uiLocale} openRecovery={() => modelReview.open('saved')} />
+          </>
+        }
         handleModeChange={handleModeChange}
-        disabledEngineReasons={klingO3DisabledEngineReasons}
+        disabledEngineReasons={modelReview.selectorDisabledReasons}
         engineScores={engineScores}
         renderGroups={renderGroups}
         compositeOverrideSummary={compositeOverrideSummary}
@@ -309,7 +356,10 @@ export function WorkspaceAppReadyView({
             setViewMode={setViewMode}
           />
         }
-      />
+      />}
+      </WorkspaceRecentReferences>
+      {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
+        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError} /> : null}
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
@@ -339,12 +389,15 @@ export function WorkspaceAppReadyView({
         assetLibrarySource={assetLibrarySource}
         visibleAssetLibrary={visibleAssetLibrary}
         isAssetLibraryLoading={isAssetLibraryLoading}
+        isAssetLibraryLoadingMore={isAssetLibraryLoadingMore}
+        assetLibraryHasMore={assetLibraryHasMore}
         assetLibraryError={assetLibraryError}
         assetDeletePendingId={assetDeletePendingId}
         fieldFallbackLabel={workspaceCopy.assetLibrary.fieldFallback}
         onAssetLibrarySourceChange={handleAssetLibrarySourceChange}
         onCloseAssetLibrary={closeAssetLibrary}
         onRefreshAssets={fetchAssetLibrary}
+        onLoadMoreAssets={loadMoreAssetLibrary}
         onSelectFieldAsset={handleSelectLibraryAsset}
         onSelectKlingAsset={handleSelectKlingLibraryAsset}
         onDeleteAsset={handleDeleteLibraryAsset}

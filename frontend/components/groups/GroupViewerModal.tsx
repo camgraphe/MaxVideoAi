@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { normalizeGenerationObservation } from '@/lib/generation-observation';
 import { resolveStableMediaUrl } from '@/lib/media';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 
@@ -50,6 +51,16 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
           ? Math.max(0, Math.min(100, Math.round(item.meta.progress as number)))
           : undefined;
       const message = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
+      const observation = normalizeGenerationObservation(item.meta?.observation);
+      const startedAt = typeof item.meta?.startedAt === 'number' && Number.isFinite(item.meta.startedAt)
+        ? item.meta.startedAt
+        : undefined;
+      const etaSeconds = typeof item.meta?.etaSeconds === 'number' && Number.isFinite(item.meta.etaSeconds)
+        ? item.meta.etaSeconds
+        : undefined;
+      const etaSource = item.meta?.etaSource === 'observed' || item.meta?.etaSource === 'heuristic'
+        ? item.meta.etaSource
+        : undefined;
       const engineLabel = typeof group.paramsSnapshot?.engineLabel === 'string' ? String(group.paramsSnapshot.engineLabel) : undefined;
 
       return {
@@ -64,8 +75,13 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
         aspectRatio: item.aspect,
         status,
         progress,
+        observation,
+        startedAt,
+        etaSeconds,
+        etaSource,
         message,
         engineLabel,
+        engineId: typeof item.meta?.engineId === 'string' ? item.meta.engineId : typeof group.paramsSnapshot?.engineId === 'string' ? group.paramsSnapshot.engineId : undefined,
         durationSec: item.durationSec,
         createdAt: group.createdAt,
         indexable: baseIndexable,

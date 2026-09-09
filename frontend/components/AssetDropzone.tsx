@@ -4,18 +4,21 @@ import clsx from 'clsx';
 import { useMemo, useCallback, useRef } from 'react';
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps } from '@/types/engines';
+import { getWorkspaceReferenceSlots } from '@/components/composer/workspace-reference-layout';
+import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
+import { getWorkspaceFrameCommand } from '@/components/composer/workspace-reference-commands';
 import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import { normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
 import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
+import { buildAssetFieldHelperLines } from '@/components/asset-dropzone/asset-field-helper-lines';
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetFieldGuidance } from '@/components/asset-dropzone/AssetFieldGuidance';
 import { AssetFieldDisabledBadge, AssetFieldDisabledNotice } from '@/components/asset-dropzone/AssetFieldDisabledState';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
   buildAssetFieldTooltipLines,
-  formatAcceptedAudioExtensions,
   readMediaDuration,
   resolveAcceptedAudioInputTypes,
   resolveAssetFieldTitle,
@@ -86,8 +89,9 @@ export function AssetDropzone({
   const minimumImageSidePx = normalizeMinimumImageSide(constraints.minImageSidePx);
   const acceptFormats = useMemo(() => {
     const configuredFormats = caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
-    return configuredFormats?.map((format) => format.toLowerCase()) ?? [];
-  }, [caps?.acceptsImageFormats, constraints.supportedFormats]);
+    const formats = configuredFormats?.map((format) => format.toLowerCase()) ?? [];
+    return density === 'workspace' && field.type === 'image' ? formats.filter((format) => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'heif', 'bmp', 'tif', 'tiff'].includes(format.replace(/^\./, ''))) : formats;
+  }, [caps?.acceptsImageFormats, constraints.supportedFormats, field.type, density]);
   const accept = (() => {
     if (field.type === 'image') {
       return acceptFormats.length
@@ -108,12 +112,13 @@ export function AssetDropzone({
 
   const filledAssetCount = useMemo(() => assets.filter((asset) => asset != null).length, [assets]);
   const displaySlots = useMemo(() => {
+    if (density === 'workspace') return getWorkspaceReferenceSlots({ assets, maxCount, minCount });
     return getVisibleAssetSlots({
       assets,
       maxCount,
       minCount,
     });
-  }, [assets, maxCount, minCount]);
+  }, [assets, maxCount, minCount, density]);
   const renderSlots = useMemo(() => {
     if (!isCollectionField || displaySlots.length <= 1) return displaySlots;
     const emptySlots = displaySlots.filter((slot) => slot.asset == null);
@@ -251,67 +256,19 @@ export function AssetDropzone({
     [field, handleFile, onUrlSelect]
   );
 
-  const helperLines = useMemo(() => {
-    const lines: string[] = [];
-    if (field.type === 'image') {
-      if (acceptFormats.length) {
-        lines.push(assetCopy.formats(acceptFormats.map((ext) => ext.toUpperCase()).join(', ')));
-      } else {
-        lines.push(assetCopy.formats('PNG, JPG, WebP'));
-      }
-      const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
-      if (maxImage) lines.push(assetCopy.mbMax(maxImage));
-      if (minimumImageSidePx != null) lines.push(`${minimumImageSidePx} x ${minimumImageSidePx} px min`);
-    } else if (field.type === 'video') {
-      lines.push(assetCopy.formats('MP4, MOV'));
-      const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
-      if (maxVideo) lines.push(assetCopy.mbMax(maxVideo));
-      const maxVideoDuration = field.maxDurationSec ?? limits.videoMaxDurationSec;
-      if (maxVideoDuration) lines.push(assetCopy.secondsMax(maxVideoDuration));
-    } else {
-      const audioFormats = formatAcceptedAudioExtensions(mediaFieldConstraint);
-      lines.push(assetCopy.formats(audioFormats));
-      const maxAudio = mediaFieldConstraint.maxSizeMB ?? limits.videoMaxMB;
-      if (maxAudio) lines.push(assetCopy.mbMax(maxAudio));
-      const minAudioDuration = field.minDurationSec;
-      const maxAudioDuration = field.maxDurationSec ?? limits.audioMaxDurationSec;
-      if (typeof minAudioDuration === 'number' && typeof maxAudioDuration === 'number') {
-        lines.push(assetCopy.secondsRequired(minAudioDuration, maxAudioDuration));
-      } else if (typeof maxAudioDuration === 'number') {
-        lines.push(assetCopy.secondsMax(maxAudioDuration));
-      }
-      if (field.id === 'audio_url') {
-        lines.push(assetCopy.videoLengthFollowsAudio);
-      }
-    }
-    if (field.maxCount && field.maxCount > 1) {
-      lines.push(assetCopy.upToFiles(field.maxCount));
-    }
-    if (field.minCount && field.minCount > 1) {
-      lines.push(assetCopy.atLeastFiles(field.minCount));
-    }
-    return lines;
-  }, [
-    acceptFormats,
-    assetCopy,
-    caps?.maxUploadMB,
-    constraints.maxImageSizeMB,
-    constraints.maxVideoSizeMB,
-    field.id,
-    field.maxCount,
-    field.maxDurationSec,
-    field.minCount,
-    field.minDurationSec,
-    field.type,
-    limits.audioMaxDurationSec,
-    limits.imageMaxMB,
-    limits.videoMaxDurationSec,
-    limits.videoMaxMB,
-    mediaFieldConstraint,
-    minimumImageSidePx,
-  ]);
+  const helperLines = useMemo(() => buildAssetFieldHelperLines({
+    field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy,
+  }), [field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy]);
 
-  const fieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
+  const defaultFieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
+  const frameCommand = getWorkspaceFrameCommand({ field, role, required }, engine);
+  const frameTitle = frameCommand ? workspaceReferenceCopy(locale)[frameCommand] : null;
+  const workspaceFieldTitle = resolveWorkspaceReferenceFieldTitle(field, role, locale);
+  const fieldTitle = density === 'workspace'
+    ? field.type === 'image' && (engine.modes.includes('t2v') || engine.modes.includes('i2v'))
+      ? frameTitle ?? workspaceFieldTitle
+      : workspaceFieldTitle
+    : defaultFieldTitle;
   const roleDescription = resolveAssetRoleDescription(role, assetCopy);
   const visibleHelperText = field.type === 'video' && helperLines.length ? helperLines.join(' · ') : null;
   const detailsTooltipLines = buildAssetFieldTooltipLines({
@@ -346,6 +303,67 @@ export function AssetDropzone({
           : 'grid-cols-1 sm:grid-cols-2';
   const shouldLimitSoloWidth = isSoloField && displaySlots.length === 1 && !workspaceDensity;
 
+  const renderSlot = ({ asset, slotIndex }: (typeof displaySlots)[number]) => {
+    const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video'));
+    const slotLabel = resolveSlotLabel(field, role, slotIndex, assetCopy);
+
+    return (
+      <AssetDropzoneSlot
+        key={`${field.id}-slot-${slotIndex}`}
+        accept={accept}
+        mediaKind={field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image'}
+        asset={asset}
+        assetCopy={assetCopy}
+        canOpenLibrary={canOpenLibrary}
+        compactDensity={compactDensity}
+        compactCollectionLayout={compactCollectionLayout}
+        workspaceDensity={workspaceDensity}
+        disabled={disabled}
+        disabledReason={disabledReason}
+        displaySlotCount={displaySlots.length}
+        engineId={engine.id}
+        filledAssetCount={filledAssetCount}
+        fullBleedSingleAsset={fullBleedSingleAsset}
+        hideRequiredSlotCopy={hideRequiredSlotCopy}
+        inputRef={(element) => {
+          inputRefs.current[slotIndex] = element;
+        }}
+        isCollectionField={isCollectionField}
+        minCount={minCount}
+        slotIndex={slotIndex}
+        slotLabel={workspaceDensity && !isCollectionField ? fieldTitle ?? slotLabel : slotLabel}
+        onDisabledAttempt={handleDisabledAttempt}
+        onDrop={(event, targetSlotIndex) => {
+          void handleDrop(event, targetSlotIndex);
+        }}
+        onInputChange={(event, targetSlotIndex) => {
+          void onInputChange(event, targetSlotIndex);
+        }}
+        onOpenLibrarySlot={(targetSlotIndex) => onOpenLibrary?.(field, targetSlotIndex)}
+        onPaste={(event, targetSlotIndex) => {
+          void handlePaste(event, targetSlotIndex);
+        }}
+        onRemoveSlot={(targetSlotIndex) => onRemove?.(field, targetSlotIndex)}
+        onSelectFileSlot={(targetSlotIndex) => inputRefs.current[targetSlotIndex]?.click()}
+      />
+    );
+  };
+
+  if (workspaceDensity) {
+    const copy = workspaceReferenceCopy(locale);
+    return <div className="app-reference-field" data-reference-field={field.id}>
+      <div className="app-reference-field-heading"><strong>{fieldTitle}</strong>{required ? <small>{copy.required}</small> : null}{headerAction}</div>
+      {disabledReason ? <p className="app-reference-disabled" role="note">{disabledReason}</p> : null}
+      <div className="app-reference-slots">
+          {renderSlots.map(renderSlot)}
+      </div>
+      <details className="app-reference-guidance"><summary>{copy.details}{isCollectionField ? ` · ${filledAssetCount}/${maxCount}` : ''}</summary>
+        {guidance ? <p>{guidance.label} {guidance.tooltip}</p> : null}
+        {detailsTooltipLines.map((line) => <p key={line}>{line}</p>)}
+      </details>
+    </div>;
+  }
+
   return (
     <div
       className={clsx(
@@ -358,7 +376,7 @@ export function AssetDropzone({
       <div
         className={clsx(
           'flex w-full flex-col rounded-input border border-dashed border-border bg-surface-glass-80 text-text-secondary dark:border-white/[0.07] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.018))] dark:text-white/68',
-          workspaceDensity && 'h-full',
+          workspaceDensity && 'app-reference-surface h-full',
           fullBleedSingleAsset ? 'relative min-h-[260px] overflow-hidden' : compactDensity ? 'gap-2 p-2.5' : 'gap-4 p-4',
           disabled && disabledReason && disabledPresentation !== 'auth-lock' && 'border-warning-border/70 bg-warning-bg/30 dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.045]'
         )}
@@ -400,50 +418,7 @@ export function AssetDropzone({
             multiSlotGridClass
           )}
         >
-          {renderSlots.map(({ asset, slotIndex }) => {
-            const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video'));
-            const slotLabel = resolveSlotLabel(field, role, slotIndex, assetCopy);
-
-            return (
-              <AssetDropzoneSlot
-                key={`${field.id}-slot-${slotIndex}`}
-                accept={accept}
-                asset={asset}
-                assetCopy={assetCopy}
-                canOpenLibrary={canOpenLibrary}
-                compactDensity={compactDensity}
-                compactCollectionLayout={compactCollectionLayout}
-                workspaceDensity={workspaceDensity}
-                disabled={disabled}
-                disabledReason={disabledReason}
-                displaySlotCount={displaySlots.length}
-                engineId={engine.id}
-                filledAssetCount={filledAssetCount}
-                fullBleedSingleAsset={fullBleedSingleAsset}
-                hideRequiredSlotCopy={hideRequiredSlotCopy}
-                inputRef={(element) => {
-                  inputRefs.current[slotIndex] = element;
-                }}
-                isCollectionField={isCollectionField}
-                minCount={minCount}
-                slotIndex={slotIndex}
-                slotLabel={slotLabel}
-                onDisabledAttempt={handleDisabledAttempt}
-                onDrop={(event, targetSlotIndex) => {
-                  void handleDrop(event, targetSlotIndex);
-                }}
-                onInputChange={(event, targetSlotIndex) => {
-                  void onInputChange(event, targetSlotIndex);
-                }}
-                onOpenLibrarySlot={(targetSlotIndex) => onOpenLibrary?.(field, targetSlotIndex)}
-                onPaste={(event, targetSlotIndex) => {
-                  void handlePaste(event, targetSlotIndex);
-                }}
-                onRemoveSlot={(targetSlotIndex) => onRemove?.(field, targetSlotIndex)}
-                onSelectFileSlot={(targetSlotIndex) => inputRefs.current[targetSlotIndex]?.click()}
-              />
-            );
-          })}
+          {renderSlots.map(renderSlot)}
         </div>
         {visibleHelperText || isCollectionField || workspaceDensity ? (
           <p className={clsx(

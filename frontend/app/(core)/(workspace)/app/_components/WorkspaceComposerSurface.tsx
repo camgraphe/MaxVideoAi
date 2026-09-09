@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
+import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
-import { getSeedanceFieldBlockKey } from '@/lib/seedance-workflow';
+import { getWorkspaceReferenceFields } from '../_lib/workspace-reference-fields';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
 import {
   buildComposerAttachments,
@@ -17,9 +18,7 @@ import {
 } from '../_lib/workspace-assets';
 import {
   getKlingO3AssetState,
-  isKlingO3FrameFieldId,
   KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE,
-  KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE,
   supportsKlingO3VideoToVideo,
 } from '../_lib/kling-o3-unified-workflow';
 import { OMNI_CUSTOM_FIELD_IDS } from '../_lib/gemini-omni-unified-workflow';
@@ -158,7 +157,6 @@ function isStoryboardLaunchEngine(engineId: string): boolean {
   return normalized.includes('seedance') || normalized.includes('kling');
 }
 
-const LUMA_RAY32_MODIFY_ASSET_FIELD_IDS = new Set(['video_url', 'start_image_url', 'edit_keyframe_urls']);
 const LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS = new Set(['edit_keyframe_indexes']);
 const HDR_FIELD_ID = 'hdr';
 const SEEDANCE_REFERENCE_GUIDANCE_COPY = {
@@ -276,6 +274,7 @@ export function WorkspaceComposerSurface({
   handleOpenKlingAssetLibrary,
   setViewMode,
 }: WorkspaceComposerSurfaceProps) {
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [storyboardModalOpen, setStoryboardModalOpen] = useState(false);
   const klingO3AssetState = useMemo(
     () => getKlingO3AssetState({ inputAssets, klingElements }),
@@ -295,54 +294,16 @@ export function WorkspaceComposerSurface({
     [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
   );
 
-  const composerAssetFields = useMemo(() => {
-    return inputSchemaSummary.assetFields.map((entry) => {
-      const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset !== null);
-      const blockKey = isUnifiedSeedance
-        ? getSeedanceFieldBlockKey(entry.field.id, inputAssets, fieldHasOwnAssets)
-        : null;
-      const workflowDisabledReason =
-        blockKey === 'clearReferences'
-          ? workflowCopy.clearReferencesToUseStartEnd
-          : blockKey === 'clearStartEnd'
-            ? workflowCopy.clearStartEndToUseReferences
-            : null;
-      const klingO3DisabledReason =
-        isUnifiedKlingO3 && entry.field.type === 'video' && entry.field.id === 'video_url' && !klingO3VideoToVideoSupported
-          ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE
-          : isUnifiedKlingO3 && klingO3AssetState.hasAnyVideoInput && isKlingO3FrameFieldId(entry.field.id)
-            ? KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE
-            : null;
-      const disabledReason = klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
-      return {
-        ...entry,
-        guidance: isUnifiedSeedance && shouldShowSeedanceReferenceGuidance(entry.field)
-          ? getSeedanceReferenceGuidance(uiLocale)
-          : entry.guidance,
-        disabled: Boolean(disabledReason),
-        disabledReason,
-        disabledPresentation:
-          disabledReason && disabledReason === guestUploadLockedReason ? 'auth-lock' as const : 'default' as const,
-      };
-    }).filter((entry) => {
-      if (showOmniStudioPanel) return false;
-      if (!showLumaRay32KeyframeEditor) return true;
-      return !LUMA_RAY32_MODIFY_ASSET_FIELD_IDS.has(entry.field.id);
-    });
-  }, [
-    guestUploadLockedReason,
-    inputAssets,
-    inputSchemaSummary.assetFields,
-    isUnifiedSeedance,
-    isUnifiedKlingO3,
-    klingO3AssetState.hasAnyVideoInput,
-    klingO3VideoToVideoSupported,
-    showLumaRay32KeyframeEditor,
-    showOmniStudioPanel,
-    uiLocale,
-    workflowCopy.clearReferencesToUseStartEnd,
-    workflowCopy.clearStartEndToUseReferences,
-  ]);
+  const composerAssetFields = useMemo(() => getWorkspaceReferenceFields(inputSchemaSummary.assetFields, {
+    inputAssets, isUnifiedSeedance, isUnifiedKlingO3, klingO3VideoToVideoSupported,
+    hasAnyVideoInput: klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason, workflowCopy,
+    showOmniStudioPanel, showLumaRay32KeyframeEditor,
+  }).map((entry) => ({ ...entry,
+    guidance: isUnifiedSeedance && shouldShowSeedanceReferenceGuidance(entry.field)
+      ? getSeedanceReferenceGuidance(uiLocale) : entry.guidance,
+  })), [inputSchemaSummary.assetFields, inputAssets, isUnifiedSeedance, isUnifiedKlingO3,
+    klingO3VideoToVideoSupported, klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason,
+    workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, uiLocale]);
 
   const omniExtraFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
@@ -434,9 +395,28 @@ export function WorkspaceComposerSurface({
   const durationManagedLabel = `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
   const audioControlNote = voiceControlEnabled ? 'Audio locked by voice control' : undefined;
   const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
+  const showOptionsControl = Boolean(
+    showLoopControl ||
+    supportsKlingV3Controls ||
+    supportsKlingV3VoiceControl ||
+    isSeedance ||
+    showSafetyCheckerControl ||
+    selectedEngine.params?.promptStrength ||
+    selectedEngine.params?.guidance ||
+    (submissionMode === 'i2v' && selectedEngine.params?.initInfluence) ||
+    selectedEngine.params?.cfg_scale ||
+    advancedFields.length
+  );
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
+  const showExtraFields = Boolean(
+    showLumaRay32KeyframeEditor ||
+    showOmniStudioPanel ||
+    showRetakeWorkflowAction ||
+    showKlingElementsBuilder ||
+    (showOptionsControl && optionsOpen)
+  );
   const resolvedWorkflowNotice = klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
 
   const handleAudioChange = useCallback(
@@ -491,6 +471,7 @@ export function WorkspaceComposerSurface({
         price={price}
         currency={currency}
         isLoading={isPricing || isSubmitting}
+        isPricing={isPricing}
         error={preflightError}
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
@@ -529,7 +510,7 @@ export function WorkspaceComposerSurface({
             : null
         }
         disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
-        extraFields={
+        extraFields={showExtraFields ? (
           <>
             {showLumaRay32KeyframeEditor ? (
               <LumaRay32KeyframeEditor
@@ -594,6 +575,7 @@ export function WorkspaceComposerSurface({
               />
             ) : null}
             <SettingsControls
+              advancedOpen={showOptionsControl && optionsOpen}
               engine={selectedEngine}
               caps={capability}
               durationSec={durationSec}
@@ -644,7 +626,8 @@ export function WorkspaceComposerSurface({
               variant="advanced"
             />
           </>
-        }
+        ) : undefined}
+        optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
         settingsBar={
           <CoreSettingsBar
             density="workspace"

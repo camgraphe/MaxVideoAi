@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import type { AcceptedToolQuote } from '@/lib/toolbox/quote';
+import { useCallback, useRef, useState } from 'react';
 import { runBackgroundRemovalTool } from '@/lib/api';
 import type {
   BackgroundRemovalOutputCodec,
@@ -11,6 +12,7 @@ import type {
 } from '../_lib/background-removal-workspace-types';
 
 export function useBackgroundRemovalGenerationRunner(params: {
+  acceptedQuote?: AcceptedToolQuote | null;
   backgroundColor: BackgroundRemovalStudioBackgroundColor;
   outputCodec: BackgroundRemovalOutputCodec;
   preserveAudio: boolean;
@@ -18,7 +20,9 @@ export function useBackgroundRemovalGenerationRunner(params: {
   metadata: BackgroundRemovalVideoMetadata | null;
   videoUrl: string;
   onSuccess?: () => void;
+  onQuoteInvalidated?: () => void;
 }) {
+  const runningRef = useRef(false);
   const [result, setResult] = useState<BackgroundRemovalResult | null>(null);
   const [running, setRunning] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -31,7 +35,8 @@ export function useBackgroundRemovalGenerationRunner(params: {
   }, []);
 
   const run = useCallback(async () => {
-    if (!params.videoUrl.trim() || !params.metadata || running) return;
+    if (!params.videoUrl.trim() || !params.metadata || runningRef.current) return;
+    runningRef.current = true;
     setRunning(true);
     setError(null);
     setMessage(null);
@@ -40,6 +45,7 @@ export function useBackgroundRemovalGenerationRunner(params: {
     }
     try {
       const response = await runBackgroundRemovalTool({
+        acceptedQuote: params.acceptedQuote ?? undefined,
         videoUrl: params.videoUrl.trim(),
         backgroundColor: params.backgroundColor,
         outputContainerAndCodec: params.outputCodec,
@@ -52,21 +58,23 @@ export function useBackgroundRemovalGenerationRunner(params: {
         fps: params.metadata.fps ?? null,
       });
       setResult(response);
-      setMessage(`${response.engineLabel} · $${response.pricing.estimatedCostUsd.toFixed(2)}`);
+      setMessage(null);
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('tool_success', { detail: { tool: 'background-removal', jobId: response.jobId } }));
       }
       params.onSuccess?.();
     } catch (runError) {
+      params.onQuoteInvalidated?.();
       const nextMessage = runError instanceof Error ? runError.message : 'Background removal failed.';
       setError(nextMessage);
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('tool_error', { detail: { tool: 'background-removal', message: nextMessage } }));
       }
     } finally {
+      runningRef.current = false;
       setRunning(false);
     }
-  }, [params, running]);
+  }, [params]);
 
   return {
     clearResult,

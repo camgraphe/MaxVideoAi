@@ -1,13 +1,11 @@
+import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { uploadVideoFile } from '@/lib/client-video-upload';
-import {
-  getSeedanceFieldBlockKey,
-  isUnifiedSeedanceEngineId,
-} from '@/lib/seedance-workflow';
+import { getSeedanceFieldBlockKey, isUnifiedSeedanceEngineId } from '@/lib/seedance-workflow';
 import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 import {
   buildReferenceAssetFromLibraryAsset,
@@ -34,6 +32,7 @@ import {
 import type { CommitInputAssetMutation } from './useWorkspaceAssetState';
 
 type UseWorkspaceReferenceAssetsOptions = {
+  accountScope?: string | null;
   engineId?: string | null;
   inputSchema?: EngineInputSchema | null;
   preferredMode: Mode;
@@ -59,6 +58,7 @@ function createReferenceAssetId(): string {
 }
 
 export function useWorkspaceReferenceAssets({
+  accountScope,
   engineId,
   inputSchema,
   preferredMode,
@@ -72,6 +72,7 @@ export function useWorkspaceReferenceAssets({
   setAssetPickerTarget,
   setAssetLibrary,
 }: UseWorkspaceReferenceAssetsOptions) {
+  const valid = useWorkspaceAssetLifetime(accountScope);
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
 
   useEffect(() => {
@@ -101,11 +102,17 @@ export function useWorkspaceReferenceAssets({
       }
       return null;
     },
-    [engineId, inputAssets, workflowCopy.clearReferencesToUseStartEnd, workflowCopy.clearStartEndToUseReferences]
+    [
+      engineId,
+      inputAssets,
+      workflowCopy.clearReferencesToUseStartEnd,
+      workflowCopy.clearStartEndToUseReferences,
+    ],
   );
 
   const handleOpenAssetLibrary = useCallback(
     (field: EngineInputField, slotIndex?: number) => {
+      if (!valid()) return;
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
       if (blockedMessage) {
         showNotice(blockedMessage);
@@ -117,34 +124,36 @@ export function useWorkspaceReferenceAssets({
       }
       setAssetPickerTarget({ kind: 'field', field, slotIndex });
     },
-    [assetLibrarySource, getSeedanceFieldBlockedMessage, resetAssetLibraryForSource, setAssetPickerTarget, showNotice]
+    [
+      valid,
+      assetLibrarySource,
+      getSeedanceFieldBlockedMessage,
+      resetAssetLibraryForSource,
+      setAssetPickerTarget,
+      showNotice,
+    ],
   );
 
   const handleSelectLibraryAsset = useCallback(
     async (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
+      if (!valid()) return;
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
       if (blockedMessage) {
         showNotice(blockedMessage);
-        return;
+        return blockedMessage;
       }
       const mismatchMessage = getLibraryAssetFieldMismatchMessage(field, asset);
       if (mismatchMessage) {
         showNotice(mismatchMessage);
-        return;
+        return mismatchMessage;
       }
 
       const shouldMirrorVideo =
-        field.type === 'video' &&
-        asset.kind === 'video' &&
-        shouldMirrorVideoLibraryAsset(asset);
+        field.type === 'video' && asset.kind === 'video' && shouldMirrorVideoLibraryAsset(asset);
       const shouldMirrorImage =
-        field.type === 'image' &&
-        asset.kind === 'image' &&
-        shouldMirrorCharacterImageAsset(asset);
+        field.type === 'image' && asset.kind === 'image' && shouldMirrorCharacterImageAsset(asset);
       const reservationId =
-        shouldMirrorVideo || shouldMirrorImage
-          ? createReferenceAssetId()
-          : null;
+        shouldMirrorVideo || shouldMirrorImage ? createReferenceAssetId() : null;
       const newAsset = buildReferenceAssetFromLibraryAsset(field, asset);
       const reservedAsset = reservationId
         ? {
@@ -158,15 +167,15 @@ export function useWorkspaceReferenceAssets({
         tryInsertReferenceAsset(previous, field, reservedAsset, slotIndex, {
           inputSchema,
           preferredMode,
-        })
+        }),
       );
       if (!insertion.accepted) {
-        showNotice(
+        const message =
           insertion.reason === 'reference_budget'
             ? `Maximum ${insertion.maxTotal} total references reached for this engine mode.`
-            : `Maximum ${field.label ?? 'reference image'} count reached for this engine.`
-        );
-        return;
+            : `Maximum ${field.label ?? 'reference image'} count reached for this engine.`;
+        showNotice(message);
+        return message;
       }
       setAssetPickerTarget(null);
       if (!reservationId) {
@@ -180,10 +189,7 @@ export function useWorkspaceReferenceAssets({
         const mirrored = shouldMirrorVideo
           ? await saveAssetToLibrary({
               url: asset.url,
-              label:
-                field.label ??
-                asset.url.split('/').pop() ??
-                'Video',
+              label: field.label ?? asset.url.split('/').pop() ?? 'Video',
               source: asset.source === 'recent' ? 'saved_job_output' : asset.source,
               kind: 'video',
               jobId: asset.jobId ?? null,
@@ -192,24 +198,20 @@ export function useWorkspaceReferenceAssets({
             })
           : await saveImageToLibrary({
               url: asset.url,
-              label:
-                field.label ??
-                asset.url.split('/').pop() ??
-                'Image',
+              label: field.label ?? asset.url.split('/').pop() ?? 'Image',
               source: asset.source,
             });
+        if (!valid()) {
+          if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
+          return;
+        }
         const resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
         const resolvedReferenceAsset = {
           ...buildReferenceAssetFromLibraryAsset(field, resolvedAsset),
           id: reservationId,
         };
         const settlement = commitInputAssetMutation((previous) =>
-          settleReferenceAssetReservation(
-            previous,
-            field,
-            reservationId,
-            resolvedReferenceAsset
-          )
+          settleReferenceAssetReservation(previous, field, reservationId, resolvedReferenceAsset),
         );
         if (!settlement.settled) {
           if (insertion.replacedAsset) {
@@ -222,19 +224,16 @@ export function useWorkspaceReferenceAssets({
         }
         setAssetLibrary((previous) =>
           previous.map((entry) =>
-            entry.id === asset.id || entry.url === asset.url
-              ? resolvedAsset
-              : entry
-          )
+            entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry,
+          ),
         );
       } catch (error) {
+        if (!valid()) {
+          if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
+          return;
+        }
         const rollback = commitInputAssetMutation((previous) =>
-          settleReferenceAssetReservation(
-            previous,
-            field,
-            reservationId,
-            insertion.replacedAsset
-          )
+          settleReferenceAssetReservation(previous, field, reservationId, insertion.replacedAsset),
         );
         if (rollback.settled && rollback.discardedAsset) {
           revokeAssetPreview(rollback.discardedAsset);
@@ -246,19 +245,20 @@ export function useWorkspaceReferenceAssets({
           showNotice(
             error instanceof Error
               ? error.message
-              : 'Unable to prepare this video. Try importing the source clip directly.'
+              : 'Unable to prepare this video. Try importing the source clip directly.',
           );
         } else {
           console.error('[assets] failed to mirror character library asset', error);
           showNotice(
             error instanceof Error
               ? error.message
-              : 'Unable to prepare this character asset. Try another image.'
+              : 'Unable to prepare this character asset. Try another image.',
           );
         }
       }
     },
     [
+      valid,
       commitInputAssetMutation,
       getSeedanceFieldBlockedMessage,
       inputSchema,
@@ -266,7 +266,7 @@ export function useWorkspaceReferenceAssets({
       setAssetLibrary,
       setAssetPickerTarget,
       showNotice,
-    ]
+    ],
   );
 
   const handleAssetAdd = useCallback(
@@ -274,8 +274,9 @@ export function useWorkspaceReferenceAssets({
       field: EngineInputField,
       file: File,
       slotIndex?: number,
-      meta?: { durationSec?: number; width?: number; height?: number }
+      meta?: { durationSec?: number; width?: number; height?: number },
     ) => {
+      if (!valid()) return;
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
       if (blockedMessage) {
         showNotice(blockedMessage);
@@ -301,14 +302,14 @@ export function useWorkspaceReferenceAssets({
         tryInsertReferenceAsset(previous, field, baseAsset, slotIndex, {
           inputSchema,
           preferredMode,
-        })
+        }),
       );
       if (!insertion.accepted) {
         revokeAssetPreview(baseAsset);
         showNotice(
           insertion.reason === 'reference_budget'
             ? `Maximum ${insertion.maxTotal} total references reached for this engine mode.`
-            : `Maximum ${field.label ?? 'reference file'} count reached for this engine.`
+            : `Maximum ${field.label ?? 'reference file'} count reached for this engine.`,
         );
         return;
       }
@@ -322,8 +323,11 @@ export function useWorkspaceReferenceAssets({
               : await (async () => {
                   const preparedFile =
                     field.type === 'image'
-                      ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
+                      ? await prepareImageFileForUpload(file, {
+                          maxBytes: 25 * 1024 * 1024,
+                        })
                       : file;
+                  if (!valid()) throw new Error('Retired upload');
                   const formData = new FormData();
                   formData.append('file', preparedFile, preparedFile.name);
                   if (field.type === 'audio' && engineId) {
@@ -331,15 +335,22 @@ export function useWorkspaceReferenceAssets({
                     formData.append('mode', preferredMode);
                     formData.append('fieldId', field.id);
                   }
-                  const uploadEndpoint = field.type === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
-                  const uploadAssetType: UploadableAssetKind = field.type === 'audio' ? 'audio' : 'image';
+                  const uploadEndpoint =
+                    field.type === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
+                  const uploadAssetType: UploadableAssetKind =
+                    field.type === 'audio' ? 'audio' : 'image';
                   const response = await authFetch(uploadEndpoint, {
                     method: 'POST',
                     body: formData,
                   });
                   const payload = await response.json().catch(() => null);
                   if (!response.ok || !payload?.ok) {
-                    throw createUploadFailure(uploadAssetType, response.status, payload, 'Upload failed');
+                    throw createUploadFailure(
+                      uploadAssetType,
+                      response.status,
+                      payload,
+                      'Upload failed',
+                    );
                   }
                   return payload.asset as {
                     id: string;
@@ -351,6 +362,10 @@ export function useWorkspaceReferenceAssets({
                     name?: string;
                   };
                 })();
+          if (!valid()) {
+            revokeAssetPreview(baseAsset);
+            return;
+          }
           setInputAssets((previous) => {
             const current = previous[field.id];
             if (!current) return previous;
@@ -370,6 +385,10 @@ export function useWorkspaceReferenceAssets({
             return { ...previous, [field.id]: next };
           });
         } catch (error) {
+          if (!valid()) {
+            revokeAssetPreview(baseAsset);
+            return;
+          }
           const uploadAssetType: UploadableAssetKind =
             field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image';
           const message = getUploadFailureMessage(uploadAssetType, error, 'Upload failed');
@@ -384,7 +403,7 @@ export function useWorkspaceReferenceAssets({
               maxMB: uploadError?.maxMB ?? null,
               message,
             },
-            error
+            error,
           );
           setInputAssets((previous) => {
             const current = previous[field.id];
@@ -406,6 +425,7 @@ export function useWorkspaceReferenceAssets({
       void upload();
     },
     [
+      valid,
       commitInputAssetMutation,
       engineId,
       getSeedanceFieldBlockedMessage,
@@ -413,14 +433,18 @@ export function useWorkspaceReferenceAssets({
       preferredMode,
       setInputAssets,
       showNotice,
-    ]
+    ],
   );
 
-  const handleAssetRemove = useCallback((field: EngineInputField, index: number) => {
-    setInputAssets((previous) => {
-      return removeReferenceAsset(previous, field, index, revokeAssetPreview);
-    });
-  }, [setInputAssets]);
+  const handleAssetRemove = useCallback(
+    (field: EngineInputField, index: number) => {
+      if (!valid()) return;
+      setInputAssets((previous) => {
+        return removeReferenceAsset(previous, field, index, revokeAssetPreview);
+      });
+    },
+    [valid, setInputAssets],
+  );
 
   return {
     handleOpenAssetLibrary,

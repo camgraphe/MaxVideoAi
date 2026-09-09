@@ -48,6 +48,7 @@
     "qa:mcp-launch:enabled": "node scripts/run-mcp-launch-fixture.mjs --mode enabled",
     "qa:mcp-launch:lighthouse": "node scripts/run-mcp-launch-fixture.mjs --mode enabled --lighthouse",
     "plugin:release:build": "node scripts/build-maxvideoai-plugin-release.mjs",
+    "db:bootstrap:neon": "tsx --tsconfig frontend/tsconfig.json scripts/bootstrap-application-schema.ts",
     "db:migrate:neon": "bash scripts/apply-neon-migrations.sh",
     "neon:branches:check": "node scripts/neon-branch-guard.mjs",
     "neon:branches:prune": "node scripts/neon-branch-guard.mjs --delete-archived",
@@ -58,7 +59,14 @@
     "test:admin-smoke": "playwright test -c playwright.admin.config.ts",
     "test-videos:process": "node scripts/process-video-gallery.mjs",
     "test-videos:serve": "node scripts/serve-video-gallery.mjs",
-    "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts"
+    "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts",
+    "timeline-exports:worker": "pnpm --prefix frontend run timeline-exports:worker",
+    "timeline-exports:worker:once": "pnpm --prefix frontend run timeline-exports:worker:once",
+    "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-*.test.ts tests/studio-*.test.ts tests/timeline-export-*.test.ts",
+    "test:editor:contracts": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-workspace-architecture.test.ts tests/maxvideoai-editor-sequence-api-persistence.test.ts tests/maxvideoai-editor-generation-blocks.test.ts tests/maxvideoai-editor-engine-picker.test.ts tests/maxvideoai-editor-project-media-timeline.test.ts tests/maxvideoai-editor-timeline-external-drop.test.ts tests/maxvideoai-editor-timeline-interaction.test.ts tests/maxvideoai-editor-timeline-selection.test.ts tests/maxvideoai-editor-timeline-export.test.ts tests/studio-localization-contract.test.ts",
+    "test:editor:e2e": "playwright test -c playwright.editor.config.ts",
+    "test:editor:perf": "frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts tests/e2e/editor/editor-performance.spec.ts",
+    "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check"
   },
   "pnpm": {
     "overrides": {

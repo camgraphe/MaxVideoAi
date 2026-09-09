@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ButtonLink } from '@/components/ui/Button';
-import { buildLoginHref } from '@/lib/auth-entry-href';
+import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import {
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
@@ -32,7 +32,6 @@ import {
   type AudioVoiceGender,
   type AudioVoiceProfile,
 } from '@/lib/audio-generation';
-import { quotePublicAudioPricingSnapshot } from '@/lib/pricing-public-quote';
 import AudioLatestRendersRail from './AudioLatestRendersRail';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
 import { AudioWorkspaceComposerSurface } from './_components/audio-workspace-composer-surface';
@@ -217,22 +216,9 @@ export default function AudioWorkspace() {
     return null;
   }, [manualDurationSec, pack, script, sourceVideo?.durationSec]);
 
-  const quote = useMemo(() => {
-    if (!estimatedDurationSec) return null;
-    return quotePublicAudioPricingSnapshot({
-      pack,
-      mood: showMood ? mood : null,
-      durationSec: estimatedDurationSec,
-      voiceMode: showVoiceFields ? (voiceSample ? 'clone' : 'standard') : null,
-      script: showVoiceFields ? script : null,
-      musicEnabled: showMusicToggle ? musicEnabled : getAudioPackConfig(pack).defaultMusicEnabled,
-      musicModel: showMusicModel ? musicModel : null,
-      musicBpm: showMusicBpm ? musicBpm : null,
-    });
-  }, [estimatedDurationSec, mood, musicBpm, musicEnabled, musicModel, pack, script, showMood, showMusicBpm, showMusicModel, showMusicToggle, showVoiceFields, voiceSample]);
-
   const canGenerate =
     Boolean(user) &&
+    (!sourceVideoRequired || !sourceVideo?.durationSec || sourceVideo.durationSec <= 10) &&
     (!sourceVideoRequired || Boolean(sourceVideo?.url)) &&
     (pack !== 'music_only' || Boolean(sourceVideo?.url) || manualDurationSec >= 3) &&
     (!packConfig.requiresScript || script.trim().length > 0) &&
@@ -258,10 +244,11 @@ export default function AudioWorkspace() {
   });
 
   const handleGeneratedJobId = useCallback((jobId: string) => {
-    router.replace(`${pathname}?job=${encodeURIComponent(jobId)}`, { scroll: false });
+    router.replace(`${pathname}?intent=video&job=${encodeURIComponent(jobId)}`, { scroll: false });
   }, [pathname, router]);
 
-  const handleGenerate = useAudioGenerationRunner({
+  const { generate: handleGenerate, quote: audioQuote, canSubmit } = useAudioGenerationRunner({
+    userId: user?.id ?? null,
     canGenerate,
     copy,
     exportAudioFile,
@@ -306,11 +293,12 @@ export default function AudioWorkspace() {
   const handleSelectLatestJob = useCallback(
     (jobId: string) => {
       manualWorkspaceOverrideRef.current = false;
-      void router.replace(`${pathname}?job=${encodeURIComponent(jobId)}`, { scroll: false });
+      void router.replace(`${pathname}?intent=video&job=${encodeURIComponent(jobId)}`, { scroll: false });
     },
     [manualWorkspaceOverrideRef, pathname, router]
   );
 
+  const quote = audioQuote?.pricing;
   const composerIsScript = showVoiceFields;
   const composerLabel = composerIsScript ? copy.controls.script : copy.controls.prompt;
   const composerValue = composerIsScript ? script : prompt;
@@ -322,7 +310,9 @@ export default function AudioWorkspace() {
     : pack === 'music_only'
       ? copy.controls.promptMusicPlaceholder
       : copy.controls.promptCinematicPlaceholder;
-  const generationHint = !showVoiceFields && !prompt.trim().length
+  const generationHint = sourceVideoRequired && (sourceVideo?.durationSec ?? 0) > 10
+    ? locale.startsWith('fr') ? 'Vidéo : 10 secondes maximum' : locale.startsWith('es') ? 'Vídeo: máximo 10 segundos' : 'Video: up to 10 seconds'
+    : !showVoiceFields && !prompt.trim().length
     ? copy.pricing.missingPrompt
     : sourceVideoRequired && !sourceVideo?.url
       ? copy.pricing.missingSourceVideo
@@ -334,10 +324,7 @@ export default function AudioWorkspace() {
               duration: estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-',
             })
         : copy.pricing.missingOptions;
-  const activeProgress =
-    activeJob?.status === 'running' || activeJob?.status === 'pending'
-      ? activeJob.progress
-      : null;
+
   const displayDurationSec = pack === 'voice_only' ? null : estimatedDurationSec;
   const dockDurationLabel = displayDurationSec ? formatAudioDurationLabel(displayDurationSec) : null;
   const dockPriceLabel = quote ? formatCurrency(quote.totalCents, quote.currency, locale) : '-';
@@ -358,11 +345,11 @@ export default function AudioWorkspace() {
           <h1 className="mt-3 text-2xl font-semibold text-text-primary">{copy.auth.title}</h1>
           <p className="mt-3 text-sm text-text-secondary">{copy.auth.body}</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href={buildLoginHref({ mode: 'signup', nextPath: '/app/audio' })} size="sm">
+            <ButtonLink href={buildLoginHref({ mode: 'signup', nextPath: buildAuthReturnTarget('/app/audio', searchParams) })} size="sm">
               {copy.auth.createAccount}
             </ButtonLink>
             <ButtonLink
-              href={buildLoginHref({ mode: 'signin', nextPath: '/app/audio' })}
+              href={buildLoginHref({ mode: 'signin', nextPath: buildAuthReturnTarget('/app/audio', searchParams) })}
               variant="outline"
               size="sm"
             >
@@ -379,8 +366,9 @@ export default function AudioWorkspace() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AudioWorkspaceComposerSurface
           activeJobId={activeJob?.jobId ?? null}
-          activeProgress={activeProgress}
-          canGenerate={canGenerate}
+          previewJob={activeJob}
+          previewResult={result}
+          canGenerate={canSubmit}
           composerIsScript={composerIsScript}
           composerLabel={composerLabel}
           composerMaxLength={composerMaxLength}

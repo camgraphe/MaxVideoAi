@@ -7,8 +7,10 @@ type FetchInput = Parameters<typeof fetch>[0];
 type FetchInit = Parameters<typeof fetch>[1];
 
 export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Response> {
+  const headers = new Headers(init?.headers ?? {});
   let token: string | null = null;
-  if (readLastKnownUserId() || hasSupabaseAuthCookie()) {
+  // An explicit token is authoritative; do not insert a session await before its dispatch.
+  if (!headers.has('Authorization') && (readLastKnownUserId() || hasSupabaseAuthCookie())) {
     try {
       const { supabase } = await import('@/lib/supabaseClient');
       const { data } = await supabase.auth.getSession();
@@ -18,7 +20,6 @@ export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Re
     }
   }
 
-  const headers = new Headers(init?.headers ?? {});
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
   }
@@ -30,4 +31,7 @@ export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Re
     headers,
     credentials,
   });
+}
+export function hasAuthFetchSessionHint(): boolean {
+  return Boolean(readLastKnownUserId() || hasSupabaseAuthCookie());
 }

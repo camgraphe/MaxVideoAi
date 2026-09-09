@@ -30,7 +30,7 @@ import {
 } from '../frontend/src/lib/audio-generation';
 import { quotePublicAudioPricingSnapshot } from '../frontend/src/lib/pricing-public-quote';
 
-test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', () => {
+test('audio pricing charges 3x provider cost rounded up to 5 cents for Lyria 3 Clip music renders', () => {
   const pricing = quotePublicAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
@@ -40,11 +40,11 @@ test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', 
   });
 
   assert.equal(pricing.vendorShareCents, 4);
-  assert.equal(pricing.platformFeeCents, 6);
-  assert.equal(pricing.totalCents, 10);
+  assert.equal(pricing.platformFeeCents, 11);
+  assert.equal(pricing.totalCents, 15);
   assert.equal(pricing.base.amountCents, 4);
-  assert.equal(pricing.margin.amountCents, 6);
-  assert.equal(pricing.margin.percentApplied, 1.5);
+  assert.equal(pricing.margin.amountCents, 11);
+  assert.equal(pricing.margin.percentApplied, 2);
   assert.deepEqual(pricing.meta, {
     surface: 'audio',
     pack: 'music_only',
@@ -52,7 +52,7 @@ test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', 
     voiceMode: null,
     pricingModel: 'audio_provider_cost_plus_margin',
     vendorCostCents: 4,
-    marginPercent: 1.5,
+    marginPercent: 2,
     musicModel: 'clip',
     musicBpm: 110,
     musicEnabled: null,
@@ -78,8 +78,8 @@ test('audio pricing uses Lyria 3 Pro song pricing for long music renders', () =>
   });
 
   assert.equal(pricing.vendorShareCents, 8);
-  assert.equal(pricing.platformFeeCents, 12);
-  assert.equal(pricing.totalCents, 20);
+  assert.equal(pricing.platformFeeCents, 17);
+  assert.equal(pricing.totalCents, 25);
   assert.deepEqual(pricing.meta.vendorCostComponents, [
     {
       type: 'music_google_lyria3_pro',
@@ -99,25 +99,26 @@ test('audio pricing uses voice clone request and preview costs', () => {
     script: 'Short cloned narration.',
   });
 
-  assert.equal(pricing.vendorShareCents, 7);
-  assert.equal(pricing.totalCents, 18);
-  assert.equal(pricing.base.amountCents, 7);
+  assert.equal(pricing.vendorShareCents, 6);
+  assert.equal(pricing.totalCents, 20);
+  assert.equal(pricing.base.amountCents, 6.25);
   assert.deepEqual(pricing.addons, []);
-  assert.equal(pricing.margin.amountCents, 11);
+  assert.equal(pricing.margin.amountCents, 14);
   assert.deepEqual(pricing.meta.vendorCostComponents, [
     {
       type: 'voice_seed_audio_1_0',
       label: 'Seed Audio 1.0',
       model: 'bytedance/seed-audio-1.0',
       unit: 'minute',
-      units: 0.33,
-      amountCents: 7,
+      units: 1 / 3,
+      amountCents: 6.25,
     },
   ]);
 });
 
 test('audio helpers normalize packs, moods, voice mode, output kind, and duration bounds', () => {
   assert.equal(coerceAudioPackId(' music_only '), 'music_only');
+  assert.equal(coerceAudioPackId(' sfx_only '), 'sfx_only');
   assert.equal(coerceAudioPackId(' cinematic_voice '), 'cinematic_voice');
   assert.equal(coerceAudioPackId('basic'), null);
 
@@ -142,11 +143,13 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(AUDIO_SEED_AUDIO_VOICE_VALUES[0], 'default');
 
   assert.equal(resolveAudioVoiceMode({ pack: 'music_only', voiceSampleUrl: 'https://example.com/voice.wav' }), null);
+  assert.equal(resolveAudioVoiceMode({ pack: 'sfx_only', voiceSampleUrl: 'https://example.com/voice.wav' }), null);
   assert.equal(resolveAudioVoiceMode({ pack: 'voice_only', voiceSampleUrl: null }), 'standard');
   assert.equal(resolveAudioVoiceMode({ pack: 'voice_only', voiceSampleUrl: 'https://example.com/voice.wav' }), 'clone');
   assert.equal(resolveAudioVoiceMode({ pack: 'cinematic_voice', voiceSampleUrl: null }), 'standard');
   assert.equal(resolveAudioVoiceMode({ pack: 'cinematic_voice', voiceSampleUrl: 'https://example.com/voice.wav' }), 'clone');
   assert.equal(resolveAudioOutputKind({ pack: 'voice_only', exportAudioFile: false }), 'audio');
+  assert.equal(resolveAudioOutputKind({ pack: 'sfx_only', exportAudioFile: false }), 'audio');
   assert.equal(resolveAudioOutputKind({ pack: 'cinematic', exportAudioFile: false }), 'video');
   assert.equal(resolveAudioOutputKind({ pack: 'cinematic_voice', exportAudioFile: true }), 'both');
   assert.equal(estimateVoiceScriptDurationSec('This is a short narration sample for pricing.'), AUDIO_MIN_DURATION_SEC);
@@ -180,8 +183,8 @@ test('audio pricing does not cap voice script estimates at the music duration li
   assert.equal(estimatedDuration, 400);
   assert.equal(pricing.base.seconds, 400);
   assert.equal(pricing.vendorShareCents, 125);
-  assert.equal(pricing.margin.amountCents, 188);
-  assert.equal(pricing.totalCents, 313);
+  assert.equal(pricing.margin.amountCents, 250);
+  assert.equal(pricing.totalCents, 375);
 });
 
 test('audio pricing includes sound design and optional music for cinematic renders', () => {
@@ -199,14 +202,36 @@ test('audio pricing includes sound design and optional music for cinematic rende
   });
 
   assert.equal(withMusic.vendorShareCents, 34);
-  assert.equal(withMusic.margin.amountCents, 51);
-  assert.equal(withMusic.totalCents, 85);
+  assert.equal(withMusic.margin.amountCents, 71);
+  assert.equal(withMusic.totalCents, 105);
   assert.equal(withoutMusic.vendorShareCents, 30);
-  assert.equal(withoutMusic.margin.amountCents, 45);
-  assert.equal(withoutMusic.totalCents, 75);
+  assert.equal(withoutMusic.margin.amountCents, 60);
+  assert.equal(withoutMusic.totalCents, 90);
 });
 
-test('audio pricing rounds fractional 150 percent margins up to the next cent', () => {
+test('audio pricing supports standalone SFX renders', () => {
+  const pricing = quotePublicAudioPricingSnapshot({
+    pack: 'sfx_only',
+    durationSec: 8,
+    mood: null,
+  });
+
+  assert.equal(pricing.vendorShareCents, 1);
+  assert.equal(pricing.platformFeeCents, 4);
+  assert.equal(pricing.totalCents, 5);
+  assert.deepEqual(pricing.meta.vendorCostComponents, [
+    {
+      type: 'sound_design_mmaudio_v2_text',
+      label: 'MMAudio V2',
+      model: 'fal-ai/mmaudio-v2/text-to-audio',
+      unit: 'sec',
+      units: 8,
+      amountCents: 0.8,
+    },
+  ]);
+});
+
+test('audio pricing rounds the tripled total to the next five cents', () => {
   const pricing = quotePublicAudioPricingSnapshot({
     pack: 'cinematic',
     mood: 'tense',
@@ -215,6 +240,6 @@ test('audio pricing rounds fractional 150 percent margins up to the next cent', 
   });
 
   assert.equal(pricing.vendorShareCents, 3);
-  assert.equal(pricing.margin.amountCents, 5);
-  assert.equal(pricing.totalCents, 8);
+  assert.equal(pricing.margin.amountCents, 7);
+  assert.equal(pricing.totalCents, 10);
 });

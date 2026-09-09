@@ -9,7 +9,7 @@ import { runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
 export const listRecentGenerationsInputSchema = z.object({
   cursor: z.string().max(256).optional(),
   limit: z.number().int().min(1).max(20).default(10),
-  surface: z.enum(['video', 'image']).optional(),
+  surface: z.enum(['video', 'image', 'audio']).optional(),
   status: z.enum(['accepted', 'running', 'completed', 'failed']).optional(),
 }).strict();
 
@@ -26,7 +26,7 @@ export function registerListRecentGenerationsTool(
     {
       title: 'List recent MaxVideoAI generations',
       description:
-        'Use this to recover a bounded page from the same connected user’s MaxVideoAI library, with recent image or video generations, workspace links, and safe public result links.',
+        'Use this to recover a bounded page from the same connected user’s MaxVideoAI library, with recent image, video, or Audio generations, workspace links, and safe public result links.',
       inputSchema: listRecentGenerationsInputSchema,
       annotations: {
         readOnlyHint: true,

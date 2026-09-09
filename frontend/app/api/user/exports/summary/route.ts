@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
 import { countUserExports, ensureUserPreferences } from '@/server/preferences';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
@@ -15,7 +14,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    await ensureBillingSchema();
     const [count, prefs] = await Promise.all([
       countUserExports(userId),
       ensureUserPreferences(userId),

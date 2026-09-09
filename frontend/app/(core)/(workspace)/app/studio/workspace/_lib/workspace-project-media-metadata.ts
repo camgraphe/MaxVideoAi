@@ -1,0 +1,164 @@
+import {
+  parseWorkspaceMediaDimensions,
+  type WorkspaceMediaDimensions,
+} from './workspace-clip-composition';
+import { projectAssetTimelineNodeId } from './workspace-timeline-drops';
+import type { WorkspaceAssetRecord, WorkspaceTimelineItem } from './workspace-types';
+
+export type WorkspaceMeasuredMediaMetadata = Partial<WorkspaceMediaDimensions> & {
+  durationSec?: number | null;
+};
+
+export type WorkspaceProjectAssetMetadataSource = {
+  kind: 'image-preview' | 'video' | 'audio';
+  url: string;
+};
+
+function positivePixel(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return Math.round(value);
+}
+
+function positiveDuration(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return Math.round(value * 1000) / 1000;
+}
+
+function measuredDimensions(metadata: WorkspaceMeasuredMediaMetadata): WorkspaceMediaDimensions | null {
+  const width = positivePixel(metadata.width);
+  const height = positivePixel(metadata.height);
+  if (!width || !height) return null;
+  return { width, height };
+}
+
+function assetKindLabel(asset: WorkspaceAssetRecord): string {
+  if (asset.kind === 'video') return 'Video';
+  if (asset.kind === 'audio') return 'Audio';
+  return 'Image';
+}
+
+function assetHasMeasuredDuration(asset: WorkspaceAssetRecord): boolean {
+  return positiveDuration(asset.durationSec) !== null;
+}
+
+function assetHasMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
+  return Boolean(parseWorkspaceMediaDimensions(asset.dimensions));
+}
+
+export function workspaceAssetNeedsMetadataHydration(asset: WorkspaceAssetRecord): boolean {
+  if (asset.kind === 'audio') return !assetHasMeasuredDuration(asset);
+  if (asset.kind === 'video') {
+    return !assetHasMeasuredDimensions(asset) || !assetHasMeasuredDuration(asset);
+  }
+  if (asset.kind === 'image' || asset.kind === 'logo') {
+    return !assetHasMeasuredDimensions(asset);
+  }
+  return false;
+}
+
+export function workspaceProjectMediaNeedsMetadata(asset: WorkspaceAssetRecord): boolean {
+  return workspaceAssetNeedsMetadataHydration(asset);
+}
+
+export function workspaceProjectMediaResolutionLabel(asset: WorkspaceAssetRecord): string | null {
+  if (!asset.dimensions || !/^\d{1,5}\s*[x×]\s*\d{1,5}$/.test(asset.dimensions.trim())) {
+    return null;
+  }
+  const dimensions = parseWorkspaceMediaDimensions(asset.dimensions);
+  return dimensions ? `${dimensions.width}x${dimensions.height}` : null;
+}
+
+export function workspaceAssetNeedsMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
+  return workspaceAssetNeedsMetadataHydration(asset);
+}
+
+export function workspaceProjectAssetMetadataSourceUrl(
+  asset: WorkspaceAssetRecord,
+  items: WorkspaceTimelineItem[]
+): string | null {
+  return workspaceProjectAssetMetadataSource(asset, items)?.url ?? null;
+}
+
+export function workspaceProjectAssetMetadataSource(
+  asset: WorkspaceAssetRecord,
+  items: WorkspaceTimelineItem[]
+): WorkspaceProjectAssetMetadataSource | null {
+  if (asset.kind === 'image' || asset.kind === 'logo') {
+    const imageUrl = asset.url ?? null;
+    return imageUrl ? { kind: 'image-preview', url: imageUrl } : null;
+  }
+
+  if (asset.kind === 'audio') return asset.url ? { kind: 'audio', url: asset.url } : null;
+  if (asset.kind !== 'video') return null;
+
+  if (asset.url) return { kind: 'video', url: asset.url };
+
+  const sourceNodeId = projectAssetTimelineNodeId(asset);
+  const timelineSource = items.find(
+    (item) => item.outputNodeId === sourceNodeId && item.mediaKind === 'video' && Boolean(item.mediaUrl)
+  );
+  if (timelineSource?.mediaUrl) return { kind: 'video', url: timelineSource.mediaUrl };
+
+  return null;
+}
+
+export function workspaceAssetWithMeasuredMetadata(
+  asset: WorkspaceAssetRecord,
+  metadata: WorkspaceMeasuredMediaMetadata
+): WorkspaceAssetRecord {
+  const dimensions = measuredDimensions(metadata);
+  const durationSec = positiveDuration(metadata.durationSec);
+  const dimensionsLabel = dimensions ? `${dimensions.width}x${dimensions.height}` : asset.dimensions;
+  const nextDurationSec = positiveDuration(asset.durationSec) ?? durationSec ?? undefined;
+  const nextSubtitle = dimensionsLabel ? `${assetKindLabel(asset)} · ${dimensionsLabel}` : asset.subtitle;
+
+  if (
+    asset.dimensions === dimensionsLabel &&
+    asset.durationSec === nextDurationSec &&
+    asset.subtitle === nextSubtitle
+  ) return asset;
+
+  return {
+    ...asset,
+    width: dimensions?.width ?? asset.width,
+    height: dimensions?.height ?? asset.height,
+    dimensions: dimensionsLabel,
+    durationSec: nextDurationSec,
+    subtitle: nextSubtitle,
+  };
+}
+
+export function applyWorkspaceProjectAssetMetadataToTimelineItems(
+  items: WorkspaceTimelineItem[],
+  asset: WorkspaceAssetRecord
+): WorkspaceTimelineItem[] {
+  const dimensions = parseWorkspaceMediaDimensions(asset.dimensions);
+  const durationSec = positiveDuration(asset.durationSec);
+  if (!dimensions && !durationSec) return items;
+
+  const sourceNodeId = projectAssetTimelineNodeId(asset);
+  let didChange = false;
+  const nextItems = items.map((item) => {
+    if (item.outputNodeId !== sourceNodeId) return item;
+    if (asset.url && item.mediaUrl && asset.url !== item.mediaUrl) return item;
+    const nextSourceWidth = item.mediaKind === 'audio' ? item.sourceWidth : dimensions?.width ?? item.sourceWidth;
+    const nextSourceHeight = item.mediaKind === 'audio' ? item.sourceHeight : dimensions?.height ?? item.sourceHeight;
+    const nextSourceDurationSec = durationSec ?? item.sourceDurationSec;
+    if (
+      item.sourceWidth === nextSourceWidth &&
+      item.sourceHeight === nextSourceHeight &&
+      item.sourceDurationSec === nextSourceDurationSec &&
+      item.sourceMetadata?.measurementStatus === 'measured'
+    ) return item;
+    didChange = true;
+    return {
+      ...item,
+      sourceWidth: nextSourceWidth,
+      sourceHeight: nextSourceHeight,
+      sourceDurationSec: nextSourceDurationSec,
+      sourceMetadata: { measurementStatus: 'measured' as const },
+    };
+  });
+
+  return didChange ? nextItems : items;
+}

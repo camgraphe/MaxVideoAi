@@ -32,6 +32,7 @@ const splitFiles = [
   '_components/ImageWorkspaceGalleryRail.tsx',
   '_components/ImageWorkspaceComposerSurface.tsx',
   '_hooks/useImageComposerPersistence.ts',
+  '_hooks/useImageLibraryData.ts',
   '_hooks/useImageWorkspaceDisplayState.ts',
   '_hooks/useImageWorkspaceReferenceAssets.tsx',
   '_hooks/useImageWorkspaceViewer.ts',
@@ -152,8 +153,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(composerPersistenceHookSource, /export function useImageComposerPersistence/);
   assert.match(composerPersistenceHookSource, /parsePersistedImageComposerState/);
   assert.match(composerPersistenceHookSource, /IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS/);
-  assert.match(composerPersistenceHookSource, /localStorage\.getItem\(IMAGE_COMPOSER_STORAGE_KEY\)/);
-  assert.match(composerPersistenceHookSource, /localStorage\.setItem\(IMAGE_COMPOSER_STORAGE_KEY, serialized\)/);
+  assert.match(composerPersistenceHookSource, /localStorage\.getItem\(storageKey\)/);
+  assert.match(composerPersistenceHookSource, /localStorage\.setItem\(storageKey, serialized\)/);
   assert.match(queryHydrationHookSource, /export function useImageWorkspaceQueryHydration/);
   assert.match(queryHydrationHookSource, /const requestedJobId = useMemo/);
   assert.match(queryHydrationHookSource, /const requestedEngineId = useMemo/);
@@ -212,4 +213,26 @@ test('image workspace foundations are split from the route orchestrator', () => 
 
   const lineCount = source.split('\n').length;
   assert.ok(lineCount <= 500, `ImageWorkspace should stay below 500 lines after shell extraction, got ${lineCount}`);
+});
+
+
+test('image mobile gallery stays inside the main shell column at intermediate widths', () => {
+  const source = readFileSync(shellPath, 'utf8');
+  assert.doesNotMatch(source, /<>|<\/>/, 'a fragment must not expose the mobile rail as a sibling to the outer md:flex-row layout');
+  assert.match(source, /<main[\s\S]*<\/main>\s*\{!isDesktopLayout[\s\S]*variant="mobile"[\s\S]*\) : null\}\s*<\/div>\s*\{isDesktopLayout[\s\S]*variant="desktop"/, 'mobile rail follows the form inside its column; desktop rail remains alongside the column');
+});
+
+
+test('image library presentation delegates account-scoped listing to its route-local data owner', () => {
+  const modal = readFileSync(path.join(imageDir, '_components/ImageLibraryModal.tsx'), 'utf8');
+  const data = readFileSync(path.join(imageDir, '_hooks/useImageLibraryData.ts'), 'utf8');
+  assert.match(modal, /useImageLibraryData/);
+  assert.doesNotMatch(modal, /useSWR/);
+  assert.match(data, /buildMediaLibraryAssetsKey/);
+  assert.match(data, /fetchMediaLibraryAssets/);
+  assert.match(data, /useSWRInfinite<MediaLibraryAssetsResponse>/);
+  assert.match(data, /keepPreviousData: false/);
+  assert.match(data, /kind: 'image'/);
+  assert.match(data, /\/api\/character-references\?limit=60/);
+  assert.doesNotMatch(data, /\/api\/user-assets/);
 });

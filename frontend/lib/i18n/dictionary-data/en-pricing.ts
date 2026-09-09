@@ -15,13 +15,11 @@ export const pricing: Dictionary['pricing'] = {
         engine: 'Engine',
         resolution: 'Resolution',
         duration: 'Duration (seconds)',
-        memberStatus: 'Member status',
       },
       estimateLabels: {
         heading: 'Estimate',
         base: 'Base',
         discount: 'Discount',
-        memberChipPrefix: 'Member price — You save',
       },
       descriptions: {
         'sora-2': 'Text/image remix with native audio.',
@@ -59,29 +57,6 @@ export const pricing: Dictionary['pricing'] = {
         'Delivery hand-offs to Google Drive, OneDrive, and Dropbox.',
       ],
     },
-    member: {
-      title: 'Member status',
-      subtitle: 'Discounts update instantly when admins edit thresholds in Settings → Billing → Member tiers.',
-      tiers: [
-        {
-          name: 'Member',
-          requirement: 'Default status',
-          benefit: 'Standard pricing. Chip reads “Member price”.',
-        },
-        {
-          name: 'Plus',
-          requirement: 'Admin-defined threshold',
-          benefit: 'Workspace discount set in Billing.',
-        },
-        {
-          name: 'Pro',
-          requirement: 'Admin-defined threshold',
-          benefit: 'Workspace discount set in Billing.',
-        },
-      ],
-      chipBase: 'Member price — You save',
-      tooltip: 'Status updates daily on your last 30 days of spend.',
-    },
     refunds: {
       title: 'Refunds & protections',
       points: [
@@ -108,8 +83,8 @@ export const pricing: Dictionary['pricing'] = {
           answer: 'Failed renders auto-refund within minutes. You only pay when the job completes successfully.',
         },
         {
-          question: 'What are member discounts?',
-          answer: 'Spend $50 in 30 days to save 5%, $200 to save 10%. Savings apply automatically to every eligible run.',
+          question: 'Does account spending change generation prices?',
+          answer: 'No. New generations use the standard price shown before you generate, regardless of recent account spending.',
         },
       ],
     },

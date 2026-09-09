@@ -4,7 +4,9 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { detectHasAudioStream, detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
+import { downloadAudioSourceVideo } from './source-video-probe';
+export { inspectSourceVideo } from './source-video-probe';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadFileBuffer } from '@/server/storage';
@@ -39,13 +41,6 @@ function getFfmpegPath(): string | null {
   }
 }
 
-type SourceVideoProbe = {
-  durationSec: number | null;
-  width: number | null;
-  height: number | null;
-  hasAudio: boolean | null;
-};
-
 type StemPresence = {
   hasSoundDesign: boolean;
   hasMusic: boolean;
@@ -65,21 +60,6 @@ type MixAudioTracksParams = {
 type MixAudioIntoVideoParams = MixAudioTracksParams & {
   sourceVideoUrl: string;
 };
-
-export async function inspectSourceVideo(videoUrl: string): Promise<SourceVideoProbe> {
-  const [durationSec, dimensions, hasAudio] = await Promise.all([
-    detectMediaDuration(videoUrl, {}, 'v'),
-    detectVideoDimensions(videoUrl),
-    detectHasAudioStream(videoUrl),
-  ]);
-
-  return {
-    durationSec,
-    width: dimensions?.width ?? null,
-    height: dimensions?.height ?? null,
-    hasAudio,
-  };
-}
 
 async function fetchFileBuffer(url: string): Promise<Buffer> {
   const response = await fetch(url);
@@ -293,11 +273,16 @@ export async function muxAudioBufferIntoVideo(params: {
   const outputPath = path.join(tempDir, 'output.mp4');
 
   try {
-    await writeFetchedFile(params.sourceVideoUrl, sourcePath);
+    const source = await downloadAudioSourceVideo({ file_id: 'audio-mux-source', download_url: params.sourceVideoUrl });
+    await writeFile(sourcePath, source.bytes);
     await writeFile(audioPath, params.audioBuffer);
 
     const args = [
       '-y',
+      '-protocol_whitelist',
+      'file,pipe',
+      '-format_whitelist',
+      'mov,matroska,webm',
       '-i',
       sourcePath,
       '-i',
@@ -398,4 +383,61 @@ export async function uploadAudioRenderAudio(params: {
 
 export function resolveAudioAspectRatio(width: number | null, height: number | null): string | null {
   return resolveAspectRatio(width, height);
+}
+
+function hasId3Header(buffer: Buffer): boolean {
+  return buffer.length >= 10
+    && buffer[0] === 0x49
+    && buffer[1] === 0x44
+    && buffer[2] === 0x33
+    && buffer[3] !== undefined
+    && buffer[3] >= 2
+    && buffer[3] <= 4
+    && buffer[4] !== 0xff
+    && [...buffer.subarray(6, 10)].every((byte) => byte < 0x80);
+}
+
+function hasMpegAudioFrame(buffer: Buffer): boolean {
+  const first = buffer[0];
+  const second = buffer[1];
+  const third = buffer[2];
+  if (first !== 0xff || second === undefined || third === undefined || (second & 0xe0) !== 0xe0) return false;
+  const version = (second >> 3) & 0x03;
+  const layer = (second >> 1) & 0x03;
+  const bitrate = (third >> 4) & 0x0f;
+  const sampleRate = (third >> 2) & 0x03;
+  return version !== 0x01
+    && layer !== 0x00
+    && bitrate !== 0x00
+    && bitrate !== 0x0f
+    && sampleRate !== 0x03;
+}
+
+function detectOriginalAudioContainer(buffer: Buffer): { extension: string; mime: string } | null {
+  if (buffer.length >= 12 && buffer.subarray(0, 4).toString() === 'RIFF' && buffer.subarray(8, 12).toString() === 'WAVE') {
+    return { extension: 'wav', mime: 'audio/wav' };
+  }
+  if (buffer.subarray(0, 4).toString() === 'fLaC') return { extension: 'flac', mime: 'audio/flac' };
+  if (buffer.subarray(0, 4).toString() === 'OggS') return { extension: 'ogg', mime: 'audio/ogg' };
+  if (hasId3Header(buffer) || hasMpegAudioFrame(buffer)) return { extension: 'mp3', mime: 'audio/mpeg' };
+  return null;
+}
+
+/** Persist unmodified standalone provider output and inspect the bytes, never an estimated script duration. */
+export async function persistOriginalAudio(params: { userId: string; jobId: string; url: string }, dependencies = {
+  fetchBuffer: fetchFileBuffer, detectDuration: detectMediaBufferDuration, upload: uploadFileBuffer,
+}) {
+  const audioBuffer = await dependencies.fetchBuffer(params.url);
+  const container = detectOriginalAudioContainer(audioBuffer);
+  if (!container) throw new Error('Unsupported generated audio container.');
+  const durationSec = await dependencies.detectDuration(audioBuffer, { streamSelector: 'audio' });
+  if (!durationSec) throw new Error('Unable to inspect generated audio.');
+  const upload = await dependencies.upload({
+    data: audioBuffer,
+    mime: container.mime,
+    fileName: `${params.jobId}.${container.extension}`,
+    prefix: 'renders',
+    userId: params.userId,
+  });
+  return { audioUrl: upload.url, durationSec, mimeType: container.mime };
 }

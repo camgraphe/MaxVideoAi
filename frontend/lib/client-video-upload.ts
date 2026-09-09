@@ -1,4 +1,6 @@
 import { authFetch } from '@/lib/authFetch';
+import { canonicalMediaAssetFields, readMediaFacts, type MediaFacts } from '@/lib/media-identity';
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
 
 export const VERCEL_FUNCTION_BODY_LIMIT_BYTES = 4.5 * 1024 * 1024;
 export const CHUNKED_VIDEO_UPLOAD_THRESHOLD_BYTES = 4 * 1024 * 1024;
@@ -6,6 +8,11 @@ export const DIRECT_VIDEO_UPLOAD_THRESHOLD_BYTES = CHUNKED_VIDEO_UPLOAD_THRESHOL
 export const CHUNKED_VIDEO_UPLOAD_CHUNK_BYTES = 3_670_016;
 
 export type UploadedVideoAsset = {
+  assetId?: string;
+  legacyAssetId?: string;
+  ref?: ToolAssetRef;
+  mediaFacts?: MediaFacts;
+  durationSec?: number;
   id: string;
   url: string;
   width?: number | null;
@@ -62,6 +69,10 @@ function readAssetPayload(payload: unknown): UploadedVideoAsset | null {
   const id = (asset as { id?: unknown }).id;
   if (typeof url !== 'string' || !url) return null;
   return {
+    ...canonicalMediaAssetFields((asset as { assetId?: unknown }).assetId, 'video'),
+    mediaFacts: readMediaFacts((asset as { mediaFacts?: unknown }).mediaFacts),
+    durationSec: readMediaFacts((asset as { mediaFacts?: unknown }).mediaFacts)?.durationSec,
+    legacyAssetId: typeof (asset as { legacyAssetId?: unknown }).legacyAssetId === 'string' ? (asset as { legacyAssetId: string }).legacyAssetId : undefined,
     id: typeof id === 'string' && id ? id : `video_${Date.now().toString(36)}`,
     url,
     width: typeof (asset as { width?: unknown }).width === 'number' ? (asset as { width: number }).width : null,

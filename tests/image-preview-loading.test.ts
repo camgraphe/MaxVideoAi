@@ -6,6 +6,8 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { JSDOM } from 'jsdom';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ImageCompositePreviewDock } from '../frontend/components/groups/ImageCompositePreviewDock';
 import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 
@@ -35,10 +37,15 @@ test('the visible image preview requests a responsive optimized image immediatel
     assert.ok(image.src.startsWith('/_next/image?'), 'The small preview must not download the original PNG directly');
     assert.equal(new URL(image.src, 'https://maxvideoai.com').searchParams.get('url'), original);
     assert.match(image.srcset, /w=256&.* 256w/);
-    assert.match(image.sizes, /124px/);
-    assert.match(image.sizes, /186px/);
+    assert.match(image.sizes, /180px/);
+    assert.match(image.sizes, /220px/);
     assert.equal(image.getAttribute('loading'), 'eager');
     assert.equal(image.getAttribute('fetchpriority'), 'high');
+    const source = readFileSync(join(process.cwd(), 'frontend/components/groups/ImageCompositePreviewDock.tsx'), 'utf8');
+    assert.match(
+      source,
+      /data-workspace-preview-media[\s\S]*?<Image[\s\S]*?priority[\s\S]*?loading="eager"[\s\S]*?fetchPriority="high"/
+    );
     assert.ok(image.classList.contains('object-contain'));
   } finally {
     dom.window.close();
@@ -95,7 +102,7 @@ test('an optimizer error falls back once and preview actions retain the original
     await act(async () => root.render(preview(props)));
     const image = () => container.querySelector<HTMLImageElement>('[data-workspace-preview-media] img')!;
     assert.match(image().src, /\/_next\/image\?/);
-    for (const label of ['Download', 'Copy link', 'Edit this image', 'Add to Library']) {
+    for (const label of ['Download', 'Copy link', 'Edit this image', 'Add to Media']) {
       await act(async () => container.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!.click());
     }
     assert.deepEqual(actions, [original, original, original, original]);

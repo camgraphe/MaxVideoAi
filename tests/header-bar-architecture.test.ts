@@ -94,10 +94,10 @@ test('header bar keeps narrow mobile chrome compact', () => {
   assert.match(headerSource, /flex min-w-0 shrink-0 items-center justify-end/, 'right header actions should stay compact and right aligned');
   assert.match(
     headerSource,
-    /className="flex w-32 shrink-0 justify-end sm:w-\[205px\]"/,
+    /className="flex w-40 shrink-0 justify-end sm:w-\[205px\]"/,
     'guest auth controls should reserve the same first-paint width as their resolved state'
   );
-  assert.match(headerSource, /className="h-10 w-full rounded-input/, 'auth loading placeholder should fill the stable guest slot');
+  assert.match(headerSource, /className="h-11 w-full rounded-input/, 'auth loading placeholder should fill the stable guest slot');
   assert.doesNotMatch(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading should not resize the guest slot');
   assert.match(logoSource, /alt=""/, 'decorative logo mark should not duplicate the brand in the accessible name');
   assert.match(logoSource, /aria-hidden/, 'decorative logo mark should be hidden from assistive tech');
@@ -109,11 +109,11 @@ test('header bar keeps narrow mobile chrome compact', () => {
 test('header auth resolution preserves the account and wallet footprints', () => {
   assert.match(
     headerSource,
-    /className="flex w-32 shrink-0 justify-end sm:w-\[205px\]">\s*\{email \? \(/,
+    /className="flex w-40 shrink-0 justify-end sm:w-\[205px\]">\s*\{email \? \(/,
     'guest, loading, and authenticated account states should share one fixed-width slot'
   );
   assert.match(accountMenuSource, /className="relative w-full"/, 'the authenticated menu should fill the stable slot');
-  assert.match(accountMenuSource, /className="h-10 w-full min-h-0/, 'the authenticated trigger should keep the slot width');
+  assert.match(accountMenuSource, /className="h-11 w-full min-h-0/, 'the authenticated trigger should keep the slot width');
   assert.match(accountMenuSource, /truncate[^\n]*>\{email\}<\/span>/, 'the fixed slot should usefully expose the account email');
   assert.match(walletStatusSource, /w-\[72px\][^\n]*lg:w-24/, 'wallet loading and resolved states should keep one width');
 });

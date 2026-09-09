@@ -1,3 +1,4 @@
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import {
   projectCanonicalQuoteToSnapshot,
   quoteCanonicalPricing,
@@ -9,7 +10,7 @@ import {
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
 import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 
 export type PublicPricingMembershipTier = 'member' | 'plus' | 'pro';
@@ -30,17 +31,6 @@ export type QuotePublicPricingInput = {
   compatibilityProfileId?: string;
   pricingRules?: PricingRuleLite[];
 };
-
-function normalizeMembershipTier(value: string | null | undefined): PublicPricingMembershipTier {
-  const normalized = value?.trim().toLowerCase();
-  return normalized === 'plus' || normalized === 'pro' ? normalized : 'member';
-}
-
-function defaultDiscountPercent(tier: PublicPricingMembershipTier): number {
-  if (tier === 'plus') return 0.05;
-  if (tier === 'pro') return 0.1;
-  return 0;
-}
 
 function buildEffectiveDatabaseRule(
   selected: PricingRuleLite | null,
@@ -85,15 +75,15 @@ export function quotePublicPricing(input: QuotePublicPricingInput): CanonicalPri
     versionedRules: policyDocument.rules,
   });
   const profileId =
-    input.compatibilityProfileId ?? policy.rule.compatibilityProfile ?? 'standard';
+    input.compatibilityProfileId ?? (input.scenario.engineId === 'audio-generation' ? resolveLiveAudioPricingProfile(policy.rule) : policy.rule.compatibilityProfile ?? 'standard');
   const compatibilityProfile = policyDocument.compatibilityProfiles.find(
     (candidate) => candidate.id === profileId
   );
   if (!compatibilityProfile) {
     throw new Error(`Missing pricing compatibility profile ${profileId}`);
   }
-  const membershipTier = normalizeMembershipTier(input.scenario.membershipTier);
-  const discountPercent = input.scenario.discountPercent ?? defaultDiscountPercent(membershipTier);
+  const membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
+  const discountPercent = LIVE_MEMBERSHIP_POLICY.discountPercent;
 
   return quoteCanonicalPricing({
     facts: {
@@ -153,7 +143,7 @@ export function quotePublicAudioPricingSnapshot(input: AudioPricingInput): Prici
       membershipTier: 'member',
       discountPercent: 0,
     },
-    compatibilityProfileId: 'audio-current',
+
   });
   const snapshot = projectPublicPricingSnapshot({
     quote,

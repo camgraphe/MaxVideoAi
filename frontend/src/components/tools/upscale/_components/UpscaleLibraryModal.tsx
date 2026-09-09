@@ -2,6 +2,8 @@
 
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   AssetLibraryBrowser,
   type AssetBrowserAsset,
@@ -15,6 +17,7 @@ type UpscaleLibraryModalCopy = {
   libraryEmptyImages: string;
   libraryEmptySearch: string;
   libraryEmptyVideos: string;
+  libraryLoadMore: string;
   libraryRefresh: string;
   librarySearch: string;
   librarySourcesTitle: string;
@@ -27,9 +30,12 @@ interface UpscaleLibraryModalProps {
   assets: AssetBrowserAsset[];
   copy: UpscaleLibraryModalCopy;
   error: string | null;
+  hasMore: boolean;
   isLoading: boolean;
+  isLoadingMore: boolean;
   mediaType: UpscaleMediaType;
   onClose: () => void;
+  onLoadMore: () => void;
   onRefresh: (options: { kind: UpscaleMediaType; source: AssetLibrarySource }) => void;
   onSelectAsset: (asset: AssetBrowserAsset) => void;
   onSourceChange: (source: AssetLibrarySource) => void;
@@ -38,36 +44,48 @@ interface UpscaleLibraryModalProps {
   sourceOptions: readonly AssetLibrarySource[];
 }
 
-export function UpscaleLibraryModal({
+export function UpscaleLibraryModal(props: UpscaleLibraryModalProps) {
+  return props.open ? <UpscaleLibraryDialog {...props} /> : null;
+}
+
+function UpscaleLibraryDialog({
   assets,
   copy,
   error,
+  hasMore,
   isLoading,
+  isLoadingMore,
   mediaType,
   onClose,
+  onLoadMore,
   onRefresh,
   onSelectAsset,
   onSourceChange,
-  open,
   source,
   sourceOptions,
 }: UpscaleLibraryModalProps) {
-  if (!open) return null;
+  const { locale } = useI18n();
+  const close = locale === 'fr' ? 'Fermer' : locale === 'es' ? 'Cerrar' : 'Close';
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-overlay-bg px-3 py-4 backdrop-blur-sm">
-      <button type="button" className="absolute inset-0 cursor-default" aria-label="Close library" onClick={onClose} />
+      <div className="absolute inset-0" aria-hidden="true" onClick={onClose} />
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={copy.libraryTitle} tabIndex={-1} onKeyDown={onDialogKeyDown} className="relative z-10 w-full max-w-[1180px] outline-none">
       <AssetLibraryBrowser
         className="relative z-10 h-[88svh] max-w-[1180px]"
         title={copy.libraryTitle}
-        subtitle={copy.libraryBody}
         countLabel={copy.libraryCount.replace('{count}', String(assets.length))}
         onClose={onClose}
-        closeLabel="Close"
+        closeLabel={close}
         assetType={mediaType}
         assets={assets}
         isLoading={isLoading}
         error={error}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadMoreLabel={copy.libraryLoadMore}
+        onLoadMore={onLoadMore}
         source={source}
         availableSources={[...sourceOptions]}
         sourceLabels={copy.libraryTabs}
@@ -84,7 +102,7 @@ export function UpscaleLibraryModal({
             type="button"
             variant="outline"
             size="sm"
-            className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+            className="!min-h-11 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
             onClick={() => onRefresh({ kind: mediaType, source })}
             disabled={isLoading}
           >
@@ -97,14 +115,14 @@ export function UpscaleLibraryModal({
             type="button"
             variant="primary"
             size="sm"
-            className="min-h-[34px] flex-1 rounded-full border-brand px-2.5 py-1 text-[11px] uppercase tracking-micro sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]"
+            className="!min-h-11 flex-1 rounded-xl border-brand px-3 text-sm sm:flex-none"
             onClick={() => onSelectAsset(asset)}
           >
             {copy.libraryUse}
           </Button>
         )}
-        renderAssetMeta={(asset) => (asset.source ? <span className="capitalize">{asset.source}</span> : null)}
       />
+      </div>
     </div>
   );
 }

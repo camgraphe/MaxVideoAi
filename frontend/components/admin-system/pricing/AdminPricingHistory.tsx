@@ -14,7 +14,7 @@ type AdminPricingHistoryProps = {
   emptyLabel: string;
   loading: boolean;
   locked: boolean;
-  onPreviewRollback: (event: PricingChangeEvent) => void;
+  onPreviewRollback?: (event: PricingChangeEvent) => void;
 };
 
 function isRestorable(event: PricingChangeEvent): boolean {
@@ -74,7 +74,7 @@ export function AdminPricingHistory({
                 <td className="px-4 py-3 font-mono text-xs text-text-muted">{event.actorId}</td>
                 <td className="px-4 py-3 text-text-secondary">{formatDelta(event)}</td>
                 <td className="px-4 py-3">
-                  {isRestorable(event) ? (
+                  {onPreviewRollback && isRestorable(event) ? (
                     <Button
                       type="button"
                       variant="outline"
@@ -85,7 +85,7 @@ export function AdminPricingHistory({
                       Preview rollback
                     </Button>
                   ) : (
-                    <span className="text-text-muted">Not restorable</span>
+                    <span className="text-text-muted">{onPreviewRollback ? 'Not restorable' : 'Read-only'}</span>
                   )}
                 </td>
               </tr>

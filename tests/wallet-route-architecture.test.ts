@@ -4,16 +4,24 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 const routeSource = readFileSync(join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+const directPolicySource = readFileSync(join(process.cwd(), 'frontend/server/pricing/wallet-direct-policy.ts'), 'utf8');
 
 test('wallet GET delegates ledger aggregation to the shared wallet summary service', () => {
+  const getSource = routeSource.split('export async function POST')[0] ?? routeSource;
   assert.match(routeSource, /getWalletSummary/);
+  assert.doesNotMatch(getSource, /await ensureBillingSchema\(\)/);
   assert.doesNotMatch(routeSource, /type WalletLedgerSummaryRow/);
   assert.doesNotMatch(routeSource, /SUM\(CASE WHEN type = 'topup'/);
   assert.doesNotMatch(routeSource, /STRING_AGG\(DISTINCT LOWER\(currency\)/);
 });
 
 test('wallet route keeps checkout mutation behavior while staying below its post-extraction cap', () => {
+  const postSource = routeSource.split('export async function POST')[1] ?? '';
   assert.match(routeSource, /export async function POST/);
+  assert.match(postSource, /ensureBillingSchema/);
   assert.match(routeSource, /stripe\.checkout\.sessions\.create/);
+  assert.match(routeSource, /requireCurrentWalletDirectPricingPolicy/);
+  assert.match(directPolicySource, /requireCurrentWebPricingPolicy/);
+  assert.match(directPolicySource, /requiresMembershipPricingRefresh/);
   assert.ok(routeSource.split('\n').length <= 600);
 });

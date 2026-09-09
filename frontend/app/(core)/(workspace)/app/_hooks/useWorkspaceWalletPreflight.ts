@@ -24,6 +24,8 @@ type UseWorkspaceWalletPreflightOptions = {
 };
 
 type VerifyWalletBalanceOptions = {
+  accessToken?: string;
+  isCurrent?: () => boolean;
   preflight: PreflightResponse | null;
   iterationCount: number;
   currencyCode: string;
@@ -82,15 +84,22 @@ export function useWorkspaceWalletPreflight({
   );
 
   const verifyWalletBalance = useCallback(
-    async ({ preflight, iterationCount, currencyCode }: VerifyWalletBalanceOptions) => {
+    async ({ preflight, iterationCount, currencyCode, accessToken, isCurrent }: VerifyWalletBalanceOptions) => {
+      if (isCurrent && !isCurrent()) return false;
       const unitCostCents = resolvePreflightUnitCostCents(preflight);
-      if (typeof unitCostCents !== 'number' || unitCostCents <= 0) return true;
+      if (!preflight?.ok || typeof unitCostCents !== 'number' || !Number.isFinite(unitCostCents) || unitCostCents < 0) {
+        showComposerError('Unable to compute pricing');
+        return false;
+      }
+      if (unitCostCents === 0) return true;
 
       const requiredCents = unitCostCents * iterationCount;
       try {
-        const res = await authFetch('/api/wallet');
+        const res = await authFetch('/api/wallet', accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
+        if (isCurrent && !isCurrent()) return false;
         if (!res.ok) return true;
         const walletJson = await res.json();
+        if (isCurrent && !isCurrent()) return false;
         const balanceCents = resolveWalletBalanceCents(walletJson);
         if (typeof balanceCents !== 'number') return true;
         const shortfall = requiredCents - balanceCents;
@@ -98,11 +107,12 @@ export function useWorkspaceWalletPreflight({
         presentInsufficientFunds({ currencyCode, shortfallCents: shortfall });
         return false;
       } catch (walletError) {
+        if (isCurrent && !isCurrent()) return false;
         console.warn('[startRender] wallet balance check failed', walletError);
         return true;
       }
     },
-    [presentInsufficientFunds]
+    [presentInsufficientFunds, showComposerError]
   );
 
   return {

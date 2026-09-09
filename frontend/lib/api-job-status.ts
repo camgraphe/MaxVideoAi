@@ -1,3 +1,5 @@
+import { readLastKnownUserId } from '@/lib/last-known';
+import { generationStage, normalizeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
@@ -5,9 +7,12 @@ import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-cod
 import type { Job } from '@/types/jobs';
 
 export type JobStatusResult = {
+  createdAt?: string;
   ok: true;
   jobId: string;
   status: 'pending' | 'completed' | 'failed';
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress: number;
   videoUrl: string | null;
   previewVideoUrl?: string | null;
@@ -85,7 +90,22 @@ export function clearMissingStatusRetries(seenJobIds: Set<string>): void {
   });
 }
 
-export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
+const IN_FLIGHT_STATUS = new Map<string, Promise<JobStatusResult>>();
+
+export function getJobStatus(jobId: string): Promise<JobStatusResult> {
+  const principal = readLastKnownUserId();
+  // Only coalesce in the authenticated browser scope; never share server requests.
+  if (typeof window === 'undefined' || !principal) return fetchJobStatus(jobId);
+  const key = JSON.stringify([principal, jobId]);
+  const existing = IN_FLIGHT_STATUS.get(key);
+  if (existing) return existing;
+  const request = fetchJobStatus(jobId).finally(() => IN_FLIGHT_STATUS.delete(key));
+  IN_FLIGHT_STATUS.set(key, request);
+  return request;
+}
+
+async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
+  const checkedAt = Date.now();
   let response: Response;
   try {
     response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
@@ -140,7 +160,11 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
       ? 'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
       : undefined);
 
+  const observation = normalizeGenerationObservation(payload.observation) ?? { stage: generationStage(payload.status) };
+  if (normalizedStatus === 'pending' && observation.stage === 'completed') observation.stage = 'finalizing';
   const result: JobStatusResult = {
+    createdAt: payload.createdAt,
+    observation: { ...observation, ...(observation.degraded ? {} : { checkedAt }) },
     ok: true,
     jobId: payload.jobId ?? jobId,
     status: normalizedStatus,

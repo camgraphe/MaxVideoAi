@@ -1,4 +1,5 @@
 export type PricingAdminErrorCode =
+  | 'membership_retired'
   | 'invalid_payload'
   | 'unknown_engine'
   | 'unknown_mode'
@@ -16,6 +17,7 @@ export type PricingAdminErrorCode =
   | 'persistence_failed';
 
 const STATUS_BY_CODE: Record<PricingAdminErrorCode, number> = {
+  membership_retired: 410,
   invalid_payload: 400,
   unknown_engine: 400,
   unknown_mode: 400,

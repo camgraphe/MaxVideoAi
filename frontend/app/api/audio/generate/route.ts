@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isCurrentAudioPricingPolicy } from '@/lib/audio-pricing-policy';
 
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { generateAudioRun, AudioGenerationError } from '@/server/audio/generate-audio';
@@ -10,6 +11,9 @@ export async function POST(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED', message: 'Unauthorized' }, { status: 401 });
+  }
+  if (!isCurrentAudioPricingPolicy(req.headers)) {
+    return NextResponse.json({ ok: false, error: 'PRICING_REFRESH_REQUIRED', message: 'Audio pricing has changed. Refresh and review the current price before generating.' }, { status: 409 });
   }
   const restriction = await getActiveAccountRestriction(userId);
   if (restriction) {

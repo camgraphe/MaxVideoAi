@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
 import { listStarterPlaylistVideos } from '@/server/videos';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { listVisitorImageLikeJobs, listVisitorStarterJobs } from '@/server/visitor-workspace';
 import { isImageLikeSurface, normalizeJobSurface } from '@/lib/job-surface';
-import { applyOutputsToJobPayload, listJobOutputsByJobIds, upsertLegacyJobOutputs } from '@/server/media-library';
+import { applyOutputsToJobPayload, listJobOutputsByJobIds } from '@/server/media-library';
 import {
   formatRecentGenerationCursor,
   mapRecentGenerationRecordToWeb,
@@ -16,30 +15,36 @@ import {
 } from '@/server/generations/recent-generations';
 import { expireStaleAudioJob, isStaleAudioJob } from './_lib/jobs-stale-audio';
 import { refreshStaleFalJobs } from './_lib/jobs-fal-refresh';
+import { createJobsRouteTiming } from './_lib/jobs-route-timing';
 
 export const dynamic = 'force-dynamic';
 
-function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
+type JobsRouteTiming = ReturnType<typeof createJobsRouteTiming>;
+
+function json(
+  body: unknown,
+  init?: Parameters<typeof NextResponse.json>[1],
+  timing?: JobsRouteTiming
+) {
   const response = NextResponse.json(body, init);
   response.headers.set('Cache-Control', 'private, no-store');
+  const serverTiming = timing?.headerValue();
+  if (serverTiming) {
+    response.headers.set('Server-Timing', serverTiming);
+    console.info('[api/jobs] timing', serverTiming);
+  }
   return response;
 }
 
 export async function GET(req: NextRequest) {
+  const timing = createJobsRouteTiming({
+    enabled: process.env.NODE_ENV !== 'production' && process.env.JOBS_ROUTE_TIMING === '1',
+  });
   if (!isDatabaseConfigured()) {
     return json(
       { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
-      { status: 503 }
-    );
-  }
-
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[api/jobs] schema init failed', error);
-    return json(
-      { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
-      { status: 503 }
+      { status: 503 },
+      timing
     );
   }
 
@@ -54,7 +59,7 @@ export async function GET(req: NextRequest) {
   const requestedSurface = normalizeJobSurface(url.searchParams.get('surface'));
   const shouldRefreshStaleFalJobs =
     url.searchParams.get('refreshStale') === '1' || url.searchParams.get('refreshStale') === 'true';
-  const { userId } = await getRouteAuthContext(req);
+  const { userId } = await timing.measure('auth', () => getRouteAuthContext(req));
 
   if (!userId) {
     if (VISITOR_WORKSPACE_ENABLED) {
@@ -67,56 +72,67 @@ export async function GET(req: NextRequest) {
           limit,
           visitorSurface
         );
-        return json({ ok: true, jobs, nextCursor: null });
+        return json({ ok: true, jobs, nextCursor: null }, undefined, timing);
       }
-      if (shouldUseStarterFallback(feedType, cursor)) {
+      if (shouldUseStarterFallback(feedType, cursor, requestedSurface)) {
         const jobs = await listVisitorStarterJobs(limit);
-        return json({ ok: true, jobs, nextCursor: null });
+        return json({ ok: true, jobs, nextCursor: null }, undefined, timing);
       }
-      return json({ ok: true, jobs: [], nextCursor: null });
+      return json({ ok: true, jobs: [], nextCursor: null }, undefined, timing);
     }
-    return json({ ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' }, { status: 401 });
+    return json(
+      { ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' },
+      { status: 401 },
+      timing
+    );
   }
 
   try {
-    let rows = await readRecentGenerationRecordsForWeb({
-      userId,
-      feedType,
-      requestedSurface,
-      cursor,
-      limit,
-    });
-
-    const staleAudioJobs = rows.filter((row) => isStaleAudioJob(row));
-
-    if (staleAudioJobs.length) {
-      console.info('[api/jobs] expiring stale audio jobs', {
-        at: new Date().toISOString(),
+    let rows = await timing.measure('list', () =>
+      readRecentGenerationRecordsForWeb({
         userId,
-        count: staleAudioJobs.length,
-        samples: staleAudioJobs.slice(0, 5).map((job) => ({
-          jobId: job.job_id,
-          status: job.status,
-          updatedAt: job.updated_at,
-        })),
-      });
-      const expiredIds: string[] = [];
-      for (const jobRow of staleAudioJobs) {
-        try {
-          await expireStaleAudioJob(jobRow, userId);
-          expiredIds.push(jobRow.job_id);
-        } catch (error) {
-          console.warn('[api/jobs] failed to expire stale audio job', jobRow.job_id, error);
+        feedType,
+        requestedSurface,
+        cursor,
+        limit,
+      })
+    );
+
+    rows = await timing.measure('stale_audio', async () => {
+      const staleAudioJobs = rows.filter((row) => isStaleAudioJob(row));
+
+      if (staleAudioJobs.length) {
+        console.info('[api/jobs] expiring stale audio jobs', {
+          at: new Date().toISOString(),
+          userId,
+          count: staleAudioJobs.length,
+          samples: staleAudioJobs.slice(0, 5).map((job) => ({
+            jobId: job.job_id,
+            status: job.status,
+            updatedAt: job.updated_at,
+          })),
+        });
+        const expiredIds: string[] = [];
+        for (const jobRow of staleAudioJobs) {
+          try {
+            await expireStaleAudioJob(jobRow, userId);
+            expiredIds.push(jobRow.job_id);
+          } catch (error) {
+            console.warn('[api/jobs] failed to expire stale audio job', jobRow.job_id, error);
+          }
+        }
+        if (expiredIds.length) {
+          const refreshedRows = await readOwnedGenerationRecordsByIds({ userId, jobIds: expiredIds });
+          const refreshedMap = new Map(refreshedRows.map((row) => [row.job_id, row]));
+          return rows.map((row) => refreshedMap.get(row.job_id) ?? row);
         }
       }
-      if (expiredIds.length) {
-        const refreshedRows = await readOwnedGenerationRecordsByIds({ userId, jobIds: expiredIds });
-        const refreshedMap = new Map(refreshedRows.map((row) => [row.job_id, row]));
-        rows = rows.map((row) => refreshedMap.get(row.job_id) ?? row);
-      }
-    }
+      return rows;
+    });
 
-    rows = await refreshStaleFalJobs({ rows, shouldRefreshStaleFalJobs, userId });
+    rows = await timing.measure('fal_refresh', () =>
+      refreshStaleFalJobs({ rows, shouldRefreshStaleFalJobs, userId })
+    );
 
     const hasMore = rows.length > limit;
     let items = hasMore ? rows.slice(0, -1) : rows;
@@ -148,40 +164,22 @@ export async function GET(req: NextRequest) {
     let mapped = items.map(mapRecentGenerationRecordToWeb);
 
     if (mapped.length) {
-      try {
-        const jobIds = mapped.map((job) => job.jobId);
-        let outputMap = await listJobOutputsByJobIds(jobIds);
-        const missingOutputRows = items.filter((row) => !outputMap.has(row.job_id));
-        if (missingOutputRows.length) {
-          await Promise.all(
-            missingOutputRows.map((row) =>
-              upsertLegacyJobOutputs({
-                job_id: row.job_id,
-                user_id: row.user_id,
-                surface: row.surface,
-                video_url: row.video_url,
-                audio_url: row.audio_url,
-                thumb_url: row.thumb_url,
-                preview_frame: row.preview_frame,
-                preview_video_url: row.preview_video_url,
-                render_ids: row.render_ids,
-                duration_sec: row.duration_sec,
-                status: row.status,
-              }).catch((error) => {
-                console.warn('[api/jobs] failed to backfill media outputs', row.job_id, error);
-              })
-            )
-          );
-          outputMap = await listJobOutputsByJobIds(jobIds);
+      mapped = await timing.measure('outputs', async () => {
+        try {
+          const jobIds = mapped.map((job) => job.jobId);
+          const outputMap = await listJobOutputsByJobIds(jobIds, { ensureSchema: false });
+          return mapped.map((job) => applyOutputsToJobPayload(job, outputMap.get(job.jobId)));
+        } catch (error) {
+          console.warn('[api/jobs] media output enrichment failed', error);
+          return mapped;
         }
-        mapped = mapped.map((job) => applyOutputsToJobPayload(job, outputMap.get(job.jobId)));
-      } catch (error) {
-        console.warn('[api/jobs] media output enrichment failed', error);
-      }
+      });
     }
 
-    if (!mapped.length && shouldUseStarterFallback(feedType, cursor)) {
-      const starterVideos = await listStarterPlaylistVideos(limit);
+    if (!mapped.length && shouldUseStarterFallback(feedType, cursor, requestedSurface)) {
+      const starterVideos = await timing.measure('starter_fallback', () =>
+        listStarterPlaylistVideos(limit)
+      );
       if (starterVideos.length) {
         mapped = starterVideos.map((video) => ({
           jobId: video.id,
@@ -225,16 +223,17 @@ export async function GET(req: NextRequest) {
           indexable: video.indexable,
           curated: true,
         }));
-        return json({ ok: true, jobs: mapped, nextCursor: null });
+        return json({ ok: true, jobs: mapped, nextCursor: null }, undefined, timing);
       }
     }
 
-    return json({ ok: true, jobs: mapped, nextCursor });
+    return json({ ok: true, jobs: mapped, nextCursor }, undefined, timing);
   } catch (error) {
     console.warn('[api/jobs] query failed', error);
     return json(
       { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
-      { status: 503 }
+      { status: 503 },
+      timing
     );
   }
 }

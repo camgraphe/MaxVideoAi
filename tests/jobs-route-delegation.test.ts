@@ -27,6 +27,16 @@ test('jobs routes delegate owned reads and explicit web mapping to transport-neu
   assert.match(detailRoute, /readOwnedGenerationRecord/);
   assert.match(detailRoute, /mapGenerationStatusRecordToWeb/);
   assert.doesNotMatch(detailRoute, /const JOB_DETAIL_SELECT/);
+  assert.doesNotMatch(
+    detailRoute,
+    /ensureBillingSchema/,
+    'the latency-sensitive detail GET must not run the application schema bootstrap'
+  );
+  assert.match(
+    detailRoute,
+    /listJobOutputsByJobIds\(\[job\.job_id\],\s*\{\s*ensureSchema:\s*false\s*\}\)/,
+    'the detail response should read the migrated output projection without request-time schema work'
+  );
 });
 
 test('generation read services stay server-only and agent DTOs exclude private route fields', () => {

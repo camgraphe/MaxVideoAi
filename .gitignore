@@ -55,3 +55,8 @@ frontend/.tmp/
 
 # Local Superpowers brainstorming sessions
 .superpowers/
+
+# Generated, localhost-only toolbox review harness (templates under tests/fixtures).
+/frontend/app/(core)/(workspace)/app/tools/review/
+/frontend/public/toolbox-review/
+/frontend/.toolbox-review/

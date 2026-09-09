@@ -33,6 +33,10 @@ test('connections client revokes by OAuth client ID and never handles tokens', (
   assert.match(source, /supabase\.auth\.oauth\.revokeGrant\(\{\s*clientId/);
   assert.match(source, /router\.refresh\(\)/);
   assert.match(source, /Disconnect/);
+  assert.match(source, /openai-mark-light\.svg/);
+  assert.match(source, /claude-mark-light\.svg/);
+  assert.match(source, /resolveConnectionBrand/);
+  assert.doesNotMatch(source, /<svg/);
   assert.doesNotMatch(source, /access_token|refresh_token|client_secret/);
 });
 

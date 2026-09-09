@@ -1,3 +1,4 @@
+import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { FEATURES } from '@/content/feature-flags';
@@ -64,6 +65,8 @@ export async function handleUpscaleToolRequest(
       { status: 401 }
     );
   }
+  const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'tool');
+  if (pricingPolicyError) return pricingPolicyError;
   const restriction = await getActiveAccountRestriction(userId);
   if (restriction) {
     return NextResponse.json(
@@ -122,6 +125,7 @@ export async function handleUpscaleToolRequest(
   try {
     const result = await runUpscale({
       userId,
+      acceptedQuote: body?.acceptedQuote,
       mediaType,
       mediaUrl,
       engineId: engine.id,

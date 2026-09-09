@@ -76,7 +76,8 @@ function originalNameMetadata(value: unknown): string | null {
     : null;
 }
 
-function validStorageUrl(value: unknown): value is string {
+/** Pure URL admissibility only; callers must separately establish row and storage-object ownership. */
+export function validReferenceMediaUrl(value: unknown): value is string {
   if (typeof value !== 'string' || value.length < 1 || value.length > 4_096 || !isAllowedAssetHost(value)) {
     return false;
   }
@@ -141,7 +142,7 @@ export async function resolveOwnedReferenceAsset(
     || row.status?.trim().toLowerCase() !== 'ready'
     || row.deleted_at !== null
     || !media
-    || !validStorageUrl(row.url)
+    || !validReferenceMediaUrl(row.url)
     || !validDimension(row.width)
     || !validDimension(row.height)
     || !duration?.valid

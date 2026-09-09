@@ -24,6 +24,7 @@ export type ProbedMediaBuffer = {
   canonicalMime: string;
   detectedMime: string | null;
   durationSec: number;
+  hasAudio?: boolean;
 };
 
 type ProbeMetadata = {
@@ -78,7 +79,7 @@ export function resolveProbedMediaMetadata(
     && (kind !== 'video' || stream.disposition?.attached_pic !== 1))?.duration;
   const durationSec = Number.parseFloat(metadata.format?.duration ?? streamDuration ?? '');
   if (!Number.isFinite(durationSec) || durationSec <= 0) return null;
-  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000 };
+  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000, hasAudio };
 }
 
 export async function probeMediaBuffer(

@@ -1,6 +1,6 @@
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { query, type QueryExecutor } from '@/lib/db';
 import {
-  getMembershipTiers,
   type MembershipTierConfig,
 } from '@/lib/membership';
 
@@ -23,7 +23,7 @@ export type UserMembershipStatus = {
 
 export type UserMembershipStatusDependencies = {
   executor: QueryExecutor;
-  getMembershipTiers(): Promise<MembershipTierConfig[]>;
+  getMembershipTiers?(): Promise<MembershipTierConfig[]>;
 };
 
 type MembershipSpendRow = {
@@ -31,12 +31,7 @@ type MembershipSpendRow = {
   sum_today: unknown;
 };
 
-const CANONICAL_TIERS = ['member', 'plus', 'pro'] as const;
-
-const defaultDependencies: UserMembershipStatusDependencies = {
-  executor: { query },
-  getMembershipTiers,
-};
+const defaultDependencies: UserMembershipStatusDependencies = { executor: { query } };
 
 function parseLedgerCents(value: unknown): number {
   const parsed = typeof value === 'number'
@@ -48,59 +43,13 @@ function parseLedgerCents(value: unknown): number {
   return parsed;
 }
 
-function canonicalTier(value: unknown): AuthoritativeMembershipTier | null {
-  return typeof value === 'string' && CANONICAL_TIERS.includes(value as AuthoritativeMembershipTier)
-    ? value as AuthoritativeMembershipTier
-    : null;
-}
-
-function validateTiers(tiers: MembershipTierConfig[]): MembershipTierConfig[] {
-  if (!Array.isArray(tiers) || tiers.length !== CANONICAL_TIERS.length) {
-    throw new Error('Invalid membership tier configuration.');
-  }
-  const normalized = tiers.map((tier) => {
-    const id = canonicalTier(tier?.tier);
-    if (
-      !id
-      || !Number.isSafeInteger(tier.spendThresholdCents)
-      || tier.spendThresholdCents < 0
-      || typeof tier.discountPercent !== 'number'
-      || !Number.isFinite(tier.discountPercent)
-      || tier.discountPercent < 0
-      || tier.discountPercent > 1
-    ) {
-      throw new Error('Invalid membership tier configuration.');
-    }
-    return { ...tier, tier: id };
-  }).sort((left, right) => left.spendThresholdCents - right.spendThresholdCents);
-  if (
-    new Set(normalized.map((tier) => tier.tier)).size !== CANONICAL_TIERS.length
-    || normalized.some((tier, index) => tier.tier !== CANONICAL_TIERS[index])
-    || normalized[0]?.spendThresholdCents !== 0
-    || normalized.some((tier, index) => index > 0
-      && tier.spendThresholdCents <= normalized[index - 1].spendThresholdCents)
-    || normalized.some((tier, index) => index > 0
-      && tier.discountPercent < normalized[index - 1].discountPercent)
-  ) {
-    throw new Error('Invalid membership tier configuration.');
-  }
-  return normalized;
-}
-
 export function resolveAuthoritativeMembershipTier(
   spent30Cents: number,
-  tiers: MembershipTierConfig[],
+  tiers: MembershipTierConfig[] = [],
 ): MembershipTierConfig & { tier: AuthoritativeMembershipTier } {
   if (!Number.isSafeInteger(spent30Cents)) throw new Error('Invalid membership spend result.');
-  const validTiers = validateTiers(tiers);
-  const normalizedSpend = Math.max(0, spent30Cents);
-  let active = validTiers[0] as MembershipTierConfig & { tier: AuthoritativeMembershipTier };
-  for (const tier of validTiers) {
-    if (normalizedSpend >= tier.spendThresholdCents) {
-      active = tier as MembershipTierConfig & { tier: AuthoritativeMembershipTier };
-    }
-  }
-  return active;
+  void tiers;
+  return { tier: LIVE_MEMBERSHIP_POLICY.tier, spendThresholdCents: 0, discountPercent: 0 };
 }
 
 export async function getUserMembershipStatus(
@@ -148,7 +97,7 @@ export async function getUserMembershipStatus(
   if (rows.length !== 1) throw new Error('Invalid membership spend result.');
   const spent30Cents = parseLedgerCents(rows[0].sum_30);
   const spentTodayCents = parseLedgerCents(rows[0].sum_today);
-  const tiers = validateTiers(await dependencies.getMembershipTiers());
+  const tiers: MembershipTierConfig[] = [];
   const active = resolveAuthoritativeMembershipTier(spent30Cents, tiers);
   return {
     pricing: {

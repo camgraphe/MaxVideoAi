@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import type { EngineCaps, EngineModeUiCaps as CapabilityCaps, Mode } from '@/types/engines';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -10,6 +10,7 @@ import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resol
 
 interface CoreSettingsBarProps {
   density?: 'default' | 'workspace';
+  trailingControl?: ReactNode;
   engine: EngineCaps;
   mode: Mode;
   caps?: CapabilityCaps;
@@ -189,11 +190,12 @@ function ControlIcon({ kind }: { kind: CoreControlKind }) {
   );
 }
 
-function createInlineLabel(kind: CoreControlKind, label: string, compact: boolean) {
+function createInlineLabel(kind: CoreControlKind, label: string, compact: boolean, controlName: string) {
   const showIcon = !compact || !['iterations', 'fps'].includes(kind);
   return (
     <span className={clsx('inline-flex h-4 items-center leading-none', compact ? 'gap-1.5' : 'gap-2')}>
       {showIcon ? <ControlIcon kind={kind} /> : null}
+      <span className="sr-only">{controlName}: </span>
       <span className="block truncate leading-none">{label}</span>
     </span>
   );
@@ -218,13 +220,16 @@ function InlineSelectControl({
   compact?: boolean;
   action?: boolean;
 }) {
+  const { t } = useI18n();
+  const names = {duration:'Duration',resolution:'Resolution',aspect:'Format',audio:'Audio',iterations:'Outputs',fps:'Frame rate',hdr:'HDR'};
+  const controlName = t(`workspace.header.controlLabels.${kind}`, names[kind]) ?? names[kind];
   if (!options.length) return null;
   return (
-    <div className={clsx(compact ? 'min-w-0 flex-none' : 'min-w-0', className)}>
+    <div className={clsx(compact ? 'min-w-0 flex-none' : 'min-w-0', action && 'app-output-count', className)}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
-          label: createInlineLabel(kind, String(option.label), compact),
+          label: createInlineLabel(kind, String(option.label), compact, controlName),
         }))}
         value={value}
         onChange={onChange}
@@ -233,10 +238,11 @@ function InlineSelectControl({
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
           action
-            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
-            : compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
+            ? 'h-11 !min-w-0 border-brand !bg-[image:var(--brand-gradient)] px-2.5 text-[11px] !text-on-brand shadow-card'
+            : compact ? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1.5 px-2.5 text-xs' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
+        menuClassName={compact ? 'app-experience app-settings-menu' : undefined}
         portal={compact}
         hideChevron={compact}
       />
@@ -274,6 +280,7 @@ export function CoreIterationsControl({
 
 export function CoreSettingsBar({
   density = 'default',
+  trailingControl,
   engine,
   mode,
   caps,
@@ -431,7 +438,7 @@ export function CoreSettingsBar({
         data-settings-density={density}
         className={clsx(
           'flex items-center',
-          workspaceDensity ? 'w-max min-w-full flex-nowrap gap-1.5' : 'flex-wrap gap-2'
+          workspaceDensity ? 'w-full flex-wrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
         {durationManaged ? (
@@ -531,6 +538,7 @@ export function CoreSettingsBar({
             onIterationsChange={onIterationsChange}
           />
         ) : null}
+        {trailingControl}
       </div>
       {audioNotice || isLtxFastLong ? (
         <div className="flex flex-wrap items-center gap-3 text-[11px] text-text-muted">

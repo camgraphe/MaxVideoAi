@@ -16,7 +16,11 @@ import {
   type MediaAssetRecord,
   type MediaKind,
 } from '../media-library-records';
-import { listLibraryAssetPage as listLibraryAssetPageFromListing } from './asset-listing';
+import {
+  findLibraryAssetByOrigin as findLibraryAssetByOriginFromListing,
+  listLibraryAssetPage as listLibraryAssetPageFromListing,
+  type MediaLibraryReadOptions,
+} from './asset-listing';
 import { copyRemoteMedia, createRemoteVideoAssetThumbnail } from './asset-media';
 import { resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
 import type { MediaLibraryPage } from './pagination';
@@ -29,6 +33,7 @@ export async function listLibraryAssets(params: {
   includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
+  q?: string | null;
 }): Promise<MediaAssetRecord[]> {
   const page = await listLibraryAssetPage({
     userId: params.userId,
@@ -38,6 +43,7 @@ export async function listLibraryAssets(params: {
     includeOutputs: params.includeOutputs,
     limit: params.limit,
     cursor: params.cursor ?? null,
+    q: params.q ?? null,
   });
   return page.items;
 }
@@ -50,8 +56,18 @@ export async function listLibraryAssetPage(params: {
   includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
-}): Promise<MediaLibraryPage<MediaAssetRecord>> {
-  return listLibraryAssetPageFromListing(params);
+  q?: string | null;
+}, options: MediaLibraryReadOptions = {}): Promise<MediaLibraryPage<MediaAssetRecord>> {
+  return listLibraryAssetPageFromListing(params, options);
+}
+
+export async function findLibraryAssetByOrigin(params: {
+  userId: string;
+  originUrl: string;
+  kind?: MediaKind | null;
+  source?: string | null;
+}, options: MediaLibraryReadOptions = {}): Promise<MediaAssetRecord | null> {
+  return findLibraryAssetByOriginFromListing(params, options);
 }
 
 export async function ensureReusableAsset(params: {
@@ -70,6 +86,7 @@ export async function ensureReusableAsset(params: {
   thumbUrl?: string | null;
   previewUrl?: string | null;
   metadata?: Record<string, unknown> | null;
+  allowRemoteThumbnailFallback?: boolean;
 }): Promise<MediaAssetRecord> {
   await ensureMediaLibrarySchema();
   const source = normalizeMediaAssetSource(params.source);
@@ -120,7 +137,7 @@ export async function ensureReusableAsset(params: {
     [identity, params.userId]
   );
   if (existing[0]) {
-    if (!existing[0].thumb_url && !resolvedThumbUrl && params.kind === 'video') {
+    if (!existing[0].thumb_url && !resolvedThumbUrl && params.kind === 'video' && params.allowRemoteThumbnailFallback !== false) {
       resolvedThumbUrl = await createRemoteVideoAssetThumbnail({
         userId: params.userId,
         url: existing[0].url,
@@ -178,7 +195,7 @@ export async function ensureReusableAsset(params: {
   if (!resolvedThumbUrl && copied.thumbUrl) {
     resolvedThumbUrl = copied.thumbUrl;
   }
-  if (!resolvedThumbUrl && params.kind === 'video') {
+  if (!resolvedThumbUrl && params.kind === 'video' && params.allowRemoteThumbnailFallback !== false) {
     resolvedThumbUrl = await createRemoteVideoAssetThumbnail({
       userId: params.userId,
       url: copied.url,
@@ -318,4 +335,23 @@ export async function deleteLibraryAsset(params: { userId: string; assetId: stri
   );
   if (!rows.length) return 'not_found';
   return 'deleted';
+}
+export async function readOwnedLibraryAssetsByIds(params: {
+  userId: string;
+  assetIds: readonly string[];
+}): Promise<MediaAssetRecord[]> {
+  const assetIds = Array.from(new Set(params.assetIds.map((assetId) => assetId.trim()).filter(Boolean))).slice(0, 200);
+  if (!assetIds.length) return [];
+  await ensureMediaLibrarySchema();
+  const rows = await query<DbMediaAssetRow>(
+    `SELECT id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
+            source_job_id, source_output_id, status, metadata, created_at
+       FROM media_assets
+      WHERE user_id = $1
+        AND id = ANY($2::text[])
+        AND deleted_at IS NULL
+        AND status <> 'deleted'`,
+    [params.userId, assetIds]
+  );
+  return rows.map(mapAssetRow);
 }

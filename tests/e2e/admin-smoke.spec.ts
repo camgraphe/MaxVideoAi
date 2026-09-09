@@ -40,8 +40,8 @@ const smokeRoutes: SmokeRoute[] = [
   },
   {
     path: '/admin/membership',
-    heading: 'Membership pricing',
-    section: 'All membership tiers',
+    heading: 'Membership history',
+    section: 'Membership discounts are retired.',
   },
   {
     path: '/admin/billing-products',

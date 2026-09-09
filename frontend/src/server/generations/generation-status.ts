@@ -1,3 +1,4 @@
+import { generationStage, type GenerationObservation } from '@/lib/generation-observation';
 import { query } from '@/lib/db';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
@@ -21,11 +22,19 @@ export type AgentGenerationResult =
       surface: 'image';
       imageUrls: string[];
       thumbnailUrls: string[];
+    }
+  | {
+      surface: 'audio';
+      audioUrl: string | null;
+      videoUrl: string | null;
+      thumbnailUrl: string | null;
+      mimeType: string;
+      durationSec: number | null;
     };
 
 export type AgentGenerationStatus = {
   jobId: string;
-  surface: 'video' | 'image';
+  surface: 'video' | 'image' | 'audio';
   status: 'accepted' | 'running' | 'completed' | 'failed';
   progress: number | null;
   message: string | null;
@@ -176,6 +185,7 @@ function buildFallbackSettingsSnapshot(record: GenerationStatusRecord): unknown 
 }
 
 export type GenerationStatusWebOverrides = {
+  observation?: GenerationObservation;
   status?: string;
   progress?: number;
   videoUrl?: string | null;
@@ -215,6 +225,7 @@ export function mapGenerationStatusRecordToWeb(
     createdAt: record.created_at,
     status: override('status', record.status ?? undefined),
     progress: override('progress', record.progress ?? undefined),
+    observation: overrides.observation ?? { stage: generationStage(override('status', record.status ?? undefined), Boolean((record.settings_snapshot as { providerVideoCopy?: unknown } | null)?.providerVideoCopy)) },
     videoUrl: normalizeMediaUrl(override('videoUrl', record.video_url)) ?? undefined,
     previewVideoUrl: normalizeMediaUrl(override('previewVideoUrl', record.preview_video_url)) ?? undefined,
     audioUrl: normalizeMediaUrl(override('audioUrl', record.audio_url)) ?? undefined,

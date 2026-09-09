@@ -195,6 +195,26 @@ test('ordinary public preflight stays anonymous and does not resolve an auth ses
   assert.equal(authCalls, 0);
 });
 
+test('unknown-engine preflight keeps canonical errors without enabling schema bootstrap fallback', async () => {
+  let computeOptions: unknown;
+  const result = await resolveMediaAwarePreflight({
+    request: requestFor(engineFor('flux-3'), 't2v'),
+  }, {
+    getConfiguredEngineFn: async () => undefined,
+    computeConfiguredPreflightFn: async (_request, options) => {
+      computeOptions = options;
+      return {
+        ok: false,
+        messages: ['Unknown engine selection'],
+        error: { code: 'ENGINE_NOT_FOUND', message: 'Unknown engine' },
+      };
+    },
+  });
+
+  assert.equal(result.error?.code, 'ENGINE_NOT_FOUND');
+  assert.deepEqual(computeOptions, { bootstrap: false });
+});
+
 test('media-aware preflight rejects execution-only attachment fields before attachment processing', async () => {
   const engine = engineFor('grok-imagine-video-1-5');
   const forbiddenInputs = [

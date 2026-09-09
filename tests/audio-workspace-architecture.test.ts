@@ -204,11 +204,12 @@ test('audio helper modules expose the expected workspace contract', () => {
   }
 });
 
-test('audio generation dock keeps icon-only controls accessible', () => {
-  const generationDockSource = readFileSync(generationDockPath, 'utf8');
-
-  assert.match(generationDockSource, /aria-label="Audio generation options"/);
-  assert.match(generationDockSource, /<ChevronDown className="h-4 w-4" aria-hidden/);
+test('audio generation dock exposes the real action without an inert options duplicate', () => {
+  const dock = readFileSync(generationDockPath, 'utf8');
+  assert.match(dock, /onClick=\{onGenerate\}/);
+  assert.doesNotMatch(dock, /Audio generation options|md:left-\[188px\]|xl:right-\[332px\]/);
+  assert.match(dock, /app-audio-generation-dock/);
+  assert.match(readFileSync(optionsSectionPath, 'utf8'), /copy\.controls\.advanced/);
 });
 
 test('audio upload inputs stay hidden from keyboard traversal', () => {
@@ -236,7 +237,8 @@ test('audio history renders playable audio files inline', () => {
 test('audio workspace keeps voice script duration estimates internal for pricing', () => {
   const generationDockSource = readFileSync(generationDockPath, 'utf8');
 
-  assert.match(workspaceSource, /quotePublicAudioPricingSnapshot\(\{[\s\S]*durationSec: estimatedDurationSec/, 'pricing should keep using the internal estimated duration');
+  assert.match(readFileSync(generationRunnerHookPath, 'utf8'), /useAudioCreationQuote\(request, userId, canGenerate\)/, 'generation and the displayed amount share an account-bound server quote');
+  assert.match(readFileSync(join(root, 'frontend/src/server/audio/audio-generate-validation.ts'), 'utf8'), /return estimateVoiceScriptDurationSec\(params.script/, 'voice duration estimates remain internal to server preparation');
   assert.match(workspaceSource, /const displayDurationSec = pack === 'voice_only' \? null : estimatedDurationSec/, 'voice-only duration estimates should be hidden from the UI');
   assert.doesNotMatch(composerSurfaceSource, /copy\.controls\.estimatedDuration/, 'script composer should not display estimated read duration');
   assert.match(generationDockSource, /\{durationLabel \? \(/, 'generation dock should render the duration card only when a display duration exists');
@@ -314,4 +316,16 @@ test('audio workspace keeps music and cinematic modes while adding Seed Audio vo
     },
   ]);
   assert.equal(resolveProviderLabel(DEFAULT_AUDIO_WORKSPACE_COPY, 'voice_only'), 'Seed Audio 1.0');
+});
+
+test('audio workbench uses compact named mode tabs and keeps dock padding separate from scroll content', () => {
+  const controls = readFileSync(controlsPath, 'utf8');
+  const css = readFileSync('frontend/src/styles/app-experience.css', 'utf8');
+  assert.match(controls, /app-audio-mode-tabs/);
+  assert.match(controls, /aria-describedby=\{`audio-mode-\$\{mode\.id\}-description`\}/);
+  assert.match(controls, /onClick=\{onClick\}/);
+  assert.doesNotMatch(composerSurfaceSource, /copy\.hero\.eyebrow|copy\.hero\.body/);
+  assert.match(css, /\.app-audio-workbench > div:first-child/);
+  assert.doesNotMatch(css, /\.app-audio-workbench > div \{/);
+  assert.match(css, /\.app-audio-generation-dock \{ height: auto; min-height: 0;/);
 });

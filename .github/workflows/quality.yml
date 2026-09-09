@@ -74,12 +74,27 @@ jobs:
       - name: Install media and database validation tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends ffmpeg postgresql
-          pg_config --bindir >> "$GITHUB_PATH"
+          sudo apt-get install --yes --no-install-recommends ffmpeg postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install --yes --no-install-recommends postgresql-17
+          echo '/usr/lib/postgresql/17/bin' >> "$GITHUB_PATH"
+          /usr/lib/postgresql/17/bin/postgres --version
           ffmpeg -hide_banner -version
 
       - name: Validate tests
-        run: pnpm run test:validate
+        run: |
+          # Studio starts a disposable Next dev server and Chromium. Qualify it
+          # separately so compilation does not compete with the full test suite.
+          validation_tests=()
+          for test_file in tests/*.test.ts; do
+            if [[ "$test_file" != "tests/connected-studio-montage-browser-integration.test.ts" ]]; then
+              validation_tests+=("$test_file")
+            fi
+          done
+          pnpm exec tsx --tsconfig frontend/tsconfig.json --test "${validation_tests[@]}"
+
+      - name: Validate connected Studio browser
+        run: pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/connected-studio-montage-browser-integration.test.ts
 
       - name: Smoke test admin
         env:

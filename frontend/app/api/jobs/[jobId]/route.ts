@@ -1,7 +1,7 @@
+import { generationStage, type GenerationObservation } from '@/lib/generation-observation';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { shouldUseFalApis } from '@/lib/result-provider';
-import { ensureBillingSchema } from '@/lib/schema';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -119,13 +119,6 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     return json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[api/jobs] schema init failed', error);
-    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
-  }
-
   let job: GenerationStatusRecord | null;
   try {
     job = await readOwnedGenerationRecord({ userId, jobId });
@@ -137,6 +130,8 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   if (!job) {
     return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
+  // Finishing tools own their original output and provider reconciliation.
+  if (job.surface === 'tool') return json(mapGenerationStatusRecordToWeb(job));
   let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   let normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);
   let normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
@@ -154,7 +149,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   });
 
   try {
-    let outputMap = await listJobOutputsByJobIds([job.job_id]);
+    let outputMap = await listJobOutputsByJobIds([job.job_id], { ensureSchema: false });
     if (!outputMap.has(job.job_id)) {
       await upsertLegacyJobOutputs({
         job_id: job.job_id,
@@ -169,7 +164,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         duration_sec: job.duration_sec,
         status: job.status,
       });
-      outputMap = await listJobOutputsByJobIds([job.job_id]);
+      outputMap = await listJobOutputsByJobIds([job.job_id], { ensureSchema: false });
     }
     const enriched = applyOutputsToJobPayload(
       {
@@ -193,9 +188,13 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     console.warn('[api/jobs] media output detail enrichment failed', { jobId, error });
   }
 
+  let statusCheckDegraded = false;
+  let providerCompleted = false;
+  let providerPercent: GenerationObservation['providerPercent'];
   // Optionally poll FAL once if pending and we have provider job id
   if (
     surface !== 'audio' &&
+    surface !== 'tool' &&
     shouldUseFalApis() &&
     (job.provider ?? 'fal') === 'fal' &&
     job.provider_job_id &&
@@ -208,14 +207,17 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
       const statusInfo = (await falClient.queue
         .status(falModel, { requestId: job.provider_job_id })
         .catch(() => null)) as Record<string, unknown> | null;
+      if (!statusInfo) statusCheckDegraded = true;
       if (statusInfo) {
         const state = typeof statusInfo.status === 'string' ? statusInfo.status.toUpperCase() : undefined;
+        providerCompleted = Boolean(state && FAL_COMPLETED_STATES.has(state));
         const queueResult =
           state && FAL_COMPLETED_STATES.has(state)
             ? ((await falClient.queue.result(falModel, { requestId: job.provider_job_id }).catch(() => null)) as
                 | Record<string, unknown>
                 | null)
             : null;
+        if (providerCompleted && !queueResult) statusCheckDegraded = true;
         if (queueResult && state && FAL_COMPLETED_STATES.has(state)) {
           try {
             await updateJobFromFalWebhook({
@@ -243,6 +245,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
               });
             }
           } catch (refreshError) {
+            statusCheckDegraded = true;
             console.warn('[api/jobs] failed to apply Fal completed result', {
               jobId,
               providerJobId: job.provider_job_id,
@@ -261,7 +264,11 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         };
         const vUrl: string | undefined = sj?.response?.video?.url || sj?.output?.video || sj?.video_url;
         const st: string | undefined = sj?.status || sj?.state;
-        const prog: number | undefined = sj?.progress || sj?.percent;
+        const prog = sj?.progress ?? sj?.percent;
+        // Only a finite field in this provider response has provider provenance.
+        if (typeof prog === 'number' && Number.isFinite(prog)) {
+          providerPercent = { value: Math.max(0, Math.min(100, prog)), source: 'provider', provider: 'fal' };
+        }
         let status = job.status ?? 'queued';
         let progress = job.progress ?? 0;
         let videoUrl = normalizedVideoUrl;
@@ -332,12 +339,12 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
           }
         } else if (st && FAL_FAILED_STATES.has(st.toUpperCase())) {
           status = 'failed';
-        } else if (typeof prog === 'number') {
-          progress = Math.max(progress, Math.min(100, Math.round(prog)));
+        } else if (st?.toUpperCase() === 'IN_PROGRESS' && job.status !== 'completed' && job.status !== 'failed') {
           status = 'running';
+          if (providerPercent) progress = Math.round(providerPercent.value);
         }
         if (status !== job.status || progress !== job.progress || videoUrl !== normalizedVideoUrl || thumbUrl !== normalizedThumbUrl) {
-          await query(
+          const updated = await query<{ job_id: string }>(
             `UPDATE app_jobs
                 SET status = $1,
                     progress = $2,
@@ -349,12 +356,19 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
                       WHEN $8::jsonb IS NOT NULL THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $8::jsonb, true)
                       ELSE settings_snapshot
                     END
-              WHERE job_id = $6`,
+              WHERE job_id = $6 AND (status IS NULL OR status NOT IN ('completed', 'failed'))
+              RETURNING job_id`,
             [status, progress, videoUrl ?? null, thumbUrl ?? null, thumbUrl ?? null, jobId, message, providerVideoCopyStateJson]
           );
+          if (!updated.length) {
+            // A webhook may have completed the job while this status request was in flight.
+            const latest = await readOwnedGenerationRecord({ userId, jobId });
+            return latest ? json(mapGenerationStatusRecordToWeb(latest)) : json({ ok: false, error: 'Not found' }, { status: 404 });
+          }
           return json(
             mapGenerationStatusRecordToWeb(job, {
               status,
+              observation: { stage: generationStage(status, providerCompleted || Boolean(providerVideoCopyStateJson) || getProviderVideoCopyState(job.settings_snapshot).attempts > 0), providerPercent, degraded: statusCheckDegraded },
               progress,
               videoUrl,
               previewVideoUrl: normalizedPreviewVideoUrl,
@@ -369,7 +383,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         }
       }
     } catch {
-      // ignore polling errors
+      statusCheckDegraded = true;
     }
   }
 
@@ -449,6 +463,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
 
   return json(
     mapGenerationStatusRecordToWeb(job, {
+      observation: { stage: generationStage(job.status, providerCompleted || getProviderVideoCopyState(job.settings_snapshot).attempts > 0), providerPercent, degraded: statusCheckDegraded },
       videoUrl: responseVideoUrl,
       previewVideoUrl: normalizedPreviewVideoUrl,
       audioUrl: normalizedAudioUrl,

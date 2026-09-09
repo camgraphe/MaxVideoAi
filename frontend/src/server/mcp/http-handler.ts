@@ -3,6 +3,7 @@ import { isIP } from 'node:net';
 import { classifyMcpClient } from '@/server/mcp/client-family';
 
 import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
+import { FEATURES } from '@/content/feature-flags';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
@@ -18,7 +19,11 @@ import {
   createMaxVideoAiMcpServer,
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
-import { resolveMcpRuntimeCapabilities } from '@/server/mcp/operational-access';
+import {
+  resolveMcpRuntimeCapabilities,
+  type McpRuntimeCapabilities,
+} from '@/server/mcp/operational-access';
+import { isStudioMontageCreationEnabled } from '@/server/studio/feature-access';
 import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
 import type { TrialRiskRequestContext } from '@/server/agent-api/prepare-generation';
 
@@ -33,6 +38,7 @@ export type McpHttpHandlerDeps = {
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
   recordConnection?(principal: AgentPrincipal): Promise<McpConnectionBindingResult>;
   accountStatusDeps?: AgentAccountStatusWalletDeps;
+  runtimeCapabilities?: McpRuntimeCapabilities;
 };
 
 function jsonRpcError(status: number, code: number, message: string, headers?: HeadersInit): Response {
@@ -99,6 +105,11 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'list_media',
   'create_reference_upload_link',
   'import_reference_files',
+  'prepare_montage',
+  'list_audio_capabilities',
+  'prepare_audio_generation',
+  'confirm_audio_generation',
+  'create_studio_montage',
 ]);
 
 function parseSseJsonRpcPayload(body: string): unknown {
@@ -246,7 +257,13 @@ export async function handleMcpHttpRequest(
   injectedDeps?: McpHttpHandlerDeps
 ): Promise<Response> {
   const requestHost = getMcpRequestHost(request.headers);
-  const capabilities = resolveMcpRuntimeCapabilities(process.env, requestHost);
+  const capabilities = injectedDeps?.runtimeCapabilities
+    ?? resolveMcpRuntimeCapabilities(process.env, requestHost);
+  const studioMontageCreation = isStudioMontageCreationEnabled(
+    process.env,
+    requestHost,
+    FEATURES.mcp.studioMontageCreation,
+  );
   const enabled =
     injectedDeps?.enabled ??
     (isMcpFoundationFeatureEnabled('transport', process.env, requestHost) &&
@@ -285,7 +302,7 @@ export async function handleMcpHttpRequest(
       capabilities,
       injectedDeps?.accountStatusDeps,
     ),
-    capabilities,
+    { ...capabilities, studioMontageCreation },
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ENV } from '@/lib/env';
-import { ensureBillingSchema } from '@/lib/schema';
 import { resolveStripeBillingDocument } from '@/lib/stripe-receipts';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
@@ -18,22 +17,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
   }
 
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[api/receipts] schema init failed, returning mock ledger', error);
-    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
-  }
-
   const url = new URL(req.url);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') ?? '50')));
   const cursor = url.searchParams.get('cursor');
+  const scope = url.searchParams.get('scope') ?? 'activity';
+  if (scope !== 'activity' && scope !== 'documents') {
+    return NextResponse.json({ error: 'Invalid receipt scope' }, { status: 400 });
+  }
 
   const { userId } = await getRouteAuthContext(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const params: Array<string | number> = [userId];
   let where = 'WHERE user_id = $1';
+  if (scope === 'documents') {
+    where += ` AND type = 'topup'
+      AND (
+        stripe_invoice_id IS NOT NULL
+        OR stripe_hosted_invoice_url IS NOT NULL
+        OR stripe_invoice_pdf IS NOT NULL
+        OR stripe_receipt_url IS NOT NULL
+        OR stripe_charge_id IS NOT NULL
+        OR stripe_payment_intent_id IS NOT NULL
+      )`;
+  }
   if (cursor) {
     params.push(Number(cursor));
     where += ` AND id < $${params.length}`;
@@ -88,8 +95,8 @@ export async function GET(req: NextRequest) {
       params
     );
   } catch (error) {
-    console.warn('[api/receipts] query failed, returning mock ledger', error);
-    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
+    console.warn('[api/receipts] read failed', { type: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json({ ok: false, error: 'Payment history unavailable' }, { status: 503 });
   }
 
   const hasMore = rows.length > limit;
@@ -98,7 +105,10 @@ export async function GET(req: NextRequest) {
 
   const sanitized = await Promise.all(
     items.map(async (row) => {
-      const document = await resolveStripeBillingDocument(stripe, {
+      const hasCachedInvoice = Boolean(row.stripe_hosted_invoice_url || row.stripe_invoice_pdf);
+      const hasCachedReceiptWithoutInvoice = Boolean(row.stripe_receipt_url && !row.stripe_invoice_id);
+      const lookupClient = hasCachedInvoice || hasCachedReceiptWithoutInvoice ? null : stripe;
+      const document = await resolveStripeBillingDocument(lookupClient, {
         type: row.kind,
         stripeInvoiceId: row.stripe_invoice_id,
         stripeHostedInvoiceUrl: row.stripe_hosted_invoice_url,

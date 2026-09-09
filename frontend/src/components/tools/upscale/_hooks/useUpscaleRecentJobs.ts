@@ -98,7 +98,7 @@ export function useUpscaleRecentJobs({
     setSource(defaultGeneratedImageSource);
     setMediaUrl(defaultGeneratedImageSource.url);
     setPreviewMode('source');
-    setPreviewZoom('100');
+    setPreviewZoom('fit');
     setMessage(defaultGeneratedImageSource.name ?? null);
   }, [
     defaultGeneratedImageSource,

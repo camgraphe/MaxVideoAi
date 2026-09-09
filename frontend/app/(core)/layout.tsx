@@ -1,3 +1,7 @@
+import localFont from 'next/font/local';
+import { AppExperienceRoot } from '@/components/AppExperienceRoot';
+import '@/styles/app-experience.css';
+import '@/styles/app-shell.css';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
@@ -18,6 +22,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { LocaleSync } from '@/components/i18n/LocaleSync';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { buildSiteOrganizationSchema } from '@/lib/seo/site-organization-schema';
+const appFont = localFont({ src: './_fonts/GeistLatin.woff2', variable: '--font-app', display: 'swap', weight: '100 900', preload: false });
 const NORMALIZED_SITE_URL = SITE_ORIGIN;
 
 export const metadata: Metadata = {
@@ -82,7 +87,7 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
           <LocaleSync />
           <SessionWatchdog />
           <SWRFocusResync />
-          {children}
+          <AppExperienceRoot fontClass={appFont.variable}>{children}</AppExperienceRoot>
         </SWRProvider>
       </I18nProvider>
       {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}

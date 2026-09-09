@@ -16,6 +16,14 @@ import { runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
 import { getGenerationStatusInputSchema } from '@/server/mcp/tools/get-generation-status';
 
 const DOWNLOAD_TTL_SECONDS = 60 * 60;
+const AUDIO_DOWNLOAD_EXTENSIONS: Readonly<Record<string, string>> = {
+  'audio/flac': 'flac',
+  'audio/mpeg': 'mp3',
+  'audio/mp4': 'm4a',
+  'audio/ogg': 'ogg',
+  'audio/wav': 'wav',
+  'audio/webm': 'webm',
+};
 
 type GenerationDownloadDependencies = {
   now?: () => Date;
@@ -27,9 +35,11 @@ type GenerationDownloadServices = Pick<MaxVideoAiMcpServices, 'createGenerationD
 
 function primaryOutputUrl(recovery: AgentGenerationRecovery): string | null {
   if (recovery.status !== 'completed' || !recovery.result) return null;
-  return recovery.result.surface === 'video'
-    ? recovery.result.videoUrl
-    : recovery.result.imageUrls[0] ?? null;
+  if (recovery.result.surface === 'video') return recovery.result.videoUrl;
+  if (recovery.result.surface === 'audio') {
+    return recovery.result.audioUrl ?? recovery.result.videoUrl;
+  }
+  return recovery.result.imageUrls[0] ?? null;
 }
 
 function generationDownloadFilename(recovery: AgentGenerationRecovery, mediaUrl: string): string {
@@ -38,12 +48,17 @@ function generationDownloadFilename(recovery: AgentGenerationRecovery, mediaUrl:
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 96) || 'generation';
-  let extension = recovery.surface === 'video' ? 'mp4' : 'jpg';
-  try {
-    const match = new URL(mediaUrl).pathname.match(/\.([a-z0-9]{2,5})$/i);
-    if (match?.[1]) extension = match[1].toLowerCase();
-  } catch {
-    // The recovery service has already bounded public result URLs.
+  const audioMimeExtension = recovery.result?.surface === 'audio'
+    ? AUDIO_DOWNLOAD_EXTENSIONS[recovery.result.mimeType]
+    : undefined;
+  let extension = recovery.surface === 'video' ? 'mp4' : audioMimeExtension ?? (recovery.surface === 'audio' ? 'm4a' : 'jpg');
+  if (!audioMimeExtension) {
+    try {
+      const match = new URL(mediaUrl).pathname.match(/\.([a-z0-9]{2,5})$/i);
+      if (match?.[1]) extension = match[1].toLowerCase();
+    } catch {
+      // The recovery service has already bounded public result URLs.
+    }
   }
   return `maxvideoai-${safeJobId}.${extension}`;
 }
@@ -97,7 +112,7 @@ export function registerPresentGenerationTool(
     {
       title: 'Present a MaxVideoAI generation',
       description:
-        'Use this when a completed owned MaxVideoAI generation should be shown inline as a playable video or image result. Call get_generation_status or list_recent_generations first; do not use this to poll, generate, retry, or charge credits.',
+        'Use this when a completed owned MaxVideoAI generation should be shown inline as a playable video, image, or audio result. Call get_generation_status or list_recent_generations first; do not use this to poll, generate, retry, or charge credits.',
       inputSchema: getGenerationStatusInputSchema,
       annotations: {
         readOnlyHint: true,

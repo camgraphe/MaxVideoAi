@@ -15,12 +15,12 @@ const tiers: MembershipTierConfig[] = [
   { tier: 'pro', spendThresholdCents: 20_000, discountPercent: 0.1 },
 ];
 
-test('authoritative membership tier uses the shared current threshold resolver', () => {
+test('authoritative membership tier uses standard pricing regardless of historical thresholds', () => {
   assert.equal(resolveAuthoritativeMembershipTier(0, tiers).tier, 'member');
   assert.equal(resolveAuthoritativeMembershipTier(4_999, tiers).tier, 'member');
-  assert.equal(resolveAuthoritativeMembershipTier(5_000, tiers).tier, 'plus');
-  assert.equal(resolveAuthoritativeMembershipTier(19_999, tiers).tier, 'plus');
-  assert.equal(resolveAuthoritativeMembershipTier(20_000, tiers).tier, 'pro');
+  assert.equal(resolveAuthoritativeMembershipTier(5_000, tiers).tier, 'member');
+  assert.equal(resolveAuthoritativeMembershipTier(19_999, tiers).tier, 'member');
+  assert.equal(resolveAuthoritativeMembershipTier(20_000, tiers).tier, 'member');
 });
 
 test('membership status reads only the user-scoped rolling receipt ledger and returns pricing provenance', async () => {
@@ -37,14 +37,14 @@ test('membership status reads only the user-scoped rolling receipt ledger and re
   });
 
   assert.deepEqual(status.pricing, {
-    tier: 'plus',
+    tier: 'member',
     source: 'app_receipts_rolling_30d',
     spent30Cents: 7_250,
-    thresholdCents: 5_000,
-    discountPercent: 0.05,
+    thresholdCents: 0,
+    discountPercent: 0,
   });
   assert.equal(status.spentTodayCents, 125);
-  assert.deepEqual(status.tiers, tiers);
+  assert.deepEqual(status.tiers, []);
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0].params, ['user-1']);
   assert.match(calls[0].sql, /FROM app_receipts/i);
@@ -54,7 +54,7 @@ test('membership status reads only the user-scoped rolling receipt ledger and re
   assert.doesNotMatch(calls[0].sql, /prompt|reference|provider|token/i);
 });
 
-test('membership lookup fails closed for malformed spend, tier, and account inputs', async () => {
+test('membership lookup fails closed for malformed spend and account inputs, but ignores retired tier configuration', async () => {
   const executor = (row: Record<string, unknown>): QueryExecutor => ({
     async query<TRecord>() {
       return [row] as TRecord[];
@@ -67,24 +67,13 @@ test('membership lookup fails closed for malformed spend, tier, and account inpu
     }),
     /membership/i,
   );
-  await assert.rejects(
-    getUserMembershipStatus('user-1', {
-      executor: executor({ sum_30: '0', sum_today: '0' }),
-      getMembershipTiers: async () => [{ tier: 'vip', spendThresholdCents: 0, discountPercent: 0 }],
-    }),
-    /membership/i,
-  );
-  await assert.rejects(
-    getUserMembershipStatus('user-1', {
-      executor: executor({ sum_30: '0', sum_today: '0' }),
-      getMembershipTiers: async () => [
-        tiers[0],
-        tiers[1],
-        { ...tiers[2], spendThresholdCents: tiers[1].spendThresholdCents },
-      ],
-    }),
-    /membership/i,
-  );
+  const retired = await getUserMembershipStatus('user-1', {
+    executor: executor({ sum_30: '90000', sum_today: '20' }),
+    getMembershipTiers: async () => { throw new Error('Dormant tiers must never be loaded'); },
+  });
+  assert.equal(retired.pricing.tier, 'member');
+  assert.equal(retired.pricing.discountPercent, 0);
+  assert.equal(retired.spent30Cents, 90000);
   await assert.rejects(
     getUserMembershipStatus(' ', {
       executor: executor({ sum_30: '0', sum_today: '0' }),

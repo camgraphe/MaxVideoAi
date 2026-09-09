@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import type { BillingSession, TopupQuote } from '../_lib/billing-types';
+import { useBillingRequestOwner } from './useBillingRequestOwner';
 
 export function useBillingTopupQuotes({
   authLoading,
@@ -19,18 +20,30 @@ export function useBillingTopupQuotes({
   customAmountValid: boolean;
   quoteErrorMessage: string;
 }) {
-  const [topupQuotes, setTopupQuotes] = useState<Record<number, TopupQuote>>({});
-  const [quoteLoading, setQuoteLoading] = useState(false);
-  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const accountId = authLoading ? null : session?.user?.id ?? null;
+  const accessToken = session?.access_token ?? null;
+  const amounts = JSON.stringify([...new Set([
+    ...USD_TOPUP_TIERS.map((tier) => tier.amountCents),
+    ...(customAmountValid && customAmountCents != null ? [customAmountCents] : []),
+  ])]);
+  const identity = accountId ? JSON.stringify([
+    accountId, normalizedChargeCurrency, amounts, customAmountCents, customAmountValid,
+  ]) : null;
+  const { owner, requestScope, isActive } = useBillingRequestOwner(identity);
+  const [state, setState] = useState<{
+    owner: typeof owner;
+    quotes: Record<number, TopupQuote>;
+    loading: boolean;
+    error: string | null;
+  }>({ owner, quotes: {}, loading: Boolean(accountId), error: null });
 
   useEffect(() => {
-    if (authLoading) return;
-    let canceled = false;
+    if (!accountId || !isActive()) return;
+    const requestToken = requestScope.begin(accountId);
 
     async function loadQuotes() {
-      setQuoteLoading(true);
-      setQuoteError(null);
-      const token = session?.access_token ?? null;
+      setState({ owner, quotes: {}, loading: true, error: null });
+      const token = accessToken;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers.Authorization = `Bearer ${token}`;
       try {
@@ -39,17 +52,14 @@ export function useBillingTopupQuotes({
           headers,
           body: JSON.stringify({
             currency: normalizedChargeCurrency,
-            amounts: [
-              ...USD_TOPUP_TIERS.map((tier) => tier.amountCents),
-              ...(customAmountValid && customAmountCents != null ? [customAmountCents] : []),
-            ],
+            amounts: JSON.parse(amounts),
           }),
         });
         const data = await response.json().catch(() => null);
         if (!response.ok || !data?.ok) {
           throw new Error(data?.error ?? 'quote_failed');
         }
-        if (canceled) return;
+        if (!isActive() || !requestScope.isCurrent(requestToken)) return;
         const mapped: Record<number, TopupQuote> = {};
         (data.quotes ?? []).forEach((entry: Record<string, unknown>) => {
           const usdAmount = Number(entry?.usdAmountCents);
@@ -59,29 +69,24 @@ export function useBillingTopupQuotes({
             mapped[usdAmount] = { amountMinor: localAmount, currency: quoteCurrency };
           }
         });
-        setTopupQuotes(mapped);
+        setState({ owner, quotes: mapped, loading: false, error: null });
       } catch (error) {
-        if (!canceled) {
+        if (isActive() && requestScope.isCurrent(requestToken)) {
           console.warn('[billing] topup quote fetch failed', error);
-          setTopupQuotes({});
-          setQuoteError(quoteErrorMessage);
-        }
-      } finally {
-        if (!canceled) {
-          setQuoteLoading(false);
+          setState({ owner, quotes: {}, loading: false, error: quoteErrorMessage });
         }
       }
     }
 
     loadQuotes();
     return () => {
-      canceled = true;
+      requestScope.invalidate();
     };
-  }, [authLoading, customAmountCents, customAmountValid, normalizedChargeCurrency, quoteErrorMessage, session]);
+  }, [accessToken, accountId, amounts, isActive, normalizedChargeCurrency, owner, quoteErrorMessage, requestScope]);
 
   return {
-    topupQuotes,
-    quoteLoading,
-    quoteError,
+    topupQuotes: accountId && state.owner === owner ? state.quotes : {},
+    quoteLoading: Boolean(accountId) && (state.owner !== owner || state.loading),
+    quoteError: accountId && state.owner === owner ? state.error : null,
   };
 }

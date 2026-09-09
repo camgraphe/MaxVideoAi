@@ -66,7 +66,7 @@ export const AUDIO_PROVIDER_ROSTER: Record<AudioPipelineRole, AudioProviderCandi
   ],
 };
 
-export const ENABLE_AUDIO_PROVIDER_FALLBACK = process.env.AUDIO_PROVIDER_FALLBACK !== '0';
+export const ENABLE_AUDIO_PROVIDER_FALLBACK = false; // Execution must match the canonical quoted provider. No paid substitution;
 
 export const AUDIO_PROVIDER_TIMEOUT_MS: Record<AudioPipelineRole, number> = {
   soundDesign: 600_000,

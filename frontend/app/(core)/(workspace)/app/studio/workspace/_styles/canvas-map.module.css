@@ -1,0 +1,167 @@
+.canvasNavigator {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 7;
+  width: 180px;
+  height: 196px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 11px;
+  background:
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg)),
+    var(--studio-surface);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+}
+
+.canvasNavigatorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  width:100%;
+  border:0;
+  background:var(--studio-surface-strong);
+  pointer-events:auto;
+  cursor:pointer;
+  padding: 0 11px;
+  border-bottom: 1px solid var(--studio-border);
+  color: var(--studio-text);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.canvasNavigatorCollapsed { height:44px; width:auto; }
+@media(max-width:600px) { .canvasNavigator { top:76px; right:8px; } }
+
+@media(max-height:500px) and (min-width:621px) {
+  .canvasNavigatorCollapsed {
+    width:132px;
+  }
+
+  .canvasNavigatorHeader {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+}
+
+.canvasNavigatorControls {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  left: 9px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.canvasNavigatorControls button {
+  display: inline-flex;
+  width: 100%;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.canvasNavigatorControls button:hover,
+.canvasNavigatorControls button:focus-visible {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  outline: 1px solid rgba(147, 197, 253, 0.58);
+}
+
+.canvasMiniMap {
+  position: absolute;
+  right: 24px;
+  top: 50px;
+  z-index: 8;
+  display: block;
+  width: 164px;
+  height: 82px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg);
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.canvasMiniMap:active {
+  cursor: grabbing;
+}
+
+.canvasMiniMapBackdrop {
+  fill: var(--studio-bg);
+}
+
+.canvasMiniMapEdge {
+  stroke: rgba(96, 165, 250, 0.42);
+  stroke-linecap: round;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.canvasMiniMapNode {
+  fill: var(--studio-surface);
+  stroke: rgba(226, 232, 240, 0.28);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.canvasMiniMapNodeHeader {
+  opacity: 0.92;
+}
+
+.canvasMiniMapNodeMedia {
+  clip-path: inset(0 round 1.5px);
+  opacity: 0.88;
+}
+
+.canvasMiniMapShotWell {
+  fill: var(--studio-bg-soft);
+  stroke: rgba(226, 232, 240, 0.3);
+  stroke-dasharray: 2 2;
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.canvasMiniMapAudioBar {
+  fill: rgba(45, 212, 191, 0.78);
+}
+
+.canvasMiniMapTextLine {
+  stroke: rgba(191, 219, 254, 0.68);
+  stroke-linecap: round;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.canvasMiniMapViewport {
+  fill: rgba(14, 165, 233, 0.06);
+  stroke: rgba(56, 189, 248, 0.92);
+  stroke-dasharray: 3 2;
+  stroke-width: 1.2;
+  cursor: grab;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (max-width: 480px) and (max-height: 600px) {
+  .canvasNavigator {
+    width: 124px;
+  }
+
+  .canvasMiniMap {
+    right: 8px;
+    width: 108px;
+  }
+}

@@ -20,6 +20,11 @@ export type GenerateRouteMetricOptions = {
   jobId?: string | null;
 };
 
+/** Accepted is recorded at reservation; a pending provider response adds no duplicate event. */
+export function terminalGenerateMetricStatus(status: string): 'completed' | 'failed' | null {
+  return status === 'completed' || status === 'failed' ? status : null;
+}
+
 type RecordGenerateMetric = (input: GenerateMetricInput) => void | Promise<void>;
 
 export function createGenerateMetricLogger(params: {
@@ -49,6 +54,7 @@ export function createGenerateMetricLogger(params: {
       durationSec: state.durationSec,
       resolution: state.resolution,
       ...(options?.meta ?? {}),
+      durationSource: 'request_elapsed',
     };
     void recordMetric({
       jobId: options?.jobId ?? state.jobId,

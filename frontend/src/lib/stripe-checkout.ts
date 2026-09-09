@@ -70,6 +70,7 @@ export function buildWalletTopUpCheckoutSessionParams({
     billing_address_collection: 'auto',
     automatic_tax: { enabled: true },
     tax_id_collection: { enabled: true },
+    invoice_creation: { enabled: true },
     line_items: [
       {
         price_data: {

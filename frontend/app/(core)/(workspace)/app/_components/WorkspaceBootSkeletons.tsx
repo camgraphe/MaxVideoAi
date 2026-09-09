@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { WorkspacePreviewColumn } from '@/components/groups/WorkspacePreviewColumn';
 
 const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
@@ -24,7 +25,7 @@ export function GalleryRailSkeleton({ responsive = false }: { responsive?: boole
     <div
       className={
         responsive
-          ? 'flex w-full flex-col gap-4 min-[1088px]:h-[calc(125vh-var(--header-height))] min-[1088px]:max-w-[312px] min-[1088px]:shrink-0 min-[1088px]:gap-0 min-[1088px]:border-l min-[1088px]:border-border min-[1088px]:bg-bg/80 min-[1088px]:px-3 min-[1088px]:pb-6 min-[1088px]:pt-4'
+          ? 'flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3'
           : 'w-full rounded-card border border-border bg-surface-glass-60 p-3'
       }
       aria-hidden
@@ -39,6 +40,9 @@ export function GalleryRailSkeleton({ responsive = false }: { responsive?: boole
 }
 
 export function WorkspaceBootPreview({ posterSrc }: { posterSrc?: string | null }) {
+  if (!posterSrc) {
+    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card" aria-hidden><WorkspacePreviewHeaderSkeleton /></section><WorkspaceEmptyPreview media="video" /></>;
+  }
   return (
     <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>
       <WorkspacePreviewHeaderSkeleton />

@@ -17,6 +17,7 @@ export type VideoMetadata = {
   height: number;
   durationSec: number;
   fps: number;
+  hasAudio?: boolean;
 };
 
 function normalizeFalUrl(value: string): string {

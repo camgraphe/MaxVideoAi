@@ -1,6 +1,10 @@
 import mcpPublication from '../config/mcp-publication.json';
 
 export const FEATURES = {
+  studio: {
+    maxVideoAiEditor: true,
+    adminOnly: true,
+  },
   delivery: {
     drive: true,
     onedrive: true,
@@ -27,7 +31,6 @@ export const FEATURES = {
     refundsAuto: true,
     itemisedReceipts: true,
     multiApproverTopups: true,
-    memberTiers: true,
     teams: false,
   },
   notifications: {

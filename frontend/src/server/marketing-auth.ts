@@ -25,3 +25,12 @@ export async function getMarketingAuthSnapshot(): Promise<MarketingAuthSnapshot>
     return { email: null, isAdmin: false };
   }
 }
+export async function hasMarketingNavigationSession(): Promise<boolean> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.auth.getSession();
+    return !error && Boolean(data.session?.access_token);
+  } catch {
+    return false;
+  }
+}

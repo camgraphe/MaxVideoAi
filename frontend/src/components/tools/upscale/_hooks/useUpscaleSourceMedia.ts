@@ -91,7 +91,7 @@ export function useUpscaleSourceMedia({
         setMediaUrl(uploaded.url);
         setResult(null);
         setPreviewMode('source');
-        setMessage(uploaded.name ?? file.name);
+        setMessage(null);
       } catch (uploadError) {
         setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
       } finally {
@@ -119,19 +119,19 @@ export function useUpscaleSourceMedia({
         changeMediaType(nextMediaType);
       }
       setSource({
-        id: asset.id.startsWith('job:') ? null : asset.id,
-        jobId: asset.id.startsWith('job:') ? asset.id.slice(4) : null,
+        id: asset.savedAssetId ?? (asset.sourceOutputId || asset.source === 'recent' || asset.id.startsWith('job:') ? null : asset.id),
+        jobId: asset.jobId ?? (asset.id.startsWith('job:') ? asset.id.slice(4) : null),
         url: asset.url,
         width: asset.width ?? null,
         height: asset.height ?? null,
         mime: asset.mime ?? (nextMediaType === 'video' ? 'video/mp4' : 'image/png'),
-        name: asset.source ? `${asset.source} asset` : copy.library,
+        name: copy.library,
       });
       setMediaUrl(asset.url);
       setResult(null);
       setPreviewMode('source');
       setError(null);
-      setMessage(asset.source ? `${copy.library}: ${asset.source}` : copy.library);
+      setMessage(null);
       setLibraryModalOpen(false);
     },
     [

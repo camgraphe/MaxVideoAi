@@ -36,6 +36,7 @@ export function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forc
   if (forceImageGroup || surface === 'image') {
     return `/app/image?job=${encodeURIComponent(jobId)}`;
   }
+  if (surface === 'tool') return '/app/tools';
   if (surface === 'upscale') {
     return `/app/tools/upscale?job=${encodeURIComponent(jobId)}`;
   }
@@ -55,7 +56,7 @@ export function resolveGroupLibrarySavePayload(group: GroupSummary): LibrarySave
   const audioUrl = firstHttpUrl([group.hero.audioUrl, ...members.map((member) => member.audioUrl)]);
   const thumbUrl = firstHttpUrl([group.hero.thumbUrl, firstPreview?.thumbUrl, job?.thumbUrl]);
   const previewUrl = firstHttpUrl([group.hero.previewVideoUrl, firstPreview?.previewVideoUrl, job?.previewVideoUrl]);
-  const imageUrl = firstHttpUrl([jobRenderUrl, ...members.map((member) => member.thumbUrl), thumbUrl]);
+  const imageUrl = firstHttpUrl([group.hero.originalUrl, jobRenderUrl, ...members.map((member) => member.originalUrl)]);
   const jobId = job?.jobId ?? group.hero.jobId ?? group.id;
   const label = job?.prompt ?? group.hero.prompt ?? undefined;
 
@@ -74,7 +75,7 @@ export function resolveGroupLibrarySavePayload(group: GroupSummary): LibrarySave
 export function resolveEntryLibrarySavePayload(entry: MediaLightboxEntry): LibrarySavePayload | null {
   const videoUrl = firstHttpUrl([entry.videoUrl]);
   const audioUrl = firstHttpUrl([entry.audioUrl]);
-  const imageUrl = firstHttpUrl([entry.imageUrl, entry.thumbUrl]);
+  const imageUrl = firstHttpUrl([entry.imageUrl]);
   const label = entry.prompt ?? entry.label ?? undefined;
 
   if (videoUrl) {

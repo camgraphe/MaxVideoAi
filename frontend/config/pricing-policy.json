@@ -19,6 +19,16 @@
       "totalRounding": "nearest"
     },
     {
+      "id": "audio-tripled-rounded",
+      "vendorSubtotalRounding": "preserve",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest",
+      "subtotalRounding": "up",
+      "subtotalRoundingIncrementCents": 5
+    },
+    {
       "id": "schema-current",
       "vendorSubtotalRounding": "nearest",
       "marginRounding": "up",
@@ -67,14 +77,24 @@
       "currency": "USD"
     },
     {
+      "id": "toolbox-finishing",
+      "engineId": "toolbox-finishing",
+      "marginPercent": 1.5,
+      "marginFlatCents": 0,
+      "surchargeAudioPercent": 0,
+      "surchargeUpscalePercent": 0,
+      "currency": "USD",
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "audio-current",
       "engineId": "audio-generation",
-      "marginPercent": 1.5,
+      "marginPercent": 2,
       "marginFlatCents": 0,
       "surchargeAudioPercent": 0.2,
       "surchargeUpscalePercent": 0.5,
       "currency": "USD",
-      "compatibilityProfile": "audio-current"
+      "compatibilityProfile": "audio-tripled-rounded"
     },
     {
       "id": "storyboard-generate",

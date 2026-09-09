@@ -2,14 +2,13 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineInputSchema, Mode } from '@/types/engines';
 import { useWorkspaceAssetLibrary } from './useWorkspaceAssetLibrary';
-import type {
-  CommitInputAssetMutation,
-  WorkspaceInputAssetState,
-} from './useWorkspaceAssetState';
+import type { CommitInputAssetMutation, WorkspaceInputAssetState } from './useWorkspaceAssetState';
 import { useWorkspaceKlingElementAssets } from './useWorkspaceKlingElementAssets';
 import { useWorkspaceReferenceAssets } from './useWorkspaceReferenceAssets';
 
 type UseWorkspaceAssetsOptions = {
+  accountScope?: string | null;
+  userId?: string | null;
   inputAssets: WorkspaceInputAssetState;
   setInputAssets: Dispatch<SetStateAction<WorkspaceInputAssetState>>;
   commitInputAssetMutation: CommitInputAssetMutation;
@@ -26,6 +25,8 @@ type UseWorkspaceAssetsOptions = {
 };
 
 export function useWorkspaceAssets({
+  accountScope,
+  userId,
   inputAssets,
   setInputAssets,
   commitInputAssetMutation,
@@ -46,36 +47,37 @@ export function useWorkspaceAssets({
     visibleAssetLibrary,
     isAssetLibraryLoading,
     assetLibraryError,
+    assetLibraryHasMore,
+    isAssetLibraryLoadingMore,
     assetDeletePendingId,
     fetchAssetLibrary,
+    loadMoreAssetLibrary,
     handleAssetLibrarySourceChange,
     closeAssetLibrary,
     handleDeleteLibraryAsset,
     resetAssetLibraryForSource,
   } = useWorkspaceAssetLibrary({
+    userId,
     showNotice,
     setInputAssets,
   });
 
-  const {
-    handleOpenAssetLibrary,
-    handleSelectLibraryAsset,
-    handleAssetAdd,
-    handleAssetRemove,
-  } = useWorkspaceReferenceAssets({
-    engineId,
-    inputSchema,
-    preferredMode,
-    workflowCopy,
-    showNotice,
-    inputAssets,
-    setInputAssets,
-    commitInputAssetMutation,
-    assetLibrarySource,
-    resetAssetLibraryForSource,
-    setAssetPickerTarget,
-    setAssetLibrary,
-  });
+  const { handleOpenAssetLibrary, handleSelectLibraryAsset, handleAssetAdd, handleAssetRemove } =
+    useWorkspaceReferenceAssets({
+      accountScope,
+      engineId,
+      inputSchema,
+      preferredMode,
+      workflowCopy,
+      showNotice,
+      inputAssets,
+      setInputAssets,
+      commitInputAssetMutation,
+      assetLibrarySource,
+      resetAssetLibraryForSource,
+      setAssetPickerTarget,
+      setAssetLibrary,
+    });
 
   const {
     handleOpenKlingAssetLibrary,
@@ -85,6 +87,7 @@ export function useWorkspaceAssets({
     handleKlingElementAssetRemove,
     handleKlingElementAssetAdd,
   } = useWorkspaceKlingElementAssets({
+    accountScope,
     showNotice,
     klingElements,
     setKlingElements,
@@ -102,8 +105,11 @@ export function useWorkspaceAssets({
     visibleAssetLibrary,
     isAssetLibraryLoading,
     assetLibraryError,
+    assetLibraryHasMore,
+    isAssetLibraryLoadingMore,
     assetDeletePendingId,
     fetchAssetLibrary,
+    loadMoreAssetLibrary,
     handleAssetLibrarySourceChange,
     closeAssetLibrary,
     handleDeleteLibraryAsset,

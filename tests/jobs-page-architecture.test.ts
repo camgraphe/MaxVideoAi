@@ -67,8 +67,10 @@ test('jobs route-local modules expose expected contracts', () => {
   assert.match(shellSource, /AppSidebar/);
   assert.match(shellSource, /GroupedJobCard/);
   assert.match(shellSource, /GroupViewerModal/);
-  assert.match(shellSource, /renderGroupGrid/);
-  assert.match(shellSource, /renderCollapsedRail/);
+  assert.match(shellSource, /filterActivityGroups/);
+  assert.doesNotMatch(shellSource, /CollapsedGroupRail|collapsedSections|sections\.map/);
+  assert.match(shellSource, /JOBS_SOURCES/);
+  assert.match(shellSource, /heroJobId && surface !== 'background-removal'/, 'the background-removal tool does not hydrate job settings from query parameters');
   assert.match(collapsedRailSource, /export function CollapsedGroupRailSkeleton/);
   assert.match(collapsedRailSource, /export function CollapsedGroupRail/);
   assert.match(skeletonCardsSource, /export function renderSkeletonCards/);
@@ -76,8 +78,9 @@ test('jobs route-local modules expose expected contracts', () => {
   assert.match(copyHookSource, /DEFAULT_JOBS_COPY\.sections/);
   assert.match(controllerHookSource, /export function useJobsPageController/);
   assert.match(controllerHookSource, /useInfiniteJobs/);
-  assert.match(controllerHookSource, /useInfiniteJobs\(JOBS_PAGE_SIZE, \{ surface: 'storyboard' \}\)/);
-  assert.match(controllerHookSource, /key: 'storyboard'/);
+  assert.equal((controllerHookSource.match(/useInfiniteJobs\(JOBS_PAGE_SIZE/g) ?? []).length, 1);
+  assert.match(controllerHookSource, /surface: source/);
+  assert.match(controllerHookSource, /useState<JobsSource>\('all'\)/);
   assert.match(controllerHookSource, /saveAssetToLibrary/);
   assert.match(controllerHookSource, /getJobStatus/);
   assert.match(controllerHookSource, /window\.addEventListener\('jobs:hidden'/);
@@ -91,8 +94,8 @@ test('jobs route-local modules expose expected contracts', () => {
   assert.match(helpersSource, /\/app\/tools\/storyboard\?job=/);
   assert.match(helpersSource, /export function resolveGroupLibrarySavePayload/);
   assert.match(helpersSource, /export function resolveEntryLibrarySavePayload/);
-  assert.match(typesSource, /export type JobsSectionKey/);
+  assert.match(typesSource, /export type JobsSource/);
   assert.match(typesSource, /'storyboard'/);
-  assert.match(typesSource, /export interface JobsPageSection/);
+  assert.match(typesSource, /'background-removal'/);
   assert.match(typesSource, /export type \{ GroupedJobAction \}/);
 });

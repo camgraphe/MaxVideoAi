@@ -1,3 +1,4 @@
+import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
@@ -19,6 +20,7 @@ import {
 } from '../_lib/workspace-upload-errors';
 
 type UseWorkspaceKlingElementAssetsOptions = {
+  accountScope?: string | null;
   showNotice: (message: string) => void;
   klingElements: KlingElementState[];
   setKlingElements: Dispatch<SetStateAction<KlingElementState[]>>;
@@ -28,6 +30,7 @@ type UseWorkspaceKlingElementAssetsOptions = {
 };
 
 export function useWorkspaceKlingElementAssets({
+  accountScope,
   showNotice,
   klingElements,
   setKlingElements,
@@ -35,6 +38,7 @@ export function useWorkspaceKlingElementAssets({
   resetAssetLibraryForSource,
   setAssetPickerTarget,
 }: UseWorkspaceKlingElementAssetsOptions) {
+  const valid = useWorkspaceAssetLifetime(accountScope);
   const klingElementsRef = useRef<KlingElementState[]>([]);
 
   useEffect(() => {
@@ -53,40 +57,48 @@ export function useWorkspaceKlingElementAssets({
 
   const handleOpenKlingAssetLibrary = useCallback(
     (elementId: string, slot: 'frontal' | 'reference' | 'video', slotIndex?: number) => {
+      if (!valid()) return;
       const nextSource = slot === 'video' ? 'recent' : 'all';
       if (assetLibrarySource !== nextSource) {
         resetAssetLibraryForSource(nextSource);
       }
       setAssetPickerTarget({ kind: 'kling', elementId, slot, slotIndex });
     },
-    [assetLibrarySource, resetAssetLibraryForSource, setAssetPickerTarget]
+    [valid, assetLibrarySource, resetAssetLibraryForSource, setAssetPickerTarget],
   );
 
   const handleSelectKlingLibraryAsset = useCallback(
     (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => {
+      if (!valid()) return;
       const newAsset = buildKlingLibraryAsset(asset);
       setKlingElements((previous) =>
-        insertKlingLibraryAsset(previous, target, newAsset, revokeKlingAssetPreview)
+        insertKlingLibraryAsset(previous, target, newAsset, revokeKlingAssetPreview),
       );
 
       setAssetPickerTarget(null);
     },
-    [setAssetPickerTarget, setKlingElements]
+    [valid, setAssetPickerTarget, setKlingElements],
   );
 
   const handleKlingElementAdd = useCallback(() => {
+    if (!valid()) return;
     setKlingElements((previous) => [...previous, createKlingElement()]);
-  }, [setKlingElements]);
+  }, [valid, setKlingElements]);
 
-  const handleKlingElementRemove = useCallback((id: string) => {
-    setKlingElements((previous) => {
-      const next = previous.filter((element) => element.id !== id);
-      return next.length ? next : [createKlingElement()];
-    });
-  }, [setKlingElements]);
+  const handleKlingElementRemove = useCallback(
+    (id: string) => {
+      if (!valid()) return;
+      setKlingElements((previous) => {
+        const next = previous.filter((element) => element.id !== id);
+        return next.length ? next : [createKlingElement()];
+      });
+    },
+    [valid, setKlingElements],
+  );
 
   const handleKlingElementAssetRemove = useCallback(
     (elementId: string, slot: 'frontal' | 'reference' | 'video', index?: number) => {
+      if (!valid()) return;
       setKlingElements((previous) =>
         previous.map((element) => {
           if (element.id !== elementId) return element;
@@ -104,14 +116,15 @@ export function useWorkspaceKlingElementAssets({
             references[index] = null;
           }
           return { ...element, references };
-        })
+        }),
       );
     },
-    [setKlingElements]
+    [valid, setKlingElements],
   );
 
   const handleKlingElementAssetAdd = useCallback(
     (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => {
+      if (!valid()) return;
       const assetId = createLocalId('element_asset');
       const previewUrl = URL.createObjectURL(file);
       const baseAsset: KlingElementAsset = {
@@ -123,6 +136,7 @@ export function useWorkspaceKlingElementAssets({
         url: undefined as string | undefined,
       };
 
+      if (!valid()) return;
       setKlingElements((previous) =>
         previous.map((element) => {
           if (element.id !== elementId) return element;
@@ -135,7 +149,8 @@ export function useWorkspaceKlingElementAssets({
             return { ...element, video: baseAsset };
           }
           const references = [...element.references];
-          let targetIndex = typeof index === 'number' ? index : references.findIndex((entry) => entry === null);
+          let targetIndex =
+            typeof index === 'number' ? index : references.findIndex((entry) => entry === null);
           if (targetIndex < 0) {
             targetIndex = references.length;
           }
@@ -145,7 +160,7 @@ export function useWorkspaceKlingElementAssets({
           revokeKlingAssetPreview(references[targetIndex]);
           references[targetIndex] = baseAsset;
           return { ...element, references };
-        })
+        }),
       );
 
       const upload = async () => {
@@ -153,7 +168,13 @@ export function useWorkspaceKlingElementAssets({
           const preparedFile =
             slot === 'video'
               ? file
-              : await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 });
+              : await prepareImageFileForUpload(file, {
+                  maxBytes: 25 * 1024 * 1024,
+                });
+          if (!valid()) {
+            revokeKlingAssetPreview(baseAsset);
+            return;
+          }
           const formData = new FormData();
           formData.append('file', preparedFile, preparedFile.name);
           const uploadEndpoint = slot === 'video' ? '/api/uploads/video' : '/api/uploads/image';
@@ -163,7 +184,16 @@ export function useWorkspaceKlingElementAssets({
           });
           const payload = await response.json().catch(() => null);
           if (!response.ok || !payload?.ok) {
-            throw createUploadFailure(slot === 'video' ? 'video' : 'image', response.status, payload, 'Upload failed');
+            throw createUploadFailure(
+              slot === 'video' ? 'video' : 'image',
+              response.status,
+              payload,
+              'Upload failed',
+            );
+          }
+          if (!valid()) {
+            revokeKlingAssetPreview(baseAsset);
+            return;
           }
           const assetResponse = payload.asset as {
             id: string;
@@ -195,9 +225,13 @@ export function useWorkspaceKlingElementAssets({
               }
               const references = element.references.map((asset) => updateAsset(asset));
               return { ...element, references };
-            })
+            }),
           );
         } catch (error) {
+          if (!valid()) {
+            revokeKlingAssetPreview(baseAsset);
+            return;
+          }
           const assetType = slot === 'video' ? 'video' : 'image';
           const message = getUploadFailureMessage(assetType, error, 'Upload failed.');
           const uploadError = error as UploadFailure;
@@ -212,7 +246,7 @@ export function useWorkspaceKlingElementAssets({
               maxMB: uploadError?.maxMB ?? null,
               message,
             },
-            error
+            error,
           );
           setKlingElements((previous) =>
             previous.map((element) => {
@@ -225,7 +259,7 @@ export function useWorkspaceKlingElementAssets({
               if (slot === 'video') return { ...element, video: markError(element.video) };
               const references = element.references.map((asset) => markError(asset));
               return { ...element, references };
-            })
+            }),
           );
           showNotice(message);
         }
@@ -233,7 +267,7 @@ export function useWorkspaceKlingElementAssets({
 
       void upload();
     },
-    [setKlingElements, showNotice]
+    [valid, setKlingElements, showNotice],
   );
 
   return {

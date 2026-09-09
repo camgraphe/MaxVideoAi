@@ -11,12 +11,11 @@ import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
 import type { AgentOpenUrlDestination } from './types';
 import {
-  invalidatePreparedQuote,
-  lockOwnedQuote,
   type LockedOwnedQuote,
   type McpGenerationQuote,
   type OwnedQuoteInput,
 } from './quote-repository';
+import { anyGenerationQuoteRepository, type CanonicalAnyGenerationRequest } from './audio-quote-repository';
 
 const TOKEN_VERSION = 'v1';
 const TOKEN_LIFETIME_SECONDS = 10 * 60;
@@ -44,14 +43,14 @@ export type McpTopupHandoff = McpTopupHandoffPayload & {
   freshQuoteRequired: true;
   nextActionAfterFunding: {
     tool: 'get_account_status';
-    then: 'prepare_generation';
+    then: 'prepare_generation' | 'prepare_audio_generation';
   };
 };
 
 export type McpTopupNotRequired = {
   topupRequired: false;
   nextAction: {
-    tool: 'confirm_generation';
+    tool: 'confirm_generation' | 'confirm_audio_generation';
     arguments: { quoteId: string; confirmed: true };
   };
 };
@@ -68,21 +67,21 @@ export type McpTopupHandoffDependencies = {
   lockOwnedQuote(
     input: OwnedQuoteInput,
     dependencies: { executor: TransactionQueryExecutor },
-  ): Promise<LockedOwnedQuote | null>;
+  ): Promise<LockedOwnedQuote<CanonicalAnyGenerationRequest> | null>;
   getWalletSummary(userId: string, executor: TransactionQueryExecutor): Promise<WalletSummary>;
   invalidatePreparedQuote(
     input: OwnedQuoteInput,
     dependencies: { executor: TransactionQueryExecutor; expiredAt: Date },
-  ): Promise<McpGenerationQuote | null>;
+  ): Promise<McpGenerationQuote<CanonicalAnyGenerationRequest> | null>;
 };
 
 const defaultDependencies: Omit<McpTopupHandoffDependencies, 'billingBaseUrl'> = {
   secret: process.env.MCP_TOPUP_HANDOFF_SECRET,
   randomUUID,
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
-  lockOwnedQuote,
+  lockOwnedQuote: anyGenerationQuoteRepository.lockOwnedQuote,
   getWalletSummary,
-  invalidatePreparedQuote,
+  invalidatePreparedQuote: anyGenerationQuoteRepository.invalidatePreparedQuote,
 };
 
 type TokenOptions = {
@@ -276,7 +275,7 @@ function staleQuote(): never {
 
 type TransactionResult =
   | { kind: 'stale' }
-  | { kind: 'not_required'; quoteId: string }
+  | { kind: 'not_required'; quoteId: string; audio: boolean }
   | { kind: 'handoff'; value: McpTopupHandoff };
 
 export async function createMcpTopupHandoff(
@@ -313,7 +312,7 @@ export async function createMcpTopupHandoff(
       throw new AgentApiError('INTERNAL_ERROR', 'The wallet balance is unavailable.');
     }
     if (wallet.balanceCents >= quote.priceCents) {
-      return { kind: 'not_required', quoteId: quote.quoteId };
+      return { kind: 'not_required', quoteId: quote.quoteId, audio: quote.request.surface === 'audio' };
     }
     const amountCents = Math.max(MIN_TOPUP_CENTS, quote.priceCents - wallet.balanceCents);
     const quoteIntentId = dependencies.randomUUID();
@@ -348,7 +347,7 @@ export async function createMcpTopupHandoff(
         freshQuoteRequired: true,
         nextActionAfterFunding: {
           tool: 'get_account_status',
-          then: 'prepare_generation',
+          then: quote.request.surface === 'audio' ? 'prepare_audio_generation' : 'prepare_generation',
         },
       },
     };
@@ -358,7 +357,7 @@ export async function createMcpTopupHandoff(
     return {
       topupRequired: false,
       nextAction: {
-        tool: 'confirm_generation',
+        tool: result.audio ? 'confirm_audio_generation' : 'confirm_generation',
         arguments: { quoteId: result.quoteId, confirmed: true },
       },
     };

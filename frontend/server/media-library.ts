@@ -20,6 +20,7 @@ export {
   applyOutputsToJobPayload,
   listJobOutputsByJobIds,
   listRecentOutputs,
+  listRecentOutputPage,
   listStoryboardKlingFirstFrameOutputs,
   upsertJobOutputs,
   upsertLegacyJobOutputs,
@@ -28,6 +29,8 @@ export {
 export {
   deleteLibraryAsset,
   ensureReusableAsset,
+  findLibraryAssetByOrigin,
   listLibraryAssets,
+  listLibraryAssetPage,
   saveJobOutputToLibrary,
 } from './media-library/assets';

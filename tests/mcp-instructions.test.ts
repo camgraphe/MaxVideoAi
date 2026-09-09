@@ -52,6 +52,15 @@ const services = {
   async importReferenceFiles() {
     throw new Error('unused');
   },
+  async listAudioCapabilities() {
+    throw new Error('unused');
+  },
+  async prepareAudioGeneration() {
+    throw new Error('unused');
+  },
+  async confirmAudioGeneration() {
+    throw new Error('unused');
+  },
 } satisfies MaxVideoAiMcpServices;
 
 async function getInstructions(options: MaxVideoAiMcpServerOptions): Promise<string> {
@@ -138,6 +147,28 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /completed.*present_generation|present_generation.*completed/is);
   assert.match(instructions, /inline.*(?:video|image).*compatible.*host/is);
   assert.match(instructions, /(?:resource link|library).*fallback.*(?:without|does not).*UI/is);
+});
+
+test('instructions advertise the exact Audio quote flow only behind both paid and Audio gates', async () => {
+  const disabledByPaidGate = await getInstructions({
+    paidGeneration: false,
+    referenceUploads: false,
+    audioGeneration: true,
+  });
+  assert.doesNotMatch(disabledByPaidGate, /list_audio_capabilities|prepare_audio_generation|confirm_audio_generation/i);
+
+  const enabled = await getInstructions({
+    paidGeneration: true,
+    referenceUploads: false,
+    audioGeneration: true,
+  });
+  assert.match(enabled, /list_audio_capabilities.*currently available mode/is);
+  assert.match(enabled, /prepare_audio_generation.*exact cents.*currency.*expiry.*balance.*top-up/is);
+  assert.match(enabled, /explicit approval.*exact quote.*confirm_audio_generation/is);
+  assert.match(enabled, /failed or refunded.*fresh quote.*new explicit approval/is);
+  assert.match(enabled, /never automatically retry an Audio provider failure/i);
+  assert.match(enabled, /get_generation_status.*list_recent_generations.*surface audio/is);
+  assert.match(enabled, /present completed original Audio with present_generation/i);
 });
 
 test('instructions cover all video workflows and distinguish private media selection from upload', async () => {

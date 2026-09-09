@@ -1,7 +1,12 @@
 'use client';
 
-import type { ComponentProps, ReactNode } from 'react';
+import { useId, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import { recentMediaCopy } from '@/components/library/recent-media-copy';
+import { AppGlyph } from '@/components/app/AppGlyph';
+import type { RecentReferenceDropProps } from './WorkspaceRecentReferences.client';
 import dynamic from 'next/dynamic';
+import { focusWorkspaceRecentTarget } from '../_lib/workspace-recent-focus';
+import { WorkspaceCreationHeading } from './WorkspaceCreationHeading';
 import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
@@ -56,6 +61,10 @@ type WorkspaceAppShellProps = {
   compositeOverrideSummary: PreviewDockProps['compositeOverrideSummary'];
   setViewerTarget: PreviewDockProps['setViewerTarget'];
   composerSurface: ReactNode;
+  modelReviewCommands?: ReactNode;
+  recentMedia?: ReactNode;
+  onOpenRecentMedia?: () => void;
+  recentDropProps?: RecentReferenceDropProps;
 };
 
 export function WorkspaceAppShell({
@@ -92,10 +101,42 @@ export function WorkspaceAppShell({
   compositeOverrideSummary,
   setViewerTarget,
   composerSurface,
+  modelReviewCommands,
+  recentMedia,
+  onOpenRecentMedia,
+  recentDropProps,
 }: WorkspaceAppShellProps) {
+  const [railView, setRailView] = useState<'activity' | 'recent'>('activity');
+  const [mobileRecentOpen, setMobileRecentOpen] = useState(false);
+  const recentPanelRef = useRef<HTMLDivElement>(null);
+  const activityPanelRef = useRef<HTMLDivElement>(null);
+  const recentOpenerRef = useRef<HTMLButtonElement>(null);
+  const recentPanelId = useId();
+  const activityPanelId = useId();
+  const copy = recentMediaCopy(modeLabelLocale);
+  const closeMobileRecent = () => {
+    setMobileRecentOpen(false);
+    setRailView('activity');
+    if (window.matchMedia('(min-width: 768px)').matches) return;
+    requestAnimationFrame(() => {
+      const opener = recentOpenerRef.current;
+      focusWorkspaceRecentTarget(opener, opener?.closest<HTMLElement>('.app-creation-heading') ?? opener);
+    });
+  };
+  const openRecentMedia = () => {
+    if (railView !== 'recent') onOpenRecentMedia?.();
+    setRailView('recent');
+    setMobileRecentOpen(true);
+  };
   return (
     <WorkspaceChrome
       rail={
+        <div className="app-media-rail">
+          {recentMedia ? <div className="app-media-rail-switch" aria-label={copy.title}>
+            <button type="button" aria-pressed={railView === 'activity'} onClick={() => { setRailView('activity'); setMobileRecentOpen(false); }}>{copy.activity}</button>
+            <button type="button" aria-pressed={railView === 'recent'} onClick={openRecentMedia}>{copy.title}</button>
+          </div> : null}
+          <div id={activityPanelId} ref={activityPanelRef} tabIndex={-1} hidden={railView !== 'activity'}>
         <GalleryRail
           engine={selectedEngine}
           engineRegistry={engines}
@@ -106,8 +147,22 @@ export function WorkspaceAppShell({
           onFeedStateChange={handleGalleryFeedStateChange}
           variant="responsive"
         />
+          </div>
+          {recentMedia ? <div id={recentPanelId} ref={recentPanelRef} tabIndex={-1} hidden={railView !== 'recent'}
+            className={`app-recent-rail-panel${mobileRecentOpen ? ' is-mobile-open' : ''}`}
+            onKeyDown={(event) => { if (event.key === 'Escape') { closeMobileRecent(); } }}>
+            <button className="app-recent-mobile-close" type="button" onClick={closeMobileRecent}>{copy.close}</button>
+            {recentMedia}
+          </div> : null}
+        </div>
       }
     >
+      <WorkspaceCreationHeading action={recentMedia ? <>
+        <button className="app-recent-mobile-open" type="button" aria-controls={activityPanelId}
+          onClick={() => { setRailView('activity'); setMobileRecentOpen(false); requestAnimationFrame(() => { focusWorkspaceRecentTarget(activityPanelRef.current); }); }}>{copy.activity}</button>
+        <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
+          onClick={() => { openRecentMedia(); requestAnimationFrame(() => { focusWorkspaceRecentTarget(recentPanelRef.current); }); }}><AppGlyph name="library" />{copy.title}</button>
+      </> : null} />
       {notice && (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
           {notice}
@@ -139,6 +194,7 @@ export function WorkspaceAppShell({
           engineModeOptions={engineModeOptions}
           modeLabelLocale={modeLabelLocale}
           onEngineChange={handleEngineChange}
+          modelReviewCommands={modelReviewCommands}
           onModeChange={handleModeChange}
           disabledEngineReasons={disabledEngineReasons}
           engineScores={engineScores}
@@ -146,7 +202,7 @@ export function WorkspaceAppShell({
           compositeOverrideSummary={compositeOverrideSummary}
           setViewerTarget={setViewerTarget}
         />
-        {composerSurface}
+        <div {...recentDropProps}>{composerSurface}</div>
       </div>
     </WorkspaceChrome>
   );

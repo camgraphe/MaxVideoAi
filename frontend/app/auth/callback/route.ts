@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { safeInternalReturnTarget } from '@/lib/auth-return-target';
 import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +8,7 @@ const DEFAULT_NEXT_PATH = '/generate';
 
 function sanitizeNextPath(value: string | null): string {
   if (!value) return DEFAULT_NEXT_PATH;
-  const trimmed = value.trim();
+  const trimmed = safeInternalReturnTarget(value, DEFAULT_NEXT_PATH);
   if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return DEFAULT_NEXT_PATH;
   if (trimmed.startsWith('/login') || trimmed.startsWith('/api') || trimmed.startsWith('/_next')) {
     return DEFAULT_NEXT_PATH;

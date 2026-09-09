@@ -51,28 +51,30 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    await ensureBillingSchema();
+    const preferred = await getUserPreferredCurrency(userId, { throwOnError: true });
+    const balances = await getWalletBalancesByCurrency(userId, { throwOnError: true });
+    const formattedBalances = balances.map((entry) => ({
+      currency: entry.currency ? entry.currency.toUpperCase() : null,
+      balanceCents: entry.balanceCents,
+    }));
+
+    return NextResponse.json(
+      {
+        ok: true,
+        currency: normalizeForResponse(preferred),
+        defaultCurrency,
+        enabled: enabledUpper,
+        balances: formattedBalances,
+        locked: Boolean(preferred),
+      } satisfies CurrencySummaryResponse
+    );
   } catch (error) {
-    console.warn('[api/me/currency] ensureBillingSchema failed', error instanceof Error ? error.message : error);
+    console.warn('[api/me/currency] read failed', { type: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json(
+      { ok: false, error: 'Currency information unavailable', enabled: enabledUpper, defaultCurrency } satisfies CurrencySummaryResponse,
+      { status: 503 },
+    );
   }
-
-  const preferred = await getUserPreferredCurrency(userId);
-  const balances = await getWalletBalancesByCurrency(userId);
-  const formattedBalances = balances.map((entry) => ({
-    currency: entry.currency ? entry.currency.toUpperCase() : null,
-    balanceCents: entry.balanceCents,
-  }));
-
-  return NextResponse.json(
-    {
-      ok: true,
-      currency: normalizeForResponse(preferred),
-      defaultCurrency,
-      enabled: enabledUpper,
-      balances: formattedBalances,
-      locked: Boolean(preferred),
-    } satisfies CurrencySummaryResponse
-  );
 }
 
 export async function POST(req: NextRequest) {

@@ -7,21 +7,29 @@ import {
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 
 type CheckoutReturnToastOptions = {
+  accountId: string | null;
+  authLoading: boolean;
   cancelledMessage: string;
   onAmountReturned: (amountCents: number | null) => void;
   onCancelled: (amountCents: number | null, currency: string) => void;
   onGoogleAdsConversion: (value?: number, currency?: string) => void;
   onReturnTarget: (target: WalletCheckoutReturnTarget | null) => void;
+  onStatus: (status: 'success' | 'cancelled') => void;
+  onSuccess: () => void;
   onToast: (message: string | null) => void;
   successMessage: string;
 };
 
 export function useBillingCheckoutReturnToast({
+  accountId,
+  authLoading,
   cancelledMessage,
   onAmountReturned,
   onCancelled,
   onGoogleAdsConversion,
   onReturnTarget,
+  onStatus,
+  onSuccess,
   onToast,
   successMessage,
 }: CheckoutReturnToastOptions) {
@@ -40,13 +48,17 @@ export function useBillingCheckoutReturnToast({
         : null;
     const parsedCurrency = String(currencyParam ?? 'USD').toUpperCase();
     if (!status) return undefined;
-    const message = status === 'success' ? successMessage : status === 'cancelled' ? cancelledMessage : null;
-    if (!message) return undefined;
+    const returnStatus = status === 'success' ? 'success' : status === 'cancelled' ? 'cancelled' : null;
+    if (!returnStatus) return undefined;
+    if (returnStatus === 'success' && (authLoading || !accountId)) return undefined;
+    const message = returnStatus === 'success' ? successMessage : cancelledMessage;
 
+    onStatus(returnStatus);
     onToast(message);
     onAmountReturned(parsedAmountCents);
     const timeout = window.setTimeout(() => onToast(null), 4000);
-    if (status === 'success') {
+    if (returnStatus === 'success') {
+      onSuccess();
       onReturnTarget(consumePendingWalletCheckoutReturn());
       onGoogleAdsConversion(amountParam ? Number(amountParam) : undefined, currencyParam ?? undefined);
       if (checkoutSessionIdParam) {
@@ -58,7 +70,7 @@ export function useBillingCheckoutReturnToast({
         });
       }
     }
-    if (status === 'cancelled') {
+    if (returnStatus === 'cancelled') {
       clearPendingWalletCheckoutReturn();
       onReturnTarget(null);
       onCancelled(parsedAmountCents, parsedCurrency);
@@ -76,5 +88,5 @@ export function useBillingCheckoutReturnToast({
     );
     window.history.replaceState({}, '', url.toString());
     return () => window.clearTimeout(timeout);
-  }, [cancelledMessage, onAmountReturned, onCancelled, onGoogleAdsConversion, onReturnTarget, onToast, successMessage]);
+  }, [accountId, authLoading, cancelledMessage, onAmountReturned, onCancelled, onGoogleAdsConversion, onReturnTarget, onStatus, onSuccess, onToast, successMessage]);
 }

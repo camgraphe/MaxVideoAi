@@ -4,16 +4,15 @@
 
 import clsx from 'clsx';
 import { useState, type MouseEvent as ReactMouseEvent } from 'react';
-import useSWR from 'swr';
 import { Images, Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
-import { authFetch } from '@/lib/authFetch';
 import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
+import { usePaginatedMediaLibraryAssets } from '@/hooks/usePaginatedMediaLibraryAssets';
 import { isLibraryImageAsset } from '@/lib/library-image';
 import type { CharacterBuilderReferenceImage } from '@/types/character-builder';
 import type { CharacterCopy } from '../_lib/character-builder-copy';
-import type { CharacterLibraryAsset, CharacterLibraryAssetsResponse } from '../_lib/character-builder-types';
+import type { CharacterLibraryAsset } from '../_lib/character-builder-types';
 
 export function ReferenceSlot({
   title,
@@ -105,31 +104,32 @@ export function ReferenceSlot({
 
 export function CharacterReferenceLibraryModal({
   open,
+  userId,
   onClose,
   onSelect,
   copy,
 }: {
   open: boolean;
+  userId: string | null;
   onClose: () => void;
   onSelect: (asset: CharacterLibraryAsset) => void;
   copy: CharacterCopy;
 }) {
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
-  const swrKey = open
-    ? activeSource === 'all'
-      ? '/api/user-assets?kind=image&limit=60'
-      : `/api/user-assets?kind=image&limit=60&source=${encodeURIComponent(activeSource)}`
-    : null;
-  const { data, error, isLoading } = useSWR<CharacterLibraryAssetsResponse>(swrKey, async (url: string) => {
-    const response = await authFetch(url);
-    const payload = (await response.json().catch(() => null)) as CharacterLibraryAssetsResponse | null;
-    if (!response.ok || !payload?.ok) {
-      throw new Error(copy.library.error);
-    }
-    return payload ?? { ok: true, assets: [] };
+  const source = activeSource === 'all' ? null : activeSource;
+  const { assets: paginatedAssets, error, hasMore, isLoading, isLoadingMore, loadMore } = usePaginatedMediaLibraryAssets({
+    enabled: open,
+    userId,
+    kind: 'image',
+    source,
   });
 
-  const assets = (data?.assets ?? []).filter(isLibraryImageAsset);
+  const assets = paginatedAssets
+    .filter(isLibraryImageAsset)
+    .map((asset) => ({
+      ...asset,
+      source: asset.source === 'saved_job_output' ? 'generated' : asset.source,
+    }));
 
   if (!open) return null;
 
@@ -214,8 +214,9 @@ export function CharacterReferenceLibraryModal({
               {copy.library.empty}
             </div>
           ) : (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {assets.map((asset) => (
+            <div className="space-y-4">
+              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+                {assets.map((asset) => (
                 <button
                   key={asset.id}
                   type="button"
@@ -231,7 +232,15 @@ export function CharacterReferenceLibraryModal({
                     </p>
                   </div>
                 </button>
-              ))}
+                ))}
+              </div>
+              {hasMore ? (
+                <div className="flex justify-center">
+                  <Button type="button" variant="outline" size="sm" disabled={isLoadingMore} onClick={loadMore}>
+                    {copy.library.loadMore}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           )}
         </div>

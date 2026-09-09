@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { reconcileFinishingJobs } from '@/server/tools/finishing-poll';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { linkFalJob } from '@/server/admin-job-tools';
@@ -23,12 +24,16 @@ const POLL_INITIAL_DELAY_MS = 5_000;
 const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
 const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED', 'OK']);
 
-export async function runFalPoll() {
+const defaults = { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs };
+
+export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
+  const { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs } = { ...defaults, ...dependencies };
   const rows = await query<FalPendingJob>(
     `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
 	     FROM app_jobs
 	     WHERE provider_job_id IS NOT NULL
 	       AND COALESCE(provider, 'fal') = 'fal'
+	       AND engine_id IS DISTINCT FROM 'toolbox-finishing'
 	       AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress')
      ORDER BY updated_at ASC
      LIMIT 10`
@@ -38,7 +43,7 @@ export async function runFalPoll() {
   let updates = 0;
 
   for (const job of rows) {
-    if (job.surface === 'audio' || job.engine_id.startsWith('audio-')) {
+    if (job.surface === 'audio' || job.engine_id === 'toolbox-finishing' || job.engine_id.startsWith('audio-')) {
       continue;
     }
 
@@ -328,6 +333,7 @@ export async function runFalPoll() {
        FROM app_jobs
       WHERE provider_job_id IS NOT NULL
         AND COALESCE(provider, 'fal') = 'fal'
+        AND engine_id IS DISTINCT FROM 'toolbox-finishing'
         AND status = 'completed'
         AND video_url ILIKE '%.fal.media/%'
         AND updated_at > NOW() - INTERVAL '7 days'
@@ -368,6 +374,7 @@ export async function runFalPoll() {
        FROM app_jobs
 	      WHERE provider_job_id IS NULL
 	        AND COALESCE(provider, 'fal') = 'fal'
+	        AND engine_id IS DISTINCT FROM 'toolbox-finishing'
 	        AND status = 'pending'
         AND created_at < NOW() - INTERVAL '5 minutes'
       ORDER BY created_at ASC
@@ -386,7 +393,8 @@ export async function runFalPoll() {
 	          WHERE job_id = $1
 	            AND status = 'pending'
 	            AND provider_job_id IS NULL
-	            AND COALESCE(provider, 'fal') = 'fal'`,
+	            AND COALESCE(provider, 'fal') = 'fal'
+	            AND engine_id IS DISTINCT FROM 'toolbox-finishing'`,
         [stale.job_id]
       );
       await query(
@@ -410,6 +418,13 @@ export async function runFalPoll() {
     }
   }
 
+  let finishing = { checked: 0, reconciled: 0, failures: 0 };
+  try {
+    finishing = await reconcileFinishingJobs();
+  } catch {
+    finishing.failures = 1;
+    console.warn('[fal-poll] finishing reconciliation deferred');
+  }
   return NextResponse.json({
     ok: true,
     checked: rows.length,
@@ -419,5 +434,6 @@ export async function runFalPoll() {
     mcpLibraryPromotions,
     mcpLibraryPromotionFailures,
     provisionalFailures,
+    finishing,
   });
 }

@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import deepmerge from 'deepmerge';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -424,8 +425,10 @@ export default function AngleToolPage() {
         outputIndex={activeRecentOutputIndex}
         savingOutputUrl={savingOutputUrl}
       />
+      <ToolMediaHandoff userId={user?.id} destination="angle" locale={locale} onSelect={asset => handleLibrarySelect({ ...asset, width: asset.width ?? undefined, height: asset.height ?? undefined })} disabled={generating || uploading} />
       <AngleImageLibraryModal
         open={libraryModalOpen}
+        userId={user?.id ?? null}
         onClose={() => setLibraryModalOpen(false)}
         onSelect={handleLibrarySelect}
         copy={copy}

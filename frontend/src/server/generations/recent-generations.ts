@@ -17,7 +17,8 @@ export type RecentGenerationSurface =
   | 'angle'
   | 'audio'
   | 'upscale'
-  | 'background-removal';
+  | 'background-removal'
+  | 'tool';
 
 export type RecentGenerationQueryParam = string | number | Date | string[];
 
@@ -152,8 +153,8 @@ export function buildRecentGenerationSurfaceFilterClause(
           OR render_ids IS NOT NULL
           OR COALESCE(engine_id, '') = ANY($${aliasesIndex}::text[])
         )
-        AND COALESCE(surface, '') NOT IN ('storyboard', 'character', 'angle', 'upscale', 'background-removal')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard', 'character-builder', 'angle', 'upscale', 'background-removal', 'video')
+        AND COALESCE(surface, '') NOT IN ('storyboard', 'character', 'angle', 'upscale', 'background-removal', 'tool')
+        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard', 'character-builder', 'angle', 'upscale', 'background-removal', 'video', 'tool')
         AND job_id NOT LIKE 'tool_angle_%'
         AND job_id NOT LIKE 'tool_upscale_%'
         AND job_id NOT LIKE 'tool_background_removal_%'
@@ -171,8 +172,8 @@ export function buildRecentGenerationSurfaceFilterClause(
         OR settings_snapshot->>'surface' = 'video'
       )
       AND NOT (
-        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal')
-        OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal')
+        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
+        OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
         OR job_id LIKE 'tool_angle_%'
         OR job_id LIKE 'tool_upscale_%'
         OR job_id LIKE 'tool_background_removal_%'
@@ -210,8 +211,8 @@ function addFeedFilter(
     return;
   }
   conditions.push(`NOT (
-    surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal')
-    OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal')
+    surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
+    OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
     OR job_id LIKE 'tool_angle_%'
     OR job_id LIKE 'tool_upscale_%'
     OR job_id LIKE 'tool_background_removal_%'
@@ -278,7 +279,7 @@ async function readRecentGenerationRecords(params: {
   return rows.filter((record) => record.user_id === userId);
 }
 
-function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video: string } {
+function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video: string; audio: string } {
   const hasValidRenderEntry = `EXISTS (
     SELECT 1
       FROM jsonb_array_elements(CASE WHEN jsonb_typeof(j.render_ids) = 'array'
@@ -294,11 +295,11 @@ function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video:
     WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) IN ('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale')
       THEN 'image'
     WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'background-removal' THEN 'video'
-    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'audio' THEN NULL
+    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'audio' THEN 'audio'
     WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) IN ('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale')
       THEN 'image'
     WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'background-removal' THEN 'video'
-    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'audio' THEN NULL
+    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'audio' THEN 'audio'
     WHEN j.job_id LIKE 'tool_angle_%' OR j.job_id LIKE 'angle_%' THEN 'image'
     WHEN j.job_id LIKE 'tool_upscale_%' OR j.job_id LIKE 'upscale_%' THEN 'image'
     WHEN j.job_id LIKE 'tool_background_removal_%' OR j.job_id LIKE 'background_removal_%'
@@ -311,12 +312,13 @@ function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video:
   return {
     image: `${classification} = 'image'`,
     video: `${classification} = 'video'`,
+    audio: `${classification} = 'audio'`,
   };
 }
 
 async function readRecentAgentGenerationRecords(params: {
   userId: string;
-  surface: 'video' | 'image' | null;
+  surface: 'video' | 'image' | 'audio' | null;
   status: AgentGenerationStatus['status'] | null;
   cursor?: string | null;
   limit: number;
@@ -330,7 +332,7 @@ async function readRecentAgentGenerationRecords(params: {
   const ownedConditions = [
     'j.user_id = $1',
     'j.hidden IS NOT TRUE',
-    params.surface ? surfaceClauses[params.surface] : `(${surfaceClauses.image} OR ${surfaceClauses.video})`,
+    params.surface ? surfaceClauses[params.surface] : `(${surfaceClauses.image} OR ${surfaceClauses.video} OR ${surfaceClauses.audio})`,
   ];
   if (params.status) {
     queryParams.push(STATUS_VALUES[params.status]);
@@ -414,7 +416,7 @@ export async function readOwnedGenerationRecordsByIds(params: {
 
 export async function listRecentGenerations(params: {
   userId: string;
-  surface?: 'video' | 'image' | null;
+  surface?: 'video' | 'image' | 'audio' | null;
   status?: AgentGenerationStatus['status'] | null;
   cursor?: string | null;
   limit?: number;

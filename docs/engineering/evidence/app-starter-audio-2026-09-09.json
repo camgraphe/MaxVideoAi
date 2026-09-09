@@ -1,0 +1,63 @@
+{
+  "createdAt": "2026-09-09",
+  "language": "English",
+  "voice": {
+    "model": "fal-ai/minimax/speech-02-hd",
+    "input": {
+      "text": "Every story starts with a small idea. A place you have never been. A character you cannot forget. Give it a voice, and suddenly, the whole world comes alive.",
+      "voice_setting": {
+        "voice_id": "English_FriendlyPerson",
+        "speed": 1.06,
+        "vol": 1,
+        "pitch": 0,
+        "emotion": "neutral",
+        "english_normalization": true
+      },
+      "audio_setting": {
+        "format": "mp3",
+        "sample_rate": 44100,
+        "bitrate": 128000,
+        "channel": 1
+      },
+      "language_boost": "English",
+      "output_format": "url"
+    },
+    "requestId": "01a085f4-197e-79e0-8752-44bb3498ca9c",
+    "display": "/assets/app-starters/every-story-0732966f796d.mp3",
+    "durationSec": 10.34449,
+    "transcript": "Every story starts with a small idea, a place you have never been.\nA character you cannot forget.\nGive it a voice, and suddenly, the whole world comes alive."
+  },
+  "instrumental": {
+    "model": "fal-ai/minimax-music/v2.6",
+    "input": {
+      "prompt": "Original instrumental for an energetic English tech creator YouTube demonstration. 128 BPM, punchy syncopated electro-funk and clean breakbeat groove. Tight kick, crisp snare, swinging sixteenth-note closed hi-hats, warm bouncing synth bass, short bright pluck accents, understated chopped rhythmic synth stabs. Confident forward momentum immediately from the first beat. Clear strong beat grid for fast visual edits. Keep a steady rhythmic pulse throughout, no ambient intro, no long builds, no breakdowns, no empty pauses. Add small percussion variations and concise fills every eight bars, with a more lifted groove at the product reveal. Arrange for clear spoken voiceover: minimal lead melody, restrained midrange, no piercing highs, no huge EDM drops. Modern, playful, premium creative studio energy. Purely instrumental, no voices or vocal samples, no lyrics. Approximately two and a half minutes of continuous full groove, with a short clean ending. Entirely original composition.",
+      "is_instrumental": true,
+      "lyrics_optimizer": false
+    },
+    "requestId": "01a07614-2e35-7481-a27a-05636ba612bb",
+    "source": "YouTube production-v2/audio/music-v2/music.mp3",
+    "display": "/assets/app-starters/electro-funk-c1a8c5151e60.mp3",
+    "startSec": 0,
+    "durationSec": 24
+  },
+  "song": {
+    "model": "fal-ai/minimax-music/v2.6",
+    "input": {
+      "prompt": "Original English indie electro-pop song, 112 BPM. Playful confident female lead with clear natural native English pronunciation. Dry close verse vocal, big melodic singable chorus with light harmonies. Bouncy analog synth bass, crisp live-feel drums, shimmering offbeat guitar and a slightly gritty neon-night atmosphere. Strong hook immediately: start with the chorus, no long instrumental intro, no spoken introduction. Fun and distinctive, not corporate advertising. Compact complete song with a clean ending. Entirely original melody and lyrics; no artist imitation.",
+      "lyrics": "[Chorus]\nWe are the color outside the lines\nDancing through the warning signs\nIf the whole world fades to gray\nWe will paint another way\n\n[Verse]\nLast train left without a sound\nWe took the long way out of town\nOne red light and a paper moon\nWe made a night out of coming soon\n\n[Chorus]\nWe are the color outside the lines\nDancing through the warning signs\nIf the whole world fades to gray\nWe will paint another way\n\n[Outro]\nAnother way\nWe will paint another way",
+      "is_instrumental": false,
+      "lyrics_optimizer": false,
+      "audio_setting": {
+        "format": "mp3",
+        "sample_rate": 44100,
+        "bitrate": 256000
+      }
+    },
+    "requestId": "01a085f4-cd84-7db3-9451-e5574bdda74f",
+    "display": "/assets/app-starters/outside-the-lines-30a8afe0351b.mp3",
+    "fullDurationSec": 85.812245,
+    "startSec": 49.5,
+    "durationSec": 28,
+    "verification": "Whisper-1 located the second English chorus from 50.16s to 66.96s, ending lyrics through 75.52s. Automatic transcription is not accent or subjective quality review."
+  }
+}

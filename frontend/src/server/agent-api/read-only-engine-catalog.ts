@@ -1,6 +1,7 @@
 import {
   cloneEngine,
   getBaseEngineIncludingHidden,
+  getBaseEngines,
   getBaseEnginesByCategory,
   type EngineCategory,
 } from '@/lib/engines';
@@ -18,6 +19,8 @@ import {
   projectConfiguredEngine,
 } from '@/server/engine-configuration-projection';
 import type { EngineCaps } from '@/types/engines';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
+import { projectSeededEngineSettings } from '@/server/engine-settings-defaults';
 
 export type ReadOnlyEngineCatalogDependencies = Readonly<{
   databaseConfigured(): boolean;
@@ -35,14 +38,16 @@ async function projectReadOnlyEngines(
   baseEngines: EngineCaps[],
   includeDisabled: boolean,
   dependencies: ReadOnlyEngineCatalogDependencies,
+  seededEngines: EngineCaps[] = [],
 ): Promise<EngineCaps[]> {
   if (!dependencies.databaseConfigured()) return baseEngines.map(cloneEngine);
   const [settings, overrides] = await Promise.all([
     dependencies.fetchSettings(),
     dependencies.fetchOverrides(),
   ]);
+  const effectiveSettings = seededEngines.length ? projectSeededEngineSettings(seededEngines, settings) : settings;
   return baseEngines
-    .map((engine) => projectConfiguredEngine(engine, settings, overrides))
+    .map((engine) => projectConfiguredEngine(engine, effectiveSettings, overrides))
     .filter((entry) => includeDisabled || !entry.disabled)
     .map((entry) => applyConfiguredEngineRuntimeOptions(entry.engine));
 }
@@ -55,6 +60,18 @@ export function getReadOnlyConfiguredEnginesByCategory(
   return projectReadOnlyEngines(getBaseEnginesByCategory(category), includeDisabled, dependencies);
 }
 
+export async function getReadOnlyConfiguredEngine(
+  engineId: string,
+  includeDisabled = false,
+  dependencies: ReadOnlyEngineCatalogDependencies = defaultDependencies,
+): Promise<EngineCaps | undefined> {
+  if (!engineId) return undefined;
+  const base = getBaseEngines().find((engine) => engine.id === engineId);
+  if (!base) return undefined;
+  const [configured] = await projectReadOnlyEngines([base], includeDisabled, dependencies, [base]);
+  return configured;
+}
+
 export async function getReadOnlyConfiguredEngineIncludingHidden(
   engineId: string,
   includeDisabled = false,
@@ -64,6 +81,20 @@ export async function getReadOnlyConfiguredEngineIncludingHidden(
   const base = getBaseEngineIncludingHidden(engineId);
   if (!base) return undefined;
   const [configured] = await projectReadOnlyEngines([base], includeDisabled, dependencies);
+  return configured;
+}
+
+export async function getReadOnlyConfiguredEngineIncludingRuntimePrivate(
+  engineId: string,
+  includeDisabled = false,
+  dependencies: ReadOnlyEngineCatalogDependencies = defaultDependencies,
+): Promise<EngineCaps | undefined> {
+  if (!engineId) return undefined;
+  // Only the public video population is refreshed by the generation seed.
+  const publicBase = getBaseEngines().find((engine) => engine.id === engineId);
+  const base = publicBase ?? getBaseEngineIncludingHidden(engineId) ?? getPrivateRuntimeEngineById(engineId);
+  if (!base) return undefined;
+  const [configured] = await projectReadOnlyEngines([base], includeDisabled, dependencies, publicBase ? [publicBase] : []);
   return configured;
 }
 

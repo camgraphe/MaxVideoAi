@@ -5,7 +5,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { JSDOM } from 'jsdom';
 
-import { buildAgentGenerationRecovery } from '../frontend/src/server/agent-api/generation-status';
+import {
+  buildAgentGenerationRecovery,
+  buildGenerationResourceLinks,
+} from '../frontend/src/server/agent-api/generation-status';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import type { AgentGenerationStatus } from '../frontend/src/server/generations/generation-status';
 import { buildGenerationResultAppHtml } from '../frontend/src/server/mcp/generation-result-app';
@@ -15,11 +18,12 @@ import {
   type MaxVideoAiMcpServices,
 } from '../frontend/src/server/mcp/server';
 
-const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v4.html';
+const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v5.html';
 const LEGACY_TEMPLATE_URIS = [
   'ui://maxvideoai/generation-result-v1.html',
   'ui://maxvideoai/generation-result-v2.html',
   'ui://maxvideoai/generation-result-v3.html',
+  'ui://maxvideoai/generation-result-v4.html',
 ] as const;
 
 const principal: AgentPrincipal = {
@@ -47,6 +51,42 @@ function completedVideoStatus(): AgentGenerationStatus {
       audioUrl: null,
     },
     retryAfterSeconds: null,
+  };
+}
+
+function audioStatus(status: AgentGenerationStatus['status'] = 'completed'): AgentGenerationStatus {
+  return {
+    jobId: 'completed-audio-job',
+    surface: 'audio',
+    status,
+    progress: status === 'completed' ? 100 : status === 'failed' ? 0 : 25,
+    message: status === 'failed' ? 'Audio generation failed.' : null,
+    priceCents: 45,
+    currency: 'USD',
+    paymentStatus: status === 'failed' ? 'refunded_wallet' : 'paid_wallet',
+    result: status === 'completed' ? {
+      surface: 'audio',
+      audioUrl: 'https://media.maxvideoai.com/generated/completed-audio.m4a',
+      videoUrl: null,
+      thumbnailUrl: null,
+      mimeType: 'audio/mp4',
+      durationSec: 12.375,
+    } : null,
+    retryAfterSeconds: status === 'running' ? 5 : null,
+  };
+}
+
+function soundtrackAudioStatus(): AgentGenerationStatus {
+  const status = audioStatus();
+  return {
+    ...status,
+    jobId: 'cinematic-soundtrack-job',
+    result: status.result?.surface === 'audio' ? {
+      ...status.result,
+      audioUrl: null,
+      videoUrl: 'https://media.maxvideoai.com/generated/cinematic-soundtrack',
+      mimeType: 'audio/mpeg',
+    } : null,
   };
 }
 
@@ -143,6 +183,8 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.equal(typeof content?.text, 'string');
   const html = content?.text ?? '';
   assert.match(html, /<video\b[^>]*controls[^>]*playsinline/is);
+  assert.match(html, /<audio\b[^>]*id=["']audio["'][^>]*controls[^>]*preload=["']metadata["'][^>]*hidden/is);
+  assert.doesNotMatch(html, /<audio\b[^>]*autoplay/is);
   assert.match(html, /request\(['"]ui\/initialize['"]/);
   assert.match(html, /appInfo:\s*\{[^}]*name:\s*['"]MaxVideoAI generation result['"]/s);
   assert.match(html, /appCapabilities:\s*\{[^}]*availableDisplayModes:\s*\[['"]inline['"]\]/s);
@@ -153,6 +195,7 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.match(html, /ui\/notifications\/tool-result/);
   assert.match(html, /ui\/open-link/);
   assert.match(html, /<button\b[^>]*id=["']download["'][^>]*>Download<\/button>/is);
+  assert.match(html, /<button\b[^>]*id=["']reuse["'][^>]*>Reuse settings<\/button>/is);
   assert.match(html, /buildResultLibraryUrl\(libraryUrl,\s*result\?\.jobId,\s*result\?\.surface\)/);
   assert.match(html, /searchParams\.set\(['"]view['"],\s*['"]review['"]\)/);
   assert.match(html, /searchParams\.set\(['"]kind['"],\s*resultSurface\)/);
@@ -161,6 +204,14 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.match(html, /name:\s*['"]get_generation_download['"]/);
   assert.match(html, /downloadButton\.addEventListener\(['"]click['"]/);
   assert.match(html, /prefers-color-scheme:\s*dark/);
+  assert.match(html, /result\?\.status === ['"]failed['"]/);
+  assert.match(html, /media\?\.durationSec/);
+  assert.match(html, /\.media\[data-surface=["']audio["']\]/);
+  assert.doesNotMatch(html, /▂|▅|▇|waveform/i);
+  assert.equal((html.match(/<img\b[^>]*id=["']image["']/giu) ?? []).length, 1);
+  assert.match(html, /min-height:\s*44px/);
+  assert.match(html, /grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)/);
+  assert.match(html, /\.action-buttons #open\s*\{[^}]*grid-column:\s*1 \/ -1/);
   assert.match(html, /MaxVideoAI/);
   assert.doesNotMatch(html, /dangerouslySetInnerHTML|eval\(|new Function\(|document\.write\(/);
 
@@ -349,6 +400,80 @@ test('generation presenter opens the targeted render and hands a fresh attachmen
   dom.window.close();
 });
 
+test('v5 Audio fixture renders one manual player, measured duration, and keyboard buttons without loading failed media', async () => {
+  const externalOpens: string[] = [];
+  const createDom = (generationStatus: AgentGenerationStatus) => new JSDOM(buildGenerationResultAppHtml(), {
+    runScripts: 'dangerously',
+    url: 'https://web-sandbox.oaiusercontent.com/',
+    beforeParse(window) {
+      Object.defineProperty(window, 'postMessage', { configurable: true, value() {} });
+      Object.defineProperty(window, 'openai', {
+        configurable: true,
+        value: {
+          toolOutput: {
+            ...buildAgentGenerationRecovery(
+              generationStatus,
+              'https://maxvideoai-mcp-staging.vercel.app/account/connections',
+            ),
+            download: null,
+          },
+          async openExternal(input: { href: string }) { externalOpens.push(input.href); },
+        },
+      });
+      Object.defineProperty(window.HTMLMediaElement.prototype, 'pause', { configurable: true, value() {} });
+      Object.defineProperty(window.HTMLMediaElement.prototype, 'load', { configurable: true, value() {} });
+    },
+  });
+
+  const completed = createDom(audioStatus());
+  const audio = completed.window.document.getElementById('audio') as HTMLAudioElement;
+  const video = completed.window.document.getElementById('video') as HTMLVideoElement;
+  const reuse = completed.window.document.getElementById('reuse') as HTMLButtonElement;
+  const open = completed.window.document.getElementById('open') as HTMLButtonElement;
+  assert.equal(audio.autoplay, false);
+  assert.equal(audio.controls, true);
+  assert.equal(audio.hidden, false);
+  assert.equal(audio.src, 'https://media.maxvideoai.com/generated/completed-audio.m4a');
+  assert.equal(video.hidden, true);
+  assert.equal(completed.window.document.getElementById('media')?.dataset.surface, 'audio');
+  assert.equal((completed.window.document.getElementById('audio-art') as HTMLElement).hidden, false);
+  assert.equal(completed.window.document.getElementById('duration')?.textContent, '12.375 s');
+  assert.equal(reuse.disabled, false);
+  assert.equal(open.disabled, false);
+  reuse.focus();
+  assert.equal(completed.window.document.activeElement, reuse);
+  reuse.click();
+  open.click();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(externalOpens, [
+    'https://maxvideoai-mcp-staging.vercel.app/app/audio?job=completed-audio-job&reuse=1',
+    'https://maxvideoai-mcp-staging.vercel.app/app/library?view=review&kind=audio&job=completed-audio-job',
+  ]);
+  completed.window.close();
+
+  const soundtrack = createDom(soundtrackAudioStatus());
+  const soundtrackAudio = soundtrack.window.document.getElementById('audio') as HTMLAudioElement;
+  assert.equal(soundtrackAudio.hidden, false);
+  assert.equal(
+    soundtrackAudio.src,
+    'https://media.maxvideoai.com/generated/cinematic-soundtrack',
+  );
+  assert.equal((soundtrack.window.document.getElementById('video') as HTMLVideoElement).hidden, true);
+  soundtrack.window.close();
+
+  for (const terminal of ['running', 'failed'] as const) {
+    const incomplete = createDom(audioStatus(terminal));
+    const incompleteAudio = incomplete.window.document.getElementById('audio') as HTMLAudioElement;
+    assert.equal(incompleteAudio.hasAttribute('src'), false);
+    assert.equal(incompleteAudio.hidden, true);
+    assert.match(
+      incomplete.window.document.getElementById('empty')?.textContent ?? '',
+      terminal === 'failed' ? /failed/i : /not completed/i,
+    );
+    incomplete.window.close();
+  }
+});
+
 test('generation presenter signs the durable output as an attachment', async () => {
   const createDescriptor = (presentGenerationModule as unknown as Record<string, unknown>)[
     'createGenerationDownloadDescriptor'
@@ -384,5 +509,58 @@ test('generation presenter signs the durable output as an attachment', async () 
     url: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=valid',
     filename: 'maxvideoai-completed-video-job.mp4',
     expiresAt: '2026-08-27T10:00:00.000Z',
+  });
+});
+
+test('generation presenter signs the original Audio output with its durable extension', async () => {
+  const recovery = buildAgentGenerationRecovery(audioStatus());
+  const calls: Array<{ key: string; downloadFilename?: string }> = [];
+  const descriptor = await presentGenerationModule.createGenerationDownloadDescriptor(recovery, {
+    now: () => new Date('2026-09-08T09:00:00.000Z'),
+    extractStorageKeyFromUrl: () => 'renders/audio-owner/completed-audio.m4a',
+    createSignedDownloadUrl: async (key, options) => {
+      calls.push({ key, downloadFilename: options.downloadFilename });
+      return 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-audio.m4a?signature=fresh';
+    },
+  });
+
+  assert.deepEqual(calls, [{
+    key: 'renders/audio-owner/completed-audio.m4a',
+    downloadFilename: 'maxvideoai-completed-audio-job.m4a',
+  }]);
+  assert.deepEqual(descriptor, {
+    url: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-audio.m4a?signature=fresh',
+    filename: 'maxvideoai-completed-audio-job.m4a',
+    expiresAt: '2026-09-08T10:00:00.000Z',
+  });
+});
+
+test('Audio soundtrack fallback keeps its durable MIME and filename extension', async () => {
+  const recovery = buildAgentGenerationRecovery(soundtrackAudioStatus());
+  assert.deepEqual(buildGenerationResourceLinks(recovery), [{
+    uri: 'https://media.maxvideoai.com/generated/cinematic-soundtrack',
+    name: 'MaxVideoAI output',
+    description: 'output for generation cinematic-soundtrack-job',
+    mimeType: 'audio/mpeg',
+  }]);
+
+  const calls: Array<{ key: string; downloadFilename?: string }> = [];
+  const descriptor = await presentGenerationModule.createGenerationDownloadDescriptor(recovery, {
+    now: () => new Date('2026-09-08T09:00:00.000Z'),
+    extractStorageKeyFromUrl: () => 'renders/audio-owner/cinematic-soundtrack',
+    createSignedDownloadUrl: async (key, options) => {
+      calls.push({ key, downloadFilename: options.downloadFilename });
+      return 'https://videohub-uploads-us.s3.amazonaws.com/signed/cinematic-soundtrack?signature=fresh';
+    },
+  });
+
+  assert.deepEqual(calls, [{
+    key: 'renders/audio-owner/cinematic-soundtrack',
+    downloadFilename: 'maxvideoai-cinematic-soundtrack-job.mp3',
+  }]);
+  assert.deepEqual(descriptor, {
+    url: 'https://videohub-uploads-us.s3.amazonaws.com/signed/cinematic-soundtrack?signature=fresh',
+    filename: 'maxvideoai-cinematic-soundtrack-job.mp3',
+    expiresAt: '2026-09-08T10:00:00.000Z',
   });
 });

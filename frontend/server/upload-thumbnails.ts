@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -143,4 +143,46 @@ function runFfmpeg(ffmpegPath: string, inputPath: string, outputPath: string, si
       }
     });
   });
+}
+const MAX_VIDEO_THUMBNAIL_BYTES = 10 * 1024 * 1024;
+
+export async function createVideoThumbnailFromFile(params: {
+  path: string;
+  userId?: string | null;
+  fileName?: string | null;
+}): Promise<string | null> {
+  if (!params.path) return null;
+
+  const ffmpegPath = getFfmpegPath();
+  if (!ffmpegPath) return null;
+  const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
+
+  const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-upload-thumb-'));
+  const outputPath = path.join(tempDir, 'thumb.jpg');
+
+  try {
+    await runFfmpeg(executableFfmpegPath, params.path, outputPath);
+    const outputStat = await stat(outputPath);
+    if (outputStat.size <= 0 || outputStat.size > MAX_VIDEO_THUMBNAIL_BYTES) return null;
+    const thumb = await readFile(outputPath);
+    if (!thumb.length || thumb.length > MAX_VIDEO_THUMBNAIL_BYTES) return null;
+
+    const upload = await uploadImageToStorage({
+      data: thumb,
+      mime: 'image/jpeg',
+      userId: params.userId ?? undefined,
+      prefix: 'user-asset-thumbs',
+      fileName: `${baseName(params.fileName)}-thumb.jpg`,
+    });
+
+    return normalizeMediaUrl(upload.url) ?? upload.url;
+  } catch (error) {
+    console.warn('[upload-thumbnails] failed to create local video thumbnail', {
+      fileName: params.fileName ?? null,
+      error,
+    });
+    return null;
+  } finally {
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+  }
 }
