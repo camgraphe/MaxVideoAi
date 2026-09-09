@@ -371,6 +371,33 @@
   padding: 0 0 16px;
   border-bottom: 1px solid var(--app-line, var(--border));
 }
+.currentSetupHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.currentSetupHeading > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.pricingBasis {
+  color: var(--app-muted, var(--text-muted));
+  font-size: 11px;
+  line-height: 1.35;
+}
+.dialog .editSettings {
+  min-height: 36px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  background: transparent;
+  color: var(--app-ink, var(--text-primary));
+}
 .currentSetupBody {
   display: grid;
   grid-template-columns: minmax(170px, 1fr) auto auto;

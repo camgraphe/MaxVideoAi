@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, X, RotateCcw } from 'lucide-react';
+import { Plus, X, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { getModeLabel } from '@/components/ui/engine-select/engine-select-helpers';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { isVideoComparisonEngine } from '../_lib/workspace-model-alternatives';
@@ -33,7 +33,16 @@ export function WorkspaceModelAlternatives({ review, engines, locale, currentPri
   const pickerReasons = { ...review.disabledEngineReasons, ...Object.fromEntries([...selected].map(id => [id, fr ? 'Déjà ajouté' : es ? 'Ya añadido' : 'Already added'])) };
   return <>
     <section className={styles.currentSetup} aria-label={copy.currentSetup}>
-      <span className={styles.eyebrow}>{copy.currentSetup}</span>
+      <div className={styles.currentSetupHeading}>
+        <div>
+          <span className={styles.eyebrow}>{copy.currentSetup}</span>
+          <span className={styles.pricingBasis}>{copy.pricingBasis}</span>
+        </div>
+        <button type="button" className={styles.editSettings} onClick={review.close}>
+          <SlidersHorizontal size={15} aria-hidden="true" />
+          {copy.editSettings}
+        </button>
+      </div>
       <div className={styles.currentSetupBody}>
         <div className={styles.identity}><EngineIcon engine={currentEngine} size={30} /><span>{currentEngine?.label ?? current.form.engineId}</span></div>
         <div className={styles.chips}><span>{currentFacts.effectiveDurationSec}s</span><span>{current.form.resolution}</span><span>{current.form.aspectRatio}</span><span>{current.form.iterations || 1}×</span></div>

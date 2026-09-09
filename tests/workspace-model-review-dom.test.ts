@@ -812,6 +812,12 @@ test('comparison family picker adds and removes models without mutating the draf
     const before = structuredClone(f.setup);
     await f.click('Compare'); await f.tick();
     for (let index = 0; index < f.requests.length; index++) await f.respond(index);
+    assert.match(f.dom.window.document.body.textContent ?? '', /Current Create video settings/);
+    assert.match(f.dom.window.document.body.textContent ?? '', /Used to calculate every price below/);
+    await f.click('Edit settings');
+    assert.equal(f.current.panel, null, 'editing returns to the composer');
+    assert.deepEqual(f.setup, before, 'returning to settings leaves the current setup intact');
+    await f.click('Compare'); await f.tick();
     const originalCount = f.requests.length;
     const removed = f.current.alternatives[0];
     await act(async () => f.current.comparison.remove(removed.engine.id));
