@@ -2,6 +2,20 @@
 
 9 septembre 2026. Recherche élargie après retour d'Adrien : répertoires, dépôts, composants précis et discussions communautaires. Deux références Magic UI ouvertes dans Chrome ; autres niveaux de qualification explicités ci-dessous. Aucun benchmark mobile des démos. Les adaptations MaxVideoAI sont nos propositions, pas des choix déjà approuvés.
 
+## Résultat du cycle de qualification V1
+
+La [planche interactive](review/index.html#references) présente désormais six mécanismes précis, avec schémas d'adaptation et liens source. La sélection affinée remplace les catégories encore trop générales « micro-interactions Uiverse » et « matière React Bits/Three » : **Codrops Demo 1, Animated Beam, Morphing Dialog, Hero Video Dialog, Aceternity Compare et Stateful Button**. Les autres répertoires restent un vivier ; ils ne sont pas des composants choisis.
+
+- **Codrops Demo 1 :** rendu desktop examiné avant et après PageDown. Les images changent de position autour du grand titre fixe. Retenir la composition ouverte ; le titre fixe et la densité d'images de cette démo ne servent pas nécessairement notre parcours. [Démo précise](https://tympanus.net/Development/ScrollAnimationsGrid/), [dépôt](https://github.com/codrops/ScrollAnimationsGrid). Ce n'est pas un nouveau benchmark mobile.
+- **Animated Beam :** composition relue dans Chrome. Les six branches autour d'un nœud central conviennent à une vue d'intégrations mais alourdiraient notre histoire ; proposer un chemin unique et nommé. [Source et exemple](https://magicui.design/docs/components/animated-beam).
+- **Morphing Dialog / Hero Video Dialog :** conserver les limites de l'essai précédent ci-dessous. Une apparence réussie ne garantit pas le focus ou la lecture. Pas de reprise automatique du composant.
+- **Compare :** rendu desktop consulté. Le masque partage deux représentations du même panneau ; transposer à une transformation image, avec commandes A/B si le geste précis est difficile. Pour les vidéos de moteurs, privilégier les lecteurs existants nommés. [Démo et documentation](https://ui.aceternity.com/components/compare). Geste tactile/clavier et code manuel non qualifiés.
+- **Stateful Button :** documentation décrivant attente puis succès consultée ; démo non essayée. Notre étude locale ajoute échec/nouvel essai, explicite sa simulation et n'envoie aucune action. [Source documentaire](https://ui.aceternity.com/components/stateful-button). La version produit doit suivre les retours réels.
+
+Les schémas de la planche sont originaux et volontairement explicatifs ; ce ne sont ni des screenshots des démos ni du code copié. Aucune bibliothèque ajoutée. Choisir la version et les conditions du composant exact avant adoption. Une recette par appareil, contexte lecteur, réduction du mouvement et coût de chargement reste obligatoire au prototype intégré.
+
+**Assets examinés :** montre existante et poster/vidéo documentés le 6 septembre ; chaussure et angle ; visuels abstraits `reference-workflow-*`. Ces derniers ne montrent pas une transformation réelle et ne constituent pas une preuve de modèle. La planche reprend uniquement les médias existants documentés de la montre pour matérialiser le récit ; le futur sujet artistique reste à produire après décision.
+
 ## Recherche élargie : du répertoire au composant
 
 La première liste de six sites était un point de départ. Pour chaque sélection finale, conserver la référence précise, le code source s'il existe, la raison de son intérêt, les adaptations et les essais manquants. Un lien vers un répertoire seul n'est pas une qualification.

@@ -23,11 +23,12 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 | Document | Contenu | Statut |
 |---|---|---|
+| [Revue visuelle V1](review/index.html) | Storyboard complet, étude de mouvement, états MCP, six références et interactions manipulables | À examiner ; support local distinct du produit |
 | [Hypothèses et conseil](conseil-strategique.md) | Recommandations par métier et rôle de chaque famille de pages | Cadrage provisoire, audit incomplet |
 | [MCP, Studio et logos](product-narrative.md) | Deux voies de création, scénario MCP, disponibilité et crédibilité | Fil de création accepté ; placement proposé |
 | [Qualité des interactions](interaction-details.md) | Lecteurs, modales, filtres, menus, états et fermeture | Contrat proposé pour la revue de détails |
 | [Recherche créative et assets](creative-research.md) | Références, effets, ImageGen, vidéo et pictogrammes | Recherche sourcée ; effets à éprouver |
-| [Mesure et conversion](measurement.md) | Clarity, GSC, GA4, baseline et hypothèses | GSC Web/IA 28 jours relevé ; collecte complète à faire |
+| [Mesure et conversion](measurement.md) | Clarity, GSC, GA4, baseline et hypothèses | GSC Web/IA, comparaison Web/LATAM, GA4 acquisition et Clarity agrégé relevés ; funnels/sessions à approfondir |
 | [Inventaire](inventory.md) | Gabarits publics et priorités initiales | Inventorié depuis le code ; trafic à mesurer |
 | [Scénario du pilote](home-pilot.md) | Proposition de parcours complet et mouvement | À valider au jalon V1 |
 | [Effet signature](motion-signature.md) | Construction/déconstruction au scroll, références et options techniques | Proposition ambitieuse à qualifier |
@@ -53,6 +54,8 @@ Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouve
 
 Le fil de création suivie a reçu un accord de direction. La hiérarchie complète, la place du MCP et les médias restent à préciser avant de clôturer V1. V2/V3 ne sont pas validés par défaut parce que le cadrage existe.
 
+La [revue visuelle](review/index.html) rend cette décision concrète : sept moments, MCP après la transformation suivie, collection originale proposée et détails. Le [mode d'ouverture](review/README.md) décrit l'aperçu local et ses limites. Les petits essais de mouvement sont des études de conception, pas la recette du prototype intégré V3.
+
 ## Approfondissement avant implémentation
 
 1. **Données et vérité produit :** compléter comparaison de périodes GSC, pays LATAM, GA4/Clarity et état des intégrations. Sortie : pages à protéger et hypothèses étayées, limites explicites.
@@ -77,6 +80,7 @@ Les suppressions/fusions de pages, changements d'URL, nouvelles promesses commer
 - Aucune dépendance ajoutée, aucune page applicative modifiée, aucun déploiement.
 - Conseil global, workflow créatif et plan de mesure ajoutés ; onglets Chrome GSC/Vercel/Semrush repérés, première lecture Vercel réalisée. Aucun audit complet des comptes à ce stade.
 - Le premier audit de la conversation a couvert 14 états visuels. Ses artefacts restent dans `output/audits/2026-09-09-site-visual/` du checkout principal ; ce dossier local n'est pas un livrable versionné ni une preuve disponible automatiquement dans ce worktree.
+- Cycle V1 approfondi : revue HTML/CSS/JS locale, relevés GSC comparés et pays LATAM, GA4 et Clarity accessibles. Les données n'établissent pas encore un funnel complet ; voir measurement.md. La recherche bornée dans le frontend ne trouve pas de mention Zoho ; cela ne prouve pas l'absence d'une intégration externe.
 
 ## Règle d'entretien
 

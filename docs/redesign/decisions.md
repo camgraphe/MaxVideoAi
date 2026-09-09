@@ -12,7 +12,7 @@
 | D06 | Accueil comme pilote d'expérience ; catalogue + fiche comme tests de généralisation | Proposition | Couvre narration et information dense |
 | D07 | Transformation suivie idée → référence → image → vidéo | Accord de direction utilisateur ; hiérarchie non finalisée | Retour après le premier dossier ; home-pilot.md |
 | D08 | Pas de scrub vidéo lourd par défaut ; essai borné si nécessaire | Recommandation technique | Poids/décodage à mesurer, aucun benchmark réalisé |
-| D09 | Priorité de livraison après pilote à recalibrer avec données SEO | Proposition | GSC/analytics non acquis |
+| D09 | Priorité de livraison après pilote à recalibrer avec données SEO | Proposition étayée partiellement | Relevés GSC/GA4/Clarity acquis ; funnels et sessions détaillées non audités |
 | D10 | Inclure au moins une proposition avancée de construction/déconstruction au scroll | Exigence utilisateur | Ajout du 9 septembre pendant le cadrage |
 | D11 | « La scène se construit » : plans → angles → vidéo → galerie | Proposition | motion-signature.md ; références repérées, qualification visuelle à faire |
 | D12 | Mobile et performance prioritaires, conçus dès le début | Exigence utilisateur | Ajout du 9 septembre pendant le cadrage |
@@ -26,6 +26,10 @@
 | D20 | Approfondir références, forums et code avant d'intégrer | Recherche élargie réalisée ; qualification partielle | creative-research.md ; pas d'adoption technique |
 | D21 | Inclure une page d'exemples dans le pilote | Recommandation issue des premiers relevés GSC | /examples/ltx : 285 clics Web, période 10 août–6 septembre |
 | D22 | Intégrer le rapport GSC IA bêta disponible dans le compte | Constat dans Chrome et correction du cadrage initial | measurement.md ; impressions ≠ citations ni conversions |
+| D23 | Revue visuelle locale de sept moments, deux effets et six détails | Réalisée ; hiérarchie à valider | review/index.html ; accord utilisateur « ok go » pour approfondir et matérialiser la proposition |
+| D24 | Réconcilier l'attribution avant d'évaluer la conversion du reboot | Recommandation issue des données | GA4 : 94,07 % du revenu affiché dans Unassigned |
+| D25 | Vérifier performance terrain et plein écran dans la recette du pilote | Priorité d'investigation | Clarity agrégé : LCP 3,5 s / INP 260 ms / CLS 0,13 ; erreur requestfullscreen non localisée |
+| D26 | Réutiliser la montre comme preuve existante ; proposer une collection originale distincte | Proposition, aucune nouvelle génération | Médias inspectés et provenance du 6 septembre ; review/README.md |
 
 ## Avancement
 
@@ -41,8 +45,11 @@
 - [x] Inspecter l'instrumentation existante et amorcer la lecture des comptes dans Chrome.
 - [ ] Valider V1 : scénario de l'accueil.
 - [x] Relever GSC Web et IA sur 28 jours, premiers résultats pages/requêtes/appareils/pays.
-- [ ] Compléter crawl, comparaison de périodes, pays LATAM, GA4 et Clarity.
-- [ ] Inspecter et qualifier les assets du parcours suivi.
+- [x] Compléter comparaison Web et pays LATAM ; relever GA4 acquisition et Clarity agrégé.
+- [ ] Compléter crawl, funnel GA4, réconciliation de mesure et sessions Clarity détaillées.
+- [x] Inspecter les médias publics candidats ; qualifier la montre et les illustrations abstraites.
+- [x] Matérialiser storyboard, références et premiers états manipulables dans une revue locale.
+- [ ] Choisir le sujet de la nouvelle collection et qualifier ses futurs assets.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -54,3 +61,5 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 ## Prochaine décision à présenter
 
 Le fil suivi est acquis comme direction ; ne pas redemander cet accord. Prochaine revue : storyboard complet intégrant le MCP et la place conditionnelle du Studio, avec références précises et planche des détails. Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
+
+Livrable désormais disponible : [review/index.html](review/index.html). La décision proposée porte sur l'ordre résultat → transformation → MCP → choix → usages → prix → réponses, et sur le brief de collection. Les couleurs de la revue et ses essais CSS ne valent pas validation V2/V3.
