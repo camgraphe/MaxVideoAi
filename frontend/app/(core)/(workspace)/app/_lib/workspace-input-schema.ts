@@ -148,6 +148,7 @@ export function summarizeWorkspaceInputSchema({
       allowsUnifiedVeoFirstLast
       && unifiedFirstFrameField
       && unifiedFirstFrameField.id !== 'first_frame_url'
+      && field.id !== unifiedFirstFrameField.id
       && field.type === 'image'
       && field.modes?.includes('i2v')
       && VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame.includes(field.id as never)
