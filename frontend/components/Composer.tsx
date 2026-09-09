@@ -227,13 +227,12 @@ export function Composer({
                   {(settingsBar || (workspaceDensity && optionsControl)) ? (
                     <div className={clsx(
                       'app-composer-settings-group min-w-0 flex-1',
-                      workspaceDensity && 'flex flex-wrap items-end gap-2'
+                      workspaceDensity && 'app-composer-settings-inline'
                     )}>
                       {settingsBar}
-                      {workspaceDensity ? optionsControl : null}
                     </div>
                   ) : null}
-                  {!workspaceDensity ? optionsControl : null}
+                  {optionsControl}
                   {onGenerate ? (
                     <div className={clsx(
                       'flex shrink-0 flex-col gap-2',

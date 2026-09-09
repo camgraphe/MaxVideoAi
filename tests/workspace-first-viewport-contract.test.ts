@@ -68,12 +68,12 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSettingsSource, /workspaceDensity[\s\S]*w-full flex-wrap/);
   assert.match(coreSettingsSource, /portal=\{compact\}/);
   assert.match(imageSettingsSource, /portal=\{compact\}/);
-  assert.doesNotMatch(composerSource, /overflow-x-auto/, 'essential settings must wrap without a hidden horizontal scroll area');
+  assert.match(composerSource, /workspaceDensity && 'app-composer-settings-inline'/);
   assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex gap-3/);
-  assert.match(composerSource, /app-composer-settings-group[\s\S]*workspaceDensity \? optionsControl : null/);
+  assert.match(composerSource, /\{settingsBar\}[\s\S]*<\/div>[\s\S]*\{optionsControl\}/, 'Options participates in the toolbar layout');
   assert.match(composerSource, /workspaceDensity \? 'app-composer-submit' : 'lg:items-end'/);
-  assert.match(videoComposerSource, /<CoreSettingsBar[\s\S]*trailingControl=\{<WorkspaceOptionsButton/);
-  assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*trailingControl=/);
+  assert.match(videoComposerSource, /optionsControl=\{<WorkspaceOptionsButton[\s\S]*<CoreSettingsBar/);
+  assert.match(imageSurfaceSource, /optionsControl=[\s\S]*<ImageSettingsBar/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
@@ -86,12 +86,15 @@ test('workspace quantity controls sit beside the generate action', () => {
   assert.match(imageSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
 });
 
-test('narrow composer toolbars keep settings and submit actions on stable rows', () => {
-  assert.match(appExperienceStyles, /@container \(max-width: 720px\)/);
-  assert.match(appExperienceStyles, /app-composer-toolbar-layout \{ flex-direction: column; align-items: stretch; \}/);
-  assert.match(appExperienceStyles, /app-composer-submit \{ width: 100%; flex: none; justify-content: flex-end; \}/);
-  assert.match(appExperienceStyles, /app-generation-controls \{ width: 100%; flex: 1 1 auto; margin-inline-start: 0; \}/);
-  assert.match(appExperienceStyles, /app-generation-controls \.app-generation-action \{ width: 100%; \}/);
+test('workspace toolbars wrap settings naturally and keep generation aligned right', () => {
+  assert.match(appExperienceStyles, /app-composer-toolbar-layout \{[^}]*flex-direction: row; flex-wrap: wrap;/);
+  assert.match(appExperienceStyles, /app-composer-settings-inline \[data-settings-density="workspace"\] \{ display: contents; \}/);
+  assert.match(appExperienceStyles, /app-composer-submit \{[^}]*margin-inline-start: auto;/);
+  assert.doesNotMatch(appExperienceStyles, /app-composer-settings-scroll/);
+  assert.match(appExperienceStyles, /app-composer-submit \{[^}]*flex: 0 0 auto;/);
+  assert.match(appExperienceStyles, /app-generation-controls \{[^}]*flex-wrap: nowrap;/);
+  assert.match(appExperienceStyles, /@container \(max-width: 520px\)/);
+  assert.doesNotMatch(appExperienceStyles, /app-composer-toolbar-layout \{ flex-direction: column;/);
 });
 
 test('workspace mobile settings wrap with touch targets and compact controls', () => {

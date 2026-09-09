@@ -608,9 +608,9 @@ export function WorkspaceComposerSurface({
             />
           </>
         }
+        optionsControl={<WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} />}
         settingsBar={
           <CoreSettingsBar
-            trailingControl={<WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} />}
             density="workspace"
             engine={selectedEngine}
             mode={submissionMode}

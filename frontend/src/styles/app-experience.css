@@ -181,22 +181,26 @@
 }
 .app-experience .app-prompt-heading button { min-height: 44px !important; }
 .app-experience .app-composer-toolbar { margin-top: 8px; padding: 8px 0; background: var(--app-canvas); }
-.app-experience .app-composer-toolbar > div { flex-wrap: wrap; gap: 8px; }
+/* Let individual settings wrap naturally; keep the generation group at the right edge. */
 .app-experience .app-composer-toolbar { container-type: inline-size; }
-.app-experience .app-composer-toolbar-layout { min-width: 0; flex-direction: row; flex-wrap: wrap; align-items: end; }
-.app-experience .app-composer-settings-group { display: flex; flex: 1 1 380px; min-width: 0; align-items: end; }
-.app-experience .app-composer-settings-group > :first-child { flex: 1 1 320px; min-width: 0; }
-.app-experience .app-composer-submit { min-width: 0; display: flex; flex: 0 1 auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-.app-experience .app-generation-controls { width: auto; min-width: 0; max-width: 100%; flex: 0 1 260px; margin-inline-start: auto; }
+.app-experience .app-composer-toolbar > .app-composer-toolbar-layout { display: flex; min-width: 0; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; }
+.app-experience .app-composer-settings-inline,
+.app-experience .app-composer-settings-inline > div,
+.app-experience .app-composer-settings-inline [data-settings-density="workspace"] { display: contents; }
+.app-experience .app-composer-settings-inline [data-settings-density="workspace"] > * { flex-shrink: 0; }
+.app-experience .app-composer-toolbar-layout > .app-options-button { align-self: center; }
+.app-experience .app-composer-submit { min-width: 0; display: flex; flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; margin-inline-start: auto; max-width: 100%; }
+.app-experience .app-generation-controls { width: auto; min-width: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; }
 .app-experience .app-generation-controls > :not(.app-generation-action) { flex-shrink: 0; }
-.app-experience .app-generation-controls .app-generation-action { width: auto; min-width: 0; max-width: 100%; flex: 1 1 auto; padding-block: 10px; }
-@container (max-width: 720px) {
-  .app-experience .app-composer-toolbar-layout { flex-direction: column; align-items: stretch; }
-  .app-experience .app-composer-settings-group { width: 100%; flex: none; }
-  .app-experience .app-composer-settings-group > :first-child { width: 100%; flex: 1 1 auto; }
-  .app-experience .app-composer-submit { width: 100%; flex: none; justify-content: flex-end; }
-  .app-experience .app-generation-controls { width: 100%; flex: 1 1 auto; margin-inline-start: 0; }
-  .app-experience .app-generation-controls .app-generation-action { width: 100%; }
+.app-experience .app-generation-controls .app-generation-action { width: auto; min-width: 0; flex: none; padding: 10px 12px; gap: 10px; }
+.app-experience .app-generation-controls .app-generation-label { white-space: nowrap; overflow-wrap: normal; }
+.app-experience .app-composer-submit > .app-quote-status { flex-basis: 100%; max-width: none; text-align: right; }
+@container (max-width: 520px) {
+  .app-experience .app-composer-toolbar > .app-composer-toolbar-layout { gap: 5px; }
+  .app-experience .app-generation-controls { gap: 4px; }
+  .app-experience .app-generation-controls .app-generation-action { padding-inline: 9px; gap: 7px; }
+  .app-experience .app-generation-controls :is(.app-generation-label, .app-generation-price) { font-size: 12px; }
+  .app-experience .app-generation-controls .app-generation-price { padding-left: 7px; }
 }
 .app-experience .app-composer-toolbar button { min-height: 44px !important; }
 .app-experience .app-composer-toolbar [aria-haspopup="listbox"] { border: 1px solid var(--app-line); background: var(--app-panel); }
