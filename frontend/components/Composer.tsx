@@ -224,15 +224,17 @@ export function Composer({
                 <div className={workspaceDensity
                   ? 'app-composer-toolbar-layout flex gap-3'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
-                  {(settingsBar || (workspaceDensity && optionsControl)) ? (
+                  {(settingsBar || (workspaceDensity && (optionsControl || generateControl))) ? (
                     <div className={clsx(
                       'app-composer-settings-group min-w-0 flex-1',
                       workspaceDensity && 'app-composer-settings-inline'
                     )}>
                       {settingsBar}
+                      {workspaceDensity ? optionsControl : null}
+                      {workspaceDensity ? generateControl : null}
                     </div>
                   ) : null}
-                  {optionsControl}
+                  {!workspaceDensity ? optionsControl : null}
                   {onGenerate ? (
                     <div className={clsx(
                       'flex shrink-0 flex-col gap-2',
@@ -240,7 +242,7 @@ export function Composer({
                     )}>
                       {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
                       <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
-                        {generateControl}
+                        {!workspaceDensity ? generateControl : null}
                         <Button
                           type="button"
                           size="md"

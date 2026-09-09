@@ -410,6 +410,13 @@ export function WorkspaceComposerSurface({
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
+  const showExtraFields = Boolean(
+    showLumaRay32KeyframeEditor ||
+    showOmniStudioPanel ||
+    showRetakeWorkflowAction ||
+    showKlingElementsBuilder ||
+    (showOptionsControl && optionsOpen)
+  );
   const resolvedWorkflowNotice = klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
 
   const handleAudioChange = useCallback(
@@ -503,7 +510,7 @@ export function WorkspaceComposerSurface({
             : null
         }
         disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
-        extraFields={
+        extraFields={showExtraFields ? (
           <>
             {showLumaRay32KeyframeEditor ? (
               <LumaRay32KeyframeEditor
@@ -619,7 +626,7 @@ export function WorkspaceComposerSurface({
               variant="advanced"
             />
           </>
-        }
+        ) : undefined}
         optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
         settingsBar={
           <CoreSettingsBar

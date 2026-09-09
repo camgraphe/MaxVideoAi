@@ -70,16 +70,17 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.match(composerSource, /workspaceDensity && 'app-composer-settings-inline'/);
   assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex gap-3/);
-  assert.match(composerSource, /\{settingsBar\}[\s\S]*<\/div>[\s\S]*\{optionsControl\}/, 'Options participates in the toolbar layout');
+  assert.match(composerSource, /\{settingsBar\}[\s\S]*workspaceDensity \? optionsControl/, 'Options participates in the settings group');
   assert.match(composerSource, /workspaceDensity \? 'app-composer-submit' : 'lg:items-end'/);
   assert.match(videoComposerSource, /optionsControl=\{showOptionsControl \? <WorkspaceOptionsButton[\s\S]*<CoreSettingsBar/);
   assert.match(imageSurfaceSource, /optionsControl=[\s\S]*<ImageSettingsBar/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
-test('workspace quantity controls sit beside the generate action', () => {
+test('workspace quantity controls stay with settings while generate owns the right edge', () => {
   assert.match(composerTypesSource, /generateControl\?: ReactNode/);
-  assert.match(composerSource, /app-generation-controls[\s\S]*\{generateControl\}[\s\S]*<Button/);
+  assert.match(composerSource, /\{settingsBar\}[\s\S]*workspaceDensity \? optionsControl[\s\S]*workspaceDensity \? generateControl/);
+  assert.match(composerSource, /app-generation-controls[\s\S]*!workspaceDensity \? generateControl[\s\S]*<Button/);
   assert.match(videoComposerSource, /generateControl=\{[\s\S]*<CoreIterationsControl[\s\S]*iterations=\{form\.iterations\}/);
   assert.match(imageSurfaceSource, /generateControl=\{[\s\S]*<ImageCountControl[\s\S]*value=\{numImages\}/);
   assert.match(coreSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
@@ -94,7 +95,10 @@ test('workspace toolbars wrap settings naturally and keep generation aligned rig
   assert.match(appExperienceStyles, /app-composer-submit \{[^}]*flex: 0 0 auto;/);
   assert.match(appExperienceStyles, /app-generation-controls \{[^}]*flex-wrap: nowrap;/);
   assert.match(appExperienceStyles, /@container \(max-width: 520px\)/);
+  assert.match(appExperienceStyles, /@container \(max-width: 520px\)[\s\S]*app-composer-submit \{ order: -1; width: 100%; flex-basis: 100%; justify-content: flex-end; \}/);
   assert.doesNotMatch(appExperienceStyles, /app-composer-toolbar-layout \{ flex-direction: column;/);
+  assert.match(videoComposerSource, /const showExtraFields = Boolean\([\s\S]*showOptionsControl && optionsOpen/);
+  assert.match(videoComposerSource, /extraFields=\{showExtraFields \? \(/);
 });
 
 test('workspace mobile settings wrap with touch targets and compact controls', () => {
@@ -187,7 +191,9 @@ test('workspace density never changes route order by authentication state', () =
   assert.ok(imageSurfaceSource.indexOf('<ImageCompositePreviewDock') < imageSurfaceSource.indexOf('<form'));
   assert.doesNotMatch(videoShellSource, /authStatus|session|user/);
   assert.doesNotMatch(imageSurfaceSource, /authStatus/);
-  assert.match(workspaceChromeSource, /p-4 lg:px-7 lg:py-2/);
+  assert.match(workspaceChromeSource, /p-4[^"]*lg:px-7 lg:py-2/);
+  assert.match(workspaceChromeSource, /flex flex-none flex-col min-\[768px\]:flex-1 min-\[768px\]:flex-row/);
+  assert.match(workspaceChromeSource, /app-workspace-main[^"]*flex-none[^"]*min-\[768px\]:flex-1/);
 });
 
 // The empty editor must never flash a large player before the form becomes usable.

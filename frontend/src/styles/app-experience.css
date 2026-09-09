@@ -42,7 +42,7 @@
   --text-secondary: #b2b7ad;
   --on-brand: #231c12;
 }
-.app-experience .app-workspace-main { padding: 32px 36px; gap: 26px; max-width: 1160px; width: 100%; margin-inline: auto; }
+.app-experience .app-workspace-main { min-height: 0; padding: 32px 36px; gap: 26px; max-width: 1160px; width: 100%; margin-inline: auto; }
 .app-experience .app-creation-heading { align-items: end; padding-bottom: 20px; border-bottom: 1px solid var(--app-line); }
 .app-creation-heading .app-eyebrow { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; color: var(--app-muted); font-size: 11px; font-weight: 550; letter-spacing: .06em; text-transform: uppercase; }
 .app-creation-heading h1 { font-size: clamp(24px, 2.2vw, 32px); font-weight: 620; line-height: 1.15; letter-spacing: -.05em; }
@@ -197,6 +197,7 @@
 .app-experience .app-composer-submit > .app-quote-status { flex-basis: 100%; max-width: none; text-align: right; }
 @container (max-width: 520px) {
   .app-experience .app-composer-toolbar > .app-composer-toolbar-layout { gap: 5px; }
+  .app-experience .app-composer-submit { order: -1; width: 100%; flex-basis: 100%; justify-content: flex-end; }
   .app-experience .app-generation-controls { gap: 4px; }
   .app-experience .app-generation-controls .app-generation-action { padding-inline: 9px; gap: 7px; }
   .app-experience .app-generation-controls :is(.app-generation-label, .app-generation-price) { font-size: 12px; }
