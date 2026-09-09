@@ -19,14 +19,18 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** la revue V1 est difficile à interpréter et son ambition visuelle insuffisante. Adrien n'est pas convaincu par la montre, le style ni le découpage d'une image en rectangles. Il demande des objets détourés et indépendants qui s'assemblent, des rotations de caméra/objet, une ouverture d'ordinateur ou un workflow qui progresse au scroll. La [nouvelle intention illustrée](review/direction.html) répond à ce retour ; elle n'est pas validée. Voir [la réorientation](direction-reorientation.md).
+**Dernier retour :** conserver l'essai 3D comme exemple ; le sujet chaussure n'est pas retenu. Adrien apprécie le mouvement lié au scroll, en particulier pour un workflow avec ordinateur et fenêtres, lorsqu'il explique la création. Pas de bouton d'activation de l'expérience sur une page utile. Un aperçu vidéo suivant la souris peut être pertinent. Priorité désormais à la fabrication de la page complète.
+
+**À regarder maintenant : [l'accueil — composition 01](review/home.html).** Page complète FR/EN/espagnol LATAM, avec images existantes, sélecteur de modèles, FAQ, vue mobile et annotations d'effets masquées par défaut. [Intentions et points à décider](home-composition.md) ; [recette et limites](home-composition-validation.md). Le langage visuel et les emplacements restent proposés, pas validés.
 
 ## Documents de travail
 
-**Méthode actualisée :** terminer l'essai engagé, puis composer les vraies pages avec leurs contenus et des images d'attente pertinentes. Définir et valider les emplacements avant de produire les effets. Voir [la méthode et la carte initiale des emplacements](page-first-workflow.md). La fabrication d'autres démonstrations isolées n'est plus la prochaine étape.
+**Méthode actualisée :** l’essai est terminé et une première composition complète est disponible. Composer les pages avec leurs contenus et des images d’attente pertinentes. Définir et valider les emplacements avant de produire les effets. Voir [la méthode et la carte initiale des emplacements](page-first-workflow.md). La fabrication d'autres démonstrations isolées n'est plus la prochaine étape.
 
 | Document | Contenu | Statut |
 |---|---|---|
+| [Accueil — composition 01](review/home.html) | Page complète, trois langues, mobile et emplacements annotés | Réalisée ; hiérarchie et direction à examiner |
+| [Choix de composition](home-composition.md) | Récit, provenance, contenu et points de migration | Proposition documentée |
 | [Pages avant effets](page-first-workflow.md) | Ordre de conception et emplacements proposés dans l'accueil | Méthode demandée par Adrien |
 | [Essai animé 3D](review/motion.html) | Ordinateur articulé, objet, assemblage, rotation et vue mobile | Étude locale ; sujet et usage non validés |
 | [Revue visuelle V1](review/index.html) | Storyboard complet, étude de mouvement, états MCP, six références et interactions manipulables | À examiner ; support local distinct du produit |
@@ -60,7 +64,7 @@ Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouve
 
 Le fil de création suivie a reçu un accord de direction. La hiérarchie complète, la place du MCP et les médias restent à préciser avant de clôturer V1. V2/V3 ne sont pas validés par défaut parce que le cadrage existe.
 
-La [revue visuelle](review/index.html) rend cette décision concrète : sept moments, MCP après la transformation suivie, collection originale proposée et détails. Le [mode d'ouverture](review/README.md) décrit l'aperçu local et ses limites. Les petits essais de mouvement sont des études de conception, pas la recette du prototype intégré V3.
+La [composition de l’accueil](review/home.html) est le support actuel de décision. La [revue V1](review/index.html), la [planche de direction](review/direction.html) et l’essai 3D restent des explorations historiques. Leur existence ne valide pas le prototype intégré V3.
 
 ## Approfondissement avant implémentation
 

@@ -34,6 +34,8 @@
 | D28 | Distinguer ordre de page, direction artistique et mouvement ; montrer l'intention avant de demander une validation | Méthode corrigée | Nouvelle planche ImageGen en quatre états et explication en français dans review/direction.html |
 | D29 | Terminer un court essai animé de la scène avec vue mobile | Autorisé par « ok », réalisé comme étude locale | review/motion.html ; ne valide pas le sujet ni son intégration |
 | D30 | Composer les pages avec visuels d'attente, réserver les emplacements et fabriquer les effets après choix des sections | Exigence de méthode utilisateur | Dernier retour ; page-first-workflow.md. Terminer D29 puis donner priorité à la page complète |
+| D31 | Garder l’essai en référence ; réserver le scroll à un récit produit clair, sans activation préalable sur les pages utiles ; envisager un aperçu suivant la souris | Retour utilisateur acquis | Après examen de motion.html ; home-composition.md |
+| D32 | Accueil complet avec posters réels, workflow illustré, choix des modèles et FAQ, en FR/EN/es LATAM | Réalisé comme proposition locale ; direction et placements à examiner | review/home.html ; home-composition-validation.md |
 
 ## Avancement
 
@@ -53,7 +55,9 @@
 - [ ] Compléter crawl, funnel GA4, réconciliation de mesure et sessions Clarity détaillées.
 - [x] Inspecter les médias publics candidats ; qualifier la montre et les illustrations abstraites.
 - [x] Matérialiser storyboard, références et premiers états manipulables dans une revue locale.
-- [ ] Choisir le sujet de la nouvelle collection et qualifier ses futurs assets.
+- [x] Terminer l’étude 3D puis la conserver comme référence distincte.
+- [x] Composer l’accueil complet avec images pertinentes, vue mobile, trois langues et carte des effets.
+- [ ] Retenir la composition et les sections avant de produire leurs nouveaux assets.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -64,6 +68,6 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 
 ## Prochaine décision à présenter
 
-Le fil suivi est acquis comme direction ; ne pas redemander cet accord. Prochaine revue : storyboard complet intégrant le MCP et la place conditionnelle du Studio, avec références précises et planche des détails. Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
+Le fil suivi et la méthode « pages avant effets » sont acquis. Prochaine décision : juger la [composition complète de l’accueil](review/home.html), sa hiérarchie et la place du MCP, puis retenir les emplacements où le mouvement explique quelque chose. Les notes sont accessibles via « Voir les effets prévus ». Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
 
-Livrable historique : [review/index.html](review/index.html). **Le retour suivant n'a pas validé la direction.** Livrable de clarification : [review/direction.html](review/direction.html), quatre images d'une scène sortant du cadre, puis [essai 3D local](review/motion.html). Sujet, palette et usage restent des propositions. La prochaine revue porte sur une page complète avec contenus et images adaptés, accompagnée d'une carte courte des effets envisagés. Voir [la méthode actualisée](page-first-workflow.md).
+La [revue V1](review/index.html), la [planche illustrée](review/direction.html) et l'[étude 3D](review/motion.html) restent des références historiques. Le sujet de la chaussure n'est pas retenu pour la page. Voir [la méthode actualisée](page-first-workflow.md) et [le compte rendu de composition](home-composition.md).

@@ -1,6 +1,6 @@
 # Pilote accueil — scénario proposé
 
-Statut : accord de direction sur le fil idée → référence → image → vidéo ; hiérarchie complète V1 encore à finaliser. Ce document décrit une page entière avant dessin et implémentation.
+Statut : scénario initial conservé comme référence de contenu. La proposition actuelle est [la composition 01](review/home.html), décrite dans [home-composition.md](home-composition.md). Elle place le MCP après la preuve d’ouverture et remplace le comparatif supposé de sorties identiques par un sélecteur de rendus réels. Le tableau de correspondance avec les sections existantes ci-dessous reste un garde-fou pour la future migration.
 
 Retour d'Adrien : mettre en avant la création à partir d'un site ou projet avec Codex/Claude via MCP ; calibrer le Studio selon sa disponibilité ; placer les logos avec une fonction précise. Voir [récit produit](product-narrative.md). Proposition : remonter la séquence 5 juste après la transformation, puis montrer comparaison et exemples. L'ordre complet reste à juger sur storyboard. Ajouter une page d'exemples au pilote de généralisation à la lumière des premiers relevés GSC.
 

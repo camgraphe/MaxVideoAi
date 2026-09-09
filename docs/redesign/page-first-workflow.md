@@ -2,6 +2,12 @@
 
 Décision du 9 septembre 2026, après la demande d'Adrien : terminer l'essai animé commencé, puis travailler dans les pages avec des images pertinentes aux emplacements prévus. Produire les effets lorsque leur présence et leur rôle sont retenus.
 
+## État actuel
+
+L'essai est terminé et conservé en référence. [L’accueil complet](review/home.html) matérialise les trois premières étapes ci-dessous : textes et images de l'écosystème MaxVideoAI, FR/EN/es LATAM, aperçu mobile et intentions d'effets accessibles en mode revue. Voir [les choix de composition](home-composition.md). La prochaine étape est de juger cette page, puis de fabriquer le mouvement dans les sections retenues.
+
+Le dernier retour confirme l'intérêt du scroll, sous réserve d'un récit cohérent, et écarte une activation préalable sur les pages du site. Le poster ou la composition initiale doit être visible ; les ressources d'animation se préparent progressivement. L'aperçu qui accompagne la souris est proposé pour la sélection des modèles, avec version fixe au toucher.
+
 ## Ordre de travail
 
 1. **Composer une vraie page complète.** Accueil proposé comme premier pilote, puis catalogue, fiche modèle et exemples. Utiliser les vrais contenus, actions et capacités disponibles. Donner une place visible au MCP ; adapter le Studio à son accès effectif. Présenter desktop et mobile ensemble.
@@ -23,6 +29,6 @@ Décision du 9 septembre 2026, après la demande d'Adrien : terminer l'essai ani
 
 Cette carte réserve des possibilités ; elle ne valide pas cinq animations. La première page permettra de supprimer les moments redondants et de choisir où concentrer l'effort.
 
-## Portée de l'essai en cours
+## Portée de l'essai terminé
 
-[La scène 3D](review/motion.html) termine l'exploration autorisée : ouverture d'écran, objet indépendant, décor assemblé, rotation. Sujet et palette de travail, pas identité validée. Aucun nouvel essai d'effet autonome n'est prioritaire après celui-ci. Prochain livrable : une page complète avec vrais contenus et visuels d'attente, puis une décision sur ses emplacements d'animation.
+[La scène 3D](review/motion.html) termine l'exploration autorisée : ouverture d'écran, objet indépendant, décor assemblé, rotation. Sujet et palette de travail, pas identité validée. Aucun nouvel essai d'effet autonome n'est prioritaire après celui-ci. Livrable disponible : [la composition complète de l’accueil](review/home.html). La prochaine décision porte sur ses sections et emplacements d’animation.
