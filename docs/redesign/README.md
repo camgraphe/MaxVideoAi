@@ -19,9 +19,9 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** conserver l'essai 3D comme exemple ; le sujet chaussure n'est pas retenu. Adrien apprécie le mouvement lié au scroll, en particulier pour un workflow avec ordinateur et fenêtres, lorsqu'il explique la création. Pas de bouton d'activation de l'expérience sur une page utile. Un aperçu vidéo suivant la souris peut être pertinent. Priorité désormais à la fabrication de la page complète.
+**Dernier retour :** la composition 01 paraît trop légère, générique et insuffisante pour remplacer l'accueil actuel. Adrien confirme qu'on peut améliorer le SEO, réécrire et fusionner ; il faut conserver la logique produit. Benchmark demandé : Higgsfield et InVideo, complétés par les acteurs stock devenus créatifs IA.
 
-**À regarder maintenant : [l'accueil — composition 01](review/home.html).** Page complète FR/EN/espagnol LATAM, avec images existantes, sélecteur de modèles, FAQ, vue mobile et annotations d'effets masquées par défaut. [Intentions et points à décider](home-composition.md) ; [recette et limites](home-composition-validation.md). Le langage visuel et les emplacements restent proposés, pas validés.
+**Référence actuelle : [le brief de remplacement corrigé](home-replacement-brief.md).** Comparaison directe avec la production, rôles des sections, [40 destinations documentées](home-replacement-links.json), nouvelle composition en six moments et observations sur Higgsfield, InVideo et Freepik/Magnific. La [composition 01](review/home.html) reste consultable comme version à reprendre ; elle n'est pas un candidat prêt à remplacer l'accueil.
 
 ## Documents de travail
 
@@ -29,7 +29,8 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 | Document | Contenu | Statut |
 |---|---|---|
-| [Accueil — composition 01](review/home.html) | Page complète, trois langues, mobile et emplacements annotés | Réalisée ; hiérarchie et direction à examiner |
+| [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
+| [Accueil — composition 01](review/home.html) | Première page complète, trois langues et mobile | À reprendre : richesse et couverture insuffisantes |
 | [Choix de composition](home-composition.md) | Récit, provenance, contenu et points de migration | Proposition documentée |
 | [Pages avant effets](page-first-workflow.md) | Ordre de conception et emplacements proposés dans l'accueil | Méthode demandée par Adrien |
 | [Essai animé 3D](review/motion.html) | Ordinateur articulé, objet, assemblage, rotation et vue mobile | Étude locale ; sujet et usage non validés |
@@ -64,7 +65,7 @@ Commencer par un prototype de l'accueil entier, desktop et mobile, puis éprouve
 
 Le fil de création suivie a reçu un accord de direction. La hiérarchie complète, la place du MCP et les médias restent à préciser avant de clôturer V1. V2/V3 ne sont pas validés par défaut parce que le cadrage existe.
 
-La [composition de l’accueil](review/home.html) est le support actuel de décision. La [revue V1](review/index.html), la [planche de direction](review/direction.html) et l’essai 3D restent des explorations historiques. Leur existence ne valide pas le prototype intégré V3.
+La [composition 01](review/home.html) est à reprendre selon le [brief corrigé](home-replacement-brief.md). La [revue V1](review/index.html), la [planche de direction](review/direction.html) et l’essai 3D restent des explorations historiques. Leur existence ne valide pas le prototype intégré V3.
 
 ## Approfondissement avant implémentation
 

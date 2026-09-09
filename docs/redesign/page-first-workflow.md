@@ -6,6 +6,8 @@ Décision du 9 septembre 2026, après la demande d'Adrien : terminer l'essai ani
 
 L'essai est terminé et conservé en référence. [L’accueil complet](review/home.html) matérialise les trois premières étapes ci-dessous : textes et images de l'écosystème MaxVideoAI, FR/EN/es LATAM, aperçu mobile et intentions d'effets accessibles en mode revue. Voir [les choix de composition](home-composition.md). La prochaine étape est de juger cette page, puis de fabriquer le mouvement dans les sections retenues.
 
+**Mise à jour du 10 septembre :** cette première composition est jugée trop légère. Le [brief de remplacement corrigé](home-replacement-brief.md) rétablit les rôles produit et les destinations manquantes avant la prochaine passe visuelle. Adrien autorise les réécritures et fusions utiles, avec une raison pour chaque changement.
+
 Le dernier retour confirme l'intérêt du scroll, sous réserve d'un récit cohérent, et écarte une activation préalable sur les pages du site. Le poster ou la composition initiale doit être visible ; les ressources d'animation se préparent progressivement. L'aperçu qui accompagne la souris est proposé pour la sélection des modèles, avec version fixe au toucher.
 
 ## Ordre de travail

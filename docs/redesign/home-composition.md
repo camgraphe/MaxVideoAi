@@ -2,6 +2,8 @@
 
 9 septembre 2026. Première page complète après l'étude de mouvement. **Proposition à examiner**, distincte des routes de production.
 
+**Retour du 10 septembre : à reprendre.** La proposition est trop légère et sa couverture ne suffit pas pour remplacer l'accueil actuel. La recette technique reste valable dans son périmètre ; voir [le diagnostic et le brief corrigé](home-replacement-brief.md) avant de poursuivre.
+
 Ouvrir [l'accueil FR](review/home.html). Le sélecteur propose aussi [EN](review/home-en.html) et [espagnol LATAM](review/home-es.html). « Vue mobile » présente la même page à 320, 390 ou 768 px. « Voir les effets prévus » affiche les intentions dans leur section ; ces annotations sont masquées à l'ouverture.
 
 ## Ce que cette page propose

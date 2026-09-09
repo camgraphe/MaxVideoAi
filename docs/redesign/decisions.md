@@ -36,6 +36,10 @@
 | D30 | Composer les pages avec visuels d'attente, réserver les emplacements et fabriquer les effets après choix des sections | Exigence de méthode utilisateur | Dernier retour ; page-first-workflow.md. Terminer D29 puis donner priorité à la page complète |
 | D31 | Garder l’essai en référence ; réserver le scroll à un récit produit clair, sans activation préalable sur les pages utiles ; envisager un aperçu suivant la souris | Retour utilisateur acquis | Après examen de motion.html ; home-composition.md |
 | D32 | Accueil complet avec posters réels, workflow illustré, choix des modèles et FAQ, en FR/EN/es LATAM | Réalisé comme proposition locale ; direction et placements à examiner | review/home.html ; home-composition-validation.md |
+| D33 | Composition 01 trop légère et générique pour remplacer l'accueil | Retour utilisateur ; reprise nécessaire | Comparaison production/proposition et home-replacement-brief.md |
+| D34 | Réécrire, simplifier, fusionner et améliorer le SEO, avec une destination et une raison pour chaque fonction modifiée | Autorisation utilisateur | « C'est remplacement de celle-là » ; inventaire de 40 destinations dans home-replacement-links.json |
+| D35 | Benchmark Higgsfield (correction de « XField »), InVideo et acteurs stock/création IA | Demande utilisateur ; trois références visuelles examinées | Higgsfield, InVideo, Freepik redirigé vers Magnific ; Artlist repéré seulement |
+| D36 | Présenter le MCP comme partie d'un parcours de valeur, sans exclusivité revendiquée | Correction stratégique après vérification | Higgsfield et Magnific exposent aussi une entrée MCP sur leurs pages |
 
 ## Avancement
 
@@ -57,7 +61,9 @@
 - [x] Matérialiser storyboard, références et premiers états manipulables dans une revue locale.
 - [x] Terminer l’étude 3D puis la conserver comme référence distincte.
 - [x] Composer l’accueil complet avec images pertinentes, vue mobile, trois langues et carte des effets.
-- [ ] Retenir la composition et les sections avant de produire leurs nouveaux assets.
+- [x] Comparer la composition 01 à l’accueil en production et documenter ses pertes de contenu/liens.
+- [x] Examiner Higgsfield, InVideo et Freepik/Magnific, puis corriger le brief de remplacement.
+- [ ] Recomposer l’accueil à partir du brief corrigé et retenir les sections avant de produire leurs nouveaux assets.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -68,6 +74,8 @@ Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-archit
 
 ## Prochaine décision à présenter
 
-Le fil suivi et la méthode « pages avant effets » sont acquis. Prochaine décision : juger la [composition complète de l’accueil](review/home.html), sa hiérarchie et la place du MCP, puis retenir les emplacements où le mouvement explique quelque chose. Les notes sont accessibles via « Voir les effets prévus ». Le cadrage stratégique reste provisoire tant que l'audit des parcours et la collecte complémentaire sont incomplets.
+Le fil suivi et la méthode « pages avant effets » sont acquis, ainsi que la possibilité de réécrire et fusionner pour améliorer l'accueil. La composition 01 ne répond pas suffisamment au besoin de remplacement. La prochaine proposition visuelle suivra le [brief corrigé](home-replacement-brief.md) : richesse produit, preuve, usages/comparaison, deux voies de création, prix et réponses.
 
-La [revue V1](review/index.html), la [planche illustrée](review/direction.html) et l'[étude 3D](review/motion.html) restent des références historiques. Le sujet de la chaussure n'est pas retenu pour la page. Voir [la méthode actualisée](page-first-workflow.md) et [le compte rendu de composition](home-composition.md).
+L'inventaire [home-replacement-links.json](home-replacement-links.json) rend les choix de destination explicites, sans imposer de conserver chaque bloc ou lien à la même place. La lecture des concurrents ne valide pas une nouvelle palette ni leurs promesses pour MaxVideoAI. Le cadrage de conversion reste provisoire tant que l'audit des parcours et la mesure complémentaires sont incomplets.
+
+La [revue V1](review/index.html), la [planche illustrée](review/direction.html), l'[étude 3D](review/motion.html) et la [composition 01](review/home.html) restent consultables avec leur statut historique. Aucun de ces livrables ne vaut autorisation de mise en ligne.
