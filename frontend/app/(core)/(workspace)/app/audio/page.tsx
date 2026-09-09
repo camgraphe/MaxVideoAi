@@ -1,3 +1,4 @@
+import { AppCreationContent } from '@/components/app/AppCreationContent';
 import type { Metadata } from 'next';
 
 import { HeaderBar } from '@/components/HeaderBar';
@@ -21,7 +22,9 @@ export default function AudioGeneratePage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
-        <AudioCreationWorkspace />
+        <AppCreationContent>
+          <AudioCreationWorkspace />
+        </AppCreationContent>
       </div>
     </div>
   );

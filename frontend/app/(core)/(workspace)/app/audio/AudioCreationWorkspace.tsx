@@ -178,7 +178,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   if (requestedIntent === 'video') return <div className="flex min-w-0 flex-1 flex-col"><div className={styles.root} style={{ flex: 'none', paddingBottom: 0 }}><a href={`${pathname}?intent=voice`}>← {copy.back}</a></div><VideoSoundtrack key={userId ?? 'guest'} /></div>;
   const price = quote ? new Intl.NumberFormat(locale, { style: 'currency', currency: quote.pricing.currency }).format(quote.pricing.totalCents / 100) : null;
   return <main className={styles.root} data-audio-creation={intent}>
-    <header className={styles.header}><div><h1>{copy.title}</h1></div><a href={`${pathname}?intent=video`}>{copy.video}<span aria-hidden>↗</span></a></header>
+    <header className={styles.header}><h1 className="sr-only">{copy.title}</h1><a href={`${pathname}?intent=video`}>{copy.video}<span aria-hidden>↗</span></a></header>
     <nav className={styles.intents} aria-label={copy.title}>{AUDIO_CREATION_INTENTS.map((key, index) => <button type="button" className={styles.intent} key={key} aria-pressed={intent === key} onClick={() => chooseIntent(key)}><span className={styles.intentVisual} style={{ backgroundPositionX: `${index * 25}%` }} aria-hidden /><span className={styles.intentNumber} aria-hidden>0{index + 1}</span><span className={styles.intentCheck} aria-hidden>{intent === key ? '✓' : '↗'}</span><strong>{copy.intents[key][0]}</strong></button>)}</nav>
     {notice ? <div className={styles.status} role="alert">{notice}</div> : null}
     <div className={styles.layout}><div>

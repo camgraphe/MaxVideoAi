@@ -109,8 +109,10 @@ export function WorkspaceAppShell({
   const [railView, setRailView] = useState<'activity' | 'recent'>('activity');
   const [mobileRecentOpen, setMobileRecentOpen] = useState(false);
   const recentPanelRef = useRef<HTMLDivElement>(null);
+  const activityPanelRef = useRef<HTMLDivElement>(null);
   const recentOpenerRef = useRef<HTMLButtonElement>(null);
   const recentPanelId = useId();
+  const activityPanelId = useId();
   const copy = recentMediaCopy(modeLabelLocale);
   const closeMobileRecent = () => {
     setMobileRecentOpen(false);
@@ -134,7 +136,7 @@ export function WorkspaceAppShell({
             <button type="button" aria-pressed={railView === 'activity'} onClick={() => { setRailView('activity'); setMobileRecentOpen(false); }}>{copy.activity}</button>
             <button type="button" aria-pressed={railView === 'recent'} onClick={openRecentMedia}>{copy.title}</button>
           </div> : null}
-          <div hidden={railView !== 'activity'}>
+          <div id={activityPanelId} ref={activityPanelRef} tabIndex={-1} hidden={railView !== 'activity'}>
         <GalleryRail
           engine={selectedEngine}
           engineRegistry={engines}
@@ -155,8 +157,12 @@ export function WorkspaceAppShell({
         </div>
       }
     >
-      <WorkspaceCreationHeading action={recentMedia ? <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
-        onClick={() => { openRecentMedia(); requestAnimationFrame(() => { focusWorkspaceRecentTarget(recentPanelRef.current); }); }}><AppGlyph name="library" />{copy.title}</button> : null} />
+      <WorkspaceCreationHeading action={recentMedia ? <>
+        <button className="app-recent-mobile-open" type="button" aria-controls={activityPanelId}
+          onClick={() => { setRailView('activity'); setMobileRecentOpen(false); requestAnimationFrame(() => { focusWorkspaceRecentTarget(activityPanelRef.current); }); }}>{copy.activity}</button>
+        <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
+          onClick={() => { openRecentMedia(); requestAnimationFrame(() => { focusWorkspaceRecentTarget(recentPanelRef.current); }); }}><AppGlyph name="library" />{copy.title}</button>
+      </> : null} />
       {notice && (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
           {notice}

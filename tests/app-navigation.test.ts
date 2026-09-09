@@ -75,6 +75,10 @@ test('app shell keeps account authority, localized separate public links, and na
   const menu = readFileSync('frontend/components/app/AppSiteMenu.client.tsx', 'utf8');
   const navigation = readFileSync('frontend/components/app/AppNavigation.client.tsx', 'utf8');
   const css = readFileSync('frontend/src/styles/app-shell.css', 'utf8');
+  const creation = readFileSync('frontend/components/app/AppCreationContent.tsx', 'utf8');
+  assert.doesNotMatch(header, /<AppNavigation variant="activities"/);
+  assert.match(creation, /<AppNavigation variant="activities" \/>/);
+  assert.doesNotMatch(css, /:has\(\.app-navigation-activities\) \.app-sidebar/);
   assert.equal((header.match(/useHeaderAccountState\(\)/g) ?? []).length, 1);
   assert.doesNotMatch(menu, /fetch\(|useHeaderAccountState|supabase/);
   assert.match(menu, /getPathname\(\{ locale, href: item.href \}\)/);

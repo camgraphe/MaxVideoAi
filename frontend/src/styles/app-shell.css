@@ -53,7 +53,7 @@
   box-shadow: 0 3px 9px rgb(91 33 182 / 30%); pointer-events: none;
 }
 .app-experience .app-navigation-rail a:last-child { margin-top: auto; }
-.app-experience .app-navigation-activities { position: sticky; top: var(--header-height); z-index: 30; flex-wrap: wrap; gap: 6px; padding: 8px 28px 8px 110px; border-bottom: 1px solid var(--app-line); background: var(--app-canvas); }
+.app-experience .app-navigation-activities { position: sticky; top: var(--header-height); z-index: 30; flex-wrap: wrap; gap: 6px; padding: 8px 24px; border-bottom: 1px solid var(--app-line); background: var(--app-canvas); }
 .app-experience .app-navigation-activities a { padding: 0 16px; }
 .app-experience .app-navigation-activities .app-glyph { width: 19px; height: 19px; }
 .app-experience .app-navigation-mobile { display: none; }
@@ -109,9 +109,6 @@
   .app-experience .app-complete-menu, .app-experience .app-public-menu { grid-template-columns: 1fr; }
 }
 
-@media (min-width: 768px) {
-  .app-experience:has(.app-navigation-activities) .app-sidebar { top: calc(var(--header-height) + 61px); height: calc(100dvh - var(--header-height) - 61px); }
-}
 @media (min-width: 768px) and (max-height: 550px) {
   .app-experience .app-navigation-rail { gap: 4px; padding: 6px 4px; }
   .app-experience .app-navigation-rail a { flex: none; min-height: 44px; padding: 3px 1px; gap: 3px; }

@@ -192,7 +192,7 @@ test('workspace density never changes route order by authentication state', () =
   assert.doesNotMatch(videoShellSource, /authStatus|session|user/);
   assert.doesNotMatch(imageSurfaceSource, /authStatus/);
   assert.match(workspaceChromeSource, /p-4[^"]*lg:px-7 lg:py-2/);
-  assert.match(workspaceChromeSource, /flex flex-none flex-col min-\[768px\]:flex-1 min-\[768px\]:flex-row/);
+  assert.match(workspaceChromeSource, /flex min-w-0 flex-1 flex-col min-\[768px\]:flex-row/);
   assert.match(workspaceChromeSource, /app-workspace-main[^"]*flex-none[^"]*min-\[768px\]:flex-1/);
 });
 

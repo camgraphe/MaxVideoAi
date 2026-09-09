@@ -20,7 +20,6 @@ import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import { getAccountInitials } from '@/components/header/header-nav-helpers';
 import { AppSiteMenu } from '@/components/app/AppSiteMenu.client';
-import { AppNavigation } from '@/components/app/AppNavigation.client';
 import { WorkspaceMobileNav } from '@/components/header/WorkspaceMobileNav';
 import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
@@ -451,7 +450,6 @@ export function HeaderBar() {
         </div>
       </header>}
       {isAppExperiencePath(pathname) ? <WorkspaceMobileNav studioVisible={canShowStudioNavigation()} /> : null}
-      {isAppExperiencePath(pathname) ? <AppNavigation variant="activities" /> : null}
       {mobileMenuOpen ? (
         <HeaderMobileMenu
           ctaLabel={ctaLabel}

@@ -72,7 +72,11 @@ test('mobile Recents lives in the creation heading action with drawer state and 
   const heading = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceCreationHeading.tsx', 'utf8');
   assert.match(heading, /action\?: ReactNode/);
   assert.match(heading, /\{action\}/);
-  assert.match(shell, /<WorkspaceCreationHeading action=\{recentMedia \? <button ref=\{recentOpenerRef\}/);
+  assert.match(shell, /<WorkspaceCreationHeading action=\{recentMedia \? <>[\s\S]*<button ref=\{recentOpenerRef\}/);
+  assert.match(shell, /aria-controls=\{activityPanelId\}/);
+  assert.match(shell, /focusWorkspaceRecentTarget\(activityPanelRef\.current\)/);
+  assert.match(heading, /md:hidden/);
+  assert.match(heading, /<h1 className="sr-only"/);
   assert.match(shell, /aria-expanded=\{mobileRecentOpen\} aria-controls=\{recentPanelId\}/);
   assert.match(shell, /focusWorkspaceRecentTarget\(recentPanelRef\.current\)/);
   assert.match(shell, /focusWorkspaceRecentTarget\(opener, opener\?\.closest<HTMLElement>\('\.app-creation-heading'\)/);
