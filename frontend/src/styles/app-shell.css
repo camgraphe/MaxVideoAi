@@ -44,6 +44,15 @@
 .app-experience .app-navigation-rail { width: 100%; flex-direction: column; gap: 10px; padding: 18px 6px; overflow-y: auto; }
 .app-experience .app-navigation-rail a { position: relative; flex-direction: column; min-height: 65px; gap: 7px; font-size: 10px; padding: 7px 2px; text-align: center; }
 .app-experience .app-navigation-rail a[aria-current="page"]::before { content: ''; position: absolute; left: -6px; width: 2px; height: 22px; background: var(--app-accent); }
+.app-experience .app-navigation-badged { position: relative; }
+.app-experience .app-navigation-badged::after {
+  content: attr(data-navigation-badge);
+  position: absolute; top: 4px; right: 2px; z-index: 1;
+  padding: 3px 6px 2px; color: #fff; background: linear-gradient(135deg, #a855f7, #6d28d9);
+  clip-path: polygon(9% 0, 100% 0, 91% 100%, 0 100%); transform: rotate(7deg);
+  font-size: 7px; font-weight: 800; line-height: 1; letter-spacing: .08em; text-transform: uppercase;
+  box-shadow: 0 3px 9px rgb(91 33 182 / 30%); pointer-events: none;
+}
 .app-experience .app-navigation-rail a:last-child { margin-top: auto; }
 .app-experience .app-navigation-activities { position: sticky; top: var(--header-height); z-index: 30; flex-wrap: wrap; gap: 6px; padding: 8px 28px 8px 110px; border-bottom: 1px solid var(--app-line); background: var(--app-canvas); }
 .app-experience .app-navigation-activities a { padding: 0 16px; }

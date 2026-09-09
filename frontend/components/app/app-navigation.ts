@@ -14,10 +14,10 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
   { id: 'generate-audio', label: 'Generate Audio', badge: null, icon: 'generate-audio', href: '/app/audio' },
-  ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', badge: null, icon: 'generate', href: '/app/studio/projects' }] : []),
   ...(FEATURES.workflows.toolsSection
     ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
+  ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', badge: 'Beta', icon: 'generate', href: '/app/studio/projects' }] : []),
   { id: 'library', label: 'Media', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Activity', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
@@ -26,7 +26,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
 
 export type AppPrimary = 'create' | 'studio' | 'media' | 'tools' | 'activity' | 'account';
 export type AppActivity = 'video' | 'image' | 'audio';
-export type AppNavItem = { id: string; label: string; href: string; glyph: AppGlyphName };
+export type AppNavItem = { id: string; label: string; href: string; glyph: AppGlyphName; badge?: string };
 
 export const APP_ACTIVITIES: readonly AppNavItem[] = [
   { id: 'video', label: 'Video', href: '/app', glyph: 'video' },
@@ -35,11 +35,11 @@ export const APP_ACTIVITIES: readonly AppNavItem[] = [
 ];
 const PRIMARY_ITEMS: readonly (AppNavItem & { id: AppPrimary })[] = [
   { id: 'create', label: 'Create', href: '/app', glyph: 'create' },
-  ...(FEATURES.studio.maxVideoAiEditor
-    ? [{ id: 'studio' as const, label: 'Studio', href: '/app/studio/projects', glyph: 'studio' as const }]
-    : []),
   { id: 'media', label: 'Media', href: '/app/library', glyph: 'library' },
   { id: 'tools', label: 'Tools', href: '/app/tools', glyph: 'tools' },
+  ...(FEATURES.studio.maxVideoAiEditor
+    ? [{ id: 'studio' as const, label: 'Studio', href: '/app/studio/projects', glyph: 'studio' as const, badge: 'Beta' }]
+    : []),
   { id: 'activity', label: 'Activity', href: '/jobs', glyph: 'prompt' },
   { id: 'account', label: 'Account', href: '/settings', glyph: 'settings' },
 ];
@@ -71,11 +71,12 @@ export function getAppMenuItems(
 ): readonly AppNavItem[] {
   return [
     ...APP_ACTIVITIES,
-    ...(studioVisible && FEATURES.studio.maxVideoAiEditor
-      ? [{ id: 'studio', label: 'Studio', href: '/app/studio/projects', glyph: 'studio' as const }]
-      : []),
-    ...(toolsEnabled ? [...PRIMARY_ITEMS.filter((item) => item.id === 'tools'), ...TOOL_ITEMS] : []),
     { id: 'library', label: 'Media', href: '/app/library', glyph: 'library' },
+    ...(toolsEnabled ? PRIMARY_ITEMS.filter((item) => item.id === 'tools') : []),
+    ...(studioVisible && FEATURES.studio.maxVideoAiEditor
+      ? PRIMARY_ITEMS.filter((item) => item.id === 'studio')
+      : []),
+    ...(toolsEnabled ? TOOL_ITEMS : []),
     { id: 'jobs', label: 'Activity', href: '/jobs', glyph: 'prompt' },
     { id: 'billing', label: 'Billing', href: '/billing', glyph: 'wallet' },
     { id: 'settings', label: 'Settings', href: '/settings', glyph: 'settings' },

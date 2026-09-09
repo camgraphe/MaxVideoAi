@@ -19,7 +19,14 @@ export function AppNavigation({ variant, studioVisible = false }: {
   return (
     <nav className={`app-navigation app-navigation-${variant}`} aria-label={label}>
       {(activities ? APP_ACTIVITIES : getAppNavigation(undefined, studioVisible)).map((item) => (
-        <Link key={item.id} href={item.href} prefetch={false} aria-current={(activities ? selection.activity : selection.primary) === item.id ? 'page' : undefined}>
+        <Link
+          key={item.id}
+          href={item.href}
+          prefetch={false}
+          aria-current={(activities ? selection.activity : selection.primary) === item.id ? 'page' : undefined}
+          className={item.badge ? 'app-navigation-badged' : undefined}
+          data-navigation-badge={item.badge}
+        >
           <AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span>
         </Link>
       ))}
