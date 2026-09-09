@@ -69,10 +69,10 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         throw error;
       }
     };
-    const openFresh = async () => {
+    const openFresh = async (navigationTimeout = 30_000) => {
       const owned = await prepareFresh();
       try {
-        await owned.page.goto(`${runtime.browserOrigin}${montage.studioUrl}`, { waitUntil: 'domcontentloaded' });
+        await owned.page.goto(`${runtime.browserOrigin}${montage.studioUrl}`, { waitUntil: 'domcontentloaded', timeout: navigationTimeout });
         await expect(owned.page.locator('[data-timeline-item]')).toHaveCount(2, { timeout: 25_000 });
         const rejectCookies = owned.page.getByRole('button', { name: 'Reject all', exact: true });
         await expect(rejectCookies).toBeVisible({ timeout: 10_000 });
@@ -84,7 +84,9 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       }
     };
 
-    const first = await openFresh();
+    // This disposable dev server compiles Studio on its first request. Shared CI
+    // CPU can exceed Playwright's 30s default; later navigation keeps that limit.
+    const first = await openFresh(120_000);
     const page = first.page;
     let stale: Awaited<ReturnType<typeof openFresh>> | undefined;
     try {
