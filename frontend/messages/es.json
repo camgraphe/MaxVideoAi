@@ -1601,15 +1601,13 @@
       "fields": {
         "engine": "Motor",
         "resolution": "Resolución",
-        "duration": "Duración (segundos)",
-        "memberStatus": "Estado de miembro"
+        "duration": "Duración (segundos)"
       },
       "engineLabel": "Motor",
       "estimateLabels": {
         "heading": "Estimación",
         "base": "Base",
-        "discount": "Descuento",
-        "memberChipPrefix": "Precio miembro — Ahorras"
+        "discount": "Descuento"
       },
       "descriptions": {
         "sora-2": "Remix de texto/imagen con audio nativo.",
@@ -1711,37 +1709,6 @@
         "Previsto: resúmenes diarios automatizados sobre gasto, reembolsos y salud de la cola.",
         "Previsto: entregas de equipo a los destinos de almacenamiento compatibles."
       ]
-    },
-    "member": {
-      "title": "Estado de miembro",
-      "subtitle": "Los descuentos se actualizan al instante cuando los administradores editan los umbrales en Ajustes → Facturación → Niveles de miembro.",
-      "tiers": [
-        {
-          "name": "Miembro",
-          "requirement": "Estado base aplicado automáticamente.",
-          "benefit": "Tarifa estándar. La ficha muestra “Precio miembro”."
-        },
-        {
-          "name": "Plus",
-          "requirement": "Umbral configurado en Facturación.",
-          "requirementThreshold": "Umbral configurado en Facturación.",
-          "benefit": "Descuento de workspace definido por el admin.",
-          "benefitDiscount": "Descuento de workspace definido por el admin."
-        },
-        {
-          "name": "Pro",
-          "requirement": "Umbral alto fijado por tu equipo financiero.",
-          "requirementThreshold": "Umbral alto fijado por tu equipo financiero.",
-          "benefit": "Descuento configurado en Facturación.",
-          "benefitDiscount": "Descuento configurado en Facturación."
-        }
-      ],
-      "chipBase": "Precio para miembros — Ahorras",
-      "tooltip": "El estado se actualiza diariamente según tus gastos de los últimos 30 días.",
-      "requirementDefault": "Estado predefinido — se aplica automáticamente",
-      "requirementThreshold": "Umbral definido por el admin: {amount} (últimos 30 días)",
-      "benefitBase": "Tarifa base",
-      "benefitDiscount": "Ahorra {percent}% en cada render"
     },
     "refunds": {
       "title": "Reembolsos y protecciones",

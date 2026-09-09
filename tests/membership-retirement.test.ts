@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { getMembershipDiscountMap } from '../frontend/src/lib/membership';
@@ -90,6 +92,86 @@ test('membership UI and pricing policy remain separate from historical receipt i
     const faq = dictionary.workspace.billing.faq.entries;
     assert.doesNotMatch(JSON.stringify(faq), /applies automatically|s’applique automatiquement|se aplica automáticamente/);
     assert.ok(dictionary.videoPage.details.discountAppliedLabel);
+  }
+});
+
+test('active public pricing copy cannot advertise the retired membership program', async () => {
+  const { pricing: fallbackPricing } = await import('../frontend/lib/i18n/dictionary-data/en-pricing');
+  assert.equal('member' in fallbackPricing, false);
+  assert.equal('memberStatus' in fallbackPricing.estimator.fields, false);
+  assert.equal('memberChipPrefix' in fallbackPricing.estimator.estimateLabels, false);
+
+  for (const locale of ['en', 'fr', 'es']) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    assert.equal('member' in dictionary.pricing, false, `${locale} pricing copy should not expose retired member tiers`);
+    assert.equal('memberStatus' in dictionary.pricing.estimator.fields, false, `${locale} estimator fields should not expose member status`);
+    assert.equal('memberChipPrefix' in dictionary.pricing.estimator.estimateLabels, false, `${locale} estimator labels should not expose member savings`);
+  }
+
+  const estimatorSource = readFileSync('frontend/components/marketing/PriceEstimator.tsx', 'utf8');
+  assert.doesNotMatch(estimatorSource, /memberStatus|memberChipPrefix|Member price|You save/);
+
+  const featureFlags = readFileSync('frontend/content/feature-flags.ts', 'utf8');
+  assert.doesNotMatch(featureFlags, /memberTiers/);
+
+  const translationSource = readFileSync('fr-strings-to-translate.json', 'utf8');
+  assert.doesNotMatch(translationSource, /member discounts|save 5%|save 10%/i);
+});
+
+test('the deterministic mock server also ignores legacy membership tiers', async () => {
+  const port = await new Promise<number>((resolve, reject) => {
+    const reservation = createServer();
+    reservation.once('error', reject);
+    reservation.listen(0, '127.0.0.1', () => {
+      const address = reservation.address();
+      assert.ok(address && typeof address === 'object');
+      reservation.close((error) => error ? reject(error) : resolve(address.port));
+    });
+  });
+  const child = spawn(process.execPath, ['mock-server.js'], {
+    cwd: process.cwd(),
+    env: { ...process.env, HOST: '127.0.0.1', PORT: String(port) },
+    stdio: 'ignore',
+  });
+
+  try {
+    let ready = false;
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      try {
+        const response = await fetch(`http://127.0.0.1:${port}/healthz`);
+        if (response.ok) {
+          ready = true;
+          break;
+        }
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+    }
+    assert.equal(ready, true, 'mock server should become ready');
+
+    for (const memberTier of ['Plus', 'Pro']) {
+      const response = await fetch(`http://127.0.0.1:${port}/api/preflight`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          engine: 'veo-3-1',
+          mode: 't2v',
+          durationSec: 8,
+          resolution: '1080p',
+          aspectRatio: '16:9',
+          fps: 24,
+          prompt: 'A quiet cinematic test shot.',
+          addons: { audio: true },
+          user: { memberTier },
+        }),
+      });
+      const quote = await response.json() as { itemization: { base: { subtotal: number }; addons: Array<{ subtotal: number }>; discounts: unknown[] }; total: number };
+      const subtotal = quote.itemization.base.subtotal + quote.itemization.addons.reduce((sum, addon) => sum + addon.subtotal, 0);
+      assert.deepEqual(quote.itemization.discounts, []);
+      assert.equal(quote.total, subtotal);
+    }
+  } finally {
+    child.kill('SIGTERM');
   }
 });
 

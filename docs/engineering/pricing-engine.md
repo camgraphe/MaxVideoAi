@@ -85,6 +85,8 @@ pnpm --silent pricing:audit -- --json
 
 The 178-row pre-canonical billing baseline and public baseline are immutable historical evidence. The legacy `pricing:public-baseline:generate` entry point now refuses to write; changing either fixture requires a separately designed migration rather than an operating command. The commands above do not mutate pricing policy or application state.
 
+Reviewed post-baseline price changes are recorded as exact scenario and field deltas in `frontend/src/lib/pricing-audit/approved-changes.ts`. The audit reports those rows separately as approved changes and still fails for any unlisted or altered delta. Gemini Omni 1.1's exact token price is the first such change: the historical 10-second 720p projection remains $1.30 while the reviewed canonical price is $1.32.
+
 Every current cross-surface difference is preserved and identified by a compatibility profile. Updating `frontend/config/pricing-policy.json` is a commercial change after this foundation batch and requires an intentional matrix review; it must never be bundled into an unrelated refactor.
 
 ## Foundation compatibility profiles

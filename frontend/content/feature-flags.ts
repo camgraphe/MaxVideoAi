@@ -31,7 +31,6 @@ export const FEATURES = {
     refundsAuto: true,
     itemisedReceipts: true,
     multiApproverTopups: true,
-    memberTiers: true,
     teams: false,
   },
   notifications: {

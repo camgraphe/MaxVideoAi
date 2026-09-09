@@ -1602,15 +1602,13 @@
       "fields": {
         "engine": "Modèle",
         "resolution": "Résolution",
-        "duration": "Durée (secondes)",
-        "memberStatus": "Statut membre"
+        "duration": "Durée (secondes)"
       },
       "engineLabel": "Modèle",
       "estimateLabels": {
         "heading": "Estimation",
         "base": "Base",
-        "discount": "Remise",
-        "memberChipPrefix": "Prix membre — Vous économisez"
+        "discount": "Remise"
       },
       "descriptions": {
         "sora-2": "Remix texte/image avec audio natif.",
@@ -1712,37 +1710,6 @@
         "Prévu : résumés quotidiens automatisés couvrant les dépenses, les remboursements et la santé de la file d'attente.",
         "Prévu : transferts d’équipe vers les destinations de stockage prises en charge."
       ]
-    },
-    "member": {
-      "title": "Statut membre",
-      "subtitle": "Les remises se mettent à jour instantanément lorsque les administrateurs modifient les seuils dans Paramètres → Facturation → Niveaux de membres.",
-      "tiers": [
-        {
-          "name": "Membre",
-          "requirement": "Statut par défaut — activé dès l’inscription.",
-          "benefit": "Tarif standard. La pastille affiche « Prix membre »."
-        },
-        {
-          "name": "Plus",
-          "requirement": "Seuil défini dans Facturation.",
-          "requirementThreshold": "Seuil défini dans Facturation.",
-          "benefit": "Remise d’espace configurée par l’administrateur.",
-          "benefitDiscount": "Remise d’espace configurée par l’administrateur."
-        },
-        {
-          "name": "Pro",
-          "requirement": "Seuil haut défini par votre équipe finance.",
-          "requirementThreshold": "Seuil haut, fixé par votre équipe finance.",
-          "benefit": "Remise d’espace configurée dans Facturation.",
-          "benefitDiscount": "Remise d’espace configurée dans Facturation."
-        }
-      ],
-      "chipBase": "Prix membre — Vous économisez",
-      "tooltip": "Le statut se met à jour quotidiennement sur vos dépenses des 30 derniers jours.",
-      "requirementDefault": "Statut par défaut — appliqué automatiquement",
-      "requirementThreshold": "Seuil défini par l’admin : {amount} (30 jours glissants)",
-      "benefitBase": "Tarif de base",
-      "benefitDiscount": "Économisez {percent}% sur chaque rendu"
     },
     "refunds": {
       "title": "Remboursements & protections",

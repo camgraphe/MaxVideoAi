@@ -15,13 +15,11 @@ export const pricing: Dictionary['pricing'] = {
         engine: 'Engine',
         resolution: 'Resolution',
         duration: 'Duration (seconds)',
-        memberStatus: 'Member status',
       },
       estimateLabels: {
         heading: 'Estimate',
         base: 'Base',
         discount: 'Discount',
-        memberChipPrefix: 'Member price — You save',
       },
       descriptions: {
         'sora-2': 'Text/image remix with native audio.',
@@ -58,29 +56,6 @@ export const pricing: Dictionary['pricing'] = {
         'Automated daily summaries covering spend, refunds, and queue health.',
         'Delivery hand-offs to Google Drive, OneDrive, and Dropbox.',
       ],
-    },
-    member: {
-      title: 'Member status',
-      subtitle: 'Discounts update instantly when admins edit thresholds in Settings → Billing → Member tiers.',
-      tiers: [
-        {
-          name: 'Member',
-          requirement: 'Default status',
-          benefit: 'Standard pricing. Chip reads “Member price”.',
-        },
-        {
-          name: 'Plus',
-          requirement: 'Admin-defined threshold',
-          benefit: 'Workspace discount set in Billing.',
-        },
-        {
-          name: 'Pro',
-          requirement: 'Admin-defined threshold',
-          benefit: 'Workspace discount set in Billing.',
-        },
-      ],
-      chipBase: 'Member price — You save',
-      tooltip: 'Status updates daily on your last 30 days of spend.',
     },
     refunds: {
       title: 'Refunds & protections',

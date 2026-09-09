@@ -18,7 +18,7 @@ async function main(): Promise<void> {
     process.stdout.write(`${JSON.stringify(matrix, null, 2)}\n`);
   } else {
     console.log(
-      `[pricing-audit] ${matrix.summary.scenarios} scenarios; ${matrix.summary.matches} matches; ${matrix.summary.mismatches} mismatches; ${matrix.summary.compatibilityProfiles} compatibility profiles`
+      `[pricing-audit] ${matrix.summary.scenarios} scenarios; ${matrix.summary.matches} matches; ${matrix.summary.approvedChanges} approved changes; ${matrix.summary.mismatches} mismatches; ${matrix.summary.compatibilityProfiles} compatibility profiles`
     );
     for (const row of matrix.rows.filter((candidate) => candidate.status === 'mismatch')) {
       console.error(

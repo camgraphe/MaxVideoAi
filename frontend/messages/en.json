@@ -1498,15 +1498,13 @@
       "fields": {
         "engine": "Engine",
         "resolution": "Resolution",
-        "duration": "Duration (seconds)",
-        "memberStatus": "Member status"
+        "duration": "Duration (seconds)"
       },
       "engineLabel": "Engine",
       "estimateLabels": {
         "heading": "Estimate",
         "base": "Base",
-        "discount": "Discount",
-        "memberChipPrefix": "Member price — You save"
+        "discount": "Discount"
       },
       "descriptions": {
         "sora-2": "Text/image remix with native audio.",
@@ -1608,33 +1606,6 @@
         "Planned: automated daily summaries covering spend, refunds, and queue health.",
         "Planned: team delivery hand-offs to supported storage destinations."
       ]
-    },
-    "member": {
-      "title": "Member status",
-      "subtitle": "Discounts update instantly when admins edit thresholds in Settings → Billing → Member tiers.",
-      "tiers": [
-        {
-          "name": "Member",
-          "requirement": "Default status",
-          "benefit": "Standard pricing. Chip reads “Member price”."
-        },
-        {
-          "name": "Plus",
-          "requirement": "Admin-defined threshold",
-          "benefit": "Workspace discount set in Billing."
-        },
-        {
-          "name": "Pro",
-          "requirement": "Admin-defined threshold",
-          "benefit": "Workspace discount set in Billing."
-        }
-      ],
-      "chipBase": "Member price — You save",
-      "tooltip": "Status updates daily on your last 30 days of spend.",
-      "requirementDefault": "Default status — applies automatically",
-      "requirementThreshold": "Admin threshold: {amount} (rolling 30 days)",
-      "benefitBase": "Baseline rate",
-      "benefitDiscount": "Save {percent}% on every render"
     },
     "refunds": {
       "title": "Refunds & protections",

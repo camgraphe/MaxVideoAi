@@ -46,13 +46,11 @@ export function PriceEstimator({
     engine: 'Engine',
     resolution: 'Resolution',
     duration: 'Duration (seconds)',
-    memberStatus: 'Member status',
   }) as Record<string, string>;
   const estimateLabels = t('pricing.estimator.estimateLabels', {
     heading: 'Estimate',
     base: 'Base',
     discount: 'Discount',
-    memberChipPrefix: 'Member price - You save',
   }) as Record<string, string>;
   const descriptions = dictionary.pricing.estimator.descriptions;
   const pricingEngineMap = useMemo(() => {

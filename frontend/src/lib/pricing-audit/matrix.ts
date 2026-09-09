@@ -2,6 +2,10 @@ import { comparePricingOutputs } from '@maxvideoai/pricing';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 
 import { collectCanonicalPricingOutputs, type CanonicalPricingAuditOutput } from './canonical-collectors';
+import {
+  APPROVED_PRICING_AUDIT_CHANGES,
+  type ApprovedPricingAuditChange,
+} from './approved-changes';
 import type { FrozenPricingOutput, PricingAuditSurface } from './types';
 
 export type PricingAuditErrorCode =
@@ -30,8 +34,9 @@ export type PricingAuditMatrixRow = {
   policySource: 'database' | 'versioned';
   policyRuleId: string;
   compatibilityProfile?: string;
-  migrationState: 'frozen-baseline-match' | 'frozen-baseline-mismatch';
-  status: 'match' | 'mismatch';
+  migrationState: 'frozen-baseline-match' | 'reviewed-pricing-change' | 'frozen-baseline-mismatch';
+  status: 'match' | 'approved-change' | 'mismatch';
+  approvalReason?: string;
   fieldDeltas: Record<string, { current: string | number | undefined; canonical: string | number | undefined }>;
 };
 
@@ -40,6 +45,7 @@ export type PricingAuditMatrix = {
   summary: {
     scenarios: number;
     matches: number;
+    approvedChanges: number;
     mismatches: number;
     compatibilityProfiles: number;
   };
@@ -54,6 +60,22 @@ function assertUniqueRows(rows: Array<{ scenarioId: string }>, label: string): v
     }
     ids.add(row.scenarioId);
   }
+}
+
+function matchesApprovedChange(
+  approval: ApprovedPricingAuditChange | undefined,
+  fieldDeltas: PricingAuditMatrixRow['fieldDeltas'],
+): approval is ApprovedPricingAuditChange {
+  if (!approval) return false;
+  const actualFields = Object.keys(fieldDeltas).sort();
+  const approvedFields = Object.keys(approval.fieldDeltas).sort();
+  if (actualFields.length !== approvedFields.length) return false;
+  return actualFields.every((field, index) => {
+    if (field !== approvedFields[index]) return false;
+    const actual = fieldDeltas[field];
+    const expected = approval.fieldDeltas[field];
+    return actual?.current === expected?.current && actual?.canonical === expected?.canonical;
+  });
 }
 
 function assertValidOutput(row: FrozenPricingOutput, label: string): void {
@@ -71,7 +93,8 @@ function assertValidOutput(row: FrozenPricingOutput, label: string): void {
 export function buildPricingAuditMatrixFromOutputs(
   current: FrozenPricingOutput[],
   canonical: CanonicalPricingAuditOutput[],
-  approvedCompatibilityProfiles?: ReadonlySet<string>
+  approvedCompatibilityProfiles?: ReadonlySet<string>,
+  approvedChanges: readonly ApprovedPricingAuditChange[] = [],
 ): PricingAuditMatrix {
   assertUniqueRows(current, 'frozen baseline outputs');
   assertUniqueRows(canonical, 'canonical outputs');
@@ -79,6 +102,7 @@ export function buildPricingAuditMatrixFromOutputs(
   canonical.forEach((row) => assertValidOutput(row, 'canonical output'));
   const currentById = new Map(current.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(canonical.map((row) => [row.scenarioId, row]));
+  const approvedChangesById = new Map(approvedChanges.map((change) => [change.scenarioId, change]));
   const ids = [...new Set([...currentById.keys(), ...canonicalById.keys()])].sort();
   const rows = ids.map((scenarioId): PricingAuditMatrixRow => {
     const currentRow = currentById.get(scenarioId);
@@ -98,6 +122,8 @@ export function buildPricingAuditMatrixFromOutputs(
       );
     }
     const comparison = comparePricingOutputs(scenarioId, currentRow, canonicalRow);
+    const approval = comparison.status === 'mismatch' ? approvedChangesById.get(scenarioId) : undefined;
+    const approved = matchesApprovedChange(approval, comparison.fieldDeltas);
     return {
       scenarioId,
       engineId: canonicalRow.engineId,
@@ -111,17 +137,22 @@ export function buildPricingAuditMatrixFromOutputs(
       migrationState:
         comparison.status === 'match'
           ? 'frozen-baseline-match'
+          : approved
+            ? 'reviewed-pricing-change'
           : 'frozen-baseline-mismatch',
-      status: comparison.status,
+      status: comparison.status === 'match' ? 'match' : approved ? 'approved-change' : 'mismatch',
+      ...(approved ? { approvalReason: approval.reason } : {}),
       fieldDeltas: comparison.fieldDeltas,
     };
   });
   const mismatches = rows.filter((row) => row.status === 'mismatch').length;
+  const approvedChangesCount = rows.filter((row) => row.status === 'approved-change').length;
   return {
     version: 1,
     summary: {
       scenarios: rows.length,
-      matches: rows.length - mismatches,
+      matches: rows.length - mismatches - approvedChangesCount,
+      approvedChanges: approvedChangesCount,
       mismatches,
       compatibilityProfiles: new Set(rows.map((row) => row.compatibilityProfile).filter(Boolean)).size,
     },
@@ -159,6 +190,7 @@ export async function buildPricingAuditMatrix(
   return buildPricingAuditMatrixFromOutputs(
     frozenBaseline,
     collectCanonicalPricingOutputs(frozenBaseline),
-    new Set(policy.compatibilityProfiles.map((profile) => profile.id))
+    new Set(policy.compatibilityProfiles.map((profile) => profile.id)),
+    APPROVED_PRICING_AUDIT_CHANGES,
   );
 }
