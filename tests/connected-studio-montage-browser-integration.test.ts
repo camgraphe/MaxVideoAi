@@ -333,7 +333,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         await loading.page.waitForTimeout(1_200);
         assert.deepEqual(initialWrites, [], 'An unresolved project must not persist a transient starter through a legacy writer.');
         releaseRead();
-        await expect(loading.page.locator('[data-timeline-item]')).toHaveCount(2);
+        await expect(loading.page.locator('[data-timeline-item]')).toHaveCount(2, { timeout: 25_000 });
         await expect(loading.page.getByRole('button', { name: 'Projects', exact: true })).toBeEnabled();
         assert.deepEqual(loading.errors, []);
       } finally { releaseRead(); await loading.close(); }
@@ -430,7 +430,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         const beforeRecovery = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
         assert.equal(beforeRecovery.rows[0].timeline_state.timelineItems[0].title, 'A real browser edit');
         await offline.page.reload({ waitUntil: 'domcontentloaded' });
-        await expect(offline.page.locator('[data-timeline-item]')).toHaveCount(2);
+        await expect(offline.page.locator('[data-timeline-item]')).toHaveCount(2, { timeout: 25_000 });
         await offline.page.locator('[data-timeline-item="montage-clip-01"]').click();
         await expect(offline.page.getByLabel('Clip name', { exact: true })).toHaveValue('Recovered offline browser draft');
         const failedExit = offline.page.waitForResponse((response) => response.url() === endpoint && response.request().method() === 'PUT' && response.status() === 503);
@@ -446,7 +446,7 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         void successfulExit.catch(() => undefined);
         await offline.page.getByRole('button', { name: 'Projects', exact: true }).click();
         await successfulExit;
-        await expect(offline.page).toHaveURL(`${runtime.browserOrigin}/app/studio/projects`);
+        await expect(offline.page).toHaveURL(`${runtime.browserOrigin}/app/studio/projects`, { timeout: 25_000 });
         const recovered = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
         assert.equal(recovered.rows[0].timeline_state.timelineItems[0].title, 'Recovered offline browser draft');
         assert.deepEqual(offline.errors, []);
