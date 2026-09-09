@@ -13,7 +13,7 @@ function routeFiles(directory: string): string[] {
   });
 }
 
-test('Studio preview is admin-only across navigation, pages, APIs, and visitor access', () => {
+test('Studio beta is discoverable while projects, workspaces, and APIs remain admin-only', () => {
   const flags = read('frontend/content/feature-flags.ts');
   const navigation = read('frontend/components/app/app-navigation.ts');
   const sidebar = read('frontend/components/AppSidebar.tsx');
@@ -23,15 +23,22 @@ test('Studio preview is admin-only across navigation, pages, APIs, and visitor a
   const middleware = read('frontend/middleware.ts');
 
   assert.match(flags, /studio:\s*\{[\s\S]*maxVideoAiEditor:\s*true,[\s\S]*adminOnly:\s*true/);
-  assert.match(navigation, /canShowStudioNavigation\(isAdmin:\s*boolean\)/);
-  assert.match(sidebar, /useAdminNavigationAccess/);
-  assert.match(header, /WorkspaceMobileNav studioVisible=\{canShowStudioNavigation\(isAdmin\)\}/);
-  assert.match(siteMenu, /getAppMenuItems\(undefined, studioVisible \?\? canShowStudioNavigation\(isAdmin\)\)/);
+  assert.match(navigation, /canShowStudioNavigation\(\)/);
+  assert.match(navigation, /return FEATURES\.studio\.maxVideoAiEditor/);
+  assert.doesNotMatch(sidebar, /useAdminNavigationAccess/, 'public beta discovery should not require an admin lookup');
+  assert.match(sidebar, /studioVisible=\{canShowStudioNavigation\(\)\}/);
+  assert.match(header, /WorkspaceMobileNav studioVisible=\{canShowStudioNavigation\(\)\}/);
+  assert.match(siteMenu, /getAppMenuItems\(undefined, studioVisible \?\? canShowStudioNavigation\(\)\)/);
   assert.doesNotMatch(visitorAccess, /normalized\.startsWith\('\/app\/studio/);
   assert.match(middleware, /canUseLocalAdminBypassForProtectedPath\(req, pathname, FEATURES\.studio\.adminOnly\)/);
 
+  const projectsPage = read('frontend/app/(core)/(workspace)/app/studio/projects/page.tsx');
+  assert.match(projectsPage, /resolveStudioPageAccess\(\)/);
+  assert.match(projectsPage, /StudioPreviewAccess/);
+  assert.match(projectsPage, /access\.ok/);
+  assert.match(projectsPage, /query\.preview === 'studio-beta'/, 'admins should be able to review the gated surface without changing access');
+
   for (const path of [
-    'frontend/app/(core)/(workspace)/app/studio/projects/page.tsx',
     'frontend/app/(core)/(workspace)/app/studio/workspace/page.tsx',
     'frontend/app/(core)/(workspace)/app/studio/workspace/[projectId]/page.tsx',
   ]) {

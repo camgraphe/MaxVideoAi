@@ -450,7 +450,7 @@ export function HeaderBar() {
           </div>
         </div>
       </header>}
-      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav studioVisible={canShowStudioNavigation(isAdmin)} /> : null}
+      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav studioVisible={canShowStudioNavigation()} /> : null}
       {isAppExperiencePath(pathname) ? <AppNavigation variant="activities" /> : null}
       {mobileMenuOpen ? (
         <HeaderMobileMenu

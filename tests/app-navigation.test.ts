@@ -6,6 +6,7 @@ import { HeaderWalletStatus } from '../frontend/components/header/HeaderWalletSt
 import {
   NAV_ITEMS,
   appNavLabel,
+  canShowStudioNavigation,
   getAppNavigation,
   getAppMenuItems,
   getAppNavigationSelection,
@@ -30,11 +31,12 @@ test('every existing destination keeps a named complete-menu path and tools obey
   assert.equal(new Set(menu.map((item) => item.href)).size, menu.length);
   assert.ok(menu.every((item) => item.href !== '/dashboard'));
   assert.ok(NAV_ITEMS.every((item) => item.href !== '/dashboard'));
-  assert.deepEqual(getAppNavigation(true).map((item) => item.id), ['create', 'media', 'tools', 'activity', 'account']);
+  assert.deepEqual(getAppNavigation(true).map((item) => item.id), ['create', 'media', 'tools', 'studio', 'activity', 'account']);
   assert.deepEqual(getAppNavigation(true, true).map((item) => item.id), ['create', 'media', 'tools', 'studio', 'activity', 'account']);
   assert.deepEqual(getAppNavigation(false, true).map((item) => item.id), ['create', 'media', 'studio', 'activity', 'account']);
   assert.equal(getAppNavigation(true, true).find((item) => item.id === 'studio')?.badge, 'Beta');
-  assert.deepEqual(getAppNavigationSelection('/app/studio/projects'), { primary: null, activity: null });
+  assert.equal(canShowStudioNavigation(), true, 'the beta entry should be discoverable before editor access is granted');
+  assert.deepEqual(getAppNavigationSelection('/app/studio/projects'), { primary: 'studio', activity: null });
   assert.deepEqual(getAppNavigationSelection('/app/studio/projects', true, true), { primary: 'studio', activity: null });
   assert.deepEqual(getAppNavigationSelection('/app/studio/workspace/project_123', true, true), { primary: 'studio', activity: null });
   assert.ok(getAppMenuItems(false, true).every((item) => !item.href.startsWith('/app/tools')));

@@ -87,7 +87,7 @@ export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, si
           <AppAssistantConnections locale={locale} onNavigate={close} />
           <section aria-labelledby={`${titleId}-app`}><h3 id={`${titleId}-app`}>{copy.app}</h3>
             <nav className="app-complete-menu" aria-label={copy.app}>
-              {getAppMenuItems(undefined, studioVisible ?? canShowStudioNavigation(isAdmin)).map((item) => <Link key={item.id} href={item.href} prefetch={false} onClick={(event) => handleAppNavigate(event, item.href)}><AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span></Link>)}
+              {getAppMenuItems(undefined, studioVisible ?? canShowStudioNavigation()).map((item) => <Link key={item.id} href={item.href} prefetch={false} onClick={(event) => handleAppNavigate(event, item.href)}><AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span></Link>)}
               {isAdmin ? <Link href="/admin" prefetch={false} onClick={(event) => { if (onAppNavigate) handleAppNavigate(event, '/admin'); else { event.preventDefault(); close(); window.location.assign('/admin'); } }}><AppGlyph name="settings" /><span>Admin</span></Link> : null}
             </nav>
           </section>

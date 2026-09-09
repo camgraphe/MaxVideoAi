@@ -54,12 +54,12 @@ const TOOL_ITEMS: readonly AppNavItem[] = [
   { id: 'fix-blur', label: 'Fix Motion Blur', href: '/app/tools/fix-blur', glyph: 'video' },
   { id: 'smooth-motion', label: 'Smooth Motion', href: '/app/tools/smooth-motion', glyph: 'video' },
 ];
-export function canShowStudioNavigation(isAdmin: boolean): boolean {
-  return FEATURES.studio.maxVideoAiEditor && (!FEATURES.studio.adminOnly || isAdmin);
+export function canShowStudioNavigation(): boolean {
+  return FEATURES.studio.maxVideoAiEditor;
 }
 export function getAppNavigation(
   toolsEnabled: boolean = FEATURES.workflows.toolsSection,
-  studioVisible: boolean = canShowStudioNavigation(false),
+  studioVisible: boolean = canShowStudioNavigation(),
 ) {
   return PRIMARY_ITEMS.filter((item) => (
     (toolsEnabled || item.id !== 'tools') && (studioVisible || item.id !== 'studio')
@@ -67,7 +67,7 @@ export function getAppNavigation(
 }
 export function getAppMenuItems(
   toolsEnabled: boolean = FEATURES.workflows.toolsSection,
-  studioVisible: boolean = canShowStudioNavigation(false),
+  studioVisible: boolean = canShowStudioNavigation(),
 ): readonly AppNavItem[] {
   return [
     ...APP_ACTIVITIES,
@@ -86,7 +86,7 @@ export function getAppMenuItems(
 export function getAppNavigationSelection(
   pathname: string | null | undefined,
   toolsEnabled: boolean = FEATURES.workflows.toolsSection,
-  studioVisible: boolean = canShowStudioNavigation(false),
+  studioVisible: boolean = canShowStudioNavigation(),
 ): { primary: AppPrimary | null; activity: AppActivity | null } {
   const path = pathname?.replace(/\/+$/, '') || '/';
   const matches = (href: string) => path === href || path.startsWith(`${href}/`);
