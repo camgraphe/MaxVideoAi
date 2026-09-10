@@ -230,6 +230,7 @@ export function WorkspaceAppReadyView({
           klingO3VideoToVideoSupported: supportsKlingO3VideoToVideo(selectedEngine),
           hasAnyVideoInput: getKlingO3AssetState({ inputAssets, klingElements }).hasAnyVideoInput,
           showOmniStudioPanel: selectedEngine.id === 'gemini-omni-flash',
+          previousInteractionId: form.extraInputValues.previous_interaction_id,
           showLumaRay32KeyframeEditor: selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v',
         }}>
       {({ recentMedia, recentDropProps, refreshRecentMedia }) => <WorkspaceAppShell

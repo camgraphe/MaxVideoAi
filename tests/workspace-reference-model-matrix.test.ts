@@ -145,7 +145,7 @@ test('Veo exposes first/last controls in unified mode and reference fields only 
   assertExactFieldOwners(value, references);
 });
 
-test('Happy Horse, Omni and Luma keep their dedicated workflow surfaces', () => {
+test('Happy Horse and Omni expose shared references while Luma keeps its editor', () => {
   const happyHorse = engine('happy-horse-1-1');
   const horseFields = summary(happyHorse, 't2v', { isUnifiedHappyHorse: true }).assetFields;
   assert.deepEqual(horseFields.map(({ field }) => [field.id, field.maxCount]), [['image_url', 1], ['image_urls', 9]]);
@@ -154,7 +154,17 @@ test('Happy Horse, Omni and Luma keep their dedicated workflow surfaces', () => 
   const omni = engine('gemini-omni-flash');
   const omniFields = summary(omni, 't2v', { isUnifiedGeminiOmni: true }).assetFields;
   assert.deepEqual(omniFields.map(({ field }) => field.id), ['image_url', 'reference_images', 'video_url']);
-  assert.equal(getWorkspaceReferenceFields(omniFields, { ...referenceOptions(), showOmniStudioPanel: true }).length, 0);
+  const sharedOmni = getWorkspaceReferenceFields(omniFields, { ...referenceOptions(), showOmniStudioPanel: true });
+  assert.deepEqual(sharedOmni.map(({ field }) => field.id), ['image_url', 'reference_images', 'video_url']);
+  assert.ok(sharedOmni.every((entry) => !entry.disabled));
+  for (const [fieldId, media] of [['image_url', image], ['reference_images', image], ['video_url', video]] as const) {
+    const selected = getWorkspaceReferenceFields(omniFields, { ...referenceOptions({ [fieldId]: [media] }), showOmniStudioPanel: true });
+    assert.deepEqual(selected.filter((entry) => !entry.disabled).map(({ field }) => field.id), [fieldId]);
+  }
+  const refining = getWorkspaceReferenceFields(omniFields, { ...referenceOptions(), showOmniStudioPanel: true, previousInteractionId: 'interactions/test' });
+  assert.ok(refining.every((entry) => entry.disabled && /previous interaction/i.test(entry.disabledReason ?? '')));
+  const guest = getWorkspaceReferenceFields(omniFields, { ...referenceOptions(), showOmniStudioPanel: true, guestUploadLockedReason: 'Sign in' });
+  assert.ok(guest.every((entry) => entry.disabled && entry.disabledPresentation === 'auth-lock'));
 
   const luma = engine('luma-ray-3-2');
   const modifyFields = summary(luma, 'v2v').assetFields;
