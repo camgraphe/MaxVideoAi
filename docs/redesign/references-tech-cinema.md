@@ -61,7 +61,7 @@ La sélection doit partir de la bibliothèque réelle :
 - Juger la vidéo en lecture et à l'arrêt ; une jolie vignette ne suffit pas. Pour Connect, rechercher aussi les références d'origine afin de montrer un passage source → résultat vérifiable.
 - Réutiliser les bons films et concevoir le mouvement de page autour de leurs caractéristiques. La génération de nouveaux médias répondra aux manques identifiés.
 
-Le registre **frontend/config/public-video-sources.json** lu dans ce worktree contient 11 sources de démos publiques. Il sert de point de repère, **pas d'inventaire de toute la bibliothèque** et pas de limite à la sélection autorisée. Aucun compte n'a encore été filtré ni aucun ensemble de vidéos Camgraph Admin visionné pendant ce lot de conseil. Ne pas présenter ces onze sources comme la curation demandée.
+Le registre **frontend/config/public-video-sources.json** lu dans ce worktree contient 11 sources de démos publiques. Il sert de point de repère, **pas d'inventaire de toute la bibliothèque** et pas de limite à la sélection autorisée. La première lecture des références ne comportait pas encore de filtrage Camgraph Admin. La [passe 09](media-direction-09.md) a depuis repéré 100 candidats et présélectionné neuf films, dont huit de ce compte ; elle retrouve aussi le Short du sac dans YouTube et les captures du site de démonstration. Ne pas confondre cet échantillon avec un audit exhaustif de la bibliothèque.
 
 L'autorisation de sélection est conservée pour la suite ; aucune nouvelle autorisation par vidéo n'est nécessaire par défaut. Le registre d'origine et les dérivés de lecture garderont leurs propriétaires actuels. Ce lot ne change pas la visibilité des médias, ne publie aucune vidéo et ne génère aucun nouveau film.
 
@@ -80,4 +80,4 @@ La première passe mobile prévoit le même sens de lecture avec une densité ad
 
 ## État
 
-Sites vivants examinés sur desktop, fiches Godly lues, références et transpositions documentées. Aucune génération ImageGen, aucune copie de code tiers, aucun changement applicatif ni déploiement dans ce lot.
+Sites vivants examinés sur desktop, fiches Godly lues, références et transpositions documentées. La [revue visuelle 09](review/reference-film-09/index.html) fournit maintenant les captures réelles, la sélection de films et les productions YouTube retrouvées. Les états de mouvement proposés restent à fabriquer. Aucune génération ImageGen, aucune copie de code tiers, aucun changement applicatif ni déploiement dans ce lot.

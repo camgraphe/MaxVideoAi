@@ -108,7 +108,7 @@ Cette réalisation locale ne vaut pas validation artistique ni gain de conversio
 
 ## Prochaine décision à présenter
 
-Partir des références réelles appréciées par Adrien — LocalCan, Arrakis et Pryzm — et de leurs animations porteuses de sens. La [lecture comparée](references-tech-cinema.md) propose leur rôle dans la direction MaxVideoAI. Définir les compositions et leur progression avant de reprendre les mockups. La direction 08 reste non validée ; les piliers PAYG, Compare, références et Connect sont conservés.
+Partir des références réelles appréciées par Adrien — LocalCan, Arrakis et Pryzm — et de leurs animations porteuses de sens. La [lecture comparée](references-tech-cinema.md) propose leur rôle dans la direction MaxVideoAI. La [revue 09](review/reference-film-09/index.html) fournit les captures, neuf films candidats et le Short C08 retrouvé dans YouTube. Choisir les scènes et leur progression avant de reprendre les mockups. La direction 08 reste non validée ; les piliers PAYG, Compare, références et Connect sont conservés.
 
 Les [40 destinations](home-replacement-links.json) servent à l’analyse de continuité selon D40, pas à une obligation de reproduire l’ancienne composition. Les données GSC/GA4/Clarity doivent accompagner l’intégration ; aucune nouvelle extraction dans cette exploration artistique.
 
@@ -136,4 +136,12 @@ Ces trois sites deviennent les références actives de recherche. La proposition
 
 ### Complément D45 — Réutiliser les vidéos du site
 
-Adrien autorise explicitement à puiser dans les vidéos produites par le site, celles de Camgraph Admin en priorité et aussi celles des autres utilisateurs. Cette source devient la matière principale de la recherche visuelle et des futurs mockups. Commencer par sélectionner les vidéos existantes avec leur provenance, leur modèle et leur rôle ; produire de nouveaux médias seulement pour les besoins qui restent. La curation de la bibliothèque n'a pas encore été réalisée dans ce lot de lecture des références.
+Adrien autorise explicitement à puiser dans les vidéos produites par le site, celles de Camgraph Admin en priorité et aussi celles des autres utilisateurs. Cette source devient la matière principale de la recherche visuelle et des futurs mockups. Commencer par sélectionner les vidéos existantes avec leur provenance, leur modèle et leur rôle ; produire de nouveaux médias seulement pour les besoins qui restent. La curation a été réalisée dans le lot suivant, documenté en D46.
+
+## Décision D46 — Retrouver les productions existantes avant les prochains mockups
+
+Adrien autorise la passe de sélection puis signale le Short du sac, dont la tâche et les médias se trouvent dans le dossier YouTube. La tâche « Préparer vidéo YouTube sur MCP » a été retrouvée ; le livrable courant C08 est la révision finale `rework-v2`, avec un Short explicatif de 21,875 s et un long de 67,208 s. Les anciens trois fragments ne doivent pas redevenir la source de travail. Réutiliser références, plans, montages et versions propres déjà disponibles.
+
+La [revue 09](review/reference-film-09/index.html) associe les références réelles à neuf films candidats, dont huit Camgraph Admin. Elle inclut les deux références vérifiées du sac, le Short existant et les captures avant/après du site de démonstration MCP. Ces dernières ne prouvent pas une conversation assistant enregistrée : les notes de production indiquent son absence. Le dossier YouTube reste intact.
+
+Cette passe livre la curation et les intentions, sans sélection créative finale par Adrien. La prochaine validation porte sur le langage visuel et les scènes d’ouverture, références/Connect et Compare avant composition anglaise desktop/mobile. Les contraintes PAYG, continuité SEO/GEO, mobile/performance, FR puis ES LATAM demeurent. Aucun nouveau film généré, changement applicatif, publication ou déploiement.

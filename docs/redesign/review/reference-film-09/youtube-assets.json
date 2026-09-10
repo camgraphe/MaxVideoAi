@@ -1,0 +1,70 @@
+{
+  "youtubeRoot": "/Users/adrienmillot/Documents/youtube",
+  "threadId": "01a073b7-7e21-7bf3-9936-4e4183a4909a",
+  "threadTitle": "Préparer vidéo YouTube sur MCP",
+  "files": {
+    "bag-short.mp4": {
+      "source": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/exports/C08_SHORT_EXPLAINER_EN_V2.mp4",
+      "measured": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 21.875,
+        "fps": 24.0
+      }
+    },
+    "bag-short-clean.mp4": {
+      "source": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/exports/C08_SHORT_EXPLAINER_EN_V2-clean.mp4",
+      "measured": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 21.875,
+        "fps": 24.0
+      }
+    },
+    "bag-long.mp4": {
+      "source": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/exports/C08_LONG_EN_V2.mp4",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 67.208333,
+        "fps": 24.0
+      }
+    },
+    "site-before.mp4": {
+      "source": "maxvideoai-mcp-youtube/production/captures/site-before.mp4",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 7.875,
+        "fps": 24.0
+      }
+    },
+    "site-after.mp4": {
+      "source": "maxvideoai-mcp-youtube/production/captures/site-after.mp4",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 16.0,
+        "fps": 24.0
+      }
+    },
+    "desktop-phone.mp4": {
+      "source": "maxvideoai-mcp-youtube/production/captures/desktop-phone.mp4",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 20.041667,
+        "fps": 24.0
+      }
+    }
+  },
+  "images": {
+    "bag-short-poster.jpg": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/exports/C08_SHORT_EXPLAINER_EN_V2-poster.jpg",
+    "bag-reference-board.jpg": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/board/02-reference.jpg",
+    "bag-action-board.jpg": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/board/04-action.jpg",
+    "bag-dialogue-board.jpg": "maxvideoai-youtube-studio/production-planning/concept-08/launch-v6/finish-v1/rework-v2/board/05-dialogue.jpg",
+    "site-before.jpg": "maxvideoai-mcp-youtube/production/captures/site-before-qc.jpg",
+    "site-after.jpg": "maxvideoai-mcp-youtube/production/captures/site-after-qc.jpg",
+    "desktop-phone.jpg": "maxvideoai-mcp-youtube/production/captures/desktop-phone-qc.jpg"
+  }
+}

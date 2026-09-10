@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-10",
+  "scope": "Local reference and media review; no production application changes",
+  "checks": {
+    "nodeSyntax": "passed",
+    "jsonParse": "passed",
+    "htmlLocalReferences": "18 resolved",
+    "youtubeLinks": "six exact-file links return HTTP 200 to HEAD",
+    "publicExposureLint": "passed",
+    "gitDiffCheck": "passed",
+    "browser": "Chrome desktop 1314×1014 and viewport override 390×844",
+    "visual": "Opening, film grid, bag production and Compare checked; no horizontal overflow observed visually in these states",
+    "filters": "Product returns two candidates; References returns one",
+    "readers": "C08 final vertical Short on desktop and mobile; original private bag source on mobile; site-after capture on desktop reached end",
+    "dialog": "Escape and close button work; focus returns to launch button; reference image opens",
+    "mediaMeasurements": "Nine originals and six local video files measured with ffprobe; no whole-media download from remote sources",
+    "motion": "Reduced-motion CSS inspected, no operating-system preference emulation performed",
+    "directSectionLink": "Reload #youtube arrives at the C08 section after dynamic gallery insertion; user scroll cancels automatic repositioning"
+  },
+  "limitations": [
+    "No real iOS/Android device or Safari test",
+    "No measured Core Web Vitals or conversion impact",
+    "Nine original candidates examined in player at several states, not full continuous editorial/audio QC",
+    "No new frame-by-frame or audio/lip-sync approval for C08",
+    "Original media remain unprepared for public homepage delivery; no source registry or visibility changes"
+  ],
+  "localEvidence": "qa/ (ignored by Git; screenshots are specific review states)"
+}

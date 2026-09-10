@@ -21,6 +21,8 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 
 **Dernier retour :** les mockups ne convainquent pas encore Adrien. Il souhaite choisir un style à partir de sites réels avant de reprendre les générations. Il apprécie LocalCan, Arrakis et Pryzm et insiste sur leurs animations qui ont du sens. La [lecture des références tech, création et cinéma](references-tech-cinema.md) précise ce qui peut être transposé à MaxVideoAI. La direction 08 reste une exploration ; PAYG, Compare, références, Connect et la continuité SEO/GEO restent centraux. Les vidéos déjà produites par le site seront la matière principale, avec priorité à Camgraph Admin puis aux autres utilisateurs, selon l’autorisation explicite d’Adrien.
 
+**Revue actuelle : [références et films 09](review/reference-film-09/index.html).** 100 candidats repérés, neuf films présélectionnés dont huit Camgraph Admin, captures des trois sites et vrai scorecard. Le Short final du sac et les captures de démonstration web ont été retrouvés dans le dossier YouTube à la demande d’Adrien. [Provenance, propositions et limites](media-direction-09.md). Ce support sert au choix des scènes et de la direction avant le prochain master anglais ; il ne valide pas une nouvelle homepage.
+
 **Prototype précédent, rejeté : [English master 05](review/home-en.html?v=5).** Cinq films, catalogue complet recherchable, comparatif affiné et scène Connect en 3D au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-05-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
 
 ## Principe directeur — continuité SEO et amélioration réelle
@@ -41,6 +43,7 @@ La documentation reste proportionnée : consigner les décisions de fond et les 
 |---|---|---|
 | [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
 | [Références choisies : tech et cinéma](references-tech-cinema.md) | LocalCan, Arrakis, Pryzm, mouvement et transposition au produit | Références appréciées ; direction précise à sélectionner avant mockups |
+| [Direction et films 09](media-direction-09.md) · [Revue visuelle](review/reference-film-09/index.html) | Films réels, provenance, Short C08, captures web et scènes proposées | Curation livrée ; sélection créative finale ouverte |
 | [Direction consolidée 08](home-direction-08.md) | Mix 1 + 3, récit complet, pages/intents, marque, motion et recette | Exploration non validée ; piliers et cartographie utiles conservés |
 | [Cinéma, publicité, social, web et IA](art-direction-07.md) | Trois directions, compositions desktop/mobile et storyboards | Série livrée ; mix 1 + 3 retenu comme orientation |
 | [Premiers concepts cinématographiques](art-direction-06.md) | Trois directions initiales et cadre de décision | Direction améliorée mais insuffisante selon Adrien |

@@ -1,0 +1,80 @@
+{
+  "clips": [
+    {
+      "key": "bag-short",
+      "title": "How I made this AI scene",
+      "video": "local-assets/bag-short.mp4",
+      "poster": "references/bag-short-poster.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Montage C08 · MiniMax H3",
+      "placement": "Démonstration références / exemple MiniMax H3",
+      "note": "Version finale V2 : références → action → dialogue. Le Short de 21,875 s remplace les trois fragments abandonnés.",
+      "motion": "Réutiliser les plans sans incrustations pour montrer le geste et la relation avec les références. Le Short entier se regarde volontairement.",
+      "caution": "Les écrans générés du présentateur ne sont pas des captures produit. Revoir le détail des mains et de la fidélité avant de choisir un extrait. Conserver les crédits musicaux si la bande son est reprise.",
+      "measured": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 21.875,
+        "fps": 24.0
+      }
+    },
+    {
+      "key": "site-before",
+      "title": "Le site avant animation",
+      "video": "local-assets/site-before.mp4",
+      "poster": "references/site-before.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Capture du site de démonstration",
+      "placement": "Connect — état initial du projet",
+      "note": "Capture existante du site local de démonstration, avant l’intégration de la vidéo.",
+      "motion": "Le cadre web reste stable ; seul le contenu du visuel change vers sa version animée.",
+      "caution": "Site de démonstration conçu pour la production YouTube. Il ne s’agit pas d’un site client.",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 7.875,
+        "fps": 24.0
+      }
+    },
+    {
+      "key": "site-after",
+      "title": "Le site prend vie",
+      "video": "local-assets/site-after.mp4",
+      "poster": "references/site-after.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Capture du site de démonstration",
+      "placement": "Connect — résultat concret dans le projet",
+      "note": "Capture existante du même site local avec une vidéo de produit intégrée.",
+      "motion": "Passer du visuel fixe au film dans le même cadre, puis révéler la destination web.",
+      "caution": "Cette capture prouve le résultat intégré. Elle ne montre pas une conversation réelle de génération avec Codex.",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 16.0,
+        "fps": 24.0
+      }
+    },
+    {
+      "key": "desktop-phone",
+      "title": "Un résultat, deux formats",
+      "video": "local-assets/desktop-phone.mp4",
+      "poster": "references/desktop-phone.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Capture du site de démonstration",
+      "placement": "Connect — continuité desktop / mobile",
+      "note": "Capture existante présentant la création sur ordinateur et téléphone.",
+      "motion": "Les deux cadres se rapprochent du rendu puis prennent leur place dans la composition.",
+      "caution": "La vue composée n’est pas un test sur téléphone physique. Vérifier les vrais recadrages au moment de l’intégration.",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 20.041667,
+        "fps": 24.0
+      }
+    }
+  ]
+}
