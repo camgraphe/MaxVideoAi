@@ -145,3 +145,19 @@ Adrien autorise la passe de sélection puis signale le Short du sac, dont la tâ
 La [revue 09](review/reference-film-09/index.html) associe les références réelles à neuf films candidats, dont huit Camgraph Admin. Elle inclut les deux références vérifiées du sac, le Short existant et les captures avant/après du site de démonstration MCP. Ces dernières ne prouvent pas une conversation assistant enregistrée : les notes de production indiquent son absence. Le dossier YouTube reste intact.
 
 Cette passe livre la curation et les intentions, sans sélection créative finale par Adrien. La prochaine validation porte sur le langage visuel et les scènes d’ouverture, références/Connect et Compare avant composition anglaise desktop/mobile. Les contraintes PAYG, continuité SEO/GEO, mobile/performance, FR puis ES LATAM demeurent. Aucun nouveau film généré, changement applicatif, publication ou déploiement.
+
+
+## Décision D47 — Refaire Compare et toutes les pages, pas seulement l’accueil
+
+Adrien rappelle que toutes les pages sont dans le périmètre de la refonte. Le scoreboard sera lui aussi redessiné : la homepage ne doit pas afficher l’ancien comme cible ni renvoyer à une expérience détaillée laissée visuellement en retrait.
+
+La revue 09 retire la capture actuelle de la projection Compare. Elle reste une pièce d’audit. Préparer ensemble le module synthétique de l’accueil et un extrait de la future page Compare, desktop et mobile, avec un langage graphique et des interactions communs. Réexaminer aussi les critères, regroupements, contenus et hiérarchie ; les 11 critères actuels ne sont pas un quota figé. Préserver les informations utiles, la traçabilité des notes et les acquis SEO/GEO, en documentant les modifications de fond.
+
+La méthode par gabarits pilotes organise le travail sur l’ensemble du site ; elle ne réduit pas le périmètre à ces seuls pilotes. Cette correction précise le brief, sans valider une nouvelle maquette ni lancer une intégration en production.
+
+
+## Décision D48 — Rechercher les vidéos de chaussures et renforcer le produit
+
+Adrien propose de retrouver des vidéos de chaussures plus anciennes, au mouvement plus publicitaire que la bouilloire. Trois rendus de sneaker du 21 juin 2026 ont été retrouvés chez Camgraph Admin : Happy Horse 1.0, Kling 3.0 Omni Pro et Seedance 2.0. Ils sont ajoutés à la revue, qui passe à douze films, dont onze de ce compte.
+
+La variante Kling Omni est proposée en priorité pour la section produit ; la lampe reste une alternative sobre, la bouilloire passe en réserve. Ce choix éditorial de travail reste à juger, et ne constitue pas une validation finale de l’extrait. Ce sont de vraies générations existantes, distinctes de l’essai de chaussure 3D de la refonte précédemment rejeté. Même prompt, mêmes références mais ordre inversé pour Seedance : ne pas en déduire un benchmark contrôlé. Dimensions, sources, réserves et intentions figurent dans [media-direction-09.md](media-direction-09.md).

@@ -70,5 +70,26 @@
     "fps": "24/1",
     "duration": 12.25,
     "hasAudio": true
+  },
+  {
+    "key": "sneaker-kling",
+    "width": 1920,
+    "height": 1080,
+    "duration": 10.041667,
+    "fps": "24/1"
+  },
+  {
+    "key": "sneaker-happyhorse",
+    "width": 1280,
+    "height": 720,
+    "duration": 10.122667,
+    "fps": "24/1"
+  },
+  {
+    "key": "sneaker-seedance",
+    "width": 864,
+    "height": 496,
+    "duration": 10.1,
+    "fps": "24/1"
   }
 ]

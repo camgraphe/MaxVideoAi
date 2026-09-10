@@ -3,9 +3,10 @@
   "scope": {
     "adminCandidates": 80,
     "otherPublicCandidates": 20,
-    "selected": 9,
-    "selectedAdmin": 8,
-    "selectedOther": 1
+    "selected": 12,
+    "selectedAdmin": 11,
+    "selectedOther": 1,
+    "additionalShoeCandidates": 3
   },
   "clips": [
     {
@@ -29,11 +30,86 @@
       "reviewStatus": "Lecture originale lancée, états de début/fin examinés ; validation éditoriale finale à faire."
     },
     {
+      "key": "sneaker-kling",
+      "title": "Sneaker / Kling 3.0 Omni Pro",
+      "category": "Product",
+      "placement": "Produit — candidat prioritaire",
+      "note": "Sneaker ivoire, cobalt et orange : composants séparés, assemblage puis chaussure complète en studio. Film existant du 21 juin 2026.",
+      "motion": "Faire correspondre la progression du scroll aux étapes de construction, puis laisser voir le produit fini. Étudier une séquence pilotée au scroll avec poster immédiat ; simple lecture sur mobile si le coût ou la fluidité l’exige.",
+      "caution": "Contrôler les raccords, la stabilité des composants et la fidélité au design avant sélection finale. Candidat produit prioritaire : source 1920 × 1080, assemblage visible et présentation finale. Ce choix éditorial n’est pas un classement général des moteurs.",
+      "jobId": "job_7c357b63-138b-4d14-8798-c5db4f406894",
+      "model": "Kling 3.0 Omni Pro",
+      "engineId": "kling-o3-pro",
+      "requestedRatio": "16:9",
+      "requestedDuration": 10,
+      "visibility": "private",
+      "origin": "Camgraph Admin",
+      "video": null,
+      "poster": null,
+      "createdAt": "2026-06-21T20:36:11.846Z",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 10.041667,
+        "fps": "24/1"
+      }
+    },
+    {
+      "key": "sneaker-happyhorse",
+      "title": "Sneaker / Happy Horse 1.0",
+      "category": "Product",
+      "placement": "Produit — variante d’assemblage",
+      "note": "Sneaker ivoire, cobalt et orange : composants séparés, assemblage puis chaussure complète en studio. Film existant du 21 juin 2026.",
+      "motion": "Faire correspondre la progression du scroll aux étapes de construction, puis laisser voir le produit fini. Étudier une séquence pilotée au scroll avec poster immédiat ; simple lecture sur mobile si le coût ou la fluidité l’exige.",
+      "caution": "Contrôler les raccords, la stabilité des composants et la fidélité au design avant sélection finale. Source 1280 × 720 ; juger le rendu à sa taille réelle. Ne pas confondre ce film généré avec une simulation physique des pièces.",
+      "jobId": "job_0077f1a7-b87e-44cf-9611-0f7da0d6c368",
+      "model": "Happy Horse 1.0",
+      "engineId": "happy-horse-1-0",
+      "requestedRatio": "16:9",
+      "requestedDuration": 10,
+      "visibility": "public",
+      "origin": "Camgraph Admin",
+      "video": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/e2d23793-3c25-4675-9cd2-87a09a6f6475.mp4",
+      "poster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/9914fe9f-6981-4cd9-acdf-aef8828ac3e8.jpg",
+      "createdAt": "2026-06-21T20:37:15.466Z",
+      "measured": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10.122667,
+        "fps": "24/1"
+      }
+    },
+    {
+      "key": "sneaker-seedance",
+      "title": "Sneaker / Seedance 2.0",
+      "category": "Product",
+      "placement": "Produit — variante d’assemblage",
+      "note": "Sneaker ivoire, cobalt et orange : composants séparés, assemblage puis chaussure complète en studio. Film existant du 21 juin 2026.",
+      "motion": "Faire correspondre la progression du scroll aux étapes de construction, puis laisser voir le produit fini. Étudier une séquence pilotée au scroll avec poster immédiat ; simple lecture sur mobile si le coût ou la fluidité l’exige.",
+      "caution": "Contrôler les raccords, la stabilité des composants et la fidélité au design avant sélection finale. Source 864 × 496 : réserve de mouvement, pas grand hero. L’ordre des deux références diffère de celui des deux autres générations.",
+      "jobId": "job_b962ad28-1b5b-4834-92c4-02590e07181f",
+      "model": "Seedance 2.0",
+      "engineId": "seedance-2-0",
+      "requestedRatio": "16:9",
+      "requestedDuration": 10,
+      "visibility": "private",
+      "origin": "Camgraph Admin",
+      "video": null,
+      "poster": null,
+      "createdAt": "2026-06-21T20:35:08.198Z",
+      "measured": {
+        "width": 864,
+        "height": 496,
+        "duration": 10.1,
+        "fps": "24/1"
+      }
+    },
+    {
       "n": 64,
       "key": "task-light",
       "title": "Light, in motion",
       "category": "Product",
-      "placement": "Ouverture — contrepoint produit",
+      "placement": "Produit — alternative sobre",
       "note": "Le bras se déploie puis la lampe éclaire le bois. L’objet et son usage se comprennent sans explication.",
       "motion": "L’ouverture du cadre accompagne le déploiement. Candidat à un court essai de lecture liée au scroll.",
       "caution": "Le cadrage change pendant le film : ne pas promettre une rotation 3D libre ni une fidélité à un produit réel.",
@@ -91,7 +167,7 @@
       "key": "red-kettle",
       "title": "Everyday, elevated",
       "category": "Product",
-      "placement": "Exemples produit / alternative chaude",
+      "placement": "Produit — réserve calme, après les chaussures",
       "note": "Une bouilloire rouge, des reflets et de la vapeur dans une cuisine. Un usage quotidien, accessible au-delà du cinéma.",
       "motion": "Un déplacement de cadrage discret suffit ; conserver une lecture normale du clip.",
       "caution": "La buée et les reflets doivent être vérifiés en pleine définition. Le modèle affiché est celui de cette génération.",

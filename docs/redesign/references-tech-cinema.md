@@ -35,7 +35,7 @@ Ces niveaux évitent de réserver toute l'animation à un seul bloc. Chaque sect
 |---|---|---|
 | Ouverture | Un ensemble de créations film, social et produit se compose ; un rendu devient le plan principal. Les labels et actions gardent une position stable. | La diversité des créations et leur qualité. |
 | Modèles | Les identités se placent puis la sélection explicite change le rendu ou les caractéristiques associées. | On choisit un outil pour son projet ; le catalogue a de la profondeur. |
-| Compare | Les deux modèles se mettent en regard ; les jauges se révèlent par critère et restent lisibles à l'arrivée. Les notes finales sont fixes. | Les différences éditoriales et l'accès au détail. |
+| Compare | Concevoir la nouvelle synthèse d’accueil et la future page détaillée ensemble ; révéler les différences avec des valeurs exactes. | Un même langage graphique entre découverte et décision. |
 | Références | L'image source conserve sa présence pendant que sa composition se transforme en plan vidéo. | Ce que l'on apporte au modèle et ce que l'on dirige. |
 | Connect | Le contexte d'un projet rejoint ses références ; une proposition se construit ; le prix est revu ; le résultat arrive. | La continuité entre assistant, choix et création. |
 | Paiement à l'usage | Une sélection volontaire de modèle/réglages actualise une estimation issue de la vraie source ; le devis reste distinct et visible avant génération. | Le contrôle du coût, sans facturation déclenchée par la démo. |

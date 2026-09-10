@@ -6,7 +6,7 @@
 
 ## Conseil de composition
 
-Retenir la précision et la profondeur d’Arrakis, la démonstration par tâches de LocalCan et la place des créations chez Pryzm. Donner à MaxVideoAI une ouverture cinéma avec un contrepoint produit ; expliquer les références et Connect avec une production existante ; réintroduire Compare comme moment de décision. Les surfaces olive/ivoire et le bronze de la revue sont une piste de continuité avec l’app, pas une palette approuvée.
+Retenir la précision et la profondeur d’Arrakis, la démonstration par tâches de LocalCan et la place des créations chez Pryzm. Donner à MaxVideoAI une ouverture cinéma avec un contrepoint produit ; expliquer les références et Connect avec une production existante ; réintroduire Compare comme moment de décision. Après le rappel d’Adrien, les films de sneakers deviennent la piste produit prioritaire et la bouilloire une réserve calme. Les surfaces olive/ivoire et le bronze de la revue sont une piste de continuité avec l’app, pas une palette approuvée.
 
 Les captures des sites sont conservées dans `review/reference-film-09/references/`. Leurs liens vivants et fiches Godly sont dans la revue. Les sites ont été examinés sur desktop à différentes positions et états ; aucune bibliothèque d’animation précise n’a été identifiée dans leur code. Ces captures restent des documents de recherche internes, pas des assets à publier sur MaxVideoAI.
 
@@ -26,9 +26,25 @@ Les captures des sites sont conservées dans `review/reference-film-09/reference
 | Beyond the frame | Gemini Omni Flash 1.1 | 1920 × 1080 · 8 s | Paysage minéral, brume et oiseaux : diversité du catalogue. |
 | A little character | Kling 3 Pro | 1440 × 1440 · 5,042 s | Lapin animé et bouquet, création communautaire. Carré, pas 9:16 ; tonalité très douce, réserve. |
 
-Huit de ces neuf vidéos viennent de Camgraph Admin. Leurs prompts différents ne permettent pas d’en faire un benchmark. La vidéo étiquetée « atomiseur » a été écartée de la sélection produit après visionnage : l’objet ressemble à un pichet. Les originaux ont une piste audio, sans validation auditive dans cette passe.
+Ce premier lot comportait huit vidéos Camgraph Admin sur neuf. La recherche ciblée chaussures ajoute trois films de ce compte : la sélection actuelle compte douze films, dont onze Camgraph Admin. Leurs prompts différents ne permettent pas d’en faire un benchmark. La vidéo étiquetée « atomiseur » a été écartée de la sélection produit après visionnage : l’objet ressemble à un pichet. Les originaux ont une piste audio, sans validation auditive dans cette passe.
 
 `selection.json` contient les identifiants et notes, ainsi que les URLs des seuls médias publics. `media-probes.json` contient les dimensions/durées mesurées avec ffprobe. `media.local.json`, ignoré par Git, contient les URLs privées autorisées et les deux références ; la revue les charge uniquement localement. Aucun statut public/privé n’a été changé, aucune écriture en base ni publication effectuée.
+
+## Complément produit — sneakers retrouvées le 10 septembre
+
+Adrien signale des vidéos de chaussures plus anciennes et plus dynamiques. La recherche ciblée dans les créations terminées de Camgraph Admin retrouve la série du 21 juin 2026, distincte de l’ancien essai 3D de chaussure de cette refonte. Trois films ont été ouverts en lecture et examinés à plusieurs états ; les sources ont été mesurées par ffprobe.
+
+| Source | Modèle enregistré à la génération | Mesure de l’original | Choix éditorial |
+|---|---|---|---|
+| `job_7c357b63-138b-4d14-8798-c5db4f406894` | Kling 3.0 Omni Pro | 1920 × 1080 · 10,042 s | Candidat produit prioritaire : composants, assemblage et chaussure complète. |
+| `job_0077f1a7-b87e-44cf-9611-0f7da0d6c368` | Happy Horse 1.0 | 1280 × 720 · 10,123 s | Variante de construction et présentation finale, à juger à sa taille de diffusion. |
+| `job_b962ad28-1b5b-4834-92c4-02590e07181f` | Seedance 2.0 | 864 × 496 · 10,1 s | Réserve de mouvement ; résolution limitée pour un grand visuel. |
+
+Les trois prompts sont identiques et décrivent une sneaker ivoire/cobalt/orange construite à partir de composants. Les deux références sont les mêmes URLs dans les snapshots, mais leur ordre est inversé dans Seedance. Ne pas présenter ce lot comme un test parfaitement identique entre moteurs, ni transférer cette préférence éditoriale en notes du futur scoreboard. Les libellés indiquent les modèles au moment de la génération, pas une vérification du catalogue commercial courant.
+
+La chaussure qui se construit donne un déroulement publicitaire plus marqué que le mouvement de caméra autour de la bouilloire. Proposition : utiliser une de ces séquences pour la place produit, étudier sa progression avec le scroll, puis laisser le produit fini lisible. Vérifier finesse des raccords, fidélité au design et fluidité mobile avant de retenir l’extrait. Aucune validation image par image ou audio complète revendiquée. La lampe reste une alternative sobre ; la bouilloire passe en réserve.
+
+Les trois vidéos sont intégrées au même lecteur de la revue. Une est publique, deux privées ; les URLs privées restent dans `media.local.json`, ignoré par Git. Aucun changement de visibilité ni nouvelle génération.
 
 ## Le sac : retrouver la production, pas recommencer
 
@@ -63,14 +79,18 @@ Cette ancienne démo utilise une montre. Elle sert à étudier la continuité fi
 | Modèles | Marques et sélection lisibles | Les modèles se placent, un choix volontaire actualise le rendu associé | Liste tactile ; noms stables, pas de logos qui échappent au doigt |
 | Références | Sources et résultat déjà présents | Plans légèrement détachés, perspective commune, résultat mis au premier plan | Même ordre de lecture avec une faible translation ; état complet sans animation |
 | Connect | Projet et destination identifiables | Contexte → proposition → devis accepté → résultat intégré | Étapes sélectionnables, sans bloquer le scroll et sans génération déclenchée par la démo |
-| Compare | Deux noms et notes finales lisibles | Alignement des modèles puis révélation de trois critères ; scores finaux fixes | Deux colonnes lisibles ensemble ; accès aux 11 critères |
+| Compare | Aperçu de la future présentation partagée avec les pages détaillées | Alignement des modèles puis révélation de différences utiles, avec des données exactes | Synthèse et détail conçus ensemble ; critères et regroupements à réexaminer |
 | PAYG | Promesse de paiement à l’usage et explication courte | Sélection explicite d’un scénario et estimation issue des vrais tarifs | Contrôles tactiles, montant stable et devis distinct |
 
 Les mouvements décrits restent des intentions, pas des effets validés ou déjà fabriqués dans cette revue. Les images annotées de la prochaine composition montreront leurs états d’entrée, intermédiaire et final. Les origines de chaque média seront conservées.
 
 ## Compare, contenu et continuité
 
-Capture fraîche du [comparatif Kling 3 Pro / Seedance 2.5](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-seedance-2-5), avec ses 11 critères. La proposition reprend Prompt Adherence, Visual Quality, Motion Realism pour une lecture progressive, puis renvoie au détail. Ne pas fabriquer des scores mouvants ou une nouvelle méthode.
+Le [comparatif actuel Kling 3 Pro / Seedance 2.5](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-seedance-2-5) et sa capture documentent l’existant à auditer. Ils ne sont plus affichés comme projection du futur module dans la revue. Adrien rappelle que la refonte concerne toutes les pages, donc aussi les pages Compare et leur scoreboard.
+
+Concevoir côte à côte un aperçu synthétique pour la homepage et un extrait de la future page Compare, desktop et mobile. Ils partagent une direction graphique, des repères et une logique d’interaction. La page détaillée développe résultats, critères, méthode, capacités, prix et limites. Les 11 critères actuels, leur ordre et leurs regroupements peuvent être réexaminés : préserver l’information utile et la continuité SEO/GEO ne signifie pas figer l’ancienne interface. Toute modification de méthode ou de note doit être motivée et documentée ; l’animation ne crée pas de données.
+
+La conception avance par gabarits pilotes puis déclinaisons à toutes les familles de pages. La homepage ne doit pas promettre une expérience visuelle qui disparaît dès l’ouverture du détail. Cette correction de cadrage ne vaut pas validation d’une nouvelle maquette du scoreboard.
 
 Point relevé à vérifier dans le lot Compare : le bloc « comparable score tier » associe 1080p à 720p alors que les deux modèles proposent 1080p. La comparaison de prix demande une explication du niveau réellement choisi avant d’en faire une promesse sur la homepage. Aucun correctif de production dans ce lot.
 
