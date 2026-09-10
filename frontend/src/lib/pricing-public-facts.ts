@@ -56,7 +56,7 @@ export type PublicPricingFactsContext = {
   useStandardDefinitionFacts?: boolean;
 };
 
-const DEFAULT_LUMA_RAY2_BASE_PRICE_USD = {
+export const DEFAULT_LUMA_RAY2_BASE_PRICE_USD = {
   standard: 0.5,
   flash: 0.2,
 } as const;

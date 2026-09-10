@@ -3,6 +3,7 @@ import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } fr
 import {
   buildAuthoredPublicOfferFacts,
   buildPublicPricingFacts,
+  DEFAULT_LUMA_RAY2_BASE_PRICE_USD,
   type PublicPricingFactsResult,
 } from '@/lib/pricing-public-facts';
 import { quotePublicPricing } from '@/lib/pricing-public-quote';
@@ -158,6 +159,10 @@ export function resolveModelOfferAmountCents(engine: FalEngineEntry, pricingEngi
         durationOption: '5s',
         resolution: '540p',
         mode: 't2v',
+        lumaRay2BasePriceUsd:
+          pricingEngine.id === 'lumaRay2_flash'
+            ? DEFAULT_LUMA_RAY2_BASE_PRICE_USD.flash
+            : DEFAULT_LUMA_RAY2_BASE_PRICE_USD.standard,
       });
       return quoteModelOfferFacts(facts, { mode: 't2v', resolution: '540p' });
     } catch {

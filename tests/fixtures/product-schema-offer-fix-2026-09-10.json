@@ -1,0 +1,26 @@
+{
+  "rows": [
+    {
+      "id": "json-ld:lumaRay2:offer",
+      "previousStatus": "unavailable",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 65,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.65",
+      "compatibilityProfile": "schema-current"
+    },
+    {
+      "id": "json-ld:lumaRay2_flash:offer",
+      "previousStatus": "unavailable",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 26,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.26",
+      "compatibilityProfile": "schema-current"
+    }
+  ]
+}
