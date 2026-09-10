@@ -70,7 +70,8 @@
 - [x] Recevoir le retour 03 : base à poursuivre, anglais master, Compare/Connect prioritaires, Angle secondaire.
 - [x] Composer le master anglais 04 et conserver l’étude Angle séparément.
 - [x] Recevoir le rejet de la finition 04 ; reprendre la page entière dans le master 05.
-- [ ] Examiner la composition 05 et sa finition avant intégration.
+- [x] Acter le rejet du master 05 et changer de méthode : direction ImageGen puis images clés avant code.
+- [ ] Examiner les concepts cinématographiques et consolider une cible visuelle.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -103,8 +104,10 @@ Cette réalisation locale ne vaut pas validation artistique ni gain de conversio
 
 ## Prochaine décision à présenter
 
-Examiner [l’accueil anglais 05](review/home-en.html?v=5) dans l’ordre résultats → catalogue → Compare → Connect. Vérifier le poids relatif de ces chapitres et la qualité des interactions avant d’engager leur intégration Next.js. [Présentation](home-composition.md) et [contrôles](home-composition-05-validation.md).
+Examiner les [trois concepts cinématographiques](art-direction-06.md), puis consolider une cible avec les retours. Dessiner ensuite les états clés des modèles, du comparatif et de Connect avant une nouvelle fabrication. Le [master 05](review/home-en.html?v=5) est rejeté. Les archives précédentes restent disponibles ; aucune publication.
 
-Les [40 destinations](home-replacement-links.json) restent accessibles mais leur emplacement évolue. Cette couverture ne prouve ni parité SEO ni amélioration de conversion. La sélection éditoriale des comparaisons reste à confronter aux données GSC/GA4/Clarity ; aucune nouvelle extraction de ces comptes n’a été faite pendant l’itération 04.
+Les [40 destinations](home-replacement-links.json) servent à l’analyse de continuité selon D40, pas à une obligation de reproduire l’ancienne composition. Les données GSC/GA4/Clarity doivent accompagner l’intégration ; aucune nouvelle extraction dans cette exploration artistique.
 
-L’[étude Angle](review/angle-en.html), les [notes 03](home-composition-03.md), la [revue V1](review/index.html), la [planche illustrée](review/direction.html) et l’[étude 3D](review/motion.html) conservent leur rôle historique. La version EN de l’accueil est désormais 05 ; FR/ES restent 03. Aucun livrable local ne vaut autorisation de mise en ligne.
+## Décision D42 — Direction cinématographique avant nouvelle implémentation
+
+Retour d’Adrien du 10 septembre 2026 : rejet du master 05, scoreboard jugé inférieur aux pages existantes et scène 3D sans évolution compréhensible. Explorer avec ImageGen une direction cinématographique liée au produit, penser chaque section et son mouvement, puis dessiner les états clés avant fabrication. La [méthode de reprise](art-direction-reset.md) définit les étapes, les critères et le rôle de chaque chapitre. Le prochain livrable est visuel ; aucune version 06 codée ne sera considérée comme la réponse par défaut.
