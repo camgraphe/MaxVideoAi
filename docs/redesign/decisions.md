@@ -108,7 +108,7 @@ Cette réalisation locale ne vaut pas validation artistique ni gain de conversio
 
 ## Prochaine décision à présenter
 
-Examiner la consolidation 08 fondée sur le choix explicite du mix 1 + 3 et sur le [récit complet](home-direction-08.md). Le paiement à l’usage et les comparatifs restent identitaires ; la nouveauté du MCP justifie sa mise en avant sans historique GSC. Approfondir les états de l’ouverture, des modèles, du comparatif et de Connect avant fabrication. Le rappel de génération a été supprimé à la demande d’Adrien. Le master 05 reste rejeté et archivé ; aucune publication.
+Partir des références réelles appréciées par Adrien — LocalCan, Arrakis et Pryzm — et de leurs animations porteuses de sens. La [lecture comparée](references-tech-cinema.md) propose leur rôle dans la direction MaxVideoAI. Définir les compositions et leur progression avant de reprendre les mockups. La direction 08 reste non validée ; les piliers PAYG, Compare, références et Connect sont conservés.
 
 Les [40 destinations](home-replacement-links.json) servent à l’analyse de continuité selon D40, pas à une obligation de reproduire l’ancienne composition. Les données GSC/GA4/Clarity doivent accompagner l’intégration ; aucune nouvelle extraction dans cette exploration artistique.
 
@@ -127,3 +127,13 @@ Adrien préfère les couleurs et le fond de la troisième planche, avec le conte
 Il confirme ensuite que le paiement à l’usage et Compare sont des forces de la marque. Les références et le MCP, récemment lancé selon lui, doivent aussi être mis en avant. L’absence d’historique Search Console ne justifie pas de minimiser cette nouveauté. La [direction 08](home-direction-08.md) formalise les acquis à renforcer et les nouveautés à faire découvrir, avec leurs destinations et leur mesure.
 
 Le rappel ImageGen, déjà mis en pause après le succès de la troisième planche, a été supprimé sur demande explicite. L’outil de l’app a confirmé la suppression. Aucun nouveau rappel n’est programmé.
+
+## Décision D45 — Choisir le style sur des sites réels et leurs mouvements
+
+Adrien demande d'élargir les références avant de reprendre les mockups. Il apprécie LocalCan, Arrakis et Pryzm et fournit leurs fiches Godly. Il souhaite mêler le côté tech à davantage d'images, de vidéo et de cinéma. Il précise que le mouvement utile qui anime la page est un point commun essentiel à retenir.
+
+Ces trois sites deviennent les références actives de recherche. La proposition de leur donner des rôles complémentaires est consignée dans [references-tech-cinema.md](references-tech-cinema.md) ; elle n'est pas encore une validation d'un style final. Les animations doivent être conçues avec les sections, et non ajoutées après une image de homepage. Aucun nouveau mockup ni changement de production n'est lancé dans cette passe.
+
+### Complément D45 — Réutiliser les vidéos du site
+
+Adrien autorise explicitement à puiser dans les vidéos produites par le site, celles de Camgraph Admin en priorité et aussi celles des autres utilisateurs. Cette source devient la matière principale de la recherche visuelle et des futurs mockups. Commencer par sélectionner les vidéos existantes avec leur provenance, leur modèle et leur rôle ; produire de nouveaux médias seulement pour les besoins qui restent. La curation de la bibliothèque n'a pas encore été réalisée dans ce lot de lecture des références.

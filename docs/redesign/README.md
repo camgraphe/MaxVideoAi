@@ -19,7 +19,7 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** Adrien retient la structure et les usages de la planche 1, avec le fond et les tons chauds de la planche 3, en raccord avec l’app. Le paiement à l’usage et les comparatifs restent centraux ; les références et Connect/MCP doivent être mis en avant même sans historique GSC. La [revue 08](review/art-direction-08/index.html) présente la planche consolidée obtenue avec références. Le [plan complet](home-direction-08.md) relie cette synthèse aux pages, aux intentions et aux détails à fabriquer. Le rappel de génération a été supprimé à sa demande. [Série 07](art-direction-07.md) · [Méthode](art-direction-reset.md).
+**Dernier retour :** les mockups ne convainquent pas encore Adrien. Il souhaite choisir un style à partir de sites réels avant de reprendre les générations. Il apprécie LocalCan, Arrakis et Pryzm et insiste sur leurs animations qui ont du sens. La [lecture des références tech, création et cinéma](references-tech-cinema.md) précise ce qui peut être transposé à MaxVideoAI. La direction 08 reste une exploration ; PAYG, Compare, références, Connect et la continuité SEO/GEO restent centraux. Les vidéos déjà produites par le site seront la matière principale, avec priorité à Camgraph Admin puis aux autres utilisateurs, selon l’autorisation explicite d’Adrien.
 
 **Prototype précédent, rejeté : [English master 05](review/home-en.html?v=5).** Cinq films, catalogue complet recherchable, comparatif affiné et scène Connect en 3D au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-05-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
 
@@ -40,7 +40,8 @@ La documentation reste proportionnée : consigner les décisions de fond et les 
 | Document | Contenu | Statut |
 |---|---|---|
 | [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
-| [Direction consolidée 08](home-direction-08.md) | Mix 1 + 3, récit complet, pages/intents, marque, motion et recette | Orientation acquise ; résultat graphique et détails à examiner |
+| [Références choisies : tech et cinéma](references-tech-cinema.md) | LocalCan, Arrakis, Pryzm, mouvement et transposition au produit | Références appréciées ; direction précise à sélectionner avant mockups |
+| [Direction consolidée 08](home-direction-08.md) | Mix 1 + 3, récit complet, pages/intents, marque, motion et recette | Exploration non validée ; piliers et cartographie utiles conservés |
 | [Cinéma, publicité, social, web et IA](art-direction-07.md) | Trois directions, compositions desktop/mobile et storyboards | Série livrée ; mix 1 + 3 retenu comme orientation |
 | [Premiers concepts cinématographiques](art-direction-06.md) | Trois directions initiales et cadre de décision | Direction améliorée mais insuffisante selon Adrien |
 | [Accueil — master anglais 05](review/home-en.html?v=5) | Résultats, Compare, Connect et catalogue | Rejeté ; archive de travail |
