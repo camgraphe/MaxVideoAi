@@ -2,7 +2,7 @@
 
 10 septembre 2026, relevés dans la nuit du 9 au 10. Référence : accueil de production anglais relu dans Chrome, composition 01 et retour d'Adrien. **La composition 01 ne remplit pas encore le rôle d'un remplacement de l'accueil.** Sa direction est à reprendre ; la recette technique précédente n'était pas une validation de sa richesse produit ou de sa couverture SEO.
 
-**Livrable courant :** [master anglais 04](review/home-en.html?v=4), avec Compare et Connect prioritaires après retour sur la composition 03. [Présentation](home-composition.md). Proposition locale, avant intégration.
+**Livrable courant :** [direction consolidée 08](home-direction-08.md), après rejet des prototypes 04/05 et sélection d’un mix des planches ImageGen 1 et 3. Paiement à l’usage, Compare, références et Connect structurent le récit. La direction est développée avant toute nouvelle intégration de production.
 
 ## Principe directeur — continuité SEO et amélioration réelle
 

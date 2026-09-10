@@ -1,25 +1,28 @@
 # Trois nouvelles pistes — cinéma, publicité, social, web et IA
 
-10 septembre 2026. Exploration artistique EN ; deux planches obtenues après relance, troisième en attente d'une relance programmée. Aucune piste sélectionnée, aucune nouvelle homepage implémentée.
+10 septembre 2026. Trois planches artistiques EN obtenues, enregistrées et affichées. Adrien a ensuite retenu un mix des planches 1 et 3 ; voir la [direction consolidée](home-direction-08.md). Aucune nouvelle homepage implémentée.
 
-**Relance demandée par Adrien :** après les neuf erreurs réseau initiales, Frame Shift puis The Motion Atlas ont été générées avec succès et affichées dans cet ordre. From the Source a encore échoué. Une relance unique de cette troisième planche est programmée dans la conversation le 10 septembre 2026 à **15 h 08 min 37 s, Europe/Madrid** (13:08:37 UTC), une heure après création du rappel. Identifiant : `retenter-la-troisi-me-planche-maxvideoai`. Aucun recours à une API de secours, refusée par Adrien.
+**Série complète :** après les erreurs réseau initiales, Frame Shift puis The Motion Atlas ont été générées avec succès. La nouvelle demande d'Adrien, « retente maintenant », a permis d'obtenir From the Source, affichée en troisième. La relance prévue à 15 h 08 a été désactivée après ce succès, puis supprimée à la demande explicite d’Adrien ; suppression confirmée par l’outil de l’app pour `retenter-la-troisi-me-planche-maxvideoai`. Aucun recours à une API de secours, refusée par Adrien.
 
 | Ordre d'affichage | Planche enregistrée | Dimensions réelles |
 |---|---|---|
 | 1 | [Frame Shift](review/art-direction-07/frame-shift.png) | 1448 × 1086 |
 | 2 | [The Motion Atlas](review/art-direction-07/motion-atlas.png) | 1448 × 1086 |
+| 3 | [From the Source](review/art-direction-07/from-the-source.png) | 1448 × 1086 |
 
-La troisième planche n'existe pas encore. Ne pas confondre les étapes numérotées du storyboard dans les images avec les numéros des propositions.
+Cet ordre correspond à l'affichage effectif dans la conversation. Ne pas confondre les étapes numérotées du storyboard dans les images avec les numéros des propositions.
 
 **Lecture de la première planche :** la diversité film/social/produit et les trois états du casque sont visibles ; le mobile est recomposé. Le comparatif détaillé et le menu ouvert restent à dessiner. Les qualificatifs de modèles ajoutés par ImageGen, notamment « Longer stories », ne constituent pas des capacités vérifiées : les remplacer par les données propriétaires du catalogue. La typographie des noms ne remplace pas les logos officiels.
 
 **Lecture de la deuxième planche :** les trois usages ont des cadrages distincts et le comparatif garde les six valeurs éditoriales prévues. Le storyboard montre le placement, la révélation et l'état final des jauges. Leur longueur dans une image raster n'est pas une validation mathématique de l'échelle : le rendu final devra la calculer à partir des données. Le titre de direction et les annotations de la planche ne constituent pas de nouveaux noms de fonctionnalités. La version mobile reste une intention graphique, sans interaction testée.
 
+**Lecture de la troisième planche :** le site source, le plan à revoir et les trois formats de création conservent la bouteille et son identité. La lumière et les matières rendent la publicité et l'animation produit plus concrètes. L'exemple boisson prend toutefois beaucoup de place : à réserver à une démonstration Connect ou à équilibrer avec d'autres univers dans l'ouverture générale. La mention mobile « Real results » n'est pas une preuve : elle doit être remplacée, car ces images restent illustratives. Le plan dessiné ne représente pas une interface native déjà livrée. Écarter aussi les annotations manuscrites décoratives lors de la consolidation pour retrouver un système typographique plus cohérent.
+
 ## Le brief corrigé
 
 La série 06 améliore la direction, mais ne convainc pas encore Adrien. Elle surreprésente aussi le cinéma : les clients produisent des publicités, des TikTok/Reels et des animations de produits pour leurs sites. Le langage cinématographique apporte cadrage, lumière et qualité d'image ; il ne doit pas enfermer MaxVideoAI dans un usage de réalisateur.
 
-Cette série prépare trois compositions et récits différents. Chaque planche demandée doit réunir une ouverture desktop, une recomposition mobile et trois images clés d'un mouvement. Il s'agit de cibles graphiques, pas de captures de pages fonctionnelles. Le détail de toute la homepage, du menu et du lecteur sera développé après choix de direction.
+Cette série présente trois compositions et récits différents. Chaque planche réunit une ouverture desktop, une recomposition mobile et trois images clés d'un mouvement. Il s'agit de cibles graphiques, pas de captures de pages fonctionnelles. Le détail de toute la homepage, du menu et du lecteur sera développé après choix de direction.
 
 ## Frame Shift — les formats comme langage graphique
 
@@ -92,8 +95,8 @@ Cette série prépare trois compositions et récits différents. Chaque planche 
 
 ## Sources et état de livraison
 
-Les captures réelles [accueil](review/art-direction-06/published-home.png) et [scoreboard](review/art-direction-06/published-scoreboard.png) ont été examinées. Les deux tentatives avec captures pour chaque direction ont échoué sur une erreur réseau du point d'entrée d'édition d'ImageGen. Trois générations neuves sans pièces jointes ont ensuite échoué sur le point d'entrée de génération. La relance demandée par Adrien, avec les mêmes prompts de génération neuve, a fourni les deux planches ci-dessus ; la troisième a encore échoué. Le brief reprend les données produit vérifiées, mais les appels réussis ne recevaient pas les captures. Les [prompts exacts, tentatives et empreintes des fichiers](review/art-direction-07/prompts.json) distinguent ces modes.
+Les captures réelles [accueil](review/art-direction-06/published-home.png) et [scoreboard](review/art-direction-06/published-scoreboard.png) ont été examinées. Les deux tentatives avec captures pour chaque direction ont échoué sur une erreur réseau du point d'entrée d'édition d'ImageGen. Trois générations neuves sans pièces jointes ont ensuite échoué sur le point d'entrée de génération. Les relances demandées par Adrien, avec les mêmes prompts de génération neuve, ont finalement fourni les trois planches. Le brief reprend les données produit vérifiées, mais les appels réussis ne recevaient pas les captures. Les [prompts exacts, tentatives et empreintes des fichiers](review/art-direction-07/prompts.json) distinguent ces modes.
 
-Les trois générations indépendantes demandaient un canevas de 2400 × 1800. Les deux relances réussies ont retourné 1448 × 1086, sans redimensionnement ajouté. Les dimensions réelles et l'ordre d'affichage sont consignés plus haut et dans le manifeste. L'examen des images porte sur leur composition ; il ne vaut pas une recette de site responsive ou une mesure de performance.
+Les trois générations indépendantes demandaient un canevas de 2400 × 1800. Les trois sorties ont chacune retourné 1448 × 1086, sans redimensionnement ajouté. Les dimensions réelles et l'ordre d'affichage sont consignés plus haut et dans le manifeste. L'examen des images porte sur leur composition ; il ne vaut pas une recette de site responsive ou une mesure de performance.
 
-Contrôle documentaire : liens locaux, structure JSON, dimensions PNG et empreintes des deux fichiers vérifiés ; `git diff --check`. Aucun test frontend ni mesure de performance annoncé pour ces planches. Le service intégré a été utilisé exclusivement ; aucune API payante de secours, aucune génération MaxVideoAI, aucun déploiement.
+Contrôle documentaire : liens locaux, structure JSON, dimensions PNG et empreintes des trois fichiers vérifiés ; `git diff --check`. Aucun test frontend ni mesure de performance annoncé pour ces planches. Le service intégré a été utilisé exclusivement ; aucune API payante de secours, aucune génération MaxVideoAI, aucun déploiement.

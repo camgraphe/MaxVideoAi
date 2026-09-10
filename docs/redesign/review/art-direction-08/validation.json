@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-10",
+  "scope": "Local design review and documentation, not the production homepage",
+  "browser": {
+    "surface": "Chrome",
+    "viewportWidth": 1314,
+    "documentWidth": 1314,
+    "imagesLoaded": 2,
+    "noindexNofollow": true,
+    "chapterCount": 7,
+    "accordionOpenClose": "passed; observed open count 3 → 4 → 3",
+    "anchorNavigation": "passed; #continuite positioned at 19.76px from viewport top",
+    "visualInspection": "Desktop screenshot inspected; image fits available width. Generated-board mobile comparison typography needs revision."
+  },
+  "notTested": [
+    "Functional homepage on mobile",
+    "Production SEO output",
+    "Core Web Vitals",
+    "Actual motion implementation",
+    "Conversion funnel",
+    "All public destination HTTP status"
+  ],
+  "imageContracts": [
+    "frame-shift.png",
+    "motion-atlas.png",
+    "from-the-source.png",
+    "consolidated.png and all 3 attached references"
+  ],
+  "localLinks": {
+    "checked": 89,
+    "result": "all resolve on disk; local HTML anchors checked"
+  },
+  "http": "6 local review assets/pages returned HTTP 200 to HEAD",
+  "colourPairChecks": {
+    "cta": "#FFF9E8 on #765020",
+    "ctaRatio": 6.79,
+    "bodyRatio": 13.35,
+    "secondaryRatio": 5.54,
+    "scope": "Three proposed solid colour pairs only; not a whole-page accessibility audit"
+  },
+  "jsonAndPng": "JSON parse, option order, PNG dimensions, hashes, original output copy and prompt hash passed"
+}

@@ -19,7 +19,7 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** la première série ImageGen va dans une meilleure direction, mais reste insuffisante. Adrien demande trois autres pistes plus originales et graphiques, avec mobile et storyboard détaillés. Le cinéma doit cohabiter avec la publicité, TikTok/Reels, les animations de produits web et la création avec l'IA. La relance de la [série 07](art-direction-07.md) a produit Frame Shift et The Motion Atlas ; From the Source a encore échoué. Sa relance unique est programmée le 10 septembre à 15 h 08, Europe/Madrid. [Méthode](art-direction-reset.md) · [Série 06, non retenue à ce stade](art-direction-06.md).
+**Dernier retour :** Adrien retient la structure et les usages de la planche 1, avec le fond et les tons chauds de la planche 3, en raccord avec l’app. Le paiement à l’usage et les comparatifs restent centraux ; les références et Connect/MCP doivent être mis en avant même sans historique GSC. La [revue 08](review/art-direction-08/index.html) présente la planche consolidée obtenue avec références. Le [plan complet](home-direction-08.md) relie cette synthèse aux pages, aux intentions et aux détails à fabriquer. Le rappel de génération a été supprimé à sa demande. [Série 07](art-direction-07.md) · [Méthode](art-direction-reset.md).
 
 **Prototype précédent, rejeté : [English master 05](review/home-en.html?v=5).** Cinq films, catalogue complet recherchable, comparatif affiné et scène Connect en 3D au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-05-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
 
@@ -40,7 +40,8 @@ La documentation reste proportionnée : consigner les décisions de fond et les 
 | Document | Contenu | Statut |
 |---|---|---|
 | [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
-| [Cinéma, publicité, social, web et IA](art-direction-07.md) | Trois directions, compositions desktop/mobile et storyboards | Deux planches livrées ; troisième relance programmée |
+| [Direction consolidée 08](home-direction-08.md) | Mix 1 + 3, récit complet, pages/intents, marque, motion et recette | Orientation acquise ; résultat graphique et détails à examiner |
+| [Cinéma, publicité, social, web et IA](art-direction-07.md) | Trois directions, compositions desktop/mobile et storyboards | Série livrée ; mix 1 + 3 retenu comme orientation |
 | [Premiers concepts cinématographiques](art-direction-06.md) | Trois directions initiales et cadre de décision | Direction améliorée mais insuffisante selon Adrien |
 | [Accueil — master anglais 05](review/home-en.html?v=5) | Résultats, Compare, Connect et catalogue | Rejeté ; archive de travail |
 | [Choix de composition](home-composition.md) | Récit, provenance, contenu et points de migration | Proposition documentée |

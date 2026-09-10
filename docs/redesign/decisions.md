@@ -73,8 +73,9 @@
 - [x] Acter le rejet du master 05 et changer de méthode : direction ImageGen puis images clés avant code.
 - [x] Recevoir le retour sur la série 06 : direction améliorée mais insuffisante ; élargir à publicité, social, web et IA.
 - [x] Préparer les trois briefs 07 et leurs storyboards ; sauvegarder les prompts et les neuf erreurs réseau ImageGen.
-- [ ] Obtenir les trois planches 07 : Frame Shift et The Motion Atlas livrées ; From the Source en attente d'une relance unique programmée.
-- [ ] Examiner les trois nouvelles pistes 07 avec mobile/storyboard et consolider une cible visuelle.
+- [x] Obtenir et afficher les trois planches 07 : Frame Shift, The Motion Atlas, puis From the Source ; désactiver la relance programmée après le dernier succès.
+- [x] Recevoir le choix de mix 1 + 3 et la confirmation des piliers : paiement à l’usage, Compare, références et Connect.
+- [ ] Examiner la planche consolidée 08 et détailler la cible visuelle.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -107,7 +108,7 @@ Cette réalisation locale ne vaut pas validation artistique ni gain de conversio
 
 ## Prochaine décision à présenter
 
-Compléter puis examiner les [trois nouvelles pistes graphiques](art-direction-07.md), avec compositions desktop/mobile et trois images clés par piste, puis consolider une cible avec les retours. Frame Shift et The Motion Atlas sont livrées ; From the Source a encore échoué. Sa relance unique dans la conversation est programmée le 10 septembre 2026 à 15 h 08, Europe/Madrid, conformément à la demande d'Adrien. Approfondir ensuite les états des modèles, du comparatif et de Connect avant une nouvelle fabrication. Le [master 05](review/home-en.html?v=5) est rejeté ; la série 06 est jugée meilleure mais insuffisante. Les archives précédentes restent disponibles ; aucune publication.
+Examiner la consolidation 08 fondée sur le choix explicite du mix 1 + 3 et sur le [récit complet](home-direction-08.md). Le paiement à l’usage et les comparatifs restent identitaires ; la nouveauté du MCP justifie sa mise en avant sans historique GSC. Approfondir les états de l’ouverture, des modèles, du comparatif et de Connect avant fabrication. Le rappel de génération a été supprimé à la demande d’Adrien. Le master 05 reste rejeté et archivé ; aucune publication.
 
 Les [40 destinations](home-replacement-links.json) servent à l’analyse de continuité selon D40, pas à une obligation de reproduire l’ancienne composition. Les données GSC/GA4/Clarity doivent accompagner l’intégration ; aucune nouvelle extraction dans cette exploration artistique.
 
@@ -118,3 +119,11 @@ Retour d’Adrien du 10 septembre 2026 : rejet du master 05, scoreboard jugé in
 ## Décision D43 — Trois pistes plus graphiques, pour l'ensemble des usages
 
 Adrien demande trois autres propositions après la série 06 : davantage d'originalité, de graphisme et de finesse, avec desktop, mobile et storyboard. Il précise que le cinéma est une composante : les clients créent aussi des publicités, des TikTok/Reels et des animations de produits pour leurs pages web. La série 07 doit exprimer cette diversité et le rôle de l'IA sans promettre une diffusion automatique ou de nouvelles fonctions de campagne. Aucune piste de la série 06 n'est validée ; les mouvements et la qualité mobile restent à éprouver après sélection d'une cible visuelle.
+
+## Décision D44 — Consolider les planches 1 et 3 avec les piliers de la marque
+
+Adrien préfère les couleurs et le fond de la troisième planche, avec le contenu de la première. Il demande une identité propre, en raccord avec l’app, qui conserve le cinéma tout en montrant le social et les produits. Il attend les logos d’origine et un travail plus développé relié aux pages et intentions SEO existantes. Le choix porte sur ce mélange ; il ne vaut pas acceptation d’une nouvelle planche encore à examiner.
+
+Il confirme ensuite que le paiement à l’usage et Compare sont des forces de la marque. Les références et le MCP, récemment lancé selon lui, doivent aussi être mis en avant. L’absence d’historique Search Console ne justifie pas de minimiser cette nouveauté. La [direction 08](home-direction-08.md) formalise les acquis à renforcer et les nouveautés à faire découvrir, avec leurs destinations et leur mesure.
+
+Le rappel ImageGen, déjà mis en pause après le succès de la troisième planche, a été supprimé sur demande explicite. L’outil de l’app a confirmé la suppression. Aucun nouveau rappel n’est programmé.

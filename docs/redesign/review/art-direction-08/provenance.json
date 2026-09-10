@@ -1,0 +1,51 @@
+{
+  "created": "2026-09-10",
+  "status": "generated-not-yet-user-validated",
+  "direction": "Consolidation of displayed series 07 options 1 and 3 with app brand sources",
+  "tool": "image_gen__imagegen",
+  "mode": "built-in with referenced_image_paths",
+  "attempts": 1,
+  "promptFile": "docs/redesign/review/art-direction-08/prompt.txt",
+  "promptSha256": "63372e167e9ee6dada6cecab9f211b5123aac6df95ccc14ab11090b7438a6288",
+  "requestedCanvas": {
+    "width": 2400,
+    "height": 1800
+  },
+  "references": [
+    {
+      "file": "docs/redesign/review/art-direction-07/frame-shift.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "a65c906aef34ccf4386d94ee14c834ec15d1d17363112591203fec39f00c0610"
+    },
+    {
+      "file": "docs/redesign/review/art-direction-07/from-the-source.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "473d787b09dfd82304538fca73a2f45d964a24aba5875f091f85072548384f73"
+    },
+    {
+      "file": "docs/redesign/review/art-direction-08/brand-reference.png",
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "75c8c4f4aad7bbb22d0cf2b2de6e151a18f34efd1753769b18cebf10e34ff7d5"
+    }
+  ],
+  "referenceRoles": [
+    "Option 1: structure and cinema/social/product breadth",
+    "Option 3: warm background, light and materials",
+    "Clean local reference sheet: actual product marks and app colours; no private account screenshot"
+  ],
+  "output": {
+    "file": "docs/redesign/review/art-direction-08/consolidated.png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "4320c0a85400940976aa5528e8fe1965119e5a6c20619f1cbc4fe7f1f2882602"
+  },
+  "originalFile": "/Users/adrienmillot/.codex/generated_images/01a086ef-68a2-7dd1-9a3e-fc5c425137e6/exec-6c4a8a14-15da-4a44-a506-52425c0dadde.png",
+  "unchangedCopy": true,
+  "displayedOnceInConversation": true,
+  "review": "docs/redesign/review/art-direction-08/index.html",
+  "scope": "Concept and supporting documents only; not a functional homepage",
+  "automation": "Historical retry automation deleted at user request. No new automation created."
+}
