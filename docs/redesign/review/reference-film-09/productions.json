@@ -8,16 +8,17 @@
       "category": "Production existante",
       "origin": "Dossier YouTube",
       "model": "Montage C08 · MiniMax H3",
-      "placement": "Démonstration références / exemple MiniMax H3",
+      "placement": "Archive de production — Short exclu du site",
       "note": "Version finale V2 : références → action → dialogue. Le Short de 21,875 s remplace les trois fragments abandonnés.",
-      "motion": "Réutiliser les plans sans incrustations pour montrer le geste et la relation avec les références. Le Short entier se regarde volontairement.",
-      "caution": "Les écrans générés du présentateur ne sont pas des captures produit. Revoir le détail des mains et de la fidélité avant de choisir un extrait. Conserver les crédits musicaux si la bande son est reprise.",
+      "motion": "Extraire seulement les images et plans utiles pour une démonstration propre au site. Aucun Short complet ni présentateur parlant.",
+      "caution": "Ne pas intégrer cet export ni sa version sans sous-titres au site. Écarter les plans de présentateur, le commentaire et l’habillage YouTube.",
       "measured": {
         "width": 1080,
         "height": 1920,
         "duration": 21.875,
         "fps": 24.0
-      }
+      },
+      "status": "archived-source-only"
     },
     {
       "key": "site-before",

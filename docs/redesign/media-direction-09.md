@@ -2,7 +2,7 @@
 
 10 septembre 2026. Support de choix avant la prochaine maquette anglaise. La direction finale, les scènes et leur animation restent à valider.
 
-**[Ouvrir la revue](http://127.0.0.1:8775/docs/redesign/review/reference-film-09/index.html)** · [Aller au Short du sac](http://127.0.0.1:8775/docs/redesign/review/reference-film-09/index.html#youtube)
+**[Ouvrir la revue](http://127.0.0.1:8775/docs/redesign/review/reference-film-09/index.html)** · [Voir les images et plans sources du sac](http://127.0.0.1:8775/docs/redesign/review/reference-film-09/index.html#youtube)
 
 ## Conseil de composition
 
@@ -55,11 +55,11 @@ La source courante est `maxvideoai-youtube-studio/production-planning/concept-08
 - Short final : `exports/C08_SHORT_EXPLAINER_EN_V2.mp4`, 1080 × 1920, **21,875 s**. Une seule version explicative remplace les trois anciens fragments rejetés.
 - Montage long : `exports/C08_LONG_EN_V2.mp4`, 1920 × 1080, **67,208 s**.
 - Versions `-clean.mp4`, sous-titres SRT/VTT/ASS, plans séparés dans `edit/`, plan de montage, projet Premiere et planches `board/` disponibles.
-- Les trois planches utiles sont référence, action et dialogue. Elles sont reprises telles quelles dans la revue, sans retouche ni nouvelle génération.
+- Les planches référence et action sont reprises telles quelles dans la revue, sans retouche ni nouvelle génération. La planche dialogue et le poster du présentateur sont retirés de la présentation active.
 
 Le job source `2b7d8e08-fd0f-4232-acc3-4157b2142152` relie réellement les références `ma_ec53b5e78fc54035910f2eed5df902f7` (voyageur/gare) et `ma_fa55a0a16cc64533948c8f814b1c910f` (sac produit) à la scène montrée. La consultation des références originales et leur lien de génération ont été vérifiés. Le voyageur tient déjà le sac sur sa référence : ne pas raconter un transfert d’objet totalement absent de l’image initiale.
 
-Pour la homepage : privilégier le geste, l’objet et la relation source/résultat. Proposer le Short complet comme exemple explicatif volontaire. La série de présentateur ne devient pas le visage dominant de la marque. Les variations d’accessoires et les approximations des écrans générés figurent déjà dans le bilan C08 ; conserver cette distinction entre mise en scène et véritable interface.
+Consigne explicite d’Adrien : aucun Short YouTube complet et aucun présentateur parlant sur le site, même en lecture volontaire. Utiliser uniquement les images, références et plans utiles comme matière de la nouvelle démonstration : objet, geste, relation source/résultat. Écarter introductions, commentaire parlé, séquence de dialogue explicatif, sous-titres et habillage YouTube. Les exports complets restent des archives de production, pas des contenus à intégrer. Cette exclusion concerne le présentateur et le format explicatif ; elle n’interdit pas les personnages qui participent à une scène visuelle pertinente. Les variations d’accessoires et les approximations des écrans générés figurent déjà dans le bilan C08 ; conserver cette distinction entre mise en scène et véritable interface.
 
 ## Website Move — concept conservé, réalisation à refaire
 
@@ -71,7 +71,7 @@ Adrien écarte explicitement la réalisation avec la montre. Seule l’idée d�
 
 Adrien autorise aussi à repenser complètement le mécanisme si un effet pertinent inspire une meilleure démonstration. Le déroulé avant/après et la mise en scène dans un cadre de navigateur ne sont pas figés. Conserver l’objectif — faire comprendre l’apport de la vidéo à un site — puis choisir ensemble composition, sujet, mouvement et résultat. L’effet doit servir cette compréhension, rester lisible sans mouvement et être viable sur mobile.
 
-Prochain travail : proposer ensemble un nouveau sujet et la démonstration complète, avec états desktop/mobile et rôle du mouvement. Le nouveau produit reste à choisir ; la sélection de sneakers pour la section produit ne les impose pas automatiquement à Website Move. Les anciennes captures restent des archives, distinctes du Short du sac conservé. Aucune nouvelle génération ou production n’est lancée par cette correction de cadrage.
+Prochain travail : proposer ensemble un nouveau sujet et la démonstration complète, avec états desktop/mobile et rôle du mouvement. Le nouveau produit reste à choisir ; la sélection de sneakers pour la section produit ne les impose pas automatiquement à Website Move. Les anciennes captures restent des archives, distinctes des images et plans du sac réutilisables. Aucune nouvelle génération ou production n’est lancée par cette correction de cadrage.
 
 `youtube-assets.json` conserve les chemins exacts et les mesures locales. Les liens symboliques de `local-assets/` pointent vers six fichiers précis, sans recopier les vidéos ni exposer le dossier YouTube entier. Ils sont ignorés par Git. Le dossier YouTube et ses projets Premiere restent intacts. Les images de planche et posters déjà existants sont les seules copies de cette production dans la revue.
 

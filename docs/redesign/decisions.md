@@ -167,6 +167,13 @@ La variante Kling Omni est proposée en priorité pour la section produit ; la l
 
 Adrien conserve l’idée de donner vie à un produit dans un site grâce à la vidéo, mais écarte la réalisation avec la montre. Reconcevoir le produit présenté, son univers, le site de démonstration, les visuels, le storyboard, la vidéo et son intégration. L’ancien exemple ne sert plus de cible ni d’image d’attente ; ses captures sont retirées de la revue active et conservées seulement en archive.
 
-Le nouveau sujet et la mise en scène restent à proposer ensemble, en desktop et mobile. Les chaussures présélectionnées pour la section produit ne deviennent pas automatiquement le sujet de Website Move. Cette décision consigne le besoin de nouvelle production ; elle ne lance aucune génération. Le Short du sac reste disponible pour la démonstration références.
+Le nouveau sujet et la mise en scène restent à proposer ensemble, en desktop et mobile. Les chaussures présélectionnées pour la section produit ne deviennent pas automatiquement le sujet de Website Move. Cette décision consigne le besoin de nouvelle production ; elle ne lance aucune génération. Les images et plans du sac restent disponibles pour la démonstration références ; D50 exclut le Short complet et le présentateur parlant.
 
 Complément D49 : Adrien ouvre aussi la possibilité de repenser entièrement le mécanisme à partir d’un effet visuel pertinent. Ne pas limiter le chantier à remplacer la montre dans le déroulé existant. L’avant/après et le cadre de navigateur sont des options, pas des contraintes ; conserver l’objectif de compréhension, la cohérence produit et les exigences mobile/performance.
+
+
+## Décision D50 — Utiliser les images et plans YouTube, pas les Shorts
+
+Adrien exclut le Short YouTube complet et le présentateur parlant du site. L’autorisation de réutilisation vise les images, références et plans utiles à la nouvelle démonstration, pas le format YouTube ni une explication face caméra, même proposée au clic. Privilégier l’objet, le geste et le résultat ; écarter introduction, commentaires parlés, séquences de dialogue explicatif, sous-titres et habillage YouTube.
+
+La revue retire le lecteur du Short, son lien vers l’export sans sous-titres, le poster du présentateur et la planche dialogue. Elle conserve deux plans sources, référence produit et geste. Les exports et projets YouTube restent intacts en archive. Cette décision remplace les propositions précédentes de montrer le Short complet volontairement.
