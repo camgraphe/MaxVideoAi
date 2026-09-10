@@ -2,6 +2,8 @@
 
 Mise à jour : 10 septembre 2026. Responsable de décision : Adrien. Statut : conception, avant implémentation.
 
+**En pause à la demande d’Adrien — 10 septembre 2026.** Reprise prévue la semaine suivante. Lire [le point de reprise](REPRISE.md) avant toute nouvelle action : décisions récentes, sources locales et ordre de continuation y sont réunis.
+
 ## Objectif
 
 Repenser l'expérience du site public : davantage de créations et de démonstrations, des compositions ouvertes, du mouvement utile et une identité originale liée à MaxVideoAI. La réussite ne se mesure pas au nombre de couleurs, de cartes ou d'animations ajoutées.
