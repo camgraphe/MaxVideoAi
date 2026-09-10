@@ -73,7 +73,7 @@
 - [x] Acter le rejet du master 05 et changer de méthode : direction ImageGen puis images clés avant code.
 - [x] Recevoir le retour sur la série 06 : direction améliorée mais insuffisante ; élargir à publicité, social, web et IA.
 - [x] Préparer les trois briefs 07 et leurs storyboards ; sauvegarder les prompts et les neuf erreurs réseau ImageGen.
-- [ ] Obtenir les trois planches 07 : aucun résultat visuel retourné dans cette passe.
+- [ ] Obtenir les trois planches 07 : Frame Shift et The Motion Atlas livrées ; From the Source en attente d'une relance unique programmée.
 - [ ] Examiner les trois nouvelles pistes 07 avec mobile/storyboard et consolider une cible visuelle.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
@@ -107,7 +107,7 @@ Cette réalisation locale ne vaut pas validation artistique ni gain de conversio
 
 ## Prochaine décision à présenter
 
-Obtenir puis examiner les [trois nouvelles pistes graphiques](art-direction-07.md), avec compositions desktop/mobile et trois images clés par piste, puis consolider une cible avec les retours. Les briefs sont prêts, mais la génération est bloquée après neuf erreurs réseau ; aucune planche 07 ne peut encore être présentée comme réalisée. Approfondir ensuite les états des modèles, du comparatif et de Connect avant une nouvelle fabrication. Le [master 05](review/home-en.html?v=5) est rejeté ; la série 06 est jugée meilleure mais insuffisante. Les archives précédentes restent disponibles ; aucune publication.
+Compléter puis examiner les [trois nouvelles pistes graphiques](art-direction-07.md), avec compositions desktop/mobile et trois images clés par piste, puis consolider une cible avec les retours. Frame Shift et The Motion Atlas sont livrées ; From the Source a encore échoué. Sa relance unique dans la conversation est programmée le 10 septembre 2026 à 15 h 08, Europe/Madrid, conformément à la demande d'Adrien. Approfondir ensuite les états des modèles, du comparatif et de Connect avant une nouvelle fabrication. Le [master 05](review/home-en.html?v=5) est rejeté ; la série 06 est jugée meilleure mais insuffisante. Les archives précédentes restent disponibles ; aucune publication.
 
 Les [40 destinations](home-replacement-links.json) servent à l’analyse de continuité selon D40, pas à une obligation de reproduire l’ancienne composition. Les données GSC/GA4/Clarity doivent accompagner l’intégration ; aucune nouvelle extraction dans cette exploration artistique.
 
