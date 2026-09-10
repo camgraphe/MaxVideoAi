@@ -150,6 +150,21 @@ export function resolveModelOfferAmountCents(engine: FalEngineEntry, pricingEngi
   const durationSeconds = resolveOfferDurationSeconds(pricingEngine, hint?.durationSeconds);
   const mode = engine.category === 'image' ? 't2i' : 't2v';
 
+  if (pricingEngine.id === 'lumaRay2' || pricingEngine.id === 'lumaRay2_flash') {
+    try {
+      const facts = buildPublicPricingFacts({
+        engine: pricingEngine,
+        durationSec: 5,
+        durationOption: '5s',
+        resolution: '540p',
+        mode: 't2v',
+      });
+      return quoteModelOfferFacts(facts, { mode: 't2v', resolution: '540p' });
+    } catch {
+      return null;
+    }
+  }
+
   if (pricingEngine.id === 'luma-ray-3-2') {
     try {
       const facts = buildPublicPricingFacts({
@@ -298,7 +313,7 @@ export function buildProductSchema({
 }) {
   const provider = resolveProviderInfo(engine);
   const offerPayload: { offers?: ReturnType<typeof buildProductOffer> } =
-    pricingEngine && engine.surfaces.pricing.includeInEstimator
+    pricingEngine
     ? { offers: buildProductOffer(engine, pricingEngine, canonical) }
     : {};
   if (!offerPayload.offers) return null;
