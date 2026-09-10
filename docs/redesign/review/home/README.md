@@ -1,69 +1,83 @@
-# Revue locale de l’accueil — master anglais 04
+# Revue locale de l’accueil — master anglais 05
 
-Entrée de référence : [English master](../home-en.html?v=4). [Angle](../angle-en.html) conserve l’étude de cadrages pour la future page outil. [EN 03](../home-en-v3.html), [FR 03](../home.html) et [ES LATAM 03](../home-es.html) sont historiques.
+[English master](../home-en.html?v=5) est la référence. [EN 04](../home-en-v4.html), [EN 03](../home-en-v3.html), [FR 03](../home.html) et [ES LATAM 03](../home-es.html) sont conservés. [Angle](../angle-en.html) reste une étude distincte.
 
-Ces pages sont noindex et locales. Elles ne génèrent pas de média, ne facturent rien et n’envoient pas d’événement analytics.
+Ces pages sont locales et noindex. Elles ne génèrent ni média, ni facturation, ni événements analytics.
 
-## Construire et servir
+## Construire
 
 Depuis la racine du worktree :
 
 ```bash
 node docs/redesign/review/home/build.mjs
-python3 -m http.server 8775 --bind 127.0.0.1
 ```
 
-Réutiliser le serveur déjà présent. Le générateur écrit uniquement home-en.html et angle-en.html. Il ne retraduit pas FR/ES.
+Le générateur écrit home-en.html et angle-en.html. Il ne retraduit pas FR/ES. Réutiliser le serveur existant sur 127.0.0.1:8775 ; sinon lancer `python3 -m http.server 8775 --bind 127.0.0.1` depuis cette racine.
+
+Après une modification de connect-scene.mjs, reconstruire le moteur avec les dépendances déjà installées dans un checkout du projet :
+
+```bash
+node docs/redesign/review/home/build-connect.mjs '/chemin/du/checkout'
+```
+
+Le checkout doit fournir esbuild et frontend/node_modules/three. Construction de cette version : Three.js 0.183.2 et esbuild 0.25.11 du checkout principal. Le bundle local connect-runtime.js est versionné pour une revue autonome ; aucune dépendance CDN. Licence MIT dans [THREE-LICENSE.txt](THREE-LICENSE.txt).
 
 ## Propriétaires
 
-- build.mjs → master.mjs : assemble le master à partir du rendu de base, remplace les chapitres, projette seulement les données nécessaires au navigateur et conserve Angle séparément.
-- rebuild.mjs : rend la composition 03 à la demande, sans écriture automatique. Conserve les contrats des cinq films, posters préparés, prix indicatifs, FAQ et liens. Échoue si l’ordre ou les sources attendues changent.
-- master-data.mjs : lit les modèles actuels publiés et le catalogue généré, puis les notes et capacités. Vérifie la publication des trois comparaisons et la plage des notes.
-- master-sections.mjs : HTML du catalogue, de Compare et de Connect. Le contenu principal, les notes initiales et les liens du catalogue existent avant JavaScript.
-- rebuild.css + master.css : base claire conservée, chapitres Compare/Connect, fenêtres, responsive et mouvement réduit.
-- master.client.mjs : lecteur, modales natives, aperçu mobile et préférences.
-- master-interactions.mjs : recherche/filtres, défilement des familles, données du scorecard et étapes Connect.
-- playback.mjs : unique lecteur d’ambiance, visibilité, pause explicite, déplacement entre modèles et fallback original ; cinq tests existants.
-- angle.client.mjs : étude séparée des quatre cadrages. Aucun chargement de ces images dans le master 04.
-
-rebuild-copy.mjs et content.mjs gardent les contenus de base. rebuild.client.mjs reste utilisé par les pages 03. render.mjs, editorial.mjs, home.css et home.mjs sont historiques ; ne pas exécuter les anciens générateurs sur les pages courantes.
-
-## Sources
-
-| Donnée | Source |
+| Fichier | Responsabilité |
 |---|---|
-| Publication, identité et famille | frontend/config/model-registry.json |
-| Nom de présentation | frontend/config/engine-catalog.json, lecture seule |
-| Six critères éditoriaux | data/benchmarks/engine-scores.v1.json |
-| Capacités | data/benchmarks/engine-key-specs.v1.json |
-| Méthode et nature des notes | /benchmarks, page publique consultée le 10 septembre 2026 |
-| Cinq films, ordre, durée, poster et coûts indicatifs | frontend/components/marketing/home/home-redesign-visuals.ts |
-| Poster prioritaire mobile/desktop | frontend/config/home-posters.generated.json, lecture seule |
-| Vidéos préparées | frontend/config/public-video-renditions.generated.json, lecture seule |
-| Huit questions de départ | frontend/messages/en.json, home.redesign.faq |
-| Preuve Claude | frontend/public/media/mcp/claude-inline-video-proof.jpg |
-| Angle | Images publiques angle-orbit-hero-dialogue-{source,field,reverse,elevated}.webp |
-| Disco Motel | Starter existant de l’app, sans attribution à un modèle |
-| Marques et police | Assets locaux existants ; FLUX a un repère typographique, sans logo inventé |
+| build.mjs / master.mjs | Composition EN, données nécessaires et étude Angle séparée |
+| rebuild.mjs | Base 03 rendue sans écriture automatique ; contrats médias, prix indicatifs, FAQ et liens |
+| master-data.mjs | Catalogue actuel et publication des duos ; notes et capacités publiées |
+| master-sections.mjs | Catalogue, familles et comparatif rendus dans le HTML |
+| connect-section.mjs | Texte, liens, contrôles, scène de secours et capture Claude |
+| rebuild.css + finish.css | Base commune et finition complète du master 05 |
+| master.client.mjs | Lecteur, modales natives, préférences et outil de revue mobile |
+| master-interactions.mjs | Catalogue, familles et comparatif ; délégation de Connect |
+| connect-controller.mjs | Préparation, scroll, sélection, animation à la demande, visibilité, préférences et nettoyage |
+| connect-scene.mjs | Géométrie, textures de démonstration, éclairage, caméra, poses et ressources WebGL |
+| build-connect.mjs / connect-runtime.js | Construction / projection navigateur de la scène |
+| playback.mjs | Lecteur vidéo unique, intention, pause, visibilité et fallback original |
+| angle.client.mjs | Quatre cadrages de l’étude séparée |
+| v4/ | Styles et interactions archivés avec home-en-v4.html |
 
-Les scores sont éditoriaux. Les prix des exemples restent indicatifs ; aucun calcul de tarif n’a été ajouté au navigateur. La capture Claude garde son propre contexte et n’est pas rattachée au brief illustratif de Connect. Aucun modèle, score, catalogue généré ou média de production n’est modifié.
+master.css est l’ancien support 04, conservé comme historique. Le master 05 ne le charge pas. Les anciens render/editorial/rebuild.client restent liés aux archives ; ne pas utiliser leurs générateurs pour écraser le master courant.
 
-## Contrôles
+## Scène et chargement
+
+Un IntersectionObserver prépare la scène à 700 px de son entrée, sans activation obligatoire. La géométrie est procédurale ; aucun GLB ni HDR distant. Le contexte, le plan et le brief sont dessinés sur des textures canvas. Seuls le logo MaxVideoAI, deux marques de modèles et la capture Claude existante sont utilisés comme images de la scène.
+
+Le rendu est programmé pour une progression ou un déplacement de souris, puis s’arrête une fois stabilisé. Il est suspendu hors champ, dans un onglet masqué ou derrière une fenêtre. Sur petite largeur, la résolution est plafonnée à 1,15× et les ombres sont désactivées à la création ; plafond desktop 1,5×. Le scroll épinglé est désactivé jusqu’à 900 px, en fenêtre de faible hauteur et avec mouvement réduit. Save-Data conserve la scène HTML sans WebGL.
+
+Le contrôleur maintient une seule légende accessible ; les autres sont hidden/inert. La scène est décorative pour les technologies d’assistance, le parcours est expliqué dans le HTML. La perte de contexte WebGL conserve l’illustration et les commandes. Les ressources de rendu sont libérées à la sortie, avec conservation lors du retour via le cache de navigation.
+
+## Provenance
+
+- Identité/publication : frontend/config/model-registry.json ; présentation : engine-catalog.json en lecture seule.
+- Notes : data/benchmarks/engine-scores.v1.json ; capacités : engine-key-specs.v1.json ; méthode liée à /benchmarks.
+- Films, ordre, durées et coûts indicatifs : frontend/components/marketing/home/home-redesign-visuals.ts.
+- Posters et lectures préparées : home-posters.generated.json et public-video-renditions.generated.json, sans changement.
+- Huit questions initiales : frontend/messages/en.json, home.redesign.faq ; une question assistant ajoutée en 04.
+- Preuve Claude : frontend/public/media/mcp/claude-inline-video-proof.jpg, conservée dans son contexte réel.
+- Disco Motel, marques et police : assets existants. FLUX conserve un repère typographique.
+
+Les notes restent éditoriales. Aucun nouveau calcul de prix. Aucune source média ou projection de production n’est modifiée. La capture Claude n’est pas le résultat du projet illustratif.
+
+## Vérification
 
 ```bash
 node docs/redesign/review/home/build.mjs
-node --check docs/redesign/review/home/master.mjs
 node --check docs/redesign/review/home/master.client.mjs
 node --check docs/redesign/review/home/master-interactions.mjs
-node --check docs/redesign/review/home/angle.client.mjs
+node --check docs/redesign/review/home/connect-controller.mjs
+node --check docs/redesign/review/home/connect-scene.mjs
 node --test docs/redesign/review/home/playback.test.mjs
 npm run lint:exposure
 git diff --check
 ```
 
-L’aperçu local propose 320, 390 et 768 px. Le sélecteur « Connect step » de la revue permet d’examiner chaque état dans l’iframe. Il ne fait pas partie du site proposé. Cet aperçu ne remplace pas les essais sur iOS/Android, réseau lent et technologies d’assistance.
+L’outil de revue propose 320, 390 et 768 px un accès direct au menu et un sélecteur d’étape Connect. Il ne fait pas partie du produit. Il ne remplace pas un téléphone réel, Safari, un lecteur d’écran ou un réseau lent.
 
-Pour l’intégration, reprendre les propriétaires React existants, les contrats média et les chargements responsive ; ces scripts de revue ne sont pas destinés à être copiés tels quels dans le site.
+Ces scripts sont un support de revue ; l’intégration utilisera les propriétaires React existants et fera l’objet de mesures comparables avant/après.
 
-[Présentation](../../home-composition.md) · [Recette](../../home-composition-04-validation.md) · [Destinations](../../home-replacement-links.json)
+[Présentation](../../home-composition.md) · [Contrôles](../../home-composition-05-validation.md) · [Destinations](../../home-replacement-links.json)

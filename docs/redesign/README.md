@@ -19,9 +19,9 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** la base issue de l’accueil réel se rapproche de la direction recherchée. Adrien demande un master anglais, moins d’Angle, plus de Compare et une présentation des assistants sous un libellé compréhensible comme « Connect ». La finition reste à examiner.
+**Dernier retour :** le master 04 est jugé lourd, trop simple et insuffisamment fini dans son ensemble : boutons, menus, ombres, fonds, séparations, comparatif et Connect. Le master 05 reprend la densité et les détails de toute la page, avec une scène Connect en 3D. La qualité artistique reste à examiner, sans présumer une validation.
 
-**Référence actuelle : [English master 04](review/home-en.html?v=4).** Cinq films, catalogue complet recherchable, scorecard éditorial interactif et parcours Connect au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-04-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
+**Référence actuelle : [English master 05](review/home-en.html?v=5).** Cinq films, catalogue complet recherchable, comparatif affiné et scène Connect en 3D au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-05-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
 
 ## Principe directeur — continuité SEO et amélioration réelle
 
@@ -40,7 +40,7 @@ La documentation reste proportionnée : consigner les décisions de fond et les 
 | Document | Contenu | Statut |
 |---|---|---|
 | [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
-| [Accueil — master anglais 04](review/home-en.html?v=4) | Résultats, Compare, Connect et catalogue | Nouvelle proposition à examiner |
+| [Accueil — master anglais 05](review/home-en.html?v=5) | Résultats, Compare, Connect et catalogue | Nouvelle proposition à examiner |
 | [Choix de composition](home-composition.md) | Récit, provenance, contenu et points de migration | Proposition documentée |
 | [Pages avant effets](page-first-workflow.md) | Ordre de conception et emplacements proposés dans l'accueil | Méthode demandée par Adrien |
 | [Essai animé 3D](review/motion.html) | Ordinateur articulé, objet, assemblage, rotation et vue mobile | Étude locale ; sujet et usage non validés |

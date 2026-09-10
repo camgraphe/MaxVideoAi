@@ -58,4 +58,4 @@ La [méthode des benchmarks](https://maxvideoai.com/benchmarks) distingue notes 
 
 Captures conservées dans le dossier ignoré du checkout principal : output/redesign-composition-04-2026-09-10/. Il contient l’accueil et le comparateur desktop, le scroll Connect, les états plan/résultat à 320 px, le contexte à 390 px et le résultat à 768 px.
 
-[Voir le master](review/home-en.html?v=4) · [Présentation](home-composition.md) · [Sources](review/home/README.md)
+[Voir le master](review/home-en-v4.html) · [Présentation historique](home-composition-04.md) · [Sources](review/home/README.md)

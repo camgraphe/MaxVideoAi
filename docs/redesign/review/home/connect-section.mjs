@@ -1,0 +1,20 @@
+import {link,arrow} from './master-sections.mjs';
+
+export function connectSection(){
+ return `<section class="connect-section" id="connect" aria-labelledby="connect-title">
+ <div class="shell"><div class="section-heading connect-heading"><div><p class="eyebrow">MAXVIDEOAI CONNECT</p><h2 id="connect-title">Keep the idea moving.</h2></div><div><p>Your website. Your brief. Your next video.<br>Create with the assistant you already work with.</p><div class="assistant-logos">${['codex','claude','chatgpt'].map((n,i)=>link('https://maxvideoai.com/integrations/'+n,`<img src="/frontend/public/brand/partners/${i===1?'anthropic/claude-mark-light.svg':'openai/openai-mark-light.svg'}" alt="" width="20" height="20">${['Codex','Claude','ChatGPT'][i]}`)).join('')}</div></div></div></div>
+ <div class="connect-runway" id="connect-runway"><div class="connect-sticky shell">
+ <div class="connect-story" id="connect-story">
+ <div class="connect-topline"><div class="connect-steps" role="group" aria-label="Connect workflow"><button data-connect-step="0" aria-pressed="true"><span>01</span>Context</button><button data-connect-step="1" aria-pressed="false"><span>02</span>Approval</button><button data-connect-step="2" aria-pressed="false"><span>03</span>Video</button></div><button class="story-play" id="connect-play" aria-label="Play the workflow animation"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6Z"/></svg><span>Play the story</span></button></div>
+ <div class="connect-stage" id="connect-stage" data-step="0">
+ <div class="scene-aura" aria-hidden="true"></div>
+ <div class="fallback-scene" aria-hidden="true"><div class="fallback-window"><div class="window-chrome"><i></i><i></i><i></i><span>your-site.com</span></div><div class="fallback-art"><span>YOUR PROJECT</span><strong>Made to<br>move.</strong><div class="art-block one"></div><div class="art-block two"></div><div class="art-block three"></div></div></div><div class="fallback-plan"><span>CREATIVE PLAN</span><strong>A clear next step.</strong><p>Prompt & references</p><p>Model & settings</p><p>Quote to approve</p></div><div class="fallback-core"><img src="/frontend/public/assets/branding/logo-mark.svg" alt="" width="54" height="54"></div><div class="fallback-result"><img src="/frontend/public/media/mcp/claude-inline-video-proof.jpg" alt="" width="1152" height="768" loading="lazy"></div></div>
+ <canvas id="connect-canvas" aria-hidden="true"></canvas>
+ <div class="scene-meta"><span id="scene-label">WEBSITE / BRIEF / REFERENCES</span><span class="scene-step" id="connect-count">01 / 03</span></div>
+ <div class="scene-progress" aria-hidden="true"><i id="scene-progress-fill"></i></div>
+ </div>
+ <div class="connect-below"><div class="connect-caption" data-connect-panel="0"><p class="eyebrow">START WITH YOUR PROJECT</p><h3>“Turn this page into a launch video.”</h3><p>Give your assistant the website, brief or references. It prepares the creative direction from your context.</p></div><div class="connect-caption" data-connect-panel="1" hidden inert><p class="eyebrow">YOU MAKE THE CALL</p><h3>The plan. The model. The price.</h3><p>Review the proposed prompt, settings and quote. Paid generation starts after your approval.</p></div><div class="connect-caption" data-connect-panel="2" hidden inert><p class="eyebrow">CONTINUE THE CONVERSATION</p><h3>Your video, right where you work.</h3><p>The final frame shows an actual Claude integration example. The preceding workflow is illustrative.</p></div>
+ <div class="connect-actions">${link('https://maxvideoai.com/mcp','Connect your assistant '+arrow,'button')}<button id="mcp-proof" class="text-link" aria-label="Enlarge the Claude integration screenshot">See a real example ${arrow}</button></div></div>
+ <div class="connect-foot"><span id="connect-hint">Scroll to explore the workflow</span><button id="connect-resume" hidden>Follow scroll again</button><p>Connect uses the Model Context Protocol (MCP). ${link('https://maxvideoai.com/docs/mcp','Setup guide ↗')}</p></div>
+ </div></div></div></section>`;
+}

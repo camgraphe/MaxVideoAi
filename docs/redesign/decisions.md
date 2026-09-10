@@ -69,7 +69,8 @@
 - [x] Repartir de l’accueil réel : proposition 03, cinq films, Angle et preuve MCP.
 - [x] Recevoir le retour 03 : base à poursuivre, anglais master, Compare/Connect prioritaires, Angle secondaire.
 - [x] Composer le master anglais 04 et conserver l’étude Angle séparément.
-- [ ] Examiner la composition 04 et sa finition avant intégration.
+- [x] Recevoir le rejet de la finition 04 ; reprendre la page entière dans le master 05.
+- [ ] Examiner la composition 05 et sa finition avant intégration.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -92,10 +93,18 @@ La proposition 04 matérialise ces choix. « Connect » reste un libellé propos
 
 Instruction explicite d’Adrien pendant la finalisation du master 04 : placer le SEO et la continuité au centre du plan, tout en changeant ce qui fonctionne mal. Les différences à faible impact identifié peuvent avancer dans le travail autorisé ; ne pas imposer la reproduction exacte de l’ancien accueil ou une validation pour chaque ajustement. Garder une revue pour les changements réellement significatifs et proportionner la justification à leur impact. Le [principe directeur](README.md#principe-directeur--continuité-seo-et-amélioration-réelle) formalise cette règle dans le plan, le brief et la migration.
 
+## Décision D41 — Reprendre la finition de toute la page
+
+Retour explicite d’Adrien : la proposition 04 est lourde, peu dense et trop simple. Compare et Connect sont les exemples les plus visibles, mais les boutons, menus, ombres, fonds et doubles séparations doivent aussi être retravaillés. Il demande une vraie profondeur et des mouvements significatifs, sans perdre le mobile ni la performance.
+
+Le master 05 reprend la composition complète. Connect est une scène Three.js avec géométrie, profondeur, éclairage et déplacements continus des mêmes objets. Elle se prépare à l’approche, sans bouton de chargement. Une illustration HTML est présente immédiatement ; les petits écrans et le mouvement réduit n’utilisent pas de section épinglée. Le comparatif, les commandes et les fenêtres reçoivent la même passe de finition.
+
+Cette réalisation locale ne vaut pas validation artistique ni gain de conversion ou de performance mesuré. L’anglais, la continuité SEO proportionnée de D40, la place secondaire d’Angle et l’intégration ultérieure des mesures/Zoho restent le cadre. Aucun déploiement.
+
 ## Prochaine décision à présenter
 
-Examiner [l’accueil anglais 04](review/home-en.html?v=4) dans l’ordre résultats → catalogue → Compare → Connect. Vérifier le poids relatif de ces chapitres et la qualité des interactions avant d’engager leur intégration Next.js. [Présentation](home-composition.md) et [contrôles](home-composition-04-validation.md).
+Examiner [l’accueil anglais 05](review/home-en.html?v=5) dans l’ordre résultats → catalogue → Compare → Connect. Vérifier le poids relatif de ces chapitres et la qualité des interactions avant d’engager leur intégration Next.js. [Présentation](home-composition.md) et [contrôles](home-composition-05-validation.md).
 
 Les [40 destinations](home-replacement-links.json) restent accessibles mais leur emplacement évolue. Cette couverture ne prouve ni parité SEO ni amélioration de conversion. La sélection éditoriale des comparaisons reste à confronter aux données GSC/GA4/Clarity ; aucune nouvelle extraction de ces comptes n’a été faite pendant l’itération 04.
 
-L’[étude Angle](review/angle-en.html), les [notes 03](home-composition-03.md), la [revue V1](review/index.html), la [planche illustrée](review/direction.html) et l’[étude 3D](review/motion.html) conservent leur rôle historique. La version EN de l’accueil est désormais 04 ; FR/ES restent 03. Aucun livrable local ne vaut autorisation de mise en ligne.
+L’[étude Angle](review/angle-en.html), les [notes 03](home-composition-03.md), la [revue V1](review/index.html), la [planche illustrée](review/direction.html) et l’[étude 3D](review/motion.html) conservent leur rôle historique. La version EN de l’accueil est désormais 05 ; FR/ES restent 03. Aucun livrable local ne vaut autorisation de mise en ligne.

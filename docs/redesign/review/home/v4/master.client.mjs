@@ -1,8 +1,8 @@
 import {initMasterInteractions} from './master-interactions.mjs';
-import {createHeroPlayer} from './playback.mjs';
+import {createHeroPlayer} from '../playback.mjs';
 const data=JSON.parse(document.querySelector('#page-data').textContent),c=data.copy;
 const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)];
-const root=document.documentElement,reduced=matchMedia('(prefers-reduced-motion:reduce)'),compact=matchMedia('(max-width:900px)'),short=matchMedia('(max-height:650px)');
+const root=document.documentElement,reduced=matchMedia('(prefers-reduced-motion:reduce)'),compact=matchMedia('(max-width:900px)'),short=matchMedia('(max-height:570px)');
 const embedded=new URL(location.href).searchParams.has('phone');
 if(embedded)root.classList.add('phone');
 let selected=0,manualReduced=false;
@@ -38,7 +38,7 @@ if(document.readyState==='complete')startAmbient();else window.addEventListener(
 
 const detail=$('#detail-dialog'),detailMedia=$('#detail-media');let opener=null;
 function openDialog(dialog,trigger){
- opener=trigger||document.activeElement;player.suspend(true);dialog.showModal();document.body.style.overflow='hidden';document.dispatchEvent(new CustomEvent('review-overlay',{detail:true}));
+ opener=trigger||document.activeElement;player.suspend(true);dialog.showModal();document.body.style.overflow='hidden';
  if(dialog.id==='menu-dialog')$('#menu-open').setAttribute('aria-expanded','true');
 }
 all('dialog').forEach(dialog=>{
@@ -47,7 +47,7 @@ all('dialog').forEach(dialog=>{
  dialog.addEventListener('close',()=>{
   if(dialog===detail){detailMedia.querySelector('video')?.pause();detailMedia.replaceChildren();}
   if(dialog.id==='mobile-dialog')$('#mobile-frame').removeAttribute('src');
-  document.body.style.overflow='';player.suspend(false);document.dispatchEvent(new CustomEvent('review-overlay',{detail:false}));$('#menu-open').setAttribute('aria-expanded','false');opener?.focus({preventScroll:true});
+  document.body.style.overflow='';player.suspend(false);$('#menu-open').setAttribute('aria-expanded','false');opener?.focus({preventScroll:true});
  });
 });
 $('#cost-info').addEventListener('click',event=>{
@@ -92,7 +92,6 @@ $('#preview-connect-step').addEventListener('change',event=>{
 });
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==parent||!embedded||event.data?.type!=='redesign-section')return;
- if(event.data.section==='menu'){openDialog($('#menu-dialog'),$('#menu-open'));return;}
  if(Number.isInteger(event.data.connectStep))master.selectConnectStep(event.data.connectStep);
  const target=document.getElementById(event.data.section);if(target)target.scrollIntoView({behavior:'instant',block:'start'});
 });
