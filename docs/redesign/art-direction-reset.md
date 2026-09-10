@@ -6,7 +6,7 @@ Le master 05 est rejeté. Le retour porte sur l’axe visuel, le niveau de finit
 
 Les prototypes précédents ont matérialisé trop tôt des choix graphiques faibles. Le mouvement a été fabriqué avant que les images clés et leur récit soient convaincants. La présence de WebGL et de transitions n’a pas établi une qualité de direction artistique.
 
-[Les trois planches ImageGen sont disponibles](art-direction-06.md).
+[La série initiale](art-direction-06.md) reste une exploration. Le retour suivant demande [trois pistes plus graphiques](art-direction-07.md), qui réunissent cinéma, publicité, social, web et IA, avec mobile et storyboard dès la planche.
 
 Le prochain objectif est une cible visuelle cohérente : cadrage, lumière, matière, typographie, composition et densité. Le code vient après la sélection de cette cible et la compréhension du mouvement.
 
@@ -14,6 +14,7 @@ Le prochain objectif est une cible visuelle cohérente : cadrage, lumière, mati
 
 - Accueil anglais de MaxVideoAI, plateforme de génération vidéo, comparaison des modèles et préparation d’images.
 - Langage cinématographique : place majeure aux images, rythme de plans, cadrages et lumière. Explorer le noir et une voie éditoriale plus claire ; cinématographique ne signifie pas uniquement fond sombre.
+- Montrer les usages publicitaires, TikTok/Reels et les animations de produits pour une page web au même titre que les plans de cinéma. L'IA se comprend par la création, le choix des modèles et Connect ; le site ne doit pas ressembler à un portfolio de réalisateur.
 - Le visiteur comprend qu’il peut explorer les résultats, comparer et créer avec un prix connu avant génération.
 - Compare et Connect sont structurants ; Angle garde sa page et son rôle d’outil secondaire.
 - Les logos restent des repères identifiables. Les animations servent le sens du chapitre.
@@ -36,9 +37,9 @@ Aucune sélection visuelle ne sera assimilée à une autorisation de déploiemen
 
 | Section | Message | Mouvement proposé à dessiner | Comportement mobile / arrêt |
 |---|---|---|---|
-| Ouverture | Voici ce que vous pouvez créer | Un vrai plan de cinéma domine ; le cadre s’ouvre ou se resserre légèrement au passage vers la suite. Pas de texte qui s’enfuit pendant sa lecture | Poster visible dès le HTML, CTA et exemples avant la preuve ; mouvement local court, lecture volontaire selon le contrat média |
+| Ouverture | Voici ce que vous pouvez créer | Composition de plans de cinéma, publicité produit et social, avec un sujet dominant ; cadrages et formats évoluent pour expliquer ces usages. Pas de texte qui s’enfuit pendant sa lecture | Poster visible dès le HTML, CTA et exemples avant la preuve ; mouvement local court, lecture volontaire selon le contrat média |
 | Modèles | Choisir une sensibilité et une capacité | Galerie de plans et logos : déplacement latéral ou légère profondeur, modèle actif passant au premier plan. Le nom reste lisible ; les images ne sont pas des décorations anonymes | Glissement tactile et sélection directe ; arrêt au focus et avec mouvement réduit ; pas de rail défilant impossible à viser |
-| Comparaison | Comprendre les écarts avant de choisir | Les deux modèles se placent, les jauges se révèlent et les chiffres peuvent rejoindre une seule fois leur valeur publiée. Un critère peut être mis en lumière pendant le scroll | Les valeurs finales restent accessibles et stables ; sélection explicite du duo et des détails ; aucun classement aléatoire ou score présenté comme fluctuant en direct |
+| Comparaison | Comprendre les écarts avant de choisir | Les deux modèles se placent, les jauges se révèlent ; la série 07 privilégie des chiffres finaux fixes. Un critère peut être mis en lumière pendant le scroll | Les valeurs finales restent accessibles et stables ; sélection explicite du duo et des détails ; aucun classement aléatoire ou score présenté comme fluctuant en direct |
 | Connect | Transformer votre projet en vidéo avec votre assistant | Un même projet traverse site → références extraites → storyboard et devis à approuver → film. Même sujet, même identité, différences visibles entre les états | Trois ou quatre moments lisibles au toucher ou dans le flux ; début et résultat se comprennent sans animation |
 | Guides par intention | Trouver le bon point de départ | Cadrage/relecture courte du résultat au survol ou à la sélection. L’effet révèle une intention différente, pas un simple zoom répété | Posters et labels complets ; accès direct aux guides |
 | Outils image | Préparer ce qui servira au film | Démonstration avant/après pertinente par outil. Angle peut montrer sa rotation sur sa page ; ne pas rejouer un effet dominant dans chaque ligne | Comparaison par bouton ou curseur tactile ; aucune dépendance au survol |

@@ -71,7 +71,10 @@
 - [x] Composer le master anglais 04 et conserver l’étude Angle séparément.
 - [x] Recevoir le rejet de la finition 04 ; reprendre la page entière dans le master 05.
 - [x] Acter le rejet du master 05 et changer de méthode : direction ImageGen puis images clés avant code.
-- [ ] Examiner les concepts cinématographiques et consolider une cible visuelle.
+- [x] Recevoir le retour sur la série 06 : direction améliorée mais insuffisante ; élargir à publicité, social, web et IA.
+- [x] Préparer les trois briefs 07 et leurs storyboards ; sauvegarder les prompts et les neuf erreurs réseau ImageGen.
+- [ ] Obtenir les trois planches 07 : aucun résultat visuel retourné dans cette passe.
+- [ ] Examiner les trois nouvelles pistes 07 avec mobile/storyboard et consolider une cible visuelle.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -104,10 +107,14 @@ Cette réalisation locale ne vaut pas validation artistique ni gain de conversio
 
 ## Prochaine décision à présenter
 
-Examiner les [trois concepts cinématographiques](art-direction-06.md), puis consolider une cible avec les retours. Dessiner ensuite les états clés des modèles, du comparatif et de Connect avant une nouvelle fabrication. Le [master 05](review/home-en.html?v=5) est rejeté. Les archives précédentes restent disponibles ; aucune publication.
+Obtenir puis examiner les [trois nouvelles pistes graphiques](art-direction-07.md), avec compositions desktop/mobile et trois images clés par piste, puis consolider une cible avec les retours. Les briefs sont prêts, mais la génération est bloquée après neuf erreurs réseau ; aucune planche 07 ne peut encore être présentée comme réalisée. Approfondir ensuite les états des modèles, du comparatif et de Connect avant une nouvelle fabrication. Le [master 05](review/home-en.html?v=5) est rejeté ; la série 06 est jugée meilleure mais insuffisante. Les archives précédentes restent disponibles ; aucune publication.
 
 Les [40 destinations](home-replacement-links.json) servent à l’analyse de continuité selon D40, pas à une obligation de reproduire l’ancienne composition. Les données GSC/GA4/Clarity doivent accompagner l’intégration ; aucune nouvelle extraction dans cette exploration artistique.
 
 ## Décision D42 — Direction cinématographique avant nouvelle implémentation
 
 Retour d’Adrien du 10 septembre 2026 : rejet du master 05, scoreboard jugé inférieur aux pages existantes et scène 3D sans évolution compréhensible. Explorer avec ImageGen une direction cinématographique liée au produit, penser chaque section et son mouvement, puis dessiner les états clés avant fabrication. La [méthode de reprise](art-direction-reset.md) définit les étapes, les critères et le rôle de chaque chapitre. Le prochain livrable est visuel ; aucune version 06 codée ne sera considérée comme la réponse par défaut.
+
+## Décision D43 — Trois pistes plus graphiques, pour l'ensemble des usages
+
+Adrien demande trois autres propositions après la série 06 : davantage d'originalité, de graphisme et de finesse, avec desktop, mobile et storyboard. Il précise que le cinéma est une composante : les clients créent aussi des publicités, des TikTok/Reels et des animations de produits pour leurs pages web. La série 07 doit exprimer cette diversité et le rôle de l'IA sans promettre une diffusion automatique ou de nouvelles fonctions de campagne. Aucune piste de la série 06 n'est validée ; les mouvements et la qualité mobile restent à éprouver après sélection d'une cible visuelle.

@@ -19,7 +19,7 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** rejet du master 05. Adrien demande une direction plus cinématographique, un mouvement pensé pour chaque section, un scoreboard au niveau des pages existantes et un récit Connect compréhensible. La méthode repart de concepts ImageGen et d’images clés avant l’animation. [Nouvelle méthode](art-direction-reset.md) · [Concepts ImageGen](art-direction-06.md).
+**Dernier retour :** la première série ImageGen va dans une meilleure direction, mais reste insuffisante. Adrien demande trois autres pistes plus originales et graphiques, avec mobile et storyboard détaillés. Le cinéma doit cohabiter avec la publicité, TikTok/Reels, les animations de produits web et la création avec l'IA. Les [briefs de la série 07](art-direction-07.md) sont prêts, mais les neuf appels ImageGen ont échoué : aucune nouvelle planche disponible. [Méthode](art-direction-reset.md) · [Série 06, non retenue à ce stade](art-direction-06.md).
 
 **Prototype précédent, rejeté : [English master 05](review/home-en.html?v=5).** Cinq films, catalogue complet recherchable, comparatif affiné et scène Connect en 3D au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-05-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
 
@@ -40,7 +40,8 @@ La documentation reste proportionnée : consigner les décisions de fond et les 
 | Document | Contenu | Statut |
 |---|---|---|
 | [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
-| [Concepts cinématographiques](art-direction-06.md) | Trois directions et cadre de décision | Exploration actuelle |
+| [Cinéma, publicité, social, web et IA](art-direction-07.md) | Trois briefs de direction, compositions desktop/mobile et storyboards prévus | Briefs prêts ; génération bloquée, aucune planche livrée |
+| [Premiers concepts cinématographiques](art-direction-06.md) | Trois directions initiales et cadre de décision | Direction améliorée mais insuffisante selon Adrien |
 | [Accueil — master anglais 05](review/home-en.html?v=5) | Résultats, Compare, Connect et catalogue | Rejeté ; archive de travail |
 | [Choix de composition](home-composition.md) | Récit, provenance, contenu et points de migration | Proposition documentée |
 | [Pages avant effets](page-first-workflow.md) | Ordre de conception et emplacements proposés dans l'accueil | Méthode demandée par Adrien |
