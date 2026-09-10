@@ -1,1 +1,1 @@
-import './rebuild.mjs';
+import './master.mjs';

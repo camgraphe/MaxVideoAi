@@ -2,11 +2,17 @@
 
 10 septembre 2026, relevés dans la nuit du 9 au 10. Référence : accueil de production anglais relu dans Chrome, composition 01 et retour d'Adrien. **La composition 01 ne remplit pas encore le rôle d'un remplacement de l'accueil.** Sa direction est à reprendre ; la recette technique précédente n'était pas une validation de sa richesse produit ou de sa couverture SEO.
 
-**Livrable du 10 septembre :** [composition 02 fonctionnelle](home-composition.md), avec scroll, vidéos et reprise des accès documentés. Elle constitue une réponse locale à ce brief, pas une validation de mise en production.
+**Livrable courant :** [master anglais 04](review/home-en.html?v=4), avec Compare et Connect prioritaires après retour sur la composition 03. [Présentation](home-composition.md). Proposition locale, avant intégration.
 
-## Principe acquis
+## Principe directeur — continuité SEO et amélioration réelle
 
-Adrien autorise l'amélioration du SEO, les réécritures, simplifications et fusions. Le contrat porte sur la fonction rendue au visiteur et les intentions de recherche, pas sur la conservation mot à mot des textes ni le même nombre de sections. Chaque contenu ou destination retiré doit avoir une décision motivée : gardé, fusionné, déplacé ou supprimé avec justification. Le remplacement de la page n'implique pas de changer son URL.
+Le SEO, le GEO et la continuité du parcours sont au centre de la refonte. Préserver les intentions de recherche utiles, les accès aux fonctions, les preuves et la solidité technique ; corriger les défauts existants, même si la nouvelle page diffère sensiblement de l’ancienne.
+
+Les réécritures, changements de présentation, suppressions de répétitions, déplacements et fusions à faible impact identifié peuvent avancer directement dans le périmètre autorisé. Une petite différence visuelle ou éditoriale ne justifie pas à elle seule de bloquer le chantier ou de demander une validation. L’inventaire des liens est un outil de décision, pas un quota à conserver.
+
+L’impact s’apprécie par la fonction et l’intention touchées, les pages/requêtes qui apportent du trafic lorsque ces données sont disponibles, la destination proposée et les contrats techniques. Une petite modification de code peut avoir un effet important ; l’absence de données ne prouve pas l’absence d’impact. Réserver une revue explicite aux changements significatifs : suppression d’une intention utile, refonte d’une page d’entrée importante, migration d’URL ou modification d’indexabilité. Préparer alors le résultat concret, la justification et le retour arrière.
+
+La documentation reste proportionnée : consigner les décisions de fond et les déplacements significatifs, sans imposer une validation par phrase ou par élément graphique. Ne pas annoncer une absence de risque Google ni un gain de trafic sans mesure.
 
 ## Diagnostic vérifié
 

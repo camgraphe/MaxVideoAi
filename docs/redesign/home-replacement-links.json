@@ -3,7 +3,7 @@
   "observed_date": "2026-09-09/2026-09-10",
   "scope": "Unique main-content destinations in rendered English homepage initial state; includes one external credibility link. Footer and links appearing only after interaction are separate.",
   "source_main_unique": 40,
-  "proposal_main_unique": 44,
+  "proposal_main_unique": 47,
   "items": [
     {
       "source_url": "https://maxvideoai.com/ai-video-engines",
@@ -11,8 +11,9 @@
       "proposed_destination": "Navigation / crédibilité",
       "decision": "Vérifier le rôle puis replacer",
       "reason": "Ne pas supprimer silencieusement un lien de crédibilité existant ; contrôler son contrat.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/best-for",
@@ -20,8 +21,9 @@
       "proposed_destination": "02 — Choisir par usage",
       "decision": "Fusionner guides et sélection visuelle",
       "reason": "Conserver les quatre intentions et leur accès au guide, avec une présentation plus courte.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/best-for/ads",
@@ -29,8 +31,9 @@
       "proposed_destination": "02 — Choisir par usage",
       "decision": "Fusionner guides et sélection visuelle",
       "reason": "Conserver les quatre intentions et leur accès au guide, avec une présentation plus courte.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/best-for/cinematic-realism",
@@ -38,8 +41,9 @@
       "proposed_destination": "02 — Choisir par usage",
       "decision": "Fusionner guides et sélection visuelle",
       "reason": "Conserver les quatre intentions et leur accès au guide, avec une présentation plus courte.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/best-for/fast-drafts",
@@ -47,8 +51,9 @@
       "proposed_destination": "02 — Choisir par usage",
       "decision": "Fusionner guides et sélection visuelle",
       "reason": "Conserver les quatre intentions et leur accès au guide, avec une présentation plus courte.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/best-for/image-to-video",
@@ -56,8 +61,9 @@
       "proposed_destination": "02 — Choisir par usage",
       "decision": "Fusionner guides et sélection visuelle",
       "reason": "Conserver les quatre intentions et leur accès au guide, avec une présentation plus courte.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-ltx-2-3-pro",
@@ -65,8 +71,9 @@
       "proposed_destination": "02 — Comparer avant de choisir",
       "decision": "Recomposer les comparatifs",
       "reason": "Réserver une démonstration claire et les liens de comparaison utiles ; la sélection éditoriale reste à confirmer avec les données.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0",
@@ -74,8 +81,9 @@
       "proposed_destination": "02 — Comparer avant de choisir",
       "decision": "Recomposer les comparatifs",
       "reason": "Réserver une démonstration claire et les liens de comparaison utiles ; la sélection éditoriale reste à confirmer avec les données.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-veo-3-1",
@@ -83,8 +91,9 @@
       "proposed_destination": "02 — Comparer avant de choisir",
       "decision": "Recomposer les comparatifs",
       "reason": "Réserver une démonstration claire et les liens de comparaison utiles ; la sélection éditoriale reste à confirmer avec les données.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/ltx-2-vs-ltx-2-3-fast",
@@ -92,8 +101,9 @@
       "proposed_destination": "02 — Comparer avant de choisir",
       "decision": "Recomposer les comparatifs",
       "reason": "Réserver une démonstration claire et les liens de comparaison utiles ; la sélection éditoriale reste à confirmer avec les données.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0",
@@ -101,8 +111,9 @@
       "proposed_destination": "02 — Comparer avant de choisir",
       "decision": "Recomposer les comparatifs",
       "reason": "Réserver une démonstration claire et les liens de comparaison utiles ; la sélection éditoriale reste à confirmer avec les données.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-veo-3-1",
@@ -110,8 +121,9 @@
       "proposed_destination": "02 — Comparer avant de choisir",
       "decision": "Recomposer les comparatifs",
       "reason": "Réserver une démonstration claire et les liens de comparaison utiles ; la sélection éditoriale reste à confirmer avec les données.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/app",
@@ -119,8 +131,9 @@
       "proposed_destination": "01/04/06 — Actions de création",
       "decision": "Conserver",
       "reason": "Génération après prix connu, sans promesse de nouvelle capacité.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/app/image",
@@ -128,8 +141,9 @@
       "proposed_destination": "04 — Préparer puis animer",
       "decision": "Fusionner workflow et outils",
       "reason": "Garder référence, personnage, angle, upscale et accès au catalogue d’outils.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples",
@@ -137,8 +151,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/flux",
@@ -146,8 +161,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/grok",
@@ -155,8 +171,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/hailuo",
@@ -164,8 +181,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/happy-horse",
@@ -173,8 +191,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/kling",
@@ -182,8 +201,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/ltx",
@@ -191,8 +211,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/seedance",
@@ -200,8 +221,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/examples/wan",
@@ -209,8 +231,9 @@
       "proposed_destination": "01/02 — Créations et choix du modèle",
       "decision": "Recomposer les preuves",
       "reason": "Préserver l’accès aux familles et aux prompts/réglages. Une galerie d’images de départ ne remplace pas ces sorties vidéo.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/mcp",
@@ -218,8 +241,9 @@
       "proposed_destination": "03 — Créer avec son assistant",
       "decision": "Renforcer",
       "reason": "Conserver contexte, choix de modèle, prix approuvé et résultat bibliothèque.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/models",
@@ -227,8 +251,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "footer"
     },
     {
       "source_url": "https://maxvideoai.com/models/flux-3",
@@ -236,8 +261,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "footer"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "footer",
+      "placement_composition_04": "footer"
     },
     {
       "source_url": "https://maxvideoai.com/models/grok-imagine-video-1-5",
@@ -245,8 +271,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "footer"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "footer",
+      "placement_composition_04": "footer"
     },
     {
       "source_url": "https://maxvideoai.com/models/kling-3-pro",
@@ -254,8 +281,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "dialog"
     },
     {
       "source_url": "https://maxvideoai.com/models/ltx-2-5-pro",
@@ -263,8 +291,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "dialog"
     },
     {
       "source_url": "https://maxvideoai.com/models/minimax-h3-max",
@@ -272,8 +301,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/models/pika-text-to-video",
@@ -281,8 +311,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "footer"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "footer",
+      "placement_composition_04": "footer"
     },
     {
       "source_url": "https://maxvideoai.com/models/seedance-2-0",
@@ -290,8 +321,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "footer"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "footer",
+      "placement_composition_04": "footer"
     },
     {
       "source_url": "https://maxvideoai.com/models/seedance-2-5",
@@ -299,8 +331,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "dialog"
     },
     {
       "source_url": "https://maxvideoai.com/models/wan-3-prime",
@@ -308,8 +341,9 @@
       "proposed_destination": "01/02 — Catalogue et preuves",
       "decision": "Rattacher chaque modèle à sa preuve",
       "reason": "Utiliser le registre actuel et les lecteurs existants ; ne pas réattribuer un ancien résultat à un nouveau modèle.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "dialog"
     },
     {
       "source_url": "https://maxvideoai.com/pricing",
@@ -317,8 +351,9 @@
       "proposed_destination": "05 — Prix et suivi",
       "decision": "Concentrer la réassurance",
       "reason": "Conserver prix avant génération, PAYG, crédits en cas d’échec et suivi des réglages/coûts.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/tools",
@@ -326,8 +361,9 @@
       "proposed_destination": "04 — Préparer puis animer",
       "decision": "Fusionner workflow et outils",
       "reason": "Garder référence, personnage, angle, upscale et accès au catalogue d’outils.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/tools/angle",
@@ -335,8 +371,9 @@
       "proposed_destination": "04 — Préparer puis animer",
       "decision": "Fusionner workflow et outils",
       "reason": "Garder référence, personnage, angle, upscale et accès au catalogue d’outils.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/tools/character-builder",
@@ -344,8 +381,9 @@
       "proposed_destination": "04 — Préparer puis animer",
       "decision": "Fusionner workflow et outils",
       "reason": "Garder référence, personnage, angle, upscale et accès au catalogue d’outils.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://maxvideoai.com/tools/upscale",
@@ -353,8 +391,9 @@
       "proposed_destination": "04 — Préparer puis animer",
       "decision": "Fusionner workflow et outils",
       "reason": "Garder référence, personnage, angle, upscale et accès au catalogue d’outils.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "main"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "main",
+      "placement_composition_04": "main"
     },
     {
       "source_url": "https://startupfa.me/s/maxvideoai?utm_source=maxvideoai.com",
@@ -362,14 +401,18 @@
       "proposed_destination": "Navigation / crédibilité",
       "decision": "Vérifier le rôle puis replacer",
       "reason": "Ne pas supprimer silencieusement un lien de crédibilité existant ; contrôler son contrat.",
-      "status": "present_in_local_composition_03",
-      "placement_composition_03": "footer"
+      "status": "present_in_local_composition_04",
+      "placement_composition_03": "footer",
+      "placement_composition_04": "footer"
     }
   ],
   "composition_01_main_unique": 22,
-  "proposal_version": "composition_03_local",
+  "proposal_version": "composition_04_english_master",
   "proposal_verified_date": "2026-09-10",
-  "proposal_scope": "Static HTML: 35 of the 40 source destinations remain in main; four secondary model links and Startup Fame are in the footer. All 40 remain present. Link presence and placement do not establish SEO or traffic parity.",
+  "proposal_scope": "Static HTML: 30 of the 40 source destinations in main, six in footer, four in the model dialog. All 40 remain present; 47 unique HTTPS destinations in main. Presence and placement do not establish SEO or traffic parity.",
   "proposal_main_unique_composition_02": 48,
-  "current_proposal": "composition_03"
+  "current_proposal": "composition_04_english_master",
+  "proposal_main_unique_composition_03": 44,
+  "scope_composition_04": "HTML destinations in English master, separating main, footer and model dialog. Dynamic comparison links are additional. Link preservation is not SEO parity.",
+  "proposal_scope_composition_03": "Static HTML: 35 of the 40 source destinations remain in main; four secondary model links and Startup Fame are in the footer. All 40 remain present. Link presence and placement do not establish SEO or traffic parity."
 }

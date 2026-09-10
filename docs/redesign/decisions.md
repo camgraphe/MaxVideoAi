@@ -67,7 +67,9 @@
 - [x] Recomposer l’accueil à partir du brief corrigé avec une proposition fonctionnelle (composition 02).
 - [x] Acter le rejet de la direction 02 : effets trop décoratifs, finition et lien au produit insuffisants.
 - [x] Repartir de l’accueil réel : proposition 03, cinq films, Angle et preuve MCP.
-- [ ] Valider la composition 03 dans son ensemble avant intégration.
+- [x] Recevoir le retour 03 : base à poursuivre, anglais master, Compare/Connect prioritaires, Angle secondaire.
+- [x] Composer le master anglais 04 et conserver l’étude Angle séparément.
+- [ ] Examiner la composition 04 et sa finition avant intégration.
 - [ ] Proposer les états visuels détaillés et valider V2.
 - [ ] Construire/mesurer le prototype animé, puis valider V3.
 - [ ] Intégrer et présenter un lot prêt à livrer pour V4.
@@ -80,10 +82,20 @@ Demande explicite d’Adrien le 10 septembre 2026. Retirer de la nouvelle propos
 
 Commande : `tsx --tsconfig frontend/tsconfig.json --test tests/home-route-architecture.test.ts tests/models-catalog-architecture.test.ts tests/hreflang-variants.test.ts` depuis le worktree. Exécutable tsx existant du checkout principal utilisé pour ces contrôles. Premier lancement sans tsconfig : résolution des alias échouée ; commande corrigée, 13 tests passent. Node disponible : 23.9.0 ; le projet demande Node 22.x. Utiliser le runtime cible et les dépendances propres au worktree pour la recette d'intégration. Aucun build complet exécuté.
 
+## Décision D39 — Anglais master, Compare et Connect prioritaires
+
+Demande explicite d’Adrien le 10 septembre 2026 : travailler sur l’anglais comme langue de référence ; le français vient ensuite. Angle n’est pas le cœur du produit et ne doit plus dominer l’accueil. Conserver son effet pour sa propre page. Renforcer les comparatifs et explorer une présentation animée de la création avec un assistant. Le nom technique MCP reste explicable, mais le libellé d’entrée doit parler aux visiteurs. Les logos sont appréciés ; la présentation doit pouvoir accueillir le catalogue actuel.
+
+La proposition 04 matérialise ces choix. « Connect » reste un libellé proposé et pointe vers /mcp ; aucune nouvelle route n’est créée. Le scorecard réutilise les évaluations éditoriales publiées, identifiées comme telles, et distingue les capacités. La validation de la composition et de la finition reste ouverte.
+
+## Décision D40 — Priorité SEO, liberté de corriger l’existant
+
+Instruction explicite d’Adrien pendant la finalisation du master 04 : placer le SEO et la continuité au centre du plan, tout en changeant ce qui fonctionne mal. Les différences à faible impact identifié peuvent avancer dans le travail autorisé ; ne pas imposer la reproduction exacte de l’ancien accueil ou une validation pour chaque ajustement. Garder une revue pour les changements réellement significatifs et proportionner la justification à leur impact. Le [principe directeur](README.md#principe-directeur--continuité-seo-et-amélioration-réelle) formalise cette règle dans le plan, le brief et la migration.
+
 ## Prochaine décision à présenter
 
-Le fil suivi et la méthode « pages avant effets » sont acquis, ainsi que la possibilité de réécrire et fusionner pour améliorer l'accueil. La composition 01 ne répond pas suffisamment au besoin de remplacement. La composition 02 a également été jugée insuffisante : le mouvement ne prouvait pas assez la valeur du produit. La [proposition 03](home-composition.md) repart des démonstrations et contenus de l’accueil réel, avec un mouvement lié à la sélection du modèle et aux cadrages Angle.
+Examiner [l’accueil anglais 04](review/home-en.html?v=4) dans l’ordre résultats → catalogue → Compare → Connect. Vérifier le poids relatif de ces chapitres et la qualité des interactions avant d’engager leur intégration Next.js. [Présentation](home-composition.md) et [contrôles](home-composition-04-validation.md).
 
-L'inventaire [home-replacement-links.json](home-replacement-links.json) rend les choix de destination explicites, sans imposer de conserver chaque bloc ou lien à la même place. La lecture des concurrents ne valide pas une nouvelle palette ni leurs promesses pour MaxVideoAI. Le cadrage de conversion reste provisoire tant que l'audit des parcours et la mesure complémentaires sont incomplets.
+Les [40 destinations](home-replacement-links.json) restent accessibles mais leur emplacement évolue. Cette couverture ne prouve ni parité SEO ni amélioration de conversion. La sélection éditoriale des comparaisons reste à confronter aux données GSC/GA4/Clarity ; aucune nouvelle extraction de ces comptes n’a été faite pendant l’itération 04.
 
-La [revue V1](review/index.html), la [planche illustrée](review/direction.html), l'[étude 3D](review/motion.html) et les [notes de la composition 01](home-composition-01.md) restent consultables avec leur statut historique. Les URLs de l’accueil affichent désormais la proposition 03. Aucun de ces livrables ne vaut autorisation de mise en ligne.
+L’[étude Angle](review/angle-en.html), les [notes 03](home-composition-03.md), la [revue V1](review/index.html), la [planche illustrée](review/direction.html) et l’[étude 3D](review/motion.html) conservent leur rôle historique. La version EN de l’accueil est désormais 04 ; FR/ES restent 03. Aucun livrable local ne vaut autorisation de mise en ligne.

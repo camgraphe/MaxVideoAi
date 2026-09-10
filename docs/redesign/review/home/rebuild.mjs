@@ -1,4 +1,4 @@
-import {readFile,writeFile} from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
 import {content,media} from './content.mjs';
 import {rebuildCopy} from './rebuild-copy.mjs';
 
@@ -31,7 +31,7 @@ const paths={fr:{models:'modeles',examples:'galerie',pricing:'tarifs',compare:'c
 const comparisons=[['seedance-2-0-vs-veo-3-1','Seedance 2.0','Veo 3.1'],['kling-3-pro-vs-ltx-2-3-pro','Kling 3 Pro','LTX 2.3 Pro'],['ltx-2-3-fast-vs-seedance-2-0','LTX 2.3 Fast','Seedance 2.0'],['ltx-2-3-fast-vs-veo-3-1','LTX 2.3 Fast','Veo 3.1'],['seedance-1-5-pro-vs-seedance-2-0','Seedance 1.5 Pro','Seedance 2.0'],['ltx-2-vs-ltx-2-3-fast','LTX 2','LTX 2.3 Fast']];
 const angleSources=['source','field','reverse','elevated'].map(s=>`/frontend/public/assets/tools/angle-orbit-hero-dialogue-${s}.webp`);
 const guideSources=['cinematic-realism','image-to-video','fast-drafts-city','product-ads'].map(s=>`/frontend/public/hero/best-for-${s}.webp`);
-for(const locale of ['fr','en','es']){
+export async function renderReview(locale){
  const c=content[locale],e=rebuildCopy[locale],dictionary=JSON.parse(await read(`frontend/messages/${locale}.json`)).home;
  const route=(key,suffix='')=>`https://maxvideoai.com${locale==='en'?'':`/${locale}`}/${paths[locale][key]||key}${suffix?`/${suffix}`:''}`;
  const link=(href,label,cls='',extra='')=>`<a href="${esc(href)}" class="${cls}" ${href.startsWith('https:')?'target="_blank" rel="noopener"':''} ${extra}>${label}</a>`;
@@ -81,6 +81,5 @@ for(const locale of ['fr','en','es']){
 <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"><header><span>MAXVIDEOAI</span><button data-close aria-label="${esc(e.close)}">×</button></header><div id="detail-media"></div><div class="detail-caption"><h2 id="detail-title"></h2><p id="detail-text"></p></div></dialog>
 <dialog id="mobile-dialog" class="mobile-dialog" aria-labelledby="mobile-title"><header><h2 id="mobile-title">${esc(c.mobile)}</h2><select id="preview-width" aria-label="${esc(e.width)}"><option value="390">390 px</option><option value="320">320 px</option><option value="768">768 px</option></select><button data-close aria-label="${esc(e.close)}">×</button></header><nav>${[['hero','Hero'],['models',c.nav[0]],['tools','Angle'],['assistant','MCP'],['pricing',c.nav[3]]].map(([id,n])=>`<button data-preview-section="${id}">${esc(n)}</button>`).join('')}</nav><iframe id="mobile-frame" data-src="${file(locale)}?phone=1" title="${esc(c.mobile)}"></iframe></dialog>
 <script id="page-data" type="application/json">${JSON.stringify({shots,copy:e,angleSources}).replace(/</g,'\\u003c')}</script><script type="module" src="home/rebuild.client.mjs"></script></body></html>`;
- await writeFile(new URL('../'+file(locale),import.meta.url),html);
+ return html;
 }
-console.log('Generated homepage 03 from current homepage media: FR, EN, es-419.');

@@ -1,48 +1,33 @@
-# Accueil — proposition 03, repartir du produit
+# Accueil — master anglais, proposition 04
 
-10 septembre 2026. **Proposition locale à examiner ; aucune intégration ni publication.** Le retour sur la proposition 02 est acté : ses effets paraissaient peu liés au produit et sa finition ne justifiait pas le remplacement de l’accueil.
+L’anglais devient la référence de conception et de contenu. Ouvrir [la page anglaise](review/home-en.html?v=4). Les versions française et espagnole restent à la proposition 03 ; elles seront adaptées après validation du master.
 
-Ouvrir [l’accueil FR](review/home.html), [EN](review/home-en.html) ou [es LATAM](review/home-es.html).
+Cette version suit le retour d’Adrien du 10 septembre : conserver la base de l’accueil réel, réduire Angle, remettre Compare au premier plan et présenter la création avec les assistants par son bénéfice.
 
-## Ce qu’il faut regarder
+## Ce qui change
 
-1. **L’accueil et les cinq films.** Le fond clair et la logique de choix du site existant sont conservés. Le texte laisse la place aux rendus. Cliquer sur un modèle ouvre son panneau ; son film, sa durée, son mode, ses liens et son coût indicatif restent associés.
-2. **Les intentions.** Quatre entrées visuelles reprennent les guides actuels. Les comparatifs viennent ensuite, sans notes de performance inventées ni faux test de plusieurs moteurs sur un même prompt.
-3. **Angle.** Une vraie scène du site est présentée sous quatre cadrages générés. Sur ordinateur, le scroll fait passer de l’un à l’autre, dans les deux sens. Les boutons permettent de choisir librement. Sur petit écran, le bloc conserve une hauteur naturelle et se manipule par boutons. Ce sont quatre images, pas une caméra 3D continue.
-4. **Le MCP.** La proposition emploie une capture publique existante de Claude affichant une vidéo MaxVideoAI. Elle présente le parcours contexte → proposition et prix → création, avec liens Codex/Claude/ChatGPT. La capture s’agrandit. Aucune création MCP exécutée pour cette revue n’est revendiquée.
-5. **Le reste de l’accueil.** Création d’images, outils, tarifs, huit questions de l’accueil, liens de découverte et pied de page restent présents. Les longs arguments répétés deviennent des textes plus courts, des exemples et des liens utiles.
+1. **Voir les résultats.** Les cinq films et leur sélection restent en tête. Ce sont les mêmes médias, modèles et coûts indicatifs que l’accueil existant.
+2. **Explorer les modèles.** Douze familles vidéo avec leurs marques, une rangée défilante et un catalogue recherchable : 40 modèles publiés et actuels au moment de la construction, dont 32 vidéo et 8 image. La sélection de cinq films ne prétend pas représenter tout le catalogue.
+3. **Comparer avant de créer.** Un chapitre principal avec trois duos : MiniMax / Seedance, Kling / Seedance, LTX Fast / Pro. Le scorecard anime six critères éditoriaux réels. L’onglet Capabilities montre les limites publiées. Noms, notes, capacités, dates et lien de comparaison se mettent à jour ensemble.
+4. **Connect.** « From your project to a video. » Le scroll accompagne contexte → proposition à approuver → résultat. Les étapes sont aussi sélectionnables. Codex, Claude et ChatGPT mènent à leurs intégrations existantes. MCP est expliqué comme la technologie de connexion ; le bouton reste dirigé vers la page /mcp.
+5. **Angle revient à sa juste place.** Une entrée parmi les outils de préparation. L’animation est conservée dans [l’étude Angle](review/angle-en.html), pour travailler ensuite sa page.
 
-Les fenêtres d’agrandissement ont un fond atténué, une fermeture native par Échap et un retour du focus. Le lecteur se met en pause quand une fenêtre s’ouvre ou quand son film sort de la zone visible.
+Les quatre guides par intention, les outils image, les prix, les huit questions de recherche initiales et les destinations de découverte restent accessibles. Une neuvième question explique la création avec les assistants.
 
-## Ce qui revient de l’accueil existant
+## Ce que montrent les animations
 
-| Source actuelle | Nouvelle place |
-|---|---|
-| Promesse de choix du modèle, exemples réels, prix avant génération | Titre, introduction, cinq films et informations de la sélection |
-| MiniMax H3 Max, Seedance 2.5, Wan 3 Prime, Kling 3 Pro, LTX 2.5 Pro | Même ordre et mêmes sources que le propriétaire de l’accueil |
-| Quatre guides par usage | Quatre grandes images sans cartes imbriquées |
-| Comparatifs et familles d’exemples | Liens explicites, comparatifs secondaires dans un accordéon HTML |
-| Références et outils de préparation | Démonstration Angle, image de départ Disco Motel, outils et modèles image |
-| Assistant MCP | Explication courte et capture réelle de l’intégration Claude |
-| Crédits, tarif préalable et remboursement des échecs | Bloc prix et historique |
-| Huit questions de recherche de l’accueil | Questions issues des dictionnaires actuels ; réponses raccourcies et localisées |
+Le comparateur présente des **évaluations éditoriales MaxVideoAI**, avec un lien vers la méthode. Il ne transforme pas les notes en mesure objective ni en résultat de test réalisé pour cette revue. Les capacités ont une présentation distincte.
 
-Les cinq **coûts indicatifs** viennent des valeurs éditoriales de l’accueil : 1,19 / 1,46 / 0,70 / 2,63 / 0,72 USD. Ils ne sont ni recalculés dans le navigateur, ni présentés comme des devis actualisés ou des reçus de paiement. Le bouton d’information explique cette limite.
+Connect montre un parcours illustratif. La dernière étape affiche une **capture réelle existante de Claude** ; elle n’est pas présentée comme le résultat du brief fictif montré avant. Aucune génération n’a été lancée pendant cette itération.
 
-## Mobile et mouvement
+Le défilement reste natif. Sur petit écran ou avec mouvement réduit, Connect prend une hauteur naturelle et se parcourt par boutons. Le poster principal reste présent dès le HTML ; la lecture mobile demande une action.
 
-Le poster principal est disponible dans le HTML et utilise les copies préparées existantes, dont la version mobile. La lecture automatique est réservée au desktop autorisé ; la lecture mobile demande une action. Une seule vidéo d’ambiance est montée à la fois. La vue mobile de la revue ne lance aucune lecture automatique.
+## Référencement et prochaine décision
 
-Le bloc Angle ne monopolise pas plusieurs écrans sur mobile, tablette, fenêtre très basse ou préférence de mouvement réduit. Les vues supplémentaires se préparent à l’approche de la section ; avec Save-Data, une vue est demandée au moment de la sélection.
+Les 40 destinations relevées sur l’accueil de départ restent présentes : 30 dans le contenu principal, 6 dans le pied de page et 4 dans le catalogue modal. Ce déplacement est documenté ; il ne constitue pas une preuve de parité SEO. Cet inventaire aide à décider : le maintien exact des 40 destinations n’est pas une contrainte si une suppression ou une fusion améliore la page avec un impact acceptable et motivé. Les contenus essentiels et les liens du catalogue sont écrits dans le HTML.
 
-La page est une proposition de composition. **Aucun gain Core Web Vitals ni gain de conversion n’a été mesuré.** Les contrôles de largeur en iframe ne remplacent pas une recette sur téléphone.
+« Connect » est ici un **libellé de présentation proposé**, pas une nouvelle route ni un produit annoncé. Les mentions « AI video generator », comparaison de modèles et création avec les assistants restent explicites.
 
-## Référencement et intégration
+La prochaine revue porte sur l’équilibre **résultats → Compare → Connect**, la lisibilité et le niveau de finition. L’intégration Next.js, la recette SEO/GEO, la mesure mobile et les parcours de conversion suivent la validation de cette composition. GSC, GA4, Clarity et Zoho restent dans ce travail d’intégration ; aucun gain n’est annoncé sur la base du prototype.
 
-L’inventaire des 40 destinations de départ a été actualisé : toutes restent accessibles, certaines dans le pied de page. Les liens ne suffisent pas à démontrer une équivalence SEO. Les huit questions reprennent les intentions de recherche existantes ; les réponses raccourcies restent à valider avec les données et le contexte des pages.
-
-Les pages de revue sont noindex. Les routes de production, metadata, hreflang, JSON-LD, sitemaps, consentement, Clarity, GA4, GSC et Zoho n’ont pas été modifiés. L’ES éditorial est LATAM ; les routes existantes restent en /es.
-
-**Prochaine décision :** juger cette composition dans le contexte de l’accueil, surtout l’ouverture, la sélection et l’usage d’Angle. Ensuite seulement, intégrer le lot retenu dans les propriétaires Next.js existants et mesurer les médias, les parcours et le référencement avant mise en ligne.
-
-[Recette et limites](home-composition-03-validation.md) · [Exécution et sources](review/home/README.md) · [Brief de remplacement](home-replacement-brief.md) · [Notes historiques de la proposition 02](home-composition-02.md)
+[Contrôles et limites](home-composition-04-validation.md) · [Sources et exécution](review/home/README.md) · [Historique 03](home-composition-03.md)

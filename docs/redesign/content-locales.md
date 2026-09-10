@@ -1,10 +1,10 @@
 # Contenus, SEO éditorial et langues
 
-Statut : plan initial. Pas de réécriture publiée.
+Statut : conception locale. Depuis le retour du 10 septembre 2026, **l’anglais est le master**. Concevoir et valider contenu, hiérarchie et interactions en EN ; adapter ensuite le français, puis l’espagnol LATAM. Les versions FR/ES 03 ne sont pas des traductions du master 04. Pas de réécriture publiée.
 
 ## Traitement de chaque contenu
 
-Attribuer un identifiant à chaque bloc existant et noter : URL/locale, source, objectif utilisateur, éventuelle requête d'entrée, décision, nouveau texte/destination, justification et validation. Valeurs de décision : conserver, condenser, convertir en démonstration, déplacer, enrichir, supprimer après revue.
+Attribuer un identifiant à chaque bloc existant et noter : URL/locale, source, objectif utilisateur, éventuelle requête d'entrée, décision, nouveau texte/destination, justification et validation. Valeurs de décision : conserver, condenser, convertir en démonstration, déplacer, enrichir, supprimer avec justification proportionnée à l’impact. Les corrections et simplifications à faible impact identifié avancent directement ; réserver la validation aux changements significatifs de fonction ou d’intention de recherche.
 
 La longueur seule ne justifie pas une suppression. Préserver les limites, conditions, réponses précises et preuves originales ; réduire les slogans répétés, inventaires de fonctionnalités et paraphrases. Une vidéo ne remplace pas les informations que les utilisateurs et moteurs doivent pouvoir lire.
 

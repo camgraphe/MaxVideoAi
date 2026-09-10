@@ -1,6 +1,6 @@
 # MaxVideoAI — plan directeur de refonte du site
 
-Mise à jour : 9 septembre 2026. Responsable de décision : Adrien. Statut : conception, avant implémentation.
+Mise à jour : 10 septembre 2026. Responsable de décision : Adrien. Statut : conception, avant implémentation.
 
 ## Objectif
 
@@ -12,16 +12,26 @@ Repenser l'expérience du site public : davantage de créations et de démonstra
 - Réduire le texte répétitif et montrer les capacités du produit.
 - Proposer une expérience plus ambitieuse, originale, technologique et animée.
 - Préserver les acquis SEO/GEO et améliorer les contenus et langues.
-- EN, FR et espagnol LATAM ; conserver `es-419` comme référence éditoriale, sans changer automatiquement les URLs `/es/` ou le hreflang `es`.
+- Anglais master : conception et rédaction EN d’abord, FR après validation, puis espagnol LATAM ; conserver `es-419` comme référence éditoriale, sans changer automatiquement les URLs `/es/` ou le hreflang `es`.
 - Avancer de façon autonome sur les travaux réversibles et demander une validation sur les choix importants.
 - Travailler dans une branche et un dossier isolés.
 - Concevoir pour le mobile dès le départ et faire de la performance une condition de validation, y compris pour les effets ambitieux.
 
 Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton n'est pas acquise. Les documents historiques de l'app et son rendu observé diffèrent sur certains accents : la nouvelle app est une référence de continuité, pas une prescription de palette pour le site.
 
-**Dernier retour :** la composition 01 paraît trop légère, générique et insuffisante pour remplacer l'accueil actuel. Adrien confirme qu'on peut améliorer le SEO, réécrire et fusionner ; il faut conserver la logique produit. Benchmark demandé : Higgsfield et InVideo, complétés par les acteurs stock devenus créatifs IA.
+**Dernier retour :** la base issue de l’accueil réel se rapproche de la direction recherchée. Adrien demande un master anglais, moins d’Angle, plus de Compare et une présentation des assistants sous un libellé compréhensible comme « Connect ». La finition reste à examiner.
 
-**Référence actuelle : [le brief de remplacement corrigé](home-replacement-brief.md).** Comparaison directe avec la production, rôles des sections, [40 destinations documentées](home-replacement-links.json), nouvelle composition en six moments et observations sur Higgsfield, InVideo et Freepik/Magnific. La [proposition 03](review/home.html) repart de l’accueil réel après le rejet de la direction 02 : cinq démonstrations, cadrages Angle et preuve MCP existante ; [présentation et limites](home-composition.md). Elle reste à examiner avant intégration.
+**Référence actuelle : [English master 04](review/home-en.html?v=4).** Cinq films, catalogue complet recherchable, scorecard éditorial interactif et parcours Connect au scroll. [Présentation et limites](home-composition.md) · [Recette](home-composition-04-validation.md). L’[étude Angle](review/angle-en.html) est conservée pour sa propre page. FR/ES restent des archives 03 ; aucune intégration de production n’est lancée.
+
+## Principe directeur — continuité SEO et amélioration réelle
+
+Le SEO, le GEO et la continuité du parcours sont au centre de la refonte. Préserver les intentions de recherche utiles, les accès aux fonctions, les preuves et la solidité technique ; corriger les défauts existants, même si la nouvelle page diffère sensiblement de l’ancienne.
+
+Les réécritures, changements de présentation, suppressions de répétitions, déplacements et fusions à faible impact identifié peuvent avancer directement dans le périmètre autorisé. Une petite différence visuelle ou éditoriale ne justifie pas à elle seule de bloquer le chantier ou de demander une validation. L’inventaire des liens est un outil de décision, pas un quota à conserver.
+
+L’impact s’apprécie par la fonction et l’intention touchées, les pages/requêtes qui apportent du trafic lorsque ces données sont disponibles, la destination proposée et les contrats techniques. Une petite modification de code peut avoir un effet important ; l’absence de données ne prouve pas l’absence d’impact. Réserver une revue explicite aux changements significatifs : suppression d’une intention utile, refonte d’une page d’entrée importante, migration d’URL ou modification d’indexabilité. Préparer alors le résultat concret, la justification et le retour arrière.
+
+La documentation reste proportionnée : consigner les décisions de fond et les déplacements significatifs, sans imposer une validation par phrase ou par élément graphique. Ne pas annoncer une absence de risque Google ni un gain de trafic sans mesure.
 
 ## Documents de travail
 
@@ -30,7 +40,7 @@ Les anciennes maquettes ne sont pas validées. La palette charbon/ivoire/laiton 
 | Document | Contenu | Statut |
 |---|---|---|
 | [Brief de remplacement](home-replacement-brief.md) | Diagnostic, recomposition, benchmark et contrat de conservation/amélioration | Base de reprise après retour utilisateur |
-| [Accueil — composition 01](review/home.html) | Première page complète, trois langues et mobile | À reprendre : richesse et couverture insuffisantes |
+| [Accueil — master anglais 04](review/home-en.html?v=4) | Résultats, Compare, Connect et catalogue | Nouvelle proposition à examiner |
 | [Choix de composition](home-composition.md) | Récit, provenance, contenu et points de migration | Proposition documentée |
 | [Pages avant effets](page-first-workflow.md) | Ordre de conception et emplacements proposés dans l'accueil | Méthode demandée par Adrien |
 | [Essai animé 3D](review/motion.html) | Ordinateur articulé, objet, assemblage, rotation et vue mobile | Étude locale ; sujet et usage non validés |

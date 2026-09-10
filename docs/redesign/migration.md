@@ -1,5 +1,8 @@
 # Migration, architecture et critères de sortie
 
+
+La continuité SEO/GEO guide la migration et permet de corriger l’existant. Appliquer le [principe directeur](README.md#principe-directeur--continuité-seo-et-amélioration-réelle) : changements réversibles à faible impact identifié dans le travail courant, revue ciblée pour les modifications significatives de trafic, d’intention, d’URL ou d’indexabilité. Ne pas figer les textes, sections ou liens par simple ressemblance avec l’ancien site.
+
 ## Ordre de réalisation
 
 1. Conception : inventaire, scénario, sources médias, validations V1 et V2.
