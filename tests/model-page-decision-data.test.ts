@@ -1020,7 +1020,7 @@ test('model page demo media can reuse a verified fallback clip when no public jo
   assert.deepEqual(pickDemoMedia([], fallback.id, null, fallback, { allowFallbackReuse: true }), fallback);
 });
 
-test('Seedance 2.0 schema can use decision metadata without a free price offer', () => {
+test('Seedance 2.0 schema omits Product when no truthful offer is available', () => {
   const seedance = getEngine('seedance-2-0');
   const decision = buildModelDecisionDataFromContent({ engine: seedance, locale: 'en' });
   assert.ok(decision);
@@ -1047,6 +1047,5 @@ test('Seedance 2.0 schema can use decision metadata without a free price offer',
 
   assert.equal(webPage?.name, decision.meta.title);
   assert.equal(webPage?.description, decision.meta.description);
-  assert.equal(product?.description, decision.meta.description);
-  assert.ok(product && !('offers' in product), 'variable pay-as-you-go model schema should not emit a price: 0 offer');
+  assert.equal(product, undefined, 'variable pay-as-you-go model schema should omit an ineligible Product node');
 });

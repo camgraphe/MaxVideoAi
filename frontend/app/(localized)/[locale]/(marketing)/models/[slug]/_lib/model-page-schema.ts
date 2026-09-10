@@ -301,6 +301,7 @@ export function buildProductSchema({
     pricingEngine && engine.surfaces.pricing.includeInEstimator
     ? { offers: buildProductOffer(engine, pricingEngine, canonical) }
     : {};
+  if (!offerPayload.offers) return null;
   const category = isImageOnlyModel(engine)
     ? 'AI Image Generator'
     : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
@@ -314,7 +315,7 @@ export function buildProductSchema({
     category,
     url: canonical,
     image: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
-    ...(offerPayload.offers ? { offers: offerPayload.offers } : {}),
+    offers: offerPayload.offers,
     brand: {
       '@type': 'Brand',
       name: provider.name,

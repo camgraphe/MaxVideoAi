@@ -1230,7 +1230,7 @@ test('existing Seedance content links to Mini only as a lower-cost batch value a
   }
 });
 
-test('migrated template product schemas avoid free price offers', () => {
+test('model schema payloads omit Product when no truthful offer is available', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
     const decision = buildModelDecisionDataFromContent({ engine, locale: 'en' });
@@ -1255,8 +1255,7 @@ test('migrated template product schemas avoid free price offers', () => {
 
     const product = schemas.find((schema) => schema['@type'] === 'Product');
 
-    assert.ok(product, `${slug} should emit Product schema`);
-    assert.ok(!('offers' in product), `${slug} Product schema should not emit a free price offer`);
+    assert.equal(product, undefined, `${slug} should not emit an ineligible Product schema`);
   }
 });
 
