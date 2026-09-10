@@ -61,13 +61,17 @@ Le job source `2b7d8e08-fd0f-4232-acc3-4157b2142152` relie réellement les réf�
 
 Pour la homepage : privilégier le geste, l’objet et la relation source/résultat. Proposer le Short complet comme exemple explicatif volontaire. La série de présentateur ne devient pas le visage dominant de la marque. Les variations d’accessoires et les approximations des écrans générés figurent déjà dans le bilan C08 ; conserver cette distinction entre mise en scène et véritable interface.
 
-## Connect : une seconde production déjà disponible
+## Website Move — concept conservé, réalisation à refaire
 
 `maxvideoai-mcp-youtube/production/` contient un film anglais de 132 s et trois Shorts, des captures OBS du site de démonstration, une présentation et une vue ordinateur/téléphone. `EDITING-NOTES.md` distingue les exports Premiere des livrables finis dans `exports/`.
 
-La revue permet de lire les captures existantes `captures/site-before.mp4`, `site-after.mp4` et `desktop-phone.mp4`. Elles montrent le résultat d’une intégration web. **Aucune conversation complète avec Codex n’a été enregistrée** dans cette production, d’après les notes : les éléments de configuration sont des références documentaires. Ne pas reconstruire une conversation fictive en la présentant comme une capture.
+Les captures existantes `captures/site-before.mp4`, `site-after.mp4` et `desktop-phone.mp4` sont retirées de la présentation active après le retour d’Adrien. Elles restent archivées comme production historique. **Aucune conversation complète avec Codex n’a été enregistrée** dans cette production, d’après les notes : les éléments de configuration sont des références documentaires. Ne pas reconstruire une conversation fictive en la présentant comme une capture.
 
-Cette ancienne démo utilise une montre. Elle sert à étudier la continuité fixe → animé dans un site ; elle ne rétablit pas la montre comme sujet imposé à la nouvelle homepage. Le sac démontre les références, ce second projet démontre la destination web : ne pas fusionner leurs provenances.
+Adrien écarte explicitement la réalisation avec la montre. Seule l’idée d’un site dont le produit prend vie grâce à la vidéo est conservée. Reconcevoir entièrement le produit présenté, son univers visuel, le site de démonstration, le storyboard, les images, la vidéo et son intégration. L’ancienne réalisation ne sert plus de cible ni d’image d’attente.
+
+Adrien autorise aussi à repenser complètement le mécanisme si un effet pertinent inspire une meilleure démonstration. Le déroulé avant/après et la mise en scène dans un cadre de navigateur ne sont pas figés. Conserver l’objectif — faire comprendre l’apport de la vidéo à un site — puis choisir ensemble composition, sujet, mouvement et résultat. L’effet doit servir cette compréhension, rester lisible sans mouvement et être viable sur mobile.
+
+Prochain travail : proposer ensemble un nouveau sujet et la démonstration complète, avec états desktop/mobile et rôle du mouvement. Le nouveau produit reste à choisir ; la sélection de sneakers pour la section produit ne les impose pas automatiquement à Website Move. Les anciennes captures restent des archives, distinctes du Short du sac conservé. Aucune nouvelle génération ou production n’est lancée par cette correction de cadrage.
 
 `youtube-assets.json` conserve les chemins exacts et les mesures locales. Les liens symboliques de `local-assets/` pointent vers six fichiers précis, sans recopier les vidéos ni exposer le dossier YouTube entier. Ils sont ignorés par Git. Le dossier YouTube et ses projets Premiere restent intacts. Les images de planche et posters déjà existants sont les seules copies de cette production dans la revue.
 

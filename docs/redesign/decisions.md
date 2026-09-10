@@ -161,3 +161,12 @@ La méthode par gabarits pilotes organise le travail sur l’ensemble du site ; 
 Adrien propose de retrouver des vidéos de chaussures plus anciennes, au mouvement plus publicitaire que la bouilloire. Trois rendus de sneaker du 21 juin 2026 ont été retrouvés chez Camgraph Admin : Happy Horse 1.0, Kling 3.0 Omni Pro et Seedance 2.0. Ils sont ajoutés à la revue, qui passe à douze films, dont onze de ce compte.
 
 La variante Kling Omni est proposée en priorité pour la section produit ; la lampe reste une alternative sobre, la bouilloire passe en réserve. Ce choix éditorial de travail reste à juger, et ne constitue pas une validation finale de l’extrait. Ce sont de vraies générations existantes, distinctes de l’essai de chaussure 3D de la refonte précédemment rejeté. Même prompt, mêmes références mais ordre inversé pour Seedance : ne pas en déduire un benchmark contrôlé. Dimensions, sources, réserves et intentions figurent dans [media-direction-09.md](media-direction-09.md).
+
+
+## Décision D49 — Recréer entièrement Website Move
+
+Adrien conserve l’idée de donner vie à un produit dans un site grâce à la vidéo, mais écarte la réalisation avec la montre. Reconcevoir le produit présenté, son univers, le site de démonstration, les visuels, le storyboard, la vidéo et son intégration. L’ancien exemple ne sert plus de cible ni d’image d’attente ; ses captures sont retirées de la revue active et conservées seulement en archive.
+
+Le nouveau sujet et la mise en scène restent à proposer ensemble, en desktop et mobile. Les chaussures présélectionnées pour la section produit ne deviennent pas automatiquement le sujet de Website Move. Cette décision consigne le besoin de nouvelle production ; elle ne lance aucune génération. Le Short du sac reste disponible pour la démonstration références.
+
+Complément D49 : Adrien ouvre aussi la possibilité de repenser entièrement le mécanisme à partir d’un effet visuel pertinent. Ne pas limiter le chantier à remplacer la montre dans le déroulé existant. L’avant/après et le cadre de navigateur sont des options, pas des contraintes ; conserver l’objectif de compréhension, la cohérence produit et les exigences mobile/performance.

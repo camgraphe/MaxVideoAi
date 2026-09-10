@@ -27,16 +27,17 @@
       "category": "Production existante",
       "origin": "Dossier YouTube",
       "model": "Capture du site de démonstration",
-      "placement": "Connect — état initial du projet",
+      "placement": "Archive — réalisation écartée, non retenue pour la refonte",
       "note": "Capture existante du site local de démonstration, avant l’intégration de la vidéo.",
-      "motion": "Le cadre web reste stable ; seul le contenu du visuel change vers sa version animée.",
+      "motion": "Idée de site animé conservée, réalisation à recréer entièrement avec un nouveau produit.",
       "caution": "Site de démonstration conçu pour la production YouTube. Il ne s’agit pas d’un site client.",
       "measured": {
         "width": 1920,
         "height": 1080,
         "duration": 7.875,
         "fps": 24.0
-      }
+      },
+      "status": "archived-rejected-website-move"
     },
     {
       "key": "site-after",
@@ -46,16 +47,17 @@
       "category": "Production existante",
       "origin": "Dossier YouTube",
       "model": "Capture du site de démonstration",
-      "placement": "Connect — résultat concret dans le projet",
+      "placement": "Archive — réalisation écartée, non retenue pour la refonte",
       "note": "Capture existante du même site local avec une vidéo de produit intégrée.",
-      "motion": "Passer du visuel fixe au film dans le même cadre, puis révéler la destination web.",
+      "motion": "Idée de site animé conservée, réalisation à recréer entièrement avec un nouveau produit.",
       "caution": "Cette capture prouve le résultat intégré. Elle ne montre pas une conversation réelle de génération avec Codex.",
       "measured": {
         "width": 1920,
         "height": 1080,
         "duration": 16.0,
         "fps": 24.0
-      }
+      },
+      "status": "archived-rejected-website-move"
     },
     {
       "key": "desktop-phone",
@@ -65,16 +67,17 @@
       "category": "Production existante",
       "origin": "Dossier YouTube",
       "model": "Capture du site de démonstration",
-      "placement": "Connect — continuité desktop / mobile",
+      "placement": "Archive — réalisation écartée, non retenue pour la refonte",
       "note": "Capture existante présentant la création sur ordinateur et téléphone.",
-      "motion": "Les deux cadres se rapprochent du rendu puis prennent leur place dans la composition.",
+      "motion": "Idée de site animé conservée, réalisation à recréer entièrement avec un nouveau produit.",
       "caution": "La vue composée n’est pas un test sur téléphone physique. Vérifier les vrais recadrages au moment de l’intégration.",
       "measured": {
         "width": 1920,
         "height": 1080,
         "duration": 20.041667,
         "fps": 24.0
-      }
+      },
+      "status": "archived-rejected-website-move"
     }
   ]
 }
