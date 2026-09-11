@@ -148,7 +148,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     ? normalizeMediaUrl(job.hero_render_id) ?? job.hero_render_id
     : null;
 
-  let finalPayload = payload.result ?? payload.response ?? payload.data ?? null;
+  let finalPayload = payload.payload ?? payload.result ?? payload.response ?? payload.data ?? null;
+  let resultFailureContext: unknown = null;
   const statusInfo = normalizeStatus(payload.status, job.status, job.progress);
   let nextStatus = statusInfo.status;
   let nextProgress = statusInfo.progress;
@@ -171,6 +172,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
         }
       }
     } catch (error) {
+      // SDK ValidationError.body contains the actual rejection; its message may
+      // contain only "Unprocessable Entity". Keep it available to diagnostics.
+      resultFailureContext = error;
       if (nextStatus === 'completed') {
         console.warn('[fal-webhook] Failed to fetch final result', error);
       }
@@ -265,7 +269,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     }
   }
 
-  const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? finalPayload : null);
+  const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? resultFailureContext ?? finalPayload : null);
   let nextMessage =
     extractedErrorMessage ??
     (nextStatus === 'failed'

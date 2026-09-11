@@ -9,6 +9,12 @@ import {
 
 const forbidden = /fal(?:\.ai)?|fail\.ai|byteplus|modelark|google\s+vertex|kling\s+direct|provider/i;
 
+test('content refusals explain that reference media may also need changing', () => {
+  const message = toUserFacingFailureMessage('The request content was blocked by safety checks.');
+  assert.match(message, /Review the prompt and any reference images, video, or audio/);
+  assert.doesNotMatch(message, /retry in a few moments/i);
+});
+
 test('user-facing failure messages hide provider and internal wording', () => {
   const message = toUserFacingFailureMessage('Fal returned no result after timeout grace period.');
 
