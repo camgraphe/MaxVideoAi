@@ -2,6 +2,8 @@ export type FalWebhookPayload = {
   request_id?: string;
   requestId?: string;
   status?: string;
+  payload?: unknown;
+  payload_error?: unknown;
   response?: unknown;
   data?: unknown;
   result?: unknown;

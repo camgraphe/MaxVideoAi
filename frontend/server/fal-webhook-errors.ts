@@ -40,66 +40,51 @@ function normalizeErrorText(value: unknown): string | null {
 }
 
 function findFirstErrorMessage(payload: unknown): string | null {
-  if (!payload || typeof payload !== 'object') {
-    return normalizeErrorText(payload);
-  }
-
   const visited = new Set<unknown>();
   const stack: unknown[] = [payload];
+  let transportFallback: string | null = null;
 
   while (stack.length) {
     const current = stack.pop();
     if (!current || typeof current !== 'object') {
       const text = normalizeErrorText(current);
-      if (text) return text;
+      if (text) {
+        if (isTransportError(text)) transportFallback ??= text;
+        else return text;
+      }
       continue;
     }
     if (visited.has(current)) continue;
     visited.add(current);
-
-    const record = current as Record<string, unknown>;
-    for (const key of ERROR_MESSAGE_KEYS) {
-      if (key in record) {
-        const candidate = normalizeErrorText(record[key]);
-        if (candidate) return candidate;
-      }
+    if (Array.isArray(current)) {
+      stack.push(...current.slice(0, 50).reverse());
+      continue;
     }
-
-    for (const value of Object.values(record)) {
-      if (value && typeof value === 'object') {
-        stack.push(value);
-      } else {
-        const text = normalizeErrorText(value);
-        if (text) return text;
-      }
+    const record = current as Record<string, unknown>;
+    if (record.type === 'content_policy_violation') {
+      return 'The request content was blocked by safety checks. Review the prompt and reference media before trying again.';
+    }
+    // Traverse diagnostic containers only. Never treat echoed input, media URLs,
+    // request IDs, status values, metrics or seeds as a failure explanation.
+    const keys = ['payload', 'body', ...ERROR_MESSAGE_KEYS, 'result', 'response', 'data'];
+    for (const key of keys.reverse()) {
+      if (record[key] != null) stack.push(record[key]);
     }
   }
+  return transportFallback;
+}
 
-  return null;
+function isTransportError(message: string): boolean {
+  return /^(?:(?:unexpected|invalid)\s+)?(?:http\s+)?status(?:\s+code)?\s*:?\s*\d{3}\b|^unprocessable entity$/i.test(message);
 }
 
 export function extractFalErrorMessage(payload: FalWebhookPayload, additionalContext?: unknown): string | null {
-  const direct = normalizeErrorText(payload.error);
-  if (direct) return direct;
-
-  const nestedSources: unknown[] = [];
-  if (payload.error && typeof payload.error === 'object') {
-    nestedSources.push(payload.error);
-  }
-  if (payload.result) nestedSources.push(payload.result);
-  if (payload.response) nestedSources.push(payload.response);
-  if (payload.data) nestedSources.push(payload.data);
-  if (additionalContext && typeof additionalContext === 'object') {
-    nestedSources.push(additionalContext);
-  }
-
-  for (const source of nestedSources) {
+  let fallback: string | null = null;
+  for (const source of [payload.payload, additionalContext, payload.error, payload.result, payload.response, payload.data, payload]) {
     const candidate = findFirstErrorMessage(source);
-    if (candidate) return candidate;
+    if (!candidate) continue;
+    if (!isTransportError(candidate)) return candidate;
+    fallback ??= candidate;
   }
-
-  const fallback = findFirstErrorMessage(payload);
-  if (fallback) return fallback;
-
-  return null;
+  return fallback;
 }

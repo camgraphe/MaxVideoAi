@@ -180,7 +180,7 @@ function messageForCategory(category: FailureCategory): string {
     case 'no_output':
       return 'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.';
     case 'safety':
-      return 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.';
+      return 'This request was blocked by safety checks. Review the prompt and any reference images, video, or audio before trying again.';
     case 'start':
       return 'MaxVideoAI could not start this render. Please retry in a few moments.';
     case 'storage':

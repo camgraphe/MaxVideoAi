@@ -9,6 +9,7 @@ import { backfillCompletedMcpJobOutputs } from '@/server/media-library/mcp-outpu
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 import { getFalPollTiming } from '@/server/fal-poll-timing';
 import { reconcileStaleFalProvisionals } from '@/server/fal-stale-provisionals';
+import { extractFalErrorMessage } from '@/server/fal-webhook-errors';
 
 type FalPendingJob = {
   job_id: string;
@@ -275,7 +276,19 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
         continue;
       }
 
-      const result = await falClient.queue.result(falModel, { requestId: job.provider_job_id });
+      let result: Awaited<ReturnType<typeof falClient.queue.result>>;
+      try {
+        result = await falClient.queue.result(falModel, { requestId: job.provider_job_id });
+      } catch (error) {
+        const failure = error as { status?: number; body?: { detail?: unknown } } | null;
+        // COMPLETED is the queue state, not proof of successful inference. A
+        // structured 422 result is a terminal input rejection, unlike a read error.
+        const reason = state && COMPLETED_STATES.has(state) && failure?.status === 422 && failure.body?.detail
+          ? extractFalErrorMessage({ error: failure.body }) : null;
+        if (!reason) throw error;
+        await markJobFailed(reason, { autoRefundEligible: true, failureOrigin: 'provider_terminal' });
+        continue;
+      }
       if (!result) {
         if (timedOut && !beyondTimeoutGrace) {
           await recordPollEvent(
