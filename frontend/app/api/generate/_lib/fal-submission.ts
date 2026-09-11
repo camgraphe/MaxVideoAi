@@ -249,7 +249,9 @@ export async function submitFalGenerateTask(params: {
         providerJobId,
       });
 
-    if (isTimeoutError) {
+    const uncertainSubmission = params.falPayload.submissionMode === 'enqueue' &&
+      (providerJobId || !status || status >= 500 || status === 408);
+    if (isTimeoutError || uncertainSubmission) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
       const waitingMessage =
         'Rendering is still in progress. We will refresh as soon as the next status arrives.';

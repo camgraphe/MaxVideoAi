@@ -8,6 +8,7 @@ import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { backfillCompletedMcpJobOutputs } from '@/server/media-library/mcp-output-assets';
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 import { getFalPollTiming } from '@/server/fal-poll-timing';
+import { reconcileStaleFalProvisionals } from '@/server/fal-stale-provisionals';
 
 type FalPendingJob = {
   job_id: string;
@@ -21,13 +22,13 @@ type FalPendingJob = {
 
 const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000, 120_000];
 const POLL_INITIAL_DELAY_MS = 5_000;
-const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
+const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED']);
 const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED', 'OK']);
 
-const defaults = { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs };
+const defaults = { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals };
 
 export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
-  const { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs } = { ...defaults, ...dependencies };
+  const { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals } = { ...defaults, ...dependencies };
   const rows = await query<FalPendingJob>(
     `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
 	     FROM app_jobs
@@ -136,13 +137,14 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       if (lastAttemptAtMs && now - lastAttemptAtMs < backoffMs) {
         continue;
       }
+      // Every attempted row moves behind other pending jobs, including grace/unknown paths.
+      await query(`UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status IN ('pending','queued','running','processing','in_progress')`, [job.job_id]);
 
       let engineIdForLookup = job.engine_id;
-      const markRefundEligiblePollFailure = async (reason: string) => {
-        await markJobFailed(reason, {
-          autoRefundEligible: true,
-          failureOrigin: 'poll_internal',
-        });
+      const deferPoll = async (reason: string) => {
+        await recordPollEvent('poll:deferred', { reason, ageMs, beyondTimeoutGrace });
+        // Rotate the bounded cron batch even when a provider is unavailable.
+        await query(`UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status IN ('pending','queued','running','processing','in_progress')`, [job.job_id]);
       };
 
       if (!engineIdForLookup || engineIdForLookup === 'fal-unknown') {
@@ -186,7 +188,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
           );
           continue;
         }
-        await markRefundEligiblePollFailure('Unable to determine render engine for this job.');
+        await deferPoll('Unable to determine render engine for this job.');
         continue;
       }
 
@@ -220,10 +222,10 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
           continue;
         }
         if (timedOut && beyondTimeoutGrace) {
-          await markRefundEligiblePollFailure('Render status remained unavailable after timeout grace period.');
+          await deferPoll('Render status remained unavailable after timeout grace period.');
           continue;
         }
-        await markJobFailed('Render status unavailable.');
+        await deferPoll('Render status unavailable.');
         continue;
       }
 
@@ -249,7 +251,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
 
       if (state && !COMPLETED_STATES.has(state)) {
         if (timedOut && beyondTimeoutGrace) {
-          await markRefundEligiblePollFailure('Render polling exceeded expected window after timeout grace period.');
+          await deferPoll('Render still processing beyond the expected window.');
           continue;
         }
         await updateJobFromFalWebhook({
@@ -289,10 +291,10 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
           continue;
         }
         if (timedOut && beyondTimeoutGrace) {
-          await markRefundEligiblePollFailure(providerError ?? 'Render returned no result after timeout grace period.');
+          await deferPoll(providerError ?? 'Render returned no result after timeout grace period.');
           continue;
         }
-        await markJobFailed(providerError ?? 'Render returned no result for this job.');
+        await deferPoll(providerError ?? 'Render returned no result for this job.');
         continue;
       }
       await recordPollEvent(
@@ -322,7 +324,8 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       updates += 1;
     } catch (error) {
       console.warn('[fal-poll] failed to sync job', job.job_id, error);
-      await markJobFailed('Render sync failed.');
+      await recordPollEvent('poll:deferred', { reason: 'Render sync failed.' });
+      await query(`UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status IN ('pending','queued','running','processing','in_progress')`, [job.job_id]);
     }
   }
 
@@ -368,55 +371,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
     console.warn('[fal-poll] MCP output library backfill deferred', { error });
   }
 
-  let provisionalFailures = 0;
-  const staleProvisionals = await query<{ job_id: string; created_at: string }>(
-    `SELECT job_id, created_at
-       FROM app_jobs
-	      WHERE provider_job_id IS NULL
-	        AND COALESCE(provider, 'fal') = 'fal'
-	        AND engine_id IS DISTINCT FROM 'toolbox-finishing'
-	        AND status = 'pending'
-        AND created_at < NOW() - INTERVAL '5 minutes'
-      ORDER BY created_at ASC
-      LIMIT 20`
-  );
-
-  for (const stale of staleProvisionals) {
-    try {
-      await query(
-        `UPDATE app_jobs
-            SET status = 'failed',
-                progress = 0,
-                message = 'MaxVideoAI could not start this render. Please retry in a few moments.',
-                provisional = FALSE,
-                updated_at = NOW()
-	          WHERE job_id = $1
-	            AND status = 'pending'
-	            AND provider_job_id IS NULL
-	            AND COALESCE(provider, 'fal') = 'fal'
-	            AND engine_id IS DISTINCT FROM 'toolbox-finishing'`,
-        [stale.job_id]
-      );
-      await query(
-        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-        [
-          stale.job_id,
-          'fal',
-          null,
-          'fal-unknown',
-          'poll:not-started',
-          JSON.stringify({
-            at: new Date().toISOString(),
-            note: 'Job never started at Fal; marked as failed.',
-          }),
-        ]
-      );
-      provisionalFailures += 1;
-    } catch (error) {
-      console.warn('[fal-poll] failed to mark provisional job as failed', stale.job_id, error);
-    }
-  }
+  const { failed: provisionalFailures } = await reconcileStaleFalProvisionals();
 
   let finishing = { checked: 0, reconciled: 0, failures: 0 };
   try {

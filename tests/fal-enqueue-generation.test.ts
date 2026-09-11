@@ -11,11 +11,11 @@ test('MCP enqueue returns the accepted request without subscribing to a long ren
   t.after(() => { ENV.FAL_API_KEY = previousKey; });
   const client = getFalClient();
   let submits = 0;
-  t.mock.method(client.queue, 'submit', async (model: string, options: { input: Record<string, unknown> }) => {
+  t.mock.method(globalThis, 'fetch', async (url: URL, options: RequestInit) => {
     submits += 1;
-    assert.equal(model, 'minimax/h3/reference-to-video');
-    assert.equal(options.input.submissionMode, undefined);
-    return { request_id: 'accepted-request' };
+    assert.equal(url.pathname, '/minimax/h3/reference-to-video');
+    assert.equal(JSON.parse(String(options.body)).submissionMode, undefined);
+    return new Response(JSON.stringify({ request_id: 'accepted-request' }));
   });
   t.mock.method(client, 'subscribe', async () => {
     throw new Error('Must not wait for rendering inside MCP confirmation');
@@ -52,9 +52,9 @@ test('an enqueue rejection preserves the provider error and never submits a repl
   t.after(() => { ENV.FAL_API_KEY = previousKey; });
   const client = getFalClient();
   let submits = 0;
-  t.mock.method(client.queue, 'submit', async () => {
+  t.mock.method(globalThis, 'fetch', async () => {
     submits += 1;
-    throw Object.assign(new Error('Rejected input'), { status: 422, body: { detail: 'Invalid reference' } });
+    return new Response(JSON.stringify({ detail: 'Invalid reference' }), { status: 422 });
   });
   t.mock.method(client, 'subscribe', async () => { throw new Error('Unexpected subscription'); });
   await assert.rejects(generateVideo({

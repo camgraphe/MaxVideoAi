@@ -5,7 +5,7 @@ export function getFalPollTiming(engineId: string, createdAt: string, now: numbe
   const createdAtMs = Date.parse(createdAt);
   const ageMs = Number.isFinite(createdAtMs) ? now - createdAtMs : 0;
   // H3 delivered successful outputs after 63–65 minutes in the 2026-09-07 audit.
-  // Keep its total wait bounded at 90 minutes; terminal provider errors bypass grace.
+  // 90 minutes is an attention threshold, not permission to fail, refund or resubmit.
   const graceMs = engineId === 'minimax-h3' ? 55 * 60_000 : DEFAULT_GRACE_MS;
   return {
     ageMs,

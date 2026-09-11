@@ -24,6 +24,7 @@ import { fetchFalJobMedia } from '@/server/fal-job-sync';
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
+import { checkUpscaleDuration, rejectTruncatedUpscale } from './upscale-duration-integrity';
 import {
   extractFalErrorMessage,
   extractIdentifiersFromPayload,
@@ -38,7 +39,6 @@ import {
   normalizeRenderIdList,
   normalizeStatus,
   type FalWebhookPayload,
-  type WebhookIdentifiers,
 } from './fal-webhook-mapping';
 
 export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void> {
@@ -111,6 +111,11 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   const originalEngineId = job.engine_id;
+  // Correlation can recover a submission whose acknowledgment or DB write was lost.
+  if (identifiers.jobId === job.job_id && job.job_id.startsWith('tool_upscale_')) {
+    await query(`UPDATE app_jobs SET provider_job_id = COALESCE(provider_job_id, $2), provider = 'fal',
+      provisional = FALSE, updated_at = NOW() WHERE job_id = $1`, [job.job_id, requestId]);
+  }
   const originalEngineLabel = job.engine_label;
   let effectiveEngineId = job.engine_id;
   let effectiveEngineLabel = job.engine_label;
@@ -275,6 +280,13 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   const rawVideoSource = nextVideoUrl ?? media.videoUrl ?? job.video_url;
+  if (upscaleToolMediaType === 'video' && job.status !== 'completed' && nextStatus === 'completed' && rawVideoSource) {
+    const integrity = await checkUpscaleDuration(rawVideoSource, job.settings_snapshot);
+    if (integrity === 'truncated') {
+      await rejectTruncatedUpscale(job.job_id, requestId, rawVideoSource);
+      return;
+    }
+  }
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
   if (!resolvedThumbUrl) {
     resolvedThumbUrl = fallbackThumbnail(job.aspect_ratio);
@@ -490,7 +502,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     });
   }
 
-  await query(
+  const applied = await query<{ job_id: string }>(
     `UPDATE app_jobs
      SET status = $2,
          progress = $3,
@@ -516,7 +528,10 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
            ELSE settings_snapshot
          END,
          updated_at = NOW()
-     WHERE job_id = $1`,
+     WHERE job_id = $1
+       AND NOT (status = 'completed' AND $2 <> 'completed')
+       AND NOT (status = 'failed' AND $2 IN ('pending','queued','running','processing'))
+     RETURNING job_id`,
     [
       job.job_id,
       nextStatus,
@@ -537,6 +552,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       providerVideoCopyStateJson,
     ]
   );
+  if (!applied.length) return;
 
   await upsertLegacyJobOutputs({
     job_id: job.job_id,
