@@ -34,6 +34,19 @@ test('Fal poll timeout failures remain wallet-refund eligible', () => {
   );
 });
 
+test('Fal poll transactionally refunds stale charged jobs that never received a provider id', () => {
+  assert.match(
+    falPollSource,
+    /import \{ reconcileStaleFalProvisionals \} from '@\/server\/fal-stale-provisionals';/,
+    'stale provisional settlement should live in its transaction-focused module'
+  );
+  assert.match(
+    falPollSource,
+    /const \{ failed: provisionalFailures \} = await reconcileStaleFalProvisionals\(\);/,
+    'the Fal poll should run stale provisional settlement before processing provider jobs'
+  );
+});
+
 test('Fal poll repairs recent completed jobs that still point at Fal media', () => {
   assert.match(
     falPollSource,

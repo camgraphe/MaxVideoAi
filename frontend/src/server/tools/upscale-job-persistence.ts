@@ -206,6 +206,28 @@ export async function createAtomicInitialUpscaleJob(params: CreateUpscaleInitial
   }
 }
 
+export async function persistQueuedUpscaleRequest(jobId: string, providerJobId: string): Promise<void> {
+  const updated = await query<{ job_id: string }>(
+    `UPDATE app_jobs
+        SET provider_job_id = $2,
+            provider = 'fal',
+            status = 'queued',
+            provisional = FALSE,
+            updated_at = NOW()
+      WHERE job_id = $1
+        AND status = 'pending'
+        AND provider_job_id IS NULL
+      RETURNING job_id`,
+    [jobId, providerJobId]
+  );
+  if (!updated.length) {
+    throw new UpscaleToolError('Failed to save the accepted upscale request.', {
+      status: 500,
+      code: 'provider_job_persist_failed',
+    });
+  }
+}
+
 export async function insertUpscaleToolEvent(params: {
   jobId: string;
   engineId: UpscaleToolEngineId;

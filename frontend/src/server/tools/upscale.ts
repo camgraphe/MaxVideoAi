@@ -37,11 +37,12 @@ import { resolveUpscalePricingContext } from './upscale-pricing-context';
 import {
   createAtomicInitialUpscaleJob,
   insertUpscaleToolEvent,
+  persistQueuedUpscaleRequest,
   recordUpscaleRefundReceipt,
   type PendingUpscaleReceipt,
 } from './upscale-job-persistence';
 import { persistUpscaleOutput } from './upscale-output-persistence';
-
+import { runDurablyTrackedUpscaleRequest } from './upscale-provider-submission';
 
 type RunUpscaleToolInput = UpscaleToolRequest & {
   userId: string;
@@ -178,17 +179,24 @@ export async function runUpscaleToolBase(
   const startedAt = Date.now();
 
   try {
-    const result = await falClient.subscribe(engine.falModelId, {
+    const trackedRequest = await runDurablyTrackedUpscaleRequest({
+      queue: falClient.queue,
+      modelId: engine.falModelId,
       input: falInput,
-      mode: 'polling',
-      onEnqueue(requestId) {
-        providerJobId = providerJobId ?? requestId;
+      persistProviderJobId: async (requestId) => {
+        providerJobId = requestId;
+        await persistQueuedUpscaleRequest(jobId, requestId);
       },
       onQueueUpdate(update) {
-        if (update?.request_id) providerJobId = providerJobId ?? update.request_id;
+        const queueUpdate = update as { request_id?: string } | null;
+        if (queueUpdate?.request_id) providerJobId = providerJobId ?? queueUpdate.request_id;
         lastQueueUpdate = update;
       },
     });
+    const result = trackedRequest.result as {
+      data: unknown;
+      requestId?: string | null;
+    };
 
     const output = extractUpscaleOutput(result.data, mediaType);
     if (!output) {
