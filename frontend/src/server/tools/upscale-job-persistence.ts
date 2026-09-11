@@ -8,6 +8,7 @@ import type { UpscaleToolEngineId } from '@/types/tools-upscale';
 import { UPSCALE_PLACEHOLDER_THUMB, UPSCALE_TOOL_EVENT_NAME } from './upscale-constants';
 import { UpscaleToolError } from './upscale-errors';
 import { UPSCALE_SURFACE } from './upscale-request-utils';
+import { readAcceptedUpscale } from './upscale-acceptance';
 
 export type PendingUpscaleReceipt = {
   userId: string;
@@ -23,6 +24,7 @@ export type PendingUpscaleReceipt = {
 };
 
 export type CreateUpscaleInitialJobParams = {
+  requestFingerprint?: string;
   userId: string;
   jobId: string;
   description: string;
@@ -41,8 +43,11 @@ export type CreateUpscaleInitialJobParams = {
 };
 
 export async function recordUpscaleRefundReceipt(receipt: PendingUpscaleReceipt, label: string, priceOnly: boolean) {
-  try {
-    await query(
+  await withDbTransaction(async executor => {
+    const [job] = await executor.query<{ payment_status: string }>('SELECT payment_status FROM app_jobs WHERE job_id = $1 FOR UPDATE', [receipt.jobId]);
+    if (job?.payment_status === 'refunded_wallet') return;
+    if (job?.payment_status !== 'paid_wallet') throw new Error('Upscale refund requires a paid job.');
+    await executor.query(
       `INSERT INTO app_receipts (
          user_id,
          type,
@@ -75,9 +80,10 @@ export async function recordUpscaleRefundReceipt(receipt: PendingUpscaleReceipt,
         priceOnly ? null : receipt.vendorAccountId,
       ]
     );
-  } catch (error) {
-    console.warn('[tools/upscale] failed to record refund receipt', error);
-  }
+    const refunds = await executor.query<{ id: number }>("SELECT id FROM app_receipts WHERE job_id = $1 AND type = 'refund'", [receipt.jobId]);
+    if (refunds.length !== 1) throw new Error('Upscale refund was not persisted.');
+    await executor.query("UPDATE app_jobs SET payment_status = 'refunded_wallet', status = 'failed', updated_at = NOW() WHERE job_id = $1", [receipt.jobId]);
+  });
 }
 
 async function insertProvisionalUpscaleJob(
@@ -190,11 +196,13 @@ async function createUpscaleInitialJobInExecutor(
   });
 }
 
-export async function createAtomicInitialUpscaleJob(params: CreateUpscaleInitialJobParams): Promise<void> {
+export async function createAtomicInitialUpscaleJob(params: CreateUpscaleInitialJobParams): Promise<boolean> {
   try {
-    await withDbTransaction(async (executor) => {
+    return await withDbTransaction(async (executor) => {
       await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [params.jobId]);
+      if (params.requestFingerprint && await readAcceptedUpscale(params.jobId, params.requestFingerprint, executor)) return false;
       await createUpscaleInitialJobInExecutor(executor, params);
+      return true;
     });
   } catch (error) {
     if (error instanceof UpscaleToolError) throw error;
