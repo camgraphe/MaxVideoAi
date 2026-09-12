@@ -21,7 +21,7 @@ import {
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)';
 const sitemapConfigPath = 'frontend/next-sitemap.config.js';
-const answerSectionPath = `${routeRoot}/mcp/_components/McpAnswerPassagesSection.tsx`;
+const answerSectionPath = `${routeRoot}/mcp/_components/McpFaqResourcesSection.tsx`;
 const internalLinksPath = 'frontend/lib/mcp-internal-links.ts';
 const gscBaselinePath = 'docs/marketing/mcp-gsc-baseline.md';
 
@@ -228,13 +228,13 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
   });
 });
 
-test('SSR answer passages expose three self-contained GEO answers, account details, evidence and review date', async () => {
+test('SSR resources expose three self-contained GEO answers, a short FAQ, evidence and review date', async () => {
   assert.equal(existsSync(answerSectionPath), true, `${answerSectionPath} should exist`);
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  const { McpAnswerPassagesSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpAnswerPassagesSection.tsx'
+  const { McpFaqResourcesSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpFaqResourcesSection.tsx'
   );
   const { getMcpHostProof } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
@@ -242,8 +242,8 @@ test('SSR answer passages expose three self-contained GEO answers, account detai
   const copy = getMcpPageCopy('en');
   const publication = getMcpPublicationState(mcpPublication);
   const html = renderToStaticMarkup(
-    React.createElement(McpAnswerPassagesSection, {
-      copy: copy.answers,
+    React.createElement(McpFaqResourcesSection, {
+      copy,
       hostProof: getMcpHostProof('claude', 'en'),
       lastChecked: '2026-08-28',
       locale: 'en',
@@ -269,7 +269,7 @@ test('SSR answer passages expose three self-contained GEO answers, account detai
   assert.doesNotMatch(html, /FAQPage|HowTo/);
 
   const viewSource = readFileSync(`${routeRoot}/mcp/_components/McpPageView.tsx`, 'utf8');
-  assert.match(viewSource, /McpAnswerPassagesSection/);
+  assert.match(viewSource, /McpFaqResourcesSection/);
 });
 
 test('AI search crawlers can read public content while training crawlers and private surfaces remain blocked', () => {

@@ -23,8 +23,8 @@ test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry p
   );
   const copy = getMcpPageCopy('en');
   assert.equal(copy.meta.title, 'MaxVideoAI for Claude, ChatGPT & Codex | AI Video');
-  assert.equal(copy.hero.title, 'Turn Claude, ChatGPT or Codex into your AI video producer.');
-  assert.match(copy.hero.intro, /brief to rendered video/i);
+  assert.equal(copy.hero.title, 'Create AI videos from your assistant or automations.');
+  assert.match(copy.hero.intro, /complete project/i);
   assert.match(copy.hero.intro, /prompts and references/i);
   assert.match(copy.hero.intro, /exact price/i);
   assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
@@ -36,15 +36,84 @@ test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry p
   assert.doesNotMatch(JSON.stringify(copy), /local implementation|host validation in progress|budget-first shortlist|lowest-cost model/i);
 });
 
+test('the hub follows one clear path from promise to platform, production, and resources', async () => {
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const { McpHeroSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpHeroSection.tsx'
+  );
+  const { McpPlatformSelector } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPlatformSelector.tsx'
+  );
+  const { McpProductionWorkflowSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpProductionWorkflowSection.tsx'
+  );
+  const { McpFaqResourcesSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpFaqResourcesSection.tsx'
+  );
+  const { getMcpHostProof } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
+  );
+  const publication = {
+    renderPublicPage: true,
+    connectionAvailable: true,
+    indexable: true,
+    showTrialClaim: false,
+    showPaidGenerationClaim: true,
+    showReferenceClaim: true,
+  };
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getMcpPageCopy(locale);
+    const hero = renderToStaticMarkup(React.createElement(McpHeroSection, {
+      copy: copy.hero,
+      proof: null,
+      publication,
+    }));
+    const platforms = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
+      actions: copy.hero.actions,
+      copy: copy.ecosystem,
+    }));
+    const workflow = renderToStaticMarkup(React.createElement(McpProductionWorkflowSection, {
+      copy,
+      options: [],
+      publication,
+    }));
+    const resources = renderToStaticMarkup(React.createElement(McpFaqResourcesSection, {
+      copy,
+      hostProof: getMcpHostProof('claude', locale),
+      lastChecked: '2026-08-28',
+      locale,
+      publication,
+    }));
+
+    assert.match(hero, /assistant|asistente/i);
+    assert.match(hero, /automation|automatisation|automatizaci/i);
+    assert.doesNotMatch(hero, /data-client=|<button|Example conversation|Exemple de conversation|Ejemplo de conversación/i);
+    assert.equal((platforms.match(/data-platform-tier="live"/g) ?? []).length, 3);
+    assert.equal((platforms.match(/data-platform-tier="preview"/g) ?? []).length, 2);
+    assert.equal((platforms.match(/data-platform-tier="preparing"/g) ?? []).length, 4);
+    for (const label of ['OpenClaw', 'n8n', 'Cursor', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot']) {
+      assert.equal(platforms.split(`>${label}<`).length - 1, 1, `${locale} selector should show ${label} once`);
+    }
+    assert.equal((workflow.match(/data-production-step=/g) ?? []).length, 3);
+    assert.match(workflow, /reference|référence|referencia/i);
+    assert.match(workflow, /budget|devis|presupuesto|precio/i);
+    assert.match(workflow, /library|bibliothèque|biblioteca/i);
+    assert.equal((resources.match(/data-answer-passage=/g) ?? []).length, 3);
+    assert.equal((resources.match(/data-faq-item=/g) ?? []).length, 5);
+    assert.equal((resources.match(/data-client=/g) ?? []).length, 3);
+    assert.match(resources, /data-mcp-host-proof="claude"/);
+  }
+});
+
 test('the hub keeps live assistants primary while making the wider MCP ecosystem visible', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  const { McpEcosystemSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEcosystemSection.tsx'
-  );
-  const { McpEcosystemOverview } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEcosystemOverview.tsx'
+  const { McpPlatformSelector } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPlatformSelector.tsx'
   );
 
   for (const locale of ['en', 'fr', 'es'] as const) {
@@ -58,18 +127,8 @@ test('the hub keeps live assistants primary while making the wider MCP ecosystem
       copy.ecosystem.overview.filter((item) => item.href).map((item) => item.client),
       ['openclaw', 'n8n'],
     );
-    assert.deepEqual(copy.ecosystem.groups.map((group) => group.category), [
-      'autonomous-agent',
-      'automation',
-    ]);
-    assert.deepEqual(
-      copy.ecosystem.groups.flatMap((group) => group.items.map((item) => item.client)),
-      ['openclaw', 'n8n'],
-    );
-    const overviewHtml = renderToStaticMarkup(React.createElement(McpEcosystemOverview, {
-      copy: copy.ecosystem,
-    }));
-    const detailHtml = renderToStaticMarkup(React.createElement(McpEcosystemSection, {
+    const overviewHtml = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
+      actions: copy.hero.actions,
       copy: copy.ecosystem,
     }));
     assert.ok(overviewHtml.indexOf('OpenClaw') >= 0);
@@ -80,7 +139,8 @@ test('the hub keeps live assistants primary while making the wider MCP ecosystem
     assert.match(overviewHtml, /preview|aperçu|vista previa/i);
     assert.match(overviewHtml, /in preparation|en préparation|en preparación/i);
     assert.doesNotMatch(overviewHtml, /href="[^\"]*(?:cursor|github-copilot|gemini-cli|microsoft-copilot)/i);
-    assert.doesNotMatch(`${overviewHtml}${detailHtml}`, /<img|<svg/);
+    assert.equal(overviewHtml.split('>OpenClaw<').length - 1, 1);
+    assert.equal(overviewHtml.split('>n8n<').length - 1, 1);
   }
 });
 
@@ -91,12 +151,12 @@ test('French and Spanish are complete prospect-facing localizations', async () =
   const fr = getMcpPageCopy('fr');
   const es = getMcpPageCopy('es');
   assert.equal(fr.meta.title, 'MaxVideoAI pour Claude, ChatGPT et Codex | Vidéo IA');
-  assert.match(fr.hero.title, /Claude, ChatGPT ou Codex/i);
+  assert.match(fr.hero.title, /assistant.*automatisations/i);
   assert.match(fr.budget.title, /film complet/i);
   assert.match(JSON.stringify(fr.answers.items), /crédits/i);
   assert.match(JSON.stringify(fr.answers.items), /bibliothèque|galerie/i);
   assert.equal(es.meta.title, 'MaxVideoAI para Claude, ChatGPT y Codex | Vídeo IA');
-  assert.match(es.hero.title, /Claude, ChatGPT o Codex/i);
+  assert.match(es.hero.title, /asistente.*automatizaciones/i);
   assert.match(es.budget.title, /película/i);
   assert.match(JSON.stringify(es.answers.items), /créditos/i);
   assert.match(JSON.stringify(es.answers.items), /biblioteca/i);
@@ -361,7 +421,7 @@ test('trial and real proof claims remain independently gated', async () => {
   assert.match(copy.hero.trialDisclosure, /eligible verified account/i);
   assert.match(copy.hero.trialDisclosure, /Seedance 2 Mini/i);
   assert.match(copy.hero.trialDisclosure, /regular MaxVideoAI credit balance/i);
-  assert.match(withoutTrial, /Example conversation/i);
+  assert.doesNotMatch(withoutTrial, /Example conversation/i);
   assert.doesNotMatch(withoutTrial, /Generated through MCP|Verified result/i);
   assert.doesNotMatch(
     withoutTrial,

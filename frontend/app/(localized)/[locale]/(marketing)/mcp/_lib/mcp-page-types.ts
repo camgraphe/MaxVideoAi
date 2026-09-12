@@ -47,30 +47,23 @@ export type McpPageCopy = {
     connectActions: McpConnectActionsCopy;
   };
   workflow: {
+    eyebrow: string;
+    title: string;
+    intro: string;
     ariaLabel: string;
     steps: [string, string, string];
   };
   ecosystem: {
-    overviewLabel: string;
-    overviewIntro: string;
+    eyebrow: string;
+    title: string;
+    intro: string;
+    primaryLabel: string;
+    secondaryLabel: string;
     overview: Array<{
       client: Exclude<McpClientId, 'claude' | 'chatgpt' | 'codex'>;
       href?: string;
       status: string;
       availability: 'preview' | 'preparing';
-    }>;
-    eyebrow: string;
-    title: string;
-    intro: string;
-    groups: Array<{
-      category: 'autonomous-agent' | 'automation';
-      label: string;
-      items: Array<{
-        client: Extract<McpClientId, 'openclaw' | 'n8n'>;
-        href: string;
-        body: string;
-        status: string;
-      }>;
     }>;
   };
   budget: {

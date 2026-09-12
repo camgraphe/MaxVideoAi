@@ -25,12 +25,10 @@ const requiredFiles = [
   `${mcpRoot}/_components/McpClientActions.tsx`,
   `${mcpRoot}/_components/McpProofMedia.tsx`,
   `${mcpRoot}/_components/McpHostProofCard.tsx`,
-  `${mcpRoot}/_components/McpWorkflowStrip.tsx`,
-  `${mcpRoot}/_components/McpBudgetShortlist.tsx`,
+  `${mcpRoot}/_components/McpPlatformSelector.tsx`,
+  `${mcpRoot}/_components/McpProductionWorkflowSection.tsx`,
+  `${mcpRoot}/_components/McpFaqResourcesSection.tsx`,
   `${mcpRoot}/_components/McpEvidenceSection.tsx`,
-  `${mcpRoot}/_components/McpReferenceWorkflowSection.tsx`,
-  `${mcpRoot}/_components/McpAnswerPassagesSection.tsx`,
-  `${mcpRoot}/_components/McpTrustSections.tsx`,
   `${mcpRoot}/_components/McpJsonLdScripts.tsx`,
   `${integrationsRoot}/claude/page.tsx`,
   `${integrationsRoot}/chatgpt/page.tsx`,
@@ -81,11 +79,10 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   const view = requireFile(`${mcpRoot}/_components/McpPageView.tsx`);
   for (const owner of [
     'McpHeroSection',
-    'McpWorkflowStrip',
-    'McpBudgetShortlist',
-    'McpReferenceWorkflowSection',
-    'McpAnswerPassagesSection',
-    'McpTrustSections',
+    'McpPlatformSelector',
+    'McpProductionWorkflowSection',
+    'McpProjectDemo',
+    'McpFaqResourcesSection',
   ]) {
     assert.match(view, new RegExp(owner));
   }

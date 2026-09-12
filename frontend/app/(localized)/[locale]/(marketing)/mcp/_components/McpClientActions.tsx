@@ -27,9 +27,11 @@ const CLIENT_MARKS: Partial<Record<
 function McpClientAction({
   action,
   onActionClick,
+  tier,
 }: {
   action: McpClientActionCopy;
   onActionClick?: (action: McpClientActionCopy) => MouseEventHandler<HTMLAnchorElement>;
+  tier?: 'live';
 }) {
   const mark = CLIENT_MARKS[action.client];
   if (!mark) return null;
@@ -38,6 +40,7 @@ function McpClientAction({
       href={action.href}
       className="group flex min-h-[76px] flex-1 items-center gap-3 rounded-[12px] border border-hairline bg-surface p-3 text-left text-text-primary shadow-card transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/[0.16] dark:bg-white/[0.045] dark:text-white dark:hover:border-white/[0.28] dark:hover:bg-white/[0.075]"
       data-client={action.client}
+      data-platform-tier={tier}
       data-visual-tone="neutral"
       onClick={onActionClick?.(action)}
     >
@@ -62,15 +65,17 @@ function McpClientAction({
 export function McpClientActions({
   actions,
   onActionClick,
+  tier,
 }: {
   actions: McpClientActionCopy[];
   onActionClick?: (action: McpClientActionCopy) => MouseEventHandler<HTMLAnchorElement>;
+  tier?: 'live';
 }) {
   const clients = actions;
   return (
     <div className="grid gap-3 border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg sm:grid-cols-3">
       {clients.map((action) => (
-        <McpClientAction key={action.client} action={action} onActionClick={onActionClick} />
+        <McpClientAction key={action.client} action={action} onActionClick={onActionClick} tier={tier} />
       ))}
     </div>
   );
