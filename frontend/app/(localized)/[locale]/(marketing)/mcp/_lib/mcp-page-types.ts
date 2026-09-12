@@ -51,6 +51,14 @@ export type McpPageCopy = {
     steps: [string, string, string];
   };
   ecosystem: {
+    overviewLabel: string;
+    overviewIntro: string;
+    overview: Array<{
+      client: Exclude<McpClientId, 'claude' | 'chatgpt' | 'codex'>;
+      href?: string;
+      status: string;
+      availability: 'preview' | 'preparing';
+    }>;
     eyebrow: string;
     title: string;
     intro: string;

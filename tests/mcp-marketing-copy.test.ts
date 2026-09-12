@@ -36,17 +36,28 @@ test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry p
   assert.doesNotMatch(JSON.stringify(copy), /local implementation|host validation in progress|budget-first shortlist|lowest-cost model/i);
 });
 
-test('the hub presents OpenClaw and n8n only in a secondary preview section', async () => {
+test('the hub keeps live assistants primary while making the wider MCP ecosystem visible', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const { McpEcosystemSection } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEcosystemSection.tsx'
   );
+  const { McpEcosystemOverview } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEcosystemOverview.tsx'
+  );
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getMcpPageCopy(locale);
     assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
+    assert.deepEqual(
+      copy.ecosystem.overview.map((item) => item.client),
+      ['openclaw', 'n8n', 'cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'],
+    );
+    assert.deepEqual(
+      copy.ecosystem.overview.filter((item) => item.href).map((item) => item.client),
+      ['openclaw', 'n8n'],
+    );
     assert.deepEqual(copy.ecosystem.groups.map((group) => group.category), [
       'autonomous-agent',
       'automation',
@@ -55,13 +66,21 @@ test('the hub presents OpenClaw and n8n only in a secondary preview section', as
       copy.ecosystem.groups.flatMap((group) => group.items.map((item) => item.client)),
       ['openclaw', 'n8n'],
     );
-    const html = renderToStaticMarkup(React.createElement(McpEcosystemSection, {
+    const overviewHtml = renderToStaticMarkup(React.createElement(McpEcosystemOverview, {
       copy: copy.ecosystem,
     }));
-    assert.ok(html.indexOf('OpenClaw') >= 0);
-    assert.ok(html.indexOf('n8n') > html.indexOf('OpenClaw'));
-    assert.match(html, /preview|aperçu|vista previa/i);
-    assert.doesNotMatch(html, /<img|<svg/);
+    const detailHtml = renderToStaticMarkup(React.createElement(McpEcosystemSection, {
+      copy: copy.ecosystem,
+    }));
+    assert.ok(overviewHtml.indexOf('OpenClaw') >= 0);
+    assert.ok(overviewHtml.indexOf('n8n') > overviewHtml.indexOf('OpenClaw'));
+    for (const label of ['Cursor', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot']) {
+      assert.ok(overviewHtml.indexOf(label) > overviewHtml.indexOf('n8n'), `${locale} hub should show ${label}`);
+    }
+    assert.match(overviewHtml, /preview|aperçu|vista previa/i);
+    assert.match(overviewHtml, /in preparation|en préparation|en preparación/i);
+    assert.doesNotMatch(overviewHtml, /href="[^\"]*(?:cursor|github-copilot|gemini-cli|microsoft-copilot)/i);
+    assert.doesNotMatch(`${overviewHtml}${detailHtml}`, /<img|<svg/);
   }
 });
 
