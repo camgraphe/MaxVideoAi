@@ -36,6 +36,7 @@ const requiredFiles = [
   `${integrationsRoot}/chatgpt/page.tsx`,
   `${integrationsRoot}/codex/page.tsx`,
   `${integrationsRoot}/_lib/integration-copy.ts`,
+  `${integrationsRoot}/_lib/integration-page-data.ts`,
   `${integrationsRoot}/_content/types.ts`,
   `${integrationsRoot}/_content/shared.ts`,
   `${integrationsRoot}/_content/en.ts`,
@@ -94,23 +95,17 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
 test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', () => {
   for (const client of ['chatgpt', 'claude', 'codex'] as const) {
     const page = requireFile(`${integrationsRoot}/${client}/page.tsx`);
-    assert.match(page, /buildSeoMetadata/);
-    assert.match(page, new RegExp(`englishPath:\\s*['"]\\/integrations\\/${client}['"]`));
-    assert.match(page, /getIntegrationCopy/);
+    assert.match(page, new RegExp(`const CLIENT = ['"]${client}['"] as const`));
+    assert.match(page, /buildIntegrationMetadata/);
+    assert.match(page, /buildIntegrationPageData/);
     assert.match(page, /getMcpPublicationState/);
     assert.match(page, /notFound\(\)/);
     assert.match(page, /IntegrationPageView/);
+    assert.match(page, /IntegrationJsonLdScripts/);
+    assert.doesNotMatch(page, /getIntegrationCopy|getMcpCompatibilityEvidence|getMcpHostProof|buildSeoMetadata|buildMetadataUrls/);
     assert.doesNotMatch(page, /['"]use client['"]/);
-    assert.ok(page.split('\n').length <= 250, `${client} page should stay below 250 lines`);
+    assert.ok(page.split('\n').length <= 45, `${client} page should stay at or below 45 lines`);
   }
-
-  const claudePage = requireFile(`${integrationsRoot}/claude/page.tsx`);
-  const chatgptPage = requireFile(`${integrationsRoot}/chatgpt/page.tsx`);
-  const codexPage = requireFile(`${integrationsRoot}/codex/page.tsx`);
-  assert.match(claudePage, /getMcpHostProof\(['"]claude['"]/);
-  assert.match(claudePage, /hostProof=\{hostProof\}/);
-  assert.doesNotMatch(chatgptPage, /getMcpHostProof|McpHostProofCard|claude-inline-video-proof/);
-  assert.doesNotMatch(codexPage, /getMcpHostProof|McpHostProofCard|claude-inline-video-proof/);
 
   for (const component of [
     'IntegrationPageView',
@@ -122,6 +117,37 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
   ]) {
     const source = requireFile(`${integrationsRoot}/_components/${component}.tsx`);
     assert.doesNotMatch(source, /['"]use client['"]/);
+  }
+});
+
+test('the integration page-data builder preserves metadata, evidence, proof, and schema boundaries', async () => {
+  const { buildIntegrationPageData } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-page-data.ts'
+  );
+  const publication = {
+    renderPublicPage: true,
+    connectionAvailable: true,
+    indexable: true,
+    showTrialClaim: false,
+    showPaidGenerationClaim: true,
+    showReferenceClaim: true,
+  };
+  const localizedPrefix = { en: '', fr: '/fr', es: '/es' } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
+      const data = buildIntegrationPageData({ client, locale, publication });
+      const segment = locale === 'es' ? 'integraciones' : 'integrations';
+      assert.equal(data.copy.client, client);
+      assert.equal(data.compatibility.client, client);
+      assert.equal(
+        data.canonicalUrl,
+        `https://maxvideoai.com${localizedPrefix[locale]}/${segment}/${client}`,
+      );
+      assert.equal(data.breadcrumb.itemListElement[1]?.item, data.canonicalUrl);
+      assert.equal(data.application === null, client === 'chatgpt');
+      assert.equal(data.hostProof?.host ?? null, client === 'claude' ? 'claude' : null);
+    }
   }
 });
 
