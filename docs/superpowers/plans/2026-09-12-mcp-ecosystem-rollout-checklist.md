@@ -109,8 +109,8 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 - [x] Record `openclaw --version`, operating system, transport mode, and the candidate file digest associated with this checkpoint. The digest was captured after the initial lifecycle and before the remaining validation steps, so it is not presented as a pre-test provenance record.
 - [x] Create a disposable OpenClaw profile with no existing MaxVideoAI grant or cached MCP configuration.
 - [x] Add the MaxVideoAI Streamable HTTP endpoint using OpenClaw's supported OAuth configuration.
-- [x] Verify OAuth denial leaves protected tools unavailable and creates no job or wallet mutation. A distinct user-cancel path remains untested.
-- [ ] Verify a distinct user-cancel path and token refresh without losing account continuity.
+- [x] Verify OAuth denial leaves protected tools unavailable and creates no job or wallet mutation.
+- [x] Verify a distinct user-interrupted pre-approval login leaves the clean profile unauthorized with an empty token store, and observe automatic refresh through a read-only production capability probe without invoking a tool or generation.
 - [x] Approve OAuth, verify account identity, list tools, inspect account status, list models, inspect model details, request recommendations, and calculate a project budget without spending.
 - [x] Prepare one concrete generation and verify it returns a fresh exact quote without creating a paid job.
 - [x] Present the exact quoted amount and obtain explicit approval before any minimal paid confirmation.
@@ -118,7 +118,7 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 - [ ] Exercise a literally ambiguous interrupted `confirm_generation` transport response, then recover without a duplicate confirmation or paid job.
 - [ ] Exercise one bounded private-reference import path and clean up the disposable media.
 - [x] Revoke the newest MaxVideoAI grant, verify the active disposable profile loses protected access, reconnect through a fresh browser approval, and verify protected tools return without a paid call or generation.
-- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix. This checkpoint covers denial, one approved confirmation, cold/lost-context recovery, and revoke/access-loss/reconnect; it does not cover cancel, refresh, a literally interrupted confirmation response, private-reference cleanup, channel attachments, the production origin, or the ClawHub lifecycle.
+- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix. This checkpoint covers denial, user-interrupted pre-approval login, automatic token refresh, one approved confirmation, cold/lost-context recovery, revoke/access-loss/reconnect, and a read-only production capability probe; it does not cover a literally interrupted confirmation response, private-reference cleanup, channel attachments, or the ClawHub lifecycle.
 - [x] Update only the OpenClaw host evidence status and `lastChecked` field; keep site publication and acquisition unchanged until Task 3 passes.
 - [x] Run the host-proof, registry, publication, marketing, and public-baseline tests; commit the evidence update.
 

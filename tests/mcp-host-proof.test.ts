@@ -89,6 +89,8 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.match(row, /digest was captured after the initial lifecycle/);
   assert.match(row, /does not prove the bytes used during that lifecycle/);
   assert.match(row, /Denial left protected tools unavailable with no job or wallet mutation/);
+  assert.match(row, /user also interrupted a login before browser approval/);
+  assert.match(row, /token store count remained zero/);
   assert.match(row, /confirmed exactly once and completed/);
   assert.match(row, /cold\/lost-context session recovered the same accepted job through `list_recent_generations`, `get_generation_status`, and `present_generation` without a second `confirm_generation` or other paid call/);
   assert.match(row, /library fallback/);
@@ -97,6 +99,9 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.match(row, /Fresh browser OAuth restored protected-tool discovery with exit 0/);
   assert.match(row, /account connection list returned to five OpenClaw entries/);
   assert.match(row, /No paid call or generation occurred during this revoke\/access-loss\/reconnect check/);
+  assert.match(row, /older disabled production server entry with expired access and an existing refresh credential/);
+  assert.match(row, /read-only capability probe exposed protected tools, updated the token store, and advanced expiry, demonstrating automatic refresh/);
+  assert.match(row, /restored to disabled without a tool invocation, paid call, or generation/);
   assert.match(row, /remain unverified/);
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);
 });
