@@ -71,7 +71,7 @@
         "deepLinkEnabled": false,
         "deepLink": null
       },
-      "store": { "target": "clawhub", "status": "eligible" },
+      "store": { "target": "clawhub", "status": "preparing" },
       "hosts": ["openclawGateway"]
     },
     "n8n": {
