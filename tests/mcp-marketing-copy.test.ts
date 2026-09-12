@@ -236,7 +236,7 @@ test('all localized integration builders retain complete non-empty page contract
   };
 
   for (const locale of ['en', 'fr', 'es'] as const) {
-    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
+    for (const client of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const) {
       const copy = getIntegrationCopy(locale, client);
       assert.deepEqual(Object.keys(copy), topLevelFields);
       assert.equal(copy.client, client);
@@ -250,6 +250,31 @@ test('all localized integration builders retain complete non-empty page contract
       assert.equal(copy.hero.backHref, locale === 'en' ? '/mcp' : `/${locale}/mcp`);
       assert.equal(copy.support.href, locale === 'en' ? '/contact' : `/${locale}/contact`);
     }
+  }
+});
+
+test('OpenClaw and n8n previews explain distinct workflows without unearned claims', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const openclaw = getIntegrationCopy(locale, 'openclaw');
+    const n8n = getIntegrationCopy(locale, 'n8n');
+    const previewText = JSON.stringify({ openclaw, n8n });
+
+    assert.equal(openclaw.client, 'openclaw');
+    assert.equal(n8n.client, 'n8n');
+    assert.match(JSON.stringify(openclaw), /OpenClaw/);
+    assert.match(JSON.stringify(openclaw), /shared|partagé|compartid/i);
+    assert.match(JSON.stringify(openclaw), /per-requester|par demandeur|por solicitante/i);
+    assert.match(JSON.stringify(n8n), /MCP Client/);
+    assert.match(JSON.stringify(n8n), /MCP Client Tool/);
+    assert.match(JSON.stringify(n8n), /determin|détermin|determin/i);
+    assert.match(JSON.stringify(n8n), /idempoten/i);
+    assert.match(JSON.stringify(n8n), /recover|reprendre|recuper/i);
+    assert.doesNotMatch(previewText, /verified|certified|official partner/i);
+    assert.doesNotMatch(previewText, /\$\d|\d+ models/i);
   }
 });
 

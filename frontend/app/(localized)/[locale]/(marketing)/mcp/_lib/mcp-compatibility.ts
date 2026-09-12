@@ -2,7 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 import {
   getMcpHost,
   getMcpIntegration,
-  getMcpVisibleIntegrationIds,
+  getMcpIntegrationIds,
 } from '@/lib/mcp-integration-registry';
 import type { McpClientId, McpCompatibilityHostId } from './mcp-page-types';
 
@@ -28,7 +28,9 @@ export type McpCompatibilityEvidence = {
 
 export function getMcpCompatibilityEvidence(): McpCompatibilityEvidence {
   const clients = Object.fromEntries(
-    getMcpVisibleIntegrationIds().map((client) => {
+    getMcpIntegrationIds()
+      .filter((client) => getMcpIntegration(client).site.publication === 'live')
+      .map((client) => {
       const integration = getMcpIntegration(client);
       return [
         client,

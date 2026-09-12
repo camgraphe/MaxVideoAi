@@ -10,6 +10,8 @@ import {
   getIntegrationInstallInstruction,
   getIntegrationLabel,
 } from './shared';
+import { buildN8nIntegrationCopy } from './n8n';
+import { buildOpenClawIntegrationCopy } from './openclaw';
 import type { IntegrationHostGuide, IntegrationPageCopy } from './types';
 
 function buildEnglishGuides(client: McpClientId): IntegrationHostGuide[] {
@@ -92,6 +94,8 @@ function buildEnglishGuides(client: McpClientId): IntegrationHostGuide[] {
 }
 
 export function buildEnglishIntegrationCopy(client: McpClientId): IntegrationPageCopy {
+  if (client === 'openclaw') return buildOpenClawIntegrationCopy('en');
+  if (client === 'n8n') return buildN8nIntegrationCopy('en');
   const clientLabel = getIntegrationLabel(client);
   const productTerm = client === 'chatgpt'
     ? 'MaxVideoAI App'

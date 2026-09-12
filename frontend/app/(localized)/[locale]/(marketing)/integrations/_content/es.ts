@@ -12,6 +12,8 @@ import {
   getIntegrationLabel,
   localizedIntegrationPath,
 } from './shared';
+import { buildN8nIntegrationCopy } from './n8n';
+import { buildOpenClawIntegrationCopy } from './openclaw';
 import type { IntegrationHostGuide, IntegrationPageCopy } from './types';
 
 function buildSpanishGuides(client: McpClientId): IntegrationHostGuide[] {
@@ -93,6 +95,8 @@ function buildSpanishGuides(client: McpClientId): IntegrationHostGuide[] {
   ];
 }
 export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPageCopy {
+  if (client === 'openclaw') return buildOpenClawIntegrationCopy('es');
+  if (client === 'n8n') return buildN8nIntegrationCopy('es');
   const base = buildEnglishIntegrationCopy(client);
   const clientLabel = getIntegrationLabel(client);
   const term = client === 'chatgpt'

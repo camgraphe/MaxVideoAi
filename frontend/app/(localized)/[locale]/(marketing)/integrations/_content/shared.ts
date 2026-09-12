@@ -3,10 +3,10 @@ import {
   MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
 } from '@/config/maxvideoai-plugin-release';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
-import { getMcpIntegrationLabel } from '@/lib/mcp-integration-registry';
+import { getMcpHost, getMcpIntegrationLabel } from '@/lib/mcp-integration-registry';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientId, McpCompatibilityHostId } from '../../mcp/_lib/mcp-page-types';
-import type { IntegrationPageCopy } from './types';
+import type { IntegrationPageCopy, PreviewIntegrationText } from './types';
 
 export function localizedIntegrationPath(locale: AppLocale, path: string): string {
   const prefix = localePathnames[locale];
@@ -27,7 +27,14 @@ export function getIntegrationInstallInstruction(locale: AppLocale, hostId: McpC
     return `Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
   }
 
-  const host = hostId === 'claudeCode' ? 'Claude Code' : hostId === 'claudeDesktop' ? 'Claude' : 'ChatGPT';
+  const host = {
+    claudeCode: 'Claude Code',
+    claudeDesktop: 'Claude',
+    chatgptWeb: 'ChatGPT',
+    openclawGateway: 'OpenClaw',
+    n8nMcpClient: 'n8n MCP Client',
+    n8nMcpClientTool: 'n8n MCP Client Tool',
+  }[hostId] ?? getMcpIntegrationLabel(getMcpHost(hostId).integration);
   if (locale === 'fr') {
     return `Connecte MaxVideoAI dans ${host} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
   }
@@ -35,6 +42,77 @@ export function getIntegrationInstallInstruction(locale: AppLocale, hostId: McpC
     return `Conecta MaxVideoAI en ${host} con este servidor MCP y guíame hasta completar la conexión: ${MCP_PRODUCTION_RESOURCE_URL}`;
   }
   return `Connect MaxVideoAI in ${host} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
+}
+
+export function buildPreviewIntegrationCopy({
+  client,
+  locale,
+  text,
+}: {
+  client: McpClientId;
+  locale: AppLocale;
+  text: PreviewIntegrationText;
+}): IntegrationPageCopy {
+  const clientLabel = getIntegrationLabel(client);
+  return {
+    client,
+    clientLabel,
+    meta: { title: text.metaTitle, description: text.metaDescription },
+    hero: {
+      eyebrow: text.eyebrow,
+      title: text.heroTitle,
+      intro: text.heroIntro,
+      unavailable: text.unavailable,
+      liveStatus: text.unavailable,
+      accountStatus: text.unavailable,
+      setupLabel: text.setupLabel,
+      backLabel: text.backLabel,
+      backHref: locale === 'en' ? '/mcp' : `/${locale}/mcp`,
+    },
+    compatibility: {
+      checkpointLabel: text.checkpointLabel,
+      machineStatusLabel: text.machineStatusLabel,
+      statuses: text.statuses,
+    },
+    setup: {
+      eyebrow: text.setupEyebrow,
+      title: text.setupTitle,
+      intro: text.setupIntro,
+      installAction: getIntegrationInstallAction(locale, clientLabel),
+      hostGuides: text.guides,
+      oauthTitle: text.oauthTitle,
+      oauthBody: text.oauthBody,
+      oauthSteps: text.oauthSteps,
+    },
+    workflow: {
+      eyebrow: text.workflowEyebrow,
+      title: text.workflowTitle,
+      intro: text.workflowIntro,
+      previewSteps: text.workflowSteps,
+      liveSteps: text.workflowSteps,
+    },
+    references: {
+      title: text.referencesTitle,
+      planningBody: text.referencesPlanning,
+      liveBody: text.referencesGated,
+      gatedBody: text.referencesGated,
+    },
+    troubleshooting: {
+      eyebrow: text.helpEyebrow,
+      title: text.helpTitle,
+      intro: text.helpIntro,
+      items: text.helpItems,
+    },
+    disconnect: {
+      title: text.disconnectTitle,
+      body: text.disconnectBody,
+      steps: text.disconnectSteps,
+    },
+    support: {
+      label: text.supportLabel,
+      href: locale === 'en' ? '/contact' : `/${locale}/contact`,
+    },
+  };
 }
 
 export function getIntegrationInstallAction(locale: AppLocale, clientLabel: IntegrationPageCopy['clientLabel']): IntegrationPageCopy['setup']['installAction'] {
