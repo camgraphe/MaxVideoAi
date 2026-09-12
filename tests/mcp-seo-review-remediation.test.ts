@@ -68,6 +68,7 @@ function buildEnabledPostbuildSitemap(): string {
     copyFixtureFile('frontend/next-sitemap.config.js', fixtureRoot);
     copyFixtureFile('frontend/config/model-roster.json', fixtureRoot);
     copyFixtureFile('frontend/config/localized-slugs.json', fixtureRoot);
+    copyFixtureFile('frontend/config/mcp-integrations.json', fixtureRoot);
     mkdirSync(join(fixtureRoot, 'frontend/config'), { recursive: true });
     writeFileSync(
       join(fixtureRoot, 'frontend/config/mcp-publication.json'),

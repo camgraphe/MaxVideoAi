@@ -7,6 +7,7 @@ import { INDEXED_MARKETING_EXAMPLE_CANONICAL_SLUGS } from '@/config/model-famili
 import { BLOG_ENTRIES } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
+import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { getIndexableComparisonLocales } from '@/lib/compare-hub/indexation';
@@ -37,9 +38,7 @@ const IGNORED_ROUTE_TEMPLATES = new Set([
 ]);
 const MCP_PUBLIC_INDEXABLE_PATHS = new Set([
   '/mcp',
-  '/integrations/claude',
-  '/integrations/chatgpt',
-  '/integrations/codex',
+  ...getMcpPublicIntegrationPaths(),
   '/docs/mcp',
 ]);
 const MCP_INDEXABLE = getMcpPublicationState(mcpPublication).indexable;

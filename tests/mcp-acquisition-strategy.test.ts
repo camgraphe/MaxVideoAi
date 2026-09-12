@@ -19,12 +19,15 @@ test('ChatGPT is a first-class localized acquisition route beside Claude and Cod
 
   const routing = source('frontend/i18n/routing.ts');
   const publication = source('frontend/lib/mcp-publication.ts');
+  const registry = source('frontend/config/mcp-integrations.json');
   const sitemap = source('frontend/next-sitemap.config.js');
   const llms = source('frontend/lib/seo/llms-text.ts');
 
-  for (const value of [routing, publication, sitemap, llms]) {
+  for (const value of [routing, registry, llms]) {
     assert.match(value, /\/integrations\/chatgpt/);
   }
+  assert.match(publication, /getMcpPublicIntegrationPaths/);
+  assert.match(sitemap, /mcpIntegrations\.integrations/);
 });
 
 test('the commercial copy leads with the outcome and removes stale internal preview language', () => {

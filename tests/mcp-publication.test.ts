@@ -3,6 +3,19 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication';
+import { getMcpPublicIntegrationPaths } from '../frontend/lib/mcp-integration-registry';
+
+test('public integration paths come from the indexable registry projection', () => {
+  assert.deepEqual(getMcpPublicIntegrationPaths(), [
+    '/integrations/claude',
+    '/integrations/chatgpt',
+    '/integrations/codex',
+  ]);
+  const publicationSource = readFileSync('frontend/lib/mcp-publication.ts', 'utf8');
+  const discoverySource = readFileSync('frontend/lib/sitemap/route-discovery.ts', 'utf8');
+  assert.match(publicationSource, /getMcpPublicIntegrationPaths/);
+  assert.match(discoverySource, /getMcpPublicIntegrationPaths/);
+});
 
 test('public MCP previews do not become indexable before every public capability is live', () => {
   assert.deepEqual(
@@ -58,13 +71,14 @@ test('connection availability is capability-derived and independent from SEO ind
 test('the sitemap composes every publication prerequisite from the common build-time source', () => {
   const sitemapConfig = readFileSync('frontend/next-sitemap.config.js', 'utf8');
   assert.match(sitemapConfig, /require\('\.\/config\/mcp-publication\.json'\)/);
+  assert.match(sitemapConfig, /require\('\.\/config\/mcp-integrations\.json'\)/);
   assert.match(
     sitemapConfig,
     /const mcpIndexable =\s*mcpPublication\.publicIndexing &&\s*mcpPublication\.transport &&\s*mcpPublication\.oauth &&\s*mcpPublication\.discovery &&\s*mcpPublication\.paidGeneration &&\s*mcpPublication\.referenceUploads;/
   );
   assert.match(
     sitemapConfig,
-    /const MCP_PUBLIC_INDEXABLE_PATHS = \[\s*'\/mcp',\s*'\/integrations\/chatgpt',\s*'\/integrations\/claude',\s*'\/integrations\/codex',\s*'\/docs\/mcp',\s*\];/
+    /Object\.values\(mcpIntegrations\.integrations\)[\s\S]*site\.publication === 'live'[\s\S]*site\.indexable === true[\s\S]*displayOrder[\s\S]*englishPath/
   );
   assert.match(
     sitemapConfig,

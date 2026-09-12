@@ -49,6 +49,15 @@ test('Task 5 has focused acquisition, route, and client-action owners', () => {
   assert.doesNotMatch(actions, /mcp-client-actions\.json/);
 });
 
+test('analytics landing sanitization consumes registry-owned integration paths', () => {
+  const journey = requireFile('frontend/lib/analytics/journey.ts');
+  assert.match(journey, /getMcpPublicIntegrationPaths/);
+  assert.doesNotMatch(
+    journey,
+    /'\/integrations\/chatgpt',\s*'\/integrations\/claude',\s*'\/integrations\/codex'/,
+  );
+});
+
 test('landing acquisition accepts only the exact coarse allowlist and rejects extra data', async () => {
   requireFile(acquisitionPath);
   const { parseMcpAcquisitionRequest } = await import(

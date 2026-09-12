@@ -7,6 +7,7 @@ import vm from 'node:vm';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import mcpPublication from '../frontend/config/mcp-publication.json';
+import mcpIntegrations from '../frontend/config/mcp-integrations.json';
 import { buildMetadataUrls } from '../frontend/lib/metadataUrls.ts';
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication.ts';
 import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
@@ -52,13 +53,19 @@ type SitemapConfig = {
   transform: (config: SitemapConfig, path: string) => Promise<unknown>;
 };
 
-function loadSitemapConfig(publication: typeof enabledPublication): SitemapConfig {
+function loadSitemapConfig(
+  publication: typeof enabledPublication,
+  integrations: unknown = mcpIntegrations,
+): SitemapConfig {
   const absolutePath = resolve(sitemapConfigPath);
   const source = readFileSync(absolutePath, 'utf8');
   const requireFromConfig = createRequire(absolutePath);
   const moduleRecord: { exports: unknown } = { exports: {} };
-  const localRequire = (specifier: string) =>
-    specifier === './config/mcp-publication.json' ? publication : requireFromConfig(specifier);
+  const localRequire = (specifier: string) => {
+    if (specifier === './config/mcp-publication.json') return publication;
+    if (specifier === './config/mcp-integrations.json') return integrations;
+    return requireFromConfig(specifier);
+  };
   const wrapper = vm.runInNewContext(
     `(function (require, module, exports, __dirname, process) { ${source}\n})`,
     { console },
@@ -170,6 +177,25 @@ test('enabled publication fixture emits 15 localized owners with exact absolute 
     assert.ok(entry.alternateRefs?.every((item) => item.hrefIsAbsolute === true));
   }
   assert.equal(entries.some((entry) => entry.loc.includes('api.maxvideoai.com/mcp')), false);
+});
+
+test('preview-noindex registry entries never join generated sitemap paths', async () => {
+  const registryWithPreview = structuredClone(mcpIntegrations) as typeof mcpIntegrations & {
+    integrations: Record<string, unknown>;
+  };
+  registryWithPreview.integrations.openclaw = {
+    ...registryWithPreview.integrations.claude,
+    label: 'OpenClaw',
+    displayOrder: 40,
+    englishPath: '/integrations/openclaw',
+    site: { publication: 'preview_noindex', indexable: false },
+    acquisition: { enabled: false, key: 'openclaw' },
+    hosts: [],
+  };
+  const config = loadSitemapConfig(enabledPublication, registryWithPreview);
+  const entries = await config.additionalPaths(config);
+  assert.equal(entries.some((entry) => entry.loc.includes('/integrations/openclaw')), false);
+  assert.equal(entries.some((entry) => entry.loc === 'https://maxvideoai.com/integrations/claude'), true);
 });
 
 test('MCP metadata matches the approved intent and canonical locale routes', async () => {

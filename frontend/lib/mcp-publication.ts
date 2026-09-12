@@ -1,3 +1,5 @@
+import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
+
 export type McpPublicationState = {
   renderPublicPage: boolean;
   connectionAvailable: boolean;
@@ -21,12 +23,10 @@ type McpPublicationInputs = {
 const MCP_PUBLIC_SOURCE_PATHS = new Set([
   '/mcp',
   '/docs/mcp',
-  '/integrations/chatgpt',
-  '/integrations/claude',
-  '/integrations/codex',
-  '/integraciones/chatgpt',
-  '/integraciones/claude',
-  '/integraciones/codex',
+  ...getMcpPublicIntegrationPaths(),
+  ...getMcpPublicIntegrationPaths().map((path) =>
+    path.replace('/integrations/', '/integraciones/'),
+  ),
 ]);
 
 export function isMcpPublicSourcePath(pathname: string): boolean {

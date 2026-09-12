@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 const modelRoster = require('./config/model-roster.json');
+const mcpIntegrations = require('./config/mcp-integrations.json');
 const mcpPublication = require('./config/mcp-publication.json');
 const localizedSlugConfig = require('./config/localized-slugs.json');
 
@@ -21,9 +22,10 @@ const mcpIndexable =
   mcpPublication.referenceUploads;
 const MCP_PUBLIC_INDEXABLE_PATHS = [
   '/mcp',
-  '/integrations/chatgpt',
-  '/integrations/claude',
-  '/integrations/codex',
+  ...Object.values(mcpIntegrations.integrations)
+    .filter((integration) => integration.site.publication === 'live' && integration.site.indexable === true)
+    .sort((left, right) => left.displayOrder - right.displayOrder)
+    .map((integration) => integration.englishPath),
   '/docs/mcp',
 ];
 const MCP_PRIVATE_EXCLUDE_PATTERNS = [

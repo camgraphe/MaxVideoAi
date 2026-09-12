@@ -9,7 +9,6 @@ import {
   getIntegrationInstallAction,
   getIntegrationInstallInstruction,
   getIntegrationLabel,
-  localizedIntegrationPath,
 } from './shared';
 import type { IntegrationHostGuide, IntegrationPageCopy } from './types';
 
@@ -190,4 +189,3 @@ export function buildEnglishIntegrationCopy(client: McpClientId): IntegrationPag
     support: { label: 'Contact MaxVideoAI support', href: '/contact' },
   };
 }
-
