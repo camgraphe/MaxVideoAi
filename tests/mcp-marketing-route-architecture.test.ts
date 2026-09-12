@@ -171,6 +171,20 @@ test('localized integration copy has focused locale owners behind one dispatcher
   }
 });
 
+test('the MCP integration registry guide locks factual and operational ownership', () => {
+  const guide = requireFile('docs/engineering/mcp-integration-registry.md');
+  for (const owner of [
+    'frontend/config/mcp-integrations.json',
+    'frontend/lib/mcp-integration-registry.ts',
+    'docs/operations/mcp-host-compatibility-matrix.md',
+    'docs/marketing/mcp-directory-submissions.md',
+  ]) {
+    assert.match(guide, new RegExp(owner.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(guide, /external store state cannot disable the direct MCP endpoint/i);
+  assert.match(guide, /existing `verified` evidence cannot be weakened without a newer recorded checkpoint/i);
+});
+
 test('client setup copy does not contradict the publication status shown above it', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'

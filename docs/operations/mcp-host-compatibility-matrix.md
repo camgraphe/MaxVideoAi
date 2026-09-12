@@ -2,6 +2,11 @@
 
 Last hosted checkpoint: 2026-08-27
 
+Marketing pages project their integration identity, host labels, checkpoint dates,
+and status facts from `frontend/config/mcp-integrations.json`. This matrix remains
+the owner of detailed tested-host evidence, exact versions, exercised behavior,
+limitations, and explicit non-claims.
+
 ## Production checkpoint
 
 - Origin: `https://api.maxvideoai.com/mcp`
