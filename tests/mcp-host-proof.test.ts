@@ -51,3 +51,26 @@ test('the owned MCP proof asset is allowed by the Next image loader', () => {
   const config = readFileSync('frontend/next.config.js', 'utf8');
   assert.match(config, /pathname:\s*['"]\/media\/mcp\/\*\*['"]/);
 });
+
+test('the registry guide locks later hosts behind separate evidence gates', () => {
+  const guide = readFileSync('docs/engineering/mcp-integration-registry.md', 'utf8');
+
+  assert.match(guide, /## Later-host promotion sequence/);
+  for (const host of [
+    'Cursor',
+    'GitHub Copilot IDE',
+    'GitHub Copilot CLI',
+    'GitHub Copilot cloud agent',
+    'Gemini CLI',
+    'Microsoft Copilot Studio',
+    'Microsoft Agents 365',
+  ]) {
+    assert.match(guide, new RegExp(host));
+  }
+
+  assert.match(guide, /one host record at a time/i);
+  assert.match(guide, /RFC 9207/);
+  assert.match(guide, /remote OAuth[^.]*not supported/i);
+  assert.match(guide, /enterprise certification/i);
+  assert.match(guide, /remain `hidden`\s+and `not-run`/);
+});

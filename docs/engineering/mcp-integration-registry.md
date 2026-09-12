@@ -59,6 +59,35 @@ Adding a registry entry alone never authors a Next.js route or localized content
 4. run registry, host-proof, copy, route, and baseline contracts;
 5. review rendered wording so it does not imply validation for an untested sibling host.
 
+## Later-host promotion sequence
+
+Cursor, GitHub Copilot IDE, GitHub Copilot CLI, GitHub Copilot cloud agent,
+Gemini CLI, Microsoft Copilot Studio, and Microsoft Agents 365 remain `hidden`
+and `not-run`. Promote one host record at a time, only after the common
+controlled-host protocol in the operations matrix has been completed and its
+sanitized evidence has been reviewed. A pass on one surface must never change a
+sibling host automatically.
+
+Apply the following host-specific gates in addition to the common protocol:
+
+- Cursor: test manual remote configuration and any proposed install action as
+  separate paths; do not publish an Add to Cursor action before its exact URL
+  and OAuth lifecycle are proven.
+- GitHub Copilot IDE and GitHub Copilot CLI: record the precise editor or CLI
+  version independently. GitHub Copilot cloud agent stays separate because
+  remote OAuth is not supported on that surface for the MaxVideoAI connection.
+- Gemini CLI: verify discovery, callback handling, and RFC 9207 issuer (`iss`)
+  validation against the production authorization server.
+- Microsoft Copilot Studio: validate Streamable HTTP, tenant policy, connector
+  setup, approval, and recovery in an owned test tenant.
+- Microsoft Agents 365: keep the enterprise certification, admin-governance,
+  observability, and reuse track separate from a Copilot Studio host pass.
+
+After host evidence passes, move only that host from `not-run`; publication,
+indexation, acquisition, deep-link availability, and store state still require
+their own reviews. Complete EN/FR/ES content and route validation before moving
+an owning integration from `hidden` to `preview_noindex` or `live`.
+
 ## Store update procedure
 
 `docs/marketing/mcp-directory-submissions.md` owns submission evidence, account ownership, review status, listing URL, and operational follow-up. Change a registry `store.status` only after recording the corresponding event there. Store eligibility, preparation, submission, and listing do not prove host execution or direct-MCP health.
