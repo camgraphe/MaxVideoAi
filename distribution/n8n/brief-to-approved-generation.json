@@ -1,0 +1,31 @@
+{
+  "name": "MaxVideoAI - Brief to approved generation",
+  "active": false,
+  "nodes": [
+    { "id": "brief-trigger", "name": "Brief Input", "type": "n8n-nodes-base.manualTrigger", "typeVersion": 1, "position": [-900, 0], "parameters": {} },
+    { "id": "brief-normalize", "name": "Normalize Brief", "type": "n8n-nodes-base.set", "typeVersion": 3.4, "position": [-680, 0], "parameters": { "mode": "manual", "assignments": { "assignments": [{ "id": "brief", "name": "brief", "type": "object", "value": "={{ $json.brief }}" }, { "id": "idempotency", "name": "idempotencyKey", "type": "string", "value": "={{ $execution.id + '-approved-generation' }}" }] } } },
+    { "id": "brief-models", "name": "List Models", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [-460, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "list_models", "inputMode": "json", "jsonInput": "={}" } },
+    { "id": "brief-recommend", "name": "Recommend Models", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [-240, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "recommend_models", "inputMode": "json", "jsonInput": "={{ JSON.stringify({ brief: $('Normalize Brief').item.json.brief }) }}" } },
+    { "id": "brief-budget", "name": "Calculate Project Budget", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [-20, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "calculate_project_budget", "inputMode": "json", "jsonInput": "={{ JSON.stringify($json.projectProposal) }}" } },
+    { "id": "brief-prepare", "name": "Prepare Generation", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [200, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "prepare_generation", "inputMode": "json", "jsonInput": "={{ JSON.stringify({ ...$json.request, idempotencyKey: $('Normalize Brief').item.json.idempotencyKey }) }}" } },
+    { "id": "brief-approval", "name": "Human Approval", "type": "n8n-nodes-base.wait", "typeVersion": 1.1, "position": [420, 0], "parameters": { "resume": "webhook", "amount": 1, "unit": "days", "approvalRule": "Approve the exact fresh MaxVideoAI quote only" } },
+    { "id": "brief-confirm", "name": "Confirm Generation", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [640, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "confirm_generation", "inputMode": "json", "jsonInput": "={{ JSON.stringify({ quoteId: $('Prepare Generation').item.json.quoteId, idempotencyKey: $('Normalize Brief').item.json.idempotencyKey, explicitApproval: true }) }}" } },
+    { "id": "brief-poll-wait", "name": "Wait Before Status", "type": "n8n-nodes-base.wait", "typeVersion": 1.1, "position": [860, 0], "parameters": { "resume": "timeInterval", "amount": 15, "unit": "seconds" } },
+    { "id": "brief-status", "name": "Get Generation Status", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [1080, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "get_generation_status", "inputMode": "json", "jsonInput": "={{ JSON.stringify({ jobId: $('Confirm Generation').item.json.jobId }) }}" } },
+    { "id": "brief-result", "name": "Present Result", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [1300, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "present_generation", "inputMode": "json", "jsonInput": "={{ JSON.stringify({ jobId: $json.jobId }) }}" } }
+  ],
+  "connections": {
+    "Brief Input": { "main": [[{ "node": "Normalize Brief", "type": "main", "index": 0 }]] },
+    "Normalize Brief": { "main": [[{ "node": "List Models", "type": "main", "index": 0 }]] },
+    "List Models": { "main": [[{ "node": "Recommend Models", "type": "main", "index": 0 }]] },
+    "Recommend Models": { "main": [[{ "node": "Calculate Project Budget", "type": "main", "index": 0 }]] },
+    "Calculate Project Budget": { "main": [[{ "node": "Prepare Generation", "type": "main", "index": 0 }]] },
+    "Prepare Generation": { "main": [[{ "node": "Human Approval", "type": "main", "index": 0 }]] },
+    "Human Approval": { "main": [[{ "node": "Confirm Generation", "type": "main", "index": 0 }]] },
+    "Confirm Generation": { "main": [[{ "node": "Wait Before Status", "type": "main", "index": 0 }]] },
+    "Wait Before Status": { "main": [[{ "node": "Get Generation Status", "type": "main", "index": 0 }]] },
+    "Get Generation Status": { "main": [[{ "node": "Present Result", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "saveDataErrorExecution": "all", "saveDataSuccessExecution": "none" },
+  "tags": []
+}
