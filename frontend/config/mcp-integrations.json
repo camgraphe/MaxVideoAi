@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "integrations": {
+    "claude": {
+      "label": "Claude",
+      "category": "assistant",
+      "displayOrder": 10,
+      "englishPath": "/integrations/claude",
+      "site": { "publication": "live", "indexable": true },
+      "acquisition": { "enabled": true, "key": "claude" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": {
+        "target": "anthropic-connectors-directory",
+        "status": "policy_blocked"
+      },
+      "hosts": ["claudeDesktop", "claudeCode"]
+    },
+    "chatgpt": {
+      "label": "ChatGPT",
+      "category": "assistant",
+      "displayOrder": 20,
+      "englishPath": "/integrations/chatgpt",
+      "site": { "publication": "live", "indexable": true },
+      "acquisition": { "enabled": true, "key": "chatgpt" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": {
+        "target": "openai-plugin-directory",
+        "status": "policy_blocked"
+      },
+      "hosts": ["chatgptWeb"]
+    },
+    "codex": {
+      "label": "Codex",
+      "category": "autonomous-agent",
+      "displayOrder": 30,
+      "englishPath": "/integrations/codex",
+      "site": { "publication": "live", "indexable": true },
+      "acquisition": { "enabled": true, "key": "codex" },
+      "installation": {
+        "directMcp": "available",
+        "package": "available",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": {
+        "target": "openai-plugin-directory",
+        "status": "policy_blocked"
+      },
+      "hosts": ["codexCli"]
+    }
+  },
+  "hosts": {
+    "claudeDesktop": {
+      "integration": "claude",
+      "label": "Claude Desktop",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "verified",
+        "lastChecked": "2026-08-27",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "claudeCode": {
+      "integration": "claude",
+      "label": "Claude Code",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-08-27",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "chatgptWeb": {
+      "integration": "chatgpt",
+      "label": "ChatGPT",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-08-27",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "codexCli": {
+      "integration": "codex",
+      "label": "Codex CLI",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "verified",
+        "lastChecked": "2026-08-27",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    }
+  }
+}
