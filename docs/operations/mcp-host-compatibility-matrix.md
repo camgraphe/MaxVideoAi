@@ -72,6 +72,36 @@ The `present_generation` descriptor and its versioned MCP Apps resource are cove
 | Claude Code | Shared Claude adapter and skill contracts exist, but this exact host was not exercised. | Not run. |
 | Other MCP hosts | The wire contract is host-neutral, but each host still needs its own installation, OAuth, rendering, confirmation, and recovery evidence. | Unverified. |
 
+## Ecosystem expansion source review
+
+Checked: **2026-09-12**. The entries below record current host capabilities
+from primary documentation, not MaxVideoAI execution evidence. Every MaxVideoAI
+path remains `not-run` until a sanitized controlled-host checkpoint records the
+exact version and applicable lifecycle.
+
+| Host or surface | Current documented path | MaxVideoAI evidence and limitation |
+| --- | --- | --- |
+| OpenClaw Gateway | [OpenClaw MCP transports and OAuth](https://docs.openclaw.ai/cli/mcp/transports) documents saved remote Streamable HTTP servers, `auth: "oauth"`, login/logout, shared operator credentials, and optional per-requester identity. | **Not run.** Direct setup can be documented in a noindex preview, but connection, channel attachment behavior, quote confirmation, recovery, revocation, and reconnect are not verified. |
+| n8n MCP Client | [n8n MCP Client](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcpclient) documents external MCP tools as deterministic workflow steps, including OAuth2 credentials and a bounded tool-call timeout. | **Not run.** No n8n Cloud or self-hosted import, OAuth, tool call, approval pause, or accepted-job recovery is recorded. |
+| n8n MCP Client Tool | [n8n MCP Client Tool](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolmcp) documents selected external MCP tools for an AI Agent. | **Not run.** Agent tool selection and approval boundaries remain distinct from the deterministic node and require their own evidence. |
+| Cursor | [Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol) documents remote SSE and Streamable HTTP servers, OAuth, custom `mcp.json`, and an Add to Cursor surface. | **Not run.** No MaxVideoAI install button, OAuth lifecycle, tool approval, generation, or recovery evidence exists. The integration remains hidden. |
+| GitHub Copilot in IDEs | [GitHub Copilot MCP setup](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp) documents manual remote OAuth and registry discovery across supported IDE surfaces. | **Not run.** Each claimed IDE/version needs a separate checkpoint; registry presence alone is not host execution evidence. |
+| GitHub Copilot CLI | [Copilot CLI MCP setup](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) documents remote HTTP/SSE servers, OAuth reauthentication, and experimental registry search. | **Not run.** No MaxVideoAI CLI install, OAuth, approval, or recovery result is recorded. |
+| GitHub Copilot cloud agent | [Repository MCP configuration](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/configure-mcp-servers) states that the cloud agent and code review do not currently support remote MCP servers that use OAuth. | **Not run and currently incompatible with the MaxVideoAI OAuth path.** Desktop/IDE/CLI support must not be projected onto this surface. |
+| Gemini CLI | [Gemini CLI MCP documentation](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md) documents Streamable HTTP, remote OAuth discovery, localhost callbacks, and RFC 9207 `iss` validation. | **Not run.** The MaxVideoAI authorization callback must be checked against Gemini's issuer requirement before any compatibility claim. The integration remains hidden. |
+| Microsoft Copilot Studio | [Copilot Studio existing-server setup](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent) documents Streamable transport and OAuth through the onboarding wizard or a Power Platform connector. | **Not run.** Tenant, callback, connector, data-policy, tool, approval, and recovery behavior remain an enterprise validation track. |
+| Microsoft Agents 365 | [Microsoft 365 Agent Tools](https://learn.microsoft.com/en-us/microsoft-365/admin/manage/manage-tools-for-agent) documents tenant registration and governance for bring-your-own remote MCP servers. | **Not run.** Registration, admin approval, governance, observability, and Copilot Studio reuse are unverified. The integration remains hidden. |
+
+### Controlled-host promotion protocol
+
+For each new host, record a clean install, OAuth denial and approval, token
+refresh, revoke, observed authentication loss, explicit reconnect, account and
+catalog discovery, recommendation, project budget, fresh exact quote, and
+accepted-job recovery. A paid confirmation requires separate owner approval and
+must use a stable idempotency key. Record canonical result/library behavior,
+host-specific rendering and attachment limits, the exact host and MaxVideoAI
+versions, and sanitized evidence before changing `not-run`.
+
 ## Verified customer-continuity behavior
 
 - `get_account_status` returned the staging wallet balance without exposing the

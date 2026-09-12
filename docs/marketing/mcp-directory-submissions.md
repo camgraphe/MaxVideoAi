@@ -26,6 +26,26 @@ Those instructions do not verify MaxVideoAI on an exact host. Record a
 clean-account install, consent, tool behavior, revocation, and recovery result
 for each claimed host before publishing host-specific compatibility copy.
 
+## Ecosystem distribution recheck
+
+Checked: **2026-09-12**. These conclusions authorize only local preparation in
+the repository. They do not authorize publishing, account changes, namespace
+claims, marketplace submissions, public release, or spend.
+
+| Target | Primary source and current conclusion | Repository state |
+| --- | --- | --- |
+| ClawHub | [ClawHub](https://docs.openclaw.ai/clawhub) hosts versioned skills and plugins, exposes scan state, and provides an authenticated publisher CLI with `--dry-run`. Published skills use MIT-0, so licensing and the exact file set require owner review. | **Eligible for a thin local skill candidate; not submitted.** A future package must only guide the direct OAuth-backed MCP connection and must not duplicate prices, models, billing rules, or credentials. |
+| n8n workflow library | [n8n's workflow library](https://n8n.io/workflows/) accepts creator-submitted templates, while the [MCP Client node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcpclient) provides the direct client surface. | **Eligible for local workflow candidates; not submitted.** Clean import on a recorded n8n version, credential redaction, approval/idempotency tests, and owner authorization are still required. |
+| Cursor MCP catalogue / Add to Cursor | [Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol) documents one-click installation and custom remote server configuration. It does not by itself establish MaxVideoAI catalogue acceptance. | **Research only; no submission or install button.** Keep hidden until exact button encoding, brand rules, host evidence, and catalogue process are rechecked. |
+| GitHub MCP Registry and Copilot discovery | [GitHub Copilot MCP documentation](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp) describes a curated GitHub registry, while the Official MCP Registry record remains a separate metadata source. | **Research only; no GitHub listing claim.** The active `com.maxvideoai/maxvideoai` 0.3.3 record must not be described as a GitHub Copilot listing. |
+| Gemini CLI extension distribution | [Gemini CLI extension guidance](https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/writing-extensions.md) supports Git-backed extensions that can declare MCP servers. | **Research only; no extension or gallery submission.** Direct host OAuth must pass first, including the RFC 9207 issuer callback requirement. |
+| Microsoft MCP certification | [Microsoft MCP certification](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-server-certification) requires a verified publisher, Partner Center enrollment, owned endpoint, authentication, connector artifacts, metadata, documentation, and review credentials. | **Enterprise research only; eligibility not established.** No Partner Center offer, connector package, tenant registration, or certification action is authorized. |
+
+Store state never controls the direct production endpoint. A rejection,
+moderation hold, delisting, or policy change affects only its own distribution
+record and cannot demote Claude, ChatGPT, Codex, or the Official MCP Registry
+entry.
+
 Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`,
 `discovery=true`, `paidGeneration=true`, `trial=false`, and `referenceUploads=true`.
 

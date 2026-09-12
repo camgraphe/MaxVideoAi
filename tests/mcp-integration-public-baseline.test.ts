@@ -38,13 +38,14 @@ test('the existing public paths, evidence floor, deep links and localized copy s
   const hosts = Object.fromEntries(
     Object.values(evidence.clients)
       .filter((client): client is NonNullable<typeof client> => Boolean(client))
+      .filter((client) => clients.includes(client.client as (typeof clients)[number]))
       .flatMap((client) =>
         client.hosts.map((host) => [host.id, { client: host.client, status: host.status }]),
       ),
   );
   assert.deepEqual(hosts, baseline.hosts);
   assert.deepEqual(
-    Object.fromEntries(getMcpIntegrationIds().map((id) => [id, getMcpClientActionConfig(id)])),
+    Object.fromEntries(clients.map((id) => [id, getMcpClientActionConfig(id)])),
     baseline.deepLinks,
   );
 

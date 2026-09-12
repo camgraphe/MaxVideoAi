@@ -13,9 +13,25 @@ import {
   parseMcpIntegrationRegistry,
 } from '../frontend/lib/mcp-integration-registry';
 
-test('the initial registry contains the three existing integrations in public order', () => {
-  assert.deepEqual(getMcpIntegrationIds(), ['claude', 'chatgpt', 'codex']);
-  assert.deepEqual(getMcpVisibleIntegrationIds(), ['claude', 'chatgpt', 'codex']);
+test('the registry contains the live floor, first-wave previews and hidden roadmap in order', () => {
+  assert.deepEqual(getMcpIntegrationIds(), [
+    'claude',
+    'chatgpt',
+    'codex',
+    'openclaw',
+    'n8n',
+    'cursor',
+    'githubCopilot',
+    'geminiCli',
+    'microsoftCopilot',
+  ]);
+  assert.deepEqual(getMcpVisibleIntegrationIds(), [
+    'claude',
+    'chatgpt',
+    'codex',
+    'openclaw',
+    'n8n',
+  ]);
   assert.equal(getMcpIntegrationLabel('chatgpt'), 'ChatGPT');
   assert.deepEqual(getMcpPublicIntegrationPaths(), [
     '/integrations/claude',
@@ -30,7 +46,7 @@ test('existing publication, evidence and action floors are preserved', () => {
   assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
   assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
   assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
-  for (const id of getMcpIntegrationIds()) {
+  for (const id of ['claude', 'chatgpt', 'codex'] as const) {
     assert.equal(getMcpIntegration(id).site.publication, 'live');
     assert.equal(getMcpIntegration(id).site.indexable, true);
     assert.deepEqual(getMcpClientActionConfig(id), {
@@ -38,6 +54,38 @@ test('existing publication, evidence and action floors are preserved', () => {
       deepLink: null,
     });
     assert.equal(isEnabledMcpAcquisitionClient(id), true);
+  }
+});
+
+test('new hosts start without evidence, indexation or acquisition permission', () => {
+  for (const id of ['openclaw', 'n8n'] as const) {
+    assert.equal(getMcpIntegration(id).site.publication, 'preview_noindex');
+    assert.equal(getMcpIntegration(id).site.indexable, false);
+    assert.equal(getMcpIntegration(id).acquisition.enabled, false);
+    assert.equal(isEnabledMcpAcquisitionClient(id), false);
+  }
+
+  for (const id of ['cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'] as const) {
+    assert.equal(getMcpIntegration(id).site.publication, 'hidden');
+    assert.equal(getMcpIntegration(id).site.indexable, false);
+    assert.equal(getMcpIntegration(id).acquisition.enabled, false);
+    assert.equal(isEnabledMcpAcquisitionClient(id), false);
+  }
+
+  for (const id of [
+    'openclawGateway',
+    'n8nMcpClient',
+    'n8nMcpClientTool',
+    'cursorDesktop',
+    'githubCopilotIde',
+    'githubCopilotCli',
+    'githubCopilotCloudAgent',
+    'geminiCliHost',
+    'microsoftCopilotStudio',
+    'microsoftAgents365',
+  ] as const) {
+    assert.equal(getMcpHost(id).evidence.status, 'not-run');
+    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-12');
   }
 });
 

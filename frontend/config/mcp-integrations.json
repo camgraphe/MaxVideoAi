@@ -57,6 +57,102 @@
         "status": "policy_blocked"
       },
       "hosts": ["codexCli"]
+    },
+    "openclaw": {
+      "label": "OpenClaw",
+      "category": "autonomous-agent",
+      "displayOrder": 40,
+      "englishPath": "/integrations/openclaw",
+      "site": { "publication": "preview_noindex", "indexable": false },
+      "acquisition": { "enabled": false, "key": "openclaw" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": { "target": "clawhub", "status": "eligible" },
+      "hosts": ["openclawGateway"]
+    },
+    "n8n": {
+      "label": "n8n",
+      "category": "automation",
+      "displayOrder": 50,
+      "englishPath": "/integrations/n8n",
+      "site": { "publication": "preview_noindex", "indexable": false },
+      "acquisition": { "enabled": false, "key": "n8n" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": { "target": "n8n-template-library", "status": "eligible" },
+      "hosts": ["n8nMcpClient", "n8nMcpClientTool"]
+    },
+    "cursor": {
+      "label": "Cursor",
+      "category": "development",
+      "displayOrder": 60,
+      "englishPath": "/integrations/cursor",
+      "site": { "publication": "hidden", "indexable": false },
+      "acquisition": { "enabled": false, "key": "cursor" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": { "target": "cursor-mcp-catalog", "status": "not_applicable" },
+      "hosts": ["cursorDesktop"]
+    },
+    "githubCopilot": {
+      "label": "GitHub Copilot",
+      "category": "development",
+      "displayOrder": 70,
+      "englishPath": "/integrations/github-copilot",
+      "site": { "publication": "hidden", "indexable": false },
+      "acquisition": { "enabled": false, "key": "githubCopilot" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": { "target": "github-mcp-registry", "status": "not_applicable" },
+      "hosts": ["githubCopilotIde", "githubCopilotCli", "githubCopilotCloudAgent"]
+    },
+    "geminiCli": {
+      "label": "Gemini CLI",
+      "category": "development",
+      "displayOrder": 80,
+      "englishPath": "/integrations/gemini-cli",
+      "site": { "publication": "hidden", "indexable": false },
+      "acquisition": { "enabled": false, "key": "geminiCli" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": { "target": "gemini-cli-extension-gallery", "status": "not_applicable" },
+      "hosts": ["geminiCliHost"]
+    },
+    "microsoftCopilot": {
+      "label": "Microsoft Copilot",
+      "category": "enterprise",
+      "displayOrder": 90,
+      "englishPath": "/integrations/microsoft-copilot",
+      "site": { "publication": "hidden", "indexable": false },
+      "acquisition": { "enabled": false, "key": "microsoftCopilot" },
+      "installation": {
+        "directMcp": "available",
+        "package": "unavailable",
+        "deepLinkEnabled": false,
+        "deepLink": null
+      },
+      "store": { "target": "microsoft-mcp-certification", "status": "not_applicable" },
+      "hosts": ["microsoftCopilotStudio", "microsoftAgents365"]
     }
   },
   "hosts": {
@@ -97,6 +193,106 @@
         "kind": "hosted-checkpoint",
         "status": "verified",
         "lastChecked": "2026-08-27",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "openclawGateway": {
+      "integration": "openclaw",
+      "label": "OpenClaw Gateway",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "n8nMcpClient": {
+      "integration": "n8n",
+      "label": "n8n MCP Client",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "n8nMcpClientTool": {
+      "integration": "n8n",
+      "label": "n8n MCP Client Tool",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "cursorDesktop": {
+      "integration": "cursor",
+      "label": "Cursor",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "githubCopilotIde": {
+      "integration": "githubCopilot",
+      "label": "GitHub Copilot in IDEs",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "githubCopilotCli": {
+      "integration": "githubCopilot",
+      "label": "GitHub Copilot CLI",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "githubCopilotCloudAgent": {
+      "integration": "githubCopilot",
+      "label": "GitHub Copilot cloud agent",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "geminiCliHost": {
+      "integration": "geminiCli",
+      "label": "Gemini CLI",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "microsoftCopilotStudio": {
+      "integration": "microsoftCopilot",
+      "label": "Microsoft Copilot Studio",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
+    "microsoftAgents365": {
+      "integration": "microsoftCopilot",
+      "label": "Microsoft Agents 365",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "not-run",
+        "lastChecked": "2026-09-12",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     }
