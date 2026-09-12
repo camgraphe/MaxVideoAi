@@ -74,6 +74,9 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /host owns creative discussion, scripts, prompts, shot plans, and reference ideas/i);
   assert.match(instructions, /host may help create or select reference images/i);
   assert.match(instructions, /live MaxVideoAI tools for current model facts and prices instead of model memory/i);
+  assert.match(instructions, /every nullable tool field.*send null.*unless.*user.*(?:request|state|specif)/i);
+  assert.match(instructions, /hosts.*permit omission.*omit/i);
+  assert.match(instructions, /never.*nullable (?:tool )?field.*placeholder.*(?:false|maximum|duration|resolution)/i);
   assert.match(instructions, /ask only for missing choices that materially change the result or budget/i);
   assert.match(instructions, /named single- or mixed-model proposals.*calculate_project_budget/i);
   assert.match(instructions, /creative attempts are explicit billable scenarios/i);

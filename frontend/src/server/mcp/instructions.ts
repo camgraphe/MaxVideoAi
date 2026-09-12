@@ -11,6 +11,7 @@ export function buildMaxVideoAiMcpInstructions(
     'Prompt drafting remains with the host agent.',
     'The host may help create or select reference images and creatively plan or select image, video, and audio reference media when useful.',
     'Use live MaxVideoAI tools for current model facts and prices instead of model memory.',
+    'For every nullable tool field, send null unless the user explicitly requested or stated that value; hosts that permit omission may omit it instead. Never fill nullable tool fields with placeholder values such as false, a maximum duration, or a guessed resolution.',
     'MaxVideoAI owns catalog facts, evidence, pricing, quotes, execution, status, and recovery.',
     'Ask only for missing choices that materially change the result or budget.',
     'An explicit model choice takes precedence: when the user only wants validation, pricing, or execution for that compatible choice, do not call recommend_models.',
