@@ -204,6 +204,55 @@ test('each integration page keeps one host-specific setup intent without affilia
   }
 });
 
+test('all localized integration builders retain complete non-empty page contracts', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const topLevelFields = [
+    'client',
+    'clientLabel',
+    'meta',
+    'hero',
+    'compatibility',
+    'setup',
+    'workflow',
+    'references',
+    'troubleshooting',
+    'disconnect',
+    'support',
+  ];
+  const assertNoEmptyStrings = (value: unknown, path: string): void => {
+    if (typeof value === 'string') {
+      assert.ok(value.trim().length > 0, `${path} should not be empty`);
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => assertNoEmptyStrings(entry, `${path}[${index}]`));
+      return;
+    }
+    if (value && typeof value === 'object') {
+      for (const [key, entry] of Object.entries(value)) assertNoEmptyStrings(entry, `${path}.${key}`);
+    }
+  };
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
+      const copy = getIntegrationCopy(locale, client);
+      assert.deepEqual(Object.keys(copy), topLevelFields);
+      assert.equal(copy.client, client);
+      assertNoEmptyStrings(copy, `${locale}.${client}`);
+      assert.ok(copy.setup.hostGuides.length > 0);
+      assert.ok(copy.setup.oauthSteps.length > 0);
+      assert.ok(copy.workflow.previewSteps.length > 0);
+      assert.ok(copy.workflow.liveSteps.length > 0);
+      assert.ok(copy.troubleshooting.items.length > 0);
+      assert.ok(copy.disconnect.steps.length > 0);
+      assert.equal(copy.hero.backHref, locale === 'en' ? '/mcp' : `/${locale}/mcp`);
+      assert.equal(copy.support.href, locale === 'en' ? '/contact' : `/${locale}/contact`);
+    }
+  }
+});
+
 test('trial and real proof claims remain independently gated', async () => {
   requireFile(`${routeRoot}/mcp/_components/McpHeroSection.tsx`);
   const { getMcpPageCopy } = await import(

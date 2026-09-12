@@ -36,6 +36,11 @@ const requiredFiles = [
   `${integrationsRoot}/chatgpt/page.tsx`,
   `${integrationsRoot}/codex/page.tsx`,
   `${integrationsRoot}/_lib/integration-copy.ts`,
+  `${integrationsRoot}/_content/types.ts`,
+  `${integrationsRoot}/_content/shared.ts`,
+  `${integrationsRoot}/_content/en.ts`,
+  `${integrationsRoot}/_content/fr.ts`,
+  `${integrationsRoot}/_content/es.ts`,
   `${integrationsRoot}/_components/IntegrationPageView.tsx`,
   `${integrationsRoot}/_components/IntegrationHeroSection.tsx`,
   `${integrationsRoot}/_components/IntegrationConversationPreview.tsx`,
@@ -117,6 +122,26 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
   ]) {
     const source = requireFile(`${integrationsRoot}/_components/${component}.tsx`);
     assert.doesNotMatch(source, /['"]use client['"]/);
+  }
+});
+
+test('localized integration copy has focused locale owners behind one dispatcher', () => {
+  const dispatcher = requireFile(`${integrationsRoot}/_lib/integration-copy.ts`);
+  assert.ok(dispatcher.split('\n').length < 80, 'integration copy dispatcher should stay below 80 lines');
+
+  for (const [locale, builder] of [
+    ['en', 'buildEnglishIntegrationCopy'],
+    ['fr', 'buildFrenchIntegrationCopy'],
+    ['es', 'buildSpanishIntegrationCopy'],
+  ] as const) {
+    assert.match(requireFile(`${integrationsRoot}/_content/${locale}.ts`), new RegExp(`export function ${builder}`));
+  }
+
+  for (const client of ['chatgpt', 'claude', 'codex'] as const) {
+    assert.doesNotMatch(
+      requireFile(`${integrationsRoot}/${client}/page.tsx`),
+      /integrations\/_content|\.\.\/_content/,
+    );
   }
 });
 
@@ -401,7 +426,9 @@ test('visible compatibility dates are sourced from the integration registry', as
   assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
 
   const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);
-  const integrationCopy = requireFile(`${integrationsRoot}/_lib/integration-copy.ts`);
+  const integrationCopy = ['en', 'fr', 'es']
+    .map((locale) => requireFile(`${integrationsRoot}/_content/${locale}.ts`))
+    .join('\n');
   for (const source of [mcpCopy, integrationCopy]) {
     assert.doesNotMatch(source, /lastVerifiedLabel/);
     assert.doesNotMatch(source, /Hosted read-only[^\n]*passed|hébergé[^\n]*réussi|alojad[^\n]*pasaron/i);
