@@ -117,8 +117,8 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 - [x] Confirm one explicitly approved `$0.07` quote exactly once, then recover the same accepted job from cold/lost context through `list_recent_generations`, `get_generation_status`, and `present_generation`; verify completion through the MaxVideoAI library fallback without a second `confirm_generation` or other paid call.
 - [ ] Exercise a literally ambiguous interrupted `confirm_generation` transport response, then recover without a duplicate confirmation or paid job.
 - [ ] Exercise one bounded private-reference import path and clean up the disposable media.
-- [ ] Revoke the MaxVideoAI grant, verify protected access is lost, reconnect through a fresh browser approval, and verify access returns.
-- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix. This checkpoint covers denial, one approved confirmation, and cold/lost-context recovery; it does not cover cancel, refresh, revoke/loss/reconnect, or a literally interrupted confirmation response.
+- [x] Revoke the newest MaxVideoAI grant, verify the active disposable profile loses protected access, reconnect through a fresh browser approval, and verify protected tools return without a paid call or generation.
+- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix. This checkpoint covers denial, one approved confirmation, cold/lost-context recovery, and revoke/access-loss/reconnect; it does not cover cancel, refresh, a literally interrupted confirmation response, private-reference cleanup, channel attachments, the production origin, or the ClawHub lifecycle.
 - [x] Update only the OpenClaw host evidence status and `lastChecked` field; keep site publication and acquisition unchanged until Task 3 passes.
 - [x] Run the host-proof, registry, publication, marketing, and public-baseline tests; commit the evidence update.
 

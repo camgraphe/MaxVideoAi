@@ -92,6 +92,11 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.match(row, /confirmed exactly once and completed/);
   assert.match(row, /cold\/lost-context session recovered the same accepted job through `list_recent_generations`, `get_generation_status`, and `present_generation` without a second `confirm_generation` or other paid call/);
   assert.match(row, /library fallback/);
+  assert.match(row, /newest OpenClaw grant was disconnected/);
+  assert.match(row, /reported authorization required, kept protected tools unavailable, and exited nonzero/);
+  assert.match(row, /Fresh browser OAuth restored protected-tool discovery with exit 0/);
+  assert.match(row, /account connection list returned to five OpenClaw entries/);
+  assert.match(row, /No paid call or generation occurred during this revoke\/access-loss\/reconnect check/);
   assert.match(row, /remain unverified/);
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);
 });
