@@ -36,6 +36,35 @@ test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry p
   assert.doesNotMatch(JSON.stringify(copy), /local implementation|host validation in progress|budget-first shortlist|lowest-cost model/i);
 });
 
+test('the hub presents OpenClaw and n8n only in a secondary preview section', async () => {
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const { McpEcosystemSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEcosystemSection.tsx'
+  );
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getMcpPageCopy(locale);
+    assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
+    assert.deepEqual(copy.ecosystem.groups.map((group) => group.category), [
+      'autonomous-agent',
+      'automation',
+    ]);
+    assert.deepEqual(
+      copy.ecosystem.groups.flatMap((group) => group.items.map((item) => item.client)),
+      ['openclaw', 'n8n'],
+    );
+    const html = renderToStaticMarkup(React.createElement(McpEcosystemSection, {
+      copy: copy.ecosystem,
+    }));
+    assert.ok(html.indexOf('OpenClaw') >= 0);
+    assert.ok(html.indexOf('n8n') > html.indexOf('OpenClaw'));
+    assert.match(html, /preview|aperçu|vista previa/i);
+    assert.doesNotMatch(html, /<img|<svg/);
+  }
+});
+
 test('French and Spanish are complete prospect-facing localizations', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'

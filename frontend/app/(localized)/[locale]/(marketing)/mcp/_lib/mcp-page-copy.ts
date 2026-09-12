@@ -94,6 +94,15 @@ const EN: McpPageCopy = {
     ariaLabel: 'AI video production workflow',
     steps: ['Develop the brief and references', 'Compare models and project budgets', 'Approve the exact price and generate'],
   },
+  ecosystem: {
+    eyebrow: 'MORE WAYS TO WORK',
+    title: 'Prepare agent and automation workflows next',
+    intro: 'Claude, ChatGPT and Codex remain the live primary choices. These additional paths are available as non-indexed validation previews while their exact host evidence is completed.',
+    groups: [
+      { category: 'autonomous-agent', label: 'Autonomous agents', items: [{ client: 'openclaw', href: '/integrations/openclaw', body: 'Review remote OAuth identity, channel limits, explicit quote approval and accepted-job recovery for an OpenClaw-managed agent.', status: 'Validation preview' }] },
+      { category: 'automation', label: 'Automation', items: [{ client: 'n8n', href: '/integrations/n8n', body: 'Review deterministic MCP Client steps, bounded AI Agent tools, human approval and idempotent job recovery in n8n.', status: 'Validation preview' }] },
+    ],
+  },
   budget: {
     eyebrow: 'Conversation-led budgeting',
     title: 'Ask for a budget for the whole film—not a preset tier',
@@ -260,6 +269,15 @@ function frenchCopy(): McpPageCopy {
       connectActions: { instructionLabel: 'INSTALLATION RAPIDE', instructionBody: 'Choisissez votre assistant et collez une courte demande. Claude et ChatGPT guident la configuration ; Codex peut exécuter l’installation après votre accord.', copyInstruction: 'Copier pour', instructionCopied: 'Copié — collez-la dans votre assistant.', endpointLabel: 'Configuration MCP manuelle', copyEndpoint: 'Copier l’adresse du serveur', copied: 'Adresse copiée. Continuez avec le guide de votre assistant.', copyError: 'Copie impossible. Sélectionnez puis copiez manuellement l’adresse.' },
     },
     workflow: { ariaLabel: 'Parcours de production vidéo IA', steps: ['Développer le brief et les références', 'Comparer modèles et budgets du projet', 'Valider le prix exact et générer'] },
+    ecosystem: {
+      eyebrow: 'AUTRES FAÇONS DE TRAVAILLER',
+      title: 'Préparez ensuite les workflows agent et automatisation',
+      intro: 'Claude, ChatGPT et Codex restent les choix principaux déjà en ligne. Ces parcours supplémentaires sont des aperçus non indexés pendant la validation exacte de leurs hôtes.',
+      groups: [
+        { category: 'autonomous-agent', label: 'Agents autonomes', items: [{ client: 'openclaw', href: '/fr/integrations/openclaw', body: 'Examinez identité OAuth distante, limites des canaux, accord explicite sur le devis et reprise du job accepté dans OpenClaw.', status: 'Aperçu de validation' }] },
+        { category: 'automation', label: 'Automatisation', items: [{ client: 'n8n', href: '/fr/integrations/n8n', body: 'Examinez étapes MCP Client déterministes, outils agent bornés, accord humain et reprise idempotente dans n8n.', status: 'Aperçu de validation' }] },
+      ],
+    },
     budget: {
       ...EN.budget,
       eyebrow: 'Budget construit dans la discussion',
@@ -358,6 +376,15 @@ function spanishCopy(): McpPageCopy {
       connectActions: { instructionLabel: 'INSTALACIÓN RÁPIDA', instructionBody: 'Elige tu asistente y pega una petición breve. Claude y ChatGPT guían la configuración; Codex puede ejecutar la instalación después de tu aprobación.', copyInstruction: 'Copiar para', instructionCopied: 'Copiado — pégalo en tu asistente.', endpointLabel: 'Configuración MCP manual', copyEndpoint: 'Copiar dirección del servidor', copied: 'Dirección copiada. Continúa con la guía de tu asistente.', copyError: 'No se pudo copiar. Selecciona y copia la dirección manualmente.' },
     },
     workflow: { ariaLabel: 'Flujo de producción de vídeo con IA', steps: ['Desarrollar brief y referencias', 'Comparar modelos y presupuestos', 'Aprobar el precio exacto y generar'] },
+    ecosystem: {
+      eyebrow: 'MÁS FORMAS DE TRABAJAR',
+      title: 'Prepara después flujos de agentes y automatización',
+      intro: 'Claude, ChatGPT y Codex siguen siendo las opciones principales ya publicadas. Estas rutas adicionales son vistas previas no indexadas mientras se completa la evidencia de cada host.',
+      groups: [
+        { category: 'autonomous-agent', label: 'Agentes autónomos', items: [{ client: 'openclaw', href: '/es/integraciones/openclaw', body: 'Revisa identidad OAuth remota, límites de canales, aprobación explícita del precio y recuperación del job aceptado en OpenClaw.', status: 'Vista previa de validación' }] },
+        { category: 'automation', label: 'Automatización', items: [{ client: 'n8n', href: '/es/integraciones/n8n', body: 'Revisa pasos MCP Client deterministas, herramientas de agente acotadas, aprobación humana y recuperación idempotente en n8n.', status: 'Vista previa de validación' }] },
+      ],
+    },
     budget: { ...EN.budget, eyebrow: 'Presupuesto en la conversación', title: 'Pide un presupuesto para toda la película, no un paquete predefinido', intro: 'Indica si importan más calidad, presupuesto, velocidad, audio o fidelidad de referencias. El asistente puede valorar propuestas concretas, una ruta de calidad y alternativas más baratas creíbles.', exampleLabel: 'Ejemplo de conversación', examplePrompt: '«Presupuesta una película de 60 segundos. La calidad es lo primero, pero muéstrame formas creíbles de reducir el total.»', qualityLabel: 'Propuesta de máxima calidad', qualityBody: 'Usar el mejor modelo ejecutable actual para cada plano —a menudo Seedance 2.5 cuando sus capacidades encajan— y sumar cada plano con sus ajustes y referencias.', valueLabel: 'Alternativas más baratas', valueBody: 'Mantener el mismo brief y comparar solo opciones validadas, como Happy Horse, H3 o LTX cuando encajen. Explicar por plano los compromisos de calidad, movimiento, audio y referencias.', attemptsNote: 'La propuesta separa los renders previstos de un margen opcional para reintentos creativos. Un fallo técnico se sigue y reembolsa; un nuevo intento creativo sigue siendo una decisión nueva.', priceReferencesLabel: 'Referencias de precio actuales por plano', priceReferencesBody: 'Son ejemplos actuales, no paquetes ni una recomendación. El asistente construye el presupuesto real a partir de los planos elegidos.', slotLabels: { included_trial: 'Crédito inicial elegible', lowest_paid: 'Referencia de precio actual', affordable_upgrade: 'Alternativa creativa actual' }, modelLinkLabel: 'Ver detalles actuales', emptyTitle: 'Crea una propuesta en la conversación', emptyBody: 'Describe el vídeo, duración, planos y prioridades. MaxVideoAI valida cada modelo y devuelve un presupuesto comparable con precios actuales.' },
     references: { ...EN.references, eyebrow: 'Producción con referencias', title: 'Mantén la dirección visual y de audio entre planos', intro: 'El asistente puede crear ideas o elegir una referencia de imagen, vídeo o audio. MaxVideoAI comprueba los tipos y límites reales del modelo.', planningBody: 'Planifica sujeto, composición, movimiento, voz y continuidad en la conversación. El asistente conserva libertad creativa y MaxVideoAI aporta restricciones actuales.', liveBody: 'Elige un medio privado o abre una carga segura. Las referencias y resultados permanecen en la misma biblioteca MaxVideoAI que el sitio.', gatedBody: 'Planifica referencias de imagen, vídeo o audio en la conversación y reúne cargas, generación y resultados en tu cuenta MaxVideoAI.', steps: [{ title: 'Crear la dirección', body: 'Desarrolla personaje, producto, composición, movimiento e intención de audio.' }, { title: 'Elegir el modelo', body: 'MaxVideoAI comprueba referencias de imagen, vídeo y audio del modo.' }, { title: 'Revisar todo', body: 'Aprueba prompt, orden de referencias, ajustes y precio exacto.' }] },
     answers: { eyebrow: 'Respuestas directas', title: 'Tres respuestas útiles antes de conectar', updatedLabel: 'Revisión de capacidades',

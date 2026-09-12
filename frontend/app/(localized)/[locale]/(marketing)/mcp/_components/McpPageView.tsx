@@ -10,6 +10,7 @@ import type { McpProof } from '../_lib/mcp-proof';
 import { getMcpProjectDemoPrompt } from '../_lib/mcp-project-demo-copy';
 import { McpAnswerPassagesSection } from './McpAnswerPassagesSection';
 import { McpBudgetShortlist } from './McpBudgetShortlist';
+import { McpEcosystemSection } from './McpEcosystemSection';
 import { McpHeroSection } from './McpHeroSection';
 import { McpReferenceWorkflowSection } from './McpReferenceWorkflowSection';
 import { McpTrustSections } from './McpTrustSections';
@@ -44,6 +45,7 @@ export function McpPageView({
         resourceUrl={MCP_PRODUCTION_RESOURCE_URL}
       />
       <McpWorkflowStrip copy={copy.workflow} />
+      <McpEcosystemSection copy={copy.ecosystem} />
       {publication.connectionAvailable && publication.showPaidGenerationClaim ? (
         <>
           <McpProjectDemo locale={locale} />

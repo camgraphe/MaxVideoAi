@@ -50,6 +50,21 @@ export type McpPageCopy = {
     ariaLabel: string;
     steps: [string, string, string];
   };
+  ecosystem: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    groups: Array<{
+      category: 'autonomous-agent' | 'automation';
+      label: string;
+      items: Array<{
+        client: Extract<McpClientId, 'openclaw' | 'n8n'>;
+        href: string;
+        body: string;
+        status: string;
+      }>;
+    }>;
+  };
   budget: {
     eyebrow: string;
     title: string;
