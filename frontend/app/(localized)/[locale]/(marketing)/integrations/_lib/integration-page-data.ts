@@ -23,11 +23,22 @@ export type BuildIntegrationArgs = {
   publication: McpPublicationState;
 };
 
+function assertIntegrationPublication(
+  client: McpClientId,
+  publication: McpPublicationState,
+): void {
+  const site = getMcpIntegration(client).site;
+  if (publication.indexable && (site.publication !== 'live' || !site.indexable)) {
+    throw new Error(`Integration ${client} cannot be indexable in ${site.publication} state`);
+  }
+}
+
 export function buildIntegrationMetadata({
   client,
   locale,
   publication,
 }: BuildIntegrationArgs): Metadata {
+  assertIntegrationPublication(client, publication);
   const copy = getIntegrationCopy(locale, client);
   return buildSeoMetadata({
     locale,
@@ -51,6 +62,7 @@ export function buildIntegrationPageData({
   copy: IntegrationPageCopy;
   hostProof: McpHostProof | null;
 } {
+  assertIntegrationPublication(client, publication);
   const integration = getMcpIntegration(client);
   const copy = getIntegrationCopy(locale, client);
   const compatibility = getMcpCompatibilityClientEvidence(client);

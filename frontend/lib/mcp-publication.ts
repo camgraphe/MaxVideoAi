@@ -1,4 +1,8 @@
-import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
+import {
+  getMcpIntegration,
+  getMcpPublicIntegrationPaths,
+  type McpIntegrationId,
+} from '@/lib/mcp-integration-registry';
 
 export type McpPublicationState = {
   renderPublicPage: boolean;
@@ -59,5 +63,37 @@ export function getMcpPublicationState({
     showTrialClaim: trial,
     showPaidGenerationClaim: paidGeneration,
     showReferenceClaim: referenceUploads,
+  };
+}
+
+export function getMcpIntegrationPublicationState(
+  integrationId: McpIntegrationId,
+  globalState: McpPublicationState,
+): McpPublicationState {
+  const integration = getMcpIntegration(integrationId);
+  if (!globalState.renderPublicPage || integration.site.publication === 'hidden') {
+    return {
+      renderPublicPage: false,
+      connectionAvailable: false,
+      indexable: false,
+      showTrialClaim: false,
+      showPaidGenerationClaim: false,
+      showReferenceClaim: false,
+    };
+  }
+  if (integration.site.publication === 'preview_noindex') {
+    return {
+      ...globalState,
+      renderPublicPage: true,
+      connectionAvailable: false,
+      indexable: false,
+      showTrialClaim: false,
+      showPaidGenerationClaim: false,
+      showReferenceClaim: false,
+    };
+  }
+  return {
+    ...globalState,
+    indexable: globalState.indexable && integration.site.indexable,
   };
 }

@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-import { getMcpPublicationState } from '../frontend/lib/mcp-publication';
+import {
+  getMcpIntegrationPublicationState,
+  getMcpPublicationState,
+} from '../frontend/lib/mcp-publication';
 import { getMcpPublicIntegrationPaths } from '../frontend/lib/mcp-integration-registry';
 
 test('public integration paths come from the indexable registry projection', () => {
@@ -66,6 +69,64 @@ test('connection availability is capability-derived and independent from SEO ind
   });
   assert.equal(missingOAuth.connectionAvailable, false);
   assert.equal(missingOAuth.indexable, false);
+});
+
+test('integration publication keeps live clients intact and fails previews and hidden hosts closed', () => {
+  const liveGlobalState = getMcpPublicationState({
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+  });
+
+  assert.deepEqual(
+    getMcpIntegrationPublicationState('openclaw', liveGlobalState),
+    {
+      ...liveGlobalState,
+      renderPublicPage: true,
+      connectionAvailable: false,
+      indexable: false,
+      showTrialClaim: false,
+      showPaidGenerationClaim: false,
+      showReferenceClaim: false,
+    },
+  );
+  assert.deepEqual(getMcpIntegrationPublicationState('claude', liveGlobalState), liveGlobalState);
+  assert.equal(
+    getMcpIntegrationPublicationState('cursor', liveGlobalState).renderPublicPage,
+    false,
+  );
+
+  const globallyHidden = { ...liveGlobalState, renderPublicPage: false };
+  assert.equal(
+    getMcpIntegrationPublicationState('openclaw', globallyHidden).renderPublicPage,
+    false,
+  );
+});
+
+test('integration page data rejects accidental preview indexation', async () => {
+  const { buildIntegrationPageData } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-page-data.ts'
+  );
+  assert.throws(
+    () => buildIntegrationPageData({
+      client: 'openclaw',
+      locale: 'en',
+      publication: {
+        renderPublicPage: true,
+        connectionAvailable: true,
+        indexable: true,
+        showTrialClaim: false,
+        showPaidGenerationClaim: true,
+        showReferenceClaim: true,
+      },
+    }),
+    /cannot be indexable in preview_noindex state/,
+  );
 });
 
 test('the sitemap composes every publication prerequisite from the common build-time source', () => {
