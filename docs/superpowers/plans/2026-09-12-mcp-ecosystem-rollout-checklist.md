@@ -139,7 +139,7 @@ Evidence recorded 2026-09-13: 66 focused host-proof, registry, publication, mark
 - Consumes: the successful OpenClaw host checkpoint from Task 2 and the exact local ClawHub candidate.
 - Produces: a recorded dry-run and, after final owner review, an externally verifiable ClawHub listing.
 
-- [ ] Recheck current ClawHub publishing, scan, namespace, update, uninstall, and licensing documentation from first-party sources.
+- [x] Recheck current ClawHub publishing, scan, namespace, update, uninstall, and licensing documentation from first-party sources.
 - [ ] Install the current official ClawHub CLI only from its documented distribution source and record its version.
 - [ ] Run the exact dry-run for slug `maxvideoai`, name `MaxVideoAI`, and version `1.0.0`; save only sanitized output and the resolved file list.
 - [ ] Confirm the package contains exactly the three reviewed candidate files and no credential, executable installer, fixed price, or copied model roster.
