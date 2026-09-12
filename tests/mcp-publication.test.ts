@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 
 import {
@@ -7,6 +8,8 @@ import {
   getMcpPublicationState,
 } from '../frontend/lib/mcp-publication';
 import { getMcpPublicIntegrationPaths } from '../frontend/lib/mcp-integration-registry';
+
+const frontendRequire = createRequire(new URL('../frontend/package.json', import.meta.url));
 
 test('public integration paths come from the indexable registry projection', () => {
   assert.deepEqual(getMcpPublicIntegrationPaths(), [
@@ -18,6 +21,23 @@ test('public integration paths come from the indexable registry projection', () 
   const discoverySource = readFileSync('frontend/lib/sitemap/route-discovery.ts', 'utf8');
   assert.match(publicationSource, /getMcpPublicIntegrationPaths/);
   assert.match(discoverySource, /getMcpPublicIntegrationPaths/);
+});
+
+test('runtime sitemap discovery excludes explicit noindex preview routes', async () => {
+  const react = frontendRequire('react') as {
+    cache?: <TFunction extends (...args: never[]) => unknown>(fn: TFunction) => TFunction;
+  };
+  react.cache ??= (fn) => fn;
+  const { getCanonicalPathEntries } = await import(
+    '../frontend/lib/sitemap/route-discovery.ts'
+  );
+  const paths = (await getCanonicalPathEntries()).map(({ englishPath }) => englishPath);
+
+  assert.ok(paths.includes('/integrations/claude'));
+  assert.ok(paths.includes('/integrations/chatgpt'));
+  assert.ok(paths.includes('/integrations/codex'));
+  assert.equal(paths.includes('/integrations/openclaw'), false);
+  assert.equal(paths.includes('/integrations/n8n'), false);
 });
 
 test('public MCP previews do not become indexable before every public capability is live', () => {

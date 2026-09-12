@@ -23,6 +23,8 @@ test('Claude host proof is localized, historical-price qualified, and host-scope
 
   assert.equal(getMcpHostProof('chatgpt', 'en'), null);
   assert.equal(getMcpHostProof('codex', 'en'), null);
+  assert.equal(getMcpHostProof('openclaw', 'en'), null);
+  assert.equal(getMcpHostProof('n8n', 'en'), null);
   assert.match(getMcpHostProof('claude', 'fr')?.eyebrow ?? '', /Test contrôlé/);
   assert.match(getMcpHostProof('claude', 'es')?.eyebrow ?? '', /Prueba controlada/);
 });

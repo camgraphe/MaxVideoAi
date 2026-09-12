@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { McpIntegrationId } from '@/lib/mcp-integration-registry';
 
 export type McpHostProofClient = 'chatgpt' | 'claude' | 'codex';
 
@@ -51,7 +52,7 @@ const copy: Record<AppLocale, Pick<McpHostProof, 'eyebrow' | 'heading' | 'captio
   },
 };
 
-export function getMcpHostProof(client: McpHostProofClient, locale: AppLocale): McpHostProof | null {
+export function getMcpHostProof(client: McpIntegrationId, locale: AppLocale): McpHostProof | null {
   if (client !== 'claude') return null;
   return {
     host: 'claude',

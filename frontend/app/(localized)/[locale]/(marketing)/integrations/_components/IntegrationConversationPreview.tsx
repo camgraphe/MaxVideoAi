@@ -13,7 +13,7 @@ const MEDIA = {
     'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4e4954fc-513a-4345-945c-41adba7ec26a.mp4',
 } as const;
 
-const MARKS = {
+const MARKS: Partial<Record<McpClientId, { light: string; dark: string }>> = {
   claude: {
     light: '/brand/partners/anthropic/claude-mark-light.svg',
     dark: '/brand/partners/anthropic/claude-mark-dark.svg',
@@ -70,6 +70,7 @@ export function IntegrationConversationPreview({
 }) {
   const copy = COPY[locale];
   const mark = MARKS[client];
+  const clientLabel = getMcpIntegrationLabel(client);
   const icons = [BadgeCheck, CircleDollarSign, Images] as const;
 
   return (
@@ -77,10 +78,18 @@ export function IntegrationConversationPreview({
       <figcaption className="flex items-center justify-between border-b border-hairline pb-4 dark:border-white/[0.1]">
         <span className="flex items-center gap-2.5 text-sm font-semibold text-text-primary dark:text-white">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-[11px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
-            <Image src={mark.light} alt="" aria-hidden="true" width={21} height={21} className="dark:hidden" />
-            <Image src={mark.dark} alt="" aria-hidden="true" width={21} height={21} className="hidden dark:block" />
+            {mark ? (
+              <>
+                <Image src={mark.light} alt="" aria-hidden="true" width={21} height={21} className="dark:hidden" />
+                <Image src={mark.dark} alt="" aria-hidden="true" width={21} height={21} className="hidden dark:block" />
+              </>
+            ) : (
+              <span data-integration-monogram aria-hidden="true" className="text-xs font-bold uppercase tracking-tight text-text-primary dark:text-white">
+                {clientLabel.slice(0, 2)}
+              </span>
+            )}
           </span>
-          {getMcpIntegrationLabel(client)}
+          {clientLabel}
         </span>
         <span className="rounded-full border border-hairline bg-bg px-2.5 py-1 text-[11px] font-semibold text-text-secondary dark:border-white/[0.12] dark:bg-black/20 dark:text-white/68">
           {copy.label}

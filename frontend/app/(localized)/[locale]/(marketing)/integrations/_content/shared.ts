@@ -27,14 +27,15 @@ export function getIntegrationInstallInstruction(locale: AppLocale, hostId: McpC
     return `Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
   }
 
-  const host = {
+  const hostLabels: Partial<Record<McpCompatibilityHostId, string>> = {
     claudeCode: 'Claude Code',
     claudeDesktop: 'Claude',
     chatgptWeb: 'ChatGPT',
     openclawGateway: 'OpenClaw',
     n8nMcpClient: 'n8n MCP Client',
     n8nMcpClientTool: 'n8n MCP Client Tool',
-  }[hostId] ?? getMcpIntegrationLabel(getMcpHost(hostId).integration);
+  };
+  const host = hostLabels[hostId] ?? getMcpIntegrationLabel(getMcpHost(hostId).integration);
   if (locale === 'fr') {
     return `Connecte MaxVideoAI dans ${host} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
   }

@@ -7,7 +7,11 @@ import { INDEXED_MARKETING_EXAMPLE_CANONICAL_SLUGS } from '@/config/model-famili
 import { BLOG_ENTRIES } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
-import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
+import {
+  getMcpIntegration,
+  getMcpIntegrationIds,
+  getMcpPublicIntegrationPaths,
+} from '@/lib/mcp-integration-registry';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { getIndexableComparisonLocales } from '@/lib/compare-hub/indexation';
@@ -36,11 +40,14 @@ const IGNORED_ROUTE_TEMPLATES = new Set([
   '/v/[videoId]',
   '/legal/cookies',
 ]);
-const MCP_PUBLIC_INDEXABLE_PATHS = new Set([
+const MCP_PUBLIC_INDEXABLE_PATHS = new Set<string>([
   '/mcp',
   ...getMcpPublicIntegrationPaths(),
   '/docs/mcp',
 ]);
+const MCP_INTEGRATION_PATHS = new Set<string>(
+  getMcpIntegrationIds().map((id) => getMcpIntegration(id).englishPath),
+);
 const MCP_INDEXABLE = getMcpPublicationState(mcpPublication).indexable;
 let cachedAppPathsManifest: Record<string, string> | null = null;
 
@@ -67,7 +74,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       return;
     }
     const normalizedTemplate = normalizeCompareEnglishPath(template.template);
-    if (MCP_PUBLIC_INDEXABLE_PATHS.has(normalizedTemplate) && !MCP_INDEXABLE) {
+    if (shouldExcludeMcpPath(normalizedTemplate)) {
       return;
     }
     if (seen.has(normalizedTemplate)) {
@@ -96,7 +103,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
         return;
       }
       const normalizedPath = normalizeCompareEnglishPath(entry.englishPath);
-      if (MCP_PUBLIC_INDEXABLE_PATHS.has(normalizedPath) && !MCP_INDEXABLE) {
+      if (shouldExcludeMcpPath(normalizedPath)) {
         return;
       }
       if (seen.has(normalizedPath)) {
@@ -114,6 +121,9 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       return;
     }
     const normalizedPath = normalizeCompareEnglishPath(extra.englishPath);
+    if (shouldExcludeMcpPath(normalizedPath)) {
+      return;
+    }
     if (seen.has(normalizedPath)) {
       return;
     }
@@ -130,6 +140,13 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
   entries.sort((a, b) => comparePaths(a.englishPath, b.englishPath));
   validateLocaleCounts(entries);
   return entries;
+}
+
+function shouldExcludeMcpPath(englishPath: string): boolean {
+  if (MCP_INTEGRATION_PATHS.has(englishPath) && !MCP_PUBLIC_INDEXABLE_PATHS.has(englishPath)) {
+    return true;
+  }
+  return MCP_PUBLIC_INDEXABLE_PATHS.has(englishPath) && !MCP_INDEXABLE;
 }
 
 function discoverLocalizedRouteTemplates(): RouteTemplate[] {

@@ -484,11 +484,11 @@ test('Task 5 reports durable Task 7 binding through acquisitionId rather than th
 });
 
 test('client deep links remain disabled and localized setup plus endpoint copy always render', async () => {
-  const { getMcpClientActionConfig, getMcpIntegrationIds } = await import(
+  const { getMcpClientActionConfig } = await import(
     '../frontend/lib/mcp-integration-registry.ts'
   );
   const flags = Object.fromEntries(
-    getMcpIntegrationIds().map((id) => [id, getMcpClientActionConfig(id)]),
+    (['claude', 'chatgpt', 'codex'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
   );
   assert.deepEqual(flags, {
     claude: { deepLinkEnabled: false, deepLink: null },
