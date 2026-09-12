@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import actionFlags from '../frontend/config/mcp-client-actions.json';
 import { getMcpPublicationState, isMcpPublicSourcePath } from '../frontend/lib/mcp-publication';
 import baseline from './fixtures/mcp-integration-public-baseline.json';
 
@@ -27,6 +26,9 @@ test('the existing public paths, evidence floor, deep links and localized copy s
   const { getMcpCompatibilityEvidence } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
   );
+  const { getMcpClientActionConfig, getMcpIntegrationIds } = await import(
+    '../frontend/lib/mcp-integration-registry.ts'
+  );
 
   for (const url of Object.values(baseline.localizedUrls).flatMap((entry) => Object.values(entry))) {
     assert.equal(isMcpPublicSourcePath(new URL(url).pathname), true, `${url} should remain public`);
@@ -41,7 +43,10 @@ test('the existing public paths, evidence floor, deep links and localized copy s
       ),
   );
   assert.deepEqual(hosts, baseline.hosts);
-  assert.deepEqual(actionFlags, baseline.deepLinks);
+  assert.deepEqual(
+    Object.fromEntries(getMcpIntegrationIds().map((id) => [id, getMcpClientActionConfig(id)])),
+    baseline.deepLinks,
+  );
 
   for (const locale of locales) {
     for (const client of clients) {

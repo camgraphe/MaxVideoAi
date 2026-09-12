@@ -3,10 +3,10 @@ import Link from 'next/link';
 import type { MouseEventHandler } from 'react';
 import type { McpClientActionCopy, McpClientId } from '../_lib/mcp-page-types';
 
-const CLIENT_MARKS: Record<
+const CLIENT_MARKS: Partial<Record<
   McpClientId,
   { light: string; dark: string; alt: string }
-> = {
+>> = {
   claude: {
     light: '/brand/partners/anthropic/claude-mark-light.svg',
     dark: '/brand/partners/anthropic/claude-mark-dark.svg',
@@ -32,6 +32,7 @@ function McpClientAction({
   onActionClick?: (action: McpClientActionCopy) => MouseEventHandler<HTMLAnchorElement>;
 }) {
   const mark = CLIENT_MARKS[action.client];
+  if (!mark) return null;
   return (
     <Link
       href={action.href}

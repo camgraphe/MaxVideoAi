@@ -1,5 +1,7 @@
-export type McpClientId = 'claude' | 'chatgpt' | 'codex';
-export type McpCompatibilityHostId = 'claudeDesktop' | 'claudeCode' | 'chatgptWeb' | 'codexCli';
+import type { McpHostId, McpIntegrationId } from '@/lib/mcp-integration-registry';
+
+export type McpClientId = McpIntegrationId;
+export type McpCompatibilityHostId = McpHostId;
 export type McpFeaturedAnswerId = 'identity' | 'selection' | 'safety';
 export type McpAnswerDetailId = 'references' | 'credits' | 'library' | 'disconnect';
 
@@ -97,7 +99,7 @@ export type McpPageCopy = {
       body: string;
       checkpointLabel: string;
       sourceLabel: string;
-      statuses: Record<McpCompatibilityHostId, string>;
+      statuses: Partial<Record<McpCompatibilityHostId, string>>;
     };
     confirmation: {
       title: string;

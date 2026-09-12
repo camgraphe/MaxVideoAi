@@ -3,6 +3,7 @@ import { BadgeCheck, CircleDollarSign, Images } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { buildPublicVideoPosterUrl } from '@/lib/media-helpers';
+import { getMcpIntegrationLabel } from '@/lib/mcp-integration-registry';
 import type { McpClientId } from '../../mcp/_lib/mcp-page-types';
 
 const MEDIA = {
@@ -60,11 +61,6 @@ const COPY: Record<
   },
 };
 
-function clientLabel(client: McpClientId): string {
-  if (client === 'chatgpt') return 'ChatGPT';
-  return client === 'claude' ? 'Claude' : 'Codex';
-}
-
 export function IntegrationConversationPreview({
   client,
   locale,
@@ -84,7 +80,7 @@ export function IntegrationConversationPreview({
             <Image src={mark.light} alt="" aria-hidden="true" width={21} height={21} className="dark:hidden" />
             <Image src={mark.dark} alt="" aria-hidden="true" width={21} height={21} className="hidden dark:block" />
           </span>
-          {clientLabel(client)}
+          {getMcpIntegrationLabel(client)}
         </span>
         <span className="rounded-full border border-hairline bg-bg px-2.5 py-1 text-[11px] font-semibold text-text-secondary dark:border-white/[0.12] dark:bg-black/20 dark:text-white/68">
           {copy.label}

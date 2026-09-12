@@ -1,5 +1,9 @@
-import compatibility from '@/config/mcp-compatibility.json';
 import type { AppLocale } from '@/i18n/locales';
+import {
+  getMcpHost,
+  getMcpIntegration,
+  getMcpVisibleIntegrationIds,
+} from '@/lib/mcp-integration-registry';
 import type { McpClientId, McpCompatibilityHostId } from './mcp-page-types';
 
 export type McpCompatibilityHostEvidence = {
@@ -7,7 +11,7 @@ export type McpCompatibilityHostEvidence = {
   client: McpClientId;
   hostLabel: string;
   lastChecked: string;
-  status: 'verified' | 'not-run';
+  status: 'verified' | 'tested_with_limits' | 'not-run';
 };
 
 export type McpCompatibilityClientEvidence = {
@@ -16,38 +20,61 @@ export type McpCompatibilityClientEvidence = {
 };
 
 export type McpCompatibilityEvidence = {
-  clients: Record<McpClientId, McpCompatibilityClientEvidence>;
+  clients: Partial<Record<McpClientId, McpCompatibilityClientEvidence>>;
   evidenceKind: 'hosted-checkpoint';
   lastChecked: string;
   sourceEvidence: string;
 };
 
 export function getMcpCompatibilityEvidence(): McpCompatibilityEvidence {
-  const host = (id: McpCompatibilityHostId): McpCompatibilityHostEvidence => ({
-    id,
-    client: compatibility.hosts[id].client as McpClientId,
-    hostLabel: compatibility.hosts[id].hostLabel,
-    lastChecked: compatibility.lastChecked,
-    status: compatibility.hosts[id].status as 'verified' | 'not-run',
-  });
+  const clients = Object.fromEntries(
+    getMcpVisibleIntegrationIds().map((client) => {
+      const integration = getMcpIntegration(client);
+      return [
+        client,
+        {
+          client,
+          hosts: integration.hosts.map((id) => {
+            const host = getMcpHost(id);
+            return {
+              id,
+              client,
+              hostLabel: host.label,
+              lastChecked: host.evidence.lastChecked,
+              status: host.evidence.status,
+            };
+          }),
+        },
+      ];
+    }),
+  ) as McpCompatibilityEvidence['clients'];
+  const hosts = Object.values(clients)
+    .filter((client): client is McpCompatibilityClientEvidence => Boolean(client))
+    .flatMap((client) => client.hosts);
   return {
-    evidenceKind: compatibility.evidenceKind as 'hosted-checkpoint',
-    lastChecked: compatibility.lastChecked,
-    sourceEvidence: compatibility.sourceEvidence,
-    clients: {
-      claude: {
-        client: 'claude',
-        hosts: [host('claudeDesktop'), host('claudeCode')],
-      },
-      chatgpt: {
-        client: 'chatgpt',
-        hosts: [host('chatgptWeb')],
-      },
-      codex: {
-        client: 'codex',
-        hosts: [host('codexCli')],
-      },
-    },
+    clients,
+    evidenceKind: 'hosted-checkpoint',
+    lastChecked: hosts.map((host) => host.lastChecked).sort().at(-1) ?? '',
+    sourceEvidence: hosts[0] ? getMcpHost(hosts[0].id).evidence.source : '',
+  };
+}
+
+export function getMcpCompatibilityClientEvidence(
+  client: McpClientId,
+): McpCompatibilityClientEvidence {
+  const integration = getMcpIntegration(client);
+  return {
+    client,
+    hosts: integration.hosts.map((id) => {
+      const host = getMcpHost(id);
+      return {
+        id,
+        client,
+        hostLabel: host.label,
+        lastChecked: host.evidence.lastChecked,
+        status: host.evidence.status,
+      };
+    }),
   };
 }
 

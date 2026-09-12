@@ -46,7 +46,8 @@ const requiredFiles = [
   'frontend/app/integrations/claude/page.tsx',
   'frontend/app/integrations/chatgpt/page.tsx',
   'frontend/app/integrations/codex/page.tsx',
-  'frontend/config/mcp-compatibility.json',
+  'frontend/config/mcp-integrations.json',
+  'frontend/lib/mcp-integration-registry.ts',
 ] as const;
 
 function requireFile(path: string): string {
@@ -378,23 +379,26 @@ test('MCP schema builders fail closed and emit only factual live schema types', 
   }
 });
 
-test('visible compatibility dates are sourced from the recorded evidence config', () => {
-  const config = JSON.parse(requireFile('frontend/config/mcp-compatibility.json')) as {
-    evidenceKind: string;
-    lastChecked: string;
-    sourceEvidence: string;
-    hosts: Record<string, { status: string; version?: string }>;
-  };
-  assert.equal(config.evidenceKind, 'hosted-checkpoint');
-  assert.equal(config.lastChecked, '2026-08-27');
-  assert.equal(config.sourceEvidence, 'docs/operations/mcp-host-compatibility-matrix.md');
-  assert.match(requireFile(config.sourceEvidence), new RegExp(config.lastChecked));
-  assert.equal('lastVerified' in config, false);
-  assert.equal(config.hosts.claudeDesktop?.status, 'verified');
-  assert.equal(config.hosts.codexCli?.status, 'verified');
-  assert.equal(config.hosts.chatgptWeb?.status, 'not-run');
-  assert.equal('chatgptDesktop' in config.hosts, false);
-  assert.equal(config.hosts.claudeCode?.status, 'not-run');
+test('visible compatibility dates are sourced from the integration registry', async () => {
+  const registrySource = requireFile('frontend/lib/mcp-integration-registry.ts');
+  const compatibilitySource = requireFile(`${mcpRoot}/_lib/mcp-compatibility.ts`);
+  assert.match(compatibilitySource, /getMcpHost/);
+  assert.doesNotMatch(compatibilitySource, /mcp-compatibility\.json/);
+  assert.doesNotMatch(registrySource, /mcp-client-actions\.json|mcp-compatibility\.json/);
+
+  const { getMcpHost } = await import('../frontend/lib/mcp-integration-registry.ts');
+  const hosts = ['claudeDesktop', 'claudeCode', 'chatgptWeb', 'codexCli'] as const;
+  for (const hostId of hosts) {
+    const host = getMcpHost(hostId);
+    assert.equal(host.evidence.kind, 'hosted-checkpoint');
+    assert.equal(host.evidence.lastChecked, '2026-08-27');
+    assert.equal(host.evidence.source, 'docs/operations/mcp-host-compatibility-matrix.md');
+    assert.match(requireFile(host.evidence.source), new RegExp(host.evidence.lastChecked));
+  }
+  assert.equal(getMcpHost('claudeDesktop').evidence.status, 'verified');
+  assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
+  assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
+  assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
 
   const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);
   const integrationCopy = requireFile(`${integrationsRoot}/_lib/integration-copy.ts`);
