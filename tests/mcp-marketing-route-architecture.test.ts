@@ -120,6 +120,58 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
   }
 });
 
+test('OpenClaw and n8n previews use explicit thin noindex route owners', async () => {
+  for (const client of ['openclaw', 'n8n'] as const) {
+    requireFile(`frontend/app/integrations/${client}/page.tsx`);
+    const page = requireFile(`${integrationsRoot}/${client}/page.tsx`);
+    assert.match(page, new RegExp(`const CLIENT = ['"]${client}['"] as const`));
+    assert.match(page, /getMcpIntegrationPublicationState/);
+    assert.match(page, /buildIntegrationMetadata/);
+    assert.match(page, /buildIntegrationPageData/);
+    assert.match(page, /notFound\(\)/);
+    assert.match(page, /IntegrationPageView/);
+    assert.match(page, /IntegrationJsonLdScripts/);
+    assert.doesNotMatch(page, /['"]use client['"]/);
+    assert.ok(page.split('\n').length <= 45, `${client} page should stay at or below 45 lines`);
+  }
+
+  const openclaw = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/openclaw/page.tsx'
+  );
+  const n8n = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/n8n/page.tsx'
+  );
+  const paths = {
+    openclaw: {
+      en: 'https://maxvideoai.com/integrations/openclaw',
+      fr: 'https://maxvideoai.com/fr/integrations/openclaw',
+      es: 'https://maxvideoai.com/es/integraciones/openclaw',
+    },
+    n8n: {
+      en: 'https://maxvideoai.com/integrations/n8n',
+      fr: 'https://maxvideoai.com/fr/integrations/n8n',
+      es: 'https://maxvideoai.com/es/integraciones/n8n',
+    },
+  } as const;
+
+  for (const [client, route] of Object.entries({ openclaw, n8n }) as Array<
+    ['openclaw' | 'n8n', typeof openclaw]
+  >) {
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const metadata = await route.generateMetadata({ params: Promise.resolve({ locale }) });
+      assert.equal(metadata.alternates?.canonical, paths[client][locale]);
+      assert.deepEqual(metadata.alternates?.languages, {
+        en: paths[client].en,
+        fr: paths[client].fr,
+        es: paths[client].es,
+        'x-default': paths[client].en,
+      });
+      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.index : metadata.robots, false);
+      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.follow : undefined, true);
+    }
+  }
+});
+
 test('the integration page-data builder preserves metadata, evidence, proof, and schema boundaries', async () => {
   const { buildIntegrationPageData } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-page-data.ts'
@@ -225,6 +277,16 @@ test('localized routing owns the exact MCP and integration route contract', asyn
     en: '/integrations/codex',
     fr: '/integrations/codex',
     es: '/integraciones/codex',
+  });
+  assert.deepEqual(routing.pathnames['/integrations/openclaw'], {
+    en: '/integrations/openclaw',
+    fr: '/integrations/openclaw',
+    es: '/integraciones/openclaw',
+  });
+  assert.deepEqual(routing.pathnames['/integrations/n8n'], {
+    en: '/integrations/n8n',
+    fr: '/integrations/n8n',
+    es: '/integraciones/n8n',
   });
 });
 
