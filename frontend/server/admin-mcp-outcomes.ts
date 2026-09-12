@@ -1,10 +1,22 @@
 import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
 import { readMcpAuthMetadata, type McpAuthMetadata } from './admin-mcp-auth-metadata';
 import type { AdminMcpRange } from '@/server/admin-mcp-metrics';
+import type { McpClientFamily } from '@/server/mcp/client-family';
 import { buildMcpOutcomesSql, MCP_OUTCOME_RELATIONS_SQL, type McpOutcomeRelations } from './admin-mcp-outcomes-queries';
 
-export const MCP_CLIENT_LABELS = { chatgpt: 'ChatGPT', claude: 'Claude', codex: 'Codex', other: 'Other / unidentified' } as const;
-export type McpClientFamily = keyof typeof MCP_CLIENT_LABELS;
+export const MCP_CLIENT_LABELS = {
+  chatgpt: 'ChatGPT',
+  claude: 'Claude',
+  codex: 'Codex',
+  openclaw: 'OpenClaw',
+  n8n: 'n8n',
+  cursor: 'Cursor',
+  githubCopilot: 'GitHub Copilot',
+  geminiCli: 'Gemini CLI',
+  microsoftCopilot: 'Microsoft Copilot',
+  other: 'Other / unidentified',
+} as const satisfies Record<McpClientFamily, string>;
+export type { McpClientFamily } from '@/server/mcp/client-family';
 export type McpOutcomeCounts = {
   accounts: number;
   newSignups: number | null;

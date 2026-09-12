@@ -34,7 +34,7 @@ test('admin MCP view owns decision surfaces and explicit unavailable, empty, and
   for (const owner of ['AdminPageHeader', 'AdminMetricGrid', 'AdminSection', 'AdminNotice', 'AdminEmptyState']) {
     assert.match(view, new RegExp(owner));
   }
-  for (const label of ['Funnel', 'Cohort conversion', 'Client split', 'Errors', 'Cost guardrails', 'Publication flags', 'Operations alerts']) {
+  for (const label of ['Funnel', 'Cohort conversion', 'Acquisition source split', 'Errors', 'Cost guardrails', 'Publication flags', 'Operations alerts']) {
     assert.match(view, new RegExp(label, 'i'));
   }
   assert.match(view, /Unavailable/i);

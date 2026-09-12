@@ -96,6 +96,28 @@ test('MCP admin renders live activity before a collapsed measurement coverage di
   );
 });
 
+test('the acquisition split remains distinct from self-reported application attribution', () => {
+  const metrics = activityMetrics();
+  metrics.clientSplit = [
+    { client: 'chatgpt', connections: 5 },
+    { client: 'claude', connections: 3 },
+    { client: 'codex', connections: 2 },
+    { client: 'other', connections: 1 },
+  ];
+  const html = renderToStaticMarkup(createElement(AdminMcpView, {
+    metrics,
+    outcomes: { totals: null, clients: [], notices: [] },
+    selectedRange: '7d',
+  }));
+
+  assert.match(html, /Acquisition source split/);
+  assert.match(html, /acquisition-enabled landing pages/i);
+  assert.match(html, /direct.*Other \/ unidentified/i);
+  for (const label of ['ChatGPT', 'Claude', 'Codex', 'Other / unidentified']) {
+    assert.ok(html.includes(`>${label}<`), label);
+  }
+});
+
 
 test('account and completed-video metrics precede tool activity and explain attribution limits', () => {
   const counts = { accounts: 12, newSignups: 3, generators: 4, submitted: 9, videos: 6, failed: 2, pending: 1 };
@@ -103,10 +125,17 @@ test('account and completed-video metrics precede tool activity and explain attr
     metrics: activityMetrics(), selectedRange: '7d',
     outcomes: { totals: counts, clients: [
       { ...counts, client: 'chatgpt' }, { ...counts, client: 'claude' },
-      { ...counts, client: 'codex' }, { ...counts, client: 'other' },
+      { ...counts, client: 'codex' }, { ...counts, client: 'openclaw' },
+      { ...counts, client: 'n8n' }, { ...counts, client: 'cursor' },
+      { ...counts, client: 'githubCopilot' }, { ...counts, client: 'geminiCli' },
+      { ...counts, client: 'microsoftCopilot' }, { ...counts, client: 'other' },
     ], notices: [] },
   }));
-  for (const label of ['MCP accounts (total)', 'New signups using MCP', 'Users who generated videos', 'Videos generated', 'ChatGPT', 'Claude', 'Codex', 'Other / unidentified']) {
+  for (const label of [
+    'MCP accounts (total)', 'New signups using MCP', 'Users who generated videos',
+    'Videos generated', 'ChatGPT', 'Claude', 'Codex', 'OpenClaw', 'n8n', 'Cursor',
+    'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot', 'Other / unidentified',
+  ]) {
     assert.ok(html.includes(label), label);
   }
   assert.match(html, /9 video jobs submitted · 1 in progress · 2 failed or cancelled/);

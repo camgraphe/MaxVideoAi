@@ -65,6 +65,35 @@ Evidence recorded 2026-09-12: 60 focused marketing/route/visual/SEO tests and 14
 
 Brand-mark follow-up recorded 2026-09-12: all nine integrations render through the shared `McpIntegrationMark`; 43 focused registry, publication, route, and visual tests passed along with frontend lint, exposure lint, `git diff --check`, and a production build. Browser checks confirmed all nine visible hub marks and both OpenClaw/n8n hero marks load in light and dark layouts with zero horizontal overflow at 1440×900 and 390×844.
 
+### Task 1B: Extend Privacy-Safe Admin Attribution
+
+**Files:**
+- Modify: `frontend/src/server/mcp/client-family.ts`
+- Modify: `frontend/src/server/agent-api/audit-events.ts`
+- Modify: `frontend/src/lib/schema/mcp-schema.ts`
+- Create: `neon/migrations/42_mcp_client_family_ecosystem.sql`
+- Modify: `frontend/server/admin-mcp-auth-metadata.ts`
+- Modify: `frontend/server/admin-mcp-outcomes.ts`
+- Modify: `frontend/server/admin-mcp-outcomes-queries.ts`
+- Modify: `frontend/app/(core)/admin/mcp/_components/AdminMcpView.tsx`
+- Verify: `tests/admin-mcp-outcomes.test.ts`
+- Verify: `tests/admin-mcp-metrics-postgres.test.ts`
+- Verify: `tests/admin-mcp-view.test.ts`
+
+**Interfaces:**
+- Consumes: the nine integration identities in the MCP registry and self-reported MCP `clientInfo.name` metadata.
+- Produces: a privacy-safe admin application breakdown that preserves ChatGPT, Claude, Codex, and historical `other` attribution while distinguishing later clients only when evidence supports it.
+
+- [x] Extend the coarse audit family allowlist to all nine registry integrations without retaining raw client names or versions.
+- [x] Add an idempotent migration that widens the existing database check without rewriting historical rows.
+- [x] Attribute OpenClaw, n8n, Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot conservatively from explicit client-name prefixes.
+- [x] Show every registry integration plus `Other / unidentified` in the account/video application breakdown.
+- [x] Keep the acquisition funnel split limited to acquisition-enabled landing clients and label that boundary clearly in the admin UI.
+- [x] Run focused admin, audit, migration, architecture, registry, and existing-client non-regression tests.
+- [x] Record the verification result and commit the admin milestone independently.
+
+Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract, acquisition, registry, publication, host-proof, and immutable live-baseline tests passed. Frontend lint, exposure lint, TypeScript checking, `git diff --check`, and the production build exited successfully. The admin application breakdown now includes all nine registry integrations plus the historical unidentified bucket; the acquisition-source split remains restricted to ChatGPT, Claude, Codex, and `Other / unidentified` until later acquisition gates are explicitly enabled.
+
 ### Task 2: Record OpenClaw Host Evidence
 
 **Files:**
