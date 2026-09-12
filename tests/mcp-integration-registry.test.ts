@@ -57,7 +57,7 @@ test('existing publication, evidence and action floors are preserved', () => {
   }
 });
 
-test('new hosts start without evidence, indexation or acquisition permission', () => {
+test('new hosts preserve indexation and acquisition gates independently of host evidence', () => {
   for (const id of ['openclaw', 'n8n'] as const) {
     assert.equal(getMcpIntegration(id).site.publication, 'preview_noindex');
     assert.equal(getMcpIntegration(id).site.indexable, false);
@@ -72,8 +72,10 @@ test('new hosts start without evidence, indexation or acquisition permission', (
     assert.equal(isEnabledMcpAcquisitionClient(id), false);
   }
 
+  assert.equal(getMcpHost('openclawGateway').evidence.status, 'tested_with_limits');
+  assert.equal(getMcpHost('openclawGateway').evidence.lastChecked, '2026-09-13');
+
   for (const id of [
-    'openclawGateway',
     'n8nMcpClient',
     'n8nMcpClientTool',
     'cursorDesktop',

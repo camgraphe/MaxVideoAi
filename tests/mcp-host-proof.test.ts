@@ -76,3 +76,22 @@ test('the registry guide locks later hosts behind separate evidence gates', () =
   assert.match(guide, /enterprise certification/i);
   assert.match(guide, /remain `hidden`\s+and `not-run`/);
 });
+
+test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const row = matrix.split('\n').find((line) => line.startsWith('| OpenClaw Gateway |')) ?? '';
+
+  assert.match(row, /Tested-with-limits checkpoint/);
+  assert.match(row, /OpenClaw 2026\.9\.4, commit `3a9d69d`/);
+  assert.match(row, /macOS 26\.6\.2/);
+  assert.match(row, /Streamable HTTP/);
+  assert.match(row, /3b98acb659a339b944784256ec4c594531767d90b0dbc16a5caa7dc88eb7c0ca/);
+  assert.match(row, /digest was captured after the initial lifecycle/);
+  assert.match(row, /does not prove the bytes used during that lifecycle/);
+  assert.match(row, /Denial left protected tools unavailable with no job or wallet mutation/);
+  assert.match(row, /confirmed exactly once and completed/);
+  assert.match(row, /cold\/lost-context session recovered the same accepted job through `list_recent_generations`, `get_generation_status`, and `present_generation` without a second `confirm_generation` or other paid call/);
+  assert.match(row, /library fallback/);
+  assert.match(row, /remain unverified/);
+  assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);
+});

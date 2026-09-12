@@ -201,8 +201,8 @@
       "label": "OpenClaw Gateway",
       "evidence": {
         "kind": "hosted-checkpoint",
-        "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "status": "tested_with_limits",
+        "lastChecked": "2026-09-13",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },

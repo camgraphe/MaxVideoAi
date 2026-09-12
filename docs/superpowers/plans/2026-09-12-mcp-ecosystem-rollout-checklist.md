@@ -106,19 +106,23 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 - Consumes: `https://api.maxvideoai.com/mcp`, the installed OpenClaw CLI, and a disposable OpenClaw profile.
 - Produces: a dated OpenClaw Gateway checkpoint with an evidence status no stronger than the observed lifecycle.
 
-- [ ] Record `openclaw --version`, operating system, transport mode, and the candidate file digest before testing.
+- [x] Record `openclaw --version`, operating system, transport mode, and the candidate file digest associated with this checkpoint. The digest was captured after the initial lifecycle and before the remaining validation steps, so it is not presented as a pre-test provenance record.
 - [x] Create a disposable OpenClaw profile with no existing MaxVideoAI grant or cached MCP configuration.
 - [x] Add the MaxVideoAI Streamable HTTP endpoint using OpenClaw's supported OAuth configuration.
-- [ ] Verify denial/cancel leaves protected tools unavailable and creates no job or wallet mutation.
+- [x] Verify OAuth denial leaves protected tools unavailable and creates no job or wallet mutation. A distinct user-cancel path remains untested.
+- [ ] Verify a distinct user-cancel path and token refresh without losing account continuity.
 - [x] Approve OAuth, verify account identity, list tools, inspect account status, list models, inspect model details, request recommendations, and calculate a project budget without spending.
 - [x] Prepare one concrete generation and verify it returns a fresh exact quote without creating a paid job.
 - [x] Present the exact quoted amount and obtain explicit approval before any minimal paid confirmation.
-- [ ] Confirm the approved quote once, recover the accepted job after an interrupted response, and verify the completed or refunded outcome in the MaxVideoAI library.
-- Partial checkpoint: one explicitly approved `$0.07` quote was confirmed exactly once, completed, and presented through the library fallback. A deliberately interrupted confirmation response and recovery through `list_recent_generations` remain to be exercised before checking the combined item.
+- [x] Confirm one explicitly approved `$0.07` quote exactly once, then recover the same accepted job from cold/lost context through `list_recent_generations`, `get_generation_status`, and `present_generation`; verify completion through the MaxVideoAI library fallback without a second `confirm_generation` or other paid call.
+- [ ] Exercise a literally ambiguous interrupted `confirm_generation` transport response, then recover without a duplicate confirmation or paid job.
+- [ ] Exercise one bounded private-reference import path and clean up the disposable media.
 - [ ] Revoke the MaxVideoAI grant, verify protected access is lost, reconnect through a fresh browser approval, and verify access returns.
-- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix.
-- [ ] Update only the OpenClaw host evidence status and `lastChecked` field; keep site publication and acquisition unchanged until Task 3 passes.
-- [ ] Run the host-proof, registry, publication, marketing, and public-baseline tests; commit the evidence update.
+- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix. This checkpoint covers denial, one approved confirmation, and cold/lost-context recovery; it does not cover cancel, refresh, revoke/loss/reconnect, or a literally interrupted confirmation response.
+- [x] Update only the OpenClaw host evidence status and `lastChecked` field; keep site publication and acquisition unchanged until Task 3 passes.
+- [x] Run the host-proof, registry, publication, marketing, and public-baseline tests; commit the evidence update.
+
+Evidence recorded 2026-09-13: 66 focused host-proof, registry, publication, marketing, SEO, and immutable public-baseline tests passed. Frontend lint, exposure lint, and `git diff --check` passed. The OpenClaw Gateway alone moved to `tested_with_limits`; OpenClaw remains `preview_noindex`, non-indexable, acquisition-disabled, package-unavailable, and ClawHub `preparing`. The unchecked lifecycle gaps above remain required before a verified host claim.
 
 ### Task 3: Validate and Publish the ClawHub Candidate
 
