@@ -37,6 +37,7 @@
 - [x] Prepare the three credential-free n8n workflow candidates under `distribution/n8n/`.
 - [x] Document later-host promotion gates and platform-specific limitations.
 - [x] Restructure `/mcp` around one platform selector, one production workflow, the existing demo, and a shorter FAQ/resources section.
+- [x] Add locally served brand marks for all nine registry integrations and reuse them in the hub selector and integration-page heroes.
 
 ---
 
@@ -61,6 +62,8 @@
 - [x] Record the verification result in the branch handoff without changing the registry state.
 
 Evidence recorded 2026-09-12: 60 focused marketing/route/visual/SEO tests and 14 registry/publication/baseline tests passed; frontend lint, exposure lint, `git diff --check`, and the production build exited successfully. EN/FR/ES hub smoke checks returned HTTP 200 with exact canonicals, reciprocal hreflang, one `main`, and all nine platform labels. Desktop 1440×900 and mobile 390×844 checks showed no horizontal overflow and the intended 3/2/4 platform hierarchy.
+
+Brand-mark follow-up recorded 2026-09-12: all nine integrations render through the shared `McpIntegrationMark`; 43 focused registry, publication, route, and visual tests passed along with frontend lint, exposure lint, `git diff --check`, and a production build. Browser checks confirmed all nine visible hub marks and both OpenClaw/n8n hero marks load in light and dark layouts with zero horizontal overflow at 1440×900 and 390×844.
 
 ### Task 2: Record OpenClaw Host Evidence
 

@@ -15,15 +15,18 @@ function requireFile(path: string): string {
   return readFileSync(path, 'utf8');
 }
 
-test('Claude, ChatGPT, and Codex use official marks through one equal neutral action component', () => {
+test('Claude, ChatGPT, and Codex use the shared marks through one equal neutral action component', () => {
   const source = requireFile(`${componentsRoot}/McpClientActions.tsx`);
   const integrationHero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
+  const sharedMarks = requireFile('frontend/components/marketing/mcp/McpIntegrationMark.tsx');
   const openAiDark = requireFile('frontend/public/brand/partners/openai/openai-mark-dark.svg');
   const claudeDark = requireFile('frontend/public/brand/partners/anthropic/claude-mark-dark.svg');
-  assert.match(source, /\/brand\/partners\/anthropic\/claude-mark-light\.svg/);
-  assert.match(source, /\/brand\/partners\/anthropic\/claude-mark-dark\.svg/);
-  assert.match(source, /\/brand\/partners\/openai\/openai-mark-light\.svg/);
-  assert.match(source, /\/brand\/partners\/openai\/openai-mark-dark\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/anthropic\/claude-mark-light\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/anthropic\/claude-mark-dark\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/openai\/openai-mark-light\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/openai\/openai-mark-dark\.svg/);
+  assert.match(source, /McpIntegrationMark integration=\{action\.client\}/);
+  assert.match(integrationHero, /McpIntegrationMark integration=\{copy\.client\}/);
   assert.match(source, /function McpClientAction/);
   assert.match(source, /clients\.map/);
   assert.match(source, /neutral|bg-surface/);
@@ -33,9 +36,38 @@ test('Claude, ChatGPT, and Codex use official marks through one equal neutral ac
   assert.match(integrationHero, /bg-white[^"\n]*dark:bg-neutral-900/);
   assert.doesNotMatch(source, /bg-white[^"\n]*dark:bg-white/);
   assert.doesNotMatch(integrationHero, /bg-white[^"\n]*dark:bg-white/);
-  assert.equal((source.match(/h-6 w-6 object-contain/g) ?? []).length, 2);
   assert.match(source, /sm:grid-cols-3/);
   assert.doesNotMatch(source, /preferred|primaryClient|OpenAI['"]/);
+});
+
+test('the platform selector renders a local brand mark for every MCP integration', async () => {
+  const { McpPlatformSelector } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPlatformSelector.tsx'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const copy = getMcpPageCopy('en');
+  const html = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
+    actions: copy.hero.actions,
+    copy: copy.ecosystem,
+  }));
+
+  for (const client of [
+    'claude',
+    'chatgpt',
+    'codex',
+    'openclaw',
+    'n8n',
+    'cursor',
+    'githubCopilot',
+    'geminiCli',
+    'microsoftCopilot',
+  ] as const) {
+    assert.match(html, new RegExp(`data-mcp-integration-mark="${client}"`));
+    assert.match(html, new RegExp(`data-mcp-mark-kind="logo"[^>]*data-mcp-integration-mark="${client}"|data-mcp-integration-mark="${client}"[^>]*data-mcp-mark-kind="logo"`));
+  }
+  assert.doesNotMatch(html, /data-mcp-mark-kind="monogram"/);
 });
 
 test('new MCP surfaces remain light-first, restrained, and dark-compatible', () => {

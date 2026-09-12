@@ -1,28 +1,7 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEventHandler } from 'react';
-import type { McpClientActionCopy, McpClientId } from '../_lib/mcp-page-types';
-
-const CLIENT_MARKS: Partial<Record<
-  McpClientId,
-  { light: string; dark: string; alt: string }
->> = {
-  claude: {
-    light: '/brand/partners/anthropic/claude-mark-light.svg',
-    dark: '/brand/partners/anthropic/claude-mark-dark.svg',
-    alt: 'Claude',
-  },
-  chatgpt: {
-    light: '/brand/partners/openai/openai-mark-light.svg',
-    dark: '/brand/partners/openai/openai-mark-dark.svg',
-    alt: 'ChatGPT',
-  },
-  codex: {
-    light: '/brand/partners/openai/openai-mark-light.svg',
-    dark: '/brand/partners/openai/openai-mark-dark.svg',
-    alt: 'Codex',
-  },
-};
+import { McpIntegrationMark } from '@/components/marketing/mcp/McpIntegrationMark';
+import type { McpClientActionCopy } from '../_lib/mcp-page-types';
 
 function McpClientAction({
   action,
@@ -33,8 +12,6 @@ function McpClientAction({
   onActionClick?: (action: McpClientActionCopy) => MouseEventHandler<HTMLAnchorElement>;
   tier?: 'live';
 }) {
-  const mark = CLIENT_MARKS[action.client];
-  if (!mark) return null;
   return (
     <Link
       href={action.href}
@@ -45,8 +22,7 @@ function McpClientAction({
       onClick={onActionClick?.(action)}
     >
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
-        <Image className="h-6 w-6 object-contain dark:hidden" src={mark.light} alt="" aria-hidden="true" width={24} height={24} />
-        <Image className="hidden h-6 w-6 object-contain dark:block" src={mark.dark} alt="" aria-hidden="true" width={24} height={24} />
+        <McpIntegrationMark integration={action.client} />
       </span>
       <span className="min-w-0">
         <span className="block text-sm font-semibold text-text-primary dark:text-white">{action.label}</span>
@@ -57,7 +33,6 @@ function McpClientAction({
       <span className="ml-auto text-text-muted transition group-hover:translate-x-0.5 group-hover:text-text-primary dark:text-white/50 dark:group-hover:text-white" aria-hidden="true">
         →
       </span>
-      <span className="sr-only">{mark.alt}</span>
     </Link>
   );
 }

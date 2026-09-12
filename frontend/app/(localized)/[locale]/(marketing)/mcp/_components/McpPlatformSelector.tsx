@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { McpIntegrationMark } from '@/components/marketing/mcp/McpIntegrationMark';
 import { getMcpIntegrationLabel } from '@/lib/mcp-integration-registry';
 import type { McpClientActionCopy, McpPageCopy } from '../_lib/mcp-page-types';
 import { McpClientActions } from './McpClientActions';
@@ -29,7 +30,12 @@ export function McpPlatformSelector({
           {copy.overview.map((item) => {
             const content = (
               <>
-                <span className="font-semibold text-text-primary dark:text-white">{getMcpIntegrationLabel(item.client)}</span>
+                <span className="flex items-center gap-2.5">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-hairline bg-white dark:border-white/[0.12] dark:bg-neutral-900">
+                    <McpIntegrationMark integration={item.client} size={20} className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 font-semibold leading-5 text-text-primary dark:text-white">{getMcpIntegrationLabel(item.client)}</span>
+                </span>
                 <span className="mt-2 block text-[11px] leading-4 text-text-muted dark:text-white/55">{item.status}</span>
               </>
             );
