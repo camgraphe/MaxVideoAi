@@ -107,15 +107,16 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 - Produces: a dated OpenClaw Gateway checkpoint with an evidence status no stronger than the observed lifecycle.
 
 - [ ] Record `openclaw --version`, operating system, transport mode, and the candidate file digest before testing.
-- [ ] Create a disposable OpenClaw profile with no existing MaxVideoAI grant or cached MCP configuration.
-- [ ] Add the MaxVideoAI Streamable HTTP endpoint using OpenClaw's supported OAuth configuration.
+- [x] Create a disposable OpenClaw profile with no existing MaxVideoAI grant or cached MCP configuration.
+- [x] Add the MaxVideoAI Streamable HTTP endpoint using OpenClaw's supported OAuth configuration.
 - [ ] Verify denial/cancel leaves protected tools unavailable and creates no job or wallet mutation.
-- [ ] Approve OAuth, verify account identity, list tools, inspect account status, list models, inspect model details, request recommendations, and calculate a project budget without spending.
-- [ ] Prepare one concrete generation and verify it returns a fresh exact quote without creating a paid job.
-- [ ] Present the exact quoted amount and obtain explicit approval before any minimal paid confirmation.
+- [x] Approve OAuth, verify account identity, list tools, inspect account status, list models, inspect model details, request recommendations, and calculate a project budget without spending.
+- [x] Prepare one concrete generation and verify it returns a fresh exact quote without creating a paid job.
+- [x] Present the exact quoted amount and obtain explicit approval before any minimal paid confirmation.
 - [ ] Confirm the approved quote once, recover the accepted job after an interrupted response, and verify the completed or refunded outcome in the MaxVideoAI library.
+- Partial checkpoint: one explicitly approved `$0.07` quote was confirmed exactly once, completed, and presented through the library fallback. A deliberately interrupted confirmation response and recovery through `list_recent_generations` remain to be exercised before checking the combined item.
 - [ ] Revoke the MaxVideoAI grant, verify protected access is lost, reconnect through a fresh browser approval, and verify access returns.
-- [ ] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix.
+- [x] Record sanitized evidence, limitations, and the exact OpenClaw version in the compatibility matrix.
 - [ ] Update only the OpenClaw host evidence status and `lastChecked` field; keep site publication and acquisition unchanged until Task 3 passes.
 - [ ] Run the host-proof, registry, publication, marketing, and public-baseline tests; commit the evidence update.
 
