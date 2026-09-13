@@ -49,11 +49,12 @@ export function McpIntegrationMark({
     >
       {brand.kind === 'paired' ? (
         <>
-          <Image src={brand.light} alt="" width={size} height={size} className={`${className} object-contain dark:hidden`} />
-          <Image src={brand.dark} alt="" width={size} height={size} className={`hidden ${className} object-contain dark:block`} />
+          <Image aria-hidden="true" src={brand.light} alt="" width={size} height={size} className={`${className} object-contain dark:hidden`} />
+          <Image aria-hidden="true" src={brand.dark} alt="" width={size} height={size} className={`hidden ${className} object-contain dark:block`} />
         </>
       ) : (
         <Image
+          aria-hidden="true"
           src={brand.src}
           alt=""
           width={size}
