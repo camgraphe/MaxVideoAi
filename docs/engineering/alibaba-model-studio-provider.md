@@ -102,9 +102,9 @@ Happy Horse 1.1 is part of the same Alibaba direct adapter. Its public T2V contr
 3. Re-read each affected model through the public MCP catalog and prepare one zero-spend quote at the capability boundary. A published option that cannot be quoted is not launch-ready.
 4. Verify production storage and the Alibaba cron independently, then keep monitoring accepted jobs until they reach a durable local terminal state.
 5. Reconcile attempt-ledger estimates with Alibaba billing. Record free quota, promotion, discount, credit, and invoice differences outside `provider_cost_usd`.
-6. Keep fallback disabled unless a separate decision explicitly enables the eligible pre-acceptance path.
+6. Keep the fallback flag explicit and verify Fal credentials before deployment. Production enables only the eligible pre-acceptance path; do not broaden the compatible modes or error classes without a separate review.
 
-Production currently uses the master switch and public routing. The defaults stay fail-closed for every unconfigured environment, and fallback remains off by policy.
+Production currently uses the master switch, public routing, and the narrowly scoped Fal fallback described above. The defaults stay fail-closed for every unconfigured environment. The fallback was enabled on 2026-09-14 after the focused routing, submission, polling, refund, and architecture suite passed; no synthetic provider outage was introduced on the public route to force a live fallback.
 
 ## Rollback and release gates
 
