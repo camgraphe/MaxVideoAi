@@ -64,8 +64,10 @@ test('Claude, ChatGPT, and Codex are three equal primary actions', () => {
   assert.match(copy, /integrations, 'codex'/);
 
   const actions = source(`${marketingRoot}/mcp/_components/McpClientActions.tsx`);
-  assert.match(actions, /openai-mark-light\.svg/);
-  assert.match(actions, /claude-mark-light\.svg/);
+  const marks = source('frontend/components/marketing/mcp/McpIntegrationMark.tsx');
+  assert.match(actions, /McpIntegrationMark integration=\{action\.client\}/);
+  assert.match(marks, /openai-mark-light\.svg/);
+  assert.match(marks, /claude-mark-light\.svg/);
   assert.match(actions, /sm:grid-cols-3/);
 });
 
