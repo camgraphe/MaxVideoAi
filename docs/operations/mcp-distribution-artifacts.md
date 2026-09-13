@@ -20,8 +20,9 @@ credential, and duplicates no model roster, price, provider rule, or billing
 logic. Its only runtime permission is the OpenClaw-managed MCP access that the
 user separately grants to MaxVideoAI through OAuth.
 
-ClawHub's current skill terms apply MIT-0 to published skills. The product owner
-must accept that consequence for the exact files before any external action.
+ClawHub's current skill terms apply MIT-0 to published skills. On 2026-09-13,
+the product owner explicitly accepted that consequence for exactly the two
+publishable payload files, `SKILL.md` and `references/safe-generation.md`.
 
 ### Primary-source recheck
 
@@ -35,7 +36,8 @@ documentation:
   uploading it; a real first publication defaults to `1.0.0` unless an exact
   version is supplied;
 - publishing requires access to the selected personal or organization owner;
-  owner and namespace checks remain account-specific and unverified here;
+  the owner-controlled personal publisher account was verified as `@camgraphe`
+  before upload;
 - every published skill is licensed under MIT-0, allowing use, modification,
   and redistribution without attribution; the repository's BUSL-1.1 license
   does not override those ClawHub copies;
@@ -68,9 +70,13 @@ fingerprint. All three local files are non-executable ASCII text with Git mode
 `100644`; the payload audit found no credential, installer, fixed price, or
 copied model roster.
 
-No owner namespace was inspected, and no sign-in, scan, upload, publication,
-install, update, or uninstall occurred. The registry therefore remains
-`preparing` and the OpenClaw package remains unavailable.
+At `2026-09-13T20:59:22Z`, the official CLI confirmed the owner-controlled
+publisher handle `@camgraphe`. A fresh authenticated dry-run resolved the
+intended public slug `maxvideoai`, reported `latestVersion: null`, and reproduced
+the same two-file fingerprint above. The device authorization created only the
+publisher session; no scan, upload, publication, install, update, or uninstall
+occurred. The registry therefore remains `preparing` and the OpenClaw package
+remains unavailable.
 
 ### Local validation
 

@@ -145,8 +145,8 @@ Additional interrupted-response evidence recorded 2026-09-13: the exact pinned O
 - [x] Resolve and execute the current official ClawHub CLI only from its documented distribution source and record its version; keep it ephemeral rather than globally installed.
 - [x] Run the exact dry-run for slug `maxvideoai`, name `MaxVideoAI`, and version `1.0.0`; save only sanitized output and the resolved file list.
 - [x] Confirm the package contains exactly the two reviewed payload files; keep `.clawhubignore` as the third local packaging-control file, and verify no credential, executable installer, fixed price, or copied model roster.
-- [ ] Review the MIT-0 consequence for the exact published files and obtain the product owner's explicit acceptance.
-- [ ] Sign in to the owner-controlled ClawHub account and verify the intended namespace before upload.
+- [x] Review the MIT-0 consequence for the exact published files and obtain the product owner's explicit acceptance.
+- [x] Sign in to the owner-controlled ClawHub account and verify the intended namespace before upload.
 - [ ] Publish version `1.0.0` once, then inspect its listing, file contents, permissions, scan result, source attribution, and install command.
 - [ ] Perform clean install, update check, and uninstall from a disposable OpenClaw profile; verify OAuth revocation remains a separate MaxVideoAI account action.
 - [ ] Record listing URL, published digest, publisher account, scan state, and timestamps in both distribution documents.
@@ -162,9 +162,13 @@ Dry-run evidence recorded 2026-09-13: the official npm package
 Disposable differential dry-runs proved `.clawhubignore` is not uploaded while
 `references/safe-generation.md` is; `SKILL.md` is the required root payload.
 The three local files are non-executable mode-`100644` ASCII text and passed the
-credential, installer, fixed-price, and copied-roster audit. No sign-in,
-namespace inspection, MIT-0 acceptance, scan, upload, publication, install,
-update, or uninstall occurred; store status remains `preparing`.
+credential, installer, fixed-price, and copied-roster audit. On 2026-09-13, the
+product owner explicitly accepted MIT-0 for exactly the two payload files. At
+`2026-09-13T20:59:22Z`, the official CLI verified the owner-controlled publisher
+`@camgraphe`; an authenticated dry-run reproduced the same slug, version,
+file count, and fingerprint, with `latestVersion: null`. No scan, upload,
+publication, install, update, or uninstall occurred; store status remains
+`preparing`.
 
 ### Task 4: Validate n8n Workflows in a Disposable Environment
 
