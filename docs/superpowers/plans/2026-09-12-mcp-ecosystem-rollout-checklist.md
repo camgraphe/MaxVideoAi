@@ -213,21 +213,30 @@ was moved to the Trash. No generation or paid call occurred.
 - Consumes: Docker, an exact n8n image version, and a disposable OAuth credential bound after import.
 - Produces: separate MCP Client and MCP Client Tool evidence with workflow import/export parity.
 
-- [ ] Recheck the current n8n MCP Client, MCP Client Tool, credential, import/export, wait, and template-library documentation.
-- [ ] Pull a pinned official n8n image and record the immutable image digest.
-- [ ] Start n8n with a disposable volume and loopback-only port; do not reuse a production n8n database or credential store.
-- [ ] Import all three JSON candidates before adding credentials and verify no secret or credential ID is embedded.
-- [ ] Configure a disposable OAuth credential for `https://api.maxvideoai.com/mcp` through the n8n UI.
-- [ ] Execute the read-only discovery and budget path with the deterministic MCP Client node.
-- [ ] Verify the AI Agent MCP Client Tool exposes only the selected tools and cannot bypass the human approval boundary.
-- [ ] Execute the preparation path and verify the workflow pauses on the exact quote before confirmation.
-- [ ] Present the exact quoted amount and obtain explicit approval before any minimal paid confirmation.
-- [ ] Verify a single confirmation, stable idempotency key, bounded polling, accepted-job recovery, and completion/refund notification behavior.
-- [ ] Export each workflow and compare its graph, node IDs, endpoint, approval order, and credential-free shape with the repository candidate.
-- [ ] Destroy the disposable container and volume after exporting sanitized evidence.
-- [ ] Record exact n8n version, image digest, import results, OAuth lifecycle, node-specific limitations, and evidence references.
-- [ ] Update n8n host evidence only to the observed status; retain `preview_noindex` and disabled acquisition until Task 5 passes.
-- [ ] Run the workflow, host-proof, registry, publication, and public-baseline tests; commit the evidence update.
+- [x] Recheck the current n8n MCP Client, MCP Client Tool, credential, import/export, wait, and template-library documentation.
+- [x] Pull a pinned official n8n image and record the immutable image digest.
+- [x] Start n8n with a disposable volume and loopback-only port; do not reuse a production n8n database or credential store.
+- [x] Import all three JSON candidates before adding credentials and verify no secret or credential ID is embedded.
+- [x] Configure a disposable OAuth credential for `https://api.maxvideoai.com/mcp` through the n8n UI.
+- [x] Execute the read-only discovery and budget path with the deterministic MCP Client node.
+- [x] Verify the AI Agent MCP Client Tool exposes only the selected planning tools and excludes preparation/confirmation; record that agent invocation is still unverified without a Chat Model credential.
+- [x] Execute the preparation path and verify the workflow pauses on the exact quote before confirmation.
+- [x] Present the exact quoted amount and obtain explicit approval before any minimal paid confirmation.
+- [x] Verify one confirmation, server-side `quoteId` idempotency, a bounded polling graph, accepted-job recovery, a completed notification, and a zero-confirmation rejection path; retain live failure/refund notification as an explicit limitation.
+- [x] Export each workflow and compare its graph, node IDs, endpoint, approval order, and credential-free shape with the repository candidate.
+- [x] Destroy the disposable container and volume after exporting sanitized evidence.
+- [x] Record exact n8n version, image digest, import results, OAuth lifecycle, node-specific limitations, and evidence references.
+- [x] Update n8n host evidence only to the observed status; retain `preview_noindex` and disabled acquisition until Task 5 passes.
+- [x] Run the workflow, host-proof, registry, publication, and public-baseline tests; commit the evidence update.
+
+Evidence recorded 2026-09-14: the focused n8n, host-proof, registry,
+publication, marketing-copy, SEO, and immutable public-baseline suite passed
+58/58. The complete `tests/mcp-*.test.ts` suite then passed 1,012/1,012 with no
+skips; frontend lint, public-exposure lint, JSON parsing, and `git diff --check`
+also passed. Claude, ChatGPT, and Codex retain their existing publication,
+indexation, acquisition, and host-evidence states. n8n alone moves to
+`tested_with_limits`; its site remains `preview_noindex`, non-indexable, and
+acquisition-disabled, with no n8n template-library submission.
 
 ### Task 5: Promote OpenClaw and n8n Marketing Independently
 

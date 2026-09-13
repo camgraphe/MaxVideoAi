@@ -381,6 +381,9 @@ test('OpenClaw and n8n previews explain distinct workflows without unearned clai
     assert.match(JSON.stringify(n8n), /determin|détermin|determin/i);
     assert.match(JSON.stringify(n8n), /idempoten/i);
     assert.match(JSON.stringify(n8n), /recover|reprendre|recuper/i);
+    assert.match(JSON.stringify(n8n), /2\.38\.7/);
+    assert.match(JSON.stringify(n8n), /Chat Model|modèle de chat|modelo de chat/i);
+    assert.doesNotMatch(JSON.stringify(n8n), /clean import[^.]*not recorded|aucun import propre|no existe una importación limpia/i);
     assert.doesNotMatch(previewText, /verified|certified|official partner/i);
     assert.doesNotMatch(previewText, /\$\d|\d+ models/i);
   }

@@ -168,7 +168,7 @@ assert.doesNotMatch(JSON.stringify({ openclaw, n8n }), /verified|certified|offic
 assert.doesNotMatch(JSON.stringify({ openclaw, n8n }), /\$\d|\d+ models/i);
 ```
 
-Also assert that OpenClaw explains shared versus per-requester OAuth and that n8n separates deterministic steps from AI Agent tools, exact approval, stable idempotency, and accepted-job recovery.
+Also assert that OpenClaw explains shared versus per-requester OAuth and that n8n separates deterministic steps from AI Agent tools, exact approval, server-side quote idempotency, and accepted-job recovery.
 
 - [ ] **Step 2: Run and verify RED**
 
@@ -340,7 +340,7 @@ git commit -m "feat: prepare auditable ClawHub skill"
 
 - [ ] **Step 1: Write failing workflow invariants**
 
-Parse all three JSON files and assert unique node IDs, valid connection targets, no embedded credentials, endpoint equality with `https://api.maxvideoai.com/mcp`, finite wait/poll bounds, and no fixed price/model roster. For generation flows, assert the graph orders `prepare_generation` before a human approval gate and `confirm_generation`, carries one stable idempotency key, and never routes timeout recovery back into confirmation. For completion notification, assert there is no `confirm_generation` node and notifications occur only for completion, refund/failure, or required user action.
+Parse all three JSON files and assert unique node IDs, valid connection targets, no embedded credentials, endpoint equality with `https://api.maxvideoai.com/mcp`, finite wait/poll bounds, and no fixed price/model roster. For generation flows, assert the graph orders `prepare_generation` before a human approval gate and `confirm_generation`, matches the approval payload to the exact prepared `quoteId`, sends no unsupported client idempotency field, and never routes timeout recovery back into confirmation. For completion notification, assert there is no `confirm_generation` node and notifications occur only for completion, refund/failure, or required user action.
 
 - [ ] **Step 2: Run and verify RED**
 
@@ -350,7 +350,7 @@ Expected: FAIL because the workflow files do not exist.
 
 - [ ] **Step 3: Create the three minimal import candidates**
 
-Use only built-in control/data nodes plus `n8n-nodes-langchain.mcpClient` for deterministic MaxVideoAI calls. Store the MCP credential by reference only; never include a credential ID or secret in exported JSON. Use explicit manual approval/webhook boundaries, bounded batches, stable per-item keys, and wait/status branches that recover the accepted job.
+Use only built-in control/data nodes plus `@n8n/n8n-nodes-langchain.mcpClient` for deterministic MaxVideoAI calls. Store the MCP credential by reference only; never include a credential ID or secret in exported JSON. Use explicit manual approval/webhook boundaries, bounded batches, exact per-item `quoteId` matching, and wait/status branches that recover the accepted job. MaxVideoAI owns idempotent replays for a confirmed quote.
 
 - [ ] **Step 4: Document import and validation scope**
 

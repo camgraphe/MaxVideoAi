@@ -119,3 +119,28 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.match(row, /remain unverified/);
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);
 });
+
+test('the n8n matrix records deterministic and agent-tool evidence separately', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const clientRow = matrix.split('\n').find((line) => line.startsWith('| n8n MCP Client |')) ?? '';
+  const toolRow = matrix.split('\n').find((line) => line.startsWith('| n8n MCP Client Tool |')) ?? '';
+
+  assert.match(clientRow, /Tested-with-limits checkpoint/);
+  assert.match(clientRow, /n8n 2\.38\.7/);
+  assert.match(clientRow, /macOS 26\.6\.2.*arm64/);
+  assert.match(clientRow, /loopback-only/);
+  assert.match(clientRow, /\$0\.12.*Seedance 1\.5 Pro/);
+  assert.match(clientRow, /confirmed exactly once/);
+  assert.match(clientRow, /get_generation_status.*list_recent_generations.*present_generation/);
+  assert.match(clientRow, /revoked.*Authentication required/is);
+  assert.match(clientRow, /container and volume were removed/);
+  assert.doesNotMatch(clientRow, /(?:access_token|refresh_token|Bearer\s)/i);
+
+  assert.match(toolRow, /Tested-with-limits checkpoint/);
+  assert.match(toolRow, /MCP Client Tool 1\.4/);
+  assert.match(toolRow, /five selected.*planning tools/i);
+  assert.match(toolRow, /prepare_generation.*confirm_generation.*excluded/);
+  assert.match(toolRow, /Chat Model.*not configured/i);
+  assert.match(toolRow, /agent-mediated tool invocation remains unverified/i);
+  assert.doesNotMatch(toolRow, /(?:access_token|refresh_token|Bearer\s)/i);
+});
