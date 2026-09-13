@@ -80,6 +80,74 @@ test('MCP discovery exposes the executable first/last-frame and reference-video 
   assert.ok(wan.modes.includes('r2v' as never));
 });
 
+test('Wan 3 edit and extension use canonical source-video contracts without provider selection', async () => {
+  const deps = realRegistryDeps();
+  for (const engineId of ['wan-3', 'wan-3-prime']) {
+    const [model] = await listAgentModels({ id: engineId }, deps);
+    assert.ok(model);
+    assert.ok(model.modes.includes('v2v'));
+    assert.ok(model.modes.includes('extend'));
+
+    const capability = registryCapability(engineId);
+    for (const mode of ['v2v', 'extend'] as const) {
+      const source = request({
+        engineId,
+        mode,
+        settings: { durationSec: 10, resolution: '1080p', aspectRatio: '16:9' },
+        references: [{ kind: 'asset', assetId: `${engineId}-${mode}-source`, role: 'source' }],
+      });
+      assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(source, capability, {
+        resolvedReferences: [{
+          assetId: `${engineId}-${mode}-source`,
+          role: 'source',
+          mediaKind: 'video',
+          storageUrl: `https://assets.example.com/${engineId}-${mode}.mp4`,
+          width: 1920,
+          height: 1080,
+          durationSec: 15,
+          mimeType: 'video/mp4',
+          ...(source.references[0]?.slot === undefined ? {} : { slot: source.references[0].slot }),
+        }],
+      }));
+    }
+  }
+
+  const canonical = request({
+    engineId: 'wan-3',
+    mode: 'v2v',
+    settings: { durationSec: 10, resolution: '1080p', aspectRatio: '16:9' },
+    references: [{ kind: 'https', url: 'https://assets.example.com/source.mp4', role: 'source', mediaKind: 'video' }],
+  });
+  assert.equal(hashCanonicalGenerationRequest(canonical), hashCanonicalGenerationRequest(structuredClone(canonical)));
+  assert.throws(() => normalizeGenerationRequest({ ...canonical, provider: 'alibaba-model-studio' } as never));
+  assert.equal(prepareGenerationInputSchema.safeParse({ ...canonical, provider: 'alibaba-model-studio' }).success, false);
+  assert.doesNotMatch(JSON.stringify(prepareGenerationInputSchema), /ALIBABA_MODEL_STUDIO|DASHSCOPE|workspace[_-]?id|api[_-]?key/i);
+});
+
+test('Wan 3 edit and extension reject source plus requested output beyond 30 seconds', () => {
+  for (const mode of ['v2v', 'extend'] as const) {
+    const canonical = request({
+      engineId: 'wan-3',
+      mode,
+      settings: { durationSec: 16, resolution: '1080p', aspectRatio: '16:9' },
+      references: [{ kind: 'asset', assetId: `wan-${mode}-long-source`, role: 'source' }],
+    });
+    assert.throws(() => validateCanonicalGenerationCapabilities(canonical, registryCapability('wan-3'), {
+      resolvedReferences: [{
+        assetId: `wan-${mode}-long-source`,
+        role: 'source',
+        mediaKind: 'video',
+        storageUrl: `https://assets.example.com/wan-${mode}-long.mp4`,
+        width: 1920,
+        height: 1080,
+        durationSec: 15,
+        mimeType: 'video/mp4',
+        ...(canonical.references[0]?.slot === undefined ? {} : { slot: canonical.references[0].slot }),
+      }],
+    }), /not executable/);
+  }
+});
+
 test('MCP mode parity audit identifies every remaining specialized public workflow', async () => {
   const supported = new Set<string>(CANONICAL_GENERATION_MODES);
   const videoModes = new Set(CANONICAL_VIDEO_GENERATION_MODES);

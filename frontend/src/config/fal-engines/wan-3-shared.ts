@@ -91,6 +91,7 @@ export const WAN_3_INPUT_SCHEMA: NonNullable<EngineCaps['inputSchema']> = {
   constraints: {
     maxCombinedVideoDurationSec: 15,
     maxCombinedAudioDurationSec: 15,
+    maxSourcePlusOutputDurationSec: 30,
     minimumReferenceVideoFps: 16,
     atLeastOneReferenceField: ['reference_image_urls', 'reference_video_urls', 'reference_audio_urls'],
   },

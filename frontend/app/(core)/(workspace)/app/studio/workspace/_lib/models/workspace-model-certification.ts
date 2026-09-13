@@ -30,6 +30,8 @@ const VIDEO_TEXT_IMAGE_MODELS = [
   'kling-o3-4k',
   'happy-horse-1-1',
   'happy-horse-1-0',
+  'wan-3',
+  'wan-3-prime',
   'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
@@ -56,6 +58,8 @@ const REFERENCE_VIDEO_MODELS = new Set<string>([
   'kling-o3-4k',
   'happy-horse-1-1',
   'happy-horse-1-0',
+  'wan-3',
+  'wan-3-prime',
   'seedance-2-0',
   'seedance-2-0-fast',
   'seedance-2-0-mini',
@@ -122,10 +126,10 @@ export const WORKSPACE_MODEL_CERTIFICATIONS: readonly WorkspaceModelCertificatio
       modelId,
       blocks: {
         'generate-video': workflows,
-        ...(modelId === 'luma-ray-3-2' || modelId === 'seedance-2-5'
+        ...(modelId === 'luma-ray-3-2' || modelId === 'seedance-2-5' || modelId === 'wan-3' || modelId === 'wan-3-prime'
           ? { 'modify-video': ['video_to_video'] as const }
           : {}),
-        ...(modelId === 'seedance-2-5'
+        ...(modelId === 'seedance-2-5' || modelId === 'wan-3' || modelId === 'wan-3-prime'
           ? { 'extend-video': ['video_to_video'] as const }
           : {}),
       },

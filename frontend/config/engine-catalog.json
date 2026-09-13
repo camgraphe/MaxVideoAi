@@ -20534,6 +20534,7 @@
         "constraints": {
           "maxCombinedVideoDurationSec": 15,
           "maxCombinedAudioDurationSec": 15,
+          "maxSourcePlusOutputDurationSec": 30,
           "minimumReferenceVideoFps": 16,
           "atLeastOneReferenceField": [
             "reference_image_urls",
@@ -21188,6 +21189,7 @@
         "constraints": {
           "maxCombinedVideoDurationSec": 15,
           "maxCombinedAudioDurationSec": 15,
+          "maxSourcePlusOutputDurationSec": 30,
           "minimumReferenceVideoFps": 16,
           "atLeastOneReferenceField": [
             "reference_image_urls",

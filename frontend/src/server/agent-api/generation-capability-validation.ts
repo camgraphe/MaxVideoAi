@@ -613,6 +613,7 @@ function resolvedReference(
 }
 
 function validateTrustedReferenceDuration(
+  request: CanonicalGenerationRequest,
   reference: CanonicalGenerationReference,
   fields: readonly EngineInputField[],
   candidate: AgentPublicGenerationEngine,
@@ -628,11 +629,15 @@ function validateTrustedReferenceDuration(
       : undefined;
   const exclusiveMaximum =
     requestModeForExclusiveDuration(candidate, field);
+  const sourcePlusOutputMaximum = field.id === 'video_url'
+    ? constraints?.maxSourcePlusOutputDurationSec
+    : undefined;
   if (
     field.minDurationSec === undefined
     && field.maxDurationSec === undefined
     && combinedLimit === undefined
     && exclusiveMaximum === undefined
+    && sourcePlusOutputMaximum === undefined
   ) return;
   if (reference.kind !== 'asset' || !options.resolvedReferences) {
     if (options.allowUnverifiedReferenceDuration) return;
@@ -642,6 +647,7 @@ function validateTrustedReferenceDuration(
   const resolved = resolvedReference(reference, options);
   if (!resolved) fail('references', 'reference_invalid');
   const durationSec = resolved.durationSec;
+  const requestedOutputDurationSec = request.settings.durationSec;
   if (
     typeof durationSec !== 'number'
     || !Number.isFinite(durationSec)
@@ -649,6 +655,11 @@ function validateTrustedReferenceDuration(
     || (typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec)
     || (typeof field.maxDurationSec === 'number' && durationSec > field.maxDurationSec)
     || (typeof exclusiveMaximum === 'number' && durationSec >= exclusiveMaximum)
+    || (
+      typeof sourcePlusOutputMaximum === 'number'
+      && typeof requestedOutputDurationSec === 'number'
+      && durationSec + requestedOutputDurationSec > sourcePlusOutputMaximum
+    )
   ) fail('references', 'reference_invalid');
 }
 
@@ -758,7 +769,7 @@ function validateReferences(
       resolvedMediaKind(reference, options),
     );
     if (!fields.length) fail('references', 'reference_invalid');
-    validateTrustedReferenceDuration(reference, fields, candidate, options);
+    validateTrustedReferenceDuration(request, reference, fields, candidate, options);
     if (fields.length === 1 && fields[0]!.imageAspectRatio) {
       if (reference.kind !== 'asset') {
         // Budget estimates may describe unverified media; executable quotes may not.
