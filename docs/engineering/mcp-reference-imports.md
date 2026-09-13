@@ -75,6 +75,13 @@ lazily immediately before the claim and exact reference recheck. A successful st
 effect marks every released ledger owner for that key deleted; failure restores the
 fence and leaves the records released for retry.
 
+`released` is the cleanup authority even if an older or manually repaired attempt is
+later recorded as `aborted`. The strict ledger transition proves that the object was
+previously retained and explicitly relinquished; requiring the attempt to remain
+`completed` would strand that durable release forever. Live URL owners,
+pending/retained ledger owners, prefix scope, and the shared fence still protect the
+object before every deletion.
+
 The claim may recover a stale `referenced` fence left by concurrent deletion of the
 last two owners, but only inside the same atomic `NOT EXISTS` reference check and only
 when no producer lease is active. The tombstone reconciliation scan uses the partial

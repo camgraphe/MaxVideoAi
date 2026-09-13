@@ -83,6 +83,12 @@ protection and the normal skew-protection setting remain enabled. The project
 serving `maxvideoai.com` is a different project and must stay read-only during
 staging operations.
 
+The stable staging hostname is intentionally dual-use. A browser `GET` or `HEAD`
+whose response negotiation is HTML renders the `/mcp` marketing hub, including the
+default-locale redirect from `/en/mcp`. JSON/event-stream requests and every `POST`
+still rewrite `/mcp` to the MCP transport. Loopback development uses the same split;
+the dedicated production API hostname never enables the HTML exception.
+
 Because MCP protected-resource discovery is now publicly published, an
 unaliased deployment candidate returns the same stable resource metadata as the
 permanent staging host. The deployment wrapper validates that exact metadata

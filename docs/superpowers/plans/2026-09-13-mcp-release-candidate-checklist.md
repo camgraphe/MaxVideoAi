@@ -88,15 +88,62 @@ platform tasks do not block the first staging candidate.
 Run only after explicit approval for a staging deployment and staging database
 migration.
 
-- [ ] Deploy one immutable, unaliased candidate to `maxvideoai-mcp-staging`.
-- [ ] Apply migrations 43 and 44 only to the staging Neon database and verify their rollback plan.
-- [ ] Re-run transport, OAuth, account, discovery, quote preparation, recovery, admin,
+- [x] Deploy one immutable, unaliased candidate to `maxvideoai-mcp-staging`.
+- [x] Apply migrations 43 and 44 only to the staging Neon database and verify their rollback plan.
+- [x] Re-run transport, OAuth, account, discovery, quote preparation, recovery, admin,
   and localized marketing smoke tests without paid confirmation.
-- [ ] Upload one tiny disposable private reference, verify Library ownership, delete it,
+- [x] Upload one tiny disposable private reference, verify Library ownership, delete it,
   run bounded cleanup, and prove both database projections and exact storage objects are
   removed.
-- [ ] Verify cleanup cron, logs, error redaction, preview `noindex`, hidden-route 404s,
+- [x] Verify cleanup cron, logs, error redaction, preview `noindex`, hidden-route 404s,
   and rollback to the previous staging deployment.
+
+### Gate B evidence — 2026-09-13
+
+- The final immutable candidate is commit `b6d797ad5` on
+  `codex/mcp-integration-ecosystem`, deployed as
+  `dpl_8VL7X4A6AhVN8wYeAneyc3WDNo6L`. The wrapper built all 868 pages, proved the
+  candidate was unaliased before promotion, and verified that the production project,
+  domains, and protection configuration were unchanged.
+- Migrations 43 and 44 were applied only to the expiring `preview/mcp-staging` Neon
+  branch. Migration 43 is additive and rollback uses the retained previous deployment;
+  migration 44 widens the staging namespace constraints without rewriting production
+  data. The previous staging deployment remained available throughout the test.
+- Public smoke passed for root, protected-resource discovery, the anonymous MCP
+  challenge, and the admin and cleanup authorization boundaries. All 18 EN/FR/ES hub
+  and rendered integration URLs returned 200; all 12 hidden Cursor, GitHub Copilot,
+  Gemini CLI, and Microsoft Copilot URLs returned 404. OpenClaw and n8n returned
+  `noindex`; the hub, Claude, ChatGPT, and Codex remained indexable at page level while
+  the staging deployment retained its global noindex header.
+- The dual-use staging hostname initially exposed a real browser/API collision on the
+  default-locale `/mcp` route. Commit `b6d797ad5` now keeps only HTML `GET`/`HEAD`
+  navigation on the marketing route for staging and loopback, while JSON/SSE requests
+  and all POSTs remain transport-owned. The focused routing, staging, transport, and
+  marketing suite passed 55/55 before deployment.
+- Bundled Codex `0.154.0-alpha.6.2` with `gpt-5.6-luna` at low effort completed
+  OAuth-backed `get_account_status` and `list_recent_generations`, then a separate
+  `get_model_details` plus `prepare_generation` quote smoke. The production MCP server
+  was explicitly disabled and `confirm_generation` was never called, so no provider
+  submission or spend occurred.
+- Admin staging checks proved unauthenticated access returns 401 and the authenticated
+  disposable non-admin principal receives the concealed 404 boundary. The 80/80 local
+  acquisition/admin/SEO contracts remain the dashboard implementation evidence; no
+  staging admin role was created solely to manufacture a visual smoke result.
+- One tiny private image was uploaded through the real MCP handoff, matched by
+  `list_media`, and then deleted together with the previously approved failed-upload
+  residue. The first cleanup exposed a released-object edge case for an aborted attempt.
+  Commit `e45b6db79` fixed it with a failing-first disposable PostgreSQL regression;
+  the full reference suite then passed 128/128.
+- Final cleanup reached a zero batch. Database proof reports two deleted target assets,
+  five of five cleanup rows deleted, three of three object fences deleted, and zero
+  active `media_assets`, `job_outputs`, or legacy `user_assets` projections for the
+  exact target keys. The dedicated staging cleanup secret was rotated, stored in the
+  local macOS Keychain, and never written to Git or an environment file.
+- The alias was rolled back to `dpl_4TA9mrqaWqKm2Kg2a5RLH3Bgzv6W`; root, discovery,
+  MCP 401, and the authentication challenge remained healthy. The exact final candidate
+  was then re-promoted and is READY on `https://maxvideoai-mcp-staging.vercel.app`.
+  The final 180-record log scan found zero 5xx, zero application error/fatal records,
+  and zero detected secret, asset ID, storage-key, filename, or email leaks.
 
 ## Gate C — monitored production rollout
 
