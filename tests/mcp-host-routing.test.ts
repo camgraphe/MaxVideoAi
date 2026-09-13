@@ -35,6 +35,33 @@ test('API subdomain /mcp rewrites internally while main-domain /mcp remains mark
   assert.equal(getMcpApiRewritePath('api.maxvideoai.com', '/fr/mcp', 'api.maxvideoai.com'), null);
 });
 
+test('a dual-use staging host keeps browser navigation on the marketing page without opening protocol requests', () => {
+  const htmlNavigation = {
+    allowHtmlMarketing: true,
+    method: 'GET',
+    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  } as const;
+  const resolve = (
+    host: string,
+    options: Parameters<typeof getMcpApiRewritePath>[3],
+  ) => getMcpApiRewritePath(
+    host, '/mcp', host, options,
+  );
+  assert.equal(resolve('maxvideoai-mcp-staging.vercel.app', htmlNavigation), null);
+  assert.equal(resolve('maxvideoai-mcp-staging.vercel.app', {
+    ...htmlNavigation,
+    method: 'POST',
+  }), '/api/mcp');
+  assert.equal(resolve('maxvideoai-mcp-staging.vercel.app', {
+    ...htmlNavigation,
+    accept: 'application/json, text/event-stream',
+  }), '/api/mcp');
+  assert.equal(resolve('api.maxvideoai.com', {
+    ...htmlNavigation,
+    allowHtmlMarketing: false,
+  }), '/api/mcp');
+});
+
 test('middleware applies MCP host routing before locale and auth-code handling', () => {
   const source = readFileSync(join(process.cwd(), 'frontend/middleware.ts'), 'utf8');
   const mcpRouting = source.indexOf('getMcpApiRewritePath(');
