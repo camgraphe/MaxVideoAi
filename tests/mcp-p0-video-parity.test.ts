@@ -12,7 +12,7 @@ import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 
 const P0 = ['wan-3', 'wan-3-prime', 'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft'] as const;
 const expectedModes = new Map<string, readonly string[]>([
-  ['wan-3', ['t2v', 'i2v', 'ref2v']], ['wan-3-prime', ['t2v', 'i2v', 'ref2v']],
+  ['wan-3', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']], ['wan-3-prime', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']],
   ['ltx-2-5-fast', ['t2v', 'i2v', 'a2v']], ['ltx-2-5-pro', ['t2v', 'i2v', 'a2v']],
   ['grok-imagine-video-1-5', ['t2v', 'i2v', 'ref2v']],
   ['flux-3', ['t2v', 'i2v', 'fl2v', 'extend']], ['flux-3-draft', ['t2v', 'i2v', 'fl2v', 'extend']],
@@ -63,7 +63,7 @@ test('published P0 models enumerate normally and no longer require staging canar
   assert.equal(details.links.examples, null);
 });
 
-test('all 23 P0 modes expose numeric duration choices from canonical engine schemas', async () => {
+test('all 27 P0 modes expose numeric duration choices from canonical engine schemas', async () => {
   let modes = 0;
   for (const id of P0) {
     const details = await getAgentModelDetails(id, deps);
@@ -73,8 +73,23 @@ test('all 23 P0 modes expose numeric duration choices from canonical engine sche
       assert.ok(mode.duration === null || mode.duration.options === null || mode.duration.options.every(Number.isFinite), `${id}:${mode.mode}`);
     }
   }
-  assert.equal(modes, 23);
+  assert.equal(modes, 27);
   assert.deepEqual((await listPublicAgentGenerationEngines(deps)).filter((entry) => P0.includes(entry.engine.id as never)).map((entry) => entry.engine.id).sort(), [...P0].sort());
+});
+
+test('Alibaba-backed launch models keep their provider-neutral MCP mode contracts', async () => {
+  const expected = new Map<string, readonly string[]>([
+    ['wan-3', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']],
+    ['wan-3-prime', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']],
+    ['happy-horse-1-1', ['t2v', 'i2v', 'ref2v']],
+  ]);
+
+  for (const [engineId, modes] of expected) {
+    const details = await getAgentModelDetails(engineId, deps);
+    assert.deepEqual(details.modes.map((mode) => mode.mode), modes, engineId);
+    const serialized = JSON.stringify(details);
+    assert.doesNotMatch(serialized, /ALIBABA_MODEL_STUDIO|DASHSCOPE|api[_-]?key|workspace[_-]?id|providerCost/i);
+  }
 });
 
 test('deep-legacy and retired spending selection fail before canonical pricing is called', async () => {

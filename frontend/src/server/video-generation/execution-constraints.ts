@@ -257,22 +257,25 @@ export function validateProviderSpecificConstraints(params: {
       return minimaxH3Error('prompt', 'Kling text-to-video requires a single prompt or multi-shot prompts.');
     }
   }
-  if (
-    (params.engineId === 'wan-3' || params.engineId === 'wan-3-prime')
-    && params.normalizedMode === 'ref2v'
-  ) {
+  if (params.engineId === 'wan-3' || params.engineId === 'wan-3-prime') {
     const hasFile = typeof params.payload.file_url === 'string' && params.payload.file_url.trim().length > 0;
     const hasWeb = typeof params.payload.web_url === 'string' && params.payload.web_url.trim().length > 0;
-    if (hasFile && hasWeb) {
-      return minimaxH3Error('web_url', 'Wan file_url and web_url references are mutually exclusive.');
-    }
-    if ((hasFile || hasWeb) && params.payload.enable_thinking !== true) {
+    if (hasFile || hasWeb) {
       return minimaxH3Error(
-        'enable_thinking',
-        'Wan file_url and web_url references require enable_thinking=true.',
-        undefined,
-        params.payload.enable_thinking,
+        hasFile ? 'file_url' : 'web_url',
+        'Wan document and web references are not available on this execution surface.',
       );
+    }
+    if (params.normalizedMode === 'v2v' || params.normalizedMode === 'extend') {
+      const sourceVideo = typeof params.payload.video_url === 'string'
+        ? params.payload.video_url.trim()
+        : '';
+      if (!sourceVideo) {
+        return minimaxH3Error('video_url', `Wan ${params.normalizedMode} requires exactly one source video.`);
+      }
+      if ('reference_video_urls' in params.payload || 'video_urls' in params.payload) {
+        return minimaxH3Error('video_url', `Wan ${params.normalizedMode} accepts only one video_url source.`);
+      }
     }
   }
   if (isMinimaxH3EngineId(params.engineId)) {

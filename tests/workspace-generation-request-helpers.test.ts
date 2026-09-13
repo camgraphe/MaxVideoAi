@@ -400,7 +400,7 @@ test('workspace keeps Seedance 1.5 duration values free of Luma suffixes', () =>
   assert.equal(result.payload.durationOption, 5);
 });
 
-test('workspace Happy Horse 1.1 controls and payload mirror the Fal schema by mode', () => {
+test('workspace Happy Horse 1.1 controls and payload mirror the canonical schema by mode', () => {
   const happyHorse = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
   assert.ok(happyHorse);
 
@@ -413,9 +413,9 @@ test('workspace Happy Horse 1.1 controls and payload mirror the Fal schema by mo
   assert.deepEqual(t2vCaps?.duration && 'options' in t2vCaps.duration ? t2vCaps.duration.options : [], expectedDurations);
   assert.deepEqual(ref2vCaps?.duration && 'options' in ref2vCaps.duration ? ref2vCaps.duration.options : [], expectedDurations);
   assert.deepEqual(i2vCaps?.duration && 'options' in i2vCaps.duration ? i2vCaps.duration.options : [], expectedDurations);
-  assert.deepEqual(t2vCaps?.resolution, ['720p', '1080p']);
-  assert.deepEqual(ref2vCaps?.resolution, ['720p', '1080p']);
-  assert.deepEqual(i2vCaps?.resolution, ['720p', '1080p']);
+  assert.deepEqual(t2vCaps?.resolution, ['480p', '720p', '1080p']);
+  assert.deepEqual(ref2vCaps?.resolution, ['480p', '720p', '1080p']);
+  assert.deepEqual(i2vCaps?.resolution, ['480p', '720p', '1080p']);
   assert.deepEqual(t2vCaps?.aspectRatio, expectedRatios);
   assert.deepEqual(ref2vCaps?.aspectRatio, expectedRatios);
   assert.equal(i2vCaps?.aspectRatio, undefined);

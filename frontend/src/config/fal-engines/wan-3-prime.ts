@@ -5,6 +5,8 @@ export const WAN_3_PRIME_ENDPOINTS = {
   t2v: 'alibaba/wan-3.0-prime/text-to-video',
   i2v: 'alibaba/wan-3.0-prime/image-to-video',
   ref2v: 'alibaba/wan-3.0-prime/reference-to-video',
+  v2v: 'alibaba/model-studio/wan3.0-video-prime/video-edit',
+  extend: 'alibaba/model-studio/wan3.0-video-prime/extend',
 } as const;
 
 const engine = createWan3Engine({
@@ -18,12 +20,14 @@ const engine = createWan3Engine({
 export const WAN_3_PRIME_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: 'wan-3-prime', marketingName: 'Wan 3 Prime', cardTitle: 'Wan 3 Prime', provider: 'Alibaba', brandId: 'wan',
   versionLabel: '3.0 Prime', availability: 'available', logoPolicy: 'textOnly',
-  billingNote: 'Fal bills each generated output second at $0.068 (480p), $0.14 (720p), or $0.28 (1080p).',
+  billingNote: 'Customer quotes use each generated output second at $0.068 (480p), $0.14 (720p), or $0.28 (1080p); direct-provider input duration is tracked separately as an internal cost fact.',
   engine,
   modes: [
     { mode: 't2v', falModelId: WAN_3_PRIME_ENDPOINTS.t2v, ui: WAN_3_MODE_CAPS.t2v! },
     { mode: 'i2v', falModelId: WAN_3_PRIME_ENDPOINTS.i2v, ui: WAN_3_MODE_CAPS.i2v! },
     { mode: 'ref2v', falModelId: WAN_3_PRIME_ENDPOINTS.ref2v, ui: WAN_3_MODE_CAPS.ref2v! },
+    { mode: 'v2v', falModelId: WAN_3_PRIME_ENDPOINTS.v2v, ui: WAN_3_MODE_CAPS.v2v! },
+    { mode: 'extend', falModelId: WAN_3_PRIME_ENDPOINTS.extend, ui: WAN_3_MODE_CAPS.extend! },
   ],
   defaultFalModelId: WAN_3_PRIME_ENDPOINTS.t2v,
   seo: { title: 'Wan 3 Prime AI Video Generator | MaxVideoAI', description: 'Generate premium Wan 3 Prime video from text, images, or mixed references.', canonicalPath: '/models/wan-3-prime' },

@@ -20,6 +20,7 @@ export type NormalizedVideoProviderTask = {
 
 export type VideoProviderKey =
   | 'fal'
+  | 'alibaba_model_studio'
   | 'kling_direct'
   | 'byteplus_modelark'
   | 'google_vertex_veo_direct'
@@ -36,6 +37,14 @@ export type ProviderSubmitInput = {
   aspectRatio?: string | null;
   audioEnabled?: boolean;
   imageUrl?: string | null;
+  resolution?: string | null;
+  endImageUrl?: string | null;
+  referenceImageUrls?: string[] | null;
+  referenceVideoUrls?: string[] | null;
+  referenceAudioUrls?: string[] | null;
+  inputVideoDurationSec?: number | null;
+  seed?: number | null;
+  promptExtend?: boolean;
   cfgScale?: number | null;
 };
 

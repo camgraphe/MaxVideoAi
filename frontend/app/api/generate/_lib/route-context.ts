@@ -28,6 +28,7 @@ import {
   type VideoProviderRoutingPlan,
 } from '@/server/video-providers/router';
 import { isGoogleVertexOmniEngine } from '@/server/video-providers/google-vertex-omni/model-map';
+import { isAlibabaDirectEngine } from '@/server/video-providers/alibaba-model-studio/model-map';
 import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import { isLumaAgentsVideoEngine } from '@/server/video-providers/luma-agents/model-map';
@@ -137,7 +138,10 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   })) {
     providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
   }
-  if (providerRoutingPlan.kind === 'google_vertex_unavailable') {
+  if (
+    providerRoutingPlan.kind === 'google_vertex_unavailable'
+    || providerRoutingPlan.kind === 'alibaba_model_studio_unavailable'
+  ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
 
@@ -347,7 +351,8 @@ export async function resolveGenerateRouteContext(params: {
   let isAdminForDirectProvider = false;
   if (
     !isBytePlusV1a &&
-    (isKlingDirectEngine(engine.id) ||
+    (isAlibabaDirectEngine(engine.id) ||
+      isKlingDirectEngine(engine.id) ||
       isGoogleVertexVeoEngine(engine.id) ||
       isGoogleVertexOmniEngine(engine.id) ||
       isLumaAgentsVideoEngine(engine.id))
@@ -370,7 +375,10 @@ export async function resolveGenerateRouteContext(params: {
   ) {
     providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
   }
-  if (providerRoutingPlan.kind === 'google_vertex_unavailable') {
+  if (
+    providerRoutingPlan.kind === 'google_vertex_unavailable'
+    || providerRoutingPlan.kind === 'alibaba_model_studio_unavailable'
+  ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;

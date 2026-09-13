@@ -196,6 +196,7 @@ export interface EngineInputSchema {
     maxAudioSizeMB?: number;
     maxCombinedVideoDurationSec?: number;
     maxCombinedAudioDurationSec?: number;
+    maxSourcePlusOutputDurationSec?: number;
     [key: string]: unknown;
   };
 }

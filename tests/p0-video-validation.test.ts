@@ -105,27 +105,18 @@ test('site validation uses Wan provider field names and accepts audio-only refer
   }).ok, false);
 });
 
-test('Wan file and web references require thinking and remain mutually exclusive', () => {
+test('Wan file and web references remain unavailable on the shared execution surface', () => {
   const schema = candidate('wan-3').engine.inputSchema;
   const context = { inputSchema: schema, referenceValuesByField: {} };
-  assert.equal(validateRequest('wan-3', 'ref2v', {
-    prompt: 'P', duration: 5, resolution: '720p', aspect_ratio: 'auto', audio: true,
-    file_url: 'https://cdn.example.com/reference.pdf', enable_thinking: false,
-  }, context).ok, false);
-  assert.equal(validateRequest('wan-3', 'ref2v', {
-    prompt: 'P', duration: 5, resolution: '720p', aspect_ratio: 'auto', audio: true,
-    file_url: 'https://cdn.example.com/reference.pdf', enable_thinking: true,
-    web_url: 'https://example.com/reference',
-  }, context).ok, false);
   for (const field of ['file_url', 'web_url'] as const) {
-    assert.deepEqual(validateRequest('wan-3', 'ref2v', {
+    assert.equal(validateRequest('wan-3', 'ref2v', {
       prompt: 'P', duration: 5, resolution: '720p', aspect_ratio: 'auto', audio: true,
       [field]: 'https://example.com/reference', enable_thinking: true,
-    }, context), { ok: true });
+    }, context).ok, false);
   }
 });
 
-test('site generation pipeline validates and preserves schema-active Wan document and web references', () => {
+test('site generation pipeline rejects unavailable Wan document and web references', () => {
   const engine = candidate('wan-3').engine;
   const base = {
     engineId: engine.id, mode: 'ref2v' as const, prompt: 'P', multiPrompt: null,
@@ -145,14 +136,7 @@ test('site generation pipeline validates and preserves schema-active Wan documen
       mode: 'ref2v',
       rawExtraInputValues: { [field]: 'https://example.com/reference', enable_thinking: true },
     });
-    assert.equal(extra.ok, true);
-    if (!extra.ok) continue;
-    const result = buildGenerateValidationPayload({ ...base, validatedExtraInputValues: extra.values });
-    assert.equal(result.ok, true, `${field}: ${JSON.stringify(result)}`);
-    if (result.ok) {
-      assert.equal(result.payload[field], 'https://example.com/reference');
-      assert.equal(result.payload.enable_thinking, true);
-    }
+    assert.equal(extra.ok, false, field);
   }
 
   for (const rawExtraInputValues of [
@@ -165,12 +149,23 @@ test('site generation pipeline validates and preserves schema-active Wan documen
     },
   ]) {
     const extra = validateExtraInputValues({ engine, mode: 'ref2v', rawExtraInputValues });
-    assert.equal(extra.ok, true);
-    if (!extra.ok) continue;
-    assert.equal(buildGenerateValidationPayload({
+    assert.equal(extra.ok, false);
+  }
+});
+
+test('Wan edit and extend require exactly one source video', () => {
+  for (const mode of ['v2v', 'extend'] as const) {
+    const base = request('wan-3', mode, {
+      references: [],
+      settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true },
+    });
+    expectCapabilityFailure(base, 'references');
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
       ...base,
-      validatedExtraInputValues: extra.values,
-    }).ok, false);
+      references: [{
+        kind: 'https', url: 'https://cdn.example.com/source.mp4', role: 'source', mediaKind: 'video',
+      }],
+    }, candidate('wan-3')));
   }
 });
 

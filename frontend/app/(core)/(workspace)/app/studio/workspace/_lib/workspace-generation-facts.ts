@@ -22,7 +22,7 @@ export type WorkspaceGenerationAssignment = WorkspaceGenerationMediaInput & {
 
 export type WorkspaceGenerationFactIssue = {
   fieldId: string;
-  code: 'combined_duration' | 'field_capacity' | 'file_duration' | 'file_format' | 'file_size' | 'reference_budget' | 'visual_reference_required';
+  code: 'combined_duration' | 'field_capacity' | 'file_duration' | 'file_format' | 'file_size' | 'reference_budget' | 'source_output_duration' | 'visual_reference_required';
   message: string;
 };
 
@@ -74,7 +74,8 @@ function uniqueCount(values: string[]): number {
 
 function assignmentIssues(
   assignments: WorkspaceGenerationAssignment[],
-  capability: WorkspaceModelCapability | null
+  capability: WorkspaceModelCapability | null,
+  outputDurationSec: number,
 ): WorkspaceGenerationFactIssue[] {
   const issues: WorkspaceGenerationFactIssue[] = [];
   const assignmentsByField = new Map<string, WorkspaceGenerationAssignment[]>();
@@ -142,6 +143,20 @@ function assignmentIssues(
       fieldId: 'video_references',
       code: 'combined_duration',
       message: `Combined video references exceed ${constraints.maxCombinedVideoDurationSec}s.`,
+    });
+  }
+  const sourcePlusOutputMaximum = constraints?.maxSourcePlusOutputDurationSec;
+  const sourceVideoDuration = assignments
+    .filter((assignment) => assignment.kind === 'video' && assignment.fieldId === 'video_url')
+    .reduce((total, assignment) => total + (assignment.durationSec ?? 0), 0);
+  if (
+    typeof sourcePlusOutputMaximum === 'number' &&
+    sourceVideoDuration + outputDurationSec > sourcePlusOutputMaximum
+  ) {
+    issues.push({
+      fieldId: 'video_url',
+      code: 'source_output_duration',
+      message: `Source and generated video duration must total at most ${sourcePlusOutputMaximum}s.`,
     });
   }
   if (
@@ -213,7 +228,7 @@ export function resolveWorkspaceGenerationFacts(params: {
         exceeded: referenceBudgetUsed > referenceBudgetConfig.maxTotal,
       }
     : null;
-  const issues = assignmentIssues(assignments, params.capability);
+  const issues = assignmentIssues(assignments, params.capability, params.settings.durationSec);
   if (referenceBudget?.exceeded) {
     issues.push({
       fieldId: 'references',

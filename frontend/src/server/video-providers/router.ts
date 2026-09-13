@@ -1,4 +1,5 @@
 import type { Mode } from '@/types/engines';
+import { isAlibabaDirectEngine, isAlibabaDirectModeSupported, isAlibabaFalFallbackCompatible } from './alibaba-model-studio/model-map';
 import { isGoogleVertexOmniEngine, isGoogleVertexOmniModeSupported } from './google-vertex-omni/model-map';
 import { isGoogleVertexVeoEngine, isGoogleVertexVeoModeSupported } from './google-vertex-veo/model-map';
 import { isKlingDirectEngine, isKlingDirectModeSupported } from './kling-direct/model-map';
@@ -9,6 +10,10 @@ import {
 
 export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   | 'KLING_DIRECT_ENABLED'
+  | 'ALIBABA_MODEL_STUDIO_ENABLED'
+  | 'ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED'
+  | 'ALIBABA_MODEL_STUDIO_ADMIN_ONLY'
+  | 'ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED'
   | 'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'
   | 'KLING_DIRECT_FALLBACK_TO_FAL_ENABLED'
   | 'KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED'
@@ -36,6 +41,16 @@ export type VideoProviderRoutingPlan =
       kind: 'fal_only';
       primaryProvider: 'fal';
       fallbackEnabled: false;
+    }
+  | {
+      kind: 'alibaba_model_studio_primary';
+      primaryProvider: 'alibaba_model_studio';
+      fallbackProvider: 'fal';
+      fallbackEnabled: boolean;
+    }
+  | {
+      kind: 'alibaba_model_studio_unavailable';
+      reason: 'direct_not_configured' | 'public_routing_disabled' | 'admin_only';
     }
   | {
       kind: 'kling_direct_primary';
@@ -87,6 +102,38 @@ export function resolveVideoProviderRoutingPlan(params: {
   env?: VideoProviderRoutingEnv;
 }): VideoProviderRoutingPlan {
   const falOnly: VideoProviderRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  if (isAlibabaDirectEngine(params.engineId)) {
+    if (!isAlibabaDirectModeSupported(params.engineId, params.mode)) return falOnly;
+    const fallbackCompatible = isAlibabaFalFallbackCompatible(params.engineId, params.mode);
+    if (!flagEnabled(readEnv(params.env, 'ALIBABA_MODEL_STUDIO_ENABLED'))) {
+      return fallbackCompatible
+        ? falOnly
+        : { kind: 'alibaba_model_studio_unavailable', reason: 'direct_not_configured' };
+    }
+
+    const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED'));
+    const adminOnly = flagEnabled(readEnv(params.env, 'ALIBABA_MODEL_STUDIO_ADMIN_ONLY') ?? 'true');
+    if (adminOnly && !params.isAdmin) {
+      return fallbackCompatible
+        ? falOnly
+        : { kind: 'alibaba_model_studio_unavailable', reason: 'admin_only' };
+    }
+    if (!publicRoutingEnabled && !params.isAdmin) {
+      return fallbackCompatible
+        ? falOnly
+        : { kind: 'alibaba_model_studio_unavailable', reason: 'public_routing_disabled' };
+    }
+
+    return {
+      kind: 'alibaba_model_studio_primary',
+      primaryProvider: 'alibaba_model_studio',
+      fallbackProvider: 'fal',
+      fallbackEnabled:
+        fallbackCompatible
+        && flagEnabled(readEnv(params.env, 'ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED')),
+    };
+  }
+
   if (isGoogleVertexOmniEngine(params.engineId)) {
     if (!isGoogleVertexOmniModeSupported(params.engineId, params.mode)) {
       return { kind: 'google_vertex_unavailable', reason: 'unsupported_mode' };

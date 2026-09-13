@@ -1327,6 +1327,51 @@ test('prepare pricing receives the selected prelaunch engine snapshot', async ()
   await prepareGeneration(request, principal, deps);
 });
 
+test('prepare keeps Wan 3 video editing provider-neutral while forwarding verified source facts', async () => {
+  const candidate = registryCapability('wan-3');
+  const input: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'wan-3',
+    mode: 'v2v',
+    prompt: 'Preserve the composition and change the weather to light rain.',
+    settings: { durationSec: 10, resolution: '1080p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'asset', assetId: 'wan-edit-source', role: 'source' }],
+    outputCount: 1,
+  };
+  const { deps, captures } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async (canonicalRequest) => [{
+      assetId: 'wan-edit-source',
+      role: 'source',
+      ...(canonicalRequest.references[0]?.slot === undefined ? {} : { slot: canonicalRequest.references[0].slot }),
+      mediaKind: 'video',
+      storageUrl: 'https://assets.example.com/wan-edit-source.mp4',
+      width: 1920,
+      height: 1080,
+      durationSec: 15,
+      mimeType: 'video/mp4',
+    }],
+    priceGeneration: async (canonicalRequest, membershipTier, referenceContext) => {
+      assert.equal(referenceContext.resolvedReferences[0]?.durationSec, 15);
+      assert.equal(referenceContext.resolvedEngine, candidate.engine);
+      assert.equal(Object.hasOwn(canonicalRequest, 'provider'), false);
+      return {
+        priceCents: 260,
+        currency: 'USD',
+        membershipTier,
+        pricingSnapshot: { totalCents: 260, currency: 'USD', membershipTier },
+      };
+    },
+  });
+
+  const prepared = await prepareGeneration(input, principal, deps);
+  assert.equal(prepared.price.amountCents, 260);
+  assert.doesNotMatch(
+    JSON.stringify({ prepared, persisted: captures.inserted[0] }),
+    /ALIBABA_MODEL_STUDIO|DASHSCOPE|api[_-]?key|workspace[_-]?id|providerCost/i,
+  );
+});
+
 test('canonical video pricing leaves source-derived i2v framing unset', async () => {
   const request: CanonicalGenerationRequest = {
     schemaVersion: 1,

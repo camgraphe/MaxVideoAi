@@ -44,7 +44,7 @@ export const WORKSPACE_V1_BLOCK_MATRIX = {
     optionalInputs: ['motion_reference', 'previous_shot', 'continuity', 'style', 'camera', 'audio'],
     visibleControls: ['model', 'durationSec', 'aspectRatio', 'resolution', 'fps', 'referenceStrength'],
     pricingRelevantFields: ['model', 'durationSec', 'resolution'],
-    compatibleModelIds: ['luma-ray-3-2', 'seedance-2-5'],
+    compatibleModelIds: ['luma-ray-3-2', 'seedance-2-5', 'wan-3', 'wan-3-prime'],
   },
   'extend-video': {
     presetId: 'extend-video',
@@ -55,7 +55,7 @@ export const WORKSPACE_V1_BLOCK_MATRIX = {
     optionalInputs: [],
     visibleControls: ['model', 'durationSec', 'aspectRatio', 'resolution', 'fps', 'audioEnabled'],
     pricingRelevantFields: ['model', 'durationSec', 'resolution', 'audioEnabled'],
-    compatibleModelIds: ['seedance-2-5'],
+    compatibleModelIds: ['seedance-2-5', 'wan-3', 'wan-3-prime'],
   },
   'generate-image': {
     presetId: 'generate-image',

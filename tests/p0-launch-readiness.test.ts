@@ -18,8 +18,8 @@ import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 const P0 = P0_VIDEO_EXAMPLE_MODEL_IDS;
 const EXPECTED_MODES = new Map<string, readonly string[]>([
-  ['wan-3', ['t2v', 'i2v', 'ref2v']],
-  ['wan-3-prime', ['t2v', 'i2v', 'ref2v']],
+  ['wan-3', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']],
+  ['wan-3-prime', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']],
   ['ltx-2-5-fast', ['t2v', 'i2v', 'a2v']],
   ['ltx-2-5-pro', ['t2v', 'i2v', 'a2v']],
   ['grok-imagine-video-1-5', ['t2v', 'i2v', 'ref2v']],
