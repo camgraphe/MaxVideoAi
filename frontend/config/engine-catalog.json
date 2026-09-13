@@ -9673,6 +9673,7 @@
       ],
       "maxDurationSec": 15,
       "resolutions": [
+        "480p",
         "720p",
         "1080p"
       ],
@@ -9817,6 +9818,7 @@
               "ref2v"
             ],
             "values": [
+              "480p",
               "720p",
               "1080p"
             ],
@@ -9868,6 +9870,7 @@
         "perSecondCents": {
           "default": 14,
           "byResolution": {
+            "480p": 7,
             "720p": 14,
             "1080p": 18
           }
@@ -9877,6 +9880,7 @@
         "unit": "USD/s",
         "base": 0.14,
         "byResolution": {
+          "480p": 0.07,
           "720p": 0.14,
           "1080p": 0.18
         },
@@ -9920,6 +9924,7 @@
             "default": 5
           },
           "resolution": [
+            "480p",
             "720p",
             "1080p"
           ],
@@ -9960,6 +9965,7 @@
             "default": 5
           },
           "resolution": [
+            "480p",
             "720p",
             "1080p"
           ],
@@ -9997,6 +10003,7 @@
             "default": 5
           },
           "resolution": [
+            "480p",
             "720p",
             "1080p"
           ],
@@ -10050,6 +10057,7 @@
             "default": 5
           },
           "resolution": [
+            "480p",
             "720p",
             "1080p"
           ],
@@ -10094,6 +10102,7 @@
             "default": 5
           },
           "resolution": [
+            "480p",
             "720p",
             "1080p"
           ],
@@ -10135,6 +10144,7 @@
             "default": 5
           },
           "resolution": [
+            "480p",
             "720p",
             "1080p"
           ],
@@ -20273,7 +20283,9 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v",
+        "extend"
       ],
       "maxDurationSec": 30,
       "resolutions": [
@@ -20294,13 +20306,19 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
+      "extend": true,
+      "motionControls": true,
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "promptMaxChars": 5000,
-        "promptMaxCharsSource": "official"
+        "promptMaxChars": 20000,
+        "promptMaxCharsSource": "official",
+        "videoMaxMB": 100,
+        "videoMaxDurationSec": 15,
+        "videoCodecs": [
+          "h264",
+          "h265"
+        ]
       },
       "inputSchema": {
         "required": [
@@ -20314,7 +20332,7 @@
             "requiredInModes": [
               "t2v"
             ],
-            "description": "Provider prompt length: 1–5000 characters."
+            "description": "Provider prompt length: 1–20,000 characters."
           },
           {
             "id": "start_image_url",
@@ -20329,6 +20347,25 @@
             "minCount": 1,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "v2v",
+              "extend"
+            ],
+            "requiredInModes": [
+              "v2v",
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "maxDurationSec": 15,
+            "maxSizeMB": 100,
+            "source": "either",
+            "description": "One source MP4 or MOV. Source plus generated duration must not exceed 30 seconds."
           }
         ],
         "optional": [
@@ -20338,9 +20375,11 @@
             "label": "Prompt",
             "modes": [
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
-            "description": "Provider maximum: 5000 characters."
+            "description": "Provider maximum: 20,000 characters."
           },
           {
             "id": "end_image_url",
@@ -20395,65 +20434,21 @@
             "description": "Combined audio duration <=15 seconds."
           },
           {
-            "id": "file_url",
-            "type": "text",
-            "label": "Reference file URL",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "url",
-            "description": "Requires enable_thinking=true and cannot combine with web_url."
-          },
-          {
-            "id": "web_url",
-            "type": "text",
-            "label": "Public web URL",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "url",
-            "description": "Requires enable_thinking=true and cannot combine with file_url."
-          },
-          {
-            "id": "enable_thinking",
-            "type": "boolean",
-            "label": "Thinking",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "default": false
-          },
-          {
             "id": "duration",
             "type": "number",
             "label": "Duration (seconds)",
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "min": 2,
             "max": 30,
             "step": 1,
             "default": 5,
-            "description": "Provider also accepts null for smart duration."
-          },
-          {
-            "id": "enable_safety_checker",
-            "type": "boolean",
-            "label": "Safety checker",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "default": true
+            "description": "Choose a whole-number output duration from 2 to 30 seconds."
           },
           {
             "id": "resolution",
@@ -20462,7 +20457,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "values": [
               "480p",
@@ -20478,7 +20475,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "values": [
               "adaptive",
@@ -20497,7 +20496,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "min": 0,
             "max": 2147483647,
@@ -20510,7 +20511,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "default": true
           },
@@ -20521,7 +20524,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "default": true
           }
@@ -20533,12 +20538,8 @@
           "atLeastOneReferenceField": [
             "reference_image_urls",
             "reference_video_urls",
-            "reference_audio_urls",
-            "file_url",
-            "web_url"
-          ],
-          "fileOrWebRequiresThinking": true,
-          "fileAndWebMutuallyExclusive": true
+            "reference_audio_urls"
+          ]
         }
       },
       "pricingDetails": {
@@ -20650,7 +20651,59 @@
           "fps": 30,
           "audioToggle": true,
           "maxUploadMB": 100,
-          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+          "notes": "At least one image, video, or audio reference is required."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Edit exactly one source video with an optional instruction prompt."
+        },
+        "extend": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Extend exactly one source video with an optional continuation prompt."
         }
       }
     },
@@ -20740,7 +20793,67 @@
           "fps": 30,
           "audioToggle": true,
           "maxUploadMB": 100,
-          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+          "notes": "At least one image, video, or audio reference is required."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "alibaba/model-studio/wan3.0-video/video-edit",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Edit exactly one source video with an optional instruction prompt."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "alibaba/model-studio/wan3.0-video/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Extend exactly one source video with an optional continuation prompt."
         }
       }
     ],
@@ -20749,13 +20862,13 @@
         "value": true
       },
       "motionControls": {
-        "value": false
+        "value": true
       },
       "keyframes": {
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
       }
     }
   },
@@ -20824,7 +20937,9 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v",
+        "extend"
       ],
       "maxDurationSec": 30,
       "resolutions": [
@@ -20845,13 +20960,19 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
+      "extend": true,
+      "motionControls": true,
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "promptMaxChars": 5000,
-        "promptMaxCharsSource": "official"
+        "promptMaxChars": 20000,
+        "promptMaxCharsSource": "official",
+        "videoMaxMB": 100,
+        "videoMaxDurationSec": 15,
+        "videoCodecs": [
+          "h264",
+          "h265"
+        ]
       },
       "inputSchema": {
         "required": [
@@ -20865,7 +20986,7 @@
             "requiredInModes": [
               "t2v"
             ],
-            "description": "Provider prompt length: 1–5000 characters."
+            "description": "Provider prompt length: 1–20,000 characters."
           },
           {
             "id": "start_image_url",
@@ -20880,6 +21001,25 @@
             "minCount": 1,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "v2v",
+              "extend"
+            ],
+            "requiredInModes": [
+              "v2v",
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "maxDurationSec": 15,
+            "maxSizeMB": 100,
+            "source": "either",
+            "description": "One source MP4 or MOV. Source plus generated duration must not exceed 30 seconds."
           }
         ],
         "optional": [
@@ -20889,9 +21029,11 @@
             "label": "Prompt",
             "modes": [
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
-            "description": "Provider maximum: 5000 characters."
+            "description": "Provider maximum: 20,000 characters."
           },
           {
             "id": "end_image_url",
@@ -20946,65 +21088,21 @@
             "description": "Combined audio duration <=15 seconds."
           },
           {
-            "id": "file_url",
-            "type": "text",
-            "label": "Reference file URL",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "url",
-            "description": "Requires enable_thinking=true and cannot combine with web_url."
-          },
-          {
-            "id": "web_url",
-            "type": "text",
-            "label": "Public web URL",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "url",
-            "description": "Requires enable_thinking=true and cannot combine with file_url."
-          },
-          {
-            "id": "enable_thinking",
-            "type": "boolean",
-            "label": "Thinking",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "default": false
-          },
-          {
             "id": "duration",
             "type": "number",
             "label": "Duration (seconds)",
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "min": 2,
             "max": 30,
             "step": 1,
             "default": 5,
-            "description": "Provider also accepts null for smart duration."
-          },
-          {
-            "id": "enable_safety_checker",
-            "type": "boolean",
-            "label": "Safety checker",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "default": true
+            "description": "Choose a whole-number output duration from 2 to 30 seconds."
           },
           {
             "id": "resolution",
@@ -21013,7 +21111,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "values": [
               "480p",
@@ -21029,7 +21129,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "values": [
               "adaptive",
@@ -21048,7 +21150,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "min": 0,
             "max": 2147483647,
@@ -21061,7 +21165,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "default": true
           },
@@ -21072,7 +21178,9 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v",
+              "extend"
             ],
             "default": true
           }
@@ -21084,12 +21192,8 @@
           "atLeastOneReferenceField": [
             "reference_image_urls",
             "reference_video_urls",
-            "reference_audio_urls",
-            "file_url",
-            "web_url"
-          ],
-          "fileOrWebRequiresThinking": true,
-          "fileAndWebMutuallyExclusive": true
+            "reference_audio_urls"
+          ]
         }
       },
       "pricingDetails": {
@@ -21201,7 +21305,59 @@
           "fps": 30,
           "audioToggle": true,
           "maxUploadMB": 100,
-          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+          "notes": "At least one image, video, or audio reference is required."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Edit exactly one source video with an optional instruction prompt."
+        },
+        "extend": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Extend exactly one source video with an optional continuation prompt."
         }
       }
     },
@@ -21291,7 +21447,67 @@
           "fps": 30,
           "audioToggle": true,
           "maxUploadMB": 100,
-          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+          "notes": "At least one image, video, or audio reference is required."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "alibaba/model-studio/wan3.0-video-prime/video-edit",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Edit exactly one source video with an optional instruction prompt."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "alibaba/model-studio/wan3.0-video-prime/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "Extend exactly one source video with an optional continuation prompt."
         }
       }
     ],
@@ -21300,13 +21516,13 @@
         "value": true
       },
       "motionControls": {
-        "value": false
+        "value": true
       },
       "keyframes": {
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
       }
     }
   },

@@ -138,7 +138,10 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   })) {
     providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
   }
-  if (providerRoutingPlan.kind === 'google_vertex_unavailable') {
+  if (
+    providerRoutingPlan.kind === 'google_vertex_unavailable'
+    || providerRoutingPlan.kind === 'alibaba_model_studio_unavailable'
+  ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
 
@@ -372,7 +375,10 @@ export async function resolveGenerateRouteContext(params: {
   ) {
     providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
   }
-  if (providerRoutingPlan.kind === 'google_vertex_unavailable') {
+  if (
+    providerRoutingPlan.kind === 'google_vertex_unavailable'
+    || providerRoutingPlan.kind === 'alibaba_model_studio_unavailable'
+  ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;

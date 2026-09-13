@@ -8,6 +8,7 @@ import { LTX_2_5_PRO_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engi
 import { GROK_IMAGINE_VIDEO_1_5_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/grok-imagine-video-1-5';
 import { FLUX_3_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/flux-3';
 import { FLUX_3_DRAFT_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/flux-3-draft';
+import { HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/happy-horse-1-1';
 
 const registries = [
   ...WAN_3_FAL_ENGINE_REGISTRY,
@@ -24,11 +25,15 @@ const expectedEndpoints = {
     t2v: 'alibaba/wan-3.0/text-to-video',
     i2v: 'alibaba/wan-3.0/image-to-video',
     ref2v: 'alibaba/wan-3.0/reference-to-video',
+    v2v: 'alibaba/model-studio/wan3.0-video/video-edit',
+    extend: 'alibaba/model-studio/wan3.0-video/extend',
   },
   'wan-3-prime': {
     t2v: 'alibaba/wan-3.0-prime/text-to-video',
     i2v: 'alibaba/wan-3.0-prime/image-to-video',
     ref2v: 'alibaba/wan-3.0-prime/reference-to-video',
+    v2v: 'alibaba/model-studio/wan3.0-video-prime/video-edit',
+    extend: 'alibaba/model-studio/wan3.0-video-prime/extend',
   },
   'ltx-2-5-fast': {
     t2v: 'lightricks/ltx-2.5/text-to-video/fast',
@@ -87,7 +92,7 @@ function field(id: keyof typeof expectedEndpoints, mode: Mode, fieldId: string):
   return match;
 }
 
-test('seven raw engines expose exactly the canonical 23 modes and Fal endpoints', () => {
+test('seven raw engines expose exactly the canonical 27 modes and execution endpoints', () => {
   assert.equal(registries.length, 7);
   assert.deepEqual(registries.map(({ id }) => id), Object.keys(expectedEndpoints));
 
@@ -105,42 +110,56 @@ test('seven raw engines expose exactly the canonical 23 modes and Fal endpoints'
   }
 
   const allModes = registries.flatMap((item) => item.modes.map(({ mode }) => mode));
-  assert.equal(allModes.length, 23);
+  assert.equal(allModes.length, 27);
   assert.ok(!allModes.includes('keyframes-to-video' as never));
   assert.ok(!allModes.includes('draft-enhance' as never));
   assert.ok(!allModes.includes('r2v'));
-  assert.ok(!allModes.includes('v2v'));
+  assert.equal(allModes.filter((mode) => mode === 'v2v').length, 2);
 });
 
 test('Wan 3 and Prime preserve the complete provider schema and reference contract', () => {
   const commonControls = [
-    'enable_thinking', 'duration', 'enable_safety_checker', 'resolution', 'aspect_ratio',
-    'seed', 'audio', 'enable_prompt_expansion',
+    'duration', 'resolution', 'aspect_ratio', 'seed', 'audio', 'enable_prompt_expansion',
   ];
   const referenceFields = [
     'prompt', ...commonControls, 'reference_image_urls', 'reference_video_urls',
-    'reference_audio_urls', 'file_url', 'web_url',
+    'reference_audio_urls',
   ].sort();
 
   for (const id of ['wan-3', 'wan-3-prime'] as const) {
     assert.deepEqual(fieldsFor(id, 't2v').map(({ id: fieldId }) => fieldId).sort(), ['prompt', ...commonControls].sort());
     assert.deepEqual(fieldsFor(id, 'i2v').map(({ id: fieldId }) => fieldId).sort(), ['start_image_url', 'prompt', 'end_image_url', ...commonControls].sort());
     assert.deepEqual(fieldsFor(id, 'ref2v').map(({ id: fieldId }) => fieldId).sort(), referenceFields);
+    assert.deepEqual(fieldsFor(id, 'v2v').map(({ id: fieldId }) => fieldId).sort(), ['video_url', 'prompt', ...commonControls].sort());
+    assert.deepEqual(fieldsFor(id, 'extend').map(({ id: fieldId }) => fieldId).sort(), ['video_url', 'prompt', ...commonControls].sort());
     assert.deepEqual(field(id, 't2v', 'resolution').values, ['480p', '720p', '1080p']);
     assert.deepEqual(field(id, 't2v', 'aspect_ratio').values, ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16']);
-    assert.match(field(id, 't2v', 'duration').description ?? '', /null.*smart/i);
+    assert.doesNotMatch(field(id, 't2v', 'duration').description ?? '', /smart/i);
     assert.equal(field(id, 'ref2v', 'reference_image_urls').maxCount, 10);
     assert.equal(field(id, 'ref2v', 'reference_video_urls').maxCount, 5);
     assert.equal(field(id, 'ref2v', 'reference_video_urls').maxSizeMB, 100);
     assert.equal(field(id, 'ref2v', 'reference_audio_urls').maxCount, 5);
     assert.equal(field(id, 'ref2v', 'reference_audio_urls').maxSizeMB, 15);
     assert.deepEqual(entry(id).engine.inputSchema?.constraints?.atLeastOneReferenceField, [
-      'reference_image_urls', 'reference_video_urls', 'reference_audio_urls', 'file_url', 'web_url',
+      'reference_image_urls', 'reference_video_urls', 'reference_audio_urls',
     ]);
+    assert.equal(entry(id).engine.inputLimits?.promptMaxChars, 20_000);
+    assert.equal(entry(id).engine.extend, true);
   }
 
   assert.deepEqual(entry('wan-3').engine.pricingDetails?.perSecondCents?.byResolution, { '480p': 5, '720p': 10, '1080p': 20 });
   assert.deepEqual(entry('wan-3-prime').engine.pricingDetails?.perSecondCents?.byResolution, { '480p': 6.8, '720p': 14, '1080p': 28 });
+});
+
+test('HappyHorse 1.1 keeps its three modes and exposes all official direct resolutions', () => {
+  const item = HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY[0];
+  assert.ok(item);
+  assert.deepEqual(item.engine.modes, ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(item.engine.resolutions, ['480p', '720p', '1080p']);
+  assert.deepEqual(item.engine.fps, [24]);
+  assert.deepEqual(item.engine.pricingDetails?.perSecondCents?.byResolution, {
+    '480p': 7, '720p': 14, '1080p': 18,
+  });
 });
 
 test('LTX 2.5 variants preserve mixed duration, 2160p, camera and audio schema facts', () => {

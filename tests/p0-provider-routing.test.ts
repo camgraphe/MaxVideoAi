@@ -116,6 +116,11 @@ test('Alibaba routing is disabled by default and stays admin-only until public r
 });
 
 test('Alibaba advanced Wan modes are direct-only and legacy models remain untouched', () => {
+  assert.deepEqual(resolveVideoProviderRoutingPlan({
+    engineId: 'wan-3', mode: 'extend', isAdmin: true, env: {},
+  }), {
+    kind: 'alibaba_model_studio_unavailable', reason: 'direct_not_configured',
+  });
   const env: VideoProviderRoutingEnv = {
     ALIBABA_MODEL_STUDIO_ENABLED: 'true',
     ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'true',

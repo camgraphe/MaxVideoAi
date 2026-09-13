@@ -17,7 +17,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2v', 'i2v', 'ref2v'],
   maxDurationSec: 15,
-  resolutions: ['720p', '1080p'],
+  resolutions: ['480p', '720p', '1080p'],
   aspectRatios: [...HAPPY_HORSE_1_1_ASPECT_RATIOS],
   fps: [24],
   audio: true,
@@ -96,7 +96,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
         type: 'enum',
         label: 'Resolution',
         modes: ['t2v', 'i2v', 'ref2v'],
-        values: ['720p', '1080p'],
+        values: ['480p', '720p', '1080p'],
         default: '1080p',
       },
       {
@@ -131,6 +131,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
     perSecondCents: {
       default: 14,
       byResolution: {
+        '480p': 7,
         '720p': 14,
         '1080p': 18,
       },
@@ -140,6 +141,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.14,
     byResolution: {
+      '480p': 0.07,
       '720p': 0.14,
       '1080p': 0.18,
     },
@@ -164,7 +166,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
     t2v: {
       modes: ['t2v'],
       duration: { options: [...HAPPY_HORSE_DURATION_OPTIONS], default: 5 },
-      resolution: ['720p', '1080p'],
+      resolution: ['480p', '720p', '1080p'],
       aspectRatio: [...HAPPY_HORSE_1_1_ASPECT_RATIOS],
       audioToggle: false,
       notes: 'Text-to-video with native synchronized audio and multilingual lip-sync.',
@@ -172,7 +174,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
     i2v: {
       modes: ['i2v'],
       duration: { options: [...HAPPY_HORSE_DURATION_OPTIONS], default: 5 },
-      resolution: ['720p', '1080p'],
+      resolution: ['480p', '720p', '1080p'],
       acceptsImageFormats: ['jpg', 'jpeg', 'png', 'bmp', 'webp'],
       maxUploadMB: 20,
       audioToggle: false,
@@ -181,7 +183,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
     ref2v: {
       modes: ['ref2v'],
       duration: { options: [...HAPPY_HORSE_DURATION_OPTIONS], default: 5 },
-      resolution: ['720p', '1080p'],
+      resolution: ['480p', '720p', '1080p'],
       aspectRatio: [...HAPPY_HORSE_1_1_ASPECT_RATIOS],
       acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
       maxUploadMB: 10,

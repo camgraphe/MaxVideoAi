@@ -220,6 +220,23 @@ test('Wan Prime keeps fractional-cent factual precision through multiplication',
   assert.equal(facts.vendorSubtotalExactCents, 40.8);
 });
 
+test('Wan edit and extend keep the canonical output-duration customer quote basis', () => {
+  for (const engineId of ['wan-3', 'wan-3-prime']) {
+    const definition = buildPricingDefinition(engineFor(engineId));
+    assert.ok(definition);
+    const t2v = computePricingDefinitionFacts(definition, {
+      durationSec: 6, resolution: '720p', mode: 't2v',
+    } as never);
+    for (const mode of ['v2v', 'extend']) {
+      const advanced = computePricingDefinitionFacts(definition, {
+        durationSec: 6, resolution: '720p', mode, inputVideoDurationSec: 12,
+      } as never);
+      assert.equal(advanced.vendorSubtotalExactCents, t2v.vendorSubtotalExactCents);
+      assert.equal(advanced.base.seconds, 6);
+    }
+  }
+});
+
 test('Grok reference pricing applies only to ref2v and has no invented free reference', () => {
   const engine = engineFor('grok-imagine-video-1-5');
   const definition = buildPricingDefinition(engine);
