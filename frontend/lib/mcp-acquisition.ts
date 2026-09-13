@@ -1,4 +1,8 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import {
+  isEnabledMcpAcquisitionClient,
+  type McpIntegrationId,
+} from '@/lib/mcp-integration-registry';
 
 export const MCP_ACQUISITION_COOKIE_NAME = 'mv_mcp_acquisition';
 export const MCP_ACQUISITION_COOKIE_MAX_AGE_SECONDS = 10 * 60;
@@ -23,7 +27,7 @@ const SIGNED_KEYS = new Set([
   'expiresAt',
 ]);
 
-export type McpAcquisitionClient = 'chatgpt' | 'claude' | 'codex';
+export type McpAcquisitionClient = McpIntegrationId;
 export type McpAcquisitionAction = 'connect' | 'copy_endpoint';
 export type McpLandingAcquisition = {
   source: 'mcp_landing';
@@ -75,7 +79,7 @@ function isLandingAcquisition<TRecord extends Record<string, unknown>>(
     record.source === 'mcp_landing' &&
     record.medium === 'owned' &&
     record.campaign === 'mcp_connect' &&
-    (record.client === 'chatgpt' || record.client === 'claude' || record.client === 'codex')
+    isEnabledMcpAcquisitionClient(record.client)
   );
 }
 

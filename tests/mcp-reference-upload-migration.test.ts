@@ -7,6 +7,7 @@ const mediaKindMigrationPath = 'neon/migrations/34_mcp_reference_upload_media_ki
 const hardeningMigrationPath = 'neon/migrations/35_mcp_reference_upload_hardening.sql';
 const replaySafetyMigrationPath = 'neon/migrations/36_mcp_reference_upload_replay_safety.sql';
 const recoveryMigrationPath = 'neon/migrations/37_mcp_reference_upload_recovery_state.sql';
+const assetDeletionMigrationPath = 'neon/migrations/43_mcp_reference_asset_deletion.sql';
 
 test('migration 32 owns short-lived single-use reference upload sessions', () => {
   assert.equal(existsSync(migrationPath), true, `${migrationPath} should exist`);
@@ -111,4 +112,27 @@ test('recovery migration shares a durable producer fence with workspace uploads 
   assert.match(migration, /state\s+IN\s*\([^)]*producing[^)]*orphaned/isu);
   assert.match(migration, /CREATE TRIGGER[\s\S]*user_assets[\s\S]*fence/isu);
   assert.match(migration, /CREATE TRIGGER[\s\S]*media_assets[\s\S]*fence/isu);
+});
+
+test('asset deletion migration adds a bounded released cleanup state with strict transitions', () => {
+  assert.equal(existsSync(assetDeletionMigrationPath), true, `${assetDeletionMigrationPath} should exist`);
+  const source = readFileSync(assetDeletionMigrationPath, 'utf8');
+
+  assert.match(source, /state[\s\S]*pending[\s\S]*retained[\s\S]*released[\s\S]*deleted/iu);
+  assert.match(source, /WHERE\s+state\s*=\s*'released'/iu);
+  assert.match(source, /CREATE\s+INDEX[^;]*ON\s+media_assets\s*\(\s*deleted_at\s*,\s*id\s*\)[^;]*WHERE\s+deleted_at\s+IS\s+NOT\s+NULL[^;]*public_id\s+IS\s+NOT\s+NULL/iu);
+  assert.match(source, /OLD\.state\s*=\s*'pending'[\s\S]*NEW\.state\s+IN\s*\(\s*'retained'\s*,\s*'deleted'\s*\)/iu);
+  assert.match(source, /OLD\.state\s*=\s*'retained'[\s\S]*NEW\.state\s*=\s*'released'/iu);
+  assert.match(source, /OLD\.state\s*=\s*'released'[\s\S]*NEW\.state\s*=\s*'deleted'/iu);
+  assert.match(source, /user-asset-thumbs\//iu);
+  assert.match(source, /thumbnail_object_key/iu);
+  assert.match(source, /candidate_url\s*~\*/iu);
+  assert.match(source, /reference_storage_authority_is_recognized/iu);
+  assert.match(source, /unrecognized_reference_storage_object_key/iu);
+  assert.match(source, /AFTER\s+UPDATE\s+OF\s+deleted_at[\s\S]*media_assets/iu);
+  assert.match(source, /OLD\.deleted_at\s+IS\s+NULL[\s\S]*NEW\.deleted_at\s+IS\s+NOT\s+NULL/iu);
+  assert.doesNotMatch(source, /DELETE\s+FROM\s+user_assets\s+AS\s+legacy\s+USING\s+media_assets\s+AS\s+media/iu);
+  assert.doesNotMatch(source, /INSERT\s+INTO\s+mcp_reference_upload_object_fences[\s\S]*SELECT\s+cleanup\.object_key/iu);
+  assert.doesNotMatch(source, /SET\s+state\s*=\s*'referenced'[\s\S]*WHERE\s+EXISTS\s*\(SELECT\s+1\s+FROM\s+user_assets/iu);
+  assert.doesNotMatch(source, /supabase/iu);
 });

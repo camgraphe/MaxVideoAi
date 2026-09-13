@@ -319,6 +319,7 @@ function trialServices(pool: Pool, provider: TrialProviderHarness, enabled = tru
       {
         paidGenerationEnabled: () => true,
         listPublicEngines: async () => [candidate],
+        resolveRequestExecutability: () => ({ executable: true }),
         getTrialEligibility: (current) => trialEligibility(current, enabled),
         checkTrialRisk: (risk) => checkTrialRisk(risk, {
           executor,
@@ -334,6 +335,7 @@ function trialServices(pool: Pool, provider: TrialProviderHarness, enabled = tru
         paidGenerationEnabled: () => true,
         trialGenerationEnabled: () => enabled,
         listPublicEngines: async () => [candidate],
+        resolveRequestExecutability: () => ({ executable: true }),
         acceptTrialRisk: (risk, { executor: transaction }) => acceptTrialRisk(risk, {
           executor: transaction,
           secret: RISK_SECRET,
@@ -349,7 +351,10 @@ function trialServices(pool: Pool, provider: TrialProviderHarness, enabled = tru
 }
 
 async function connectTrial(identity: AgentPrincipal, services: MaxVideoAiMcpServices) {
-  const server = createMaxVideoAiMcpServer(identity, services, { paidGeneration: true });
+  const server = createMaxVideoAiMcpServer(identity, services, {
+    paidGeneration: true,
+    referenceUploads: false,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: `t9-${identity.userId}`, version: '1.0.0' });
   await server.connect(serverTransport);
@@ -716,7 +721,17 @@ test('verified OAuth acquisition completes one local SDK trial without wallet or
   const publication = JSON.parse(
     readFileSync('frontend/config/mcp-publication.json', 'utf8'),
   ) as Record<string, unknown>;
-  assert.equal(Object.keys(publication).length, 9);
-  assert.equal(publication.montagePreparation, false);
-  assert.ok(Object.values(publication).every((value) => value === false));
+  assert.deepEqual(publication, {
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+    montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
+  });
 });

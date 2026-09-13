@@ -1,0 +1,21 @@
+{
+  "name": "MaxVideoAI - Accepted job completion notification",
+  "active": false,
+  "nodes": [
+    { "id": "notification-trigger", "name": "Accepted Job Input", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [-700, 0], "parameters": { "httpMethod": "POST", "path": "maxvideoai-accepted-job", "responseMode": "onReceived" } },
+    { "id": "notification-validate", "name": "Require Accepted Job", "type": "n8n-nodes-base.set", "typeVersion": 3.4, "position": [-480, 0], "parameters": { "mode": "manual", "assignments": { "assignments": [{ "id": "accepted", "name": "acceptedJobId", "type": "string", "value": "={{ $json.acceptedJobId }}" }] } } },
+    { "id": "notification-status", "name": "Get Generation Status", "type": "n8n-nodes-langchain.mcpClient", "typeVersion": 1, "position": [-260, 0], "parameters": { "serverTransport": "httpStreamable", "endpointUrl": "https://api.maxvideoai.com/mcp", "authentication": "oAuth2", "tool": "get_generation_status", "inputMode": "json", "jsonInput": "={{ JSON.stringify({ jobId: $('Require Accepted Job').item.json.acceptedJobId }) }}" } },
+    { "id": "notification-route", "name": "Route Actionable Outcome", "type": "n8n-nodes-base.switch", "typeVersion": 3.2, "position": [-40, 0], "parameters": { "rules": { "values": [{ "outputKey": "complete", "conditions": { "conditions": [{ "leftValue": "={{ $json.status }}", "rightValue": "completed", "operator": { "type": "string", "operation": "equals" } }] } }, { "outputKey": "failed", "conditions": { "conditions": [{ "leftValue": "={{ $json.status }}", "rightValue": "failed_or_refunded", "operator": { "type": "string", "operation": "equals" } }] } }, { "outputKey": "action", "conditions": { "conditions": [{ "leftValue": "={{ $json.requiresUserAction }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }] } }] } } },
+    { "id": "notification-complete", "name": "Notify Completion", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [220, -160], "parameters": { "event": "completion", "destination": "={{ $json.canonicalResultUrl || $json.libraryUrl }}" } },
+    { "id": "notification-failure", "name": "Notify Failure Or Refund", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [220, 0], "parameters": { "event": "failure_or_refund", "destination": "={{ $json.libraryUrl }}" } },
+    { "id": "notification-action", "name": "Notify User Action", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [220, 160], "parameters": { "event": "required_user_action", "destination": "={{ $json.actionUrl }}" } }
+  ],
+  "connections": {
+    "Accepted Job Input": { "main": [[{ "node": "Require Accepted Job", "type": "main", "index": 0 }]] },
+    "Require Accepted Job": { "main": [[{ "node": "Get Generation Status", "type": "main", "index": 0 }]] },
+    "Get Generation Status": { "main": [[{ "node": "Route Actionable Outcome", "type": "main", "index": 0 }]] },
+    "Route Actionable Outcome": { "main": [[{ "node": "Notify Completion", "type": "main", "index": 0 }], [{ "node": "Notify Failure Or Refund", "type": "main", "index": 0 }], [{ "node": "Notify User Action", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "saveDataErrorExecution": "all", "saveDataSuccessExecution": "none" },
+  "tags": []
+}

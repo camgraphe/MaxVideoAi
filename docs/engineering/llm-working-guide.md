@@ -13,6 +13,7 @@ Read these files before changing architecture or route structure:
 - `docs/engineering/admin-routes.md` when touching admin pages
 - `docs/engineering/refactor-roadmap.md`
 - `docs/engineering/model-registry.md` when changing model identity, aliases, family membership, publication, replacement, or redirects
+- `docs/engineering/mcp-integration-registry.md` when changing MCP integration identity, host evidence, publication, acquisition, installation, or store state
 - `docs/engineering/pricing-engine.md` when changing provider cost inputs, commercial policy, billing quotes, displayed prices, estimators, JSON-LD offers, or pricing admin behavior
 
 Then run the large-file audit when choosing a cleanup target:

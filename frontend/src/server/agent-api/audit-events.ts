@@ -1,5 +1,6 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import { ensureMcpSchema } from '@/lib/schema/mcp-schema';
+import { MCP_CLIENT_FAMILIES, type McpClientFamily } from '@/server/mcp/client-family';
 
 export type McpAuditEvent = {
   eventType: 'connection_initialized' | 'tool_discovery' | 'tool_call' | 'grant_revoked';
@@ -10,7 +11,7 @@ export type McpAuditEvent = {
   surface: 'video' | 'image' | null;
   engineId: string | null;
   errorCode: string | null;
-  clientFamily?: 'chatgpt' | 'claude' | 'codex' | 'other';
+  clientFamily?: McpClientFamily;
 };
 
 export type McpAuditDeps = {
@@ -36,6 +37,7 @@ const EVENT_TYPES = new Set<McpAuditEvent['eventType']>([
   'tool_call',
   'grant_revoked',
 ]);
+const CLIENT_FAMILIES = new Set<McpClientFamily>(MCP_CLIENT_FAMILIES);
 
 const defaultDeps: McpAuditDeps = {
   executor: { query },
@@ -55,7 +57,7 @@ function isMcpAuditEvent(value: unknown): value is McpAuditEvent {
   if (record.clientFamily !== undefined
     && (record.eventType !== 'connection_initialized'
       || typeof record.clientFamily !== 'string'
-      || !['chatgpt', 'claude', 'codex', 'other'].includes(record.clientFamily))) return false;
+      || !CLIENT_FAMILIES.has(record.clientFamily as McpClientFamily))) return false;
   if (!EVENT_TYPES.has(record.eventType as McpAuditEvent['eventType'])) return false;
   if (typeof record.userId !== 'string' || record.userId.length < 1 || record.userId.length > 128) return false;
   if (!nullableBoundedString(record.oauthClientId)) return false;

@@ -14,7 +14,7 @@ const acquisitionPath = 'frontend/lib/mcp-acquisition.ts';
 const routePath = 'frontend/app/api/mcp/acquisition/route.ts';
 const actionsPath =
   'frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpConnectActions.client.tsx';
-const actionFlagsPath = 'frontend/config/mcp-client-actions.json';
+const integrationRegistryPath = 'frontend/lib/mcp-integration-registry.ts';
 const reportPath = '.superpowers/sdd/task-5-report.md';
 const secret = 'task-5-test-signing-secret-with-32-bytes';
 const validInput = {
@@ -39,12 +39,23 @@ function signRaw(prefix: string, payload: string): string {
 }
 
 test('Task 5 has focused acquisition, route, and client-action owners', () => {
-  for (const path of [acquisitionPath, routePath, actionsPath, actionFlagsPath]) requireFile(path);
+  for (const path of [acquisitionPath, routePath, actionsPath, integrationRegistryPath]) requireFile(path);
 
   const actions = requireFile(actionsPath);
   assert.match(actions, /^['"]use client['"];?/);
   assert.match(actions, /McpClientActions/);
   assert.match(actions, /\/api\/mcp\/acquisition/);
+  assert.match(actions, /getMcpClientActionConfig/);
+  assert.doesNotMatch(actions, /mcp-client-actions\.json/);
+});
+
+test('analytics landing sanitization consumes registry-owned integration paths', () => {
+  const journey = requireFile('frontend/lib/analytics/journey.ts');
+  assert.match(journey, /getMcpPublicIntegrationPaths/);
+  assert.doesNotMatch(
+    journey,
+    /'\/integrations\/chatgpt',\s*'\/integrations\/claude',\s*'\/integrations\/codex'/,
+  );
 });
 
 test('landing acquisition accepts only the exact coarse allowlist and rejects extra data', async () => {
@@ -74,6 +85,18 @@ test('landing acquisition accepts only the exact coarse allowlist and rejects ex
     { ...validInput, prompt: 'private prompt' },
   ]) {
     assert.equal(parseMcpAcquisitionRequest(invalid), null, JSON.stringify(invalid));
+  }
+});
+
+test('the acquisition registry enables exactly the three live clients', async () => {
+  const { isEnabledMcpAcquisitionClient } = await import(
+    '../frontend/lib/mcp-integration-registry.ts'
+  );
+  for (const client of ['claude', 'chatgpt', 'codex']) {
+    assert.equal(isEnabledMcpAcquisitionClient(client), true);
+  }
+  for (const value of ['openclaw', 'n8n', 'other', '', [], {}]) {
+    assert.equal(isEnabledMcpAcquisitionClient(value), false);
   }
 });
 
@@ -461,10 +484,12 @@ test('Task 5 reports durable Task 7 binding through acquisitionId rather than th
 });
 
 test('client deep links remain disabled and localized setup plus endpoint copy always render', async () => {
-  const flags = JSON.parse(requireFile(actionFlagsPath)) as Record<
-    'claude' | 'chatgpt' | 'codex',
-    { deepLinkEnabled: boolean; deepLink: string | null }
-  >;
+  const { getMcpClientActionConfig } = await import(
+    '../frontend/lib/mcp-integration-registry.ts'
+  );
+  const flags = Object.fromEntries(
+    (['claude', 'chatgpt', 'codex'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
+  );
   assert.deepEqual(flags, {
     claude: { deepLinkEnabled: false, deepLink: null },
     chatgpt: { deepLinkEnabled: false, deepLink: null },

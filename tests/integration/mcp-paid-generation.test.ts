@@ -7,6 +7,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { type QueryExecutor, getDb } from '../../frontend/src/lib/db';
 import { listMcpActivityHistory } from '../../frontend/src/server/agent-api/activity-history';
 import { normalizeGenerationRequest } from '../../frontend/src/server/agent-api/generation-normalization';
+import { MCP_QUOTE_LIFETIME_SECONDS } from '../../frontend/src/server/agent-api/quote-repository';
 import { updateMcpSpendingSettings } from '../../frontend/src/server/agent-api/spending-limits';
 import { verifyMcpTopupHandoff } from '../../frontend/src/server/agent-api/topup-handoff';
 import {
@@ -76,23 +77,36 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   ]);
   const annotations = Object.fromEntries(paidTools.map((tool) => [tool.name, tool.annotations]));
   assert.deepEqual(annotations.confirm_generation, {
-    readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true,
+    readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true,
   });
   assert.deepEqual(annotations.create_topup_link, {
-    readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true,
+    readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false,
+  });
+  assert.deepEqual(annotations.prepare_generation, {
+    readOnlyHint: false, destructiveHint: false, openWorldHint: false,
   });
   for (const name of [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
-    'calculate_project_budget', 'prepare_generation', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation',
+    'calculate_project_budget', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation',
   ]) {
     assert.equal(record(annotations[name]).readOnlyHint, true);
     assert.equal(record(annotations[name]).destructiveHint, false);
     assert.equal(record(annotations[name]).openWorldHint, false);
   }
   const publication = JSON.parse(readFileSync('frontend/config/mcp-publication.json', 'utf8')) as Record<string, unknown>;
-  assert.equal(Object.keys(publication).length, 9);
-  assert.equal(publication.montagePreparation, false);
-  assert.ok(Object.values(publication).every((value) => value === false));
+  assert.deepEqual(publication, {
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+    montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
+  });
   const mediaIdentity = principal('p11-media');
   await addTopup(postgres.pool, mediaIdentity.userId, 1_100_000);
   await postgres.pool.query(
@@ -114,7 +128,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     pool: postgres.pool, userId: mediaIdentity.userId,
     quoteId: t2iQuoteId, input: t2iInput, prepared: t2iPrepared,
   });
-  assert.equal(t2iPricing.membershipTier, 'plus');
+  assert.equal(t2iPricing.membershipTier, 'member');
   const t2iConfirmed = await callConfirmed(media.client, t2iQuoteId);
   assert.notEqual(t2iConfirmed.isError, true, JSON.stringify(t2iConfirmed.structuredContent));
   assert.equal(structured(t2iConfirmed).status, 'completed');
@@ -238,7 +252,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const expiryProvider = new ProviderHarness(postgres.pool);
   const expired = await sessionFor(expiredIdentity, true, createServices({
     submitPaidGeneration: expiryProvider.submit,
-    prepareNow: () => new Date(Date.now() - 11 * 60 * 1000),
+    prepareNow: () => new Date(Date.now() - (MCP_QUOTE_LIFETIME_SECONDS + 60) * 1000),
   }));
   const expiredPrepared = await callPrepared(expired.client, t2iInput);
   const expiredQuoteId = String(expiredPrepared.quoteId);

@@ -413,6 +413,55 @@ test('media_assets mirror failure stays non-fatal while upload and record failur
   );
 });
 
+test('a failed thumbnail cleanup registration cannot poison an otherwise stored image', async () => {
+  const service = await loadService();
+  const finalKey = `user-assets/by-content/${'a'.repeat(32)}/${'b'.repeat(64)}.webp`;
+  const thumbnailKey = `user-asset-thumbs/${'a'.repeat(32)}/thumb.webp`;
+  const retained: string[] = [];
+  const store = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      uploadImageToStorage: async (params: any) => {
+        await params.beforeUpload?.(finalKey);
+        return {
+          url: `https://assets.maxvideo.ai/${finalKey}`,
+          key: finalKey,
+          width: 640,
+          height: 360,
+          size: 10,
+          mime: 'image/webp',
+        };
+      },
+      createUploadImageThumbnail: async (params: any) => {
+        try {
+          await params.beforeUpload?.(thumbnailKey);
+        } catch {
+          return null;
+        }
+        throw new Error('the thumbnail registration should fail');
+      },
+    })
+  );
+
+  const result = await store({
+    userId: 'user_1',
+    fileName: 'reference.webp',
+    declaredMime: 'image/webp',
+    bytes: Buffer.from('source'),
+    cleanupObjects: {
+      async beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string }) {
+        if (entry.objectRole === 'thumbnail') throw new Error('cleanup registration unavailable');
+      },
+      async retain(objectKey: string) {
+        if (objectKey === thumbnailKey) throw new Error('unregistered thumbnail must not be retained');
+        retained.push(objectKey);
+      },
+    },
+  });
+
+  assert.equal(result.previewUrl, `https://assets.maxvideo.ai/${finalKey}`);
+  assert.deepEqual(retained, [finalKey]);
+});
+
 test('upload failures emit only coarse event codes and never forward raw secret errors', async () => {
   const service = await loadService();
   const storage = await import(pathToFileURL(

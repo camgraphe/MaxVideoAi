@@ -1,9 +1,9 @@
 import { getSupabaseAdmin } from '@/server/supabase-admin';
-import { classifyMcpClient } from '@/server/mcp/client-family';
+import { classifyMcpClient, type McpClientFamily } from '@/server/mcp/client-family';
 
 export type McpAuthMetadata = {
   profiles: Array<{ user_id: string; registered_at: string }>;
-  clients: Array<{ oauth_client_id: string; family: 'chatgpt' | 'claude' | 'codex' }>;
+  clients: Array<{ oauth_client_id: string; family: Exclude<McpClientFamily, 'other'> }>;
 };
 
 // Bounded, read-only fallback for unsynchronized profiles and legacy client attribution.

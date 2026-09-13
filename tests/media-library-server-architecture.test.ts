@@ -8,6 +8,7 @@ const facadePath = join(root, 'frontend/server/media-library.ts');
 const modulesDir = join(root, 'frontend/server/media-library');
 const modules = [
   'asset-listing.ts',
+  'asset-deletion.ts',
   'asset-media.ts',
   'asset-resolvers.ts',
   'assets.ts',
@@ -24,7 +25,7 @@ test('media library public module stays a thin facade', () => {
   assert.ok(existsSync(facadePath), 'media-library facade should exist');
   assert.match(facadeSource, /from '\.\/media-library-records'/);
   assert.match(facadeSource, /from '\.\/media-library\/job-outputs'/);
-  assert.match(facadeSource, /from '\.\/media-library\/assets'/);
+  assert.match(facadeSource, /from '\.\/media-library\/asset-deletion'/);
   assert.match(facadeSource, /export type \{/);
 
   const lineCount = facadeSource.split('\n').length;
@@ -65,8 +66,9 @@ test('media library focused modules expose the expected contracts', () => {
   assert.match(readModule('asset-resolvers.ts'), /export async function resolveReusableAssetThumbUrl/);
   assert.match(readModule('asset-resolvers.ts'), /export async function resolveReusableAssetPreviewUrl/);
   assert.match(readModule('asset-listing.ts'), /export async function listLibraryAssetPage/);
+  assert.match(readModule('asset-deletion.ts'), /export async function deleteLibraryAsset/);
   assert.match(readModule('assets.ts'), /export async function listLibraryAssets/);
   assert.match(readModule('assets.ts'), /export async function ensureReusableAsset/);
   assert.match(readModule('assets.ts'), /export async function saveJobOutputToLibrary/);
-  assert.match(readModule('assets.ts'), /export async function deleteLibraryAsset/);
+  assert.doesNotMatch(readModule('assets.ts'), /export async function deleteLibraryAsset/);
 });

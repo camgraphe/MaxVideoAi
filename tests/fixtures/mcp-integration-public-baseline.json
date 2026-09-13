@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "publicConcepts": [
+    "/mcp",
+    "/docs/mcp",
+    "/integrations/chatgpt",
+    "/integrations/claude",
+    "/integrations/codex"
+  ],
+  "localizedUrls": {
+    "/mcp": {
+      "en": "https://maxvideoai.com/mcp",
+      "fr": "https://maxvideoai.com/fr/mcp",
+      "es": "https://maxvideoai.com/es/mcp"
+    },
+    "/docs/mcp": {
+      "en": "https://maxvideoai.com/docs/mcp",
+      "fr": "https://maxvideoai.com/fr/docs/mcp",
+      "es": "https://maxvideoai.com/es/docs/mcp"
+    },
+    "/integrations/chatgpt": {
+      "en": "https://maxvideoai.com/integrations/chatgpt",
+      "fr": "https://maxvideoai.com/fr/integrations/chatgpt",
+      "es": "https://maxvideoai.com/es/integraciones/chatgpt"
+    },
+    "/integrations/claude": {
+      "en": "https://maxvideoai.com/integrations/claude",
+      "fr": "https://maxvideoai.com/fr/integrations/claude",
+      "es": "https://maxvideoai.com/es/integraciones/claude"
+    },
+    "/integrations/codex": {
+      "en": "https://maxvideoai.com/integrations/codex",
+      "fr": "https://maxvideoai.com/fr/integrations/codex",
+      "es": "https://maxvideoai.com/es/integraciones/codex"
+    }
+  },
+  "clients": ["claude", "chatgpt", "codex"],
+  "hosts": {
+    "claudeDesktop": { "client": "claude", "status": "verified" },
+    "claudeCode": { "client": "claude", "status": "not-run" },
+    "chatgptWeb": { "client": "chatgpt", "status": "not-run" },
+    "codexCli": { "client": "codex", "status": "verified" }
+  },
+  "deepLinks": {
+    "claude": { "deepLinkEnabled": false, "deepLink": null },
+    "chatgpt": { "deepLinkEnabled": false, "deepLink": null },
+    "codex": { "deepLinkEnabled": false, "deepLink": null }
+  },
+  "integrationCopy": {
+    "en": {
+      "claude": { "label": "Claude", "backHref": "/mcp" },
+      "chatgpt": { "label": "ChatGPT", "backHref": "/mcp" },
+      "codex": { "label": "Codex", "backHref": "/mcp" }
+    },
+    "fr": {
+      "claude": { "label": "Claude", "backHref": "/fr/mcp" },
+      "chatgpt": { "label": "ChatGPT", "backHref": "/fr/mcp" },
+      "codex": { "label": "Codex", "backHref": "/fr/mcp" }
+    },
+    "es": {
+      "claude": { "label": "Claude", "backHref": "/es/mcp" },
+      "chatgpt": { "label": "ChatGPT", "backHref": "/es/mcp" },
+      "codex": { "label": "Codex", "backHref": "/es/mcp" }
+    }
+  }
+}

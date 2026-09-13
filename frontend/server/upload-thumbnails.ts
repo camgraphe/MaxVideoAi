@@ -44,8 +44,8 @@ function getFfmpegPath(): string | null {
     const ffmpeg = requireForRuntime('@ffmpeg-installer/ffmpeg');
     resolvedFfmpegPath =
       typeof ffmpeg === 'string' ? ffmpeg : typeof ffmpeg?.path === 'string' ? ffmpeg.path : null;
-  } catch (error) {
-    console.warn('[upload-thumbnails] unable to resolve ffmpeg binary', error);
+  } catch {
+    console.warn('[upload-thumbnails] code=FFMPEG_RESOLUTION_FAILED');
     resolvedFfmpegPath = null;
   }
   return resolvedFfmpegPath ?? null;
@@ -81,11 +81,8 @@ export async function createUploadImageThumbnail(params: UploadThumbnailParams):
     });
 
     return normalizeMediaUrl(upload.url) ?? upload.url;
-  } catch (error) {
-    console.warn('[upload-thumbnails] failed to create image thumbnail', {
-      fileName: params.fileName ?? null,
-      error,
-    });
+  } catch {
+    console.warn('[upload-thumbnails] code=IMAGE_THUMBNAIL_FAILED');
     return null;
   }
 }
@@ -120,11 +117,8 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
     });
 
     return normalizeMediaUrl(upload.url) ?? upload.url;
-  } catch (error) {
-    console.warn('[upload-thumbnails] failed to create video thumbnail', {
-      fileName: params.fileName ?? null,
-      error,
-    });
+  } catch {
+    console.warn('[upload-thumbnails] code=VIDEO_THUMBNAIL_FAILED');
     return null;
   } finally {
     await rm(tempDir, { recursive: true, force: true }).catch(() => {});

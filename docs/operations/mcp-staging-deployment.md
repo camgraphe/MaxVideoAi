@@ -83,6 +83,12 @@ protection and the normal skew-protection setting remain enabled. The project
 serving `maxvideoai.com` is a different project and must stay read-only during
 staging operations.
 
+The stable staging hostname is intentionally dual-use. A browser `GET` or `HEAD`
+whose response negotiation is HTML renders the `/mcp` marketing hub, including the
+default-locale redirect from `/en/mcp`. JSON/event-stream requests and every `POST`
+still rewrite `/mcp` to the MCP transport. Loopback development uses the same split;
+the dedicated production API hostname never enables the HTML exception.
+
 Because MCP protected-resource discovery is now publicly published, an
 unaliased deployment candidate returns the same stable resource metadata as the
 permanent staging host. The deployment wrapper validates that exact metadata
@@ -255,10 +261,12 @@ this project.
 
 ### Schema and cleanup prerequisite
 
-Migration files 30–37 are present locally. The 2026-08-26 hosted checkpoint
+Migration files 30–44 are present locally. The 2026-08-26 hosted checkpoint
 exercised account, quote, media, recovery, upload-handoff, and top-up-handoff
 database paths, but did not perform a sanitized migration-inventory or admin
-ledger reconciliation. Migration 37 remains a deployment prerequisite, and the
+ledger reconciliation. Migrations 37, 43, and 44 remain deployment prerequisites:
+44 preserves the exact `mcp-reference-staging/` namespace across storage keys,
+cleanup rows, object fences, and URL ownership parsing. The
 deployment wrapper does not run migrations or mutate the live database. If the
 required schema state cannot be established without revealing credentials, stop
 with `SCHEMA_BLOCKED`; do not deploy and do not attempt an in-band repair.

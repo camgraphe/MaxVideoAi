@@ -7,6 +7,7 @@ import vm from 'node:vm';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import mcpPublication from '../frontend/config/mcp-publication.json';
+import mcpIntegrations from '../frontend/config/mcp-integrations.json';
 import { buildMetadataUrls } from '../frontend/lib/metadataUrls.ts';
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication.ts';
 import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
@@ -20,7 +21,7 @@ import {
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)';
 const sitemapConfigPath = 'frontend/next-sitemap.config.js';
-const answerSectionPath = `${routeRoot}/mcp/_components/McpAnswerPassagesSection.tsx`;
+const answerSectionPath = `${routeRoot}/mcp/_components/McpFaqResourcesSection.tsx`;
 const internalLinksPath = 'frontend/lib/mcp-internal-links.ts';
 const gscBaselinePath = 'docs/marketing/mcp-gsc-baseline.md';
 
@@ -52,13 +53,19 @@ type SitemapConfig = {
   transform: (config: SitemapConfig, path: string) => Promise<unknown>;
 };
 
-function loadSitemapConfig(publication: typeof enabledPublication): SitemapConfig {
+function loadSitemapConfig(
+  publication: typeof enabledPublication,
+  integrations: unknown = mcpIntegrations,
+): SitemapConfig {
   const absolutePath = resolve(sitemapConfigPath);
   const source = readFileSync(absolutePath, 'utf8');
   const requireFromConfig = createRequire(absolutePath);
   const moduleRecord: { exports: unknown } = { exports: {} };
-  const localRequire = (specifier: string) =>
-    specifier === './config/mcp-publication.json' ? publication : requireFromConfig(specifier);
+  const localRequire = (specifier: string) => {
+    if (specifier === './config/mcp-publication.json') return publication;
+    if (specifier === './config/mcp-integrations.json') return integrations;
+    return requireFromConfig(specifier);
+  };
   const wrapper = vm.runInNewContext(
     `(function (require, module, exports, __dirname, process) { ${source}\n})`,
     { console },
@@ -172,6 +179,25 @@ test('enabled publication fixture emits 15 localized owners with exact absolute 
   assert.equal(entries.some((entry) => entry.loc.includes('api.maxvideoai.com/mcp')), false);
 });
 
+test('preview-noindex registry entries never join generated sitemap paths', async () => {
+  const registryWithPreview = structuredClone(mcpIntegrations) as typeof mcpIntegrations & {
+    integrations: Record<string, unknown>;
+  };
+  registryWithPreview.integrations.openclaw = {
+    ...registryWithPreview.integrations.claude,
+    label: 'OpenClaw',
+    displayOrder: 40,
+    englishPath: '/integrations/openclaw',
+    site: { publication: 'preview_noindex', indexable: false },
+    acquisition: { enabled: false, key: 'openclaw' },
+    hosts: [],
+  };
+  const config = loadSitemapConfig(enabledPublication, registryWithPreview);
+  const entries = await config.additionalPaths(config);
+  assert.equal(entries.some((entry) => entry.loc.includes('/integrations/openclaw')), false);
+  assert.equal(entries.some((entry) => entry.loc === 'https://maxvideoai.com/integrations/claude'), true);
+});
+
 test('MCP metadata matches the approved intent and canonical locale routes', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
@@ -202,13 +228,13 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
   });
 });
 
-test('SSR answer passages expose three self-contained GEO answers, account details, evidence and review date', async () => {
+test('SSR resources expose three self-contained GEO answers, a short FAQ, evidence and review date', async () => {
   assert.equal(existsSync(answerSectionPath), true, `${answerSectionPath} should exist`);
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  const { McpAnswerPassagesSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpAnswerPassagesSection.tsx'
+  const { McpFaqResourcesSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpFaqResourcesSection.tsx'
   );
   const { getMcpHostProof } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
@@ -216,8 +242,8 @@ test('SSR answer passages expose three self-contained GEO answers, account detai
   const copy = getMcpPageCopy('en');
   const publication = getMcpPublicationState(mcpPublication);
   const html = renderToStaticMarkup(
-    React.createElement(McpAnswerPassagesSection, {
-      copy: copy.answers,
+    React.createElement(McpFaqResourcesSection, {
+      copy,
       hostProof: getMcpHostProof('claude', 'en'),
       lastChecked: '2026-08-28',
       locale: 'en',
@@ -243,7 +269,7 @@ test('SSR answer passages expose three self-contained GEO answers, account detai
   assert.doesNotMatch(html, /FAQPage|HowTo/);
 
   const viewSource = readFileSync(`${routeRoot}/mcp/_components/McpPageView.tsx`, 'utf8');
-  assert.match(viewSource, /McpAnswerPassagesSection/);
+  assert.match(viewSource, /McpFaqResourcesSection/);
 });
 
 test('AI search crawlers can read public content while training crawlers and private surfaces remain blocked', () => {

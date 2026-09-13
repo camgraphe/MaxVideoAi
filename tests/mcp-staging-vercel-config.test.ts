@@ -734,7 +734,7 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.match(runbook, /exact account[\s\S]{0,160}OAuth client/i);
   assert.match(runbook, /public routing\s+flags[\s\S]{0,160}(?:false|closed)/i);
   assert.match(runbook, /CREDENTIAL_BLOCKED/);
-  assert.match(runbook, /migration files 30–37 are present locally/i);
+  assert.match(runbook, /migration files 30–44 are present locally/i);
   assert.match(runbook, /hosted checkpoint\s+exercised account, quote, media, recovery, upload-handoff, and top-up-handoff/i);
   assert.doesNotMatch(runbook, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
   assert.doesNotMatch(runbook, /BYTEPLUS_ARK_API_KEY\s*=/);

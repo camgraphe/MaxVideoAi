@@ -174,7 +174,7 @@ function resolveStoragePrefix(prefix?: string): string {
   const referenceNamespace = process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, '');
   if (
     referenceNamespace
-    && ['media-assets', 'user-asset-thumbs'].some(
+    && ['media-assets', 'user-assets', 'user-asset-thumbs'].some(
       (root) => requested === root || requested.startsWith(`${root}/`),
     )
   ) {

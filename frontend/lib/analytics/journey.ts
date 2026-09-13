@@ -8,6 +8,7 @@ import {
   type PreparedAnalyticsEvent,
 } from './journey-contract';
 import { getPublicVideoRenditionAssetIds } from '@/lib/public-video-renditions';
+import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -82,7 +83,7 @@ const ANALYTICS_WORKSPACE_SECTIONS = new Set([
 const SAFE_MARKETING_LANDING_SURFACES = new Set([
   '/', '/about', '/ai-video-engines', '/benchmarks', '/best-for', '/blog', '/changelog',
   '/company', '/compare', '/contact', '/docs', '/editorial-standards', '/examples',
-  '/integrations/chatgpt', '/integrations/claude', '/integrations/codex', '/legal',
+  ...getMcpPublicIntegrationPaths(), '/legal',
   '/legal/acceptable-use', '/legal/cookies', '/legal/cookies-list', '/legal/mentions',
   '/legal/privacy', '/legal/subprocessors', '/legal/takedown', '/legal/terms', '/mcp',
   '/models', '/pay-as-you-go-ai-video-generator', '/pricing', '/status', '/tools', '/workflows',

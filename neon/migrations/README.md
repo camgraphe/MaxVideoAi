@@ -55,3 +55,7 @@ OAuth binding, immutable funnel ledger, and admin reporting. It must run after m
 Migration 39 extends newly prepared MCP generation quotes to 45 minutes while retaining the
 historical 10-minute constraint form for immutable existing rows. Apply it before deploying the
 runtime that creates 45-minute quotes.
+
+Migration 44 follows the MCP reference-asset deletion migration and preserves the dedicated
+`mcp-reference-staging/` namespace in storage ownership, fences, and cleanup. Apply it before
+deploying a staging runtime that prefixes reusable originals and thumbnails.

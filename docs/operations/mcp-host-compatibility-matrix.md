@@ -2,6 +2,11 @@
 
 Last hosted checkpoint: 2026-08-27
 
+Marketing pages project their integration identity, host labels, checkpoint dates,
+and status facts from `frontend/config/mcp-integrations.json`. This matrix remains
+the owner of detailed tested-host evidence, exact versions, exercised behavior,
+limitations, and explicit non-claims.
+
 ## Production checkpoint
 
 - Origin: `https://api.maxvideoai.com/mcp`
@@ -66,6 +71,39 @@ The `present_generation` descriptor and its versioned MCP Apps resource are cove
 | ChatGPT web custom app / full MCP | OpenAI currently documents full MCP for eligible Business and Enterprise/Edu workspaces on ChatGPT web; Pro access is limited to read/fetch. No MaxVideoAI submission, install, OAuth, action, or tool-rendering evidence has been recorded on this path. | Not run; do not claim host validation. |
 | Claude Code | Shared Claude adapter and skill contracts exist, but this exact host was not exercised. | Not run. |
 | Other MCP hosts | The wire contract is host-neutral, but each host still needs its own installation, OAuth, rendering, confirmation, and recovery evidence. | Unverified. |
+
+## Ecosystem expansion source review
+
+Checked: **2026-09-12**. The entries below record current host capabilities
+from primary documentation, not MaxVideoAI execution evidence. Every MaxVideoAI
+path remains `not-run` until a sanitized controlled-host checkpoint records the
+exact version and applicable lifecycle.
+
+| Host or surface | Current documented path | MaxVideoAI evidence and limitation |
+| --- | --- | --- |
+| OpenClaw Gateway | [OpenClaw MCP transports and OAuth](https://docs.openclaw.ai/cli/mcp/transports) documents saved remote Streamable HTTP servers, `auth: "oauth"`, login/logout, shared operator credentials, and optional per-requester identity. | **Tested-with-limits checkpoint (OpenClaw 2026.9.4, commit `3a9d69d`, on macOS 26.6.2; Streamable HTTP; 2026-09-13 Europe/Madrid).** Candidate `distribution/clawhub/maxvideoai/SKILL.md` SHA-256: `3b98acb659a339b944784256ec4c594531767d90b0dbc16a5caa7dc88eb7c0ca`. The digest was captured after the initial lifecycle: it identifies the retained candidate for the remaining checks but does not prove the bytes used during that lifecycle. A disposable profile connected to the branch-local endpoint through OAuth. Denial left protected tools unavailable with no job or wallet mutation. In the clean denial profile, the user also interrupted a login before browser approval; a later probe still reported authorization required, protected tools stayed unavailable, the token store count remained zero, and the process exited nonzero without an authenticated tool or paid call. After approval, the host discovered the filtered tools, read account and model data, requested recommendations, compared budgets, and prepared an exact quote without creating a job. One explicitly approved `$0.07` Seedance 1.5 Pro quote was confirmed exactly once and completed. A separate cold/lost-context session recovered the same accepted job through `list_recent_generations`, `get_generation_status`, and `present_generation` without a second `confirm_generation` or other paid call; the host exposed the MaxVideoAI library fallback but no inline media URL. With explicit approval, the newest OpenClaw grant was disconnected. The active disposable profile then reported authorization required, kept protected tools unavailable, and exited nonzero. Fresh browser OAuth restored protected-tool discovery with exit 0, and the account connection list returned to five OpenClaw entries. No paid call or generation occurred during this revoke/access-loss/reconnect check. Separately, an older disabled production server entry with expired access and an existing refresh credential was temporarily enabled. Its read-only capability probe exposed protected tools, updated the token store, and advanced expiry, demonstrating automatic refresh; the entry was restored to disabled without a tool invocation, paid call, or generation. Separately, a deterministic local fault-injection on the exact installed OpenClaw build exercised the real MaxVideoAI HTTP handler with disposable PostgreSQL and a fake provider. MaxVideoAI accepted and fully buffered the `confirm_generation` response before the test adapter destroyed the downstream socket. OpenClaw observed the transport failure, issued exactly one confirmation request, then recovered through `list_recent_generations`, `get_generation_status`, and `present_generation`; persistence showed one provider call, one job, one charge, and zero refunds. This is local fault-injection evidence, not a live-provider or production-network interruption. A bounded private-reference import and cleanup, channel attachments, and ClawHub install/update/uninstall remain unverified. The preview stays noindex and acquisition remains disabled. |
+| n8n MCP Client | [n8n MCP Client](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcpclient) documents external MCP tools as deterministic workflow steps, including OAuth2 credentials and a bounded tool-call timeout. | **Not run.** No n8n Cloud or self-hosted import, OAuth, tool call, approval pause, or accepted-job recovery is recorded. |
+| n8n MCP Client Tool | [n8n MCP Client Tool](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolmcp) documents selected external MCP tools for an AI Agent. | **Not run.** Agent tool selection and approval boundaries remain distinct from the deterministic node and require their own evidence. |
+| Cursor | [Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol) documents remote SSE and Streamable HTTP servers, OAuth, custom `mcp.json`, and an Add to Cursor surface. | **Not run.** No MaxVideoAI install button, OAuth lifecycle, tool approval, generation, or recovery evidence exists. The integration remains hidden. |
+| GitHub Copilot in IDEs | [GitHub Copilot MCP setup](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp) documents manual remote OAuth and registry discovery across supported IDE surfaces. | **Not run.** Each claimed IDE/version needs a separate checkpoint; registry presence alone is not host execution evidence. |
+| GitHub Copilot CLI | [Copilot CLI MCP setup](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) documents remote HTTP/SSE servers, OAuth reauthentication, and experimental registry search. | **Not run.** No MaxVideoAI CLI install, OAuth, approval, or recovery result is recorded. |
+| GitHub Copilot cloud agent | [Repository MCP configuration](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/configure-mcp-servers) states that the cloud agent and code review do not currently support remote MCP servers that use OAuth. | **Not run and currently incompatible with the MaxVideoAI OAuth path.** Desktop/IDE/CLI support must not be projected onto this surface. |
+| Gemini CLI | [Gemini CLI MCP documentation](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md) documents Streamable HTTP, remote OAuth discovery, localhost callbacks, and RFC 9207 `iss` validation. | **Not run.** The MaxVideoAI authorization callback must be checked against Gemini's issuer requirement before any compatibility claim. The integration remains hidden. |
+| Microsoft Copilot Studio | [Copilot Studio existing-server setup](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent) documents Streamable transport and OAuth through the onboarding wizard or a Power Platform connector. | **Not run.** Tenant, callback, connector, data-policy, tool, approval, and recovery behavior remain an enterprise validation track. |
+| Microsoft Agents 365 | [Microsoft 365 Agent Tools](https://learn.microsoft.com/en-us/microsoft-365/admin/manage/manage-tools-for-agent) documents tenant registration and governance for bring-your-own remote MCP servers. | **Not run.** Registration, admin approval, governance, observability, and Copilot Studio reuse are unverified. The integration remains hidden. |
+
+### Controlled-host promotion protocol
+
+For each new host, record a clean install, OAuth denial and approval, token
+refresh, revoke, observed authentication loss, explicit reconnect, account and
+catalog discovery, recommendation, project budget, fresh exact quote, and
+accepted-job recovery. A paid confirmation requires separate owner approval and
+must use a stable idempotency key. Record canonical result/library behavior,
+host-specific rendering and attachment limits, the exact host and MaxVideoAI
+versions, and sanitized evidence. Partial host evidence may move `not-run` to
+`tested_with_limits` when its omissions are explicit. `verified` requires the
+full applicable lifecycle above; inapplicable steps must be identified rather
+than silently omitted.
 
 ## Verified customer-continuity behavior
 

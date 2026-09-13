@@ -15,15 +15,18 @@ function requireFile(path: string): string {
   return readFileSync(path, 'utf8');
 }
 
-test('Claude, ChatGPT, and Codex use official marks through one equal neutral action component', () => {
+test('Claude, ChatGPT, and Codex use the shared marks through one equal neutral action component', () => {
   const source = requireFile(`${componentsRoot}/McpClientActions.tsx`);
   const integrationHero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
+  const sharedMarks = requireFile('frontend/components/marketing/mcp/McpIntegrationMark.tsx');
   const openAiDark = requireFile('frontend/public/brand/partners/openai/openai-mark-dark.svg');
   const claudeDark = requireFile('frontend/public/brand/partners/anthropic/claude-mark-dark.svg');
-  assert.match(source, /\/brand\/partners\/anthropic\/claude-mark-light\.svg/);
-  assert.match(source, /\/brand\/partners\/anthropic\/claude-mark-dark\.svg/);
-  assert.match(source, /\/brand\/partners\/openai\/openai-mark-light\.svg/);
-  assert.match(source, /\/brand\/partners\/openai\/openai-mark-dark\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/anthropic\/claude-mark-light\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/anthropic\/claude-mark-dark\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/openai\/openai-mark-light\.svg/);
+  assert.match(sharedMarks, /\/brand\/partners\/openai\/openai-mark-dark\.svg/);
+  assert.match(source, /McpIntegrationMark integration=\{action\.client\}/);
+  assert.match(integrationHero, /McpIntegrationMark integration=\{copy\.client\}/);
   assert.match(source, /function McpClientAction/);
   assert.match(source, /clients\.map/);
   assert.match(source, /neutral|bg-surface/);
@@ -33,9 +36,38 @@ test('Claude, ChatGPT, and Codex use official marks through one equal neutral ac
   assert.match(integrationHero, /bg-white[^"\n]*dark:bg-neutral-900/);
   assert.doesNotMatch(source, /bg-white[^"\n]*dark:bg-white/);
   assert.doesNotMatch(integrationHero, /bg-white[^"\n]*dark:bg-white/);
-  assert.equal((source.match(/h-6 w-6 object-contain/g) ?? []).length, 2);
   assert.match(source, /sm:grid-cols-3/);
   assert.doesNotMatch(source, /preferred|primaryClient|OpenAI['"]/);
+});
+
+test('the platform selector renders a local brand mark for every MCP integration', async () => {
+  const { McpPlatformSelector } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPlatformSelector.tsx'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const copy = getMcpPageCopy('en');
+  const html = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
+    actions: copy.hero.actions,
+    copy: copy.ecosystem,
+  }));
+
+  for (const client of [
+    'claude',
+    'chatgpt',
+    'codex',
+    'openclaw',
+    'n8n',
+    'cursor',
+    'githubCopilot',
+    'geminiCli',
+    'microsoftCopilot',
+  ] as const) {
+    assert.match(html, new RegExp(`data-mcp-integration-mark="${client}"`));
+    assert.match(html, new RegExp(`data-mcp-mark-kind="logo"[^>]*data-mcp-integration-mark="${client}"|data-mcp-integration-mark="${client}"[^>]*data-mcp-mark-kind="logo"`));
+  }
+  assert.doesNotMatch(html, /data-mcp-mark-kind="monogram"/);
 });
 
 test('new MCP surfaces remain light-first, restrained, and dark-compatible', () => {
@@ -47,6 +79,9 @@ test('new MCP surfaces remain light-first, restrained, and dark-compatible', () 
     'McpConnectActions.client.tsx',
     'McpProofMedia.tsx',
     'McpHostProofCard.tsx',
+    'McpPlatformSelector.tsx',
+    'McpProductionWorkflowSection.tsx',
+    'McpFaqResourcesSection.tsx',
     'McpWorkflowStrip.tsx',
     'McpBudgetShortlist.tsx',
     'McpEvidenceSection.tsx',
@@ -66,7 +101,7 @@ test('new MCP surfaces remain light-first, restrained, and dark-compatible', () 
 test('the hero stays prospect-facing and contains no internal setup vocabulary', () => {
   const source = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
   assert.doesNotMatch(source, /OAuth|scope|endpoint|staging|API key/i);
-  assert.match(source, /McpConnectActions/);
+  assert.doesNotMatch(source, /McpConnectActions|McpConversationPreview|McpClientActions/);
   assert.match(source, /showTrialClaim/);
 });
 
@@ -98,24 +133,16 @@ test('marketing setup surfaces prioritize copy-paste instructions and keep the M
   assert.match(hubCopy, /aria-live="polite"/);
 });
 
-test('workflow and live price references support a conversation-led project proposal', async () => {
-  requireFile(`${componentsRoot}/McpWorkflowStrip.tsx`);
-  requireFile(`${componentsRoot}/McpBudgetShortlist.tsx`);
+test('the production workflow keeps three steps and current price references in one section', async () => {
+  requireFile(`${componentsRoot}/McpProductionWorkflowSection.tsx`);
   requireFile(`${routeRoot}/_lib/mcp-page-copy.ts`);
-  const { McpWorkflowStrip } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpWorkflowStrip.tsx'
-  );
-  const { McpBudgetShortlist } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpBudgetShortlist.tsx'
+  const { McpProductionWorkflowSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpProductionWorkflowSection.tsx'
   );
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const copy = getMcpPageCopy('en');
-  const workflow = renderToStaticMarkup(React.createElement(McpWorkflowStrip, { copy: copy.workflow }));
-  assert.equal((workflow.match(/data-workflow-step=/g) ?? []).length, 3);
-  copy.workflow.steps.forEach((step: string) => assert.ok(workflow.includes(step.replace('&', '&amp;'))));
-
   const options = [
     {
       slot: 'included_trial',
@@ -150,15 +177,28 @@ test('workflow and live price references support a conversation-led project prop
       priceSource: 'canonical_public_quote',
     },
   ] as const;
-  const budget = renderToStaticMarkup(
-    React.createElement(McpBudgetShortlist, { copy: copy.budget, options }),
+  const workflow = renderToStaticMarkup(
+    React.createElement(McpProductionWorkflowSection, {
+      copy,
+      options,
+      publication: {
+        renderPublicPage: true,
+        connectionAvailable: true,
+        indexable: true,
+        showTrialClaim: true,
+        showPaidGenerationClaim: true,
+        showReferenceClaim: true,
+      },
+    }),
   );
-  assert.equal((budget.match(/data-price-reference=/g) ?? []).length, 2);
-  assert.ok(budget.includes('Quality-first proposal'));
-  assert.ok(budget.includes('Lower-cost alternatives'));
-  assert.ok(budget.includes('not packages or a recommendation'));
-  assert.ok(budget.includes('Included'));
-  assert.ok(budget.includes('$0.26'));
+  assert.equal((workflow.match(/data-production-step=/g) ?? []).length, 3);
+  copy.workflow.steps.forEach((step: string) => assert.ok(workflow.includes(step.replace('&', '&amp;'))));
+  assert.equal((workflow.match(/data-price-reference=/g) ?? []).length, 2);
+  assert.ok(workflow.includes('Quality-first proposal'));
+  assert.ok(workflow.includes('Lower-cost alternatives'));
+  assert.ok(workflow.includes('not packages or a recommendation'));
+  assert.ok(workflow.includes('Included'));
+  assert.ok(workflow.includes('$0.26'));
 });
 
 test('proof media is poster-backed, controlled, captioned, and never auto-plays', () => {
@@ -259,8 +299,8 @@ test('homepage assistant workflow localizes the live catalog label and uses acco
 test('the shared hub stays host-neutral before showing the controlled Claude capture', () => {
   const hero = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
   const view = requireFile(`${componentsRoot}/McpPageView.tsx`);
-  const answers = requireFile(`${componentsRoot}/McpAnswerPassagesSection.tsx`);
-  assert.match(hero, /McpConversationPreview/);
+  const answers = requireFile(`${componentsRoot}/McpFaqResourcesSection.tsx`);
+  assert.doesNotMatch(hero, /McpConversationPreview|McpHostProofCard/);
   assert.doesNotMatch(hero, /McpHostProofCard/);
   assert.match(view, /hostProof=\{hostProof\}/);
   assert.match(answers, /McpHostProofCard/);
@@ -268,8 +308,8 @@ test('the shared hub stays host-neutral before showing the controlled Claude cap
 });
 
 test('the three GEO answer passages stay adjacent to current captioned evidence', async () => {
-  const { McpAnswerPassagesSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpAnswerPassagesSection.tsx'
+  const { McpFaqResourcesSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpFaqResourcesSection.tsx'
   );
   const { getMcpHostProof } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
@@ -279,8 +319,8 @@ test('the three GEO answer passages stay adjacent to current captioned evidence'
   );
   const hostProof = getMcpHostProof('claude', 'en');
   assert.ok(hostProof);
-  const html = renderToStaticMarkup(React.createElement(McpAnswerPassagesSection, {
-    copy: getMcpPageCopy('en').answers,
+  const html = renderToStaticMarkup(React.createElement(McpFaqResourcesSection, {
+    copy: getMcpPageCopy('en'),
     hostProof,
     lastChecked: '2026-08-28',
     locale: 'en',
@@ -295,7 +335,7 @@ test('the three GEO answer passages stay adjacent to current captioned evidence'
   }));
 
   assert.equal((html.match(/data-answer-passage=/g) ?? []).length, 3);
-  assert.equal((html.match(/data-answer-detail=/g) ?? []).length, 4);
+  assert.equal((html.match(/data-faq-item=/g) ?? []).length, 5);
   assert.equal((html.match(/data-answer-evidence=/g) ?? []).length, 1);
   assert.match(html, /data-answer-with-evidence=/);
   assert.match(html, /data-mcp-host-proof="claude"/);
@@ -308,8 +348,8 @@ test('the three GEO answer passages stay adjacent to current captioned evidence'
     'mobile source order should show evidence after one answer instead of after all three passages',
   );
   assert.ok(
-    html.indexOf('data-answer-evidence=') < html.indexOf('data-answer-detail='),
-    'compact supporting answers should follow the visual proof pair',
+    html.indexOf('data-answer-evidence=') < html.indexOf('data-faq-item='),
+    'the short FAQ should follow the visual proof pair',
   );
 
   const view = requireFile(`${componentsRoot}/McpPageView.tsx`);

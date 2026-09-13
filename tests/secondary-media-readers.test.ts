@@ -107,8 +107,8 @@ for (const scenario of [
   });
 }
 
-test('all integration clients/locales defer the exact original video until native Play', () => {
-  for (const client of ['claude', 'chatgpt', 'codex'] as const) for (const locale of ['en', 'fr', 'es'] as const) {
+test('all visible integration clients/locales defer the exact original video until native Play', () => {
+  for (const client of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const) for (const locale of ['en', 'fr', 'es'] as const) {
     const dom = new JSDOM(renderToStaticMarkup(React.createElement(IntegrationConversationPreview, { client, locale })));
     const video = dom.window.document.querySelector('video')!;
     assert.equal(video.preload, 'none');
@@ -116,6 +116,10 @@ test('all integration clients/locales defer the exact original video until nativ
     assert.match(video.poster, /^\/_next\/image\?/);
     assert.match(video.querySelector('source')!.src, /4e4954fc-513a-4345-945c-41adba7ec26a\.mp4$/);
     assert.ok(video.className.includes('aspect-video'));
+    if (client === 'openclaw' || client === 'n8n') {
+      assert.equal(dom.window.document.querySelector('figcaption img'), null);
+      assert.ok(dom.window.document.querySelector('[data-integration-monogram]'));
+    }
     dom.window.close();
   }
 });

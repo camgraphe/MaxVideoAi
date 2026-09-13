@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import test from 'node:test';
+
+import { getMcpIntegration } from '../frontend/lib/mcp-integration-registry';
+
+const root = 'distribution/clawhub/maxvideoai';
+
+function read(path: string): string {
+  assert.equal(existsSync(path), true, `${path} should exist`);
+  return readFileSync(path, 'utf8');
+}
+
+test('the ClawHub candidate is a thin credential-free remote MCP guide', () => {
+  const skill = read(`${root}/SKILL.md`);
+  const safety = read(`${root}/references/safe-generation.md`);
+  const ignored = read(`${root}/.clawhubignore`);
+  const artifact = `${skill}\n${safety}`;
+
+  assert.match(skill, /^---\nname: maxvideoai\ndescription: .+\n---\n/);
+  assert.match(artifact, /https:\/\/api\.maxvideoai\.com\/mcp/);
+  for (const boundary of [
+    'list_models',
+    'calculate_project_budget',
+    'prepare_generation',
+    'confirm_generation',
+    'get_generation_status',
+  ]) {
+    assert.match(artifact, new RegExp(boundary));
+  }
+  assert.match(artifact, /explicit approval/i);
+  assert.match(artifact, /recover.*accepted job/is);
+  assert.doesNotMatch(artifact, /api[_ -]?key|client[_ -]?secret|bearer\s+[a-z0-9]/i);
+  assert.doesNotMatch(artifact, /curl\s|npm\s+(?:install|i)|pnpm\s+(?:add|install)|\$\d|\d+ models/i);
+  assert.match(ignored, /evidence/);
+  assert.match(ignored, /operations/);
+  assert.equal(getMcpIntegration('openclaw').store.status, 'preparing');
+  assert.equal(getMcpIntegration('openclaw').installation.package, 'unavailable');
+});
+
+test('ClawHub preparation documents exact files and keeps publishing owner-controlled', () => {
+  const guide = read('docs/operations/mcp-distribution-artifacts.md');
+  for (const file of [
+    'distribution/clawhub/maxvideoai/SKILL.md',
+    'distribution/clawhub/maxvideoai/references/safe-generation.md',
+    'distribution/clawhub/maxvideoai/.clawhubignore',
+  ]) {
+    assert.match(guide, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(guide, /MIT-0/);
+  assert.match(guide, /--dry-run/);
+  assert.match(guide, /install.*update.*uninstall/is);
+  assert.match(guide, /explicit owner authorization/i);
+  assert.doesNotMatch(guide, /submitted|listed/i);
+});
