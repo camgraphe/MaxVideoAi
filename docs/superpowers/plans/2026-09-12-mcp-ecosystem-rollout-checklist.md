@@ -253,14 +253,35 @@ acquisition-disabled, with no n8n template-library submission.
 - Consumes: completed host evidence from Tasks 2 and 4 plus separate publication approval for each integration.
 - Produces: truthful localized public pages and optional acquisition attribution for only the approved host.
 
-- [ ] Decide OpenClaw publication from its own evidence; do not wait for or inherit n8n evidence.
-- [ ] Decide n8n publication separately for deterministic MCP Client and AI Agent MCP Client Tool claims.
-- [ ] Replace preview language only with claims supported by the exact recorded versions and limitations.
-- [ ] Set `site.publication` and `site.indexable` only for the approved integration; review acquisition enablement as a separate change.
-- [ ] Add the approved EN/FR/ES paths to sitemap and canonical projections through the registry owner.
-- [ ] Verify reciprocal hreflang, JSON-LD, robots, one main landmark, localized paths, redirects, and installation actions.
-- [ ] Run the complete MCP marketing and SEO suites, lint, exposure lint, build, and localized HTTP smoke tests.
-- [ ] Commit OpenClaw and n8n promotions separately so either can be reverted without affecting the other or the live floor.
+- [x] Decide OpenClaw publication from its own evidence; do not wait for or inherit n8n evidence.
+- [x] Decide n8n publication separately for deterministic MCP Client and AI Agent MCP Client Tool claims.
+- [x] Replace preview language only with claims supported by the exact recorded versions and limitations.
+- [x] Set `site.publication` and `site.indexable` only for the approved integration; review acquisition enablement as a separate change.
+- [x] Add the approved EN/FR/ES paths to sitemap and canonical projections through the registry owner.
+- [x] Verify reciprocal hreflang, JSON-LD, robots, one main landmark, localized paths, redirects, and installation actions.
+- [x] Run the complete MCP marketing and SEO suites, lint, exposure lint, build, and localized HTTP smoke tests.
+- [x] Commit OpenClaw and n8n promotions separately so either can be reverted without affecting the other or the live floor.
+
+Decision recorded 2026-09-14: neither integration is promoted yet. OpenClaw
+retains `preview_noindex` because private-reference cleanup and channel
+attachment evidence remain open. n8n independently retains `preview_noindex`
+because n8n Cloud, Chat-Model-backed agent invocation, token refresh, reconnect,
+and a live failed/refunded notification remain unverified. Acquisition stays
+disabled for both. Because no promotion was approved, no sitemap path or
+indexable canonical projection was added; the localized preview copy keeps only
+the exact tested-with-limits claims.
+
+Verification recorded 2026-09-14: all 1,012 MCP tests passed with no skips,
+including copy, route, JSON-LD, publication, SEO, acquisition, and immutable
+public-baseline contracts. Frontend lint, public-exposure lint, the production
+build, and `git diff --check` passed. A production-server smoke on `localhost`
+validated all 21 EN/FR/ES owners: the 15-page Claude/ChatGPT/Codex, `/mcp`, and
+`/docs/mcp` public floor remained HTTP 200 with `index, follow`; the six
+OpenClaw/n8n previews remained HTTP 200 with `noindex, follow`. Every page had
+its exact canonical, four reciprocal alternates, and one `main`. Since no
+integration was promoted, the independent-promotion commit requirement is
+satisfied by retaining both previews in this decision-only checkpoint rather
+than creating empty promotion commits.
 
 ### Task 6: Validate and Promote Cursor
 
