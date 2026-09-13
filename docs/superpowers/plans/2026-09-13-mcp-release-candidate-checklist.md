@@ -12,8 +12,9 @@ platform tasks do not block the first staging candidate.
 - Keep OpenClaw and n8n as rendered `preview_noindex` pages with acquisition disabled.
 - Keep Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot visible only as
   preparing ecosystem entries; their dedicated routes remain hidden.
-- Keep ClawHub and the n8n template library in `preparing`; no external submission is
-  part of this candidate.
+- At candidate freeze, keep ClawHub and the n8n template library in `preparing`;
+  no external submission was part of that candidate. A later explicitly authorized
+  follow-up listed ClawHub while n8n remains `preparing`.
 - Keep paid generation, public indexing, store publication, deployment, and production
   mutations outside the local verification gate.
 

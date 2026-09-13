@@ -73,10 +73,38 @@ copied model roster.
 At `2026-09-13T20:59:22Z`, the official CLI confirmed the owner-controlled
 publisher handle `@camgraphe`. A fresh authenticated dry-run resolved the
 intended public slug `maxvideoai`, reported `latestVersion: null`, and reproduced
-the same two-file fingerprint above. The device authorization created only the
-publisher session; no scan, upload, publication, install, update, or uninstall
-occurred. The registry therefore remains `preparing` and the OpenClaw package
-remains unavailable.
+the same two-file fingerprint above.
+
+### Published listing
+
+After explicit authorization for this exact upload, ClawHub accepted version
+`1.0.0` with version ID `k971k3r0c1yhhcx7arvk6a11e58eb3gv`, two payload files,
+and the unchanged fingerprint
+`d7cca882cf7561fcc8bc83d3f5c130d060beb132bfab98871ed219ccfbfa79dd`.
+The public listing is
+[clawhub.ai/skills/skills/maxvideoai](https://clawhub.ai/skills/skills/maxvideoai),
+owned by `@camgraphe`; it exposes version `1.0.0`, the `latest` tag, and MIT-0.
+The canonical listing returned HTTP 200 after ClawHub's redirect.
+
+ClawHub's stored moderation result is `clean` with legacy reason
+`scanner.llm.clean`, no suspicious flag, and no malware block. The additional
+read-only scan completed successfully as scan
+`w17cqj7rwt42xmjz4gh24zb9t18ebpax`: static analysis and A.I.G were clean with
+zero findings, and ClawScan returned `clean` / `benign` with high confidence.
+Skillspector separately reported three heuristic findings because the guide
+mentions an access credential in a prohibition, connects to the declared
+external MaxVideoAI MCP endpoint, and says never to ask for credentials. Those
+signals are recorded rather than hidden; ClawScan classified the first two as
+expected and the last as a context mismatch because the guide requires explicit
+approval before paid confirmation.
+
+A clean package lifecycle using the same ephemeral `clawhub@0.23.3` installed
+`maxvideoai` version `1.0.0` into a disposable directory. SHA-256 comparison
+proved both installed payload files were byte-identical to the reviewed local
+files. The exact-version update correctly reported it was already at `1.0.0`,
+and uninstall removed the skill. The disposable directory was then removed.
+This package lifecycle did not create, exercise, or revoke a MaxVideoAI OAuth
+grant.
 
 ### Local validation
 
@@ -99,15 +127,15 @@ published without categories is placed in `other`; any final category/topic
 choice must use current allowed values and avoid reserved endorsement terms.
 The local contract does not replace this CLI validation.
 
-### Clean-host lifecycle still required
+### Clean-host end-to-end proof still required
 
-On a disposable OpenClaw environment, inspect the candidate, install it, verify
-its generated Skill Card, connect the remote MCP through OAuth, exercise the
-bounded workflow, update it from an exact version, and uninstall it. Confirm
-that uninstalling the skill does not revoke the separate MaxVideoAI grant and
-that revoking the grant prevents protected MCP calls.
+The isolated ClawHub install, exact-version update, and uninstall lifecycle is
+complete. A later disposable OpenClaw proof must still load the installed Skill
+Card, connect the remote MCP through OAuth, exercise the bounded workflow, and
+confirm that uninstalling the skill does not revoke the separate MaxVideoAI
+grant while revoking that grant prevents protected MCP calls.
 
-Record the exact OpenClaw and ClawHub versions, file digest, install/update/
-uninstall result, scan state, OAuth lifecycle, quote boundary, accepted-job
-recovery, and limitations. Until those checks and explicit owner authorization
-are complete, the registry state remains local preparation only.
+Record the exact OpenClaw version, OAuth lifecycle, quote boundary,
+accepted-job recovery, and limitations when that end-to-end proof is run. The
+ClawHub listing is live, but this remaining host proof keeps the OpenClaw
+marketing page `preview_noindex` and acquisition disabled.

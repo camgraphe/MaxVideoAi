@@ -122,7 +122,7 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 - [x] Update only the OpenClaw host evidence status and `lastChecked` field; keep site publication and acquisition unchanged until Task 3 passes.
 - [x] Run the host-proof, registry, publication, marketing, and public-baseline tests; commit the evidence update.
 
-Evidence recorded 2026-09-13: 66 focused host-proof, registry, publication, marketing, SEO, and immutable public-baseline tests passed. Frontend lint, exposure lint, and `git diff --check` passed. The OpenClaw Gateway alone moved to `tested_with_limits`; OpenClaw remains `preview_noindex`, non-indexable, acquisition-disabled, package-unavailable, and ClawHub `preparing`. The unchecked lifecycle gaps above remain required before a verified host claim.
+Evidence recorded 2026-09-13: 66 focused host-proof, registry, publication, marketing, SEO, and immutable public-baseline tests passed. Frontend lint, exposure lint, and `git diff --check` passed. The OpenClaw Gateway alone moved to `tested_with_limits`; the later owner-authorized ClawHub publication made its package available and listing `listed`, while OpenClaw remains `preview_noindex`, non-indexable, and acquisition-disabled. The unchecked host-lifecycle gaps above remain required before a verified host claim.
 
 Additional interrupted-response evidence recorded 2026-09-13: the exact pinned OpenClaw integration test, the hermetic injected-service transport contract, and the wider focused MCP/marketing/publication suite passed 192/192 with no skips. Frontend lint, exposure lint, TypeScript checking, and `git diff --check` also passed. The host remains `tested_with_limits`; private-reference cleanup, channel attachments, and the ClawHub lifecycle remain open.
 
@@ -147,11 +147,11 @@ Additional interrupted-response evidence recorded 2026-09-13: the exact pinned O
 - [x] Confirm the package contains exactly the two reviewed payload files; keep `.clawhubignore` as the third local packaging-control file, and verify no credential, executable installer, fixed price, or copied model roster.
 - [x] Review the MIT-0 consequence for the exact published files and obtain the product owner's explicit acceptance.
 - [x] Sign in to the owner-controlled ClawHub account and verify the intended namespace before upload.
-- [ ] Publish version `1.0.0` once, then inspect its listing, file contents, permissions, scan result, source attribution, and install command.
-- [ ] Perform clean install, update check, and uninstall from a disposable OpenClaw profile; verify OAuth revocation remains a separate MaxVideoAI account action.
-- [ ] Record listing URL, published digest, publisher account, scan state, and timestamps in both distribution documents.
-- [ ] Change `store.status` from `preparing` only to the exact observed state (`submitted` or `listed`).
-- [ ] Run the ClawHub artifact, registry, public-baseline, and exposure tests; commit the listing evidence.
+- [x] Publish version `1.0.0` once, then inspect its listing, file contents, permissions, scan result, source attribution, and install command.
+- [x] Perform clean install, update check, and uninstall from a disposable OpenClaw profile; verify OAuth revocation remains a separate MaxVideoAI account action.
+- [x] Record listing URL, published digest, publisher account, scan state, and timestamps in both distribution documents.
+- [x] Change `store.status` from `preparing` only to the exact observed state (`submitted` or `listed`).
+- [x] Run the ClawHub artifact, registry, public-baseline, and exposure tests; commit the listing evidence.
 
 Dry-run evidence recorded 2026-09-13: the official npm package
 `clawhub@0.23.3` from `openclaw/clawhub` ran under Node 23.9.0 (above its Node
@@ -166,9 +166,26 @@ credential, installer, fixed-price, and copied-roster audit. On 2026-09-13, the
 product owner explicitly accepted MIT-0 for exactly the two payload files. At
 `2026-09-13T20:59:22Z`, the official CLI verified the owner-controlled publisher
 `@camgraphe`; an authenticated dry-run reproduced the same slug, version,
-file count, and fingerprint, with `latestVersion: null`. No scan, upload,
-publication, install, update, or uninstall occurred; store status remains
-`preparing`.
+file count, and fingerprint, with `latestVersion: null`.
+
+Publication evidence recorded 2026-09-13: after explicit authorization, the
+single `1.0.0` upload kept the same two-file fingerprint and became the public
+listing [clawhub.ai/skills/skills/maxvideoai](https://clawhub.ai/skills/skills/maxvideoai)
+under `@camgraphe`. Stored moderation is `clean` with no suspicious or malware
+flag. Scan `w17cqj7rwt42xmjz4gh24zb9t18ebpax` completed successfully: static
+analysis and A.I.G were clean, ClawScan returned `clean` / `benign`, and the
+three Skillspector heuristics were recorded with their credential-prohibition,
+declared-endpoint, and human-approval context. A disposable `clawhub@0.23.3`
+install produced payloads byte-identical to the candidate, exact-version update
+reported `1.0.0` current, and uninstall removed the skill. Registry state is now
+`listed` and package availability is `available`; site publication remains
+`preview_noindex` and acquisition remains disabled pending the separate
+installed-Skill-to-OAuth end-to-end proof.
+
+Listing-evidence verification recorded 2026-09-13: 46 focused ClawHub,
+registry, publication, marketing, legal-readiness, sitemap, and exposure-boundary
+tests passed with no skips. The public exposure lint and `git diff --check` also
+passed.
 
 ### Task 4: Validate n8n Workflows in a Disposable Environment
 
