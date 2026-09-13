@@ -107,6 +107,14 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.match(row, /issued exactly one confirmation request/);
   assert.match(row, /one provider call, one job, one charge, and zero refunds/);
   assert.match(row, /not a live-provider or production-network interruption/);
+  assert.match(row, /installed `@camgraphe\/maxvideoai` version `1\.0\.0` from ClawHub/);
+  assert.match(row, /archive SHA-256 `5b47ee7a585136dd7d02a2bc50e85d5552b8b6be6de0fe22ab983eb0e0303564`/);
+  assert.match(row, /eligible, model-visible, and linked to `@camgraphe`/);
+  assert.match(row, /OAuth probe exposed all 15 protected MaxVideoAI capabilities/);
+  assert.match(row, /agent tool invocation remains unverified/);
+  assert.match(row, /credentials were cleared, the protected probe returned authorization required/);
+  assert.match(row, /profile residue was moved to the Trash/);
+  assert.doesNotMatch(row, /ClawHub install\/update\/uninstall remain unverified/);
   assert.doesNotMatch(row, /literal ambiguous interrupted `confirm_generation` transport response[^.]*remain unverified/);
   assert.match(row, /remain unverified/);
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);

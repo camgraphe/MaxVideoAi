@@ -124,7 +124,7 @@ Evidence recorded 2026-09-13: 91 focused admin, PostgreSQL, audit, MCP contract,
 
 Evidence recorded 2026-09-13: 66 focused host-proof, registry, publication, marketing, SEO, and immutable public-baseline tests passed. Frontend lint, exposure lint, and `git diff --check` passed. The OpenClaw Gateway alone moved to `tested_with_limits`; the later owner-authorized ClawHub publication made its package available and listing `listed`, while OpenClaw remains `preview_noindex`, non-indexable, and acquisition-disabled. The unchecked host-lifecycle gaps above remain required before a verified host claim.
 
-Additional interrupted-response evidence recorded 2026-09-13: the exact pinned OpenClaw integration test, the hermetic injected-service transport contract, and the wider focused MCP/marketing/publication suite passed 192/192 with no skips. Frontend lint, exposure lint, TypeScript checking, and `git diff --check` also passed. The host remains `tested_with_limits`; private-reference cleanup, channel attachments, and the ClawHub lifecycle remain open.
+Additional interrupted-response evidence recorded 2026-09-13: the exact pinned OpenClaw integration test, the hermetic injected-service transport contract, and the wider focused MCP/marketing/publication suite passed 192/192 with no skips. Frontend lint, exposure lint, TypeScript checking, and `git diff --check` also passed. The host remains `tested_with_limits`; private-reference cleanup and channel attachments remain open.
 
 ### Task 3: Validate and Publish the ClawHub Candidate
 
@@ -186,6 +186,17 @@ Listing-evidence verification recorded 2026-09-13: 46 focused ClawHub,
 registry, publication, marketing, legal-readiness, sitemap, and exposure-boundary
 tests passed with no skips. The public exposure lint and `git diff --check` also
 passed.
+
+Installed-Skill evidence recorded 2026-09-13: a clean OpenClaw 2026.9.4 profile
+installed `@camgraphe/maxvideoai` version `1.0.0` from ClawHub. The Skill Card was
+eligible, model-visible, and linked to the expected owner and artifact digests.
+Browser OAuth completed and an authenticated probe exposed all 15 protected
+capabilities without diagnostics. A later two-tool filter exposed only
+`get_account_status` and `list_models`. Headless `agent exec` did not reuse the
+profile's MCP OAuth state, so no agent-mediated protected call is claimed.
+Credentials were cleared, the next probe failed closed with authorization
+required, the Skill and MCP entry were removed, and the isolated profile residue
+was moved to the Trash. No generation or paid call occurred.
 
 ### Task 4: Validate n8n Workflows in a Disposable Environment
 

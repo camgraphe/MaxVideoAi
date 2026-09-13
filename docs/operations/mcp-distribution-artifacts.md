@@ -130,12 +130,16 @@ The local contract does not replace this CLI validation.
 ### Clean-host end-to-end proof still required
 
 The isolated ClawHub install, exact-version update, and uninstall lifecycle is
-complete. A later disposable OpenClaw proof must still load the installed Skill
-Card, connect the remote MCP through OAuth, exercise the bounded workflow, and
-confirm that uninstalling the skill does not revoke the separate MaxVideoAI
-grant while revoking that grant prevents protected MCP calls.
+complete. A separate clean OpenClaw 2026.9.4 profile also installed
+`@camgraphe/maxvideoai` version `1.0.0`, recognized the Skill Card as eligible
+and model-visible, completed browser OAuth, and exposed all 15 protected
+capabilities without a diagnostic. Clearing the OAuth credentials made the next
+probe fail closed with authorization required; the Skill, MCP entry, and profile
+were then removed. The headless `agent exec` path did not reuse the profile's MCP
+OAuth state, so an agent-mediated protected tool call from the installed Skill
+remains unverified.
 
-Record the exact OpenClaw version, OAuth lifecycle, quote boundary,
-accepted-job recovery, and limitations when that end-to-end proof is run. The
-ClawHub listing is live, but this remaining host proof keeps the OpenClaw
-marketing page `preview_noindex` and acquisition disabled.
+Record the remaining agent-mediated call, private-reference lifecycle, channel
+rendering, and limitations when those end-to-end proofs are run. The ClawHub
+listing is live, but these remaining host proofs keep the OpenClaw marketing
+page `preview_noindex` and acquisition disabled.
