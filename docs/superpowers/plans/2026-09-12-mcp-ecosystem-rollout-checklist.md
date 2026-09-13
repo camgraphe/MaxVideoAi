@@ -329,16 +329,16 @@ Additional interrupted-response evidence recorded 2026-09-13: the exact pinned O
 - Consumes: every approved local platform milestone and an exact immutable deployment candidate.
 - Produces: a production release record, rollback point, and post-deploy baseline.
 
-- [ ] Rebase or merge the latest target branch into the feature branch without weakening the frozen public baseline.
-- [ ] Run the complete repository test suite, full MCP suite, frontend lint, exposure lint, i18n check, SEO check, `git diff --check`, and production build.
-- [ ] Review the complete branch diff for credentials, generated-file drift, accidental public routes, unearned claims, and unrelated changes.
-- [ ] Smoke-test every live and preview EN/FR/ES route from the production build; confirm hidden routes still return 404.
-- [ ] Review canonical, reciprocal hreflang, robots, JSON-LD, sitemap, `llms.txt`, acquisition allowlist, and analytics event payloads.
-- [ ] Create the final review artifact or pull request with the commit map, verification evidence, known limitations, and rollback instructions.
-- [ ] Deploy an unaliased candidate and rerun transport, OAuth, account, discovery, quote, recovery, media, and marketing smoke tests.
-- [ ] Promote the exact verified candidate and record the previous deployment for rollback.
+- [x] Rebase or merge the latest target branch into the feature branch without weakening the frozen public baseline.
+- [x] Run the complete repository test suite, full MCP suite, frontend lint, exposure lint, i18n check, SEO check, `git diff --check`, and production build.
+- [x] Review the complete branch diff for credentials, generated-file drift, accidental public routes, unearned claims, and unrelated changes.
+- [x] Smoke-test every live and preview EN/FR/ES route from the production build; confirm hidden routes still return 404.
+- [x] Review canonical, reciprocal hreflang, robots, JSON-LD, sitemap, `llms.txt`, acquisition allowlist, and analytics event payloads.
+- [x] Create the final review artifact or pull request with the commit map, verification evidence, known limitations, and rollback instructions.
+- [x] Deploy an unaliased candidate and rerun transport, OAuth, account, discovery, quote, recovery, media, and marketing smoke tests.
+- [x] Promote the exact verified candidate and record the previous deployment for rollback.
 - [ ] Verify production HTTP behavior, OAuth metadata, MCP transport, account handoffs, platform pages, and store links.
-- [ ] Record deployment identifiers, timestamps, evidence links, limitations, and rollback target in the launch evidence document.
+- [x] Record deployment identifiers, timestamps, evidence links, limitations, and rollback target in the launch evidence document.
 
 ### Task 12: SEO, Store, and Funnel Follow-up
 
@@ -351,7 +351,7 @@ Additional interrupted-response evidence recorded 2026-09-13: the exact pinned O
 - Consumes: the production release, verified listings, Search Console, analytics, and support observations.
 - Produces: factual discovery and conversion evidence for the next prioritization cycle.
 
-- [ ] Submit only newly indexable canonical URLs and updated sitemaps to Search Console after production verification.
+- [x] Confirm whether newly indexable canonical URLs or changed sitemap membership require a Search Console submission after production verification; this release added none, so no manual submission was made.
 - [ ] Verify every external listing resolves to the canonical landing page and production MCP endpoint without redirect or tracking leakage.
 - [ ] Record submitted, reviewed, rejected, listed, suspended, or delisted states per store with timestamp and evidence URL.
 - [ ] Capture a clean 14-day baseline for hub visits, platform-card selection, OAuth starts, connected accounts, quote preparation, confirmation, completion/refund, and library continuation.

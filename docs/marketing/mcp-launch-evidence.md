@@ -104,6 +104,64 @@ GCS, four Nano Banana image models, three Veo 3.1 video models, and
 spend, produced no paid Gemini Omni result, created no Gemini Omni capture, and
 is not the deployment provenance assigned to the earlier Task 4 screenshots.
 
+## 2026-09-13 MCP ecosystem production rollout
+
+The owner approved PR `#289`, then explicitly authorized the administrator merge
+required because the author could not satisfy the repository's one-review rule.
+GitHub squashed reviewed head `bf99acbeed1b75d8b4c13251fd8ea9e2deb4f0f3`
+into Production revision `f428f52a2f7db302792f6683e77274236bfb4cd3` at
+`2026-09-13T20:16:42Z`. Their Git trees are identical at
+`7fc781cc9775081327f8fbc630294d03e4710f3b`.
+
+Vercel automatically built that exact merged tree as deployment
+`dpl_AwS4BzdsaLN6TXmVo1P5dTc1FRz5`, immutable URL
+`https://maxvideoai-kb17nf3lh-camgraphes-projects.vercel.app`. It was created at
+`2026-09-13T20:16:45.555Z` and reached `READY` at
+`2026-09-13T20:21:51.994Z` on the `maxvideoai.com` and
+`api.maxvideoai.com` aliases. The immediately previous READY deployment,
+`dpl_DMFeqFnwmTB9hE3rQVP2xxzuEd8N`, remains retained at
+`https://maxvideoai-ew9xav8we-camgraphes-projects.vercel.app` as the rollback
+target. No manual Production deploy or database migration was triggered in this
+checkpoint.
+
+The final stable MCP staging candidate remained
+`dpl_DX5CZKfK5oPMbHGVm6uuwHN4Ec3Y`. Its application revision differed from the
+final PR tree only by checklist evidence and direct `aria-hidden` attributes on
+three already-decorative integration images. The exact final tree passed the PR
+Vercel preview and 13-minute Quality CI before merge, then passed post-merge
+Quality CI, Lighthouse CI, IndexNow, and Pages build/deployment.
+
+Direct Production smoke recorded:
+
+- HTTP 200 for the hub and Claude, ChatGPT, Codex, OpenClaw, and n8n in EN/FR/ES
+  (18 routes), and HTTP 404 for Cursor, GitHub Copilot, Gemini CLI, and Microsoft
+  Copilot in every locale (12 routes);
+- all nine platform labels and the required locally served brand marks on each
+  localized hub;
+- `noindex, follow` on the six OpenClaw/n8n preview pages, with only the hub and
+  the three live clients present in localized sitemaps; `llms.txt` retained the
+  hub and excluded both previews;
+- exact protected-resource metadata, one Production authorization server, PKCE
+  S256, `openid`, one public JWKS signing key, an anonymous MCP HTTP 401 with the
+  canonical metadata challenge and private/no-store caching, and HTTP 406 for an
+  API-host browser request;
+- expected anonymous boundaries for Wallet (401), admin MCP (401), reference
+  cleanup (401), account connections (login redirect), and the canonical
+  `/app/library` visitor surface (200 with private/no-store caching).
+
+A capped initial sample of 500 requests from the new Vercel deployment contained
+481 HTTP 200, three 308, ten expected 404, six entries without an HTTP status,
+zero 5xx, and zero `error` or `fatal` logs. The ten sampled MCP marketing requests
+all returned 200.
+
+This checkpoint made no authenticated MCP tool call, paid confirmation, provider
+submission, private-reference upload/deletion, manual cleanup execution, store
+submission, or Search Console mutation. Authenticated OAuth lifecycle, account
+handoffs, Production reference cleanup, funnel/admin reconciliation, refunds,
+support observations, and the 14-day SEO/conversion window remain open. OpenClaw
+and n8n remain preview/noindex and acquisition-disabled; all later platforms stay
+hidden. No store or platform promotion is implied by this rollout.
+
 ## Controlled hosted evidence
 
 | Evidence | State | Result |
