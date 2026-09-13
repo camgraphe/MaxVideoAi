@@ -786,6 +786,8 @@ test('durable cleanup aborts never-finalized expired attempts and retains failed
           { cleanup_id: '00000000-0000-4000-8000-000000000202', object_key: 'attempt/parts/part-retry', owner_prefix: 'attempt/parts/', object_role: 'part', attempt_storage_key: 'attempt' },
         ] as T[];
       }
+      if (sql.includes('WITH tombstones AS')) return [{ removed: '0', released: '0' }] as T[];
+      if (sql.includes("cleanup.state = 'released'")) return [] as T[];
       if (sql.includes('mcp_reference_upload_object_fences')) return [] as T[];
       assert.deepEqual(values?.[0], ['00000000-0000-4000-8000-000000000201']);
       return [] as T[];
