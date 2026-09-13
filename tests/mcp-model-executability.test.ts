@@ -116,6 +116,15 @@ test('direct video providers require their own effective credentials', () => {
       credentials: { LUMA_AGENTS_API_KEY: 'luma-key' },
     },
     {
+      id: 'wan-3',
+      flags: {
+        ALIBABA_MODEL_STUDIO_ENABLED: 'true',
+        ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'true',
+        ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'false',
+      },
+      credentials: { ALIBABA_MODEL_STUDIO_API_KEY: 'alibaba-key' },
+    },
+    {
       id: 'veo-3-1',
       flags: {
         GOOGLE_VERTEX_VEO_ENABLED: 'true',
