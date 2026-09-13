@@ -20,6 +20,7 @@ export type NormalizedVideoProviderTask = {
 
 export type VideoProviderKey =
   | 'fal'
+  | 'alibaba_model_studio'
   | 'kling_direct'
   | 'byteplus_modelark'
   | 'google_vertex_veo_direct'
