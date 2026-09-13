@@ -514,7 +514,7 @@ test('readiness packages follow the live registry and canonical localized route 
   assert.deepEqual(toolNames(markdownRow(support, 'App-only helper')), ['get_generation_download']);
 
   const migrations = readdirSync(join(root, 'neon/migrations'));
-  for (let id = 30; id <= 37; id += 1) {
+  for (let id = 30; id <= 44; id += 1) {
     assert.ok(migrations.some((name) => name.startsWith(`${id}_`)), `migration ${id} should exist locally`);
   }
   assert.match(support, /migration files 30–37 are present locally/i);
@@ -531,7 +531,7 @@ test('readiness packages follow the live registry and canonical localized route 
   assert.match(paidRunbook, /registry returns to the five default\s+discovery tools/i);
   assert.doesNotMatch(paidRunbook, /three read-only tools|three-tool/i);
   assert.match(stagingDeployment, /Claude Desktop 1\.37937\.1 and Codex CLI 0\.149\.0-alpha\.4\.3 completed controlled\s+OAuth-backed staging sessions/i);
-  assert.match(stagingDeployment, /migration files 30–37 are present locally/i);
+  assert.match(stagingDeployment, /migration files 30–44 are present locally/i);
   assert.match(stagingDeployment, /hosted checkpoint\s+exercised account, quote, media, recovery, upload-handoff, and top-up-handoff/i);
   assert.doesNotMatch(stagingDeployment, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
   assert.doesNotMatch(stagingDeployment, /Revocation \|.*Authentication required|Reconnect \|.*succeeded/i);
