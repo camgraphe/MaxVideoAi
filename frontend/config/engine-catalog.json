@@ -9673,9 +9673,9 @@
       ],
       "maxDurationSec": 15,
       "resolutions": [
-        "480p",
         "720p",
-        "1080p"
+        "1080p",
+        "480p"
       ],
       "aspectRatios": [
         "16:9",

@@ -2,11 +2,14 @@ import mcpPublication from '@/config/mcp-publication.json';
 import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
 import { buildMcpActivityMetrics, buildMcpToolUsage, type McpActivityMetrics, type McpActivitySummaryRow, type McpToolUsage, type McpToolUsageSummaryRow } from '@/server/admin-mcp-activity';
 import {
+  loadAdminMcpProviderCosts,
+  loadAdminMcpProviderOperations,
+  type AdminMcpProviderOperation,
+} from '@/server/admin-mcp-provider-operations';
+import {
   AUDIT_SUMMARY_SQL,
   ERROR_SQL,
   FUNNEL_SQL,
-  PROVIDER_COST_SQL,
-  PROVIDER_OPERATIONS_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
   TOOL_USAGE_SQL,
@@ -86,18 +89,7 @@ export type AdminMcpMetrics = {
   revenueCents: number | null;
   providerCostCents: number | null;
   trialCostCents: number | null;
-  providerOperations: Array<{
-    provider: string;
-    attempts: number;
-    accepted: number;
-    completed: number;
-    failed: number;
-    fallbacks: number;
-    stalledPolling: number;
-    providerCostCents: number | null;
-    averageAcceptanceLatencyMs: number | null;
-    averageTerminalLatencyMs: number | null;
-  }> | null;
+  providerOperations: AdminMcpProviderOperation[] | null;
   refundsCents: number | null;
   refundRate: number | null;
   releaseRate: number | null;
@@ -153,28 +145,6 @@ type ReceiptRow = {
   non_usd_receipts: number | string | null;
 };
 
-type ProviderCostRow = {
-  attempt_count: number | string | null;
-  trial_attempt_count: number | string | null;
-  missing_cost_attempts: number | string | null;
-  provider_cost_cents: number | string | null;
-  trial_cost_cents: number | string | null;
-};
-
-type ProviderOperationsRow = {
-  provider: string;
-  attempt_count: number | string | null;
-  accepted_count: number | string | null;
-  completed_count: number | string | null;
-  failed_count: number | string | null;
-  fallback_count: number | string | null;
-  stalled_polling_count: number | string | null;
-  missing_cost_attempts: number | string | null;
-  provider_cost_cents: number | string | null;
-  average_acceptance_latency_ms: number | string | null;
-  average_terminal_latency_ms: number | string | null;
-};
-
 type AdminMcpMetricsDeps = {
   executor: QueryExecutor;
   isDatabaseConfigured(): boolean;
@@ -211,10 +181,6 @@ function count(value: number | string | null | undefined): number {
     throw new Error('Invalid aggregate count returned by the database.');
   }
   return parsed as number;
-}
-
-function nullableCount(value: number | string | null | undefined): number | null {
-  return value === null || value === undefined ? null : count(value);
 }
 
 function rate(numerator: number, denominator: number): number | null {
@@ -438,44 +404,19 @@ export async function loadAdminMcpMetrics(
     metrics.availability.providerCosts = unavailable('The MCP provider-cost attribution producer capability is not live.');
   } else if (relations.mcp_funnel_events && relations.app_jobs && relations.provider_attempts) {
     try {
-      const row = (await deps.executor.query<ProviderCostRow>(PROVIDER_COST_SQL, [range.from, range.to]))[0];
-      if (!row) throw new Error('Missing provider cost aggregate.');
-      const attemptCount = count(row.attempt_count);
-      const trialAttemptCount = count(row.trial_attempt_count);
-      const missingCostAttempts = count(row.missing_cost_attempts);
-      if (missingCostAttempts > 0) {
-        metrics.availability.providerCosts = unavailable(`Provider cost coverage is partial: ${missingCostAttempts} attempt(s) have no recorded cost.`);
+      const costs = await loadAdminMcpProviderCosts(deps.executor, range);
+      if (costs.missingCostAttempts > 0) {
+        metrics.availability.providerCosts = unavailable(`Provider cost coverage is partial: ${costs.missingCostAttempts} attempt(s) have no recorded cost.`);
       } else {
         metrics.availability.providerCosts = available();
-        metrics.providerCostCents = attemptCount === 0 ? 0 : count(row.provider_cost_cents);
-        metrics.trialCostCents = trialAttemptCount === 0 ? 0 : count(row.trial_cost_cents);
+        metrics.providerCostCents = costs.providerCostCents;
+        metrics.trialCostCents = costs.trialCostCents;
       }
     } catch {
       metrics.availability.providerCosts = unavailable('Authoritative provider cost aggregate query failed.');
     }
     try {
-      const rows = await deps.executor.query<ProviderOperationsRow>(
-        PROVIDER_OPERATIONS_SQL,
-        [range.from, range.to],
-      );
-      metrics.providerOperations = rows.map((row) => {
-        if (typeof row.provider !== 'string' || !row.provider.trim()) {
-          throw new Error('Invalid provider operations dimension.');
-        }
-        const missingCostAttempts = count(row.missing_cost_attempts);
-        return {
-          provider: row.provider,
-          attempts: count(row.attempt_count),
-          accepted: count(row.accepted_count),
-          completed: count(row.completed_count),
-          failed: count(row.failed_count),
-          fallbacks: count(row.fallback_count),
-          stalledPolling: count(row.stalled_polling_count),
-          providerCostCents: missingCostAttempts > 0 ? null : nullableCount(row.provider_cost_cents),
-          averageAcceptanceLatencyMs: nullableCount(row.average_acceptance_latency_ms),
-          averageTerminalLatencyMs: nullableCount(row.average_terminal_latency_ms),
-        };
-      });
+      metrics.providerOperations = await loadAdminMcpProviderOperations(deps.executor, range);
     } catch {
       metrics.providerOperations = null;
     }

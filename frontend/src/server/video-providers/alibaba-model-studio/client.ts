@@ -165,4 +165,3 @@ export class AlibabaModelStudioClient {
 export function getAlibabaModelStudioClient(): AlibabaModelStudioClient {
   return new AlibabaModelStudioClient();
 }
-

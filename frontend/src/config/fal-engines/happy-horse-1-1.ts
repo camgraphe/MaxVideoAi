@@ -17,7 +17,7 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2v', 'i2v', 'ref2v'],
   maxDurationSec: 15,
-  resolutions: ['480p', '720p', '1080p'],
+  resolutions: ['720p', '1080p', '480p'],
   aspectRatios: [...HAPPY_HORSE_1_1_ASPECT_RATIOS],
   fps: [24],
   audio: true,

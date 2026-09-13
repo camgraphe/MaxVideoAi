@@ -155,7 +155,8 @@ test('HappyHorse 1.1 keeps its three modes and exposes all official direct resol
   const item = HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY[0];
   assert.ok(item);
   assert.deepEqual(item.engine.modes, ['t2v', 'i2v', 'ref2v']);
-  assert.deepEqual(item.engine.resolutions, ['480p', '720p', '1080p']);
+  assert.deepEqual(item.engine.resolutions, ['720p', '1080p', '480p']);
+  assert.deepEqual(item.engine.inputSchema?.optional.find((field) => field.id === 'resolution')?.values, ['480p', '720p', '1080p']);
   assert.deepEqual(item.engine.fps, [24]);
   assert.deepEqual(item.engine.pricingDetails?.perSecondCents?.byResolution, {
     '480p': 7, '720p': 14, '1080p': 18,

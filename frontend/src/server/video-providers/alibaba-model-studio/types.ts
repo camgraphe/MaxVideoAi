@@ -63,4 +63,3 @@ export type AlibabaReferenceAsset = {
   durationSec?: number | null;
   hasAlpha?: boolean | null;
 };
-
