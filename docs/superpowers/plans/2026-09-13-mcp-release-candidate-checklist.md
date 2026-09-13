@@ -145,6 +145,43 @@ migration.
   The final 180-record log scan found zero 5xx, zero application error/fatal records,
   and zero detected secret, asset ID, storage-key, filename, or email leaks.
 
+## Pre-push integration recheck — 2026-09-13
+
+- The stale local base was not used for the final decision. `origin/main` at
+  `08a0c93322559086683d763297f0cf2348c2d202` was fetched and merged into the
+  feature branch as `9a0480d990907bf8c6c08d5984e9b8ca3e3735fe`. The resulting branch relation
+  was `0 39`; the working tree was clean.
+- The five merge conflicts were resolved by retaining both owners where required:
+  current Studio/runtime capabilities from `main`, injectable MCP services, current
+  owned-asset reads, and the transaction-safe MCP reference deletion path. The
+  combined tool-selection policy fingerprint was regenerated and its 70-fixture
+  deterministic evaluation returned zero diagnostics.
+- The complete 887-file top-level suite passed with exit code 0 under Node 22,
+  PostgreSQL 17, bounded test concurrency, and the repository environment links
+  temporarily isolated and then restored. The hermetic MCP integrations passed
+  11/11, and focused post-conflict media, transport, policy, pricing, and timeline
+  coverage passed 55/55.
+- Frontend lint, public-exposure lint, TypeScript, i18n, SEO, model-registry, model
+  audit, and architecture audit all exited 0. Localization parity covered 5,618
+  French keys and 5,612 Spanish keys. The one accepted models-audit warning remains
+  the disabled examples-family resolver for `seedance-2-0-fast-byteplus`.
+- The Node 22 production build passed all model and media prebuild gates and generated
+  879/879 static pages, including the localized MCP hub and Claude, ChatGPT, Codex,
+  OpenClaw, and n8n integration owners. `git diff --check`, conflict-marker checks,
+  generated-file drift checks, and the high-confidence added-secret scan passed. The
+  final application delta against `origin/main` covered 134 files, with 9,829
+  insertions and 1,363 deletions.
+- A fresh staging deployment of that merged application commit was attempted through
+  the fail-closed wrapper as `dpl_AMEP4NzEuV7DsRziKeWZdpuzxVME`. Vercel compiled the
+  application, then remained at `Linting and checking validity of types` until the
+  platform returned `Error` after roughly 45 minutes without a code diagnostic. The
+  wrapper did not promote the candidate. The stable staging alias remains on READY
+  deployment `dpl_8VL7X4A6AhVN8wYeAneyc3WDNo6L`; a post-failure smoke returned hub
+  200, protected-resource discovery 200, and anonymous transport 401 with the OAuth
+  resource-metadata challenge. Therefore the merged branch is locally green, but its
+  fresh hosted staging promotion remains an explicit infrastructure follow-up before
+  any production rollout.
+
 ## Gate C — monitored production rollout
 
 Run only after a separately approved production release.
