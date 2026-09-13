@@ -170,7 +170,7 @@ file count, and fingerprint, with `latestVersion: null`.
 
 Publication evidence recorded 2026-09-13: after explicit authorization, the
 single `1.0.0` upload kept the same two-file fingerprint and became the public
-listing [clawhub.ai/skills/skills/maxvideoai](https://clawhub.ai/skills/skills/maxvideoai)
+listing [clawhub.ai/camgraphe/skills/maxvideoai](https://clawhub.ai/camgraphe/skills/maxvideoai)
 under `@camgraphe`. Stored moderation is `clean` with no suspicious or malware
 flag. Scan `w17cqj7rwt42xmjz4gh24zb9t18ebpax` completed successfully: static
 analysis and A.I.G were clean, ClawScan returned `clean` / `benign`, and the

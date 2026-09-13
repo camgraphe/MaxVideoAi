@@ -55,7 +55,8 @@ test('the ClawHub listing documents exact files and keeps later publishing owner
   assert.match(guide, /\.clawhubignore[\s\S]*packaging control[\s\S]*not a published payload file/i);
   assert.match(guide, /install.*update.*uninstall/is);
   assert.match(guide, /explicit\s+owner authorization/i);
-  assert.match(guide, /https:\/\/clawhub\.ai\/skills\/skills\/maxvideoai/);
+  assert.match(guide, /https:\/\/clawhub\.ai\/camgraphe\/skills\/maxvideoai/);
+  assert.doesNotMatch(guide, /clawhub\.ai\/skills\/skills\/maxvideoai/);
   assert.match(guide, /@camgraphe/);
   assert.match(guide, /scanner\.llm\.clean/);
   assert.match(guide, /skillspector[\s\S]*three heuristic findings/i);

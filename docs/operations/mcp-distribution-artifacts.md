@@ -82,7 +82,7 @@ After explicit authorization for this exact upload, ClawHub accepted version
 and the unchanged fingerprint
 `d7cca882cf7561fcc8bc83d3f5c130d060beb132bfab98871ed219ccfbfa79dd`.
 The public listing is
-[clawhub.ai/skills/skills/maxvideoai](https://clawhub.ai/skills/skills/maxvideoai),
+[clawhub.ai/camgraphe/skills/maxvideoai](https://clawhub.ai/camgraphe/skills/maxvideoai),
 owned by `@camgraphe`; it exposes version `1.0.0`, the `latest` tag, and MIT-0.
 The canonical listing returned HTTP 200 after ClawHub's redirect.
 
