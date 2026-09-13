@@ -16,6 +16,7 @@ import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
 import {
   createDefaultMaxVideoAiMcpServices,
   createMaxVideoAiMcpServer,
+  type MaxVideoAiMcpServices,
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import { resolveMcpRuntimeCapabilities } from '@/server/mcp/operational-access';
@@ -33,6 +34,7 @@ export type McpHttpHandlerDeps = {
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
   recordConnection?(principal: AgentPrincipal): Promise<McpConnectionBindingResult>;
   accountStatusDeps?: AgentAccountStatusWalletDeps;
+  services?: MaxVideoAiMcpServices;
 };
 
 function jsonRpcError(status: number, code: number, message: string, headers?: HeadersInit): Response {
@@ -279,7 +281,7 @@ export async function handleMcpHttpRequest(
 
   const server = createMaxVideoAiMcpServer(
     principal,
-    createDefaultMaxVideoAiMcpServices(
+    injectedDeps?.services ?? createDefaultMaxVideoAiMcpServices(
       config,
       resolveTrialRiskRequestContext(request.headers),
       capabilities,

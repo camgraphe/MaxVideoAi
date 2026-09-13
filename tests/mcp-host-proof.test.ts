@@ -102,6 +102,12 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.match(row, /older disabled production server entry with expired access and an existing refresh credential/);
   assert.match(row, /read-only capability probe exposed protected tools, updated the token store, and advanced expiry, demonstrating automatic refresh/);
   assert.match(row, /restored to disabled without a tool invocation, paid call, or generation/);
+  assert.match(row, /deterministic local fault-injection on the exact installed OpenClaw build/);
+  assert.match(row, /real MaxVideoAI HTTP handler with disposable PostgreSQL and a fake provider/);
+  assert.match(row, /issued exactly one confirmation request/);
+  assert.match(row, /one provider call, one job, one charge, and zero refunds/);
+  assert.match(row, /not a live-provider or production-network interruption/);
+  assert.doesNotMatch(row, /literal ambiguous interrupted `confirm_generation` transport response[^.]*remain unverified/);
   assert.match(row, /remain unverified/);
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);
 });
