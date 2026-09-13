@@ -213,6 +213,9 @@ export function resolveAgentGenerationModeExecutability(
       if (routingPlan.kind === 'luma_agents_direct_primary') {
         return credentialDecision(configured(providerEnv.LUMA_AGENTS_API_KEY));
       }
+      if (routingPlan.kind === 'alibaba_model_studio_primary') {
+        return credentialDecision(configured(providerEnv.ALIBABA_MODEL_STUDIO_API_KEY));
+      }
       if (routingPlan.kind === 'google_vertex_veo_primary') {
         return credentialDecision(googleVertexCredentialsConfigured(providerEnv, 'veo'));
       }
