@@ -1,6 +1,6 @@
 # Alibaba Model Studio video provider
 
-This guide owns the operational contract for the direct Alibaba Model Studio video path. The integration is dormant by default. It must not be enabled, deployed, or sent live traffic merely because this code exists.
+This guide owns the operational contract for the direct Alibaba Model Studio video path. The code remains disabled by default, while the production deployment has been publicly enabled since 2026-09-14 after administrator canaries and the release gates below passed.
 
 ## Ownership and model mapping
 
@@ -70,37 +70,50 @@ A provider success is not an application completion. The output video is first c
 
 ## Pricing and observability
 
-Customer quotes continue to come from the canonical MaxVideoAI pricing pipeline. They are not derived from the Alibaba provider-cost calculation. The attempt ledger stores factual provider cost separately for margin and operational reporting:
+Customer quotes continue to come from the canonical MaxVideoAI pricing pipeline. They are not derived from the Alibaba provider-cost calculation. The attempt ledger stores a catalog-rate provider-cost estimate separately for margin and operational reporting:
 
 - Wan 3 and Wan 3 Prime count source-video plus generated duration where applicable;
 - HappyHorse 1.1 counts generated output duration;
-- returned provider usage units replace estimates when available.
+- returned provider usage units replace estimated units when available.
+
+This estimate uses the dated Singapore catalog rates encoded in the adapter. It does not know the Alibaba account's remaining free quota, temporary promotions, negotiated discounts, credits, taxes, or final invoice adjustments. Alibaba billing is therefore authoritative for cash cost and reconciliation; do not present `provider_cost_usd` as an invoiced amount when one of those account-level adjustments applies.
 
 Admin metrics group the shared attempt ledger by provider and report only aggregate attempts, acceptances, completions, failures, fallbacks, stalled polls, cost coverage, and latency. They never select raw request/response snapshots, task IDs, URLs, prompts, or user identities.
 
 Snapshots written by the common helper redact credential-like keys, workspace identifiers, signed URLs, oversized strings, and inline binary data. Provider errors shown to customers must stay provider-neutral.
 
-## Pre-traffic canary checklist
+## Production launch evidence
 
-This repository change stops before credential creation, deployment, flag activation, or live traffic. A later, separately authorized canary should first complete this no-traffic checklist:
+The public launch completed on 2026-09-14 with the Singapore account supplied for the Alibaba PoC:
 
-1. Keep `ALIBABA_MODEL_STUDIO_ENABLED=false`, public routing off, admin-only on, and fallback off.
-2. Run the provider, routing, polling, MCP, Studio, architecture, registry, lint, and type checks from this branch using Node 22.
-3. Confirm the admin aggregate query on disposable PostgreSQL and verify that no snapshot columns are selected.
-4. Review the Singapore account quota, billing access, data-retention terms, and the 5 RPS / 5 concurrency ceiling with the account owner.
-5. Verify that production storage and cron infrastructure are healthy independently of Alibaba.
-6. Record a rollback owner and observation window.
+- four Wan 3 calls completed successfully: two Wan 3 Prime and two Wan 3 Standard renders, each 15 seconds at 1080p;
+- all four outputs were copied into durable MaxVideoAI storage and appeared in the Camgraph Admin library;
+- the Alibaba console reported four HTTP 200 calls and no failure;
+- MaxVideoAI charged $18.72 in total, moving the test wallet from $78.13 to $59.41;
+- the Alibaba billing console showed $0 total, pre-tax, and bill cost because the calls consumed the Singapore free PoC quotas;
+- the catalog-rate supplier value was $12.60 with the then-current Wan 3 Standard promotion, so the observed customer sale represented $6.12 nominal gross profit, or 32.7%, before taxes and other costs.
 
-Stop here until a human separately authorizes key creation and live provider spend. Under that later authorization, start with the master switch on, public routing off, admin-only on, and one administrator. Do not enable fallback during the first accepted-task checks. Public routing is a separate final decision.
+Happy Horse 1.1 is part of the same Alibaba direct adapter. Its public T2V contract was revalidated without spending: 3 seconds at 720p quoted successfully at $0.55, and 5 seconds at 480p quoted successfully at $0.46. A paid Happy Horse provider canary remains a separately approved spend.
+
+## Post-deploy operating checklist
+
+1. Run the provider, routing, polling, MCP, Studio, architecture, registry, pricing, lint, type, build, and diff checks under Node 22. Direct `tsx` test commands must include `--tsconfig frontend/tsconfig.json` so `@/` aliases resolve.
+2. Open the authenticated `/admin/engines` surface once after deploying changed engine capabilities. Its existing seed owner refreshes system-owned `engine_settings` rows; administrator-owned rows remain authoritative.
+3. Re-read each affected model through the public MCP catalog and prepare one zero-spend quote at the capability boundary. A published option that cannot be quoted is not launch-ready.
+4. Verify production storage and the Alibaba cron independently, then keep monitoring accepted jobs until they reach a durable local terminal state.
+5. Reconcile attempt-ledger estimates with Alibaba billing. Record free quota, promotion, discount, credit, and invoice differences outside `provider_cost_usd`.
+6. Keep fallback disabled unless a separate decision explicitly enables the eligible pre-acceptance path.
+
+Production currently uses the master switch and public routing. The defaults stay fail-closed for every unconfigured environment, and fallback remains off by policy.
 
 ## Rollback and release gates
 
 The immediate rollback is to set `ALIBABA_MODEL_STUDIO_ENABLED=false`. Also keep `ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED=false` and `ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED=false`. Continue polling already accepted Alibaba task IDs until they reach a durable local terminal state; disabling new routing does not cancel accepted work.
 
-Before any later deployment or activation, require:
+Before any later deployment or routing change, require:
 
 - `pnpm model:registry:check`;
 - the focused Alibaba provider, routing, submission, polling, storage-copy, refund, MCP, Studio, admin-metrics, and architecture tests;
 - frontend TypeScript and lint checks plus `git diff --check`;
 - a secret scan confirming that no key, workspace identifier, signed URL, or raw provider payload entered the branch;
-- explicit approval for deployment, credential provisioning, admin canary traffic, provider spend, and any later public-routing change.
+- explicit approval for new provider spend and any materially broader routing or fallback change.
