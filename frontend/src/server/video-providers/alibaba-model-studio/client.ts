@@ -106,13 +106,16 @@ export class AlibabaModelStudioClient {
   }): Promise<unknown> {
     const timeout = createTimeoutSignal(params.timeoutMs);
     try {
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${this.apiKey}`,
+      };
+      if (params.method === 'POST') {
+        headers['Content-Type'] = 'application/json';
+        headers['X-DashScope-Async'] = 'enable';
+      }
       const response = await this.fetchFn(`${this.baseUrl}${params.path}`, {
         method: params.method,
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'X-DashScope-Async': 'enable',
-        },
+        headers,
         body: params.body === undefined ? undefined : JSON.stringify(params.body),
         cache: 'no-store',
         redirect: 'error',
