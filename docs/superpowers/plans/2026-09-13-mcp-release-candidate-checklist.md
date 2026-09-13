@@ -174,13 +174,28 @@ migration.
 - A fresh staging deployment of that merged application commit was attempted through
   the fail-closed wrapper as `dpl_AMEP4NzEuV7DsRziKeWZdpuzxVME`. Vercel compiled the
   application, then remained at `Linting and checking validity of types` until the
-  platform returned `Error` after roughly 45 minutes without a code diagnostic. The
-  wrapper did not promote the candidate. The stable staging alias remains on READY
-  deployment `dpl_8VL7X4A6AhVN8wYeAneyc3WDNo6L`; a post-failure smoke returned hub
-  200, protected-resource discovery 200, and anonymous transport 401 with the OAuth
-  resource-metadata challenge. Therefore the merged branch is locally green, but its
-  fresh hosted staging promotion remains an explicit infrastructure follow-up before
-  any production rollout.
+  platform returned `BUILD_EXCEEDED_MAXIMUM_TIME` after roughly 45 minutes without a
+  TypeScript diagnostic. The wrapper did not promote the candidate. The previous
+  READY deployment `dpl_8VL7X4A6AhVN8wYeAneyc3WDNo6L` remained stable throughout;
+  a post-failure smoke returned hub 200, protected-resource discovery 200, and
+  anonymous transport 401 with the OAuth resource-metadata challenge.
+- A clean retry of the same application tree from checklist commit
+  `fb41a895a782158c0b2af17047725811d95decdb` completed successfully as immutable
+  candidate `dpl_DX5CZKfK5oPMbHGVm6uuwHN4Ec3Y`. Vercel compiled in 2.1 minutes,
+  completed type checking in under three minutes, generated 879/879 static pages,
+  and finished the build in six minutes without a code change. The reviewed wrapper
+  validated provenance, the staging-only cron set, global noindex, candidate
+  fail-closed routing, OAuth discovery, anonymous MCP challenge, and unchanged
+  production-project settings before promoting it to
+  `https://maxvideoai-mcp-staging.vercel.app`.
+- Post-promotion marketing smoke returned 200 for the hub plus Claude, ChatGPT,
+  Codex, OpenClaw, and n8n in English, French, and Spanish (18 routes total). Cursor,
+  GitHub Copilot, Gemini CLI, and Microsoft Copilot remained 404 in all three locales
+  (12 routes total). The hub rendered all nine platform labels and the expected
+  Claude, OpenAI, OpenClaw, n8n, Cursor, GitHub Copilot, Gemini, and Microsoft marks.
+  The evidence supports a transient Vercel build timeout rather than a deterministic
+  application or TypeScript failure; the merged application is now locally and on
+  hosted staging green.
 
 ## Gate C — monitored production rollout
 
