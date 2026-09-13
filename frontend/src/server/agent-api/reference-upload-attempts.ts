@@ -626,7 +626,6 @@ async function cleanupReleasedReferenceUploadObjects(input: {
         AND attempts.user_id = cleanup.user_id AND attempts.media_kind = cleanup.media_kind
       WHERE cleanup.state = 'released'
         AND cleanup.object_role IN ('final', 'thumbnail')
-        AND attempts.state = 'completed'
         AND NOT EXISTS (SELECT 1 FROM user_assets AS assets
           WHERE reference_storage_object_key(assets.url) = cleanup.object_key
              OR reference_storage_object_key(assets.metadata->>'thumbUrl') = cleanup.object_key)

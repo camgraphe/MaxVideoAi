@@ -465,6 +465,37 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     );
   });
 
+  await t.test('released cleanup survives an aborted attempt and still deletes the unowned object', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(database.pool);
+    const finalKey = `user-assets/by-content/${'9'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, async (executor) => {
+      await registerReferenceUploadCleanupObject(
+        { attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+      );
+      await retainReferenceUploadCleanupObject({ attempt, objectKey: finalKey }, { executor, now });
+      await abortReferenceUploadAttempt(
+        { attempt }, { executor, abortedAt: new Date(now.getTime() + 1_000) },
+      );
+    });
+    await database.pool.query(
+      `UPDATE mcp_reference_upload_cleanup_objects
+          SET state = 'released', updated_at = clock_timestamp()
+        WHERE object_key = $1`,
+      [finalKey],
+    );
+
+    const deleted: string[] = [];
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey(key) { deleted.push(key); },
+    }), { selected: 1, deleted: 1 });
+    assert.deepEqual(deleted, [finalKey]);
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_cleanup_objects WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'deleted' }]);
+  });
+
   await t.test('library deletion removes the exact owned projections and releases only its completed MCP upload', async () => {
     await reset(database.pool);
     const { attempt } = await createClaimedAttempt(database.pool);
