@@ -48,7 +48,11 @@ test('ClawHub preparation documents exact files and keeps publishing owner-contr
     assert.match(guide, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(guide, /MIT-0/);
+  assert.match(guide, /clawhub@0\.23\.3/);
   assert.match(guide, /--dry-run/);
+  assert.match(guide, /fileCount: 2/);
+  assert.match(guide, /d7cca882cf7561fcc8bc83d3f5c130d060beb132bfab98871ed219ccfbfa79dd/);
+  assert.match(guide, /\.clawhubignore[\s\S]*packaging control[\s\S]*not a published payload file/i);
   assert.match(guide, /install.*update.*uninstall/is);
   assert.match(guide, /explicit owner authorization/i);
   assert.doesNotMatch(guide, /submitted|listed/i);

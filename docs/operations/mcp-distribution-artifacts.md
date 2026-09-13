@@ -8,7 +8,7 @@ owner authorization for the exact artifact.
 
 ## ClawHub candidate
 
-The candidate contains exactly:
+The local candidate contains exactly:
 
 - `distribution/clawhub/maxvideoai/SKILL.md`
 - `distribution/clawhub/maxvideoai/references/safe-generation.md`
@@ -49,8 +49,28 @@ documentation:
   uninstall removes the local skill but does not establish revocation of the
   separate MaxVideoAI OAuth grant.
 
-This recheck is read-only. The ClawHub CLI is not installed, no owner namespace
-was inspected, and no dry-run, sign-in, scan, upload, or publication occurred.
+The authoritative 2026-09-13 dry-run used the official npm package
+`clawhub@0.23.3` from `openclaw/clawhub`, requiring Node 22 or newer. Its npm
+integrity was
+`sha512-VwM6FQrZVarFRDiEqG42npUeyCu/iLhPnpO+b7kKIGRXv+TA6Lb8pboHnIgT6cmjFEnW3j/pTbshWeDQMQ7QWQ==`.
+The CLI was executed ephemerally with `npm exec`; it was not installed globally.
+
+The exact non-uploading command resolved `maxvideoai`, display name
+`MaxVideoAI`, and version `1.0.0` with status `would-publish`, `fileCount: 2`,
+and fingerprint
+`d7cca882cf7561fcc8bc83d3f5c130d060beb132bfab98871ed219ccfbfa79dd`.
+The two publishable payload files are `SKILL.md` and
+`references/safe-generation.md`. `.clawhubignore` is the third reviewed local
+file but is a packaging control, not a published payload file. A disposable
+variant without `.clawhubignore` produced the same file count and fingerprint;
+removing `safe-generation.md` reduced the count to one and changed the
+fingerprint. All three local files are non-executable ASCII text with Git mode
+`100644`; the payload audit found no credential, installer, fixed price, or
+copied model roster.
+
+No owner namespace was inspected, and no sign-in, scan, upload, publication,
+install, update, or uninstall occurred. The registry therefore remains
+`preparing` and the OpenClaw package remains unavailable.
 
 ### Local validation
 
@@ -58,7 +78,13 @@ Run the repository contract first. When the current ClawHub CLI is available,
 preview the resolved file set without uploading it:
 
 ```bash
-clawhub skill publish distribution/clawhub/maxvideoai --slug maxvideoai --name MaxVideoAI --version 1.0.0 --dry-run
+npm exec --yes --package=clawhub@0.23.3 -- clawhub skill publish \
+  "$PWD/distribution/clawhub/maxvideoai" \
+  --slug maxvideoai \
+  --name MaxVideoAI \
+  --version 1.0.0 \
+  --dry-run \
+  --json
 ```
 
 Review the resolved files, metadata, requested permissions, source provenance,

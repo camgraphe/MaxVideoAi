@@ -142,9 +142,9 @@ Additional interrupted-response evidence recorded 2026-09-13: the exact pinned O
 - Produces: a recorded dry-run and, after final owner review, an externally verifiable ClawHub listing.
 
 - [x] Recheck current ClawHub publishing, scan, namespace, update, uninstall, and licensing documentation from first-party sources.
-- [ ] Install the current official ClawHub CLI only from its documented distribution source and record its version.
-- [ ] Run the exact dry-run for slug `maxvideoai`, name `MaxVideoAI`, and version `1.0.0`; save only sanitized output and the resolved file list.
-- [ ] Confirm the package contains exactly the three reviewed candidate files and no credential, executable installer, fixed price, or copied model roster.
+- [x] Resolve and execute the current official ClawHub CLI only from its documented distribution source and record its version; keep it ephemeral rather than globally installed.
+- [x] Run the exact dry-run for slug `maxvideoai`, name `MaxVideoAI`, and version `1.0.0`; save only sanitized output and the resolved file list.
+- [x] Confirm the package contains exactly the two reviewed payload files; keep `.clawhubignore` as the third local packaging-control file, and verify no credential, executable installer, fixed price, or copied model roster.
 - [ ] Review the MIT-0 consequence for the exact published files and obtain the product owner's explicit acceptance.
 - [ ] Sign in to the owner-controlled ClawHub account and verify the intended namespace before upload.
 - [ ] Publish version `1.0.0` once, then inspect its listing, file contents, permissions, scan result, source attribution, and install command.
@@ -152,6 +152,19 @@ Additional interrupted-response evidence recorded 2026-09-13: the exact pinned O
 - [ ] Record listing URL, published digest, publisher account, scan state, and timestamps in both distribution documents.
 - [ ] Change `store.status` from `preparing` only to the exact observed state (`submitted` or `listed`).
 - [ ] Run the ClawHub artifact, registry, public-baseline, and exposure tests; commit the listing evidence.
+
+Dry-run evidence recorded 2026-09-13: the official npm package
+`clawhub@0.23.3` from `openclaw/clawhub` ran under Node 23.9.0 (above its Node
+22 minimum) through `npm exec`, without a global install. The exact
+`maxvideoai`/`MaxVideoAI`/`1.0.0` dry-run returned `would-publish`,
+`fileCount: 2`, and fingerprint
+`d7cca882cf7561fcc8bc83d3f5c130d060beb132bfab98871ed219ccfbfa79dd`.
+Disposable differential dry-runs proved `.clawhubignore` is not uploaded while
+`references/safe-generation.md` is; `SKILL.md` is the required root payload.
+The three local files are non-executable mode-`100644` ASCII text and passed the
+credential, installer, fixed-price, and copied-roster audit. No sign-in,
+namespace inspection, MIT-0 acceptance, scan, upload, publication, install,
+update, or uninstall occurred; store status remains `preparing`.
 
 ### Task 4: Validate n8n Workflows in a Disposable Environment
 
