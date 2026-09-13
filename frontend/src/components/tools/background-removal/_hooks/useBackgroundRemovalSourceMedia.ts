@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchBackgroundRemovalLibraryAssets,
   readBackgroundRemovalVideoMetadata,
@@ -15,6 +15,9 @@ export function useBackgroundRemovalSourceMedia(params: {
   onSourceChanged?: () => void;
   maxDurationSeconds: number;
 }) {
+  const libraryRequestRef = useRef(0);
+  useEffect(() => () => { libraryRequestRef.current += 1; }, []);
+  const [loadedLibrarySource, setLoadedLibrarySource] = useState<LibrarySource | null>(null);
   const [videoUrl, setVideoUrl] = useState('');
   const [source, setSource] = useState<BackgroundRemovalSourceAsset | null>(null);
   const [metadata, setMetadata] = useState<BackgroundRemovalVideoMetadata | null>(null);
@@ -74,14 +77,19 @@ export function useBackgroundRemovalSourceMedia(params: {
   );
 
   const refreshLibrary = useCallback(async () => {
+    const requestId = ++libraryRequestRef.current;
     setLibraryLoading(true);
     setLibraryError(null);
     try {
-      setLibraryAssets(await fetchBackgroundRemovalLibraryAssets(librarySource));
+      const assets = await fetchBackgroundRemovalLibraryAssets(librarySource);
+      if (requestId !== libraryRequestRef.current) return;
+      setLibraryAssets(assets);
+      setLoadedLibrarySource(librarySource);
     } catch (error) {
+      if (requestId !== libraryRequestRef.current) return;
       setLibraryError(error instanceof Error ? error.message : 'Could not load library videos.');
     } finally {
-      setLibraryLoading(false);
+      if (requestId === libraryRequestRef.current) setLibraryLoading(false);
     }
   }, [librarySource]);
 
@@ -139,7 +147,7 @@ export function useBackgroundRemovalSourceMedia(params: {
   return {
     changeVideoUrl,
     handleUpload,
-    libraryAssets,
+    libraryAssets: loadedLibrarySource === librarySource ? libraryAssets : [],
     libraryError,
     libraryLoading,
     libraryOpen,

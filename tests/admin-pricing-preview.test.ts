@@ -197,12 +197,14 @@ test('canonical admin quotes compare only affected totals and preserve provenanc
   assert.equal(preview[0]?.compatibilityProfile, 'standard');
 });
 
-test('canonical admin quotes accept explicit membership discounts and scenario compatibility profiles', () => {
+test('canonical admin quotes use retired live membership policy and scenario compatibility profiles', () => {
   const plus = findScenario('billing:kling-3-pro:t2v:5:1080p:plus');
+  const member = findScenario('billing:kling-3-pro:t2v:5:1080p:member');
   const jsonLd = buildPricingAuditScenarios().find((scenario) => scenario.surface === 'json-ld');
   assert.ok(jsonLd, 'Missing JSON-LD pricing audit scenario');
 
   const standardDiscount = quoteCanonicalAdminScenarios({ databaseRules: [globalRule], scenarios: [plus] })[0];
+  const memberStandard = quoteCanonicalAdminScenarios({ databaseRules: [globalRule], scenarios: [member] })[0];
   const customDiscount = quoteCanonicalAdminScenarios({
     databaseRules: [globalRule],
     membershipDiscounts: { member: 0, plus: 0.2, pro: 0.1 },
@@ -211,10 +213,13 @@ test('canonical admin quotes accept explicit membership discounts and scenario c
   const profileQuote = quoteCanonicalAdminScenarios({ databaseRules: [globalRule], scenarios: [jsonLd] })[0];
 
   requireQuoted(standardDiscount);
+  requireQuoted(memberStandard);
   requireQuoted(customDiscount);
   requireQuoted(profileQuote);
-  assert.ok(customDiscount.customerTotalCents < standardDiscount.customerTotalCents);
-  assert.equal(customDiscount.breakdown.discountPercent, 0.2);
+  assert.deepEqual(customDiscount, standardDiscount);
+  assert.equal(customDiscount.membershipTier, 'member');
+  assert.equal(customDiscount.breakdown.discountPercent, 0);
+  assert.equal(customDiscount.customerTotalCents, memberStandard.customerTotalCents);
   assert.equal(profileQuote?.policyProvenance.compatibilityProfile, 'schema-current');
 });
 

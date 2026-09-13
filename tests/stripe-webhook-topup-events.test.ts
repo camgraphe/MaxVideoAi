@@ -5,7 +5,14 @@ import type Stripe from 'stripe';
 import {
   buildCheckoutSessionTopupInput,
   buildPaymentIntentTopupInput,
+  isPaidTopupCheckoutSession,
 } from '../frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-events.ts';
+
+test('Checkout Session credits only a paid top-up', () => {
+  assert.equal(isPaidTopupCheckoutSession({ payment_status: 'paid' } as Stripe.Checkout.Session), true);
+  assert.equal(isPaidTopupCheckoutSession({ payment_status: 'unpaid' } as Stripe.Checkout.Session), false);
+  assert.equal(isPaidTopupCheckoutSession({ payment_status: 'no_payment_required' } as Stripe.Checkout.Session), false);
+});
 
 test('Checkout Session maps canonical amount, currency, FX, destination, and documents', () => {
   const session = {

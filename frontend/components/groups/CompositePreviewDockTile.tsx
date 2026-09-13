@@ -1,5 +1,8 @@
 'use client';
 
+import { normalizeGenerationObservation } from '@/lib/generation-observation';
+
+import { AppDemoVideo } from '@/components/media/AppDemoVideo.client';
 import clsx from 'clsx';
 import Image from 'next/image';
 import type { VideoItem } from '@/types/video-groups';
@@ -81,7 +84,11 @@ export function CompositePreviewDockTile({
                 )}
               />
             ) : null}
-            {shouldPlayVideo ? (
+            {shouldPlayVideo && item.meta?.curated === true ? (
+              <AppDemoVideo src={inlinePreviewUrl!} muted={isMuted} loop={isLooping}
+                className={clsx('relative z-0 h-full w-full', mediaFitClass)} register={registerVideo(itemKey)}
+                onLoadedData={video => onVideoLoadedData(itemKey, video)} onCanPlay={video => onVideoCanPlay(itemKey, video)} />
+            ) : shouldPlayVideo ? (
               <video
                 ref={registerVideo(itemKey)}
                 data-preview-video="active"
@@ -102,6 +109,8 @@ export function CompositePreviewDockTile({
             src={item.thumb}
             alt=""
             fill
+            priority={itemKey === activeVideoKey}
+            fetchPriority={itemKey === activeVideoKey ? 'high' : undefined}
             sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
             className={clsx('pointer-events-none', mediaFitClass)}
             onLoadingComplete={() => markReady(itemKey)}
@@ -129,6 +138,10 @@ export function CompositePreviewDockTile({
           className="absolute inset-0"
           state={itemStatus === 'error' ? 'error' : 'pending'}
           message={itemMessage}
+          observation={normalizeGenerationObservation(item.meta?.observation)}
+          startedAt={typeof item.meta?.startedAt === 'number' ? item.meta.startedAt : undefined}
+          etaSeconds={typeof item.meta?.etaSeconds === 'number' ? item.meta.etaSeconds : undefined}
+          etaSource={item.meta?.etaSource === 'observed' ? 'observed' : 'heuristic'}
           tone="light"
           tileIndex={index + 1}
           tileCount={tileCount}

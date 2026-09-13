@@ -15,6 +15,7 @@ import type { FormState } from '../_lib/workspace-form-state';
 import { summarizeWorkspaceInputSchema } from '../_lib/workspace-input-schema';
 
 type UseWorkspaceInputSchemaStateOptions = {
+  hydrationReady?: boolean;
   selectedEngine: EngineCaps | null;
   activeMode: Mode;
   submissionMode: Mode;
@@ -32,6 +33,7 @@ type UseWorkspaceInputSchemaStateOptions = {
 };
 
 export function useWorkspaceInputSchemaState({
+  hydrationReady = true,
   selectedEngine,
   activeMode,
   submissionMode,
@@ -66,49 +68,47 @@ export function useWorkspaceInputSchemaState({
       isUnifiedSeedance,
       selectedEngine,
       uiLocale,
-    ]
+    ],
   );
 
   const extraInputFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
-    [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
+    [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields],
   );
 
   useEffect(() => {
+    if (!hydrationReady || !selectedEngine) return;
     setForm((current) => {
-      if (!current) return current;
+      if (!current || current.engineId !== selectedEngine.id) return current;
       const allowedFieldIds = new Set(extraInputFields.map(({ field }) => field.id));
-      const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<Record<string, unknown>>(
-        (acc, [key, value]) => {
-          if (allowedFieldIds.has(key)) {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {}
-      );
+      const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<
+        Record<string, unknown>
+      >((acc, [key, value]) => {
+        if (allowedFieldIds.has(key)) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
       if (JSON.stringify(nextExtraInputValues) === JSON.stringify(current.extraInputValues)) {
         return current;
       }
       return { ...current, extraInputValues: nextExtraInputValues };
     });
-  }, [extraInputFields, setForm]);
+  }, [hydrationReady, selectedEngine, extraInputFields, setForm]);
 
   useEffect(() => {
+    if (!hydrationReady || !selectedEngine) return;
     const activeFields = inputSchemaSummary.assetFields.map((entry) => entry.field);
     const referenceBudget = resolveEngineReferenceBudget(
       selectedEngine?.inputSchema,
-      submissionMode
+      submissionMode,
     );
     setInputAssets((previous) =>
-      reconcileReferenceAssets(
-        previous,
-        activeFields,
-        referenceBudget,
-        revokeAssetPreview
-      )
+      reconcileReferenceAssets(previous, activeFields, referenceBudget, revokeAssetPreview),
     );
   }, [
+    hydrationReady,
+    selectedEngine,
     inputSchemaSummary.assetFields,
     selectedEngine?.inputSchema,
     setInputAssets,
@@ -117,36 +117,41 @@ export function useWorkspaceInputSchemaState({
 
   const primaryAssetFieldIds = useMemo(
     () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'primary'),
-    [inputSchemaSummary.assetFields]
+    [inputSchemaSummary.assetFields],
   );
 
   const referenceAssetFieldIds = useMemo(
-    () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'reference'),
-    [inputSchemaSummary.assetFields]
+    () =>
+      buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'reference'),
+    [inputSchemaSummary.assetFields],
   );
 
   const genericImageFieldIds = useMemo(
     () =>
       buildAssetFieldIdSet(
         inputSchemaSummary.assetFields,
-        (entry) => entry.role === 'generic' && entry.field.type === 'image'
+        (entry) => entry.role === 'generic' && entry.field.type === 'image',
       ),
-    [inputSchemaSummary.assetFields]
+    [inputSchemaSummary.assetFields],
   );
 
   const frameAssetFieldIds = useMemo(
     () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'frame'),
-    [inputSchemaSummary.assetFields]
+    [inputSchemaSummary.assetFields],
   );
 
   const referenceAudioFieldIds = useMemo(
-    () => buildReferenceAudioFieldIds(inputSchemaSummary.assetFields, SEEDANCE_REFERENCE_AUDIO_FIELD_IDS),
-    [inputSchemaSummary.assetFields]
+    () =>
+      buildReferenceAudioFieldIds(
+        inputSchemaSummary.assetFields,
+        SEEDANCE_REFERENCE_AUDIO_FIELD_IDS,
+      ),
+    [inputSchemaSummary.assetFields],
   );
 
   const primaryAssetFieldLabel = useMemo(
     () => getPrimaryAssetFieldLabel(inputSchemaSummary.assetFields),
-    [inputSchemaSummary.assetFields]
+    [inputSchemaSummary.assetFields],
   );
 
   const guestUploadLockedReason =

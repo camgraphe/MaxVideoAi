@@ -9,13 +9,13 @@ import { SettingsTabs } from '@/components/settings/SettingsTabs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import { FEATURES } from '@/content/feature-flags';
-import type { User } from '@supabase/supabase-js';
 import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { Button } from '@/components/ui/Button';
 import { resolveSettingsContentTab } from '@/lib/settings-navigation';
+import { AccountSettingsPanel } from './_components/AccountSettingsPanel';
 
 const DEFAULT_SETTINGS_COPY = {
   title: 'Settings',
@@ -28,12 +28,23 @@ const DEFAULT_SETTINGS_COPY = {
   },
   account: {
     title: 'Account',
-    fields: {
-      name: { label: 'Name', placeholder: 'Your name' },
-      email: { label: 'Email', placeholder: 'you@domain.com' },
-      locale: { label: 'Locale', options: ['EN', 'FR', 'ES'] },
-      theme: { label: 'Theme', options: ['System', 'Light', 'Dark'] },
+    guest: {
+      description: 'Sign in to update your account preferences.',
+      action: 'Log in',
     },
+    fields: {
+      name: { label: 'Name', placeholder: 'Your name', help: '1–80 characters.' },
+      email: { label: 'Email', placeholder: 'you@domain.com', readOnly: 'Email changes are managed separately.' },
+      locale: { label: 'Language', description: 'Interface language:' },
+      theme: {
+        label: 'Appearance',
+        description: 'Saved on this device.',
+        options: { light: 'Light', dark: 'Dark', system: 'System' },
+      },
+    },
+    actions: { save: 'Save', saving: 'Saving…', cancel: 'Cancel' },
+    validation: { required: 'Enter a name.', tooLong: 'Name must be 80 characters or fewer.' },
+    status: { success: 'Name saved.', genericError: 'Could not save your name. Try again.' },
   },
   team: {
     title: 'Team',
@@ -106,8 +117,12 @@ export default function SettingsPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-          <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
+        <main className="app-settings-main min-w-0 flex-1 overflow-y-auto px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-7">
+          <div className="mx-auto max-w-5xl">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.tabs[tab]}</p>
+            <h1 className="mt-1 text-2xl font-semibold text-text-primary">{copy.title}</h1>
+          </div>
 
           <SettingsTabs
             activeTab={tab}
@@ -117,76 +132,13 @@ export default function SettingsPage() {
             notificationsSoonLabel={copy.notifications.srSoon}
           />
 
-          {tab === 'account' && <AccountTab user={user} copy={copy.account} />}
+          {tab === 'account' && <AccountSettingsPanel user={user} copy={copy.account} />}
           {tab === 'privacy' && <PrivacyTab guest={isGuest} copy={copy.privacy} />}
           {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} guest={isGuest} />}
+          </div>
         </main>
       </div>
     </div>
-  );
-}
-
-type AccountTabProps = {
-  user: User | null;
-  copy: SettingsCopy['account'];
-};
-
-function AccountTab({ user, copy }: AccountTabProps) {
-  const nameDefault =
-    typeof user?.user_metadata?.full_name === 'string'
-      ? user?.user_metadata?.full_name
-      : user?.user_metadata?.name ?? '';
-  const emailDefault = user?.email ?? '';
-
-  return (
-    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
-      <div className="grid grid-gap-sm sm:grid-cols-2">
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.name.label}</span>
-          <input
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            placeholder={copy.fields.name.placeholder}
-            defaultValue={nameDefault}
-            readOnly={!nameDefault}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.email.label}</span>
-          <input
-            type="email"
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            placeholder={copy.fields.email.placeholder}
-            defaultValue={emailDefault}
-            readOnly
-          />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.locale.label}</span>
-          <select
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            defaultValue={copy.fields.locale.options[0]}
-            disabled
-          >
-            {copy.fields.locale.options.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.theme.label}</span>
-          <select
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            defaultValue={copy.fields.theme.options[0]}
-            disabled
-          >
-            {copy.fields.theme.options.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-    </section>
   );
 }
 
@@ -322,28 +274,21 @@ function NotificationsTab({
         </div>
         {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
         <div className="grid grid-gap-sm sm:grid-cols-2">
-          <ToggleRow label={copy.toggles.jobDone} disabled={guest} />
-          <ToggleRow label={copy.toggles.jobFailed} disabled={guest} />
-          <ToggleRow label={copy.toggles.lowWallet} disabled={guest} />
-          <ToggleRow label={copy.toggles.weeklySummary} disabled={guest} />
+          <ToggleRow label={copy.toggles.jobDone} soonLabel={copy.srSoon} />
+          <ToggleRow label={copy.toggles.jobFailed} soonLabel={copy.srSoon} />
+          <ToggleRow label={copy.toggles.lowWallet} soonLabel={copy.srSoon} />
+          <ToggleRow label={copy.toggles.weeklySummary} soonLabel={copy.srSoon} />
         </div>
       </div>
     </section>
   );
 }
 
-function ToggleRow({ label, disabled = false }: { label: string; disabled?: boolean }) {
+function ToggleRow({ label, soonLabel }: { label: string; soonLabel: string }) {
   return (
-    <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-sm">
+    <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-sm opacity-70">
       <span className="text-text-secondary">{label}</span>
-      <label className="inline-flex cursor-pointer items-center">
-        <input type="checkbox" className="peer sr-only" defaultChecked={!disabled} disabled={disabled} />
-        <span
-          className={`h-5 w-9 rounded-full ring-1 ring-border transition ${
-            disabled ? 'bg-surface-disabled opacity-70' : 'bg-surface peer-checked:bg-brand'
-          }`}
-        />
-      </label>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{soonLabel}</span>
     </div>
   );
 }

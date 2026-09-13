@@ -1,3 +1,4 @@
+import type { GenerationObservation } from '@/lib/generation-observation';
 import type { PriceFactorKind } from '@/components/PriceFactorsBar';
 import type { EngineCaps, PreflightResponse } from '@/types/engines';
 
@@ -5,6 +6,9 @@ export type QuadTileAction = 'continue' | 'refine' | 'branch' | 'copy' | 'open';
 export type QuadGroupAction = 'open' | 'compare' | 'hero';
 
 export interface QuadPreviewTile {
+  observation?: GenerationObservation;
+  startedAt?: number;
+  etaSource?: 'observed' | 'heuristic';
   localKey: string;
   batchId: string;
   id: string;

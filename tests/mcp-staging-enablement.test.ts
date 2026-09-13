@@ -42,13 +42,13 @@ test('operational capabilities enable only on the exact hosted staging authority
     closedPublication,
   );
 
-  assert.deepEqual(enabled, { paidGeneration: true, referenceUploads: true });
+  assert.deepEqual(enabled, { paidGeneration: true, referenceUploads: true, audioGeneration: false });
   assert.equal(Object.isFrozen(enabled), true);
 
   for (const host of ['maxvideoai.com', 'www.maxvideoai.com', 'api.maxvideoai.com', 'other.vercel.app']) {
     assert.deepEqual(resolveMcpRuntimeCapabilities({
       ...operationalStagingEnv,
-    }, host, closedPublication), { paidGeneration: false, referenceUploads: false });
+    }, host, closedPublication), { paidGeneration: false, referenceUploads: false, audioGeneration: false });
   }
 });
 
@@ -65,7 +65,7 @@ test('operational staging keeps reference uploads closed without the authenticat
     assert.deepEqual(resolveMcpRuntimeCapabilities({
       ...operationalStagingEnv,
       ...overrides,
-    }, host, closedPublication), { paidGeneration: true, referenceUploads: false });
+    }, host, closedPublication), { paidGeneration: true, referenceUploads: false, audioGeneration: false });
   }
 });
 
@@ -81,6 +81,7 @@ test('operational capabilities reject a differently configured non-production ho
   assert.deepEqual(resolveMcpRuntimeCapabilities(otherHostEnv, 'other.vercel.app', closedPublication), {
     paidGeneration: false,
     referenceUploads: false,
+    audioGeneration: false,
   });
 });
 
@@ -94,6 +95,7 @@ test('the operational staging flag cannot widen the local development bypass', (
   }, '127.0.0.1:3000', closedPublication), {
     paidGeneration: false,
     referenceUploads: false,
+    audioGeneration: false,
   });
 });
 

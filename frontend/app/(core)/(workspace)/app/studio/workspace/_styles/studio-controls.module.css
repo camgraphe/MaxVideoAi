@@ -1,0 +1,20 @@
+.focusScope :where(button, [href], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--studio-primary) 76%, #ffffff 10%);
+  outline-offset: 2px;
+}
+
+.focusScope :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

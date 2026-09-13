@@ -157,35 +157,14 @@ test('music renders prefer Google Vertex Lyria 3 when available', async () => {
   assert.equal(result.model, 'lyria-3-pro-preview');
 });
 
-test('music renders fall back to Fal when Google Vertex Lyria 3 fails', async () => {
+test('a failed Lyria quote never switches to a paid Fal model', async () => {
   const calls: string[] = [];
-  const result = await generateMusicTrack(
-    {
-      durationSec: 45,
-      mood: 'documentary',
-      intensity: 'standard',
-      musicModel: 'pro',
-      prompt: 'Elegant brand film underscore.',
-    },
-    {
-      generateGoogleVertexLyria3TrackFn: async () => {
-        calls.push('google_vertex_lyria3');
-        throw new Error('Vertex quota unavailable');
-      },
-      subscribe: async (model) => {
-        calls.push(model);
-        return {
-          data: {
-            audio_url: 'https://example.com/fallback-music.wav',
-          },
-          requestId: 'req_fallback_music',
-        };
-      },
-    }
-  );
-
-  assert.deepEqual(calls, ['google_vertex_lyria3', 'fal-ai/stable-audio-25/text-to-audio']);
-  assert.equal(result.providerKey, 'stable_audio_25_music');
+  await assert.rejects(generateMusicTrack(
+    { durationSec: 45, mood: 'documentary', intensity: 'standard', musicModel: 'pro' },
+    { generateGoogleVertexLyria3TrackFn: async () => { calls.push('lyria'); throw new Error('quota'); },
+      subscribe: async (model) => { calls.push(model); throw new Error('Unexpected alternate request'); } }
+  ), /quota/);
+  assert.deepEqual(calls, ['lyria']);
 });
 
 test('long music renders prioritize providers with explicit duration controls', async () => {
@@ -242,36 +221,13 @@ test('short music renders keep the recent-first music roster', async () => {
   assert.equal(calls[0], 'fal-ai/minimax-music/v2.6');
 });
 
-test('music routing can fall back to ElevenLabs Music with fal API controls', async () => {
-  const calls: Array<{ model: string; input: Record<string, unknown> }> = [];
-  await generateMusicTrack(
-    {
-      durationSec: 45,
-      mood: 'documentary',
-      intensity: 'standard',
-      prompt: 'Elegant brand film underscore.',
-    },
-    {
-      preferLyria3: false,
-      subscribe: async (model, input) => {
-        calls.push({ model, input });
-        if (model !== 'fal-ai/elevenlabs/music') {
-          throw new Error('provider unavailable');
-        }
-        return {
-          data: {
-            audio_url: 'https://example.com/elevenlabs-music.mp3',
-          },
-          requestId: 'req_elevenlabs_music',
-        };
-      },
-    }
-  );
-
-  assert.equal(calls[1]?.model, 'fal-ai/elevenlabs/music');
-  assert.equal(calls[1]?.input.music_length_ms, 45_000);
-  assert.equal(calls[1]?.input.force_instrumental, true);
-  assert.equal(calls[1]?.input.output_format, 'mp3_44100_128');
+test('explicit Fal routing fails on its quoted candidate without substitution', async () => {
+  const calls: string[] = [];
+  await assert.rejects(generateMusicTrack(
+    { durationSec: 45, mood: 'documentary', intensity: 'standard' },
+    { preferLyria3: false, subscribe: async (model) => { calls.push(model); throw new Error('quota'); } }
+  ), AudioProviderError);
+  assert.deepEqual(calls, ['fal-ai/stable-audio-25/text-to-audio']);
 });
 
 test('music provider prompts stay within the fal prompt limit after style guidance', async () => {
@@ -453,7 +409,7 @@ test('reference voice renders through Seed Audio audio_urls with @Audio1 guidanc
   assert.equal(calls[0]?.input.output_format, 'mp3');
 });
 
-test('audio music routing falls back when providers hang', async () => {
+test('an audio timeout never starts another paid provider', async () => {
   const calls: string[] = [];
   await assert.rejects(
     () =>
@@ -480,20 +436,16 @@ test('audio music routing falls back when providers hang', async () => {
       assert.ok(error instanceof AudioProviderError);
       assert.deepEqual(calls, [
         'fal-ai/minimax-music/v2.6',
-        'fal-ai/lyria2',
-        'fal-ai/elevenlabs/music',
-        'fal-ai/stable-audio-25/text-to-audio',
-        'fal-ai/ace-step',
       ]);
       assert.equal(error.role, 'music');
-      assert.equal(error.failures.length, 5);
+      assert.equal(error.failures.length, 1);
       assert.equal(error.failures[0]?.model, 'fal-ai/minimax-music/v2.6');
       return true;
     }
   );
 });
 
-test('audio provider routing surfaces every provider failure when fallback is enabled', async () => {
+test('audio provider routing reports the failed executed candidate', async () => {
   await assert.rejects(
     () =>
       runAudioRoleWithFallback(
@@ -508,14 +460,11 @@ test('audio provider routing surfaces every provider failure when fallback is en
     (error: unknown) => {
       assert.ok(error instanceof AudioProviderError);
       assert.equal(error.role, 'soundDesign');
-      assert.equal(error.failures.length, 4);
+      assert.equal(error.failures.length, 1);
       assert.deepEqual(
         error.failures.map((failure) => failure.model),
         [
           'mirelo-ai/sfx-v1.5/video-to-audio',
-          'fal-ai/thinksound/audio',
-          'fal-ai/mmaudio-v2/text-to-audio',
-          'fal-ai/stable-audio-25/text-to-audio',
         ]
       );
       return true;

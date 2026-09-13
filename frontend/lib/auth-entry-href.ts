@@ -1,14 +1,9 @@
+import { safeInternalReturnTarget as normalizeInternalTarget } from './auth-return-target';
+
 export type AuthEntryMode = 'signup' | 'signin';
 
 type SearchParamsLike = Pick<URLSearchParams, 'toString'>;
 
-function normalizeInternalTarget(candidate: string | null | undefined): string {
-  const trimmed = candidate?.trim() ?? '';
-  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) {
-    return '/app';
-  }
-  return trimmed;
-}
 
 export function buildAuthReturnTarget(
   pathname: string | null | undefined,

@@ -7,6 +7,7 @@ export const JOB_SURFACE_VALUES = [
   'audio',
   'upscale',
   'background-removal',
+  'tool',
 ] as const;
 
 export type JobSurface = (typeof JOB_SURFACE_VALUES)[number];

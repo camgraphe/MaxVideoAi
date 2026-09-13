@@ -143,6 +143,9 @@ test('one caller-owned video executor locks, reserves the wallet, and inserts wi
     const executor = {
       async query<TRecord>(sql: string) {
         calls.push(sql);
+        if (/ORDER BY id[\s\S]*FOR UPDATE/i.test(sql)) {
+          return [{ id: 'wallet-lock' }] as TRecord[];
+        }
         if (/WITH receipts AS/i.test(sql)) {
           return [
             {

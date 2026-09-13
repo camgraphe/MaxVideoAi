@@ -5,7 +5,7 @@ import {
 } from '@/server/engines';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import type { TransactionQueryExecutor } from '@/lib/db';
-import { loadMembershipTiersWithExecutor } from '@/lib/membership';
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { getLumaRay2DurationInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
@@ -254,6 +254,7 @@ export async function priceCanonicalGeneration(
   dependencies: GenerationPricingDependencies = defaultDependencies,
   referenceContext: GenerationPricingReferenceContext = {},
 ): Promise<GenerationPricingResult> {
+  membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
   if (request.surface === 'video') {
     if (referenceContext.resolvedEngine && referenceContext.resolvedEngine.id !== request.engineId) {
       throw new Error('Canonical pricing engine mismatch.');
@@ -309,22 +310,17 @@ export async function priceCanonicalGenerationInExecutor(
   membershipTier: AuthoritativeMembershipTier,
   dependencies: ExecutorGenerationPricingDependencies,
 ): Promise<GenerationPricingResult> {
+  membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
   if (
     dependencies.candidate.engine.id !== request.engineId
     || dependencies.candidate.surface !== request.surface
   ) {
     throw new Error('Canonical transaction pricing candidate mismatch.');
   }
-  const [overrideResult, tiers] = await Promise.all([
-    loadPricingPolicyOverridesWithExecutor(dependencies.executor, { lock: true }),
-    loadMembershipTiersWithExecutor(dependencies.executor, { lock: true }),
-  ]);
+  const overrideResult = await loadPricingPolicyOverridesWithExecutor(dependencies.executor, { lock: true });
   if (overrideResult.status !== 'loaded') {
     throw new Error('Canonical transaction pricing policy unavailable.');
   }
-  const membershipDiscounts = Object.fromEntries(
-    tiers.map((tier) => [tier.tier, tier.discountPercent]),
-  );
   const pricingPolicy = { loadOverrides: async () => overrideResult, warn: () => undefined };
   const computeBillingSnapshot = dependencies.computeBillingSnapshot ?? computeCanonicalBillingSnapshot;
   const engine = dependencies.candidate.engine;
@@ -358,7 +354,7 @@ export async function priceCanonicalGenerationInExecutor(
         ? getLumaRay2DurationInfo(durationSec)?.label
         : undefined,
       addons: Object.keys(addons).length ? addons : undefined,
-    }, { pricingPolicy, membershipDiscounts });
+    }, { pricingPolicy });
   } else {
     const imageReferences = canonicalImageReferences(request);
     const customImageSize = canonicalEffectiveCustomImageSize(request, dependencies);
@@ -381,7 +377,7 @@ export async function priceCanonicalGenerationInExecutor(
       referenceImageCount,
       membershipTier,
       currency: engine.pricing?.currency ?? 'USD',
-    }, { pricingPolicy, membershipDiscounts });
+    }, { pricingPolicy });
   }
   return validatePricingResult(snapshot, membershipTier);
 }

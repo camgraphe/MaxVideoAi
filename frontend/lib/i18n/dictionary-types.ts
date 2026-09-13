@@ -95,13 +95,11 @@ export type Dictionary = {
         engine: string;
         resolution: string;
         duration: string;
-        memberStatus: string;
       };
       estimateLabels: {
         heading: string;
         base: string;
         discount: string;
-        memberChipPrefix: string;
       };
       descriptions: Record<string, string>;
       engineRateLabel?: string;
@@ -123,13 +121,6 @@ export type Dictionary = {
       description: string;
       comingSoonNote?: string;
       points: string[];
-    };
-    member: {
-      title: string;
-      subtitle: string;
-      tiers: Array<{ name: string; requirement: string; benefit: string }>;
-      chipBase: string;
-      tooltip: string;
     };
     refunds: {
       title: string;

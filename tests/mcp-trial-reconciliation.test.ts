@@ -1009,5 +1009,8 @@ test('production release keeps the disabled trial unscheduled and documents safe
     paidGeneration: true,
     trial: false,
     referenceUploads: true,
+    montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
   });
 });

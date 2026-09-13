@@ -67,7 +67,7 @@ test('frontend api facade delegates engines, jobs, and media-library helpers', (
     /STATUS_RETRY_TIMERS/,
     /export function useEngines/,
     /export function useInfiniteJobs/,
-    /export async function getJobStatus/,
+    /export (?:async )?function getJobStatus/,
     /export async function saveAssetToLibrary/,
     /export async function hideJob/,
   ]) {
@@ -82,9 +82,22 @@ test('frontend api facade delegates engines, jobs, and media-library helpers', (
   assert.match(enginesApiSource, /export function useEngines/);
   assert.match(enginesApiSource, /loadFallbackEngines/);
   assert.match(jobsApiSource, /export function useInfiniteJobs/);
+  assert.match(
+    jobsApiSource,
+    /const \[cacheKey, setCacheKey\] = useState<string \| null>\(null\)/,
+    'jobs feeds should defer browser identity lookup until after hydration'
+  );
+  assert.doesNotMatch(
+    jobsApiSource,
+    /useState<string \| null>\(\(\) =>[\s\S]{0,120}readLastKnownUserId/,
+    'jobs feeds must not derive their first client render from browser storage'
+  );
   assert.match(jobsApiSource, /options\?\.surface === 'storyboard'/);
   assert.match(jobsApiSource, /export async function hideJob/);
   assert.doesNotMatch(jobsApiSource, /STATUS_RETRY_TIMERS/, 'status retry timers belong in api-job-status.ts');
-  assert.match(jobStatusApiSource, /export async function getJobStatus/);
+  assert.match(jobStatusApiSource, /export function getJobStatus\(jobId: string\): Promise<JobStatusResult>/);
+  assert.match(jobStatusApiSource, /IN_FLIGHT_STATUS/, 'principal/job request coalescing belongs in api-job-status.ts');
+  assert.match(jobStatusApiSource, /async function fetchJobStatus/, 'transport stays behind the coalescing facade');
+  assert.doesNotMatch(jobsApiSource, /IN_FLIGHT_STATUS/, 'job feeds must reuse the status request owner');
   assert.match(jobStatusApiSource, /STATUS_RETRY_TIMERS/);
 });

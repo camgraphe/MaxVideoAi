@@ -24,6 +24,7 @@ export type ProbedMediaBuffer = {
   canonicalMime: string;
   detectedMime: string | null;
   durationSec: number;
+  hasAudio?: boolean;
 };
 
 type ProbeMetadata = {
@@ -78,7 +79,7 @@ export function resolveProbedMediaMetadata(
     && (kind !== 'video' || stream.disposition?.attached_pic !== 1))?.duration;
   const durationSec = Number.parseFloat(metadata.format?.duration ?? streamDuration ?? '');
   if (!Number.isFinite(durationSec) || durationSec <= 0) return null;
-  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000 };
+  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000, hasAudio };
 }
 
 export async function probeMediaBuffer(
@@ -361,7 +362,7 @@ export async function detectVideoMetadata(
     '-select_streams',
     'v:0',
     '-show_entries',
-    'stream=width,height,r_frame_rate:format=duration',
+    'stream=width,height,r_frame_rate,duration:format=duration',
     '-of',
     'json',
     videoUrl,
@@ -370,13 +371,14 @@ export async function detectVideoMetadata(
   try {
     const { stdout } = await execFileAsync(ffprobe.path, args, { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
     const parsed = JSON.parse(stdout) as {
-      streams?: Array<{ width?: number; height?: number; r_frame_rate?: string }>;
+      streams?: Array<{ width?: number; height?: number; r_frame_rate?: string; duration?: string }>;
       format?: { duration?: string };
     };
     const stream = parsed.streams?.[0];
     const width = Number(stream?.width);
     const height = Number(stream?.height);
-    const durationSec = Number(parsed.format?.duration);
+    const streamDuration = Number(stream?.duration);
+    const durationSec = Number.isFinite(streamDuration) && streamDuration > 0 ? streamDuration : Number(parsed.format?.duration);
     const fps = parseFrameRate(stream?.r_frame_rate ?? '') ?? 30;
     if (
       !Number.isFinite(width) ||

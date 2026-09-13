@@ -340,6 +340,7 @@ export default function CharacterBuilderPage() {
           ) : null}
           <CharacterReferenceLibraryModal
             open={libraryModalRole !== null}
+            userId={user?.id ?? null}
             onClose={() => setLibraryModalRole(null)}
             onSelect={handleLibrarySelect}
             copy={copy}

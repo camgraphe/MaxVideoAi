@@ -67,7 +67,7 @@ test('targeted engine links stay authoritative over stored drafts', () => {
 });
 
 test('workspace keeps Kling V3 voice ID controls disabled for current direct routes', () => {
-  const engineModeHookSource = readFileSync(engineModeHookPath, 'utf8');
+  const engineModeHookSource = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection.ts', 'utf8');
 
   assert.match(engineModeHookSource, /const supportsKlingV3VoiceControl = false;/);
   assert.doesNotMatch(
@@ -124,4 +124,34 @@ test('workspace app shell surfaces are split into route-local components', () =>
   assert.match(modalsSource, /WorkspaceTopUpModal/);
   assert.match(modalsSource, /WorkspaceAuthGateModal/);
   assert.match(modalsSource, /AssetLibraryModal/);
+});
+
+test('model review owns account-scoped snapshots and atomic application outside the route orchestrator', () => {
+  const ready = readFileSync(appReadyViewPath, 'utf8');
+  const app = readFileSync(appClientPath, 'utf8');
+  const controller = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceModelReview.ts', 'utf8');
+  const serializer = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups.ts', 'utf8');
+  assert.match(ready, /useWorkspaceModelReview/);
+  assert.match(ready, /handleEngineChange=\{modelReview.switchModel\}/);
+  assert.match(ready, /onGuestEngineChange: composer.handleEngineChange/);
+  assert.doesNotMatch(app + ready, /sessionStorage\.(getItem|setItem).*model-setups/);
+  assert.match(controller, /prepareWorkspaceModelCandidate/);
+  assert.match(controller, /buildWorkspacePreflightRequest/);
+  assert.match(controller, /useWorkspacePreflightQuote/);
+  assert.match(controller, /serializeWorkspaceModelSetup\(source\)/);
+  assert.match(controller, /applyWorkspacePreparedSetup\(committed,\s*\{\s*\.\.\.latest\.current\.options,\s*setForm: latest\.current\.options\.applyPreparedForm,?\s*\}\)/);
+  assert.doesNotMatch(serializer, /\b(sessionStorage|localStorage|window|document)\./);
+});
+
+test('active drafts reuse bounded setup serialization and gate schema reconciliation by committed account generation', () => {
+  const active = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceActiveDraft.ts', 'utf8');
+  const schema = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceInputSchemaState.ts', 'utf8');
+  const account = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLifetime.ts', 'utf8');
+  const application = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-apply-prepared-setup.ts', 'utf8');
+  assert.match(active, /serializeWorkspaceModelSetup/);
+  assert.match(active, /phase\?\.generation === valid/);
+  assert.match(active, /applyWorkspacePreparedSetup/);
+  assert.match(schema, /if \(!hydrationReady \|\| !selectedEngine\) return/);
+  assert.match(account, /current\.current === generation/);
+  assert.ok(application.indexOf('setters.setInputAssets') < application.indexOf('setters.setForm'));
 });

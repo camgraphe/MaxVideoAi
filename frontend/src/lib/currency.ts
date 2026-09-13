@@ -102,7 +102,10 @@ export function resolveCurrency(
   return { currency: fallback, source: 'default' };
 }
 
-export async function getUserPreferredCurrency(userId: string): Promise<Currency | null> {
+export async function getUserPreferredCurrency(
+  userId: string,
+  options: { throwOnError?: boolean } = {},
+): Promise<Currency | null> {
   if (!userId || !isDatabaseConfigured()) {
     return null;
   }
@@ -113,6 +116,7 @@ export async function getUserPreferredCurrency(userId: string): Promise<Currency
     );
     return normalizeCurrencyCode(rows[0]?.preferred_currency ?? null);
   } catch (error) {
+    if (options.throwOnError) throw error;
     console.warn('[currency] failed to load user preference', {
       userId,
       error: error instanceof Error ? error.message : error,

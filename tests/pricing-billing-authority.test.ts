@@ -10,13 +10,21 @@ test('new generation charges enter through canonical server pricing owners', () 
     ['frontend/app/api/wallet/route.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/image-generation-pricing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/storyboard-image-billing.ts', 'computeCanonicalBillingSnapshot'],
-    ['frontend/src/server/audio/generate-audio.ts', 'computeCanonicalAudioBillingSnapshot'],
+    ['frontend/src/server/audio/prepare-audio.ts', 'computeCanonicalAudioBillingSnapshot'],
   ]);
   for (const [path, symbol] of canonicalConsumers) {
     const source = read(path);
     assert.match(source, new RegExp(symbol), `${path} should use ${symbol}`);
     assert.match(source, /quote-billing/, `${path} should import the server billing owner`);
   }
+});
+
+test('audio quote and generation share preparation and validate the confirmed amount before debit', () => {
+  const runner = read('frontend/src/server/audio/generate-audio.ts');
+  assert.match(runner, /await prepareAudioRun/);
+  assert.match(read('frontend/app/api/audio/quote/route.ts'), /await prepareAudioRun/);
+  assert.ok(runner.indexOf('assertExpectedAudioQuote(params.body.expectedQuote') < runner.indexOf('await createInitialAudioJob'));
+  assert.doesNotMatch(read('frontend/app/api/audio/quote/route.ts'), /createInitialAudioJob|ensureBillingSchema|generateAudioRun/);
 });
 
 test('tool charges use canonical fixed-product quotes and canonical dynamic repricing', () => {

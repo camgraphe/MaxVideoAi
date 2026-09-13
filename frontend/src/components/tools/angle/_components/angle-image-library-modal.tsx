@@ -2,41 +2,41 @@
 
 import clsx from 'clsx';
 import { useState, type MouseEvent as ReactMouseEvent } from 'react';
-import useSWR from 'swr';
 import { Button } from '@/components/ui/Button';
-import { authFetch } from '@/lib/authFetch';
 import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
+import { usePaginatedMediaLibraryAssets } from '@/hooks/usePaginatedMediaLibraryAssets';
 import { isLibraryImageAsset } from '@/lib/library-image';
 import type { AngleCopy } from '../_lib/angle-workspace-copy';
-import type { LibraryAsset, LibraryAssetsResponse } from '../_lib/angle-workspace-types';
+import type { LibraryAsset } from '../_lib/angle-workspace-types';
 
 export function AngleImageLibraryModal({
   open,
+  userId,
   onClose,
   onSelect,
   copy,
 }: {
   open: boolean;
+  userId: string | null;
   onClose: () => void;
   onSelect: (asset: LibraryAsset) => void;
   copy: AngleCopy;
 }) {
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
-  const swrKey = open
-    ? activeSource === 'all'
-      ? '/api/user-assets?kind=image&limit=60'
-      : `/api/user-assets?kind=image&limit=60&source=${encodeURIComponent(activeSource)}`
-    : null;
-  const { data, error, isLoading } = useSWR<LibraryAssetsResponse>(swrKey, async (url: string) => {
-    const response = await authFetch(url);
-    const payload = (await response.json().catch(() => null)) as LibraryAssetsResponse | null;
-    if (!response.ok || !payload?.ok) {
-      throw new Error(copy.libraryError);
-    }
-    return payload;
+  const source = activeSource === 'all' ? null : activeSource;
+  const { assets: paginatedAssets, error, hasMore, isLoading, isLoadingMore, loadMore } = usePaginatedMediaLibraryAssets({
+    enabled: open,
+    userId,
+    kind: 'image',
+    source,
   });
 
-  const assets = (data?.assets ?? []).filter(isLibraryImageAsset);
+  const assets = paginatedAssets
+    .filter(isLibraryImageAsset)
+    .map((asset) => ({
+      ...asset,
+      source: asset.source === 'saved_job_output' ? 'generated' : asset.source,
+    }));
 
   if (!open) return null;
 
@@ -121,8 +121,9 @@ export function AngleImageLibraryModal({
               {copy.libraryEmpty}
             </div>
           ) : (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {assets.map((asset) => (
+            <div className="space-y-4">
+              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+                {assets.map((asset) => (
                 <button
                   key={asset.id}
                   type="button"
@@ -140,7 +141,15 @@ export function AngleImageLibraryModal({
                     {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                   </div>
                 </button>
-              ))}
+                ))}
+              </div>
+              {hasMore ? (
+                <div className="flex justify-center">
+                  <Button type="button" variant="outline" size="sm" disabled={isLoadingMore} onClick={loadMore}>
+                    {copy.libraryLoadMore}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           )}
         </div>

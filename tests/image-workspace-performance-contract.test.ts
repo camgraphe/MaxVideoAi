@@ -27,7 +27,8 @@ test('image advanced fields load only after the stable toggle is expanded', () =
     wrapperSource,
     /dynamic(?:<[^>]+>)?\(\s*\(\) =>\s*import\('\.\/image-advanced-settings\/ImageAdvancedSettingsContent'\)/
   );
-  assert.match(wrapperSource, /isOpen \? \(\s*<ImageAdvancedSettingsContent/);
+  assert.match(wrapperSource, /const expanded = open \?\? isOpen/);
+  assert.match(wrapperSource, /expanded \? \(\s*<ImageAdvancedSettingsContent/);
   assert.doesNotMatch(wrapperSource, /import \{ SelectMenu \}/);
   assert.match(contentSource, /export function ImageAdvancedSettingsContent/);
   assert.match(contentSource, /<SelectMenu/);
@@ -39,4 +40,5 @@ test('image workspace prioritizes the composer before the secondary gallery rail
   assert.match(source, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('@\/components\/GalleryRail'\)/);
   assert.match(source, /loading: \(\) => <GalleryRailSkeleton \/>/);
   assert.doesNotMatch(source, /import \{ GalleryRail \} from/);
+  assert.match(source, /feedSurface="image"/);
 });

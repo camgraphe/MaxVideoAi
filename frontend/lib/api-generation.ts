@@ -1,3 +1,5 @@
+import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
+import { AUDIO_PRICING_POLICY_HEADER, AUDIO_PRICING_POLICY_REVISION } from '@/lib/audio-pricing-policy';
 import { authFetch } from '@/lib/authFetch';
 import { translateError } from '@/lib/error-messages';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
@@ -11,6 +13,7 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/im
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { BackgroundRemovalToolRequest, BackgroundRemovalToolResponse } from '@/types/tools-background-removal';
 import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
+import { upscaleClientAttempt, waitForAcceptedUpscale } from '@/lib/upscale-client-lifecycle';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -139,7 +142,7 @@ export async function runGenerate(
   payload: GeneratePayload,
   options?: GenerateOptions
 ): Promise<GenerateResult> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION };
   if (options?.token) {
     headers.Authorization = `Bearer ${options.token}`;
   }
@@ -195,7 +198,7 @@ export async function runGenerate(
 export async function runImageGeneration(payload: ImageGenerationRequest): Promise<ImageGenerationResponse> {
   const response = await authFetch('/api/images/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;
@@ -217,7 +220,7 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
 export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promise<AudioGenerateResponse> {
   const response = await authFetch('/api/audio/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION, [AUDIO_PRICING_POLICY_HEADER]: AUDIO_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as
@@ -245,7 +248,7 @@ export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promi
 export async function runCharacterBuilderTool(payload: CharacterBuilderRequest): Promise<CharacterBuilderResponse> {
   const response = await authFetch('/api/tools/character-builder', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as CharacterBuilderResponse | null;
@@ -267,7 +270,7 @@ export async function runCharacterBuilderTool(payload: CharacterBuilderRequest):
 export async function runAngleTool(payload: AngleToolRequest): Promise<AngleToolResponse> {
   const response = await authFetch('/api/tools/angle', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as
@@ -292,10 +295,11 @@ export async function runAngleTool(payload: AngleToolRequest): Promise<AngleTool
 }
 
 export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<UpscaleToolResponse> {
+  const attempt = payload.mediaType === 'video' ? await upscaleClientAttempt(payload) : null;
   const response = await authFetch(`/api/tools/upscale/${payload.mediaType}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
+    body: JSON.stringify({ ...payload, ...(attempt ? { requestId: attempt.requestId } : {}) }),
   });
   const data = (await response.json().catch(() => null)) as
     | (UpscaleToolResponse & { error?: { code?: string; message?: string; detail?: unknown } })
@@ -306,6 +310,7 @@ export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<Upsca
   }
 
   if (!response.ok || !data.ok) {
+    if ([400, 401, 403, 404, 409, 422].includes(response.status)) attempt?.finish();
     const error = new Error(data.error?.message ?? `Upscale tool failed (${response.status})`);
     Object.assign(error, {
       code: data.error?.code ?? 'upscale_tool_failed',
@@ -315,7 +320,7 @@ export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<Upsca
     throw error;
   }
 
-  return data;
+  return attempt ? waitForAcceptedUpscale(data, attempt) : data;
 }
 
 export async function runBackgroundRemovalTool(
@@ -323,7 +328,7 @@ export async function runBackgroundRemovalTool(
 ): Promise<BackgroundRemovalToolResponse> {
   const response = await authFetch('/api/tools/background-removal', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as

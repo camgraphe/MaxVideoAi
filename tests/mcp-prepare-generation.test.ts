@@ -333,8 +333,8 @@ test('valid video and image requests persist immutable exact quotes before retur
   }
 });
 
-test('authoritative Member, Plus, and Pro contexts set exact quotes and cannot be spoofed by MCP input', async () => {
-  const exactPrices = { member: 125, plus: 119, pro: 113 } as const;
+test('retired Member, Plus, and Pro contexts prepare standard quotes and cannot be spoofed by MCP input', async () => {
+  const exactPrices = { member: 125, plus: 125, pro: 125 } as const;
   for (const tier of ['member', 'plus', 'pro'] as const) {
     const membership = {
       tier,
@@ -346,15 +346,15 @@ test('authoritative Member, Plus, and Pro contexts set exact quotes and cannot b
     const overrides = {
       resolveMembershipPricing: async () => membership,
       priceGeneration: async (_request: CanonicalGenerationRequest, received: string) => {
-        assert.equal(received, membership.tier);
+        assert.equal(received, 'member');
         return {
           priceCents: exactPrices[tier],
           currency: 'USD',
-          membershipTier: tier,
+          membershipTier: 'member',
           pricingSnapshot: {
             totalCents: exactPrices[tier],
             currency: 'USD',
-            membershipTier: tier,
+            membershipTier: 'member',
           },
         };
       },
@@ -363,7 +363,7 @@ test('authoritative Member, Plus, and Pro contexts set exact quotes and cannot b
     const prepared = await prepareGeneration(videoInput, principal, deps);
     assert.equal(prepared.price.amountCents, exactPrices[tier]);
     const stored = captures.inserted[0].pricingSnapshot as Record<string, unknown>;
-    assert.deepEqual(stored.membership, membership);
+    assert.deepEqual(stored.membership, { ...membership, tier: 'member', thresholdCents: 0, discountPercent: 0 });
   }
 
   for (const spoofed of [
@@ -1024,7 +1024,7 @@ test('GPT Image 2 auto edit pricing keeps the same owned-reference size at confi
   assert.deepEqual(confirmed?.customImageSize, prepared?.customImageSize);
 });
 
-test('generation pricing passes the authoritative tier to both canonical pricing owners', async () => {
+test('generation pricing passes standard pricing despite a stale tier to both canonical pricing owners', async () => {
   const videoRequest = { ...videoInput, schemaVersion: 1, prompt: videoInput.prompt.trim() } as CanonicalGenerationRequest;
   const imageRequest = { ...imageInput, schemaVersion: 1 } as CanonicalGenerationRequest;
   const seen: string[] = [];
@@ -1035,20 +1035,20 @@ test('generation pricing passes the authoritative tier to both canonical pricing
         ok: true,
         total: 113,
         currency: 'USD',
-        pricing: { totalCents: 113, currency: 'USD', membershipTier: 'pro' },
+        pricing: { totalCents: 113, currency: 'USD', membershipTier: 'member' },
       };
     },
     estimateImage: async (payload: { membershipTier?: string }) => {
       seen.push(`image:${payload.membershipTier ?? 'missing'}`);
       return {
-        pricing: { totalCents: 18, currency: 'USD', membershipTier: 'pro' },
+        pricing: { totalCents: 18, currency: 'USD', membershipTier: 'member' },
         normalized: {},
       };
     },
   };
   assert.equal((await priceCanonicalGeneration(videoRequest, 'pro' as never, deps as never)).priceCents, 113);
   assert.equal((await priceCanonicalGeneration(imageRequest, 'pro' as never, deps as never)).priceCents, 18);
-  assert.deepEqual(seen, ['video:pro', 'image:pro']);
+  assert.deepEqual(seen, ['video:member', 'image:member']);
 });
 
 test('generation pricing forwards MiniMax H3 reference counts to both canonical pricing paths', async () => {

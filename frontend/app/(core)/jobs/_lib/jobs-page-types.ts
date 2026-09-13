@@ -1,20 +1,6 @@
 import type { GroupedJobAction } from '@/components/GroupedJobCard';
-import type { GroupSummary } from '@/types/groups';
-
+import type { JobSurface } from '@/types/billing';
 export type { GroupedJobAction };
-
-export type JobsSectionKey = 'video' | 'audio' | 'image' | 'storyboard' | 'character' | 'angle' | 'upscale';
-
-export interface JobsPageSection {
-  key: JobsSectionKey;
-  title: string;
-  empty: string;
-  groups: GroupSummary[];
-  hasMore: boolean;
-  isInitialLoading: boolean;
-  isValidating: boolean;
-  error: unknown;
-  forceImageGroup: boolean;
-  onRetry: () => void;
-  onLoadMore: () => void;
-}
+export type JobsSource = JobSurface | 'all';
+export type JobsStatus = 'all' | 'pending' | 'completed' | 'failed';
+export const JOBS_SOURCES = ['all', 'video', 'image', 'audio', 'storyboard', 'character', 'angle', 'upscale', 'background-removal'] as const satisfies readonly JobsSource[];

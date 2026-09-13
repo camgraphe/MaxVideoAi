@@ -4,9 +4,14 @@ import test from 'node:test';
 
 const settingsPageSource = readFileSync('frontend/app/(core)/settings/page.tsx', 'utf8');
 
-test('settings copy merge replaces localized arrays instead of duplicating options', () => {
+test('settings page delegates functional account preferences while preserving copy fallback merging', () => {
   assert.match(settingsPageSource, /deepmerge\(DEFAULT_SETTINGS_COPY, rawCopy as Partial<SettingsCopy>, \{/);
   assert.match(settingsPageSource, /arrayMerge:\s*\(_destination, source\) => source/);
-  assert.match(settingsPageSource, /copy\.fields\.locale\.options\.map/);
-  assert.match(settingsPageSource, /copy\.fields\.theme\.options\.map/);
+  assert.match(settingsPageSource, /<AccountSettingsPanel user=\{user\} copy=\{copy\.account\}/);
+  assert.doesNotMatch(settingsPageSource, /function AccountTab/);
+});
+
+test('unfinished notification preferences render as statuses instead of inert toggles', () => {
+  assert.match(settingsPageSource, /<ToggleRow label={copy\.toggles\.jobDone} soonLabel={copy\.srSoon}/);
+  assert.doesNotMatch(settingsPageSource, /defaultChecked={!disabled}/);
 });

@@ -43,6 +43,7 @@ type SettingsAdvancedPanelProps = Pick<
   | 'voiceControlActive'
   | 'voiceIdsValue'
 > & {
+  advancedOpen?: boolean;
   panelVariant: 'standalone' | 'embedded';
   state: SettingsControlState;
 };
@@ -451,6 +452,7 @@ export function SettingsAdvancedPanel(props: SettingsAdvancedPanelProps) {
 
   if (panelVariant === 'standalone') {
     if (!advancedHasContent) return null;
+    if (props.advancedOpen !== undefined) return props.advancedOpen ? <div className="app-advanced-content space-y-4 rounded-input border border-border p-3"><AdvancedContent {...props} /></div> : null;
 
     return (
       <div className="space-y-3">

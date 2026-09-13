@@ -4,11 +4,16 @@ import type {
   ReferenceSlotValue,
 } from './image-workspace-types';
 
-export function getCharacterReferenceLabel(reference: CharacterReferenceSelection): string {
-  if (reference.action === 'lighting-variant') return 'Lighting variant';
-  if (reference.action === 'full-body-fix') return 'Full-body fix';
-  if (reference.outputMode === 'character-sheet') return 'Character sheet';
-  return 'Portrait reference';
+export function getCharacterReferenceLabel(reference: CharacterReferenceSelection, locale = 'en'): string {
+  const labels = locale === 'fr'
+    ? { lighting: 'Variante d’éclairage', body: 'Corps entier', sheet: 'Fiche personnage', portrait: 'Portrait de référence' }
+    : locale === 'es'
+      ? { lighting: 'Variante de iluminación', body: 'Cuerpo completo', sheet: 'Ficha de personaje', portrait: 'Retrato de referencia' }
+      : { lighting: 'Lighting variant', body: 'Full-body fix', sheet: 'Character sheet', portrait: 'Portrait reference' };
+  if (reference.action === 'lighting-variant') return labels.lighting;
+  if (reference.action === 'full-body-fix') return labels.body;
+  if (reference.outputMode === 'character-sheet') return labels.sheet;
+  return labels.portrait;
 }
 
 export function formatCharacterReferenceDate(value?: string | null): string {

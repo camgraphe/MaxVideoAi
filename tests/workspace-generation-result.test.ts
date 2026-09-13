@@ -33,7 +33,7 @@ function pendingRender(overrides: Partial<LocalRender> = {}): LocalRender {
   };
 }
 
-test('projectAcceptedGenerationResult gates early completed videos while preserving the ready URL', () => {
+test('projectAcceptedGenerationResult shows early completed videos without an ETA gate', () => {
   const projection = projectAcceptedGenerationResult({
     response: {
       jobId: 'job_123',
@@ -73,10 +73,10 @@ test('projectAcceptedGenerationResult gates early completed videos while preserv
   });
 
   assert.equal(projection.jobId, 'job_123');
-  assert.equal(projection.gatingActive, true);
-  assert.equal(projection.gatedProgress, 95);
+  assert.equal(projection.gatingActive, false);
+  assert.equal(projection.gatedProgress, 100);
   assert.equal(projection.status, 'completed');
-  assert.equal(projection.visibleStatus, 'pending');
+  assert.equal(projection.visibleStatus, 'completed');
   assert.equal(projection.videoUrl, 'https://cdn.example.com/video.mp4');
   assert.equal(projection.statusEventDetail.progress, 100);
   assert.equal(projection.statusEventDetail.videoUrl, 'https://cdn.example.com/video.mp4');
@@ -85,10 +85,10 @@ test('projectAcceptedGenerationResult gates early completed videos while preserv
   const render = applyAcceptedGenerationResultToRender(pendingRender({ localKey: 'local_batch_3' }), projection);
   assert.equal(render.id, 'job_123');
   assert.equal(render.jobId, 'job_123');
-  assert.equal(render.status, 'pending');
-  assert.equal(render.progress, 95);
+  assert.equal(render.status, 'completed');
+  assert.equal(render.progress, 100);
   assert.equal(render.readyVideoUrl, 'https://cdn.example.com/video.mp4');
-  assert.equal(render.videoUrl, undefined);
+  assert.equal(render.videoUrl, 'https://cdn.example.com/video.mp4');
   assert.equal(render.thumbUrl, 'https://cdn.example.com/thumb.jpg');
   assert.equal(render.priceCents, 500);
   assert.equal(render.currency, 'EUR');

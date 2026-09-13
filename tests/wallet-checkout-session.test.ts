@@ -38,6 +38,7 @@ test('wallet top-up Checkout uses Stripe dynamic payment methods for wallets', (
   assert.equal(params.billing_address_collection, 'auto');
   assert.equal(params.shipping_address_collection, undefined);
   assert.deepEqual(params.automatic_tax, { enabled: true });
+  assert.deepEqual(params.invoice_creation, { enabled: true });
 });
 
 test('wallet top-up Checkout keeps PaymentIntent metadata', () => {
@@ -74,7 +75,7 @@ test('wallet top-up Checkout can attach a Stripe Customer and update supported b
     address: 'auto',
     name: 'auto',
   });
-  assert.equal('invoice_creation' in params, false);
+  assert.deepEqual(params.invoice_creation, { enabled: true });
 });
 
 test('wallet top-up Checkout omits customer update without a Stripe Customer', () => {
@@ -87,7 +88,7 @@ test('wallet top-up Checkout omits customer update without a Stripe Customer', (
 
   assert.equal(params.customer, undefined);
   assert.equal(params.customer_update, undefined);
-  assert.equal('invoice_creation' in params, false);
+  assert.deepEqual(params.invoice_creation, { enabled: true });
 });
 
 test('wallet top-up Checkout can create Elements sessions for Express Checkout', () => {
@@ -104,6 +105,7 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.equal(params.cancel_url, undefined);
   assert.equal(params.payment_method_types, undefined);
   assert.deepEqual(params.automatic_tax, { enabled: true });
+  assert.deepEqual(params.invoice_creation, { enabled: true });
 });
 
 test('wallet top-up Checkout does not block card brands by default', () => {

@@ -3,6 +3,7 @@ import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } fr
 import {
   buildAuthoredPublicOfferFacts,
   buildPublicPricingFacts,
+  DEFAULT_LUMA_RAY2_BASE_PRICE_USD,
   type PublicPricingFactsResult,
 } from '@/lib/pricing-public-facts';
 import { quotePublicPricing } from '@/lib/pricing-public-quote';
@@ -149,6 +150,25 @@ export function resolveModelOfferAmountCents(engine: FalEngineEntry, pricingEngi
   const resolution = resolveOfferResolution(pricingEngine, hint?.resolution);
   const durationSeconds = resolveOfferDurationSeconds(pricingEngine, hint?.durationSeconds);
   const mode = engine.category === 'image' ? 't2i' : 't2v';
+
+  if (pricingEngine.id === 'lumaRay2' || pricingEngine.id === 'lumaRay2_flash') {
+    try {
+      const facts = buildPublicPricingFacts({
+        engine: pricingEngine,
+        durationSec: 5,
+        durationOption: '5s',
+        resolution: '540p',
+        mode: 't2v',
+        lumaRay2BasePriceUsd:
+          pricingEngine.id === 'lumaRay2_flash'
+            ? DEFAULT_LUMA_RAY2_BASE_PRICE_USD.flash
+            : DEFAULT_LUMA_RAY2_BASE_PRICE_USD.standard,
+      });
+      return quoteModelOfferFacts(facts, { mode: 't2v', resolution: '540p' });
+    } catch {
+      return null;
+    }
+  }
 
   if (pricingEngine.id === 'luma-ray-3-2') {
     try {
@@ -298,9 +318,10 @@ export function buildProductSchema({
 }) {
   const provider = resolveProviderInfo(engine);
   const offerPayload: { offers?: ReturnType<typeof buildProductOffer> } =
-    pricingEngine && engine.surfaces.pricing.includeInEstimator
+    pricingEngine
     ? { offers: buildProductOffer(engine, pricingEngine, canonical) }
     : {};
+  if (!offerPayload.offers) return null;
   const category = isImageOnlyModel(engine)
     ? 'AI Image Generator'
     : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
@@ -314,7 +335,7 @@ export function buildProductSchema({
     category,
     url: canonical,
     image: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
-    ...(offerPayload.offers ? { offers: offerPayload.offers } : {}),
+    offers: offerPayload.offers,
     brand: {
       '@type': 'Brand',
       name: provider.name,

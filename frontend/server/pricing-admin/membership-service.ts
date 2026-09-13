@@ -1,3 +1,4 @@
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import type { PricingPolicyRule } from '@maxvideoai/pricing';
 
 import type {
@@ -402,6 +403,9 @@ export function previewMembershipChange(
   proposal: MembershipChangeProposal,
   dependencies: MembershipPricingServiceDependencies = DEFAULT_DEPENDENCIES
 ): Promise<PricingChangePreview> {
+  if (LIVE_MEMBERSHIP_POLICY.status === 'retired') {
+    return Promise.reject(new PricingAdminError('membership_retired', 'Membership discounts are retired. Historical settings are read-only.'));
+  }
   return previewMembershipChangeWithExecutor(proposal, dependencies);
 }
 
@@ -424,6 +428,9 @@ export async function confirmMembershipChange(
   actorId: string,
   dependencies: MembershipPricingServiceDependencies = DEFAULT_DEPENDENCIES
 ): Promise<MembershipChangeConfirmation> {
+  if (LIVE_MEMBERSHIP_POLICY.status === 'retired') {
+    throw new PricingAdminError('membership_retired', 'Membership discounts are retired. Historical settings are read-only.');
+  }
   const serverActorId = requiredText(actorId, 'actorId');
   const preview = await previewMembershipChange(proposal, dependencies);
   if (!fingerprint || preview.previewFingerprint !== fingerprint) {

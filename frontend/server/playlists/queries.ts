@@ -33,6 +33,7 @@ export async function listPlaylistRows(whereClause = '', params?: ReadonlyArray<
           )::text AS site_visible_count,
           COUNT(*) FILTER (
             WHERE COALESCE(aj.video_url, '') <> ''
+              OR (aj.surface = 'audio' AND COALESCE(aj.audio_url, '') <> '')
               OR COALESCE(aj.surface, '') = 'image'
               OR COALESCE(aj.render_ids::text, '') <> ''
               OR EXISTS (

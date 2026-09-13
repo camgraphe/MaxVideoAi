@@ -1,10 +1,4 @@
-import clsx from 'clsx';
-import { Button } from '@/components/ui/Button';
-import {
-  formatCurrency,
-  MEMBER_ORDER,
-  type MemberTier,
-} from '@/components/marketing/price-estimator/price-estimator-options';
+import { formatCurrency } from '@/components/marketing/price-estimator/price-estimator-options';
 
 type PriceEstimatorSummaryLabels = {
   audio: string;
@@ -15,8 +9,6 @@ type PriceEstimatorSummaryLabels = {
   duration: string;
   engine: string;
   engineRate: string;
-  memberStatus: string;
-  memberTooltip: string;
   priceChipSuffix: string;
   resolution: string;
 };
@@ -24,13 +16,9 @@ type PriceEstimatorSummaryLabels = {
 type PriceEstimatorSummaryPanelProps = {
   activeResolutionLabel?: string | null;
   currency: string;
-  discountPercent: number;
   durationDisplay: string;
   estimateLabels: Record<string, string>;
   labels: PriceEstimatorSummaryLabels;
-  memberBenefitCopy?: string;
-  memberNames: Map<MemberTier, string>;
-  memberTier: MemberTier;
   priceTotal: number;
   rate: number;
   selectedEngine?: {
@@ -42,25 +30,19 @@ type PriceEstimatorSummaryPanelProps = {
   } | null;
   selectedResolution?: string;
   audioEnabled: boolean;
-  onMemberTierChange: (tier: MemberTier) => void;
 };
 
 export function PriceEstimatorSummaryPanel({
   activeResolutionLabel,
   currency,
-  discountPercent,
   durationDisplay,
   estimateLabels,
   labels,
-  memberBenefitCopy,
-  memberNames,
-  memberTier,
   priceTotal,
   rate,
   selectedEngine,
   selectedResolution,
   audioEnabled,
-  onMemberTierChange,
 }: PriceEstimatorSummaryPanelProps) {
   return (
     <aside className="border-t border-hairline bg-surface-2/70 p-5 text-sm text-text-secondary sm:p-6 lg:border-l lg:border-t-0">
@@ -113,49 +95,6 @@ export function PriceEstimatorSummaryPanel({
             </dd>
           </div>
         </dl>
-
-        <div className="stack-gap-sm">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-              {estimateLabels.memberChipPrefix}
-            </span>
-            <span className="rounded-full bg-state-success/15 px-3 py-1 text-xs font-semibold text-state-success">
-              {memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${discountPercent}%`}
-            </span>
-          </div>
-          {memberBenefitCopy ? <p className="text-xs text-text-muted">{memberBenefitCopy}</p> : null}
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-              {labels.memberStatus}
-            </span>
-            <div className="mt-2 grid grid-cols-3 gap-2 rounded-full border border-hairline bg-surface p-1">
-              {MEMBER_ORDER.map((tier) => {
-                const selected = tier === memberTier;
-                return (
-                  <Button
-                    key={tier}
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onMemberTierChange(tier)}
-                    className={clsx(
-                      'member-status-pill min-h-0 h-8 rounded-full px-2 text-xs font-semibold',
-                      selected
-                        ? 'bg-text-primary !text-bg shadow-card hover:bg-text-primary hover:!text-bg'
-                        : 'bg-transparent !text-text-secondary hover:bg-surface-2 hover:!text-text-primary'
-                    )}
-                    aria-pressed={selected}
-                  >
-                    {memberNames.get(tier) ?? tier}
-                  </Button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-[11px] text-text-muted" aria-label={labels.memberTooltip} title={labels.memberTooltip}>
-              {labels.memberTooltip}
-            </p>
-          </div>
-        </div>
 
         <div className="stack-gap-xs text-xs text-text-muted">
           {selectedEngine?.audioIncluded ? <p className="font-semibold text-text-secondary">{labels.audioIncluded}</p> : null}

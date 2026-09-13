@@ -41,6 +41,9 @@ test('reserveWalletChargeInExecutor returns a committed charge result from the s
   const executor = {
     async query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>) {
       calls.push({ text, params });
+      if (/ORDER BY id[\s\S]*FOR UPDATE/i.test(text)) {
+        return [{ id: 'wallet-lock' } as TRecord];
+      }
       return [
         {
           balance_cents: 100,
@@ -77,8 +80,9 @@ test('reserveWalletChargeInExecutor returns a committed charge result from the s
   assert.equal(result.ok && result.receiptId, '123');
   assert.equal(result.ok && result.balanceCents, 100);
   assert.equal(result.ok && result.remainingCents, 84);
-  assert.equal(calls.length, 1);
-  assert.match(calls[0]?.text ?? '', /INSERT INTO app_receipts/);
+  assert.equal(calls.length, 2);
+  assert.match(calls[0]?.text ?? '', /FOR UPDATE/);
+  assert.match(calls[1]?.text ?? '', /INSERT INTO app_receipts/);
 });
 
 test('reserveWalletChargeInExecutor returns insufficient funds when the executor cannot insert a charge', async () => {

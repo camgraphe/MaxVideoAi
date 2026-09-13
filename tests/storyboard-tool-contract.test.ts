@@ -104,7 +104,8 @@ test('image workspace hydrates storyboard tool query and keeps result actions ro
 
   assert.match(previewActionsHookSource, /librarySource/);
   assert.match(previewActionsHookSource, /source:\s*librarySource/);
-  assert.match(previewActionsHookSource, /source=\$\{encodeURIComponent\(librarySource\)\}/);
+  assert.match(previewActionsHookSource, /buildMediaLibraryAssetsKey\(\{/);
+  assert.match(previewActionsHookSource, /originUrl:\s*selectedPreviewUrl/);
   assert.match(displayStateHookSource, /suppressDefaultPreview/);
   assert.match(displayStateHookSource, /if \(suppressDefaultPreview && !selectedPreviewEntryId\) return undefined;/);
 
@@ -189,8 +190,9 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.doesNotMatch(workspaceSource, /function BuilderStep|function ChoiceButton|function TierButton/);
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
-  assert.match(toolsPageSource, /storyboardTitle/);
-  assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
+  assert.match(toolsPageSource, /ToolboxCatalogue/);
+  const catalogueSource = readFileSync(join(process.cwd(), 'frontend/src/lib/toolbox/catalogue.ts'), 'utf8');
+  assert.match(catalogueSource, /id: 'storyboard'.*href: '\/app\/tools\/storyboard'/);
   assert.match(workspaceSource, /runImageGeneration/);
   assert.match(workspaceSource, /runStoryboard/);
   assert.match(workspaceSource, /saveImageToLibrary/);

@@ -62,16 +62,19 @@ if [[ "$PREFLIGHT_MODE" == 'dark' ]]; then
       "discovery": false,
       "paidGeneration": false,
       "trial": false,
-      "referenceUploads": false
+      "referenceUploads": false,
+      "montagePreparation": false,
+      "audioGeneration": false,
+      "studioMontageCreation": false
     }
   ' "$PUBLICATION_CONFIG" >/dev/null; then
-    printf 'PUBLICATION_BLOCKED expected=all-eight-false\n' >&2
+    printf 'PUBLICATION_BLOCKED expected=all-eleven-false\n' >&2
     exit 67
   fi
   if ! jq -e '
     all((.crons // [])[]; (.path | startswith("/api/cron/mcp-") | not))
   ' "$VERCEL_CONFIG" >/dev/null; then
-    printf 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eight-false\n' >&2
+    printf 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eleven-false\n' >&2
     exit 70
   fi
 else
@@ -84,7 +87,10 @@ else
       "discovery": true,
       "paidGeneration": true,
       "trial": false,
-      "referenceUploads": true
+      "referenceUploads": true,
+      "montagePreparation": false,
+      "audioGeneration": false,
+      "studioMontageCreation": false
     }
   ' "$PUBLICATION_CONFIG" >/dev/null; then
     printf 'PUBLICATION_BLOCKED expected=approved-release\n' >&2

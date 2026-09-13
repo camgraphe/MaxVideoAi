@@ -21,19 +21,24 @@ import { useWorkspaceRouteNavigation } from './_hooks/useWorkspaceRouteNavigatio
 import { useWorkspaceRouteFormState } from './_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
-export default function AppClientPage({ initialPreviewGroup = null }: { initialPreviewGroup?: VideoGroup | null }) {
+export default function AppClientPage({
+  initialPreviewGroup = null,
+}: {
+  initialPreviewGroup?: VideoGroup | null;
+}) {
   const app = useWorkspaceAppBootstrap();
-  const routeForm = useWorkspaceRouteFormState();
+  const confirmedAccount =
+    app.authStatus === 'authed' && app.user?.id && app.session?.access_token ? app.user.id : null;
+  const draftOwner = confirmedAccount ?? (app.authStatus === 'loggedOut' ? 'public' : null);
+  const routeForm = useWorkspaceRouteFormState(draftOwner);
+  const assetState = useWorkspaceAssetState(draftOwner);
   const noticeState = useWorkspaceNotice();
   const draft = useWorkspaceDraftStorage({
     authLoading: app.authLoading,
     authStatus: app.authStatus,
     authenticatedUserId: app.user?.id,
   });
-  const { replaceWorkspaceRoute } = useWorkspaceRouteNavigation({
-    authChecked: draft.authChecked,
-    skipOnboardingRef: draft.skipOnboardingRef,
-  });
+  const { replaceWorkspaceRoute } = useWorkspaceRouteNavigation();
   const renderState = useWorkspaceRenderState({
     recentJobs: app.recentJobs,
     engineIdByLabel: app.engineIdByLabel,
@@ -47,7 +52,13 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     workspaceCopy: app.workspaceCopy,
   });
 
-  useWorkspaceDraftHydration({
+  const activeDraft = useWorkspaceDraftHydration({
+    ...routeForm,
+    ...assetState,
+    authStatus: app.authStatus,
+    accountId: confirmedAccount,
+    accessToken: app.session?.access_token ?? null,
+    locale: app.uiLocale,
     engines: app.engines,
     requestedJobId: draft.requestedJobId,
     fromVideoId: draft.fromVideoId,
@@ -60,27 +71,11 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     readStorage: draft.readStorage,
     readScopedStorage: draft.readScopedStorage,
     writeStorage: draft.writeStorage,
-    form: routeForm.form,
-    prompt: routeForm.prompt,
-    negativePrompt: routeForm.negativePrompt,
-    multiPromptEnabled: routeForm.multiPromptEnabled,
-    multiPromptScenes: routeForm.multiPromptScenes,
-    shotType: routeForm.shotType,
-    voiceIdsInput: routeForm.voiceIdsInput,
-    memberTier: routeForm.memberTier,
     recentJobs: app.recentJobs,
     selectedPreview: renderState.selectedPreview,
     rendersLength: renderState.renders.length,
     preserveStoredDraftRef: draft.preserveStoredDraftRef,
     hasStoredFormRef: draft.hasStoredFormRef,
-    setForm: routeForm.setForm,
-    setPrompt: routeForm.setPrompt,
-    setNegativePrompt: routeForm.setNegativePrompt,
-    setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
-    setMultiPromptScenes: routeForm.setMultiPromptScenes,
-    setShotType: routeForm.setShotType,
-    setVoiceIdsInput: routeForm.setVoiceIdsInput,
-    setMemberTier: routeForm.setMemberTier,
     setSelectedPreview: renderState.setSelectedPreview,
     hydratePendingRendersFromStorage: renderState.hydratePendingRendersFromStorage,
     resetRenderState: renderState.resetRenderState,
@@ -98,44 +93,30 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     requestedJobId: draft.requestedJobId,
     fromVideoId: draft.fromVideoId,
   });
-  const assetState = useWorkspaceAssetState();
   const handleRefreshJob = useWorkspaceJobRefresh();
   const videoSettings = useWorkspaceVideoSettings({
+    ...routeForm,
+    ...assetState,
+    accountScope: draftOwner,
+    activeDraftReady: activeDraft.ready,
+    hasActiveSetup: activeDraft.hasActiveSetup,
+    draftRevision: activeDraft.revision,
     engines: app.engines,
     engineMap: app.engineMap,
     provider: app.provider,
     fromVideoId: draft.fromVideoId,
     requestedJobId: draft.requestedJobId,
     searchString: draft.searchString,
-    sharedVideoSettings: routeForm.sharedVideoSettings,
     authChecked: draft.authChecked,
     hydratedForScope: draft.hydratedForScope,
     storageScope: draft.storageScope,
     effectiveRequestedEngineId: draft.effectiveRequestedEngineId,
     effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
     rendersLength: renderState.renders.length,
-    compositeOverride: routeForm.compositeOverride,
-    compositeOverrideSummary: routeForm.compositeOverrideSummary,
-    focusComposer: routeForm.focusComposer,
     readScopedStorage: draft.readScopedStorage,
     writeScopedStorage: draft.writeScopedStorage,
     replaceRoute: replaceWorkspaceRoute,
-    setPrompt: routeForm.setPrompt,
-    setNegativePrompt: routeForm.setNegativePrompt,
-    setMemberTier: routeForm.setMemberTier,
-    setCfgScale: routeForm.setCfgScale,
-    setShotType: routeForm.setShotType,
-    setVoiceIdsInput: routeForm.setVoiceIdsInput,
-    setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
-    setMultiPromptScenes: routeForm.setMultiPromptScenes,
-    setForm: routeForm.setForm,
-    setInputAssets: assetState.setInputAssets,
-    setKlingElements: routeForm.setKlingElements,
     setSelectedPreview: renderState.setSelectedPreview,
-    setCompositeOverride: routeForm.setCompositeOverride,
-    setCompositeOverrideSummary: routeForm.setCompositeOverrideSummary,
-    setSharedPrompt: routeForm.setSharedPrompt,
-    setSharedVideoSettings: routeForm.setSharedVideoSettings,
     setNotice: noticeState.setNotice,
   });
   const composer = useWorkspaceComposerState({
@@ -166,6 +147,8 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     showNotice: noticeState.showNotice,
   });
   const assets = useWorkspaceAssets({
+    accountScope: confirmedAccount,
+    userId: confirmedAccount,
     inputAssets: assetState.inputAssets,
     setInputAssets: assetState.setInputAssets,
     commitInputAssetMutation: assetState.commitInputAssetMutation,
@@ -178,6 +161,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setKlingElements: routeForm.setKlingElements,
   });
   const inputSchema = useWorkspaceInputSchemaState({
+    hydrationReady: activeDraft.ready,
     selectedEngine: composer.selectedEngine,
     activeMode: composer.activeMode,
     submissionMode: composer.submissionMode,
@@ -211,7 +195,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,
     klingO3UnsupportedVideoReason: composer.klingO3UnsupportedVideoReason,
-    form: routeForm.form,
+    form: activeDraft.ready ? routeForm.form : null,
     activeMode: composer.activeMode,
     submissionMode: composer.submissionMode,
     effectivePrompt: composer.effectivePrompt,
@@ -219,6 +203,8 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     negativePrompt: routeForm.negativePrompt,
     selectedEngine: composer.selectedEngine,
     preflight: pricing.preflight,
+    accessToken: app.session?.access_token ?? null,
+    authChecked: draft.authChecked,
     memberTier: routeForm.memberTier,
     showComposerError: pricing.showComposerError,
     writeScopedStorage: draft.writeScopedStorage,
@@ -295,7 +281,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     authLoading: app.authLoading,
     engineCount: app.engines.length,
     enginesError: app.enginesError,
-    hasForm: Boolean(routeForm.form),
+    hasForm: activeDraft.ready && Boolean(routeForm.form),
     hasSelectedEngine: Boolean(composer.selectedEngine),
     initialPreviewFallbackGroup: previewState.initialPreviewFallbackGroup,
     initialPreviewPosterSrc: previewState.compositePreviewPosterSrc,
@@ -304,23 +290,26 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     noEnginesError: app.workspaceCopy.errors.noEngines,
   });
 
-  if (loadState) return loadState;
-
   return (
-    <WorkspaceAppReadyView
-      app={app}
-      assets={assets}
-      composer={composer}
-      draft={draft}
-      gallery={gallery}
-      generation={generation}
-      handleRefreshJob={handleRefreshJob}
-      inputSchema={inputSchema}
-      noticeState={noticeState}
-      previewState={previewState}
-      pricing={pricing}
-      renderState={renderState}
-      routeForm={routeForm}
-    />
+    <>
+      {loadState}
+      <WorkspaceAppReadyView
+        suspended={Boolean(loadState)}
+        activeDraft={activeDraft}
+        app={app}
+        assets={assets}
+        composer={composer}
+        draft={draft}
+        gallery={gallery}
+        generation={generation}
+        handleRefreshJob={handleRefreshJob}
+        inputSchema={inputSchema}
+        noticeState={noticeState}
+        previewState={previewState}
+        pricing={pricing}
+        renderState={renderState}
+        routeForm={routeForm}
+      />
+    </>
   );
 }

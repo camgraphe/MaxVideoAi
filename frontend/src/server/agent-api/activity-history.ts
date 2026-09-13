@@ -5,7 +5,7 @@ export const MCP_UNKNOWN_CLIENT_LABEL = 'Connected application';
 
 export type McpActivityItem = {
   clientLabel: string;
-  tool: 'prepare_generation' | 'confirm_generation';
+  tool: 'prepare_generation' | 'confirm_generation' | 'prepare_audio_generation' | 'confirm_audio_generation';
   model: string;
   amountCents: number;
   currency: string;
@@ -19,6 +19,7 @@ export type McpActivityHistoryInput = {
 };
 
 type McpActivityRow = {
+  surface?: unknown;
   client_label: unknown;
   model: unknown;
   price_cents: unknown;
@@ -114,7 +115,7 @@ function mapRow(
   const outcome: McpActivityItem['outcome'] = refunded ? 'refunded' : failed ? 'failed' : state;
   return {
     clientLabel: normalizeResolvedClientLabel(row.client_label),
-    tool: prepare ? 'prepare_generation' : 'confirm_generation',
+    tool: row.surface === 'audio' ? (prepare ? 'prepare_audio_generation' : 'confirm_audio_generation') : (prepare ? 'prepare_generation' : 'confirm_generation'),
     model: row.model,
     amountCents: row.price_cents as number,
     currency: row.currency,
@@ -136,6 +137,7 @@ export async function listMcpActivityHistory(
   const rows = await dependencies.executor.query<McpActivityRow>(
     `SELECT COALESCE(grants."clientLabel", 'Connected application') AS client_label,
             q.request_json ->> 'engineId' AS model,
+            q.request_json ->> 'surface' AS surface,
             q.price_cents,
             q.currency,
             q.state,

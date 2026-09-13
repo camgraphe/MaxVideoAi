@@ -27,7 +27,7 @@ test('Luma Ray 3.2 keyframe editor keeps user-deleted keyframe slots deleted', (
   ]);
 });
 
-test('Luma Ray 3.2 keyframe placeholders route through the library import flow', () => {
+test('Luma Ray 3.2 keyframe placeholders route through the Media import flow', () => {
   const timelineSource = readFileSync(timelinePath, 'utf8');
   const assetLibraryModalSource = readFileSync(assetLibraryModalPath, 'utf8');
 
@@ -38,8 +38,8 @@ test('Luma Ray 3.2 keyframe placeholders route through the library import flow',
   );
   assert.match(
     timelineSource,
-    /Open library or upload keyframe at/,
-    'placeholder tooltip should explain that upload is available inside the library'
+    /Choose from Media or upload keyframe at/,
+    'placeholder tooltip should explain that upload is available inside Media'
   );
   assert.match(
     assetLibraryModalSource,

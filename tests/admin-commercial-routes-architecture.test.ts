@@ -57,67 +57,54 @@ test('membership routes are thin, node-only, authorized, and delegate all commer
   }
 });
 
-test('membership preview and confirm adapters preserve rollback target identity', () => {
+test('membership preview and confirm adapters remain thin retired mutation boundaries', () => {
   const controller = read(controllerPath);
   const service = read(membershipServicePath);
-  assert.match(controller, /targetId:\s*event\.targetId/);
-  assert.match(service, /requiredText\(proposal\.targetId,\s*'targetId'\)/);
+  assert.doesNotMatch(controller, /MEMBERSHIP_PREVIEW_ENDPOINT|MEMBERSHIP_CONFIRM_ENDPOINT|previewRollback/);
+  assert.match(service, /membership_retired/);
   for (const path of [routePaths[1]!, routePaths[2]!]) {
     const source = read(path);
-    assert.match(source, /targetId:\s*(?:payload|proposal)\.targetId/, `${path} must preserve rollback targetId`);
+    assert.match(source, /previewMembershipChange|confirmMembershipChange/);
   }
 });
 
-test('membership controller enforces preview-fingerprint-confirm and refreshes only after commit', () => {
+test('membership controller is read-only and refreshes inventory and history together', () => {
   const source = read(controllerPath);
   assert.match(source, /useSWR[^\n]*MEMBERSHIP_INVENTORY_ENDPOINT/);
   assert.match(source, /useSWR[^\n]*MEMBERSHIP_HISTORY_ENDPOINT/);
-  assert.match(source, /postJson[^\n]*MEMBERSHIP_PREVIEW_ENDPOINT/);
-  assert.match(source, /previewFingerprint:\s*preview\.previewFingerprint/);
-  assert.match(source, /postJson[^\n]*MEMBERSHIP_CONFIRM_ENDPOINT/);
-  assert.match(source, /if \(!confirmation\.committed\)/);
-  assert.match(source, /await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
-  assert.match(source, /operation:\s*'rollback',\s*targetId:\s*event\.targetId,\s*eventId:\s*event\.id/);
-  assert.doesNotMatch(source, /previousState|nextState/);
+  assert.match(source, /Promise\.all\(\[inventoryQuery\.mutate\(\), historyQuery\.mutate\(\)\]\)/);
+  assert.doesNotMatch(source, /fetch\([^)]*method:\s*'POST'|previewFingerprint|operation:\s*'rollback'/);
 });
 
 test('membership renders the shared immutable history surface', () => {
   const source = read(viewPath);
   assert.ok(existsSync(sharedHistoryPath));
   assert.match(source, /AdminPricingHistory/);
-  assert.match(source, /onPreviewRollback=\{controller\.previewRollback\}/);
+  assert.match(source, /locked/);
+  assert.doesNotMatch(source, /onPreviewRollback/);
   assert.doesNotMatch(source, /controller\.history\.map/);
   assert.match(source, /loading=\{controller\.historyLoading\}/);
 });
 
-test('membership refresh replaces the draft from the resolved SWR inventory without exposing cached values', () => {
+test('membership refresh exposes no editable draft state', () => {
   const source = read(controllerPath);
-  const refreshBlock = source.match(/const refresh = useCallback\(async \(\) => \{[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
-  assert.doesNotMatch(refreshBlock, /setDraft\(\[\]\)/);
-  assert.match(refreshBlock, /const \[refreshedInventory, refreshedHistory\][\s\S]*await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
-  assert.match(refreshBlock, /setDraft\(createMembershipDraft\(refreshedInventory\.inventory\.tiers\)\)/);
+  assert.doesNotMatch(source, /setDraft|createMembershipDraft|updateMembershipDraft|buildMembershipProposal/);
 });
 
-test('membership post-commit refresh recovery is durable and blocks stale tier state', () => {
+test('membership read-only view exposes explicit retirement and historical inventory', () => {
   const controller = read(controllerPath);
   const view = read(viewPath);
-
-  assert.match(controller, /post_commit_refresh_failed/);
-  assert.match(controller, /interactionLocked\s*=\s*[^;]*Boolean\(postCommitWarning\)/);
-  assert.match(controller, /refreshLocked\s*=\s*previewing\s*\|\|\s*confirming\s*\|\|\s*Boolean\(preview\)/);
-  assert.match(controller, /if \(refreshLocked\) return;/);
-  assert.match(controller, /setDraft\(\[\]\)/);
-  assert.equal(controller.match(/setPostCommitWarning\(null\)/g)?.length, 1);
-  assert.match(view, /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/);
-  assert.match(view, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked\}/);
+  assert.doesNotMatch(controller, /confirming|previewing|postCommitWarning/);
+  assert.match(view, /Membership discounts are retired/);
+  assert.match(view, /Historical membership tiers/);
 });
 
 test('membership client stays browser-safe, membership-only, and contains no commercial formulas', () => {
   const source = [viewPath, controllerPath, viewModelPath].map(read).join('\n');
   assert.doesNotMatch(source, /@\/server\/|@maxvideoai\/pricing|quoteCanonicalPricing|resolvePricingPolicy/);
   assert.doesNotMatch(source, /\/api\/admin\/pricing|\/api\/admin\/billing-products|marginPercent|surchargeAudioPercent/);
-  assert.doesNotMatch(source, /discountPercent\s*[+*/-]|customerTotalCents\s*[+*/-]/);
-  assert.match(read(viewPath), /AdminPricingChangePreviewDialog/);
+  assert.doesNotMatch(source, /customerTotalCents\s*[+*/-]/);
+  assert.doesNotMatch(read(viewPath), /AdminPricingChangePreviewDialog/);
   for (const tier of ['member', 'plus', 'pro']) assert.match(read(viewModelPath), new RegExp(`'${tier}'`));
 });
 
@@ -252,20 +239,18 @@ test('billing product E2E scopes row discovery and selection to the live invento
   assert.doesNotMatch(state, /page\.locator\('tbody tr'\)/);
 });
 
-test('membership E2E previews all tiers, locks controls, cancels, and never confirms', () => {
+test('membership E2E preserves read-only history and rejects editing or mutations', () => {
   const source = read(adminCriticalFlowsPath);
-  const flow = source.match(/test\('membership tiers preview and cancel without applying'[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
+  const flow = source.match(/test\('retired membership tiers remain readable without editing or applying changes'[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
   const state = source.match(/async function waitForMembershipState[\s\S]*?\n\}/)?.[0] ?? '';
 
   assert.match(flow, /getByTestId\('membership-tier-inventory'\)/);
-  assert.match(flow, /\['member', 'plus', 'pro'\]\.map/);
-  assert.match(flow, /inventory\.getByLabel\(`\$\{tier\} discount fraction \(0–1\)`\)/);
-  assert.match(flow, /MEMBERSHIP_PREVIEW_ENDPOINT|\/api\/admin\/membership\/preview/);
-  assert.match(flow, /request\.method\(\) === 'POST'/);
-  assert.match(flow, /toBeDisabled\(\)/);
-  assert.match(flow, /getByRole\('button', \{ name: 'Cancel' \}\)\.click\(\)/);
-  assert.match(flow, /confirmRequests\)\.toBe\(0\)/);
+  assert.match(flow, /Membership history/);
+  assert.match(flow, /inventory\.locator\('dl'\)\)\.toHaveCount\(3\)/);
+  assert.match(flow, /inventory\.locator\('input, select, textarea'\)\)\.toHaveCount\(0\)/);
+  assert.match(flow, /!\['GET', 'HEAD', 'OPTIONS'\]\.includes\(request\.method\(\)\)/);
+  assert.match(flow, /expect\(mutations\)\.toEqual\(\[\]\)/);
   assert.doesNotMatch(flow, /getByRole\('button', \{ name: 'Confirm and apply now' \}\)\.click/);
   assert.match(state, /return 'timeout' as const/);
-  assert.match(flow, /if \(membershipState === 'timeout'\) \{\s*throw new Error/);
+  assert.match(flow, /expect\(membershipState\)\.not\.toBe\('timeout'\)/);
 });

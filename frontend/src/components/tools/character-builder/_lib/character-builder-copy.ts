@@ -26,14 +26,14 @@ export const DEFAULT_CHARACTER_COPY = {
   "runFullBodyDone": "Generated a full-body correction from the selected result.",
   "runLightingDone": "Generated a lighting variation from the selected result.",
   "runFailed": "Generation failed.",
-  "savedToLibrary": "Saved to Library.",
-  "saveToLibraryFailed": "Failed to save to Library.",
+  "savedToLibrary": "Saved to Media.",
+  "saveToLibraryFailed": "Failed to save to Media.",
   "pricingError": "Unable to load tool pricing",
   "reset": "Reset",
   "resetDone": "Builder settings reset to defaults.",
   "authGate": {
     "title": "Create an account to generate characters",
-    "body": "Guests can browse the builder and inspect public examples, but generation, uploads, and Library actions require an account.",
+    "body": "Guests can browse the builder and inspect public examples, but generation, uploads, and Media actions require an account.",
     "primary": "Create account",
     "secondary": "Sign in",
     "close": "Close"
@@ -63,11 +63,12 @@ export const DEFAULT_CHARACTER_COPY = {
     "remove": "Remove"
   },
   "library": {
-    "open": "Library",
-    "choose": "Choose from Library",
+    "open": "Choose from Media",
+    "choose": "Choose from Media",
     "body": "Use an uploaded or saved image as a reference.",
-    "error": "Failed to load library images",
-    "empty": "No images available in your library yet.",
+    "error": "Failed to load Media images",
+    "empty": "No images available in Media yet.",
+    "loadMore": "Load more",
     "tabs": {
       "all": "All",
       "upload": "Uploads",

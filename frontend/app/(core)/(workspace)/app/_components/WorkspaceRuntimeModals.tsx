@@ -64,12 +64,15 @@ export function WorkspaceRuntimeModals({
   assetLibrarySource,
   visibleAssetLibrary,
   isAssetLibraryLoading,
+  isAssetLibraryLoadingMore,
+  assetLibraryHasMore,
   assetLibraryError,
   assetDeletePendingId,
   fieldFallbackLabel,
   onAssetLibrarySourceChange,
   onCloseAssetLibrary,
   onRefreshAssets,
+  onLoadMoreAssets,
   onSelectFieldAsset,
   onSelectKlingAsset,
   onDeleteAsset,
@@ -102,13 +105,16 @@ export function WorkspaceRuntimeModals({
   assetLibrarySource: AssetLibrarySource;
   visibleAssetLibrary: UserAsset[];
   isAssetLibraryLoading: boolean;
+  isAssetLibraryLoadingMore: boolean;
+  assetLibraryHasMore: boolean;
   assetLibraryError: string | null;
   assetDeletePendingId: string | null;
   fieldFallbackLabel: string;
   onAssetLibrarySourceChange: (source: AssetLibrarySource) => void;
   onCloseAssetLibrary: () => void;
   onRefreshAssets: (options: { source: AssetLibrarySource; kind: AssetLibraryKind }) => void | Promise<void>;
-  onSelectFieldAsset: (field: EngineInputField, asset: UserAsset, slotIndex?: number) => void | Promise<void>;
+  onLoadMoreAssets: () => void | Promise<void>;
+  onSelectFieldAsset: (field: EngineInputField, asset: UserAsset, slotIndex?: number) => void | string | Promise<void | string>;
   onSelectKlingAsset: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => void;
   onDeleteAsset: (asset: UserAsset) => void | Promise<void>;
 }) {
@@ -150,6 +156,15 @@ export function WorkspaceRuntimeModals({
       ) : null}
       {assetPickerTarget ? (
         <AssetLibraryModal
+          target={assetPickerTarget.kind === 'field' ? {
+            scope: `${JSON.stringify(assetPickerTarget.field)}:${assetPickerTarget.slotIndex ?? "append"}`,
+            capacity: assetPickerTarget.field.maxCount,
+            slotIndex: assetPickerTarget.slotIndex,
+            role: assetPickerTarget.field.type === 'image' && (assetPickerTarget.field.maxCount ?? 1) === 1
+              ? ['end_image_url', 'end_image', 'last_frame_url'].includes(assetPickerTarget.field.id) ? 'end'
+                : ['image_url', 'start_image_url', 'start_image', 'first_frame_url', 'input_image'].includes(assetPickerTarget.field.id) ? 'start' : undefined
+              : undefined,
+          } : { scope: `${assetPickerTarget.elementId}:${assetPickerTarget.slot}:${assetPickerTarget.slotIndex ?? "append"}`, slotIndex: assetPickerTarget.slotIndex }}
           fieldLabel={
             assetPickerTarget.kind === 'field'
               ? assetPickerTarget.field.label ?? fieldFallbackLabel
@@ -162,6 +177,8 @@ export function WorkspaceRuntimeModals({
           assetType={assetLibraryKind}
           assets={visibleAssetLibrary}
           isLoading={isAssetLibraryLoading}
+          isLoadingMore={isAssetLibraryLoadingMore}
+          hasMore={assetLibraryHasMore}
           error={assetLibraryError}
           source={assetLibrarySource}
           onSourceChange={onAssetLibrarySourceChange}
@@ -169,10 +186,10 @@ export function WorkspaceRuntimeModals({
           onRefresh={(sourceOverride) =>
             onRefreshAssets({ source: sourceOverride ?? assetLibrarySource, kind: assetLibraryKind })
           }
+          onLoadMore={onLoadMoreAssets}
           onSelect={(asset) => {
             if (assetPickerTarget.kind === 'field') {
-              void onSelectFieldAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
-              return;
+              return onSelectFieldAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
             }
             onSelectKlingAsset(assetPickerTarget, asset);
           }}

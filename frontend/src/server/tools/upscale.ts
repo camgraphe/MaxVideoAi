@@ -1,3 +1,4 @@
+import { matchesAcceptedToolQuote } from '@/lib/toolbox/quote';
 import { randomUUID } from 'crypto';
 import { ApiError, ValidationError } from '@fal-ai/client';
 import { getUpscaleToolEngine } from '@/config/tools-upscale-engines';
@@ -14,10 +15,7 @@ import {
   resolveUpscaleOutputFormat,
   resolveUpscaleTargetResolution,
 } from '@/lib/tools-upscale';
-import type {
-  UpscaleToolRequest,
-  UpscaleToolResponse,
-} from '@/types/tools-upscale';
+import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 import {
   UPSCALE_SURFACE,
   buildUpscaleFalInput,
@@ -27,6 +25,7 @@ import {
   extractUpscaleOutput,
   parseUpscaleRequestId,
   toUpscaleValidationMessage,
+  usdToCredits,
   type VideoMetadata,
 } from './upscale-request-utils';
 import { UPSCALE_PLACEHOLDER_THUMB, UPSCALE_TOOL_EVENT_NAME } from './upscale-constants';
@@ -36,11 +35,14 @@ import { resolveUpscalePricingContext } from './upscale-pricing-context';
 import {
   createAtomicInitialUpscaleJob,
   insertUpscaleToolEvent,
+  persistQueuedUpscaleRequest,
   recordUpscaleRefundReceipt,
   type PendingUpscaleReceipt,
 } from './upscale-job-persistence';
 import { persistUpscaleOutput } from './upscale-output-persistence';
-
+import { runDurablyTrackedUpscaleRequest } from './upscale-provider-submission';
+import { readAcceptedUpscale, upscaleRequestIdentity } from './upscale-acceptance';
+import { acceptVideoUpscale } from './upscale-video-submission';
 
 type RunUpscaleToolInput = UpscaleToolRequest & {
   userId: string;
@@ -61,11 +63,6 @@ export type RunUpscaleToolDependencies = {
   detectVideoMetadata?: (videoUrl: string, options?: { timeoutMs?: number }) => Promise<VideoMetadata | null>;
 };
 
-function usdToCredits(value: number | null | undefined): number | null {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
-  return Math.max(1, Math.round(value * 100));
-}
-
 export async function runUpscaleToolBase(
   input: RunUpscaleToolInput,
   dependencies: RunUpscaleToolDependencies = {}
@@ -76,7 +73,12 @@ export async function runUpscaleToolBase(
   const upscaleFactor = clampUpscaleFactor(engine, input.upscaleFactor);
   const targetResolution = resolveUpscaleTargetResolution(engine, input.targetResolution);
   const outputFormat = resolveUpscaleOutputFormat(engine, input.outputFormat);
-  const jobId = `tool_upscale_${randomUUID()}`;
+  const identity = mediaType === 'video' ? upscaleRequestIdentity(input) : null;
+  const jobId = identity?.jobId ?? `tool_upscale_${randomUUID()}`;
+  if (identity) {
+    const existing = await readAcceptedUpscale(jobId, identity.fingerprint);
+    if (existing) return existing;
+  }
   const billingProductKey = engine.billingProductKey;
   const priceOnlyReceipts = receiptsPriceOnlyEnabled();
 
@@ -105,6 +107,7 @@ export async function runUpscaleToolBase(
     videoMetadata,
   });
 
+  if (!matchesAcceptedToolQuote(input.acceptedQuote, pricing)) throw new UpscaleToolError('The price changed. Review the current quote before running.', { status: 409, code: 'quote_changed' });
   const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
   const chargedCredits = usdToCredits(chargedUsd) ?? 1;
   const settingsSnapshot = buildUpscaleSettingsSnapshot({
@@ -128,7 +131,7 @@ export async function runUpscaleToolBase(
     outputFormat,
   });
   const pricingSnapshotJson = JSON.stringify(pricing);
-  const settingsSnapshotJson = JSON.stringify(settingsSnapshot);
+  const settingsSnapshotJson = JSON.stringify({ ...settingsSnapshot, requestFingerprint: identity?.fingerprint });
   const pendingReceipt: PendingUpscaleReceipt = {
     userId: input.userId,
     amountCents: pricing.totalCents,
@@ -143,7 +146,8 @@ export async function runUpscaleToolBase(
   };
 
   const preferredCurrency = await getUserPreferredCurrency(input.userId);
-  await createAtomicInitialUpscaleJob({
+  const created = await createAtomicInitialUpscaleJob({
+    requestFingerprint: identity?.fingerprint,
     userId: input.userId,
     jobId,
     description: pendingReceipt.description,
@@ -160,6 +164,7 @@ export async function runUpscaleToolBase(
     settingsSnapshotJson,
     preferredCurrency,
   });
+  if (!created && identity) return (await readAcceptedUpscale(jobId, identity.fingerprint))!;
 
   const falInput = buildUpscaleFalInput({
     engine,
@@ -170,23 +175,30 @@ export async function runUpscaleToolBase(
     outputFormat,
     metadata: videoMetadata,
   });
-  const falClient = getFalClient();
   let providerJobId: string | null = null;
   let lastQueueUpdate: unknown = null;
   const startedAt = Date.now();
 
   try {
-    const result = await falClient.subscribe(engine.falModelId, {
+    if (identity) return await acceptVideoUpscale(engine, falInput, identity);
+    const trackedRequest = await runDurablyTrackedUpscaleRequest({
+      queue: getFalClient().queue,
+      modelId: engine.falModelId,
       input: falInput,
-      mode: 'polling',
-      onEnqueue(requestId) {
-        providerJobId = providerJobId ?? requestId;
+      persistProviderJobId: async (requestId) => {
+        providerJobId = requestId;
+        await persistQueuedUpscaleRequest(jobId, requestId);
       },
       onQueueUpdate(update) {
-        if (update?.request_id) providerJobId = providerJobId ?? update.request_id;
+        const queueUpdate = update as { request_id?: string } | null;
+        if (queueUpdate?.request_id) providerJobId = providerJobId ?? queueUpdate.request_id;
         lastQueueUpdate = update;
       },
     });
+    const result = trackedRequest.result as {
+      data: unknown;
+      requestId?: string | null;
+    };
 
     const output = extractUpscaleOutput(result.data, mediaType);
     if (!output) {
@@ -251,7 +263,6 @@ export async function runUpscaleToolBase(
            render_ids = COALESCE($9::jsonb, render_ids),
            hero_render_id = COALESCE($10, hero_render_id),
            message = NULL,
-           payment_status = 'paid_wallet',
            provisional = FALSE,
            updated_at = NOW()
        WHERE job_id = $1`,
@@ -358,6 +369,8 @@ export async function runUpscaleToolBase(
       output: persistedOutput,
     };
   } catch (error) {
+    // A persistence/read failure after submission is not proof that Fal rejected the job.
+    if (identity && !(error instanceof ApiError && [400, 401, 403, 404, 422].includes(error.status))) throw error;
     const latencyMs = Date.now() - startedAt;
     let message = error instanceof Error ? error.message : 'Upscale generation failed';
     let status = 502;
@@ -388,7 +401,6 @@ export async function runUpscaleToolBase(
          SET status = 'failed',
              progress = 0,
              provider_job_id = COALESCE($2, provider_job_id),
-             payment_status = 'refunded_wallet',
              message = $3,
              provisional = FALSE,
              updated_at = NOW()

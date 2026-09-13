@@ -1,0 +1,246 @@
+.panelTitle {
+  margin: 0;
+}
+
+.libraryActionButton,
+.primaryPanelButton,
+.secondaryPanelButton {
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.librarySidebar {
+  min-height: 0;
+  overflow: hidden;
+  background: var(--studio-surface-strong);
+}
+
+.librarySidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  border-right: 1px solid var(--studio-border);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 760;
+  color: var(--studio-text-strong);
+}
+
+.panelSubtitle {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--studio-text-muted);
+}
+
+.searchBox {
+  display: block;
+}
+
+.searchBox span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.searchBox input {
+  width: 100%;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  outline: none;
+}
+
+.searchBox input {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.nodeActionGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.libraryActionButton {
+  display: grid;
+  min-height: 46px;
+  place-items: center;
+  gap: 3px;
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.libraryActionButton:hover {
+  background: var(--studio-bg-soft);
+}
+
+.primaryPanelButton:hover {
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+}
+
+.assetList {
+  display: flex;
+  flex-direction: column;
+}
+
+.assetList {
+  overflow: auto;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+}
+
+.assetRow {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 9px;
+  border-bottom: 1px solid var(--studio-border);
+  background: var(--studio-surface);
+}
+
+.assetRow:last-child {
+  border-bottom: 0;
+}
+
+.assetRow p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--studio-text);
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetRow span {
+  display: block;
+  margin-top: 2px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}
+
+.assetThumb {
+  display: grid;
+  width: 44px;
+  height: 36px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--studio-surface-strong);
+  color: var(--studio-text-muted);
+}
+
+.assetThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.emptyInspector {
+  display: grid;
+  height: calc(100% - 42px);
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.timelineInsertActions {
+  display: grid;
+  gap: 8px;
+}
+
+.timelineInsertActions button:not(.primaryPanelButton) {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.timelineInsertActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.primaryPanelButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.primaryPanelButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.secondaryPanelButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font-size: 12px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .librarySidebar {
+    display: none;
+  }
+
+  .minimap {
+    display: none;
+  }
+}

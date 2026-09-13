@@ -11,7 +11,8 @@ export function normalizeJobSurface(value: unknown): JobSurface | null {
     normalized === 'angle' ||
     normalized === 'audio' ||
     normalized === 'upscale' ||
-    normalized === 'background-removal'
+    normalized === 'background-removal' ||
+    normalized === 'tool'
   ) {
     return normalized;
   }

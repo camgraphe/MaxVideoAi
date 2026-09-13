@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { UserRoundPlus } from 'lucide-react';
 
 import type { AssetFieldConfig, ComposerAttachment } from '@/components/Composer';
 import { Button } from '@/components/ui/Button';
@@ -45,7 +45,7 @@ export function useImageWorkspaceReferenceAssets({
         }}
         className="min-h-0 h-7 gap-1.5 rounded-full px-2.5 py-0 text-[11px] font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
       >
-        <Plus className="h-3.5 w-3.5 text-brand" />
+        <UserRoundPlus className="h-3.5 w-3.5 text-brand" />
         <span>{resolvedCopy.composer.characterButton}</span>
       </Button>
     );

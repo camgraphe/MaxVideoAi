@@ -16,6 +16,7 @@ import {
   unwrapFalResponse,
 } from '@/lib/fal-response';
 import { getFalWebhookUrl } from '@/lib/fal-webhook-url';
+import { submitFalQueueOnce } from '@/lib/fal-queue-submit';
 import type { GenerateHooks, GeneratePayload, GenerateResult } from '@/lib/fal-types';
 
 export { FalGenerationError } from '@/lib/fal-error';
@@ -62,8 +63,7 @@ async function generateViaFal(
   let result: Awaited<ReturnType<typeof falClient.subscribe>>;
   try {
     if (payload.submissionMode === 'enqueue') {
-      const queued = await falClient.queue.submit(model, { input: requestBody, webhookUrl });
-      enqueuedRequestId = queued.request_id;
+      enqueuedRequestId = await submitFalQueueOnce(model, requestBody, payload.jobId);
       if (!enqueuedRequestId) throw new Error('FAL queue response did not contain a request ID');
       await hooks?.onRequestId?.(enqueuedRequestId);
       return {

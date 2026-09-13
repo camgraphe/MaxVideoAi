@@ -1,6 +1,6 @@
 import mcpPublication from '@/config/mcp-publication.json';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
-import { loadMembershipTiersWithExecutor } from '@/lib/membership';
+import { retireMembershipPricing } from '@/lib/membership-policy';
 import { getActiveAccountRestrictionInExecutor } from '@/server/fraud-cleanup';
 import {
   getGenerationStatus,
@@ -191,7 +191,6 @@ const defaultDependencies: Omit<ConfirmGenerationDependencies, 'trialRiskContext
   resolveMembershipPricing: async (userId, { executor }) => (
     await getUserMembershipStatus(userId, {
       executor,
-      getMembershipTiers: () => loadMembershipTiersWithExecutor(executor, { lock: true }),
     })
   ).pricing,
   priceGeneration: (request, membershipTier, dependencies) =>
@@ -418,11 +417,12 @@ async function confirmationTransaction(
       staleQuote();
     }
 
-    const membership = await dependencies.resolveMembershipPricing(principal.userId, { executor });
-    if (!isValidConfirmationMembership(membership)) {
+    const resolvedMembership = await dependencies.resolveMembershipPricing(principal.userId, { executor });
+    if (!isValidConfirmationMembership(resolvedMembership)) {
       if (includedTrial) trialNotEligible();
       staleQuote();
     }
+    const membership = retireMembershipPricing(resolvedMembership);
     let pricing: GenerationPricingResult;
     try {
       pricing = await dependencies.priceGeneration(

@@ -167,7 +167,7 @@ function displayedRow(params: {
 
 function resolveCompatibilityProfile(row: PublicProjectionRow): string {
   if (row.surface === 'json-ld') return 'schema-current';
-  if (row.surface === 'pricing-hub-audio') return 'audio-current';
+  if (row.surface === 'pricing-hub-audio') return 'audio-tripled-rounded';
   if (row.surface === 'pricing-hub-tool') return 'fixed-product-current';
   return PROVIDER_REFERENCE_ENGINE_IDS.has(row.engineId) ? 'provider-reference-current' : 'standard';
 }

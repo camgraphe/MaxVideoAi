@@ -188,14 +188,14 @@ function buildOperationalColumns(): AdminStatColumn<EngineOpsRow>[] {
     },
     {
       key: 'attempts',
-      header: 'Attempts',
+      header: 'Request events',
       headerClassName: 'text-right',
       cellClassName: 'text-right font-medium text-text-primary',
       render: (row) => formatNumber(row.totalAttempts),
     },
     {
       key: 'completed',
-      header: 'Completed',
+      header: 'Completion events (legacy)',
       headerClassName: 'text-right',
       cellClassName: 'text-right text-text-secondary',
       render: (row) => formatNumber(row.completedCount),
@@ -227,14 +227,14 @@ function buildOperationalColumns(): AdminStatColumn<EngineOpsRow>[] {
     },
     {
       key: 'avg',
-      header: 'Avg',
+      header: 'Observed avg',
       headerClassName: 'text-right',
       cellClassName: 'text-right text-text-primary',
       render: (row) => formatDuration(row.averageDurationMs),
     },
     {
       key: 'p95',
-      header: 'P95',
+      header: 'Observed P95',
       headerClassName: 'text-right',
       cellClassName: 'text-right text-text-primary',
       render: (row) => formatDuration(row.p95DurationMs),

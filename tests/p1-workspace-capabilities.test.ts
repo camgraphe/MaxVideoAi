@@ -35,6 +35,8 @@ test('workspace derives P1 controls from projected modes and schemas without mod
     'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx',
     'frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs.ts',
     'frontend/app/(core)/(workspace)/app/_lib/workspace-generation-payload.ts',
+    'frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection.ts',
+    'frontend/app/(core)/(workspace)/app/_lib/workspace-model-candidate.ts',
   ];
   const sources = paths.map((path) => readFileSync(path, 'utf8'));
   const composer = sources[1]!;

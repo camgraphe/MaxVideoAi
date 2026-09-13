@@ -43,6 +43,7 @@ export interface GalleryRailProps {
   engine: EngineCaps;
   engineRegistry?: EngineCaps[];
   feedType?: GalleryFeedType;
+  feedSurface?: GalleryFeedType;
   activeGroups?: GroupSummary[];
   selectedGroupId?: string | null;
   onOpenGroup?: (group: GroupSummary) => void;
@@ -52,12 +53,11 @@ export interface GalleryRailProps {
   variant?: GalleryVariant;
 }
 
-const BACKGROUND_WARM_START_DELAY_MS = 200;
-const BACKGROUND_WARM_STEP_DELAY_MS = 900;
+const BACKGROUND_WARM_START_DELAY_MS = 200, BACKGROUND_WARM_STEP_DELAY_MS = 900;
 export function GalleryRail({
   engine,
   engineRegistry,
-  feedType = 'video',
+  feedType = 'video', feedSurface,
   activeGroups = [],
   selectedGroupId = null,
   onOpenGroup,
@@ -66,12 +66,12 @@ export function GalleryRail({
   jobFilter,
   variant = 'desktop',
 }: GalleryRailProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const responsiveVariant = variant === 'responsive';
   const [responsiveDesktop, setResponsiveDesktop] = useState(false);
   useEffect(() => {
     if (!responsiveVariant) return undefined;
-    const mediaQuery = window.matchMedia('(min-width: 1088px)');
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
     const handleChange = (event: MediaQueryListEvent | MediaQueryList) => setResponsiveDesktop(event.matches);
     handleChange(mediaQuery);
     if (typeof mediaQuery.addEventListener === 'function') {
@@ -83,7 +83,7 @@ export function GalleryRail({
   }, [responsiveVariant]);
   const isDesktopVariant = variant === 'desktop' || (responsiveVariant && responsiveDesktop);
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
-  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
+  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, feedSurface ? { surface: feedSurface } : { type: feedType });
   const [backgroundWarmCount, setBackgroundWarmCount] = useState(INITIAL_EAGER_PREVIEW_COUNT);
   const hasEngineRegistry = Array.isArray(engineRegistry) && engineRegistry.length > 0;
   const { data: enginesData } = useEngines('video', { includeAverages: false, enabled: !hasEngineRegistry });
@@ -431,15 +431,15 @@ export function GalleryRail({
     <div
       className={clsx(
         'relative',
-        responsiveVariant ? 'min-[1088px]:min-h-0 min-[1088px]:flex-1' : isDesktopVariant ? 'min-h-0 flex-1' : ''
+        responsiveVariant ? 'min-[768px]:min-h-0 min-[768px]:flex-1' : isDesktopVariant ? 'min-h-0 flex-1' : ''
       )}
     >
       <div
         ref={scrollContainerRef}
         className={clsx(
-          'scrollbar-rail mt-1 space-y-4',
+          'scrollbar-rail app-gallery-rail-grid mt-1 space-y-4',
           responsiveVariant
-            ? 'min-[1088px]:h-full min-[1088px]:overflow-y-auto min-[1088px]:pr-6 min-[1088px]:pt-3'
+            ? 'min-[768px]:h-full min-[768px]:overflow-y-auto min-[768px]:pr-6 min-[768px]:pt-3'
             : isDesktopVariant
               ? 'h-full overflow-y-auto pr-6 pt-3'
               : ''
@@ -470,7 +470,7 @@ export function GalleryRail({
 
   const content = (
     <>
-      <GalleryRailHeader title={copy.title} viewAll={copy.viewAll} />
+      <GalleryRailHeader title={sampleOnly ? (locale === 'fr' ? 'Exemples à adapter' : locale === 'es' ? 'Ejemplos para adaptar' : 'Examples to make your own') : copy.title} viewAll={copy.viewAll} />
       <GalleryRailCuratedBanner copy={copy.curated} show={hasMounted && hasCuratedJobs} />
       <GalleryRailErrorBanner copy={copy.error} retryLabel={copy.retry} show={hasMounted && Boolean(error)} onRetry={retry} />
       {body}
@@ -481,11 +481,11 @@ export function GalleryRail({
   return (
     <>
       {responsiveVariant ? (
-        <aside className="flex w-full flex-col gap-4 min-[1088px]:h-[calc(125vh-var(--header-height))] min-[1088px]:max-w-[312px] min-[1088px]:shrink-0 min-[1088px]:gap-0 min-[1088px]:border-l min-[1088px]:border-border min-[1088px]:bg-bg/80 min-[1088px]:px-3 min-[1088px]:pb-6 min-[1088px]:pt-4">
+        <aside className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
           {content}
         </aside>
       ) : isDesktopVariant ? (
-        <aside className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col border-l border-border bg-bg/80 px-3 pb-6 pt-4">
+        <aside className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col bg-bg/80 px-3 pb-6 pt-4">
           {content}
         </aside>
       ) : (

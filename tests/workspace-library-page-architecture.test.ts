@@ -40,6 +40,11 @@ test('workspace library client delegates data and mutation orchestration', () =>
   assert.doesNotMatch(clientSource, /authFetch/);
   assert.doesNotMatch(clientSource, /prepareImageFileForUpload/);
   assert.ok(clientLines < 500, `expected LibraryPageClient to stay under 500 lines, got ${clientLines}`);
+  assert.doesNotMatch(clientSource, /countLabel=/, 'a paginated page must not present its loaded batch as a total');
+  assert.doesNotMatch(clientSource, /toolsTitle=|toolsDescription=|toolLinks=/, 'Media should stay focused on browsing and managing media');
+  assert.match(clientSource, /hideTitle/, 'the active Media navigation item should replace a duplicate visible page title');
+  assert.doesNotMatch(clientSource, /titleActions=/, 'saved and recent media should share the source filter');
+  assert.match(clientSource, /availableSources=\{\[\.\.\.availableSources, 'recent'\]\}/);
 });
 
 test('workspace library import input stays hidden from keyboard traversal', () => {
@@ -60,8 +65,9 @@ test('workspace library data and mutation hooks own server data workflows', () =
 
   assert.match(dataHookSource, /'use client';/);
   assert.match(dataHookSource, /export function useLibraryPageData/);
-  assert.match(dataHookSource, /useSWR<AssetsResponse>/);
-  assert.match(dataHookSource, /useSWR<RecentOutputsResponse>/);
+  assert.match(dataHookSource, /useSWRInfinite<AssetsResponse>/);
+  assert.match(dataHookSource, /useSWRInfinite<RecentOutputsResponse>/);
+  assert.match(dataHookSource, /previousPageData\.nextCursor/);
   assert.match(dataHookSource, /dedupingInterval: 60_000/);
   assert.match(dataHookSource, /dedupingInterval: 30_000/);
   assert.match(dataHookSource, /buildSavedAssetsKey/);

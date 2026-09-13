@@ -34,6 +34,7 @@ export function useWorkspaceAppBootstrap() {
   }, [authStatus, session?.access_token, user?.id]);
   const { data, error: enginesError, isLoading } = useEngines('video', {
     authScope: enginesAuthScope,
+    includeAverages: true,
   });
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const engineScores = useMemo(() => data?.engineScores ?? {}, [data?.engineScores]);

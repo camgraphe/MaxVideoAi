@@ -48,3 +48,5 @@ export type ReceiptsState = {
   loading: boolean;
   error?: string | null;
 };
+
+export type BillingReceiptsView = 'documents' | 'activity';

@@ -1,10 +1,11 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v4.html';
+export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v5.html';
 export const LEGACY_GENERATION_RESULT_APP_URIS = [
   'ui://maxvideoai/generation-result-v1.html',
   'ui://maxvideoai/generation-result-v2.html',
   'ui://maxvideoai/generation-result-v3.html',
+  'ui://maxvideoai/generation-result-v4.html',
 ] as const;
 
 const FIXED_MEDIA_ORIGINS = [
@@ -60,7 +61,7 @@ export function generationResultAppRedirectDomains(): string[] {
   return uniqueOrigins([...FIXED_MEDIA_ORIGINS, ...FIXED_APP_ORIGINS, ...configuredOrigins()]);
 }
 
-export function buildGenerationResultAppHtml(): string {
+function buildGenerationResultAppV4Html(): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -523,6 +524,165 @@ export function buildGenerationResultAppHtml(): string {
 </html>`;
 }
 
+/** v5 adds Audio without changing the document served for established v1-v4 conversations. */
+export function buildGenerationResultAppHtml(): string {
+  return buildGenerationResultAppV4Html()
+    .replace('video, .image {', 'video, audio, .image {')
+    .replace(
+      '[hidden] { display: none !important; }',
+      `[hidden] { display: none !important; }
+
+      .media[data-surface="audio"] {
+        aspect-ratio: auto;
+        background: radial-gradient(circle at 20% 20%, rgba(91, 92, 240, 0.5), transparent 44%), linear-gradient(145deg, #121625, #0b0d12);
+        display: grid;
+        min-height: 104px;
+        padding: 10px 24px 24px;
+        place-content: start stretch;
+      }
+
+      .audio-art {
+        background: radial-gradient(circle at 20% 20%, rgba(91, 92, 240, 0.5), transparent 44%), linear-gradient(145deg, #121625, #0b0d12);
+        color: #f8fafc;
+        padding: 28px 24px 8px;
+        position: relative;
+        text-align: center;
+      }
+      .audio-art-title { display: block; font-size: 17px; font-weight: 750; letter-spacing: -0.01em; }
+      .audio-art-copy { color: #cbd5e1; display: block; font-size: 12px; margin-top: 4px; }
+      .media[data-surface="audio"] audio { height: 42px; width: 100%; }
+      .action-buttons { flex-wrap: wrap; }
+      .action-buttons button { min-height: 44px; }
+
+      @media (max-width: 520px) {
+        .audio-art { padding: 26px 16px 8px; }
+        .media[data-surface="audio"] { min-height: 98px; padding: 10px 16px 22px; }
+        .action-buttons { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+        .action-buttons #open { grid-column: 1 / -1; grid-row: 2; }
+      }`,
+    )
+    .replace(
+      '</style>',
+      `.card .action-buttons { flex-wrap: wrap; }
+      .card .action-buttons button { min-height: 44px; }
+      @media (max-width: 520px) {
+        .card .action-buttons {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          width: 100%;
+        }
+        .card .action-buttons button { width: 100%; }
+        .card .action-buttons #open { grid-column: 1 / -1; grid-row: 2; }
+      }
+    </style>`,
+    )
+    .replace(
+      '<section class="media" aria-live="polite">',
+      '<section class="audio-art" id="audio-art" hidden aria-hidden="true">\n        <strong class="audio-art-title">Original Audio</strong>\n        <span class="audio-art-copy">Generated and saved by MaxVideoAI</span>\n      </section>\n      <section class="media" id="media" aria-live="polite">',
+    )
+    .replace(
+      '<video id="video" controls playsinline preload="metadata" hidden></video>',
+      '<video id="video" controls playsinline preload="metadata" hidden></video>\n        <audio id="audio" controls preload="metadata" hidden aria-label="Generated MaxVideoAI audio"></audio>',
+    )
+    .replace(
+      '<span class="detail-value" id="price">—</span>\n        </div>',
+      '<span class="detail-value" id="price">—</span>\n        </div>\n        <div>\n          <span class="detail-label">Duration</span>\n          <span class="detail-value" id="duration">—</span>\n        </div>',
+    )
+    .replace(
+      '<button type="button" id="open" disabled>Open in MaxVideoAI</button>',
+      '<button class="secondary" type="button" id="reuse" disabled>Reuse settings</button>\n          <button type="button" id="open" disabled>Open in MaxVideoAI</button>',
+    )
+    .replace(
+      "const video = document.getElementById('video');",
+      "const mediaSurface = document.getElementById('media');\n      const video = document.getElementById('video');\n      const audio = document.getElementById('audio');\n      const audioArt = document.getElementById('audio-art');",
+    )
+    .replace(
+      "const price = document.getElementById('price');",
+      "const price = document.getElementById('price');\n      const duration = document.getElementById('duration');",
+    )
+    .replace(
+      "const downloadButton = document.getElementById('download');",
+      "const downloadButton = document.getElementById('download');\n      const reuseButton = document.getElementById('reuse');",
+    )
+    .replace('let openUrl = null;', 'let openUrl = null;\n      let reuseUrl = null;')
+    .replace(
+      "|| (resultSurface !== 'video' && resultSurface !== 'image')",
+      "|| (resultSurface !== 'video' && resultSurface !== 'image' && resultSurface !== 'audio')",
+    )
+    .replace(
+      'function render(value) {',
+      `function buildAudioReuseUrl(workspaceUrl, jobId, resultSurface) {
+        if (resultSurface !== 'audio' || !workspaceUrl || typeof jobId !== 'string' || !jobId.trim()) return null;
+        try {
+          const destination = new URL(workspaceUrl);
+          const trustedWorkspace = destination.protocol === 'https:'
+            && (destination.hostname === 'maxvideoai.com'
+              || destination.hostname === 'maxvideoai-mcp-staging.vercel.app');
+          if (!trustedWorkspace) return null;
+          destination.pathname = '/app/audio';
+          destination.search = '';
+          destination.searchParams.set('job', jobId);
+          destination.searchParams.set('reuse', '1');
+          return safeUrl(destination.toString());
+        } catch {
+          return null;
+        }
+      }
+
+      function render(value) {`,
+    )
+    .replace(
+      "const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)",
+      "const audioUrl = media?.surface === 'audio' ? (safeUrl(media.audioUrl) || safeUrl(media.videoUrl)) : null;\n        const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)",
+    )
+    .replace(
+      "surface.textContent = result?.surface === 'image' ? 'Image' : 'Video';",
+      "surface.textContent = result?.surface === 'image' ? 'Image' : result?.surface === 'audio' ? 'Audio' : 'Video';\n        duration.textContent = media?.surface === 'audio' && Number.isFinite(media?.durationSec)\n          ? Number(media.durationSec).toFixed(3).replace(/\\.?0+$/, '') + ' s'\n          : '—';",
+    )
+    .replace(
+      'openButton.disabled = !openUrl;',
+      "openButton.disabled = !openUrl;\n        reuseUrl = buildAudioReuseUrl(safeUrl(workspace?.url), result?.jobId, result?.surface);\n        reuseButton.disabled = !reuseUrl;",
+    )
+    .replace(
+      "video.pause();\n        video.removeAttribute('src');",
+      "video.pause();\n        audio.pause();\n        video.removeAttribute('src');\n        audio.removeAttribute('src');",
+    )
+    .replace(
+      'video.hidden = true;\n        image.hidden = true;',
+      "mediaSurface.dataset.surface = result?.surface === 'audio' ? 'audio' : String(result?.surface || 'unknown');\n        video.hidden = true;\n        audio.hidden = true;\n        audioArt.hidden = true;\n        image.hidden = true;",
+    )
+    .replace(
+      'if (isComplete && videoUrl) {',
+      `if (isComplete && audioUrl) {
+          audio.src = audioUrl;
+          audioArt.hidden = false;
+          audio.hidden = false;
+          audio.load();
+        } else if (isComplete && videoUrl) {`,
+    )
+    .replace(
+      ": 'This generation is not completed yet.';",
+      ": result?.status === 'failed'\n              ? 'This generation failed. Open MaxVideoAI to review the failure and refund state.'\n              : 'This generation is not completed yet.';",
+    )
+    .replace(
+      "video.pause();\n          window.parent.postMessage",
+      "video.pause();\n          audio.pause();\n          window.parent.postMessage",
+    )
+    .replace(
+      "openButton.addEventListener('click', async () => {",
+      `reuseButton.addEventListener('click', async () => {
+        if (!reuseUrl) return;
+        if (window.openai?.openExternal) {
+          await window.openai.openExternal({ href: reuseUrl, redirectUrl: false });
+          return;
+        }
+        void request('ui/open-link', { url: reuseUrl });
+      });
+
+      openButton.addEventListener('click', async () => {`,
+    );
+}
+
 export function registerGenerationResultApp(server: McpServer): void {
   const resourceDomains = generationResultAppResourceDomains();
   const redirectDomains = generationResultAppRedirectDomains();
@@ -546,7 +706,9 @@ export function registerGenerationResultApp(server: McpServer): void {
         contents: [{
           uri: resourceUri,
           mimeType: 'text/html;profile=mcp-app',
-          text: buildGenerationResultAppHtml(),
+          text: resourceUri === GENERATION_RESULT_APP_URI
+            ? buildGenerationResultAppHtml()
+            : buildGenerationResultAppV4Html(),
           _meta: {
             ui: {
               prefersBorder: true,

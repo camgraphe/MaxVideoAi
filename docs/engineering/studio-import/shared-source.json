@@ -1,0 +1,149 @@
+{
+  "sourceCommit": "6165afc34bb27b8b3dc2d05074b09cdcdb44c13f",
+  "files": [
+    {
+      "path": "frontend/src/lib/authFetch.ts",
+      "gitBlob": "ac21f93517cc7e06901ca43ef07e1cfc80b8dd65",
+      "sha256": "25869418aef08c3b251a5d3597a6e9d28c5efe50c0e9edfa72758df8a7d1a45e",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/server/marketing-auth.ts",
+      "gitBlob": "1318904bcfc834a28fdfb44ffc7b3abaf36cca52",
+      "sha256": "7791ae46a0fc1cdd82b1425bedce586a6d1f5ebe56a66494cfe6b6d802ade7c1",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/server/storage.ts",
+      "gitBlob": "d153402247d427a4391f447d9fca74cf4d148012",
+      "sha256": "cff2e68471c2b55617810464382892d63ca85645cce7ed9cec578d22ccaf5d2c",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/server/upload-thumbnails.ts",
+      "gitBlob": "d4ca8fdca3fb36fe7d51f2b52ab266a0818c708e",
+      "sha256": "1cf9ae57af58d25ee9cc198cbab0a835436f13d577e5bd15facb60a9c07621c0",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/server/media-library/assets.ts",
+      "gitBlob": "4da53934f1c8c6221711518271f8daecf8e8c416",
+      "sha256": "735203f74ca09f17a0b494a6ec0160997edf28221bc62581898e4a0c1ac28f1e",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/lib/wallet.ts",
+      "gitBlob": "5e91aa6688eea6a4560d8ccc0d0952f0cc86bcdf",
+      "sha256": "5d2ebbf1d8724a85f21cd04957d0353c253f6a1f79c7baceb6b349329b390998",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/lib/tools-angle.ts",
+      "gitBlob": "b5df0826c33cf8cd61985d19f1a02c906ee773b0",
+      "sha256": "97c787de6702500c03cce67533148429e44250ceb93bc9b6c75ccf0386fce099",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/server/tools/angle-request-utils.ts",
+      "gitBlob": "436ea6304101b0a00bde93c4f30771fd865ba0f3",
+      "sha256": "b96a80ea32311da4160c57d7b7f4eda806ae41ce13bf991938fea31753dde9b7",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/content/feature-flags.ts",
+      "gitBlob": "5258649d93fc06352ef4cda8e8d0aded5948824c",
+      "sha256": "787a9f890ab6a7366c7d9c2c8da25548b22825965b124bd7be4d4a1cf4607cc2",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/lib/visitor-access.ts",
+      "gitBlob": "df7a9fcdac4be1ced58208800dd5b3eafe36ba7b",
+      "sha256": "9ffce5daeb60090939591dac6d6fc64857de9ba023ed0be4a2d66d90cc575ef8",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/lib/analytics/journey.ts",
+      "gitBlob": "054f1f05b176e2099e6fc6461f5e8ab00299e3ef",
+      "sha256": "6077ec6ad6ff36164907ddaebf5431826d03b7dd8dbec775d6d73c6c62d07979",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/package.json",
+      "gitBlob": "80882784c86b350da31409b349e1b09932eeec99",
+      "sha256": "2ad235ae68652c402bdfa9bc1831afb716a9e7cc5bca70054951306bfc840152",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "package.json",
+      "gitBlob": "b78ad52b1a4098f81b19352d95e67e8306f61151",
+      "sha256": "aaaa9a4612b5780cfea77780251e0ee8ec146da58ba3414fc0b9a34a84fdc3e3",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/messages/en.json",
+      "gitBlob": "b090d5468f0bfbfc49aae165a7f2d4453b3a789c",
+      "sha256": "9e8d2c87ed4016b3163d09b5b1adbd7ed6f640fc63728466382715c44277f21f",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/messages/fr.json",
+      "gitBlob": "abfd7245123d6aa13bf8d006057be4ac814838bc",
+      "sha256": "f62fddb2b25a5a5b28c1f268b0f43e8cb0353b05bd7e1f1822c12725c569f7ac",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/messages/es.json",
+      "gitBlob": "bfa445b7914aec2e6f35fc454430607edbe7eb02",
+      "sha256": "9e594add2a4d1d7cad0d4b1b3619147363c1e5ac788f34e7d11bb1bef605411e",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/lib/audio-generation.ts",
+      "gitBlob": "8f6b46046ce96024949095f9541d196ef041bbdc",
+      "sha256": "654b0f630bf466b80c4bb3a36b0978f9911bea93e6f8b33c7eca0a06726dd177",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/server/audio/audio-generate-validation.ts",
+      "gitBlob": "44665e32db938df554407fd5151321302ded6a88",
+      "sha256": "2645cae762c370d56084306459539f00c647dcf9e5ddd2d88f17cb6db0b0de83",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/server/audio/generate-audio.ts",
+      "gitBlob": "dbac39572a44c751982b89d457b1a5e1eb6d757f",
+      "sha256": "f42fda758d5b273c01b7d5c85aeefaef491c1833fbcd4745f82b7c75720e4811",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/src/server/audio/providers/sound-design.ts",
+      "gitBlob": "390779e2265205474d5eabe761efcaa6bebdace7",
+      "sha256": "925121b4e6f9ad118d9ee549531d717db3e54a410fd00aac1b49ada45989007f",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "tests/audio-generation-config.test.ts",
+      "gitBlob": "e7cd57633c4417b3fa1eb5fb8d4bc2e7c7bfa7a7",
+      "sha256": "c0f5d3b6e739b318a3fc0e3f36d59524ff7414893409a0c09575da24cc4b0e65",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "tests/audio-generate-validation.test.ts",
+      "gitBlob": "c75dcd7b6de8d1e495ce60eb5b4688e1812ce649",
+      "sha256": "5300e9814c5f960e8f1f14a40bdf25194a5d9b28c041f3967efd2bf6d8ec336a",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/audio/_lib/audio-workspace-helpers.ts",
+      "gitBlob": "e334826bb975a5559b424a21703d3395d1e164ba",
+      "sha256": "4dc3ba44c56100524704d7387e136ca5282990ac911bb538ed2158ffa20cb3aa",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioGenerationRunner.ts",
+      "gitBlob": "688656466d61be69852edca650b0483e8ebb8789",
+      "sha256": "56a871d0f86846f23ef4bea97c8da6334d8b8384e0a869e86d58484591ce02be",
+      "disposition": "selective shared interface adaptation; never full-file replacement"
+    }
+  ]
+}

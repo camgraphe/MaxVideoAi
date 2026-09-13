@@ -5,6 +5,7 @@ import type { KlingElementState } from '../frontend/components/KlingElementsBuil
 import type { ResolvedEngineReferenceBudget } from '../frontend/lib/reference-budget';
 import type { EngineInputField, EngineInputSchema } from '../frontend/types/engines';
 import {
+  buildAssetLibraryUrl,
   buildKlingLibraryAsset,
   buildReferenceAssetFromLibraryAsset,
   getAssetLibrarySourceForField,
@@ -49,9 +50,21 @@ function userAsset(patch: Partial<UserAsset> = {}): UserAsset {
 test('asset library helpers choose source and validate field kind', () => {
   assert.equal(getAssetLibrarySourceForField(imageField), 'all');
   assert.equal(getAssetLibrarySourceForField(videoField), 'recent');
-  assert.equal(getLibraryAssetFieldMismatchMessage(imageField, userAsset({ kind: 'video' })), 'This slot requires an image source. Pick an image from the library or import one.');
-  assert.equal(getLibraryAssetFieldMismatchMessage(videoField, userAsset({ kind: 'image' })), 'This slot requires a video source. Pick a video from the video library or import an MP4/MOV clip.');
+  assert.equal(getLibraryAssetFieldMismatchMessage(imageField, userAsset({ kind: 'video' })), 'This slot requires an image source. Pick an image from Media or import one.');
+  assert.equal(getLibraryAssetFieldMismatchMessage(videoField, userAsset({ kind: 'image' })), 'This slot requires a video source. Pick a video from Media or import an MP4/MOV clip.');
   assert.equal(getLibraryAssetFieldMismatchMessage(imageField, userAsset()), null);
+});
+
+test('asset picker requests bounded Media pages and preserves cursor pagination', () => {
+  assert.equal(buildAssetLibraryUrl('image', 'all'), '/api/media-library/assets?limit=30&kind=image');
+  assert.equal(
+    buildAssetLibraryUrl('video', 'generated', 'next/page'),
+    '/api/media-library/assets?limit=30&kind=video&source=generated&cursor=next%2Fpage'
+  );
+  assert.equal(
+    buildAssetLibraryUrl('video', 'recent', 'next/page'),
+    '/api/media-library/recent-outputs?limit=30&kind=video&cursor=next%2Fpage'
+  );
 });
 
 test('asset library mirroring policy detects generated Fal media', () => {

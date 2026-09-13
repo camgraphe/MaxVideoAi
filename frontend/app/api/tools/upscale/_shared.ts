@@ -1,3 +1,4 @@
+import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { FEATURES } from '@/content/feature-flags';
@@ -64,6 +65,8 @@ export async function handleUpscaleToolRequest(
       { status: 401 }
     );
   }
+  const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'tool');
+  if (pricingPolicyError) return pricingPolicyError;
   const restriction = await getActiveAccountRestriction(userId);
   if (restriction) {
     return NextResponse.json(
@@ -122,6 +125,8 @@ export async function handleUpscaleToolRequest(
   try {
     const result = await runUpscale({
       userId,
+      requestId: typeof body?.requestId === 'string' ? body.requestId : undefined,
+      acceptedQuote: body?.acceptedQuote,
       mediaType,
       mediaUrl,
       engineId: engine.id,
@@ -135,7 +140,7 @@ export async function handleUpscaleToolRequest(
       imageHeight: optionalNumber(body?.imageHeight),
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { status: result.status === 'pending' ? 202 : 200 });
   } catch (error) {
     const status = error instanceof UpscaleToolError ? error.status : 502;
     const code = error instanceof UpscaleToolError ? error.code : 'upscale_tool_error';

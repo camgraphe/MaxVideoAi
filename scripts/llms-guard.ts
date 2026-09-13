@@ -39,6 +39,7 @@ const ENABLED_PUBLICATION = {
   paidGeneration: true,
   trial: true,
   referenceUploads: true,
+  montagePreparation: false,
 };
 
 const FORBIDDEN_EXACT_URLS = [

@@ -2,6 +2,7 @@ import type { Ref } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode } from '@/types/engines';
 
 export interface SettingsControlsProps {
+  advancedOpen?: boolean;
   engine: EngineCaps;
   caps?: CapabilityCaps;
   durationSec: number;

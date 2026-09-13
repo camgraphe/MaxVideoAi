@@ -11,4 +11,4 @@ export type GroupedJobAction =
   | 'save-image'
   | 'save-to-library';
 
-export type GroupedJobMenuVariant = 'full' | 'compact' | 'gallery' | 'gallery-image';
+export type GroupedJobMenuVariant = 'full' | 'compact' | 'gallery' | 'gallery-image' | 'activity';

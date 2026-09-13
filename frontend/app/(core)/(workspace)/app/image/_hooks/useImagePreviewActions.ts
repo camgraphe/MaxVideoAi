@@ -1,11 +1,16 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import useSWR from 'swr';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { resolveStableMediaUrl } from '@/lib/media';
+import {
+  buildMediaLibraryAssetsKey,
+  fetchMediaLibraryAssets,
+  type MediaLibraryAssetsResponse,
+} from '@/lib/media-library-client';
 import type {
-  AssetsResponse,
   HistoryEntry,
   LibraryAsset,
 } from '../_lib/image-workspace-types';
@@ -33,34 +38,24 @@ export function useImagePreviewActions({
   setError,
   setStatusMessage,
 }: UseImagePreviewActionsParams) {
+  const { user } = useRequireAuth({ redirectIfLoggedOut: false });
   const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
   const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const selectedPreviewImage = previewEntry?.images?.[selectedPreviewImageIndex];
   const selectedPreviewUrl = resolveStableMediaUrl(selectedPreviewImage?.url, selectedPreviewImage?.thumbUrl);
-  const savedAssetLookupKey =
-    canUseWorkspace && selectedPreviewUrl
-      ? `/api/user-assets?limit=1&source=${encodeURIComponent(librarySource)}&originUrl=${encodeURIComponent(selectedPreviewUrl)}`
-      : null;
-  const {
-    data: savedAssets,
-    mutate: mutateSavedAssets,
-  } = useSWR(savedAssetLookupKey, async (url: string) => {
-    const response = await authFetch(url);
-    const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
-    if (!response.ok || !payload?.ok) {
-      let message: string | undefined;
-      if (payload && typeof payload === 'object' && 'error' in payload) {
-        const maybeError = (payload as { error?: unknown }).error;
-        if (typeof maybeError === 'string') {
-          message = maybeError;
-        }
-      }
-      throw new Error(message ?? 'Failed to load library');
-    }
-    return payload.assets;
+  const savedAssetLookupKey = buildMediaLibraryAssetsKey({
+    userId: canUseWorkspace ? user?.id : null,
+    kind: 'image',
+    source: librarySource,
+    limit: 1,
+    originUrl: selectedPreviewUrl,
   });
-  const savedAsset = (savedAssets?.[0] as LibraryAsset | undefined) ?? null;
+  const {
+    data: savedAssetsResponse,
+    mutate: mutateSavedAssets,
+  } = useSWR<MediaLibraryAssetsResponse>(savedAssetLookupKey, fetchMediaLibraryAssets);
+  const savedAsset = (savedAssetsResponse?.assets[0] as LibraryAsset | undefined) ?? null;
   const isInLibrary = Boolean(savedAsset?.id);
 
   const handleCopy = useCallback((url: string) => {
@@ -126,15 +121,13 @@ export function useImagePreviewActions({
     setIsRemovingFromLibrary(true);
     setError(null);
     setStatusMessage(null);
-    void authFetch('/api/user-assets', {
+    void authFetch(`/api/media-library/assets/${encodeURIComponent(savedAsset.id)}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: savedAsset.id }),
     })
       .then(async (response) => {
         const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
         if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? 'Failed to remove from library');
+          throw new Error(payload?.error ?? 'Failed to remove from Media');
         }
         setStatusMessage(removedFromLibraryMessage);
         void mutateSavedAssets();

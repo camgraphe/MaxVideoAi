@@ -1,8 +1,12 @@
 'use client';
 
 import type { FormEvent } from 'react';
+import { WorkspaceCreationHeading } from '../../_components/WorkspaceCreationHeading';
 import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
+import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
+import { useState } from 'react';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { ImageCountControl, ImageSettingsBar } from '@/components/ImageSettingsBar';
@@ -197,50 +201,60 @@ export function ImageWorkspaceComposerSurface({
   thinkingLevelSelectOptions,
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
-  return (
-    <div className="flex flex-col gap-1">
-      <ImageCompositePreviewDock
-        density="workspace"
-        entry={compositePreviewEntry}
-        selectedIndex={selectedPreviewImageIndex}
-        onSelectIndex={setSelectedPreviewImageIndex}
-        onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
-        onDownload={handleDownload}
-        onCopyLink={handleCopy}
-        onEditImage={handleEditSelectedPreview}
-        onAddToLibrary={handleAddToLibrary}
-        onRemoveFromLibrary={handleRemoveFromLibrary}
-        isInLibrary={isInLibrary}
-        isSavingToLibrary={isSavingToLibrary}
-        isRemovingFromLibrary={isRemovingFromLibrary}
-        copiedUrl={copiedUrl}
-        showTitle={false}
-        engineSettings={
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-4">
-            <EngineSelect
-              engines={engineCapsList}
-              engineId={selectedEngineId}
-              onEngineChange={setEngineId}
-              mode={mode}
-              onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
-              modeOptions={['t2i', 'i2i']}
-              modeLabelOverrides={{
-                t2i: resolvedCopy.modeTabs.generate,
-                i2i: resolvedCopy.modeTabs.edit,
-              }}
-              showModeSelect={false}
-              modeLayout="stacked"
-              showBillingNote={false}
-              variant="bar"
-              controlPresentation="workspace"
-              density="compact"
-              className="min-w-0 flex-1"
-            />
-          </div>
-        }
+  const engineSettings = (
+    <div className="app-image-model-selector min-w-0">
+      <EngineSelect
+        engines={engineCapsList}
+        engineId={selectedEngineId}
+        onEngineChange={setEngineId}
+        mode={mode}
+        onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
+        modeOptions={['t2i', 'i2i']}
+        modeLabelOverrides={{
+          t2i: resolvedCopy.modeTabs.generate,
+          i2i: resolvedCopy.modeTabs.edit,
+        }}
+        showModeSelect={false}
+        modeLayout="stacked"
+        showBillingNote={false}
+        variant="bar"
+        controlPresentation="workspace"
+        density="compact"
+        className="min-w-0 flex-1"
       />
+    </div>
+  );
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  return (
+    <div className="app-image-workspace-surface flex flex-col gap-1">
+      <WorkspaceCreationHeading media="image" />
+      {!compositePreviewEntry ? (
+        <>
+          <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
+          <WorkspaceEmptyPreview media="image" />
+        </>
+      ) : (
+        <ImageCompositePreviewDock
+          density="workspace"
+          entry={compositePreviewEntry}
+          selectedIndex={selectedPreviewImageIndex}
+          onSelectIndex={setSelectedPreviewImageIndex}
+          onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
+          onDownload={handleDownload}
+          onCopyLink={handleCopy}
+          onEditImage={handleEditSelectedPreview}
+          onAddToLibrary={handleAddToLibrary}
+          onRemoveFromLibrary={handleRemoveFromLibrary}
+          isInLibrary={isInLibrary}
+          isSavingToLibrary={isSavingToLibrary}
+          isRemovingFromLibrary={isRemovingFromLibrary}
+          copiedUrl={copiedUrl}
+          showTitle={false}
+          engineSettings={engineSettings}
+        />
+      )}
 
-      <form onSubmit={handleRun} className="space-y-4">
+      <form onSubmit={handleRun} className="app-image-composer space-y-4">
         {inProgressMessage ? (
           <p
             role="status"
@@ -288,6 +302,7 @@ export function ImageWorkspaceComposerSurface({
           onAssetUrlSelect={(_, url, slotIndex) => handleReferenceUrl(slotIndex, url, 'paste')}
           onOpenLibrary={(_, index) => openLibraryForSlot(index)}
           onNotice={setError}
+          optionsControl={(showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
           settingsBar={
             <ImageSettingsBar
               density="workspace"
@@ -357,6 +372,7 @@ export function ImageWorkspaceComposerSurface({
           extraFields={
             <div className="space-y-6">
               <ImageAdvancedSettings
+                open={optionsOpen}
                 title={advancedSettingsTitle}
                 seed={
                   showSeedControl

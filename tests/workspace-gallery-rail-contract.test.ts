@@ -26,7 +26,7 @@ test('workspace video rail opens renders in the composite preview, not the group
   assert.match(cardMenuSource, /onClick=\{\(\)\s*=>\s*handleAction\('open'\)\}/);
   assert.doesNotMatch(cardMenuSource, /showGalleryActions[\s\S]*onClick=\{\(\)\s*=>\s*handleAction\('view'\)\}/);
 
-  assert.match(railCardsSource, /openLabel=\{feedType === 'video' \? 'Preview' : undefined\}/);
+  assert.match(railCardsSource, /openLabel=\{locale === 'fr' \? 'Aperçu' : locale === 'es' \? 'Vista previa' : 'Preview'\}/);
   assert.match(railCardsSource, /showOpenOverlay=\{false\}/);
   assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });
@@ -74,6 +74,31 @@ test('grouped job media action surface does not nest the action menu control', (
     /<button\b/,
     'media figure must not contain nested button controls because that causes invalid interactive HTML and hydration errors'
   );
+});
+
+test('workspace gallery cards keep their action launcher compact and accessible', () => {
+  const cardSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
+    'utf8'
+  );
+
+  assert.match(cardSource, /const isGalleryRailCard = menuVariant === 'gallery' \|\| menuVariant === 'gallery-image'/);
+  assert.match(cardSource, /isGalleryRailCard \? \(\s*<SlidersHorizontal/);
+  assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
+  assert.match(cardSource, /title=\{actionMenuLabel\}/);
+  assert.match(cardSource, /showCompactMenuButton \? \(\s*<>\s*<span>\{actionMenuLabel\}<\/span>/);
+});
+
+test('workspace preview prioritizes its first video cover in completed and pending states', () => {
+  const tileSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/groups/CompositePreviewDockTile.tsx'),
+    'utf8'
+  );
+  const priorityHints = tileSource.match(/priority=\{itemKey === activeVideoKey\}/g) ?? [];
+  const fetchPriorityHints = tileSource.match(/fetchPriority=\{itemKey === activeVideoKey \? 'high' : undefined\}/g) ?? [];
+
+  assert.equal(priorityHints.length, 2, 'both completed and pending first-video covers need the Next priority contract');
+  assert.equal(fetchPriorityHints.length, 2);
 });
 
 test('Seedance completion persists canonical video outputs before preview enrichment', () => {
@@ -129,7 +154,7 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   assert.match(videoSettingsSource, /from '\.\/workspace-video-job-media'/);
   assert.match(videoJobMediaSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(videoJobMediaSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
-  assert.match(renderGroupSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
+  assert.match(renderGroupSource, /previewVideoUrl:\s*item\.previewVideoUrl\s*\?\?\s*null/);
   assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
   assert.doesNotMatch(dockUtilsSource, /return item\.previewUrl \?\? item\.url/);
 });

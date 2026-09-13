@@ -49,7 +49,9 @@
     "lighthouse:models-veo": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/models-veo && lhci collect --url=https://maxvideoai.com/models/veo-3-1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/models-veo && cp -R .lighthouseci/* ./lighthouse-reports/models-veo/ && rm -rf .lighthouseci",
     "lighthouse:pricing": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/pricing && lhci collect --url=https://maxvideoai.com/pricing?nolocale=1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/pricing && cp -R .lighthouseci/* ./lighthouse-reports/pricing/ && rm -rf .lighthouseci",
     "lighthouse:blog": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/blog && lhci collect --url=https://maxvideoai.com/blog --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/blog && cp -R .lighthouseci/* ./lighthouse-reports/blog/ && rm -rf .lighthouseci",
-    "lighthouse:contact": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/contact && lhci collect --url=https://maxvideoai.com/contact --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/contact && cp -R .lighthouseci/* ./lighthouse-reports/contact/ && rm -rf .lighthouseci"
+    "lighthouse:contact": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/contact && lhci collect --url=https://maxvideoai.com/contact --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/contact && cp -R .lighthouseci/* ./lighthouse-reports/contact/ && rm -rf .lighthouseci",
+    "timeline-exports:worker": "tsx scripts/run-timeline-export-worker.ts",
+    "timeline-exports:worker:once": "tsx scripts/run-timeline-export-worker.ts --once"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1040.0",
@@ -96,7 +98,14 @@
     "three": "^0.183.2",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@aws-sdk/client-ecs": "^3.1065.0",
+    "@remotion/bundler": "^4.0.474",
+    "@remotion/media": "^4.0.474",
+    "@remotion/renderer": "^4.0.474",
+    "@xyflow/react": "^12.11.0",
+    "html-to-image": "^1.11.13",
+    "remotion": "^4.0.474"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,md,mdx,json}": [
@@ -122,6 +131,8 @@
     "tailwindcss": "^3.4.19",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@types/react-test-renderer": "18.3.1",
+    "react-test-renderer": "18.3.1"
   }
 }

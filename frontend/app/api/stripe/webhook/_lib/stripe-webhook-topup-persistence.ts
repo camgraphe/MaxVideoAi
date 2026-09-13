@@ -143,6 +143,28 @@ async function updateTopupDocumentFields(
   }
 }
 
+export async function syncStripeTopupInvoiceDocument(fields: TopupDocumentFields & {
+  stripePaymentIntentId?: string | null;
+}): Promise<boolean> {
+  if (!process.env.DATABASE_URL) return false;
+  const paymentIntentId = normalizeStripeId(fields.stripePaymentIntentId);
+  const invoiceId = normalizeStripeId(fields.stripeInvoiceId);
+  if (!paymentIntentId && !invoiceId) return false;
+
+  const identities: ReadonlyArray<readonly [ReceiptIdentityColumn, string | null]> = [
+    ['stripe_payment_intent_id', paymentIntentId],
+    ['stripe_invoice_id', invoiceId],
+  ];
+  for (const [column, value] of identities) {
+    if (!value) continue;
+    const receipt = await findCanonicalTopupReceipt({ query }, column, value);
+    if (!receipt) continue;
+    await updateTopupDocumentFields(receipt.id, fields);
+    return true;
+  }
+  return false;
+}
+
 export async function recordStripeTopup(
   input: CanonicalStripeTopupInput,
   options: { receiptsPriceOnly: boolean }

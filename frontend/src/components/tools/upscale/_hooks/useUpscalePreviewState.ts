@@ -33,7 +33,7 @@ export function useUpscalePreviewState({
   const output = result?.output ?? null;
   const hasResult = Boolean(output?.url);
   const hasSourcePreview = Boolean(mediaUrl.trim());
-  const canCompare = hasResult && hasSourcePreview && result?.mediaType === mediaType;
+  const canCompare = hasResult && hasSourcePreview && mediaType === 'image' && result?.mediaType === mediaType;
   const activePreviewMode: PreviewMode = hasResult ? (previewMode === 'compare' && !canCompare ? 'result' : previewMode) : 'source';
   const sourcePreviewUrl = mediaUrl || SAMPLE_IMAGE_URL;
   const resultPreviewUrl = output?.url || mediaUrl || SAMPLE_IMAGE_URL;
@@ -48,8 +48,8 @@ export function useUpscalePreviewState({
   const previewFactor = mode === 'factor' ? upscaleFactor : 2;
   const outputWidth = output?.width ?? Math.round(sourceWidth * previewFactor);
   const outputHeight = output?.height ?? Math.round(sourceHeight * previewFactor);
-  const sourceSizeLabel = `${sourceWidth} x ${sourceHeight}`;
-  const outputSizeLabel = `${outputWidth} x ${outputHeight}`;
+  const sourceSizeLabel = source?.width && source?.height ? `${source.width} × ${source.height}` : '—';
+  const outputSizeLabel = output?.width && output?.height ? `${output.width} × ${output.height}` : '—';
   const zoomCanvasWidth = activePreviewMode === 'source' ? sourceWidth : outputWidth;
   const zoomCanvasHeight = activePreviewMode === 'source' ? sourceHeight : outputHeight;
   const mediaTypeLabel = mediaType === 'video' ? 'Video' : 'Image';

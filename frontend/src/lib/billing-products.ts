@@ -1,5 +1,5 @@
 import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
-import { getMembershipDiscountMap } from '@/lib/membership';
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
   projectCanonicalQuoteToSnapshot,
@@ -33,7 +33,8 @@ function normalizeSurface(value: unknown): JobSurface {
     value === 'angle' ||
     value === 'audio' ||
     value === 'upscale' ||
-    value === 'background-removal'
+    value === 'background-removal' ||
+    value === 'tool'
     ? value
     : 'image';
 }
@@ -210,9 +211,6 @@ export async function computeBillingProductSnapshot(params: {
 
   const quantity = product.unitKind === 'run' ? 1 : Math.max(1, Math.round(params.quantity ?? 1));
   const baseAmountCents = product.unitPriceCents * quantity;
-  const memberTier = (params.membershipTier ?? 'member').toLowerCase();
-  const discountMap = await getMembershipDiscountMap();
-  const discountPercent = typeof discountMap[memberTier] === 'number' ? Math.max(0, discountMap[memberTier]) : 0;
   const engineId = params.engineId ?? product.productKey;
   return buildCanonicalFixedProductSnapshot({
     engineId,
@@ -221,8 +219,8 @@ export async function computeBillingProductSnapshot(params: {
     quantity,
     unit: product.unitKind,
     unitRate: Number((product.unitPriceCents / 100).toFixed(4)),
-    memberTier: memberTier === 'plus' || memberTier === 'pro' ? memberTier : 'member',
-    discountPercent,
+    memberTier: LIVE_MEMBERSHIP_POLICY.tier,
+    discountPercent: LIVE_MEMBERSHIP_POLICY.discountPercent,
     meta: {
       pricingModel: 'billing-product',
       surface: product.surface,
@@ -267,8 +265,8 @@ export function buildCanonicalFixedProductSnapshot(input: {
     scenario: {
       id: `billing-product:${input.engineId}`,
       engineId: input.engineId,
-      membershipTier: input.memberTier,
-      discountPercent: input.discountPercent,
+      membershipTier: LIVE_MEMBERSHIP_POLICY.tier,
+      discountPercent: LIVE_MEMBERSHIP_POLICY.discountPercent,
     },
     policy,
     compatibilityProfile,

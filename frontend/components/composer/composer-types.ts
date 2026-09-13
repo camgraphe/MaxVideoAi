@@ -45,6 +45,7 @@ export interface ComposerProps {
   price: number | null;
   currency: string;
   isLoading: boolean;
+  isPricing?: boolean;
   error?: string;
   messages?: string[];
   textareaRef?: Ref<HTMLTextAreaElement>;
@@ -66,6 +67,7 @@ export interface ComposerProps {
   onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   settingsBar?: ReactNode;
   generateControl?: ReactNode;
+  optionsControl?: ReactNode;
   modeToggles?: ComposerModeToggle[];
   activeManualMode?: Mode | null;
   onModeToggle?: (mode: Mode | null) => void;

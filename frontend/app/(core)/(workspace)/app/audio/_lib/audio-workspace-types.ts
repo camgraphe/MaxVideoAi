@@ -1,3 +1,4 @@
+import type { GenerationObservation } from '@/lib/generation-observation';
 import type { AudioOutputKind } from '@/lib/audio-generation';
 
 export type SourceVideoState = {
@@ -21,6 +22,12 @@ export type GeneratedSourceVideo = {
 };
 
 export type AudioJobSettingsSnapshot = {
+  providers?: Record<string, unknown> | null;
+  voiceModel?: string | null;
+  minimaxVoiceId?: string | null;
+  lyrics?: string | null;
+  measuredDurationSec?: number | null;
+  requestedDurationSec?: number | null;
   pack?: string | null;
   prompt?: string | null;
   mood?: string | null;
@@ -51,6 +58,8 @@ export type AudioJobSettingsSnapshot = {
 };
 
 export type AudioJobDetail = {
+  mediaFacts?: { source: 'probe'; durationSec: number } | null;
+  createdAt?: string;
   ok?: boolean;
   error?: string;
   jobId: string;
@@ -68,8 +77,12 @@ export type AudioJobDetail = {
 };
 
 export type ActiveAudioJobState = {
+  startedAt?: number;
+  etaSeconds?: number | null;
+  etaSource?: 'observed' | 'heuristic';
   jobId: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
+  observation?: GenerationObservation;
   progress: number;
   message: string | null;
   videoUrl: string | null;

@@ -17,6 +17,7 @@ export type VideoMetadata = {
   height: number;
   durationSec: number;
   fps: number;
+  hasAudio?: boolean;
 };
 
 function normalizeFalUrl(value: string): string {
@@ -333,6 +334,11 @@ export function cloneUpscalePricingWithDynamicTotal(
       ...meta,
     },
   };
+}
+
+export function usdToCredits(value: number | null | undefined): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return Math.max(1, Math.round(value * 100));
 }
 
 export function toUpscaleValidationMessage(error: ValidationError): string {

@@ -1,0 +1,93 @@
+'use client';
+
+/* eslint-disable @next/next/no-img-element */
+
+import { Film } from 'lucide-react';
+import styles from '../../_styles/viewer.module.css';
+import { clipVisualStyleFor } from './useProgramPlaybackSync';
+import type { AudioPlaybackLayer, PlaybackLayer } from './useProgramPlaybackSync';
+import type { StudioCopy } from '../../../_lib/studio-copy';
+
+type ProgramPlaybackLayersProps = {
+  copy: StudioCopy['viewer']['monitor'];
+  audioPlaybackLayers: AudioPlaybackLayer[];
+  linkedAudioGroupIds: Set<string>;
+  playbackLayers: PlaybackLayer[];
+  shouldShowEmptyState: boolean;
+  registerPlaybackAudio: (audio: HTMLAudioElement | null) => void;
+  registerPlaybackVideo: (video: HTMLVideoElement | null) => void;
+  syncPlaybackAudios: () => void;
+  syncPlaybackVideos: () => void;
+  onMediaAccessError?: (item: PlaybackLayer['item']) => void;
+};
+
+export function ProgramPlaybackLayers({
+  copy,
+  audioPlaybackLayers,
+  linkedAudioGroupIds,
+  playbackLayers,
+  shouldShowEmptyState,
+  registerPlaybackAudio,
+  registerPlaybackVideo,
+  syncPlaybackAudios,
+  syncPlaybackVideos,
+  onMediaAccessError,
+}: ProgramPlaybackLayersProps) {
+  return (
+    <>
+      {playbackLayers.map((layer) => (
+        layer.mediaKind === 'image' ? (
+          <img
+            key={layer.item.id}
+            className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
+            data-playback-image-item-id={layer.item.id}
+            src={layer.url}
+            alt=""
+            style={clipVisualStyleFor(layer)}
+          />
+        ) : (
+          <video
+            key={layer.item.id}
+            ref={registerPlaybackVideo}
+            className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
+            controls={false}
+            data-playback-item-id={layer.item.id}
+            muted={
+              layer.opacity <= 0.001 ||
+              Boolean(layer.item.audioMix?.muted) ||
+              Boolean(layer.item.linkedGroupId && linkedAudioGroupIds.has(layer.item.linkedGroupId))
+            }
+            onLoadedMetadata={syncPlaybackVideos}
+            onError={() => onMediaAccessError?.(layer.item)}
+            playsInline
+            preload="auto"
+            src={layer.url}
+            style={clipVisualStyleFor(layer)}
+          />
+        )
+      ))}
+      {audioPlaybackLayers.map((layer) => (
+        <audio
+          key={layer.item.id}
+          ref={registerPlaybackAudio}
+          className={styles.viewerAudioLayer}
+          data-playback-audio-item-id={layer.item.id}
+          data-playback-audio-muted={layer.item.audioMix?.muted ? 'true' : 'false'}
+          data-playback-audio-track-id={layer.item.track}
+          muted={Boolean(layer.item.audioMix?.muted)}
+          onLoadedMetadata={syncPlaybackAudios}
+          onError={() => onMediaAccessError?.(layer.item)}
+          preload="auto"
+          src={layer.url}
+        />
+      ))}
+      {shouldShowEmptyState ? (
+        <div className={styles.viewerEmpty}>
+          <Film size={34} />
+          <p>{copy.noPlayableClip}</p>
+          <span>{copy.emptyBody}</span>
+        </div>
+      ) : null}
+    </>
+  );
+}

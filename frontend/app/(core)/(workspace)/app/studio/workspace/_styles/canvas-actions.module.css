@@ -1,0 +1,37 @@
+.selectionActions { position:absolute; z-index:46; top:12px; left:12px; display:flex; align-items:center; gap:2px; padding:3px; border:1px solid var(--studio-border); border-radius:999px; background:var(--studio-surface-strong); box-shadow:0 10px 28px var(--studio-node-shadow); }
+.selectionMenuRoot { position:relative; }
+.copyFailure { position:absolute; top:calc(100% + 8px); right:0; width:min(300px,100%); padding:12px; border:1px solid var(--studio-border); border-radius:10px; background:var(--studio-surface-strong); color:var(--studio-text); font-size:12px; }
+.selectionMenu { position:absolute; right:0; top:calc(100% + 8px); width:220px; padding:6px; border:1px solid var(--studio-border); border-radius:12px; background:var(--studio-popover-bg); box-shadow:0 16px 45px var(--studio-node-shadow); }
+.selectionMenu button { width:100%; justify-content:flex-start; }
+.selectionTitle { max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 8px; font-size:11px; font-weight:750; }
+.selectionActions button,.connectionPicker button { flex-shrink:0; min-height:44px; display:flex; align-items:center; justify-content:center; gap:7px; padding:8px 12px; border:0; border-radius:8px; background:var(--studio-control-bg); color:var(--studio-text); font:inherit; font-size:12px; cursor:pointer; white-space:nowrap; }
+.selectionActions button:hover,.connectionPicker button:hover { background:var(--studio-control-bg-hover); }
+.selectionActions button:focus-visible,.connectionPicker :focus-visible { outline:2px solid var(--studio-primary); outline-offset:-2px; }
+.connectionBackdrop { position:absolute; inset:0; z-index:160; display:grid; place-items:center; padding:12px; background:#0006; }
+.connectionPicker { width:min(680px,100%); max-height:100%; min-height:0; display:flex; flex-direction:column; border:1px solid var(--studio-border); border-radius:18px; background:var(--studio-surface-strong); box-shadow:0 20px 60px var(--studio-node-shadow); color:var(--studio-text); }
+.connectionPicker header { display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid var(--studio-border); }
+.connectionPicker h2 { margin:2px 0; font-size:18px; }
+.connectionPicker h3 { font-size:12px; margin:20px 0 8px; color:var(--studio-text-muted); }
+.connectionContent { overflow:auto; padding:0 16px 16px; overscroll-behavior:contain; }
+.connectionContent label { display:grid; gap:8px; margin-top:16px; font-size:12px; }
+.connectionContent select { min-height:44px; border:1px solid var(--studio-border); border-radius:8px; padding:8px; color:var(--studio-text); background:var(--studio-control-bg); }
+.connectionContent section > button { width:100%; justify-content:flex-start; margin:4px 0; text-align:left; }
+.connectionContent small,.connectionRow small { display:block; color:var(--studio-text-muted); }
+.connectionRow { display:flex; gap:8px; justify-content:space-between; align-items:center; padding:8px 0; font-size:13px; }
+.connectionContent p { font-size:13px; color:var(--studio-text-muted); }
+.connectionSlotBoard { display:grid; gap:10px; padding-top:16px; }
+.connectionSlot { display:grid; gap:8px; padding:12px; border:1px solid var(--studio-border); border-radius:12px; background:color-mix(in srgb,var(--studio-control-bg) 72%,transparent); }
+.connectionSlot[aria-current='true'] { border-color:var(--studio-primary); box-shadow:0 0 0 1px var(--studio-primary); }
+.connectionSlot_disabled,.connectionSlot_full { background:color-mix(in srgb,var(--studio-control-bg) 48%,transparent); }
+.connectionSlotHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.connectionSlotHeader h3 { margin:0; color:var(--studio-text); font-size:13px; }
+.connectionSlotHeader small { margin-top:3px; }
+.connectionSlotStatus { flex-shrink:0; padding:3px 7px; border:1px solid var(--studio-border); border-radius:999px; color:var(--studio-text-muted); font-size:10px; font-weight:750; }
+.connectionSlot_connected .connectionSlotStatus,.connectionSlot_available .connectionSlotStatus { border-color:color-mix(in srgb,var(--studio-primary) 42%,var(--studio-border)); color:var(--studio-primary); }
+.connectionSlot > button { width:100%; justify-content:flex-start; text-align:left; }
+.connectionCreateAction { border:1px dashed color-mix(in srgb,var(--studio-primary) 52%,var(--studio-border)) !important; background:transparent !important; color:var(--studio-primary) !important; }
+@media(max-width:700px) { .selectionActions { top:8px; left:8px; } .selectionActions > button,.selectionMenuRoot > button { padding:6px 8px; gap:5px; font-size:11px; } }
+@media(max-height:500px) and (min-width:621px) {
+  .selectionActions { top:8px; left:8px; }
+  .selectionActions > button,.selectionMenuRoot > button { padding:6px 8px; gap:5px; font-size:11px; }
+}

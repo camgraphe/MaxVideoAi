@@ -100,7 +100,7 @@ export function buildAgentAccountDestinations(accountUrl: string): AgentAccountD
 
 export function buildAgentGenerationDestination(
   accountUrl: string,
-  surface: 'video' | 'image',
+  surface: 'video' | 'image' | 'audio',
   jobId: string,
 ): AgentOpenUrlDestination {
   if (
@@ -113,7 +113,7 @@ export function buildAgentGenerationDestination(
   }
 
   const trusted = parseTrustedAccountUrl(accountUrl);
-  const url = new URL(surface === 'image' ? '/app/image' : '/app', trusted.origin);
+  const url = new URL(surface === 'image' ? '/app/image' : surface === 'audio' ? '/app/audio' : '/app', trusted.origin);
   url.searchParams.set('job', jobId);
   return {
     type: 'open_url',

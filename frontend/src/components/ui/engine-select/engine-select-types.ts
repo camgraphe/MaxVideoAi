@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineCaps, Mode } from '@/types/engines';
 
@@ -10,6 +11,9 @@ export type EngineSelectControlPresentation = 'default' | 'workspace';
 export type EngineLaunchBadge = 'new';
 
 export interface EngineSelectProps {
+  /** Optional action trigger; reuses the family browser without composer controls. */
+  trigger?: { label: string; content: ReactNode; className?: string };
+  selectedIds?: string[];
   engines: EngineCaps[];
   engineId: string;
   onEngineChange: (engineId: string) => void;

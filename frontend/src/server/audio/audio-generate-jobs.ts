@@ -1,5 +1,5 @@
 import { AUDIO_SURFACE } from '@/lib/audio-generation';
-import { query, type QueryExecutor, withDbTransaction } from '@/lib/db';
+import { query, type QueryExecutor, type TransactionQueryExecutor, withDbTransaction } from '@/lib/db';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { AudioGenerationError } from './audio-generate-validation';
 
@@ -14,18 +14,23 @@ export type SourceJobRow = {
 };
 
 export type AudioJobPatch = {
+  durationSec?: number | null;
   progress?: number;
-  status?: 'pending' | 'running' | 'completed' | 'failed';
+  status?: 'pending' | 'running';
   message?: string | null;
   videoUrl?: string | null;
   audioUrl?: string | null;
   thumbUrl?: string | null;
   hasAudio?: boolean;
-  paymentStatus?: string;
   settingsSnapshotJson?: string | null;
 };
 
-type InitialAudioJobParams = {
+type PersistedAudioJobPatch = Omit<AudioJobPatch, 'status'> & {
+  status?: 'pending' | 'running' | 'completed' | 'failed';
+  paymentStatus?: 'paid_wallet';
+};
+
+export type InitialAudioJobParams = {
   userId: string;
   jobId: string;
   amountCents: number;
@@ -37,7 +42,7 @@ type InitialAudioJobParams = {
   vendorAccountId: string | null;
   engineId: string;
   engineLabel: string;
-  durationSec: number;
+  durationSec: number | null;
   promptSummary: string;
   initialThumb: string;
   aspectRatio: string | null;
@@ -56,10 +61,16 @@ export async function loadSourceJob(userId: string, sourceJobId: string): Promis
   return rows[0] ?? null;
 }
 
-export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promise<void> {
+async function persistActiveAudioJobPatch(jobId: string, patch: PersistedAudioJobPatch): Promise<boolean> {
   const assignments: string[] = [];
   const params: unknown[] = [];
 
+  if (patch.durationSec !== undefined) {
+    // The historical SQL column is INTEGER NOT NULL. Exact probe duration lives
+    // in settings_snapshot/mediaFacts; zero is the unknown-duration sentinel.
+    params.push(typeof patch.durationSec === 'number' && Number.isFinite(patch.durationSec) && patch.durationSec > 0 ? Math.ceil(patch.durationSec) : 0);
+    assignments.push(`duration_sec = $${params.length}`);
+  }
   if (typeof patch.progress === 'number') {
     params.push(Math.max(0, Math.min(100, Math.round(patch.progress))));
     assignments.push(`progress = $${params.length}`);
@@ -98,10 +109,36 @@ export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promi
     assignments.push(`settings_snapshot = $${params.length}::jsonb`);
   }
 
-  if (!assignments.length) return;
+  if (!assignments.length) return false;
 
   params.push(jobId);
-  await query(`UPDATE app_jobs SET ${assignments.join(', ')}, updated_at = NOW() WHERE job_id = $${params.length}`, params);
+  const jobIdParam = params.length;
+  params.push(AUDIO_SURFACE);
+  const rows = await query<{ job_id: string }>(
+    `UPDATE app_jobs
+        SET ${assignments.join(', ')}, updated_at = NOW()
+      WHERE job_id = $${jobIdParam}
+        AND surface = $${params.length}
+        AND status IN ('pending', 'running')
+        AND payment_status = 'paid_wallet'
+    RETURNING job_id`,
+    params
+  );
+  return Boolean(rows[0]);
+}
+
+export async function updateAudioJob(jobId: string, patch: AudioJobPatch): Promise<boolean> {
+  return persistActiveAudioJobPatch(jobId, patch);
+}
+
+type AudioTerminalJobPatch = Omit<AudioJobPatch, 'status'>;
+
+export function completeAudioJob(jobId: string, patch: AudioTerminalJobPatch): Promise<boolean> {
+  return persistActiveAudioJobPatch(jobId, { ...patch, status: 'completed', paymentStatus: 'paid_wallet' });
+}
+
+export function failAudioJob(jobId: string, patch: AudioTerminalJobPatch): Promise<boolean> {
+  return persistActiveAudioJobPatch(jobId, { ...patch, status: 'failed', paymentStatus: 'paid_wallet' });
 }
 
 async function insertInitialAudioJob(executor: QueryExecutor, params: InitialAudioJobParams): Promise<void> {
@@ -143,7 +180,7 @@ async function insertInitialAudioJob(executor: QueryExecutor, params: InitialAud
       params.billingProductKey,
       params.engineId,
       params.engineLabel,
-      params.durationSec,
+      params.durationSec ?? 0,
       params.promptSummary,
       params.initialThumb,
       params.aspectRatio,
@@ -157,35 +194,37 @@ async function insertInitialAudioJob(executor: QueryExecutor, params: InitialAud
 }
 
 export async function createInitialAudioJob(params: InitialAudioJobParams): Promise<void> {
-  await withDbTransaction(async (executor) => {
-    const reserveResult = await reserveWalletChargeInExecutor(executor, {
-      userId: params.userId,
-      amountCents: params.amountCents,
-      currency: params.currency,
-      description: params.description,
-      jobId: params.jobId,
-      surface: AUDIO_SURFACE,
-      billingProductKey: params.billingProductKey,
-      pricingSnapshotJson: params.pricingSnapshotJson,
-      applicationFeeCents: params.applicationFeeCents,
-      vendorAccountId: params.vendorAccountId,
-      stripePaymentIntentId: null,
-      stripeChargeId: null,
-    });
+  await withDbTransaction(executor => createInitialAudioJobInExecutor(executor, params));
+}
 
-    if (!reserveResult.ok) {
-      if (reserveResult.errorCode === 'currency_mismatch') {
-        throw new AudioGenerationError('Existing wallet balance uses a different currency.', {
-          status: 400,
-          code: 'wallet_currency_mismatch',
-        });
-      }
-      throw new AudioGenerationError('Insufficient wallet balance.', {
-        status: 402,
-        code: 'INSUFFICIENT_WALLET_FUNDS',
+export async function createInitialAudioJobInExecutor(executor: TransactionQueryExecutor, params: InitialAudioJobParams): Promise<void> {
+  const reserveResult = await reserveWalletChargeInExecutor(executor, {
+    userId: params.userId,
+    amountCents: params.amountCents,
+    currency: params.currency,
+    description: params.description,
+    jobId: params.jobId,
+    surface: AUDIO_SURFACE,
+    billingProductKey: params.billingProductKey,
+    pricingSnapshotJson: params.pricingSnapshotJson,
+    applicationFeeCents: params.applicationFeeCents,
+    vendorAccountId: params.vendorAccountId,
+    stripePaymentIntentId: null,
+    stripeChargeId: null,
+  });
+
+  if (!reserveResult.ok) {
+    if (reserveResult.errorCode === 'currency_mismatch') {
+      throw new AudioGenerationError('Existing wallet balance uses a different currency.', {
+        status: 400,
+        code: 'wallet_currency_mismatch',
       });
     }
+    throw new AudioGenerationError('Insufficient wallet balance.', {
+      status: 402,
+      code: 'INSUFFICIENT_WALLET_FUNDS',
+    });
+  }
 
-    await insertInitialAudioJob(executor, params);
-  });
+  await insertInitialAudioJob(executor, params);
 }

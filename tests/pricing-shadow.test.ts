@@ -123,6 +123,15 @@ test('registry publication shadow additions are reproducible through the canonic
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
+test('the pricing audit reports the reviewed Gemini refresh without failing the release gate', () => {
+  const result = spawnSync('pnpm', ['--silent', 'pricing:audit'], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  assert.match(result.stdout, /4 approved changes; 0 mismatches/u);
+});
+
 test('canonical shadow quotes match frozen outputs except the approved Gemini Omni 1.1 refresh', async () => {
   const matrixPath = 'frontend/src/lib/pricing-audit/matrix.ts';
   assert.equal(existsSync(matrixPath), true, `${matrixPath} should exist`);
@@ -134,6 +143,8 @@ test('canonical shadow quotes match frozen outputs except the approved Gemini Om
   ];
   const matrix = await buildPricingAuditMatrix(rows);
   assert.equal(matrix.rows.length > 0, true);
+  assert.equal(matrix.summary.approvedChanges, 4);
+  assert.equal(matrix.summary.mismatches, 0);
   assert.deepEqual(
     matrix.rows
       .filter((row) => row.status !== 'match')
@@ -142,6 +153,7 @@ test('canonical shadow quotes match frozen outputs except the approved Gemini Om
         currentTotalCents: row.currentTotalCents,
         canonicalTotalCents: row.canonicalTotalCents,
         deltaCents: row.deltaCents,
+        status: row.status,
       })),
     [
       {
@@ -149,34 +161,38 @@ test('canonical shadow quotes match frozen outputs except the approved Gemini Om
         currentTotalCents: 130,
         canonicalTotalCents: 132,
         deltaCents: 2,
+        status: 'approved-change',
       },
       {
         scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:plus',
         currentTotalCents: 123,
         canonicalTotalCents: 125,
         deltaCents: 2,
+        status: 'approved-change',
       },
       {
         scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:pro',
         currentTotalCents: 117,
         canonicalTotalCents: 119,
         deltaCents: 2,
+        status: 'approved-change',
       },
       {
         scenarioId: 'estimator:gemini-omni-flash:10:720p',
         currentTotalCents: 130,
         canonicalTotalCents: 132,
         deltaCents: 2,
+        status: 'approved-change',
       },
     ]
   );
 });
 
-test('canonical audit delegates quote projection to the shared admin-safe projector', () => {
+test('canonical audit delegates to the explicit historical projector without changing the live admin default', () => {
   const collectorSource = readFileSync('frontend/src/lib/pricing-audit/canonical-collectors.ts', 'utf8');
   const projectorSource = readFileSync('frontend/server/pricing-admin/canonical-scenarios.ts', 'utf8');
 
-  assert.match(collectorSource, /quoteCanonicalAdminScenarios/);
+  assert.match(collectorSource, /quoteHistoricalCanonicalAuditScenarios/);
   assert.doesNotMatch(collectorSource, /quoteCanonicalPricing|resolvePricingPolicy|buildCanonicalPricingFacts|collectLegacyPricingOutputs/);
   assert.match(projectorSource, /buildCanonicalPricingFacts/);
   assert.match(projectorSource, /quoteCanonicalPricing/);

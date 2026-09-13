@@ -7,6 +7,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { createHash, randomUUID } from 'crypto';
+import { createReadStream } from 'node:fs';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -728,13 +729,14 @@ export async function createSignedUploadUrl(params: {
   };
 }
 
-export async function getStorageObjectMetadata(key: string): Promise<{ size: number | null; mime: string | null }> {
+export async function getStorageObjectMetadata(key: string, signal?: AbortSignal): Promise<{ size: number | null; mime: string | null }> {
   const client = getS3Client();
   const response = await client.send(
     new HeadObjectCommand({
       Bucket: S3_BUCKET,
       Key: key,
-    })
+    }),
+    { abortSignal: signal }
   );
   return {
     size: typeof response.ContentLength === 'number' ? response.ContentLength : null,
@@ -805,4 +807,90 @@ export async function createSignedDownloadUrl(
       : {}),
   });
   return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+}
+const OWNED_MEDIA_STORAGE_PREFIXES = [
+  'renders/images',
+  'renders/thumbs',
+  'renders/previews',
+  'renders/keyframes',
+  'storyboard-template-references',
+  'normalized-references',
+  'background-removal',
+  'timeline-exports',
+  'user-asset-thumbs',
+  'media-assets',
+  'user-assets',
+  'upscale',
+  'angle',
+  'renders',
+  'files',
+] as const;
+
+export function isOwnedMediaStorageKey(params: { key: string; userId: string }): boolean {
+  if (!params.key || !params.userId) return false;
+  return OWNED_MEDIA_STORAGE_PREFIXES.some((prefix) => isStorageKeyWithinUserPrefix({
+    key: params.key,
+    prefix,
+    userId: params.userId,
+  }));
+}
+
+export function ownedMediaStorageKeyForUrl(params: { url: string; userId: string }): string | null {
+  const key = extractObjectKeyFromUrl(params.url);
+  return key && isOwnedMediaStorageKey({ key, userId: params.userId }) ? key : null;
+}
+
+export async function uploadFilePath(params: {
+  path: string;
+  sizeBytes: number;
+  mime: string;
+  userId?: string | null;
+  fileName?: string | null;
+  prefix?: string;
+  cacheControl?: string;
+  acl?: string | null;
+}): Promise<{ key: string; url: string }> {
+  if (!Number.isSafeInteger(params.sizeBytes) || params.sizeBytes <= 0) {
+    throw new StorageUploadError('Cannot upload an empty or invalid file.', {
+      prefix: params.prefix ?? 'files',
+      userId: params.userId ?? 'anonymous',
+      originalFileName: params.fileName ?? null,
+    });
+  }
+
+  const client = getS3Client();
+  const key = buildObjectKey({
+    prefix: params.prefix ?? 'files',
+    userId: params.userId ?? 'anonymous',
+    leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
+  });
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    Body: createReadStream(params.path),
+    ContentLength: params.sizeBytes,
+    ContentType: params.mime || 'application/octet-stream',
+    CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
+  });
+
+  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
+  if (acl) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
+    command.input.ACL = acl;
+  }
+
+  try {
+    await client.send(command);
+  } catch {
+    throw new StorageUploadError('Failed to upload file to storage.', {
+      key,
+      keyBytes: getObjectKeySizeBytes(key),
+      prefix: params.prefix ?? 'files',
+      userId: params.userId ?? 'anonymous',
+      originalFileName: params.fileName ?? null,
+    });
+  }
+
+  return { key, url: buildPublicUrl(key) };
 }

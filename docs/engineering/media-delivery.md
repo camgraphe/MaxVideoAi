@@ -39,6 +39,7 @@ can make it the LCP element even when its weight is unchanged.
 | Model hero playback | `frontend/components/marketing/ModelHeroMedia.client.tsx` |
 | Shared public playback policy and observations | `frontend/lib/public-video-playback.ts` |
 | Shared browser attempt/fallback lifecycle | `frontend/components/media/usePublicVideoPlayback.ts` |
+| App curated demonstration cards / selected preview | `frontend/components/media/AppDemoCardMedia.client.tsx` / `AppDemoVideo.client.tsx` |
 | Manual watch/comparison controls | `frontend/components/media/usePublicVideoControls.ts` |
 | Watch / native comparison presentation | `frontend/components/watch/WatchVideoPlayer.tsx` / `frontend/components/media/PublicVideoPlayer.client.tsx` |
 | Optimized poster URLs | `frontend/lib/media-helpers.ts` and `frontend/config/image-optimizer.json` |
@@ -59,11 +60,39 @@ can make it the LCP element even when its weight is unchanged.
 
 Playback hooks stay client-side; encoding, storage and database work stay server-side. Pages compose these owners. Do not put provider, pricing, storage or encoding responsibilities in a playback component. Route-specific workspace behavior stays under its existing `_hooks`, `_lib` and `_components` boundaries.
 
+### Demonstration media inside the app
+
+Image and Audio newcomer samples use separate editorial starter collections and a
+bundled public fallback; see `app-starter-media.md` for ownership, preparation,
+playlist migration, original artwork provenance and validation limits.
+
+Curated workspace examples use `AppDemoCardMedia`: responsive lazy posters remain
+visible at rest, and a video element mounts only for visible hover playback intent.
+The existing `useExampleCardPlayback` owner applies hidden-tab, reduced-motion and
+Save-Data restrictions. A short preview takes precedence over the full source.
+Selecting Play in the main preview mounts `AppDemoVideo`, which consumes the shared
+public rendition selector and exact-original error fallback. Personal media retain
+their existing reader, and download/reuse/edit URLs remain originals.
+
+Replacing an app demonstration automatically retains these loading rules, but does
+not automatically encode the replacement. Verify the exact original selected by the
+app reader, register that source in `public-video-sources.json`, then use the explicit
+asset-scoped prepare/review/publish/HTTP-check/activate lifecycle below. Unknown or
+unprepared sources use the exact original. Do not infer app rendition coverage from
+the homepage coverage gate. Keep posters versioned when their bytes change.
+
+The no-idle-video boundary is covered by `tests/app-demo-media-contract.test.ts`.
+Browser smoke confirmed no mounted video on an idle app sample at desktop width;
+this is a loading-policy check, not a measured Core Web Vitals improvement. Comparable
+production cold/warm measurements and Safari/iOS playback remain rollout checks.
+
 ## Original, thumbnail and preview are different contracts
 
 - Keep the durable original URL available for downloads, editing and precise inspection. A presentation optimization must not silently substitute a low-resolution derivative in these actions.
 - Use a thumbnail sized for a grid or reference slot. A missing thumbnail is a repair condition; do not eagerly fetch a large original for every small tile.
-- Angle and Character Builder image pickers request `kind=image` from `/api/user-assets`; the existing user-owned listing applies the kind filter before its limit. Keep unfiltered API callers unchanged. `LibraryImageThumbnail.client.tsx` displays stored `thumbUrl` directly and lazily, with exact-original fallback for absent or failed thumbnails. It must not proxy private/signed thumbnails through the public image optimizer or replace the original asset passed to selection/generation. `isLibraryImageAsset` supports legacy responses while rejecting explicit video/audio kinds.
+- Angle and Character Builder image pickers request `kind=image` from `/api/media-library/assets` through the shared media-library client. They load 30 items initially and expose a localized load-more control while the response has another cursor page. Upscale uses the same 30-item saved-asset pages and keeps its complementary generated-video jobs request on the initial load; loading another saved-asset page does not refetch those jobs. `LibraryImageThumbnail.client.tsx` displays stored `thumbUrl` directly and lazily, with exact-original fallback for absent or failed thumbnails. It must not proxy private/signed thumbnails through the public image optimizer or replace the original asset passed to selection/generation. `isLibraryImageAsset` supports legacy responses while rejecting explicit video/audio kinds. Both page and modal layouts of `AssetLibraryBrowser` use this reader for stored images and video posters; a poster fallback remains an image and must never load the original video as an image.
+- Exact saved-state checks through `/api/media-library/assets?limit=1&originUrl=...` use a bounded origin lookup. It reads canonical `media_assets` first and falls back to `user_assets` for legacy compatibility, with account, kind and source filters applied in each lookup. This path does not scan `job_outputs` or run the paginated listing's cross-source window. The general paginated listing remains the compatibility owner for merged ordering and deduplication; qualify any rewrite of that query with representative production `EXPLAIN (ANALYZE, BUFFERS)` evidence.
+- The canonical `/api/media-library/assets` GET reads already-migrated `media_assets`, `job_outputs`, `app_jobs`, and legacy `user_assets` tables. It passes `ensureSchema: false` for both paginated and exact-origin reads so an authenticated request never waits for request-time DDL. The server listing helpers retain schema setup by default for legacy and mutation-adjacent callers. A new database must use the explicit application bootstrap and ordered Neon migrations before serving Media.
 - Existing video grid previews are short, silent and deliberately lower cadence/resolution. They are not suitable evidence of a model's full motion quality or audio.
 - Use a representative full-duration rendition for a model demonstration after its derivative has passed the measured media gates, explicit visual/audio review, public HTTP readiness and activation. A profile with a validated savings omission deliberately uses the original.
 - Preserve private/signed URL behavior. Public image optimization does not forward a user's authorization headers; do not strip signatures or publish a private source to make optimization work.

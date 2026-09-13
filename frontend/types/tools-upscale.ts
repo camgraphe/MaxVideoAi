@@ -1,3 +1,4 @@
+import type { AcceptedToolQuote } from '@/lib/toolbox/quote';
 export type UpscaleMediaType = 'image' | 'video';
 
 export type UpscaleToolEngineId =
@@ -15,6 +16,8 @@ export type UpscaleTargetResolution = '720p' | '1080p' | '1440p' | '2160p';
 export type UpscaleOutputFormat = 'jpg' | 'png' | 'webp' | 'mp4' | 'webm' | 'mov' | 'gif';
 
 export interface UpscaleToolRequest {
+  requestId?: string;
+  acceptedQuote?: AcceptedToolQuote;
   mediaType: UpscaleMediaType;
   mediaUrl: string;
   engineId?: UpscaleToolEngineId;
@@ -56,6 +59,7 @@ export interface UpscaleToolPricing {
 }
 
 export interface UpscaleToolResponse {
+  status?: 'pending' | 'completed' | 'failed';
   ok: boolean;
   jobId?: string | null;
   engineId: UpscaleToolEngineId;

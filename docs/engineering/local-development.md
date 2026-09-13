@@ -26,6 +26,7 @@ The main product implementation lives under `frontend/`. Engine selection drives
 ## Run the mock contract server
 
 `mock-server.js` is retained for deterministic `/api/engines` and `/api/preflight` responses backed by `fixtures/`. It is useful for contract work; it is not the production backend.
+Its preflight response always uses standard pricing; legacy membership tiers in a request are accepted only for compatibility and never change the total.
 
 ```bash
 pnpm install

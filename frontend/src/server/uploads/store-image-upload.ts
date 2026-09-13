@@ -91,6 +91,7 @@ type NormalizedImageUpload = {
 };
 
 type ExistingUploadRow = {
+  public_id?: string | null;
   asset_id: string;
   url: string;
   mime_type: string | null;
@@ -101,6 +102,7 @@ type ExistingUploadRow = {
 };
 
 export type StoredImageUploadRouteAsset = {
+  canonicalAssetId?: string | null;
   assetId: string;
   url: string;
   width: number;
@@ -517,6 +519,7 @@ export function createStoreImageUploadService(
           height,
           sizeBytes,
           thumbUrl: imageThumbUrl,
+          metadata: { mediaFacts: { source: 'probe', width, height } },
         })
         .catch(() => {
           dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');
@@ -564,6 +567,7 @@ export async function loadStoredImageUploadRouteAsset(params: {
     await ensureAssetSchema();
     const assets = await query<ExistingUploadRow>(
       `SELECT ua.asset_id,
+              ma.public_id,
               ua.url,
               ua.mime_type,
               ua.width,
@@ -586,6 +590,7 @@ export async function loadStoredImageUploadRouteAsset(params: {
     }
     return {
       assetId: asset.asset_id,
+      canonicalAssetId: asset.public_id,
       url: asset.url,
       width: asset.width,
       height: asset.height,

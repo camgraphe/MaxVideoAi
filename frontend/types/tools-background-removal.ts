@@ -1,3 +1,4 @@
+import type { AcceptedToolQuote } from '@/lib/toolbox/quote';
 export type BackgroundRemovalEngineId = 'bria-video-background-removal-v3';
 
 export type BackgroundRemovalStudioBackgroundColor =
@@ -25,6 +26,7 @@ export type BackgroundRemovalOutputCodec =
   | 'gif';
 
 export interface BackgroundRemovalToolRequest {
+  acceptedQuote?: AcceptedToolQuote;
   videoUrl: string;
   engineId?: 'bria-video-background-removal-v3';
   backgroundColor?: BackgroundRemovalStudioBackgroundColor;

@@ -18,9 +18,10 @@ export async function searchPlaylistCandidates(options: {
     `COALESCE(hidden, FALSE) = FALSE`,
     `visibility = 'public'`,
     `COALESCE(indexable, TRUE) = TRUE`,
-    `COALESCE(thumb_url, '') <> ''`,
+    `(COALESCE(thumb_url, '') <> '' OR (surface = 'audio' AND COALESCE(audio_url, '') <> ''))`,
     `(
       COALESCE(video_url, '') <> ''
+      OR (surface = 'audio' AND COALESCE(audio_url, '') <> '')
       OR COALESCE(surface, '') = 'image'
       OR COALESCE(render_ids::text, '') <> ''
       OR EXISTS (

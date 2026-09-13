@@ -4,6 +4,7 @@ import {
   resolveExampleFamilyId,
 } from '@/lib/model-families';
 import { getIndexablePlaylistSlugs } from '@/server/indexing';
+import { STARTER_MEDIA_SLUGS } from '@/lib/starter-media';
 import type {
   PlaylistKind,
   PlaylistRecord,
@@ -35,6 +36,9 @@ export function getPlaylistUsageTargets(slug: string): string[] {
   if (normalizedSlug === starterSlug) {
     targets.push('starter-tab');
   }
+  for (const [surface, starterMediaSlug] of Object.entries(STARTER_MEDIA_SLUGS)) {
+    if (normalizedSlug === starterMediaSlug) targets.push(`starter-${surface}`);
+  }
   if (normalizedSlug === examplesHubSlug || indexableSlugs.has(normalizedSlug)) {
     targets.push('examples-hub');
   }
@@ -61,6 +65,7 @@ export function getPlaylistUsageTargets(slug: string): string[] {
 export function isLockedPlaylistSlug(slug: string): boolean {
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) return false;
+  if (Object.values(STARTER_MEDIA_SLUGS).some(value => value === normalizedSlug)) return true;
   if (normalizedSlug === getStarterPlaylistSlug().toLowerCase()) {
     return true;
   }
@@ -77,6 +82,16 @@ export function derivePlaylistRuntimeMeta(slug: string, itemCount: number) {
   const normalizedSlug = slug.trim().toLowerCase();
   const starterSlug = getStarterPlaylistSlug().toLowerCase();
   const examplesHubSlug = getExamplesHubPlaylistSlug().toLowerCase();
+
+  const mediaSurface = Object.entries(STARTER_MEDIA_SLUGS).find(([, value]) => value === normalizedSlug)?.[0];
+  if (mediaSurface) return {
+    kind: 'core' as PlaylistKind,
+    surfaceRole: 'starter' as PlaylistSurfaceRole,
+    surfaceStatus: itemCount > 0 ? ('ready' as PlaylistSurfaceStatus) : ('empty' as PlaylistSurfaceStatus),
+    familyId: null, modelSlug: null,
+    helperText: 'Feeds newcomer samples in the app. Empty uses the bundled selection.',
+    drivesRoute: `/app/${mediaSurface}`, fallbackModelSlugs: [] as string[],
+  };
 
   if (normalizedSlug === starterSlug) {
     return {

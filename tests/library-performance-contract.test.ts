@@ -17,11 +17,12 @@ test('library page loads media in bounded pages instead of fetching hundreds upf
     'utf8'
   );
 
-  assert.match(helpersSource, /export const\s+LIBRARY_PAGE_SIZE\s*=\s*60/);
+  assert.match(helpersSource, /export const\s+LIBRARY_PAGE_SIZE\s*=\s*30/);
   assert.match(helpersSource, /export function buildSavedAssetsKey/);
   assert.match(helpersSource, /export function buildRecentOutputsKey/);
-  assert.match(dataHookSource, /savedAssetLimit/);
-  assert.match(dataHookSource, /recentOutputLimit/);
+  assert.match(dataHookSource, /useSWRInfinite/);
+  assert.match(dataHookSource, /previousPageData\.nextCursor/);
+  assert.match(dataHookSource, /activeQuery\.setSize/);
   assert.doesNotMatch(clientSource, /limit=200/);
 });
 
@@ -51,4 +52,15 @@ test('library video cards use thumbnails or placeholders in the grid', () => {
   assert.doesNotMatch(source, /<video[\s\S]*src=\{asset\.url\}[\s\S]*preload="metadata"/);
   assert.match(source, /asset\.thumbUrl\s*\?/);
   assert.match(source, /<Film\s+className=/);
+});
+
+test('library keeps contextual destinations in one scrollable mobile rail', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/library/AssetLibraryBrowser.tsx'),
+    'utf8'
+  );
+
+  assert.match(source, /<nav aria-label=\{toolsTitle\}/);
+  assert.match(source, /scrollbar-rail[^"\n]*flex-nowrap[^"\n]*overflow-x-auto[^"\n]*overscroll-x-contain/);
+  assert.match(source, /lg:block[^"\n]*lg:overflow-visible/);
 });

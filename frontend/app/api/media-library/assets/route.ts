@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canonicalMediaAssetFields, readMediaFacts } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { deleteLibraryAsset, listLibraryAssets, type MediaKind } from '@/server/media-library';
-
+import {
+  deleteLibraryAsset,
+  findLibraryAssetByOrigin,
+  listLibraryAssetPage,
+  type MediaKind,
+} from '@/server/media-library';
 export const runtime = 'nodejs';
 
 function normalizeKind(value: string | null): MediaKind | null {
@@ -15,14 +20,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, assets: [], error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let assets: Awaited<ReturnType<typeof listLibraryAssets>>;
+  let page: Awaited<ReturnType<typeof listLibraryAssetPage>>;
   try {
-    assets = await listLibraryAssets({
-      userId,
-      kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
-      source: req.nextUrl.searchParams.get('source'),
-      limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
-    });
+    const originUrl = req.nextUrl.searchParams.get('originUrl');
+    if (originUrl) {
+      const asset = await findLibraryAssetByOrigin({
+        userId,
+        originUrl,
+        kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
+        source: req.nextUrl.searchParams.get('source'),
+      }, { ensureSchema: false });
+      page = { items: asset ? [asset] : [], nextCursor: null, hasMore: false };
+    } else {
+      page = await listLibraryAssetPage({
+        userId,
+        kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
+        source: req.nextUrl.searchParams.get('source'),
+        limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+        cursor: req.nextUrl.searchParams.get('cursor'),
+        q: req.nextUrl.searchParams.get('q'),
+      }, { ensureSchema: false });
+    }
   } catch (error) {
     console.error('[media-library] failed to list assets', error);
     return NextResponse.json({ ok: false, assets: [], error: 'LOAD_FAILED' }, { status: 500 });
@@ -30,8 +48,10 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    assets: assets.map((asset) => ({
+    assets: page.items.map((asset) => ({
       id: asset.id,
+      ...canonicalMediaAssetFields(asset.publicId, asset.kind),
+      mediaFacts: readMediaFacts(asset.metadata.mediaFacts),
       url: asset.url,
       thumbUrl: asset.thumbUrl,
       previewUrl: asset.previewUrl,
@@ -46,6 +66,8 @@ export async function GET(req: NextRequest) {
       sourceOutputId: asset.sourceOutputId,
       createdAt: asset.createdAt,
     })),
+    nextCursor: page.nextCursor,
+    hasMore: page.hasMore,
   });
 }
 

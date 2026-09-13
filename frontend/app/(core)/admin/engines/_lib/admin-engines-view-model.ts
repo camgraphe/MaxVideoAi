@@ -208,8 +208,8 @@ export function buildOverviewCards(
     (acc, row) => {
       acc.total += row.acceptedCount + row.rejectedCount + row.completedCount + row.failedCount;
       acc.failed += row.failedCount;
-      acc.completed += row.completedCount;
-      acc.durationWeight += (row.averageDurationMs ?? 0) * row.completedCount;
+      acc.completed += row.observedSampleCount ?? 0;
+      acc.durationWeight += (row.averageDurationMs ?? 0) * (row.observedSampleCount ?? 0);
       return acc;
     },
     { total: 0, failed: 0, completed: 0, durationWeight: 0 }
@@ -253,9 +253,9 @@ export function buildOverviewCards(
       icon: ShieldAlert,
     },
     {
-      label: 'Avg completion',
+      label: 'Observed completion',
       value: formatDuration(weightedAverageDurationMs),
-      helper: `${formatNumber(attemptTotals.completed)} completed attempt${
+      helper: `${formatNumber(attemptTotals.completed)} observed completion${
         attemptTotals.completed === 1 ? '' : 's'
       } tracked`,
       icon: Clock3,
@@ -293,9 +293,10 @@ export function buildOperationalRows(
     const acceptedCount = metrics.reduce((sum, row) => sum + row.acceptedCount, 0);
     const rejectedCount = metrics.reduce((sum, row) => sum + row.rejectedCount, 0);
     const totalAttempts = acceptedCount + rejectedCount + completedCount + failedCount;
+    const observedCount = metrics.reduce((sum, row) => sum + (row.observedSampleCount ?? 0), 0);
     const averageDurationMs =
-      completedCount > 0
-        ? metrics.reduce((sum, row) => sum + (row.averageDurationMs ?? 0) * row.completedCount, 0) / completedCount
+      observedCount > 0
+        ? metrics.reduce((sum, row) => sum + (row.averageDurationMs ?? 0) * (row.observedSampleCount ?? 0), 0) / observedCount
         : null;
     const p95DurationMs = metrics.reduce<number | null>((max, row) => {
       if (row.p95DurationMs == null) return max;

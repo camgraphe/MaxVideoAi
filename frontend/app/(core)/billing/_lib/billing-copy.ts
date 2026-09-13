@@ -7,13 +7,30 @@ export const DEFAULT_BILLING_COPY = {
     testMode: 'Test Mode',
   },
   wallet: {
-    title: 'Add credits',
+    title: 'Wallet',
+    addCreditsTitle: 'Add credits',
     description: 'Your balance pays for successful renders only. Unused credits stay in your wallet.',
     balanceLabel: 'Current balance',
+    balanceReady: 'Available to create',
+    balanceLoading: 'Loading balance…',
+    balanceRefreshing: 'Refreshing balance…',
+    balanceUnavailable: 'Balance unavailable. Try again.',
+    guestBalance: 'Sign in to view your balance',
+    refreshBalance: 'Refresh balance',
+    stepChoose: 'Choose wallet credits',
+    stepChooseHint: 'Credits are stored in USD and do not expire while your account remains active.',
+    stepReview: 'Review payment',
+    stepReviewHint: 'Choose the currency charged by Stripe.',
+    paymentAmount: 'Payment amount',
+    creditsReceived: 'Credits received',
+    quoteCurrent: 'Current quote. Taxes, if applicable, are finalized by Stripe.',
+    quoteUnavailable: 'Finalized in Stripe Checkout',
+    hostedPaymentTitle: 'Secure Stripe Checkout',
+    hostedPaymentDescription: 'Cards and available local methods continue on Stripe.',
     addFunds: '{amount}',
     quickAmount: '{amount}',
     selectedAmount: 'Selected amount',
-    checkoutCta: 'Continue to secure Stripe Checkout · {amount}',
+    checkoutCta: 'Continue to secure Stripe Checkout',
     checkoutNote: 'Taxes and receipt are finalized by Stripe before payment.',
     firstTopupAmexNotice: 'For security reasons, American Express may be unavailable for a first top-up.',
     customLabel: 'Custom amount',
@@ -49,20 +66,6 @@ export const DEFAULT_BILLING_COPY = {
     quoteLoading: 'Fetching live totals…',
     quoteError: 'Unable to fetch FX quotes. Amount finalized at checkout.',
   },
-  membership: {
-    title: 'Member Status',
-    description:
-      'Status is automatic — no subscription. Calculated on a rolling 30 days of spend. Status updates daily based on your last 30 days of spend.',
-    defaultTier: 'Member',
-    savingsChip: 'You save {percent}%',
-    defaultLine: '{tier} — standard rate on every render.',
-    thresholdLine: '{tier} — spend {amount} / 30 days to save {percent}% on every eligible render.',
-    labels: {
-      member: 'Member',
-      plus: 'Plus',
-      pro: 'Pro',
-    },
-  },
   teams: {
     title: 'For Teams',
     description: 'Shared wallet & roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.',
@@ -78,9 +81,17 @@ export const DEFAULT_BILLING_COPY = {
     statusSoon: 'Coming soon',
   },
   receipts: {
-    title: 'Payment history',
-    subtitle: 'Wallet top-ups, render charges, refunds, and Stripe receipts where available.',
-    empty: 'No receipts yet.',
+    ledgerLabel: 'Billing documents',
+    title: 'Receipts & invoices',
+    subtitle: 'Download Stripe documents for wallet top-ups and review charges or refunds.',
+    openDocuments: 'Receipts & invoices',
+    empty: 'No payment documents or wallet activity yet.',
+    documentsEmpty: 'No wallet top-up documents yet.',
+    activityEmpty: 'No wallet activity yet.',
+    tabs: {
+      documents: 'Documents',
+      activity: 'Wallet activity',
+    },
     loading: 'Loading…',
     loadMore: 'Load more',
     exportCsv: 'Export CSV',
@@ -93,6 +104,7 @@ export const DEFAULT_BILLING_COPY = {
     },
     fields: {
       total: 'Total',
+      walletMovement: 'Wallet movement',
       tax: 'Tax',
       discount: 'Discount',
       document: 'Document',
@@ -102,6 +114,14 @@ export const DEFAULT_BILLING_COPY = {
     receiptLabel: 'Receipt',
     invoiceLabel: 'Invoice',
     contactSupport: 'Contact support',
+  },
+  checkoutReturn: {
+    successTitle: 'Payment returned',
+    cancelledTitle: 'Checkout cancelled',
+    refreshingDetail: 'Refreshing your balance and payment history…',
+    refreshedDetail: 'Latest wallet and payment history loaded.',
+    delayedDetail: 'Payment returned. Account updates may still be processing; refresh again shortly.',
+    cancelledDetail: 'No charge was completed. Your selected amount has been kept.',
   },
   refunds: {
     title: 'Protections',
@@ -117,7 +137,7 @@ export const DEFAULT_BILLING_COPY = {
       { question: 'Do I need a subscription?', answer: 'No. Pay as you go.' },
       { question: 'Can I buy just one small render?', answer: 'Yes — funds are debited per run from your $10 Starter balance.' },
       { question: 'Will my credits expire?', answer: 'Credits don’t expire while your account remains active.' },
-      { question: 'How do discounts work?', answer: 'Member status applies automatically based on your last 30 days of spend.' },
+      { question: 'Which price applies?', answer: 'New generations use standard pricing. The exact price is shown before confirmation.' },
     ],
     footnote:
       'VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners.',
@@ -142,4 +162,4 @@ export const DEFAULT_BILLING_COPY = {
   },
 };
 
-export type BillingCopy = Omit<typeof DEFAULT_BILLING_COPY, 'estimator'>;
+export type BillingCopy = typeof DEFAULT_BILLING_COPY;

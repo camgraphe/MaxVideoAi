@@ -1,7 +1,19 @@
 'use client';
 
 import clsx from 'clsx';
+import type { ReactNode } from 'react';
+import {
+  FileImage,
+  Images,
+  Palette,
+  Ratio,
+  Scan,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
+import { UIIcon } from '@/components/ui/UIIcon';
 import { formatCompactResolutionLabel } from '@/lib/resolution-labels';
 
 type ControlOption = {
@@ -12,6 +24,7 @@ type ControlOption = {
 
 interface ImageSettingsBarProps {
   density?: 'default' | 'workspace';
+  trailingControl?: ReactNode;
   numImages?: {
     value: number;
     options: ControlOption[];
@@ -48,77 +61,22 @@ interface ImageSettingsBarProps {
 type InlineControlKind = 'images' | 'aspect' | 'resolution' | 'format' | 'quality' | 'style';
 
 function ControlIcon({ kind }: { kind: InlineControlKind }) {
-  if (kind === 'images') {
-    return (
-      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-        <path d="M4.5 6.2h7v8h-7z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        <path d="M8.5 4.2h7v8h-2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (kind === 'aspect') {
-    return (
-      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-        <rect x="3.5" y="5.5" width="13" height="9" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M8 8v4m4-4v4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (kind === 'resolution') {
-    return (
-      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-        <rect x="3.5" y="4.5" width="13" height="11" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M7 9.8h6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (kind === 'quality') {
-    return (
-      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-        <path
-          d="M10 3.5l1.8 4 4.2.5-3.1 2.9.8 4.1-3.7-2.1-3.7 2.1.8-4.1L4 8l4.2-.5z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-  if (kind === 'style') {
-    return (
-      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-        <path
-          d="M5.5 13.5c1.8-3.6 4.2-6.4 7.4-8.5 1.2-.8 2.7.7 1.9 1.9-2.1 3.2-4.9 5.6-8.5 7.4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path d="M4.5 15.5c1.2.2 2.4-.1 3.2-.9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
-      <path
-        d="M5 4.5h10v11H5z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M7.5 8h5m-5 4h3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
+  const icons: Record<InlineControlKind, LucideIcon> = {
+    images: Images,
+    aspect: Ratio,
+    resolution: Scan,
+    format: FileImage,
+    quality: Sparkles,
+    style: Palette,
+  };
+  return <UIIcon icon={icons[kind]} size={16} strokeWidth={1.8} />;
 }
 
-function createInlineLabel(kind: InlineControlKind, label: string, compact: boolean) {
-  const showIcon = !compact || !['images', 'format'].includes(kind);
+function createInlineLabel(kind: InlineControlKind, label: string, compact: boolean, controlName: string) {
   return (
     <span className={clsx('inline-flex h-4 items-center leading-none', compact ? 'gap-1.5' : 'gap-2')}>
-      {showIcon ? <ControlIcon kind={kind} /> : null}
+      <ControlIcon kind={kind} />
+      <span className="sr-only">{controlName}: </span>
       <span className="block truncate leading-none">{label}</span>
     </span>
   );
@@ -141,9 +99,12 @@ function InlineControl({
   compact?: boolean;
   action?: boolean;
 }) {
+  const { t } = useI18n();
+  const names = { images: 'Images', aspect: 'Format', resolution: 'Resolution', format: 'File format', quality: 'Quality', style: 'Style' };
+  const controlName = t(`workspace.header.controlLabels.${kind}`, names[kind]) ?? names[kind];
   if (!options.length) return null;
   return (
-    <div className={compact ? 'min-w-0 flex-none' : 'min-w-0'}>
+    <div className={clsx(compact ? 'min-w-0 flex-none' : 'min-w-0', action && 'app-output-count')}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
@@ -153,6 +114,7 @@ function InlineControl({
               ? formatCompactResolutionLabel(String(option.label))
               : String(option.label),
             compact,
+            controlName,
           ),
         }))}
         value={value}
@@ -160,12 +122,12 @@ function InlineControl({
         disabled={disabled}
         className="min-w-0"
         buttonClassName={clsx(
-          'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
+          'min-h-0 rounded-[7px] border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
           action
-            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
-            : compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
+            ? 'h-11 !min-w-0 border-brand !bg-[image:var(--brand-gradient)] px-2.5 text-[11px] !text-on-brand shadow-card'
+            : compact ? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1.5 px-2.5 text-xs' : 'h-10 px-3 text-[12px]'
         )}
-        menuClassName="min-w-[12rem]"
+        menuClassName={clsx('min-w-[12rem]', compact && 'app-experience app-settings-menu')}
         menuPlacement="top"
         portal={compact}
         hideChevron={compact}
@@ -199,6 +161,7 @@ export function ImageCountControl({
 
 export function ImageSettingsBar({
   density = 'default',
+  trailingControl,
   numImages,
   aspectRatio,
   resolution,
@@ -213,7 +176,7 @@ export function ImageSettingsBar({
         data-settings-density={density}
         className={clsx(
           'flex items-center',
-          workspaceDensity ? 'w-max min-w-full flex-nowrap gap-1.5' : 'flex-wrap gap-2'
+          workspaceDensity ? 'w-full flex-wrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
         {numImages ? (
@@ -271,6 +234,7 @@ export function ImageSettingsBar({
             onChange={(value) => outputFormat.onChange(String(value))}
           />
         ) : null}
+        {trailingControl}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { safeInternalReturnTarget } from '@/lib/auth-return-target';
 import { LOCALE_OPTIONS, type AuthMode, type Locale } from './login-copy';
 
 export const DEFAULT_NEXT_PATH = '/generate';
@@ -38,7 +39,7 @@ export function formatTemplate(template: string, replacements: Record<string, st
 
 export function sanitizeNextPath(candidate: string | null | undefined): string {
   if (typeof candidate !== 'string') return DEFAULT_NEXT_PATH;
-  const trimmed = candidate.trim();
+  const trimmed = safeInternalReturnTarget(candidate, DEFAULT_NEXT_PATH);
   if (!trimmed.startsWith('/')) return DEFAULT_NEXT_PATH;
   if (trimmed === '/' || trimmed.startsWith('/login') || trimmed.startsWith('/api') || trimmed.startsWith('/_next')) {
     return DEFAULT_NEXT_PATH;

@@ -324,7 +324,7 @@ test('Luma Ray 3.2 snapshot uses fal reference totals with rounded-up margin', a
   assert.equal(snapshot.meta?.resolution, '1080p');
 });
 
-test('Luma Ray 3.2 snapshot applies membership discount after fal reference margin', async () => {
+test('Luma Ray 3.2 snapshot uses standard live pricing for a stale membership tier', async () => {
   const snapshot = await computePricingSnapshot({
     engine: getEngine('luma-ray-3-2'),
     mode: 't2v',
@@ -337,9 +337,9 @@ test('Luma Ray 3.2 snapshot applies membership discount after fal reference marg
 
   assert.equal(snapshot.base.amountCents, 400);
   assert.equal(snapshot.subtotalBeforeDiscountCents, 520);
-  assert.equal(snapshot.discount?.amountCents, 26);
-  assert.equal(snapshot.totalCents, 494);
-  assert.equal(snapshot.platformFeeCents, 94);
+  assert.equal(snapshot.discount?.amountCents ?? 0, 0);
+  assert.equal(snapshot.totalCents, 520);
+  assert.equal(snapshot.platformFeeCents, 120);
   assert.equal(snapshot.vendorShareCents, 400);
 });
 

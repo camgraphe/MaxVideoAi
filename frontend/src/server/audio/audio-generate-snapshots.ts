@@ -40,7 +40,12 @@ export function buildInitialAudioSettingsSnapshot(params: {
 }) {
   const { durationSec, normalized, sourceJobId, sourceVideoUrl } = params;
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
+    voiceModel: normalized.voiceModel,
+    minimaxVoiceId: normalized.minimaxVoiceId,
+    lyrics: normalized.lyrics,
+    requestedDurationSec: normalized.durationSec,
+    measuredDurationSec: null,
     surface: 'audio',
     pack: normalized.pack,
     prompt: normalized.prompt,
@@ -48,7 +53,7 @@ export function buildInitialAudioSettingsSnapshot(params: {
     intensity: normalized.intensity,
     musicModel: normalized.musicModel,
     musicBpm: normalized.musicBpm,
-    durationSec,
+    durationSec: normalized.pack === 'song' ? null : durationSec,
     script: normalized.script,
     musicEnabled: normalized.musicEnabled,
     exportAudioFile: normalized.exportAudioFile,

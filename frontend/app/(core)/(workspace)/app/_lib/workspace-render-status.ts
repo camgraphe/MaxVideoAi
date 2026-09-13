@@ -1,3 +1,4 @@
+import { generationStage, isStaleGenerationUpdate, mergeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
@@ -12,6 +13,8 @@ export type RenderHeroCandidate = {
 
 export type PolledJobStatus = {
   status?: LocalRender['status'] | null;
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress?: number | null;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
@@ -103,6 +106,8 @@ export function convertJobToLocalRender(job: Job, options: LocalRenderFromJobOpt
     durationSec: job.durationSec,
     prompt: job.prompt ?? '',
     progress: normalizedProgress,
+    observation: job.observation ?? { stage: generationStage(job.status) },
+    etaSource: job.etaSource,
     message,
     status: normalizedStatus,
     videoUrl: job.videoUrl ?? undefined,
@@ -140,8 +145,10 @@ export function getRendersNeedingStatusRefresh(renders: LocalRender[]): LocalRen
 }
 
 export function applyPolledJobStatusToRender(render: LocalRender, status: PolledJobStatus): LocalRender {
+  if (isStaleGenerationUpdate(render, status)) return render;
   return {
     ...render,
+    observation: mergeGenerationObservation(render.observation, status.observation),
     status: status.status ?? render.status,
     progress: status.progress ?? render.progress,
     readyVideoUrl: status.videoUrl ?? render.readyVideoUrl,
@@ -166,8 +173,10 @@ export function applyPolledJobStatusToSelectedPreview(
     return current;
   }
 
+  if (isStaleGenerationUpdate(current, status)) return current;
   return {
     ...current,
+    observation: mergeGenerationObservation(current.observation, status.observation),
     id: render.jobId,
     localKey: render.localKey,
     status: status.status ?? current.status,
@@ -218,8 +227,13 @@ export function mergeRecentJobsIntoLocalRenders(
 
     if (targetIndex !== undefined) {
       const existing = next[targetIndex];
+      if (isStaleGenerationUpdate(existing, converted)) return;
       const merged: LocalRender = {
         ...converted,
+        // A feed refresh has no fresh check evidence. Preserve the last status check and ETA source.
+        observation: mergeGenerationObservation(existing.observation, converted.observation),
+        etaSource: existing.etaSource ?? converted.etaSource,
+        etaSeconds: existing.etaSeconds ?? converted.etaSeconds,
         localKey: existing.localKey ?? converted.localKey,
         batchId: existing.batchId ?? converted.batchId,
       };

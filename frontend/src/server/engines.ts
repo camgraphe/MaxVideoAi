@@ -37,6 +37,7 @@ import {
 } from '@/server/engine-configuration-projection';
 import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
+import { getReadOnlyConfiguredEngine } from '@/server/agent-api/read-only-engine-catalog';
 
 async function getConfiguredEnginesForBase(
   baseEngines: EngineCaps[],
@@ -144,17 +145,29 @@ export type TrustedPreflightMediaPricingFacts = Readonly<{
 export type ComputeConfiguredPreflightOptions = Readonly<{
   resolvedEngine?: EngineCaps;
   trustedMediaPricingFacts?: TrustedPreflightMediaPricingFacts;
+  bootstrap?: boolean;
 }>;
+
+async function getConfiguredEngineForPreflight(
+  engineId: string,
+  includeDisabled: boolean,
+  bootstrap: boolean,
+): Promise<EngineCaps | undefined> {
+  if (bootstrap) return getConfiguredEngine(engineId, includeDisabled);
+  return getReadOnlyConfiguredEngine(engineId, includeDisabled);
+}
 
 export async function computeConfiguredPreflight(
   request: PreflightRequest,
   options: ComputeConfiguredPreflightOptions = {},
 ): Promise<PreflightResponse> {
   const engineId = typeof request.engine === 'string' ? request.engine : '';
-  const resolvedEngine = options.resolvedEngine ?? await getConfiguredEngine(engineId);
+  const bootstrap = options.bootstrap !== false;
+  const resolvedEngine = options.resolvedEngine
+    ?? await getConfiguredEngineForPreflight(engineId, false, bootstrap);
   const engine = resolvedEngine?.id === engineId ? resolvedEngine : undefined;
   if (!engine) {
-    const disabledEngine = await getConfiguredEngine(engineId, true);
+    const disabledEngine = await getConfiguredEngineForPreflight(engineId, true, bootstrap);
     if (disabledEngine) {
       return {
         ok: false,

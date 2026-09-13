@@ -78,7 +78,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.match(assetFieldGuidanceSource, /export function AssetFieldGuidance/, 'AssetFieldGuidance should own advisory copy rendering');
   assert.match(assetFieldGuidanceSource, /<AssetFieldTooltip/, 'field guidance should use the shared tooltip affordance');
   assert.match(
-    assetDropzoneSource,
+    readFileSync('frontend/components/asset-dropzone/asset-field-helper-lines.ts', 'utf8'),
     /const maxVideoDuration = field\.maxDurationSec \?\? limits\.videoMaxDurationSec;[\s\S]*assetCopy\.secondsMax\(maxVideoDuration\)/,
     'video helper copy should surface field-level duration limits such as Seedance reference videos'
   );
@@ -200,6 +200,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   );
   assert.match(assetDropzoneHelpersSource, /export function resolveSlotLabel/, 'asset dropzone helpers should own slot labels');
   assert.match(assetDropzoneHelpersSource, /export function readMediaDuration/, 'asset dropzone helpers should own browser duration probing');
+  assert.match(assetDropzoneTypesSource, /export type AssetDropzoneSlotProps/, 'both slot presentations share the types owner');
   assert.match(assetDropzoneTypesSource, /export type AssetSlotAttachment/, 'asset dropzone types should own public attachment types');
 
   const mediaLightboxSource = readFileSync(mediaLightboxPath, 'utf8');
@@ -210,7 +211,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.match(mediaLightboxSource, /<MediaLightboxEntryCard/, 'MediaLightbox should compose a focused entry card');
   assert.doesNotMatch(mediaLightboxSource, /function formatPromptPreview|function RenderDecorVisual|function ActionCard/, 'MediaLightbox should not own entry rendering helpers');
   assert.match(mediaLightboxEntryCardSource, /export function MediaLightboxEntryCard/, 'MediaLightboxEntryCard should own entry rendering');
-  assert.match(mediaLightboxEntryCardSource, /function RenderDecorVisual/, 'entry card should own decorative render visuals');
+  assert.match(mediaLightboxEntryCardSource, /function ActionCard/, 'entry card should own result actions');
   assert.match(mediaLightboxHelpersSource, /export function formatPromptPreview/, 'media lightbox helpers should own prompt formatting');
   assert.match(mediaLightboxHelpersSource, /export function resolveStatusLabel/, 'media lightbox helpers should own status labels');
   assert.match(mediaLightboxTypesSource, /export interface MediaLightboxEntry/, 'media lightbox types should own public entry contracts');
@@ -231,6 +232,8 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.match(quadPreviewHelpersSource, /export function buildTilesWithPlaceholders/, 'quad preview helpers should own placeholder composition');
   assert.match(quadPreviewTypesSource, /export interface QuadPreviewTile/, 'quad preview types should own public tile contracts');
 
+  assert.match(assetDropzoneSource, /buildAssetFieldHelperLines/, 'display guidance belongs to the focused metadata helper');
+  assert.doesNotMatch(assetDropzoneSource, /assetCopy\.secondsRequired|assetCopy\.upToFiles/, 'display metadata must not grow back into the uploader');
   assert.ok(assetDropzoneSource.split('\n').length <= 460, 'AssetDropzone should stay below 460 lines');
   assert.ok(assetFieldGuidanceSource.split('\n').length <= 80, 'AssetFieldGuidance should stay below 80 lines');
   assert.ok(assetFieldTooltipSource.split('\n').length <= 90, 'AssetFieldTooltip should stay below 90 lines');

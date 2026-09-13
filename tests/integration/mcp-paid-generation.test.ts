@@ -103,6 +103,9 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     paidGeneration: true,
     trial: false,
     referenceUploads: true,
+    montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
   });
   const mediaIdentity = principal('p11-media');
   await addTopup(postgres.pool, mediaIdentity.userId, 1_100_000);
@@ -125,7 +128,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     pool: postgres.pool, userId: mediaIdentity.userId,
     quoteId: t2iQuoteId, input: t2iInput, prepared: t2iPrepared,
   });
-  assert.equal(t2iPricing.membershipTier, 'plus');
+  assert.equal(t2iPricing.membershipTier, 'member');
   const t2iConfirmed = await callConfirmed(media.client, t2iQuoteId);
   assert.notEqual(t2iConfirmed.isError, true, JSON.stringify(t2iConfirmed.structuredContent));
   assert.equal(structured(t2iConfirmed).status, 'completed');

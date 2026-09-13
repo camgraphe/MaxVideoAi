@@ -1,0 +1,80 @@
+{
+  "decision": "Audio provider cost \u00d73, rounded upward to increments of 5 USD cents; historical fixture remains unchanged.",
+  "rows": [
+    {
+      "id": "pricing-hub-audio:audio-cinematic-voice:120",
+      "previousCents": 415,
+      "totalCents": 500
+    },
+    {
+      "id": "pricing-hub-audio:audio-cinematic-voice:30",
+      "previousCents": 110,
+      "totalCents": 135
+    },
+    {
+      "id": "pricing-hub-audio:audio-cinematic-voice:60",
+      "previousCents": 218,
+      "totalCents": 265
+    },
+    {
+      "id": "pricing-hub-audio:audio-cinematic:120",
+      "previousCents": 320,
+      "totalCents": 385
+    },
+    {
+      "id": "pricing-hub-audio:audio-cinematic:30",
+      "previousCents": 85,
+      "totalCents": 105
+    },
+    {
+      "id": "pricing-hub-audio:audio-cinematic:60",
+      "previousCents": 170,
+      "totalCents": 205
+    },
+    {
+      "id": "pricing-hub-audio:audio-music-only:120",
+      "previousCents": 20,
+      "totalCents": 25
+    },
+    {
+      "id": "pricing-hub-audio:audio-music-only:30",
+      "previousCents": 10,
+      "totalCents": 15
+    },
+    {
+      "id": "pricing-hub-audio:audio-music-only:60",
+      "previousCents": 20,
+      "totalCents": 25
+    },
+    {
+      "id": "pricing-hub-audio:audio-voice-clone:120",
+      "previousCents": 95,
+      "totalCents": 115
+    },
+    {
+      "id": "pricing-hub-audio:audio-voice-clone:30",
+      "previousCents": 25,
+      "totalCents": 30
+    },
+    {
+      "id": "pricing-hub-audio:audio-voice-clone:60",
+      "previousCents": 48,
+      "totalCents": 60
+    },
+    {
+      "id": "pricing-hub-audio:audio-voice-only:120",
+      "previousCents": 95,
+      "totalCents": 115
+    },
+    {
+      "id": "pricing-hub-audio:audio-voice-only:30",
+      "previousCents": 25,
+      "totalCents": 30
+    },
+    {
+      "id": "pricing-hub-audio:audio-voice-only:60",
+      "previousCents": 48,
+      "totalCents": 60
+    }
+  ]
+}

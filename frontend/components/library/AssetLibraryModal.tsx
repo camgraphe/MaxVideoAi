@@ -1,7 +1,11 @@
 'use client';
 
-import clsx from 'clsx';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { referencePickerCopy } from './reference-picker-copy';
+import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { assetLibraryLocaleDefaults, assetLibraryActionsCopy } from './asset-library-copy';
 import type { ChangeEvent } from 'react';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { Button } from '@/components/ui/Button';
@@ -42,15 +46,19 @@ export type UserAsset = {
 
 export type AssetLibraryModalProps = {
   fieldLabel: string;
+  target?: { scope: string; role?: 'start' | 'end'; capacity?: number; slotIndex?: number };
   assetType: AssetLibraryKind;
   assets: UserAsset[];
   isLoading: boolean;
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
   error: string | null;
   onClose: () => void;
-  onSelect: (asset: UserAsset) => void;
+  onSelect: (asset: UserAsset) => void | string | Promise<void | string>;
   source: AssetLibrarySource;
   onSourceChange: (source: AssetLibrarySource) => void;
   onRefresh: (source?: AssetLibrarySource) => void;
+  onLoadMore?: () => void;
   onDelete: (asset: UserAsset) => Promise<void> | void;
   deletingAssetId: string | null;
 };
@@ -72,7 +80,7 @@ const DEFAULT_ASSET_LIBRARY_COPY = {
   refresh: 'Refresh',
   close: 'Close',
   fieldFallback: 'Asset',
-  sourcesTitle: 'Library',
+  sourcesTitle: 'Media',
   toolsTitle: 'Create or transform',
   toolsDescription: 'Open another workspace to prepare a better source before importing it here.',
   emptySearch: 'No assets match this search.',
@@ -214,24 +222,35 @@ function getUploadFailureMessage(assetType: AssetLibraryKind, error: unknown, fa
 
 export function AssetLibraryModal({
   fieldLabel,
+  target,
   assetType,
   assets,
   isLoading,
+  isLoadingMore = false,
+  hasMore = false,
   error,
   onClose,
   onSelect,
   source,
   onSourceChange,
   onRefresh,
-  onDelete,
-  deletingAssetId,
+  onLoadMore,
 }: AssetLibraryModalProps) {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
-  const rawCopy = t('workspace.generate.assetLibrary', DEFAULT_ASSET_LIBRARY_COPY);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const busy = isSelecting || isImporting;
+  const handleClose = useCallback(() => { if (!busy) onClose(); }, [busy, onClose]);
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: handleClose, closeDisabled: busy });
+  const pickerCopy = referencePickerCopy(uiLocale);
+  const referenceCopy = workspaceReferenceCopy(uiLocale);
+  const titleId = useId();
+  const actionCopy = assetLibraryActionsCopy(uiLocale);
+  const rawCopy = t('workspace.generate.assetLibrary', {});
   const copyAssetLibrary = useMemo(
-    () => mergeCopy(DEFAULT_ASSET_LIBRARY_COPY, (rawCopy ?? {}) as Partial<typeof DEFAULT_ASSET_LIBRARY_COPY>),
-    [rawCopy]
+    () => mergeCopy({ ...DEFAULT_ASSET_LIBRARY_COPY, ...assetLibraryLocaleDefaults(uiLocale), tabs: { ...DEFAULT_ASSET_LIBRARY_COPY.tabs, ...assetLibraryLocaleDefaults(uiLocale).tabs } }, rawCopy ?? {}),
+    [rawCopy, uiLocale]
   );
   const importLabel = copyAssetLibrary.import ?? DEFAULT_ASSET_LIBRARY_COPY.import;
   const importingLabel = copyAssetLibrary.importing ?? DEFAULT_ASSET_LIBRARY_COPY.importing;
@@ -278,9 +297,10 @@ export function AssetLibraryModal({
                       ? 'Aun no hay videos guardados. Sube o genera un video para verlo aqui.'
                       : 'No saved videos yet. Upload or generate a video to see it here.'
                   : copyAssetLibrary.empty;
-  const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   const handleImportChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -293,7 +313,8 @@ export function AssetLibraryModal({
       try {
         if (assetType === 'video') {
           const uploadedAsset = await uploadVideoFile(file);
-          onSelect({
+          if (!mounted.current) return;
+          const selectionError = await onSelect({
             id: uploadedAsset.id,
             url: uploadedAsset.url,
             thumbUrl: uploadedAsset.thumbUrl ?? null,
@@ -305,6 +326,7 @@ export function AssetLibraryModal({
             mime: uploadedAsset.mime ?? null,
             canDelete: true,
           });
+          if (typeof selectionError === 'string') setImportError(selectionError);
           return;
         }
 
@@ -330,7 +352,8 @@ export function AssetLibraryModal({
           mime?: string | null;
         };
 
-        onSelect({
+        if (!mounted.current) return;
+        const selectionError = await onSelect({
           id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
           url: uploadedAsset.url,
           thumbUrl: null,
@@ -342,6 +365,7 @@ export function AssetLibraryModal({
           mime: uploadedAsset.mime ?? null,
           canDelete: true,
         });
+        if (typeof selectionError === 'string') setImportError(selectionError);
       } catch (error) {
         setImportError(getUploadFailureMessage(assetType, error, importFailedLabel));
       } finally {
@@ -366,79 +390,50 @@ export function AssetLibraryModal({
     copyAssetLibrary.searchPlaceholder ??
     (uiLocale === 'fr' ? 'Rechercher des assets...' : uiLocale === 'es' ? 'Buscar assets...' : 'Search assets...');
   const sourcesTitle =
-    copyAssetLibrary.sourcesTitle ?? (uiLocale === 'fr' ? 'Bibliotheque' : uiLocale === 'es' ? 'Biblioteca' : 'Library');
-  const toolsTitle =
-    copyAssetLibrary.toolsTitle ??
-    (uiLocale === 'fr' ? 'Creer ou transformer' : uiLocale === 'es' ? 'Crear o transformar' : 'Create or transform');
-  const toolsDescription =
-    copyAssetLibrary.toolsDescription ??
-    (uiLocale === 'fr'
-      ? "Ouvrez un autre workspace pour preparer une meilleure source avant de l'importer ici."
-      : uiLocale === 'es'
-        ? 'Abre otro workspace para preparar una mejor fuente antes de importarla aqui.'
-        : 'Open another workspace to prepare a better source before importing it here.');
+    copyAssetLibrary.sourcesTitle ?? (uiLocale === 'fr' ? 'Médias' : uiLocale === 'es' ? 'Medios' : 'Media');
+  const loadMoreLabel = t(
+    'workspace.library.browser.loadMore',
+    uiLocale === 'fr' ? 'Afficher plus' : uiLocale === 'es' ? 'Mostrar más' : 'Load more'
+  ) as string;
   const emptySearchLabel =
     copyAssetLibrary.emptySearch ??
     (uiLocale === 'fr' ? 'Aucun asset ne correspond a cette recherche.' : uiLocale === 'es' ? 'Ningun asset coincide con esta busqueda.' : 'No assets match this search.');
-  const shortcutLabels = {
-    createImage:
-      copyAssetLibrary.shortcuts?.createImage ??
-      (uiLocale === 'fr' ? 'Creer une image' : uiLocale === 'es' ? 'Crear imagen' : 'Create image'),
-    storyboard:
-      copyAssetLibrary.shortcuts?.storyboard ??
-      (uiLocale === 'fr' ? 'Storyboard' : uiLocale === 'es' ? 'Storyboard' : 'Storyboard'),
-    changeAngle:
-      copyAssetLibrary.shortcuts?.changeAngle ??
-      (uiLocale === 'fr' ? "Changer l'angle" : uiLocale === 'es' ? 'Cambiar angulo' : 'Change angle'),
-    characterBuilder:
-      copyAssetLibrary.shortcuts?.characterBuilder ??
-      (uiLocale === 'fr' ? 'Character Builder' : uiLocale === 'es' ? 'Character Builder' : 'Character builder'),
-    upscale:
-      copyAssetLibrary.shortcuts?.upscale ??
-      (uiLocale === 'fr' ? 'Upscale' : uiLocale === 'es' ? 'Upscale' : 'Upscale'),
-  };
-  const browserToolLinks =
-    assetType === 'image'
-      ? [
-          { href: '/app/image', label: shortcutLabels.createImage },
-          { href: '/app/tools/storyboard', label: shortcutLabels.storyboard },
-          { href: '/app/tools/angle', label: shortcutLabels.changeAngle },
-          { href: '/app/tools/character-builder', label: shortcutLabels.characterBuilder },
-          { href: '/app/tools/upscale', label: shortcutLabels.upscale },
-        ]
-      : [];
-
-  return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-50 px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-4">
-      <div className="absolute inset-0" role="presentation" onClick={onClose} />
+  return createPortal(
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onDialogKeyDown} className="app-experience app-library-picker-layer">
+      <div className="absolute inset-0" role="presentation" onClick={handleClose} />
       <input
         ref={importInputRef}
         type="file"
         accept={importAccept}
         className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
         onChange={handleImportChange}
       />
       <AssetLibraryBrowser
-        className="relative z-10 h-[92svh] max-w-[1240px] sm:h-[84vh]"
-        title={libraryTitle}
-        subtitle={fieldLabel}
-        onClose={onClose}
+        locale={uiLocale}
+        selection={{ scope: target?.scope ?? fieldLabel, busy, onBusyChange: setIsSelecting, onConfirm: onSelect }}
+        headingId={titleId}
+        title={target?.role ? referenceCopy[target.role] : libraryTitle}
+        subtitle={[!target?.role ? referenceCopy.kinds[assetType] : null, target?.slotIndex != null && (target?.capacity ?? 1) > 1 ? `${pickerCopy.slot} ${target.slotIndex + 1}` : null, (target?.capacity ?? 1) > 1 ? `${pickerCopy.capacity} ${target?.capacity}` : null].filter(Boolean).join(' · ')}
+        onClose={handleClose}
         closeLabel={copyAssetLibrary.close}
         assetType={assetType}
         assets={assets}
         isLoading={isLoading}
-        error={importError ?? error}
+        isLoadingMore={isLoadingMore}
+        hasMore={hasMore}
+        error={importError ?? (error ? actionCopy.loadError : null)}
         source={source}
         availableSources={[...sourceOptions]}
         sourceLabels={copyAssetLibrary.tabs}
         onSourceChange={onSourceChange}
+        onLoadMore={onLoadMore}
+        loadMoreLabel={loadMoreLabel}
         searchPlaceholder={searchPlaceholder}
         sourcesTitle={sourcesTitle}
         emptyLabel={emptyLabel ?? (assetType === 'video' ? 'No saved videos yet.' : 'No saved images yet.')}
         emptySearchLabel={emptySearchLabel}
-        toolsTitle={assetType === 'image' ? toolsTitle : undefined}
-        toolsDescription={assetType === 'image' ? toolsDescription : undefined}
-        toolLinks={browserToolLinks}
         headerActions={
           <>
             <Button
@@ -462,52 +457,8 @@ export function AssetLibraryModal({
             </Button>
           </>
         }
-        renderAssetActions={(asset) => {
-          const isDeleting = deletingAssetId === asset.id;
-          const canDelete = asset.canDelete !== false && !asset.id.startsWith('job:');
-          return (
-            <>
-              {canDelete ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className={clsx(
-                    'min-h-[34px] flex-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro focus-visible:ring-error-border sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
-                    isDeleting
-                      ? 'border-error-border bg-error-bg text-error opacity-70'
-                      : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
-                  )}
-                  onClick={() => {
-                    const result = onDelete(asset);
-                    if (result && typeof result.then === 'function') {
-                      void result.catch(() => {
-                        // errors handled upstream
-                      });
-                    }
-                  }}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
-                </Button>
-              ) : null}
-              <Button
-                type="button"
-                onClick={() => onSelect(asset)}
-                disabled={isDeleting}
-                variant="primary"
-                size="sm"
-                className={clsx(
-                  'min-h-[34px] flex-1 rounded-full border-brand px-2.5 py-1 text-[11px] uppercase tracking-micro sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
-                  isDeleting ? 'opacity-60' : 'hover:bg-brandHover'
-                )}
-              >
-                Use
-              </Button>
-            </>
-          );
-        }}
+        renderAssetActions={() => null}
       />
-    </div>
+    </div>, document.body
   );
 }

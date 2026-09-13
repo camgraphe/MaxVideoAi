@@ -1,0 +1,1530 @@
+{
+  "sourceCommit": "6165afc34bb27b8b3dc2d05074b09cdcdb44c13f",
+  "sourcePath": "/Users/adrienmillot/Desktop/MaxVideoAi V2/.worktrees/maxvideoai-editor-run",
+  "files": [
+    {
+      "path": "Dockerfile.timeline-worker",
+      "gitBlob": "0bce953ca7c97c5cb0b083ed65da1aff9b10de9d",
+      "sha256": "8c2171ef1dfbea1586a695b38c257daf715390d421f7e4d519b44bd3c1e00e8d"
+    },
+    {
+      "path": "docs/engineering/studio-editor-architecture.md",
+      "gitBlob": "45aad13a7c3f3f5be77337b9f106d1deb05cec4d",
+      "sha256": "8af35e9dbea2b66c17a90b1a39e48e5b87ac159efcc42fe02423ec963f0feba4"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-08-21-studio-main-model-certification.md",
+      "gitBlob": "6d4e1a9224c431871192f1138dd454cbefedcfef",
+      "sha256": "fcac0f6fd779501aaf4bc83b035548b59c2e9f5f4a898c05adf5b949cb2d1722"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/AGENTS.md",
+      "gitBlob": "e57d5afec02f601d527449253df0b452ff22d6bc",
+      "sha256": "8e00ef771d1bf37b94235c29620973aeacebcd573a98dc0e6179acf6e24c5f50"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/_hooks/useStudioThemeMode.ts",
+      "gitBlob": "bb35ea757b296a388655d0ebe2be1e09949fc46f",
+      "sha256": "23c89fa076f3e9c1b9959631267af499c40addcb7c04d504b62e7d86b1b01c07"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy.ts",
+      "gitBlob": "10dc936c7eb8b8196161390c40b6145f9b09ad1a",
+      "sha256": "8e774432a976236f9e2ca82784c2d0174c7bad25a0c7b6d1b01ad50614d2b479"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/projects/StudioProjectsPage.client.tsx",
+      "gitBlob": "e11a57f0634cf5be50dcb6d3b4ce11d3d0fe06a7",
+      "sha256": "585bb275009e376a122c39a57e0c2944beab704404fe4fbc14274c460ed7aeb8"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/projects/page.tsx",
+      "gitBlob": "50a571529c0b966ddea116220cfa55005756abd6",
+      "sha256": "37d0adbd468899845370bc78f6329ba041ba37a192fe3d17ca7356019a387bdd"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/projects/studio-project-marketing-entry.ts",
+      "gitBlob": "dcdc4969f0999816fa129fd8879384e218d0bec8",
+      "sha256": "37b35ef96c052d0a806dbf8d39ce46199c0d61eaedf76e3db8db8de68c3f6e8d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/projects/studio-project-preview-storage.ts",
+      "gitBlob": "555c875784c0141d8e6f020c8d6309378343cdfc",
+      "sha256": "17873c8d51910d2aba2d4330ca6f1e565a164652673c6f67445fe550f5dd3bd5"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/projects/studio-project-records.ts",
+      "gitBlob": "70377f88d3860cf8d206b90b6bb74325e1af6fdd",
+      "sha256": "6236ca286a6e5e850ed6a07f5668ee179cbb598836ee7731645663612f16bf51"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/projects/studio-projects.module.css",
+      "gitBlob": "cb621778cc52f0fb5ae3f66542880c02bd133cfe",
+      "sha256": "3547e2e34c0f7900da76fefe066cb2f1d3c641543516fbd22176b7b285f03908"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/WorkspacePage.client.tsx",
+      "gitBlob": "1989e97cfe1f1477ade98b08d9f71dcd47d53f21",
+      "sha256": "a561084066fae6ec4fded72041b1940977ed9308c17eab3e249c615440525c5c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/[projectId]/page.tsx",
+      "gitBlob": "9a9146e5c030fa05c2b7d90508ea9d14eea24beb",
+      "sha256": "2597fe60e0c690dd253bbd7a2b123c005739b2bee6f367a442ccdd5e8c94233a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ChatNodeInspector.tsx",
+      "gitBlob": "b236f0e78b86d7cf105d2508c7c3c27beb6f8843",
+      "sha256": "9308cbff8b7fbc89efdaa9d2ea700b3ecacad5f480c8fb0c7cc9c8d218286f5c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/NodeInspectorConnections.tsx",
+      "gitBlob": "b6126cf3435f60eb7ce1d50f6fe9ca731e474c1c",
+      "sha256": "c719610e40a32aa1b81d9ce2ac97465afd3def1fc8cdc6b2d6faaaf988ac62ad"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/NodeInspectorControls.tsx",
+      "gitBlob": "7b2ad28b23fc6910b2283d913b2ce0dde37ca4c7",
+      "sha256": "70863f7263d0efd879f504a6edf94667a5c40e63a399687ce960d42f27ba3cc6"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/NodeInspectorMediaPreview.tsx",
+      "gitBlob": "10445821ee415e9ce7a303d4678e360fa495048b",
+      "sha256": "7cac3aeff6b74b885ba2d08c0ad3eac6c9aca5accda0b386bcc15faaf45d4597"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/NodeSettingsPanel.tsx",
+      "gitBlob": "b59e037f362cf62ae4dfbf50758ce26bf3a6dfd3",
+      "sha256": "0f975c678220baee4b2f30860a6814de6cb16b2c097f0060332b4e70ff71444e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ShotNodeInspector.tsx",
+      "gitBlob": "2c142ac0bf49274dfe7892eb5eb54d316589da5e",
+      "sha256": "e19a22c929df4f9cb2cf51f0c5c6410ab4b0ab6deefdd94e208a419d95c4d824"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ShotNodeToolSections.tsx",
+      "gitBlob": "aede1afa854899bdddc596f5f8af3040d5bafa35",
+      "sha256": "34c78531efd42925ffd0588a6ad644b965f9390d22d3ab03c98dbacc4c6b333a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/StudioHeaderSession.tsx",
+      "gitBlob": "fd64717093ce4ddd6dc46bd76c2bc8291405ca9d",
+      "sha256": "6b9b90d5c065388df4df2f05cf26eaa152ddf1f330d9955431d723bab8918fa1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/StudioLanguageToggle.tsx",
+      "gitBlob": "d8506bdcb5686c609946c0fc658f0f668959a5e6",
+      "sha256": "f2c207e5572955c48a37c85da92bda64664489da8cb02a587ac71c1f4fa2e1e2"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/TimelineClipInspector.tsx",
+      "gitBlob": "b4326bdbcee129dda8d5dd2967e10594a263132e",
+      "sha256": "79b5ec99b3ad580c422ff67af3145ac384070d5bd9ad47391c52817a447723fe"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/TimelineProjectSidebar.tsx",
+      "gitBlob": "1d93ca16f2274b6fd94db689a17eb75ba67abf3c",
+      "sha256": "025c168c455f6c503873558883ea5fde4a6f68650d8c50f329c008d821a80428"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryBrowser.tsx",
+      "gitBlob": "21df2e2fe733dcbb73b1d6ba9904bf92dfde65bc",
+      "sha256": "70c506a7426a58eba3035fdc5f9e481ecd0f60c3a950a69c2bad1120898ecada"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryModal.tsx",
+      "gitBlob": "6d4ed86f8128046d6dc1135a917f1f80421a0223",
+      "sha256": "0fe1d554ce2ce5e329d975f0433f05ca75638d00f0e85e261b4c031416d02884"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx",
+      "gitBlob": "af7fc4f12c0b4ce44ba8635c9b7b14c17a202da2",
+      "sha256": "dfd9e69e7a1ba9eabb9c03f4b785ac5d88527949052c8e66ae0c08894f6ec7dd"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvasInspectorPanel.tsx",
+      "gitBlob": "45e21782cfc6854fdedf5a789ac83a917da98550",
+      "sha256": "23a4a4d850d8a1f54957c31e75e3222850678063a1bad8c9e56df268de0ed8d7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorLayout.tsx",
+      "gitBlob": "593c550069771d7ed575ffbb7964c90408d9638c",
+      "sha256": "db7fc0f99ccf8faabab620d1e1c997e46d172b2f17adcbfddf050027c0a65aac"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorTopbar.tsx",
+      "gitBlob": "451798a26c5ec64eebc2cbbfc93c3444c5d42805",
+      "sha256": "25b325688f8020cfafadd8949a431ccf0d49312d885e21b88cffade751cc297e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEnginePicker.tsx",
+      "gitBlob": "7a1f4461ed77193060de85a075ca7e1b3dd792dd",
+      "sha256": "77af813cb84d3ba08471b3f59877e1c76c42151e3968ddbd5092fa2d7c5b2569"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceExportDialog.tsx",
+      "gitBlob": "d3c599adb7970c68f3331b4bc54f3784aa7b7b71",
+      "sha256": "1d7def06cf89bdf435d4627c2df2fd2a0ebb6e724456ea7d5b84181446b45613"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceGuideSurfaceLayer.tsx",
+      "gitBlob": "52e6c5cf1a8e1fa515ee7f8c5081d368e2849e25",
+      "sha256": "24d373e881e60c40b97f6bf562b340aa902bed8e946d98cc80b5edd9e2f5a7e0"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceMobilePanelControls.tsx",
+      "gitBlob": "829736676f434c9de4db990093c6509ab4b2c77d",
+      "sha256": "22dd600721fa0b95313b9ab714b6d545997c4e6cac9b346a37c3e3f72baab1e8"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceMobilePanelFrame.tsx",
+      "gitBlob": "ec3f377832f5c4492b80232052b40277e298aa8a",
+      "sha256": "a58ab259318eb7249634a2f2e08c0ba74c64bd329a76ba55e9b31fba2772694b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceProjectMediaLibraryModal.tsx",
+      "gitBlob": "fbb9463c7f4d5dd5a299ce87a95913c2092e25fa",
+      "sha256": "1b9aede88d841c34e51f8f50fb4552b6c0ceffce54133cab4f5b1d2f710d447d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceProjectMediaPanel.tsx",
+      "gitBlob": "fd17d3e5aefe424e012284bcc63731175d8c9498",
+      "sha256": "c957298beb8e1afce470bad01d9c796076a8f374489fdcba12680383bbb5cfd1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceRuntimeModals.tsx",
+      "gitBlob": "2122e4f60fdf228f8d91a71ffd473b05e84e3701",
+      "sha256": "762c18b7a9942c5509c2e77ef6c3b88e9c802a9a75f34853aa9fb2284d34728e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceTimeline.tsx",
+      "gitBlob": "c6a1e3f9ba3b92dfa94172360d7d14975df77fc9",
+      "sha256": "4d7be0b35d29d59048f6c5f46a187c077f9ce77d9fa82f397aacff3e9470ee5a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceTimelineInspectorPanel.tsx",
+      "gitBlob": "69af74ab8da17075be834e3a3c7866307c9b5e9a",
+      "sha256": "da5d3a95790ab98c996545a62cbe5bc0fb33a36c15c55fc79d624e03f57cdc34"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceVideoViewer.tsx",
+      "gitBlob": "1b084309062883f635f3194cf201e7aac056ac7a",
+      "sha256": "77cb238ba44a887b12627ae95e330517a2f0b24a2ee80b0d9ae75a2b410850b0"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasFloatingToolbar.tsx",
+      "gitBlob": "41351c48b89bccf8732a4b73bc68cda8734560d2",
+      "sha256": "9dd87198e6a0519cd66ea1527203bdba61763af55e07102c3b8a0fcd34983059"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasGuideCallout.tsx",
+      "gitBlob": "cdef305b2c61ee0f21f992f54ca04a14ec656594",
+      "sha256": "03e16b54c0adf1e2b0ed38f7e6174d910562226e66c9969cded2feda655f6985"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasGuideLayer.tsx",
+      "gitBlob": "9d6b9b09fed4baf2179068af4a2c64cddf29b522",
+      "sha256": "f7cb2cae8b99732107a74d37b4d144d8375aea706fbd270fdf80a8bd5ec1c889"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasHandleDropPreview.tsx",
+      "gitBlob": "dbb68fe53b1862f229b081ec108b655ccd1c5e87",
+      "sha256": "6d38b5c9bbf9697a876f6421614b1a46982a827c6d69da289f5a450b8ffa1a43"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasMap.tsx",
+      "gitBlob": "a1cdc2b7c794d4eda51f20f1df29cb61b2991629",
+      "sha256": "dc8448a69f42f30d835af771a8bb76cd797a103c69379f7fef240d752525160c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasNavigatorPanel.tsx",
+      "gitBlob": "c81ad2fc3585811c69493844a4aaa9055df92986",
+      "sha256": "f4c52eb0659eaf237440c874134d174e9a8584f2c55c79af16c6ca1af494cbea"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasPaletteDragPreview.tsx",
+      "gitBlob": "3b4828889a5e5ab217440240c9da4c1219b3510d",
+      "sha256": "95659b60a0ac38d7727e92ce61a12c9b0f4e32b7bd7fa56bbc3d17a674e18a50"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/edges/workspace-smart-edge.tsx",
+      "gitBlob": "76a57b5c2219e1d8a1a8431dea0a928c2084322c",
+      "sha256": "817c26a48c3f967c4def81e95daed6b55eb6b95594dacf066d0781087a520735"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/WorkspaceControlField.tsx",
+      "gitBlob": "f51b614c3418d4844ecb5d954ae172bf98b83d79",
+      "sha256": "295042f4759e2ed1bb4c40e71e0982fd41d95b7985e784e103fb8596668f1d1b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/angle-reference-picker.module.css",
+      "gitBlob": "1b36305b3153ab3492a288696bb35ce0c7f29e8c",
+      "sha256": "46778e88eb045b2e63ccf8adb5c5c3217bc5c6a41cfb435a178a7b91369edd8b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-angle-reference-picker.tsx",
+      "gitBlob": "13571a836679d192a55bbe6c757e78c7a2c6f8eb",
+      "sha256": "15d58662cd4ad7bf1f9de278e296e039e1c5ed0a07caba1423ebaebd936eaf59"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-chat-node.tsx",
+      "gitBlob": "5c14a5291cbb549cd1766f8f2a3a2bcd166eb8bb",
+      "sha256": "3f75c9865d3cee65e818869074eb289cc899ddf58eda635a260bd19353a0bfb0"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-control-field.module.css",
+      "gitBlob": "19fd53cccd529e9d15e35f1776b98d56e8d29f9c",
+      "sha256": "fd0165bd7b0692c831fad276c9ca56b359b2ff2aa2d385706868cb5be9728253"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-frame.tsx",
+      "gitBlob": "db473b69cee559c826b6926a17070d650873d511",
+      "sha256": "fa2fb2071677fc9394fd65a137255047e587ad2eb59fdcca188c907e4d7b48e9"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-media-preview.tsx",
+      "gitBlob": "507d22063918c80ed461cd685c1743d518627ba4",
+      "sha256": "8cc9892da0f5b717d7198b4c2911b84eeb318b30747ecd6e1828d7d3cd29d858"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-types.tsx",
+      "gitBlob": "91945bff07c5431addeb17d080a5139a05841ac2",
+      "sha256": "9a870a145469f57bd08e560a29415920ca7e97e857d4a325f629eeb05a50ddef"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-input-dock.tsx",
+      "gitBlob": "7f47ed6e5f6035afbb9e8456535af13c48725679",
+      "sha256": "95da4a365327b6a1f7bfa01492bd502ce9caef8bf9513322337096fba9f720c4"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx",
+      "gitBlob": "60a2eed6a9ebf3a740a6fb839f3a3d4a1d846978",
+      "sha256": "ab86561fdc111784a463f3f56994a5f0a068ab4bff5bb0c68f2da3b659b1d684"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/TimelineClip.tsx",
+      "gitBlob": "612427804aae3317604dcfb885778d33f28ca314",
+      "sha256": "80e53b8ff7735b10f7856634ae45f0c4505a3b0ef75f3aefd0b5e5cb9efcf6b2"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/TimelineContextMenus.tsx",
+      "gitBlob": "58e7e71efd2578a99c62d122d609da2057411998",
+      "sha256": "1039e309feaf82c9f78b3ea1fc5b96b5051d463bfc60f66db0517d78ad63acb8"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/TimelineRuler.tsx",
+      "gitBlob": "671bf17b92c77fd25398efd0bbc942edfbc81b64",
+      "sha256": "04059385b9d69dfe77045c1abbadea777663d2ed7339809c22043af611103d49"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/TimelineToolbar.tsx",
+      "gitBlob": "dd5a11880ee467924ad767ad12e053b573dc5c4d",
+      "sha256": "e919cc72cf8b792f79543eb2677f03f3bebbd0d07a8dee8a9856ba418c61c142"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/TimelineTrackList.tsx",
+      "gitBlob": "b102fb5967d60af1d518b7990cf7b88a3ca1c371",
+      "sha256": "65f8be77d6da8d857c4b5575d859d2dd060ea70f9095a776f8c85497fec5287b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/TimelineTrackRow.tsx",
+      "gitBlob": "807ca432d4e68d69e39b2ec88edbab09eb431d7b",
+      "sha256": "5a1013f9ab37762ea25fd49a77acf844513f6ce292e9055ff1612468513b3806"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/timelineTrackDefinitions.tsx",
+      "gitBlob": "3e1d57105f6ded862005d3b3a175915d5e5aa956",
+      "sha256": "1c553bb1ddab2dc9e1279ff6d114dd7b6036a911df67d9b6e500b3f96fee31ee"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelineClipInteraction.ts",
+      "gitBlob": "65b16ec9dac96769dd05381ed9a90b5ad95dd472",
+      "sha256": "315044bc947dc4f7e7efdc9390edc2f8cd3d940ea7ecf5c521468ead0d8fcc41"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelineContextMenus.ts",
+      "gitBlob": "0c69699b7432b4a88f39cca7ce6a19d20db09938",
+      "sha256": "003f9154b380a3ba92dc93288eb89dcd05c6fa240489d864cbfe12fcef15f4c2"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelineExternalDrop.ts",
+      "gitBlob": "dfb7996a78e4ec6cfc8c362d083a01c8577a1dce",
+      "sha256": "1951156c848da876b73b74977d4cacb83f8022fde5f4cb3fabd18e6c9a2f59d4"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelineKeyboardShortcuts.ts",
+      "gitBlob": "547ff3346ccc60087daf461c2979569b567bde92",
+      "sha256": "5ac95f6f4925b30adab845f59bf54878ccb27bcb8b4aceba46b880e3077b920f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelinePanelResize.ts",
+      "gitBlob": "88a7e9e8162c6927ff82c4b79f83918eeaedf158",
+      "sha256": "7cf54962c249e02bb78212169ef7c5610186274d0090ed4580a56a2d27e0d05c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelinePlayheadDrag.ts",
+      "gitBlob": "e76e23c792af7a7fa83e904142ff1c2d2aefd165",
+      "sha256": "76985ffce8b808d29b93c76b869c01b5d531bf890d0c1354b99c4a493f928060"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelinePreviewItems.ts",
+      "gitBlob": "f4f52393afb8126c62c6da49ddf528351c634c71",
+      "sha256": "c8da83c83f4a5c2eb58d6e4101c8e120c5b0f4c3c6d97afbafc2646268b42976"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelineSurfaceSelection.ts",
+      "gitBlob": "1263f147a9ba2d4ed6e9117b745d5776e7480d2b",
+      "sha256": "4c02b8812698980cc1808c6115383aa83930b172b7c2ebf665cb4de7a873939b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/timeline/useTimelineVisibleRange.ts",
+      "gitBlob": "2d5161fad26c4dd1af22be0668faa0c88ab1d51f",
+      "sha256": "220d720faa8e92b509982c84185843235652e269fbce0f9b1b1a140c325aa12a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ui/StudioDialog.tsx",
+      "gitBlob": "2a9954900189dd2aef19a13607acd402ee008d0f",
+      "sha256": "367fabe43f5a059cdac9896f58e2d2927f866a379c73418c7f55dd3c8e820534"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ui/StudioMenu.tsx",
+      "gitBlob": "4530427be38ccc5cdc1c88685c187b3e0d2bb69d",
+      "sha256": "ca29c609762a1394b6cc03b02352c57387dc391d0e0b75045304a52669b6365a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ui/StudioPopover.tsx",
+      "gitBlob": "298cc22d0f33071997c0cecacf75a6128847869b",
+      "sha256": "06828158c75b86a5b47e8ad22b1b8f46ddd45b43dd82bef0691820965ee39a2d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ui/StudioSegmentedControl.tsx",
+      "gitBlob": "4fde5dd467d66df21073d728ee2882c5f69b1c06",
+      "sha256": "7aab6d05264a0ffedc9d03663206f4d18893b6086fe7ea4d5ff7b57e4df7cd2a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/ui/StudioSwitch.tsx",
+      "gitBlob": "97b6a7625b217797b011948ae570f7312b0f31a4",
+      "sha256": "49197a54808e15d78c0b920c70b8656645ddf883fa5dec610d54396d234ded41"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/viewer/ProgramControls.tsx",
+      "gitBlob": "a8d1e46cc58c82c34a3230435740b6de13a68633",
+      "sha256": "94902496b2e6b4556419f2d2971810497ef98dd791d69a08cac06318b01b3e11"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/viewer/ProgramMonitor.tsx",
+      "gitBlob": "ec6936816693393d9aa6002b93e7944d577bfca5",
+      "sha256": "d3c2e55582be4fa8245b7ddcbdb2e55892f1cf9651c3d6ea2f3fe5733fe4029a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/viewer/ProgramPlaybackLayers.tsx",
+      "gitBlob": "1915bdab938a259b5026801b9d5cec7007ec4093",
+      "sha256": "bb8bf2d6ee52a7b4304744f2c26170770b7f49cd5747ce1f4f818ade3b9fe7b2"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/viewer/useProgramPlaybackSync.ts",
+      "gitBlob": "20a80a5aab4de5f137e1fe42a590e13539411e24",
+      "sha256": "e13efa7973d06e78f3b853fba4480f0113507802460ea459af9f7c6958331d26"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useCanvasController.ts",
+      "gitBlob": "2c021f24807575b177c2a2604f2786fee004cafb",
+      "sha256": "64d6c0c30153c13250838d474b16001d779646d8450859f9a07f747069aa8352"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController.ts",
+      "gitBlob": "359a2104f3e89564666c06bfcf766d61db0f1f27",
+      "sha256": "a52e9aab29ece2429dc6e6623e4bf863be259e3edfbbcd535d0fb26a4f9bacde"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useProjectMediaController.ts",
+      "gitBlob": "6466302d8dc3ded05453b81b088d98ef08136bda",
+      "sha256": "d89f73b512359aaf6d4da83e67ced08aa644b17606d1ceadceb8609158eb7704"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasController.ts",
+      "gitBlob": "217c4f27d21bb149026f05c93b8042c0386f30a7",
+      "sha256": "77e7f189e5dafd5899381fecb2c3cc1ead66877768bc5bf0e83a66dc32decc2f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasGraphState.ts",
+      "gitBlob": "cd10ab1f63065c76700920e0f308384075d599b9",
+      "sha256": "a37b3d194d1fabe34dc5fa9aa2260c6ddf1ea84cf6e9b54eb10209600425194e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasGuideController.ts",
+      "gitBlob": "515b2d1cfca8b81ea5898a1d8521173089a60bdc",
+      "sha256": "cb9602662690fc51cd18ddb85574b04243951e3952b4c418e454f4fe2ac493a7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasGuideViewport.ts",
+      "gitBlob": "c0a6cba81c9dfd5d2d9164fc9953745278f78ea6",
+      "sha256": "1733a5f7dbf9589a261c809f7399ae406aba58b5c6bef7564808cb95ec655ab1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasHistory.ts",
+      "gitBlob": "d702f4a60ff0f454d40de03926752a87f23d3d1b",
+      "sha256": "5f3cfdc85733ad5af8c2ea76036138403df6fe663fed2b9da3e59ae90f138030"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasImportActions.ts",
+      "gitBlob": "54fecca5f535e954cfa89efb8d82b52725d6a292",
+      "sha256": "1db73e93bdab5d4efb693b49762e0225202efdaf794cfa7451aa168cda48eacb"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasTemplateActions.ts",
+      "gitBlob": "41f91a3585bab311631bf94f069b0597832725f8",
+      "sha256": "b8d08733483f24829723c0bc1b730b5f8e3d259d7ae4479de86bd2411457c8ac"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCanvasTimelineActions.ts",
+      "gitBlob": "c249265c6b04d61ea374a8412b2c78559c8ffb5d",
+      "sha256": "1e37e8d1e96f0415d439f92fff94e5f0e6aab7e2ea62ecf589db855f34a40b2f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceCompletedExportAssets.ts",
+      "gitBlob": "11010405f9dea9b6d76b4b78e650e17dea83b9dd",
+      "sha256": "47f95c9d1fb126869c4289ef1784f631f92c2e15c25bc27d94298fb06149e9dc"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceEditorAssetLibrary.ts",
+      "gitBlob": "5a1f43ec8faad5a01ecf4fb572062b5d7d20b93c",
+      "sha256": "fa9056daff6ae0af5b4366ebc3835692dab165656336986e85e1214f15061a50"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceEditorNotice.ts",
+      "gitBlob": "37c0fc919ea3431da6a0500c66c5bce1fe440270",
+      "sha256": "badad8d551e960d54765ac5534100de89b96b31f1004c93922db1f3ccf4b9274"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceExportState.ts",
+      "gitBlob": "a3040bf1c15345777b58fc1f1d6cc1d6d65408e3",
+      "sha256": "41bf93cd9340ba41ce00dbcc8ad6a94e431b13b4bb1e4704ac281e41d64a2bcb"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGenerationActions.ts",
+      "gitBlob": "2efe7d88fcaccfb6673a414f6ad20dfee0db36bc",
+      "sha256": "f7ce47860c91d4c8ff7c5e997357bf0d11a845573305652fc9b061154f12a7a0"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGraphActions.ts",
+      "gitBlob": "73919a3167110e9ae3cd612642c62aa4482d21db",
+      "sha256": "cf5a2631a5698b6a2ac3fbad14e8cf9f6435272ea77ba9d1a0070fe4dc4f51ec"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGuidePresentationController.ts",
+      "gitBlob": "9b61e6ca7aea9767874f1cda1faf37be5eaf5ccb",
+      "sha256": "759e127be5f4ee66814553f25367be8603a7cb8a37654378eb367e33d046f184"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceMobilePanels.ts",
+      "gitBlob": "a7775f147474fc0704ed4b6cb8f05f4e2e1dca2d",
+      "sha256": "5b708d4ccea7bf162daa682a4ef7d502fc93f38a752082af59154ca4ba9241ab"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspacePersistenceEffects.ts",
+      "gitBlob": "9f808bbf73cadaa21032e7a7cdc5ee71f146c37b",
+      "sha256": "f455105efd1460b9a2fba06198f6bf7dbf985eacc8acff9efca98d38fd2ef2ac"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceProjectMediaActions.ts",
+      "gitBlob": "438ecb09c0513e28458d2b12ff6747d068112024",
+      "sha256": "6d961e91738bbc0456d64f96ff4b01871338bdf911d3bcf3ac48bedaa0876df9"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceProjectMediaMetadataHydration.ts",
+      "gitBlob": "dbe17b61ed266312e5739ad5f518af2af99665b2",
+      "sha256": "c0de77da5e9666c462f95347432531d3231a5469d6989a35f541f3182274415c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceRenderNodes.ts",
+      "gitBlob": "b3bcc3bd1bdef50c05b59b628873cf2ac95019a8",
+      "sha256": "6360b2f25b18a6185a985680f49bfe5f2a9b8f90302789d76c001608d7077b3e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceSelectionActions.ts",
+      "gitBlob": "cdaae17ad8ac6ef82d9c37ea324e7eb0669063b6",
+      "sha256": "472c64906119134ca9e3cf61478d85db4c0b4f48ee2eb8e0c31b060349756b5f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceSequenceActions.ts",
+      "gitBlob": "3ae907ae6f93b8e792a680378a22f51c47376cfc",
+      "sha256": "bbcd36fa385dd59725c2db87b5fddaaa1f3ef025ac9d95cd564a33c3de29e54c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceSequenceSnapshots.ts",
+      "gitBlob": "a33ae8a5ea548e301e72789175430e2e04d41bff",
+      "sha256": "e1b4412c67935999d55fa1ee5db6a571ab7d2949ac9ca7ff332fbda687cc8fc9"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShellActions.ts",
+      "gitBlob": "d7bd57a523141cdc9e1ecce9cd6c0d8496597878",
+      "sha256": "289662d9207c2a6874a3264fc38eedc5df9a343af2ff8af3172e6fa450dded03"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShotPricing.ts",
+      "gitBlob": "01fb7de57e75bf14ea469fa35fbc90987b92dbd1",
+      "sha256": "5968b12912fe0957c28026635aec74d383b698b75aa8f75b2586f2f239385baf"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceTimelineClipActions.ts",
+      "gitBlob": "de2a336080275d5118ebfe9755c9b7a076e4951c",
+      "sha256": "980d56878197a206346b349d36891b6553e044b0880c6bb4ec6d66153f25a239"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceTimelineHistory.ts",
+      "gitBlob": "ea0439d45c4acf4481f7cf874df40a2ae2e74501",
+      "sha256": "75cd65ae999afd40352596b7821735ee11b34e383eaf1a7cdd3da79697ecaeb7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceTimelinePlayback.ts",
+      "gitBlob": "37a5cbbf673537711d741d0c3ec33fabe9baf384",
+      "sha256": "33a42f4dd4f7d9802e36eae4d476ee0e4b328d0f932114c90235d9b8193f3d73"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceTimelineSelectionSync.ts",
+      "gitBlob": "f519cb1eb355d07a4c1ddc548eeece4fa086b8d7",
+      "sha256": "be95ca447793c074e1d7e80e4a2213ce17415eb491db04a1524f2b26d28e7c53"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceTimelineTrackActions.ts",
+      "gitBlob": "14cfe7749ec5e2888f10a52d053eef745e1871ba",
+      "sha256": "6cc5a074b6fd3dc7c74026874fb81f10f5432e20c858455b8518f03c1ea54fab"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-capability-registry.ts",
+      "gitBlob": "dcfa103bf57fafddb6804bc1a342007b60c2b722",
+      "sha256": "c648c14be05f4e3507eca7fa1aeccfd02fbcd7aaae0c4016272b7af83befb0a6"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-engine-fields.ts",
+      "gitBlob": "696a07ab5250bc7246a4e7e9af6c9a2c9a94fa28",
+      "sha256": "5e2a3183e4ae4c303f44d5f940d81994f1ac3806ad4d29b64bcedcbc47064c3b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-input-connectors.ts",
+      "gitBlob": "2c2c21bc5fdee54aaf858bbbf69b86ace7a30aff",
+      "sha256": "fb259cc2380452912ef426ec022d3529b5573c2c215c818b319787cb43f2b5cc"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-pricing-adapter.ts",
+      "gitBlob": "3c81c250753cbb095bc9e71a0f7e081a3a95557b",
+      "sha256": "79ffa9724d3041b1a765843bd9c52c3c5bfaebbee97ac53e48569ad8ca09b081"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy.ts",
+      "gitBlob": "73135e4e3c1ab786200a44f30c60e48be9ce5aed",
+      "sha256": "2e6cedebff0234942d5e4721572e23ec9d9d138e6a89e7b460d47f29e9027786"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-engine-availability.ts",
+      "gitBlob": "fb677c6a5d9a55e38988967b98bde88168827e10",
+      "sha256": "48e33c336786f739d0f6c79f531b5881b4ed04b794fa56d4b3a33724aee5babd"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-engine-picker.ts",
+      "gitBlob": "eb09849e02ccb9612be421437fe5ec3e899bba26",
+      "sha256": "097e8f0d44d52a8fadae339e9e4a614c02c067ebdd579e27809961c52a640ce0"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-selection.ts",
+      "gitBlob": "b6eb796e7ca3c6402153758eb8fb94bec8a67c70",
+      "sha256": "b0c63d12d29b472096670fb4b8930847af6fd32628ee95ba3b75c603c58bdaa1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-v1-block-matrix.ts",
+      "gitBlob": "6493af68f750881cc691214e9981c48e06195626",
+      "sha256": "9b99d9e2eb80c4b97a6ab85b5bd219a3345002e3dd32ee59fdb1886b3f93c4a1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/character-dialogue.ts",
+      "gitBlob": "09dba8d933d21fa8b9e37f9353ce4b2c1f824a5f",
+      "sha256": "91020a28e788e092f73b2baca7790247274ba4ee8604eda7242f3c715779effb"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/cinematic-scene.ts",
+      "gitBlob": "5bdf393ba45ade04fc7d50be209bc4630ade12fa",
+      "sha256": "c6f68dc21d39b92ca7b5e12e9b9026cc4d4cea9919e334f1f45e948d53346f27"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/dev-blocks.ts",
+      "gitBlob": "a6d657ff493203eede6436c41fd29a3acbcff1a2",
+      "sha256": "71a158ba9f8b8fe69bd4da76c5d45028e6df49eb38838fb652c68d182a73382d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/guided-project-starters.ts",
+      "gitBlob": "cce331a769cc23a531289e349efa952f5e05bdf7",
+      "sha256": "f4d8ecfcce339550a7411ff0a61d6273a0f61fa3a4cc9e49a4aadcf091803095"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/minimal-start.ts",
+      "gitBlob": "a1f56145ae31b56ef18581df2c17f30bbdd6a5ec",
+      "sha256": "774a4559c0084c858f23871e0913bcbb86efb2cf3647430bd462c6629d5aefea"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/product-ad.ts",
+      "gitBlob": "9676fe22934e43e296d67fb4ee1d5d70f6897136",
+      "sha256": "dbd716f5f5690d83eff8c5d3526e88f9efaf84dabd722d10105e8dc334b9d048"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/registry.ts",
+      "gitBlob": "fd2514d0152c34585d91c143fe3c87cd703b5e79",
+      "sha256": "f5389d7095c3ef32e515fe8f6d5e8cfdabf07e93019a529e2827dad5c67f40ce"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/storyboard-to-video.ts",
+      "gitBlob": "3eeb562bc775c0a882c8090361c1fa220bafe3c5",
+      "sha256": "29705ab4dba37daa06c1327585de5f7a6f9d76eef462442603e099f0d54ca927"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/template-core.ts",
+      "gitBlob": "35cca6cd1b1639a10bebce8ef15a043ba779bb9d",
+      "sha256": "61fd4b7ef32fe7e62d5dd4c1df1e60c0b68f07e267e8fbc9253b7583707c1b32"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/ugc-ad.ts",
+      "gitBlob": "627a82c214b60f93fd989b69afb7b3dd5dc899e1",
+      "sha256": "cc5597a7f0a2017d0dcb7d8e506d260d0e71d44ef11fb327ffc6708a1c171521"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/templates/variant-base.ts",
+      "gitBlob": "507b8e10427d845a38cbd385e1b2acad32b3e7e5",
+      "sha256": "afdb62fa067ac5edf8c26638aca93a502d15a2bb28b193043a33e955b0bb792d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders.ts",
+      "gitBlob": "62e62f79d4fe5d1dbbe5df1ee25716a6c7d05f5d",
+      "sha256": "b7d91cbff7f27b5d6413fe5dba29f13ccfef4a68e5040a4716e5fcb076e373a1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions.ts",
+      "gitBlob": "93a1413477f365014a16cfae6c558ce998e7e080",
+      "sha256": "5ff570506e9e85d4ef94f376f110636bad9b84e8eca2d7c659ce0fea07525220"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop.ts",
+      "gitBlob": "b6723447b8e6ec8d493c4321c4d4605bea0b0621",
+      "sha256": "6aefbfbdcee30e1b2129b5c5293b0c1b50d12d92bd62b5583d8aa7839f392c42"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames.ts",
+      "gitBlob": "4fa15b400198a7906d2b7169206a5b80ccb72f88",
+      "sha256": "dba81f00423cf88b7b17ccf614515485f49392cc1f7ad6626931722e20d33666"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing.ts",
+      "gitBlob": "f7c46474cbdcd47810db75916d5c39bc39f92edc",
+      "sha256": "bcb691e6fda8478fdcadd9d25f0fd5a907fc79ceb68bd9d2ffc1d8618617444e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-identities.ts",
+      "gitBlob": "e2bf56974c3fa42ee4eb0dac315a8fe3657ccf61",
+      "sha256": "41727db0e578e66034de3b88a07aafb41e598d4f0f896202cc5f5851de33cef1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-insert.ts",
+      "gitBlob": "276f0df1ee5b24460d330a01c2fe919352019d80",
+      "sha256": "ea978ed2f11ecd136e03142f8d8f0b378eb93b8f59cd54747677834623fcf91b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-interaction.ts",
+      "gitBlob": "ecf94043cf4d32a79ae4cd338b15582641ca0d91",
+      "sha256": "ca2776488cc758c3cdd159841de6f32d76aa9400cd2651014b287dbf4c9dad25"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-linked-audio.ts",
+      "gitBlob": "0dbe6680bedb8ccb512014ac8351d319a21fe803",
+      "sha256": "863598e91857361c3dfe523b729eb34d104ab93651f59b8cd074738e5c1929c9"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-normalize.ts",
+      "gitBlob": "d71ad7c4c012dd5917150c495daa0422d5dab3ab",
+      "sha256": "87bd6bad1b65bbc3485e62662560d9d1ff77ba928e6e7d4480a7e433ff217430"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-performance.ts",
+      "gitBlob": "843d5fd07ef5777898ddeed38696c7fbc0fea8a5",
+      "sha256": "af7a1d7310a55410a533a0a9902f47f877980af5388510049d6abba1fb23bf0a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-playhead-visibility.ts",
+      "gitBlob": "c7793c97425ac678496e5a678c45a292b89bab4c",
+      "sha256": "461f6859f260f1631855ab62be2e585e406fe037a90087cbb37f5c8abe11b98e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-positioning.ts",
+      "gitBlob": "879d441fd801c5975fa3754b32b93f4ae60400e7",
+      "sha256": "fb425e0f1a019ba29a1c17c44a6540dec6a936477927bb7d09429bf8c4eebea3"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-resize-editing.ts",
+      "gitBlob": "27b23ac0c12db034220afe7c08902d915b68165a",
+      "sha256": "8cb88d337e43f7f1f75068c48007ca95d401068123376fc5faa8fbee2eb35665"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-selection-groups.ts",
+      "gitBlob": "a8c97b3d5f9808cc61587920c1b7a3f49d8f2d36",
+      "sha256": "ec0d9acc3f1420b5194957994f87e05f7a510ad077168c1fc9736272ffe806e1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-source-metadata.ts",
+      "gitBlob": "02d80044d6eb9db393ee017048a71220d1d63854",
+      "sha256": "6cdcc007dc48d3dc4a8237e87d4ee60071c022de998e191afe7685524be697f7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-trim.ts",
+      "gitBlob": "7b8f28b59db2ef9eb81ae8197d513f5bd6521d3f",
+      "sha256": "e1495aded1c308f8ce9ee6eb621f9879ba6494647ef3a8c2d41f256f8ba40d18"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-asset-selection.ts",
+      "gitBlob": "331ba53fa5650caa415fe9fdf7ee6f391b8b5c0b",
+      "sha256": "ec5c41b87978598ffd6760af93b9be74b23413cdc56b5cc85244669ec7784924"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-audio-provenance.ts",
+      "gitBlob": "2d7bf539f3d9b04770e4d2b12a355b693cde1e0a",
+      "sha256": "438aaa14b91a1797eb78ca4ad95766ad8521cf2744a50a4b9ae9ae9e89d3d0ae"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-block-presets.ts",
+      "gitBlob": "3e61da37c49a2da083dafafd8c865a82e0958912",
+      "sha256": "3597c83cb024a46c10cdbc2be7af4ddcbdea2244ce8bcb0da82af5654b4aa1bb"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-canvas-imports.ts",
+      "gitBlob": "c19034a1d0163750054cdfee56884d2800b1af2b",
+      "sha256": "98539fce1981e999001bb13a54ef9116b108dac64fb9f7f884d86be0eb45eba7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-canvas-shortcuts.ts",
+      "gitBlob": "5a7d4e1a57e04dfadc8cc38b13cc34d73e5fbf7b",
+      "sha256": "e840761ed25ab46be7105a42c82f36b181669fa3fa12fcfbb8be6b3cbcfb6a20"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities.ts",
+      "gitBlob": "46612fd8798ccb5364426d179beac1783d755239",
+      "sha256": "f03401bdad4b767485f9fae080ea504eb5cbf43172d71f2d4767e3170337d8ff"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition.ts",
+      "gitBlob": "3fff0943918ae68bda28fa6bf3b84aa51d1632ae",
+      "sha256": "e96276258ea365f968ac69c88381b8ca1d6e48b69fc16aeff82b87c5c7926fe4"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-copy.ts",
+      "gitBlob": "e3e8e1c86c7dbfe116386523946e47769c880791",
+      "sha256": "7220f71f7003ac5d42552081bf4225ece73692303f487eec5a63db38b45b5f71"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media.ts",
+      "gitBlob": "9956889d570fa62bc9cdead12a990c2a1133c52a",
+      "sha256": "cf5348a193e06de0a20ac4ec1ab81172080269ad0dd95614bb36458611244e2f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-routing.ts",
+      "gitBlob": "8ae9537fb49393bbf0f80923ac90ba99e19321f0",
+      "sha256": "7012680284e18196040c496a511eb876dd5506203e0ea92a58a042676a303887"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation.ts",
+      "gitBlob": "3520717d5747bc76dcc7a764d0fa0b728a20827f",
+      "sha256": "6f59e1f15b112a3737b3b5d104e2b51489b4370e43fdebc910da9b661176520a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard.ts",
+      "gitBlob": "40c5df9ddda57c68a0499a9164e750eff8bf0361",
+      "sha256": "f36b6102fe9fa68b887179ec36997f46a9cc66772c7edcc3fd76d7b619593a20"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-helpers.ts",
+      "gitBlob": "929f61b950ea431f4559b5101a31cf5a99da0806",
+      "sha256": "41677eb1cc6e364709dae1dfb0f9f23fb46f22d885393a6ad608394ddc90ba7f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-guide-analytics.ts",
+      "gitBlob": "335ca3e7ed52b7e3f7acf7649f722462059880cc",
+      "sha256": "7c05df6a365f6ed8d4fb88e97286965c6c1a50d2ec59b130aa39f99948ea8576"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-guide-layout.ts",
+      "gitBlob": "89b78643e3330c82ed2d604483ffde658272f056",
+      "sha256": "994d1aa59273485973543f2ae8f4926c31e01f3e67e07636f52b0a8a4f04d664"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-guide-state.ts",
+      "gitBlob": "3d110f4509281e7550e6d02ff807ae94fe229202",
+      "sha256": "d5c30da0b659b3d9e637c2e94828d29a5ee4f5582f92faa29e9588caf493bef6"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-handle-drop.ts",
+      "gitBlob": "dbcad88eea154dd39fc78a16f114c876e1d145b1",
+      "sha256": "34f1e7d09ae9f041fbe36c7aa7c78c32b96201cdbdb9d3f504be1702042a4f1e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets.ts",
+      "gitBlob": "066d448d14be56c27fa2149e340b9444c0c80eec",
+      "sha256": "1bcf6bc2ce478d83747cfa150ff1357bc5db01d85b6b0b590756e140b398cdc2"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-media-availability.ts",
+      "gitBlob": "20b6cb988175ca875be10fcad54a65ae96c31d32",
+      "sha256": "4e88d54815907de3669198d664aa4dac16045928ab4fd00a34cf4c3c59f97783"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-output-count.ts",
+      "gitBlob": "7defd7cc19ec4a0ba87db961a2bd0cae730f5109",
+      "sha256": "7a26d55043a4364308aeb596eb057ce5a5dca061f2de0f9e9dd6c4475bf0ac1d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing.ts",
+      "gitBlob": "caba89778d729436763e53c740c49fd65fef918e",
+      "sha256": "fd03bc6e794d1a487315fa1913ce7c68cce7ec53e376653eab8401cff99f1369"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-program-snapshot.ts",
+      "gitBlob": "6d3cbc0a4f968195592079f5a5afe3cb38f30e3e",
+      "sha256": "4c2fd8162963ee4c7633c1a9c181913eaa88ccb40de5b4f2b14deaee48149acc"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag.ts",
+      "gitBlob": "db3dcd9a06922abfdd925efca3d8fa4b877edb05",
+      "sha256": "22f8bd818209589a00aa5cad322a817c03c206d9758b36f907525ef53a9c0b44"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-metadata.ts",
+      "gitBlob": "1ca805580c8704a94800ea6cfc19e4127dfbcb48",
+      "sha256": "aa28809ee16333e03b20710039632812b1f4c03efeb077a8a5d727b40d4a95b3"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline.ts",
+      "gitBlob": "011040d0af34ed345b9a4946aacf584f1a1b4dff",
+      "sha256": "c3ead61c59e88203bd6e142c0b3aeac95d9b6dd3de11dcb67fd2585864033ac3"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-upload.ts",
+      "gitBlob": "8710f0a5cb2e1e9a49beffba7d3c476a5bfedab9",
+      "sha256": "6b269f1a9622d0d4f66783f80047fedff06a215c13a4f0cdb6ef27790612c283"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings.ts",
+      "gitBlob": "14968c09f13fe314b097ddf933e1bf7e4377ab5a",
+      "sha256": "724805c0b1b238e205bb0286e696db9795c4983af068f918b5258ca843db103d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-render-edges.ts",
+      "gitBlob": "a7d1c2afd18fc8c6f1ee7b56d8d1254ab4e127e8",
+      "sha256": "4b9155cf18e58bb5815a78573a18821815ed07807c44995d1585941ba7c7726a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers.ts",
+      "gitBlob": "a317539a68664d7d8a614eedcf5be6871b8d20a6",
+      "sha256": "a7c0b673bc149ad90505fbae9945215eee1a381c36e5cab98d26d7bc2a291499"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates.ts",
+      "gitBlob": "07fd349d6b57ce74bb35825d24cde9fe81b76fca",
+      "sha256": "683f5450d3ff4c0407514461c1c80c3a1c5e50c28cfbcf46db2d590600c63f00"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timecode.ts",
+      "gitBlob": "68f27a6c2eead8376bd665c342412ecefc0ccb7c",
+      "sha256": "f70a0d9e150b487463de399041f8fbf52befd9daa4296859fea9df3e98de503a"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-drops.ts",
+      "gitBlob": "7739813862a8d6e6428047b9bd0954afecd56cfd",
+      "sha256": "d60ad1b3200b2ffc956e7a4324b64b4f2daaf4eecc8dff1b3695035d99317ba6"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing.ts",
+      "gitBlob": "d1a78bba3aeae0feafd98bc9cf81abac7799bccb",
+      "sha256": "4e756b2c39f09c93f61f24c2d0e4805c463d24a6e224681cd75207e2f2dfe828"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export-session.ts",
+      "gitBlob": "792b5e5cdbe92143bc67220c78b102c2d0811fac",
+      "sha256": "ed4249969646e9ad4f8d41e9d13f05f6aef4cf624941dafe1b2ef2b5a8df311e"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export.ts",
+      "gitBlob": "babda73b535134de6f6e616151f9b26e806a9dac",
+      "sha256": "f558f27f4b8edc0af76948eb358c2e81e3ae093891f7da2a50414ca3ef761173"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render.ts",
+      "gitBlob": "2d9aa9e28c2fe54ff70f08dd22dee4010f915dcd",
+      "sha256": "5b8de7de61c96dd68d8b057c5193685c767fa790d7d13ac483bd022741311ac1"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-selection.ts",
+      "gitBlob": "20e8332f2a7b5b71866c1258b1ad17f88bd90c6a",
+      "sha256": "fa2ba79686d4e959ae20b0c15b51764b79b40e0e2cdbb0657a4cc4dcc98c70d9"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-tracks.ts",
+      "gitBlob": "93fa1deea3b209e193b7d3dbf1a40750e1dc568d",
+      "sha256": "5d1924d80600bfbec6ef7820dd82216686a882b548bba5f28b4a8179fa3b53a7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-pricing.ts",
+      "gitBlob": "bd6d3863d71af34c14a73fddeaa7cd47c6794163",
+      "sha256": "559c655c37647c52feaadf60ac0dad95e1389130a0e28dd7641f039140ff2ebf"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-requests.ts",
+      "gitBlob": "f6005be42b7e6eab2cbef1a14dc2c87bef52d0a0",
+      "sha256": "edc961b3926207350fc1097df2437c5ce992dd6a25539ea71b84e7c0b923ee5c"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-settings.ts",
+      "gitBlob": "0fb92b9515c4d8955f869c007256f9c273a91d4c",
+      "sha256": "4931e2685e959cd58719e1dc36db5b88a45442c56312a1bcfbdda504a2b179c5"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types.ts",
+      "gitBlob": "9dd5d987804ef12c24ef4a165393cd96003ae1a5",
+      "sha256": "c6e2425e5cb358b0fc56416cd8c9806cb6a7a32c7533a9fafa5159d820ded2aa"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-api-persistence.ts",
+      "gitBlob": "c7caab3b0456b272c581f817dfa793a4989b128f",
+      "sha256": "6c89193a78e3c56775b54ff272d53199a6a148ff71bd89ad4a4a94efe44aa046"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers.ts",
+      "gitBlob": "b1fcd16f3a3c7a3fac5e3a57e57cc478f8eae854",
+      "sha256": "0380965a3e38f9a9d52ecd2f3fd84330befa0fd2e3df6410364ac2caad2d96c4"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-persistence.ts",
+      "gitBlob": "70a92042f05b87e5bd49868b2865935df5cd2854",
+      "sha256": "b29015f103871e7082a35776a8b0ead9f7f6d9ce480e48f23cc5aed854aff631"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-selectors.ts",
+      "gitBlob": "49d3457e148aaaacb4b9c07095c96f01ddb13f4c",
+      "sha256": "ef297d52a855bca60702ec0d7a8c9ce9e658d38c2efb9c3dcc2c92596eb12181"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-api-persistence.ts",
+      "gitBlob": "0f4ea481564fd70a7337b94dbcc12b0aa6b2660f",
+      "sha256": "8b0040102c796f1c43c46aa82dbb254c7db2f9e2d1858025e4afffc2ed57b4f9"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-operations.ts",
+      "gitBlob": "0c71f82e1a39ff089c7048abaeece7febfca0558",
+      "sha256": "876e697ecba1071737da2051391a489733dbeb1ddca9f50ff68beb482e948a59"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-snapshot.ts",
+      "gitBlob": "cccf31ab352fbaf293448433c3184f6ca3a6eece",
+      "sha256": "82d1f9215ac74b987e5ee1bf74020e6e962fa3c9c5ebe219eb6bd761fdc862c3"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state.ts",
+      "gitBlob": "293d5f7021087994e92ab18b5df98ff6f9910c8c",
+      "sha256": "13abe89645f87f03bea75aa9aa41f225b5b806697150bbbdda1684eb65780419"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/asset-library.module.css",
+      "gitBlob": "8b49e91a3ec03ad5cc6fbeed65f127ed45992889",
+      "sha256": "1530f76d0e0a1fecc63ae5a3bec6c9b43ef73291ebb030139628ef0fc400971b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-chat-node.module.css",
+      "gitBlob": "f9785cf4a7879d01924dcc3d9d931b256ddeeda7",
+      "sha256": "8c5a0c92970298b713da0a3f66b65ea310c5904da6b8a199db4ea947df1bb60b"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-guide.module.css",
+      "gitBlob": "7249c1965e5ae5d8e3e08f3c59bd432da157bd2f",
+      "sha256": "7dde52c9f7647bc1837fb82f6f0ac01f75c1b908febe4f149358e63f15b57aab"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-map.module.css",
+      "gitBlob": "7be8b5da340d317237fd24dcbf97c2df7dedda3e",
+      "sha256": "dff0e9e1e13b20b524dd25f6bfbe4493a8c3f98dd19819caf27e0d7a34f7f185"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-navigator.module.css",
+      "gitBlob": "5e1d29fad16300dbd23b5c6abe7c49c46cca7aa3",
+      "sha256": "d935f4b64ee6ae4d7e61a5f339c61965330dcd74c84a8108e8f07848d4b655f3"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-nodes.module.css",
+      "gitBlob": "819ac66241531485eef543cc7c7f0082cf55d821",
+      "sha256": "8d9aaa6bbb87779d849f432c876b857614b2ea34f1f9ad3683ae7b956d481968"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-shot-controls.module.css",
+      "gitBlob": "13e2d1860e27fe8d16079c677ec58dd149d1c6fc",
+      "sha256": "c0a2f8d9c83b32cb0d083a49b4a81693d5a0fd15588cdffafdd990297e752946"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-toolbar.module.css",
+      "gitBlob": "067132b6f4809288e76881b10bf5cdc9e959739d",
+      "sha256": "6922d86648810d80abca537d06c6d61d13ecf6af3671e3e422983d9479d70f27"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas.module.css",
+      "gitBlob": "dafdcf2ca6d23c33a06149acfa89ac0a968b06ff",
+      "sha256": "306ad4823869e3f1fb0cb75c199ee248b7ccd5fe6d83e829af36b057f83d0000"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/export.module.css",
+      "gitBlob": "f54d3e6c22235492fb19e28fad3677b99129e2ff",
+      "sha256": "3e84b1dd7def0d3cba5471a076ccb2c353220ba9574859368288cd75d0ca72b4"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/inspector.module.css",
+      "gitBlob": "a873e663aa7582cfd5d1413325c56a171210e9c1",
+      "sha256": "cecf084849713d9d1356c10cec0c6f6c223f0f44dee575dc42cb5fa9c3085e97"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/media.module.css",
+      "gitBlob": "0fd6357573627222326da5cd0434f7b04075cec4",
+      "sha256": "282f1293034430ed2835a76d1d9497ff55e76a4dd5488fa89d71015e2b81c5c7"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/shell.module.css",
+      "gitBlob": "4e91604987106334f696156a68f3ba16ac83bbbc",
+      "sha256": "92363f9be46568f878105d2d6c78537eb97de579e00e8f8d2c4f613469be7a11"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/studio-controls.module.css",
+      "gitBlob": "b47177a4ac464d08cf237cd2164c73d6d2b48ea7",
+      "sha256": "01285d5b365c646a7584deab4ad4888110ef0de52197fa9d4eade73a5c8006d5"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/studio-session.module.css",
+      "gitBlob": "00266e5f4a2176d70d32d543430174392441caec",
+      "sha256": "03afc4525c42c833d8428fdf4074d03282106667c04765a7981854947e2af416"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/timeline-clips.module.css",
+      "gitBlob": "4c9ca0d307175c6c5a8e2faaa32295963b21cf63",
+      "sha256": "cb4466d9617185786b9e2e05f6e58dac64ea5df3394328a58698adb97132945f"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/timeline-context-menu.module.css",
+      "gitBlob": "66a11a14eed640fa04af8a2cc5e8cf1eea01e7fe",
+      "sha256": "ca57b2ef7dbcf51b29a41e98e4508d791fae9cc3c434a182f5f3faa533d25c15"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/timeline-controls.module.css",
+      "gitBlob": "f6f5ef779615767b6be77077b9566a95f1c07210",
+      "sha256": "dc450205579bd3e8f295f26e4b703c2dc98d0e7b547981c62140f8b35c358a77"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/timeline.module.css",
+      "gitBlob": "9501e00216c3bebfe4a6cc2d7bec8f812f46cf1f",
+      "sha256": "46f1fabf05f8d213a570e29b1460128d7dba736ad3058539e3f58a146588a2b6"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/viewer.module.css",
+      "gitBlob": "636b9a83bdcbef4e02a650f6cd77e0b1694ecf12",
+      "sha256": "349ebd6d7b13fa1a3640bbe93155a55ca28eb4bbe09f3f460b6d35bffdcc3584"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_styles/workspace-engine-picker.module.css",
+      "gitBlob": "08ee65de3f13f5250ced41ef82ed6e464adbdc8c",
+      "sha256": "b758b36b57e7bac6e4641509537024456a60393d847dbe245d576392f8cb0518"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/maxvideoai-editor.module.css",
+      "gitBlob": "f292ae978206b325daa9936b076e50e711c3b97a",
+      "sha256": "8fa619d109d10c9c4b8aadf4d38db84859e7420a9b0c3db9ed0dbb945bc0ee3d"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/page.tsx",
+      "gitBlob": "334d8f4151e058e415b31d9429175bb393273435",
+      "sha256": "81bab57ae265d9f7229db8c6edcac1f54d383166b27714760ccb04d97a72d00c"
+    },
+    {
+      "path": "frontend/app/api/studio/_lib/studio-route-utils.ts",
+      "gitBlob": "5208efd11078e81f5d007c02086b85a5787a63f9",
+      "sha256": "e2480686d0c47275b6158157255e8a89fd34cde446e9ec4c03bf27e1e269a8ae"
+    },
+    {
+      "path": "frontend/app/api/studio/chat/route.ts",
+      "gitBlob": "bca128398075114e0316d8d54fb0c01487e03ebb",
+      "sha256": "3d2e0d149a2af10daf5302b5b1977808c55b4fb78b2cfa118f0f9566cb76d0c7"
+    },
+    {
+      "path": "frontend/app/api/studio/marketing-entry/route.ts",
+      "gitBlob": "46e68db1eda8a4a0834be16daa34b5630cdfb49d",
+      "sha256": "dc366af5963ac8841be714c832e19ff7c3d8c1aaa652ef2b06c04f4f26b566e4"
+    },
+    {
+      "path": "frontend/app/api/studio/projects/[projectId]/route.ts",
+      "gitBlob": "2c042973661ee9796a3782cf0af8bb7ce93b942b",
+      "sha256": "1a4e27542ff675ab05f15aff85995ad16d673e1dce969cf44cc0c32bf1023ea2"
+    },
+    {
+      "path": "frontend/app/api/studio/projects/[projectId]/sequences/[sequenceId]/route.ts",
+      "gitBlob": "3e7e127d4647f0f64342555c2fe135860435642a",
+      "sha256": "7e5bead3ad9703ac62fbcabecb5ed53f45f82ab6ed0b9a0f6bc0c3e3cc11c39a"
+    },
+    {
+      "path": "frontend/app/api/studio/projects/[projectId]/sequences/route.ts",
+      "gitBlob": "e0f32c93e8d9548536505c55d88f90242836e87f",
+      "sha256": "6283e732a7f3e6af753b64073075a82b3d08968e8752214cdf88b61f4d13858b"
+    },
+    {
+      "path": "frontend/app/api/studio/projects/route.ts",
+      "gitBlob": "7348b6711b12ffcb828a08862b46ff48a4a35199",
+      "sha256": "d827212b1375133ae9a8c1b210949b8463ecc9a8de0a83bf5ab93756f01bfc74"
+    },
+    {
+      "path": "frontend/app/api/studio/timeline-exports/[exportId]/route.ts",
+      "gitBlob": "8c627cffe4ad62b3da8cc2b17e59ad74d6761776",
+      "sha256": "9842bb701170f075ff5ca129f97792a3ac9b74c0c1604859da6c6b08b22029a2"
+    },
+    {
+      "path": "frontend/app/api/studio/timeline-exports/estimate/route.ts",
+      "gitBlob": "ac455f7efa52612728f83a12b832face0b62cd55",
+      "sha256": "af1e59c4577dcd9a4e61f11c9ba295c6f20bb2883ea83c1cfee145cbd75f1609"
+    },
+    {
+      "path": "frontend/app/api/studio/timeline-exports/route.ts",
+      "gitBlob": "bcb931eb93c9fef03cda0a3df4ff2dd87d70dcf4",
+      "sha256": "849cb763a4359c366b1c419ebbf570f693b5d99b3d04b9963e957f63a4419ecb"
+    },
+    {
+      "path": "frontend/public/assets/studio/starters/cinematic-trailer-canvas.webp",
+      "gitBlob": "6e830fc7eb14618a6202598eefc5f3f09260d2dc",
+      "sha256": "1facab95ea92cd4f5b6f9aff27a606b82527b128863e9ce4f5a6439b4babc8b8"
+    },
+    {
+      "path": "frontend/public/assets/studio/starters/cinematic-trailer.webp",
+      "gitBlob": "990185c5f2f08b95a8e55aa3f26e409d51e3ddd6",
+      "sha256": "1d99708d808b48b395e76aafeea3a8704cd732084d83bcda3a2f6c6cf085d49e"
+    },
+    {
+      "path": "frontend/public/assets/studio/starters/product-ad-canvas.webp",
+      "gitBlob": "ef6d1b046f9dd29114aa55aa3ab42c1c122399d8",
+      "sha256": "505c694a6da431c26b8d784027b55190115bdb4128f1178b8d5903736300b680"
+    },
+    {
+      "path": "frontend/public/assets/studio/starters/product-ad.webp",
+      "gitBlob": "a0c77baaaf40a1265642ee12178015cad6b58080",
+      "sha256": "513131b09d5b6319b3fbf67241ce5dff59065d0aecd8d9cf74e9513b92575adb"
+    },
+    {
+      "path": "frontend/public/assets/studio/starters/storyboard-to-video-canvas.webp",
+      "gitBlob": "fae31e4514e04ef8c3886682d760e1a09054d2a9",
+      "sha256": "85f80e372352aca321b040d756a338be437f5f4f29653f76083bc6cfb29fc718"
+    },
+    {
+      "path": "frontend/public/assets/studio/starters/storyboard-to-video.webp",
+      "gitBlob": "8d06f34abcd51de9d0cd68e093943001c82cc926",
+      "sha256": "0a3092881d2601b6fe923bf609d0143cdf06edc7c6e165eacd8cae57e9d93385"
+    },
+    {
+      "path": "frontend/public/studio/demo-ambient.wav",
+      "gitBlob": "5cc83c53a09af2d6c7027344cbf26c4c5c8a4693",
+      "sha256": "e08357c44a2bc2a35cec0e9a29a33ab02ccbd33402eaf245d5f3bc2f515079b2"
+    },
+    {
+      "path": "frontend/scripts/run-timeline-export-worker.ts",
+      "gitBlob": "2e82e2d2ab0d4e7b01079110df8874b66bc3b3cf",
+      "sha256": "60cdf48a6842083fd08708c5a68ab3747b668b6d210e5fa033baf165200d3632"
+    },
+    {
+      "path": "frontend/src/remotion/timeline-export/Root.tsx",
+      "gitBlob": "b579949c1a9667399609595d4af96cf0828c4246",
+      "sha256": "892fe9f5b3f04db31a65f9f1de84846d10a3eedfb4d7ba9c7ac0e1270da8d86e"
+    },
+    {
+      "path": "frontend/src/remotion/timeline-export/TimelineComposition.tsx",
+      "gitBlob": "e6ff9f015edd650abd30a7f9cb95e1597bdbe6c2",
+      "sha256": "cd8c61c8c17c066aa03840c084bc84d0474f2bcc4080ea8d0724223d5bb00ce1"
+    },
+    {
+      "path": "frontend/src/remotion/timeline-export/types.ts",
+      "gitBlob": "9fbef5227eea02316e9b7296cae9c869740f50c5",
+      "sha256": "e47579d515d631a0fef7341021bc07a610b1e908b4431e147678806ba6b8ae59"
+    },
+    {
+      "path": "frontend/src/server/studio/chat.ts",
+      "gitBlob": "e82ebc573a03412c59e28926d7b39c118f2c7ed8",
+      "sha256": "b4cacdbb8becec5d0f6817b99b6e443baf33efabd30bad322381208759612fe9"
+    },
+    {
+      "path": "frontend/src/server/studio/contracts.ts",
+      "gitBlob": "f5f6f43faf4fc6eb19951573ff66b5cd24b91546",
+      "sha256": "631158d7abf621f10036af0111f83bde313a879fe1b076ec42814e80440179ad"
+    },
+    {
+      "path": "frontend/src/server/studio/repository.ts",
+      "gitBlob": "bec5903e97cd5954235696c18ad4938d1c0d2bb6",
+      "sha256": "e071493fbc97e132510c5379e45ff91d7e1da7d67b546f2d1f6041b85c57c9a8"
+    },
+    {
+      "path": "frontend/src/server/studio/schema.ts",
+      "gitBlob": "c3bb98f40516de6fc6d1cac8b18d2d487fecf547",
+      "sha256": "b3cd36ab3aea0be2ff39456d89f9a432421d0a2fd30a429ba7a6dd4771b446e7"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/billing.ts",
+      "gitBlob": "d7021cf02292e5d18fac579517428c36fb1cc4ba",
+      "sha256": "09e6147b98196ae0adc4b719b1ad11549594565a60e6ef137df3ce2c76decf6d"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/contracts.ts",
+      "gitBlob": "e4210a1b03b7440dff92f883469ceb7a77f3fc45",
+      "sha256": "0d6f9973294a0f560216cf303d5544ef9f5502914b4e9821a36356c66b8f37f7"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/ecs-runner.ts",
+      "gitBlob": "755d537596c6fab1edd1668267680dee773dba94",
+      "sha256": "6dfaf936add2da431695281d35054512770f93b428d03a0262be3f7d053db986"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/estimate-token.ts",
+      "gitBlob": "fddd4313de91cf1c9460da4dc7890cc3744ca14f",
+      "sha256": "617e06b5d786f3c053f9589f2bd1f35301b0442a98154a20acd047ba3e3ea613"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/manifest-resolver.ts",
+      "gitBlob": "4c70b3cf5314bfac599cf3711ee83848caed04e7",
+      "sha256": "6c0b185d04f984c19d3bffa768ca0ccd3c537bacbcb4749abef19d9589f60e19"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/media-security.ts",
+      "gitBlob": "f980c8399fd008ebaa68a3efb8cfd06ca86907c3",
+      "sha256": "962d7ece54be3493638b015e6183bbde82d3250bab5f3018126c1a478f1929e3"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/pricing.ts",
+      "gitBlob": "d49714ad9502a2d644a8c05f76fd39379e0b8179",
+      "sha256": "6144d6edf9e7bc8e95acaf0b09e4540322a86d256a96bab4f61cbfac027b7c4e"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/render-request.ts",
+      "gitBlob": "3d6fdfc26c39ae5b35f37a214058eae60f877734",
+      "sha256": "01a95e7f3da6e61e144e19862f869f45c84545d872e97889d2dab7b9d279dc30"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/renderer.ts",
+      "gitBlob": "879f2fb8d2e2100fadc94c2ad1c9ced83b6f65d0",
+      "sha256": "bbe03c0ddda32b88ec401d05bba64ae49e7e9b8e95e4b1c9fb4fe1cf5d754640"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/repository.ts",
+      "gitBlob": "662b3c92dc5dc3e101f0ad8c5e89643c4aeb9407",
+      "sha256": "443fe3022c127167b58f31eb328217742062a359fe0371f4880f11d12e58dd17"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/schema.ts",
+      "gitBlob": "8391890af4b7f7d67ad8ba702ec6092af6674b80",
+      "sha256": "c34bfc13aecf495ea9dc05bcd4d27ab43d192ad08f33bd529badda8e80182af1"
+    },
+    {
+      "path": "frontend/src/server/timeline-exports/worker-preflight.ts",
+      "gitBlob": "33a3201653f59f401b584740e9d2bc1aa64828ab",
+      "sha256": "7c08e74c889350e7301cd2c9316bb18f105905cbddf3de2c92a569e8a52a2887"
+    },
+    {
+      "path": "neon/migrations/26_studio_projects.sql",
+      "gitBlob": "00ea355bba997b04e327d93edbb508de090612ba",
+      "sha256": "c9af654c13689d26e1345be12112bc8dccf2871651e0c4e6b03577646a4b3430"
+    },
+    {
+      "path": "playwright.editor.config.ts",
+      "gitBlob": "6af41c14198f07a1bfede022532cc665f674abdc",
+      "sha256": "8ba0ab6fba98bbce986ade155b602d91aa52932addff88a2a70fbe41e4380842"
+    },
+    {
+      "path": "tests/e2e/editor/editor-helpers.ts",
+      "gitBlob": "2072033804c75caa7d3bbc37237e93b1aceda4f8",
+      "sha256": "5fd37f2128d2e9ec055d721bf77260de9217869d9666ecc9cfb8806d36669516"
+    },
+    {
+      "path": "tests/e2e/editor/editor-library.spec.ts",
+      "gitBlob": "27d8f0828c9ba863cd8b908e8e0bf96cf3d83d8d",
+      "sha256": "2a18bc456966c0441f1d833d07f0d1562bfff5373659ee9ba7f6cd7e3184362b"
+    },
+    {
+      "path": "tests/e2e/editor/editor-performance.spec.ts",
+      "gitBlob": "0b8f4e6586534f9956c8c429c1052991a3920b20",
+      "sha256": "623b97671bb92c7733c67c39572c929f6c256d255b047b1b8fc001b0fc9ef994"
+    },
+    {
+      "path": "tests/e2e/editor/editor-responsive.spec.ts",
+      "gitBlob": "2ca3509f4a88f82a879821b6ceea073e65846c02",
+      "sha256": "639db72c170d02c4fc3c580ddd0e5c72a65106ee033c44b623fc12a2a1bf0f24"
+    },
+    {
+      "path": "tests/e2e/editor/editor-smoke.spec.ts",
+      "gitBlob": "073077aab8aa94739999daec0c2648f3442a365e",
+      "sha256": "cac17ab98496b9681ee9ded7095d8963a8265910161b19b16fb3a3c5465bf4bf"
+    },
+    {
+      "path": "tests/e2e/editor/editor-timeline.spec.ts",
+      "gitBlob": "4b02abcb557a154d655a2ccdd87c4198cc5327e8",
+      "sha256": "eec2b0aefa35355ebfc5bff7ea666c3ede19cc421535225acd59c7b117980446"
+    },
+    {
+      "path": "tests/e2e/editor/editor-v1-user-flows.spec.ts",
+      "gitBlob": "11a052d68227074c7483e7536f42b451cf27c311",
+      "sha256": "91d6b9742cdec7ca1e051f18c2bcad787757abb2cab23e5f8e5dfada773166ab"
+    },
+    {
+      "path": "tests/helpers/react-hook-harness.ts",
+      "gitBlob": "2d08164cfe9b9ed7cb57dde527c188fff21e9bad",
+      "sha256": "7fe4ecdf79bfa85a6a573cf841aa7818747bc723f2f844cc423c5ffdc41ab7a1"
+    },
+    {
+      "path": "tests/maxvideoai-editor-engine-picker.test.ts",
+      "gitBlob": "6b994c32c449e404e0d5c0954aa8b03dcaffbe5f",
+      "sha256": "a1564b8ced4ed5b46a84b0575211e1507fcaa95c7c227c3b38f376569897a5cc"
+    },
+    {
+      "path": "tests/maxvideoai-editor-final-generation-fixes.test.ts",
+      "gitBlob": "dca0a4e4371de14c68d95da2cfc369bbefbf10e2",
+      "sha256": "928982b6ab5db61bfcd7b5ed51958d09ed7d431d1eca72d7fc063ddd38971583"
+    },
+    {
+      "path": "tests/maxvideoai-editor-generation-blocks.test.ts",
+      "gitBlob": "8c8e964b9a174826ad2aca9c4bb5741efd060f17",
+      "sha256": "ab91afed05962a8419725d05b5abdde62e00d7e6b5fe9b73c2243c14e3aa657b"
+    },
+    {
+      "path": "tests/maxvideoai-editor-graph-helpers.test.ts",
+      "gitBlob": "16d2cfa6a7e2b8ca6da3e6db0dccd547ddff82b2",
+      "sha256": "888b9a5af25765620f2f5aa656e9f3b498631356ea631ac0c804bce05923774d"
+    },
+    {
+      "path": "tests/maxvideoai-editor-guide-annotations.test.ts",
+      "gitBlob": "8f80e0aaa6313b54cc2ec18dd7e1765e5d3cdf0e",
+      "sha256": "d7a66d79173c5b13593ec0a4c8111eff66c9a432436e493aa2b2182ea431484b"
+    },
+    {
+      "path": "tests/maxvideoai-editor-project-media-timeline.test.ts",
+      "gitBlob": "dd626b0b0adee9594a74f34de0d86e759788bc73",
+      "sha256": "1286022c36671e6327df63eb8908905ef2eb7d14c4b1ec5e8de2169188265fd4"
+    },
+    {
+      "path": "tests/maxvideoai-editor-sequence-api-persistence.test.ts",
+      "gitBlob": "6c18a8a0e0c6dd3cb05b7e0779b1d058f51809fc",
+      "sha256": "84b2350b3f2ef3c84388bf78d7806bc8d4f6f169f7057aec683d55963af70289"
+    },
+    {
+      "path": "tests/maxvideoai-editor-sequence-operations.test.ts",
+      "gitBlob": "64358ed5b2959d250ad11d9e95ea7033159bb0bd",
+      "sha256": "02b183d322a098dbec8148ca533d6038b120959272706679289dab3044c24a33"
+    },
+    {
+      "path": "tests/maxvideoai-editor-timeline-export.test.ts",
+      "gitBlob": "8db1f0ca2116640a61e2b6b6691a7a4cce7bd7d8",
+      "sha256": "204caac7f30a540b172e2fe0cdcae8d5df9dbeed2d82b5e1c9ed1891c3f8c256"
+    },
+    {
+      "path": "tests/maxvideoai-editor-timeline-external-drop.test.ts",
+      "gitBlob": "d9355702c373c5cc3353f92c5054cb9f3699b99b",
+      "sha256": "63dd803ad1327c8e5b615ca6d71c22a23695216ad1c6a1cc6ce13a3bfef92842"
+    },
+    {
+      "path": "tests/maxvideoai-editor-timeline-interaction.test.ts",
+      "gitBlob": "f940252a9cbee8f4c90897aa02be8f972d278458",
+      "sha256": "dba98883beb983c516f01226d875a9e9ff00fb68e9145d4aba4296678079ae6c"
+    },
+    {
+      "path": "tests/maxvideoai-editor-timeline-selection.test.ts",
+      "gitBlob": "6a9a195c59c35b665d02ede76a857ff50f429e0c",
+      "sha256": "ca2ff3f18aa6f40e17086f9a39de7f6b0fcac76d684174c4d6fc7840fe91d04c"
+    },
+    {
+      "path": "tests/maxvideoai-editor-v1-capability-matrix.test.ts",
+      "gitBlob": "a4166266e0c4476d5ad8f3ef5cd10d52fc23254d",
+      "sha256": "87d14ed5dc82b81b370aeefc4e08001c70f0a940fd705707306c28c5ae034a41"
+    },
+    {
+      "path": "tests/maxvideoai-editor-v1-pricing.test.ts",
+      "gitBlob": "7c87e48b7bcf3cc9f00ac4bfad95061663b7a2f8",
+      "sha256": "a1d0860bc43372920fd6db40d4436d51e9835e13d8be260ca99a5545359359e3"
+    },
+    {
+      "path": "tests/maxvideoai-editor-v1-request-payloads.test.ts",
+      "gitBlob": "1ac750a0fff046503e17f8e8a1b0513aa342200d",
+      "sha256": "898306d883ab681225b5746fbbffc45c2867270256cee009c3d830d76827b43b"
+    },
+    {
+      "path": "tests/maxvideoai-editor-workspace-architecture.test.ts",
+      "gitBlob": "42d6f908e6ddd0e94c69c2bb9b6fb1a9d27ad639",
+      "sha256": "84724fec3e261e670bbb1b86ef51169be11d76fb3f1ef06929ee7c0c70515cb1"
+    },
+    {
+      "path": "tests/media-library-round4.test.ts",
+      "gitBlob": "90e314801877795a9820214076dd80663daf0946",
+      "sha256": "0745544eee7a1f53d7850add70434654f0b02b13f31e9aac495cfff1129c99e9",
+      "disposition": "excluded-global-owner-contract"
+    },
+    {
+      "path": "tests/media-library-round5.test.ts",
+      "gitBlob": "4c8b2a372f1523c994f3c4028dd7c186c696268d",
+      "sha256": "438b79895b76c15e33379047fd8733486e03bcc285a99f1ff928e0330be37b89",
+      "disposition": "excluded-global-owner-contract"
+    },
+    {
+      "path": "tests/media-library-security-round3.test.ts",
+      "gitBlob": "d96cb3576b4d5a95476aadbd644c32c0266c8ae0",
+      "sha256": "21964b42c83b27283469cd2ef0bb05051e386271a5b0c66790d3d5a8f7e9323f",
+      "disposition": "excluded-global-owner-contract"
+    },
+    {
+      "path": "tests/studio-localization-contract.test.ts",
+      "gitBlob": "1211662502af56ce2cac824e7cf1c0798088cede",
+      "sha256": "b19fe87ffc710d0f95f4e5c73daae699ee0874b18efcce9cf0593d132d11770f"
+    },
+    {
+      "path": "tests/studio-marketing-entry.test.ts",
+      "gitBlob": "0b3bc5943277d3f2bd77c319bf797797a2771fc9",
+      "sha256": "8a29802716097de2388302019e4ca2a4d82ebb4d9403df9eb87194adb8c42c38"
+    },
+    {
+      "path": "tests/timeline-export-server-contract.test.ts",
+      "gitBlob": "0f0ec40542b3772a3de36803ea8ce695c6102e61",
+      "sha256": "b3a64ca09b13b107e181848891340c8502d019893b7835f91ac3982c578fc4b4"
+    },
+    {
+      "path": "tests/timeline-export-server-round2.test.ts",
+      "gitBlob": "feb9d77c6f9169ab29591a7782bf761d65c38448",
+      "sha256": "c0643e36e41fa5f06c7efa864c7ffc77ce59a15109330bb0fcd7f14c6a669b65"
+    },
+    {
+      "path": "tests/timeline-export-server-security.test.ts",
+      "gitBlob": "cbdb20321eac29d6bbcc4e6cfde783334f8b2b49",
+      "sha256": "f52a53ac434f5a948cfda78dc950f12f7f979e1161a4c17ef1a371ee30359f3e"
+    },
+    {
+      "path": "tests/timeline-export-thumbnail-round4.test.ts",
+      "gitBlob": "a96e2a273534bd0ede708fb01b38a2d9db73ede4",
+      "sha256": "3c2eae96bc748939c9cff8cc8350241e5f3442d5179001abd2a5a2e244b75a51"
+    },
+    {
+      "path": "tests/wallet-render-round3.test.ts",
+      "gitBlob": "cb4904f7cf1424731fcec352e1c57aa4c0b35f49",
+      "sha256": "dd15d17bdc5ad4476b104cb52b3e3ca15096da0c673f1ea273d29d7236a6874a",
+      "disposition": "excluded-global-owner-contract"
+    },
+    {
+      "path": "frontend/lib/studio-chat-models.ts",
+      "gitBlob": "bb655fc877015c7c052d403390637e7d743ffec5",
+      "sha256": "bfa2de871dac464ee04424f4d4eee3f71457834c51ffbd01460ed41c05a492d7"
+    },
+    {
+      "path": "docs/engineering/maxvideoai-editor-server-render.md",
+      "gitBlob": "cd5cf692679e72c2c3d6cbc02beced6b44ddc40b",
+      "sha256": "b81a1d23decc54102672e902508275e958c7963df9eb42d27586fdb5d99898ad"
+    },
+    {
+      "path": "frontend/public/storyboard/examples/storyboarder-product-reference.jpg",
+      "gitBlob": "d328e80c1d0b7979f02a7c1b0c9c2bf0a6a24e15",
+      "sha256": "0b78ca82c0b6703df5ef3b8731f883c3bd95701e4f7df465d783bbd85eb5637a"
+    }
+  ]
+}

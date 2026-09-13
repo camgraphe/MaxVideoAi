@@ -111,11 +111,6 @@ export type LibraryAsset = {
   createdAt?: string;
 };
 
-export type AssetsResponse = {
-  ok: boolean;
-  assets: LibraryAsset[];
-};
-
 export type ImageLibraryModalState = {
   open: boolean;
   slotIndex: number | null;

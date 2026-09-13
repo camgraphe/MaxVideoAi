@@ -204,8 +204,7 @@ function buildPreflight(body) {
     aspectRatio,
     fps,
     addons = {},
-    seedLocked = false,
-    user = {}
+    seedLocked = false
   } = body || {};
 
   const engine = enginesMap[engineId];
@@ -388,21 +387,8 @@ function buildPreflight(body) {
   }
 
   const subtotalBeforeDiscount = roundCurrency(baseSubtotal + addonsTotal);
-
-  const memberTier = user.memberTier || null;
-  const tierDiscountRate = getMemberDiscountRate(memberTier);
-  const discountAmount = roundCurrency(subtotalBeforeDiscount * tierDiscountRate);
-
-  const discounts = tierDiscountRate > 0 ? [
-    {
-      type: 'member',
-      tier: memberTier,
-      rate: tierDiscountRate,
-      amount: -discountAmount
-    }
-  ] : [];
-
-  const total = roundCurrency(subtotalBeforeDiscount - discountAmount);
+  const discounts = [];
+  const total = subtotalBeforeDiscount;
 
   const messages = [];
   if (engine.maxDurationSec && durationSec === engine.maxDurationSec && resolution === '1080p') {
@@ -436,15 +422,6 @@ function buildPreflight(body) {
     status: 200,
     payload: response
   };
-}
-
-function getMemberDiscountRate(tier) {
-  if (!tier) return 0;
-  const normalized = tier.toLowerCase();
-  if (normalized === 'plus') return 0.05;
-  if (normalized === 'pro') return 0.1;
-  if (normalized === 'member') return 0;
-  return 0;
 }
 
 function roundCurrency(value) {

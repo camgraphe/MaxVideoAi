@@ -7,6 +7,7 @@ import {
 } from './stripe-webhook-event-state';
 import { handleChargeFailed, handlePaymentIntentFailed } from './stripe-webhook-failed-payments';
 import { handleChargeRefunded } from './stripe-webhook-refunds';
+import { handleInvoicePaid } from './stripe-webhook-invoice-events';
 import {
   handleCheckoutSessionCompleted,
   handlePaymentIntentSucceeded,
@@ -15,7 +16,9 @@ import { replayMcpTopupAttributionForProcessedEvent } from './stripe-webhook-mcp
 
 const HANDLED_EVENT_TYPES = new Set([
   'checkout.session.completed',
+  'checkout.session.async_payment_succeeded',
   'payment_intent.succeeded',
+  'invoice.paid',
   'payment_intent.payment_failed',
   'charge.refunded',
   'charge.failed',
@@ -29,6 +32,7 @@ export type StripeWebhookEventProcessorDependencies = {
   rollbackStripeEvent: typeof rollbackStripeEvent;
   replayMcpTopupAttribution: typeof replayMcpTopupAttributionForProcessedEvent;
   handleCheckoutSessionCompleted: typeof handleCheckoutSessionCompleted;
+  handleInvoicePaid: typeof handleInvoicePaid;
   handlePaymentIntentSucceeded: typeof handlePaymentIntentSucceeded;
   handlePaymentIntentFailed: typeof handlePaymentIntentFailed;
   handleChargeRefunded: typeof handleChargeRefunded;
@@ -73,10 +77,14 @@ export function createStripeWebhookEventProcessor(
     try {
       switch (event.type) {
         case 'checkout.session.completed':
+        case 'checkout.session.async_payment_succeeded':
           await dependencies.handleCheckoutSessionCompleted(
             event.data.object as Stripe.Checkout.Session,
             options
           );
+          break;
+        case 'invoice.paid':
+          await dependencies.handleInvoicePaid(event.data.object as Stripe.Invoice);
           break;
         case 'payment_intent.succeeded':
           await dependencies.handlePaymentIntentSucceeded(
@@ -110,6 +118,7 @@ export const processStripeWebhookEvent = createStripeWebhookEventProcessor({
   rollbackStripeEvent,
   replayMcpTopupAttribution: replayMcpTopupAttributionForProcessedEvent,
   handleCheckoutSessionCompleted,
+  handleInvoicePaid,
   handlePaymentIntentSucceeded,
   handlePaymentIntentFailed,
   handleChargeRefunded,

@@ -1,3 +1,4 @@
+import { requiresMembershipPricingRefresh, MEMBERSHIP_PRICING_REFRESH_MESSAGE } from '@/lib/membership-policy';
 import { randomUUID } from 'crypto';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
@@ -53,7 +54,6 @@ import { resolveImageGenerationPricingSnapshot } from './image-generation-pricin
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
 export type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
-
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 
@@ -80,6 +80,7 @@ export async function executeImageGeneration({
   ) {
     fail('t2i', 'job_charge_conflict', 'Invalid pre-reserved image generation state.', 409);
   }
+  if (!trustedQuotedBilling && requiresMembershipPricingRefresh(body.membershipTier)) fail('t2i', 'PRICING_REFRESH_REQUIRED', MEMBERSHIP_PRICING_REFRESH_MESSAGE, 409);
   if (!isDatabaseConfigured()) {
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
   }

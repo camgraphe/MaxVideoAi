@@ -26,6 +26,8 @@ export type LegacyJobMediaRow = {
   preview_video_url?: string | null;
   render_ids?: unknown;
   duration_sec?: number | null;
+  measured_duration_sec?: number | null;
+  audio_mime_type?: string | null;
   status?: string | null;
 };
 
@@ -245,13 +247,19 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       storageUrl: null,
       thumbUrl: null,
       previewUrl: null,
-      mimeType: inferMimeFromUrl(audioUrl, 'audio'),
+      mimeType: inferMimeFromUrl(audioUrl, 'audio', row.audio_mime_type),
       width: null,
       height: null,
       durationSec: normalizeInteger(row.duration_sec),
       position: 0,
       status,
-      metadata: { legacy: true, surface: row.surface ?? null },
+      metadata: {
+        legacy: true,
+        surface: row.surface ?? null,
+        ...(normalizePositiveNumber(row.measured_duration_sec) === null
+          ? {}
+          : { measuredDurationSec: normalizePositiveNumber(row.measured_duration_sec) }),
+      },
     });
   }
 

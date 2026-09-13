@@ -7,6 +7,7 @@ import {
 export type McpRuntimeCapabilities = Readonly<{
   paidGeneration: boolean;
   referenceUploads: boolean;
+  audioGeneration: boolean;
 }>;
 
 export type McpOperationalPublication = Readonly<{
@@ -15,6 +16,7 @@ export type McpOperationalPublication = Readonly<{
   discovery: boolean;
   paidGeneration: boolean;
   referenceUploads: boolean;
+  audioGeneration?: boolean;
 }>;
 
 export function resolveMcpRuntimeCapabilities(
@@ -33,5 +35,6 @@ export function resolveMcpRuntimeCapabilities(
   return Object.freeze({
     paidGeneration: publication.paidGeneration || operationalStaging,
     referenceUploads: publication.referenceUploads || stagingReferenceCleanup,
+    audioGeneration: publication.audioGeneration === true,
   });
 }

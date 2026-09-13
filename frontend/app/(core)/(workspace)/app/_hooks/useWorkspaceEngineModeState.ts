@@ -1,53 +1,21 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import {
-  getSeedanceAssetState,
-  getUnifiedSeedanceMode,
-  isUnifiedSeedanceEngineId,
-} from '@/lib/seedance-workflow';
-import {
-  getUnifiedHappyHorseMode,
-  isHappyHorseEngineId,
-  supportsHappyHorseVideoEdit,
-} from '@/lib/happy-horse-workflow';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
-import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
-import {
-  getKlingO3DisabledEngineReasons,
-  getKlingO3UnsupportedVideoReason,
-  isKlingO3EngineId,
-  resolveKlingO3UnifiedMode,
-} from '../_lib/kling-o3-unified-workflow';
-import {
-  isGeminiOmniEngineId,
-  resolveGeminiOmniUnifiedMode,
-} from '../_lib/gemini-omni-unified-workflow';
-import {
-  isUnifiedMinimaxH3EngineId,
-  resolveMinimaxH3UnifiedMode,
-} from '../_lib/minimax-h3-unified-workflow';
-import {
-  getReferenceInputStatus,
-  hasInputAssetInSlots,
-  PRIMARY_IMAGE_SLOT_IDS,
-  PRIMARY_VIDEO_SLOT_IDS,
-  type ReferenceAsset,
-} from '../_lib/workspace-assets';
+import { getKlingO3DisabledEngineReasons } from '../_lib/kling-o3-unified-workflow';
+import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
+import { resolveWorkspaceWorkflow, type WorkspaceWorkflowProjection } from '../_lib/workspace-workflow-projection';
 import {
   buildComposerModeToggles,
   coerceFormState,
   coerceFormStateForEngineChange,
   getComposerWorkflowNotice,
-  getEngineModeOptions,
-  getModeCaps,
   getPreferredEngineModeForEngineRequest,
   getPreferredEngineMode,
   isWorkspaceModeAvailable,
   matchesEngineToken,
   resolveSelectedWorkspaceEngine,
-  supportsModeAudioControl,
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 
@@ -63,7 +31,7 @@ export function supportsWorkspaceMultiPrompt(engine: EngineCaps, mode?: Mode): b
 export type WorkspaceComposerWorkflowCopy = Parameters<typeof buildComposerModeToggles>[0]['workflowCopy'] & {
   removeAudioToUseEdit: string;
 };
-export type WorkspaceReferenceInputStatus = ReturnType<typeof getReferenceInputStatus>;
+export type WorkspaceReferenceInputStatus = WorkspaceWorkflowProjection['referenceInputStatus'];
 export type WorkspaceComposerModeToggles = ReturnType<typeof buildComposerModeToggles>;
 
 type UseWorkspaceEngineModeStateOptions = {
@@ -117,6 +85,7 @@ type UseWorkspaceEngineModeStateResult = {
   showRetakeWorkflowAction: boolean;
   composerWorkflowNotice: string | null;
   handleEngineChange: (engineId: string) => void;
+  applyPreparedForm: (form: FormState) => void;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
 };
@@ -171,50 +140,41 @@ export function useWorkspaceEngineModeState({
   const selectedEngine = useMemo<EngineCaps | null>(() => {
     return resolveSelectedWorkspaceEngine({ engines, form, engineOverride });
   }, [engines, form, engineOverride]);
+  const {
+    supportsKlingV3Controls,
+    supportsKlingV3VoiceControl,
+    isSeedance,
+    isUnifiedSeedance,
+    isUnifiedHappyHorse,
+    isUnifiedKlingO3,
+    isUnifiedGeminiOmni,
+    klingO3UnsupportedVideoReason,
+    primaryAudioDurationSec,
+    primaryVideoDurationSec,
+    workspaceExecutableModes,
+    engineModeOptions,
+    referenceInputStatus,
+    hasLastFrameInput,
+    implicitMode,
+    audioWorkflowLocked,
+    audioWorkflowUnsupported,
+    activeManualMode,
+    activeMode,
+    allowsUnifiedVeoFirstLast,
+    submissionMode,
+    showSafetyCheckerControl,
+    capability,
+    supportsAudioToggle,
+    isUnifiedMinimaxH3,
+  } = useMemo(
+    () => resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAssets, klingElements }),
+    [selectedEngine, form, inputAssets, klingElements]
+  );
 
-  const supportsKlingV3Controls =
-    selectedEngine?.id === 'kling-3-pro' ||
-    selectedEngine?.id === 'kling-3-standard' ||
-    selectedEngine?.id === 'kling-3-4k' ||
-    Boolean(selectedEngine?.id.startsWith('kling-o3-'));
-  const supportsKlingV3VoiceControl = false;
-  const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
-  const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
-  const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
-  const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
-  const isUnifiedGeminiOmni = isGeminiOmniEngineId(selectedEngine?.id);
-  const isUnifiedMinimaxH3 = isUnifiedMinimaxH3EngineId(selectedEngine?.id);
   const klingO3DisabledEngineReasons = useMemo(
     () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
     [engines, inputAssets, klingElements]
   );
-  const klingO3UnsupportedVideoReason = useMemo(
-    () => getKlingO3UnsupportedVideoReason({ engine: selectedEngine, inputAssets, klingElements }),
-    [inputAssets, klingElements, selectedEngine]
-  );
-
-  const primaryAudioDurationSec = useMemo(() => {
-    for (const entries of Object.values(inputAssets)) {
-      for (const asset of entries) {
-        if (asset?.kind === 'audio' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return Math.max(1, Math.round(asset.durationSec));
-        }
-      }
-    }
-    return null;
-  }, [inputAssets]);
-
-  const primaryVideoDurationSec = useMemo(() => {
-    for (const fieldId of PRIMARY_VIDEO_SLOT_IDS) {
-      const entries = inputAssets[fieldId] ?? [];
-      for (const asset of entries) {
-        if (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return Math.max(1, Math.ceil(asset.durationSec));
-        }
-      }
-    }
-    return null;
-  }, [inputAssets]);
 
   useEffect(() => {
     if (form?.engineId === 'pika-image-to-video') {
@@ -224,180 +184,6 @@ export function useWorkspaceEngineModeState({
       });
     }
   }, [form?.engineId, setForm]);
-
-  const workspaceExecutableModes = useMemo(
-    () => selectedEngine ? [...selectedEngine.modes] : [],
-    [selectedEngine],
-  );
-  const engineModeOptions = useMemo(
-    () => getEngineModeOptions(selectedEngine
-      ? { ...selectedEngine, modes: workspaceExecutableModes }
-      : null),
-    [selectedEngine, workspaceExecutableModes],
-  );
-
-  const referenceInputStatus = useMemo(() => getReferenceInputStatus(inputAssets), [inputAssets]);
-  const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
-  const hasPrimaryImageInput = useMemo(
-    () => hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url'], 'image'),
-    [inputAssets]
-  );
-  const hasLastFrameInput = useMemo(
-    () => hasInputAssetInSlots(inputAssets, ['last_frame_url', 'end_image_url'], 'image'),
-    [inputAssets]
-  );
-
-  const implicitMode = useMemo<Mode>(() => {
-    if (!selectedEngine) return form?.mode ?? 't2v';
-    if (isUnifiedMinimaxH3) {
-      return resolveMinimaxH3UnifiedMode(inputAssets);
-    }
-    if (isUnifiedSeedance) {
-      return getUnifiedSeedanceMode(inputAssets);
-    }
-    if (isUnifiedKlingO3) {
-      return resolveKlingO3UnifiedMode({
-        engine: selectedEngine,
-        inputAssets,
-        klingElements,
-      });
-    }
-    if (isUnifiedGeminiOmni) {
-      return resolveGeminiOmniUnifiedMode({
-        engine: selectedEngine,
-        inputAssets,
-        previousInteractionId: form?.extraInputValues.previous_interaction_id,
-      });
-    }
-    if (isUnifiedHappyHorse && (form?.mode === 't2v' || !form?.mode)) {
-      return getUnifiedHappyHorseMode(inputAssets, {
-        supportsVideoEdit: supportsHappyHorseVideoEdit(selectedEngine.id),
-      });
-    }
-    const modes = workspaceExecutableModes;
-    if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
-    if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
-    if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
-    if (referenceInputStatus.hasVideo && modes.includes('reframe')) return 'reframe';
-    if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
-    if (modes.includes('t2v')) return 't2v';
-    return modes[0] ?? 't2v';
-  }, [
-    form?.extraInputValues.previous_interaction_id,
-    form?.mode,
-    inputAssets,
-    isUnifiedHappyHorse,
-    isUnifiedGeminiOmni,
-    isUnifiedKlingO3,
-    isUnifiedMinimaxH3,
-    isUnifiedSeedance,
-    klingElements,
-    referenceInputStatus.hasAudio,
-    referenceInputStatus.hasImage,
-    referenceInputStatus.hasVideo,
-    selectedEngine,
-    workspaceExecutableModes,
-  ]);
-
-  const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
-  const audioWorkflowLocked = referenceInputStatus.hasAudio && audioToVideoSupported;
-  const audioWorkflowUnsupported =
-    referenceInputStatus.hasAudio &&
-    Boolean(selectedEngine) &&
-    !audioToVideoSupported &&
-    !(isUnifiedSeedance && seedanceAssetState.hasReferenceAudio) &&
-    !isUnifiedMinimaxH3;
-
-  const activeManualMode = useMemo<Mode | null>(() => {
-    if (!selectedEngine) return null;
-    const currentMode = form?.mode ?? null;
-    if (isUnifiedSeedance) {
-      return currentMode === 'extend' && isWorkspaceModeAvailable(selectedEngine, currentMode) ? currentMode : null;
-    }
-    if (isUnifiedKlingO3) return null;
-    if (isUnifiedGeminiOmni) return null;
-    if (isUnifiedMinimaxH3) return null;
-    if (referenceInputStatus.hasAudio) return null;
-    if (
-      (currentMode === 'v2v' ||
-        currentMode === 'reframe' ||
-        currentMode === 'ref2v' ||
-        currentMode === 'fl2v' ||
-        currentMode === 'extend' ||
-        currentMode === 'retake') &&
-      isWorkspaceModeAvailable(selectedEngine, currentMode)
-      && workspaceExecutableModes.includes(currentMode)
-    ) {
-      return currentMode;
-    }
-    return null;
-  }, [
-    form?.mode,
-    isUnifiedGeminiOmni,
-    isUnifiedKlingO3,
-    isUnifiedMinimaxH3,
-    isUnifiedSeedance,
-    referenceInputStatus.hasAudio,
-    selectedEngine,
-    workspaceExecutableModes,
-  ]);
-
-  const activeMode: Mode = activeManualMode ?? implicitMode;
-  const unifiedFirstFrameField = useMemo(
-    () => resolveActiveVideoInputField({
-      inputSchema: selectedEngine?.inputSchema,
-      mode: 'fl2v',
-      type: 'image',
-      candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
-    }),
-    [selectedEngine?.inputSchema]
-  );
-  const hasUnifiedFirstFrameInput = useMemo(
-    () => Boolean(
-      unifiedFirstFrameField
-      && hasInputAssetInSlots(inputAssets, [unifiedFirstFrameField.id], 'image')
-    ),
-    [inputAssets, unifiedFirstFrameField]
-  );
-  const allowsUnifiedVeoFirstLast = useMemo(() => {
-    return Boolean(
-      selectedEngine &&
-        selectedEngine.modes.includes('fl2v') &&
-        activeManualMode === null &&
-        (
-          activeMode === 't2v'
-          || (
-            activeMode === 'i2v'
-            && (
-              unifiedFirstFrameField?.id === 'first_frame_url'
-              || hasUnifiedFirstFrameInput
-              || hasLastFrameInput
-            )
-          )
-        )
-    );
-  }, [
-    activeManualMode,
-    activeMode,
-    hasLastFrameInput,
-    hasUnifiedFirstFrameInput,
-    selectedEngine,
-    unifiedFirstFrameField?.id,
-  ]);
-  const submissionMode = useMemo<Mode>(() => {
-    if (allowsUnifiedVeoFirstLast && hasPrimaryImageInput && hasLastFrameInput) {
-      return 'fl2v';
-    }
-    return activeMode;
-  }, [activeMode, allowsUnifiedVeoFirstLast, hasLastFrameInput, hasPrimaryImageInput]);
-  const showSafetyCheckerControl = useMemo(() => {
-    const schema = selectedEngine?.inputSchema;
-    if (!schema) return false;
-    return [...(schema.required ?? []), ...(schema.optional ?? [])].some((field) => {
-      if (field.id !== 'enable_safety_checker') return false;
-      return !field.modes || field.modes.includes(submissionMode);
-    });
-  }, [selectedEngine, submissionMode]);
 
   useEffect(() => {
     if (!selectedEngine || !form) return;
@@ -417,14 +203,13 @@ export function useWorkspaceEngineModeState({
     }
   }, [activeMode, setShotType, shotType, supportsKlingV3Controls]);
 
-  const capability = useMemo(() => {
-    if (!selectedEngine) return undefined;
-    return getModeCaps(selectedEngine, submissionMode);
-  }, [selectedEngine, submissionMode]);
-
-  const supportsAudioToggle = Boolean(
-    selectedEngine && supportsModeAudioControl(selectedEngine, submissionMode, capability)
-  );
+  const applyPreparedForm = useCallback((prepared: FormState) => {
+    requestedEngineOverrideIdRef.current = null;
+    requestedEngineOverrideTokenRef.current = null;
+    requestedModeOverrideRef.current = null;
+    preserveStoredDraftRef.current = false;
+    setForm(prepared);
+  }, [requestedEngineOverrideIdRef, requestedEngineOverrideTokenRef, requestedModeOverrideRef, preserveStoredDraftRef, setForm]);
 
   const handleEngineChange = useCallback(
     (engineId: string) => {
@@ -620,6 +405,7 @@ export function useWorkspaceEngineModeState({
     showRetakeWorkflowAction,
     composerWorkflowNotice,
     handleEngineChange,
+    applyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
   };

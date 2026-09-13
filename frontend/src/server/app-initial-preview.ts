@@ -40,7 +40,7 @@ function toVideoAspect(value?: string | null): VideoItem['aspect'] {
   }
 }
 
-function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvider = 'fal'): VideoGroup | null {
+function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvider = 'fal', curated = false): VideoGroup | null {
   const videoUrl = normalizeMediaUrl(preview.videoUrl) ?? null;
   const thumbUrl = normalizeMediaUrl(preview.thumbUrl) ?? null;
   const previewVideoUrl = normalizeMediaUrl(preview.previewVideoUrl) ?? undefined;
@@ -58,6 +58,7 @@ function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvi
     engineId: preview.engineId ?? undefined,
     meta: {
       mediaType: videoUrl ? 'video' : 'image',
+      curated,
       engineLabel: preview.engineLabel ?? undefined,
     },
   };
@@ -84,8 +85,8 @@ async function resolveUserInitialPreview(userId: string): Promise<InitialPreview
         AND hidden IS NOT TRUE
         AND NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')
         AND NOT (
-          surface IN ('image', 'character', 'angle', 'audio', 'upscale')
-          OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
+          surface IN ('image', 'character', 'angle', 'audio', 'upscale', 'tool')
+          OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale', 'tool')
           OR job_id LIKE 'tool_angle_%'
           OR job_id LIKE 'tool_upscale_%'
           OR render_ids IS NOT NULL
@@ -133,7 +134,7 @@ export async function resolveInitialAppPreviewGroup(): Promise<VideoGroup | null
   try {
     const { userId } = await getRouteAuthContext();
     const preview = userId ? await resolveUserInitialPreview(userId) : await resolveStarterInitialPreview();
-    return preview ? mapInitialPreviewToGroup(preview) : null;
+    return preview ? mapInitialPreviewToGroup(preview, 'fal', !userId) : null;
   } catch (error) {
     console.warn('[app] failed to resolve initial preview', error);
     return null;

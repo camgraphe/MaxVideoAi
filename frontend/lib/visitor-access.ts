@@ -12,11 +12,16 @@ export function canVisitorBrowseWorkspacePath(pathname: string): boolean {
   return (
     normalized === '/app' ||
     normalized === '/app/audio' ||
+    normalized === '/app/studio/projects' ||
     normalized === '/app/tools' ||
     normalized === '/app/tools/angle' ||
     normalized === '/app/tools/character-builder' ||
     normalized === '/app/tools/upscale' ||
     normalized === '/app/tools/background-removal' ||
+    normalized === '/app/tools/restore-video' ||
+    normalized === '/app/tools/denoise' ||
+    normalized === '/app/tools/fix-blur' ||
+    normalized === '/app/tools/smooth-motion' ||
     normalized === '/dashboard' ||
     normalized === '/jobs' ||
     normalized === '/app/image' ||

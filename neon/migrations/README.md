@@ -14,6 +14,20 @@ Run migrations with:
 pnpm db:migrate:neon
 ```
 
+These files are incremental and do not establish the original `app_jobs`
+baseline on an empty database. For a newly created application database, run the
+explicit baseline bootstrap first, then apply the migrations:
+
+```bash
+APPLICATION_DATABASE_URL='<direct target URL>' pnpm db:bootstrap:neon
+DATABASE_URL_UNPOOLED='<same direct target URL>' pnpm db:migrate:neon
+```
+
+The baseline command intentionally ignores inherited `DATABASE_URL`, accepts a
+direct non-pooled Neon hostname, and is not part of request or build startup.
+Use it only for an authorized new target. Existing databases normally apply only
+the ordered migrations.
+
 `DATABASE_URL_UNPOOLED` (preferred) or `DATABASE_URL` must be a direct Neon connection. The
 runner parses and normalizes the URL hostname, accepts only direct `*.neon.tech` hosts, and rejects
 `-pooler` PgBouncer URLs because schema migrations require session-safe direct connections. Each

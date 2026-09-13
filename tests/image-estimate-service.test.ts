@@ -178,12 +178,7 @@ test('transport-neutral estimate returns canonical GPT Image 2 pricing and norma
   );
 });
 
-test('transport-neutral image estimates apply the authoritative membership tier in exact cents', async () => {
-  const expected = {
-    member: 20,
-    plus: 19,
-    pro: 18,
-  } as const;
+test('transport-neutral image estimates retire stale membership tiers at the standard exact price', async () => {
   for (const membershipTier of ['member', 'plus', 'pro'] as const) {
     const result = await estimateImageGeneration({
       engineId: 'gpt-image-2',
@@ -193,8 +188,9 @@ test('transport-neutral image estimates apply the authoritative membership tier 
       quality: 'high',
       membershipTier,
     } as Parameters<typeof estimateImageGeneration>[0] & { membershipTier: typeof membershipTier });
-    assert.equal(result.pricing.membershipTier, membershipTier);
-    assert.equal(result.pricing.totalCents, expected[membershipTier]);
+    assert.equal(result.pricing.membershipTier, 'member');
+    assert.equal(result.pricing.totalCents, 20);
+    assert.equal(result.pricing.discount?.amountCents ?? 0, 0);
   }
 });
 

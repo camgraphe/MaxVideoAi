@@ -1,5 +1,6 @@
 'use client';
 
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Ref } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
@@ -33,6 +34,7 @@ export function GalleryRailCards({
   selectedGroupId,
   sentinelRef,
 }: GalleryRailCardsProps) {
+  const { locale } = useI18n();
   return (
     <>
       {groups.map((group, index) => {
@@ -48,7 +50,8 @@ export function GalleryRailCards({
             allowRemove={false}
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
-            openLabel={feedType === 'video' ? 'Preview' : undefined}
+            openLabel={locale === 'fr' ? 'Aperçu' : locale === 'es' ? 'Vista previa' : 'Preview'}
+            actionMenuLabel={locale === 'fr' ? 'Réutiliser' : locale === 'es' ? 'Reutilizar' : 'Reuse'}
             showOpenOverlay={false}
             selected={selectedGroupId === group.id}
             eagerPreview={feedType === 'video' && index < backgroundWarmCount}
@@ -69,7 +72,7 @@ export function GalleryRailCards({
             </div>
           </div>
         ))}
-      <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
+      <div ref={sentinelRef} className="app-gallery-rail-sentinel h-1 w-full" aria-hidden />
     </>
   );
 }

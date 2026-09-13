@@ -1,77 +1,20 @@
 import { query } from '@/lib/db';
 import { getBaseEngines } from '@/lib/engines';
-import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
+import type { EnginePricingDetails } from '@/types/engines';
 import {
   fetchEngineSettingsReadOnly,
   fetchEngineSettingsReadOnlyWithExecutor,
-  type EngineSettingsRecord,
 } from '@/server/engine-configuration-read';
+import { buildEngineSettingsSeedPayload, type EngineSettingsSeedPayload } from '@/server/engine-settings-defaults';
 
 export type { EngineSettingsRecord } from '@/server/engine-configuration-read';
 export const fetchEngineSettings = fetchEngineSettingsReadOnly;
 export const fetchEngineSettingsWithExecutor = fetchEngineSettingsReadOnlyWithExecutor;
 
-type EngineSettingsUpsert = {
-  engine_id: string;
-  options: Record<string, unknown>;
-  pricing: EnginePricingDetails | null;
-  updated_by: string | null;
-};
-
 let ensureSeedPromise: Promise<void> | null = null;
 
 function isProductionBuildPhase() {
   return process.env.NEXT_PHASE === 'phase-production-build';
-}
-
-function normalizeOptions(engine: EngineCaps): Record<string, unknown> {
-  return {
-    label: engine.label,
-    provider: engine.provider,
-    maxDurationSec: engine.maxDurationSec,
-    modes: engine.modes,
-    resolutions: engine.resolutions,
-    aspectRatios: engine.aspectRatios,
-    fps: engine.fps,
-    audio: engine.audio,
-    upscale4k: engine.upscale4k,
-    extend: engine.extend,
-    motionControls: engine.motionControls,
-    keyframes: engine.keyframes,
-    inputLimits: engine.inputLimits,
-    params: engine.params,
-    availability: engine.availability,
-    latencyTier: engine.latencyTier,
-    apiAvailability: engine.apiAvailability ?? null,
-    brandId: engine.brandId ?? null,
-  };
-}
-
-function extractPricing(engine: EngineCaps): EnginePricingDetails | null {
-  if (engine.pricingDetails) {
-    return engine.pricingDetails;
-  }
-  if (!engine.pricing) return null;
-  const pricingDetails: EnginePricingDetails = {
-    currency: engine.pricing.currency ?? 'USD',
-    perSecondCents: engine.pricing.byResolution
-      ? {
-          default:
-            engine.pricing.base != null ? Math.round(engine.pricing.base * 100) : undefined,
-          byResolution: Object.fromEntries(
-            Object.entries(engine.pricing.byResolution).map(([key, dollars]) => [key, Math.round(dollars * 100)])
-          ),
-        }
-      : engine.pricing.base != null
-        ? { default: Math.round(engine.pricing.base * 100) }
-        : undefined,
-    maxDurationSec: engine.maxDurationSec,
-  };
-  return pricingDetails;
-}
-
-function shouldRefreshEngineOptions(engine: EngineCaps, current?: EngineSettingsRecord | null): boolean {
-  return !current || current.updated_by == null;
 }
 
 export async function listEnginePricingOverrides(): Promise<Record<string, EnginePricingDetails>> {
@@ -95,20 +38,8 @@ export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void
     const existing = await fetchEngineSettings();
     const baseEngines = getBaseEngines();
     const upserts = baseEngines
-      .map((engine) => {
-        const current = existing.get(engine.id);
-        if (!shouldRefreshEngineOptions(engine, current)) {
-          return null;
-        }
-        const upsert: EngineSettingsUpsert = {
-          engine_id: engine.id,
-          options: normalizeOptions(engine),
-          pricing: extractPricing(engine) ?? current?.pricing ?? null,
-          updated_by: current?.updated_by ?? updatedBy ?? null,
-        };
-        return upsert;
-      })
-      .filter((entry): entry is EngineSettingsUpsert => entry != null);
+      .map((engine) => buildEngineSettingsSeedPayload(engine, existing.get(engine.id), updatedBy))
+      .filter((entry): entry is EngineSettingsSeedPayload => entry != null);
 
     if (!upserts.length) return;
 

@@ -1,13 +1,15 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
 import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
 import { getEngineModeLabel } from '../_lib/workspace-engine-helpers';
+import styles from './workspace-model-review.module.css';
 import { CompositePreviewDockSkeleton } from './WorkspaceBootSkeletons';
 
 const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
@@ -41,6 +43,7 @@ export function WorkspacePreviewDock({
   onModeChange,
   disabledEngineReasons,
   engineScores,
+  modelReviewCommands,
   renderGroups,
   compositeOverrideSummary,
   setViewerTarget,
@@ -62,22 +65,14 @@ export function WorkspacePreviewDock({
   onModeChange: (mode: Mode) => void;
   disabledEngineReasons?: Record<string, string>;
   engineScores?: Record<string, number>;
+  modelReviewCommands?: ReactNode;
   renderGroups: ReadonlyMap<string, unknown>;
   compositeOverrideSummary: GroupSummary | null;
   setViewerTarget: Dispatch<SetStateAction<WorkspaceViewerTarget>>;
 }) {
-  return (
-    <CompositePreviewDock
-      density="workspace"
-      group={group}
-      isLoading={isLoading}
-      autoPlayRequestId={autoPlayRequestId}
-      copyPrompt={hasSharedVideoSettings ? null : sharedPrompt}
-      onCopyPrompt={hasSharedVideoSettings ? undefined : sharedPrompt ? onCopySharedPrompt : undefined}
-      showTitle={false}
-      guidedNavigation={guidedNavigation}
-      engineSettings={
-        <EngineSettingsBar
+  const engineSettings = (
+    <div className={styles.modelStrip}>
+        <div className={styles.modelSelector}><EngineSettingsBar
           engines={engines}
           engineId={engineId}
           onEngineChange={onEngineChange}
@@ -90,8 +85,28 @@ export function WorkspacePreviewDock({
           showModeBadge={false}
           controlPresentation="workspace"
           density="compact"
-        />
-      }
+        /></div>
+      {modelReviewCommands}
+    </div>
+  );
+  // A local illustration reserves the result location without mounting a media reader.
+  if (!group && !isLoading) {
+    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card">
+      <div className="px-4 py-1">{engineSettings}</div>
+    </section><WorkspaceEmptyPreview media="video" /></>;
+  }
+
+  return (
+    <CompositePreviewDock
+      density="workspace"
+      group={group}
+      isLoading={isLoading}
+      autoPlayRequestId={autoPlayRequestId}
+      copyPrompt={hasSharedVideoSettings ? null : sharedPrompt}
+      onCopyPrompt={hasSharedVideoSettings ? undefined : sharedPrompt ? onCopySharedPrompt : undefined}
+      showTitle={false}
+      guidedNavigation={guidedNavigation}
+      engineSettings={engineSettings}
       onOpenModal={(nextGroup) => {
         if (!nextGroup) return;
         if (renderGroups.has(nextGroup.id)) {

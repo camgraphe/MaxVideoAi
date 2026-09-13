@@ -1,4 +1,5 @@
 import type { JobSurface } from '@/types/billing';
+import type { GenerationObservation } from '@/lib/generation-observation';
 
 export interface MediaLightboxEntry {
   id: string;
@@ -13,6 +14,10 @@ export interface MediaLightboxEntry {
   surface?: JobSurface | null;
   status?: 'pending' | 'completed' | 'failed';
   progress?: number | null;
+  observation?: GenerationObservation;
+  startedAt?: number;
+  etaSeconds?: number | null;
+  etaSource?: 'observed' | 'heuristic';
   message?: string | null;
   engineLabel?: string | null;
   engineId?: string | null;

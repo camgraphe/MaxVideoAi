@@ -3,7 +3,8 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { ChevronDown, Moon, Sun } from 'lucide-react';
-import { NAV_ITEMS } from '@/components/AppSidebar';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { NAV_ITEMS, NAV_ICON_MAP } from '@/components/AppSidebar';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -51,14 +52,15 @@ export function HeaderMobileMenu({
   onToggleDropdown,
   onToggleTheme,
 }: HeaderMobileMenuProps) {
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-y-contain bg-bg px-4 py-6 sm:px-6">
+    <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t('workspace.sidebar.aria.menu', 'App menu')} onKeyDown={onDialogKeyDown} className="app-mobile-menu fixed inset-0 z-50 overflow-y-auto overscroll-y-contain bg-bg px-4 py-6 sm:px-6">
       <div className="mx-auto flex max-w-sm items-center justify-end">
         <Button
           type="button"
           size="sm"
           variant="ghost"
-          className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface p-2 text-text-primary"
+          className="!min-h-11 gap-2 rounded-lg border border-hairline bg-surface px-3 text-text-primary"
           aria-label={t('workspace.header.mobileClose', 'Close menu')}
           onClick={onClose}
         >
@@ -74,6 +76,7 @@ export function HeaderMobileMenu({
             <line x1="6" y1="6" x2="18" y2="18" />
             <line x1="18" y1="6" x2="6" y2="18" />
           </svg>
+          {t('workspace.header.mobileClose', 'Close')}
         </Button>
       </div>
       <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
@@ -93,17 +96,16 @@ export function HeaderMobileMenu({
           </Button>
         </div>
         <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
-          {!isAuthenticated ? (
+          {(
             <div className="rounded-[28px] border border-hairline bg-surface px-4 py-4 shadow-card">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Workspace</p>
-                  <p className="mt-1 text-sm font-medium text-text-primary">Open the app without dead ends.</p>
+                  <p className="text-sm font-semibold text-text-primary">{t('workspace.sidebar.aria.menu', 'App menu')}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-2">
-                {guestMobileNavItems.map((item) => {
-                  const Icon = GUEST_MOBILE_NAV_ICONS[item.id as keyof typeof GUEST_MOBILE_NAV_ICONS];
+              <div className="grid grid-cols-2 gap-2">
+                {(isAuthenticated ? NAV_ITEMS : guestMobileNavItems).map((item) => {
+                  const Icon = NAV_ICON_MAP[item.id] ?? GUEST_MOBILE_NAV_ICONS.generate;
                   const label = t(`workspace.sidebar.links.${item.id}`, item.label);
                   const currentPath = pathname ?? '';
                   const isActive =
@@ -115,15 +117,16 @@ export function HeaderMobileMenu({
                       key={item.id}
                       href={item.href}
                       prefetch={false}
+                      aria-current={isActive ? 'page' : undefined}
                       className={clsx(
-                        'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        'flex min-h-20 flex-col items-start gap-2 rounded-2xl border px-3 py-3 text-left text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         isActive
                           ? 'border-border bg-surface-2 text-text-primary'
                           : 'border-hairline bg-bg text-text-primary hover:bg-surface-2'
                       )}
                       onClick={onClose}
                     >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-hairline bg-surface text-text-primary">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-hairline bg-surface text-text-primary">
                         <UIIcon icon={Icon} size={18} />
                       </span>
                       <span>{label}</span>
@@ -132,7 +135,7 @@ export function HeaderMobileMenu({
                 })}
               </div>
             </div>
-          ) : null}
+          )}
           {marketingLinks.map((item) => {
             const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
             const label = t(`nav.linkLabels.${item.key}`, item.key);

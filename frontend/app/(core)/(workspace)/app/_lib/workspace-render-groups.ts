@@ -144,21 +144,16 @@ export function buildPendingGroupSummaries(
 ): GroupSummary[] {
   const summaries: GroupSummary[] = [];
   renderGroups.forEach((group, id) => {
-    const now = Date.now();
     const members: GroupMemberSummary[] = group.items.map((item) => {
       const thumb = item.thumbUrl ?? resolveRenderThumb(item);
-      const gatingActive = now < item.minReadyAt && item.status !== 'failed';
-      const memberVideoUrl = gatingActive ? null : item.videoUrl ?? item.readyVideoUrl ?? null;
+      const memberVideoUrl = item.videoUrl ?? item.readyVideoUrl ?? null;
       const memberStatus: GroupMemberSummary['status'] = (() => {
         if (item.status === 'failed') return 'failed';
-        if (gatingActive) return 'pending';
         if (item.status === 'completed' || memberVideoUrl) return 'completed';
         return 'pending';
       })();
       const memberProgress = typeof item.progress === 'number'
-        ? gatingActive
-          ? Math.min(Math.max(item.progress, 5), 95)
-          : item.progress
+        ? item.progress
         : memberStatus === 'completed'
           ? 100
           : item.progress;
@@ -176,12 +171,14 @@ export function buildPendingGroupSummaries(
         currency: item.currency ?? group.currency ?? null,
         thumbUrl: thumb,
         videoUrl: memberVideoUrl,
-        previewVideoUrl: gatingActive ? null : item.previewVideoUrl ?? null,
+        previewVideoUrl: item.previewVideoUrl ?? null,
         aspectRatio: item.aspectRatio ?? null,
         prompt: item.prompt,
         status: memberStatus,
         progress: memberProgress,
         message: item.message,
+        observation: item.observation,
+        etaSource: item.etaSource,
         etaLabel: item.etaLabel ?? null,
         etaSeconds: item.etaSeconds ?? null,
         createdAt: item.createdAt,
@@ -254,22 +251,11 @@ export function buildQuadTileFromRender(
   group: LocalRenderGroup,
   fallbackCurrency: string
 ): QuadPreviewTile {
-  const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
-  const videoUrl = gatingActive ? undefined : render.videoUrl ?? render.readyVideoUrl;
-  const previewVideoUrl = gatingActive ? undefined : render.previewVideoUrl;
-  const progress = gatingActive
-    ? Math.min(Math.max(render.progress ?? 5, 95), 95)
-    : videoUrl
-      ? 100
-      : render.progress;
-  const status: QuadPreviewTile['status'] =
-    render.status === 'failed'
-      ? 'failed'
-      : gatingActive
-        ? 'pending'
-        : videoUrl
-          ? 'completed'
-          : render.status ?? 'pending';
+  const videoUrl = render.videoUrl ?? render.readyVideoUrl;
+  const previewVideoUrl = render.previewVideoUrl;
+  const progress = videoUrl ? 100 : render.progress;
+  const status: QuadPreviewTile['status'] = render.status === 'failed'
+    ? 'failed' : videoUrl ? 'completed' : render.status ?? 'pending';
 
   return {
     localKey: render.localKey,
@@ -289,6 +275,9 @@ export function buildQuadTileFromRender(
     durationSec: render.durationSec,
     engineLabel: render.engineLabel,
     engineId: render.engineId,
+    observation: render.observation,
+    etaSource: render.etaSource,
+    startedAt: Date.parse(render.createdAt),
     etaLabel: render.etaLabel,
     prompt: render.prompt,
     status,
@@ -319,6 +308,9 @@ export function buildQuadTileFromGroupMember(
     durationSec: member.durationSec,
     engineLabel: member.engineLabel,
     engineId: member.engineId ?? fallbackEngineId,
+    observation: member.observation,
+    etaSource: member.etaSource,
+    startedAt: Date.parse(member.createdAt),
     etaLabel: member.etaLabel ?? undefined,
     prompt: member.prompt ?? '',
     status: member.status ?? 'completed',

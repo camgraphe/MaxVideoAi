@@ -81,7 +81,7 @@ function safeAgentFailureCode(settingsSnapshot: unknown): string | null {
   return failureCode && SAFE_AGENT_FAILURE_CODES.has(failureCode) ? failureCode : null;
 }
 
-function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image' | null {
+function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image' | 'audio' | null {
   const surface = deriveJobSurface({
     surface: record.surface,
     settingsSnapshot: record.settings_snapshot,
@@ -91,7 +91,45 @@ function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image
     renderIds: Array.isArray(record.render_ids) ? record.render_ids : null,
   });
   if (surface === 'video' || surface === 'background-removal') return 'video';
+  if (surface === 'audio') return 'audio';
   return IMAGE_SURFACES.has(surface) ? 'image' : null;
+}
+
+function audioResultFacts(record: GenerationStatusRecord, audioUrl: string | null, videoUrl: string | null) {
+  const snapshot = record.settings_snapshot && typeof record.settings_snapshot === 'object'
+    ? record.settings_snapshot as Record<string, unknown>
+    : {};
+  const mediaFacts = snapshot.mediaFacts && typeof snapshot.mediaFacts === 'object'
+    ? snapshot.mediaFacts as Record<string, unknown>
+    : {};
+  const measured = typeof mediaFacts.durationSec === 'number'
+    ? mediaFacts.durationSec
+    : snapshot.measuredDurationSec;
+  const durationSec = typeof measured === 'number' && Number.isFinite(measured) && measured > 0
+    ? measured
+    : typeof record.duration_sec === 'number' && Number.isFinite(record.duration_sec) && record.duration_sec > 0
+      ? record.duration_sec
+      : null;
+  const storedMime = typeof snapshot.audioMimeType === 'string'
+    ? snapshot.audioMimeType.trim().toLowerCase()
+    : '';
+  const allowedAudioMimes = new Set(['audio/flac', 'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav']);
+  let mimeType = allowedAudioMimes.has(storedMime) ? storedMime : '';
+  if (!mimeType && audioUrl) {
+    const path = new URL(audioUrl).pathname.toLowerCase();
+    mimeType = path.endsWith('.wav') ? 'audio/wav'
+      : path.endsWith('.flac') ? 'audio/flac'
+        : path.endsWith('.ogg') ? 'audio/ogg'
+          : path.endsWith('.m4a') ? 'audio/mp4'
+            : path.endsWith('.mp3') ? 'audio/mpeg' : 'application/octet-stream';
+  }
+  if (!mimeType && videoUrl) {
+    const path = new URL(videoUrl).pathname.toLowerCase();
+    mimeType = path.endsWith('.webm') ? 'video/webm'
+      : path.endsWith('.mov') ? 'video/quicktime'
+        : path.endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream';
+  }
+  return { durationSec, mimeType: mimeType || 'application/octet-stream' };
 }
 
 function normalizeAgentStatus(rawStatus: string | null): AgentGenerationStatus['status'] {
@@ -192,10 +230,22 @@ function stableMediaUrl(value: string | null | undefined): string | null {
 
 function buildAgentResult(
   record: GenerationStatusRecord,
-  surface: 'video' | 'image',
+  surface: 'video' | 'image' | 'audio',
   status: AgentGenerationStatus['status']
 ): AgentGenerationResult | null {
   if (status !== 'completed') return null;
+  if (surface === 'audio') {
+    const audioUrl = stableMediaUrl(record.audio_url);
+    const videoUrl = stableMediaUrl(record.video_url);
+    if (!audioUrl && !videoUrl) return null;
+    return {
+      surface,
+      audioUrl,
+      videoUrl,
+      thumbnailUrl: stableMediaUrl(record.thumb_url),
+      ...audioResultFacts(record, audioUrl, videoUrl),
+    };
+  }
   if (surface === 'video') {
     const videoUrl = stableMediaUrl(record.video_url);
     if (!videoUrl) return null;

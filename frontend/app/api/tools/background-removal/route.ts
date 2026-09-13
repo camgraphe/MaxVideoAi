@@ -1,3 +1,4 @@
+import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -60,6 +61,8 @@ export async function POST(req: NextRequest) {
       { status: 401 }
     );
   }
+  const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'tool');
+  if (pricingPolicyError) return pricingPolicyError;
   const restriction = await getActiveAccountRestriction(userId);
   if (restriction) {
     return NextResponse.json(
@@ -120,6 +123,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await runBackgroundRemovalToolBase({
       userId,
+      acceptedQuote: body?.acceptedQuote,
       videoUrl,
       engineId,
       backgroundColor: resolveStudioBackgroundColor(body?.backgroundColor),

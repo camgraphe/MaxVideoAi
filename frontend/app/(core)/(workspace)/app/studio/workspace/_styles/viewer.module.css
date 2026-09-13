@@ -1,0 +1,368 @@
+.videoViewerShell {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(37, 99, 235, 0.14), transparent 34%),
+    var(--studio-bg);
+}
+
+.viewerStage {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  place-items: center;
+  padding: 22px 24px;
+}
+
+.programMonitor {
+  display: grid;
+  width: min(100%, 1100px);
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+}
+
+.programMonitorHeader,
+.programMonitorMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}
+
+.programMonitorTitle,
+.programMonitorActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.programMonitorTitle {
+  flex-wrap: wrap;
+}
+
+.programMonitorHeader span {
+  color: var(--studio-text);
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.programMonitorTitle small {
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.programModelPill {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border: 1px solid rgba(129, 140, 248, 0.26);
+  border-radius: 7px;
+  background: rgba(88, 28, 135, 0.32);
+  color: var(--studio-accent-text);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.programMonitorHeader strong {
+  color: var(--studio-text-strong);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+}
+
+.programZoomControl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-weight: 720;
+  text-transform: uppercase;
+}
+
+.programZoomControl select {
+  height: 30px;
+  min-width: 78px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-select-text);
+  font: inherit;
+  font-size: 11px;
+  text-transform: none;
+}
+
+.programFullscreenButton {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.programFullscreenButton:hover,
+.programFullscreenButton:focus-visible {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.programFrameViewport {
+  container-type: size;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  place-items: center;
+}
+
+.viewerProgramControlsPanel {
+  display: grid;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.viewerScrubRow {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  color: var(--studio-text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewerScrubTrack {
+  position: relative;
+  height: 14px;
+  overflow: hidden;
+}
+
+.viewerScrubTrack::before {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, var(--studio-timeline-grid) 0 2px, transparent 2px 7px),
+    var(--studio-border);
+  content: "";
+}
+
+.viewerScrubTrack > span {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: #8b5cf6;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.46);
+}
+
+.viewerPlaybackControls {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.viewerPlaybackControls button {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.viewerPlaybackControls button:hover,
+.viewerPlaybackControls button:focus-visible {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.viewerPlaybackControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.viewerPlaybackControls .viewerPlaybackPrimary {
+  width: 54px;
+  height: 44px;
+  border-color: rgba(129, 140, 248, 0.3);
+  background: var(--studio-bg-soft);
+}
+
+.viewerPlaybackDivider {
+  width: 1px;
+  height: 26px;
+  margin: 0 4px;
+  background: var(--studio-border);
+}
+
+.viewerPlaybackControls .viewerMarkButton {
+  width: 44px;
+  height: 44px;
+  color: var(--studio-accent-text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.viewerMarkField {
+  display: inline-flex;
+  height: 30px;
+  min-width: 106px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewerPlaybackControls .viewerSnapshotButton {
+  width: 44px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--studio-text-strong);
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.viewerPlaybackControls .viewerMarkClearButton {
+  width: auto;
+  height: 44px;
+  padding: 0 10px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-weight: 760;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+.viewerInOutSummary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 16px;
+  color: var(--studio-text-muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.programFrame {
+  position: relative;
+  display: grid;
+  aspect-ratio: var(--workspace-project-aspect-ratio, 16 / 9);
+  place-self: center;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-bg);
+  box-shadow:
+    0 24px 72px var(--studio-node-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.programFrameFit {
+  width: min(100cqw, calc(100cqh * var(--workspace-project-aspect-width, 16) / var(--workspace-project-aspect-height, 9)));
+  height: min(100cqh, calc(100cqw * var(--workspace-project-aspect-height, 9) / var(--workspace-project-aspect-width, 16)));
+}
+
+.programFrameScaled {
+  width: calc(var(--workspace-project-preview-width, 1920px) * var(--workspace-program-zoom-scale, 1));
+  height: calc(var(--workspace-project-preview-height, 1080px) * var(--workspace-program-zoom-scale, 1));
+}
+
+.viewerVideoLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--studio-bg);
+  object-fit: contain;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.viewerVideoLayerVisible {
+  pointer-events: auto;
+}
+
+.viewerAudioLayer {
+  display: none;
+}
+
+.viewerEmpty {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--studio-text-muted);
+  text-align: center;
+}
+
+.viewerEmpty p {
+  margin: 0;
+}
+
+.viewerEmpty p {
+  color: var(--studio-text-strong);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.viewerEmpty span {
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}

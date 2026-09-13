@@ -31,15 +31,7 @@ export function BackgroundRemovalRecentRail(props: {
       <div className="grid gap-3 p-4">
         {!props.items.length ? (
           <div className="rounded-[14px] border border-dashed border-border bg-bg p-3">
-            <span className="relative block aspect-video overflow-hidden rounded-[12px] bg-surface-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="" className="h-full w-full object-cover opacity-90" src={BACKGROUND_REMOVAL_WORKSPACE_RECENT_PLACEHOLDER} />
-              <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/82 px-2 py-1 text-[11px] font-semibold text-white">
-                00:12
-              </span>
-            </span>
-            <p className="mt-3 text-sm font-semibold text-text-primary">{props.copy.recentEmpty}</p>
-            <p className="mt-1 text-xs leading-5 text-text-secondary">{props.copy.priceBeforeGeneration}</p>
+            <p className="text-sm text-text-secondary">{props.copy.recentEmpty}</p>
           </div>
         ) : null}
         {props.items.map((item) => (

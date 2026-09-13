@@ -1,21 +1,21 @@
-import { randomUUID } from 'node:crypto';
+import { buildAudioRunReservation, type ReservedAudioRun } from './audio-run-reservation';
+import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 
 import {
-  getAudioPackConfig,
   type AudioGenerateRequestBody,
   type AudioGenerateResponse,
 } from '@/lib/audio-generation';
-import { computeCanonicalAudioBillingSnapshot } from '@/server/pricing/quote-billing';
+import { prepareAudioRun, assertAudioProviderConfigured, assertExpectedAudioQuote } from './prepare-audio';
+import { generateSongTrack, generateAmbienceTrack, generateMinimaxVoiceTrack } from './providers/standalone';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
   mixAudioIntoVideo,
   mixAudioTracks,
-  inspectSourceVideo,
-  resolveAudioAspectRatio,
   uploadAudioRenderAudio,
   uploadAudioRenderVideo,
+  persistOriginalAudio,
 } from '@/server/audio/media';
 import {
   generateClonedVoiceTrack,
@@ -25,21 +25,16 @@ import {
 } from '@/server/audio/providers';
 import {
   AudioGenerationError,
-  resolveAudioRenderDuration,
-  validateAudioGenerateRequest,
 } from '@/server/audio/audio-generate-validation';
 import {
+  completeAudioJob,
   createInitialAudioJob,
-  loadSourceJob,
-  PLACEHOLDER_THUMB,
+  failAudioJob,
   updateAudioJob,
 } from '@/server/audio/audio-generate-jobs';
 import { refundAudioCharge } from '@/server/audio/audio-generate-receipts';
 import {
-  buildPromptSummary,
-  buildInitialAudioSettingsSnapshot,
   buildProviderSnapshot,
-  isVideoBackedPack,
   parseProviderFailures,
 } from '@/server/audio/audio-generate-snapshots';
 
@@ -60,113 +55,40 @@ export async function generateAudioRun(params: {
 
   await ensureBillingSchema();
 
-  const normalized = validateAudioGenerateRequest(params.body);
-  const packConfig = getAudioPackConfig(normalized.pack);
-  const sourceJob =
-    normalized.sourceJobId
-      ? await loadSourceJob(params.userId, normalized.sourceJobId)
-      : null;
+  const prepared = await prepareAudioRun(params.body, params.userId);
+  assertExpectedAudioQuote(params.body.expectedQuote, { inputKey: prepared.inputKey, pricing: prepared.pricingSnapshot });
+  assertAudioProviderConfigured(prepared.normalized);
+  const reservation = buildAudioRunReservation(prepared, params.userId);
+  await createInitialAudioJob(reservation.initialJob);
+  return executeReservedAudioRun(reservation.execution);
+}
 
-  if (normalized.sourceJobId && !sourceJob) {
-    throw new AudioGenerationError('Source job not found.', {
-      status: 404,
-      code: 'source_job_not_found',
-      field: 'sourceJobId',
-    });
-  }
-
-  const sourceVideoUrl = normalized.sourceVideoUrl ?? sourceJob?.video_url ?? null;
-  if (packConfig.requiresVideo && !sourceVideoUrl) {
-    throw new AudioGenerationError('Source video is missing.', {
-      status: 400,
-      code: 'source_video_missing',
-      field: 'sourceVideoUrl',
-    });
-  }
-
-  const needsSourceProbe = Boolean(sourceVideoUrl) && (packConfig.requiresVideo || normalized.pack === 'music_only');
-  const sourceProbe = needsSourceProbe && sourceVideoUrl ? await inspectSourceVideo(sourceVideoUrl) : null;
-  const probedDurationSec = sourceProbe?.durationSec ? Math.round(sourceProbe.durationSec) : null;
-  const durationSec = resolveAudioRenderDuration({
-    pack: normalized.pack,
-    sourceVideoUrl,
-    requiresVideo: packConfig.requiresVideo,
-    probedDurationSec,
-    requestedDurationSec: normalized.durationSec,
-    script: normalized.script,
-  });
-
-  const aspectRatio =
-    sourceJob?.aspect_ratio ??
-    resolveAudioAspectRatio(sourceProbe?.width ?? null, sourceProbe?.height ?? null) ??
-    (isVideoBackedPack(normalized.pack) ? '16:9' : null);
-  const pricingSnapshot = await computeCanonicalAudioBillingSnapshot({
-    pack: normalized.pack,
-    durationSec,
-    mood: normalized.mood ?? null,
-    voiceMode: normalized.voiceMode,
-    script: normalized.script,
-    musicModel: normalized.musicModel,
-    musicBpm: normalized.musicBpm,
-    musicEnabled: normalized.musicEnabled,
-  });
-  const pricingSnapshotJson = JSON.stringify(pricingSnapshot);
-  const promptSummary = buildPromptSummary({
-    pack: normalized.pack,
-    prompt: normalized.prompt,
-    mood: normalized.mood,
-    script: normalized.script,
-  });
-  const initialSettingsSnapshot = buildInitialAudioSettingsSnapshot({
-    durationSec,
-    normalized,
-    sourceJobId: sourceJob?.job_id ?? null,
-    sourceVideoUrl,
-  });
-
-  const jobId = `aud_${randomUUID()}`;
-  const amountCents = pricingSnapshot.totalCents;
-  const initialThumb = sourceJob?.thumb_url ?? PLACEHOLDER_THUMB;
-
-  await createInitialAudioJob({
-    userId: params.userId,
-    jobId,
-    amountCents,
-    currency: pricingSnapshot.currency,
-    description: packConfig.label,
-    billingProductKey: packConfig.billingProductKey,
-    pricingSnapshotJson,
-    applicationFeeCents: pricingSnapshot.platformFeeCents ?? pricingSnapshot.margin.amountCents,
-    vendorAccountId: pricingSnapshot.vendorAccountId ?? null,
-    engineId: packConfig.engineId,
-    engineLabel: packConfig.label,
-    durationSec,
-    promptSummary,
-    initialThumb,
-    aspectRatio,
-    settingsSnapshotJson: JSON.stringify(initialSettingsSnapshot),
-  });
-
-  await updateAudioJob(jobId, {
-    status: 'running',
-    progress: 8,
-    message: sourceVideoUrl ? 'Preparing source media…' : 'Preparing audio render…',
-  });
+/** Shared provider execution after a committed wallet/job reservation. It never reserves a second charge. */
+export async function executeReservedAudioRun(params: ReservedAudioRun): Promise<AudioGenerateResponse> {
+  const { jobId, initialSettingsSnapshot, initialThumb } = params;
+  const { normalized, sourceJob, sourceVideoUrl, sourceProbe, durationSec, pricingSnapshot } = params.prepared;
 
   try {
+    await updateAudioJob(jobId, {
+      status: 'running',
+      progress: 8,
+      message: sourceVideoUrl ? 'Preparing source media…' : 'Preparing audio render…',
+    });
     let soundDesign: Awaited<ReturnType<typeof generateSoundDesignTrack>> | null = null;
     let music: Awaited<ReturnType<typeof generateMusicTrack>> | null = null;
+    if (normalized.pack === 'song') music = await generateSongTrack({ prompt: normalized.prompt!, lyrics: normalized.lyrics! });
+    if (normalized.pack === 'ambience_only') soundDesign = await generateAmbienceTrack({ prompt: normalized.prompt!, durationSec });
     let voiceTrack: Awaited<ReturnType<typeof generateStandardVoiceTrack>> | null = null;
 
-    if (normalized.pack === 'cinematic' || normalized.pack === 'cinematic_voice') {
+    if (normalized.pack === 'sfx_only' || normalized.pack === 'cinematic' || normalized.pack === 'cinematic_voice') {
       await updateAudioJob(jobId, {
         progress: 24,
-        message: 'Generating cinematic sound design…',
+        message: normalized.pack === 'sfx_only' ? 'Generating sound effects…' : 'Generating cinematic sound design…',
       });
       soundDesign = await generateSoundDesignTrack({
-        sourceVideoUrl: sourceVideoUrl!,
+        sourceVideoUrl,
         durationSec,
-        mood: normalized.mood!,
+        mood: normalized.mood ?? 'epic',
         intensity: normalized.intensity,
         prompt: normalized.prompt,
       });
@@ -195,7 +117,7 @@ export async function generateAudioRun(params: {
             ? 'Generating reference voice over…'
             : 'Generating voice over…',
       });
-      voiceTrack =
+      voiceTrack = normalized.voiceModel === 'minimax' ? await generateMinimaxVoiceTrack(normalized) :
         normalized.voiceMode === 'clone' && normalized.voiceSampleUrl
           ? await generateClonedVoiceTrack({
               script: normalized.script,
@@ -241,7 +163,12 @@ export async function generateAudioRun(params: {
       message: normalized.outputKind === 'audio' ? 'Mastering audio file…' : 'Mixing final soundtrack…',
     });
 
-    if (normalized.pack === 'music_only') {
+    const original = normalized.pack === 'song' ? music : normalized.pack === 'ambience_only' ? soundDesign : normalized.pack === 'voice_only' && normalized.seedAudioOutputFormat !== 'pcm' ? voiceTrack : null;
+    const persistedOriginal = original?.url ? await persistOriginalAudio({ userId: params.userId, jobId, url: original.url }) : null;
+
+    if (persistedOriginal) {
+      // Keep exact provider bytes; full song and spoken script are not truncated to an estimate.
+    } else if (normalized.pack === 'music_only') {
       if (!music?.url) {
         throw new AudioGenerationError('Music generation returned no audio output.', {
           status: 502,
@@ -250,6 +177,18 @@ export async function generateAudioRun(params: {
       }
       audioBuffer = await mixAudioTracks({
         musicUrl: music.url,
+        targetDurationSec: durationSec,
+        mixIntensity: normalized.intensity,
+      });
+    } else if (normalized.pack === 'sfx_only') {
+      if (!soundDesign?.url) {
+        throw new AudioGenerationError('Sound design generation returned no audio output.', {
+          status: 502,
+          code: 'sound_design_output_missing',
+        });
+      }
+      audioBuffer = await mixAudioTracks({
+        soundDesignUrl: soundDesign.url,
         targetDurationSec: durationSec,
         mixIntensity: normalized.intensity,
       });
@@ -282,7 +221,8 @@ export async function generateAudioRun(params: {
       videoBuffer = mixed.videoBuffer;
     }
 
-    let uploadedAudioUrl: string | null = null;
+    let uploadedAudioUrl: string | null = persistedOriginal?.audioUrl ?? null;
+    let uploadedAudioMimeType: string | null = persistedOriginal?.mimeType ?? null;
     let uploadedVideoUrl: string | null = null;
     let uploadedThumbUrl: string | null = initialThumb;
 
@@ -297,6 +237,7 @@ export async function generateAudioRun(params: {
         audioBuffer,
       });
       uploadedAudioUrl = uploadedAudio.audioUrl;
+      uploadedAudioMimeType = 'audio/mp4';
     }
 
     if (videoBuffer) {
@@ -313,7 +254,9 @@ export async function generateAudioRun(params: {
       uploadedThumbUrl = uploadedVideo.thumbUrl ?? initialThumb;
     }
 
-    const finalSettingsSnapshotJson = buildProviderSnapshot(initialSettingsSnapshot, {
+    const outputBuffer = audioBuffer ?? videoBuffer;
+    const measuredDurationSec = persistedOriginal?.durationSec ?? (outputBuffer ? await detectMediaBufferDuration(outputBuffer, { streamSelector: 'audio' }) : null);
+    const finalSettingsSnapshotJson = buildProviderSnapshot({ ...initialSettingsSnapshot, measuredDurationSec, durationSec: measuredDurationSec ?? durationSec, mediaFacts: measuredDurationSec ? { source: 'probe', durationSec: measuredDurationSec } : null, audioMimeType: uploadedAudioMimeType }, {
       soundDesign:
         soundDesign
           ? {
@@ -350,23 +293,28 @@ export async function generateAudioRun(params: {
               requestId: voiceTrack.requestId ?? null,
             }
           : null,
-      source: {
-        durationSec,
+      source: sourceVideoUrl ? {
+        durationSec: sourceProbe?.durationSec ?? null,
         hasSourceAudio: sourceProbe?.hasAudio ?? null,
-      },
+      } : null,
     });
 
-    await updateAudioJob(jobId, {
-      status: 'completed',
+    const completionWon = await completeAudioJob(jobId, {
+      durationSec: measuredDurationSec ?? durationSec,
       progress: 100,
       message: 'Audio render complete.',
       videoUrl: uploadedVideoUrl,
       audioUrl: uploadedAudioUrl,
       thumbUrl: uploadedThumbUrl ?? initialThumb,
       hasAudio: true,
-      paymentStatus: 'paid_wallet',
       settingsSnapshotJson: finalSettingsSnapshotJson,
     });
+    if (!completionWon) {
+      throw new AudioGenerationError('Audio job already reached a terminal state.', {
+        status: 409,
+        code: 'audio_terminal_transition_lost',
+      });
+    }
 
     await upsertLegacyJobOutputs({
       job_id: jobId,
@@ -377,7 +325,9 @@ export async function generateAudioRun(params: {
       thumb_url: uploadedThumbUrl ?? initialThumb,
       preview_frame: uploadedThumbUrl ?? initialThumb,
       render_ids: null,
-      duration_sec: durationSec,
+      duration_sec: Math.ceil(measuredDurationSec ?? durationSec),
+      measured_duration_sec: measuredDurationSec,
+      audio_mime_type: uploadedAudioMimeType,
       status: 'completed',
     }).catch((outputError) => {
       console.warn('[audio] failed to persist job outputs', { jobId }, outputError);
@@ -392,11 +342,18 @@ export async function generateAudioRun(params: {
       outputKind: normalized.outputKind,
       status: 'completed',
       progress: 100,
+      durationSec: measuredDurationSec,
+      requestedDurationSec: normalized.durationSec,
+      mediaFacts: measuredDurationSec ? { source: 'probe', durationSec: measuredDurationSec } : null,
+      providers: JSON.parse(finalSettingsSnapshotJson).providers,
       pricing: pricingSnapshot,
       paymentStatus: 'paid_wallet',
       sourceJobId: sourceJob?.job_id ?? null,
     };
   } catch (error) {
+    if (error instanceof AudioGenerationError && error.code === 'audio_terminal_transition_lost') {
+      throw error;
+    }
     const providerFailures = parseProviderFailures(error);
     const message =
       error instanceof AudioGenerationError
@@ -405,25 +362,34 @@ export async function generateAudioRun(params: {
           ? error.message
           : 'Audio generation failed.';
 
-    await updateAudioJob(jobId, {
-      status: 'failed',
+    const failureWon = await failAudioJob(jobId, {
       progress: 0,
       message,
-      paymentStatus: 'refunded_wallet',
       settingsSnapshotJson:
         providerFailures && providerFailures.length
           ? buildProviderSnapshot(initialSettingsSnapshot, { failures: providerFailures })
           : JSON.stringify(initialSettingsSnapshot),
     });
-    await refundAudioCharge({
-      userId: params.userId,
-      jobId,
-      amountCents,
-      currency: pricingSnapshot.currency,
-      description: `${packConfig.label} refund`,
-      billingProductKey: packConfig.billingProductKey,
-      pricingSnapshotJson,
-    });
+    if (!failureWon) {
+      if (error instanceof AudioGenerationError) {
+        throw error;
+      }
+      throw new AudioGenerationError(message, {
+        status: 502,
+        code: 'audio_generation_failed',
+        providerFailures,
+      });
+    }
+    try {
+      await refundAudioCharge({ userId: params.userId, jobId });
+    } catch (refundError) {
+      console.error('[audio] wallet refund reconciliation pending', { jobId }, refundError);
+      throw new AudioGenerationError(`${message} Wallet refund reconciliation is pending.`, {
+        status: 502,
+        code: 'audio_refund_reconciliation_pending',
+        providerFailures,
+      });
+    }
 
     if (error instanceof AudioGenerationError) {
       throw error;

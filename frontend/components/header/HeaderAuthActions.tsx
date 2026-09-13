@@ -30,7 +30,7 @@ export function HeaderAuthActions({
         size="sm"
         onMouseEnter={() => router.prefetch(signupHref)}
         onFocus={() => router.prefetch(signupHref)}
-        className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
+        className="!min-h-11 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
       >
         <span className="sm:hidden">{createAccountMobile}</span>
         <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
@@ -42,7 +42,7 @@ export function HeaderAuthActions({
         size="sm"
         onMouseEnter={() => router.prefetch(signinHref)}
         onFocus={() => router.prefetch(signinHref)}
-        className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
+        className="!min-h-11 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
       >
         <span className="sm:hidden">{signInMobile}</span>
         <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>

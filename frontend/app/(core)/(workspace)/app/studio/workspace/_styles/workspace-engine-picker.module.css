@@ -1,0 +1,306 @@
+.trigger {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-control-bg);
+  color: var(--studio-text);
+  cursor: pointer;
+  padding: 0 8px;
+  text-align: left;
+}
+
+.trigger:hover {
+  border-color: color-mix(in srgb, var(--studio-primary) 48%, var(--studio-border));
+  background: var(--studio-control-bg-hover);
+}
+
+.triggerNode {
+  height: 32px;
+}
+
+.triggerInspector {
+  height: 38px;
+}
+
+.triggerLabel {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron,
+.chevronOpen {
+  flex: none;
+  color: var(--studio-text-muted);
+  transition: transform 140ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.panel {
+  --studio-engine-picker-disabled-label: #475569;
+  --studio-engine-picker-disabled-reason: #475569;
+  position: fixed;
+  z-index: 120;
+  display: flex;
+  width: clamp(320px, 44vw, 620px);
+  max-width: calc(100vw - 24px);
+  max-height: min(70vh, 520px);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg);
+  box-shadow: 0 24px 64px var(--studio-node-shadow);
+  color: var(--studio-text);
+}
+
+.panel[data-theme='dark'] {
+  --studio-engine-picker-disabled-label: #dbeafe;
+  --studio-engine-picker-disabled-reason: #cbd5e1;
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 8px 6px 11px;
+  border-bottom: 1px solid var(--studio-border);
+  color: var(--studio-text-muted);
+}
+
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--studio-select-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--studio-text-muted);
+}
+
+.resultCounts {
+  display: flex;
+  gap: 8px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pickerGrid {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: 148px minmax(0, 1fr);
+  flex: 1;
+}
+
+.familyColumn {
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 7px;
+  border-right: 1px solid var(--studio-border);
+  scrollbar-width: none;
+}
+
+.familyColumn::-webkit-scrollbar,
+.modelList::-webkit-scrollbar {
+  display: none;
+}
+
+.familyButton {
+  display: grid;
+  width: 100%;
+  min-height: 36px;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px;
+  text-align: left;
+}
+
+.familyButton > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.familyButton:hover,
+.familyButtonActive {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+}
+
+.familyCount {
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.modelRegion {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  padding: 7px;
+}
+
+.modelRegionLabel {
+  padding: 3px 5px 7px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.modelList {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.modelOption {
+  display: grid;
+  width: 100%;
+  height: 58px;
+  min-height: 58px;
+  grid-template-columns: 28px minmax(0, 1fr) 16px;
+  gap: 9px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--studio-text);
+  cursor: pointer;
+  font: inherit;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.modelOption:hover:not(.modelOptionDisabled),
+.modelOptionHighlighted:not(.modelOptionDisabled) {
+  border-color: color-mix(in srgb, var(--studio-primary) 34%, var(--studio-border));
+  background: var(--studio-bg-soft);
+}
+
+.modelCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.modelCopy strong,
+.modelCopy > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modelCopy strong {
+  color: var(--studio-text-strong);
+  font-size: 11px;
+}
+
+.modelCopy > span {
+  color: var(--studio-text-muted);
+  font-size: 9.5px;
+}
+
+.modelCopy .disabledReason {
+  color: color-mix(in srgb, var(--studio-text-muted) 88%, var(--studio-text));
+}
+
+.modelOptionDisabled {
+  cursor: not-allowed;
+}
+
+.modelOptionDisabled .modelCopy strong {
+  color: var(--studio-engine-picker-disabled-label);
+}
+
+.modelOptionDisabled .modelCopy .disabledReason {
+  color: var(--studio-engine-picker-disabled-reason);
+}
+
+.selectedCheck {
+  color: var(--studio-primary);
+}
+
+.noResults {
+  display: grid;
+  min-height: 132px;
+  place-items: center;
+  padding: 18px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.trigger:focus-visible,
+.searchInput:focus-visible,
+.familyButton:focus-visible,
+.modelList:focus-visible,
+.modelOption:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--studio-primary) 76%, #ffffff 10%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .searchRow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .resultCounts {
+    grid-column: 2;
+  }
+
+  .pickerGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .familyColumn {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: 0;
+    border-bottom: 1px solid var(--studio-border);
+  }
+
+  .familyButton {
+    width: auto;
+    min-width: 126px;
+    flex: 0 0 auto;
+  }
+}

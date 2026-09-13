@@ -537,17 +537,32 @@ test('Engine select keeps its app-specific family priority stable', () => {
   const expectedPriority = [
     'seedance',
     'kling',
-    'veo',
-    'happy-horse',
-    'luma',
-    'sora',
-    'ltx',
-    'wan',
-    'pika',
     'hailuo',
+    'veo',
+    'wan',
+    'happy-horse',
+    'ltx',
+    'grok',
+    'sora',
+    'luma',
+    'pika',
+    'flux',
   ];
   assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, expectedPriority);
-  const families = ['sora', 'ltx', 'seedance', 'veo', 'happy-horse', 'wan', 'kling', 'luma', 'pika', 'hailuo'];
+  const families = [
+    'sora',
+    'ltx',
+    'seedance',
+    'veo',
+    'happy-horse',
+    'wan',
+    'kling',
+    'luma',
+    'pika',
+    'hailuo',
+    'flux',
+    'grok',
+  ];
   const sorted = families
     .slice()
     .sort((a, b) => getEngineSelectFamilyRank({ family: a }) - getEngineSelectFamilyRank({ family: b }));

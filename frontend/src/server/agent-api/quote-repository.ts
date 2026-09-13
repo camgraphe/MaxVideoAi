@@ -23,11 +23,11 @@ export type McpGenerationQuoteState =
   | 'failed'
   | 'expired';
 
-export type McpGenerationQuote = {
+export type McpGenerationQuote<Request = CanonicalGenerationRequest> = {
   quoteId: string;
   userId: string;
   oauthClientId: string | null;
-  request: CanonicalGenerationRequest;
+  request: Request;
   requestHash: string;
   catalogRevision: string;
   pricingSnapshot: Record<string, unknown>;
@@ -43,10 +43,10 @@ export type McpGenerationQuote = {
   updatedAt: Date;
 };
 
-export type InsertPreparedQuoteInput = {
+export type InsertPreparedQuoteInput<Request = CanonicalGenerationRequest> = {
   userId: string;
   oauthClientId: string | null;
-  request: CanonicalGenerationRequest;
+  request: Request;
   requestHash: string;
   catalogRevision: string;
   pricingSnapshot: Record<string, unknown>;
@@ -81,8 +81,8 @@ type QuoteExpireDependencies = QuoteLockDependencies & {
   expiredAt: Date;
 };
 
-export type LockedOwnedQuote = {
-  quote: McpGenerationQuote;
+export type LockedOwnedQuote<Request = CanonicalGenerationRequest> = {
+  quote: McpGenerationQuote<Request>;
   databaseNow: Date;
 };
 
@@ -247,405 +247,446 @@ function requireNow(dependencies: QuoteRepositoryDependencies): Date {
   return new Date(value.getTime());
 }
 
-function assertInsertInput(value: unknown): asserts value is InsertPreparedQuoteInput {
-  if (!isRecord(value)
-    || !hasExactKeys(value, INSERT_KEYS)
-    || !isBoundedText(value.userId, 128)
-    || !isNullableBoundedText(value.oauthClientId, 256)
-    || !HASH_PATTERN.test(String(value.requestHash))
-    || !isBoundedText(value.catalogRevision, 256)
-    || !isRecord(value.pricingSnapshot)
-    || !Number.isSafeInteger(value.priceCents)
-    || (value.priceCents as number) < 0
-    || (value.priceCents as number) > MAX_INTEGER_CENTS
-    || typeof value.currency !== 'string'
-    || !CURRENCY_PATTERN.test(value.currency)
-    || typeof value.fundingMode !== 'string'
-    || !FUNDING_MODES.has(value.fundingMode as GenerationFundingMode)) {
-    throw new Error('Invalid prepared quote input.');
+/** Shared persistence and atomic quote state machine. Surface codecs cannot alter ownership or billing state. */
+export function createQuoteRepository<Request>(codec: {
+  surfaces: readonly ('video' | 'image' | 'audio')[];
+  normalize(value: unknown): Request;
+  hash(value: Request): string;
+  parseFunding(snapshot: Record<string, unknown>, priceCents: number, currency: string, mode: GenerationFundingMode, request: Request): IncludedTrialFundingSnapshot | null;
+}) {
+  if (!codec.surfaces.length || codec.surfaces.some(surface => !['video', 'image', 'audio'].includes(surface))) throw new Error('Invalid quote surface codec.');
+  // Internal allowlisted literals; request values never enter SQL text.
+  const surfacePredicate = `AND request_json->>'surface' IN (${codec.surfaces.map(surface => `'${surface}'`).join(', ')})`;
+  function assertInsertInput(value: unknown): asserts value is InsertPreparedQuoteInput<Request> {
+    if (!isRecord(value)
+      || !hasExactKeys(value, INSERT_KEYS)
+      || !isBoundedText(value.userId, 128)
+      || !isNullableBoundedText(value.oauthClientId, 256)
+      || !HASH_PATTERN.test(String(value.requestHash))
+      || !isBoundedText(value.catalogRevision, 256)
+      || !isRecord(value.pricingSnapshot)
+      || !Number.isSafeInteger(value.priceCents)
+      || (value.priceCents as number) < 0
+      || (value.priceCents as number) > MAX_INTEGER_CENTS
+      || typeof value.currency !== 'string'
+      || !CURRENCY_PATTERN.test(value.currency)
+      || typeof value.fundingMode !== 'string'
+      || !FUNDING_MODES.has(value.fundingMode as GenerationFundingMode)) {
+      throw new Error('Invalid prepared quote input.');
+    }
+    let canonical: Request;
+    try {
+      canonical = codec.normalize(value.request);
+    } catch {
+      throw new Error('Invalid prepared quote input.');
+    }
+    if (codec.hash(canonical) !== value.requestHash) {
+      throw new Error('Invalid prepared quote input.');
+    }
+    try {
+      codec.parseFunding(
+        value.pricingSnapshot,
+        value.priceCents as number,
+        value.currency,
+        value.fundingMode as GenerationFundingMode,
+        canonical,
+      );
+    } catch {
+      throw new Error('Invalid prepared quote input.');
+    }
   }
-  let canonical: CanonicalGenerationRequest;
-  try {
-    canonical = normalizeGenerationRequest(value.request);
-  } catch {
-    throw new Error('Invalid prepared quote input.');
-  }
-  if (hashCanonicalGenerationRequest(canonical) !== value.requestHash) {
-    throw new Error('Invalid prepared quote input.');
-  }
-  try {
-    parseTrialFunding(
-      value.pricingSnapshot,
-      value.priceCents as number,
-      value.currency,
-      value.fundingMode as GenerationFundingMode,
-      canonical,
-    );
-  } catch {
-    throw new Error('Invalid prepared quote input.');
-  }
-}
 
-function assertOwnerInput(value: unknown): asserts value is OwnedQuoteInput {
-  if (!isRecord(value)
-    || !hasExactKeys(value, OWNER_KEYS)
-    || typeof value.quoteId !== 'string'
-    || !UUID_V4_PATTERN.test(value.quoteId)
-    || !isBoundedText(value.userId, 128)
-    || !isNullableBoundedText(value.oauthClientId, 256)) {
-    throw new Error('Invalid quote ownership input.');
+  function assertOwnerInput(value: unknown): asserts value is OwnedQuoteInput {
+    if (!isRecord(value)
+      || !hasExactKeys(value, OWNER_KEYS)
+      || typeof value.quoteId !== 'string'
+      || !UUID_V4_PATTERN.test(value.quoteId)
+      || !isBoundedText(value.userId, 128)
+      || !isNullableBoundedText(value.oauthClientId, 256)) {
+      throw new Error('Invalid quote ownership input.');
+    }
   }
-}
 
-function assertJobInput(value: unknown): asserts value is OwnedQuoteJobInput {
-  if (!isRecord(value)
-    || !hasExactKeys(value, JOB_KEYS)
-    || typeof value.quoteId !== 'string'
-    || !UUID_V4_PATTERN.test(value.quoteId)
-    || !isBoundedText(value.userId, 128)
-    || !isNullableBoundedText(value.oauthClientId, 256)
-    || !isBoundedText(value.jobId, 256)) {
-    throw new Error('Invalid quote job input.');
+  function assertJobInput(value: unknown): asserts value is OwnedQuoteJobInput {
+    if (!isRecord(value)
+      || !hasExactKeys(value, JOB_KEYS)
+      || typeof value.quoteId !== 'string'
+      || !UUID_V4_PATTERN.test(value.quoteId)
+      || !isBoundedText(value.userId, 128)
+      || !isNullableBoundedText(value.oauthClientId, 256)
+      || !isBoundedText(value.jobId, 256)) {
+      throw new Error('Invalid quote job input.');
+    }
   }
-}
 
-function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
-  const requestRecord = jsonRecord(row.request_json);
-  const pricingSnapshot = jsonRecord(row.pricing_snapshot);
-  const expiresAt = finiteDate(row.expires_at);
-  const claimedAt = row.claimed_at === null ? null : finiteDate(row.claimed_at);
-  const createdAt = finiteDate(row.created_at);
-  const updatedAt = finiteDate(row.updated_at);
-  let request: CanonicalGenerationRequest | null = null;
-  const fundingMode = typeof row.funding_mode === 'string'
-    && FUNDING_MODES.has(row.funding_mode as GenerationFundingMode)
-    ? row.funding_mode as GenerationFundingMode
-    : null;
-  try {
-    if (requestRecord) request = normalizeGenerationRequest(requestRecord);
-  } catch {
-    request = null;
-  }
-  if (typeof row.quote_id !== 'string'
-    || !UUID_V4_PATTERN.test(row.quote_id)
-    || !isBoundedText(row.user_id, 128)
-    || !isNullableBoundedText(row.oauth_client_id, 256)
-    || !request
-    || typeof row.request_hash !== 'string'
-    || !HASH_PATTERN.test(row.request_hash)
-    || hashCanonicalGenerationRequest(request) !== row.request_hash
-    || !isBoundedText(row.catalog_revision, 256)
-    || !pricingSnapshot
-    || !Number.isSafeInteger(row.price_cents)
-    || (row.price_cents as number) < 0
-    || (row.price_cents as number) > MAX_INTEGER_CENTS
-    || typeof row.currency !== 'string'
-    || !CURRENCY_PATTERN.test(row.currency)
-    || !fundingMode
-    || typeof row.state !== 'string'
-    || !STATES.has(row.state as McpGenerationQuoteState)
-    || !isNullableBoundedText(row.job_id, 256)
-    || !expiresAt
-    || !createdAt
-    || !updatedAt
-    || (row.claimed_at !== null && !claimedAt)
-    || ![
-      MCP_LEGACY_QUOTE_LIFETIME_SECONDS,
-      MCP_QUOTE_LIFETIME_SECONDS,
-    ].includes((expiresAt.getTime() - createdAt.getTime()) / 1000)
-    || updatedAt < createdAt
-    || (claimedAt !== null
-      && (claimedAt < createdAt || claimedAt >= expiresAt || claimedAt > updatedAt))) {
-    throw new Error('Invalid quote row.');
-  }
-  const state = row.state as McpGenerationQuoteState;
-  let trialFunding: IncludedTrialFundingSnapshot | null;
-  try {
-    trialFunding = parseTrialFunding(
-      pricingSnapshot,
-      row.price_cents as number,
-      row.currency,
-      fundingMode,
+  function parseQuoteRow(row: QuoteRow): McpGenerationQuote<Request> {
+    const requestRecord = jsonRecord(row.request_json);
+    const pricingSnapshot = jsonRecord(row.pricing_snapshot);
+    const expiresAt = finiteDate(row.expires_at);
+    const claimedAt = row.claimed_at === null ? null : finiteDate(row.claimed_at);
+    const createdAt = finiteDate(row.created_at);
+    const updatedAt = finiteDate(row.updated_at);
+    let request: Request | null = null;
+    const fundingMode = typeof row.funding_mode === 'string'
+      && FUNDING_MODES.has(row.funding_mode as GenerationFundingMode)
+      ? row.funding_mode as GenerationFundingMode
+      : null;
+    try {
+      if (requestRecord) request = codec.normalize(requestRecord);
+    } catch {
+      request = null;
+    }
+    if (typeof row.quote_id !== 'string'
+      || !UUID_V4_PATTERN.test(row.quote_id)
+      || !isBoundedText(row.user_id, 128)
+      || !isNullableBoundedText(row.oauth_client_id, 256)
+      || !request
+      || typeof row.request_hash !== 'string'
+      || !HASH_PATTERN.test(row.request_hash)
+      || codec.hash(request) !== row.request_hash
+      || !isBoundedText(row.catalog_revision, 256)
+      || !pricingSnapshot
+      || !Number.isSafeInteger(row.price_cents)
+      || (row.price_cents as number) < 0
+      || (row.price_cents as number) > MAX_INTEGER_CENTS
+      || typeof row.currency !== 'string'
+      || !CURRENCY_PATTERN.test(row.currency)
+      || !fundingMode
+      || typeof row.state !== 'string'
+      || !STATES.has(row.state as McpGenerationQuoteState)
+      || !isNullableBoundedText(row.job_id, 256)
+      || !expiresAt
+      || !createdAt
+      || !updatedAt
+      || (row.claimed_at !== null && !claimedAt)
+      || ![
+        MCP_LEGACY_QUOTE_LIFETIME_SECONDS,
+        MCP_QUOTE_LIFETIME_SECONDS,
+      ].includes((expiresAt.getTime() - createdAt.getTime()) / 1000)
+      || updatedAt < createdAt
+      || (claimedAt !== null
+        && (claimedAt < createdAt || claimedAt >= expiresAt || claimedAt > updatedAt))) {
+      throw new Error('Invalid quote row.');
+    }
+    const state = row.state as McpGenerationQuoteState;
+    let trialFunding: IncludedTrialFundingSnapshot | null;
+    try {
+      trialFunding = codec.parseFunding(
+        pricingSnapshot,
+        row.price_cents as number,
+        row.currency,
+        fundingMode,
+        request,
+      );
+    } catch {
+      throw new Error('Invalid quote row.');
+    }
+    const claimedShape = row.job_id !== null && claimedAt !== null;
+    if (((state === 'prepared' || state === 'expired') && (row.job_id !== null || claimedAt !== null))
+      || ((state === 'claimed' || state === 'accepted') && !claimedShape)
+      || (state === 'failed' && ((row.job_id === null) !== (claimedAt === null)))) {
+      throw new Error('Invalid quote row.');
+    }
+    return {
+      quoteId: row.quote_id,
+      userId: row.user_id,
+      oauthClientId: row.oauth_client_id,
       request,
+      requestHash: row.request_hash,
+      catalogRevision: row.catalog_revision,
+      pricingSnapshot,
+      priceCents: row.price_cents as number,
+      currency: row.currency,
+      fundingMode,
+      trialFunding,
+      state,
+      jobId: row.job_id,
+      expiresAt,
+      claimedAt,
+      createdAt,
+      updatedAt,
+    };
+  }
+
+  function parseOptionalQuote(rows: QuoteRow[]): McpGenerationQuote<Request> | null {
+    if (rows.length === 0) return null;
+    if (rows.length !== 1) throw new Error('Invalid quote repository result.');
+    return parseQuoteRow(rows[0]);
+  }
+
+  const QUOTE_COLUMNS = `
+    quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+    pricing_snapshot, price_cents, currency, funding_mode, state, job_id,
+    expires_at, claimed_at, created_at, updated_at
+  `;
+
+  async function insertPreparedQuote(
+    input: InsertPreparedQuoteInput<Request>,
+    dependencies: QuoteRepositoryDependencies = defaultDependencies,
+  ): Promise<McpGenerationQuote<Request>> {
+    assertInsertInput(input);
+    const canonicalRequest = codec.normalize(input.request);
+    const createdAt = requireNow(dependencies);
+    const expiresAt = new Date(createdAt.getTime() + MCP_QUOTE_LIFETIME_SECONDS * 1000);
+    const nextUuid = dependencies.randomUUID ?? defaultDependencies.randomUUID;
+    const quoteId = nextUuid?.();
+    if (!quoteId || !UUID_V4_PATTERN.test(quoteId)) throw new Error('Invalid quote UUID source.');
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `INSERT INTO mcp_generation_quotes (
+        quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+        pricing_snapshot, price_cents, currency, funding_mode, state,
+        expires_at, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7::jsonb, $8, $9, $10, $11, $12, $13, $13)
+      RETURNING ${QUOTE_COLUMNS}`,
+      [
+        quoteId, input.userId, input.oauthClientId, JSON.stringify(canonicalRequest),
+        input.requestHash, input.catalogRevision, JSON.stringify(input.pricingSnapshot),
+        input.priceCents, input.currency, input.fundingMode, 'prepared', expiresAt, createdAt,
+      ],
     );
-  } catch {
-    throw new Error('Invalid quote row.');
+    const quote = parseOptionalQuote(rows);
+    if (!quote) throw new Error('Prepared quote was not persisted.');
+    return quote;
   }
-  const claimedShape = row.job_id !== null && claimedAt !== null;
-  if (((state === 'prepared' || state === 'expired') && (row.job_id !== null || claimedAt !== null))
-    || ((state === 'claimed' || state === 'accepted') && !claimedShape)
-    || (state === 'failed' && ((row.job_id === null) !== (claimedAt === null)))) {
-    throw new Error('Invalid quote row.');
+
+  async function getOwnedQuote(
+    input: OwnedQuoteInput,
+    dependencies: Pick<QuoteRepositoryDependencies, 'executor'> = defaultDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertOwnerInput(input);
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `SELECT ${QUOTE_COLUMNS}
+         FROM mcp_generation_quotes
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}`,
+      [input.quoteId, input.userId, input.oauthClientId],
+    );
+    return parseOptionalQuote(rows);
   }
-  return {
-    quoteId: row.quote_id,
-    userId: row.user_id,
-    oauthClientId: row.oauth_client_id,
-    request,
-    requestHash: row.request_hash,
-    catalogRevision: row.catalog_revision,
-    pricingSnapshot,
-    priceCents: row.price_cents as number,
-    currency: row.currency,
-    fundingMode,
-    trialFunding,
-    state,
-    jobId: row.job_id,
-    expiresAt,
-    claimedAt,
-    createdAt,
-    updatedAt,
-  };
-}
 
-function parseOptionalQuote(rows: QuoteRow[]): McpGenerationQuote | null {
-  if (rows.length === 0) return null;
-  if (rows.length !== 1) throw new Error('Invalid quote repository result.');
-  return parseQuoteRow(rows[0]);
-}
-
-const QUOTE_COLUMNS = `
-  quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
-  pricing_snapshot, price_cents, currency, funding_mode, state, job_id,
-  expires_at, claimed_at, created_at, updated_at
-`;
-
-export async function insertPreparedQuote(
-  input: InsertPreparedQuoteInput,
-  dependencies: QuoteRepositoryDependencies = defaultDependencies,
-): Promise<McpGenerationQuote> {
-  assertInsertInput(input);
-  const canonicalRequest = normalizeGenerationRequest(input.request);
-  const createdAt = requireNow(dependencies);
-  const expiresAt = new Date(createdAt.getTime() + MCP_QUOTE_LIFETIME_SECONDS * 1000);
-  const nextUuid = dependencies.randomUUID ?? defaultDependencies.randomUUID;
-  const quoteId = nextUuid?.();
-  if (!quoteId || !UUID_V4_PATTERN.test(quoteId)) throw new Error('Invalid quote UUID source.');
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `INSERT INTO mcp_generation_quotes (
-      quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
-      pricing_snapshot, price_cents, currency, funding_mode, state,
-      expires_at, created_at, updated_at
-    ) VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7::jsonb, $8, $9, $10, $11, $12, $13, $13)
-    RETURNING ${QUOTE_COLUMNS}`,
-    [
-      quoteId, input.userId, input.oauthClientId, JSON.stringify(canonicalRequest),
-      input.requestHash, input.catalogRevision, JSON.stringify(input.pricingSnapshot),
-      input.priceCents, input.currency, input.fundingMode, 'prepared', expiresAt, createdAt,
-    ],
-  );
-  const quote = parseOptionalQuote(rows);
-  if (!quote) throw new Error('Prepared quote was not persisted.');
-  return quote;
-}
-
-export async function getOwnedQuote(
-  input: OwnedQuoteInput,
-  dependencies: Pick<QuoteRepositoryDependencies, 'executor'> = defaultDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertOwnerInput(input);
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `SELECT ${QUOTE_COLUMNS}
-       FROM mcp_generation_quotes
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3`,
-    [input.quoteId, input.userId, input.oauthClientId],
-  );
-  return parseOptionalQuote(rows);
-}
-
-export async function lockOwnedPreparedQuote(
-  input: OwnedQuoteInput,
-  dependencies: QuoteLockDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertOwnerInput(input);
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `SELECT ${QUOTE_COLUMNS}
-       FROM mcp_generation_quotes
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-        AND state = 'prepared'
-      FOR UPDATE`,
-    [input.quoteId, input.userId, input.oauthClientId],
-  );
-  const quote = parseOptionalQuote(rows);
-  if (!quote) return null;
-  const clockRows = await dependencies.executor.query<{ current_time: unknown }>(
-    'SELECT clock_timestamp() AS current_time',
-  );
-  if (clockRows.length !== 1) throw new Error('Invalid quote repository clock result.');
-  const currentTime = finiteDate(clockRows[0].current_time);
-  if (!currentTime) throw new Error('Invalid quote repository clock result.');
-  return quote.expiresAt <= currentTime ? null : quote;
-}
-
-export async function lockOwnedQuote(
-  input: OwnedQuoteInput,
-  dependencies: QuoteLockDependencies,
-): Promise<LockedOwnedQuote | null> {
-  assertOwnerInput(input);
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `SELECT ${QUOTE_COLUMNS}
-       FROM mcp_generation_quotes
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-      FOR UPDATE`,
-    [input.quoteId, input.userId, input.oauthClientId],
-  );
-  const quote = parseOptionalQuote(rows);
-  if (!quote) return null;
-  const clockRows = await dependencies.executor.query<{ current_time: unknown }>(
-    'SELECT clock_timestamp() AS current_time',
-  );
-  if (clockRows.length !== 1) throw new Error('Invalid quote repository clock result.');
-  const databaseNow = finiteDate(clockRows[0].current_time);
-  if (!databaseNow) throw new Error('Invalid quote repository clock result.');
-  return { quote, databaseNow };
-}
-
-export async function claimPreparedQuote(
-  input: OwnedQuoteJobInput,
-  dependencies: QuoteClaimDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertJobInput(input);
-  const claimedAt = finiteDate(dependencies.claimedAt);
-  if (!claimedAt) throw new Error('Invalid quote claim clock.');
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `UPDATE mcp_generation_quotes
-        SET state = 'claimed', job_id = $4, claimed_at = $5, updated_at = $5
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-        AND state = 'prepared'
-        AND expires_at > $5
-        AND job_id IS NULL
-        AND claimed_at IS NULL
-    RETURNING ${QUOTE_COLUMNS}`,
-    [input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt],
-  );
-  return parseOptionalQuote(rows);
-}
-
-export async function markQuoteExpired(
-  input: OwnedQuoteInput,
-  dependencies: QuoteExpireDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertOwnerInput(input);
-  const expiredAt = finiteDate(dependencies.expiredAt);
-  if (!expiredAt) throw new Error('Invalid quote expiration clock.');
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `UPDATE mcp_generation_quotes
-        SET state = 'expired', updated_at = $4
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-        AND state = 'prepared'
-        AND expires_at <= $4
-    RETURNING ${QUOTE_COLUMNS}`,
-    [input.quoteId, input.userId, input.oauthClientId, expiredAt],
-  );
-  return parseOptionalQuote(rows);
-}
-
-export async function invalidatePreparedQuote(
-  input: OwnedQuoteInput,
-  dependencies: QuoteExpireDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertOwnerInput(input);
-  const expiredAt = finiteDate(dependencies.expiredAt);
-  if (!expiredAt) throw new Error('Invalid quote invalidation clock.');
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `UPDATE mcp_generation_quotes
-        SET state = 'expired', updated_at = $4
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-        AND state = 'prepared'
-        AND job_id IS NULL
-        AND claimed_at IS NULL
-    RETURNING ${QUOTE_COLUMNS}`,
-    [input.quoteId, input.userId, input.oauthClientId, expiredAt],
-  );
-  return parseOptionalQuote(rows);
-}
-
-export async function markQuoteAccepted(
-  input: OwnedQuoteJobInput,
-  dependencies: QuoteRepositoryDependencies = defaultDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertJobInput(input);
-  const now = requireNow(dependencies);
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `UPDATE mcp_generation_quotes
-        SET state = 'accepted', updated_at = $5
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-        AND job_id = $4
-        AND state = 'claimed'
-    RETURNING ${QUOTE_COLUMNS}`,
-    [input.quoteId, input.userId, input.oauthClientId, input.jobId, now],
-  );
-  return parseOptionalQuote(rows);
-}
-
-export async function markQuoteFailed(
-  input: OwnedQuoteJobInput,
-  dependencies: QuoteRepositoryDependencies = defaultDependencies,
-): Promise<McpGenerationQuote | null> {
-  assertJobInput(input);
-  const now = requireNow(dependencies);
-  const rows = await dependencies.executor.query<QuoteRow>(
-    `UPDATE mcp_generation_quotes
-        SET state = 'failed', updated_at = $5
-      WHERE quote_id = $1
-        AND user_id = $2
-        AND oauth_client_id IS NOT DISTINCT FROM $3
-        AND job_id = $4
-        AND state IN ('claimed', 'accepted')
-    RETURNING ${QUOTE_COLUMNS}`,
-    [input.quoteId, input.userId, input.oauthClientId, input.jobId, now],
-  );
-  return parseOptionalQuote(rows);
-}
-
-export async function expirePreparedQuotes(
-  options: { limit?: number } = {},
-  dependencies: QuoteRepositoryDependencies = defaultDependencies,
-): Promise<number> {
-  const limit = options.limit ?? MCP_QUOTE_EXPIRATION_BATCH_SIZE;
-  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1_000) {
-    throw new Error('Invalid quote expiration batch size.');
+  async function lockOwnedPreparedQuote(
+    input: OwnedQuoteInput,
+    dependencies: QuoteLockDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertOwnerInput(input);
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `SELECT ${QUOTE_COLUMNS}
+         FROM mcp_generation_quotes
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+          AND state = 'prepared'
+        FOR UPDATE`,
+      [input.quoteId, input.userId, input.oauthClientId],
+    );
+    const quote = parseOptionalQuote(rows);
+    if (!quote) return null;
+    const clockRows = await dependencies.executor.query<{ current_time: unknown }>(
+      'SELECT clock_timestamp() AS current_time',
+    );
+    if (clockRows.length !== 1) throw new Error('Invalid quote repository clock result.');
+    const currentTime = finiteDate(clockRows[0].current_time);
+    if (!currentTime) throw new Error('Invalid quote repository clock result.');
+    return quote.expiresAt <= currentTime ? null : quote;
   }
-  const now = requireNow(dependencies);
-  const rows = await dependencies.executor.query<{ count: unknown }>(
-    `WITH expired_quotes AS (
-      SELECT quote_id
-        FROM mcp_generation_quotes
-       WHERE state = 'prepared'
-         AND expires_at <= $1
-       ORDER BY expires_at ASC, quote_id ASC
-       LIMIT $2
-       FOR UPDATE SKIP LOCKED
-    ), updated_quotes AS (
-      UPDATE mcp_generation_quotes AS quotes
-         SET state = 'expired', updated_at = $1
-        FROM expired_quotes
-       WHERE quotes.quote_id = expired_quotes.quote_id
-      RETURNING quotes.quote_id
-    )
-    SELECT COUNT(*)::text AS count FROM updated_quotes`,
-    [now, limit],
-  );
-  if (rows.length !== 1 || typeof rows[0].count !== 'string' || !/^\d+$/u.test(rows[0].count)) {
-    throw new Error('Invalid quote expiration result.');
+
+  async function lockOwnedQuote(
+    input: OwnedQuoteInput,
+    dependencies: QuoteLockDependencies,
+  ): Promise<LockedOwnedQuote<Request> | null> {
+    assertOwnerInput(input);
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `SELECT ${QUOTE_COLUMNS}
+         FROM mcp_generation_quotes
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+        FOR UPDATE`,
+      [input.quoteId, input.userId, input.oauthClientId],
+    );
+    const quote = parseOptionalQuote(rows);
+    if (!quote) return null;
+    const clockRows = await dependencies.executor.query<{ current_time: unknown }>(
+      'SELECT clock_timestamp() AS current_time',
+    );
+    if (clockRows.length !== 1) throw new Error('Invalid quote repository clock result.');
+    const databaseNow = finiteDate(clockRows[0].current_time);
+    if (!databaseNow) throw new Error('Invalid quote repository clock result.');
+    return { quote, databaseNow };
   }
-  const count = Number(rows[0].count);
-  if (!Number.isSafeInteger(count) || count < 0 || count > limit) {
-    throw new Error('Invalid quote expiration result.');
+
+  async function claimPreparedQuote(
+    input: OwnedQuoteJobInput,
+    dependencies: QuoteClaimDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertJobInput(input);
+    const claimedAt = finiteDate(dependencies.claimedAt);
+    if (!claimedAt) throw new Error('Invalid quote claim clock.');
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `UPDATE mcp_generation_quotes
+          SET state = 'claimed', job_id = $4, claimed_at = $5, updated_at = $5
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+          AND state = 'prepared'
+          AND expires_at > $5
+          AND job_id IS NULL
+          AND claimed_at IS NULL
+      RETURNING ${QUOTE_COLUMNS}`,
+      [input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt],
+    );
+    return parseOptionalQuote(rows);
   }
-  return count;
+
+  async function markQuoteExpired(
+    input: OwnedQuoteInput,
+    dependencies: QuoteExpireDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertOwnerInput(input);
+    const expiredAt = finiteDate(dependencies.expiredAt);
+    if (!expiredAt) throw new Error('Invalid quote expiration clock.');
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `UPDATE mcp_generation_quotes
+          SET state = 'expired', updated_at = $4
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+          AND state = 'prepared'
+          AND expires_at <= $4
+      RETURNING ${QUOTE_COLUMNS}`,
+      [input.quoteId, input.userId, input.oauthClientId, expiredAt],
+    );
+    return parseOptionalQuote(rows);
+  }
+
+  async function invalidatePreparedQuote(
+    input: OwnedQuoteInput,
+    dependencies: QuoteExpireDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertOwnerInput(input);
+    const expiredAt = finiteDate(dependencies.expiredAt);
+    if (!expiredAt) throw new Error('Invalid quote invalidation clock.');
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `UPDATE mcp_generation_quotes
+          SET state = 'expired', updated_at = $4
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+          AND state = 'prepared'
+          AND job_id IS NULL
+          AND claimed_at IS NULL
+      RETURNING ${QUOTE_COLUMNS}`,
+      [input.quoteId, input.userId, input.oauthClientId, expiredAt],
+    );
+    return parseOptionalQuote(rows);
+  }
+
+  async function markQuoteAccepted(
+    input: OwnedQuoteJobInput,
+    dependencies: QuoteRepositoryDependencies = defaultDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertJobInput(input);
+    const now = requireNow(dependencies);
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `UPDATE mcp_generation_quotes
+          SET state = 'accepted', updated_at = $5
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+          AND job_id = $4
+          AND state = 'claimed'
+      RETURNING ${QUOTE_COLUMNS}`,
+      [input.quoteId, input.userId, input.oauthClientId, input.jobId, now],
+    );
+    return parseOptionalQuote(rows);
+  }
+
+  async function markQuoteFailed(
+    input: OwnedQuoteJobInput,
+    dependencies: QuoteRepositoryDependencies = defaultDependencies,
+  ): Promise<McpGenerationQuote<Request> | null> {
+    assertJobInput(input);
+    const now = requireNow(dependencies);
+    const rows = await dependencies.executor.query<QuoteRow>(
+      `UPDATE mcp_generation_quotes
+          SET state = 'failed', updated_at = $5
+        WHERE quote_id = $1
+          AND user_id = $2
+          AND oauth_client_id IS NOT DISTINCT FROM $3
+          ${surfacePredicate}
+          AND job_id = $4
+          AND state IN ('claimed', 'accepted')
+      RETURNING ${QUOTE_COLUMNS}`,
+      [input.quoteId, input.userId, input.oauthClientId, input.jobId, now],
+    );
+    return parseOptionalQuote(rows);
+  }
+
+  async function expirePreparedQuotes(
+    options: { limit?: number } = {},
+    dependencies: QuoteRepositoryDependencies = defaultDependencies,
+  ): Promise<number> {
+    const limit = options.limit ?? MCP_QUOTE_EXPIRATION_BATCH_SIZE;
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1_000) {
+      throw new Error('Invalid quote expiration batch size.');
+    }
+    const now = requireNow(dependencies);
+    const rows = await dependencies.executor.query<{ count: unknown }>(
+      `WITH expired_quotes AS (
+        SELECT quote_id
+          FROM mcp_generation_quotes
+         WHERE state = 'prepared'
+           AND expires_at <= $1
+         ORDER BY expires_at ASC, quote_id ASC
+         LIMIT $2
+         FOR UPDATE SKIP LOCKED
+      ), updated_quotes AS (
+        UPDATE mcp_generation_quotes AS quotes
+           SET state = 'expired', updated_at = $1
+          FROM expired_quotes
+         WHERE quotes.quote_id = expired_quotes.quote_id
+        RETURNING quotes.quote_id
+      )
+      SELECT COUNT(*)::text AS count FROM updated_quotes`,
+      [now, limit],
+    );
+    if (rows.length !== 1 || typeof rows[0].count !== 'string' || !/^\d+$/u.test(rows[0].count)) {
+      throw new Error('Invalid quote expiration result.');
+    }
+    const count = Number(rows[0].count);
+    if (!Number.isSafeInteger(count) || count < 0 || count > limit) {
+      throw new Error('Invalid quote expiration result.');
+    }
+    return count;
+  }
+
+  return { insertPreparedQuote, getOwnedQuote, lockOwnedPreparedQuote, lockOwnedQuote, claimPreparedQuote, markQuoteExpired, invalidatePreparedQuote, markQuoteAccepted, markQuoteFailed, expirePreparedQuotes };
 }
+
+export const generationQuoteCodec = {
+  surfaces: ['video', 'image'] as const,
+  normalize: normalizeGenerationRequest,
+  hash: hashCanonicalGenerationRequest,
+  parseFunding: parseTrialFunding,
+};
+
+export const {
+  insertPreparedQuote,
+  getOwnedQuote,
+  lockOwnedPreparedQuote,
+  lockOwnedQuote,
+  claimPreparedQuote,
+  markQuoteExpired,
+  invalidatePreparedQuote,
+  markQuoteAccepted,
+  markQuoteFailed,
+  expirePreparedQuotes
+} = createQuoteRepository(generationQuoteCodec);

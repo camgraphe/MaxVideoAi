@@ -71,12 +71,12 @@ test('jobs API route helper modules expose expected contracts', () => {
 test('jobs API keeps storyboard renders out of generic video and image feeds', () => {
   assert.match(
     recentServiceSource,
-    /surface IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'\)/,
+    /surface IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'type=video should explicitly exclude storyboard jobs by surface'
   );
   assert.match(
     recentServiceSource,
-    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal'\)/,
+    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'type=video should explicitly exclude storyboard jobs by snapshot surface'
   );
   assert.match(recentServiceSource, /job_id LIKE 'storyboard_%'/, 'type=video should exclude legacy storyboard job ids');
@@ -87,7 +87,25 @@ test('jobs API keeps storyboard renders out of generic video and image feeds', (
   );
   assert.match(
     recentServiceSource,
-    /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'\)/,
+    /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'surface=video should explicitly reject storyboard jobs'
+  );
+});
+
+test('jobs list reads migrated tables without request-time schema or legacy repair work', () => {
+  assert.doesNotMatch(
+    routeSource,
+    /ensureBillingSchema/,
+    'the latency-sensitive GET must not run the application schema bootstrap'
+  );
+  assert.doesNotMatch(
+    routeSource,
+    /upsertLegacyJobOutputs/,
+    'the list response must not wait for legacy output repair writes'
+  );
+  assert.match(
+    routeSource,
+    /listJobOutputsByJobIds\(jobIds,\s*\{\s*ensureSchema:\s*false\s*\}\)/,
+    'the list response should read already-migrated output rows directly'
   );
 });

@@ -730,5 +730,8 @@ test('verified OAuth acquisition completes one local SDK trial without wallet or
     paidGeneration: true,
     trial: false,
     referenceUploads: true,
+    montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
   });
 });

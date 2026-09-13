@@ -3,6 +3,16 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import mcpPublication from '@/config/mcp-publication.json';
 import { FEATURES } from '@/content/feature-flags';
 import {
+  createPrepareMontageService,
+  type MontageEditPlan,
+  type PrepareMontageInput,
+} from '@/server/agent-api/montage-plan';
+import type { CreateStudioMontageInput } from '@/lib/studio/montage-contract';
+import {
+  createStudioMontageProject,
+  type CreateStudioMontageResult,
+} from '@/server/studio/montage-command';
+import {
   createAgentAccountStatusService,
   type AgentAccountStatusWalletDeps,
 } from '@/server/agent-api/account-status';
@@ -45,6 +55,17 @@ import {
   type PrepareGenerationInput,
   type TrialRiskRequestContext,
 } from '@/server/agent-api/prepare-generation';
+import { listAudioCapabilities } from '@/server/agent-api/audio-capabilities';
+import {
+  createPrepareAudioGenerationService,
+  type PreparedAudioGeneration,
+  type PrepareAudioGenerationInput,
+} from '@/server/agent-api/prepare-audio-generation';
+import {
+  createConfirmAudioGenerationService,
+  type AudioGenerationConfirmation,
+  type ConfirmAudioGenerationInput,
+} from '@/server/agent-api/confirm-audio-generation';
 import {
   getAgentGenerationStatus,
   listAgentRecentGenerations,
@@ -89,10 +110,15 @@ import { registerListModelsTool } from '@/server/mcp/tools/list-models';
 import { registerGetModelDetailsTool } from '@/server/mcp/tools/get-model-details';
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
+import { registerPrepareMontageTool } from '@/server/mcp/tools/prepare-montage';
+import { registerCreateStudioMontageTool } from '@/server/mcp/tools/create-studio-montage';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerPresentGenerationTool } from '@/server/mcp/tools/present-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
 import { registerCalculateProjectBudgetTool } from '@/server/mcp/tools/calculate-project-budget';
+import { registerListAudioCapabilitiesTool } from '@/server/mcp/tools/list-audio-capabilities';
+import { registerPrepareAudioGenerationTool } from '@/server/mcp/tools/prepare-audio-generation';
+import { registerConfirmAudioGenerationTool } from '@/server/mcp/tools/confirm-audio-generation';
 
 export type MaxVideoAiMcpServices = {
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
@@ -142,11 +168,31 @@ export type MaxVideoAiMcpServices = {
     input: ImportReferenceFilesInput,
     principal: AgentPrincipal,
   ): Promise<ImportReferenceFilesResult>;
+  prepareMontage?(
+    input: PrepareMontageInput,
+    principal: AgentPrincipal,
+  ): Promise<MontageEditPlan>;
+  listAudioCapabilities?(principal: AgentPrincipal): Promise<ReturnType<typeof listAudioCapabilities>>;
+  prepareAudioGeneration?(
+    input: PrepareAudioGenerationInput,
+    principal: AgentPrincipal,
+  ): Promise<PreparedAudioGeneration>;
+  confirmAudioGeneration?(
+    input: ConfirmAudioGenerationInput,
+    principal: AgentPrincipal,
+  ): Promise<AudioGenerationConfirmation>;
+  createStudioMontage?(
+    input: CreateStudioMontageInput,
+    principal: AgentPrincipal,
+  ): Promise<CreateStudioMontageResult>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
   paidGeneration?: boolean;
   referenceUploads?: boolean;
+  montagePreparation?: boolean;
+  audioGeneration?: boolean;
+  studioMontageCreation?: boolean;
 };
 
 export function createDefaultMaxVideoAiMcpServices(
@@ -234,6 +280,21 @@ export function createDefaultMaxVideoAiMcpServices(
     listMedia: (input, principal) => listAgentMedia(input, principal),
     createReferenceUploadLink: createDefaultReferenceUploadLinkService(config.accountUrl),
     importReferenceFiles: createDefaultReferenceFileImportService(config.accountUrl),
+    prepareMontage: createPrepareMontageService(),
+    listAudioCapabilities: async () => listAudioCapabilities(runtimeEnv),
+    prepareAudioGeneration: (input, principal) => createPrepareAudioGenerationService(
+      config.accountUrl,
+      { paidGenerationEnabled: () => capabilities.paidGeneration },
+    )(input, principal),
+    confirmAudioGeneration: (input, principal) => createConfirmAudioGenerationService(
+      config.accountUrl,
+      { paidGenerationEnabled: () => capabilities.paidGeneration },
+    )(input, principal),
+    createStudioMontage: (input, principal) => createStudioMontageProject(
+      { userId: principal.userId },
+      input,
+      { featureEnabled: true },
+    ),
   };
 }
 
@@ -244,6 +305,9 @@ export function createMaxVideoAiMcpServer(
 ): McpServer {
   const referenceUploads = options.referenceUploads ?? FEATURES.mcp.referenceUploads;
   const paidGeneration = options.paidGeneration ?? mcpPublication.paidGeneration;
+  const montagePreparation = options.montagePreparation ?? mcpPublication.montagePreparation;
+  const audioGeneration = paidGeneration && (options.audioGeneration ?? mcpPublication.audioGeneration);
+  const studioMontageCreation = options.studioMontageCreation ?? mcpPublication.studioMontageCreation;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -251,7 +315,13 @@ export function createMaxVideoAiMcpServer(
       websiteUrl: 'https://maxvideoai.com/mcp',
     },
     {
-      instructions: buildMaxVideoAiMcpInstructions({ paidGeneration, referenceUploads }),
+      instructions: buildMaxVideoAiMcpInstructions({
+        paidGeneration,
+        referenceUploads,
+        montagePreparation,
+        audioGeneration,
+        studioMontageCreation,
+      }),
       capabilities: { tools: {} },
     }
   );
@@ -266,6 +336,17 @@ export function createMaxVideoAiMcpServer(
     registerListMediaTool(server, principal, services);
     registerCreateReferenceUploadLinkTool(server, principal, services);
     registerImportReferenceFilesTool(server, principal, services);
+  }
+  if (montagePreparation) {
+    registerPrepareMontageTool(server, principal, services);
+  }
+  if (studioMontageCreation) {
+    registerCreateStudioMontageTool(server, principal, services);
+  }
+  if (audioGeneration) {
+    registerListAudioCapabilitiesTool(server, principal, services);
+    registerPrepareAudioGenerationTool(server, principal, services);
+    registerConfirmAudioGenerationTool(server, principal, services);
   }
   if (paidGeneration) {
     registerGenerationResultApp(server);

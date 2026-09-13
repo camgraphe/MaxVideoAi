@@ -3,13 +3,12 @@ import {
   generateGoogleVertexLyria3Track,
   GOOGLE_VERTEX_LYRIA3_PROVIDER_KEY,
   isGoogleVertexLyria3Configured,
-  isGoogleVertexLyria3DurationSupported,
   selectGoogleVertexLyria3Model,
 } from './google-vertex-lyria';
 import { AudioProviderError } from './error';
 import { runAudioRoleWithFallback } from './fal-runner';
 import { buildMusicPrompt, limitProviderPrompt } from './prompts';
-import { AUDIO_PROVIDER_ROSTER, ENABLE_AUDIO_PROVIDER_FALLBACK } from './roster';
+import { AUDIO_PROVIDER_ROSTER } from './roster';
 import type { AudioProviderCandidate, AudioProviderResult, AudioProviderSubscribe } from './types';
 
 function orderMusicProvidersForDuration(durationSec: number): AudioProviderCandidate[] {
@@ -37,27 +36,13 @@ export async function generateMusicTrack(input: {
   preferLyria3?: boolean;
   generateGoogleVertexLyria3TrackFn?: typeof generateGoogleVertexLyria3Track;
 }): Promise<AudioProviderResult> {
-  let lyriaFailure: { providerKey: string; model: string; message: string } | null = null;
-  const shouldTryLyria3 =
-    options?.preferLyria3 !== false &&
-    isGoogleVertexLyria3DurationSupported(input.durationSec) &&
-    (Boolean(options?.generateGoogleVertexLyria3TrackFn) || isGoogleVertexLyria3Configured());
-
-  if (shouldTryLyria3) {
-    try {
-      return await (options?.generateGoogleVertexLyria3TrackFn ?? generateGoogleVertexLyria3Track)(input);
-    } catch (error) {
-      lyriaFailure = {
-        providerKey: GOOGLE_VERTEX_LYRIA3_PROVIDER_KEY,
-        model: selectGoogleVertexLyria3Model(input.durationSec, input.musicModel),
-        message: error instanceof Error ? error.message : 'Unknown Google Vertex Lyria failure',
-      };
-      if (!ENABLE_AUDIO_PROVIDER_FALLBACK) {
-        throw new AudioProviderError('music', [lyriaFailure]);
-      }
+  if (options?.preferLyria3 !== false) {
+    if (!options?.generateGoogleVertexLyria3TrackFn && !isGoogleVertexLyria3Configured()) {
+      throw new AudioProviderError('music', [{ providerKey: GOOGLE_VERTEX_LYRIA3_PROVIDER_KEY,
+        model: selectGoogleVertexLyria3Model(input.durationSec, input.musicModel), message: 'Lyria is unavailable. No alternative model was charged.' }]);
     }
+    return (options?.generateGoogleVertexLyria3TrackFn ?? generateGoogleVertexLyria3Track)(input);
   }
-
   try {
     return await runAudioRoleWithFallback('music', (candidate) => {
       const basePrompt = buildMusicPrompt(input.mood, input.intensity, input.prompt);
@@ -121,9 +106,6 @@ export async function generateMusicTrack(input: {
       timeoutMs: options?.timeoutMs,
     });
   } catch (error) {
-    if (lyriaFailure && error instanceof AudioProviderError) {
-      throw new AudioProviderError('music', [lyriaFailure, ...error.failures]);
-    }
     throw error;
   }
 }

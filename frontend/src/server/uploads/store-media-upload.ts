@@ -1,4 +1,5 @@
 import { ensureReusableAsset } from '@/server/media-library';
+import type { MediaFacts } from '@/lib/media-identity';
 import { createHash } from 'node:crypto';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { deleteStorageObjectByUrl, uploadFileBuffer, recordUserAsset } from '@/server/storage';
@@ -75,6 +76,7 @@ export type StoreMediaUploadInput = {
 };
 
 export type StoredMediaUpload = {
+  mediaFacts?: MediaFacts;
   assetId: string;
   legacyAssetId: string;
   width: null;
@@ -143,6 +145,8 @@ function createStoreMediaUploadService(
     if (!duration.valid || duration.durationSec === null) {
       throw new MediaUploadError('METADATA_UNVERIFIED', 'The uploaded media metadata could not be verified.');
     }
+    const mediaFacts: MediaFacts = { source: 'probe', durationSec: duration.durationSec,
+      ...(typeof probe.hasAudio === 'boolean' ? { hasAudio: probe.hasAudio } : {}) };
 
     let upload: Awaited<ReturnType<typeof uploadFileBuffer>>;
     let producerClaim: StorageObjectProducerClaim | null = null;
@@ -240,6 +244,7 @@ function createStoreMediaUploadService(
       await renewProducerClaim();
       producerCheckpoint();
       const metadata = {
+        mediaFacts,
         originalName: input.fileName,
         kind: mediaKind,
         durationSec: duration.durationSec,
@@ -268,7 +273,7 @@ function createStoreMediaUploadService(
         sizeBytes: input.bytes.length,
         durationSec: duration.durationSec,
         thumbUrl: previewUrl,
-        metadata: { originalName: input.fileName },
+        metadata: { originalName: input.fileName, mediaFacts },
       });
       producerCheckpoint();
       await renewProducerClaim();
@@ -290,6 +295,7 @@ function createStoreMediaUploadService(
       producerClaim = null;
       return {
         assetId: canonicalAsset.publicId,
+        mediaFacts,
         legacyAssetId,
         width: null,
         height: null,

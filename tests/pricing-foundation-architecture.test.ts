@@ -114,15 +114,15 @@ test('pricing engineering guide records completed canonical pricing authorities 
   }
 });
 
-test('pricing engineering guide records completed isolated-database admin acceptance', () => {
+test('pricing engineering guide records historical admin acceptance and current membership retirement', () => {
   const guide = readFileSync('docs/engineering/pricing-engine.md', 'utf8');
   const acceptedStatus = 'Operationally accepted on isolated DB';
 
-  assert.equal(guide.split(acceptedStatus).length - 1, 4);
-  assert.match(guide, /stale[^.]*409/i);
-  assert.match(guide, /database_unavailable[^.]*503/i);
-  assert.match(guide, /final state[^.]*restored/i);
-  assert.match(guide, /commercial values and pricing results remain unchanged/i);
-  assert.match(guide, /admin mutation workflow changed from direct mutation to[^.]*preview[^.]*confirmation/i);
+  assert.equal(guide.split(acceptedStatus).length - 1, 3);
+  assert.match(guide, /409 PRICING_REFRESH_REQUIRED/i);
+  assert.match(guide, /membership[^.]*read-only/i);
+  assert.match(guide, /membership_retired/);
+  assert.match(guide, /current membership preview, confirmation, and rollback return HTTP 410/i);
+  assert.match(guide, /pricing-policy and billing-product mutations use[^.]*preview[^.]*confirmation/i);
   assert.doesNotMatch(guide, /did not change[^.]*admin mutation/i);
 });

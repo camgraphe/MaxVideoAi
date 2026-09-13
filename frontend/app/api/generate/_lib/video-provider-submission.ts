@@ -235,7 +235,7 @@ export async function submitGenerateProviderTask(params: {
     inputSummary: params.falInputSummary,
   });
   const falSubmission = await submitFalGenerateTask({
-    falPayload: params.falPayload,
+    falPayload: { ...params.falPayload, submissionMode: 'enqueue' },
     jobId: params.jobId,
     engineId: params.engineId,
     engineLabel: params.engineLabel,
@@ -254,7 +254,7 @@ export async function submitGenerateProviderTask(params: {
   if (!falSubmission.ok) {
     return { kind: 'error_response', status: falSubmission.status, body: falSubmission.body };
   }
-  if (params.falPayload.submissionMode === 'enqueue') {
+  if (falSubmission.generationResult.providerJobId) {
     // The initial job and charge already exist. Do not overwrite a fast terminal webhook
     // with a queued finalization (including its media and refund state).
     return {

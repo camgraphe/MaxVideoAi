@@ -58,7 +58,7 @@ test('prepareLocalGenerationRender builds the pending render and selected previe
   assert.equal(prepared.friendlyMessage, 'Take 1/2');
   assert.equal(prepared.startedAt, now);
   assert.equal(prepared.minReadyAt, now + prepared.minDurationMs);
-  assert.equal(prepared.minDurationMs, 8000);
+  assert.equal(prepared.minDurationMs, 0);
   assert.equal(prepared.initialRender.createdAt, new Date(now).toISOString());
   assert.equal(prepared.initialRender.engineId, 'veo-3-1');
   assert.equal(prepared.initialRender.engineLabel, 'Veo 3.1');
@@ -76,7 +76,10 @@ test('prepareLocalGenerationRender builds the pending render and selected previe
     iterationCount: 2,
     aspectRatio: '9:16',
     thumbUrl: '/assets/frames/thumb-9x16.svg',
-    progress: 5,
+    progress: 0,
+    observation: { stage: 'submitting' },
+    startedAt: now,
+    etaSource: 'heuristic',
     message: 'Take 1/2',
     priceCents: 250,
     currency: 'EUR',
@@ -106,4 +109,26 @@ test('prepareLocalGenerationRender falls back to single-render copy and currency
   assert.equal(prepared.thumb, '/assets/frames/thumb-1x1.svg');
   assert.equal(prepared.initialRender.currency, 'GBP');
   assert.equal(prepared.selectedPreview.message, '');
+});
+
+test('saved pending metadata reaches the preview adapter and a legacy gate cannot hide completed media', async () => {
+  const { serializePendingRenders, deserializePendingRenders } = await import('../frontend/app/(core)/(workspace)/app/_lib/render-persistence');
+  const { buildPendingGroupSummaries, buildRenderGroups } = await import('../frontend/app/(core)/(workspace)/app/_lib/workspace-render-groups');
+  const { adaptGroupSummaries } = await import('../frontend/lib/video-group-adapter');
+  const prepared = prepareLocalGenerationRender({
+    batchId: 'timing', iterationIndex: 0, iterationCount: 1, selectedEngine: engine({ avgDurationMs: 96_000 }),
+    form: baseForm(), effectiveDurationSec: 5, effectivePrompt: 'Fixture', formatTakeLabel: () => '', now: 1_000,
+  });
+  const local = { ...prepared.initialRender, jobId: 'job_timing', observation: { stage: 'processing' as const, checkedAt: 2_000 }, minReadyAt: Date.now() + 600_000 };
+  const restored = deserializePendingRenders(serializePendingRenders([local]));
+  assert.equal(restored[0].etaSource, 'observed');
+  assert.equal(restored[0].etaSeconds, 96);
+  const [group] = adaptGroupSummaries(buildPendingGroupSummaries(buildRenderGroups(restored), {}), 'fal');
+  assert.deepEqual(group.items[0].meta?.observation, local.observation);
+  assert.equal(group.items[0].meta?.etaSource, 'observed');
+  assert.equal(group.items[0].meta?.startedAt, 1_000);
+  const completed = { ...restored[0], status: 'completed' as const, videoUrl: '/fixture-completed.mp4' };
+  const [ready] = buildPendingGroupSummaries(buildRenderGroups([completed]), {});
+  assert.equal(ready.hero.videoUrl, '/fixture-completed.mp4');
+  assert.equal(ready.hero.status, 'completed');
 });

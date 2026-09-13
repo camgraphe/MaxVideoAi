@@ -19,6 +19,7 @@ export type PricingCompatibilityProfile = {
   discountRounding: 'nearest' | 'up' | 'down';
   totalRounding: 'nearest' | 'up' | 'down';
   subtotalRounding?: 'nearest' | 'up' | 'down';
+  subtotalRoundingIncrementCents?: number;
   marginPercentOverride?: number;
   marginFlatCentsOverride?: number;
   surchargeAudioPercentOverride?: number;
@@ -173,6 +174,10 @@ export function validatePricingPolicyDocument(
       profile.subtotalRounding == null
         ? undefined
         : roundingValue(profile.subtotalRounding, ['nearest', 'up', 'down'], `${id}.subtotalRounding`);
+    const subtotalRoundingIncrementCents = optionalNonNegativeNumber(profile.subtotalRoundingIncrementCents, `${id}.subtotalRoundingIncrementCents`, true);
+    if (subtotalRoundingIncrementCents != null && (subtotalRoundingIncrementCents < 1 || !subtotalRounding)) {
+      throw new PricingPolicyValidationError('invalid_number', `${id}.subtotalRoundingIncrementCents requires a positive increment and subtotal rounding`);
+    }
     const vendorShareMode =
       profile.vendorShareMode == null
         ? undefined
@@ -185,6 +190,7 @@ export function validatePricingPolicyDocument(
       discountRounding: roundingValue(profile.discountRounding, ['nearest', 'up', 'down'], `${id}.discountRounding`),
       totalRounding: roundingValue(profile.totalRounding, ['nearest', 'up', 'down'], `${id}.totalRounding`),
       ...(subtotalRounding ? { subtotalRounding } : {}),
+      ...(subtotalRoundingIncrementCents != null ? { subtotalRoundingIncrementCents } : {}),
       ...(marginPercentOverride != null ? { marginPercentOverride } : {}),
       ...(marginFlatCentsOverride != null ? { marginFlatCentsOverride } : {}),
       ...(surchargeAudioPercentOverride != null ? { surchargeAudioPercentOverride } : {}),

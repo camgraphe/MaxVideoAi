@@ -1,11 +1,13 @@
 import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/normalized-generation-attachment-validation';
 import {
   computeConfiguredPreflight,
-  getConfiguredEngine,
-  getConfiguredEngineIncludingHidden,
   type ComputeConfiguredPreflightOptions,
   type TrustedPreflightMediaPricingFacts,
 } from '@/server/engines';
+import {
+  getReadOnlyConfiguredEngine,
+  getReadOnlyConfiguredEngineIncludingRuntimePrivate,
+} from '@/server/agent-api/read-only-engine-catalog';
 import type { EngineCaps, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { parsePreflightRequestPayload } from './preflight-request';
 import type { LaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
@@ -18,8 +20,8 @@ type MediaConstraintDependencies = Parameters<
 >[0]['mediaConstraintDeps'];
 
 export type MediaAwarePreflightDependencies = {
-  getConfiguredEngineFn?: typeof getConfiguredEngine;
-  getConfiguredEngineIncludingHiddenFn?: typeof getConfiguredEngineIncludingHidden;
+  getConfiguredEngineFn?: typeof getReadOnlyConfiguredEngine;
+  getConfiguredEngineIncludingHiddenFn?: typeof getReadOnlyConfiguredEngineIncludingRuntimePrivate;
   computeConfiguredPreflightFn?: (
     request: PreflightRequest,
     options?: ComputeConfiguredPreflightOptions,
@@ -93,9 +95,9 @@ export async function resolveMediaAwarePreflight(
   const parsedRequest = parsePreflightRequestPayload(input.request);
   if (!parsedRequest.ok) return parsedRequest.response;
   const request = parsedRequest.request;
-  const getConfiguredEngineFn = dependencies.getConfiguredEngineFn ?? getConfiguredEngine;
+  const getConfiguredEngineFn = dependencies.getConfiguredEngineFn ?? getReadOnlyConfiguredEngine;
   const getConfiguredEngineIncludingHiddenFn =
-    dependencies.getConfiguredEngineIncludingHiddenFn ?? getConfiguredEngineIncludingHidden;
+    dependencies.getConfiguredEngineIncludingHiddenFn ?? getReadOnlyConfiguredEngineIncludingRuntimePrivate;
   const computeConfiguredPreflightFn =
     dependencies.computeConfiguredPreflightFn ?? computeConfiguredPreflight;
   const publicEngine = await getConfiguredEngineFn(request.engine);
@@ -104,7 +106,7 @@ export async function resolveMediaAwarePreflight(
     ? await getConfiguredEngineIncludingHiddenFn(request.engine)
     : undefined;
   const engine = publicEngine ?? privateEngine;
-  if (!engine) return computeConfiguredPreflightFn(request);
+  if (!engine) return computeConfiguredPreflightFn(request, { bootstrap: false });
   if (
     privateEngine
     && !resolveAgentGenerationModeExecutability(
@@ -113,7 +115,7 @@ export async function resolveMediaAwarePreflight(
       input.launchCanaryContext!.generationEnvironment,
     ).executable
   ) {
-    return computeConfiguredPreflightFn(request);
+    return computeConfiguredPreflightFn(request, { bootstrap: false });
   }
   if (privateEngine || resolveRuntimeResolutionPolicy(engine, request.mode).usesSchemaDefaults) {
     const settingsValidation = validateRuntimeRequestSettings({
@@ -150,7 +152,7 @@ export async function resolveMediaAwarePreflight(
   const needsInputAudioDuration = requiresInputAudioDuration(engine, request);
   const needsTrustedOwnedMedia = requiresTrustedOwnedMedia(engine, request);
   if (!needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia) {
-    return computeConfiguredPreflightFn(request, { resolvedEngine: engine });
+    return computeConfiguredPreflightFn(request, { resolvedEngine: engine, bootstrap: false });
   }
   const userId = input.userId === undefined
     ? await input.resolveUserId?.() ?? null
@@ -208,5 +210,6 @@ export async function resolveMediaAwarePreflight(
   return computeConfiguredPreflightFn(request, {
     resolvedEngine: engine,
     trustedMediaPricingFacts,
+    bootstrap: false,
   });
 }

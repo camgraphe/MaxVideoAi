@@ -1,3 +1,4 @@
+import { listenForGuestCreationLogin, consumeGuestCreationFromLocation } from '@/lib/guest-creation-continuation';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import {
@@ -35,6 +36,7 @@ import {
 } from '../_lib/image-workspace-types';
 
 type UseImageComposerPersistenceParams = {
+  accountId: string | null;
   engines: ImageEngineOption[];
   engineId: string;
   mode: ImageGenerationMode;
@@ -75,6 +77,7 @@ type UseImageComposerPersistenceParams = {
 };
 
 export function useImageComposerPersistence({
+  accountId,
   engines,
   engineId,
   mode,
@@ -113,6 +116,12 @@ export function useImageComposerPersistence({
   setWatermark,
   setReferenceSlots,
 }: UseImageComposerPersistenceParams) {
+  const storageKey = `${IMAGE_COMPOSER_STORAGE_KEY}:${accountId ?? 'guest'}`;
+  const currentPayloadRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (accountId) return;
+    return listenForGuestCreationLogin('/app/image', () => currentPayloadRef.current);
+  }, [accountId]);
   const hasHydratedStorageRef = useRef(false);
   const persistTimerRef = useRef<number | null>(null);
   const persistedSignatureRef = useRef<string | null>(null);
@@ -125,7 +134,8 @@ export function useImageComposerPersistence({
     hasHydratedStorageRef.current = true;
     let parsed: PersistedImageComposerState | null = null;
     try {
-      const stored = window.localStorage.getItem(IMAGE_COMPOSER_STORAGE_KEY);
+      const continuation = accountId ? consumeGuestCreationFromLocation('/app/image') : null;
+      const stored = continuation ?? window.localStorage.getItem(storageKey);
       if (stored) {
         parsed = parsePersistedImageComposerState(stored);
         if (parsed) {
@@ -240,6 +250,8 @@ export function useImageComposerPersistence({
 
     setStorageHydrated(true);
   }, [
+    accountId,
+    storageKey,
     engines,
     setAspectRatio,
     setCustomImageHeight,
@@ -291,13 +303,14 @@ export function useImageComposerPersistence({
     } catch {
       return;
     }
+    currentPayloadRef.current = serialized;
     if (serialized === persistedSignatureRef.current) return;
     if (persistTimerRef.current !== null) {
       window.clearTimeout(persistTimerRef.current);
     }
     persistTimerRef.current = window.setTimeout(() => {
       try {
-        window.localStorage.setItem(IMAGE_COMPOSER_STORAGE_KEY, serialized);
+        window.localStorage.setItem(storageKey, serialized);
         persistedSignatureRef.current = serialized;
       } catch {
         // ignore storage failures
@@ -310,6 +323,7 @@ export function useImageComposerPersistence({
       }
     };
   }, [
+    storageKey,
     aspectRatio,
     customImageHeight,
     customImageWidth,

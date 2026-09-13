@@ -1,0 +1,81 @@
+.nodeActionShell,
+.nodeActionsRoot {
+  position: relative;
+}
+
+.nodeActionsButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--studio-surface) 78%, transparent);
+  color: var(--studio-text-muted);
+  cursor: pointer;
+}
+
+.nodeActionsButton:hover,
+.nodeActionsButton:focus-visible {
+  background: color-mix(in srgb, var(--node-accent) 18%, var(--studio-surface));
+  color: var(--studio-text-strong);
+}
+
+.nodeActionsMenu {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 80;
+  display: grid;
+  width: 210px;
+  max-height: min(310px, calc(100dvh - 32px));
+  gap: 3px;
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-popover-bg);
+  box-shadow: 0 16px 42px var(--studio-node-shadow);
+}
+
+.nodeActionsMenu button {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nodeActionsMenu button:hover,
+.nodeActionsMenu button:focus-visible {
+  background: var(--studio-control-bg-hover);
+  color: var(--studio-text-strong);
+}
+
+.nodeActionFailure {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 82;
+  width: 210px;
+  padding: 8px 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-popover-bg);
+  color: var(--studio-danger-text);
+  font-size: 11px;
+}
+.nodeActionsOverlay {
+  position: absolute;
+  z-index: 85;
+  width: max-content;
+  visibility: hidden;
+}

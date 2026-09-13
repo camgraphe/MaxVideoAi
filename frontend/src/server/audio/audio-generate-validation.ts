@@ -1,5 +1,10 @@
 import {
   AUDIO_MAX_DURATION_SEC,
+  AUDIO_MINIMAX_VOICE_VALUES,
+  AUDIO_CINEMATIC_MAX_DURATION_SEC,
+  AUDIO_LYRICS_MAX_LENGTH,
+  type AudioVoiceModel,
+  AUDIO_SFX_MAX_DURATION_SEC,
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
@@ -47,6 +52,9 @@ import {
 } from '@/lib/audio-generation';
 
 type NormalizedAudioGenerateInput = {
+  voiceModel: AudioVoiceModel | null;
+  minimaxVoiceId: string | null;
+  lyrics: string | null;
   sourceVideoUrl: string | null;
   sourceJobId: string | null;
   pack: AudioPackId;
@@ -227,11 +235,41 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const packConfig = getAudioPackConfig(pack);
+  const voiceModel = packConfig.includesVoice ? body.voiceModel ?? 'seed' : null;
+  if ((body.voiceModel && !packConfig.includesVoice) || (voiceModel && !['seed', 'minimax'].includes(voiceModel))) {
+    throw new AudioGenerationError('Voice model is unsupported.', { status: 400, code: 'voice_model_invalid', field: 'voiceModel' });
+  }
+  const minimaxVoiceId = voiceModel === 'minimax' ? normalizeString(body.minimaxVoiceId) ?? 'English_FriendlyPerson' : null;
+  if (body.minimaxVoiceId && (voiceModel !== 'minimax' || !(AUDIO_MINIMAX_VOICE_VALUES as readonly string[]).includes(body.minimaxVoiceId))) {
+    throw new AudioGenerationError('Voice preset is unsupported.', { status: 400, code: 'voice_preset_invalid', field: 'minimaxVoiceId' });
+  }
+  if (voiceModel === 'minimax' && body.voiceSampleUrl) {
+    throw new AudioGenerationError('Use Seed Audio for audio references.', { status: 400, code: 'voice_reference_unsupported', field: 'voiceSampleUrl' });
+  }
+  if (voiceModel === 'minimax' && (body.seedAudioVoice != null || body.seedAudioOutputFormat != null || body.seedAudioSampleRate != null)) {
+    throw new AudioGenerationError('This voice uses MP3 at 44100 Hz and its own voice preset.', { status: 400, code: 'voice_format_unsupported', field: 'voiceModel' });
+  }
+  const lyrics = normalizeString(body.lyrics);
+  if (pack === 'song') {
+    if (!lyrics || lyrics.length > AUDIO_LYRICS_MAX_LENGTH || body.script || body.durationSec != null) {
+      throw new AudioGenerationError('A song needs lyrics (up to 3500 characters); narration and exact duration are unsupported.', { status: 400, code: 'song_input_invalid', field: 'lyrics' });
+    }
+  } else if (lyrics) {
+    throw new AudioGenerationError('Lyrics require song mode.', { status: 400, code: 'lyrics_unsupported', field: 'lyrics' });
+  }
   const prompt = normalizeString(body.prompt);
   validateTextLength(prompt, AUDIO_PROMPT_MAX_LENGTH, 'prompt', 'Audio prompt');
+  if (pack === 'song' && (!prompt || prompt.length < 10)) throw new AudioGenerationError('Describe the song in at least 10 characters.', { status: 400, code: 'song_prompt_invalid', field: 'prompt' });
 
   const sourceVideoUrl = normalizeString(body.sourceVideoUrl);
   const sourceJobId = normalizeString(body.sourceJobId);
+  if (['sfx_only', 'ambience_only', 'song'].includes(pack) && (sourceVideoUrl || sourceJobId)) {
+    throw new AudioGenerationError('Standalone SFX accepts a text prompt, not a source video.', {
+      status: 400,
+      code: 'audio_source_unsupported',
+      field: 'sourceVideoUrl',
+    });
+  }
   if (packConfig.requiresVideo && !sourceVideoUrl && !sourceJobId) {
     throw new AudioGenerationError('A source video is required.', {
       status: 400,
@@ -239,7 +277,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       field: 'sourceVideoUrl',
     });
   }
-  if ((pack === 'music_only' || pack === 'cinematic') && !prompt) {
+  if ((pack === 'music_only' || pack === 'sfx_only' || pack === 'cinematic' || pack === 'song' || pack === 'ambience_only') && !prompt) {
     throw new AudioGenerationError('An audio prompt is required for this mode.', {
       status: 400,
       code: 'audio_prompt_required',
@@ -468,7 +506,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
 
   const seedAudioSampleRate = packConfig.includesVoice
     ? body.seedAudioSampleRate == null
-      ? DEFAULT_SEED_AUDIO_SAMPLE_RATE
+      ? voiceModel === 'minimax' ? 44100 : DEFAULT_SEED_AUDIO_SAMPLE_RATE
       : coerceSeedAudioSampleRate(body.seedAudioSampleRate)
     : null;
   if (packConfig.includesVoice && body.seedAudioSampleRate != null && !seedAudioSampleRate) {
@@ -524,6 +562,11 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const durationInput = normalizeOptionalInteger(body.durationSec);
+  if (pack === 'sfx_only' && durationInput != null && durationInput > AUDIO_SFX_MAX_DURATION_SEC) {
+    throw new AudioGenerationError('Standalone SFX supports at most 30 seconds.', {
+      status: 400, code: 'audio_duration_invalid', field: 'durationSec',
+    });
+  }
   const requestedDurationSec =
     durationInput == null
       ? null
@@ -532,8 +575,8 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
           code: 'audio_duration_invalid',
           label: 'Duration',
         });
-  if (pack === 'music_only' && !sourceVideoUrl && !sourceJobId && durationInput == null) {
-    throw new AudioGenerationError('Duration is required when generating music without a video.', {
+  if ((pack === 'music_only' || pack === 'sfx_only' || pack === 'ambience_only') && !sourceVideoUrl && !sourceJobId && durationInput == null) {
+    throw new AudioGenerationError('Duration is required when generating standalone audio without a video.', {
       status: 400,
       code: 'audio_duration_required',
       field: 'durationSec',
@@ -550,6 +593,9 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   const locale = normalizeString(body.locale);
 
   return {
+    voiceModel,
+    minimaxVoiceId,
+    lyrics,
     sourceVideoUrl,
     sourceJobId,
     pack,
@@ -595,6 +641,11 @@ export function resolveAudioRenderDuration(params: {
         field: 'sourceVideoUrl',
       });
     }
+    if (params.probedDurationSec > AUDIO_CINEMATIC_MAX_DURATION_SEC) {
+      throw new AudioGenerationError('Video sound design currently supports videos up to 10 seconds.', {
+        status: 400, code: 'source_video_duration_invalid', field: 'sourceVideoUrl',
+      });
+    }
     validateAudioDurationInRange(params.probedDurationSec, {
       field: 'sourceVideoUrl',
       code: 'source_video_duration_invalid',
@@ -608,11 +659,13 @@ export function resolveAudioRenderDuration(params: {
     });
   }
 
+  if (params.pack === 'song') return AUDIO_MIN_DURATION_SEC; // Fixed per-song billing; measured output duration is stored on completion.
+
   if (params.pack === 'voice_only') {
     return estimateVoiceScriptDurationSec(params.script ?? '');
   }
 
-  if (params.pack === 'music_only') {
+  if (params.pack === 'music_only' || params.pack === 'sfx_only' || params.pack === 'ambience_only') {
     return validateAudioDurationInRange(params.probedDurationSec ?? params.requestedDurationSec ?? AUDIO_MIN_DURATION_SEC, {
       field: 'durationSec',
       code: 'audio_duration_invalid',

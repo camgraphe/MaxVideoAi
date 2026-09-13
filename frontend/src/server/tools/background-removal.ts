@@ -1,3 +1,4 @@
+import { matchesAcceptedToolQuote } from '@/lib/toolbox/quote';
 import { randomUUID } from 'crypto';
 import { ApiError, ValidationError } from '@fal-ai/client';
 import { getBackgroundRemovalToolEngine } from '@/config/tools-background-removal-engines';
@@ -94,6 +95,7 @@ export async function runBackgroundRemovalToolBase(
     outputCodec,
     videoMetadata,
   });
+  if (!matchesAcceptedToolQuote(input.acceptedQuote, pricing)) throw new BackgroundRemovalToolError('The price changed. Review the current quote before running.', { status: 409, code: 'quote_changed' });
   const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
   const chargedCredits = usdToCredits(chargedUsd) ?? 1;
   const settingsSnapshot = buildBackgroundRemovalSettingsSnapshot({

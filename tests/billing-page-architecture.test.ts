@@ -6,10 +6,15 @@ const pagePath = 'frontend/app/(core)/billing/page.tsx';
 const clientPath = 'frontend/app/(core)/billing/_components/BillingClient.tsx';
 const authGatePath = 'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx';
 const walletPanelPath = 'frontend/app/(core)/billing/_components/WalletTopupPanel.tsx';
+const walletOverviewPath = 'frontend/app/(core)/billing/_components/BillingWalletOverview.tsx';
+const amountPickerPath = 'frontend/app/(core)/billing/_components/WalletAmountPicker.tsx';
+const checkoutSummaryPath = 'frontend/app/(core)/billing/_components/WalletCheckoutSummary.tsx';
 const receiptsPanelPath = 'frontend/app/(core)/billing/_components/ReceiptsPanel.tsx';
 const expressCheckoutPath = 'frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx';
 const currencyHookPath = 'frontend/app/(core)/billing/_hooks/useBillingCurrencyState.ts';
 const receiptsHookPath = 'frontend/app/(core)/billing/_hooks/useBillingReceipts.ts';
+const reconciliationHookPath = 'frontend/app/(core)/billing/_hooks/useBillingCheckoutReconciliation.ts';
+const reconciliationLibPath = 'frontend/app/(core)/billing/_lib/billing-checkout-reconciliation.ts';
 const sessionHookPath = 'frontend/app/(core)/billing/_hooks/useBillingSessionState.ts';
 const analyticsHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupAnalytics.ts';
 const quotesHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupQuotes.ts';
@@ -21,16 +26,26 @@ const utilsPath = 'frontend/app/(core)/billing/_lib/billing-utils.ts';
 const accessibleModalHookPath = 'frontend/components/ui/useAccessibleModal.ts';
 const hostedCheckoutHookPath = 'frontend/hooks/useHostedWalletCheckout.ts';
 const checkoutReturnNoticePath = 'frontend/app/(core)/billing/_components/BillingCheckoutReturnNotice.tsx';
+const stylePaths = [
+  'frontend/app/(core)/billing/_components/billing-layout.module.css',
+  'frontend/app/(core)/billing/_components/billing-topup.module.css',
+  'frontend/app/(core)/billing/_components/billing-receipts.module.css',
+];
 
 test('billing page delegates client billing behavior to route-local modules', () => {
   for (const file of [
     clientPath,
     authGatePath,
     walletPanelPath,
+    walletOverviewPath,
+    amountPickerPath,
+    checkoutSummaryPath,
     receiptsPanelPath,
     expressCheckoutPath,
     currencyHookPath,
     receiptsHookPath,
+    reconciliationHookPath,
+    reconciliationLibPath,
     sessionHookPath,
     analyticsHookPath,
     quotesHookPath,
@@ -42,6 +57,7 @@ test('billing page delegates client billing behavior to route-local modules', ()
     accessibleModalHookPath,
     hostedCheckoutHookPath,
     checkoutReturnNoticePath,
+    ...stylePaths,
   ]) {
     assert.equal(existsSync(file), true, `${file} should exist`);
   }
@@ -55,6 +71,30 @@ test('billing page delegates client billing behavior to route-local modules', ()
   assert.match(pageSource, /export const dynamic = 'force-dynamic';/);
 });
 
+test('billing styles stay split by page responsibility', () => {
+  for (const file of stylePaths) {
+    const lineCount = readFileSync(file, 'utf8').split('\n').length;
+    assert.ok(lineCount < 500, `expected ${file} to stay under 500 lines, got ${lineCount}`);
+  }
+});
+
+test('authenticated workspace copy does not advertise retired member pricing offers', () => {
+  const billingCopy = readFileSync(copyPath, 'utf8');
+  const composerCopy = readFileSync('frontend/components/composer/composer-copy.ts', 'utf8');
+  assert.doesNotMatch(billingCopy, /Member Status|Member price|You save/);
+  assert.doesNotMatch(composerCopy, /Member price|You save/);
+
+  for (const locale of ['en', 'fr', 'es']) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8')) as { workspace: unknown };
+    const workspaceCopy = JSON.stringify(dictionary.workspace);
+    assert.doesNotMatch(
+      workspaceCopy,
+      /Member price|You save|Tarif membre|Vous économisez|Precio miembro|Ahorras|Ahorra/,
+      `${locale} workspace copy should not advertise member pricing`,
+    );
+  }
+});
+
 test('billing client keeps orchestration separate from copy, checkout widgets, and receipts UI', () => {
   const clientSource = readFileSync(clientPath, 'utf8');
   const clientLines = clientSource.split('\n').length;
@@ -63,9 +103,10 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.match(clientSource, /from '\.\/WalletTopupPanel';/);
   assert.match(clientSource, /from '\.\/ReceiptsPanel';/);
   assert.match(clientSource, /from '\.\/BillingAuthGateModal';/);
-  assert.match(clientSource, /from '\.\/BillingHero';/);
+  assert.match(clientSource, /from '\.\/BillingWalletOverview';/);
   assert.match(clientSource, /useBillingCurrencyState\(\{/);
   assert.match(clientSource, /useBillingReceipts\(\{/);
+  assert.match(clientSource, /useBillingCheckoutReconciliation\(\{/);
   assert.match(clientSource, /useBillingSessionState\(\{/);
   assert.match(clientSource, /useBillingTopupQuotes\(\{/);
   assert.match(clientSource, /useBillingTopupAnalytics\(topupQuotes\)/);
@@ -105,10 +146,14 @@ test('billing feature modules own their explicit responsibilities', () => {
   const intentSource = readFileSync(intentPath, 'utf8');
   const clientSource = readFileSync(clientPath, 'utf8');
   const walletPanelSource = readFileSync(walletPanelPath, 'utf8');
+  const walletOverviewSource = readFileSync(walletOverviewPath, 'utf8');
+  const amountPickerSource = readFileSync(amountPickerPath, 'utf8');
+  const checkoutSummarySource = readFileSync(checkoutSummaryPath, 'utf8');
   const receiptsPanelSource = readFileSync(receiptsPanelPath, 'utf8');
   const expressCheckoutSource = readFileSync(expressCheckoutPath, 'utf8');
   const currencyHookSource = readFileSync(currencyHookPath, 'utf8');
   const receiptsHookSource = readFileSync(receiptsHookPath, 'utf8');
+  const reconciliationHookSource = readFileSync(reconciliationHookPath, 'utf8');
   const sessionHookSource = readFileSync(sessionHookPath, 'utf8');
   const analyticsHookSource = readFileSync(analyticsHookPath, 'utf8');
   const quotesHookSource = readFileSync(quotesHookPath, 'utf8');
@@ -120,10 +165,16 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(authGateSource, /from '@\/components\/ui\/useAccessibleModal';/);
 
   assert.match(walletPanelSource, /export function WalletTopupPanel/);
+  assert.match(walletPanelSource, /<WalletAmountPicker/);
+  assert.match(walletPanelSource, /<WalletCheckoutSummary/);
   assert.match(walletPanelSource, /<WalletExpressCheckout/);
   assert.match(walletPanelSource, /<TurnstileChallenge/);
   assert.match(receiptsPanelSource, /export function ReceiptsPanel/);
   assert.match(receiptsPanelSource, /formatReceiptSurfaceLabel/);
+  assert.match(receiptsPanelSource, /<details/);
+  assert.match(walletOverviewSource, /export function BillingWalletOverview/);
+  assert.match(amountPickerSource, /export function WalletAmountPicker/);
+  assert.match(checkoutSummarySource, /export function WalletCheckoutSummary/);
   assert.match(expressCheckoutSource, /export function WalletExpressCheckout/);
   assert.match(currencyHookSource, /export function useBillingCurrencyState/);
   assert.match(currencyHookSource, /\/api\/me\/currency/);
@@ -132,12 +183,14 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(receiptsHookSource, /\/api\/receipts/);
   assert.match(receiptsHookSource, /exportCSV/);
   assert.match(receiptsHookSource, /receiptsCollapsed/);
+  assert.match(receiptsHookSource, /refreshReceipts/);
+  assert.match(reconciliationHookSource, /runBillingCheckoutReconciliation/);
   assert.match(sessionHookSource, /export function useBillingSessionState/);
   assert.match(sessionHookSource, /\/api\/wallet/);
-  assert.match(sessionHookSource, /\/api\/member-status\?includeTiers=1/);
+  assert.doesNotMatch(sessionHookSource, /\/api\/member-status/);
   assert.match(sessionHookSource, /\/api\/stripe-mode/);
   assert.match(sessionHookSource, /writeLastKnownWallet/);
-  assert.match(sessionHookSource, /writeLastKnownMember/);
+  assert.doesNotMatch(sessionHookSource, /writeLastKnownMember/);
   assert.match(analyticsHookSource, /export function useBillingTopupAnalytics/);
   assert.match(analyticsHookSource, /topup_started/);
   assert.match(quotesHookSource, /export function useBillingTopupQuotes/);
@@ -151,4 +204,16 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(intentSource, /export function buildBillingIntentTarget/);
   assert.match(clientSource, /from '\.\.\/_lib\/billing-intent';/);
   assert.match(utilsSource, /export function parseAmountToCents/);
+});
+
+
+test('billing read owners share render-time identity and callback retirement', () => {
+  const ownerPath = 'frontend/app/(core)/billing/_hooks/useBillingRequestOwner.ts';
+  assert.equal(existsSync(ownerPath), true);
+  for (const file of [sessionHookPath, receiptsHookPath, quotesHookPath, reconciliationHookPath]) {
+    assert.match(readFileSync(file, 'utf8'), /useBillingRequestOwner/);
+  }
+  const clientSource = readFileSync(clientPath, 'utf8');
+  assert.match(clientSource, /useBillingCheckoutReconciliation\(\{\s*accountId: authLoading \? null : session\?\.user\?\.id \?\? null/);
+  assert.match(clientSource, /useBillingCheckoutReturnToast\(\{\s*accountId: session\?\.user\?\.id \?\? null,\s*authLoading,/);
 });

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getFalPollTiming } from '../frontend/server/fal-poll-timing';
 
-test('H3 stays recoverable through observed 65-minute renders but has a bounded 90-minute deadline', () => {
+test('H3 has a 90-minute attention threshold, not a render cancellation deadline', () => {
   const createdAt = '2026-09-07T00:00:00Z';
   const timing = (minutes: number, engine = 'minimax-h3') =>
     getFalPollTiming(engine, createdAt, Date.parse(createdAt) + minutes * 60_000);

@@ -160,3 +160,22 @@ test('new jobs join the next polling cycle while a slow existing job stays in fl
     assert.deepEqual(fixture.requests.map((request) => request.jobId), ['job_0', 'job_1']);
   } finally { await fixture.dispose(); }
 });
+
+test('failed status checks retain the last observation time and recover on the existing interval', async () => {
+  const fixture = await mountWorkspace(jobs.slice(0, 1), true);
+  try {
+    await fixture.respond(0, { observation: { stage: 'processing' } });
+    const checkedAt = fixture.state.renders[0]?.observation?.checkedAt;
+    assert.ok(checkedAt);
+    await fixture.tick();
+    await fixture.respond(1, { error: 'Temporary outage' }, 503);
+    assert.equal(fixture.state.renders[0]?.observation?.degraded, true);
+    assert.equal(fixture.state.renders[0]?.observation?.checkedAt, checkedAt);
+    assert.equal(fixture.requests.length, 2);
+    await fixture.tick();
+    await fixture.respond(2, { observation: { stage: 'finalizing' } });
+    assert.equal(fixture.state.renders[0]?.observation?.stage, 'finalizing');
+    assert.equal(fixture.state.renders[0]?.observation?.degraded, undefined);
+    assert.equal(fixture.requests.length, 3);
+  } finally { await fixture.dispose(); }
+});

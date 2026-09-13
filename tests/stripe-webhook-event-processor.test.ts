@@ -47,6 +47,7 @@ function recordingDependencies(
       return true;
     },
     handleCheckoutSessionCompleted: async () => recordHandler('checkout.session.completed'),
+    handleInvoicePaid: async () => recordHandler('invoice.paid'),
     handlePaymentIntentSucceeded: async () => recordHandler('payment_intent.succeeded'),
     handlePaymentIntentFailed: async () => recordHandler('payment_intent.payment_failed'),
     handleChargeRefunded: async () => recordHandler('charge.refunded'),
@@ -67,6 +68,32 @@ test('unsupported events are unhandled without claiming them', async () => {
 
   assert.equal(result, 'unhandled');
   assert.deepEqual(calls, []);
+});
+
+test('asynchronous Checkout success uses the canonical top-up handler', async () => {
+  const calls: string[] = [];
+  const event = stripeEvent('checkout.session.async_payment_succeeded');
+  const processEvent = createStripeWebhookEventProcessor(recordingDependencies(calls));
+
+  assert.equal(await processEvent(event, processorOptions), 'handled');
+  assert.deepEqual(calls, [
+    `claim:${event.id}`,
+    'dispatch:checkout.session.completed',
+    `mark:${event.id}`,
+  ]);
+});
+
+test('paid invoices synchronize documents without dispatching a wallet top-up handler', async () => {
+  const calls: string[] = [];
+  const event = stripeEvent('invoice.paid');
+  const processEvent = createStripeWebhookEventProcessor(recordingDependencies(calls));
+
+  assert.equal(await processEvent(event, processorOptions), 'handled');
+  assert.deepEqual(calls, [
+    `claim:${event.id}`,
+    'dispatch:invoice.paid',
+    `mark:${event.id}`,
+  ]);
 });
 
 test('duplicate events replay measurement without dispatching wallet handlers or marking', async () => {

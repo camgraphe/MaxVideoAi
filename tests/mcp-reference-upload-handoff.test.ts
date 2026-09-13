@@ -386,7 +386,7 @@ test('shared video and audio storage owners verify metadata and return the canon
     const dependencies = {
       ...producerFenceStubs,
       async probeMediaBuffer() {
-        return { kind: candidate.kind, canonicalMime: candidate.canonicalMime, detectedMime: candidate.canonicalMime, durationSec: 4.25 };
+        return { kind: candidate.kind, canonicalMime: candidate.canonicalMime, detectedMime: candidate.canonicalMime, durationSec: 4.25, hasAudio: candidate.kind === 'audio' };
       },
       async uploadFileBuffer(input: { beforeUpload?: (key: string) => Promise<void> }) {
         calls.push({ name: 'upload', value: input });
@@ -419,6 +419,7 @@ test('shared video and audio storage owners verify metadata and return the canon
     });
 
     assert.deepEqual(stored, {
+      mediaFacts: { source: 'probe', durationSec: 4.25, hasAudio: candidate.kind === 'audio' },
       assetId: `ma_${(candidate.kind === 'video' ? 'a' : 'b').repeat(32)}`,
       legacyAssetId: `legacy-${candidate.kind}-1`,
       width: null,
@@ -437,6 +438,9 @@ test('shared video and audio storage owners verify metadata and return the canon
     assert.equal(canonical.kind, candidate.kind);
     assert.equal(canonical.mimeType, candidate.canonicalMime);
     assert.equal(canonical.durationSec, 4.25);
+    assert.deepEqual((canonical.metadata as Record<string, unknown>).mediaFacts, stored.mediaFacts);
+    const legacy = calls.find((call) => call.name === 'legacy')?.value as Record<string, unknown>;
+    assert.deepEqual((legacy.metadata as Record<string, unknown>).mediaFacts, stored.mediaFacts);
     assert.equal(canonical.sizeBytes, 3);
   }
 });
@@ -577,15 +581,15 @@ test('primary stream probing ignores attached cover art and keeps broad workspac
       { codec_type: 'audio', duration: '3' },
     ],
     format: { format_name: 'mp3', duration: '3' },
-  }), { kind: 'audio', canonicalMime: 'audio/mpeg', detectedMime: 'audio/mpeg', durationSec: 3 });
+  }), { kind: 'audio', canonicalMime: 'audio/mpeg', detectedMime: 'audio/mpeg', durationSec: 3, hasAudio: true });
   assert.deepEqual(resolveProbedMediaMetadata({
     streams: [{ codec_type: 'video', duration: '2' }],
     format: { format_name: 'matroska,webm', duration: '2' },
-  }), { kind: 'video', canonicalMime: 'video/webm', detectedMime: 'video/webm', durationSec: 2 });
+  }), { kind: 'video', canonicalMime: 'video/webm', detectedMime: 'video/webm', durationSec: 2, hasAudio: false });
   assert.deepEqual(resolveProbedMediaMetadata({
     streams: [{ codec_type: 'audio', duration: '2' }],
     format: { format_name: 'ogg', duration: '2' },
-  }), { kind: 'audio', canonicalMime: 'audio/ogg', detectedMime: 'audio/ogg', durationSec: 2 });
+  }), { kind: 'audio', canonicalMime: 'audio/ogg', detectedMime: 'audio/ogg', durationSec: 2, hasAudio: true });
   assert.equal(resolveSupportedReferenceMedia('video', 'video/webm'), null);
   assert.equal(resolveSupportedReferenceMedia('audio', 'audio/ogg'), null);
 });
@@ -602,7 +606,7 @@ test('workspace probing safely persists broad verified containers while MCP rema
       streams: [{ codec_type: fixture.kind, duration: '2.5' }],
       format: { format_name: fixture.format, duration: '2.5' },
     }, { declaredMime: fixture.declared }), {
-      kind: fixture.kind, canonicalMime: fixture.expected, detectedMime: fixture.expected, durationSec: 2.5,
+      kind: fixture.kind, canonicalMime: fixture.expected, detectedMime: fixture.expected, durationSec: 2.5, hasAudio: fixture.kind === 'audio',
     });
     assert.equal(resolveSupportedReferenceMedia(fixture.kind, fixture.expected), null);
   }
@@ -612,7 +616,7 @@ test('workspace probing safely persists broad verified containers while MCP rema
       { codec_type: 'audio', duration: '3' },
     ],
     format: { format_name: 'aiff', duration: '3' },
-  }, { declaredMime: 'audio/aiff' }), { kind: 'audio', canonicalMime: 'audio/aiff', detectedMime: 'audio/aiff', durationSec: 3 });
+  }, { declaredMime: 'audio/aiff' }), { kind: 'audio', canonicalMime: 'audio/aiff', detectedMime: 'audio/aiff', durationSec: 3, hasAudio: true });
 });
 
 test('MCP rejects declared allowlist MIME when ffprobe verified only an unsupported container fallback', async () => {

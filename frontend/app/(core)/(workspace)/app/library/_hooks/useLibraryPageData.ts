@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
-import useSWR from 'swr';
+import { useCallback, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import useSWRInfinite from 'swr/infinite';
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import {
   assetsFetcher,
@@ -16,58 +17,101 @@ import {
   type SavedAssetSource,
 } from '../_lib/library-page-helpers';
 
+function dedupeById<T extends { id: string }>(pages: T[][]): T[] {
+  const seen = new Set<string>();
+  return pages.flatMap((page) => page.filter((item) => !seen.has(item.id) && Boolean(seen.add(item.id))));
+}
+
 export function useLibraryPageData({
   userId,
   activeView,
   activeKind,
   activeSource,
-  savedAssetLimit,
-  recentOutputLimit,
   toolsEnabled,
+  jobId,
 }: {
   userId: string | null | undefined;
   activeView: LibraryView;
   activeKind: LibraryKind;
   activeSource: SavedAssetSource;
-  savedAssetLimit: number;
-  recentOutputLimit: number;
   toolsEnabled: boolean;
+  jobId?: string | null;
 }) {
-  const savedAssetsKey = buildSavedAssetsKey({
-    userId,
-    activeKind,
-    activeSource,
-    limit: savedAssetLimit,
-  });
-  const recentOutputsKey = buildRecentOutputsKey({
-    userId,
-    activeKind,
-    activeView,
-    limit: recentOutputLimit,
-  });
+  const [searchQuery, setSearchQueryState] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+  const urlSearchParams = useSearchParams();
+  const activeJobId = activeView === 'review' ? jobId ?? null : null;
 
-  const assetsQuery = useSWR<AssetsResponse>(savedAssetsKey, assetsFetcher, {
-    dedupingInterval: 60_000,
-    keepPreviousData: true,
-    revalidateOnFocus: false,
-    shouldRetryOnError: false,
-  });
-  const recentOutputsQuery = useSWR<RecentOutputsResponse>(recentOutputsKey, recentOutputsFetcher, {
-    dedupingInterval: 30_000,
-    keepPreviousData: true,
-    revalidateOnFocus: false,
-    shouldRetryOnError: false,
-  });
+  const setSearchQuery = useCallback((value: string) => {
+    setSearchQueryState(value.slice(0, 200));
+  }, []);
+  const clearJobFilter = useCallback(() => {
+    const params = new URLSearchParams(urlSearchParams?.toString() ?? '');
+    params.delete('job');
+    const query = params.toString();
+    const routePath = pathname ?? '/app/library';
+    router.replace(query ? `${routePath}?${query}` : routePath, { scroll: false });
+  }, [pathname, router, urlSearchParams]);
 
+  const assetsQuery = useSWRInfinite<AssetsResponse>(
+    (pageIndex, previousPageData) => {
+      if (previousPageData && !previousPageData.nextCursor) return null;
+      return buildSavedAssetsKey({
+        userId,
+        activeKind,
+        activeSource,
+        activeView,
+        searchQuery,
+        cursor: pageIndex === 0 ? null : previousPageData?.nextCursor,
+      });
+    },
+    assetsFetcher,
+    {
+      dedupingInterval: 60_000,
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      revalidateFirstPage: false,
+    }
+  );
+  const recentOutputsQuery = useSWRInfinite<RecentOutputsResponse>(
+    (pageIndex, previousPageData) => {
+      if (previousPageData && !previousPageData.nextCursor) return null;
+      return buildRecentOutputsKey({
+        userId,
+        activeKind,
+        activeView,
+        searchQuery,
+        jobId: activeJobId,
+        cursor: pageIndex === 0 ? null : previousPageData?.nextCursor,
+      });
+    },
+    recentOutputsFetcher,
+    {
+      dedupingInterval: 30_000,
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      revalidateFirstPage: false,
+    }
+  );
+
+  const assetPages = useMemo(() => assetsQuery.data?.map((page) => page.assets) ?? [], [assetsQuery.data]);
+  const recentPages = useMemo(
+    () => recentOutputsQuery.data?.map((page) => page.outputs) ?? [],
+    [recentOutputsQuery.data]
+  );
   const assets = useMemo(
     () =>
-      (assetsQuery.data?.assets ?? []).filter((asset) =>
+      dedupeById(assetPages).filter((asset) =>
         toolsEnabled
           ? true
           : asset.source !== 'storyboard' && asset.source !== 'character' && asset.source !== 'angle'
       ),
-    [assetsQuery.data?.assets, toolsEnabled]
+    [assetPages, toolsEnabled]
   );
+  const recentOutputs = useMemo(() => dedupeById(recentPages), [recentPages]);
   const savedBrowserAssets = useMemo<AssetBrowserAsset[]>(
     () =>
       assets.map((asset) => ({
@@ -90,7 +134,7 @@ export function useLibraryPageData({
   );
   const reviewBrowserAssets = useMemo<AssetBrowserAsset[]>(
     () =>
-      (recentOutputsQuery.data?.outputs ?? [])
+      recentOutputs
         .filter((output) => output.kind === activeKind)
         .map((output) => ({
           id: output.id,
@@ -100,6 +144,7 @@ export function useLibraryPageData({
           kind: activeKind,
           width: output.width,
           height: output.height,
+          durationSec: output.durationSec,
           size: null,
           mime: output.mime,
           source: 'recent',
@@ -110,22 +155,40 @@ export function useLibraryPageData({
           isSaved: Boolean(output.isSaved),
           savedAssetId: output.savedAssetId ?? null,
         })),
-    [activeKind, recentOutputsQuery.data?.outputs]
+    [activeKind, recentOutputs]
   );
 
+  const activeQuery = activeView === 'saved' ? assetsQuery : recentOutputsQuery;
+  const activeLastPage = activeQuery.data?.at(-1);
+  const isLoadingMore = Boolean(
+    activeQuery.isValidating && activeQuery.data && activeQuery.size > activeQuery.data.length
+  );
+  const loadMore = useCallback(() => {
+    if (activeLastPage?.nextCursor && !isLoadingMore) void activeQuery.setSize((size) => size + 1);
+  }, [activeLastPage?.nextCursor, activeQuery, isLoadingMore]);
+  const visibleSavedAssets = assetsQuery.isLoading ? [] : savedBrowserAssets;
+  const visibleReviewAssets = recentOutputsQuery.isLoading ? [] : reviewBrowserAssets;
+
   return {
-    assetsData: assetsQuery.data,
+    assetsData: assetsQuery.data?.at(-1),
     assetsError: assetsQuery.error,
     assetsLoading: assetsQuery.isLoading,
     assetsValidating: assetsQuery.isValidating,
     mutateAssets: assetsQuery.mutate,
-    recentData: recentOutputsQuery.data,
+    recentData: recentOutputsQuery.data?.at(-1),
     recentError: recentOutputsQuery.error,
     recentLoading: recentOutputsQuery.isLoading,
     recentValidating: recentOutputsQuery.isValidating,
     mutateRecentOutputs: recentOutputsQuery.mutate,
-    savedBrowserAssets,
-    reviewBrowserAssets,
-    currentAssets: activeView === 'saved' ? savedBrowserAssets : reviewBrowserAssets,
+    savedBrowserAssets: visibleSavedAssets,
+    reviewBrowserAssets: visibleReviewAssets,
+    currentAssets: activeView === 'saved' ? visibleSavedAssets : visibleReviewAssets,
+    searchQuery,
+    setSearchQuery,
+    hasMore: Boolean(activeLastPage?.nextCursor),
+    loadMore,
+    isLoadingMore,
+    activeJobId,
+    clearJobFilter,
   };
 }

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
@@ -47,6 +48,10 @@ type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
 
 type UseWorkspaceVideoSettingsOptions = {
+  accountScope?: string | null;
+  activeDraftReady?: boolean;
+  hasActiveSetup?: boolean;
+  draftRevision?: string;
   engines: EngineCaps[];
   engineMap: Map<string, EngineCaps>;
   provider: ResultProvider;
@@ -86,6 +91,10 @@ type UseWorkspaceVideoSettingsOptions = {
 };
 
 export function useWorkspaceVideoSettings({
+  accountScope,
+  activeDraftReady = true,
+  hasActiveSetup = false,
+  draftRevision = '',
   engines,
   engineMap,
   provider,
@@ -123,6 +132,20 @@ export function useWorkspaceVideoSettings({
   setSharedVideoSettings,
   setNotice,
 }: UseWorkspaceVideoSettingsOptions) {
+  const valid = useWorkspaceAssetLifetime(accountScope);
+  const revisionRef = useRef(draftRevision);
+  revisionRef.current = draftRevision;
+  const pendingRecallRef = useRef<{ revision: string | undefined; awaitingCommit: boolean } | null>(null);
+  const snapshotCommitPendingRef = useRef(false);
+  // The immediate tile settings belong to this recall. Later user edits do not.
+  useLayoutEffect(() => {
+    snapshotCommitPendingRef.current = false;
+    const pending = pendingRecallRef.current;
+    if (pending?.awaitingCommit) {
+      pending.revision = draftRevision;
+      pending.awaitingCommit = false;
+    }
+  });
   const hydratedJobRef = useRef<string | null>(null);
   const restoredPreviewJobRef = useRef<string | null>(null);
   const appliedStoryboardHandoffRef = useRef<string | null>(null);
@@ -130,6 +153,8 @@ export function useWorkspaceVideoSettings({
 
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
+      if (!valid()) return;
+      pendingRecallRef.current = null;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
           engines,
@@ -138,6 +163,7 @@ export function useWorkspaceVideoSettings({
           createFallbackScene: createMultiPromptScene,
           createFallbackKlingElement: createKlingElement,
         });
+        snapshotCommitPendingRef.current = true;
         setPrompt(resolved.prompt);
         setNegativePrompt(resolved.negativePrompt);
         if (resolved.memberTier) {
@@ -184,6 +210,7 @@ export function useWorkspaceVideoSettings({
       }
     },
     [
+      valid,
       engineMap,
       engines,
       focusComposer,
@@ -199,12 +226,14 @@ export function useWorkspaceVideoSettings({
       setPrompt,
       setShotType,
       setVoiceIdsInput,
-    ]
+    ],
   );
 
   const hydrateVideoSettingsFromJob = useCallback(
     async (jobId: string | null | undefined) => {
-      if (!jobId) return;
+      if (!jobId || !valid()) return;
+      const recall = { revision: revisionRef.current, awaitingCommit: snapshotCommitPendingRef.current };
+      pendingRecallRef.current = recall;
       try {
         const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
         if (!response.ok) {
@@ -212,7 +241,7 @@ export function useWorkspaceVideoSettings({
           return;
         }
         const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
-        if (!payload?.ok) return;
+        if (!payload?.ok || !valid() || pendingRecallRef.current !== recall || revisionRef.current !== recall.revision) return;
         if (payload.settingsSnapshot) {
           applyVideoSettingsSnapshot(payload.settingsSnapshot);
         }
@@ -220,13 +249,17 @@ export function useWorkspaceVideoSettings({
         const mediaPatch = buildVideoJobMediaPatch(payload);
         if (!mediaPatch) return;
 
-        setSelectedPreview((current) => applyVideoJobMediaPatchToSelectedPreview(current, jobId, mediaPatch));
-        setCompositeOverride((current) => applyVideoJobMediaPatchToCompositeOverride(current, jobId, mediaPatch));
+        setSelectedPreview((current) =>
+          applyVideoJobMediaPatchToSelectedPreview(current, jobId, mediaPatch),
+        );
+        setCompositeOverride((current) =>
+          applyVideoJobMediaPatchToCompositeOverride(current, jobId, mediaPatch),
+        );
       } catch {
         // ignore best-effort recalls from gallery
       }
     },
-    [applyVideoSettingsSnapshot, setCompositeOverride, setSelectedPreview]
+    [valid, applyVideoSettingsSnapshot, setCompositeOverride, setSelectedPreview],
   );
 
   const applyVideoSettingsFromTile = useCallback(
@@ -237,20 +270,23 @@ export function useWorkspaceVideoSettings({
         // ignore
       }
     },
-    [applyVideoSettingsSnapshot]
+    [applyVideoSettingsSnapshot],
   );
 
   useEffect(() => {
+    if (!activeDraftReady || !valid()) return;
     const hydrationClaim = claimSharedVideoHydration(
       appliedSharedVideoIdRef.current,
       sharedVideoSettings?.id,
-      engines.length
+      engines.length,
     );
     appliedSharedVideoIdRef.current = hydrationClaim.nextAppliedVideoId;
     if (!hydrationClaim.shouldApply || !sharedVideoSettings) return;
     applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
     void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
   }, [
+    activeDraftReady,
+    valid,
     applyVideoSettingsSnapshot,
     engines.length,
     hydrateVideoSettingsFromJob,
@@ -260,6 +296,7 @@ export function useWorkspaceVideoSettings({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!searchString.includes('storyboard=1')) return;
+    if (!activeDraftReady || !valid()) return;
     if (!authChecked) return;
     if (!engines.length) return;
     if (hydratedForScope !== storageScope) return;
@@ -324,6 +361,8 @@ export function useWorkspaceVideoSettings({
       setNotice(error instanceof Error ? error.message : 'Failed to apply storyboard settings.');
     }
   }, [
+    activeDraftReady,
+    valid,
     authChecked,
     engines,
     focusComposer,
@@ -349,15 +388,19 @@ export function useWorkspaceVideoSettings({
   ]);
 
   useEffect(() => {
-    if (!fromVideoId) return undefined;
+    if (!fromVideoId || !activeDraftReady || !valid()) return undefined;
+    const revision = revisionRef.current;
     let cancelled = false;
     (async () => {
       let shouldStripParam = false;
       try {
-        const res = await authFetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, { cache: 'no-store' });
+        const res = await authFetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, {
+          cache: 'no-store',
+        });
         if (!res.ok) return;
         const json = await res.json();
-        if (!json?.ok || !json.video || cancelled) return;
+        if (!json?.ok || !json.video || cancelled || !valid() || revisionRef.current !== revision)
+          return;
         const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
         const overrideGroup = mapSharedVideoToGroup(video, provider);
         setCompositeOverride(overrideGroup);
@@ -376,7 +419,7 @@ export function useWorkspaceVideoSettings({
       } catch (error) {
         console.warn('[app] failed to load shared video', error);
       } finally {
-        if (cancelled) return;
+        if (cancelled || !valid() || revisionRef.current !== revision) return;
         if (shouldStripParam && searchString.includes('from=')) {
           const params = new URLSearchParams(searchString);
           params.delete('from');
@@ -389,6 +432,8 @@ export function useWorkspaceVideoSettings({
       cancelled = true;
     };
   }, [
+    activeDraftReady,
+    valid,
     fromVideoId,
     provider,
     replaceRoute,
@@ -408,7 +453,9 @@ export function useWorkspaceVideoSettings({
   }, [compositeOverride, setSharedPrompt, setSharedVideoSettings]);
 
   useEffect(() => {
-    if (!requestedJobId) return;
+    if (!requestedJobId || !activeDraftReady || !valid()) return;
+    const revision = revisionRef.current;
+    let cancelled = false;
     if (!engines.length) return;
     if (hydratedJobRef.current === requestedJobId) return;
     hydratedJobRef.current = requestedJobId;
@@ -419,6 +466,7 @@ export function useWorkspaceVideoSettings({
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
         }
+        if (cancelled || !valid() || revisionRef.current !== revision) return;
         applyVideoSettingsSnapshot(payload.settingsSnapshot);
 
         try {
@@ -437,12 +485,19 @@ export function useWorkspaceVideoSettings({
         }
       })
       .catch((error) => {
+        if (cancelled || !valid() || revisionRef.current !== revision) return;
         setNotice(error instanceof Error ? error.message : 'Failed to load job settings.');
       });
+    return () => {
+      cancelled = true;
+      hydratedJobRef.current = null;
+    };
   }, [
     applyVideoSettingsSnapshot,
     engines.length,
     provider,
+    activeDraftReady,
+    valid,
     requestedJobId,
     setCompositeOverride,
     setCompositeOverrideSummary,
@@ -463,6 +518,9 @@ export function useWorkspaceVideoSettings({
     if (compositeOverride) return;
     if (compositeOverrideSummary) return;
 
+    if (!activeDraftReady || !valid()) return;
+    const revision = revisionRef.current;
+    let cancelled = false;
     const storedJobId = (readScopedStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
     if (!storedJobId.startsWith('job_')) return;
     if (restoredPreviewJobRef.current === storedJobId) return;
@@ -480,7 +538,8 @@ export function useWorkspaceVideoSettings({
           throw new Error('Job has no preview media');
         }
 
-        applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        if (cancelled || !valid() || revisionRef.current !== revision) return;
+        if (!hasActiveSetup) applyVideoSettingsSnapshot(payload.settingsSnapshot);
         setCompositeOverride(mapSharedVideoToGroup(restoredPreview.sharedVideo, provider));
         setCompositeOverrideSummary(null);
         setSelectedPreview(restoredPreview.selectedPreview);
@@ -488,8 +547,15 @@ export function useWorkspaceVideoSettings({
       .catch(() => {
         // ignore preview restore failures
       });
+    return () => {
+      cancelled = true;
+      restoredPreviewJobRef.current = null;
+    };
   }, [
     applyVideoSettingsSnapshot,
+    activeDraftReady,
+    valid,
+    hasActiveSetup,
     authChecked,
     compositeOverride,
     compositeOverrideSummary,

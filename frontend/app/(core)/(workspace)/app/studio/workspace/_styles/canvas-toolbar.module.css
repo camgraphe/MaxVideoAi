@@ -1,0 +1,433 @@
+.canvasToolbar,
+.canvasToolbar button,
+.canvasToolbar input {
+  font: inherit;
+}
+
+.canvasToolbar {
+  position: absolute;
+  z-index: 42;
+  bottom: 18px;
+  left: 50%;
+  display: inline-flex;
+  height: 44px;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(100% - 32px);
+  padding: 0;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 12px;
+  background: var(--studio-surface-strong);
+  box-shadow:
+    0 8px 24px var(--studio-node-shadow),
+    0 0 0 1px var(--studio-border),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+  color: var(--studio-text);
+  user-select: none;
+}
+
+.canvasToolbar[data-canvas-toolbar-popover-open='true'] {
+  z-index: 140;
+}
+
+.toolbarButton {
+  display: flex;
+  width: auto;
+  min-width: 44px;
+  height: 44px;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 10px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.toolbarButton:hover,
+.toolbarButton:focus-visible {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+}
+
+.toolbarButton:disabled,
+.toolbarButton:disabled:hover {
+  background: transparent;
+  color: var(--studio-border);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toolbarButton:active {
+  transform: scale(0.98);
+}
+
+.toolbarButton:focus-visible,
+.selectionOption:focus-visible,
+.workbenchLink:focus-visible,
+.blockOption:focus-visible,
+.saveActionButton:focus-visible,
+.templateSaveForm input:focus-visible,
+.templateSaveForm button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--studio-primary) 76%, #ffffff 10%);
+  outline-offset: 2px;
+}
+
+.toolbarButtonActive {
+  background: var(--studio-primary);
+  color: var(--studio-on-primary);
+}
+
+.toolbarSeparator {
+  width: 1px;
+  height: 28px;
+  margin: 0 3px;
+  background: var(--studio-border);
+}
+
+.toolbarControl {
+  display: contents;
+}
+
+.toolbarPopover {
+  position: absolute;
+  box-sizing: border-box;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  display: grid;
+  width: min(340px, calc(100vw - 24px));
+  min-height: 0;
+  max-height: min(55dvh, 420px);
+  gap: 10px;
+  padding: 12px;
+  transform: translateX(-50%);
+  overflow: auto;
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background: var(--studio-popover-bg);
+  box-shadow: 0 28px 84px var(--studio-node-shadow);
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+
+.toolbarPopoverWide {
+  width: min(430px, calc(100vw - 40px));
+}
+
+.addPalette {
+  width: min(540px, calc(100vw - 32px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.paletteGroup,
+.workbenchGroup {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.workbenchGroup {
+  grid-column: 1 / -1;
+}
+
+.workbenchList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.selectionOption,
+.workbenchLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--studio-text);
+  text-align: left;
+  text-decoration: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.selectionOption:hover,
+.selectionOption[aria-checked='true'],
+.workbenchLink:hover {
+  background: var(--studio-bg-soft);
+}
+
+.workbenchLink > span {
+  flex: 1;
+}
+
+.workbenchLink svg {
+  flex: none;
+}
+
+.validationBadge {
+  padding: 2px 4px;
+  border: 1px solid var(--studio-border);
+  border-radius: 4px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-style: normal;
+}
+
+.popoverHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.popoverHeader strong {
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.popoverHeader span {
+  display:none;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.blockOptionList {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 7px;
+}
+
+.blockOption {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: grab;
+  text-align: left;
+}
+
+.blockOption:active {
+  cursor: grabbing;
+}
+
+.blockOption:hover,
+.blockOption:focus-visible {
+  background: var(--studio-bg-soft);
+}
+
+.blockOptionIcon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 22%, var(--studio-surface));
+  color: color-mix(in srgb, var(--template-accent, #8b5cf6) 82%, #ffffff 10%);
+}
+
+.blockOptionContent {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.blockOption strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blockOption small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.blockOptionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.blockOptionMeta em {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1px 5px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--template-accent, #8b5cf6) 30%, var(--studio-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 12%, var(--studio-bg-soft));
+  color: var(--studio-text);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveActionList {
+  display: grid;
+  gap: 8px;
+}
+
+.saveActionButton {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 54px;
+  padding: 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.saveActionButton:hover,
+.saveActionButton:focus-visible {
+  background: var(--studio-bg-soft);
+}
+
+.saveActionButton > svg {
+  color: var(--studio-primary);
+}
+
+.saveActionButton span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.saveActionButton strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveActionButton small {
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.templateSaveForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.templateSaveForm input {
+  min-width: 0;
+  height: 44px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-select-text);
+  padding: 0 10px;
+  outline: none;
+}
+
+.templateSaveForm button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.templateSaveForm button:hover {
+  background: var(--studio-control-bg-hover);
+}
+
+.templateSaveForm input:disabled,
+.templateSaveForm button:disabled,
+.templateSaveForm button:disabled:hover {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .canvasToolbar {
+    bottom: 12px;
+    max-width:calc(100% - 16px);
+    justify-content:center;
+    gap:2px;
+    overflow:visible;
+  }
+
+  .canvasToolbar[data-canvas-toolbar-popover-open='true'] {
+    overflow: visible;
+  }
+
+  .toolbarPopover,
+  .toolbarPopoverWide {
+    width: min(340px, calc(100vw - 24px));
+    height:auto;
+    min-height:0;
+    max-height:min(40dvh,340px);
+  }
+
+  .blockOptionList {
+    grid-template-columns: 1fr;
+  }
+
+  .addPalette,
+  .workbenchList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toolbarSeparator {
+    display: none;
+  }
+}
+
+.toolbarButton span { font-size:12px; white-space:nowrap; }
+.blockOptionContent small { display:none; }
+@media (max-height: 500px) {
+  .canvasToolbar { bottom: 8px; }
+  .toolbarPopover {
+    max-height: min(37dvh, 144px);
+  }
+}

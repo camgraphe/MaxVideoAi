@@ -1,0 +1,419 @@
+.assetLibraryClose,
+.assetLibraryImportSelectedButton,
+.assetLibraryUploadButton,
+.assetBrowserCard,
+.assetBrowserSourceButton,
+.assetBrowserLoadMoreButton {
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.assetBrowser {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.assetBrowserSidebar {
+  flex: 1 1 260px;
+  min-height: 220px;
+}
+
+.assetBrowserModal {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.assetBrowserHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assetBrowserHeaderActions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.assetBrowserTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.assetBrowserCount {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-info-text);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.assetBrowserSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text-muted);
+}
+
+.assetBrowserSearch span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.assetBrowserSearch input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--studio-select-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.assetBrowserSearch input::placeholder {
+  color: var(--studio-text-muted);
+}
+
+.assetBrowserSearchHint {
+  margin: -4px 0 0;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.assetBrowserSources {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.assetBrowserSourceButton {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--studio-surface);
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.assetBrowserSourceButton:hover {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+}
+
+.assetBrowserSourceButtonActive {
+  background: rgba(124, 58, 237, 0.92);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.24);
+}
+
+.assetBrowserContent {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.assetBrowserGrid {
+  min-height: 0;
+  overflow: auto;
+}
+
+.assetBrowserSidebar .assetBrowserGrid {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+}
+
+.assetBrowserModal .assetBrowserGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+
+.assetBrowserLoadMore {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
+}
+
+.assetBrowserLoadMoreButton {
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.assetBrowserLoadMoreButton:hover {
+  background: rgba(124, 58, 237, 0.14);
+}
+
+.assetBrowserLoadMoreButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.assetBrowserNotice {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+  color: var(--studio-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.assetBrowserCard {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  text-align: left;
+}
+
+button.assetBrowserCard {
+  cursor: pointer;
+}
+
+.assetBrowserCard:hover {
+  border-color: rgba(124, 58, 237, 0.58);
+  background: var(--studio-bg-soft);
+}
+
+.assetBrowserCardSelected {
+  border-color: rgba(124, 58, 237, 0.88);
+  background: rgba(124, 58, 237, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.42);
+}
+
+.assetBrowserSelectionMark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.96);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.22);
+}
+
+.assetBrowserSidebar .assetBrowserCard {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 9px;
+  border-width: 0 0 1px;
+  border-radius: 0;
+}
+
+.assetBrowserSidebar .assetBrowserCard:last-child {
+  border-bottom: 0;
+}
+
+.assetBrowserModal .assetBrowserCard {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.assetBrowserThumb {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--studio-bg);
+  color: var(--studio-text-muted);
+}
+
+.assetBrowserThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.assetBrowserSidebar .assetBrowserThumb {
+  width: 44px;
+  height: 36px;
+}
+
+.assetBrowserModal .assetBrowserThumb {
+  height: 104px;
+}
+
+.assetBrowserMeta {
+  display: block;
+  min-width: 0;
+}
+
+.assetBrowserMeta strong,
+.assetBrowserMeta small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetBrowserMeta strong {
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.assetBrowserMeta small {
+  margin-top: 3px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}
+
+.assetLibraryOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--studio-bg);
+  backdrop-filter: blur(16px);
+  overscroll-behavior: contain;
+}
+
+.assetLibraryModal {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  width: min(760px, 100%);
+  height: min(620px, calc(100dvh - 48px));
+  max-height: min(620px, calc(100dvh - 48px));
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg)),
+    var(--studio-bg);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
+}
+
+.assetLibraryClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.assetLibraryUploadInput {
+  display: none;
+}
+
+.assetLibraryUploadButton {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.96), rgba(37, 99, 235, 0.82));
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 760;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.2);
+}
+
+.assetLibraryImportSelectedButton {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--studio-text-strong);
+  color: var(--studio-bg);
+  font-size: 12px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.assetLibraryImportSelectedButton:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.assetLibraryUploadButton:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.assetBrowserModal .assetBrowserHeader {
+  padding-right: 44px;
+}
+@media (max-width: 640px) {
+  .assetLibraryOverlay {
+    padding: 8px;
+  }
+
+  .assetLibraryModal {
+    height: calc(100dvh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .assetBrowserModal .assetBrowserHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .assetBrowserModal .assetBrowserHeaderActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}

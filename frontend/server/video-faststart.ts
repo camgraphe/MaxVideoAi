@@ -7,6 +7,7 @@ import path from 'node:path';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { isStorageConfigured, uploadFileBuffer } from '@/server/storage';
+import { copyProviderVideoOriginal } from './provider-video-original-copy';
 
 type EnsureFastStartVideoOptions = {
   jobId: string;
@@ -135,9 +136,9 @@ export async function ensureFastStartVideo(
 
     const lengthHeader = response.headers.get('content-length');
     const maxBytes = getMaxBytes();
-    if (lengthHeader && Number(lengthHeader) > maxBytes) {
-      console.warn('[video-faststart] source too large', { jobId: options.jobId, size: Number(lengthHeader), maxBytes });
-      return null;
+    if (!lengthHeader || !Number.isFinite(Number(lengthHeader)) || Number(lengthHeader) > maxBytes) {
+      bodyTimeout = setTimeout(() => controller.abort(), DOWNLOAD_BODY_TIMEOUT_MS);
+      return await copyProviderVideoOriginal(response, options);
     }
 
     bodyTimeout = setTimeout(() => controller.abort(), DOWNLOAD_BODY_TIMEOUT_MS);
