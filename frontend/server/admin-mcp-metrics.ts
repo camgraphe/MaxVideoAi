@@ -6,6 +6,7 @@ import {
   ERROR_SQL,
   FUNNEL_SQL,
   PROVIDER_COST_SQL,
+  PROVIDER_OPERATIONS_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
   TOOL_USAGE_SQL,
@@ -85,6 +86,18 @@ export type AdminMcpMetrics = {
   revenueCents: number | null;
   providerCostCents: number | null;
   trialCostCents: number | null;
+  providerOperations: Array<{
+    provider: string;
+    attempts: number;
+    accepted: number;
+    completed: number;
+    failed: number;
+    fallbacks: number;
+    stalledPolling: number;
+    providerCostCents: number | null;
+    averageAcceptanceLatencyMs: number | null;
+    averageTerminalLatencyMs: number | null;
+  }> | null;
   refundsCents: number | null;
   refundRate: number | null;
   releaseRate: number | null;
@@ -148,6 +161,20 @@ type ProviderCostRow = {
   trial_cost_cents: number | string | null;
 };
 
+type ProviderOperationsRow = {
+  provider: string;
+  attempt_count: number | string | null;
+  accepted_count: number | string | null;
+  completed_count: number | string | null;
+  failed_count: number | string | null;
+  fallback_count: number | string | null;
+  stalled_polling_count: number | string | null;
+  missing_cost_attempts: number | string | null;
+  provider_cost_cents: number | string | null;
+  average_acceptance_latency_ms: number | string | null;
+  average_terminal_latency_ms: number | string | null;
+};
+
 type AdminMcpMetricsDeps = {
   executor: QueryExecutor;
   isDatabaseConfigured(): boolean;
@@ -186,6 +213,10 @@ function count(value: number | string | null | undefined): number {
   return parsed as number;
 }
 
+function nullableCount(value: number | string | null | undefined): number | null {
+  return value === null || value === undefined ? null : count(value);
+}
+
 function rate(numerator: number, denominator: number): number | null {
   return denominator === 0 ? null : numerator / denominator;
 }
@@ -218,6 +249,7 @@ function baseMetrics(range: AdminMcpRange, flags: Record<string, boolean>, reaso
     revenueCents: null,
     providerCostCents: null,
     trialCostCents: null,
+    providerOperations: null,
     refundsCents: null,
     refundRate: null,
     releaseRate: null,
@@ -420,6 +452,32 @@ export async function loadAdminMcpMetrics(
       }
     } catch {
       metrics.availability.providerCosts = unavailable('Authoritative provider cost aggregate query failed.');
+    }
+    try {
+      const rows = await deps.executor.query<ProviderOperationsRow>(
+        PROVIDER_OPERATIONS_SQL,
+        [range.from, range.to],
+      );
+      metrics.providerOperations = rows.map((row) => {
+        if (typeof row.provider !== 'string' || !row.provider.trim()) {
+          throw new Error('Invalid provider operations dimension.');
+        }
+        const missingCostAttempts = count(row.missing_cost_attempts);
+        return {
+          provider: row.provider,
+          attempts: count(row.attempt_count),
+          accepted: count(row.accepted_count),
+          completed: count(row.completed_count),
+          failed: count(row.failed_count),
+          fallbacks: count(row.fallback_count),
+          stalledPolling: count(row.stalled_polling_count),
+          providerCostCents: missingCostAttempts > 0 ? null : nullableCount(row.provider_cost_cents),
+          averageAcceptanceLatencyMs: nullableCount(row.average_acceptance_latency_ms),
+          averageTerminalLatencyMs: nullableCount(row.average_terminal_latency_ms),
+        };
+      });
+    } catch {
+      metrics.providerOperations = null;
     }
   } else {
     const missing = [!relations.app_jobs && 'app_jobs', !relations.provider_attempts && 'provider_attempts'].filter(Boolean).join(', ');

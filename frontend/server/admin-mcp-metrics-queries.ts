@@ -198,3 +198,38 @@ export const PROVIDER_COST_SQL = `/* admin-mcp:provider-costs */
     ROUND(SUM(cost_usd) * 100)::bigint AS provider_cost_cents,
     ROUND(SUM(cost_usd) FILTER (WHERE is_trial) * 100)::bigint AS trial_cost_cents
   FROM attempt_costs`;
+
+export const PROVIDER_OPERATIONS_SQL = `/* admin-mcp:provider-operations */
+  WITH mcp_jobs AS (
+    SELECT DISTINCT job_id
+    FROM mcp_funnel_events
+    WHERE job_id IS NOT NULL
+  ), scoped_attempts AS (
+    SELECT attempt.provider, attempt.status, attempt.started_at, attempt.accepted_at,
+           attempt.finished_at, attempt.fallback_to_attempt_id, attempt.provider_cost_usd
+    FROM mcp_jobs
+    JOIN app_jobs job ON job.job_id = mcp_jobs.job_id
+    JOIN provider_attempts attempt ON attempt.job_id = job.id
+    WHERE attempt.created_at >= $1 AND attempt.created_at < $2
+  )
+  SELECT
+    attempt.provider,
+    COUNT(*)::bigint AS attempt_count,
+    COUNT(*) FILTER (WHERE attempt.accepted_at IS NOT NULL)::bigint AS accepted_count,
+    COUNT(*) FILTER (WHERE attempt.status = 'completed')::bigint AS completed_count,
+    COUNT(*) FILTER (WHERE attempt.status = 'failed')::bigint AS failed_count,
+    COUNT(*) FILTER (
+      WHERE attempt.status = 'fallback_started' OR attempt.fallback_to_attempt_id IS NOT NULL
+    )::bigint AS fallback_count,
+    COUNT(*) FILTER (WHERE attempt.status = 'polling_stalled')::bigint AS stalled_polling_count,
+    COUNT(*) FILTER (WHERE attempt.provider_cost_usd IS NULL)::bigint AS missing_cost_attempts,
+    ROUND(SUM(attempt.provider_cost_usd) * 100)::bigint AS provider_cost_cents,
+    ROUND(AVG(EXTRACT(EPOCH FROM (attempt.accepted_at - attempt.started_at)) * 1000)
+      FILTER (WHERE attempt.accepted_at IS NOT NULL AND attempt.started_at IS NOT NULL))::bigint
+      AS average_acceptance_latency_ms,
+    ROUND(AVG(EXTRACT(EPOCH FROM (attempt.finished_at - attempt.started_at)) * 1000)
+      FILTER (WHERE attempt.finished_at IS NOT NULL AND attempt.started_at IS NOT NULL))::bigint
+      AS average_terminal_latency_ms
+  FROM scoped_attempts attempt
+  GROUP BY attempt.provider
+  ORDER BY attempt.provider ASC`;

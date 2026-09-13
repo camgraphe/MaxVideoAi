@@ -146,6 +146,23 @@ function createMetricsHarness(options: {
           trial_cost_cents: options.zeroDenominators ? 0 : 123,
         }] as T[];
       }
+      if (sql.includes('admin-mcp:provider-operations')) {
+        return options.zeroDenominators
+          ? [] as T[]
+          : [{
+              provider: 'alibaba_model_studio',
+              attempt_count: 4,
+              accepted_count: 3,
+              completed_count: 2,
+              failed_count: 1,
+              fallback_count: 1,
+              stalled_polling_count: 1,
+              missing_cost_attempts: 0,
+              provider_cost_cents: 456,
+              average_acceptance_latency_ms: 850,
+              average_terminal_latency_ms: 12_500,
+            }] as T[];
+      }
       throw new Error(`Unexpected query: ${sql}`);
     },
   };
@@ -263,6 +280,18 @@ test('loads every available funnel, cohort, client, economics, error, polling, a
   assert.equal(metrics.revenueCents, 1234);
   assert.equal(metrics.providerCostCents, 456);
   assert.equal(metrics.trialCostCents, 123);
+  assert.deepEqual(metrics.providerOperations, [{
+    provider: 'alibaba_model_studio',
+    attempts: 4,
+    accepted: 3,
+    completed: 2,
+    failed: 1,
+    fallbacks: 1,
+    stalledPolling: 1,
+    providerCostCents: 456,
+    averageAcceptanceLatencyMs: 850,
+    averageTerminalLatencyMs: 12_500,
+  }]);
   assert.equal(metrics.refundsCents, 200);
   assert.equal(metrics.refundRate, 0.5);
   assert.equal(metrics.releaseRate, 0.2);
@@ -423,6 +452,9 @@ test('all reporting queries are parameterized UTC [from,to) aggregates and exclu
   const providerCall = metricCalls.find((call) => call.sql.includes('admin-mcp:provider-costs'));
   assert.match(providerCall?.sql ?? '', /attempt\.created_at\s*>=\s*\$1[\s\S]*attempt\.created_at\s*<\s*\$2/i);
   assert.doesNotMatch(providerCall?.sql ?? '', /COALESCE\(attempt\.provider_cost_usd,\s*0\)/i);
+  const providerOperationsCall = metricCalls.find((call) => call.sql.includes('admin-mcp:provider-operations'));
+  assert.match(providerOperationsCall?.sql ?? '', /GROUP BY attempt\.provider/i);
+  assert.doesNotMatch(providerOperationsCall?.sql ?? '', /request_snapshot|response_snapshot|provider_job_id|user_id/i);
 
   const auditSql = metricCalls
     .filter((call) => call.sql.includes('mcp_audit_events'))

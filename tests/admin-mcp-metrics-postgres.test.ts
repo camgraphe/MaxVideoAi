@@ -11,6 +11,7 @@ import {
   ERROR_SQL,
   FUNNEL_SQL,
   PROVIDER_COST_SQL,
+  PROVIDER_OPERATIONS_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
   TOOL_USAGE_SQL,
@@ -99,7 +100,14 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     );
     CREATE TABLE app_jobs (id BIGSERIAL PRIMARY KEY, job_id TEXT NOT NULL UNIQUE);
     CREATE TABLE provider_attempts (
+      id BIGSERIAL PRIMARY KEY,
       job_id BIGINT NOT NULL REFERENCES app_jobs(id),
+      provider TEXT NOT NULL,
+      status TEXT NOT NULL,
+      started_at TIMESTAMPTZ,
+      accepted_at TIMESTAMPTZ,
+      finished_at TIMESTAMPTZ,
+      fallback_to_attempt_id BIGINT,
       provider_cost_usd NUMERIC(12, 6),
       created_at TIMESTAMPTZ NOT NULL
     );
@@ -156,18 +164,19 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
       ('charge', 300, 'USD', 'mcp-paid-inside', '2026-06-30 23:59:59Z'),
       ('charge', 700, 'USD', 'not-mcp', '2026-07-03 00:00Z');
 
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 1.50, '2026-07-01 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, NULL, '2026-07-05 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 9.00, '2026-07-08 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 0.25, '2026-07-04 00:00Z' FROM app_jobs WHERE job_id = 'mcp-trial-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 0.75, '2026-06-30 23:59:59Z' FROM app_jobs WHERE job_id = 'mcp-paid-inside';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 7.00, '2026-07-03 00:00Z' FROM app_jobs WHERE job_id = 'not-mcp';
+    INSERT INTO provider_attempts (job_id, provider, status, started_at, accepted_at, finished_at, provider_cost_usd, created_at)
+    SELECT id, 'alibaba_model_studio', 'completed', '2026-07-01 00:00Z', '2026-07-01 00:00:01Z', '2026-07-01 00:00:11Z', 1.50, '2026-07-01 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
+    INSERT INTO provider_attempts (job_id, provider, status, started_at, finished_at, provider_cost_usd, created_at)
+    SELECT id, 'alibaba_model_studio', 'polling_stalled', '2026-07-05 00:00Z', '2026-07-05 00:03Z', NULL, '2026-07-05 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
+    INSERT INTO provider_attempts (job_id, provider, status, provider_cost_usd, created_at)
+    SELECT id, 'alibaba_model_studio', 'completed', 9.00, '2026-07-08 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
+    INSERT INTO provider_attempts (job_id, provider, status, started_at, finished_at, provider_cost_usd, created_at)
+    SELECT id, 'fal', 'failed', '2026-07-04 00:00Z', '2026-07-04 00:00:02Z', 0.25, '2026-07-04 00:00Z' FROM app_jobs WHERE job_id = 'mcp-trial-old';
+    UPDATE provider_attempts SET fallback_to_attempt_id = id WHERE provider = 'fal';
+    INSERT INTO provider_attempts (job_id, provider, status, provider_cost_usd, created_at)
+    SELECT id, 'fal', 'completed', 0.75, '2026-06-30 23:59:59Z' FROM app_jobs WHERE job_id = 'mcp-paid-inside';
+    INSERT INTO provider_attempts (job_id, provider, status, provider_cost_usd, created_at)
+    SELECT id, 'fal', 'completed', 7.00, '2026-07-03 00:00Z' FROM app_jobs WHERE job_id = 'not-mcp';
   `);
 
   const params = [new Date('2026-07-01T00:00:00.000Z'), new Date('2026-07-08T00:00:00.000Z')];
@@ -234,6 +243,28 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     assert.equal(Number(row.missing_cost_attempts), 1);
     assert.equal(Number(row.provider_cost_cents), 175);
     assert.equal(Number(row.trial_cost_cents), 25);
+  });
+
+  await t.test('provider operations group Alibaba lifecycle, fallback, cost, and latency without payloads', async () => {
+    const rows = (await client.query(PROVIDER_OPERATIONS_SQL, params)).rows;
+    assert.deepEqual(rows.map((row) => ({
+      provider: row.provider,
+      attempts: Number(row.attempt_count),
+      accepted: Number(row.accepted_count),
+      completed: Number(row.completed_count),
+      failed: Number(row.failed_count),
+      fallbacks: Number(row.fallback_count),
+      stalled: Number(row.stalled_polling_count),
+      costCents: row.provider_cost_cents === null ? null : Number(row.provider_cost_cents),
+      acceptanceLatencyMs: row.average_acceptance_latency_ms === null ? null : Number(row.average_acceptance_latency_ms),
+      terminalLatencyMs: row.average_terminal_latency_ms === null ? null : Number(row.average_terminal_latency_ms),
+    })), [{
+      provider: 'alibaba_model_studio', attempts: 2, accepted: 1, completed: 1, failed: 0,
+      fallbacks: 0, stalled: 1, costCents: 150, acceptanceLatencyMs: 1000, terminalLatencyMs: 95_500,
+    }, {
+      provider: 'fal', attempts: 1, accepted: 0, completed: 0, failed: 1,
+      fallbacks: 1, stalled: 0, costCents: 25, acceptanceLatencyMs: null, terminalLatencyMs: 2000,
+    }]);
   });
 
   await t.test('video outcomes deduplicate users, exclude web/image jobs, and attribute each job to its own application', async () => {
