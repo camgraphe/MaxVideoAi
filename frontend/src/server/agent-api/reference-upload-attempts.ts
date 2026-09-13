@@ -405,8 +405,8 @@ export async function cleanupReferenceUploadObject(input: {
   const ownerPrefix = String(row.owner_prefix);
   const scoped = objectKey.startsWith(ownerPrefix) && (
     (row.object_role === 'part' && ownerPrefix === `${input.attempt.storageKey}/parts/`)
-    || (row.object_role === 'thumbnail' && ownerPrefix.startsWith('user-asset-thumbs/'))
-    || (row.object_role === 'final' && ownerPrefix.startsWith('user-assets/'))
+    || (row.object_role === 'thumbnail' && hasReferenceCleanupRoot(ownerPrefix, 'user-asset-thumbs/'))
+    || (row.object_role === 'final' && hasReferenceCleanupRoot(ownerPrefix, 'user-assets/by-content/'))
   );
   if (!scoped) return false;
   try {
@@ -422,6 +422,12 @@ export async function cleanupReferenceUploadObject(input: {
   return updated.length === 1;
 }
 
+const MCP_REFERENCE_STAGING_OBJECT_PREFIX = 'mcp-reference-staging/';
+
+function hasReferenceCleanupRoot(value: string, root: string): boolean {
+  return value.startsWith(root) || value.startsWith(`${MCP_REFERENCE_STAGING_OBJECT_PREFIX}${root}`);
+}
+
 function cleanupObjectOwnerPrefix(input: {
   attempt: ReferenceUploadAttempt; objectKey: string; objectRole: ReferenceUploadCleanupRole; safeToDelete: boolean;
 }): string {
@@ -429,7 +435,7 @@ function cleanupObjectOwnerPrefix(input: {
   const separator = objectKey.lastIndexOf('/');
   const expectedRoot = input.objectRole === 'final' ? 'user-assets/by-content/' : 'user-asset-thumbs/';
   if (objectKey !== input.objectKey || objectKey.length < 1 || objectKey.length > 1024
-    || separator < expectedRoot.length || !objectKey.startsWith(expectedRoot)
+    || separator < expectedRoot.length || !hasReferenceCleanupRoot(objectKey, expectedRoot)
     || (input.objectRole === 'thumbnail' && !input.safeToDelete)) {
     throw new Error('Invalid reference upload cleanup object scope.');
   }
@@ -638,8 +644,8 @@ async function cleanupReleasedReferenceUploadObjects(input: {
     const objectKey = String(row.object_key);
     const ownerPrefix = String(row.owner_prefix);
     return objectKey.startsWith(ownerPrefix)
-      && ((row.object_role === 'final' && ownerPrefix.startsWith('user-assets/'))
-        || (row.object_role === 'thumbnail' && ownerPrefix.startsWith('user-asset-thumbs/')));
+      && ((row.object_role === 'final' && hasReferenceCleanupRoot(ownerPrefix, 'user-assets/by-content/'))
+        || (row.object_role === 'thumbnail' && hasReferenceCleanupRoot(ownerPrefix, 'user-asset-thumbs/')));
   });
   const claimed: Array<{ row: ReferenceUploadCleanupCandidate; claimId: string }> = [];
   for (const row of scopedRows) {
@@ -839,10 +845,10 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
     const ownerPrefix = String(row.owner_prefix);
     if (!objectKey.startsWith(ownerPrefix)) return false;
     if (row.object_role === 'part') return ownerPrefix === `${String(row.attempt_storage_key)}/parts/`;
-    if (row.object_role === 'thumbnail') return ownerPrefix.startsWith('user-asset-thumbs/');
+    if (row.object_role === 'thumbnail') return hasReferenceCleanupRoot(ownerPrefix, 'user-asset-thumbs/');
     if (row.object_role === 'legacy_staging') return ownerPrefix.startsWith('mcp-reference-')
       && objectKey === String(row.attempt_storage_key);
-    return row.object_role === 'final' && ownerPrefix.startsWith('user-assets/');
+    return row.object_role === 'final' && hasReferenceCleanupRoot(ownerPrefix, 'user-assets/by-content/');
   });
   const claimedRows: Array<{ row: ReferenceUploadCleanupCandidate; claimId: string | null }> = [];
   for (const row of scopedRows) {

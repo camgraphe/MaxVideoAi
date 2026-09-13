@@ -478,8 +478,8 @@ export function createStoreImageUploadService(
         ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
         ...(params.cleanupObjects ? {
           beforeUpload: async (objectKey: string) => {
-            cleanupThumbnailKey = objectKey;
             await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
+            cleanupThumbnailKey = objectKey;
           },
         } : {}),
         ...(params.signal ? { signal: params.signal } : {}),

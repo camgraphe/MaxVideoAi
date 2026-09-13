@@ -45,6 +45,13 @@ an import-specific override: ordinary product uploads keep their existing
 storage defaults. Do not replace this explicit visibility intent with the
 deployment-wide `S3_UPLOAD_ACL` setting.
 
+Operational staging additionally prefixes both content-addressed originals and
+thumbnails with the exact `mcp-reference-staging/` namespace. Durable cleanup
+rows, object fences, and URL parsing preserve that namespace end to end; they
+must never collapse a staging key onto the production `user-assets/` or
+`user-asset-thumbs/` keyspace. Thumbnail failures log only stable event codes,
+not filenames, object keys, user identifiers, or raw storage errors.
+
 ## Library deletion and storage cleanup
 
 Deleting a canonical library asset remains an authenticated library operation; it

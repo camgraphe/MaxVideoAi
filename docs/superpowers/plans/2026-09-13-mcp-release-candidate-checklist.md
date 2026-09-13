@@ -89,7 +89,7 @@ Run only after explicit approval for a staging deployment and staging database
 migration.
 
 - [ ] Deploy one immutable, unaliased candidate to `maxvideoai-mcp-staging`.
-- [ ] Apply migration 43 only to the staging Neon database and verify its rollback plan.
+- [ ] Apply migrations 43 and 44 only to the staging Neon database and verify their rollback plan.
 - [ ] Re-run transport, OAuth, account, discovery, quote preparation, recovery, admin,
   and localized marketing smoke tests without paid confirmation.
 - [ ] Upload one tiny disposable private reference, verify Library ownership, delete it,

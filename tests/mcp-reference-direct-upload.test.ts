@@ -9,8 +9,10 @@ import { createMcpReferenceUploadCleanupHandler } from '../frontend/app/api/cron
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
+  cleanupReferenceUploadObject,
   cleanupExpiredReferenceUploadAttempts,
   countMcpReferenceUploadLiveState,
+  registerReferenceUploadCleanupObject,
 } from '../frontend/src/server/agent-api/reference-upload-attempts';
 import { purgeMcpReferenceStagingObjects } from '../frontend/server/storage';
 import {
@@ -225,6 +227,63 @@ test('hosted staging can inject its dedicated reference storage namespace', asyn
 
   assert.equal(response.status, 200);
   assert.match(storageKey, /^mcp-reference-staging-isolated\//u);
+});
+
+test('staging-prefixed final and thumbnail objects stay inside the durable cleanup boundary', async () => {
+  for (const entry of [
+    {
+      objectRole: 'final' as const,
+      objectKey: `mcp-reference-staging/user-assets/by-content/${'a'.repeat(32)}/${'b'.repeat(64)}.png`,
+      ownerPrefix: `mcp-reference-staging/user-assets/by-content/${'a'.repeat(32)}/`,
+    },
+    {
+      objectRole: 'thumbnail' as const,
+      objectKey: `mcp-reference-staging/user-asset-thumbs/${'a'.repeat(32)}/thumb.webp`,
+      ownerPrefix: `mcp-reference-staging/user-asset-thumbs/${'a'.repeat(32)}/`,
+    },
+  ]) {
+    let registeredOwnerPrefix = '';
+    await registerReferenceUploadCleanupObject({
+      attempt: attempt() as never,
+      objectKey: entry.objectKey,
+      objectRole: entry.objectRole,
+      safeToDelete: true,
+    }, {
+      executor: {
+        async query<T>(_sql: string, params?: unknown[]) {
+          registeredOwnerPrefix = String(params?.[7] ?? '');
+          return [{ cleanup_id: '00000000-0000-4000-8000-000000000099' }] as T[];
+        },
+      } as TransactionQueryExecutor,
+      now,
+    });
+    assert.equal(registeredOwnerPrefix, entry.ownerPrefix);
+
+    const deleted: string[] = [];
+    let queryCount = 0;
+    const result = await cleanupReferenceUploadObject({
+      attempt: attempt() as never,
+      objectKey: entry.objectKey,
+    }, {
+      executor: {
+        async query<T>() {
+          queryCount += 1;
+          if (queryCount === 1) {
+            return [{
+              cleanup_id: '00000000-0000-4000-8000-000000000099',
+              object_key: entry.objectKey,
+              owner_prefix: entry.ownerPrefix,
+              object_role: entry.objectRole,
+            }] as T[];
+          }
+          return [{ cleanup_id: '00000000-0000-4000-8000-000000000099' }] as T[];
+        },
+      },
+      async deleteStorageObjectKey(key) { deleted.push(key); },
+    });
+    assert.equal(result, true);
+    assert.deepEqual(deleted, [entry.objectKey]);
+  }
 });
 
 test('production schedules reference cleanup whenever reference uploads are public', () => {

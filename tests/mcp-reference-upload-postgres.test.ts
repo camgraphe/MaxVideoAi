@@ -104,13 +104,14 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
   await database.pool.query(`CREATE TABLE user_assets (
     asset_id text PRIMARY KEY, user_id text, url text, metadata jsonb
   )`);
-  for (const migration of [32, 34, 35, 36, 37, 43]) {
+  for (const migration of [32, 34, 35, 36, 37, 43, 44]) {
     const name = migration === 32 ? '32_mcp_reference_uploads.sql'
       : migration === 34 ? '34_mcp_reference_upload_media_kind.sql'
         : migration === 35 ? '35_mcp_reference_upload_hardening.sql'
           : migration === 36 ? '36_mcp_reference_upload_replay_safety.sql'
             : migration === 37 ? '37_mcp_reference_upload_recovery_state.sql'
-              : '43_mcp_reference_asset_deletion.sql';
+              : migration === 43 ? '43_mcp_reference_asset_deletion.sql'
+                : '44_mcp_reference_staging_storage_namespace.sql';
     await database.pool.query(readFileSync(`neon/migrations/${name}`, 'utf8'));
   }
 
@@ -131,7 +132,7 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       upper_key: string | null; base_key: string | null; attacker_key: string | null;
       quarantined_key: string | null; quarantined_base_key: string | null; query_decoy_key: string | null;
       upper_namespace_key: string | null; quarantined_upper_namespace_key: string | null;
-      http_key: string | null; quarantined_http_key: string | null;
+      http_key: string | null; quarantined_http_key: string | null; staging_key: string | null;
     }>(
       `SELECT reference_storage_object_key($1) AS upper_key,
               reference_storage_object_key($2) AS base_key,
@@ -142,7 +143,8 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
               reference_storage_object_key($6) AS upper_namespace_key,
               unrecognized_reference_storage_object_key($7) AS quarantined_upper_namespace_key,
               reference_storage_object_key($8) AS http_key,
-              unrecognized_reference_storage_object_key($8) AS quarantined_http_key`,
+              unrecognized_reference_storage_object_key($8) AS quarantined_http_key,
+              reference_storage_object_key($9) AS staging_key`,
       [
         `HTTPS://assets.maxvideo.ai/${key}`,
         `https://assets.maxvideo.ai/public/${key}`,
@@ -152,6 +154,7 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
         `https://assets.maxvideo.ai/public/${key.replace('user-assets/by-content', 'USER-ASSETS/BY-CONTENT')}`,
         `https://custom-storage.example/public/${key.replace('user-assets/by-content', 'USER-ASSETS/BY-CONTENT')}`,
         `http://assets.maxvideo.ai/public/${key}`,
+        `https://assets.maxvideo.ai/public/mcp-reference-staging/${key}`,
       ],
     );
     assert.deepEqual(parsed.rows, [{
@@ -165,6 +168,7 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       quarantined_upper_namespace_key: null,
       http_key: null,
       quarantined_http_key: key,
+      staging_key: `mcp-reference-staging/${key}`,
     }]);
   });
 
