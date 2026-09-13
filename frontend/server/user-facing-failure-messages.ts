@@ -18,7 +18,7 @@ type FailureCategory = 'busy' | 'copyright' | 'no_output' | 'safety' | 'start' |
 type SeedanceSpecificFailure = 'copyright' | 'reference_safety' | 'start' | 'task_output';
 
 const PROVIDER_OR_INTERNAL_PATTERN =
-  /\b(?:fal(?:\.ai)?|fail\.ai|byteplus|modelark|google\s+vertex|vertex\s+veo|google\s+veo\s+direct|kling\s+direct|provider|providers|provider_job_id|request_id|webhook|polling|api\s*key)\b/i;
+  /\b(?:fal(?:\.ai)?|fail\.ai|alibaba|dashscope|model\s+studio|byteplus|modelark|google\s+vertex|vertex\s+veo|google\s+veo\s+direct|kling\s+direct|provider|providers|provider_job_id|request_id|webhook|polling|api\s*key)\b/i;
 const URL_OR_PAYLOAD_PATTERN = /https?:\/\/|\/v\d+\/|{.*}|^\[[\s\S]*\]$/i;
 const OPAQUE_TRANSPORT_FAILURE_PATTERN =
   /\b(?:unexpected\s+)?(?:http\s+)?status(?:\s+code)?\s*:?\s*\d{3}\b|\bunprocessable entity\b/i;

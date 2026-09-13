@@ -49,7 +49,8 @@ function normalizeResolution(value: string | null | undefined): AlibabaVideoReso
 }
 
 function normalizeRatio(value: string | null | undefined): string {
-  const normalized = cleanString(value) ?? 'adaptive';
+  const raw = cleanString(value) ?? 'adaptive';
+  const normalized = raw === 'auto' ? 'adaptive' : raw;
   if (RATIOS.has(normalized)) return normalized;
   invalidRequest('Alibaba video generation received an unsupported aspect ratio.', 'ALIBABA_UNSUPPORTED_ASPECT_RATIO', {
     aspectRatio: value,
@@ -250,4 +251,3 @@ export function buildAlibabaVideoPayload(input: AlibabaVideoPayloadInput): Aliba
   if (route.family === 'wan3') return buildWanPayload(input, route.model as 'wan3.0-video' | 'wan3.0-video-prime');
   return buildHappyHorsePayload(input);
 }
-

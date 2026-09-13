@@ -103,3 +103,30 @@ test('provider attempt helper omits binary base64 payloads from stored snapshots
   assert.equal(stored.response.videos[0].mimeType, 'video/mp4');
   assert.equal(queries[0]?.params?.[4], 0.42);
 });
+
+test('provider attempt snapshots redact credentials, private workspace identifiers, and signed URLs', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  await createProviderAttempt({
+    publicJobId: 'job_private',
+    attemptIndex: 1,
+    provider: 'alibaba_model_studio',
+    requestSnapshot: {
+      authorization: 'Bearer secret',
+      api_key: 'secret',
+      workspaceId: 'private-workspace',
+      image_url: 'https://storage.example/x.png?X-Amz-Signature=secret',
+      safe: { promptLength: 42 },
+    },
+    queryFn: async <T = unknown>(sql: string, params?: unknown[]): Promise<T[]> => {
+      queries.push({ sql, params });
+      return [{ id: 20, attempt_index: 1 }] as T[];
+    },
+  });
+
+  const stored = JSON.parse(String(queries[0]?.params?.[5]));
+  assert.equal(stored.authorization, '[redacted secret]');
+  assert.equal(stored.api_key, '[redacted secret]');
+  assert.equal(stored.workspaceId, '[redacted private identifier]');
+  assert.equal(stored.image_url, '[redacted signed URL]');
+  assert.deepEqual(stored.safe, { promptLength: 42 });
+});

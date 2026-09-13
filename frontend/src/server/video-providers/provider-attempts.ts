@@ -13,6 +13,18 @@ const BINARY_SNAPSHOT_KEYS = new Set([
   'inline_data',
   'inlinedata',
 ]);
+const SECRET_SNAPSHOT_KEYS = new Set([
+  'authorization',
+  'apikey',
+  'accesskey',
+  'secretkey',
+  'accesstoken',
+  'refreshtoken',
+  'password',
+  'credential',
+  'credentials',
+]);
+const PRIVATE_IDENTIFIER_KEYS = new Set(['workspaceid', 'workspaceidentifier']);
 
 export type ProviderAttemptStatus =
   | 'submit_started'
@@ -33,9 +45,25 @@ function isBinarySnapshotKey(key: string): boolean {
   return BINARY_SNAPSHOT_KEYS.has(key.replace(/[^a-z0-9_]/gi, '').toLowerCase());
 }
 
+function normalizedSnapshotKey(key: string): string {
+  return key.replace(/[^a-z0-9]/gi, '').toLowerCase();
+}
+
+function isSignedUrl(value: string): boolean {
+  if (!/^https:\/\//i.test(value)) return false;
+  try {
+    const url = new URL(value);
+    const keys = new Set(Array.from(url.searchParams.keys(), (key) => normalizedSnapshotKey(key)));
+    return ['xamzsignature', 'xamzcredential', 'signature', 'sig', 'token'].some((key) => keys.has(key));
+  } catch {
+    return false;
+  }
+}
+
 function sanitizeSnapshotValue(value: unknown, depth = 0): unknown {
   if (value === null || value === undefined) return value;
   if (typeof value === 'string') {
+    if (isSignedUrl(value)) return '[redacted signed URL]';
     if (value.length <= MAX_SNAPSHOT_STRING_LENGTH) return value;
     return `[truncated string: ${value.length} chars]`;
   }
@@ -47,6 +75,15 @@ function sanitizeSnapshotValue(value: unknown, depth = 0): unknown {
 
   const output: Record<string, unknown> = {};
   Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => {
+    const normalizedKey = normalizedSnapshotKey(key);
+    if (SECRET_SNAPSHOT_KEYS.has(normalizedKey)) {
+      output[key] = '[redacted secret]';
+      return;
+    }
+    if (PRIVATE_IDENTIFIER_KEYS.has(normalizedKey)) {
+      output[key] = '[redacted private identifier]';
+      return;
+    }
     if (isBinarySnapshotKey(key) && typeof entry === 'string') {
       output[key] = `[omitted binary string: ${entry.length} chars]`;
       return;

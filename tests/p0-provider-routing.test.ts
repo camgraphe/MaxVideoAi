@@ -22,6 +22,10 @@ const P0_MODES = {
 } as const;
 
 const allDirectFlags: VideoProviderRoutingEnv = {
+  ALIBABA_MODEL_STUDIO_ENABLED: 'false',
+  ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'false',
+  ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'true',
+  ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: 'false',
   KLING_DIRECT_ENABLED: 'true',
   KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
   KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
@@ -81,4 +85,56 @@ test('existing approved direct routing remains intact beside the Fal-only P0 set
     engineId: 'gemini-omni-flash', mode: 't2v', isAdmin: true, env: allDirectFlags,
   }).kind, 'google_vertex_omni_primary');
   assert.equal(getBytePlusSeedanceProfile('seedance-2-0')?.engineId, 'seedance-2-0');
+});
+
+test('Alibaba routing is disabled by default and stays admin-only until public routing is enabled', () => {
+  assert.deepEqual(resolveVideoProviderRoutingPlan({
+    engineId: 'wan-3', mode: 't2v', isAdmin: true, env: {},
+  }), {
+    kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false,
+  });
+
+  const enabledEnv: VideoProviderRoutingEnv = {
+    ALIBABA_MODEL_STUDIO_ENABLED: 'true',
+    ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'false',
+    ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'true',
+    ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: 'true',
+  };
+  assert.deepEqual(resolveVideoProviderRoutingPlan({
+    engineId: 'wan-3', mode: 't2v', isAdmin: false, env: enabledEnv,
+  }), {
+    kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false,
+  });
+  assert.deepEqual(resolveVideoProviderRoutingPlan({
+    engineId: 'wan-3', mode: 't2v', isAdmin: true, env: enabledEnv,
+  }), {
+    kind: 'alibaba_model_studio_primary',
+    primaryProvider: 'alibaba_model_studio',
+    fallbackProvider: 'fal',
+    fallbackEnabled: true,
+  });
+});
+
+test('Alibaba advanced Wan modes are direct-only and legacy models remain untouched', () => {
+  const env: VideoProviderRoutingEnv = {
+    ALIBABA_MODEL_STUDIO_ENABLED: 'true',
+    ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'true',
+    ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'false',
+    ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: 'true',
+  };
+  for (const mode of ['v2v', 'extend']) {
+    assert.deepEqual(resolveVideoProviderRoutingPlan({
+      engineId: 'wan-3-prime', mode, isAdmin: false, env,
+    }), {
+      kind: 'alibaba_model_studio_primary',
+      primaryProvider: 'alibaba_model_studio',
+      fallbackProvider: 'fal',
+      fallbackEnabled: false,
+    });
+  }
+  assert.deepEqual(resolveVideoProviderRoutingPlan({
+    engineId: 'wan-2-6', mode: 't2v', isAdmin: true, env,
+  }), {
+    kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false,
+  });
 });
