@@ -296,7 +296,7 @@ than creating empty promotion commits.
 - Consumes: Cursor's current remote MCP and OAuth implementation on an exact desktop version.
 - Produces: separate manual-configuration and verified install-action evidence.
 
-- [ ] Recheck Cursor's first-party MCP, OAuth, `mcp.json`, Add to Cursor, catalogue, and branding documentation.
+- [x] Recheck Cursor's first-party MCP, OAuth, `mcp.json`, Add to Cursor, catalogue, and branding documentation.
 - [ ] Record the exact Cursor version and test manual remote Streamable HTTP configuration first.
 - [ ] Exercise OAuth denial, approval, refresh, revoke, reconnect, discovery, budget, quote preparation, approved minimal confirmation, recovery, and library result.
 - [ ] Verify the exact Add to Cursor URL encoding and behavior separately; do not infer it from manual configuration success.
@@ -305,6 +305,17 @@ than creating empty promotion commits.
 - [ ] Enable any install button only after its exact generated URL passes a clean-host test.
 - [ ] Decide site publication, indexation, acquisition, and catalogue submission as separate reviewed changes.
 - [ ] Run all focused and full non-regression gates; commit evidence, marketing, and external submission states separately.
+
+Documentation preflight recorded 2026-09-14: current first-party Cursor MCP,
+install-link, deep-link, plugin/Marketplace, security, publisher-terms, and brand
+pages were reviewed. Manual remote configuration uses a minimal `url` entry for
+`https://api.maxvideoai.com/mcp`; Desktop and Web/Agents callbacks are documented
+as `http://localhost:8787/callback` and
+`https://www.cursor.com/agents/mcp/oauth/callback`. Manual configuration and the
+`cursor://anysphere.cursor-deeplink/mcp/install` action remain separate test
+surfaces. Cursor is not installed on the test Mac and no Cursor profile or
+`mcp.json` exists, so host evidence remains `not-run`, the integration stays
+hidden, and no install link or Marketplace submission is enabled.
 
 ### Task 7: Validate GitHub Copilot Surfaces Separately
 
