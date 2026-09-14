@@ -439,20 +439,43 @@ hosted-verified.
 - Test: MCP registry, host-proof, publication, marketing, SEO, and public-baseline suites.
 
 **Interfaces:**
-- Consumes: an owner-controlled Microsoft tenant, Copilot Studio, Microsoft Agents 365 administration, and current certification rules.
-- Produces: distinct tenant-level evidence for Copilot Studio and Agents 365.
+- Consumes: an owner-controlled Microsoft tenant, Copilot Studio, Microsoft Agent 365 administration, and current certification rules.
+- Produces: distinct tenant-level evidence for Copilot Studio and Agent 365.
 
-- [ ] Recheck Microsoft first-party documentation for existing MCP servers, Power Platform connectors, OAuth, tenant data policy, Agents 365 governance, Partner Center, and MCP certification.
+- [x] Recheck Microsoft first-party documentation for existing MCP servers, Power Platform connectors, OAuth, tenant data policy, Agent 365 governance, Partner Center, and MCP certification.
 - [ ] Confirm the publisher identity, Partner Center enrollment, tenant administrator, test users, and support contact are owner-controlled.
 - [ ] Configure the MaxVideoAI remote MCP server in a non-production test tenant and record the exact Copilot Studio version/environment.
 - [ ] Exercise OAuth denial, approval, refresh, revoke, reconnect, discovery, budget, quote preparation, approved minimal confirmation, recovery, and library result.
 - [ ] Test tenant policies, connector permissions, administrator approval, audit visibility, disabled-user behavior, and removal.
-- [ ] Test Agents 365 registration, governance, observability, and Copilot Studio reuse separately.
+- [ ] Test Agent 365 registration, governance, observability, and Copilot Studio reuse separately.
 - [ ] Record sanitized evidence and limitations for both host records; update them independently.
 - [ ] Create EN/FR/ES content that explains enterprise prerequisites and only observed compatibility.
-- [ ] Establish certification eligibility before creating a Partner Center offer or connector package.
+- [ ] Establish certification eligibility before creating a Partner Center offer or MCP certification package.
 - [ ] Decide publication, indexation, acquisition, and Microsoft certification independently.
 - [ ] Run all focused and full non-regression gates; commit each enterprise milestone separately.
+
+Documentation preflight result (2026-09-14): Copilot Studio documents direct
+Streamable HTTP onboarding with OAuth dynamic discovery/DCR, but generates the
+callback during setup and applies Power Platform data policies through its
+connector boundary. Microsoft Agent 365 is the current product name. Its BYO
+remote-MCP path is still preview and separately requires Agent 365 CLI
+1.1.165-preview or later, a provisioned service principal, a public endpoint,
+tenant administrator approval, and tenant-wide consent. Its ExternalOAuth path
+documents a static client rather than DCR, may create multiple Entra
+applications without automatic rollback, can take up to 30 minutes to
+propagate, and currently supports neither republishing nor deleting a BYO MCP
+registration. The current MCP certification path is also preview and now uses
+the Partner Center **Apps and Agents for M365 and Copilot** offer with a
+manifest, tool file, `intro.md`, public/legal/support material, and Azure Key
+Vault configuration.
+
+No owner-controlled Microsoft tenant, eligible licences, publisher enrollment,
+administrator, maker, test users, support identity, Key Vault, or static OAuth
+client has been established for this track. No tenant login, registration,
+callback, protected tool, payment, Entra mutation, Partner Center offer, or
+submission was attempted. Both hosts therefore remain independent registry
+`not-run` checkpoints; the integration stays hidden, non-indexable,
+acquisition-disabled, and without a prepared or submitted Microsoft package.
 
 ### Task 10: Close Existing Claude and ChatGPT Evidence Gaps
 

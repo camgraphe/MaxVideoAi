@@ -65,7 +65,7 @@ test('the registry guide locks later hosts behind separate evidence gates', () =
     'GitHub Copilot cloud agent',
     'Gemini CLI',
     'Microsoft Copilot Studio',
-    'Microsoft Agents 365',
+    'Microsoft Agent 365',
   ]) {
     assert.match(guide, new RegExp(host));
   }
@@ -73,9 +73,10 @@ test('the registry guide locks later hosts behind separate evidence gates', () =
   assert.match(guide, /one host record at a time/i);
   assert.match(guide, /RFC 9207/);
   assert.match(guide, /remote OAuth[^.]*not supported/i);
-  assert.match(guide, /enterprise certification/i);
+  assert.match(guide, /Microsoft certification/i);
   assert.match(guide, /Cursor remains `hidden` with a `tested_with_limits` desktop checkpoint/);
-  assert.match(guide, /Microsoft Agents 365 remain `hidden` and\s+`not-run`/);
+  assert.match(guide, /Microsoft Agent 365 remain `hidden` and\s+`not-run`/);
+  assert.match(guide, /Microsoft certification:[^.]*independent from both host checkpoints/i);
 });
 
 test('the Cursor matrix records manual, OAuth, agent-tool, and deep-link evidence separately', () => {
@@ -145,6 +146,38 @@ test('the Gemini CLI matrix pins the stable preflight and keeps promotion blocke
   assert.match(row, /0\.60\.0-preview\.0/);
   assert.match(row, /remains registry `not-run`, hidden, non-indexable, and acquisition-disabled/);
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|localhost:\d+\/oauth\/callback\?)/i);
+});
+
+test('the Microsoft enterprise matrix keeps Copilot Studio and Agent 365 separate and blocked', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const directory = readFileSync('docs/marketing/mcp-directory-submissions.md', 'utf8');
+  const studioRow = matrix.split('\n').find((line) => line.startsWith('| Microsoft Copilot Studio |')) ?? '';
+  const agentRow = matrix.split('\n').find((line) => line.startsWith('| Microsoft Agent 365 |')) ?? '';
+  const certificationRow = directory
+    .split('\n')
+    .find((line) => line.startsWith('| Microsoft MCP certification |')) ?? '';
+
+  assert.match(studioRow, /Streamable HTTP only/);
+  assert.match(studioRow, /dynamic discovery and DCR/);
+  assert.match(studioRow, /callback URI is generated.*must be copied exactly/);
+  assert.match(studioRow, /Power Platform data policies/);
+  assert.match(studioRow, /remains registry `not-run`, hidden, non-indexable, and acquisition-disabled/);
+
+  assert.match(agentRow, /BYO remote-MCP path remains preview/);
+  assert.match(agentRow, /Agent 365 CLI 1\.1\.165-preview/);
+  assert.match(agentRow, /ExternalOAuth.*static client ID and secret/);
+  assert.match(agentRow, /AI Admin or Global Admin.*tenant-wide consent/);
+  assert.match(agentRow, /up to 30 minutes/);
+  assert.match(agentRow, /does not support republishing or deleting/);
+  assert.match(agentRow, /Defender Advanced Hunting/);
+  assert.match(agentRow, /remains registry `not-run`, hidden, non-indexable, and acquisition-disabled/);
+
+  assert.match(certificationRow, /Apps and Agents for M365 and Copilot/);
+  assert.match(certificationRow, /manifest.*tool file.*`intro\.md`.*Azure Key Vault/);
+  assert.match(certificationRow, /no Partner Center offer/i);
+  for (const row of [studioRow, agentRow, certificationRow]) {
+    assert.doesNotMatch(row, /(?:client_secret|access_token|refresh_token|Bearer\s|callback\?code=)/i);
+  }
 });
 
 test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', () => {

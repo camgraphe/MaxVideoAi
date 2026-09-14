@@ -63,7 +63,7 @@ Adding a registry entry alone never authors a Next.js route or localized content
 
 Cursor remains `hidden` with a `tested_with_limits` desktop checkpoint. GitHub
 Copilot IDE, GitHub Copilot CLI, GitHub Copilot cloud agent, Gemini CLI,
-Microsoft Copilot Studio, and Microsoft Agents 365 remain `hidden` and
+Microsoft Copilot Studio, and Microsoft Agent 365 remain `hidden` and
 `not-run`. Promote one host record at a time, only after the common
 controlled-host protocol in the operations matrix has been completed and its
 sanitized evidence has been reviewed. A pass on one surface must never change a
@@ -81,8 +81,10 @@ Apply the following host-specific gates in addition to the common protocol:
   validation against the production authorization server.
 - Microsoft Copilot Studio: validate Streamable HTTP, tenant policy, connector
   setup, approval, and recovery in an owned test tenant.
-- Microsoft Agents 365: keep the enterprise certification, admin-governance,
-  observability, and reuse track separate from a Copilot Studio host pass.
+- Microsoft Agent 365: keep registration, admin-governance, observability, and
+  reuse separate from a Copilot Studio host pass.
+- Microsoft certification: keep Partner Center eligibility, package review,
+  certification, and distribution independent from both host checkpoints.
 
 After host evidence passes, move only that host from `not-run`; publication,
 indexation, acquisition, deep-link availability, and store state still require
