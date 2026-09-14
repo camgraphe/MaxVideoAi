@@ -12,8 +12,9 @@ platform tasks do not block the first staging candidate.
 - Keep OpenClaw and n8n as rendered `preview_noindex` pages with acquisition disabled.
 - Keep Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot visible only as
   preparing ecosystem entries; their dedicated routes remain hidden.
-- Keep ClawHub and the n8n template library in `preparing`; no external submission is
-  part of this candidate.
+- At candidate freeze, keep ClawHub and the n8n template library in `preparing`;
+  no external submission was part of that candidate. A later explicitly authorized
+  follow-up listed ClawHub while n8n remains `preparing`.
 - Keep paid generation, public indexing, store publication, deployment, and production
   mutations outside the local verification gate.
 
@@ -201,15 +202,55 @@ migration.
 
 Run only after a separately approved production release.
 
-- [ ] Promote the exact staging-verified candidate and retain the previous deployment
+- [x] Promote the exact staging-verified candidate and retain the previous deployment
   as the rollback target.
 - [ ] Re-run critical HTTP, OAuth, MCP, Library, admin, SEO, and cleanup checks.
-- [ ] Keep OpenClaw and n8n noindex/acquisition-disabled until their evidence and store
+- [x] Keep OpenClaw and n8n noindex/acquisition-disabled until their evidence and store
   decisions are approved independently.
 - [ ] Monitor OAuth failures, confirmation recovery, refunds, cleanup failures, support
   reports, and funnel events closely during the initial rollout.
 - [ ] Promote platforms, stores, indexing, and acquisition one at a time through the
   larger ecosystem checklist.
+
+### Gate C initial evidence — 2026-09-13
+
+- The owner approved PR `#289`, including an explicit administrator merge after the
+  repository's one-review rule blocked the author's normal merge. GitHub squashed the
+  reviewed head `bf99acbeed1b75d8b4c13251fd8ea9e2deb4f0f3` into Production revision
+  `f428f52a2f7db302792f6683e77274236bfb4cd3`; both commits resolve to tree
+  `7fc781cc9775081327f8fbc630294d03e4710f3b`, so the merged source is exact.
+- Vercel built that revision automatically as production deployment
+  `dpl_AwS4BzdsaLN6TXmVo1P5dTc1FRz5`, immutable URL
+  `https://maxvideoai-kb17nf3lh-camgraphes-projects.vercel.app`. It was created at
+  `2026-09-13T20:16:45.555Z`, reached `READY` at `2026-09-13T20:21:51.994Z`, and owns
+  the `maxvideoai.com` and `api.maxvideoai.com` aliases. The immediately previous
+  READY deployment `dpl_DMFeqFnwmTB9hE3rQVP2xxzuEd8N` remains available at
+  `https://maxvideoai-ew9xav8we-camgraphes-projects.vercel.app` as the rollback target.
+- The stable MCP staging deployment remained `dpl_DX5CZKfK5oPMbHGVm6uuwHN4Ec3Y`.
+  Its application revision preceded the final PR head only by this checklist evidence
+  and the three direct decorative-image `aria-hidden` annotations required by Quality
+  CI. The final PR-head Vercel preview, complete local suite, and post-merge Quality CI
+  all verified the exact Production tree before and after the automatic deployment.
+- Post-merge GitHub Quality CI, Lighthouse CI, IndexNow, and Pages build/deployment all
+  completed successfully. Direct Production smoke returned 200 for the hub plus
+  Claude, ChatGPT, Codex, OpenClaw, and n8n in EN/FR/ES (18 routes), 404 for Cursor,
+  GitHub Copilot, Gemini CLI, and Microsoft Copilot in all three locales (12 routes),
+  and `noindex, follow` for all six OpenClaw/n8n preview pages. Every localized hub
+  rendered all nine platform labels and more than the required eight brand marks.
+- Public, non-mutating protocol checks passed for protected-resource metadata, the
+  single Production authorization server, PKCE S256, `openid`, a nonempty public JWKS,
+  the anonymous MCP 401/no-store challenge, and the API-host browser 406 boundary.
+  Anonymous Wallet, admin, cleanup, Library, and account-connection boundaries also
+  behaved as designed. EN/FR/ES sitemaps retained only the hub and three live clients;
+  `llms.txt` included the hub and excluded both previews.
+- A capped post-deploy sample of 500 Vercel requests contained 481 HTTP 200, three 308,
+  ten expected 404, six entries without an HTTP status, zero 5xx, and zero
+  `error`/`fatal` logs. This is the initial monitoring checkpoint, not the 14-day
+  funnel, support, refund, OAuth lifecycle, or cleanup observation window.
+- No authenticated Production MCP call, paid confirmation, provider submission,
+  private-reference upload/deletion, manual cleanup execution, store submission, or
+  Search Console mutation was performed in this checkpoint. Those parts of the second
+  and fourth Gate C bullets remain open and must not be inferred from public smoke.
 
 ## Accepted launch limitations
 

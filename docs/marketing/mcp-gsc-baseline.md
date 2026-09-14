@@ -19,6 +19,27 @@ comparison (1,535), and Veo/Gemini comparison pages. These are the highest-value
 contextual-link sources for the future plugin hub; they are not MCP-attributed
 traffic.
 
+## MCP ecosystem rollout observation window
+
+- Production revision: `f428f52a2f7db302792f6683e77274236bfb4cd3`
+- Production deployment: `dpl_AwS4BzdsaLN6TXmVo1P5dTc1FRz5`
+- Rollout start: 2026-09-13 at 20:16:42 UTC (PR merge); deployment reached READY at
+  20:21:51 UTC.
+- Observation window: 2026-09-13 through 2026-09-27 inclusive, subject to normal GSC
+  reporting delay.
+- Indexable MCP membership did not change: the hub and Claude, ChatGPT, and Codex
+  remained indexable in EN/FR/ES. OpenClaw and n8n remained `noindex, follow` and out
+  of sitemaps; Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot remained
+  hidden and returned 404.
+- Because this release introduced no newly indexable canonical URL and did not change
+  MCP sitemap membership, no manual URL-indexing or sitemap submission was made.
+  IndexNow completed successfully as part of the post-merge workflow.
+
+Do not fill the 14-day result early. At or after the reporting window, record hub
+visits, platform-card selection, OAuth starts, connected accounts, quote preparation,
+confirmation, completion/refund, Library continuation, EN/FR/ES discovery, canonical
+selection, hreflang, rich-result warnings, and support observations separately.
+
 ## Earlier query-group capture
 
 - Captured: 2026-07-13

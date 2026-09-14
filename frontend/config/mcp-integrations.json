@@ -67,11 +67,11 @@
       "acquisition": { "enabled": false, "key": "openclaw" },
       "installation": {
         "directMcp": "available",
-        "package": "unavailable",
+        "package": "available",
         "deepLinkEnabled": false,
         "deepLink": null
       },
-      "store": { "target": "clawhub", "status": "preparing" },
+      "store": { "target": "clawhub", "status": "listed" },
       "hosts": ["openclawGateway"]
     },
     "n8n": {
@@ -211,8 +211,8 @@
       "label": "n8n MCP Client",
       "evidence": {
         "kind": "hosted-checkpoint",
-        "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "status": "tested_with_limits",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -222,7 +222,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -231,8 +231,8 @@
       "label": "Cursor",
       "evidence": {
         "kind": "hosted-checkpoint",
-        "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "status": "tested_with_limits",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -242,7 +242,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -252,7 +252,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -262,7 +262,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -272,7 +272,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -282,17 +282,17 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
     "microsoftAgents365": {
       "integration": "microsoftCopilot",
-      "label": "Microsoft Agents 365",
+      "label": "Microsoft Agent 365",
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     }

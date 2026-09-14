@@ -3,7 +3,10 @@ import test from 'node:test';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { startStudioAuthFixture, STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
-import { resolveAgentPrincipal } from '../frontend/src/server/mcp/oauth-adapter';
+import {
+  hasActiveOAuthGrant,
+  resolveAgentPrincipal,
+} from '../frontend/src/server/mcp/oauth-adapter';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const { createClient } = requireFrontend('@supabase/supabase-js');
@@ -31,6 +34,74 @@ test('disposable auth validates two signed identities through the installed SDK 
     assert.equal((await client.auth.getUser(session.access_token)).data.user, null);
     assert.equal((await fetch(`${fixture.origin}/auth/v1/user`)).status, 401);
     assert.equal((await fetch(`${fixture.origin}/unimplemented`)).status, 404);
+  } finally {
+    await fixture.close();
+  }
+});
+
+test('disposable auth revokes the OAuth grant and its client-bound session', async () => {
+  const fixture = await startStudioAuthFixture();
+  try {
+    const session = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-fixture-client' });
+    const headers = {
+      apikey: fixture.anonKey,
+      authorization: `Bearer ${session.access_token}`,
+    };
+
+    const activeResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
+    assert.equal(activeResponse.status, 200);
+    const activeGrants = await activeResponse.json() as Array<{
+      scopes: string[];
+      client: { id: string };
+    }>;
+    assert.equal(activeGrants.length, 1);
+    assert.deepEqual(activeGrants[0]?.scopes, ['openid', 'email', 'profile']);
+    assert.equal(activeGrants[0]?.client.id, 'studio-fixture-client');
+
+    fixture.revokeGrant(session.access_token);
+
+    const revokedResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
+    assert.equal(revokedResponse.status, 401);
+    assert.equal((await fetch(`${fixture.origin}/auth/v1/user`, { headers })).status, 401);
+  } finally {
+    await fixture.close();
+  }
+});
+
+test('re-authorizing the same OAuth client rejects the old access token and accepts the new consent token', async () => {
+  const fixture = await startStudioAuthFixture();
+  const client = createClient(fixture.origin, fixture.anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  try {
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const oldSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
+      clientId: 'studio-fixture-client',
+      issuedAt,
+    });
+    fixture.revokeGrant(oldSession.access_token);
+    const newSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
+      clientId: 'studio-fixture-client',
+      issuedAt,
+    });
+    const deps = {
+      createAuthClient: async () => client.auth,
+      hasActiveGrant: (accessToken: string, clientId: string) =>
+        hasActiveOAuthGrant(accessToken, clientId, {
+          supabaseUrl: fixture.origin,
+          anonKey: fixture.anonKey,
+        }),
+    };
+
+    await assert.rejects(
+      resolveAgentPrincipal(new Request('http://127.0.0.1/mcp', {
+        headers: { Authorization: `Bearer ${oldSession.access_token}` },
+      }), deps),
+      /Authentication required/,
+    );
+    const principal = await resolveAgentPrincipal(new Request('http://127.0.0.1/mcp', {
+      headers: { Authorization: `Bearer ${newSession.access_token}` },
+    }), deps);
+    assert.equal(principal.userId, STUDIO_FIXTURE_OWNERS[0]);
+    assert.equal(principal.clientId, 'studio-fixture-client');
   } finally {
     await fixture.close();
   }
@@ -78,7 +149,10 @@ test('real MCP principal adapter consumes SDK-verified bearer and refuses cookie
   const client = createClient(fixture.origin, fixture.anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
   try {
     const session = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-fixture-client' });
-    const deps = { createAuthClient: async () => client.auth };
+    const deps = {
+      createAuthClient: async () => client.auth,
+      hasActiveGrant: async (_accessToken: string, clientId: string) => clientId === 'studio-fixture-client',
+    };
     const principal = await resolveAgentPrincipal(new Request('http://127.0.0.1/mcp', {
       headers: { Authorization: `Bearer ${session.access_token}` },
     }), deps);

@@ -45,6 +45,9 @@ test('existing publication, evidence and action floors are preserved', () => {
   assert.equal(getMcpHost('claudeDesktop').evidence.status, 'verified');
   assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
   assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
+  assert.equal(getMcpHost('claudeCode').evidence.lastChecked, '2026-08-27');
+  assert.equal(getMcpHost('chatgptWeb').evidence.lastChecked, '2026-08-27');
+  assert.equal(getMcpHost('chatgptWeb').label, 'ChatGPT');
   assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
   for (const id of ['claude', 'chatgpt', 'codex'] as const) {
     assert.equal(getMcpIntegration(id).site.publication, 'live');
@@ -75,20 +78,34 @@ test('new hosts preserve indexation and acquisition gates independently of host 
   assert.equal(getMcpHost('openclawGateway').evidence.status, 'tested_with_limits');
   assert.equal(getMcpHost('openclawGateway').evidence.lastChecked, '2026-09-13');
 
+  assert.equal(getMcpHost('n8nMcpClient').evidence.status, 'tested_with_limits');
+  assert.equal(getMcpHost('n8nMcpClient').evidence.lastChecked, '2026-09-14');
+  assert.equal(getMcpHost('n8nMcpClientTool').evidence.status, 'not-run');
+  assert.equal(getMcpHost('n8nMcpClientTool').evidence.lastChecked, '2026-09-14');
+
+  assert.equal(getMcpHost('cursorDesktop').evidence.status, 'tested_with_limits');
+  assert.equal(getMcpHost('cursorDesktop').evidence.lastChecked, '2026-09-14');
+
   for (const id of [
-    'n8nMcpClient',
-    'n8nMcpClientTool',
-    'cursorDesktop',
     'githubCopilotIde',
     'githubCopilotCli',
     'githubCopilotCloudAgent',
-    'geminiCliHost',
+  ] as const) {
+    assert.equal(getMcpHost(id).evidence.status, 'not-run');
+    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-14');
+  }
+
+  for (const id of [
     'microsoftCopilotStudio',
     'microsoftAgents365',
   ] as const) {
     assert.equal(getMcpHost(id).evidence.status, 'not-run');
-    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-12');
+    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-14');
   }
+
+  assert.equal(getMcpHost('geminiCliHost').evidence.status, 'not-run');
+  assert.equal(getMcpHost('geminiCliHost').evidence.lastChecked, '2026-09-14');
+  assert.equal(getMcpHost('microsoftAgents365').label, 'Microsoft Agent 365');
 });
 
 test('invalid registries fail closed', () => {
