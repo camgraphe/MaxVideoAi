@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, statSync } from 'node:fs';
 import test from 'node:test';
 
 const evidence = readFileSync('docs/marketing/mcp-directory-submissions.md', 'utf8');
@@ -55,8 +56,11 @@ test('release preparation preserves the canonical artifact owner and latest-rele
   assert.match(mainRelease, /maxvideoai-plugin-v0\.3\.3/);
   assert.match(canonicalRelease, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.3/);
   assert.match(canonicalRelease, /installation artifact owner/i);
+  assert.match(canonicalRelease, /one installable ZIP and its SHA-256 checksum/i);
+  assert.match(canonicalRelease, /two source archives.*generated automatically by GitHub/i);
 
-  assert.match(releaseNote, /installable archives and their SHA-256\s+checksums remain owned by the canonical plugin release/i);
+  assert.match(releaseNote, /one installable ZIP and its SHA-256\s+checksum remain owned by the canonical plugin release/i);
+  assert.match(releaseNote, /two source archives.*generated automatically by GitHub/is);
   assert.match(checklist, /gh release create maxvideoai-plugin-v0\.3\.3/);
   assert.match(checklist, /--verify-tag/);
   assert.match(checklist, /--latest/);
@@ -66,16 +70,23 @@ test('release preparation preserves the canonical artifact owner and latest-rele
 });
 
 test('n8n preparation pins all three reviewed candidates without claiming a library submission', () => {
-  const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', '8c26ac349a4d89f59565bbbed9aa94fbcece72a2667d3e1f9728f98d8792ee0a'],
-    ['distribution/n8n/campaign-queue.json', '1f84f8abc68c8f9ca8034ec52b7d4d3814311b8ff407f040b8af1e302b44799d'],
-    ['distribution/n8n/completion-notification.json', '1c72336bdc40156894817232a56167e4f94ef28ce971f14632aab458fad96eed'],
-  ]);
+  const candidates = [
+    'distribution/n8n/brief-to-approved-generation.json',
+    'distribution/n8n/campaign-queue.json',
+    'distribution/n8n/completion-notification.json',
+  ];
 
-  for (const [path, digest] of candidates) {
-    assert.match(checklist, new RegExp(
-      '\\| `' + path + '` \\| `' + digest + '` \\| `ready_to_execute` \\|',
-    ));
+  for (const path of candidates) {
+    const candidateRow = checklist
+      .split('\n')
+      .find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
+    const documentedDigest = candidateRow.match(/\| `([a-f0-9]{64})` \| `ready_to_execute` \|$/)?.[1];
+    const actualDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
+
+    assert.ok(candidateRow, `missing documented candidate: ${path}`);
+    assert.ok(documentedDigest, `missing documented SHA-256: ${path}`);
+    assert.equal(documentedDigest, actualDigest, `documented SHA-256 drifted: ${path}`);
+    assert.equal(statSync(path).mode & 0o777, 0o644, `candidate mode must remain 100644: ${path}`);
   }
 
   const n8n = row('n8n workflow library');
