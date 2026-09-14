@@ -126,6 +126,25 @@ Evidence recorded 2026-09-13: 66 focused host-proof, registry, publication, mark
 
 Additional interrupted-response evidence recorded 2026-09-13: the exact pinned OpenClaw integration test, the hermetic injected-service transport contract, and the wider focused MCP/marketing/publication suite passed 192/192 with no skips. Frontend lint, exposure lint, TypeScript checking, and `git diff --check` also passed. The host remains `tested_with_limits`; private-reference cleanup and channel attachments remain open.
 
+Private-reference attempt recorded 2026-09-14: staging OAuth completed in the
+existing disposable OpenClaw 2026.9.4 profile, and a filtered probe exposed only
+`create_reference_upload_link` and `list_media`, with no preparation or
+confirmation tool. OpenClaw's isolated headless agent did not complete the
+read-only media call (`PARAMETER_INVALID`), while its normal Gateway command
+returned `DEVICE_IDENTITY_REQUIRED` and required authentication before opening
+a WebSocket. The test stopped before creating an upload session: no upload
+session, media asset,
+job, quote, charge, or generation was created. The temporary staging entry and
+its local OAuth credentials were removed, and the original production/local
+profile state was restored.
+
+Migration 43 is present in the deployed application source but is not attested
+as applied to the production database, so production was not used for this
+test. Staging has the required migrations, but physical staging cleanup still
+requires a separately authorized operator credential and a bounded cleanup run.
+The private-reference lifecycle remains unverified; no registry, publication,
+marketing, indexation, acquisition, or store state changed.
+
 ### Task 3: Validate and Publish the ClawHub Candidate
 
 **Files:**

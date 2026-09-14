@@ -253,6 +253,27 @@ test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', ()
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|https?:\/\/[^ )`]*\/[^ )`]*\?)/i);
 });
 
+test('the OpenClaw private-reference attempt stays blocked without overstating cleanup evidence', () => {
+  const checklist = readFileSync(
+    'docs/superpowers/plans/2026-09-12-mcp-ecosystem-rollout-checklist.md',
+    'utf8',
+  );
+  const taskTwo = checklist.split('### Task 3:')[0]?.split('### Task 2:').at(-1) ?? '';
+
+  assert.match(taskTwo, /staging OAuth completed/i);
+  assert.match(taskTwo, /`create_reference_upload_link` and `list_media`/);
+  assert.match(
+    taskTwo,
+    /- \[ \] Exercise one bounded private-reference import path and clean up the disposable media\./,
+  );
+  assert.match(taskTwo, /no upload\s+session, media asset,\s+job, quote, charge, or generation/i);
+  assert.match(taskTwo, /migration 43.*not.*attested.*production/is);
+  assert.match(taskTwo, /production was not used for this\s+test/i);
+  assert.match(taskTwo, /physical staging cleanup[\s\S]{0,100}operator credential/i);
+  assert.match(taskTwo, /private-reference lifecycle remains unverified/i);
+  assert.doesNotMatch(taskTwo, /(?:access_token|refresh_token|Bearer\s|callback\?code=|request_id)/i);
+});
+
 test('the n8n matrix records deterministic and agent-tool evidence separately', () => {
   const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
   const clientRow = matrix.split('\n').find((line) => line.startsWith('| n8n MCP Client |')) ?? '';
