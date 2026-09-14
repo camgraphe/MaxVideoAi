@@ -38,6 +38,23 @@ test('the hub sells the outcome through all five live integration entry points',
   assert.doesNotMatch(JSON.stringify(copy), /local implementation|host validation in progress|budget-first shortlist|lowest-cost model/i);
 });
 
+test('the hub withdraws an Available now action when its registry publication is removed', async () => {
+  const { buildMcpClientActions } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const actions = buildMcpClientActions('en', {
+    claude: 'Claude connector',
+    chatgpt: 'ChatGPT app',
+    codex: 'Codex plugin',
+    openclaw: 'OpenClaw',
+    n8n: 'n8n',
+    supporting: 'Free · MaxVideoAI account required',
+  }, ['claude', 'chatgpt', 'codex', 'n8n']);
+
+  assert.deepEqual(actions.map((action) => action.client), ['claude', 'chatgpt', 'codex', 'n8n']);
+  assert.equal(actions.some((action) => action.client === 'openclaw'), false);
+});
+
 test('the hub follows one clear path from promise to platform, production, and resources', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'

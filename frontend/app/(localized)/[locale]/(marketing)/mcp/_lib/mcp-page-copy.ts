@@ -4,6 +4,7 @@ import {
   MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
 } from '@/config/maxvideoai-plugin-release';
 import { localizedSlugs } from '@/lib/i18nSlugs';
+import { getMcpPublicIntegrationIds, type McpIntegrationId } from '@/lib/mcp-integration-registry';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientActionCopy, McpPageCopy } from './mcp-page-types';
 
@@ -12,9 +13,10 @@ function localizedPath(locale: AppLocale, ...segments: string[]): string {
   return `/${[prefix, ...segments].filter(Boolean).join('/')}`;
 }
 
-function clientActions(
+export function buildMcpClientActions(
   locale: AppLocale,
   labels: { claude: string; chatgpt: string; codex: string; openclaw: string; n8n: string; supporting: string },
+  publicIntegrationIds: readonly McpIntegrationId[] = getMcpPublicIntegrationIds(),
 ): McpClientActionCopy[] {
   const integrations = localizedSlugs[locale].integrations;
   const instruction = (client: McpClientActionCopy['client']) => {
@@ -38,7 +40,8 @@ function clientActions(
     if (locale === 'es') return `Conecta MaxVideoAI en ${clientLabel} con este servidor MCP y guíame hasta completar la conexión: ${MCP_PRODUCTION_RESOURCE_URL}`;
     return `Connect MaxVideoAI in ${clientLabel} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
   };
-  return [
+  const publicIntegrationSet = new Set(publicIntegrationIds);
+  const actions: McpClientActionCopy[] = [
     {
       client: 'claude',
       href: localizedPath(locale, integrations, 'claude'),
@@ -75,6 +78,7 @@ function clientActions(
       installInstruction: instruction('n8n'),
     },
   ];
+  return actions.filter((action) => publicIntegrationSet.has(action.client));
 }
 
 const EN: McpPageCopy = {
@@ -93,7 +97,7 @@ const EN: McpPageCopy = {
     intro: 'Start in Claude, ChatGPT or Codex, or connect an agent and automation workflow. MaxVideoAI develops prompts and references, compares current models, prices the complete project and generates only after you approve the exact price.',
     previewIntro: 'Start in your assistant, agent or automation workflow. Develop prompts and references, compare current models, budget the complete project and review the MaxVideoAI production path.',
     trialDisclosure: 'Eligible verified accounts can try one introductory Seedance 2 Mini generation, separate from the regular MaxVideoAI credit balance.',
-    actions: clientActions('en', {
+    actions: buildMcpClientActions('en', {
       claude: 'Claude connector',
       chatgpt: 'ChatGPT app',
       codex: 'Codex plugin',
@@ -294,7 +298,7 @@ function frenchCopy(): McpPageCopy {
       intro: 'Commencez dans Claude, ChatGPT ou Codex, ou connectez un agent et un workflow d’automatisation. MaxVideoAI développe prompts et références, compare les modèles actuels, chiffre le projet complet et génère après votre validation du devis exact.',
       previewIntro: 'Commencez dans votre assistant, votre agent ou votre workflow d’automatisation. Développez prompts et références, comparez les modèles actuels, budgétez le projet complet et découvrez le parcours MaxVideoAI.',
       trialDisclosure: 'Les comptes vérifiés et éligibles peuvent essayer une génération Seedance 2 Mini de découverte, distincte du solde habituel de crédits MaxVideoAI.',
-      actions: clientActions('fr', { claude: 'Connecteur Claude', chatgpt: 'App ChatGPT', codex: 'Plugin Codex', openclaw: 'OpenClaw', n8n: 'n8n', supporting: 'Gratuit · compte MaxVideoAI requis' }),
+      actions: buildMcpClientActions('fr', { claude: 'Connecteur Claude', chatgpt: 'App ChatGPT', codex: 'Plugin Codex', openclaw: 'OpenClaw', n8n: 'n8n', supporting: 'Gratuit · compte MaxVideoAI requis' }),
       connectActions: { instructionLabel: 'INSTALLATION RAPIDE', instructionBody: 'Choisissez un workflow compatible et collez une courte demande. Claude, ChatGPT et OpenClaw guident la configuration directe ; Codex installe son plugin et n8n utilise le parcours MCP Client déterministe testé.', copyInstruction: 'Copier pour', instructionCopied: 'Copié — collez-la dans votre assistant.', endpointLabel: 'Configuration MCP manuelle', copyEndpoint: 'Copier l’adresse du serveur', copied: 'Adresse copiée. Continuez avec le guide de votre assistant.', copyError: 'Copie impossible. Sélectionnez puis copiez manuellement l’adresse.' },
     },
     workflow: { eyebrow: 'COMMENT ÇA MARCHE', title: 'Du projet à la vidéo terminée en trois étapes', intro: 'Gardez direction créative, choix du modèle, devis exact et médias terminés dans un parcours clair.', ariaLabel: 'Parcours de production vidéo IA', steps: ['Développer le brief et les références', 'Comparer modèles et budgets du projet', 'Valider le prix exact et générer'] },
@@ -405,7 +409,7 @@ function spanishCopy(): McpPageCopy {
       intro: 'Empieza en Claude, ChatGPT o Codex, o conecta un agente y un flujo de automatización. MaxVideoAI desarrolla prompts y referencias, compara modelos actuales, calcula el proyecto completo y genera después de aprobar el precio exacto.',
       previewIntro: 'Empieza en tu asistente, agente o flujo de automatización. Desarrolla prompts y referencias, compara modelos actuales, presupuesta el proyecto completo y revisa el recorrido de MaxVideoAI.',
       trialDisclosure: 'Las cuentas verificadas y elegibles pueden probar una generación inicial con Seedance 2 Mini, separada del saldo normal de créditos.',
-      actions: clientActions('es', { claude: 'Conector Claude', chatgpt: 'App de ChatGPT', codex: 'Plugin de Codex', openclaw: 'OpenClaw', n8n: 'n8n', supporting: 'Gratis · cuenta MaxVideoAI obligatoria' }),
+      actions: buildMcpClientActions('es', { claude: 'Conector Claude', chatgpt: 'App de ChatGPT', codex: 'Plugin de Codex', openclaw: 'OpenClaw', n8n: 'n8n', supporting: 'Gratis · cuenta MaxVideoAI obligatoria' }),
       connectActions: { instructionLabel: 'INSTALACIÓN RÁPIDA', instructionBody: 'Elige un flujo compatible y pega una petición breve. Claude, ChatGPT y OpenClaw guían la conexión directa; Codex instala su plugin y n8n usa la ruta MCP Client determinista probada.', copyInstruction: 'Copiar para', instructionCopied: 'Copiado — pégalo en tu asistente.', endpointLabel: 'Configuración MCP manual', copyEndpoint: 'Copiar dirección del servidor', copied: 'Dirección copiada. Continúa con la guía de tu asistente.', copyError: 'No se pudo copiar. Selecciona y copia la dirección manualmente.' },
     },
     workflow: { eyebrow: 'CÓMO FUNCIONA', title: 'Del proyecto al vídeo terminado en tres pasos', intro: 'Mantén la dirección creativa, la elección del modelo, el precio exacto y los medios terminados en un recorrido claro.', ariaLabel: 'Flujo de producción de vídeo con IA', steps: ['Desarrollar brief y referencias', 'Comparar modelos y presupuestos', 'Aprobar el precio exacto y generar'] },

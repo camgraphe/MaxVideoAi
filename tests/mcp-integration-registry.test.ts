@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -7,6 +8,7 @@ import {
   getMcpIntegration,
   getMcpIntegrationIds,
   getMcpIntegrationLabel,
+  getMcpPublicIntegrationIds,
   getMcpPublicIntegrationPaths,
   getMcpVisibleIntegrationIds,
   isEnabledMcpAcquisitionClient,
@@ -39,6 +41,21 @@ test('the registry contains five live integrations and the hidden roadmap in ord
     '/integrations/codex',
     '/integrations/openclaw',
     '/integrations/n8n',
+  ]);
+});
+
+test('public integration ids fail closed when a registry entry is withdrawn', () => {
+  const fixture = JSON.parse(readFileSync('frontend/config/mcp-integrations.json', 'utf8')) as {
+    integrations: Record<string, { site: { publication: string; indexable: boolean } }>;
+  };
+  fixture.integrations.openclaw.site = { publication: 'hidden', indexable: false };
+
+  const withdrawnRegistry = parseMcpIntegrationRegistry(fixture);
+  assert.deepEqual(getMcpPublicIntegrationIds(withdrawnRegistry), [
+    'claude',
+    'chatgpt',
+    'codex',
+    'n8n',
   ]);
 });
 
