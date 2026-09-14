@@ -32,6 +32,54 @@ Checked: **2026-09-14**. These conclusions authorize only local preparation in
 the repository. They do not authorize publishing, account changes, namespace
 claims, marketplace submissions, public release, or spend.
 
+### Task 15 source-preparation execution checklist — 2026-09-14
+
+This checklist is repository preparation for the authorized owner. It records
+the public baseline observed without signing in and does not perform or prove
+an external action. A controller may replace a state with `submitted`,
+`claimed`, or `verified` only after the corresponding public mutation succeeds
+and the resulting URL is re-read. A button click, redirect to login, draft, tag,
+or existing third-party record is not completion evidence.
+
+| Surface | Exact public URL and observed baseline | Prepared owner action | Current state | Completion evidence required before changing the state |
+| --- | --- | --- | --- | --- |
+| Main `camgraphe/MaxVideoAi` GitHub release | [`/releases/latest`](https://github.com/camgraphe/MaxVideoAi/releases/latest) still resolves to [`maxvideoai-plugin-v0.2.0`](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.2.0). The [`maxvideoai-plugin-v0.3.3` tag](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.3.3) already exists but is not the latest GitHub Release object. | Publish one release object from the existing `maxvideoai-plugin-v0.3.3` tag using `docs/operations/mcp-main-repository-release-v0.3.3.md`. Do not attach or copy an installable archive or checksum. | `ready_to_execute` | The new release URL returns the intended title/tag and `/releases/latest` resolves to it. Re-read both URLs before recording `verified`. |
+| Canonical `camgraphe/maxvideoai-plugin` release | [`v0.3.3`](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3) is the latest canonical plugin release and owns the four installable release assets, including checksums. | No mutation. Keep this release as the installation artifact owner and link to it from the main-repository release note. | `verified` | Preserve the canonical URL, version, source attribution, downloadable artifacts, and checksums; never duplicate or replace them from the monorepo release. |
+| n8n workflow library | The public [workflow library](https://n8n.io/workflows/) has no MaxVideoAI submission. The [Creator Portal](https://creators.n8n.io/) redirects an unauthenticated visitor to its login and currently accepts one workflow submission at a time for review. | An authorized owner signs in and submits each of the three exact credential-free candidates listed below separately. Do not add a credential before upload and do not claim n8n Cloud or MCP Client Tool execution. | `identity_step_required` | Record one result per workflow. Use `submitted` only after the portal confirms that workflow was received; use `verified` only after its final public library URL is readable and matches the reviewed JSON. |
+| GitHub MCP registry discovery | The [public API search](https://api.mcp.github.com/v0.1/servers?search=maxvideoai) returns no MaxVideoAI result. GitHub documents [registry discovery in Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) and organization-owned [custom registries](https://docs.github.com/en/copilot/how-tos/administer-copilot/manage-mcp-usage/configure-mcp-registry), but the checked public documentation exposes no third-party submission control for GitHub's default public registry. | Do not improvise a PR, support request, or custom-registry setup. Recheck for a documented public third-party submission route; proceed only if GitHub publishes one. | `unavailable_no_documented_submission` | A first-party GitHub submission route plus an accepted result and a positive public API search are required. The Official MCP Registry record is not substitute evidence. |
+| MCPBeat owner claim | The existing [MaxVideoAI MCPBeat record](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/) offers “Your server? Claim it” and redirects to [MCPBeat sign-in](https://mcpbeat.com/login/?next=%2Fmcp-servers%2Fmaxvideoai%2Fmaxvideoai%2F). At the dated read it reported the endpoint answering, with tools hidden behind the expected authorization challenge, but its week history also said the service did not always answer. | An authorized owner signs in, completes the offered ownership flow, and changes no health claim. | `identity_step_required` | Use `claimed` only after the public record or authenticated owner view confirms ownership. Preserve MCPBeat's independently measured availability caveat; a claim is not host compatibility verification. |
+| Glama owner claim | The existing [MaxVideoAI Glama record](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) offers ownership by GitHub, HTTP challenge, or DNS and redirects to [Glama sign-in](https://glama.ai/sign-in?returnPath=%2Fmcp%2Fconnectors%2Fcom.maxvideoai%2Fmaxvideoai%23claim-connector). The same dated page showed the conflicting labels `Unhealthy` and `OAuth` / `Works in Glama`. | An authorized owner signs in and chooses one documented ownership proof. Do not “fix” or reinterpret the independent health labels during the claim. | `identity_step_required` | Use `claimed` only after Glama confirms ownership. Record the exact post-claim health labels separately; ownership does not prove health or exact-host compatibility. |
+| Docker MCP Catalog | Docker's [contribution guide](https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md) supports remote Streamable HTTP servers with OAuth through a reviewed pull request, but its contribution rules require a license that permits catalog consumption and identify permissive licenses such as MIT or Apache-2.0 as acceptable while rejecting non-permissive licensing. MaxVideoAI remains under [Business Source License 1.1](https://github.com/camgraphe/MaxVideoAi/blob/main/LICENSE). | Do not fork, create catalog files, open a PR, or relicense MaxVideoAI in this task. | `blocked_by_license` | A separate owner-and-Legal-approved permissive-license change, followed by a fresh Docker policy review, would be required before preparing a submission. Technical remote-OAuth eligibility alone does not remove the license blocker. |
+
+The exact n8n candidates authorized for identity-bound submission are:
+
+| Candidate | SHA-256 | Prepared state |
+| --- | --- | --- |
+| `distribution/n8n/brief-to-approved-generation.json` | `8c26ac349a4d89f59565bbbed9aa94fbcece72a2667d3e1f9728f98d8792ee0a` | `ready_to_execute` |
+| `distribution/n8n/campaign-queue.json` | `1f84f8abc68c8f9ca8034ec52b7d4d3814311b8ff407f040b8af1e302b44799d` | `ready_to_execute` |
+| `distribution/n8n/completion-notification.json` | `1c72336bdc40156894817232a56167e4f94ef28ce971f14632aab458fad96eed` | `ready_to_execute` |
+
+All three files remain disabled, mode `100644`, valid JSON, and free of
+credential references. Their deterministic self-hosted MCP Client evidence is
+public and indexable on MaxVideoAI; this distribution checklist changes only
+the unsubmitted n8n library state. MCP Client Tool invocation with a Chat Model,
+n8n Cloud, token refresh, post-revocation reconnect, and a live failed/refunded
+notification remain outside the claim.
+
+The main-repository release is prepared as this controller-only command. It is
+documented here and was not run by the source-preparation task:
+
+```bash
+gh release create maxvideoai-plugin-v0.3.3 \
+  --repo camgraphe/MaxVideoAi \
+  --verify-tag \
+  --latest \
+  --title "MaxVideoAI plugin v0.3.3" \
+  --notes-file docs/operations/mcp-main-repository-release-v0.3.3.md
+```
+
+Pass no asset paths. The notes file links to the canonical artifact owner.
+
 ### Observed public records
 
 These links record what was visible on 2026-09-14; they do not make an
@@ -51,7 +99,7 @@ listing, or proof that MaxVideoAI works in a particular host.
 | Target | Primary source and current conclusion | Repository state |
 | --- | --- | --- |
 | ClawHub | Current first-party [publishing](https://github.com/openclaw/clawhub/blob/main/docs/publishing.md), [CLI](https://github.com/openclaw/clawhub/blob/main/docs/cli.md), and [skill-format](https://github.com/openclaw/clawhub/blob/main/docs/skill-format.md) guidance documents owner-scoped skill publishing, a non-uploading `--dry-run`, post-submission security scans, versioned install/update/uninstall state, and mandatory MIT-0 licensing for published skill files. | **Listed and verified.** [MaxVideoAI 1.0.0](https://clawhub.ai/camgraphe/skills/maxvideoai) is owned by `@camgraphe`, contains the two reviewed MIT-0 payload files, and has fingerprint `d7cca882cf7561fcc8bc83d3f5c130d060beb132bfab98871ed219ccfbfa79dd`. Stored moderation is `clean` with no suspicious or malware flag. The additional scan completed: static analysis and A.I.G were clean, ClawScan returned `clean` / `benign`, and Skillspector's three recorded heuristic findings are attributable to the credential prohibition, declared MCP endpoint, and human-approval wording. Clean install, exact-version update, byte comparison, and uninstall passed with `clawhub@0.23.3`. The later clean-profile checkpoint installed the ClawHub package and completed browser OAuth plus protected capability discovery. OpenClaw is published for direct MCP and ClawHub, while agent tool invocation, private-reference import, and channel rendering remain outside the claimed scope. |
-| n8n workflow library | [n8n's workflow library](https://n8n.io/workflows/) accepts creator-submitted templates, while the [MCP Client node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcpclient) provides the direct client surface. | **Local candidates validated with limits; not submitted.** Three credential-free JSON candidates imported and re-exported with graph parity on self-hosted n8n 2.38.7. Deterministic OAuth, exact approval, one confirmation, recovery, completed notification, rejection, revocation and access loss were recorded. n8n Cloud, token refresh, post-revocation reconnect, live failure/refund notification and Chat-Model-backed MCP Client Tool invocation remain unverified. Template-library submission still requires fresh owner authorization for the exact files. |
+| n8n workflow library | [n8n's workflow library](https://n8n.io/workflows/) accepts creator-submitted templates, while the [MCP Client node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcpclient) provides the direct client surface. | **Local candidates validated with limits; not submitted.** Three credential-free JSON candidates imported and re-exported with graph parity on self-hosted n8n 2.38.7. Deterministic OAuth, exact approval, one confirmation, recovery, completed notification, rejection, revocation and access loss were recorded. That self-hosted deterministic scope is live and indexable on MaxVideoAI. n8n Cloud, token refresh, post-revocation reconnect, live failure/refund notification and Chat-Model-backed MCP Client Tool invocation remain unverified. The exact three-file external action is owner-authorized, but each library submission still requires the authorized owner to complete the Creator Portal identity step and record its observed result. |
 | Cursor MCP catalogue / Add to Cursor | [Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol) documents one-click installation and custom remote server configuration. It does not by itself establish MaxVideoAI catalogue acceptance. | **Research only; no submission or install button.** Keep hidden until exact button encoding, brand rules, host evidence, and catalogue process are rechecked. |
 | GitHub MCP Registry and Copilot discovery | [GitHub Copilot MCP documentation](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp) describes a curated GitHub registry, while the Official MCP Registry record remains a separate metadata source. | **Research only; no GitHub listing claim.** The active `com.maxvideoai/maxvideoai` 0.3.3 record must not be described as a GitHub Copilot listing. |
 | Gemini CLI extension distribution | [Gemini CLI extension guidance](https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/writing-extensions.md) supports Git-backed extensions that can declare MCP servers. | **Research only; no extension or gallery submission.** Direct host OAuth must pass first, including the RFC 9207 issuer callback requirement. |

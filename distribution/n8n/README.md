@@ -38,7 +38,9 @@ planning tools: `get_account_status`, `list_models`, `get_model_details`,
 `confirm_generation` were excluded. A Chat Model credential was not configured
 in the disposable instance, so agent-mediated tool invocation remains
 unverified. n8n Cloud, token refresh, and a post-revocation reconnect also
-remain unverified; the integration therefore stays a non-indexed preview.
+remain unverified. The tested self-hosted deterministic MCP Client scope is
+live and indexable on MaxVideoAI; those separate MCP Client Tool and n8n Cloud
+limitations remain outside the public claim.
 
 ## Credential boundary
 
@@ -71,5 +73,8 @@ A creative retry starts a fresh quote and approval cycle.
 
 Before catalogue release, repeat the relevant checks on the target deployment,
 configure a Chat Model for the bounded AI Agent path if that path will be
-claimed, and review the sanitized export. A template-library write requires a
-fresh policy review and explicit owner authorization for the exact files.
+claimed, and review the sanitized export. The product owner has authorized the
+exact three-file external action recorded in
+`docs/marketing/mcp-directory-submissions.md`; each template-library write
+still requires that authorized owner to complete the Creator Portal identity
+step, submit one reviewed workflow at a time, and record the observed result.

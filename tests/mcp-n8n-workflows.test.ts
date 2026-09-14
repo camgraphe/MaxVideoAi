@@ -208,7 +208,7 @@ test('completion notification only observes an accepted job and actionable outco
   assert.doesNotMatch(routing, /requiresUserAction/);
 });
 
-test('n8n candidate documentation records the disposable checkpoint and keeps catalogue release pending', () => {
+test('n8n candidate documentation records the live deterministic scope and keeps catalogue submission factual', () => {
   const path = `${root}/README.md`;
   assert.equal(existsSync(path), true, `${path} should exist`);
   const guide = readFileSync(path, 'utf8');
@@ -221,7 +221,12 @@ test('n8n candidate documentation records the disposable checkpoint and keeps ca
   assert.match(guide, /MCP Client Tool.*Chat Model.*not configured/is);
   assert.match(guide, /quoteId.*idempoten/is);
   assert.doesNotMatch(guide, /stable idempotency key/i);
-  assert.match(guide, /explicit owner authorization/i);
+  assert.match(guide, /self-hosted deterministic MCP Client scope is\s+live and indexable/i);
+  assert.match(guide, /MCP Client Tool and n8n Cloud[\s\S]{0,120}outside the public claim/i);
+  assert.match(guide, /product owner has authorized the\s+exact three-file external action/i);
+  assert.match(guide, /Creator Portal identity\s+step/i);
+  assert.doesNotMatch(guide, /integration therefore stays a non-indexed preview/i);
+  assert.doesNotMatch(guide, /fresh policy review and explicit owner authorization/i);
   assert.equal(getMcpIntegration('n8n').store.status, 'preparing');
   assert.equal(getMcpIntegration('n8n').installation.package, 'unavailable');
 });
