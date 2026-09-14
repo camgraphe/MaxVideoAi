@@ -57,7 +57,7 @@ function english(): PreviewIntegrationText {
     machineStatusLabel: 'Host evidence state',
     statuses: {
       n8nMcpClient: 'Tested with limits on self-hosted n8n 2.38.7: clean import, project-scoped OAuth, deterministic planning, exact approval, one confirmation, recovery and revocation passed.',
-      n8nMcpClientTool: 'MCP Client Tool 1.4 imported with five selected planning tools and no preparation or confirmation tool. Agent invocation was not exercised because no Chat Model credential was configured.',
+      n8nMcpClientTool: 'Not run: MCP Client Tool 1.4 imported with five selected planning tools and no preparation or confirmation tool. Agent invocation was not exercised because no Chat Model credential was configured.',
     },
     setupEyebrow: 'CHOOSE THE EXECUTION SHAPE',
     setupTitle: 'Use deterministic steps for fixed workflows and agent tools for bounded decisions',
@@ -118,7 +118,7 @@ function french(): PreviewIntegrationText {
     machineStatusLabel: 'État de preuve de l’hôte',
     statuses: {
       n8nMcpClient: 'Testé avec limites sur n8n auto-hébergé 2.38.7 : import propre, OAuth de projet, planification, accord exact, confirmation unique, reprise et révocation ont réussi.',
-      n8nMcpClientTool: 'MCP Client Tool 1.4 a été importé avec cinq outils de planification choisis, sans préparation ni confirmation. Aucun modèle de chat n’étant configuré, l’appel par agent reste non vérifié.',
+      n8nMcpClientTool: 'Non testé : MCP Client Tool 1.4 a été importé avec cinq outils de planification choisis, sans préparation ni confirmation. Aucun modèle de chat n’étant configuré, l’appel par agent reste non vérifié.',
     },
     setupEyebrow: 'CHOISIR LE MODE D’EXÉCUTION',
     setupTitle: 'Étapes déterministes pour les flux fixes, outils agent pour les décisions bornées',
@@ -179,7 +179,7 @@ function spanish(): PreviewIntegrationText {
     machineStatusLabel: 'Estado de evidencia del host',
     statuses: {
       n8nMcpClient: 'Probado con límites en n8n self-hosted 2.38.7: importación limpia, OAuth de proyecto, planificación, aprobación exacta, confirmación única, recuperación y revocación funcionaron.',
-      n8nMcpClientTool: 'MCP Client Tool 1.4 se importó con cinco herramientas de planificación seleccionadas, sin preparar ni confirmar. La invocación del agente sigue sin verificar porque no había credencial de Chat Model.',
+      n8nMcpClientTool: 'No probado: MCP Client Tool 1.4 se importó con cinco herramientas de planificación seleccionadas, sin preparar ni confirmar. La invocación del agente sigue sin verificar porque no había credencial de Chat Model.',
     },
     setupEyebrow: 'ELEGIR LA FORMA DE EJECUCIÓN',
     setupTitle: 'Pasos deterministas para flujos fijos y herramientas de agente para decisiones acotadas',

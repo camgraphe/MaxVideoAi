@@ -182,7 +182,7 @@ async function oauthFixture(provider: 'email' | 'google', confirmed: boolean) {
       return {
         async getClaims() {
           return {
-            data: { claims: { sub: userId, client_id: `t9-${provider}-client` } },
+            data: { claims: { sub: userId, client_id: `t9-${provider}-client`, iat: 1_789_372_800 } },
             error: null,
           };
         },

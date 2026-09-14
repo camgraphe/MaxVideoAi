@@ -396,7 +396,7 @@ test('direct_mcp classification is an explicit post-auth seam, not a live-lookin
           async getClaims(accessToken: string) {
             calls.push(`claims:${accessToken}`);
             return {
-              data: { claims: { sub: 'user-1', client_id: 'oauth-client-1' } },
+              data: { claims: { sub: 'user-1', client_id: 'oauth-client-1', iat: 1_789_372_800 } },
               error: null,
             };
           },

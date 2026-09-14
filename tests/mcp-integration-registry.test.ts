@@ -78,10 +78,10 @@ test('new hosts preserve indexation and acquisition gates independently of host 
   assert.equal(getMcpHost('openclawGateway').evidence.status, 'tested_with_limits');
   assert.equal(getMcpHost('openclawGateway').evidence.lastChecked, '2026-09-13');
 
-  for (const id of ['n8nMcpClient', 'n8nMcpClientTool'] as const) {
-    assert.equal(getMcpHost(id).evidence.status, 'tested_with_limits');
-    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-14');
-  }
+  assert.equal(getMcpHost('n8nMcpClient').evidence.status, 'tested_with_limits');
+  assert.equal(getMcpHost('n8nMcpClient').evidence.lastChecked, '2026-09-14');
+  assert.equal(getMcpHost('n8nMcpClientTool').evidence.status, 'not-run');
+  assert.equal(getMcpHost('n8nMcpClientTool').evidence.lastChecked, '2026-09-14');
 
   assert.equal(getMcpHost('cursorDesktop').evidence.status, 'tested_with_limits');
   assert.equal(getMcpHost('cursorDesktop').evidence.lastChecked, '2026-09-14');

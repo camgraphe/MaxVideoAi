@@ -3,7 +3,10 @@ import test from 'node:test';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { startStudioAuthFixture, STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
-import { resolveAgentPrincipal } from '../frontend/src/server/mcp/oauth-adapter';
+import {
+  hasActiveOAuthGrant,
+  resolveAgentPrincipal,
+} from '../frontend/src/server/mcp/oauth-adapter';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const { createClient } = requireFrontend('@supabase/supabase-js');
@@ -61,6 +64,45 @@ test('disposable auth exposes an active OAuth grant and can revoke it without in
     assert.equal(revokedResponse.status, 200);
     assert.deepEqual(await revokedResponse.json(), []);
     assert.equal((await fetch(`${fixture.origin}/auth/v1/user`, { headers })).status, 200);
+  } finally {
+    await fixture.close();
+  }
+});
+
+test('re-authorizing the same OAuth client rejects the old access token and accepts the new consent token', async () => {
+  const fixture = await startStudioAuthFixture();
+  const client = createClient(fixture.origin, fixture.anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  try {
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const oldSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
+      clientId: 'studio-fixture-client',
+      issuedAt: issuedAt - 2,
+    });
+    fixture.revokeGrant(oldSession.access_token);
+    const newSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
+      clientId: 'studio-fixture-client',
+      issuedAt,
+    });
+    const deps = {
+      createAuthClient: async () => client.auth,
+      hasActiveGrant: (accessToken: string, clientId: string, tokenIssuedAt: number) =>
+        hasActiveOAuthGrant(accessToken, clientId, tokenIssuedAt, {
+          supabaseUrl: fixture.origin,
+          anonKey: fixture.anonKey,
+        }),
+    };
+
+    await assert.rejects(
+      resolveAgentPrincipal(new Request('http://127.0.0.1/mcp', {
+        headers: { Authorization: `Bearer ${oldSession.access_token}` },
+      }), deps),
+      /Authentication required/,
+    );
+    const principal = await resolveAgentPrincipal(new Request('http://127.0.0.1/mcp', {
+      headers: { Authorization: `Bearer ${newSession.access_token}` },
+    }), deps);
+    assert.equal(principal.userId, STUDIO_FIXTURE_OWNERS[0]);
+    assert.equal(principal.clientId, 'studio-fixture-client');
   } finally {
     await fixture.close();
   }

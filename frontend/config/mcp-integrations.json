@@ -221,7 +221,7 @@
       "label": "n8n MCP Client Tool",
       "evidence": {
         "kind": "hosted-checkpoint",
-        "status": "tested_with_limits",
+        "status": "not-run",
         "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }

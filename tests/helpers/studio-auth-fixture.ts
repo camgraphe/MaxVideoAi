@@ -47,9 +47,10 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
     expiresIn?: number;
     clientId?: string;
     registerGrant?: boolean;
+    issuedAt?: number;
   } = {}): FixtureSession {
     if (!STUDIO_FIXTURE_USERS.includes(subject)) throw new Error('Unknown fixture user.');
-    const issuedAt = Math.floor(Date.now() / 1000);
+    const issuedAt = settings.issuedAt ?? Math.floor(Date.now() / 1000);
     const expiresIn = settings.expiresIn ?? 3600;
     const sessionId = randomUUID();
     const timestamp = new Date(issuedAt * 1000).toISOString();

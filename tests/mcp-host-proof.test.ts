@@ -290,7 +290,7 @@ test('the n8n matrix records deterministic and agent-tool evidence separately', 
   assert.match(clientRow, /container and volume were removed/);
   assert.doesNotMatch(clientRow, /(?:access_token|refresh_token|Bearer\s)/i);
 
-  assert.match(toolRow, /Tested-with-limits checkpoint/);
+  assert.match(toolRow, /Not-run configuration checkpoint/);
   assert.match(toolRow, /MCP Client Tool 1\.4/);
   assert.match(toolRow, /five selected.*planning tools/i);
   assert.match(toolRow, /prepare_generation.*confirm_generation.*excluded/);
