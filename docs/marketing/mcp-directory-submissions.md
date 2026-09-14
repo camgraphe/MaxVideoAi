@@ -1,7 +1,7 @@
 # MaxVideoAI MCP distribution packages
 
 Checked: 2026-09-14
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.3 ACTIVE — PLATFORM DIRECTORIES NOT SUBMITTED**
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.3 ACTIVE — MCPBEAT OWNER CONFIRMED; WORKFLOW LIBRARY NOT SUBMITTED**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
@@ -28,27 +28,26 @@ for each claimed host before publishing host-specific compatibility copy.
 
 ## Ecosystem distribution recheck
 
-Checked: **2026-09-14**. These conclusions authorize only local preparation in
-the repository. They do not authorize publishing, account changes, namespace
-claims, marketplace submissions, public release, or spend.
+Checked: **2026-09-14**. These conclusions record the controller's observed
+results after the reviewed preparation. This repository update does not
+authorize or perform publishing, account changes, namespace claims,
+marketplace submissions, public releases, or spend.
 
-### Task 15 source-preparation execution checklist — 2026-09-14
+### Task 15 observed external execution checklist — 2026-09-14
 
-This checklist is repository preparation for the authorized owner. It records
-the public baseline observed without signing in and does not perform or prove
-an external action. A controller may replace a state with `submitted`,
-`claimed`, or `verified` only after the corresponding public mutation succeeds
-and the resulting URL is re-read. A button click, redirect to login, draft, tag,
-or existing third-party record is not completion evidence.
+This checklist records only the external states the controller observed after
+the authorized actions. This source-only update performs no external action.
+States remain independent: a release, owner claim, sign-in step, prepared
+challenge, or third-party health label proves only its own recorded result.
 
 | Surface | Exact public URL and observed baseline | Prepared owner action | Current state | Completion evidence required before changing the state |
 | --- | --- | --- | --- | --- |
-| Main `camgraphe/MaxVideoAi` GitHub release | [`/releases/latest`](https://github.com/camgraphe/MaxVideoAi/releases/latest) still resolves to [`maxvideoai-plugin-v0.2.0`](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.2.0). The [`maxvideoai-plugin-v0.3.3` tag](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.3.3) already exists but is not the latest GitHub Release object. | Publish one release object from the existing `maxvideoai-plugin-v0.3.3` tag using `docs/operations/mcp-main-repository-release-v0.3.3.md`. Do not attach or copy an installable archive or checksum. | `ready_to_execute` | The new release URL returns the intended title/tag and `/releases/latest` resolves to it. Re-read both URLs before recording `verified`. |
+| Main `camgraphe/MaxVideoAi` GitHub release | [`maxvideoai-plugin-v0.3.3`](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.3.3) was created from the existing tag on 2026-09-14. It is public, non-draft, and non-prerelease, with zero uploaded assets. The [latest-release API](https://api.github.com/repos/camgraphe/MaxVideoAi/releases/latest) now resolves to that tag. | No further mutation. Preserve this release as a source-and-discovery pointer to the canonical plugin release; do not attach or copy its installable archive or checksum. | `verified` | Re-read the release object and latest-release API on a later release change. Zero uploaded assets must remain distinct from GitHub's automatically generated source archives. |
 | Canonical `camgraphe/maxvideoai-plugin` release | [`v0.3.3`](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3) is the latest canonical plugin release. Its download surface contains one installable ZIP and its SHA-256 checksum; the other two source archives are generated automatically by GitHub and are not installable package artifacts. | No mutation. Keep this release as the installation artifact owner and link to it from the main-repository release note. | `verified` | Preserve the canonical URL, version, source attribution, installable ZIP, and checksum; never duplicate or replace them from the monorepo release. |
-| n8n workflow library | The public [workflow library](https://n8n.io/workflows/) has no MaxVideoAI submission. The [Creator Portal](https://creators.n8n.io/) redirects an unauthenticated visitor to its login and currently accepts one workflow submission at a time for review. | An authorized owner signs in and submits each of the three exact credential-free candidates listed below separately. Do not add a credential before upload and do not claim n8n Cloud or MCP Client Tool execution. | `identity_step_required` | Record one result per workflow. Use `submitted` only after the portal confirms that workflow was received; use `verified` only after its final public library URL is readable and matches the reviewed JSON. |
+| n8n workflow library | No workflow was submitted. The [Creator Portal](https://creators.n8n.io/) flow reached email verification / credential login, but the controller has no authenticated portal session. No personal account data is recorded. The public [workflow library](https://n8n.io/workflows/) still has no MaxVideoAI submission and currently accepts one workflow submission at a time for review. | An authorized owner completes the identity step and submits each of the three exact credential-free candidates listed below separately. Do not add a credential before upload and do not claim n8n Cloud or MCP Client Tool execution. | `identity_step_required` | Record one result per workflow. Use `submitted` only after the portal confirms that workflow was received; use `verified` only after its final public library URL is readable and matches the reviewed JSON. |
 | GitHub MCP registry discovery | The [public API search](https://api.mcp.github.com/v0.1/servers?search=maxvideoai) returns no MaxVideoAI result. GitHub documents [registry discovery in Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) and organization-owned [custom registries](https://docs.github.com/en/copilot/how-tos/administer-copilot/manage-mcp-usage/configure-mcp-registry), but the checked public documentation exposes no third-party submission control for GitHub's default public registry. | Do not improvise a PR, support request, or custom-registry setup. Recheck for a documented public third-party submission route; proceed only if GitHub publishes one. | `unavailable_no_documented_submission` | A first-party GitHub submission route plus an accepted result and a positive public API search are required. The Official MCP Registry record is not substitute evidence. |
-| MCPBeat owner claim | The existing [MaxVideoAI MCPBeat record](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/) offers “Your server? Claim it” and redirects to [MCPBeat sign-in](https://mcpbeat.com/login/?next=%2Fmcp-servers%2Fmaxvideoai%2Fmaxvideoai%2F). At the dated read it reported the endpoint answering, with tools hidden behind the expected authorization challenge, but its week history also said the service did not always answer. | An authorized owner signs in, completes the offered ownership flow, and changes no health claim. | `identity_step_required` | Use `claimed` only after the public record or authenticated owner view confirms ownership. Preserve MCPBeat's independently measured availability caveat; a claim is not host compatibility verification. |
-| Glama owner claim | The existing [MaxVideoAI Glama record](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) offers ownership by GitHub, HTTP challenge, or DNS and redirects to [Glama sign-in](https://glama.ai/sign-in?returnPath=%2Fmcp%2Fconnectors%2Fcom.maxvideoai%2Fmaxvideoai%23claim-connector). The same dated page showed the conflicting labels `Unhealthy` and `OAuth` / `Works in Glama`. The permanent HTTP ownership document is prepared locally for [`https://api.maxvideoai.com/.well-known/glama.json`](https://api.maxvideoai.com/.well-known/glama.json), but its Production response has not been verified. | After the reviewed branch reaches Production, the controller verifies the exact body at the ownership URL, signs in as the authorized owner, and asks Glama to check the HTTP proof. Do not “fix” or reinterpret the independent health labels during the claim. | `verification_endpoint_prepared` | Use `claimed` only after Production returns the exact body and Glama confirms ownership. Record the exact post-claim health labels separately; ownership does not prove health or exact-host compatibility. |
+| MCPBeat owner claim | The public [MaxVideoAI MCPBeat record](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/) now shows `OWNER CONFIRMED`, version `0.3.3`, and `ANSWERING`. At the check, MCPBeat independently reported 96.9% uptime over the prior week; that time-window observation is not a MaxVideoAI SLA. Ownership verification used the repository file flow. The temporary public file was removed after confirmation, while its add and remove commits remain recoverable Git history in the canonical repository. | No further claim mutation. Preserve MCPBeat's independent health measurement and do not convert ownership into host compatibility or uptime guarantees. | `claimed` | Re-read the public owner, version, and health labels before a later status update. A claim remains separate from exact-host execution evidence. |
+| Glama owner claim | The owner profile was created and the HTTP challenge was selected for the existing [MaxVideoAI Glama record](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai). The permanent ownership route is prepared on this branch for [`https://api.maxvideoai.com/.well-known/glama.json`](https://api.maxvideoai.com/.well-known/glama.json), but Production has not yet served it and Glama has not confirmed ownership. The record still shows the independent, conflicting labels `Unhealthy` and `OAuth` / `Works in Glama`. | After the reviewed branch reaches Production, the controller verifies the exact body at the ownership URL and asks Glama to check the selected HTTP proof. Do not “fix” or reinterpret the independent health labels during the claim. | `verification_endpoint_prepared` | Use `claimed` only after Production returns the exact body and Glama confirms ownership. Record the exact post-claim health labels separately; ownership does not prove health or exact-host compatibility. |
 | Docker MCP Catalog | Docker's [contribution guide](https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md) supports remote Streamable HTTP servers with OAuth through a reviewed pull request, but its contribution rules require a license that permits catalog consumption and identify permissive licenses such as MIT or Apache-2.0 as acceptable while rejecting non-permissive licensing. MaxVideoAI remains under [Business Source License 1.1](https://github.com/camgraphe/MaxVideoAi/blob/main/LICENSE). | Do not fork, create catalog files, open a PR, or relicense MaxVideoAI in this task. | `blocked_by_license` | A separate owner-and-Legal-approved permissive-license change, followed by a fresh Docker policy review, would be required before preparing a submission. Technical remote-OAuth eligibility alone does not remove the license blocker. |
 
 The exact n8n candidates authorized for identity-bound submission are:
@@ -66,19 +65,10 @@ the unsubmitted n8n library state. MCP Client Tool invocation with a Chat Model,
 n8n Cloud, token refresh, post-revocation reconnect, and a live failed/refunded
 notification remain outside the claim.
 
-The main-repository release is prepared as this controller-only command. It is
-documented here and was not run by the source-preparation task:
-
-```bash
-gh release create maxvideoai-plugin-v0.3.3 \
-  --repo camgraphe/MaxVideoAi \
-  --verify-tag \
-  --latest \
-  --title "MaxVideoAI plugin v0.3.3" \
-  --notes-file docs/operations/mcp-main-repository-release-v0.3.3.md
-```
-
-Pass no asset paths. The notes file links to the canonical artifact owner.
+The controller created the main-repository release from the existing tag with
+the prepared notes. No asset paths were passed. The notes link to the canonical
+artifact owner, and the canonical `camgraphe/maxvideoai-plugin` `v0.3.3`
+release remains the only owner of the installable ZIP and SHA-256 asset.
 
 ### Observed public records
 
@@ -89,9 +79,11 @@ listing, or proof that MaxVideoAI works in a particular host.
 | Surface | Observed state |
 | --- | --- |
 | Official MCP Registry | [`com.maxvideoai/maxvideoai`](https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai) is active at `0.3.3`. This is the official protocol registry record, not an OpenAI, Anthropic, GitHub, or other host-store listing. |
-| Canonical public source and release | The canonical repository is [`camgraphe/maxvideoai-plugin`](https://github.com/camgraphe/maxvideoai-plugin), and its matching public release is [`v0.3.3`](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3). Repository publication does not prove host compatibility. |
+| Main repository release pointer | [`camgraphe/MaxVideoAi` `maxvideoai-plugin-v0.3.3`](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.3.3) is the public, non-draft, non-prerelease latest release, with zero uploaded assets. It points to the canonical artifact owner rather than duplicating the installable package. |
+| Canonical public source and release | The canonical repository is [`camgraphe/maxvideoai-plugin`](https://github.com/camgraphe/maxvideoai-plugin), and its matching public release is [`v0.3.3`](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3). It remains the owner of the single installable ZIP and SHA-256 asset. Repository publication does not prove host compatibility. |
 | ClawHub | [MaxVideoAI](https://clawhub.ai/camgraphe/skills/maxvideoai) is listed at `1.0.0`. This package listing is separate from direct MCP host evidence. |
-| Independent downstream records | [MCPBeat](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/), [mcpdirectory.dev](https://mcpdirectory.dev/s/maxvideoai/), and [Glama](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) expose downstream or independently maintained records. They are not platform endorsements, first-party store listings, or proof of host compatibility. |
+| MCPBeat | [MCPBeat](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/) publicly shows `OWNER CONFIRMED`, version `0.3.3`, and `ANSWERING`. Its independently reported 96.9% prior-week uptime is a dated third-party observation, not a MaxVideoAI SLA or exact-host compatibility proof. |
+| Other independent downstream records | [mcpdirectory.dev](https://mcpdirectory.dev/s/maxvideoai/) and [Glama](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) expose independently maintained records. Glama ownership remains unconfirmed and its `Unhealthy` and `OAuth` / `Works in Glama` labels conflict. These records are not platform endorsements, first-party store listings, or proof of host compatibility. |
 | GitHub MCP registry | The checked [GitHub MCP registry API query](https://api.mcp.github.com/v0.1/servers?search=maxvideoai) returned no MaxVideoAI result on 2026-09-14. The Official MCP Registry record must not be represented as a GitHub registry or Copilot listing. |
 | n8n workflow library | Three repository templates are prepared and locally validated with limits, but none has been submitted to the n8n workflow library. |
 | OpenAI and Anthropic directories | MaxVideoAI is deliberately not submitted under the current first-party commerce and AI-media directory policies described above. These store decisions remain independent from the live direct MCP setup paths. |

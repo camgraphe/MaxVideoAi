@@ -7,7 +7,7 @@ const evidence = readFileSync('docs/marketing/mcp-directory-submissions.md', 'ut
 const releaseNote = readFileSync('docs/operations/mcp-main-repository-release-v0.3.3.md', 'utf8');
 
 const checklist = evidence.match(
-  /### Task 15 source-preparation execution checklist — 2026-09-14[\s\S]*?(?=\n### Observed public records)/,
+  /### Task 15 observed external execution checklist — 2026-09-14[\s\S]*?(?=\n### Observed public records)/,
 )?.[0] ?? '';
 
 function row(surface: string): string {
@@ -16,15 +16,15 @@ function row(surface: string): string {
     .find((line) => line.startsWith(`| ${surface} |`)) ?? '';
 }
 
-test('Task 15 checklist keeps every unexecuted external action in a non-completion state', () => {
-  assert.ok(checklist, 'missing dated Task 15 source-preparation checklist');
+test('Task 15 checklist advances only the externally observed release and MCPBeat results', () => {
+  assert.ok(checklist, 'missing dated Task 15 observed-results checklist');
 
   const expectedStates = new Map([
-    ['Main `camgraphe/MaxVideoAi` GitHub release', 'ready_to_execute'],
+    ['Main `camgraphe/MaxVideoAi` GitHub release', 'verified'],
     ['Canonical `camgraphe/maxvideoai-plugin` release', 'verified'],
     ['n8n workflow library', 'identity_step_required'],
     ['GitHub MCP registry discovery', 'unavailable_no_documented_submission'],
-    ['MCPBeat owner claim', 'identity_step_required'],
+    ['MCPBeat owner claim', 'claimed'],
     ['Glama owner claim', 'verification_endpoint_prepared'],
     ['Docker MCP Catalog', 'blocked_by_license'],
   ]);
@@ -36,10 +36,8 @@ test('Task 15 checklist keeps every unexecuted external action in a non-completi
   }
 
   for (const surface of [
-    'Main `camgraphe/MaxVideoAi` GitHub release',
     'n8n workflow library',
     'GitHub MCP registry discovery',
-    'MCPBeat owner claim',
     'Glama owner claim',
     'Docker MCP Catalog',
   ]) {
@@ -51,9 +49,12 @@ test('release preparation preserves the canonical artifact owner and latest-rele
   const mainRelease = row('Main `camgraphe/MaxVideoAi` GitHub release');
   const canonicalRelease = row('Canonical `camgraphe/maxvideoai-plugin` release');
 
-  assert.match(mainRelease, /https:\/\/github\.com\/camgraphe\/MaxVideoAi\/releases\/latest/);
-  assert.match(mainRelease, /maxvideoai-plugin-v0\.2\.0/);
+  assert.match(mainRelease, /https:\/\/api\.github\.com\/repos\/camgraphe\/MaxVideoAi\/releases\/latest/);
   assert.match(mainRelease, /maxvideoai-plugin-v0\.3\.3/);
+  assert.match(mainRelease, /created from the existing tag on 2026-09-14/i);
+  assert.match(mainRelease, /public, non-draft, and non-prerelease/i);
+  assert.match(mainRelease, /zero uploaded assets/i);
+  assert.match(mainRelease, /latest-release API.*resolves to that tag/i);
   assert.match(canonicalRelease, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.3/);
   assert.match(canonicalRelease, /installation artifact owner/i);
   assert.match(canonicalRelease, /one installable ZIP and its SHA-256 checksum/i);
@@ -61,10 +62,7 @@ test('release preparation preserves the canonical artifact owner and latest-rele
 
   assert.match(releaseNote, /one installable ZIP and its SHA-256\s+checksum remain owned by the canonical plugin release/i);
   assert.match(releaseNote, /two source archives.*generated automatically by GitHub/is);
-  assert.match(checklist, /gh release create maxvideoai-plugin-v0\.3\.3/);
-  assert.match(checklist, /--verify-tag/);
-  assert.match(checklist, /--latest/);
-  assert.match(checklist, /Pass no asset paths/i);
+  assert.match(checklist, /No asset paths were passed/i);
   assert.doesNotMatch(releaseNote, /Controller-only|source-preparation task|gh release create/);
   assert.doesNotMatch(releaseNote, /gh release upload|\.zip\s|\.sha256\s/);
 });
@@ -93,12 +91,14 @@ test('n8n preparation pins all three reviewed candidates without claiming a libr
   assert.match(n8n, /https:\/\/n8n\.io\/workflows\//);
   assert.match(n8n, /https:\/\/creators\.n8n\.io\//);
   assert.match(n8n, /one workflow submission at a time/i);
-  assert.match(n8n, /has no MaxVideoAI submission/i);
+  assert.match(n8n, /no workflow was submitted/i);
+  assert.match(n8n, /no authenticated portal session/i);
+  assert.match(n8n, /no personal account data/i);
   assert.match(checklist, /deterministic self-hosted MCP Client evidence is\s+public and indexable/i);
   assert.match(checklist, /MCP Client Tool invocation[\s\S]{0,180}n8n Cloud[\s\S]{0,220}outside the claim/i);
 });
 
-test('GitHub, MCPBeat, Glama, and Docker caveats require observed evidence before promotion', () => {
+test('MCPBeat claim evidence and the unchanged GitHub, Glama, and Docker caveats stay explicit', () => {
   const github = row('GitHub MCP registry discovery');
   const mcpbeat = row('MCPBeat owner claim');
   const glama = row('Glama owner claim');
@@ -109,11 +109,20 @@ test('GitHub, MCPBeat, Glama, and Docker caveats require observed evidence befor
   assert.match(github, /Official MCP Registry record is not substitute evidence/i);
 
   assert.match(mcpbeat, /https:\/\/mcpbeat\.com\/mcp-servers\/maxvideoai\/maxvideoai\//);
-  assert.match(mcpbeat, /identity|sign-in/i);
-  assert.match(mcpbeat, /did not always answer/i);
+  assert.match(mcpbeat, /`OWNER CONFIRMED`/);
+  assert.match(mcpbeat, /version `0\.3\.3`/i);
+  assert.match(mcpbeat, /`ANSWERING`/);
+  assert.match(mcpbeat, /96\.9% uptime over the prior week/i);
+  assert.match(mcpbeat, /not a MaxVideoAI SLA/i);
+  assert.match(mcpbeat, /repository file flow/i);
+  assert.match(mcpbeat, /temporary public file was removed/i);
+  assert.match(mcpbeat, /add and remove commits remain recoverable/i);
   assert.match(glama, /https:\/\/glama\.ai\/mcp\/connectors\/com\.maxvideoai\/maxvideoai/);
   assert.match(glama, /https:\/\/api\.maxvideoai\.com\/\.well-known\/glama\.json/);
-  assert.match(glama, /Production.*exact body.*Glama.*confirms ownership/i);
+  assert.match(glama, /owner profile was created/i);
+  assert.match(glama, /HTTP challenge was selected/i);
+  assert.match(glama, /Production has not yet served/i);
+  assert.match(glama, /Glama has not confirmed ownership/i);
   assert.match(glama, /`Unhealthy`/);
   assert.match(glama, /`Works in Glama`/);
 
