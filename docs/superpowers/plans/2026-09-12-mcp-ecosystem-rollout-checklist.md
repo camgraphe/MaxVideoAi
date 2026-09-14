@@ -641,17 +641,24 @@ Claude/ChatGPT/Codex non-regression constraints.
   registration path.
 - [x] Claim the existing MaxVideoAI record on MCPBeat and record the observed
   third-party health-state caveat.
-- [ ] Complete Glama ownership verification after the permanent HTTP challenge
+- [x] Complete Glama ownership verification after the permanent HTTP challenge
   route has passed the reviewed Production deployment.
 - [x] Recheck and record every currently resulting public URL, endpoint,
   version, owner, and status without promoting pending or unavailable states.
 
 ### Task 16: Final verification and handoff
 
-- [ ] Run full non-regression and build gates on the final branch.
-- [ ] Obtain a whole-branch code review and address load-bearing findings.
-- [ ] Push and open or update the review artifact only after fresh verification.
-- [ ] Deploy only through the repository's reviewed production workflow.
-- [ ] Smoke-test the final production routes and external listing links.
-- [ ] Leave time-window observations such as the 14-day funnel baseline as
+- [x] Run full non-regression and build gates on the final branch.
+- [x] Obtain a whole-branch code review and address load-bearing findings.
+- [x] Push and open or update the review artifact only after fresh verification.
+- [x] Deploy only through the repository's reviewed production workflow.
+- [x] Smoke-test the final production routes and external listing links.
+- [x] Leave time-window observations such as the 14-day funnel baseline as
   scheduled operational follow-up rather than falsely marking elapsed time.
+
+Task 16 closed through reviewed PR
+[#296](https://github.com/camgraphe/MaxVideoAi/pull/296), merge commit
+`ed610c74ac1fae3dee60afa7f2b275c73e2ad0be`, and its resulting Production
+deployment. The two remaining n8n submissions in Task 15 deliberately stay
+open until Creator Portal workflow `19591` leaves human review and the portal
+re-enables `Share new template`.

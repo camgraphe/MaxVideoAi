@@ -7,7 +7,7 @@ const evidence = readFileSync('docs/marketing/mcp-directory-submissions.md', 'ut
 const releaseNote = readFileSync('docs/operations/mcp-main-repository-release-v0.3.3.md', 'utf8');
 
 const checklist = evidence.match(
-  /### Task 15 observed external execution checklist — 2026-09-14[\s\S]*?(?=\n### Observed public records)/,
+  /### Task 15 observed external execution checklist — 2026-09-15[\s\S]*?(?=\n### Observed public records)/,
 )?.[0] ?? '';
 
 function row(surface: string): string {
@@ -16,7 +16,7 @@ function row(surface: string): string {
     .find((line) => line.startsWith(`| ${surface} |`)) ?? '';
 }
 
-test('Task 15 checklist advances only the externally observed release, MCPBeat, and n8n results', () => {
+test('Task 15 checklist advances only externally observed distribution results', () => {
   assert.ok(checklist, 'missing dated Task 15 observed-results checklist');
 
   const expectedStates = new Map([
@@ -25,7 +25,7 @@ test('Task 15 checklist advances only the externally observed release, MCPBeat, 
     ['n8n workflow library', 'submitted'],
     ['GitHub MCP registry discovery', 'unavailable_no_documented_submission'],
     ['MCPBeat owner claim', 'claimed'],
-    ['Glama owner claim', 'verification_endpoint_prepared'],
+    ['Glama owner claim', 'claimed'],
     ['Docker MCP Catalog', 'blocked_by_license'],
   ]);
 
@@ -37,7 +37,6 @@ test('Task 15 checklist advances only the externally observed release, MCPBeat, 
 
   for (const surface of [
     'GitHub MCP registry discovery',
-    'Glama owner claim',
     'Docker MCP Catalog',
   ]) {
     assert.doesNotMatch(row(surface), /\| `(?:submitted|claimed|verified)` \|/);
@@ -106,7 +105,7 @@ test('n8n evidence pins the reviewed candidates and records only one private pen
   assert.match(checklist, /MCP Client Tool invocation[\s\S]{0,180}n8n Cloud[\s\S]{0,220}outside the claim/i);
 });
 
-test('MCPBeat claim evidence and the unchanged GitHub, Glama, and Docker caveats stay explicit', () => {
+test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats explicit', () => {
   const github = row('GitHub MCP registry discovery');
   const mcpbeat = row('MCPBeat owner claim');
   const glama = row('Glama owner claim');
@@ -129,10 +128,12 @@ test('MCPBeat claim evidence and the unchanged GitHub, Glama, and Docker caveats
   assert.match(glama, /https:\/\/api\.maxvideoai\.com\/\.well-known\/glama\.json/);
   assert.match(glama, /owner profile was created/i);
   assert.match(glama, /HTTP challenge was selected/i);
-  assert.match(glama, /Production has not yet served/i);
-  assert.match(glama, /Glama has not confirmed ownership/i);
+  assert.match(glama, /Production returned the exact challenge body/i);
+  assert.match(glama, /Ownership verified/i);
+  assert.match(glama, /administration page was accessible/i);
   assert.match(glama, /`Unhealthy`/);
   assert.match(glama, /`Works in Glama`/);
+  assert.match(glama, /ownership does not prove health/i);
 
   assert.match(docker, /github\.com\/docker\/mcp-registry\/blob\/main\/CONTRIBUTING\.md/);
   assert.match(docker, /Business Source License 1\.1/);
