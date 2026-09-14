@@ -5,6 +5,7 @@ import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
   hasActiveOAuthGrant,
   resolveAgentPrincipal,
+  resolveMcpAgentPrincipal,
   type OAuthAdapterDeps,
   type OAuthClaims,
   type OAuthUser,
@@ -245,23 +246,28 @@ test('active OAuth grant lookup fails closed on unavailable or malformed Auth re
   }), false);
 });
 
-test('OAuth principal accepts a missing client id without weakening user identity', async () => {
-  let grantChecks = 0;
+test('first-party OAuth principal accepts a signed bearer without an OAuth client binding', async () => {
   const principal = await resolveAgentPrincipal(
-    requestWithToken(),
-    createDeps({
-      claims: { sub: 'user-1' },
-      onGrantCheck: () => { grantChecks += 1; },
-    })
+    requestWithToken('first-party-access-token'),
+    createDeps({ claims: { sub: 'user-1' } }),
   );
 
-  assert.equal(grantChecks, 0);
   assert.deepEqual(principal, {
     userId: 'user-1',
     clientId: null,
     emailVerified: true,
     authMethod: 'oauth',
   });
+});
+
+test('MCP OAuth principal rejects a signed bearer without an OAuth client binding', async () => {
+  await assert.rejects(
+    () => resolveMcpAgentPrincipal(
+      requestWithToken('unbound-access-token'),
+      createDeps({ claims: { sub: 'user-1', iat: 1_789_372_800 } }),
+    ),
+    isAuthRequired,
+  );
 });
 
 test('OAuth principal treats confirmed Google accounts as verified', async () => {

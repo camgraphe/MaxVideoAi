@@ -167,9 +167,10 @@ function authenticationRequired(): AgentApiError {
   return new AgentApiError('AUTH_REQUIRED', 'Authentication required.');
 }
 
-export async function resolveAgentPrincipal(
+async function resolveOAuthPrincipal(
   request: Request,
-  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps
+  deps: OAuthAdapterDeps,
+  requireClientBinding: boolean,
 ): Promise<AgentPrincipal> {
   const accessToken = readRequestBearerAccessToken(request);
   if (!accessToken) {
@@ -192,7 +193,7 @@ export async function resolveAgentPrincipal(
   const tokenIssuedAtSeconds = Number.isSafeInteger(rawIssuedAt) && Number(rawIssuedAt) >= 0
     ? Number(rawIssuedAt)
     : null;
-  if (clientId && tokenIssuedAtSeconds === null) {
+  if ((clientId && tokenIssuedAtSeconds === null) || (requireClientBinding && !clientId)) {
     throw authenticationRequired();
   }
   const userPromise = auth.getUser(accessToken);
@@ -218,6 +219,20 @@ export async function resolveAgentPrincipal(
       typeof user.email_confirmed_at === 'string' && user.email_confirmed_at.trim().length > 0,
     authMethod: 'oauth',
   };
+}
+
+export function resolveAgentPrincipal(
+  request: Request,
+  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+): Promise<AgentPrincipal> {
+  return resolveOAuthPrincipal(request, deps, false);
+}
+
+export function resolveMcpAgentPrincipal(
+  request: Request,
+  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+): Promise<AgentPrincipal> {
+  return resolveOAuthPrincipal(request, deps, true);
 }
 
 export type AuthenticatedMcpConnection = {
