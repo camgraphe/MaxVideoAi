@@ -36,6 +36,36 @@ test('disposable auth validates two signed identities through the installed SDK 
   }
 });
 
+test('disposable auth exposes an active OAuth grant and can revoke it without invalidating the user session', async () => {
+  const fixture = await startStudioAuthFixture();
+  try {
+    const session = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-fixture-client' });
+    const headers = {
+      apikey: fixture.anonKey,
+      authorization: `Bearer ${session.access_token}`,
+    };
+
+    const activeResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
+    assert.equal(activeResponse.status, 200);
+    const activeGrants = await activeResponse.json() as Array<{
+      scopes: string[];
+      client: { id: string };
+    }>;
+    assert.equal(activeGrants.length, 1);
+    assert.deepEqual(activeGrants[0]?.scopes, ['openid', 'email', 'profile']);
+    assert.equal(activeGrants[0]?.client.id, 'studio-fixture-client');
+
+    fixture.revokeGrant(session.access_token);
+
+    const revokedResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
+    assert.equal(revokedResponse.status, 200);
+    assert.deepEqual(await revokedResponse.json(), []);
+    assert.equal((await fetch(`${fixture.origin}/auth/v1/user`, { headers })).status, 200);
+  } finally {
+    await fixture.close();
+  }
+});
+
 test('fixture cookies use actual SSR session encoding and expired sessions refresh without an identity stub', async () => {
   const fixture = await startStudioAuthFixture();
   try {

@@ -25,6 +25,12 @@ type Claims = {
   sub: string; aud: string; role: string; iss: string; iat: number; exp: number;
   session_id: string; email: string; client_id?: string;
 };
+type FixtureGrant = {
+  id: string;
+  subject: string;
+  clientId: string;
+  grantedAt: string;
+};
 
 const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
 
@@ -34,9 +40,14 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
   const anonKey = 'studio-disposable-auth-fixture-anon';
   const publicJwk = { ...publicKey.export({ format: 'jwk' }), kid, alg: 'ES256', use: 'sig' };
   const sessions = new Map<string, { subject: string; sessionId: string; clientId?: string }>();
+  const grants = new Map<string, FixtureGrant>();
   let origin = '';
 
-  function createSession(subject: string, settings: { expiresIn?: number; clientId?: string } = {}): FixtureSession {
+  function createSession(subject: string, settings: {
+    expiresIn?: number;
+    clientId?: string;
+    registerGrant?: boolean;
+  } = {}): FixtureSession {
     if (!STUDIO_FIXTURE_USERS.includes(subject)) throw new Error('Unknown fixture user.');
     const issuedAt = Math.floor(Date.now() / 1000);
     const expiresIn = settings.expiresIn ?? 3600;
@@ -58,6 +69,17 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
     const signature = sign('sha256', Buffer.from(payload), { key: privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url');
     const refreshToken = randomUUID();
     sessions.set(refreshToken, { subject, sessionId, clientId: settings.clientId });
+    if (settings.clientId && settings.registerGrant !== false) {
+      const grantKey = `${subject}\0${settings.clientId}`;
+      if (!grants.has(grantKey)) {
+        grants.set(grantKey, {
+          id: randomUUID(),
+          subject,
+          clientId: settings.clientId,
+          grantedAt: timestamp,
+        });
+      }
+    }
     return { access_token: `${payload}.${signature}`, refresh_token: refreshToken, token_type: 'bearer', expires_in: expiresIn, expires_at: claims.exp, user };
   }
 
@@ -101,6 +123,20 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
         identities: [{ id: claims.sub, user_id: claims.sub, provider: 'email' }],
       }); return;
     }
+    if (request.method === 'GET' && url.pathname === '/auth/v1/user/oauth/grants') {
+      const token = request.headers.authorization?.replace(/^Bearer /i, '') ?? '';
+      const claims = verifyToken(token);
+      if (!claims) { reply(401, { code: 'bad_jwt', message: 'Invalid or inactive fixture token.' }); return; }
+      reply(200, [...grants.values()]
+        .filter((grant) => grant.subject === claims.sub)
+        .map((grant) => ({
+          id: grant.id,
+          scopes: ['openid', 'email', 'profile'],
+          granted_at: grant.grantedAt,
+          client: { id: grant.clientId, name: 'Studio fixture client', uri: '' },
+        })));
+      return;
+    }
     if (request.method === 'POST' && url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'refresh_token') {
       try {
         let body = '';
@@ -112,7 +148,7 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
         const current = typeof refreshToken === 'string' ? sessions.get(refreshToken) : undefined;
         if (!current) { reply(400, { code: 'refresh_token_not_found', message: 'Invalid fixture refresh token.' }); return; }
         sessions.delete(refreshToken);
-        reply(200, createSession(current.subject, { clientId: current.clientId }));
+        reply(200, createSession(current.subject, { clientId: current.clientId, registerGrant: false }));
       } catch { reply(400, { code: 'invalid_request', message: 'Invalid fixture request.' }); }
       return;
     }
@@ -139,8 +175,14 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
       if (!claims) return;
       for (const [refresh, session] of sessions) if (session.sessionId === claims.session_id) sessions.delete(refresh);
     },
+    revokeGrant(token: string) {
+      const claims = verifyToken(token, true);
+      if (!claims?.client_id) return;
+      grants.delete(`${claims.sub}\0${claims.client_id}`);
+    },
     async close() {
       sessions.clear();
+      grants.clear();
       server.closeAllConnections();
       await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     },
