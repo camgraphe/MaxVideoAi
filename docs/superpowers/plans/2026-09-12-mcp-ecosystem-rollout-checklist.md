@@ -356,14 +356,39 @@ change to split into a separate release commit.
 - Consumes: exact supported IDE and Copilot CLI versions plus GitHub's current registry/discovery rules.
 - Produces: distinct evidence for IDE, CLI, and cloud-agent surfaces.
 
-- [ ] Recheck GitHub's first-party MCP documentation for each supported IDE, Copilot CLI, cloud agent, OAuth, and registry discovery.
+- [x] Recheck GitHub's first-party MCP documentation for each supported IDE, Copilot CLI, cloud agent, OAuth, and registry discovery.
 - [ ] Test one exact IDE/version through the complete OAuth, discovery, budget, quote, confirmation, recovery, revocation, and reconnect lifecycle.
 - [ ] Test Copilot CLI independently through the same lifecycle and record its own limitations.
-- [ ] Verify the cloud agent's current remote-OAuth support; retain an explicit incompatibility statement while it cannot use the MaxVideoAI OAuth path.
-- [ ] Record sanitized evidence separately for IDE, CLI, and cloud agent; update each host record independently.
+- [x] Verify the cloud agent's current remote-OAuth support; retain an explicit incompatibility statement while it cannot use the MaxVideoAI OAuth path.
+- [x] Record sanitized evidence separately for IDE, CLI, and cloud agent; update each host record independently. The attempted IDE and CLI checkpoints remain `not-run` because the complete lifecycle did not pass.
 - [ ] Create EN/FR/ES marketing content that names only the verified surfaces and versions.
-- [ ] Decide publication, indexation, acquisition, and GitHub registry/discovery submission independently.
+- [x] Decide publication, indexation, acquisition, and GitHub registry/discovery submission independently. All remain disabled while the revocation blocker is unresolved in a hosted build.
 - [ ] Run all focused and full non-regression gates; commit each surface milestone separately.
+
+Documentation and controlled-host evidence recorded 2026-09-14: GitHub's
+current first-party documentation treats Copilot in IDEs, Copilot CLI, and the
+cloud agent as separate surfaces. Visual Studio Code 1.137.0 with bundled
+GitHub Copilot Chat 0.65.0 completed OAuth, discovery, account, catalogue,
+recommendation, budget, and exact `$0.37` quote preparation without a paid
+confirmation. GitHub Copilot CLI 1.0.83 completed the same read/planning path,
+then confirmed one separately approved exact `$0.34` quote and recovered the
+completed result from a cold session without a duplicate confirmation. The
+cloud agent remains explicitly incompatible because GitHub does not support
+remote OAuth MCP servers on that surface.
+
+The CLI revoke check exposed a server-side blocker: after its grant disappeared
+from MaxVideoAI account connections, the already-issued access token still
+completed one protected account-status call. Testing stopped under the support
+runbook, so refresh and reconnect were not attempted and the IDE lifecycle was
+not advanced to a paid confirmation. Commit `9a9c97999` adds a fail-closed,
+uncached active-grant check to every MCP OAuth request with a `client_id`, keeps
+first-party bearer behavior unchanged, and records the blocked evidence. The
+focused security and host-evidence checks, TypeScript, frontend lint, public
+exposure lint, and `git diff --check` passed; an independent Sol-medium review
+reported no critical, important, or minor issue. The fix is branch-local only:
+both tested surfaces remain registry `not-run`, the integration remains hidden,
+and all publication, indexation, acquisition, install, and registry actions stay
+disabled until deployment and a fresh revoke/access-loss/reconnect pass.
 
 ### Task 8: Validate Gemini CLI
 
