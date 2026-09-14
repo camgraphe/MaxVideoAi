@@ -93,13 +93,15 @@ test('new hosts preserve indexation and acquisition gates independently of host 
   }
 
   for (const id of [
-    'geminiCliHost',
     'microsoftCopilotStudio',
     'microsoftAgents365',
   ] as const) {
     assert.equal(getMcpHost(id).evidence.status, 'not-run');
     assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-12');
   }
+
+  assert.equal(getMcpHost('geminiCliHost').evidence.status, 'not-run');
+  assert.equal(getMcpHost('geminiCliHost').evidence.lastChecked, '2026-09-14');
 });
 
 test('invalid registries fail closed', () => {

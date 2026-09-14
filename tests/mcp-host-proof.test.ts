@@ -132,6 +132,21 @@ test('the GitHub Copilot matrix keeps IDE, CLI, and cloud evidence separate and 
   }
 });
 
+test('the Gemini CLI matrix pins the stable preflight and keeps promotion blocked', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const row = matrix.split('\n').find((line) => line.startsWith('| Gemini CLI |')) ?? '';
+
+  assert.match(row, /Gemini CLI 0\.59\.0/);
+  assert.match(row, /59dc2cdb098b3000d36e34a185fc873932df4fd9d00900e817f2b19cd349d98b/);
+  assert.match(row, /`httpUrl`.*Streamable HTTP/);
+  assert.match(row, /`http:\/\/localhost:<OS-assigned port>\/oauth\/callback`/);
+  assert.match(row, /PKCE S256.*`state`/);
+  assert.match(row, /does not validate.*RFC 9207 `iss`/);
+  assert.match(row, /0\.60\.0-preview\.0/);
+  assert.match(row, /remains registry `not-run`, hidden, non-indexable, and acquisition-disabled/);
+  assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|localhost:\d+\/oauth\/callback\?)/i);
+});
+
 test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', () => {
   const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
   const row = matrix.split('\n').find((line) => line.startsWith('| OpenClaw Gateway |')) ?? '';

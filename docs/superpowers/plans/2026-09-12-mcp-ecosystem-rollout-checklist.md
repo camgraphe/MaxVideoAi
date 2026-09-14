@@ -402,8 +402,8 @@ disabled until deployment and a fresh revoke/access-loss/reconnect pass.
 - Consumes: an exact Gemini CLI release and its current remote OAuth discovery behavior.
 - Produces: callback and RFC 9207 issuer evidence before any extension distribution.
 
-- [ ] Recheck Gemini CLI's first-party MCP server, OAuth discovery, callback, RFC 9207 `iss`, extension, and gallery documentation.
-- [ ] Install or run a pinned Gemini CLI version in a disposable profile and record the package digest.
+- [x] Recheck Gemini CLI's first-party MCP server, OAuth discovery, callback, RFC 9207 `iss`, extension, and gallery documentation.
+- [x] Install or run a pinned Gemini CLI version in a disposable profile and record the package digest.
 - [ ] Verify authorization-server discovery and the exact callback URI before protected tool execution.
 - [ ] Exercise OAuth denial, approval, refresh, revoke, reconnect, discovery, budget, quote preparation, approved minimal confirmation, recovery, and library result.
 - [ ] Record sanitized callback/issuer evidence and limitations; update only the Gemini CLI host status.
@@ -411,6 +411,23 @@ disabled until deployment and a fresh revoke/access-loss/reconnect pass.
 - [ ] Prepare an extension candidate only after direct host OAuth passes; validate installation before any gallery submission.
 - [ ] Decide publication, indexation, acquisition, and extension distribution independently.
 - [ ] Run all focused and full non-regression gates; commit evidence, marketing, and distribution states separately.
+
+Preflight result (2026-09-14): the pinned stable npm package
+`@google/gemini-cli@0.59.0` reported the expected version from a disposable
+extraction. Its calculated SHA-256 was
+`59dc2cdb098b3000d36e34a185fc873932df4fd9d00900e817f2b19cd349d98b`,
+and its registry SHA-1 and SHA-512 integrity values matched. The versioned
+documentation and source confirm Streamable HTTP through `httpUrl`, OAuth
+discovery, DCR, a default
+`http://localhost:<OS-assigned port>/oauth/callback` callback, PKCE S256, and
+random `state` validation. They also show that stable 0.59.0 does not validate
+the RFC 9207 `iss` response parameter. The issuer fix landed in Gemini CLI
+0.60.0-preview.0 only. Accordingly, no MaxVideoAI OAuth flow or protected tool
+was started, the remaining lifecycle and marketing tasks stay unchecked, and
+Gemini CLI remains hidden, non-indexable, acquisition-disabled, extension-free,
+and registry `not-run`. Resume only on a stable release containing the issuer
+check and after the MaxVideoAI active-grant revocation fix is deployed and
+hosted-verified.
 
 ### Task 9: Validate Microsoft Copilot as an Enterprise Track
 
