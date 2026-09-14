@@ -412,10 +412,10 @@ test('OpenClaw and n8n live copy explains supported scopes without unearned clai
     assert.match(JSON.stringify(n8n), /create_reference_upload_link/);
     assert.match(JSON.stringify(n8n), /unverified|non vérifié|sin verificar/i);
     assert.equal(n8n.setup.installAction.copyInstructionEnabled, false);
-    assert.match(n8n.setup.installAction.body, /import|importez|imp[oó]rta/i);
+    assert.match(n8n.setup.installAction.body, /build|configure|construisez|configurez|construye|configura/i);
     assert.doesNotMatch(
-      JSON.stringify(n8n.setup.installAction),
-      /guides you|vous guide|te guía|guidance|être guidé|recibir ayuda|paste|collez|pégalo|pega la petición/i,
+      `${JSON.stringify(n8n.setup.installAction)} ${n8n.setup.hostGuides.map((guide) => guide.installInstruction).join(' ')}`,
+      /guides you|vous guide|te guía|guidance|être guidé|recibir ayuda|paste|collez|pégalo|pega la petición|download|télécharg|descarga|import|importez|importa|impórta/i,
     );
     assert.doesNotMatch(
       n8n.references.planningBody,
@@ -714,13 +714,15 @@ test('the MCP hub keeps conversational setup copy away from the manual n8n workf
     const copy = getMcpPageCopy(locale);
     assert.match(copy.hero.connectActions.copyInstruction, /cop|copi/i);
     assert.match(copy.hero.connectActions.instructionBody, /paste|collez|p[eé]ga/i);
-    assert.match(copy.hero.connectActions.instructionBody, /import|importez|importa/i);
+    assert.match(copy.hero.connectActions.instructionBody, /build|configure|construisez|configurez|construye|configura/i);
+    assert.doesNotMatch(copy.hero.connectActions.instructionBody, /download|télécharg|descarga|import|importez|importa|impórta/i);
     assert.equal(copy.hero.actions.length, 5);
     for (const action of copy.hero.actions) {
       assert.match(action.installInstruction, /MaxVideoAI/);
       if (action.client === 'n8n') {
         assert.equal(action.copyInstallInstruction, false);
-        assert.match(action.installInstruction, /import|importez|importa/i);
+        assert.match(action.installInstruction, /build|configure|construisez|configurez|construye|configura/i);
+        assert.doesNotMatch(action.installInstruction, /download|télécharg|descarga|import|importez|importa|impórta/i);
         assert.doesNotMatch(action.installInstruction, /guide me|guide-moi|guíame/i);
       } else {
         assert.equal(action.copyInstallInstruction, true);
