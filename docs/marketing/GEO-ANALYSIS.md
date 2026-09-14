@@ -36,7 +36,7 @@ Fresh read-only probes on 2026-08-28 establish this boundary:
 | --- | --- | --- |
 | `/llms.txt` | The deployed repository-aware change belongs to the current production line; retain a direct post-release re-probe before using it as external evidence. | Keeps the dedicated repository and five owned MCP pages as first-party sources. |
 | `/mcp` HTML | Public, reachable, and verified on 2026-08-29 with a people-visible link to `github.com/camgraphe/maxvideoai-plugin`. | Preserves the approved “Claude, ChatGPT or Codex” composition and adds no host-specific proof claim. |
-| `/integrations/chatgpt` HTML | Public and reachable with the shared ChatGPT/Codex MCP connection, direct developer-mode setup, first-use OAuth, and an explicit OpenAI directory non-submission boundary. | The README refresh preserves direct MCP availability without promising a future directory listing. |
+| `/integrations/chatgpt` HTML | Observed on 2026-08-28 as public and reachable with the shared ChatGPT/Codex journey, installation then first-use OAuth, a directory-approval boundary, and developer MCP fallback. | Corrects the source copy to make direct developer-mode MCP the primary live route and state the OpenAI directory non-submission boundary without implying that wording was already deployed. |
 | Focused plugin repository | Public with the proof-led README, six current non-repeating product captures, and checksum-backed v0.3.0 through v0.3.3 releases. | The deterministic source bundle and public tree match with zero reported drift for v0.3.3. |
 
 Treat the public v0.3.3 tree and release assets as installation and publication evidence only; they do not prove native-host execution or an end-to-end paid generation in every named host.
@@ -54,7 +54,7 @@ Treat the public v0.3.3 tree and release assets as installation and publication 
 | Platform | Readiness | Main strength | Main gap |
 | --- | ---: | --- | --- |
 | Google AI Overviews | 88/100 | Public localized owners, server-rendered question passages, current GitHub answer blocks, established domain visibility, structured data, and contextual links. | No post-change search window or earned citation yet. |
-| ChatGPT search and app discovery | 91/100 | Dedicated live intent owner, allowed retrieval crawlers, synchronized public plugin repository, tagged releases, shared ChatGPT/Codex journey, and richer agent-readable GitHub passages. | Public-directory approval, real-host evidence, and observed citation data remain outstanding. The MCP URL remains the developer fallback. |
+| ChatGPT search and app discovery | 91/100 | Dedicated live intent owner, direct MCP as the primary live route, allowed retrieval crawlers, synchronized public plugin repository, tagged releases, and richer agent-readable GitHub passages. | Exact-host evidence and observed citation data remain outstanding. OpenAI directory submission remains `do_not_submit` / `policy_blocked` under the current commerce policy; it is not a pending acquisition milestone. |
 | Perplexity | 78/100 | Concise source passages, synchronized public repository identity, current visual evidence, localized technical guide, and crawler access are ready. | No earned community validation, authoritative listing, or observed citation data. |
 
 ## AI Crawler Access Status
@@ -133,7 +133,7 @@ Risks to prevent:
 ## Top 5 Highest-Impact Changes
 
 1. Integrate and deploy the reviewed repository-aware `llms.txt`, JSON-LD, and people-visible source links; re-probe all three live outputs before recording them as production evidence, then publish the first tagged focused-repository release when its separate gates pass.
-2. Publish the documented shared ChatGPT/Codex journey with its three host-neutral captures, installation then first-use OAuth sequence, directory-approval boundary, and developer MCP fallback intact.
+2. Publish the corrected ChatGPT journey with direct developer-mode MCP, first-use OAuth, three host-neutral captures, and the current OpenAI directory non-submission boundary intact.
 3. Capture one fresh production, job-backed flow showing brief, recommendation, quote, approval, result, and library continuity without exposing account data.
 4. Earn external mentions through useful demonstrations and documentation; pursue only directories whose current rules fit the released package.
 5. Observe at least 14 days of search, referral, clone/download, and assistant-attributed activity before claiming acquisition lift.
@@ -142,7 +142,7 @@ Risks to prevent:
 
 - Keep BreadcrumbList on the hub, integration pages, and technical docs.
 - Use SoftwareApplication or WebApplication for the visible connected MaxVideoAI product only when availability and capabilities match the page.
-- Keep the dedicated plugin repository in the MaxVideoAI Organization and evidence-backed WebApplication `sameAs` fields; `sameAs` identifies the first-party project, not a relationship with ChatGPT, Claude, or Codex. Keep directory availability conditional on approval rather than encoding it as present inventory.
+- Keep the dedicated plugin repository in the MaxVideoAI Organization and evidence-backed WebApplication `sameAs` fields; `sameAs` identifies the first-party project, not a relationship with ChatGPT, Claude, or Codex. Do not encode OpenAI or Anthropic directory inventory while their states remain `do_not_submit` / `policy_blocked`.
 - Emit integration WebApplication JSON-LD only while the shared page is indexable, and keep its description specific to that page’s setup intent.
 - Use VideoObject for the verified proof media only when the visible player, thumbnail, duration, upload date, and provenance fields exist.
 - Keep the MaxVideoAI Organization entity and maintained sameAs profiles consistent across layouts.
@@ -151,7 +151,7 @@ Risks to prevent:
 
 ## Content Reformatting Suggestions
 
-- Hero: one result-oriented H1, one concrete supporting paragraph, and three equal actions in the order Claude, ChatGPT, Codex; keep MCP as the developer fallback rather than a fourth competing promise.
+- Hero: one result-oriented H1, one concrete supporting paragraph, and three equal actions in the order Claude, ChatGPT, Codex; the ChatGPT action leads to direct MCP setup as its primary live route rather than presenting MCP as a fallback or a fourth competing promise.
 - Workflow: show an actual dialogue that asks only the missing budget/quality/reference questions.
 - Model choice: show the best current fit first, then validated alternatives with price and trade-off; no generic tier boxes.
 - Credits: separate free recommendations/estimates from paid generation; explain top-up and mandatory re-quote in one ordered sequence.
