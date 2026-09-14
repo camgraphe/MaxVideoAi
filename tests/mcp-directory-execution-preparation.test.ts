@@ -25,7 +25,7 @@ test('Task 15 checklist keeps every unexecuted external action in a non-completi
     ['n8n workflow library', 'identity_step_required'],
     ['GitHub MCP registry discovery', 'unavailable_no_documented_submission'],
     ['MCPBeat owner claim', 'identity_step_required'],
-    ['Glama owner claim', 'identity_step_required'],
+    ['Glama owner claim', 'verification_endpoint_prepared'],
     ['Docker MCP Catalog', 'blocked_by_license'],
   ]);
 
@@ -112,6 +112,8 @@ test('GitHub, MCPBeat, Glama, and Docker caveats require observed evidence befor
   assert.match(mcpbeat, /identity|sign-in/i);
   assert.match(mcpbeat, /did not always answer/i);
   assert.match(glama, /https:\/\/glama\.ai\/mcp\/connectors\/com\.maxvideoai\/maxvideoai/);
+  assert.match(glama, /https:\/\/api\.maxvideoai\.com\/\.well-known\/glama\.json/);
+  assert.match(glama, /Production.*exact body.*Glama.*confirms ownership/i);
   assert.match(glama, /`Unhealthy`/);
   assert.match(glama, /`Works in Glama`/);
 
