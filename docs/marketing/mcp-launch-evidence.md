@@ -138,9 +138,9 @@ Direct Production smoke recorded:
   Copilot in every locale (12 routes);
 - all nine platform labels and the required locally served brand marks on each
   localized hub;
-- `noindex, follow` on the six OpenClaw/n8n preview pages, with only the hub and
-  the three live clients present in localized sitemaps; `llms.txt` retained the
-  hub and excluded both previews;
+- `noindex, follow` on the six OpenClaw/n8n pages at that earlier checkpoint,
+  with only the hub and the three live clients present in localized sitemaps;
+  `llms.txt` retained the hub and excluded both pages;
 - exact protected-resource metadata, one Production authorization server, PKCE
   S256, `openid`, one public JWKS signing key, an anonymous MCP HTTP 401 with the
   canonical metadata challenge and private/no-store caching, and HTTP 406 for an
@@ -158,9 +158,17 @@ This checkpoint made no authenticated MCP tool call, paid confirmation, provider
 submission, private-reference upload/deletion, manual cleanup execution, store
 submission, or Search Console mutation. Authenticated OAuth lifecycle, account
 handoffs, Production reference cleanup, funnel/admin reconciliation, refunds,
-support observations, and the 14-day SEO/conversion window remain open. OpenClaw
-and n8n remain preview/noindex and acquisition-disabled; all later platforms stay
-hidden. No store or platform promotion is implied by this rollout.
+support observations, and the 14-day SEO/conversion window remained open at
+that checkpoint. OpenClaw and n8n were then noindex and acquisition-disabled;
+all later platforms stayed hidden. No store or platform promotion was implied
+by that rollout.
+
+On 2026-09-14, the later host evidence supported a separate publication
+decision: OpenClaw became live, indexable, and acquisition-enabled for direct
+MCP and its listed ClawHub package, while n8n became live, indexable, and
+acquisition-enabled only for the tested self-hosted deterministic MCP Client
+workflow. OpenClaw private-reference/channel paths, n8n Cloud, and n8n MCP
+Client Tool remain outside the claimed scopes; n8n templates remain unsubmitted.
 
 ## Controlled hosted evidence
 

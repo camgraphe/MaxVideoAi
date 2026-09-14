@@ -33,6 +33,8 @@ const requiredFiles = [
   `${integrationsRoot}/claude/page.tsx`,
   `${integrationsRoot}/chatgpt/page.tsx`,
   `${integrationsRoot}/codex/page.tsx`,
+  `${integrationsRoot}/openclaw/page.tsx`,
+  `${integrationsRoot}/n8n/page.tsx`,
   `${integrationsRoot}/_lib/integration-copy.ts`,
   `${integrationsRoot}/_lib/integration-page-data.ts`,
   `${integrationsRoot}/_content/types.ts`,
@@ -117,7 +119,7 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
   }
 });
 
-test('OpenClaw and n8n previews use explicit thin noindex route owners', async () => {
+test('OpenClaw and n8n use explicit thin indexable route owners', async () => {
   for (const client of ['openclaw', 'n8n'] as const) {
     requireFile(`frontend/app/integrations/${client}/page.tsx`);
     const page = requireFile(`${integrationsRoot}/${client}/page.tsx`);
@@ -163,7 +165,7 @@ test('OpenClaw and n8n previews use explicit thin noindex route owners', async (
         es: paths[client].es,
         'x-default': paths[client].en,
       });
-      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.index : metadata.robots, false);
+      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.index : metadata.robots, true);
       assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.follow : undefined, true);
     }
   }
@@ -295,6 +297,9 @@ test('the MCP publication boundary recognizes exact localized source routes', ()
     '/integrations/claude',
     '/integrations/chatgpt',
     '/fr/integrations/codex',
+    '/integrations/openclaw',
+    '/fr/integrations/n8n',
+    '/es/integraciones/openclaw',
     '/es/integraciones/claude',
     '/docs/mcp',
     '/fr/docs/mcp',
@@ -314,6 +319,9 @@ test('published MCP routes pass the middleware boundary without a gated rewrite'
     '/integrations/claude',
     '/integrations/chatgpt',
     '/fr/integrations/codex',
+    '/integrations/openclaw',
+    '/fr/integrations/n8n',
+    '/es/integraciones/openclaw',
     '/es/integraciones/claude',
     '/es/integraciones/codex',
     '/docs/mcp',

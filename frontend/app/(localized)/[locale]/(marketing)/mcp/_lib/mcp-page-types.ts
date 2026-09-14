@@ -63,7 +63,7 @@ export type McpPageCopy = {
       client: Exclude<McpClientId, 'claude' | 'chatgpt' | 'codex'>;
       href?: string;
       status: string;
-      availability: 'preview' | 'preparing';
+      availability: 'preparing';
     }>;
   };
   budget: {

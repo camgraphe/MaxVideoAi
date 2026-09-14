@@ -63,8 +63,8 @@
       "category": "autonomous-agent",
       "displayOrder": 40,
       "englishPath": "/integrations/openclaw",
-      "site": { "publication": "preview_noindex", "indexable": false },
-      "acquisition": { "enabled": false, "key": "openclaw" },
+      "site": { "publication": "live", "indexable": true },
+      "acquisition": { "enabled": true, "key": "openclaw" },
       "installation": {
         "directMcp": "available",
         "package": "available",
@@ -79,8 +79,8 @@
       "category": "automation",
       "displayOrder": 50,
       "englishPath": "/integrations/n8n",
-      "site": { "publication": "preview_noindex", "indexable": false },
-      "acquisition": { "enabled": false, "key": "n8n" },
+      "site": { "publication": "live", "indexable": true },
+      "acquisition": { "enabled": true, "key": "n8n" },
       "installation": {
         "directMcp": "available",
         "package": "unavailable",

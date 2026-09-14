@@ -110,7 +110,7 @@ function parseRobotsGroups(source: string) {
 test('disabled publication removes every MCP source page from generated sitemap candidates', async () => {
   const config = loadSitemapConfig(disabledPublication);
   const entries = await config.additionalPaths(config);
-  const sourcePages = entries.filter((entry) => /\/(?:mcp|integrations\/(?:chatgpt|claude|codex)|docs\/mcp)$/.test(entry.loc));
+  const sourcePages = entries.filter((entry) => /\/(?:mcp|integrations\/(?:chatgpt|claude|codex|openclaw|n8n)|docs\/mcp)$/.test(entry.loc));
   assert.equal(sourcePages.length, 0);
 
   for (const privatePattern of [
@@ -132,7 +132,7 @@ test('disabled publication removes every MCP source page from generated sitemap 
   }
 });
 
-test('enabled publication fixture emits 15 localized owners with exact absolute EN FR ES hreflang URLs', async () => {
+test('enabled publication fixture emits 21 localized owners with exact absolute EN FR ES hreflang URLs', async () => {
   const config = loadSitemapConfig(enabledPublication);
   const entries = await config.additionalPaths(config);
   const byLoc = new Map(entries.map((entry) => [entry.loc, entry]));
@@ -157,6 +157,16 @@ test('enabled publication fixture emits 15 localized owners with exact absolute 
       fr: 'https://maxvideoai.com/fr/integrations/codex',
       es: 'https://maxvideoai.com/es/integraciones/codex',
     },
+    'https://maxvideoai.com/integrations/openclaw': {
+      en: 'https://maxvideoai.com/integrations/openclaw',
+      fr: 'https://maxvideoai.com/fr/integrations/openclaw',
+      es: 'https://maxvideoai.com/es/integraciones/openclaw',
+    },
+    'https://maxvideoai.com/integrations/n8n': {
+      en: 'https://maxvideoai.com/integrations/n8n',
+      fr: 'https://maxvideoai.com/fr/integrations/n8n',
+      es: 'https://maxvideoai.com/es/integraciones/n8n',
+    },
     'https://maxvideoai.com/docs/mcp': {
       en: 'https://maxvideoai.com/docs/mcp',
       fr: 'https://maxvideoai.com/fr/docs/mcp',
@@ -166,7 +176,7 @@ test('enabled publication fixture emits 15 localized owners with exact absolute 
 
   assert.equal(
     entries.filter((entry) => Object.values(expected).some((locales) => Object.values(locales).includes(entry.loc as never))).length,
-    15,
+    21,
     'each localized MCP intent owner should be emitted exactly once',
   );
   for (const [canonical, locales] of Object.entries(expected)) {

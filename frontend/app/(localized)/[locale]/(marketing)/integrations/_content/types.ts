@@ -85,7 +85,7 @@ export type IntegrationPageCopy = {
   support: { label: string; href: string };
 };
 
-export type PreviewIntegrationText = {
+export type IntegrationText = {
   metaTitle: string;
   metaDescription: string;
   eyebrow: string;

@@ -16,6 +16,8 @@ test('public integration paths come from the indexable registry projection', () 
     '/integrations/claude',
     '/integrations/chatgpt',
     '/integrations/codex',
+    '/integrations/openclaw',
+    '/integrations/n8n',
   ]);
   const publicationSource = readFileSync('frontend/lib/mcp-publication.ts', 'utf8');
   const discoverySource = readFileSync('frontend/lib/sitemap/route-discovery.ts', 'utf8');
@@ -23,7 +25,7 @@ test('public integration paths come from the indexable registry projection', () 
   assert.match(discoverySource, /getMcpPublicIntegrationPaths/);
 });
 
-test('runtime sitemap discovery excludes explicit noindex preview routes', async () => {
+test('runtime sitemap discovery includes all five live integration routes', async () => {
   const react = frontendRequire('react') as {
     cache?: <TFunction extends (...args: never[]) => unknown>(fn: TFunction) => TFunction;
   };
@@ -36,8 +38,8 @@ test('runtime sitemap discovery excludes explicit noindex preview routes', async
   assert.ok(paths.includes('/integrations/claude'));
   assert.ok(paths.includes('/integrations/chatgpt'));
   assert.ok(paths.includes('/integrations/codex'));
-  assert.equal(paths.includes('/integrations/openclaw'), false);
-  assert.equal(paths.includes('/integrations/n8n'), false);
+  assert.ok(paths.includes('/integrations/openclaw'));
+  assert.ok(paths.includes('/integrations/n8n'));
 });
 
 test('public MCP previews do not become indexable before every public capability is live', () => {
@@ -91,7 +93,7 @@ test('connection availability is capability-derived and independent from SEO ind
   assert.equal(missingOAuth.indexable, false);
 });
 
-test('integration publication keeps live clients intact and fails previews and hidden hosts closed', () => {
+test('integration publication keeps all five live clients intact and fails hidden hosts closed', () => {
   const liveGlobalState = getMcpPublicationState({
     publicMarketing: true,
     publicIndexing: true,
@@ -103,19 +105,9 @@ test('integration publication keeps live clients intact and fails previews and h
     referenceUploads: true,
   });
 
-  assert.deepEqual(
-    getMcpIntegrationPublicationState('openclaw', liveGlobalState),
-    {
-      ...liveGlobalState,
-      renderPublicPage: true,
-      connectionAvailable: false,
-      indexable: false,
-      showTrialClaim: false,
-      showPaidGenerationClaim: false,
-      showReferenceClaim: false,
-    },
-  );
-  assert.deepEqual(getMcpIntegrationPublicationState('claude', liveGlobalState), liveGlobalState);
+  for (const id of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const) {
+    assert.deepEqual(getMcpIntegrationPublicationState(id, liveGlobalState), liveGlobalState);
+  }
   assert.equal(
     getMcpIntegrationPublicationState('cursor', liveGlobalState).renderPublicPage,
     false,
@@ -128,13 +120,13 @@ test('integration publication keeps live clients intact and fails previews and h
   );
 });
 
-test('integration page data rejects accidental preview indexation', async () => {
+test('integration page data rejects accidental hidden-route indexation', async () => {
   const { buildIntegrationPageData } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-page-data.ts'
   );
   assert.throws(
     () => buildIntegrationPageData({
-      client: 'openclaw',
+      client: 'cursor',
       locale: 'en',
       publication: {
         renderPublicPage: true,
@@ -145,7 +137,7 @@ test('integration page data rejects accidental preview indexation', async () => 
         showReferenceClaim: true,
       },
     }),
-    /cannot be indexable in preview_noindex state/,
+    /cannot be indexable in hidden state/,
   );
 });
 

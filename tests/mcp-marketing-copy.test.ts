@@ -17,7 +17,7 @@ function wordCount(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }
 
-test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry points', async () => {
+test('the hub sells the outcome through all five live integration entry points', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -27,7 +27,9 @@ test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry p
   assert.match(copy.hero.intro, /complete project/i);
   assert.match(copy.hero.intro, /prompts and references/i);
   assert.match(copy.hero.intro, /exact price/i);
-  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
+  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']);
+  assert.match(copy.hero.connectActions.instructionBody, /OpenClaw/);
+  assert.match(copy.hero.connectActions.instructionBody, /n8n/);
   assert.deepEqual(copy.workflow.steps, [
     'Develop the brief and references',
     'Compare models and project budgets',
@@ -91,8 +93,8 @@ test('the hub follows one clear path from promise to platform, production, and r
     assert.match(hero, /assistant|asistente/i);
     assert.match(hero, /automation|automatisation|automatizaci/i);
     assert.doesNotMatch(hero, /data-client=|<button|Example conversation|Exemple de conversation|Ejemplo de conversación/i);
-    assert.equal((platforms.match(/data-platform-tier="live"/g) ?? []).length, 3);
-    assert.equal((platforms.match(/data-platform-tier="preview"/g) ?? []).length, 2);
+    assert.equal((platforms.match(/data-platform-tier="live"/g) ?? []).length, 5);
+    assert.equal((platforms.match(/data-platform-tier="preview"/g) ?? []).length, 0);
     assert.equal((platforms.match(/data-platform-tier="preparing"/g) ?? []).length, 4);
     for (const label of ['OpenClaw', 'n8n', 'Cursor', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot']) {
       assert.equal(platforms.split(`>${label}<`).length - 1, 1, `${locale} selector should show ${label} once`);
@@ -103,12 +105,12 @@ test('the hub follows one clear path from promise to platform, production, and r
     assert.match(workflow, /library|bibliothèque|biblioteca/i);
     assert.equal((resources.match(/data-answer-passage=/g) ?? []).length, 3);
     assert.equal((resources.match(/data-faq-item=/g) ?? []).length, 5);
-    assert.equal((resources.match(/data-client=/g) ?? []).length, 3);
+    assert.equal((resources.match(/data-client=/g) ?? []).length, 5);
     assert.match(resources, /data-mcp-host-proof="claude"/);
   }
 });
 
-test('the hub keeps live assistants primary while making the wider MCP ecosystem visible', async () => {
+test('the hub keeps live integrations primary while making the roadmap visible', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -118,15 +120,12 @@ test('the hub keeps live assistants primary while making the wider MCP ecosystem
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getMcpPageCopy(locale);
-    assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
+    assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']);
     assert.deepEqual(
       copy.ecosystem.overview.map((item) => item.client),
-      ['openclaw', 'n8n', 'cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'],
+      ['cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'],
     );
-    assert.deepEqual(
-      copy.ecosystem.overview.filter((item) => item.href).map((item) => item.client),
-      ['openclaw', 'n8n'],
-    );
+    assert.deepEqual(copy.ecosystem.overview.filter((item) => item.href), []);
     const overviewHtml = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
       actions: copy.hero.actions,
       copy: copy.ecosystem,
@@ -136,7 +135,7 @@ test('the hub keeps live assistants primary while making the wider MCP ecosystem
     for (const label of ['Cursor', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot']) {
       assert.ok(overviewHtml.indexOf(label) > overviewHtml.indexOf('n8n'), `${locale} hub should show ${label}`);
     }
-    assert.match(overviewHtml, /preview|aperçu|vista previa/i);
+    assert.doesNotMatch(overviewHtml, /preview|aperçu|vista previa/i);
     assert.match(overviewHtml, /in preparation|en préparation|en preparación/i);
     assert.doesNotMatch(overviewHtml, /href="[^\"]*(?:cursor|github-copilot|gemini-cli|microsoft-copilot)/i);
     assert.equal(overviewHtml.split('>OpenClaw<').length - 1, 1);
@@ -361,7 +360,7 @@ test('all localized integration builders retain complete non-empty page contract
   }
 });
 
-test('OpenClaw and n8n previews explain distinct workflows without unearned claims', async () => {
+test('OpenClaw and n8n live copy explains supported scopes without unearned claims', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
@@ -369,13 +368,16 @@ test('OpenClaw and n8n previews explain distinct workflows without unearned clai
   for (const locale of ['en', 'fr', 'es'] as const) {
     const openclaw = getIntegrationCopy(locale, 'openclaw');
     const n8n = getIntegrationCopy(locale, 'n8n');
-    const previewText = JSON.stringify({ openclaw, n8n });
+    const liveText = JSON.stringify({ openclaw, n8n });
 
     assert.equal(openclaw.client, 'openclaw');
     assert.equal(n8n.client, 'n8n');
     assert.match(JSON.stringify(openclaw), /OpenClaw/);
     assert.match(JSON.stringify(openclaw), /shared|partagé|compartid/i);
     assert.match(JSON.stringify(openclaw), /per-requester|par demandeur|por solicitante/i);
+    assert.match(JSON.stringify(openclaw), /ClawHub/i);
+    assert.match(JSON.stringify(openclaw), /private-reference|références privées|referencias privadas/i);
+    assert.match(JSON.stringify(openclaw), /channel|canal/i);
     assert.match(JSON.stringify(n8n), /MCP Client/);
     assert.match(JSON.stringify(n8n), /MCP Client Tool/);
     assert.match(JSON.stringify(n8n), /determin|détermin|determin/i);
@@ -384,9 +386,16 @@ test('OpenClaw and n8n previews explain distinct workflows without unearned clai
     assert.match(JSON.stringify(n8n), /2\.38\.7/);
     assert.match(JSON.stringify(n8n), /Chat Model|modèle de chat|modelo de chat/i);
     assert.match(JSON.stringify(n8n), /Not run|Non testé|No probado/i);
+    assert.match(JSON.stringify(n8n), /n8n Cloud/i);
+    assert.deepEqual(
+      n8n.setup.hostGuides.map((guide) => guide.hostId),
+      ['n8nMcpClient'],
+      'only the tested deterministic host should expose a setup action',
+    );
     assert.doesNotMatch(JSON.stringify(n8n), /clean import[^.]*not recorded|aucun import propre|no existe una importación limpia/i);
-    assert.doesNotMatch(previewText, /verified|certified|official partner/i);
-    assert.doesNotMatch(previewText, /\$\d|\d+ models/i);
+    assert.doesNotMatch(liveText, /non-indexed preview|aperçu non indexé|vista no indexada|validation preview|aperçu de validation|vista previa de validación/i);
+    assert.doesNotMatch(liveText, /certified|official partner/i);
+    assert.doesNotMatch(liveText, /\$\d|\d+ models/i);
   }
 });
 
@@ -555,7 +564,7 @@ test('compatibility wording stays exact per tested host', async () => {
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
   );
   const evidence = getMcpCompatibilityEvidence();
-  assert.equal(evidence.lastChecked, '2026-08-27');
+  assert.equal(evidence.lastChecked, '2026-09-14');
   assert.equal(evidence.clients.claude.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.codex.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.chatgpt.hosts[0]?.status, 'not-run');
@@ -681,7 +690,7 @@ test('integration pages offer one truthful copy-paste setup instruction per host
   }
 });
 
-test('the MCP hub carries a pasteable installation instruction for Claude, ChatGPT, and Codex', async () => {
+test('the MCP hub carries a pasteable installation instruction for all five live integrations', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -690,7 +699,7 @@ test('the MCP hub carries a pasteable installation instruction for Claude, ChatG
     const copy = getMcpPageCopy(locale);
     assert.match(copy.hero.connectActions.copyInstruction, /cop|copi/i);
     assert.match(copy.hero.connectActions.instructionBody, /paste|collez|p[eé]ga/i);
-    assert.equal(copy.hero.actions.length, 3);
+    assert.equal(copy.hero.actions.length, 5);
     for (const action of copy.hero.actions) {
       assert.match(action.installInstruction, /MaxVideoAI/);
       assert.match(

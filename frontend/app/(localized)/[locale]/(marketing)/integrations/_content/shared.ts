@@ -6,7 +6,7 @@ import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { getMcpHost, getMcpIntegrationLabel } from '@/lib/mcp-integration-registry';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientId, McpCompatibilityHostId } from '../../mcp/_lib/mcp-page-types';
-import type { IntegrationPageCopy, PreviewIntegrationText } from './types';
+import type { IntegrationPageCopy, IntegrationText } from './types';
 
 export function localizedIntegrationPath(locale: AppLocale, path: string): string {
   const prefix = localePathnames[locale];
@@ -45,14 +45,14 @@ export function getIntegrationInstallInstruction(locale: AppLocale, hostId: McpC
   return `Connect MaxVideoAI in ${host} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
 }
 
-export function buildPreviewIntegrationCopy({
+export function buildIntegrationCopy({
   client,
   locale,
   text,
 }: {
   client: McpClientId;
   locale: AppLocale;
-  text: PreviewIntegrationText;
+  text: IntegrationText;
 }): IntegrationPageCopy {
   const clientLabel = getIntegrationLabel(client);
   return {

@@ -1,13 +1,11 @@
 import type { AppLocale } from '@/i18n/locales';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
-import { buildPreviewIntegrationCopy, getIntegrationInstallInstruction } from './shared';
-import type { IntegrationPageCopy, PreviewIntegrationText } from './types';
+import { buildIntegrationCopy, getIntegrationInstallInstruction } from './shared';
+import type { IntegrationPageCopy, IntegrationText } from './types';
 
 function guides(locale: AppLocale, text: {
   deterministicTitle: string;
   deterministicIntro: string;
-  agentTitle: string;
-  agentIntro: string;
   select: string;
   credential: string;
   approval: string;
@@ -27,32 +25,19 @@ function guides(locale: AppLocale, text: {
       setupValues: [{ label: 'MCP endpoint', value: MCP_PRODUCTION_RESOURCE_URL }],
       limitation: text.limitation,
     },
-    {
-      hostId: 'n8nMcpClientTool' as const,
-      title: text.agentTitle,
-      intro: text.agentIntro,
-      installInstruction: getIntegrationInstallInstruction(locale, 'n8nMcpClientTool'),
-      steps: [
-        { title: text.credential, body: text.select },
-        { title: text.approval, body: text.limitation },
-      ],
-      commands: [],
-      setupValues: [{ label: 'MCP endpoint', value: MCP_PRODUCTION_RESOURCE_URL }],
-      limitation: text.limitation,
-    },
   ];
 }
 
-function english(): PreviewIntegrationText {
+function english(): IntegrationText {
   return {
-    metaTitle: 'Automate AI Video with n8n and MaxVideoAI | Preview',
-    metaDescription: 'Preview approval-safe MaxVideoAI workflows using n8n MCP Client steps or selected MCP Client Tool actions for an AI Agent.',
-    eyebrow: 'N8N WORKFLOW PREVIEW',
+    metaTitle: 'Automate AI Video with n8n and MaxVideoAI',
+    metaDescription: 'Run approval-safe AI video workflows with MaxVideoAI and the deterministic MCP Client in tested self-hosted n8n deployments.',
+    eyebrow: 'N8N AI VIDEO AUTOMATION',
     heroTitle: 'Design repeatable AI video workflows in n8n with MaxVideoAI',
-    heroIntro: 'This non-indexed preview separates deterministic MCP Client steps from selected MCP Client Tool actions for an AI Agent. A self-hosted n8n checkpoint is recorded; n8n Cloud and agent invocation still need separate validation.',
-    unavailable: 'The self-hosted MCP Client path passed import, OAuth, exact approval, one confirmation and accepted-job recovery. The integration is not launched while n8n Cloud and the Chat-Model-backed agent path remain to be exercised.',
-    setupLabel: 'Review the n8n setup',
-    backLabel: 'Return to the live assistant workflow',
+    heroIntro: 'The supported path uses deterministic MCP Client nodes in tested self-hosted n8n 2.38.7. It covers OAuth, planning, exact approval, one confirmation and accepted-job recovery. n8n Cloud and the AI Agent MCP Client Tool path remain unverified.',
+    unavailable: 'The self-hosted deterministic MCP Client path is available with explicit approval before confirmation. n8n Cloud and AI Agent invocation through MCP Client Tool are not part of the supported scope.',
+    setupLabel: 'Connect self-hosted n8n',
+    backLabel: 'See all supported workflows',
     checkpointLabel: 'Self-hosted checkpoint',
     machineStatusLabel: 'Host evidence state',
     statuses: {
@@ -60,13 +45,11 @@ function english(): PreviewIntegrationText {
       n8nMcpClientTool: 'Not run: MCP Client Tool 1.4 imported with five selected planning tools and no preparation or confirmation tool. Agent invocation was not exercised because no Chat Model credential was configured.',
     },
     setupEyebrow: 'CHOOSE THE EXECUTION SHAPE',
-    setupTitle: 'Use deterministic steps for fixed workflows and agent tools for bounded decisions',
-    setupIntro: 'Both paths connect to the same MaxVideoAI endpoint through an n8n-owned OAuth credential. The credential belongs to the n8n project or instance and is never embedded in an exported template.',
+    setupTitle: 'Use deterministic MCP Client steps for the supported workflow',
+    setupIntro: 'The tested MCP Client path connects through an n8n-owned OAuth credential. The separate AI Agent MCP Client Tool configuration remains not run, and no credential is embedded in exported templates.',
     guides: guides('en', {
       deterministicTitle: 'MCP Client for deterministic workflow steps',
       deterministicIntro: 'Choose one MaxVideoAI tool per node when the workflow order and inputs should remain explicit.',
-      agentTitle: 'MCP Client Tool for a bounded AI Agent',
-      agentIntro: 'Expose only selected discovery and planning tools to an AI Agent; keep paid confirmation behind a separate human gate.',
       select: 'Create an OAuth2 credential for the MaxVideoAI endpoint, then select the exact tool and JSON input in the node.',
       credential: 'Connect the OAuth credential',
       approval: 'Keep approval outside preparation',
@@ -89,9 +72,10 @@ function english(): PreviewIntegrationText {
     referencesGated: 'Do not embed signed media, credentials or private bytes in the template. Resolve them at runtime through the authenticated MaxVideoAI account.',
     helpEyebrow: 'WORKFLOW SAFETY',
     helpTitle: 'Avoid duplicate spend and hidden credentials',
-    helpIntro: 'Import tests and a controlled deployment must confirm each invariant before publication.',
+    helpIntro: 'The published scope is the tested self-hosted deterministic workflow; templates remain locally prepared and unsubmitted.',
     helpItems: [
-      { question: 'Which n8n node should I use?', answer: 'Use MCP Client for deterministic steps. Use MCP Client Tool only when a bounded AI Agent needs selected tools.' },
+      { question: 'Which n8n node should I use?', answer: 'Use MCP Client for the supported deterministic steps. MCP Client Tool for an AI Agent remains not run and unsupported.' },
+      { question: 'Does this work on n8n Cloud?', answer: 'No n8n Cloud support is claimed. The tested scope is self-hosted n8n 2.38.7.' },
       { question: 'Can the workflow confirm automatically?', answer: 'No. The candidate templates require a POST approval that matches the fresh quoteId. MaxVideoAI keeps confirmation idempotent for that quote.' },
       { question: 'What happens when polling times out?', answer: 'Resume status for the accepted job. Do not route timeout recovery back into confirmation or create a replacement.' },
     ],
@@ -102,18 +86,18 @@ function english(): PreviewIntegrationText {
   };
 }
 
-function french(): PreviewIntegrationText {
+function french(): IntegrationText {
   const copy = english();
   return {
     ...copy,
-    metaTitle: 'Automatiser la vidéo IA avec n8n et MaxVideoAI | Aperçu',
-    metaDescription: 'Aperçu de workflows MaxVideoAI sûrs avec des étapes n8n MCP Client ou des actions MCP Client Tool sélectionnées pour un agent IA.',
-    eyebrow: 'APERÇU DE WORKFLOW N8N',
+    metaTitle: 'Automatiser la vidéo IA avec n8n et MaxVideoAI',
+    metaDescription: 'Exécutez des workflows vidéo IA sûrs avec MaxVideoAI et MCP Client déterministe sur les déploiements n8n auto-hébergés testés.',
+    eyebrow: 'AUTOMATISATION VIDÉO IA N8N',
     heroTitle: 'Concevez des workflows vidéo IA répétables dans n8n avec MaxVideoAI',
-    heroIntro: 'Cet aperçu non indexé sépare les étapes MCP Client déterministes des actions MCP Client Tool choisies pour un agent IA. Un contrôle n8n auto-hébergé est enregistré ; n8n Cloud et l’appel par agent restent à valider.',
-    unavailable: 'Le parcours MCP Client auto-hébergé a validé import, OAuth, accord exact, confirmation unique et reprise du job. L’intégration n’est pas lancée tant que n8n Cloud et le parcours agent avec modèle de chat restent non vérifiés.',
-    setupLabel: 'Examiner la configuration n8n',
-    backLabel: 'Revenir au workflow assistant déjà en ligne',
+    heroIntro: 'Le parcours compatible utilise les nœuds MCP Client déterministes sur n8n auto-hébergé 2.38.7. Il couvre OAuth, planification, accord exact, confirmation unique et reprise. n8n Cloud et MCP Client Tool pour agent IA restent non vérifiés.',
+    unavailable: 'Le parcours MCP Client déterministe auto-hébergé est disponible avec accord explicite avant confirmation. n8n Cloud et l’appel par agent via MCP Client Tool restent hors du périmètre compatible.',
+    setupLabel: 'Connecter n8n auto-hébergé',
+    backLabel: 'Voir tous les workflows compatibles',
     checkpointLabel: 'Contrôle auto-hébergé',
     machineStatusLabel: 'État de preuve de l’hôte',
     statuses: {
@@ -121,13 +105,11 @@ function french(): PreviewIntegrationText {
       n8nMcpClientTool: 'Non testé : MCP Client Tool 1.4 a été importé avec cinq outils de planification choisis, sans préparation ni confirmation. Aucun modèle de chat n’étant configuré, l’appel par agent reste non vérifié.',
     },
     setupEyebrow: 'CHOISIR LE MODE D’EXÉCUTION',
-    setupTitle: 'Étapes déterministes pour les flux fixes, outils agent pour les décisions bornées',
-    setupIntro: 'Les deux parcours utilisent le même point MaxVideoAI via un identifiant OAuth détenu par n8n. Aucun jeton n’est intégré au workflow exporté.',
+    setupTitle: 'Utilisez MCP Client déterministe pour le workflow compatible',
+    setupIntro: 'Le parcours MCP Client testé utilise un identifiant OAuth détenu par n8n. La configuration MCP Client Tool pour agent IA reste non testée et aucun identifiant n’est intégré aux modèles exportés.',
     guides: guides('fr', {
       deterministicTitle: 'MCP Client pour des étapes déterministes',
       deterministicIntro: 'Choisissez un outil MaxVideoAI par nœud lorsque l’ordre et les entrées doivent rester explicites.',
-      agentTitle: 'MCP Client Tool pour un agent IA borné',
-      agentIntro: 'Exposez uniquement des outils choisis de découverte et planification ; gardez la confirmation payante derrière une validation humaine.',
       select: 'Créez l’identifiant OAuth2 pour le point MCP, puis choisissez l’outil et son entrée JSON exacte.',
       credential: 'Connecter l’identifiant OAuth',
       approval: 'Séparer préparation et accord',
@@ -150,9 +132,10 @@ function french(): PreviewIntegrationText {
     referencesGated: 'N’intégrez ni média signé, ni identifiant, ni octets privés au modèle exporté ; résolvez-les à l’exécution.',
     helpEyebrow: 'SÉCURITÉ DU WORKFLOW',
     helpTitle: 'Évitez les dépenses doubles et les identifiants cachés',
-    helpIntro: 'Les tests d’import et un déploiement contrôlé doivent confirmer chaque invariant avant publication.',
+    helpIntro: 'Le périmètre publié est le workflow déterministe auto-hébergé testé ; les modèles restent préparés localement et non soumis.',
     helpItems: [
-      { question: 'Quel nœud n8n utiliser ?', answer: 'MCP Client pour les étapes déterministes ; MCP Client Tool seulement pour fournir des outils choisis à un agent borné.' },
+      { question: 'Quel nœud n8n utiliser ?', answer: 'MCP Client pour les étapes déterministes compatibles. MCP Client Tool pour agent IA reste non testé et non compatible.' },
+      { question: 'Cela fonctionne-t-il sur n8n Cloud ?', answer: 'Aucune compatibilité n8n Cloud n’est revendiquée. Le périmètre testé est n8n auto-hébergé 2.38.7.' },
       { question: 'Le workflow peut-il confirmer automatiquement ?', answer: 'Non. Il exige un POST d’accord correspondant au quoteId récent. MaxVideoAI rend la confirmation de ce devis idempotente.' },
       { question: 'Que faire après un délai de polling ?', answer: 'Reprenez le statut du job accepté ; ne revenez pas à la confirmation et ne créez pas de remplacement.' },
     ],
@@ -163,18 +146,18 @@ function french(): PreviewIntegrationText {
   };
 }
 
-function spanish(): PreviewIntegrationText {
+function spanish(): IntegrationText {
   const copy = english();
   return {
     ...copy,
-    metaTitle: 'Automatiza vídeo IA con n8n y MaxVideoAI | Vista previa',
-    metaDescription: 'Vista previa de flujos seguros con pasos n8n MCP Client o acciones MCP Client Tool seleccionadas para un agente de IA.',
-    eyebrow: 'VISTA PREVIA DE N8N',
+    metaTitle: 'Automatiza vídeo IA con n8n y MaxVideoAI',
+    metaDescription: 'Ejecuta flujos seguros de vídeo IA con MaxVideoAI y MCP Client determinista en despliegues n8n self-hosted probados.',
+    eyebrow: 'AUTOMATIZACIÓN DE VÍDEO IA N8N',
     heroTitle: 'Diseña flujos repetibles de vídeo IA en n8n con MaxVideoAI',
-    heroIntro: 'Esta vista no indexada separa los pasos deterministas de MCP Client de las acciones MCP Client Tool elegidas para un agente. Ya existe una prueba self-hosted; n8n Cloud y la invocación del agente aún requieren validación separada.',
-    unavailable: 'La ruta MCP Client self-hosted validó importación, OAuth, aprobación exacta, una confirmación y recuperación del job. La integración no se lanza mientras n8n Cloud y el agente con modelo de chat sigan sin verificar.',
-    setupLabel: 'Revisar la configuración de n8n',
-    backLabel: 'Volver al flujo de asistentes ya publicado',
+    heroIntro: 'La ruta compatible usa nodos MCP Client deterministas en n8n self-hosted 2.38.7. Cubre OAuth, planificación, aprobación exacta, una confirmación y recuperación. n8n Cloud y MCP Client Tool para agentes de IA siguen sin verificar.',
+    unavailable: 'La ruta MCP Client determinista self-hosted está disponible con aprobación explícita antes de confirmar. n8n Cloud y la invocación de agentes mediante MCP Client Tool quedan fuera del alcance compatible.',
+    setupLabel: 'Conectar n8n self-hosted',
+    backLabel: 'Ver todos los flujos compatibles',
     checkpointLabel: 'Prueba self-hosted',
     machineStatusLabel: 'Estado de evidencia del host',
     statuses: {
@@ -182,13 +165,11 @@ function spanish(): PreviewIntegrationText {
       n8nMcpClientTool: 'No probado: MCP Client Tool 1.4 se importó con cinco herramientas de planificación seleccionadas, sin preparar ni confirmar. La invocación del agente sigue sin verificar porque no había credencial de Chat Model.',
     },
     setupEyebrow: 'ELEGIR LA FORMA DE EJECUCIÓN',
-    setupTitle: 'Pasos deterministas para flujos fijos y herramientas de agente para decisiones acotadas',
-    setupIntro: 'Ambas rutas usan el mismo endpoint mediante una credencial OAuth propiedad de n8n. Nunca se incluye un token en el flujo exportado.',
+    setupTitle: 'Usa MCP Client determinista para el flujo compatible',
+    setupIntro: 'La ruta MCP Client probada utiliza una credencial OAuth propiedad de n8n. La configuración MCP Client Tool para agentes sigue sin probar y las plantillas exportadas no incluyen credenciales.',
     guides: guides('es', {
       deterministicTitle: 'MCP Client para pasos deterministas',
       deterministicIntro: 'Elige una herramienta MaxVideoAI por nodo cuando el orden y las entradas deban ser explícitos.',
-      agentTitle: 'MCP Client Tool para un agente acotado',
-      agentIntro: 'Expón solo herramientas elegidas de descubrimiento y planificación; mantén la confirmación de pago tras aprobación humana.',
       select: 'Crea la credencial OAuth2 para el endpoint MCP y selecciona la herramienta y su entrada JSON exacta.',
       credential: 'Conectar la credencial OAuth',
       approval: 'Separar preparación y aprobación',
@@ -211,9 +192,10 @@ function spanish(): PreviewIntegrationText {
     referencesGated: 'No incluyas medios firmados, credenciales ni bytes privados en la plantilla; resuélvelos durante la ejecución autenticada.',
     helpEyebrow: 'SEGURIDAD DEL FLUJO',
     helpTitle: 'Evita gasto duplicado y credenciales ocultas',
-    helpIntro: 'Las pruebas de importación y un despliegue controlado deben confirmar cada invariante antes de publicar.',
+    helpIntro: 'El alcance publicado es el flujo determinista self-hosted probado; las plantillas siguen preparadas localmente y sin enviar.',
     helpItems: [
-      { question: '¿Qué nodo n8n debo usar?', answer: 'MCP Client para pasos deterministas; MCP Client Tool solo para herramientas seleccionadas de un agente acotado.' },
+      { question: '¿Qué nodo n8n debo usar?', answer: 'MCP Client para los pasos deterministas compatibles. MCP Client Tool para agentes sigue sin probar y sin soporte.' },
+      { question: '¿Funciona en n8n Cloud?', answer: 'No se afirma soporte para n8n Cloud. El alcance probado es n8n self-hosted 2.38.7.' },
       { question: '¿Puede confirmar automáticamente?', answer: 'No. Exige un POST de aprobación que coincida con el quoteId reciente. MaxVideoAI mantiene idempotente la confirmación de esa cotización.' },
       { question: '¿Qué ocurre tras un timeout?', answer: 'Recupera el estado del job aceptado; no vuelvas a confirmar ni crees un reemplazo.' },
     ],
@@ -225,7 +207,7 @@ function spanish(): PreviewIntegrationText {
 }
 
 export function buildN8nIntegrationCopy(locale: AppLocale): IntegrationPageCopy {
-  return buildPreviewIntegrationCopy({
+  return buildIntegrationCopy({
     client: 'n8n',
     locale,
     text: locale === 'fr' ? french() : locale === 'es' ? spanish() : english(),

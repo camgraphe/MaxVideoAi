@@ -88,14 +88,14 @@ test('landing acquisition accepts only the exact coarse allowlist and rejects ex
   }
 });
 
-test('the acquisition registry enables exactly the three live clients', async () => {
+test('the acquisition registry enables exactly the five live clients', async () => {
   const { isEnabledMcpAcquisitionClient } = await import(
     '../frontend/lib/mcp-integration-registry.ts'
   );
-  for (const client of ['claude', 'chatgpt', 'codex']) {
+  for (const client of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']) {
     assert.equal(isEnabledMcpAcquisitionClient(client), true);
   }
-  for (const value of ['openclaw', 'n8n', 'other', '', [], {}]) {
+  for (const value of ['cursor', 'githubCopilot', 'other', '', [], {}]) {
     assert.equal(isEnabledMcpAcquisitionClient(value), false);
   }
 });
@@ -496,12 +496,14 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     '../frontend/lib/mcp-integration-registry.ts'
   );
   const flags = Object.fromEntries(
-    (['claude', 'chatgpt', 'codex'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
+    (['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
   );
   assert.deepEqual(flags, {
     claude: { deepLinkEnabled: false, deepLink: null },
     chatgpt: { deepLinkEnabled: false, deepLink: null },
     codex: { deepLinkEnabled: false, deepLink: null },
+    openclaw: { deepLinkEnabled: false, deepLink: null },
+    n8n: { deepLinkEnabled: false, deepLink: null },
   });
 
   requireFile(actionsPath);
@@ -512,9 +514,9 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   for (const [locale, expectedHrefs] of [
-    ['en', ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex']],
-    ['fr', ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex']],
-    ['es', ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex']],
+    ['en', ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex', '/integrations/openclaw', '/integrations/n8n']],
+    ['fr', ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex', '/fr/integrations/openclaw', '/fr/integrations/n8n']],
+    ['es', ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex', '/es/integraciones/openclaw', '/es/integraciones/n8n']],
   ] as const) {
     const copy = getMcpPageCopy(locale);
     const html = renderToStaticMarkup(React.createElement(McpConnectActions, {
@@ -525,7 +527,7 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     }));
     for (const href of expectedHrefs) assert.match(html, new RegExp(`href="${href}"`));
     assert.match(html, /https:\/\/api\.maxvideoai\.com\/mcp/);
-    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, 3);
+    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, 5);
   }
 
   const en = getMcpPageCopy('en').hero.connectActions;

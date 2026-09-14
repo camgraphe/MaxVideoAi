@@ -141,5 +141,5 @@ remains unverified.
 
 Record the remaining agent-mediated call, private-reference lifecycle, channel
 rendering, and limitations when those end-to-end proofs are run. The ClawHub
-listing is live, but these remaining host proofs keep the OpenClaw marketing
-page `preview_noindex` and acquisition disabled.
+listing and tested direct-MCP scope support the live, indexable,
+acquisition-enabled OpenClaw page; the remaining paths stay outside the claim.
