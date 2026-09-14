@@ -74,7 +74,34 @@ test('the registry guide locks later hosts behind separate evidence gates', () =
   assert.match(guide, /RFC 9207/);
   assert.match(guide, /remote OAuth[^.]*not supported/i);
   assert.match(guide, /enterprise certification/i);
-  assert.match(guide, /remain `hidden`\s+and `not-run`/);
+  assert.match(guide, /Cursor remains `hidden` with a `tested_with_limits` desktop checkpoint/);
+  assert.match(guide, /Microsoft Agents 365 remain `hidden` and\s+`not-run`/);
+});
+
+test('the Cursor matrix records manual, OAuth, agent-tool, and deep-link evidence separately', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const row = matrix.split('\n').find((line) => line.startsWith('| Cursor |')) ?? '';
+
+  assert.match(row, /Tested-with-limits checkpoint/);
+  assert.match(row, /Cursor 3\.20\.17, build `0c32194e3fb5ffaced9fb36430b860ec301e1fc0`/);
+  assert.match(row, /macOS 26\.6\.2 arm64/);
+  assert.match(row, /a3cf86050ea4c322b8a63fa840f35a54318c46da9b33281c2b223a17e473c738/);
+  assert.match(row, /dedicated user-data directory, extensions directory, and project/);
+  assert.match(row, /CLI `--add-mcp` path wrote.*did not surface/is);
+  assert.match(row, /project `\.cursor\/mcp\.json` path independently created the server/);
+  assert.match(row, /15 tools plus 6 resources/);
+  assert.match(row, /Cursor Grok 4\.6 Medium/);
+  assert.match(row, /`get_account_status`.*`list_models`.*`get_model_details`.*`recommend_models`.*`calculate_project_budget`.*`prepare_generation`/);
+  assert.match(row, /exact quote were both `\$0\.34`/);
+  assert.match(row, /stopped before `confirm_generation`/);
+  assert.match(row, /logout returned the server to `Needs Authentication`/);
+  assert.match(row, /fresh browser OAuth restored `Connected`/);
+  assert.match(row, /`cursor:\/\/anysphere\.cursor-deeplink\/mcp\/install`/);
+  assert.match(row, /prefilled as Remote HTTPS with the exact production endpoint/);
+  assert.match(row, /install was cancelled, and no duplicate server was retained/);
+  assert.match(row, /moves only to `tested_with_limits`/);
+  assert.match(row, /marketing integration remains hidden/);
+  assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|localhost:\d+\/callback\?)/i);
 });
 
 test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', () => {

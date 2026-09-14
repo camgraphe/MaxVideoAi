@@ -80,8 +80,10 @@ test('new hosts preserve indexation and acquisition gates independently of host 
     assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-14');
   }
 
+  assert.equal(getMcpHost('cursorDesktop').evidence.status, 'tested_with_limits');
+  assert.equal(getMcpHost('cursorDesktop').evidence.lastChecked, '2026-09-14');
+
   for (const id of [
-    'cursorDesktop',
     'githubCopilotIde',
     'githubCopilotCli',
     'githubCopilotCloudAgent',

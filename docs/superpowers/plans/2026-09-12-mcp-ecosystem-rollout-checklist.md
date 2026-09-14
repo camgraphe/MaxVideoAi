@@ -297,14 +297,14 @@ than creating empty promotion commits.
 - Produces: separate manual-configuration and verified install-action evidence.
 
 - [x] Recheck Cursor's first-party MCP, OAuth, `mcp.json`, Add to Cursor, catalogue, and branding documentation.
-- [ ] Record the exact Cursor version and test manual remote Streamable HTTP configuration first.
+- [x] Record the exact Cursor version and test manual remote Streamable HTTP configuration first.
 - [ ] Exercise OAuth denial, approval, refresh, revoke, reconnect, discovery, budget, quote preparation, approved minimal confirmation, recovery, and library result.
-- [ ] Verify the exact Add to Cursor URL encoding and behavior separately; do not infer it from manual configuration success.
-- [ ] Record sanitized evidence and limitations, then update only Cursor's host status.
+- [x] Verify the exact Add to Cursor URL encoding and behavior separately; do not infer it from manual configuration success.
+- [x] Record sanitized evidence and limitations, then update only Cursor's host status.
 - [ ] Create complete EN/FR/ES content and explicit routes from recorded evidence.
 - [ ] Enable any install button only after its exact generated URL passes a clean-host test.
-- [ ] Decide site publication, indexation, acquisition, and catalogue submission as separate reviewed changes.
-- [ ] Run all focused and full non-regression gates; commit evidence, marketing, and external submission states separately.
+- [x] Decide site publication, indexation, acquisition, and catalogue submission as separate reviewed changes.
+- [x] Run all focused and full non-regression gates; commit evidence, marketing, and external submission states separately.
 
 Documentation preflight recorded 2026-09-14: current first-party Cursor MCP,
 install-link, deep-link, plugin/Marketplace, security, publisher-terms, and brand
@@ -313,9 +313,36 @@ pages were reviewed. Manual remote configuration uses a minimal `url` entry for
 as `http://localhost:8787/callback` and
 `https://www.cursor.com/agents/mcp/oauth/callback`. Manual configuration and the
 `cursor://anysphere.cursor-deeplink/mcp/install` action remain separate test
-surfaces. Cursor is not installed on the test Mac and no Cursor profile or
-`mcp.json` exists, so host evidence remains `not-run`, the integration stays
-hidden, and no install link or Marketplace submission is enabled.
+surfaces.
+
+Desktop evidence recorded 2026-09-14: Cursor 3.20.17 build
+`0c32194e3fb5ffaced9fb36430b860ec301e1fc0` ran on macOS 26.6.2 arm64 from an
+official notarized DMG with SHA-256
+`a3cf86050ea4c322b8a63fa840f35a54318c46da9b33281c2b223a17e473c738`.
+The test used isolated profile, extension, and project directories. Cursor's
+CLI `--add-mcp` path wrote the production endpoint into user settings but did
+not surface it in the new MCP panel; the documented project `.cursor/mcp.json`
+path did. OAuth connected through the localhost callback and exposed 15 tools
+plus 6 resources. A project-scoped Cursor Grok 4.6 Medium agent completed
+account, catalogue, model-detail, recommendation, budget, and quote-preparation
+calls. It reported a matching `$0.34` estimate and exact quote for a 4-second
+480p 16:9 Seedance 2.0 Mini request, then stopped before confirmation with no
+job, charge, or generation. Explicit logout produced `Needs Authentication`,
+and fresh browser OAuth restored `Connected`. The separately constructed
+current Add to Cursor deep link opened a correctly prefilled Remote HTTPS
+review dialog; the install was cancelled and no duplicate remained. OAuth
+denial, automatic refresh, paid confirmation, accepted-job recovery, library
+presentation, private-reference cleanup, and a completed deep-link install
+remain open. Cursor moves only to `tested_with_limits`; the site stays hidden,
+indexation and acquisition stay disabled, and no install action or catalogue
+submission is enabled.
+
+Verification completed 2026-09-14: the focused Cursor/publication suite passed
+85/85, the complete MCP suite passed 1,013 tests, frontend lint and the public
+exposure check passed, and the production build completed. This checkpoint
+changes only evidence and documentation state; there is no Cursor marketing,
+install-action, catalogue-submission, deployment, or existing-client state
+change to split into a separate release commit.
 
 ### Task 7: Validate GitHub Copilot Surfaces Separately
 

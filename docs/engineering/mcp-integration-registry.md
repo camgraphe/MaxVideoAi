@@ -61,9 +61,10 @@ Adding a registry entry alone never authors a Next.js route or localized content
 
 ## Later-host promotion sequence
 
-Cursor, GitHub Copilot IDE, GitHub Copilot CLI, GitHub Copilot cloud agent,
-Gemini CLI, Microsoft Copilot Studio, and Microsoft Agents 365 remain `hidden`
-and `not-run`. Promote one host record at a time, only after the common
+Cursor remains `hidden` with a `tested_with_limits` desktop checkpoint. GitHub
+Copilot IDE, GitHub Copilot CLI, GitHub Copilot cloud agent, Gemini CLI,
+Microsoft Copilot Studio, and Microsoft Agents 365 remain `hidden` and
+`not-run`. Promote one host record at a time, only after the common
 controlled-host protocol in the operations matrix has been completed and its
 sanitized evidence has been reviewed. A pass on one surface must never change a
 sibling host automatically.

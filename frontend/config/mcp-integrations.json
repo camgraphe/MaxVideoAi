@@ -231,8 +231,8 @@
       "label": "Cursor",
       "evidence": {
         "kind": "hosted-checkpoint",
-        "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "status": "tested_with_limits",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
