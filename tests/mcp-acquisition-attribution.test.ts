@@ -419,11 +419,19 @@ test('direct_mcp classification is an explicit post-auth seam, not a live-lookin
           },
         };
       },
+      async hasActiveGrant(accessToken: string, clientId: string) {
+        calls.push(`grant:${accessToken}:${clientId}`);
+        return true;
+      },
     },
   );
   const resolved = createDirectAuthenticatedMcpConnection(principal);
 
-  assert.deepEqual(calls, ['claims:access-token', 'user:access-token']);
+  assert.deepEqual(calls, [
+    'claims:access-token',
+    'user:access-token',
+    'grant:access-token:oauth-client-1',
+  ]);
   assert.deepEqual(resolved.principal, {
     userId: 'user-1',
     clientId: 'oauth-client-1',

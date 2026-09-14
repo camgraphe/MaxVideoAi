@@ -78,7 +78,10 @@ test('real MCP principal adapter consumes SDK-verified bearer and refuses cookie
   const client = createClient(fixture.origin, fixture.anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
   try {
     const session = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-fixture-client' });
-    const deps = { createAuthClient: async () => client.auth };
+    const deps = {
+      createAuthClient: async () => client.auth,
+      hasActiveGrant: async (_accessToken: string, clientId: string) => clientId === 'studio-fixture-client',
+    };
     const principal = await resolveAgentPrincipal(new Request('http://127.0.0.1/mcp', {
       headers: { Authorization: `Bearer ${session.access_token}` },
     }), deps);

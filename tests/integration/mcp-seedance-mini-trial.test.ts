@@ -200,6 +200,9 @@ async function oauthFixture(provider: 'email' | 'google', confirmed: boolean) {
         },
       };
     },
+    async hasActiveGrant() {
+      return true;
+    },
   });
 }
 

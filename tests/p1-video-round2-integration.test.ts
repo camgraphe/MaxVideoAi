@@ -57,6 +57,10 @@ function supabasePrincipalResolver(input: {
         },
       };
     },
+    async hasActiveGrant(accessToken, clientId) {
+      assert.equal(accessToken, 'test-session-access-token');
+      return clientId === input.clientId;
+    },
   });
 }
 

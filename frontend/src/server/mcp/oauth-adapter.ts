@@ -33,7 +33,52 @@ type OAuthAuthClient = {
 
 export type OAuthAdapterDeps = {
   createAuthClient(): Promise<OAuthAuthClient>;
+  hasActiveGrant(accessToken: string, clientId: string): Promise<boolean>;
 };
+
+type ActiveOAuthGrantLookupDeps = {
+  supabaseUrl?: string;
+  anonKey?: string;
+  fetcher?: typeof fetch;
+};
+
+export async function hasActiveOAuthGrant(
+  accessToken: string,
+  clientId: string,
+  deps: ActiveOAuthGrantLookupDeps = {},
+): Promise<boolean> {
+  const supabaseUrl = deps.supabaseUrl ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = deps.anonKey ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl?.trim() || !anonKey?.trim()) return false;
+
+  try {
+    const grantsUrl = new URL('/auth/v1/user/oauth/grants', supabaseUrl);
+    const response = await (deps.fetcher ?? fetch)(grantsUrl, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        apikey: anonKey,
+        authorization: `Bearer ${accessToken}`,
+      },
+      cache: 'no-store',
+    });
+    if (!response.ok) return false;
+
+    const grants: unknown = await response.json();
+    if (!Array.isArray(grants)) return false;
+    return grants.some((grant) => {
+      if (!grant || typeof grant !== 'object') return false;
+      const client = (grant as { client?: unknown }).client;
+      return Boolean(
+        client
+        && typeof client === 'object'
+        && (client as { id?: unknown }).id === clientId,
+      );
+    });
+  } catch {
+    return false;
+  }
+}
 
 const defaultOAuthAdapterDeps: OAuthAdapterDeps = {
   async createAuthClient() {
@@ -64,6 +109,9 @@ const defaultOAuthAdapterDeps: OAuthAdapterDeps = {
       },
     };
   },
+  async hasActiveGrant(accessToken, clientId) {
+    return hasActiveOAuthGrant(accessToken, clientId);
+  },
 };
 
 function authenticationRequired(): AgentApiError {
@@ -89,14 +137,23 @@ export async function resolveAgentPrincipal(
     throw authenticationRequired();
   }
 
-  const userResult = await auth.getUser(accessToken);
+  const rawClientId = claimsResult.data?.claims.client_id;
+  const clientId = typeof rawClientId === 'string' && rawClientId.trim() ? rawClientId.trim() : null;
+  const userPromise = auth.getUser(accessToken);
+  const activeGrantPromise = clientId
+    ? deps.hasActiveGrant(accessToken, clientId).catch(() => false)
+    : Promise.resolve(true);
+  const [userResult, hasActiveGrant] = await Promise.all([
+    userPromise,
+    activeGrantPromise,
+  ]);
   const user = userResult.data.user;
   if (userResult.error || !user || user.id !== subject) {
     throw authenticationRequired();
   }
-
-  const rawClientId = claimsResult.data?.claims.client_id;
-  const clientId = typeof rawClientId === 'string' && rawClientId.trim() ? rawClientId.trim() : null;
+  if (!hasActiveGrant) {
+    throw authenticationRequired();
+  }
 
   return {
     userId: subject,

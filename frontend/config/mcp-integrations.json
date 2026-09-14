@@ -242,7 +242,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -252,7 +252,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },
@@ -262,7 +262,7 @@
       "evidence": {
         "kind": "hosted-checkpoint",
         "status": "not-run",
-        "lastChecked": "2026-09-12",
+        "lastChecked": "2026-09-14",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },

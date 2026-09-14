@@ -87,6 +87,12 @@ test('new hosts preserve indexation and acquisition gates independently of host 
     'githubCopilotIde',
     'githubCopilotCli',
     'githubCopilotCloudAgent',
+  ] as const) {
+    assert.equal(getMcpHost(id).evidence.status, 'not-run');
+    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-09-14');
+  }
+
+  for (const id of [
     'geminiCliHost',
     'microsoftCopilotStudio',
     'microsoftAgents365',

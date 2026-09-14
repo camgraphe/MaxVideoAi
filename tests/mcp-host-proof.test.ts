@@ -104,6 +104,34 @@ test('the Cursor matrix records manual, OAuth, agent-tool, and deep-link evidenc
   assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|localhost:\d+\/callback\?)/i);
 });
 
+test('the GitHub Copilot matrix keeps IDE, CLI, and cloud evidence separate and blocked safely', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const ideRow = matrix.split('\n').find((line) => line.startsWith('| GitHub Copilot in IDEs |')) ?? '';
+  const cliRow = matrix.split('\n').find((line) => line.startsWith('| GitHub Copilot CLI |')) ?? '';
+  const cloudRow = matrix.split('\n').find((line) => line.startsWith('| GitHub Copilot cloud agent |')) ?? '';
+
+  assert.match(ideRow, /Visual Studio Code 1\.137\.0, build `645f29cc3176500b4b5762ba887cf2a7f0ffdf2c`/);
+  assert.match(ideRow, /GitHub Copilot Chat 0\.65\.0.*completions core 1\.378\.1799/);
+  assert.match(ideRow, /exact `\$0\.37`.*stopped before `confirm_generation`/);
+  assert.match(ideRow, /remains registry `not-run`, hidden, non-indexable, and acquisition-disabled/);
+
+  assert.match(cliRow, /GitHub Copilot CLI 1\.0\.83/);
+  assert.match(cliRow, /80a5ded6f1db484b4661af676ea914605ecfbcaf49f6b4bed81e6df16cbd56bd/);
+  assert.match(cliRow, /OAuth denial left protected tools unavailable with no job or charge/);
+  assert.match(cliRow, /exact `\$0\.34`.*`confirm_generation` ran exactly once/);
+  assert.match(cliRow, /cold session recovered.*`list_recent_generations`.*`get_generation_status`.*`present_generation`/);
+  assert.match(cliRow, /disconnected the CLI grant.*already-issued access token still completed a protected `get_account_status` call/);
+  assert.match(cliRow, /Testing stopped immediately/);
+  assert.match(cliRow, /not deployed or hosted-verified/);
+  assert.match(cliRow, /remains registry `not-run`/);
+
+  assert.match(cloudRow, /do not currently support remote MCP servers that use OAuth/);
+  assert.match(cloudRow, /currently incompatible with the MaxVideoAI OAuth path/);
+  for (const row of [ideRow, cliRow, cloudRow]) {
+    assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|localhost:\d+\/callback\?)/i);
+  }
+});
+
 test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', () => {
   const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
   const row = matrix.split('\n').find((line) => line.startsWith('| OpenClaw Gateway |')) ?? '';

@@ -20,6 +20,8 @@ function createDeps(options?: {
   claimsError?: unknown;
   user?: OAuthUser | null;
   userError?: unknown;
+  activeGrant?: boolean;
+  onGrantCheck?: () => void;
 }): OAuthAdapterDeps {
   return {
     async createAuthClient() {
@@ -46,6 +48,10 @@ function createDeps(options?: {
           };
         },
       };
+    },
+    async hasActiveGrant() {
+      options?.onGrantCheck?.();
+      return options?.activeGrant ?? true;
     },
   };
 }
@@ -89,12 +95,99 @@ test('OAuth principal requires the fresh Auth user to match the token subject', 
   );
 });
 
+test('OAuth principal rejects a signed access token after its client grant is revoked', async () => {
+  await assert.rejects(
+    () => resolveAgentPrincipal(
+      requestWithToken('revoked-access-token'),
+      createDeps({ activeGrant: false }),
+    ),
+    isAuthRequired,
+  );
+});
+
+test('active OAuth grant lookup accepts only the matching client grant', async () => {
+  const module = await import('../frontend/src/server/mcp/oauth-adapter');
+  const lookup = (module as typeof module & {
+    hasActiveOAuthGrant?: (
+      accessToken: string,
+      clientId: string,
+      deps: { supabaseUrl: string; anonKey: string; fetcher: typeof fetch },
+    ) => Promise<boolean>;
+  }).hasActiveOAuthGrant;
+  assert.equal(typeof lookup, 'function');
+
+  const requests: Request[] = [];
+  const active = await lookup!('access-token', 'client-1', {
+    supabaseUrl: 'https://project.supabase.co',
+    anonKey: 'public-anon-key',
+    fetcher: async (input, init) => {
+      requests.push(new Request(input, init));
+      return Response.json([
+        {
+          id: 'grant-1',
+          scopes: ['openid', 'email', 'profile'],
+          granted_at: '2026-09-14T08:00:00.000Z',
+          client: { id: 'client-1', name: 'GitHub Copilot CLI', uri: '' },
+        },
+      ]);
+    },
+  });
+
+  assert.equal(active, true);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0]?.url, 'https://project.supabase.co/auth/v1/user/oauth/grants');
+  assert.equal(requests[0]?.method, 'GET');
+  assert.equal(requests[0]?.headers.get('authorization'), 'Bearer access-token');
+  assert.equal(requests[0]?.headers.get('apikey'), 'public-anon-key');
+  assert.equal(requests[0]?.cache, 'no-store');
+
+  const inactive = await lookup!('access-token', 'client-1', {
+    supabaseUrl: 'https://project.supabase.co',
+    anonKey: 'public-anon-key',
+    fetcher: async () => Response.json([
+      {
+        id: 'grant-2',
+        scopes: ['openid', 'email', 'profile'],
+        granted_at: '2026-09-14T08:00:00.000Z',
+        client: { id: 'client-2', name: 'Another client', uri: '' },
+      },
+    ]),
+  });
+  assert.equal(inactive, false);
+});
+
+test('active OAuth grant lookup fails closed on unavailable or malformed Auth responses', async () => {
+  const { hasActiveOAuthGrant } = await import('../frontend/src/server/mcp/oauth-adapter');
+  const config = {
+    supabaseUrl: 'https://project.supabase.co',
+    anonKey: 'public-anon-key',
+  };
+
+  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
+    ...config,
+    fetcher: async () => new Response(null, { status: 503 }),
+  }), false);
+  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
+    ...config,
+    fetcher: async () => Response.json({ grants: [] }),
+  }), false);
+  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
+    ...config,
+    fetcher: async () => { throw new Error('network unavailable'); },
+  }), false);
+});
+
 test('OAuth principal accepts a missing client id without weakening user identity', async () => {
+  let grantChecks = 0;
   const principal = await resolveAgentPrincipal(
     requestWithToken(),
-    createDeps({ claims: { sub: 'user-1' } })
+    createDeps({
+      claims: { sub: 'user-1' },
+      onGrantCheck: () => { grantChecks += 1; },
+    })
   );
 
+  assert.equal(grantChecks, 0);
   assert.deepEqual(principal, {
     userId: 'user-1',
     clientId: null,
