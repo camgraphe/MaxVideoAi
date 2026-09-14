@@ -180,6 +180,11 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
       const claims = verifyToken(token, true);
       if (!claims?.client_id) return;
       grants.delete(`${claims.sub}\0${claims.client_id}`);
+      for (const [refresh, session] of sessions) {
+        if (session.subject === claims.sub && session.clientId === claims.client_id) {
+          sessions.delete(refresh);
+        }
+      }
     },
     async close() {
       sessions.clear();

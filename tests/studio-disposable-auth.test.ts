@@ -39,7 +39,7 @@ test('disposable auth validates two signed identities through the installed SDK 
   }
 });
 
-test('disposable auth exposes an active OAuth grant and can revoke it without invalidating the user session', async () => {
+test('disposable auth revokes the OAuth grant and its client-bound session', async () => {
   const fixture = await startStudioAuthFixture();
   try {
     const session = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-fixture-client' });
@@ -61,9 +61,8 @@ test('disposable auth exposes an active OAuth grant and can revoke it without in
     fixture.revokeGrant(session.access_token);
 
     const revokedResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
-    assert.equal(revokedResponse.status, 200);
-    assert.deepEqual(await revokedResponse.json(), []);
-    assert.equal((await fetch(`${fixture.origin}/auth/v1/user`, { headers })).status, 200);
+    assert.equal(revokedResponse.status, 401);
+    assert.equal((await fetch(`${fixture.origin}/auth/v1/user`, { headers })).status, 401);
   } finally {
     await fixture.close();
   }
@@ -76,7 +75,7 @@ test('re-authorizing the same OAuth client rejects the old access token and acce
     const issuedAt = Math.floor(Date.now() / 1000);
     const oldSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
       clientId: 'studio-fixture-client',
-      issuedAt: issuedAt - 2,
+      issuedAt,
     });
     fixture.revokeGrant(oldSession.access_token);
     const newSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
@@ -85,8 +84,8 @@ test('re-authorizing the same OAuth client rejects the old access token and acce
     });
     const deps = {
       createAuthClient: async () => client.auth,
-      hasActiveGrant: (accessToken: string, clientId: string, tokenIssuedAt: number) =>
-        hasActiveOAuthGrant(accessToken, clientId, tokenIssuedAt, {
+      hasActiveGrant: (accessToken: string, clientId: string) =>
+        hasActiveOAuthGrant(accessToken, clientId, {
           supabaseUrl: fixture.origin,
           anonKey: fixture.anonKey,
         }),

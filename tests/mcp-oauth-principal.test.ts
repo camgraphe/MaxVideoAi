@@ -23,7 +23,7 @@ function createDeps(options?: {
   user?: OAuthUser | null;
   userError?: unknown;
   activeGrant?: boolean;
-  onGrantCheck?: (issuedAtSeconds: number) => void;
+  onGrantCheck?: (accessToken: string, clientId: string) => void;
 }): OAuthAdapterDeps {
   return {
     async createAuthClient() {
@@ -31,7 +31,7 @@ function createDeps(options?: {
         async getClaims() {
           return {
             data: options?.claims === null ? null : {
-              claims: options?.claims ?? { sub: 'user-1', client_id: 'client-1', iat: 1_789_372_800 },
+              claims: options?.claims ?? { sub: 'user-1', client_id: 'client-1' },
             },
             error: options?.claimsError ?? null,
           };
@@ -53,8 +53,8 @@ function createDeps(options?: {
         },
       };
     },
-    async hasActiveGrant(_accessToken, _clientId, issuedAtSeconds) {
-      options?.onGrantCheck?.(issuedAtSeconds);
+    async hasActiveGrant(accessToken, clientId) {
+      options?.onGrantCheck?.(accessToken, clientId);
       return options?.activeGrant ?? true;
     },
   };
@@ -109,34 +109,25 @@ test('OAuth principal rejects a signed access token after its client grant is re
   );
 });
 
-test('OAuth principal passes the verified JWT issuance time to the active-grant check', async () => {
-  let checkedIssuedAt: number | undefined;
+test('OAuth principal checks the active grant with the verified bearer and client binding', async () => {
+  let checkedGrant: { accessToken: string; clientId: string } | undefined;
   await resolveAgentPrincipal(
-    requestWithToken(),
+    requestWithToken('verified-access-token'),
     createDeps({
-      claims: { sub: 'user-1', client_id: 'client-1', iat: 1_789_372_800 },
-      onGrantCheck: (issuedAtSeconds) => { checkedIssuedAt = issuedAtSeconds; },
+      claims: { sub: 'user-1', client_id: 'client-1' },
+      onGrantCheck: (accessToken, clientId) => { checkedGrant = { accessToken, clientId }; },
     }),
   );
 
-  assert.equal(checkedIssuedAt, 1_789_372_800);
-});
-
-test('OAuth principal fails closed when a client-bound token has no valid JWT issuance time', async () => {
-  for (const iat of [undefined, '1789372800', Number.NaN, 1_789_372_800.5]) {
-    await assert.rejects(
-      () => resolveAgentPrincipal(
-        requestWithToken(),
-        createDeps({ claims: { sub: 'user-1', client_id: 'client-1', iat } }),
-      ),
-      isAuthRequired,
-    );
-  }
+  assert.deepEqual(checkedGrant, {
+    accessToken: 'verified-access-token',
+    clientId: 'client-1',
+  });
 });
 
 test('active OAuth grant lookup accepts only the matching client grant', async () => {
   const requests: Request[] = [];
-  const active = await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
+  const active = await hasActiveOAuthGrant('access-token', 'client-1', {
     supabaseUrl: 'https://project.supabase.co',
     anonKey: 'public-anon-key',
     fetcher: async (input, init) => {
@@ -160,18 +151,7 @@ test('active OAuth grant lookup accepts only the matching client grant', async (
   assert.equal(requests[0]?.headers.get('apikey'), 'public-anon-key');
   assert.equal(requests[0]?.cache, 'no-store');
 
-  const activeWithOffset = await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
-    supabaseUrl: 'https://project.supabase.co',
-    anonKey: 'public-anon-key',
-    fetcher: async () => Response.json([{
-      id: 'grant-with-offset',
-      granted_at: '2026-09-14T10:00:00+02:00',
-      client: { id: 'client-1' },
-    }]),
-  });
-  assert.equal(activeWithOffset, true);
-
-  const inactive = await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
+  const inactive = await hasActiveOAuthGrant('access-token', 'client-1', {
     supabaseUrl: 'https://project.supabase.co',
     anonKey: 'public-anon-key',
     fetcher: async () => Response.json([
@@ -186,8 +166,7 @@ test('active OAuth grant lookup accepts only the matching client grant', async (
   assert.equal(inactive, false);
 });
 
-test('active OAuth grant lookup rejects a token issued before the current consent generation', async () => {
-  const { hasActiveOAuthGrant } = await import('../frontend/src/server/mcp/oauth-adapter');
+test('active OAuth grant lookup does not treat consent timestamps as token-generation identifiers', async () => {
   const config = {
     supabaseUrl: 'https://project.supabase.co',
     anonKey: 'public-anon-key',
@@ -199,8 +178,8 @@ test('active OAuth grant lookup rejects a token issued before the current consen
     }]),
   };
 
-  assert.equal(await hasActiveOAuthGrant('old-token', 'client-1', 1_789_372_800, config), false);
-  assert.equal(await hasActiveOAuthGrant('new-token', 'client-1', 1_789_372_801, config), true);
+  assert.equal(await hasActiveOAuthGrant('old-token', 'client-1', config), true);
+  assert.equal(await hasActiveOAuthGrant('new-token', 'client-1', config), true);
 });
 
 test('active OAuth grant lookup fails closed on unavailable or malformed Auth responses', async () => {
@@ -209,38 +188,15 @@ test('active OAuth grant lookup fails closed on unavailable or malformed Auth re
     anonKey: 'public-anon-key',
   };
 
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
+  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
     ...config,
     fetcher: async () => new Response(null, { status: 503 }),
   }), false);
-  for (const grantedAt of [
-    '0',
-    '2026-09-14T08:00:00',
-    '2026-02-30T08:00:00Z',
-    '1969-12-31T23:59:59Z',
-    '2026-09-14T08:00:00+24:00',
-  ]) {
-    assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
-      ...config,
-      fetcher: async () => Response.json([{
-        id: 'malformed-time-grant',
-        granted_at: grantedAt,
-        client: { id: 'client-1' },
-      }]),
-    }), false, `must reject non-canonical grant time: ${grantedAt}`);
-  }
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
+  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
     ...config,
     fetcher: async () => Response.json({ grants: [] }),
   }), false);
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
-    ...config,
-    fetcher: async () => Response.json([{
-      id: 'grant-without-authoritative-time',
-      client: { id: 'client-1' },
-    }]),
-  }), false);
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', 1_789_372_800, {
+  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
     ...config,
     fetcher: async () => { throw new Error('network unavailable'); },
   }), false);
@@ -264,7 +220,7 @@ test('MCP OAuth principal rejects a signed bearer without an OAuth client bindin
   await assert.rejects(
     () => resolveMcpAgentPrincipal(
       requestWithToken('unbound-access-token'),
-      createDeps({ claims: { sub: 'user-1', iat: 1_789_372_800 } }),
+      createDeps({ claims: { sub: 'user-1' } }),
     ),
     isAuthRequired,
   );
@@ -290,7 +246,7 @@ test('OAuth principal does not trust claims or user metadata for email verificat
   const principal = await resolveAgentPrincipal(
     requestWithToken(),
     createDeps({
-      claims: { sub: 'user-1', client_id: 'client-1', iat: 1_789_372_800, email_verified: true },
+      claims: { sub: 'user-1', client_id: 'client-1', email_verified: true },
       user: {
         id: 'user-1',
         email_confirmed_at: null,
