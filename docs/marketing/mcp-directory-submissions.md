@@ -54,9 +54,15 @@ The exact n8n candidates authorized for identity-bound submission are:
 
 | Candidate | SHA-256 | Prepared state |
 | --- | --- | --- |
-| `distribution/n8n/brief-to-approved-generation.json` | `8c26ac349a4d89f59565bbbed9aa94fbcece72a2667d3e1f9728f98d8792ee0a` | `ready_to_execute` |
-| `distribution/n8n/campaign-queue.json` | `1f84f8abc68c8f9ca8034ec52b7d4d3814311b8ff407f040b8af1e302b44799d` | `ready_to_execute` |
-| `distribution/n8n/completion-notification.json` | `1c72336bdc40156894817232a56167e4f94ef28ce971f14632aab458fad96eed` | `ready_to_execute` |
+| `distribution/n8n/brief-to-approved-generation.json` | `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` | `ready_to_execute` |
+| `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `ready_to_execute` |
+| `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `ready_to_execute` |
+
+The 2026-09-14 Creator Portal guideline recheck found that every submitted
+workflow must include an explanatory Sticky Note. These hashes pin the revised
+credential-free candidates after adding one non-connected documentation note
+to each export. No executable node, graph edge, setting, activation state,
+credential boundary, or workflow behavior changed, and no upload occurred.
 
 All three files remain disabled, mode `100644`, valid JSON, and free of
 credential references. Their deterministic self-hosted MCP Client evidence is

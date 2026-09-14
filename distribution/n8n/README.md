@@ -6,6 +6,17 @@ tool inputs and ordering. Use the **MCP Client Tool** only when a bounded AI
 Agent needs selected discovery or planning tools. Paid confirmation remains a
 separate deterministic node after a human approval event.
 
+## Template-guideline recheck
+
+On 2026-09-14, the current submission guideline linked from the authenticated
+n8n Creator Portal was rechecked before upload. It requires a submitted
+workflow to include at least one explanatory Sticky Note. Each candidate now
+contains exactly one yellow-default, non-connected Sticky Note with its intended
+user and outcome, graph walkthrough, self-hosted MCP OAuth setup, applicable
+approval and recovery boundary, and the unclaimed n8n Cloud and MCP Client Tool
+scope. The notes are documentation-only: no executable node, connection,
+setting, credential boundary, activation state, or workflow behavior changed.
+
 ## Recorded self-hosted checkpoint
 
 On 2026-09-14, the three candidates were imported into self-hosted n8n 2.38.7
