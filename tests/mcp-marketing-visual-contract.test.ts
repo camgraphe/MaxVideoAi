@@ -357,15 +357,15 @@ test('the three GEO answer passages stay adjacent to current captioned evidence'
   assert.doesNotMatch(view, /hostProof \? \(\s*<section/);
 });
 
-test('client actions point to equally factual localized guides', async () => {
+test('priority and added public client actions point to factual localized guides', async () => {
   requireFile(`${routeRoot}/_lib/mcp-page-copy.ts`);
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const expectations = {
-    en: ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex'],
-    fr: ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex'],
-    es: ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex'],
+    en: ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex', '/integrations/openclaw', '/integrations/n8n'],
+    fr: ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex', '/fr/integrations/openclaw', '/fr/integrations/n8n'],
+    es: ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex', '/es/integraciones/openclaw', '/es/integraciones/n8n'],
   } as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     assert.deepEqual(

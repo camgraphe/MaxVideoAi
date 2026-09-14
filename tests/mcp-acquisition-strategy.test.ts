@@ -56,12 +56,20 @@ test('the commercial copy leads with the outcome and removes stale internal prev
   }
 });
 
-test('Claude, ChatGPT, and Codex are three equal primary actions', () => {
+test('Claude, ChatGPT, and Codex stay first while OpenClaw and n8n are public actions', async () => {
   const copy = source(copyPath);
-  assert.match(copy, /clientActions\('en',[\s\S]*claude:[\s\S]*chatgpt:[\s\S]*codex:/);
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  assert.deepEqual(
+    getMcpPageCopy('en').hero.actions.map((action: { client: string }) => action.client),
+    ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'],
+  );
   assert.match(copy, /integrations, 'chatgpt'/);
   assert.match(copy, /integrations, 'claude'/);
   assert.match(copy, /integrations, 'codex'/);
+  assert.match(copy, /integrations, 'openclaw'/);
+  assert.match(copy, /integrations, 'n8n'/);
 
   const actions = source(`${marketingRoot}/mcp/_components/McpClientActions.tsx`);
   const marks = source('frontend/components/marketing/mcp/McpIntegrationMark.tsx');
