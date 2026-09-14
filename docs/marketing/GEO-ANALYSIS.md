@@ -10,7 +10,7 @@ The commercial umbrella is **“MaxVideoAI for Claude, ChatGPT or Codex”** or 
 
 This prevents “MCP” from becoming a comprehension barrier without hiding the interoperable mechanism. It also avoids claiming that one tested OpenAI surface automatically proves every ChatGPT and Codex surface. Compatibility remains recorded per host and install path.
 
-ChatGPT and Codex share the same MaxVideoAI plugin and MCP connection: the documented journey is installation followed by OAuth on first use. The public directory remains subject to approval, while the MCP URL stays available as the developer fallback. Claude uses the same host-neutral MCP core through its plugin or custom-connector presentation. Separately reviewed host-result evidence remains in internal measurement columns rather than visible acquisition warnings.
+ChatGPT and Codex share the same MaxVideoAI MCP connection. ChatGPT's documented journey is direct developer-mode connection followed by OAuth on first use; MaxVideoAI is deliberately not submitted to the OpenAI directory under the current commerce policy. Claude uses the same host-neutral MCP core through its plugin or custom-connector presentation. Separately reviewed host-result evidence remains in internal measurement columns rather than visible acquisition warnings.
 
 Primary terminology references to recheck before publication:
 
@@ -36,7 +36,7 @@ Fresh read-only probes on 2026-08-28 establish this boundary:
 | --- | --- | --- |
 | `/llms.txt` | The deployed repository-aware change belongs to the current production line; retain a direct post-release re-probe before using it as external evidence. | Keeps the dedicated repository and five owned MCP pages as first-party sources. |
 | `/mcp` HTML | Public, reachable, and verified on 2026-08-29 with a people-visible link to `github.com/camgraphe/maxvideoai-plugin`. | Preserves the approved “Claude, ChatGPT or Codex” composition and adds no host-specific proof claim. |
-| `/integrations/chatgpt` HTML | Public and reachable with the shared ChatGPT/Codex journey, installation then first-use OAuth, directory-approval boundary, and developer MCP fallback. | The README refresh does not change the host journey or its availability boundary. |
+| `/integrations/chatgpt` HTML | Public and reachable with the shared ChatGPT/Codex MCP connection, direct developer-mode setup, first-use OAuth, and an explicit OpenAI directory non-submission boundary. | The README refresh preserves direct MCP availability without promising a future directory listing. |
 | Focused plugin repository | Public with the proof-led README, six current non-repeating product captures, and checksum-backed v0.3.0 through v0.3.3 releases. | The deterministic source bundle and public tree match with zero reported drift for v0.3.3. |
 
 Treat the public v0.3.3 tree and release assets as installation and publication evidence only; they do not prove native-host execution or an end-to-end paid generation in every named host.

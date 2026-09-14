@@ -1,6 +1,6 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-08-29
+Checked: 2026-09-14
 Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.3 ACTIVE — PLATFORM DIRECTORIES NOT SUBMITTED**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
@@ -9,7 +9,7 @@ linked primary sources on the day an owner authorizes a new submission.
 
 ## Implementation-date primary-source recheck
 
-Checked: **2026-08-29**. This recheck records distribution decisions, not
+Checked: **2026-09-14**. This recheck records distribution decisions, not
 approval by a platform or a statement about MaxVideoAI's eligibility.
 
 | Target | Primary source and factual rule | Result | Evidence before a status change | Owner and next trigger |
@@ -31,6 +31,22 @@ for each claimed host before publishing host-specific compatibility copy.
 Checked: **2026-09-14**. These conclusions authorize only local preparation in
 the repository. They do not authorize publishing, account changes, namespace
 claims, marketplace submissions, public release, or spend.
+
+### Observed public records
+
+These links record what was visible on 2026-09-14; they do not make an
+independent aggregator a platform endorsement, an OpenAI or Anthropic store
+listing, or proof that MaxVideoAI works in a particular host.
+
+| Surface | Observed state |
+| --- | --- |
+| Official MCP Registry | [`com.maxvideoai/maxvideoai`](https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai) is active at `0.3.3`. This is the official protocol registry record, not an OpenAI, Anthropic, GitHub, or other host-store listing. |
+| Canonical public source and release | The canonical repository is [`camgraphe/maxvideoai-plugin`](https://github.com/camgraphe/maxvideoai-plugin), and its matching public release is [`v0.3.3`](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3). Repository publication does not prove host compatibility. |
+| ClawHub | [MaxVideoAI](https://clawhub.ai/camgraphe/skills/maxvideoai) is listed at `1.0.0`. This package listing is separate from direct MCP host evidence. |
+| Independent downstream records | [MCPBeat](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/), [mcpdirectory.dev](https://mcpdirectory.dev/s/maxvideoai/), and [Glama](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) expose downstream or independently maintained records. They are not platform endorsements, first-party store listings, or proof of host compatibility. |
+| GitHub MCP registry | The checked [GitHub MCP registry API query](https://api.mcp.github.com/v0.1/servers?search=maxvideoai) returned no MaxVideoAI result on 2026-09-14. The Official MCP Registry record must not be represented as a GitHub registry or Copilot listing. |
+| n8n workflow library | Three repository templates are prepared and locally validated with limits, but none has been submitted to the n8n workflow library. |
+| OpenAI and Anthropic directories | MaxVideoAI is deliberately not submitted under the current first-party commerce and AI-media directory policies described above. These store decisions remain independent from the live direct MCP setup paths. |
 
 | Target | Primary source and current conclusion | Repository state |
 | --- | --- | --- |

@@ -561,6 +561,7 @@ test('the ChatGPT setup renders its machine compatibility state discreetly', asy
   }));
 
   assert.match(html, />not-run</);
-  assert.match(html, /Public listing.*approval/is);
-  assert.match(html, /Developer.*MCP/is);
+  assert.match(html, /Developer.*MCP|MCP.*developer/is);
+  assert.match(html, /not submitted.*OpenAI directory|OpenAI directory non-submission/is);
+  assert.doesNotMatch(html, /public listing.*approval|OpenAI approval.*public listing/is);
 });

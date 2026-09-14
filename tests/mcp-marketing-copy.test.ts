@@ -296,7 +296,7 @@ test('each integration page keeps one host-specific setup intent without affilia
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
   const setupSignals = {
-    chatgpt: /shared plugin directory|répertoire de plugins partagé|directorio de plugins compartido/i,
+    chatgpt: /developer mode|mode développeur|modo desarrollador/i,
     claude: /remote connector|connecteur distant|conector remoto/i,
     codex: /install.*plugin|installation.*plugin|installer.*plugin|instalación.*plugin|instalar.*plugin/i,
   } as const;
@@ -676,34 +676,15 @@ test('integration pages offer one truthful copy-paste setup instruction per host
       hubStatus: getMcpPageCopy(locale).trust.compatibility.statuses[chatgptGuide.hostId],
     });
     assert.match(chatgptMarketing, /developer|développeur|desarrollador/i);
-    assert.match(
-      chatgptMarketing,
-      /shared plugin|plugin directory|répertoire de plugins partagé|directorio de plugins compartido/i,
-    );
-    assert.match(
-      chatgptMarketing,
-      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
-    );
+    assert.match(chatgptMarketing, /direct|directe|directa|directamente/i);
+    assert.match(chatgptMarketing, /not submitted|pas soumis|ne pas soumettre|no se presenta|no presentar/i);
+    assert.doesNotMatch(chatgptMarketing, /after (?:OpenAI )?approval|après approbation|después de la aprobación|cuando OpenAI.*apruebe/i);
 
-    const [publicListing, developerFallback] = chatgptGuide.steps;
-    assert.ok(publicListing);
-    assert.ok(developerFallback);
-    assert.match(
-      `${publicListing.title} ${publicListing.body}`,
-      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
-    );
-    assert.doesNotMatch(
-      `${publicListing.title} ${publicListing.body}`,
-      /developer|développeur|desarrollador/i,
-    );
-    assert.match(
-      `${developerFallback.title} ${developerFallback.body}`,
-      /developer|développeur|desarrollador/i,
-    );
-    assert.doesNotMatch(
-      `${developerFallback.title} ${developerFallback.body}`,
-      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
-    );
+    const [developerMode, directConnection] = chatgptGuide.steps;
+    assert.ok(developerMode);
+    assert.ok(directConnection);
+    assert.match(`${developerMode.title} ${developerMode.body}`, /developer|développeur|desarrollador/i);
+    assert.match(`${directConnection.title} ${directConnection.body}`, /direct|directe|directa/i);
   }
 });
 
@@ -729,37 +710,35 @@ test('the MCP hub carries a pasteable installation instruction for all five live
   }
 });
 
-test('ChatGPT page copy uses the shared plugin journey without retired validation warnings', async () => {
+test('ChatGPT policy-blocked store copy preserves direct MCP without promising a future listing', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
+  const { getMcpIntegration } = await import('../frontend/lib/mcp-integration-registry.ts');
+  assert.equal(getMcpIntegration('chatgpt').store.status, 'policy_blocked');
+  assert.equal(getMcpIntegration('chatgpt').installation.directMcp, 'available');
+
   const expectations = {
     en: {
-      directory: /shared plugin directory/i,
-      sharedConnection: /same plugin and MCP connection/i,
-      install: /install MaxVideoAI/i,
+      noSubmission: /not submitted.*OpenAI directory|OpenAI directory non-submission/is,
+      directConnection: /direct.*MCP|MCP.*direct/is,
       firstUse: /OAuth.*first use|first uses MaxVideoAI.*OAuth/is,
-      approval: /public.*approval|approval.*public/i,
       permissions: /Business.*Enterprise\/Edu.*Pro.*read\/fetch/is,
-      retired: /guide to testing|test MaxVideoAI|unverified|have not yet been verified|validation guide|not yet been recorded/i,
+      futureListing: /after (?:OpenAI )?approval|public listing after|once OpenAI approves/i,
     },
     fr: {
-      directory: /répertoire de plugins partagé/i,
-      sharedConnection: /même plugin et la même connexion MCP/i,
-      install: /installez MaxVideoAI/i,
+      noSubmission: /pas soumis.*répertoire OpenAI|ne pas soumettre.*répertoire OpenAI/is,
+      directConnection: /MCP.*direct|directement.*MCP/is,
       firstUse: /OAuth.*première utilisation|première fois.*OAuth/is,
-      approval: /public.*approbation|approbation.*public/i,
       permissions: /Business.*Enterprise\/Edu.*Pro.*lecture.*consultation/is,
-      retired: /guide pour tester|testez MaxVideoAI|non vérifiée|ne sont pas encore vérifiés|guide de validation|n’ont pas encore été enregistrés/i,
+      futureListing: /après approbation|dès que.*approuvée/i,
     },
     es: {
-      directory: /directorio de plugins compartido/i,
-      sharedConnection: /mismo plugin y la misma conexión MCP/i,
-      install: /instala MaxVideoAI/i,
+      noSubmission: /no se presenta.*directorio de OpenAI|no presentar.*directorio de OpenAI/is,
+      directConnection: /MCP.*direct|directamente.*MCP/is,
       firstUse: /OAuth.*primer uso|primera vez.*OAuth/is,
-      approval: /públic.*aprobación|aprobación.*públic/i,
       permissions: /Business.*Enterprise\/Edu.*Pro.*lectura.*consulta/is,
-      retired: /guía para probar|prueba MaxVideoAI|sin verificar|todavía no se han verificado|guía de validación|aún no se han registrado/i,
+      futureListing: /después de la aprobación|cuando OpenAI.*apruebe/i,
     },
   } as const;
 
@@ -774,12 +753,10 @@ test('ChatGPT page copy uses the shared plugin journey without retired validatio
       compatibilityStatus: copy.compatibility.statuses.chatgptWeb,
     });
     const expected = expectations[locale];
-    assert.match(chatgptJourney, expected.directory);
-    assert.match(chatgptJourney, expected.sharedConnection);
-    assert.match(chatgptJourney, expected.install);
+    assert.match(chatgptJourney, expected.noSubmission);
+    assert.match(chatgptJourney, expected.directConnection);
     assert.match(chatgptJourney, expected.firstUse);
-    assert.match(chatgptJourney, expected.approval);
     assert.match(chatgptJourney, expected.permissions);
-    assert.doesNotMatch(chatgptJourney, expected.retired);
+    assert.doesNotMatch(chatgptJourney, expected.futureListing);
   }
 });
