@@ -16,13 +16,13 @@ function row(surface: string): string {
     .find((line) => line.startsWith(`| ${surface} |`)) ?? '';
 }
 
-test('Task 15 checklist advances only the externally observed release and MCPBeat results', () => {
+test('Task 15 checklist advances only the externally observed release, MCPBeat, and n8n results', () => {
   assert.ok(checklist, 'missing dated Task 15 observed-results checklist');
 
   const expectedStates = new Map([
     ['Main `camgraphe/MaxVideoAi` GitHub release', 'verified'],
     ['Canonical `camgraphe/maxvideoai-plugin` release', 'verified'],
-    ['n8n workflow library', 'identity_step_required'],
+    ['n8n workflow library', 'submitted'],
     ['GitHub MCP registry discovery', 'unavailable_no_documented_submission'],
     ['MCPBeat owner claim', 'claimed'],
     ['Glama owner claim', 'verification_endpoint_prepared'],
@@ -36,7 +36,6 @@ test('Task 15 checklist advances only the externally observed release and MCPBea
   }
 
   for (const surface of [
-    'n8n workflow library',
     'GitHub MCP registry discovery',
     'Glama owner claim',
     'Docker MCP Catalog',
@@ -67,18 +66,20 @@ test('release preparation preserves the canonical artifact owner and latest-rele
   assert.doesNotMatch(releaseNote, /gh release upload|\.zip\s|\.sha256\s/);
 });
 
-test('n8n preparation pins all three reviewed candidates without claiming a library submission', () => {
-  const candidates = [
-    'distribution/n8n/brief-to-approved-generation.json',
-    'distribution/n8n/campaign-queue.json',
-    'distribution/n8n/completion-notification.json',
-  ];
+test('n8n evidence pins the reviewed candidates and records only one private pending submission', () => {
+  const candidates = new Map([
+    ['distribution/n8n/brief-to-approved-generation.json', 'submitted_pending_review'],
+    ['distribution/n8n/campaign-queue.json', 'queued_platform_blocked'],
+    ['distribution/n8n/completion-notification.json', 'queued_platform_blocked'],
+  ]);
 
-  for (const path of candidates) {
+  for (const [path, state] of candidates) {
     const candidateRow = checklist
       .split('\n')
       .find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
-    const documentedDigest = candidateRow.match(/\| `([a-f0-9]{64})` \| `ready_to_execute` \|$/)?.[1];
+    const documentedDigest = candidateRow.match(
+      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '` \\|$'),
+    )?.[1];
     const actualDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
 
     assert.ok(candidateRow, `missing documented candidate: ${path}`);
@@ -90,10 +91,17 @@ test('n8n preparation pins all three reviewed candidates without claiming a libr
   const n8n = row('n8n workflow library');
   assert.match(n8n, /https:\/\/n8n\.io\/workflows\//);
   assert.match(n8n, /https:\/\/creators\.n8n\.io\//);
-  assert.match(n8n, /one workflow submission at a time/i);
-  assert.match(n8n, /no workflow was submitted/i);
-  assert.match(n8n, /no authenticated portal session/i);
+  assert.match(n8n, /one-at-a-time sequencing/i);
+  assert.match(n8n, /private Creator Portal workflow ID `19591`/i);
+  assert.match(n8n, /Turn creative briefs into approved MaxVideoAI generations with human approval/);
+  assert.match(n8n, /passed.*AI review/i);
+  assert.match(n8n, /`Pending`.*`Under review`/i);
+  assert.match(n8n, /3–5 business days/i);
+  assert.match(n8n, /Share new template.*disabled/i);
+  assert.match(n8n, /no public .*URL exists/i);
   assert.match(n8n, /no personal account data/i);
+  assert.match(n8n, /other two.*not submitted.*queued/i);
+  assert.doesNotMatch(n8n, /\| `(?:claimed|verified)` \|/);
   assert.match(checklist, /deterministic self-hosted MCP Client evidence is\s+public and indexable/i);
   assert.match(checklist, /MCP Client Tool invocation[\s\S]{0,180}n8n Cloud[\s\S]{0,220}outside the claim/i);
 });
