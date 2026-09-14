@@ -34,6 +34,16 @@ async function archiveSnapshot(root: string, target: string, revision: string) {
   await symlink(await realpath(join(root, 'frontend/node_modules')), join(target, 'frontend/node_modules'), 'dir');
 }
 
+export function summarizeStudioReadinessFailure(logs: string, maxChars = 4_000): string {
+  const limit = Math.max(200, Math.floor(maxChars));
+  if (logs.length <= limit) return logs;
+  const marker = '\n...[readiness diagnostic truncated]...\n';
+  const retainedChars = limit - marker.length;
+  const headChars = Math.ceil(retainedChars / 2);
+  const tailChars = Math.floor(retainedChars / 2);
+  return `${logs.slice(0, headChars)}${marker}${logs.slice(-tailChars)}`;
+}
+
 /** Owns a committed Next snapshot, fresh local DB and test-only Auth, never an existing server. */
 export async function startStudioIntegrationRuntime(options: {
   initializeDatabase(database: DisposablePostgres): Promise<void>;
@@ -61,6 +71,7 @@ export async function startStudioIntegrationRuntime(options: {
   let childExit: Promise<void> | undefined;
   let closing: Promise<void> | undefined;
   let logs = '';
+  let firstReadinessFailure = '';
 
   async function close() {
     if (closing) return closing;
@@ -142,18 +153,25 @@ export async function startStudioIntegrationRuntime(options: {
     const readinessTimeoutMs = Number(process.env.STUDIO_INTEGRATION_READY_TIMEOUT_MS ?? 90_000);
     const deadline = Date.now() + readinessTimeoutMs;
     while (Date.now() < deadline) {
-      if (child.exitCode !== null || child.signalCode !== null) throw new Error(`Isolated Next exited before readiness. ${logs.slice(-4000)}`);
+      if (child.exitCode !== null || child.signalCode !== null) {
+        throw new Error(`Isolated Next exited before readiness. ${summarizeStudioReadinessFailure(logs)}`);
+      }
       // A failed bind must never let an unrelated HTTP listener satisfy readiness.
       if (!/Ready in/u.test(logs)) { await delay(200); continue; }
       try {
         const response = await fetch(`${origin}/api/studio/projects`, { signal: AbortSignal.timeout(2000) });
         if (response.status === 401) return { origin, browserOrigin, mcpHost, revision, database, auth, close, readLogs: () => logs };
         const body = await response.text().catch(() => '');
-        logs = `${logs}\n[readiness] ${response.status} ${body}`.slice(-100_000);
+        const failure = `[readiness] ${response.status} ${body}`;
+        if (!firstReadinessFailure) firstReadinessFailure = failure;
+        logs = `${logs}\n${failure}`.slice(-100_000);
       } catch { /* No existing server is reused; wait for this exact child to become ready. */ }
       await delay(200);
     }
-    throw new Error(`Isolated Studio route readiness timed out. ${logs.slice(-4000)}`);
+    const diagnostic = firstReadinessFailure
+      ? `${firstReadinessFailure}\n[runtime tail]\n${logs}`
+      : logs;
+    throw new Error(`Isolated Studio route readiness timed out. ${summarizeStudioReadinessFailure(diagnostic)}`);
   } catch (error) {
     await close();
     throw error;
