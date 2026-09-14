@@ -11,6 +11,7 @@ export type McpClientActionCopy = {
   label: string;
   supportingLabel: string;
   installInstruction: string;
+  copyInstallInstruction: boolean;
 };
 
 export type McpConnectActionsCopy = {

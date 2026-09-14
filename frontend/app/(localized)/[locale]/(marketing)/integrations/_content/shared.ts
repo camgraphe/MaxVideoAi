@@ -26,6 +26,11 @@ export function getIntegrationInstallInstruction(locale: AppLocale, hostId: McpC
     }
     return `Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
   }
+  if (hostId === 'n8nMcpClient' || hostId === 'n8nMcpClientTool') {
+    if (locale === 'fr') return `Importez le workflow JSON MaxVideoAI dans n8n auto-hébergé. Créez ensuite l’identifiant OAuth2 pour ${MCP_PRODUCTION_RESOURCE_URL} et associez-le manuellement à chaque nœud MCP Client.`;
+    if (locale === 'es') return `Importa el flujo JSON de MaxVideoAI en n8n self-hosted. Después crea la credencial OAuth2 para ${MCP_PRODUCTION_RESOURCE_URL} y asígnala manualmente a cada nodo MCP Client.`;
+    return `Import the MaxVideoAI JSON workflow into self-hosted n8n. Then create the OAuth2 credential for ${MCP_PRODUCTION_RESOURCE_URL} and assign it manually to every MCP Client node.`;
+  }
 
   const hostLabels: Partial<Record<McpCompatibilityHostId, string>> = {
     claudeCode: 'Claude Code',
@@ -119,15 +124,19 @@ export function buildIntegrationCopy({
 export function getIntegrationInstallAction(locale: AppLocale, clientLabel: IntegrationPageCopy['clientLabel']): IntegrationPageCopy['setup']['installAction'] {
   if (locale === 'fr') {
     const isCodex = clientLabel === 'Codex';
+    const isN8n = clientLabel === 'n8n';
     return {
       eyebrow: 'INSTALLATION RAPIDE',
-      title: isCodex ? 'Copiez, Codex installe le plugin' : `Copiez, ${clientLabel} vous guide`,
-      body: isCodex
+      title: isN8n ? 'Importez le workflow dans n8n' : isCodex ? 'Copiez, Codex installe le plugin' : `Copiez, ${clientLabel} vous guide`,
+      body: isN8n
+        ? 'Téléchargez un workflow JSON MaxVideoAI, importez-le dans n8n auto-hébergé, puis configurez manuellement son identifiant OAuth2.'
+        : isCodex
         ? 'Collez la demande dans Codex : il peut exécuter les commandes après votre autorisation.'
         : `Collez la demande dans ${clientLabel} : il vous indique exactement où ajouter MaxVideoAI et terminer la connexion.`,
-      showInstruction: 'Voir ce qui sera copié',
-      copyInstruction: isCodex ? 'Copier et installer dans Codex' : `Copier pour être guidé dans ${clientLabel}`,
-      copiedInstruction: `Copié — collez maintenant dans ${clientLabel}.`,
+      copyInstructionEnabled: !isN8n,
+      showInstruction: isN8n ? 'Voir la configuration manuelle' : 'Voir ce qui sera copié',
+      copyInstruction: isN8n ? 'Importer dans n8n' : isCodex ? 'Copier et installer dans Codex' : `Copier pour être guidé dans ${clientLabel}`,
+      copiedInstruction: isN8n ? 'Configuration manuelle affichée.' : `Copié — collez maintenant dans ${clientLabel}.`,
       copyEndpoint: 'Copier l’adresse MCP',
       copiedEndpoint: 'Adresse MCP copiée.',
       copyError: 'Copie impossible. Sélectionnez le texte puis copiez-le manuellement.',
@@ -137,15 +146,19 @@ export function getIntegrationInstallAction(locale: AppLocale, clientLabel: Inte
   }
   if (locale === 'es') {
     const isCodex = clientLabel === 'Codex';
+    const isN8n = clientLabel === 'n8n';
     return {
       eyebrow: 'INSTALACIÓN RÁPIDA',
-      title: isCodex ? 'Copia y Codex instala el plugin' : `Copia y ${clientLabel} te guía`,
-      body: isCodex
+      title: isN8n ? 'Importa el flujo en n8n' : isCodex ? 'Copia y Codex instala el plugin' : `Copia y ${clientLabel} te guía`,
+      body: isN8n
+        ? 'Descarga un flujo JSON de MaxVideoAI, impórtalo en n8n self-hosted y configura manualmente su credencial OAuth2.'
+        : isCodex
         ? 'Pega la petición en Codex: podrá ejecutar los comandos después de tu autorización.'
         : `Pega la petición en ${clientLabel}: te indicará exactamente dónde añadir MaxVideoAI y completar la conexión.`,
-      showInstruction: 'Ver qué se copiará',
-      copyInstruction: isCodex ? 'Copiar e instalar en Codex' : `Copiar para recibir ayuda en ${clientLabel}`,
-      copiedInstruction: `Copiado — pégalo ahora en ${clientLabel}.`,
+      copyInstructionEnabled: !isN8n,
+      showInstruction: isN8n ? 'Ver la configuración manual' : 'Ver qué se copiará',
+      copyInstruction: isN8n ? 'Importar en n8n' : isCodex ? 'Copiar e instalar en Codex' : `Copiar para recibir ayuda en ${clientLabel}`,
+      copiedInstruction: isN8n ? 'Configuración manual mostrada.' : `Copiado — pégalo ahora en ${clientLabel}.`,
       copyEndpoint: 'Copiar dirección MCP',
       copiedEndpoint: 'Dirección MCP copiada.',
       copyError: 'No se pudo copiar. Selecciona el texto y cópialo manualmente.',
@@ -154,15 +167,19 @@ export function getIntegrationInstallAction(locale: AppLocale, clientLabel: Inte
     };
   }
   const isCodex = clientLabel === 'Codex';
+  const isN8n = clientLabel === 'n8n';
   return {
     eyebrow: 'FAST SETUP',
-    title: isCodex ? 'Copy it, and Codex installs the plugin' : `Copy it, and ${clientLabel} guides you`,
-    body: isCodex
+    title: isN8n ? 'Import the workflow into n8n' : isCodex ? 'Copy it, and Codex installs the plugin' : `Copy it, and ${clientLabel} guides you`,
+    body: isN8n
+      ? 'Download a MaxVideoAI JSON workflow, import it into self-hosted n8n, then configure its OAuth2 credential manually.'
+      : isCodex
       ? 'Paste the request into Codex. It can run the commands after you approve them.'
       : `Paste the request into ${clientLabel}. It will show you exactly where to add MaxVideoAI and finish connecting.`,
-    showInstruction: 'See what will be copied',
-    copyInstruction: isCodex ? 'Copy and install in Codex' : `Copy for guidance in ${clientLabel}`,
-    copiedInstruction: `Copied — paste it into ${clientLabel}.`,
+    copyInstructionEnabled: !isN8n,
+    showInstruction: isN8n ? 'See the manual configuration' : 'See what will be copied',
+    copyInstruction: isN8n ? 'Import into n8n' : isCodex ? 'Copy and install in Codex' : `Copy for guidance in ${clientLabel}`,
+    copiedInstruction: isN8n ? 'Manual configuration shown.' : `Copied — paste it into ${clientLabel}.`,
     copyEndpoint: 'Copy MCP address',
     copiedEndpoint: 'MCP address copied.',
     copyError: 'Unable to copy. Select the text and copy it manually.',

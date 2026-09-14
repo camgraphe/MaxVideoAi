@@ -295,6 +295,6 @@ test('n8n candidate documentation records the live deterministic scope and keeps
   assert.match(guide, /Creator Portal identity\s+step/i);
   assert.doesNotMatch(guide, /integration therefore stays a non-indexed preview/i);
   assert.doesNotMatch(guide, /fresh policy review and explicit owner authorization/i);
-  assert.equal(getMcpIntegration('n8n').store.status, 'preparing');
+  assert.equal(getMcpIntegration('n8n').store.status, 'submitted');
   assert.equal(getMcpIntegration('n8n').installation.package, 'unavailable');
 });

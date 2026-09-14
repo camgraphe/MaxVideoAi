@@ -404,6 +404,23 @@ test('OpenClaw and n8n live copy explains supported scopes without unearned clai
     assert.match(JSON.stringify(n8n), /Chat Model|modèle de chat|modelo de chat/i);
     assert.match(JSON.stringify(n8n), /Not run|Non testé|No probado/i);
     assert.match(JSON.stringify(n8n), /n8n Cloud/i);
+    assert.match(JSON.stringify(n8n), /19591/);
+    assert.match(JSON.stringify(n8n), /Pending|Under review|En révision|En revisión/i);
+    assert.match(JSON.stringify(n8n), /two|deux|dos/i);
+    assert.match(JSON.stringify(n8n), /not submitted|ne sont pas soumis|non soumis|sin enviar/i);
+    assert.match(JSON.stringify(n8n), /list_media/);
+    assert.match(JSON.stringify(n8n), /create_reference_upload_link/);
+    assert.match(JSON.stringify(n8n), /unverified|non vérifié|sin verificar/i);
+    assert.equal(n8n.setup.installAction.copyInstructionEnabled, false);
+    assert.match(n8n.setup.installAction.body, /import|importez|imp[oó]rta/i);
+    assert.doesNotMatch(
+      JSON.stringify(n8n.setup.installAction),
+      /guides you|vous guide|te guía|guidance|être guidé|recibir ayuda|paste|collez|pégalo|pega la petición/i,
+    );
+    assert.doesNotMatch(
+      n8n.references.planningBody,
+      /select existing|sélectionne un média|selecciona un activo|create a bounded upload|crée un relais|crea una transferencia/i,
+    );
     assert.deepEqual(
       n8n.setup.hostGuides.map((guide) => guide.hostId),
       ['n8nMcpClient'],
@@ -688,7 +705,7 @@ test('integration pages offer one truthful copy-paste setup instruction per host
   }
 });
 
-test('the MCP hub carries a pasteable installation instruction for all five live integrations', async () => {
+test('the MCP hub keeps conversational setup copy away from the manual n8n workflow', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -697,15 +714,23 @@ test('the MCP hub carries a pasteable installation instruction for all five live
     const copy = getMcpPageCopy(locale);
     assert.match(copy.hero.connectActions.copyInstruction, /cop|copi/i);
     assert.match(copy.hero.connectActions.instructionBody, /paste|collez|p[eé]ga/i);
+    assert.match(copy.hero.connectActions.instructionBody, /import|importez|importa/i);
     assert.equal(copy.hero.actions.length, 5);
     for (const action of copy.hero.actions) {
       assert.match(action.installInstruction, /MaxVideoAI/);
-      assert.match(
-        action.installInstruction,
-        action.client === 'codex'
-          ? /codex plugin marketplace add/
-          : /https:\/\/api\.maxvideoai\.com\/mcp/,
-      );
+      if (action.client === 'n8n') {
+        assert.equal(action.copyInstallInstruction, false);
+        assert.match(action.installInstruction, /import|importez|importa/i);
+        assert.doesNotMatch(action.installInstruction, /guide me|guide-moi|guíame/i);
+      } else {
+        assert.equal(action.copyInstallInstruction, true);
+        assert.match(
+          action.installInstruction,
+          action.client === 'codex'
+            ? /codex plugin marketplace add/
+            : /https:\/\/api\.maxvideoai\.com\/mcp/,
+        );
+      }
     }
   }
 });

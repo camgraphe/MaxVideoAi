@@ -171,7 +171,7 @@ export function McpConnectActions({
           {copy.instructionBody}
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          {renderedActions.map((action) => (
+          {renderedActions.filter((action) => action.copyInstallInstruction).map((action) => (
             <button
               key={action.client}
               type="button"

@@ -1,6 +1,7 @@
 # MaxVideoAI n8n workflow candidates
 
-These disabled JSON exports are review candidates, not launched n8n templates.
+These disabled JSON exports are reviewed workflow candidates. One candidate is
+privately submitted for human review; none is a public n8n library template.
 They use the **MCP Client** node for deterministic workflow steps with explicit
 tool inputs and ordering. Use the **MCP Client Tool** only when a bounded AI
 Agent needs selected discovery or planning tools. Paid confirmation remains a
@@ -89,3 +90,11 @@ exact three-file external action recorded in
 `docs/marketing/mcp-directory-submissions.md`; each template-library write
 still requires that authorized owner to complete the Creator Portal identity
 step, submit one reviewed workflow at a time, and record the observed result.
+
+The first exact candidate, `brief-to-approved-generation.json`, passed Creator
+Portal AI review and is privately `Pending` / `Under review` as workflow
+`19591`. The other two candidates have not been submitted because the portal
+disables `Share new template` while that review is pending. No public workflow
+library URL exists. None of the three JSON workflows calls `list_media` or
+`create_reference_upload_link`; private-reference automation remains
+unverified and outside their claimed scope.

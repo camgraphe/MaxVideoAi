@@ -48,6 +48,7 @@ export type IntegrationPageCopy = {
       eyebrow: string;
       title: string;
       body: string;
+      copyInstructionEnabled: boolean;
       showInstruction: string;
       copyInstruction: string;
       copiedInstruction: string;

@@ -69,8 +69,11 @@ have not been verified.
 n8n is `live`, indexable, and acquisition-enabled only for the tested
 self-hosted deterministic MCP Client workflow. The MCP Client host remains
 `tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
-claimed, and the template-library store state remains `preparing` until an
-authorized external submission occurs.
+claimed. The template-library store state is `submitted` only for private
+Creator Portal workflow `19591`, which is `Pending` / `Under review`. The other
+two reviewed JSON workflows are not submitted because the portal disables the
+next-template action during that review. No public listing or verification is
+claimed.
 
 ## Later-host promotion sequence
 
