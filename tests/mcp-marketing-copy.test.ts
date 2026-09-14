@@ -17,7 +17,7 @@ function wordCount(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }
 
-test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry points', async () => {
+test('the hub sells the outcome through all five live integration entry points', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -27,13 +27,32 @@ test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry p
   assert.match(copy.hero.intro, /complete project/i);
   assert.match(copy.hero.intro, /prompts and references/i);
   assert.match(copy.hero.intro, /exact price/i);
-  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
+  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']);
+  assert.match(copy.hero.connectActions.instructionBody, /OpenClaw/);
+  assert.match(copy.hero.connectActions.instructionBody, /n8n/);
   assert.deepEqual(copy.workflow.steps, [
     'Develop the brief and references',
     'Compare models and project budgets',
     'Approve the exact price and generate',
   ]);
   assert.doesNotMatch(JSON.stringify(copy), /local implementation|host validation in progress|budget-first shortlist|lowest-cost model/i);
+});
+
+test('the hub withdraws an Available now action when its registry publication is removed', async () => {
+  const { buildMcpClientActions } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const actions = buildMcpClientActions('en', {
+    claude: 'Claude connector',
+    chatgpt: 'ChatGPT app',
+    codex: 'Codex plugin',
+    openclaw: 'OpenClaw',
+    n8n: 'n8n',
+    supporting: 'Free · MaxVideoAI account required',
+  }, ['claude', 'chatgpt', 'codex', 'n8n']);
+
+  assert.deepEqual(actions.map((action) => action.client), ['claude', 'chatgpt', 'codex', 'n8n']);
+  assert.equal(actions.some((action) => action.client === 'openclaw'), false);
 });
 
 test('the hub follows one clear path from promise to platform, production, and resources', async () => {
@@ -91,8 +110,8 @@ test('the hub follows one clear path from promise to platform, production, and r
     assert.match(hero, /assistant|asistente/i);
     assert.match(hero, /automation|automatisation|automatizaci/i);
     assert.doesNotMatch(hero, /data-client=|<button|Example conversation|Exemple de conversation|Ejemplo de conversación/i);
-    assert.equal((platforms.match(/data-platform-tier="live"/g) ?? []).length, 3);
-    assert.equal((platforms.match(/data-platform-tier="preview"/g) ?? []).length, 2);
+    assert.equal((platforms.match(/data-platform-tier="live"/g) ?? []).length, 5);
+    assert.equal((platforms.match(/data-platform-tier="preview"/g) ?? []).length, 0);
     assert.equal((platforms.match(/data-platform-tier="preparing"/g) ?? []).length, 4);
     for (const label of ['OpenClaw', 'n8n', 'Cursor', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot']) {
       assert.equal(platforms.split(`>${label}<`).length - 1, 1, `${locale} selector should show ${label} once`);
@@ -103,12 +122,12 @@ test('the hub follows one clear path from promise to platform, production, and r
     assert.match(workflow, /library|bibliothèque|biblioteca/i);
     assert.equal((resources.match(/data-answer-passage=/g) ?? []).length, 3);
     assert.equal((resources.match(/data-faq-item=/g) ?? []).length, 5);
-    assert.equal((resources.match(/data-client=/g) ?? []).length, 3);
+    assert.equal((resources.match(/data-client=/g) ?? []).length, 5);
     assert.match(resources, /data-mcp-host-proof="claude"/);
   }
 });
 
-test('the hub keeps live assistants primary while making the wider MCP ecosystem visible', async () => {
+test('the hub keeps live integrations primary while making the roadmap visible', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -118,15 +137,12 @@ test('the hub keeps live assistants primary while making the wider MCP ecosystem
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getMcpPageCopy(locale);
-    assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
+    assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']);
     assert.deepEqual(
       copy.ecosystem.overview.map((item) => item.client),
-      ['openclaw', 'n8n', 'cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'],
+      ['cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'],
     );
-    assert.deepEqual(
-      copy.ecosystem.overview.filter((item) => item.href).map((item) => item.client),
-      ['openclaw', 'n8n'],
-    );
+    assert.deepEqual(copy.ecosystem.overview.filter((item) => item.href), []);
     const overviewHtml = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
       actions: copy.hero.actions,
       copy: copy.ecosystem,
@@ -136,7 +152,7 @@ test('the hub keeps live assistants primary while making the wider MCP ecosystem
     for (const label of ['Cursor', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot']) {
       assert.ok(overviewHtml.indexOf(label) > overviewHtml.indexOf('n8n'), `${locale} hub should show ${label}`);
     }
-    assert.match(overviewHtml, /preview|aperçu|vista previa/i);
+    assert.doesNotMatch(overviewHtml, /preview|aperçu|vista previa/i);
     assert.match(overviewHtml, /in preparation|en préparation|en preparación/i);
     assert.doesNotMatch(overviewHtml, /href="[^\"]*(?:cursor|github-copilot|gemini-cli|microsoft-copilot)/i);
     assert.equal(overviewHtml.split('>OpenClaw<').length - 1, 1);
@@ -280,7 +296,7 @@ test('each integration page keeps one host-specific setup intent without affilia
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
   const setupSignals = {
-    chatgpt: /shared plugin directory|répertoire de plugins partagé|directorio de plugins compartido/i,
+    chatgpt: /developer mode|mode développeur|modo desarrollador/i,
     claude: /remote connector|connecteur distant|conector remoto/i,
     codex: /install.*plugin|installation.*plugin|installer.*plugin|instalación.*plugin|instalar.*plugin/i,
   } as const;
@@ -361,7 +377,7 @@ test('all localized integration builders retain complete non-empty page contract
   }
 });
 
-test('OpenClaw and n8n previews explain distinct workflows without unearned claims', async () => {
+test('OpenClaw and n8n live copy explains supported scopes without unearned claims', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
@@ -369,13 +385,16 @@ test('OpenClaw and n8n previews explain distinct workflows without unearned clai
   for (const locale of ['en', 'fr', 'es'] as const) {
     const openclaw = getIntegrationCopy(locale, 'openclaw');
     const n8n = getIntegrationCopy(locale, 'n8n');
-    const previewText = JSON.stringify({ openclaw, n8n });
+    const liveText = JSON.stringify({ openclaw, n8n });
 
     assert.equal(openclaw.client, 'openclaw');
     assert.equal(n8n.client, 'n8n');
     assert.match(JSON.stringify(openclaw), /OpenClaw/);
     assert.match(JSON.stringify(openclaw), /shared|partagé|compartid/i);
     assert.match(JSON.stringify(openclaw), /per-requester|par demandeur|por solicitante/i);
+    assert.match(JSON.stringify(openclaw), /ClawHub/i);
+    assert.match(JSON.stringify(openclaw), /private-reference|références privées|referencias privadas/i);
+    assert.match(JSON.stringify(openclaw), /channel|canal/i);
     assert.match(JSON.stringify(n8n), /MCP Client/);
     assert.match(JSON.stringify(n8n), /MCP Client Tool/);
     assert.match(JSON.stringify(n8n), /determin|détermin|determin/i);
@@ -384,9 +403,33 @@ test('OpenClaw and n8n previews explain distinct workflows without unearned clai
     assert.match(JSON.stringify(n8n), /2\.38\.7/);
     assert.match(JSON.stringify(n8n), /Chat Model|modèle de chat|modelo de chat/i);
     assert.match(JSON.stringify(n8n), /Not run|Non testé|No probado/i);
+    assert.match(JSON.stringify(n8n), /n8n Cloud/i);
+    assert.match(JSON.stringify(n8n), /19591/);
+    assert.match(JSON.stringify(n8n), /Pending|Under review|En révision|En revisión/i);
+    assert.match(JSON.stringify(n8n), /two|deux|dos/i);
+    assert.match(JSON.stringify(n8n), /not submitted|ne sont pas soumis|non soumis|sin enviar/i);
+    assert.match(JSON.stringify(n8n), /list_media/);
+    assert.match(JSON.stringify(n8n), /create_reference_upload_link/);
+    assert.match(JSON.stringify(n8n), /unverified|non vérifié|sin verificar/i);
+    assert.equal(n8n.setup.installAction.copyInstructionEnabled, false);
+    assert.match(n8n.setup.installAction.body, /build|configure|construisez|configurez|construye|configura/i);
+    assert.doesNotMatch(
+      `${JSON.stringify(n8n.setup.installAction)} ${n8n.setup.hostGuides.map((guide) => guide.installInstruction).join(' ')}`,
+      /guides you|vous guide|te guía|guidance|être guidé|recibir ayuda|paste|collez|pégalo|pega la petición|download|télécharg|descarga|import|importez|importa|impórta/i,
+    );
+    assert.doesNotMatch(
+      n8n.references.planningBody,
+      /select existing|sélectionne un média|selecciona un activo|create a bounded upload|crée un relais|crea una transferencia/i,
+    );
+    assert.deepEqual(
+      n8n.setup.hostGuides.map((guide) => guide.hostId),
+      ['n8nMcpClient'],
+      'only the tested deterministic host should expose a setup action',
+    );
     assert.doesNotMatch(JSON.stringify(n8n), /clean import[^.]*not recorded|aucun import propre|no existe una importación limpia/i);
-    assert.doesNotMatch(previewText, /verified|certified|official partner/i);
-    assert.doesNotMatch(previewText, /\$\d|\d+ models/i);
+    assert.doesNotMatch(liveText, /non-indexed preview|aperçu non indexé|vista no indexada|validation preview|aperçu de validation|vista previa de validación/i);
+    assert.doesNotMatch(liveText, /certified|official partner/i);
+    assert.doesNotMatch(liveText, /\$\d|\d+ models/i);
   }
 });
 
@@ -555,7 +598,7 @@ test('compatibility wording stays exact per tested host', async () => {
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
   );
   const evidence = getMcpCompatibilityEvidence();
-  assert.equal(evidence.lastChecked, '2026-08-27');
+  assert.equal(evidence.lastChecked, '2026-09-14');
   assert.equal(evidence.clients.claude.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.codex.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.chatgpt.hosts[0]?.status, 'not-run');
@@ -650,38 +693,19 @@ test('integration pages offer one truthful copy-paste setup instruction per host
       hubStatus: getMcpPageCopy(locale).trust.compatibility.statuses[chatgptGuide.hostId],
     });
     assert.match(chatgptMarketing, /developer|développeur|desarrollador/i);
-    assert.match(
-      chatgptMarketing,
-      /shared plugin|plugin directory|répertoire de plugins partagé|directorio de plugins compartido/i,
-    );
-    assert.match(
-      chatgptMarketing,
-      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
-    );
+    assert.match(chatgptMarketing, /direct|directe|directa|directamente/i);
+    assert.match(chatgptMarketing, /not submitted|pas soumis|ne pas soumettre|no se presenta|no presentar/i);
+    assert.doesNotMatch(chatgptMarketing, /after (?:OpenAI )?approval|après approbation|después de la aprobación|cuando OpenAI.*apruebe/i);
 
-    const [publicListing, developerFallback] = chatgptGuide.steps;
-    assert.ok(publicListing);
-    assert.ok(developerFallback);
-    assert.match(
-      `${publicListing.title} ${publicListing.body}`,
-      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
-    );
-    assert.doesNotMatch(
-      `${publicListing.title} ${publicListing.body}`,
-      /developer|développeur|desarrollador/i,
-    );
-    assert.match(
-      `${developerFallback.title} ${developerFallback.body}`,
-      /developer|développeur|desarrollador/i,
-    );
-    assert.doesNotMatch(
-      `${developerFallback.title} ${developerFallback.body}`,
-      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
-    );
+    const [developerMode, directConnection] = chatgptGuide.steps;
+    assert.ok(developerMode);
+    assert.ok(directConnection);
+    assert.match(`${developerMode.title} ${developerMode.body}`, /developer|développeur|desarrollador/i);
+    assert.match(`${directConnection.title} ${directConnection.body}`, /direct|directe|directa/i);
   }
 });
 
-test('the MCP hub carries a pasteable installation instruction for Claude, ChatGPT, and Codex', async () => {
+test('the MCP hub keeps conversational setup copy away from the manual n8n workflow', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
@@ -690,50 +714,58 @@ test('the MCP hub carries a pasteable installation instruction for Claude, ChatG
     const copy = getMcpPageCopy(locale);
     assert.match(copy.hero.connectActions.copyInstruction, /cop|copi/i);
     assert.match(copy.hero.connectActions.instructionBody, /paste|collez|p[eé]ga/i);
-    assert.equal(copy.hero.actions.length, 3);
+    assert.match(copy.hero.connectActions.instructionBody, /build|configure|construisez|configurez|construye|configura/i);
+    assert.doesNotMatch(copy.hero.connectActions.instructionBody, /download|télécharg|descarga|import|importez|importa|impórta/i);
+    assert.equal(copy.hero.actions.length, 5);
     for (const action of copy.hero.actions) {
       assert.match(action.installInstruction, /MaxVideoAI/);
-      assert.match(
-        action.installInstruction,
-        action.client === 'codex'
-          ? /codex plugin marketplace add/
-          : /https:\/\/api\.maxvideoai\.com\/mcp/,
-      );
+      if (action.client === 'n8n') {
+        assert.equal(action.copyInstallInstruction, false);
+        assert.match(action.installInstruction, /build|configure|construisez|configurez|construye|configura/i);
+        assert.doesNotMatch(action.installInstruction, /download|télécharg|descarga|import|importez|importa|impórta/i);
+        assert.doesNotMatch(action.installInstruction, /guide me|guide-moi|guíame/i);
+      } else {
+        assert.equal(action.copyInstallInstruction, true);
+        assert.match(
+          action.installInstruction,
+          action.client === 'codex'
+            ? /codex plugin marketplace add/
+            : /https:\/\/api\.maxvideoai\.com\/mcp/,
+        );
+      }
     }
   }
 });
 
-test('ChatGPT page copy uses the shared plugin journey without retired validation warnings', async () => {
+test('ChatGPT policy-blocked store copy preserves direct MCP without promising a future listing', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
+  const { getMcpIntegration } = await import('../frontend/lib/mcp-integration-registry.ts');
+  assert.equal(getMcpIntegration('chatgpt').store.status, 'policy_blocked');
+  assert.equal(getMcpIntegration('chatgpt').installation.directMcp, 'available');
+
   const expectations = {
     en: {
-      directory: /shared plugin directory/i,
-      sharedConnection: /same plugin and MCP connection/i,
-      install: /install MaxVideoAI/i,
+      noSubmission: /not submitted.*OpenAI directory|OpenAI directory non-submission/is,
+      directConnection: /direct.*MCP|MCP.*direct/is,
       firstUse: /OAuth.*first use|first uses MaxVideoAI.*OAuth/is,
-      approval: /public.*approval|approval.*public/i,
       permissions: /Business.*Enterprise\/Edu.*Pro.*read\/fetch/is,
-      retired: /guide to testing|test MaxVideoAI|unverified|have not yet been verified|validation guide|not yet been recorded/i,
+      futureListing: /after (?:OpenAI )?approval|public listing after|once OpenAI approves/i,
     },
     fr: {
-      directory: /répertoire de plugins partagé/i,
-      sharedConnection: /même plugin et la même connexion MCP/i,
-      install: /installez MaxVideoAI/i,
+      noSubmission: /pas soumis.*répertoire OpenAI|ne pas soumettre.*répertoire OpenAI/is,
+      directConnection: /MCP.*direct|directement.*MCP/is,
       firstUse: /OAuth.*première utilisation|première fois.*OAuth/is,
-      approval: /public.*approbation|approbation.*public/i,
       permissions: /Business.*Enterprise\/Edu.*Pro.*lecture.*consultation/is,
-      retired: /guide pour tester|testez MaxVideoAI|non vérifiée|ne sont pas encore vérifiés|guide de validation|n’ont pas encore été enregistrés/i,
+      futureListing: /après approbation|dès que.*approuvée/i,
     },
     es: {
-      directory: /directorio de plugins compartido/i,
-      sharedConnection: /mismo plugin y la misma conexión MCP/i,
-      install: /instala MaxVideoAI/i,
+      noSubmission: /no se presenta.*directorio de OpenAI|no presentar.*directorio de OpenAI/is,
+      directConnection: /MCP.*direct|directamente.*MCP/is,
       firstUse: /OAuth.*primer uso|primera vez.*OAuth/is,
-      approval: /públic.*aprobación|aprobación.*públic/i,
       permissions: /Business.*Enterprise\/Edu.*Pro.*lectura.*consulta/is,
-      retired: /guía para probar|prueba MaxVideoAI|sin verificar|todavía no se han verificado|guía de validación|aún no se han registrado/i,
+      futureListing: /después de la aprobación|cuando OpenAI.*apruebe/i,
     },
   } as const;
 
@@ -748,12 +780,10 @@ test('ChatGPT page copy uses the shared plugin journey without retired validatio
       compatibilityStatus: copy.compatibility.statuses.chatgptWeb,
     });
     const expected = expectations[locale];
-    assert.match(chatgptJourney, expected.directory);
-    assert.match(chatgptJourney, expected.sharedConnection);
-    assert.match(chatgptJourney, expected.install);
+    assert.match(chatgptJourney, expected.noSubmission);
+    assert.match(chatgptJourney, expected.directConnection);
     assert.match(chatgptJourney, expected.firstUse);
-    assert.match(chatgptJourney, expected.approval);
     assert.match(chatgptJourney, expected.permissions);
-    assert.doesNotMatch(chatgptJourney, expected.retired);
+    assert.doesNotMatch(chatgptJourney, expected.futureListing);
   }
 });

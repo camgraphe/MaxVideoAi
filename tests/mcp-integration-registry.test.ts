@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -7,13 +8,14 @@ import {
   getMcpIntegration,
   getMcpIntegrationIds,
   getMcpIntegrationLabel,
+  getMcpPublicIntegrationIds,
   getMcpPublicIntegrationPaths,
   getMcpVisibleIntegrationIds,
   isEnabledMcpAcquisitionClient,
   parseMcpIntegrationRegistry,
 } from '../frontend/lib/mcp-integration-registry';
 
-test('the registry contains the live floor, first-wave previews and hidden roadmap in order', () => {
+test('the registry contains five live integrations and the hidden roadmap in order', () => {
   assert.deepEqual(getMcpIntegrationIds(), [
     'claude',
     'chatgpt',
@@ -37,6 +39,23 @@ test('the registry contains the live floor, first-wave previews and hidden roadm
     '/integrations/claude',
     '/integrations/chatgpt',
     '/integrations/codex',
+    '/integrations/openclaw',
+    '/integrations/n8n',
+  ]);
+});
+
+test('public integration ids fail closed when a registry entry is withdrawn', () => {
+  const fixture = JSON.parse(readFileSync('frontend/config/mcp-integrations.json', 'utf8')) as {
+    integrations: Record<string, { site: { publication: string; indexable: boolean } }>;
+  };
+  fixture.integrations.openclaw.site = { publication: 'hidden', indexable: false };
+
+  const withdrawnRegistry = parseMcpIntegrationRegistry(fixture);
+  assert.deepEqual(getMcpPublicIntegrationIds(withdrawnRegistry), [
+    'claude',
+    'chatgpt',
+    'codex',
+    'n8n',
   ]);
 });
 
@@ -60,19 +79,12 @@ test('existing publication, evidence and action floors are preserved', () => {
   }
 });
 
-test('new hosts preserve indexation and acquisition gates independently of host evidence', () => {
+test('OpenClaw and n8n publish without upgrading their independent host evidence', () => {
   for (const id of ['openclaw', 'n8n'] as const) {
-    assert.equal(getMcpIntegration(id).site.publication, 'preview_noindex');
-    assert.equal(getMcpIntegration(id).site.indexable, false);
-    assert.equal(getMcpIntegration(id).acquisition.enabled, false);
-    assert.equal(isEnabledMcpAcquisitionClient(id), false);
-  }
-
-  for (const id of ['cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'] as const) {
-    assert.equal(getMcpIntegration(id).site.publication, 'hidden');
-    assert.equal(getMcpIntegration(id).site.indexable, false);
-    assert.equal(getMcpIntegration(id).acquisition.enabled, false);
-    assert.equal(isEnabledMcpAcquisitionClient(id), false);
+    assert.equal(getMcpIntegration(id).site.publication, 'live');
+    assert.equal(getMcpIntegration(id).site.indexable, true);
+    assert.equal(getMcpIntegration(id).acquisition.enabled, true);
+    assert.equal(isEnabledMcpAcquisitionClient(id), true);
   }
 
   assert.equal(getMcpHost('openclawGateway').evidence.status, 'tested_with_limits');
@@ -82,6 +94,16 @@ test('new hosts preserve indexation and acquisition gates independently of host 
   assert.equal(getMcpHost('n8nMcpClient').evidence.lastChecked, '2026-09-14');
   assert.equal(getMcpHost('n8nMcpClientTool').evidence.status, 'not-run');
   assert.equal(getMcpHost('n8nMcpClientTool').evidence.lastChecked, '2026-09-14');
+
+  assert.equal(getMcpIntegration('openclaw').store.status, 'listed');
+  assert.equal(getMcpIntegration('n8n').store.status, 'submitted');
+
+  for (const id of ['cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'] as const) {
+    assert.equal(getMcpIntegration(id).site.publication, 'hidden');
+    assert.equal(getMcpIntegration(id).site.indexable, false);
+    assert.equal(getMcpIntegration(id).acquisition.enabled, false);
+    assert.equal(isEnabledMcpAcquisitionClient(id), false);
+  }
 
   assert.equal(getMcpHost('cursorDesktop').evidence.status, 'tested_with_limits');
   assert.equal(getMcpHost('cursorDesktop').evidence.lastChecked, '2026-09-14');

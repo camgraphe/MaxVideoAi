@@ -39,13 +39,10 @@ export function McpPlatformSelector({
                 <span className="mt-2 block text-[11px] leading-4 text-text-muted dark:text-white/55">{item.status}</span>
               </>
             );
-            const className = `min-h-24 rounded-xl border p-4 ${item.availability === 'preview'
-              ? 'border-hairline bg-bg transition hover:border-border-hover hover:bg-surface-hover dark:border-white/[0.12] dark:bg-white/[0.035] dark:hover:border-white/[0.24] dark:hover:bg-white/[0.05]'
-              : 'border-hairline bg-bg/45 dark:border-white/[0.07] dark:bg-white/[0.018]'
-            }`;
+            const className = 'min-h-24 rounded-xl border border-hairline bg-bg/45 p-4 dark:border-white/[0.07] dark:bg-white/[0.018]';
 
             return item.href ? (
-              <Link key={item.client} href={item.href} className={className} data-platform-tier="preview">{content}</Link>
+              <Link key={item.client} href={item.href} className={className}>{content}</Link>
             ) : (
               <div key={item.client} className={className} data-platform-tier="preparing">{content}</div>
             );

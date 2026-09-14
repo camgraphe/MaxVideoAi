@@ -1,10 +1,22 @@
 # MaxVideoAI n8n workflow candidates
 
-These disabled JSON exports are review candidates, not launched n8n templates.
+These disabled JSON exports are reviewed workflow candidates. One candidate is
+privately submitted for human review; none is a public n8n library template.
 They use the **MCP Client** node for deterministic workflow steps with explicit
 tool inputs and ordering. Use the **MCP Client Tool** only when a bounded AI
 Agent needs selected discovery or planning tools. Paid confirmation remains a
 separate deterministic node after a human approval event.
+
+## Template-guideline recheck
+
+On 2026-09-14, the current submission guideline linked from the authenticated
+n8n Creator Portal was rechecked before upload. It requires a submitted
+workflow to include at least one explanatory Sticky Note. Each candidate now
+contains exactly one yellow-default, non-connected Sticky Note with its intended
+user and outcome, graph walkthrough, self-hosted MCP OAuth setup, applicable
+approval and recovery boundary, and the unclaimed n8n Cloud and MCP Client Tool
+scope. The notes are documentation-only: no executable node, connection,
+setting, credential boundary, activation state, or workflow behavior changed.
 
 ## Recorded self-hosted checkpoint
 
@@ -38,7 +50,9 @@ planning tools: `get_account_status`, `list_models`, `get_model_details`,
 `confirm_generation` were excluded. A Chat Model credential was not configured
 in the disposable instance, so agent-mediated tool invocation remains
 unverified. n8n Cloud, token refresh, and a post-revocation reconnect also
-remain unverified; the integration therefore stays a non-indexed preview.
+remain unverified. The tested self-hosted deterministic MCP Client scope is
+live and indexable on MaxVideoAI; those separate MCP Client Tool and n8n Cloud
+limitations remain outside the public claim.
 
 ## Credential boundary
 
@@ -71,5 +85,16 @@ A creative retry starts a fresh quote and approval cycle.
 
 Before catalogue release, repeat the relevant checks on the target deployment,
 configure a Chat Model for the bounded AI Agent path if that path will be
-claimed, and review the sanitized export. A template-library write requires a
-fresh policy review and explicit owner authorization for the exact files.
+claimed, and review the sanitized export. The product owner has authorized the
+exact three-file external action recorded in
+`docs/marketing/mcp-directory-submissions.md`; each template-library write
+still requires that authorized owner to complete the Creator Portal identity
+step, submit one reviewed workflow at a time, and record the observed result.
+
+The first exact candidate, `brief-to-approved-generation.json`, passed Creator
+Portal AI review and is privately `Pending` / `Under review` as workflow
+`19591`. The other two candidates have not been submitted because the portal
+disables `Share new template` while that review is pending. No public workflow
+library URL exists. None of the three JSON workflows calls `list_media` or
+`create_reference_upload_link`; private-reference automation remains
+unverified and outside their claimed scope.

@@ -56,18 +56,18 @@ function buildFrenchGuides(client: McpClientId): IntegrationHostGuide[] {
     return [
       {
         hostId: 'chatgptWeb',
-        title: 'Connecter MaxVideoAI par la fiche publique ou le MCP développeur',
-        intro: 'Utilisez la fiche publique du plugin partagé dès son approbation par OpenAI pour votre compte, ou connectez le MCP MaxVideoAI en mode développeur dès maintenant. Les deux parcours mènent à OAuth lors de la première utilisation.',
+        title: 'Connecter MaxVideoAI par le MCP développeur',
+        intro: 'Connectez directement le MCP MaxVideoAI en mode développeur ChatGPT, puis terminez OAuth à la première utilisation. MaxVideoAI n’est délibérément pas soumis au répertoire OpenAI selon la politique commerciale actuelle.',
         installInstruction: getIntegrationInstallInstruction('fr', 'chatgptWeb'),
         steps: [
-          { title: 'Installer la fiche publique après approbation', body: 'Dès que la fiche publique est approuvée par OpenAI et disponible pour votre compte ou espace, ouvrez le répertoire Plugins, choisissez MaxVideoAI et installez le plugin partagé.' },
-          { title: 'Connecter le MCP développeur maintenant', body: 'En mode développeur, ajoutez une connexion MaxVideoAI avec l’adresse MCP ci-dessous. Cette voie MCP directe reste distincte de l’installation depuis le répertoire public.' },
+          { title: 'Activer le mode développeur', body: 'Vérifiez que votre offre ChatGPT et votre rôle dans l’espace autorisent les permissions MCP nécessaires, puis activez le mode développeur.' },
+          { title: 'Ajouter la connexion MCP directe', body: 'Ajoutez une connexion MaxVideoAI avec l’adresse MCP ci-dessous. Ne collez jamais de jeton, mot de passe ou clé API dans l’adresse.' },
           { title: 'Démarrer une nouvelle discussion', body: 'Activez MaxVideoAI dans le menu des outils puis terminez OAuth lors de la première utilisation.' },
         ],
         commands: [],
-        setupValues: [{ label: 'Solution MCP en mode développeur', value: MCP_PRODUCTION_RESOURCE_URL }],
+        setupValues: [{ label: 'Adresse MCP du mode développeur', value: MCP_PRODUCTION_RESOURCE_URL }],
         authTrigger: 'OAuth démarre lorsque la nouvelle discussion ChatGPT utilise MaxVideoAI pour la première fois. Connectez-vous ou créez le compte MaxVideoAI à relier.',
-        limitation: 'La disponibilité dans le répertoire public commence après l’approbation d’OpenAI et reste soumise à la politique du compte ou de l’espace. Les espaces Business et Enterprise/Edu éligibles peuvent utiliser le MCP complet, tandis que Pro reste limité à la lecture et à la consultation. Le mode développeur peut connecter l’adresse MCP ci-dessus dès maintenant.',
+        limitation: 'Les espaces Business et Enterprise/Edu éligibles peuvent utiliser le MCP complet, tandis que Pro reste limité à la lecture et à la consultation. Le MCP direct en mode développeur reste disponible indépendamment de la décision actuelle de ne pas soumettre MaxVideoAI au répertoire OpenAI.',
       },
     ];
   }
@@ -105,12 +105,12 @@ export function buildFrenchIntegrationCopy(client: McpClientId): IntegrationPage
       ? 'Connecteur MaxVideoAI'
       : 'Plugin MaxVideoAI';
   const setupDescription = client === 'chatgpt'
-    ? 'Après approbation OpenAI, installez MaxVideoAI depuis le répertoire partagé de ChatGPT ou connectez le MCP en mode développeur ; OAuth démarre au premier usage.'
+    ? 'Connectez MaxVideoAI à ChatGPT par MCP direct en mode développeur ; OAuth démarre au premier usage pour comparer, valider un devis et récupérer le résultat.'
     : client === 'claude'
       ? 'Configurez le connecteur distant dans Claude pour préparer prompts et références, comparer les modèles vidéo IA, vérifier le devis et approuver la génération.'
       : 'Installez le plugin Codex pour préparer prompts et références, comparer les modèles vidéo IA, vérifier le devis exact et approuver la génération.';
   const setupIntro = client === 'chatgpt'
-    ? 'ChatGPT et Codex utilisent le même répertoire de plugins partagé et la même connexion MCP. Installez MaxVideoAI depuis la fiche publique après approbation, ou connectez le MCP développeur dès maintenant, puis démarrez une nouvelle discussion et terminez OAuth à la première utilisation.'
+    ? 'ChatGPT et Codex utilisent la même connexion MCP MaxVideoAI. Connectez-la directement en mode développeur ChatGPT, démarrez une nouvelle discussion puis terminez OAuth à la première utilisation. MaxVideoAI n’est pas soumis au répertoire OpenAI selon la politique commerciale actuelle ; cette décision distincte ne désactive pas le MCP direct.'
     : client === 'claude'
       ? 'Cette page Claude réunit la configuration du connecteur distant et le passage à la production : développez le brief, comparez modèles et budgets actuels, validez les références puis approuvez un devis MaxVideoAI exact lorsque la demande est prête.'
       : 'Cette page Codex réunit l’installation du plugin et le passage à la production : développez le brief, comparez modèles et budgets actuels, validez les références puis approuvez un devis MaxVideoAI exact lorsque la demande est prête.';
@@ -127,10 +127,10 @@ export function buildFrenchIntegrationCopy(client: McpClientId): IntegrationPage
       intro: setupIntro,
       unavailable: 'Préparez prompts et références, comparez les modèles, budgétez le projet et découvrez le parcours de production MaxVideoAI.',
       liveStatus: client === 'chatgpt'
-        ? 'MaxVideoAI se connecte gratuitement dans ChatGPT, sans abonnement supplémentaire. Utilisez le plugin public après approbation de la fiche ou connectez le MCP développeur dès maintenant, puis connectez-vous ou créez un compte par OAuth à la première utilisation ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI.'
+        ? 'MaxVideoAI se connecte directement et gratuitement en mode développeur ChatGPT, sans abonnement supplémentaire. Connectez-vous ou créez un compte par OAuth à la première utilisation ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI. Aucune fiche du répertoire OpenAI n’est revendiquée.'
         : 'La connexion MaxVideoAI est gratuite, sans abonnement supplémentaire. Connectez-vous ou créez un compte ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI à la consommation.',
       accountStatus: 'Un compte MaxVideoAI est requis et sa création est gratuite. La connexion n’ajoute aucun abonnement ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI.',
-      setupLabel: client === 'chatgpt' ? 'Installer MaxVideoAI dans ChatGPT' : `Configurer MaxVideoAI dans ${clientLabel}`,
+      setupLabel: client === 'chatgpt' ? 'Connecter MaxVideoAI dans ChatGPT' : `Configurer MaxVideoAI dans ${clientLabel}`,
       backLabel: 'Voir le parcours complet dans votre assistant IA',
       backHref: localizedIntegrationPath('fr', 'mcp'),
     },
@@ -140,7 +140,7 @@ export function buildFrenchIntegrationCopy(client: McpClientId): IntegrationPage
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 a validé sur le staging contrôlé OAuth, catalogue, budgets, devis exact, médias, récupération, envoi et recharge.',
         claudeCode: 'La configuration du connecteur partagé est prête, mais aucun contrôle direct de Claude Code en production n’a encore été enregistré.',
-        chatgptWeb: 'ChatGPT et Codex utilisent le même plugin et la même connexion MCP. Installez MaxVideoAI puis connectez votre compte par OAuth lors de la première utilisation.',
+        chatgptWeb: 'Le mode développeur ChatGPT peut connecter directement le MCP MaxVideoAI et lancer OAuth au premier usage. Ce parcours reste distinct de la décision actuelle de ne pas soumettre MaxVideoAI au répertoire OpenAI.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 a validé en production installation, OAuth, compte, catalogue, recommandations, budgets, devis exact, génération payante, récupération et contrat du lecteur intégré.',
       },
     },

@@ -11,6 +11,7 @@ export type McpClientActionCopy = {
   label: string;
   supportingLabel: string;
   installInstruction: string;
+  copyInstallInstruction: boolean;
 };
 
 export type McpConnectActionsCopy = {
@@ -63,7 +64,7 @@ export type McpPageCopy = {
       client: Exclude<McpClientId, 'claude' | 'chatgpt' | 'codex'>;
       href?: string;
       status: string;
-      availability: 'preview' | 'preparing';
+      availability: 'preparing';
     }>;
   };
   budget: {

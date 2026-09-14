@@ -42,14 +42,16 @@ export function IntegrationInstallCopy({
       </p>
       <h4 className="mt-1 text-xl font-semibold tracking-tight text-text-primary dark:text-white">{copy.title}</h4>
       <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary dark:text-white/68">{copy.body}</p>
-      <button
-        type="button"
-        data-copy-install-instructions
-        onClick={() => void copyText(instruction, 'instruction')}
-        className="mt-4 min-h-12 w-full rounded-[10px] bg-text-primary px-5 text-sm font-semibold text-bg transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:bg-white dark:text-black sm:w-auto sm:min-w-[320px]"
-      >
-        {copy.copyInstruction}
-      </button>
+      {copy.copyInstructionEnabled ? (
+        <button
+          type="button"
+          data-copy-install-instructions
+          onClick={() => void copyText(instruction, 'instruction')}
+          className="mt-4 min-h-12 w-full rounded-[10px] bg-text-primary px-5 text-sm font-semibold text-bg transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:bg-white dark:text-black sm:w-auto sm:min-w-[320px]"
+        >
+          {copy.copyInstruction}
+        </button>
+      ) : null}
       <p className="mt-2 min-h-5 text-xs text-text-secondary dark:text-white/68" role="status" aria-live="polite">
         {status}
       </p>

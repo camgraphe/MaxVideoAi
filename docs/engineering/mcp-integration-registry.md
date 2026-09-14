@@ -59,6 +59,22 @@ Adding a registry entry alone never authors a Next.js route or localized content
 4. run registry, host-proof, copy, route, and baseline contracts;
 5. review rendered wording so it does not imply validation for an untested sibling host.
 
+## Published tested-with-limits scopes
+
+OpenClaw is `live`, indexable, and acquisition-enabled for direct MCP and the
+listed ClawHub package. Its host evidence remains `tested_with_limits` because
+private-reference import, channel attachments, and inline channel rendering
+have not been verified.
+
+n8n is `live`, indexable, and acquisition-enabled only for the tested
+self-hosted deterministic MCP Client workflow. The MCP Client host remains
+`tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
+claimed. The template-library store state is `submitted` only for private
+Creator Portal workflow `19591`, which is `Pending` / `Under review`. The other
+two reviewed JSON workflows are not submitted because the portal disables the
+next-template action during that review. No public listing or verification is
+claimed.
+
 ## Later-host promotion sequence
 
 Cursor remains `hidden` with a `tested_with_limits` desktop checkpoint. GitHub

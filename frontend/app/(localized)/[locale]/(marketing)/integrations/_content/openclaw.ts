@@ -1,27 +1,27 @@
 import type { AppLocale } from '@/i18n/locales';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
-import { buildPreviewIntegrationCopy, getIntegrationInstallInstruction } from './shared';
-import type { IntegrationPageCopy, PreviewIntegrationText } from './types';
+import { buildIntegrationCopy, getIntegrationInstallInstruction } from './shared';
+import type { IntegrationPageCopy, IntegrationText } from './types';
 
 const COMMANDS = [
   `openclaw mcp set maxvideoai '{"url":"${MCP_PRODUCTION_RESOURCE_URL}","transport":"streamable-http","auth":"oauth"}'`,
   'openclaw mcp login maxvideoai',
 ];
 
-function english(): PreviewIntegrationText {
+function english(): IntegrationText {
   return {
-    metaTitle: 'MaxVideoAI for OpenClaw | Connection Preview',
-    metaDescription: 'Preview the approval-safe path for planning and producing AI video from an OpenClaw-managed agent through the MaxVideoAI remote MCP server.',
-    eyebrow: 'OPENCLAW CONNECTION PREVIEW',
-    heroTitle: 'Prepare an OpenClaw video-production workflow with MaxVideoAI',
-    heroIntro: 'This non-indexed preview documents the current OpenClaw remote MCP and OAuth setup. MaxVideoAI has not yet recorded the complete controlled-host lifecycle required for a public compatibility claim.',
-    unavailable: 'Direct host validation is still in progress. Use this page to review the intended setup, account, approval and recovery boundaries without treating the OpenClaw path as launched.',
-    setupLabel: 'Review the OpenClaw setup',
-    backLabel: 'Return to the live assistant workflow',
-    checkpointLabel: 'Documentation reviewed',
+    metaTitle: 'MaxVideoAI for OpenClaw | AI Video Production',
+    metaDescription: 'Connect OpenClaw to MaxVideoAI through direct MCP or ClawHub to plan, price, approve and recover AI video production with explicit limits.',
+    eyebrow: 'OPENCLAW AI VIDEO INTEGRATION',
+    heroTitle: 'Produce AI video from OpenClaw with MaxVideoAI',
+    heroIntro: 'Connect through the direct remote MCP server or install MaxVideoAI 1.0.0 from ClawHub. The tested OpenClaw path covers OAuth, planning, an explicitly approved generation, recovery, revocation and reconnect; private-reference import and channel rendering remain unverified.',
+    unavailable: 'OpenClaw is available through direct MCP and the listed ClawHub package, with explicit approval before spend. Private-reference import, channel attachments and inline channel rendering are outside the verified scope.',
+    setupLabel: 'Connect OpenClaw',
+    backLabel: 'See all supported workflows',
+    checkpointLabel: 'Tested checkpoint',
     machineStatusLabel: 'Host evidence state',
-    statuses: { openclawGateway: 'OpenClaw documents remote Streamable HTTP and OAuth, but the MaxVideoAI clean-install, OAuth lifecycle, paid confirmation and recovery checklist has not been run.' },
-    setupEyebrow: 'VALIDATION SETUP',
+    statuses: { openclawGateway: 'Tested with limits on OpenClaw 2026.9.4: OAuth denial and approval, discovery, planning, one explicit paid confirmation, accepted-job recovery, revocation, reconnect, refresh and ClawHub installation were exercised.' },
+    setupEyebrow: 'CONNECT OPENCLAW',
     setupTitle: 'Configure the remote MCP without storing MaxVideoAI credentials',
     setupIntro: 'OpenClaw supports shared operator OAuth and a per-requester identity mode. Choose the identity boundary for the channel before connecting; neither mode permits credentials in prompts or committed configuration.',
     guides: [{
@@ -38,7 +38,7 @@ function english(): PreviewIntegrationText {
       commands: COMMANDS,
       setupValues: [{ label: 'MaxVideoAI MCP endpoint', value: MCP_PRODUCTION_RESOURCE_URL }],
       authTrigger: 'Run openclaw mcp login maxvideoai after saving the server.',
-      limitation: 'Channel attachment, inline result and approval interfaces vary. The controlled test must record those limits before this preview can become a public compatibility page.',
+      limitation: 'Private-reference import, channel attachments and inline channel rendering were not verified. Use the returned MaxVideoAI library destination when the channel does not render a result.',
     }],
     oauthTitle: 'Keep channel identity and MaxVideoAI account identity explicit',
     oauthBody: 'Shared OAuth is operator-managed. Per-requester OAuth isolates accounts by trusted sender. In both cases the browser handles MaxVideoAI sign-in and consent; the conversation never receives the password or payment details.',
@@ -54,13 +54,13 @@ function english(): PreviewIntegrationText {
     ],
     referencesTitle: 'Keep private references inside MaxVideoAI-owned handoffs',
     referencesPlanning: 'OpenClaw can help plan reference roles, but the selected model supplies the current accepted kinds and limits.',
-    referencesGated: 'Use an existing account-owned asset or a bounded MaxVideoAI upload handoff. Record each channel’s attachment limitations during host validation.',
-    helpEyebrow: 'VALIDATION NOTES',
-    helpTitle: 'What must be checked before launch',
-    helpIntro: 'The public claim remains closed until the exact OpenClaw version completes the applicable lifecycle.',
+    referencesGated: 'Private-reference import and channel attachments were not verified in OpenClaw. Add private media through MaxVideoAI, then use the account library and result link outside any unverified channel-rendering path.',
+    helpEyebrow: 'SUPPORTED SCOPE',
+    helpTitle: 'What the tested OpenClaw path includes',
+    helpIntro: 'Direct MCP and the ClawHub package are available with the following host-specific boundaries.',
     helpItems: [
-      { question: 'Is MaxVideoAI listed on ClawHub?', answer: 'No listing is claimed. A ClawHub package is a separate distribution artifact and cannot prove direct MCP compatibility.' },
-      { question: 'Can every channel send the same references?', answer: 'Do not assume that. Attachment and inline-result behavior must be recorded per supported channel.' },
+      { question: 'Is MaxVideoAI listed on ClawHub?', answer: 'Yes. MaxVideoAI 1.0.0 is listed on ClawHub under @camgraphe. The listing remains separate from direct MCP host evidence.' },
+      { question: 'Can every channel send the same references?', answer: 'No supported claim is made for private-reference import or channel attachments. Channel rendering also remains unverified.' },
       { question: 'What happens after a timeout?', answer: 'Recover the existing accepted job by its identifier. Never create a replacement paid job automatically.' },
     ],
     disconnectTitle: 'Disconnect OpenClaw and revoke MaxVideoAI access',
@@ -70,29 +70,29 @@ function english(): PreviewIntegrationText {
   };
 }
 
-function french(): PreviewIntegrationText {
+function french(): IntegrationText {
   const copy = english();
   return {
     ...copy,
-    metaTitle: 'MaxVideoAI pour OpenClaw | Aperçu de connexion',
-    metaDescription: 'Aperçu du parcours sécurisé pour planifier et produire une vidéo IA depuis un agent OpenClaw via le serveur MCP distant MaxVideoAI.',
-    eyebrow: 'APERÇU DE CONNEXION OPENCLAW',
-    heroTitle: 'Préparez un workflow de production vidéo OpenClaw avec MaxVideoAI',
-    heroIntro: 'Cet aperçu non indexé documente la configuration MCP distante et OAuth actuelle d’OpenClaw. MaxVideoAI n’a pas encore enregistré le cycle complet requis pour revendiquer la compatibilité publique.',
-    unavailable: 'La validation directe de l’hôte est en cours. Consultez ici la configuration et les limites de compte, d’approbation et de reprise sans considérer le parcours OpenClaw comme lancé.',
-    setupLabel: 'Examiner la configuration OpenClaw',
-    backLabel: 'Revenir au workflow assistant déjà en ligne',
-    checkpointLabel: 'Documentation examinée',
+    metaTitle: 'MaxVideoAI pour OpenClaw | Production vidéo IA',
+    metaDescription: 'Connectez OpenClaw à MaxVideoAI par MCP direct ou ClawHub pour planifier, chiffrer, approuver et reprendre une production vidéo IA.',
+    eyebrow: 'INTÉGRATION VIDÉO IA OPENCLAW',
+    heroTitle: 'Produisez vos vidéos IA depuis OpenClaw avec MaxVideoAI',
+    heroIntro: 'Connectez le serveur MCP distant directement ou installez MaxVideoAI 1.0.0 depuis ClawHub. Le parcours testé couvre OAuth, planification, génération approuvée, reprise, révocation et reconnexion ; l’import de références privées et le rendu par canal restent non vérifiés.',
+    unavailable: 'OpenClaw est disponible par MCP direct et via le paquet ClawHub listé, avec accord explicite avant toute dépense. Références privées, pièces jointes et rendu intégré aux canaux restent hors du périmètre vérifié.',
+    setupLabel: 'Connecter OpenClaw',
+    backLabel: 'Voir tous les workflows compatibles',
+    checkpointLabel: 'Contrôle testé',
     machineStatusLabel: 'État de preuve de l’hôte',
-    statuses: { openclawGateway: 'OpenClaw documente Streamable HTTP distant et OAuth, mais le test MaxVideoAI d’installation propre, cycle OAuth, confirmation payante et reprise n’a pas été exécuté.' },
-    setupEyebrow: 'CONFIGURATION DE VALIDATION',
+    statuses: { openclawGateway: 'Testé avec limites sur OpenClaw 2026.9.4 : refus et accord OAuth, découverte, planification, une confirmation payante explicite, reprise, révocation, reconnexion, renouvellement et installation ClawHub ont été exercés.' },
+    setupEyebrow: 'CONNECTER OPENCLAW',
     setupTitle: 'Configurez le MCP distant sans stocker d’identifiants MaxVideoAI',
     setupIntro: 'OpenClaw propose un OAuth opérateur partagé et un mode d’identité par demandeur. Choisissez la frontière d’identité du canal avant la connexion ; aucun mode n’autorise des identifiants dans les prompts ou la configuration versionnée.',
     guides: [{ ...copy.guides[0], installInstruction: getIntegrationInstallInstruction('fr', 'openclawGateway'), steps: [
       { title: 'Choisir le modèle d’identité', body: 'Utilisez OAuth partagé pour un agent contrôlé par l’opérateur. Utilisez OAuth par demandeur si chaque expéditeur de confiance doit connecter son propre compte.' },
       { title: 'Enregistrer le serveur distant', body: 'Ajoutez le point HTTPS en Streamable HTTP avec OAuth, sans jeton ni mot de passe dans la configuration.' },
       { title: 'S’authentifier et vérifier', body: 'Lancez la connexion navigateur, puis consultez le compte et le catalogue actuel avant de préparer un devis.' },
-    ], limitation: 'Les interfaces de pièces jointes, résultats et approbations varient selon le canal. Le test contrôlé doit les consigner avant toute publication.' }],
+    ], limitation: 'L’import de références privées, les pièces jointes et le rendu intégré aux canaux ne sont pas vérifiés. Utilisez la bibliothèque MaxVideoAI si le canal n’affiche pas le résultat.' }],
     oauthTitle: 'Gardez explicites l’identité du canal et celle du compte MaxVideoAI',
     oauthBody: 'OAuth partagé appartient à l’opérateur ; OAuth par demandeur sépare les comptes. Dans les deux cas, le navigateur gère la connexion et le consentement sans transmettre mot de passe ni paiement à la conversation.',
     oauthSteps: ['Choisir une identité partagée ou par demandeur', 'Valider la connexion MaxVideoAI dans le navigateur', 'Tester la déconnexion, la perte d’accès puis une nouvelle connexion explicite'],
@@ -107,13 +107,13 @@ function french(): PreviewIntegrationText {
     ],
     referencesTitle: 'Gardez les références privées dans les relais MaxVideoAI',
     referencesPlanning: 'OpenClaw peut planifier les rôles ; le modèle sélectionné fournit les types et limites actuels.',
-    referencesGated: 'Utilisez un média du compte ou un relais d’envoi MaxVideoAI borné, puis consignez les limites de chaque canal.',
-    helpEyebrow: 'NOTES DE VALIDATION',
-    helpTitle: 'Ce qui doit être contrôlé avant le lancement',
-    helpIntro: 'La revendication publique reste fermée jusqu’au test du cycle applicable sur une version OpenClaw précise.',
+    referencesGated: 'L’import de références privées et les pièces jointes ne sont pas vérifiés dans OpenClaw. Ajoutez les médias privés dans MaxVideoAI et utilisez la bibliothèque hors des parcours de rendu par canal non vérifiés.',
+    helpEyebrow: 'PÉRIMÈTRE COMPATIBLE',
+    helpTitle: 'Ce que couvre le parcours OpenClaw testé',
+    helpIntro: 'Le MCP direct et le paquet ClawHub sont disponibles avec les limites propres à cet hôte.',
     helpItems: [
-      { question: 'MaxVideoAI est-il listé sur ClawHub ?', answer: 'Aucune liste n’est revendiquée. Le paquet ClawHub est distinct et ne prouve pas la compatibilité MCP directe.' },
-      { question: 'Tous les canaux acceptent-ils les mêmes références ?', answer: 'Ne le supposez pas : pièces jointes et résultats intégrés doivent être testés par canal.' },
+      { question: 'MaxVideoAI est-il listé sur ClawHub ?', answer: 'Oui. MaxVideoAI 1.0.0 est listé sur ClawHub sous @camgraphe. Cette liste reste distincte de la preuve MCP directe.' },
+      { question: 'Tous les canaux acceptent-ils les mêmes références ?', answer: 'Aucune compatibilité n’est revendiquée pour les références privées ou pièces jointes. Le rendu intégré reste également non vérifié.' },
       { question: 'Que faire après un délai ?', answer: 'Reprenez le job déjà accepté avec son identifiant ; ne créez jamais automatiquement un second job payant.' },
     ],
     disconnectTitle: 'Déconnecter OpenClaw et révoquer MaxVideoAI',
@@ -123,29 +123,29 @@ function french(): PreviewIntegrationText {
   };
 }
 
-function spanish(): PreviewIntegrationText {
+function spanish(): IntegrationText {
   const copy = english();
   return {
     ...copy,
-    metaTitle: 'MaxVideoAI para OpenClaw | Vista previa de conexión',
-    metaDescription: 'Vista previa del flujo seguro para planificar y producir vídeo IA desde un agente OpenClaw mediante el servidor MCP remoto de MaxVideoAI.',
-    eyebrow: 'VISTA PREVIA DE OPENCLAW',
-    heroTitle: 'Prepara un flujo de producción de vídeo OpenClaw con MaxVideoAI',
-    heroIntro: 'Esta vista previa no indexada documenta la configuración MCP remota y OAuth actual de OpenClaw. MaxVideoAI todavía no ha registrado el ciclo completo necesario para afirmar compatibilidad pública.',
-    unavailable: 'La validación directa del host sigue en curso. Revisa la configuración y los límites de cuenta, aprobación y recuperación sin considerar lanzada la ruta OpenClaw.',
-    setupLabel: 'Revisar la configuración de OpenClaw',
-    backLabel: 'Volver al flujo de asistentes ya publicado',
-    checkpointLabel: 'Documentación revisada',
+    metaTitle: 'MaxVideoAI para OpenClaw | Producción de vídeo IA',
+    metaDescription: 'Conecta OpenClaw con MaxVideoAI mediante MCP directo o ClawHub para planificar, presupuestar, aprobar y recuperar producción de vídeo IA.',
+    eyebrow: 'INTEGRACIÓN DE VÍDEO IA OPENCLAW',
+    heroTitle: 'Produce vídeo IA desde OpenClaw con MaxVideoAI',
+    heroIntro: 'Conecta directamente el servidor MCP remoto o instala MaxVideoAI 1.0.0 desde ClawHub. La ruta probada cubre OAuth, planificación, generación aprobada, recuperación, revocación y reconexión; la importación de referencias privadas y el renderizado por canal siguen sin verificar.',
+    unavailable: 'OpenClaw está disponible mediante MCP directo y el paquete listado en ClawHub, con aprobación explícita antes del gasto. Las referencias privadas, los adjuntos y el renderizado dentro de canales quedan fuera del alcance verificado.',
+    setupLabel: 'Conectar OpenClaw',
+    backLabel: 'Ver todos los flujos compatibles',
+    checkpointLabel: 'Prueba realizada',
     machineStatusLabel: 'Estado de evidencia del host',
-    statuses: { openclawGateway: 'OpenClaw documenta Streamable HTTP remoto y OAuth, pero aún no se ha ejecutado la instalación limpia, el ciclo OAuth, la confirmación pagada ni la recuperación de MaxVideoAI.' },
-    setupEyebrow: 'CONFIGURACIÓN DE VALIDACIÓN',
+    statuses: { openclawGateway: 'Probado con límites en OpenClaw 2026.9.4: rechazo y aprobación OAuth, descubrimiento, planificación, una confirmación pagada explícita, recuperación, revocación, reconexión, renovación e instalación desde ClawHub.' },
+    setupEyebrow: 'CONECTAR OPENCLAW',
     setupTitle: 'Configura el MCP remoto sin guardar credenciales de MaxVideoAI',
     setupIntro: 'OpenClaw admite OAuth compartido del operador y un modo de identidad por solicitante. Elige el límite de identidad del canal antes de conectar; ningún modo permite credenciales en prompts o configuración versionada.',
     guides: [{ ...copy.guides[0], installInstruction: getIntegrationInstallInstruction('es', 'openclawGateway'), steps: [
       { title: 'Elegir el modelo de identidad', body: 'Usa OAuth compartido para un agente del operador y OAuth por solicitante cuando cada remitente de confianza conecte su propia cuenta.' },
       { title: 'Guardar el servidor remoto', body: 'Registra el endpoint HTTPS como Streamable HTTP con OAuth, sin tokens ni contraseñas en la configuración.' },
       { title: 'Autenticar e inspeccionar', body: 'Completa el consentimiento en el navegador y consulta cuenta y catálogo antes de preparar un precio exacto.' },
-    ], limitation: 'Las interfaces de adjuntos, resultados y aprobación cambian según el canal. Deben registrarse antes de publicar.' }],
+    ], limitation: 'La importación de referencias privadas, los adjuntos y el renderizado integrado en canales no se verificaron. Usa la biblioteca MaxVideoAI si el canal no muestra el resultado.' }],
     oauthTitle: 'Mantén explícitas la identidad del canal y la cuenta MaxVideoAI',
     oauthBody: 'OAuth compartido pertenece al operador; OAuth por solicitante separa cuentas. El navegador gestiona acceso y consentimiento sin entregar contraseña ni pagos a la conversación.',
     oauthSteps: ['Elegir identidad compartida o por solicitante', 'Completar acceso y consentimiento en el navegador', 'Probar cierre, pérdida de acceso y una nueva conexión explícita'],
@@ -160,13 +160,13 @@ function spanish(): PreviewIntegrationText {
     ],
     referencesTitle: 'Mantén referencias privadas en transferencias de MaxVideoAI',
     referencesPlanning: 'OpenClaw puede planificar los roles; el modelo elegido devuelve tipos y límites actuales.',
-    referencesGated: 'Usa un activo de la cuenta o una transferencia limitada de MaxVideoAI y registra las restricciones de cada canal.',
-    helpEyebrow: 'NOTAS DE VALIDACIÓN',
-    helpTitle: 'Qué debe comprobarse antes del lanzamiento',
-    helpIntro: 'La afirmación pública sigue cerrada hasta probar el ciclo aplicable en una versión exacta de OpenClaw.',
+    referencesGated: 'La importación de referencias privadas y los adjuntos no están verificados en OpenClaw. Añade medios privados en MaxVideoAI y usa la biblioteca fuera de las rutas de renderizado por canal no verificadas.',
+    helpEyebrow: 'ALCANCE COMPATIBLE',
+    helpTitle: 'Qué incluye la ruta probada de OpenClaw',
+    helpIntro: 'El MCP directo y el paquete ClawHub están disponibles con estos límites específicos del host.',
     helpItems: [
-      { question: '¿MaxVideoAI aparece en ClawHub?', answer: 'No se afirma ningún listado. El paquete ClawHub es independiente y no prueba la compatibilidad MCP directa.' },
-      { question: '¿Todos los canales aceptan las mismas referencias?', answer: 'No debe suponerse: los adjuntos y resultados integrados se prueban por canal.' },
+      { question: '¿MaxVideoAI aparece en ClawHub?', answer: 'Sí. MaxVideoAI 1.0.0 está listado en ClawHub bajo @camgraphe. El listado es independiente de la evidencia MCP directa.' },
+      { question: '¿Todos los canales aceptan las mismas referencias?', answer: 'No se afirma compatibilidad con referencias privadas o adjuntos. El renderizado integrado también sigue sin verificar.' },
       { question: '¿Qué ocurre tras un timeout?', answer: 'Recupera el job aceptado por su identificador; nunca crees automáticamente otro job de pago.' },
     ],
     disconnectTitle: 'Desconectar OpenClaw y revocar MaxVideoAI',
@@ -177,7 +177,7 @@ function spanish(): PreviewIntegrationText {
 }
 
 export function buildOpenClawIntegrationCopy(locale: AppLocale): IntegrationPageCopy {
-  return buildPreviewIntegrationCopy({
+  return buildIntegrationCopy({
     client: 'openclaw',
     locale,
     text: locale === 'fr' ? french() : locale === 'es' ? spanish() : english(),

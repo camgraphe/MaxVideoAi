@@ -590,3 +590,68 @@ revocation fix is deployed and hosted-verified.
 ## Completion Definition
 
 The rollout is complete only when every applicable checkbox above has evidence or an explicit current incompatibility record, every published claim is backed by a named host checkpoint, every external listing has a recorded factual state, the production release has a rollback point, and the post-release SEO/funnel observation window has been reviewed.
+
+---
+
+## Owner-authorized finalization addendum — 2026-09-14
+
+The product owner has now approved continuing the ecosystem plan through the
+remaining local and external publication work. This supersedes only the
+conservative publication decision recorded under Task 5; it does not weaken
+the evidence boundaries, spending approval, credential handling, or existing
+Claude/ChatGPT/Codex non-regression constraints.
+
+### Task 13: Publish the supported OpenClaw and n8n scopes
+
+- [x] Promote OpenClaw to a live, indexable, acquisition-enabled integration.
+- [x] Describe OpenClaw as available through direct MCP and ClawHub without
+  claiming the unverified private-reference or channel-rendering paths.
+- [x] Promote n8n to a live, indexable, acquisition-enabled integration for
+  the tested self-hosted deterministic MCP Client workflow.
+- [x] Keep the n8n AI Agent MCP Client Tool and n8n Cloud limitations explicit.
+- [x] Remove preview wording and update EN/FR/ES metadata, copy, sitemap,
+  hreflang, JSON-LD, hub actions, attribution, and evidence documentation.
+- [x] Preserve all existing Claude, ChatGPT, and Codex public behavior.
+- [x] Run the focused MCP suites, frontend lint, exposure lint, TypeScript,
+  production build, and localized HTTP smoke tests.
+
+### Task 14: Correct public directory and release messaging
+
+- [x] Remove wording that promises a future public ChatGPT listing while the
+  current OpenAI commerce-policy decision remains `do_not_submit`.
+- [x] Keep direct ChatGPT developer-mode MCP setup public and unchanged.
+- [x] Record the active Official MCP Registry, canonical GitHub `0.3.3`
+  release, ClawHub `1.0.0`, and downstream aggregator listings.
+- [x] Record that GitHub's MCP registry currently has no MaxVideoAI entry and
+  that n8n's workflow library has not yet received the templates.
+- [x] Keep Anthropic and OpenAI directory non-submission decisions explicit and
+  independent from direct MCP availability.
+
+### Task 15: Complete authorized external distribution actions
+
+- [x] Correct the stale `v0.2.0` latest-release surface in the main GitHub
+  repository without replacing the canonical `maxvideoai-plugin` artifacts.
+- [x] Submit the first exact validated credential-free n8n template through the
+  owner-controlled workflow-library process; record its private pending-review
+  state without claiming a public listing.
+- [ ] Submit the two remaining exact n8n templates when the platform re-enables
+  `Share new template` after its current human review.
+- [x] Check GitHub's current documented MCP-registry process and record that it
+  exposes no public third-party submission route; do not invent an unsupported
+  registration path.
+- [x] Claim the existing MaxVideoAI record on MCPBeat and record the observed
+  third-party health-state caveat.
+- [ ] Complete Glama ownership verification after the permanent HTTP challenge
+  route has passed the reviewed Production deployment.
+- [x] Recheck and record every currently resulting public URL, endpoint,
+  version, owner, and status without promoting pending or unavailable states.
+
+### Task 16: Final verification and handoff
+
+- [ ] Run full non-regression and build gates on the final branch.
+- [ ] Obtain a whole-branch code review and address load-bearing findings.
+- [ ] Push and open or update the review artifact only after fresh verification.
+- [ ] Deploy only through the repository's reviewed production workflow.
+- [ ] Smoke-test the final production routes and external listing links.
+- [ ] Leave time-window observations such as the 14-day funnel baseline as
+  scheduled operational follow-up rather than falsely marking elapsed time.

@@ -32,7 +32,7 @@ The same connected account and Library are used on the website and through the p
 ## Which setup should you use?
 
 - **Claude:** add the remote connector/plugin, complete OAuth, then begin with a no-spend plan. Follow the [Claude guide](docs/claude.md).
-- **ChatGPT:** install the shared plugin when it is available in the public directory, or use the documented developer MCP fallback. Follow the [ChatGPT guide](docs/chatgpt.md).
+- **ChatGPT:** connect the direct MCP in developer mode and complete OAuth on first use. MaxVideoAI is not submitted to the OpenAI directory under the current commerce policy. Follow the [ChatGPT guide](docs/chatgpt.md).
 - **Codex:** install the tagged public package, open a new task, and call `$maxvideoai:plan` or `$maxvideoai:generate`. Follow the [Codex guide](docs/codex.md).
 - **Another MCP client:** connect only if the client supports remote Streamable HTTP and OAuth. Follow the [generic MCP guide](docs/generic-mcp.md).
 

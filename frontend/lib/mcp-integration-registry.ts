@@ -218,6 +218,15 @@ export function getMcpVisibleIntegrationIds(): McpIntegrationId[] {
   return getMcpIntegrationIds().filter((id) => getMcpIntegration(id).site.publication !== 'hidden');
 }
 
+export function getMcpPublicIntegrationIds(
+  source: Pick<ParsedRegistry, 'integrations'> = registry,
+): McpIntegrationId[] {
+  return Object.values(source.integrations)
+    .filter((integration) => integration.site.publication === 'live' && integration.site.indexable)
+    .sort((left, right) => left.displayOrder - right.displayOrder)
+    .map((integration) => integration.id);
+}
+
 export function getMcpIntegration(id: McpIntegrationId): McpIntegrationRecord {
   return registry.integrations[id] as McpIntegrationRecord;
 }
@@ -231,9 +240,8 @@ export function getMcpHost(id: McpHostId): McpHostRecord {
 }
 
 export function getMcpPublicIntegrationPaths(): Array<`/integrations/${string}`> {
-  return getMcpIntegrationIds()
+  return getMcpPublicIntegrationIds()
     .map(getMcpIntegration)
-    .filter((integration) => integration.site.publication === 'live' && integration.site.indexable)
     .map((integration) => integration.englishPath);
 }
 

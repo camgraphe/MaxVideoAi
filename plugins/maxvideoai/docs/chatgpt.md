@@ -1,11 +1,11 @@
 # Use MaxVideoAI with ChatGPT
 
-ChatGPT and Codex use the same MaxVideoAI plugin and the same MCP connection. Install or connect, then complete OAuth on the first use. From there, you can compare current video models, prepare an exact quote, approve one paid attempt, and recover finished work in the MaxVideoAI Library.
+ChatGPT and Codex use the same MaxVideoAI MCP connection. Connect it in ChatGPT developer mode, then complete OAuth on the first use. From there, you can compare current video models, prepare an exact quote, approve one paid attempt, and recover finished work in the MaxVideoAI Library.
 
 For a safe first request, jump to the [no-spend verification](#how-do-i-verify-without-spending-credits).
 
 ```text
-Install or connect → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library
+Connect direct MCP → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library
 ```
 
 ## Which ChatGPT plans and permissions support the connection?
@@ -21,21 +21,11 @@ Pro: read/fetch MCP permissions in developer mode
 
 ## How do I install or connect MaxVideoAI?
 
-The MaxVideoAI plugin is designed for the shared ChatGPT and Codex directory. Public directory availability begins after the listing is approved.
+MaxVideoAI is deliberately not submitted to the OpenAI directory under the current commerce policy. This directory decision is separate from direct MCP availability and does not disable the live developer-mode setup below.
 
-### Public directory plugin
+### Direct developer MCP connection
 
-After approval, go to **Plugins** in ChatGPT, or **Apps** if that is shown for your rollout or account:
-
-1. Select MaxVideoAI.
-2. Choose **Install plugin** if shown.
-3. Choose **Connect** if prompted, then complete OAuth in your browser.
-
-To invoke MaxVideoAI in ChatGPT, mention `@MaxVideoAI`, or choose **+ → More → MaxVideoAI**, when those controls are available for your account.
-
-### Direct developer MCP fallback
-
-For eligible workspaces that need a direct connection, the developer MCP URL fallback is `https://api.maxvideoai.com/mcp`:
+For eligible workspaces, the developer-mode MCP endpoint is `https://api.maxvideoai.com/mcp`:
 
 1. Confirm that your plan and role permit developer mode under OpenAI's current beta rules.
 2. Enable developer mode from the Apps advanced settings or workspace permissions available to your role.
@@ -47,7 +37,7 @@ For eligible workspaces that need a direct connection, the developer MCP URL fal
 ```text
 Remote MCP endpoint: https://api.maxvideoai.com/mcp
 Authentication: OAuth on first use
-Directory route: available after public listing approval
+OpenAI directory: not submitted under the current commerce policy
 ```
 
 ## What happens after OAuth?
@@ -74,14 +64,12 @@ Then move to a concrete request only when the model, prompt, settings, and suppo
 
 ## How do I disconnect and revoke access?
 
-**Public plugin installation:** workspace admins manage the plugin under **Workspace settings → Plugins**.
-
-**Underlying app connection:** users manage the app connection or connected account from **Settings → Apps**, or from the connection surface where shown for their account, then choose **Disconnect** when available.
+**App connection:** users manage the app connection or connected account from **Settings → Apps**, or from the connection surface where shown for their account, then choose **Disconnect** when available. Workspace admins manage workspace connections through the controls available to their role.
 
 **Authorization:** revoke the corresponding MaxVideoAI OAuth connection from your MaxVideoAI account connection settings. Disconnecting the app connection in ChatGPT does not replace that MaxVideoAI-side revocation.
 
 ```text
-Manage the workspace plugin → disconnect the app connection → revoke the MaxVideoAI OAuth connection
+Disconnect the app connection → revoke the MaxVideoAI OAuth connection
 ```
 
 ## Sources
@@ -91,4 +79,4 @@ Manage the workspace plugin → disconnect the app connection → revoke the Max
 - [OpenAI: Plugins in ChatGPT and Codex](https://help.openai.com/en/articles/20001256-plugins-in-codex)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-09-14.

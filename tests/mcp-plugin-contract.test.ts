@@ -410,7 +410,16 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     'privacy-and-permissions.md',
     'troubleshooting.md',
     'how-it-works.md',
-  ];
+  ] as const;
+  const expectedReviewDates: Record<(typeof guideNames)[number], string> = {
+    'chatgpt.md': '2026-09-14',
+    'claude.md': '2026-08-28',
+    'codex.md': '2026-08-28',
+    'generic-mcp.md': '2026-08-28',
+    'privacy-and-permissions.md': '2026-08-28',
+    'troubleshooting.md': '2026-08-28',
+    'how-it-works.md': '2026-08-28',
+  };
   const guideJourneyContracts: Record<string, { expectedBehavior: RegExp; disconnectPath: RegExp }> = {
     'chatgpt.md': {
       expectedBehavior: /Example[\s\S]{0,240}stop before any paid generation/i,
@@ -446,7 +455,11 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     const guidePath = path.join(pluginRoot, 'docs', guideName);
     assert.ok(existsSync(guidePath), `${guideName} must exist`);
     const guide = read(`docs/${guideName}`);
-    assert.match(guide, /Last reviewed: 2026-08-28/);
+    assert.deepEqual(
+      guide.match(/^Last reviewed: \d{4}-\d{2}-\d{2}\.$/gm),
+      [`Last reviewed: ${expectedReviewDates[guideName]}.`],
+      `${guideName} must expose its exact current review date once`,
+    );
     assert.match(guide, /!\[[^\]]{12,}\]\(\.\.\/assets\//, `${guideName} needs a useful visual`);
     assert.match(guide, /not (?:a )?native[^.\n]{0,40}(?:capture|proof)/i, `${guideName} must label the visual boundary`);
     assert.match(guide, /\*\*Example\*\*:\s*“[^”]{20,}”/, `${guideName} needs a concrete first prompt`);
@@ -467,7 +480,8 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   const chatgpt = read('docs/chatgpt.md');
   assert.match(chatgpt, /Business and Enterprise\/Edu/i);
   assert.match(chatgpt, /Pro[^\n]*(?:read\/fetch|read and fetch)/i);
-  assert.match(chatgpt, /Plugins[\s\S]{0,160}Apps[\s\S]{0,80}if[^.]*shown/i);
+  assert.match(chatgpt, /Enable developer mode[\s\S]{0,240}\*\*Apps → Create\*\*/i);
+  assert.match(chatgpt, /OAuth authentication[\s\S]{0,180}\*\*Scan Tools\*\*/i);
   assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta/);
   assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/11487775-connectors-in-chatgpt/);
   assert.doesNotMatch(chatgpt, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT/i);

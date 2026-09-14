@@ -11,7 +11,13 @@ const files = [
   'completion-notification.json',
 ] as const;
 
-type Node = { id: string; name: string; type: string; parameters: Record<string, unknown> };
+type Node = {
+  id: string;
+  name: string;
+  type: string;
+  position: unknown;
+  parameters: Record<string, unknown>;
+};
 type Workflow = {
   name: string;
   active: boolean;
@@ -44,6 +50,68 @@ function reachable(workflow: Workflow, from: string, to: string): boolean {
 function directTargets(workflow: Workflow, from: string, output = 0): string[] {
   return (workflow.connections[from]?.main?.[output] ?? []).map((edge) => edge.node);
 }
+
+test('each n8n candidate includes one isolated submission-guideline note with complete setup guidance', () => {
+  const workflowSpecificGuidance = new Map<typeof files[number], RegExp[]>([
+    [
+      'brief-to-approved-generation.json',
+      [/exact fresh quote/i, /quoteId/, /confirm_generation/, /jobId/, /bounded (?:status )?recovery/i],
+    ],
+    [
+      'campaign-queue.json',
+      [/one approval per item/i, /exact fresh quote/i, /quoteId/, /confirm_generation/, /jobId/],
+    ],
+    [
+      'completion-notification.json',
+      [/acceptedJobId/, /does not prepare or confirm/i, /upstream approval/i, /recovery/i],
+    ],
+  ]);
+
+  for (const file of files) {
+    const workflow = load(file);
+    const notes = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote');
+
+    assert.equal(notes.length, 1, `${file}: expected exactly one Sticky Note`);
+    const [note] = notes;
+    const content = String(note.parameters.content ?? '');
+    const position = note.position;
+
+    assert.equal(workflow.nodes.filter((node) => node.id === note.id).length, 1, `${file}: note id must be unique`);
+    assert.equal(workflow.nodes.filter((node) => node.name === note.name).length, 1, `${file}: note name must be unique`);
+    assert.match(note.id, /^[a-z][a-z0-9-]+-guide$/);
+    assert.match(note.name, /^Template guide:/);
+    assert.ok(Array.isArray(position), `${file}: note position must be a coordinate pair`);
+    assert.equal(position.length, 2, `${file}: note position must be a coordinate pair`);
+    assert.ok(position.every((coordinate) => typeof coordinate === 'number' && Number.isFinite(coordinate)));
+    assert.ok(Number(note.parameters.width) >= 500, `${file}: note should be wide enough to read`);
+    assert.ok(Number(note.parameters.height) >= 500, `${file}: note should be tall enough to read`);
+    assert.ok(content.length >= 800, `${file}: note should contain substantive instructions`);
+    assert.match(content, /^# /);
+    assert.match(content, /## Intended user and outcome/i);
+    assert.match(content, /## How it works/i);
+    assert.match(content, /## Setup/i);
+    assert.match(content, /self-hosted n8n/i);
+    assert.match(content, /MaxVideoAI MCP OAuth/i);
+    assert.match(content, /https:\/\/api\.maxvideoai\.com\/mcp/);
+    assert.match(content, /after import/i);
+    assert.match(content, /n8n Cloud/i);
+    assert.match(content, /MCP Client Tool/i);
+    for (const pattern of workflowSpecificGuidance.get(file) ?? []) {
+      assert.match(content, pattern, `${file}: missing ${pattern}`);
+    }
+
+    assert.equal(note.name in workflow.connections, false, `${file}: note must not be a connection source`);
+    for (const outputs of Object.values(workflow.connections)) {
+      for (const branch of outputs.main ?? []) {
+        assert.equal(
+          (branch ?? []).some((edge) => edge.node === note.name),
+          false,
+          `${file}: note must not be a connection target`,
+        );
+      }
+    }
+  }
+});
 
 test('n8n candidates are import-shaped, credential-free and internally connected', () => {
   for (const file of files) {
@@ -208,7 +276,7 @@ test('completion notification only observes an accepted job and actionable outco
   assert.doesNotMatch(routing, /requiresUserAction/);
 });
 
-test('n8n candidate documentation records the disposable checkpoint and keeps catalogue release pending', () => {
+test('n8n candidate documentation records the live deterministic scope and keeps catalogue submission factual', () => {
   const path = `${root}/README.md`;
   assert.equal(existsSync(path), true, `${path} should exist`);
   const guide = readFileSync(path, 'utf8');
@@ -221,7 +289,12 @@ test('n8n candidate documentation records the disposable checkpoint and keeps ca
   assert.match(guide, /MCP Client Tool.*Chat Model.*not configured/is);
   assert.match(guide, /quoteId.*idempoten/is);
   assert.doesNotMatch(guide, /stable idempotency key/i);
-  assert.match(guide, /explicit owner authorization/i);
-  assert.equal(getMcpIntegration('n8n').store.status, 'preparing');
+  assert.match(guide, /self-hosted deterministic MCP Client scope is\s+live and indexable/i);
+  assert.match(guide, /MCP Client Tool and n8n Cloud[\s\S]{0,120}outside the public claim/i);
+  assert.match(guide, /product owner has authorized the\s+exact three-file external action/i);
+  assert.match(guide, /Creator Portal identity\s+step/i);
+  assert.doesNotMatch(guide, /integration therefore stays a non-indexed preview/i);
+  assert.doesNotMatch(guide, /fresh policy review and explicit owner authorization/i);
+  assert.equal(getMcpIntegration('n8n').store.status, 'submitted');
   assert.equal(getMcpIntegration('n8n').installation.package, 'unavailable');
 });
