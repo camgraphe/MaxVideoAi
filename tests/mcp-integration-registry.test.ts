@@ -45,6 +45,9 @@ test('existing publication, evidence and action floors are preserved', () => {
   assert.equal(getMcpHost('claudeDesktop').evidence.status, 'verified');
   assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
   assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
+  assert.equal(getMcpHost('claudeCode').evidence.lastChecked, '2026-08-27');
+  assert.equal(getMcpHost('chatgptWeb').evidence.lastChecked, '2026-08-27');
+  assert.equal(getMcpHost('chatgptWeb').label, 'ChatGPT');
   assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
   for (const id of ['claude', 'chatgpt', 'codex'] as const) {
     assert.equal(getMcpIntegration(id).site.publication, 'live');

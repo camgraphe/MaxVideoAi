@@ -489,12 +489,39 @@ acquisition-disabled, and without a prepared or submitted Microsoft package.
 - Consumes: exact Claude Code and ChatGPT Web versions/surfaces.
 - Produces: host-specific evidence that strengthens existing pages without changing their live floor.
 
+- [x] Recheck current first-party Claude Code and ChatGPT web/plugin documentation, version paths, OAuth behavior, permissions, results, and direct-versus-directory boundaries.
 - [ ] Run the complete clean-account lifecycle in Claude Code and record its exact version and limitations.
 - [ ] Run the complete graphical ChatGPT installation, OAuth, tool, quote, approved minimal confirmation, recovery, revoke, and reconnect lifecycle.
 - [ ] Verify inline result rendering and the canonical MaxVideoAI fallback destination separately in each host.
 - [ ] Update only the corresponding host evidence records and supported copy claims.
 - [ ] Preserve Claude Desktop and Codex CLI verified evidence unless a newer checkpoint proves a change.
 - [ ] Run the full MCP and public-baseline gates; commit Claude Code and ChatGPT evidence independently.
+
+Documentation preflight result (2026-09-14): Claude Code's exact stable channel
+resolved to 2.1.236. Anthropic documents pinning that version and verifying a
+signed release manifest plus the platform SHA-256 before execution. That stable
+supports remote Streamable HTTP, OAuth discovery, DCR, CIMD, OAuth callbacks at
+`http://localhost:<random port>/callback`, secure token refresh, resources, and
+default per-tool approval. Anthropic does not guarantee that logout invokes the
+authorization server's revocation endpoint or that a result-level
+`resource_link` receives a native rendering, so server-side revocation evidence
+and the text fallback must both be checked in the future hosted pass.
+
+OpenAI's current plugin documentation describes a ChatGPT developer-mode direct
+connection to a public HTTPS Streamable HTTP MCP server. OAuth uses protected
+resource and authorization-server metadata, prefers CIMD while retaining DCR,
+requires PKCE S256 and `resource` propagation, and exposes the exact callback
+through the connection-management surface. A developer connection remains
+independent from public plugin submission. MaxVideoAI's existing public ChatGPT
+page therefore remains intact while the separately documented plugin-directory
+decision remains `do_not_submit` under the current commerce policy.
+
+Neither host was connected or exercised during this preflight. Claude Code and
+ChatGPT web remain registry `not-run`; Claude Desktop and Codex CLI retain their
+existing `verified` checkpoints. No copy claim, route, sitemap entry, indexation,
+acquisition, store state, quote, payment, generation, or external account state
+was changed. The runtime checklist resumes only after the active-grant
+revocation fix is deployed and hosted-verified.
 
 ### Task 11: Final Branch, Deployment, and Production Verification
 

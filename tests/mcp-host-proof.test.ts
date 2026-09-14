@@ -180,6 +180,36 @@ test('the Microsoft enterprise matrix keeps Copilot Studio and Agent 365 separat
   }
 });
 
+test('the Claude Code and ChatGPT web preflight pins current host paths without upgrading evidence', () => {
+  const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
+  const checklist = readFileSync(
+    'docs/superpowers/plans/2026-09-12-mcp-ecosystem-rollout-checklist.md',
+    'utf8',
+  );
+  const chatgptRow =
+    matrix.split('\n').find((line) => line.startsWith('| ChatGPT web custom app / full MCP |')) ?? '';
+  const claudeCodeRow = matrix.split('\n').find((line) => line.startsWith('| Claude Code |')) ?? '';
+
+  assert.match(chatgptRow, /developer mode/);
+  assert.match(chatgptRow, /Streamable HTTP/);
+  assert.match(chatgptRow, /CIMD.*DCR.*PKCE S256/);
+  assert.match(chatgptRow, /direct developer connection.*public plugin submission/i);
+  assert.match(chatgptRow, /remains `not-run`/);
+
+  assert.match(claudeCodeRow, /stable 2\.1\.236/);
+  assert.match(claudeCodeRow, /signed manifest.*SHA-256/);
+  assert.match(claudeCodeRow, /Streamable HTTP/);
+  assert.match(claudeCodeRow, /`http:\/\/localhost:<random port>\/callback`/);
+  assert.match(claudeCodeRow, /DCR.*CIMD/);
+  assert.match(claudeCodeRow, /tool approval/);
+  assert.match(claudeCodeRow, /remains `not-run`/);
+  assert.doesNotMatch(checklist, /Claude Code[\s\S]*?PKCE callbacks/);
+
+  for (const row of [chatgptRow, claudeCodeRow]) {
+    assert.doesNotMatch(row, /(?:access_token|refresh_token|Bearer\s|callback\?code=)/i);
+  }
+});
+
 test('the OpenClaw matrix records a sanitized tested-with-limits checkpoint', () => {
   const matrix = readFileSync('docs/operations/mcp-host-compatibility-matrix.md', 'utf8');
   const row = matrix.split('\n').find((line) => line.startsWith('| OpenClaw Gateway |')) ?? '';
