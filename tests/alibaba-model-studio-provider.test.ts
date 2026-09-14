@@ -351,6 +351,13 @@ test('Alibaba client uses the Singapore DashScope async contract without leaking
   assert.equal(requests[0]?.url, 'https://dashscope-intl.ap-southeast-1.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis');
   assert.equal(new Headers(requests[0]?.init?.headers).get('Authorization'), 'Bearer super-secret-key');
   assert.equal(new Headers(requests[0]?.init?.headers).get('X-DashScope-Async'), 'enable');
+  assert.equal(new Headers(requests[0]?.init?.headers).get('Content-Type'), 'application/json');
+
+  await client.getTask('task-123');
+  assert.equal(requests[1]?.url, 'https://dashscope-intl.ap-southeast-1.aliyuncs.com/api/v1/tasks/task-123');
+  assert.equal(new Headers(requests[1]?.init?.headers).get('Authorization'), 'Bearer super-secret-key');
+  assert.equal(new Headers(requests[1]?.init?.headers).get('X-DashScope-Async'), null);
+  assert.equal(new Headers(requests[1]?.init?.headers).get('Content-Type'), null);
 
   assert.throws(
     () => normalizeAlibabaBaseUrl('https://dashscope.aliyuncs.com'),

@@ -1,5 +1,7 @@
 # Alibaba Direct Video Provider Implementation Plan
 
+> **Post-launch status (2026-09-14):** Tasks 1-8 shipped through PRs #290, #291, and #292. Production public routing is active, four Wan 3/Prime canaries completed, and the operational evidence and current checklist now live in `docs/engineering/alibaba-model-studio-provider.md`. The no-traffic constraints below are retained as the historical implementation boundary, not the current production state. When replaying a test command from this plan, add `--tsconfig frontend/tsconfig.json` immediately before `--test` so the repository aliases resolve.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add one reusable Alibaba Cloud Model Studio direct-video adapter and connect Wan 3 Standard, Wan 3 Prime, and HappyHorse 1.1 to every existing MaxVideoAI execution surface without enabling live traffic.
