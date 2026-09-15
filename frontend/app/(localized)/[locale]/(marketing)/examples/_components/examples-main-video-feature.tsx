@@ -1,4 +1,6 @@
 import clsx from 'clsx';
+import Image from 'next/image';
+import { EXAMPLES_HERO_POSTER_SIZES } from '@/components/examples/hero-poster';
 import { getExampleReuseCopy } from '../_lib/example-reuse-copy';
 import Link from 'next/link';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -67,10 +69,15 @@ export function ExamplesMainVideoFeature({
           >
             {isPortrait && poster ? (
               <>
-                <div
-                  className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
-                  style={{ backgroundImage: `url(${poster})` }}
-                  aria-hidden
+                <Image
+                  src={poster}
+                  alt=""
+                  fill
+                  sizes={EXAMPLES_HERO_POSTER_SIZES}
+                  loading="eager"
+                  fetchPriority="low"
+                  className="scale-110 object-cover object-center blur-2xl"
+                  aria-hidden="true"
                 />
                 <div className="absolute inset-0 bg-black/30" aria-hidden />
               </>

@@ -98,3 +98,33 @@ test('example funnel clicks keep bounded labels and never report prompt or media
     assert.doesNotMatch(JSON.stringify(result.events), /private/);
   }
 });
+
+test('portrait hero decoration reuses the prioritized responsive poster without requesting the original', async () => {
+  const require = createRequire(import.meta.url);
+  const previous = require.extensions['.css'];
+  require.extensions['.css'] = () => {};
+  let ExamplesMainVideoFeature;
+  try {
+    ({ ExamplesMainVideoFeature } = await import('../frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-main-video-feature'));
+  } finally {
+    if (previous) require.extensions['.css'] = previous;
+    else delete require.extensions['.css'];
+  }
+  const dom = new JSDOM(renderToStaticMarkup(React.createElement(ExamplesMainVideoFeature, {
+    aspectRatio: '9 / 16', contentUrl: 'https://media.maxvideoai.com/example.mp4',
+    copy: getExamplesMainVideoCopy('en', 'ltx'), durationSec: 6, engineLabel: 'LTX 2.5 Pro',
+    exampleHref: '/video/public-example', hasAudio: false, heroLine: 'LTX 2.5 Pro',
+    isPortrait: true, locale: 'en', mimeType: 'video/mp4', modelHref: '/models/ltx-2-5-pro',
+    poster: '/poster.jpg', promptFull: null, title: 'Example',
+  })));
+  try {
+    const document = dom.window.document;
+    assert.equal(document.querySelector('[style*="background-image"]'), null, 'no raw CSS poster request');
+    const images = [...document.querySelectorAll('img')];
+    assert.equal(images.length, 2);
+    assert.equal(images.filter(image => image.getAttribute('fetchpriority') === 'high').length, 1);
+    assert.equal(images[0].getAttribute('srcset'), images[1].getAttribute('srcset'));
+    assert.equal(images[0].getAttribute('sizes'), images[1].getAttribute('sizes'));
+    assert.equal(document.querySelector('video'), null);
+  } finally { dom.window.close(); }
+});

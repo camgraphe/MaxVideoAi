@@ -2,6 +2,18 @@
 
 Read this guide when changing image/video presentation, poster URLs, generated media, thumbnail repairs, or public model examples. Keep model identity in `frontend/config/model-registry.json`; media delivery is not another model registry.
 
+## Portrait backdrops on examples pages
+
+`ExamplesMainVideoFeature` keeps its blurred portrait backdrop on the same responsive
+Next Image source as `ExamplesHeroVideo`. Both use `EXAMPLES_HERO_POSTER_SIZES` from
+`components/examples/hero-poster.ts`; only the foreground poster has high priority.
+The backdrop must not request the original through a CSS `background-image`: that
+extra request was the LCP bottleneck in the D91 mobile production-build fixture.
+The original video/source identity, main poster geometry and manual mobile playback
+remain unchanged. Verify matching `currentSrc` and one network transfer for both
+images when changing either side; `tests/examples-acquisition-journey.test.ts`
+covers the server-rendered URL selection contract.
+
 ## Comparison detail galleries
 
 Comparison detail pages load optional public `examples-<modelSlug>` playlists through the route-local `compare-gallery-loader.ts`. `compare-gallery-data.ts` rechecks exact normalized model identity, public visibility, usable poster/original URLs, deduplication and the three-item limit. Prelaunch models skip media lookup; missing media must not break the page or substitute a sibling model. The historical same-prompt showdown configuration remains separate and is not used by this template.
