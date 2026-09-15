@@ -48,11 +48,11 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
     scopeRef.current = null;
     setScope({ ...scope });
   }, [scope]);
-  const eligible = Boolean(key && accessToken && authChecked);
+  const eligible = Boolean(key && authChecked);
   const current = eligible && matches && observation?.scope === scope ? observation : null;
 
   useEffect(() => {
-    if (!scope.requestKey || !scope.authChecked || !scope.accessToken) return;
+    if (!scope.requestKey || !scope.authChecked) return;
     let canceled = false;
     const payload = JSON.parse(scope.requestKey) as PreflightRequest;
     const accessToken = scope.accessToken;

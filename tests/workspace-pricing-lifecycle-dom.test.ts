@@ -64,6 +64,22 @@ test('current draft masks a resolved quote synchronously before debounce and sco
   } finally { await f.dispose(); }
 });
 
+test('anonymous draft requests and displays its public quote after auth readiness', async () => {
+  const f = await mount();
+  try {
+    await f.update({ accessToken: null });
+    assert.equal(f.current.price, null);
+    assert.equal(f.current.isPricing, true);
+
+    await f.tick();
+    assert.equal(f.requests.length, 1);
+    await f.respond(0, { ok: true, total: 328 });
+
+    assert.equal(f.current.price, 3.28);
+    assert.equal(f.current.currency, 'USD');
+  } finally { await f.dispose(); }
+});
+
 test('engine, inputs and account changes mask every render and superseded responses cannot install', async () => {
   const f = await mount();
   try {
@@ -76,11 +92,11 @@ test('engine, inputs and account changes mask every render and superseded respon
     await f.respond(2); assert.equal(f.current.price, 1.25);
     await f.update({ accessToken: 'fixture-b' }); masked(f); assert.equal(f.current.isPricing, true);
     await f.tick(); await f.respond(3); assert.equal(f.current.price, 1.25);
-    await f.update({ accessToken: null }); masked(f); assert.equal(f.current.isPricing, false);
-    await f.tick(); assert.equal(f.requests.length, 4);
+    await f.update({ accessToken: null }); masked(f); assert.equal(f.current.isPricing, true);
+    await f.tick(); assert.equal(f.requests.length, 5); await f.respond(4); assert.equal(f.current.price, 1.25);
     await f.update({ accessToken: 'fixture-b', authChecked: false }); masked(f);
-    await f.tick(); assert.equal(f.requests.length, 4);
-    await f.update({ authChecked: true }); masked(f); await f.tick(); await f.respond(4);
+    await f.tick(); assert.equal(f.requests.length, 5);
+    await f.update({ authChecked: true }); masked(f); await f.tick(); await f.respond(5);
     await f.update({ form: null }); masked(f); assert.equal(f.current.isPricing, false);
   } finally { await f.dispose(); }
 });
