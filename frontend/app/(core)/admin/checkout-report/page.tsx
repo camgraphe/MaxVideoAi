@@ -329,7 +329,7 @@ function buildReportCards(report: Awaited<ReturnType<typeof fetchCheckoutReport>
     { label: 'Passed', value: formatNumber(report.summary.passed), helper: 'Top-ups recorded after Checkout', tone: 'green', icon: CheckCircle2 },
     { label: 'Abandoned', value: formatNumber(report.summary.abandoned), helper: 'Session created, no receipt after 30 min', tone: 'amber', icon: Clock3 },
     { label: 'Blocked', value: formatNumber(report.summary.blocked), helper: 'Rate limited or CAPTCHA failed', tone: 'rose', icon: LockKeyhole },
-    { label: 'AMEX blocked', value: formatNumber(report.summary.amexBlocked), helper: 'First top-up attempts covered by the American Express block', tone: 'rose', icon: ShieldCheck },
+    { label: 'AMEX restriction applied', value: formatNumber(report.summary.amexBlocked), helper: 'Sessions with the brand restriction; this is not a count of declined Amex cards', tone: 'rose', icon: ShieldCheck },
     { label: 'Card failures', value: formatNumber(report.summary.failedCardAttempts), helper: `${formatNumber(report.summary.failedCardLimitedSessions)} sessions expired after repeated declines`, tone: 'rose', icon: CreditCard },
     { label: 'Challenged', value: formatNumber(report.summary.challenged), helper: `${formatNumber(report.summary.captchaPassed)} CAPTCHA passes`, tone: 'violet', icon: ShieldAlert },
     { label: 'Open', value: formatNumber(report.summary.open), helper: 'Recent Checkout sessions still pending', tone: 'blue', icon: WalletCards },

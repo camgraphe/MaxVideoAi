@@ -97,3 +97,14 @@ assert.match(expressCheckoutSource, /express_checkout_ready/);
 assert.match(expressCheckoutSource, /express_checkout_cancelled/);
 assert.match(expressCheckoutSource, /express_checkout_confirm_started/);
 assert.match(expressCheckoutSource, /express_checkout_confirm_failed/);
+
+assert.equal(
+  classifyCheckoutAbandonmentSignal([{ eventName: 'express_checkout_confirm_failed' }, { eventName: 'hosted_checkout_redirecting' }], true),
+  'none',
+  'a paid receipt must override earlier failed attempts in abandonment reporting'
+);
+assert.equal(
+  classifyCheckoutAbandonmentSignal([{ eventName: 'express_checkout_unavailable', metadata: { reason: 'no_available_methods' } }]),
+  'passive_open',
+  'a device without an eligible wallet is not a technical payment error'
+);

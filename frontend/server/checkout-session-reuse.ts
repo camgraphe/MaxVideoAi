@@ -64,7 +64,7 @@ export async function findReusableExpressCheckoutSession(
     gaSessionId?: string | null;
     userId: string;
   }
-): Promise<{ checkoutAttemptId: number; clientSecret: string; id: string } | null> {
+): Promise<{ checkoutAttemptId: number; clientSecret: string; expiresAt: number; id: string } | null> {
   const rows = await query<CheckoutSessionReuseRow>(
     `SELECT id, stripe_checkout_session_id
        FROM checkout_attempts
@@ -99,7 +99,7 @@ export async function findReusableExpressCheckoutSession(
           status: session.status,
         })
       ) {
-        return { checkoutAttemptId: Number(row.id), clientSecret: session.client_secret as string, id: session.id };
+        return { checkoutAttemptId: Number(row.id), clientSecret: session.client_secret as string, expiresAt: session.expires_at, id: session.id };
       }
     } catch (error) {
       console.warn('[payments] failed to inspect reusable express checkout session', {

@@ -108,53 +108,33 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.deepEqual(params.invoice_creation, { enabled: true });
 });
 
-test('wallet top-up Checkout does not block card brands by default', () => {
-  const params = buildParams();
-
-  assert.equal(params.payment_method_options, undefined);
+test('first and returning top-ups share unrestricted card acceptance and dynamic methods in both UIs', () => {
+  for (const checkoutUiMode of ['hosted', 'elements'] as const) {
+    for (const firstTopUp of [true, false]) {
+      const params = buildParams({
+        checkoutUiMode,
+        returnUrl: 'https://maxvideoai.com/billing?status=success',
+        sessionMetadata: { kind: 'topup', first_wallet_topup: String(firstTopUp) },
+      });
+      assert.equal(params.payment_method_options, undefined);
+      assert.equal(params.payment_method_types, undefined);
+      assert.equal(params.metadata?.first_wallet_topup, String(firstTopUp));
+    }
+  }
 });
 
-test('wallet top-up Checkout can block American Express for first top-ups', () => {
-  const params = buildParams({ blockAmexCards: true });
-  const paymentMethodOptions = params.payment_method_options as {
-    card?: { restrictions?: { brands_blocked?: string[] } };
-  };
-
-  assert.deepEqual(paymentMethodOptions.card?.restrictions?.brands_blocked, ['american_express']);
-});
-
-test('wallet top-up Checkout does not send card brand restrictions for Elements sessions', () => {
-  const params = buildParams({
-    blockAmexCards: true,
-    checkoutUiMode: 'elements',
-    successUrl: undefined,
-    cancelUrl: undefined,
-    returnUrl: 'https://maxvideoai.com/billing?status=success',
-  });
-
-  assert.equal(params.ui_mode, 'elements');
-  assert.equal(params.payment_method_options, undefined);
-});
-
-test('wallet top-up Checkout applies first top-up Amex blocking at the server boundary', () => {
+test('wallet top-up accepts all card brands while retaining first-purchase fraud controls', () => {
   const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
   const checkoutSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/stripe-checkout.ts'), 'utf8');
-  const envSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/env.ts'), 'utf8');
 
   assert.match(routeSource, /async function hasCompletedWalletTopUp\(userId: string\)/);
   assert.match(routeSource, /first_wallet_topup: String\(isFirstTopUp\)/);
-  assert.match(routeSource, /STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION/);
-  assert.match(routeSource, /shouldBlockAmexForCheckoutSession = isFirstTopUp && !isExpressCheckoutTopUp/);
-  assert.match(routeSource, /blockAmexCards: shouldBlockAmexForCheckoutSession/);
-  assert.match(routeSource, /amex_block_required/);
-  assert.match(routeSource, /brands_blocked/);
-  assert.match(routeSource, /amexBlocked: shouldBlockAmexForCheckoutSession/);
-  assert.doesNotMatch(routeSource, /STRIPE_BLOCK_AMEX/);
-  assert.match(checkoutSource, /american_express/);
-  assert.match(checkoutSource, /brands_blocked/);
-  assert.match(checkoutSource, /blockAmexCards/);
-  assert.match(checkoutSource, /checkoutUiMode !== 'elements'/);
-  assert.doesNotMatch(envSource, /STRIPE_BLOCK_AMEX/);
+  assert.match(routeSource, /STRIPE_HOSTED_CHECKOUT_API_VERSION = '2025-02-24.acacia'/);
+  assert.match(routeSource, /await evaluateWalletCheckoutGuard\(/);
+  assert.match(routeSource, /checkoutGuard.action === 'captcha_required'/);
+  assert.match(routeSource, /checkoutGuard.action === 'rate_limited'/);
+  assert.match(routeSource, /checkout_captcha_passed: String\(checkoutGuard.captchaPassed\)/);
+  assert.doesNotMatch(routeSource + checkoutSource, /american_express|brands_blocked|blockAmexCards|amex_block/);
   assert.doesNotMatch(routeSource, /express_checkout_unavailable_for_first_topup/);
 });
 

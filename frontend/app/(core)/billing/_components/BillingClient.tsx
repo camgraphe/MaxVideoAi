@@ -31,7 +31,6 @@ import {
   parseBillingIntent,
   type BillingIntent,
 } from '../_lib/billing-intent';
-import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 import styles from './billing-layout.module.css';
 
@@ -68,7 +67,8 @@ export function BillingClient({
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [expressRequested, setExpressRequested] = useState(false);
+  const [expressPaying, setExpressPaying] = useState(false);
+  useEffect(() => { setExpressPaying(false); }, [session?.user?.id]);
   const [checkoutReturnTarget, setCheckoutReturnTarget] = useState<WalletCheckoutReturnTarget | null>(null);
   const [checkoutReturnStatus, setCheckoutReturnStatus] = useState<'success' | 'cancelled' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -101,6 +101,7 @@ export function BillingClient({
       return new Intl.NumberFormat(billingIntlLocale, {
         style: 'currency',
         currency: 'USD',
+        currencyDisplay: 'narrowSymbol',
         maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
       }).format(amount);
     } catch {
@@ -194,14 +195,8 @@ export function BillingClient({
   });
 
   useEffect(() => {
-    setExpressRequested(false);
-  }, [normalizedChargeCurrency, selectedTopupCents]);
-
-  useEffect(() => {
     replayPendingTopupCancelled();
   }, [replayPendingTopupCancelled]);
-
-  // no FX preview when using Checkout redirection
 
   useBillingCheckoutReturnToast({
     accountId: session?.user?.id ?? null,
@@ -261,6 +256,7 @@ export function BillingClient({
 
   const handleExpressTopupStarted = useCallback(
     (amountCents: number) => {
+      setExpressPaying(true);
       triggerTopupStarted(amountCents, normalizedChargeCurrency);
     },
     [normalizedChargeCurrency, triggerTopupStarted]
@@ -268,6 +264,7 @@ export function BillingClient({
 
   const handleExpressTopupFailed = useCallback(
     (amountCents: number, reason?: string) => {
+      setExpressPaying(false);
       triggerTopupFailed(amountCents, normalizedChargeCurrency, reason);
       setToast(copy.errors.topupStart);
     },
@@ -292,7 +289,6 @@ export function BillingClient({
   const selectedTopupPaymentLabel = selectedTopupQuote
     ? formatLocalAmount(selectedTopupQuote.amountMinor, selectedTopupQuote.currency)
     : null;
-  const selectedTopupLocalLabel = normalizedChargeCurrency !== 'USD' ? selectedTopupPaymentLabel : null;
 
   if (authLoading) {
     return null;
@@ -345,7 +341,6 @@ export function BillingClient({
                 customAmountInputRef={customAmountInputRef}
                 customAmountValid={customAmountValid}
                 customCardActive={customCardActive}
-                expressRequested={expressRequested}
                 formatUsdAmount={formatUsdAmount}
                 handleCheckoutCaptchaError={hostedCheckout.handleCaptchaError}
                 handleCheckoutCaptchaRequired={hostedCheckout.requireCaptcha}
@@ -354,29 +349,17 @@ export function BillingClient({
                 handleExpressTopupFailed={handleExpressTopupFailed}
                 handleExpressTopupStarted={handleExpressTopupStarted}
                 handleTopUp={handleTopUp}
-                isTopupStarting={hostedCheckout.isSubmitting}
+                isTopupStarting={hostedCheckout.isSubmitting || expressPaying}
+                hostedCheckoutStarting={hostedCheckout.isSubmitting}
                 locale={locale}
                 normalizedChargeCurrency={normalizedChargeCurrency}
                 onCustomAmountInputChange={onCustomAmountInputChange}
-                onExpressReveal={() => {
-                  recordCheckoutInteractionEvent({
-                    amountCents: selectedTopupCents,
-                    eventName: 'express_checkout_revealed',
-                    mode: 'express_checkout',
-                    metadata: {
-                      currency: normalizedChargeCurrency,
-                      locale,
-                    },
-                  });
-                  setExpressRequested(true);
-                }}
                 onOpenCustomAmountEditor={openCustomAmountEditor}
                 onPresetSelected={handlePresetSelected}
                 quoteError={quoteError}
                 quoteLoading={quoteLoading}
                 selectedTopupAmountLabel={selectedTopupAmountLabel}
                 selectedTopupCents={selectedTopupCents}
-                selectedTopupLocalLabel={selectedTopupLocalLabel}
                 selectedTopupPaymentLabel={selectedTopupPaymentLabel}
                 session={session}
                 stripePromise={stripePromise}

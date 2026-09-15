@@ -73,7 +73,7 @@ test('checkout summary separates the quoted payment from USD wallet credits', as
   ]);
   assert.match(
     document.querySelector('button')?.textContent ?? '',
-    /Continue to secure Stripe Checkout/,
+    /Card or other methods/,
   );
 });
 
@@ -146,14 +146,14 @@ test('currency selector displays the quoted currency while enabled options are s
     checkoutCaptchaResetGeneration: 0, checkoutCaptchaToken: null, copy: DEFAULT_BILLING_COPY,
     currencyLoading: true, currencyOptions: ['USD'], currencyStatus: 'Detecting currencies…',
     currencyStatusClass: '', customAmountCents: null, customAmountError: null, customAmountInput: '',
-    customAmountInputRef: null, customAmountValid: false, customCardActive: false, expressRequested: false,
+    customAmountInputRef: null, customAmountValid: false, customCardActive: false,
     formatUsdAmount: (cents) => `$${cents / 100}`, handleCheckoutCaptchaError: noop,
     handleCheckoutCaptchaRequired: noop, handleCheckoutCaptchaToken: noop, handleCurrencyChange: noop,
     handleExpressTopupFailed: noop, handleExpressTopupStarted: noop, handleTopUp: noop,
-    isTopupStarting: false, locale: 'en', normalizedChargeCurrency: 'EUR', onCustomAmountInputChange: noop,
-    onExpressReveal: noop, onOpenCustomAmountEditor: noop, onPresetSelected: noop,
+    isTopupStarting: false, hostedCheckoutStarting: false, locale: 'en', normalizedChargeCurrency: 'EUR', onCustomAmountInputChange: noop,
+    onOpenCustomAmountEditor: noop, onPresetSelected: noop,
     quoteError: null, quoteLoading: false, selectedTopupAmountLabel: '$10', selectedTopupCents: 1000,
-    selectedTopupLocalLabel: '€8.60', selectedTopupPaymentLabel: '€8.60', session: null,
+    selectedTopupPaymentLabel: '€8.60', session: null,
     stripePromise: null, turnstileSiteKey: '', wallet: null,
   }));
   const document = new JSDOM(markup).window.document;
