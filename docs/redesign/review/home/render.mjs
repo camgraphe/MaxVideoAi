@@ -60,4 +60,3 @@ for(const [locale,c] of Object.entries(content)){
  await writeFile(new URL(`../${file(locale)}`,import.meta.url),html);
 }
 console.log('Generated composition 02: FR, EN and es-419.');
-

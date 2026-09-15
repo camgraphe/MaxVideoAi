@@ -18,4 +18,3 @@ export const ASSISTANT_JOURNEY_COPY = {
   {title:'Tu video',heading:'Encuéntralo en MaxVideoAI.',body:'Cuando termine la generación, revisa el resultado y sigue trabajando desde tu biblioteca.',detail:'Ver · descargar · preparar la siguiente escena'},
  ]},
 };
-
