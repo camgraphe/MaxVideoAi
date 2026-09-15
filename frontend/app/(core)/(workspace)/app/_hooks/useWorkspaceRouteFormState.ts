@@ -70,6 +70,10 @@ export function useWorkspaceRouteFormState(accountScope: string | null = 'legacy
   );
   const [compositeOverrideSummary, setCompositeOverrideSummary] =
     useAccountField<GroupSummary | null>(accountScope, null);
+  const clearCompositePreview = useCallback(() => {
+    setCompositeOverride(null);
+    setCompositeOverrideSummary(null);
+  }, [setCompositeOverride, setCompositeOverrideSummary]);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
   const focusComposer = useCallback(() => {
@@ -102,6 +106,7 @@ export function useWorkspaceRouteFormState(accountScope: string | null = 'legacy
     setSharedPrompt,
     sharedVideoSettings,
     setSharedVideoSettings,
+    clearCompositePreview,
     compositeOverride,
     setCompositeOverride,
     compositeOverrideSummary,
