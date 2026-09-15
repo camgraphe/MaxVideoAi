@@ -17,6 +17,12 @@ const P1_PUBLIC_VIDEO_MODEL_IDS = [
   'kling-3-turbo-pro',
   'minimax-h3-max',
 ] as const;
+const LAUNCHED_IMAGE_MODEL_IDS = [
+  'flux-3-draft',
+  'flux-3',
+  'gpt-image-2-5-flare',
+  'gpt-image-2-5-sunburst',
+] as const;
 
 function readFixtureRows<T>(path: string): T[] {
   return (JSON.parse(readFileSync(path, 'utf8')) as { rows: T[] }).rows;
@@ -75,7 +81,7 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
   assert.equal(additions.generatedFrom, 'registry-publication-shadow-additions');
   assert.equal(
     additions.rows.length,
-    8
+    LAUNCHED_IMAGE_MODEL_IDS.length * 4
       + P0_VIDEO_PRICING_SCENARIOS.length
       + P0_VIDEO_MODEL_IDS.length * 4
       + P1_PUBLIC_VIDEO_MODEL_IDS.length * 4,

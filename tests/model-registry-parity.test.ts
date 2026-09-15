@@ -30,7 +30,8 @@ import {
 } from '../frontend/config/model-families.ts';
 
 const baseline = JSON.parse(readFileSync('tests/fixtures/model-registry-baseline.json', 'utf8'));
-const P0_SUCCESSORS = {
+const APPROVED_SUCCESSORS = {
+  'gpt-image-2': 'gpt-image-2-5-flare',
   'ltx-2-3': 'ltx-2-5-pro',
   'ltx-2-3-fast': 'ltx-2-5-fast',
   'ltx-2': 'ltx-2-5-pro',
@@ -66,10 +67,10 @@ test('runtime model projection matches every baseline identity and surface', () 
     assert.equal(actual.slug, expected.slug);
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
-    assert.equal(actual.lifecycle, expected.lifecycle);
+    assert.equal(actual.lifecycle, expected.id === 'gpt-image-2' ? 'legacy' : expected.lifecycle);
     assert.equal(
       actual.successorId,
-      P0_SUCCESSORS[expected.id as keyof typeof P0_SUCCESSORS] ?? expected.successorId,
+      APPROVED_SUCCESSORS[expected.id as keyof typeof APPROVED_SUCCESSORS] ?? expected.successorId,
     );
     const actualPublication = toLegacyModelSurfaces(actual);
     if (reciprocalSeedance25PairOwners.has(expected.id)) {
@@ -208,13 +209,14 @@ test('generated catalog and rosters project registry lifecycle and successor ide
   }
 });
 
-test('canonical lifecycle classifies every approved non-current model and authors only the six P0 successors', () => {
+test('canonical lifecycle classifies every approved non-current model and authors only approved successors', () => {
   const nonCurrent = Object.fromEntries(
     listRuntimeModels()
       .filter((model) => model.lifecycle !== 'current')
       .map((model) => [model.id, model.lifecycle]),
   );
   assert.deepEqual(nonCurrent, {
+    'gpt-image-2': 'legacy',
     'happy-horse-1-0': 'legacy',
     'kling-2-5-turbo': 'legacy',
     'kling-2-6-pro': 'legacy',
@@ -234,7 +236,7 @@ test('canonical lifecycle classifies every approved non-current model and author
         .filter((model) => model.successorId !== null)
         .map((model) => [model.id, model.successorId]),
     ),
-    P0_SUCCESSORS,
+    APPROVED_SUCCESSORS,
   );
 });
 

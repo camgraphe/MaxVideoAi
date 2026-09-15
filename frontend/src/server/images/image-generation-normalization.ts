@@ -1,7 +1,21 @@
 import type { ImageGenerationRequest } from '@/types/image-generation';
+import { canonicalizeImageFieldValue } from '@/lib/image/inputSchema';
 
 export function normalizeOptionalBoolean(value: unknown): boolean | null {
   return typeof value === 'boolean' ? value : null;
+}
+
+export function resolveImageEnumSetting(allowed: string[], input: unknown): {
+  allowed: string[];
+  invalid: boolean;
+  value: string | null;
+} {
+  const value = typeof input === 'string' ? canonicalizeImageFieldValue(allowed, input) : null;
+  return {
+    allowed,
+    invalid: typeof input === 'string' && input.trim().length > 0 && !value,
+    value,
+  };
 }
 
 export function normalizeImageGenerationMetadata(value: unknown): ImageGenerationRequest['metadata'] | null {

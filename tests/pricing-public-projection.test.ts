@@ -49,11 +49,15 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   const fixture = JSON.parse(
     readFileSync('tests/fixtures/pricing-public-projections.v1.json', 'utf8')
   ) as PublicProjectionFixture;
+  const launch = JSON.parse(
+    readFileSync('tests/fixtures/gpt-image-2-5-public-pricing-launch-2026-09-15.json', 'utf8')
+  ) as PublicProjectionFixture;
   assert.equal(fixture.version, 1);
   assert.equal(fixture.generatedFrom, 'canonical-public-pricing-paths');
   assert.ok(fixture.rows.length >= 250, `expected at least 250 public projection rows, got ${fixture.rows.length}`);
 
-  const ids = fixture.rows.map((row) => row.id);
+  const rows = [...fixture.rows, ...launch.rows];
+  const ids = rows.map((row) => row.id);
   assert.equal(new Set(ids).size, ids.length, 'public projection scenario ids must be unique');
 
   const requiredSurfaces = new Set([
@@ -68,12 +72,12 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
     'workspace-preflight',
     'image-estimate',
   ]);
-  const actualSurfaces = new Set(fixture.rows.map((row) => row.surface));
+  const actualSurfaces = new Set(rows.map((row) => row.surface));
   for (const surface of requiredSurfaces) {
     assert.equal(actualSurfaces.has(surface), true, `missing public pricing surface ${surface}`);
   }
 
-  for (const row of fixture.rows) {
+  for (const row of rows) {
     assert.ok(row.id.trim(), 'scenario id should not be empty');
     assert.ok(row.engineId.trim(), `${row.id}.engineId should not be empty`);
     if (row.status === 'exact') {
@@ -89,10 +93,10 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   }
 
   const estimatorEngineIds = new Set(
-    fixture.rows.filter((row) => row.surface === 'estimator').map((row) => row.engineId)
+    rows.filter((row) => row.surface === 'estimator').map((row) => row.engineId)
   );
   const modelEngineIds = new Set(
-    fixture.rows.filter((row) => row.surface === 'model-page').map((row) => row.engineId)
+    rows.filter((row) => row.surface === 'model-page').map((row) => row.engineId)
   );
   for (const entry of listFalEngines()) {
     if (entry.surfaces.pricing.includeInEstimator) {
@@ -126,7 +130,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(592 rows\)/);
+  assert.match(result.stdout, /current \(610 rows\)/);
 });
 
 test('canonical public pricing adapters exist and stay browser safe', () => {
