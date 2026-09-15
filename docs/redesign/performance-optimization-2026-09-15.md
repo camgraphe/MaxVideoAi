@@ -14,6 +14,10 @@ SEO restent la référence. Aucun nouveau contenu marketing ni achat.
 - Menu marketing connecté : les traductions du compte vivent dans le petit
   dictionnaire client `nav`. FR et ES ne retombent plus sur les libellés anglais
   de `workspace`, absent de ce payload. CTA branché sur `nav.cta` existant.
+- Tarifs MiniMax H3 : quatre clés techniques visibles, également présentes
+  dans le HTML de production avant D95, remplacées par les durées, résolutions
+  et entrées correspondantes en EN/FR/ES. Les montants et réglages ne changent
+  pas. Un test couvre les libellés des presets de tout le catalogue exécutable.
 
 ## Comparaison reproductible
 
@@ -46,9 +50,17 @@ Rapports bruts et captures locaux ignorés par Git :
 contient une clé `version` écrasée par la version Lighthouse ; les noms de
 fichiers et ports identifient sans ambiguïté les variantes.
 
+Douze mesures complémentaires avec cache navigateur conservé après une visite
+de préparation : 100/100 et CLS 0 dans tous les cas. LCP mobile avant → après :
+accueil 987 → 986 ms, Character 994 → 1 032 ms, MCP 985 → 992 ms ; desktop
+263 → 263 ms, 264 → 261 ms, 292 → 291 ms. Un passage par cas : pas de conclusion
+statistique à tirer de ces petits écarts. Rapports dans `performance-warm/`.
+
 ## Validation et limites
 
 51 tests ciblés passent ; tests rouges puis verts sur les trois corrections.
+La couverture tarifaire et ses contrats associés ajoutent 46 tests réussis ;
+le nouveau test reproduit les douze libellés manquants avant correction.
 Deux builds complets, lint frontend, exposition publique, parité i18n et
 contrôles SEO/liens passent. L’accueil desktop conserve exactement les
 dimensions, polices et couleurs calculées de ses sections avant/après.
