@@ -8,6 +8,7 @@ import { getPricingDetails } from '@/lib/fal-catalog';
 import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
 import { LIVE_MEMBERSHIP_POLICY, LIVE_MEMBERSHIP_DISCOUNTS } from '@/lib/membership-policy';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
+import { isGptImage25EngineId } from '@/lib/image/gptImage2';
 import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing-context';
 import {
@@ -70,16 +71,40 @@ export async function computeCanonicalBillingSnapshot(
   );
   if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
   const discountPercent = memberTierDiscounts[memberTier] ?? 0;
+  const isGptImage25Edit = isGptImage25EngineId(context.engine.id) && context.mode === 'i2i';
+  const isGptImage25Edit4K = isGptImage25Edit && billingFacts.meta.billed_image_size === '3840x2160';
+  const additionalReferenceImageCount = isGptImage25Edit
+    ? Math.max(0, Math.round(Number(billingFacts.meta.additional_reference_image_count) || 0))
+    : 0;
+  const additionalReferenceCustomerCents = isGptImage25Edit4K ? 2 : 1;
+  const minimumEditCustomerCents = isGptImage25Edit4K ? 3 : 2;
+  const outputUnitExactCents = Number(billingFacts.meta.base_unit_price_exact_cents);
+  const outputCount = Math.max(1, Math.round(billingFacts.base.seconds));
+  if (isGptImage25Edit) {
+    billingFacts.meta.included_reference_customer_cents = 0;
+    billingFacts.meta.additional_reference_customer_cents = additionalReferenceCustomerCents;
+    billingFacts.meta.minimum_edit_customer_cents = minimumEditCustomerCents;
+  }
+  const pricingScenario = {
+    id: `billing:${context.engine.id}:${context.mode ?? 'default'}:${context.resolution}`,
+    engineId: context.engine.id,
+    ...(context.mode ? { mode: context.mode } : {}),
+    resolution: context.resolution,
+    membershipTier: memberTier,
+    discountPercent,
+    ...(isGptImage25Edit
+      ? {
+          commercialAdjustment: {
+            pricingBasisExactCents: outputUnitExactCents * outputCount,
+            minimumCustomerTotalCents: minimumEditCustomerCents,
+            fixedCustomerCents: additionalReferenceImageCount * additionalReferenceCustomerCents,
+          },
+        }
+      : {}),
+  } as const;
   const quote = quoteCanonicalPricing({
     facts: billingFacts.facts,
-    scenario: {
-      id: `billing:${context.engine.id}:${context.mode ?? 'default'}:${context.resolution}`,
-      engineId: context.engine.id,
-      ...(context.mode ? { mode: context.mode } : {}),
-      resolution: context.resolution,
-      membershipTier: memberTier,
-      discountPercent,
-    },
+    scenario: pricingScenario,
     policy,
     compatibilityProfile,
   });

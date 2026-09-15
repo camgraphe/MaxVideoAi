@@ -207,6 +207,12 @@ The approved versioned Audio rule now uses a 200% markup (provider cost ×3), ze
 
 The historical `audio-current` profile remains available. Historical audit reproduction explicitly retains the former 150% markup and whole-cent Seed estimate; active admin previews use the current policy. Immutable public/billing fixtures remain untouched. The 15 approved Audio public-price changes are recorded separately in `tests/fixtures/audio-pricing-change-2026-09-08.json`, including their previous totals; the read-only public baseline checks every other field and row unchanged. The current full public baseline contains 592 rows.
 
+## GPT Image 2.5 edit-reference policy — 2026-09-16
+
+Flare and Sunburst image edits account for every source image in provider facts while including the first source image in the customer price. Each additional source image adds exactly 1 cent at standard output sizes or 2 cents at 4K. A one-output low-quality edit has a 2-cent customer minimum at standard sizes and a 3-cent minimum at 4K.
+
+The billing adapter supplies the output-only pricing basis, minimum, and fixed additional-reference amount as a canonical commercial adjustment. `quoteCanonicalPricing` remains the only owner of customer-total and settlement-allocation math. The provider subtotal and snapshot metadata continue to expose all source-image costs, including the commercially included first source. Text-to-image quotes and deterministic marketing/model-card projections are unchanged.
+
 ## Product schema offer repair — 2026-09-10
 
 Indexed legacy model pages resolve Product offers independently from pricing-estimator publication. This lets Luma Ray 2, Luma Ray 2 Flash, Wan 2.5, LTX 2 Fast, and LTX 2 reuse their existing canonical or authored prices in JSON-LD without republishing those models in the estimator or changing billing. The two Luma rows that previously had no structured-data amount are recorded in `tests/fixtures/product-schema-offer-fix-2026-09-10.json`; the frozen historical fixture remains unchanged.

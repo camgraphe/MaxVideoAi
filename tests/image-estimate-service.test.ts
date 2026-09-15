@@ -241,6 +241,35 @@ test('transport-neutral estimate preserves image-to-image reference count and au
   assert.notEqual(gpt.normalized.referenceImageSizes, referenceImageSizes);
 });
 
+test('GPT Image 2.5 edit pricing includes the first source and charges fixed additional-reference increments', async () => {
+  const engineIds = ['gpt-image-2-5-flare', 'gpt-image-2-5-sunburst'] as const;
+  const scenarios = [
+    { resolution: '1024x768', referenceImageCount: 1, expectedTotalCents: 2 },
+    { resolution: '1024x768', referenceImageCount: 2, expectedTotalCents: 3 },
+    { resolution: '3840x2160', referenceImageCount: 1, expectedTotalCents: 3 },
+    { resolution: '3840x2160', referenceImageCount: 2, expectedTotalCents: 5 },
+  ] as const;
+
+  for (const engineId of engineIds) {
+    for (const scenario of scenarios) {
+      const result = await estimateImageGeneration({
+        engineId,
+        mode: 'i2i',
+        numImages: 1,
+        resolution: scenario.resolution,
+        quality: 'low',
+        referenceImageCount: scenario.referenceImageCount,
+      });
+
+      assert.equal(
+        result.pricing.totalCents,
+        scenario.expectedTotalCents,
+        `${engineId} ${scenario.resolution} with ${scenario.referenceImageCount} source/reference image(s)`
+      );
+    }
+  }
+});
+
 test('transport-neutral estimate exposes stable validation errors', async () => {
   await assert.rejects(
     estimateImageGeneration({
