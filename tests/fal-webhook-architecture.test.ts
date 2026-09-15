@@ -16,6 +16,7 @@ const mappingStatusPath = join(root, 'frontend/server/fal-webhook-status.ts');
 const refundsPath = join(root, 'frontend/server/fal-webhook-refunds.ts');
 const provisionalPath = join(root, 'frontend/server/fal-webhook-provisional.ts');
 const typesPath = join(root, 'frontend/server/fal-webhook-types.ts');
+const imageOutputPath = join(root, 'frontend/server/fal-webhook-image-output.ts');
 
 const handlerSource = readFileSync(handlerPath, 'utf8');
 const mappingSource = readFileSync(mappingPath, 'utf8');
@@ -29,6 +30,14 @@ const mappingStatusSource = readFileSync(mappingStatusPath, 'utf8');
 const refundsSource = readFileSync(refundsPath, 'utf8');
 const provisionalSource = readFileSync(provisionalPath, 'utf8');
 const typesSource = readFileSync(typesPath, 'utf8');
+
+test('Fal webhook persists image outputs before marking them completed', () => {
+  assert.ok(existsSync(imageOutputPath), 'webhook image persistence should live in a focused helper');
+  assert.match(handlerSource, /persistFalWebhookImageOutputs/);
+  assert.match(handlerSource, /let imageUrls/);
+  assert.match(handlerSource, /imageUrls = await persistFalWebhookImageOutputs/);
+  assert.match(handlerSource, /heroImageIndex >= 0 \? heroImageIndex : 0/);
+});
 
 test('Fal webhook handler delegates mapping, payload extraction, provisional job, and refund helpers', () => {
   assert.ok(existsSync(mappingPath), 'Fal webhook mapping helpers should live in a sibling server module');

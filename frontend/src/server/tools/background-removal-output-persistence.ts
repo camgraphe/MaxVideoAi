@@ -47,7 +47,8 @@ export async function persistBackgroundRemovalOutput(params: {
   durationSec?: number | null;
 }): Promise<BackgroundRemovalToolOutput> {
   const { output, userId, jobId, providerJobId, engineId, engineLabel, outputCodec, durationSec } = params;
-  if (!isStorageConfigured() || !output.url) return output;
+  if (!isStorageConfigured()) throw new Error('MaxVideoAI storage is required for background removal outputs');
+  if (!output.url) throw new Error('Background removal output URL is missing');
 
   try {
     const controller = new AbortController();
@@ -126,6 +127,6 @@ export async function persistBackgroundRemovalOutput(params: {
       jobId,
       error: error instanceof Error ? error.message : String(error),
     });
-    return output;
+    throw error;
   }
 }

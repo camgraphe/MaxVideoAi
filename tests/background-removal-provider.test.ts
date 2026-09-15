@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 import {
   BACKGROUND_REMOVAL_OUTPUT_CODECS,
@@ -15,6 +17,12 @@ import {
   BACKGROUND_REMOVAL_PRORES_RETENTION_DAYS,
   buildBackgroundRemovalOutputRetentionMetadata,
 } from '../frontend/src/server/tools/background-removal-output-persistence.ts';
+
+test('background removal outputs must be owned by MaxVideoAI before completion', () => {
+  const source = readFileSync(join(process.cwd(), 'frontend/src/server/tools/background-removal-output-persistence.ts'), 'utf8');
+  assert.match(source, /MaxVideoAI storage is required for background removal outputs/);
+  assert.doesNotMatch(source, /catch \(error\) \{[\s\S]*?return output;/);
+});
 
 test('studio provider input maps MaxVideoAI controls to Bria v3 schema', () => {
   assert.deepEqual(

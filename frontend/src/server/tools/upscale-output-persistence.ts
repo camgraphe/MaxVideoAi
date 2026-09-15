@@ -15,7 +15,8 @@ export async function persistUpscaleOutput(params: {
   durationSec?: number | null;
 }): Promise<UpscaleToolOutput> {
   const { output, mediaType, userId, jobId, providerJobId, engineId, engineLabel, outputFormat, durationSec } = params;
-  if (!isStorageConfigured() || !output.url) return output;
+  if (!isStorageConfigured()) throw new Error('MaxVideoAI storage is required for upscale outputs');
+  if (!output.url) throw new Error('Upscale output URL is missing');
 
   try {
     const controller = new AbortController();
@@ -124,6 +125,6 @@ export async function persistUpscaleOutput(params: {
       jobId,
       error: error instanceof Error ? error.message : String(error),
     });
-    return output;
+    throw error;
   }
 }

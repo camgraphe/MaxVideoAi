@@ -15,9 +15,11 @@ test('copyGeneratedImagesToStorage replaces provider image URLs with stored medi
     images,
     jobId: 'img_test',
     userId: 'user_test',
+    requireOwnedOutput: true,
     deps: {
       isStorageConfigured: () => true,
-      extractStorageKeyFromUrl: () => null,
+      extractStorageKeyFromUrl: (url) =>
+        url.startsWith('https://media.maxvideoai.com/') ? 'renders/images/user_test/output.jpeg' : null,
       fetch: async () =>
         new Response(Buffer.from([1, 2, 3]), {
           status: 200,
@@ -39,4 +41,42 @@ test('copyGeneratedImagesToStorage replaces provider image URLs with stored medi
   assert.equal(copied[0]?.width, 5504);
   assert.equal(copied[0]?.height, 3040);
   assert.equal(copied[0]?.mimeType, 'image/jpeg');
+});
+
+test('copyGeneratedImagesToStorage rejects when required ownership cannot be established', async () => {
+  await assert.rejects(
+    copyGeneratedImagesToStorage({
+      images: [{ url: 'https://v3b.fal.media/files/output.png' }],
+      jobId: 'img_test',
+      userId: 'user_test',
+      requireOwnedOutput: true,
+      deps: {
+        isStorageConfigured: () => true,
+        extractStorageKeyFromUrl: () => null,
+        fetch: async () => {
+          throw new Error('provider download failed');
+        },
+        uploadImageToStorage: async () => {
+          throw new Error('upload should not be reached');
+        },
+      },
+    }),
+    /Could not persist generated image to MaxVideoAI storage/
+  );
+});
+
+test('copyGeneratedImagesToStorage rejects required external outputs when storage is unavailable', async () => {
+  await assert.rejects(
+    copyGeneratedImagesToStorage({
+      images: [{ url: 'https://v3b.fal.media/files/output.png' }],
+      jobId: 'img_test',
+      userId: 'user_test',
+      requireOwnedOutput: true,
+      deps: {
+        isStorageConfigured: () => false,
+        extractStorageKeyFromUrl: () => null,
+      },
+    }),
+    /MaxVideoAI storage is required for generated image outputs/
+  );
 });

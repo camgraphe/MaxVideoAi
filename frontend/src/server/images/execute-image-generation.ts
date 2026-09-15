@@ -509,9 +509,9 @@ export async function executeImageGeneration({
           ...image,
           url: normalizeMediaUrl(image.url) ?? image.url,
         }));
-        const stableImages = jobSurface === 'storyboard'
-          ? await copyGeneratedImagesToStorage({ images: normalizedImages, jobId, userId })
-          : normalizedImages;
+        const stableImages = await copyGeneratedImagesToStorage({
+          images: normalizedImages, jobId, userId, requireOwnedOutput: true,
+        });
 
         const thumbUrls = await createImageThumbnailBatch({
           jobId,
