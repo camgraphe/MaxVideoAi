@@ -199,7 +199,7 @@ export function MarketingMobileMenu({
               className="w-full rounded-2xl border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
               onClick={onSignOut}
             >
-              {t('workspace.header.signOut', 'Sign out')}
+              {t('nav.account.signOut', 'Sign out')}
             </Button>
           </div>
         ) : (

@@ -38,3 +38,22 @@ test('marketing message selection excludes unrelated workspace copy', () => {
     footer: dictionary.footer,
   });
 });
+
+test('connected marketing navigation has localized account copy inside its small message payload', () => {
+  for (const [locale, generate, signOut] of [
+    ['en', 'Generate', 'Sign out'], ['fr', 'Générer', 'Se déconnecter'], ['es', 'Generar', 'Cerrar sesión'],
+  ]) {
+    const dictionary = JSON.parse(readFileSync(join(root, `frontend/messages/${locale}.json`), 'utf8'));
+    const client = pickClientMessageNamespaces(dictionary, MARKETING_CLIENT_MESSAGE_NAMESPACES);
+    assert.equal(client.nav.cta, generate);
+    assert.equal(client.nav.account?.signOut, signOut);
+    for (const id of ['generate', 'generate-image', 'generate-audio', 'tools', 'library', 'jobs', 'billing', 'settings']) {
+      assert.ok(client.nav.account?.links[id], `${locale} account link ${id} must be translated`);
+    }
+    assert.equal(client.workspace, undefined);
+  }
+  for (const file of ['MarketingAccountMenu.tsx', 'MarketingMobileMenu.tsx']) {
+    assert.doesNotMatch(readFileSync(join(root, 'frontend/components/marketing', file), 'utf8'), /t\(['`"]workspace\./);
+  }
+  assert.doesNotMatch(readFileSync(join(root, 'frontend/components/marketing/MarketingNav.tsx'), 'utf8'), /t\('nav\.generate'/);
+});

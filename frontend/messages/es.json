@@ -1,5 +1,24 @@
 {
   "nav": {
+    "account": {
+      "signedIn": "Sesión iniciada",
+      "signOut": "Cerrar sesión",
+      "links": {
+        "dashboard": "Panel",
+        "generate": "Generar video",
+        "generate-image": "Generar imagen",
+        "generate-audio": "Generar audio",
+        "jobs": "Historial",
+        "tools": "Herramientas",
+        "library": "Medios",
+        "billing": "Facturación",
+        "settings": "Ajustes",
+        "studio": "Studio"
+      },
+      "badges": {
+        "studio": "Beta"
+      }
+    },
     "brand": "MaxVideo AI",
     "links": [
       {

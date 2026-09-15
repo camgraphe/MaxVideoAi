@@ -1,9 +1,6 @@
 import '@/styles/marketing-mcp.css';
 import '@/styles/marketing-redesign.css';
 import '@/styles/marketing-cinema.css';
-import '@/styles/marketing-home.css';
-import '@/styles/marketing-models.css';
-import '@/styles/marketing-compare.css';
 import '@/styles/marketing-tools.css';
 import '@/styles/marketing-navigation.css';
 import { MarketingMotion } from '@/components/marketing/MarketingMotion.client';

@@ -1,3 +1,4 @@
+import '@/styles/marketing-compare.css';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { localePathnames, locales } from '@/i18n/locales';

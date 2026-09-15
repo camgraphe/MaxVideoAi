@@ -2,7 +2,7 @@
 
 import type { MouseEvent, RefObject } from 'react';
 import { Link } from '@/i18n/navigation';
-import { NAV_ITEMS } from '@/components/AppSidebar';
+import { NAV_ITEMS } from '@/components/app/app-navigation';
 import { Button } from '@/components/ui/Button';
 
 type MarketingTranslate = <T = unknown>(key: string, fallback?: T) => T | undefined;
@@ -56,14 +56,14 @@ export function MarketingAccountMenu({
         >
           <div className="mb-3 rounded-input bg-bg px-3 py-2">
             <p className="text-xs uppercase tracking-micro text-text-muted">
-              {t('workspace.header.signedIn', 'Signed in')}
+              {t('nav.account.signedIn', 'Signed in')}
             </p>
             <p className="mt-1 truncate text-sm font-medium text-text-primary">{email}</p>
           </div>
-          <nav className="mb-2 flex flex-col gap-1" aria-label={t('workspace.header.primaryNav', 'Primary navigation')}>
+          <nav className="mb-2 flex flex-col gap-1" aria-label={t('nav.primaryNavigation', 'Primary navigation')}>
             {NAV_ITEMS.map((item) => {
-              const label = t(`workspace.sidebar.links.${item.id}`, item.label);
-              const badgeLabel = item.badge ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge) : null;
+              const label = t(`nav.account.links.${item.id}`, item.label);
+              const badgeLabel = item.badge ? t(`nav.account.badges.${item.badgeKey ?? item.id}`, item.badge) : null;
               return (
                 <Link
                   key={item.id}
@@ -99,7 +99,7 @@ export function MarketingAccountMenu({
             className="min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-2"
             onClick={onSignOut}
           >
-            {t('workspace.header.signOut', 'Sign out')}
+            {t('nav.account.signOut', 'Sign out')}
             <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
           </Button>
         </div>

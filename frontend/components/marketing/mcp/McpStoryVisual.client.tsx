@@ -15,7 +15,7 @@ export function McpStoryVisual({ locale, client, priority = false }: { locale: A
   const icons = [MessageSquare, SlidersHorizontal, Film];
   return <figure className="mcp-story" data-stage={stage}>
     <div className="mcp-story-scene">
-      <Image src={cover} alt="" aria-hidden="true" width={1200} height={615} sizes="(min-width: 1024px) 58vw, 100vw" priority={priority} className="mcp-story-image" />
+      <Image src={cover} alt="" aria-hidden="true" width={1200} height={615} sizes="(min-width: 1024px) 58vw, 100vw" priority={priority} fetchPriority={priority ? 'high' : 'auto'} className="mcp-story-image" />
       <div className="mcp-story-top"><span>{copy.visualLabel}</span><span className="mcp-story-connection">{client ? <McpIntegrationMark integration={client} size={18} className="h-[18px] w-[18px]" /> : <MessageSquare size={17} />}<ArrowRight size={13} /><Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={19} height={19} /></span></div>
       {client === 'n8n' ? <div className="mcp-workflow-nodes" aria-label={copy.visualLabel}>{[locale === 'es' ? 'Brief' : 'Brief', locale === 'fr' ? 'Validation' : locale === 'es' ? 'Aprobación' : 'Approval', locale === 'fr' ? 'Vidéo' : 'Video'].map((label,index) => {const Icon=icons[index];return <div key={label}><span><Icon size={21}/></span><strong>{label}</strong>{index<2?<ArrowRight size={16} aria-hidden="true"/>:null}</div>;})}</div> : <div className="mcp-story-message"><span className="mcp-story-message-icon"><MessageSquare size={18} /></span><p>{copy.prompt}</p><ArrowRight size={20} aria-hidden="true" /></div>}
       <div className="mcp-story-caption" id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-${stage}`}>

@@ -1,3 +1,4 @@
+import '@/styles/marketing-models.css';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
