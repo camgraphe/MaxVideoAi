@@ -83,6 +83,14 @@ selection made while the render is running. The submission/preview integration i
 covered in `tests/workspace-generation-quote-boundary.test.ts` using simulated API
 responses; no paid render is needed.
 
+When a feed refresh completes a local render before its status poll, the render-state
+cleanup transfers that row's final media into the selected preview before pruning
+it. An explicit selection resolves only its matching active group; other pending
+jobs cannot take over when that group moves to history. Automatic active-group
+fallback is reserved for the absence of a selected preview. The history-first and
+poll-first completion paths, with and without another active job, are covered by
+`tests/workspace-render-polling-behavior.test.ts` composed with the preview hook.
+
 Selected previews keep their selected layout/identity but refresh their items from
 live pending groups and recent history. Completion cannot revert to an older pending
 snapshot. The same rule applies in the expanded viewer, including after active rows
