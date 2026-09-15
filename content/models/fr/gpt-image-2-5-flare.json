@@ -4,7 +4,7 @@
   "seo": {
     "title": "GPT Image 2.5 Flare - text-to-image et édition | MaxVideoAI",
     "description": "Générez et éditez des images avec GPT Image 2.5 Flare dans MaxVideoAI. Text-to-image, image-to-image, presets de taille, taille custom, niveaux de qualité, formats de sortie et mask URL optionnel.",
-    "image": "https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/6c1fb061-f94e-497f-8f33-7b85d3bceb78.png"
+    "image": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/eb9ab949-13ac-474a-b945-4f89d6effdd8.png"
   },
   "overview": "GPT Image 2.5 Flare est un modèle image quality-first dans MaxVideoAI. Une seule entrée Image Lab couvre text-to-image et image-to-image, avec presets de taille, width/height custom, qualité, nombre de sorties, format et mask URL si l’edit doit rester dans une zone précise.",
   "hero": {
@@ -444,63 +444,34 @@
     ],
     "fallbackItems": [
       {
-        "id": "product",
-        "title": "Packshot produit texte",
-        "category": "Produit",
-        "aspectRatio": "1024x768 · High",
-        "alt": "Packshot GPT Image 2.5 Flare avec label produit lisible",
-        "tags": [
-          "product"
-        ]
-      },
-      {
-        "id": "typography",
-        "title": "Poster typographique",
-        "category": "Texte lisible",
-        "aspectRatio": "4K",
-        "alt": "Poster GPT Image 2.5 Flare avec hiérarchie typographique nette",
+        "id": "portrait",
+        "title": "VANTA — couverture mode",
+        "category": "Portrait et typographie",
+        "aspectRatio": "1024x1536",
+        "alt": "Couverture mode GPT Image 2.5 Flare intitulée VANTA avec pose forte et texte éditorial lisible",
         "tags": [
           "typography"
         ]
       },
       {
-        "id": "ui",
-        "title": "Mockup UI",
-        "category": "UI",
-        "aspectRatio": "1920x1080",
-        "alt": "Mockup d’écran GPT Image 2.5 Flare avec interface lisible",
+        "id": "cinema",
+        "title": "AFTERLIGHT — architecture cinéma",
+        "category": "Cinéma et typographie",
+        "aspectRatio": "4K · 16:9",
+        "alt": "Double page GPT Image 2.5 Flare intitulée AFTERLIGHT avec architecture sous l’orage et danseuse",
         "tags": [
-          "ui"
-        ]
-      },
-      {
-        "id": "edit",
-        "title": "Retouche produit",
-        "category": "Edit image",
-        "aspectRatio": "Auto",
-        "alt": "Retouche GPT Image 2.5 Flare qui préserve produit et label",
-        "tags": [
-          "edit"
-        ]
-      },
-      {
-        "id": "mask",
-        "title": "Edit guidé par masque",
-        "category": "Masque",
-        "aspectRatio": "Mask URL",
-        "alt": "Retouche GPT Image 2.5 Flare limitée à une zone masquée",
-        "tags": [
-          "mask"
-        ]
-      },
-      {
-        "id": "final",
-        "title": "Hero still 4K",
-        "category": "Final",
-        "aspectRatio": "3840x2160",
-        "alt": "Still hero GPT Image 2.5 Flare en 4K avec détails produit nets",
-        "tags": [
+          "typography",
           "final"
+        ]
+      },
+      {
+        "id": "afterlight",
+        "title": "Direction artistique nocturne",
+        "category": "Campagne éditoriale",
+        "aspectRatio": "Portrait",
+        "alt": "Visuel de campagne nocturne GPT Image 2.5 Flare avec composition et typographie éditoriales",
+        "tags": [
+          "typography"
         ]
       }
     ],

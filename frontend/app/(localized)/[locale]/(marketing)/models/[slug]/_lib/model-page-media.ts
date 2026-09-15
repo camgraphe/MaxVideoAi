@@ -133,6 +133,12 @@ export function pickHeroMedia(
   preferredId: string | null,
   fallback: FeaturedMedia
 ): FeaturedMedia {
+  // Image model heroes are deliberately curated in the engine registry. Keep a
+  // model playlist available to the gallery without letting its first item
+  // silently replace the authored hero artwork.
+  if (!fallback.videoUrl && fallback.posterUrl) {
+    return fallback;
+  }
   const preferred = preferredId ? cards.find((card) => card.id === preferredId) : null;
   if (preferred) {
     return toFeaturedMedia(preferred) ?? fallback;

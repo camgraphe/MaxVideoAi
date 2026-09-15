@@ -3,7 +3,8 @@
   "versionLabel": "Uni-1",
   "seo": {
     "title": "Luma Uni-1 : prix image, références et retouche | MaxVideoAI",
-    "description": "Utilisez Luma Uni-1 dans MaxVideoAI pour générer des images 2K, retoucher une image source, guider la composition avec plusieurs références, utiliser une recherche visuelle web optionnelle et consulter des prix publics de référence."
+    "description": "Utilisez Luma Uni-1 dans MaxVideoAI pour générer des images 2K, retoucher une image source, guider la composition avec plusieurs références, utiliser une recherche visuelle web optionnelle et consulter des prix publics de référence.",
+    "image": "/assets/model-examples/luma-uni-1/product.webp"
   },
   "overview": "Luma Uni-1 est un modèle d’image 2K dans MaxVideoAI pour concepts visuels, retouches source, composition guidée, références multiples et recherche visuelle. C’est une route image uniquement.",
   "pricingNotes": "Les prix affichés utilisent les prix publics de référence MaxVideoAI. Les exemples de retouche et de références incluent les comptes d’images indiqués; le devis exact apparaît dans l’app avant génération.",
