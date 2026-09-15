@@ -105,6 +105,7 @@ export const STANDARD_ENGINE_FIELD_IDS = new Set([
   'aspectratio',
   'fps',
   'generateaudio',
+  'audio',
   'seed',
   'camerafixed',
   'enablesafetychecker',
@@ -308,7 +309,10 @@ export function findInputFieldById(engine: EngineCaps, mode: Mode, fieldId: stri
 }
 
 export function findGenerateAudioField(engine: EngineCaps, mode: Mode): EngineInputField | null {
-  return findInputFieldById(engine, mode, 'generate_audio');
+  return (
+    findInputFieldById(engine, mode, 'generate_audio')
+    ?? findInputFieldById(engine, mode, 'audio')
+  );
 }
 
 export function resolveAudioDefault(engine: EngineCaps, mode: Mode): boolean {

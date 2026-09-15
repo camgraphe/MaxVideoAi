@@ -94,12 +94,12 @@ test('unified Seedance variants expose their real cross-mode fields and delegate
   }
 });
 
-test('Wan 3 reference mode exposes document and public webpage URLs as advanced fields', () => {
+test('Wan 3 reference mode keeps audio in core while exposing reference directives as advanced fields', () => {
   for (const id of ['wan-3', 'wan-3-prime']) {
     const result = summary(engine(id), 'ref2v');
     assert.deepEqual(
       result.secondaryFields.map(({ field }) => field.id).sort(),
-      ['audio', 'enable_prompt_expansion', 'file_url', 'web_url'],
+      ['enable_prompt_expansion', 'file_url', 'web_url'],
       id,
     );
     assert.equal(result.promptField?.id, 'prompt', id);
