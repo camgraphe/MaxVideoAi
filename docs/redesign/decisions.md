@@ -465,3 +465,10 @@ Adrien autorise la passe galeries/parcours/performance proposée après D88. Il 
 La réutilisation publique est présentée comme point de départ (prompt et réglages disponibles), jamais comme reproduction exacte avec toutes les sources privées. Notice de chargement échoué ajoutée et accès aux vidéos privées limité au propriétaire. Analytics utilise le pont existant et des valeurs bornées.
 
 Recette : 21 routes SEO et 90 destinations, 115 tests ciblés ; builds isolés sans DB. Positions des visuels améliorées de 270–283 px sur mobile, sans prétendre à une mesure CWV. Main, auth réelle, sitemaps vidéo et performance sur vrais médias restent à valider avant publication. Bilan : `acquisition-prelaunch-review-2026-09-15.md`. Aucun push.
+
+
+## D90 — Main intégré, composition conservée (15 septembre 2026)
+
+Après le « ok go », sauvegarde du travail D89 puis intégration locale de `origin/main` (PR 297). Les derniers choix visuels restent prioritaires ; aucune nouvelle section marketing. Les fondations MCP/OAuth sont fusionnées, les contrats anciens alignés sur les menus, galeries et palette approuvés. Derniers libellés OpenClaw/n8n FR/ES localisés.
+
+Build isolé validé, 5 531 tests principaux réussis et 1 ignoré ; 69 routes SEO et quatre sitemaps stables avant/après. Les cinq cas Studio/MCP intégrés restent bloqués au démarrage par la résolution d’une dépendance AWS dans le snapshot temporaire, erreur reproduite sur main seul. Recette authentifiée, sitemaps vidéo avec données et mesures CWV restent nécessaires. Ce lot ne donne pas un feu vert de publication. Aucun push ou déploiement. Bilan : [main-integration-review-2026-09-15.md](main-integration-review-2026-09-15.md).

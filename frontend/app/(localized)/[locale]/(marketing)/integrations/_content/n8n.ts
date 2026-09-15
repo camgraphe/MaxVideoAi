@@ -22,7 +22,7 @@ function guides(locale: AppLocale, text: {
         { title: text.approval, body: text.limitation },
       ],
       commands: [],
-      setupValues: [{ label: 'MCP endpoint', value: MCP_PRODUCTION_RESOURCE_URL }],
+      setupValues: [{ label: locale === 'fr' ? 'Adresse MCP' : locale === 'es' ? 'Dirección MCP' : 'MCP endpoint', value: MCP_PRODUCTION_RESOURCE_URL }],
       limitation: text.limitation,
     },
   ];

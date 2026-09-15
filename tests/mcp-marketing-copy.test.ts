@@ -73,6 +73,12 @@ test('localized host setup titles and introductions do not inherit the English g
         assert.ok(original, `${client}/${guide.hostId}`);
         assert.notEqual(guide.title, original.title, `${locale}/${client} setup title`);
         assert.notEqual(guide.intro, original.intro, `${locale}/${client} setup introduction`);
+        for (const field of ['commandLabel', 'authTrigger'] as const) {
+          if (original[field]) assert.notEqual(guide[field], original[field], `${locale}/${client} ${field}`);
+        }
+        for (const [index, value] of guide.setupValues.entries()) {
+          assert.notEqual(value.label, original.setupValues[index]?.label, `${locale}/${client} setup value label`);
+        }
       }
     }
   }
