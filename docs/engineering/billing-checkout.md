@@ -15,10 +15,28 @@ usable on that customer's device. No eligible wallet is a normal state; the
 hosted action remains available. Loading errors provide the same fallback for
 cards and eligible local payment methods.
 
+The hosted action keeps its card/other-method label, followed immediately by a
+localized secure-payment line and the official Stripe wordmark. The small local
+SVG comes from [Stripe's logo kit](https://stripe.com/newsroom/information); its
+mask preserves the artwork and uses the approved slate/white colors for light
+and dark themes. It adds no external script or competing checkout action.
+
 `WalletAmountPicker` keeps four preset amounts plus a custom amount. USD is
 explicit in the section hint; compact currency symbols keep the four presets
 readable on small screens. Payment confirmation locks the amount, currency, and
 alternative checkout action until it succeeds or fails.
+
+New payments offer EUR and USD through the existing `resolveEnabledCurrencies`
+policy (`ENABLED_CURRENCIES` can override it for a deliberate environment policy).
+Keep GBP and CHF recognized for historical records; do not rewrite balances,
+receipts, refunds, or saved preferences to remove them from the checkout menu.
+`GET /api/me/currency` uses the same resolution as the wallet: a supported saved
+preference wins, otherwise US customers default to USD and all other countries
+default to EUR. Missing geolocation also falls back to EUR. Customers can always
+choose either enabled currency manually. Old GBP/CHF preferences are ignored
+for new payments without changing the saved historical values.
+Quote and payment creation both reject an explicitly disabled currency. This
+keeps old clients from obtaining a quote that the payment endpoint cannot use.
 
 ## Existing payment boundaries
 
@@ -75,7 +93,7 @@ New local methods require account eligibility, a supported charge currency,
 confirmation and return-flow testing, and webhook fulfillment verification.
 Checkout's dynamic methods should handle presentation. A Dashboard toggle alone
 does not establish support (for example, BLIK requires PLN, outside the current
-EUR/USD/GBP/CHF billing currencies).
+EUR/USD billing currencies).
 
 As checked on 2026-09-15, Cartes Bancaires and Bancontact are active on the live
 account. Bizum is also active after the owner completed Stripe identity

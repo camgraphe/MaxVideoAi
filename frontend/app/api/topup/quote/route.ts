@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { convertUsdToCurrencyAmount } from '@/lib/fxQuote';
-import { normalizeCurrencyCode, resolveCurrency } from '@/lib/currency';
+import { normalizeCurrencyCode, resolveCurrency, resolveEnabledCurrencies } from '@/lib/currency';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export async function POST(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   const body = (await req.json().catch(() => null)) ?? {};
   const requestedCurrency = normalizeCurrencyCode(typeof body.currency === 'string' ? body.currency : null);
+
+  if (requestedCurrency && !resolveEnabledCurrencies().includes(requestedCurrency)) {
+    return NextResponse.json({ ok: false, error: 'Unsupported currency' }, { status: 400 });
+  }
 
   const currencyResolution = resolveCurrency(req, requestedCurrency ? { preferred_currency: requestedCurrency } : undefined);
   const targetCurrency = requestedCurrency ?? currencyResolution.currency;

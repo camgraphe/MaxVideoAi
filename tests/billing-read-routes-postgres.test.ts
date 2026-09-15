@@ -95,6 +95,28 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     assert.equal(fixture.statements.length, 2);
     assert.ok(fixture.statements.every(sql => /^\s*SELECT\b/i.test(sql)));
   });
+  await t.test('retired preferences resolve an enabled currency without rewriting historical balances or profiles', async () => {
+    fixture.userId = otherUser;
+    for (const preferred of ['gbp', 'chf']) {
+      await pg.pool.query('UPDATE profiles SET preferred_currency = $2 WHERE id = $1', [otherUser, preferred]);
+      for (const [country, expected] of [['GB', 'EUR'], ['US', 'USD']]) {
+        fixture.statements.length = 0;
+        const response = await routes.getCurrency(new Request('http://localhost/api/me/currency', {
+          headers: { 'x-vercel-ip-country': country },
+        }));
+        const data = await response.json();
+        assert.equal(response.status, 200);
+        assert.deepEqual(data.enabled, ['EUR', 'USD']);
+        assert.equal(data.currency, expected);
+        assert.equal(data.locked, false);
+        assert.deepEqual(data.balances, [{ currency: 'GBP', balanceCents: 99999 }]);
+        assert.equal(fixture.statements.length, 2);
+        assert.ok(fixture.statements.every(sql => /^\s*SELECT\b/i.test(sql)));
+        assert.equal((await pg.pool.query('SELECT preferred_currency FROM profiles WHERE id = $1', [otherUser])).rows[0].preferred_currency, preferred);
+      }
+    }
+    fixture.userId = fixtureUser;
+  });
   await t.test('receipts keep pagination, original cents and stored invoice precedence', async () => {
     fixture.statements.length = 0;
     const first = await routes.getReceipts(new Request('http://localhost/api/receipts?limit=2'));
