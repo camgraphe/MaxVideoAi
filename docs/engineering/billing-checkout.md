@@ -135,7 +135,13 @@ rotation/expiry alone never replaces a successfully prepared session. Successful
 cache identity excludes the CAPTCHA credential; failed/challenged requests are never cached.
 
 Express sessions can be reused by first-time and returning customers. The server lookup
-checks owner, amount, currency, attribution, UI mode, Stripe open/unpaid status and expiry.
+checks owner, amount, currency, journey attribution, UI mode, Stripe open/unpaid status
+and expiry. A tab-specific GA4 session is retained on the original Checkout Session for
+reporting, but it does not split the payment identity or force another payable session.
+Server preparation is serialized by account and hashed IP with transaction advisory locks;
+concurrent tabs release their database connection between lock retries, then repeat the
+reuse lookup after the first preparation finishes. Unrelated account and IP scopes continue
+in parallel.
 For a first top-up it also excludes an active failed-card cooldown before returning a
 session. Reuse retains the original attempt and its failed-card history, and creates no
 new guard row. New payable Stripe sessions consume the quota even if later expired;

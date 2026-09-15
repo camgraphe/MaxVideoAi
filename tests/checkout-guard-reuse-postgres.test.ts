@@ -37,13 +37,32 @@ test('first-top-up reuse preserves fraud cooldown and guard/report counts reflec
   const output = join(folder, 'guard.cjs');
   await build({ stdin: { resolveDir: process.cwd(), contents: `
     export { findReusableExpressCheckoutSession } from './frontend/server/checkout-session-reuse';
+    export { withCheckoutSessionPreparationLock } from './frontend/server/checkout-session-coordination';
     export { evaluateWalletCheckoutGuard } from './frontend/server/checkout-guard';
     export { fetchCheckoutReport } from './frontend/server/checkout-report';`, loader: 'ts' },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'local-postgres', setup(b) {
       b.onResolve({ filter: /^@\/lib\/(db|schema)$/ }, args => ({ path: args.path, namespace: 'fixture' }));
       b.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ loader: 'ts', contents: args.path.endsWith('/db')
-        ? 'export async function query(sql, params) { return (await globalThis.__checkoutGuardPool.query(sql, params)).rows; }'
+        ? `
+          const pool = globalThis.__checkoutGuardPool;
+          export async function query(sql, params) { return (await pool.query(sql, params)).rows; }
+          export async function withDbTransaction(callback) {
+            const client = await pool.connect();
+            const executor = { query: async (sql, params) => (await client.query(sql, params)).rows };
+            try {
+              await client.query('BEGIN');
+              const result = await callback(executor, client);
+              await client.query('COMMIT');
+              return result;
+            } catch (error) {
+              await client.query('ROLLBACK');
+              throw error;
+            } finally {
+              client.release();
+            }
+          }
+        `
         : 'export async function ensureBillingSchema() {}' }));
     } }],
   });
@@ -54,6 +73,13 @@ test('first-top-up reuse preserves fraud cooldown and guard/report counts reflec
   const input = { userId: 'first-user', amountCents: 1000, currency: 'EUR', hasCompletedTopUp: false };
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).id, 'cs_reuse');
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).checkoutAttemptId, 1);
+  session.metadata = { ga_session_id: '1789486466' };
+  assert.equal(
+    (await mod.findReusableExpressCheckoutSession(stripe, input)).id,
+    'cs_reuse',
+    'another tab for the same checkout must reuse the payable session even when its analytics session differs',
+  );
+  session.metadata = {};
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM checkout_attempts')).rows[0].n, 1, 'reuse never creates or resets an attempt');
   for (const changed of [{ userId: 'other-user' }, { currency: 'USD' }, { amountCents: 2500 }]) {
     assert.equal(await mod.findReusableExpressCheckoutSession(stripe, { ...input, ...changed }), null);
@@ -86,4 +112,39 @@ test('first-top-up reuse preserves fraud cooldown and guard/report counts reflec
   assert.equal(report.recent.find((row: { id: number }) => row.id === 1).paymentCurrency, 'EUR');
   await pg.pool.query("DELETE FROM checkout_attempts WHERE stripe_checkout_session_id IS NOT NULL");
   assert.equal((await mod.evaluateWalletCheckoutGuard(guardInput)).action, 'allow', 'CAPTCHA and UI events alone never consume creation capacity');
+
+  await pg.pool.query('CREATE TABLE checkout_coordination_probe (value text NOT NULL)');
+  let releaseFirst!: () => void;
+  let firstEntered!: () => void;
+  const firstCanFinish = new Promise<void>((resolve) => { releaseFirst = resolve; });
+  const firstDidEnter = new Promise<void>((resolve) => { firstEntered = resolve; });
+  const lockScope = { userId: 'same-user', ipHash: 'same-ip' };
+  const first = mod.withCheckoutSessionPreparationLock(lockScope, async (executor: { query: Function }) => {
+    firstEntered();
+    await firstCanFinish;
+    await executor.query("INSERT INTO checkout_coordination_probe (value) VALUES ('created')");
+    return 'created';
+  });
+  await firstDidEnter;
+
+  assert.equal(
+    await mod.withCheckoutSessionPreparationLock(
+      { userId: 'unrelated-user', ipHash: 'unrelated-ip' },
+      async () => 'unrelated',
+    ),
+    'unrelated',
+    'an unrelated customer must not wait for this checkout',
+  );
+
+  let secondEntered = false;
+  const second = mod.withCheckoutSessionPreparationLock(lockScope, async (executor: { query: Function }) => {
+    secondEntered = true;
+    const rows = await executor.query('SELECT value FROM checkout_coordination_probe');
+    return rows[0]?.value ?? 'missing';
+  });
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(secondEntered, false, 'the second preparation must not race the first callback');
+  releaseFirst();
+  assert.deepEqual(await Promise.all([first, second]), ['created', 'created']);
+  assert.equal(secondEntered, true);
 });
