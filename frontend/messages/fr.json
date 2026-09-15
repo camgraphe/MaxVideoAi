@@ -7898,7 +7898,7 @@
         "primaryCta": "Ouvrir Character Builder",
         "proofs": [
           "Partez d'un portrait de référence, d'une inspiration tenue optionnelle ou d'un concept créé de zéro",
-          "Générez une portrait de référence réutilisable ou une planche personnage à 8 panneaux",
+          "Générez un portrait de référence réutilisable ou une planche personnage à 8 panneaux",
           "Réutilisez le même personnage dans les scènes, les prompts, les retouches et les parcours de création vidéo basés sur image fixe"
         ],
         "showcase": {
@@ -7914,7 +7914,7 @@
             {
               "label": "02",
               "title": "Générer la référence",
-              "body": "Créez une portrait de référence ou une planche personnage à 8 panneaux cohérente."
+              "body": "Créez un portrait de référence ou une planche personnage à 8 panneaux cohérente."
             },
             {
               "label": "03",
@@ -7935,7 +7935,7 @@
         ],
         "solutionLabel": "Ce que l'outil crée",
         "solutionTitle": "Character Builder crée la référence en premier",
-        "solutionBody": "Générez une portrait de référence ou une planche personnage à 8 panneaux, puis réutilisez cette même base dans vos prompts, vos retouches et vos parcours de création vidéo basés sur image fixe.",
+        "solutionBody": "Générez un portrait de référence ou une planche personnage à 8 panneaux, puis réutilisez cette même base dans vos prompts, vos retouches et vos parcours de création vidéo basés sur image fixe.",
         "portraitInputLabel": "Portrait de référence",
         "portraitInputAlt": "Portrait de référence utilisé comme base dans Character Builder.",
         "sheetLabel": "Planche 8 panneaux réutilisable",
@@ -7957,7 +7957,7 @@
           },
           {
             "stepLabel": "Générer",
-            "title": "Générer une portrait de référence ou une planche à 8 panneaux",
+            "title": "Générer un portrait de référence ou une planche à 8 panneaux",
             "body": "Créez une référence visage plus resserrée ou une planche cohérente avec quatre vues en pied et quatre gros plans.",
             "pills": [
               "Portrait de référence",
@@ -8151,7 +8151,7 @@
           },
           {
             "question": "Puis-je partir de zéro ?",
-            "answer": "Oui. Vous pouvez construire une portrait de référence ou une planche personnage à partir d'un concept créé de zéro quand vous n'avez pas d'image source."
+            "answer": "Oui. Vous pouvez construire un portrait de référence ou une planche personnage à partir d'un concept créé de zéro quand vous n'avez pas d'image source."
           },
           {
             "question": "Puis-je réutiliser cela dans des parcours de création image-to-video ?",
@@ -8201,7 +8201,7 @@
       "finalCta": {
         "eyebrow": "Commencez par la référence",
         "title": "Gardez le même personnage d'une scène à l'autre",
-        "body": "Générez une portrait de référence ou une planche à 8 panneaux, puis réutilisez cette même référence dans les prompts, les retouches et les parcours de création vidéo basés sur image fixe.",
+        "body": "Générez un portrait de référence ou une planche à 8 panneaux, puis réutilisez cette même référence dans les prompts, les retouches et les parcours de création vidéo basés sur image fixe.",
         "primaryCta": "Ouvrir Character Builder",
         "panelLeft": "Personnage verrouillé",
         "panelRight": "Prêt à réutiliser",
