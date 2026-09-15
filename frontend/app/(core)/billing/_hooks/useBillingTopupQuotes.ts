@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import type { BillingSession, TopupQuote } from '../_lib/billing-types';
 import { useBillingRequestOwner } from './useBillingRequestOwner';
@@ -9,25 +9,24 @@ export function useBillingTopupQuotes({
   authLoading,
   session,
   normalizedChargeCurrency,
-  customAmountCents,
-  customAmountValid,
+  selectedTopupCents,
   quoteErrorMessage,
 }: {
   authLoading: boolean;
   session: BillingSession;
   normalizedChargeCurrency: string;
-  customAmountCents: number | null;
-  customAmountValid: boolean;
+  selectedTopupCents: number;
   quoteErrorMessage: string;
 }) {
   const accountId = authLoading ? null : session?.user?.id ?? null;
-  const accessToken = session?.access_token ?? null;
+  const accessTokenRef = useRef(session?.access_token);
+  accessTokenRef.current = session?.access_token;
   const amounts = JSON.stringify([...new Set([
     ...USD_TOPUP_TIERS.map((tier) => tier.amountCents),
-    ...(customAmountValid && customAmountCents != null ? [customAmountCents] : []),
+    selectedTopupCents,
   ])]);
   const identity = accountId ? JSON.stringify([
-    accountId, normalizedChargeCurrency, amounts, customAmountCents, customAmountValid,
+    accountId, normalizedChargeCurrency, amounts,
   ]) : null;
   const { owner, requestScope, isActive } = useBillingRequestOwner(identity);
   const [state, setState] = useState<{
@@ -43,7 +42,7 @@ export function useBillingTopupQuotes({
 
     async function loadQuotes() {
       setState({ owner, quotes: {}, loading: true, error: null });
-      const token = accessToken;
+      const token = accessTokenRef.current;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers.Authorization = `Bearer ${token}`;
       try {
@@ -82,7 +81,7 @@ export function useBillingTopupQuotes({
     return () => {
       requestScope.invalidate();
     };
-  }, [accessToken, accountId, amounts, isActive, normalizedChargeCurrency, owner, quoteErrorMessage, requestScope]);
+  }, [accountId, amounts, isActive, normalizedChargeCurrency, owner, quoteErrorMessage, requestScope]);
 
   return {
     topupQuotes: accountId && state.owner === owner ? state.quotes : {},

@@ -13,6 +13,7 @@ export type CheckoutAbandonmentSignal =
 
 export type CheckoutReportSummary = {
   total: number;
+  sessionsCreated: number;
   passed: number;
   abandoned: number;
   blocked: number;
@@ -38,6 +39,7 @@ export type CheckoutReportRecentAttempt = {
   id: number;
   userId: string;
   amountCents: number;
+  paymentCurrency: string | null;
   mode: 'hosted' | 'express_checkout';
   outcome: string;
   status: CheckoutReportStatus;
@@ -72,6 +74,7 @@ type CheckoutReportAggregateRow = {
 
 type CheckoutReportSummaryRow = {
   total: number | string | null;
+  sessions_created: number | string | null;
   hosted: number | string | null;
   express: number | string | null;
   captcha_passed: number | string | null;
@@ -91,6 +94,7 @@ type CheckoutReportRecentRow = {
   id: number | string;
   user_id: string;
   amount_cents: number | string;
+  payment_currency: string | null;
   mode: 'hosted' | 'express_checkout';
   outcome: string;
   status: CheckoutReportStatus;
@@ -118,6 +122,7 @@ const RANGE_INTERVALS: Record<CheckoutReportRange, string> = {
 
 const EMPTY_SUMMARY: CheckoutReportSummary = {
   total: 0,
+  sessionsCreated: 0,
   passed: 0,
   abandoned: 0,
   blocked: 0,
@@ -243,6 +248,7 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
     query<CheckoutReportSummaryRow>(
       `SELECT
          COUNT(*)::int AS total,
+         COUNT(*) FILTER (WHERE attempt.stripe_checkout_session_id IS NOT NULL)::int AS sessions_created,
          COUNT(*) FILTER (WHERE attempt.mode = 'hosted')::int AS hosted,
          COUNT(*) FILTER (WHERE attempt.mode = 'express_checkout')::int AS express,
          COUNT(*) FILTER (WHERE attempt.captcha_passed IS TRUE)::int AS captcha_passed,
@@ -271,6 +277,7 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
     query<CheckoutReportReasonRow>(
       `SELECT COALESCE(NULLIF(attempt.reason, ''), 'none') AS reason, COUNT(*)::int AS count
        ${scopedSql}
+       AND attempt.outcome IN ('rate_limited', 'captcha_required', 'captcha_failed', 'session_failed')
        GROUP BY COALESCE(NULLIF(attempt.reason, ''), 'none')
        ORDER BY count DESC, reason ASC
        LIMIT 8`
@@ -280,6 +287,7 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
          attempt.id,
          attempt.user_id,
          attempt.amount_cents,
+         attempt.metadata->>'currency' AS payment_currency,
          attempt.mode,
          attempt.outcome,
          ${statusSql} AS status,
@@ -302,6 +310,7 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
   const summary: CheckoutReportSummary = {
     ...EMPTY_SUMMARY,
     total: Number(summaryRow?.total ?? 0),
+    sessionsCreated: Number(summaryRow?.sessions_created ?? 0),
     hosted: Number(summaryRow?.hosted ?? 0),
     express: Number(summaryRow?.express ?? 0),
     captchaPassed: Number(summaryRow?.captcha_passed ?? 0),
@@ -330,6 +339,7 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
         id,
         userId: row.user_id,
         amountCents: Number(row.amount_cents ?? 0),
+        paymentCurrency: /^[a-z]{3}$/i.test(row.payment_currency ?? '') ? row.payment_currency!.toUpperCase() : null,
         mode: row.mode,
         outcome: row.outcome,
         status: row.status,

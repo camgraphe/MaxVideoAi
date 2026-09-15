@@ -124,3 +124,45 @@ then lint, TypeScript, localization parity, and the production build. The
 runtime native-checkout test covers rapid selections, session reuse, duplicate
 confirmation, retry, stale responses, and no-wallet availability. Component
 fixtures are useful for layout checks but do not prove actual payment success.
+
+## Preparation lifecycle and guard reporting
+
+Only an applied amount feeds `useBillingTopupQuotes`. Draft input and same-account Auth
+refreshes do not reload quotes, currency detection or the native Stripe element. A new
+amount/currency still retires the previous payable element until its quote is ready.
+`WalletExpressCheckout` retries a CAPTCHA challenge when a fresh token arrives; token
+rotation/expiry alone never replaces a successfully prepared session. Successful session
+cache identity excludes the CAPTCHA credential; failed/challenged requests are never cached.
+
+Express sessions can be reused by first-time and returning customers. The server lookup
+checks owner, amount, currency, attribution, UI mode, Stripe open/unpaid status and expiry.
+For a first top-up it also excludes an active failed-card cooldown before returning a
+session. Reuse retains the original attempt and its failed-card history, and creates no
+new guard row. New payable Stripe sessions consume the quota even if later expired;
+CAPTCHA requests, visual remounts, wallet cancellation and preparation telemetry do not.
+
+`frontend/server/checkout-guard-policy.ts` is the shared source for enforcement and the
+read-only admin summary. First top-ups require CAPTCHA after three sessions or for a
+custom amount. With CAPTCHA configured the maximum is 12 new sessions per 15 minutes,
+allowing the four presets in two currencies plus hosted fallback after verification.
+Without CAPTCHA the maximum remains six. Returning-user and IP limits remain unchanged;
+five failed first-top-up card attempts still expire the session and impose a 30-minute
+cooldown. No Amex brand restriction is active.
+
+The admin report separates preparation counts from confirmed paid receipts. Unpaid sessions
+after 30 minutes include passive wallet preparation, so this is not a customer conversion
+or proven-abandonment measure. Guard interventions do not prove fraud. The Amex restriction
+metric is explicitly historical, card-failure telemetry is scoped to first top-ups, and
+wallet credits (USD) are displayed separately from payment currency.
+
+Receipt document reads deduplicate in-flight lookups by Stripe client and object identity.
+A Stripe `404/resource_missing` is retained in a bounded process-local cache for one hour;
+other failures are retried normally and existing document URLs remain valid fallbacks.
+This reduces repeated requests for historical objects unavailable in the current account,
+without editing financial history or suppressing checkout/payment errors. Cold instances
+may still perform the first missing-object lookup; this is not a persistent repair of the
+historical reference.
+
+Regression coverage: `billing-express-lifecycle.test.ts`,
+`wallet-express-checkout-behavior.test.ts`, `checkout-guard-reuse-postgres.test.ts`,
+`checkout-guard.test.ts`, `checkout-report.test.ts`, and `stripe-receipt-documents.test.ts`.

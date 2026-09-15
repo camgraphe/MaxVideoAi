@@ -397,9 +397,12 @@ export async function POST(req: NextRequest) {
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
 
-    if (isExpressCheckoutTopUp && !isFirstTopUp) {
+    // Reuse is also safe for first top-ups: the lookup excludes their active
+    // failed-card cooldown, and retains the original attempt and failure history.
+    if (isExpressCheckoutTopUp) {
       const reusableSession = await findReusableExpressCheckoutSession(stripe, {
         userId,
+        hasCompletedTopUp,
         amountCents,
         attribution: walletAttribution,
         currency: resolvedCurrencyUpper,

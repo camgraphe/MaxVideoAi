@@ -215,3 +215,35 @@ test('resolveStripeBillingDocument falls back to cached receipt URL after fresh 
     url: 'https://cached.example/receipt',
   });
 });
+
+
+test('historical Stripe 404 lookups are deduplicated and bounded without hiding temporary errors or other accounts', async () => {
+  let requests = 0;
+  let now = 1000;
+  const savedNow = Date.now;
+  Date.now = () => now;
+  const makeClient = (failure: { code: string; statusCode: number }) => ({
+    charges: { retrieve: async () => ({}) },
+    paymentIntents: { retrieve: async () => { requests++; throw failure; } },
+  });
+  const stripe = makeClient({ code: 'resource_missing', statusCode: 404 });
+  const source = { type: 'topup', stripePaymentIntentId: 'pi_historical' };
+  try {
+    assert.deepEqual(await Promise.all(Array.from({ length: 5 }, () => resolveStripeBillingDocument(stripe, source))), Array(5).fill(null));
+    assert.equal(requests, 1, 'simultaneous history reads share one Stripe lookup');
+    await resolveStripeBillingDocument(stripe, source);
+    assert.equal(requests, 1, 'a confirmed missing object is not retried on every page visit');
+    const otherAccount = makeClient({ code: 'resource_missing', statusCode: 404 });
+    await resolveStripeBillingDocument(otherAccount, source);
+    assert.equal(requests, 2, 'missing status cannot cross Stripe clients/accounts');
+    now += 60 * 60 * 1000 + 1;
+    await resolveStripeBillingDocument(stripe, source);
+    assert.equal(requests, 3, 'negative lookups expire and can recover');
+    const temporary = makeClient({ code: 'rate_limit', statusCode: 429 });
+    await resolveStripeBillingDocument(temporary, source);
+    await resolveStripeBillingDocument(temporary, source);
+    assert.equal(requests, 5, 'temporary failures are retried normally');
+    const fallback = await resolveStripeBillingDocument(stripe, { ...source, stripeReceiptUrl: 'https://pay.stripe.com/receipts/cached' });
+    assert.equal(fallback?.url, 'https://pay.stripe.com/receipts/cached');
+  } finally { Date.now = savedNow; }
+});

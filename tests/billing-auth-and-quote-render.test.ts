@@ -99,8 +99,7 @@ test('the first render for a new quote identity never exposes the previous curre
       authLoading: false,
       session: { access_token: 'token-a', user: { id: 'account-a' } },
       normalizedChargeCurrency: currency,
-      customAmountCents: null,
-      customAmountValid: false,
+      selectedTopupCents: 1000,
       quoteErrorMessage: 'quote failed',
     });
     observations.push({
@@ -147,7 +146,7 @@ test('quote input identity masks every changed render and rejects late currency/
     state = useBillingTopupQuotes({
       session: account ? { user: { id: account }, access_token: account } : null,
       authLoading: pending, normalizedChargeCurrency: currency,
-      customAmountCents: amount, customAmountValid: valid, quoteErrorMessage: 'quote failed',
+      selectedTopupCents: valid && amount != null ? amount : 1000, quoteErrorMessage: 'quote failed',
     });
     observed.push(state);
     return null;
@@ -177,7 +176,7 @@ test('quote input identity masks every changed render and rejects late currency/
     assert.deepEqual(state.topupQuotes, {});
     await resolve(2, 1001);
     assert.equal(state.topupQuotes[1000]?.amountMinor, 1001);
-    await render({ amount: 2500, valid: true });
+    await render({ amount: 2700, valid: true });
     assert.equal(new Set(requests[3].body.amounts).size, requests[3].body.amounts.length);
     await resolve(3);
     await render({ amount: 3500, valid: true });

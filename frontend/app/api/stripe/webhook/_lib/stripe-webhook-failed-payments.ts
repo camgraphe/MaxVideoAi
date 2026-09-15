@@ -1,3 +1,4 @@
+import { CHECKOUT_GUARD_LIMITS } from '@/server/checkout-guard-policy';
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
 import { normalizeStripeId } from './stripe-webhook-documents';
@@ -10,7 +11,7 @@ type FailedTopupPaymentMetadata = {
   checkoutUiMode: string | null;
 };
 
-const FAILED_CARD_ATTEMPT_LIMIT = 5;
+const FAILED_CARD_ATTEMPT_LIMIT = CHECKOUT_GUARD_LIMITS.failedCardAttempts;
 const FAILED_CARD_ATTEMPT_LIMIT_REASON = 'failed_card_attempt_limit';
 
 function readMetadataString(metadata: Stripe.Metadata | null | undefined, key: string): string | null {
