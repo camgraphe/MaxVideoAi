@@ -295,20 +295,31 @@ export function calculateGptImage25ProviderPrice(params: {
   const tier = resolveGptImage25PricingTier(params.imageSize, params.customImageSize);
   const outputCount = Math.max(1, Math.round(params.outputCount));
   const referenceImageCount = Math.max(0, Math.round(params.referenceImageCount ?? 0));
-  const paidReferenceImageCount = params.mode === 'i2i' ? Math.max(0, referenceImageCount - 1) : 0;
+  const providerReferenceImageCount = params.mode === 'i2i' ? referenceImageCount : 0;
+  const includedReferenceImageCount = providerReferenceImageCount > 0 ? 1 : 0;
+  const additionalReferenceImageCount = Math.max(
+    0,
+    providerReferenceImageCount - includedReferenceImageCount
+  );
   const referenceUnitExactCents = tier.billingKey === '3840x2160' ? 1.2 : 0.8;
   const outputUnitExactCents = tier.prices[params.quality];
   const outputSubtotalExactCents = outputUnitExactCents * outputCount;
-  const referenceSubtotalExactCents = referenceUnitExactCents * paidReferenceImageCount;
+  const referenceSubtotalExactCents = Math.round(
+    referenceUnitExactCents * providerReferenceImageCount * 1000
+  ) / 1000;
   return {
     tier,
     outputCount,
     referenceImageCount,
-    paidReferenceImageCount,
+    providerReferenceImageCount,
+    includedReferenceImageCount,
+    additionalReferenceImageCount,
     outputUnitExactCents,
     outputSubtotalExactCents,
     referenceUnitExactCents,
     referenceSubtotalExactCents,
-    providerSubtotalExactCents: outputSubtotalExactCents + referenceSubtotalExactCents,
+    providerSubtotalExactCents: Math.round(
+      (outputSubtotalExactCents + referenceSubtotalExactCents) * 1000
+    ) / 1000,
   };
 }

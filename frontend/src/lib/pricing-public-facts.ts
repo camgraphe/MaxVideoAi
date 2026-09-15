@@ -332,7 +332,10 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
         pricing_model: 'gpt_image_2_5_quality_size',
         provider_cost_source: 'fal_gpt_image_2_5_pricing_table',
         reference_image_count: price.referenceImageCount,
-        paid_reference_image_count: price.paidReferenceImageCount,
+        provider_reference_image_count: price.providerReferenceImageCount,
+        included_reference_image_count: price.includedReferenceImageCount,
+        additional_reference_image_count: price.additionalReferenceImageCount,
+        paid_reference_image_count: price.additionalReferenceImageCount,
       },
     });
   }

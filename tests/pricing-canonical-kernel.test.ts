@@ -71,6 +71,34 @@ test('canonical quote preserves fractional vendor cents for commercial math', as
   assert.equal(quote.breakdown.vendorSubtotalExactCents, 10.1);
 });
 
+test('canonical quote can include provider costs while pricing an included input from an output-only basis', async () => {
+  const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');
+  const quote = quoteCanonicalPricing({
+    facts: { engineId: 'image-edit', currency: 'USD', vendorSubtotalExactCents: 3.513, unit: 'image', quantity: 1 },
+    scenario: {
+      id: 'image-edit:4k-low',
+      engineId: 'image-edit',
+      membershipTier: 'member',
+      discountPercent: 0,
+      commercialAdjustment: {
+        pricingBasisExactCents: 1.113,
+        minimumCustomerTotalCents: 3,
+        fixedCustomerCents: 2,
+      },
+    },
+    policy: resolvedPolicy,
+    compatibilityProfile: standardProfile,
+  });
+
+  assert.equal(quote.vendorSubtotalCents, 4);
+  assert.equal(quote.customerTotalCents, 5);
+  assert.equal(quote.platformFeeCents, 1);
+  assert.equal(quote.vendorShareCents, 4);
+  assert.equal(quote.breakdown.pricingBasisExactCents, 1.113);
+  assert.equal(quote.breakdown.fixedCustomerCents, 2);
+  assert.equal(quote.breakdown.minimumCustomerTotalCents, 3);
+});
+
 test('canonical quote supports explicit vendor rounding compatibility', async () => {
   assert.equal(existsSync(canonicalPath), true, `${canonicalPath} should exist`);
   const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');

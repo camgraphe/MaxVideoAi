@@ -92,7 +92,7 @@ test('GPT Image 2.5 pricing preserves fal.ai fractional provider cents', () => {
   assert.equal(fourK.prices.max, 40.026);
 });
 
-test('GPT Image 2.5 edit pricing includes only references beyond the first included image', () => {
+test('GPT Image 2.5 edit pricing tracks every provider input while including the first source commercially', () => {
   const price = calculateGptImage25ProviderPrice({
     mode: 'i2i',
     imageSize: '1024x1024',
@@ -102,9 +102,11 @@ test('GPT Image 2.5 edit pricing includes only references beyond the first inclu
   });
 
   assert.equal(price.outputSubtotalExactCents, 5.268);
-  assert.equal(price.paidReferenceImageCount, 2);
-  assert.equal(price.referenceSubtotalExactCents, 1.6);
-  assert.equal(price.providerSubtotalExactCents, 6.868);
+  assert.equal(price.providerReferenceImageCount, 3);
+  assert.equal(price.includedReferenceImageCount, 1);
+  assert.equal(price.additionalReferenceImageCount, 2);
+  assert.equal(price.referenceSubtotalExactCents, 2.4);
+  assert.equal(price.providerSubtotalExactCents, 7.668);
 });
 
 test('GPT Image 2.5 billing facts use the exact quality-and-size vendor subtotal', () => {
