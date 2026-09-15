@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-14",
+  "scope": "review viewer and source data only",
+  "localLinks": "all resolve",
+  "http": {
+    "index.html": 200,
+    "home.png": 200,
+    "compare.png": 200,
+    "website-move.png": 200,
+    "local-assets/bag-product.webp": 200,
+    "local-assets/bag-scene.webp": 200,
+    "home-diversity.png": 200
+  },
+  "compareValues": "10 exact source values verified",
+  "browser": {
+    "desktop": "review visually inspected",
+    "mobile": "390x844, source table expanded and inspected, scrollWidth 390",
+    "applicationMobileUX": "not tested; boards are raster concepts"
+  },
+  "diffCheck": "passed",
+  "applicationBuild": "not run; documentation and static review only",
+  "revisionD52": {
+    "image": "home-diversity.png",
+    "visualInspection": "Dancer, animated rabbit, narrative bus and landscape visible; sneakers removed; references and headset left of desktop copy.",
+    "review": "Active image link verified in browser after reload.",
+    "remaining": "Compare layout alignment with detailed board and desktop FAQ remain documented; no new app performance check."
+  },
+  "revisionD55": {
+    "http": {
+      "home-app-connect.png": 200,
+      "home-separate-journeys.png": 200,
+      "local-assets/app-desktop.jpg": 200,
+      "local-assets/app-mobile.jpg": 200
+    },
+    "imageDimensions": {
+      "home-app-connect.png": [
+        1024,
+        1536
+      ],
+      "home-separate-journeys.png": [
+        1024,
+        1536
+      ],
+      "local-assets/app-desktop.jpg": [
+        1428,
+        1015
+      ],
+      "local-assets/app-mobile.jpg": [
+        378,
+        818
+      ]
+    },
+    "scope": "static visual proposal and original app captures",
+    "observedAppState": "guest/sample",
+    "appActions": "navigation and viewport changes only",
+    "generatedInterface": "composition illustration; exact screenshots separately linked"
+  },
+  "revisionD56": {
+    "image": "app-devices.png",
+    "visualInspection": "Landscape desktop screen preserved; phone overlaps peripheral right rail; central scene visible; text separate.",
+    "scope": "isolated generated composition, no application implementation",
+    "remaining": "Typography harmonization and dedicated mobile composition"
+  }
+}

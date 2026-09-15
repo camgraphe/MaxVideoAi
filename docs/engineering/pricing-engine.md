@@ -55,6 +55,10 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/app/(core)/admin/billing-products` | Referenced fixed-product preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable billing-product-domain owner |
 | `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads; pricing and billing-product preview/confirm mutations; explicit membership-retired errors | Operationally accepted on isolated DB | Stable thin route adapters |
 
+## Homepage guided pricing demonstration
+
+`(home)/_lib/home-price-demo-data.ts` selects three exact Wan 3 text-to-video scenarios through Pricing's `getPresetQuote`: 5 s / 720p, 15 s / 720p, 15 s / 1080p, audio enabled. If any scenario is not exact, it omits the demonstration. `HomePriceDemo.client.tsx` selects these server-projected quotes without computing commercial prices; `HomePriceAppSurface.client.tsx` presents them with the shared workspace Composer and CoreSettingsBar in an inert, lazy-loaded surface. The generation handler is a no-op and the real studio is a separate link. Preserve this boundary: the homepage is neither a live quote endpoint nor a generation client. `tests/home-price-demo.test.ts` verifies the public quote projection in EN, FR and ES.
+
 ## Policy precedence
 
 Canonical server quotes use this deterministic precedence:

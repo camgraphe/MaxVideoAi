@@ -22,7 +22,7 @@ import {
   buildComparisonMetrics,
 } from './_lib/compare-page-scorecard';
 import { buildCompareSpecRows } from './_lib/compare-page-spec-rows';
-import { buildCompareShowdownSlots } from './_lib/compare-page-showdowns';
+import { loadCompareGallery } from './_lib/compare-gallery-loader';
 import {
   computePricingScore,
   getCanonicalCompareSlug,
@@ -125,26 +125,15 @@ export default async function CompareDetailPage(
     rightScore,
     rightSpecs,
   } = routeData;
-  const showdownSlots = await buildCompareShowdownSlots({
-    activeLocale,
-    canonicalSlug,
-    left,
-    pairHasKling3Native4k,
-    pairHasNativeAudio,
-    right,
-    shouldSwapDisplayOrder,
-  });
+  const [leftGallery, rightGallery] = await Promise.all([
+    loadCompareGallery(left, leftIsPrelaunch), loadCompareGallery(right, rightIsPrelaunch),
+  ]);
   const {
-    exposeSourcePrompt,
     generateWithLabel,
     heroIntroTemplate,
-    localizedPromptNote,
     prelaunchNotice,
     scorecardCriteriaLabel,
     scorecardProvisionalNote,
-    showdownActionHint,
-    showdownActionLabel,
-    showdownSubtitle,
     winnerSummaryHeading,
   } = buildCompareDetailPageText({
     activeLocale,
@@ -154,7 +143,7 @@ export default async function CompareDetailPage(
     labels,
     pageHeroIntro: pageOverride?.heroIntro,
     pairHasKling3Native4k,
-    hasShowdownSlots: showdownSlots.length > 0,
+    hasShowdownSlots: false,
   });
   const leftAccent = getEngineAccent(left);
   const rightAccent = getEngineAccent(right);
@@ -199,7 +188,7 @@ export default async function CompareDetailPage(
     pairHasKling3Native4k,
     pairHasNativeAudio,
     specLabels,
-    hasShowdownSlots: showdownSlots.length > 0,
+    hasShowdownSlots: false,
   });
   const faqJsonLd = buildCompareFaqJsonLd(faqItems);
 
@@ -249,13 +238,14 @@ export default async function CompareDetailPage(
 
   return (
     <CompareDetailContent
+      galleries={{ left: leftGallery, right: rightGallery }}
+      returnPath={`${localePrefix}/${compareBase}/${canonicalSlug}`}
       activeLocale={activeLocale}
       breadcrumbJsonLd={breadcrumbJsonLd}
       compareCopy={compareCopy}
       compareHubHref={compareHubHref}
       comparisonMetrics={comparisonMetrics}
       criteriaCount={criteriaCount}
-      exposeSourcePrompt={exposeSourcePrompt}
       faqItems={faqItems}
       faqJsonLd={faqJsonLd}
       generateWithLabel={generateWithLabel}
@@ -264,11 +254,9 @@ export default async function CompareDetailPage(
       left={left}
       leftAccent={leftAccent}
       leftCanGenerate={leftCanGenerate}
-      leftIsPrelaunch={leftIsPrelaunch}
       leftOverall={leftOverall}
       leftPricingDisplay={leftPricingDisplay}
       leftScoreStyle={leftScoreStyle}
-      localizedPromptNote={localizedPromptNote}
       pageOverride={pageOverride}
       pairHasNativeAudio={pairHasNativeAudio}
       prelaunchNotice={prelaunchNotice}
@@ -279,17 +267,11 @@ export default async function CompareDetailPage(
       right={right}
       rightAccent={rightAccent}
       rightCanGenerate={rightCanGenerate}
-      rightIsPrelaunch={rightIsPrelaunch}
       rightOverall={rightOverall}
       rightPricingDisplay={rightPricingDisplay}
       rightScoreStyle={rightScoreStyle}
       scorecardCriteriaLabel={scorecardCriteriaLabel}
       scorecardProvisionalNote={scorecardProvisionalNote}
-      showdownActionHint={showdownActionHint}
-      showdownActionLabel={showdownActionLabel}
-      showdownSlots={showdownSlots}
-      showdownSubtitle={showdownSubtitle}
-      slug={slug}
       specRows={specRows}
       summaryRows={summaryRows}
       webPageJsonLd={webPageJsonLd}

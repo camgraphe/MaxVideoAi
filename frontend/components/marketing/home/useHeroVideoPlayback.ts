@@ -26,6 +26,8 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
   const [manualPlayRequest, setManualPlayRequest] = useState(0);
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const transitionCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [hasTransitionFrame, setHasTransitionFrame] = useState(false);
   const idleHandleRef = useRef<number | null>(null);
   const idleUsesRequestRef = useRef(false);
   const generationRef = useRef(0);
@@ -34,6 +36,7 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
   const pendingManualPlayRef = useRef(false);
   const playerVisibleRef = useRef(false);
   const documentVisibleRef = useRef(true);
+  const lastEndedVideoRef = useRef<HTMLVideoElement | null>(null);
   const selected = items[selectedIndex] ?? items[0];
   const {
     attempt, begin, fail, setContext,
@@ -70,6 +73,7 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
         !(error instanceof DOMException && error.name === 'AbortError')
       ) {
         setStatus('error');
+        setHasTransitionFrame(false);
         setIsFrameReady(false);
       }
     });
@@ -165,17 +169,18 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     videoRef.current?.pause();
   }, [cancelScheduledLoad]);
 
-  function resetForSelection(videoSrc: string) {
+  function resetForSelection(videoSrc: string, trigger: 'user' | 'automatic' = 'user') {
+    if (trigger === 'user') setHasTransitionFrame(false);
     generationRef.current += 1;
     playAttemptRef.current += 1;
     cancelScheduledLoad();
     videoRef.current?.pause();
     userPausedRef.current = false;
-    pendingManualPlayRef.current = true;
-    begin(videoSrc, 'user', { force: true });
+    pendingManualPlayRef.current = trigger === 'user';
+    begin(videoSrc, trigger, { force: true });
     setContext({ intended: true });
     setHasUserPaused(false);
-    setIsMuted(true);
+    if (trigger === 'user') setIsMuted(true);
     setStatus('loading');
     setProgress(0);
     setCurrentTime(0);
@@ -229,10 +234,12 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     setIsFrameReady(false);
     const failure = fail(attemptId, video.error?.code);
     if (failure === 'fallback') setStatus('loading');
-    if (failure === 'terminal') setStatus('error');
+    if (failure === 'terminal') { setStatus('error'); setHasTransitionFrame(false); }
   }
 
   return {
+    transitionCanvasRef,
+    hasTransitionFrame,
     selectedIndex,
     selected,
     status,
@@ -253,12 +260,21 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     mediaHandlers: {
       onLoadedData(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
-        setIsFrameReady(true);
+        if (!hasTransitionFrame) setIsFrameReady(true);
       },
       onPlaying(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
-        measurePlaying(event.currentTarget);
-        setIsFrameReady(true);
+        const video = event.currentTarget;
+        const generation = generationRef.current;
+        measurePlaying(video);
+        const reveal = () => {
+          if (videoRef.current !== video || generationRef.current !== generation) return;
+          setIsFrameReady(true);
+          setHasTransitionFrame(false);
+        };
+        if (hasTransitionFrame && typeof video.requestVideoFrameCallback === 'function') {
+          video.requestVideoFrameCallback(reveal);
+        } else reveal();
         setStatus('playing');
       },
       onWaiting(event: SyntheticEvent<HTMLVideoElement>) {
@@ -270,6 +286,42 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
         if (!isCurrentVideo(event)) return;
         measurePause();
         setStatus(userPausedRef.current ? 'paused' : 'loading');
+      },
+      onEnded(event: SyntheticEvent<HTMLVideoElement>) {
+        if (
+          !isCurrentVideo(event) ||
+          lastEndedVideoRef.current === event.currentTarget ||
+          userPausedRef.current ||
+          !playerVisibleRef.current ||
+          !documentVisibleRef.current ||
+          document.visibilityState === 'hidden'
+        ) return;
+        // Advance only at the natural end; no timer or speculative media loading.
+        lastEndedVideoRef.current = event.currentTarget;
+        for (let offset = 1; offset <= items.length; offset += 1) {
+          const nextIndex = (selectedIndex + offset) % items.length;
+          const next = items[nextIndex];
+          if (!next?.videoSrc) continue;
+          // Keep one decoded frame locally while the next selected video starts.
+          // Drawing a cross-origin video is allowed; never export/read canvas pixels.
+          const video = event.currentTarget;
+          const canvas = transitionCanvasRef.current;
+          if (canvas && video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) {
+            try {
+              const scale = Math.min(1, 1280 / video.videoWidth);
+              canvas.width = Math.round(video.videoWidth * scale);
+              canvas.height = Math.round(video.videoHeight * scale);
+              const context = canvas.getContext('2d');
+              if (context) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                setHasTransitionFrame(true);
+              }
+            } catch { setHasTransitionFrame(false); }
+          }
+          resetForSelection(next.videoSrc, 'automatic');
+          setSelectedIndex(nextIndex);
+          break;
+        }
       },
       onError(event: SyntheticEvent<HTMLVideoElement>) {
         if (!playbackAttempt) return;

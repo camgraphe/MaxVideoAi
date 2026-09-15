@@ -51,37 +51,19 @@ export function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: st
   return selected;
 }
 
-export function buildVideoBoundaries(values: KeySpecValues | null): string[] {
-  if (!values) {
-    return [
-      'Output is short-form. For longer edits, stitch multiple clips.',
-      'Resolution is capped on this tier.',
-      'No video input here — start from text or a single reference image.',
-      'No fixed seeds — iteration = re-run + refine.',
-    ];
-  }
+export function buildVideoBoundaries(values: KeySpecValues | null, locale: 'en' | 'fr' | 'es' = 'en'): string[] {
+  const copy = {
+    en: { duration: (v: string) => `Clip duration: ${v}. Assemble several clips for longer edits.`, resolution: (v: string) => `Available resolutions: ${v}.`, video: 'Video input is not supported on this model.', image: 'Image-to-video is not supported on this model.', audio: 'This model does not generate native audio.', iteration: 'Refine your prompt and compare variations before choosing a result.' },
+    fr: { duration: (v: string) => `Durée des clips : ${v}. Assemblez plusieurs clips pour un montage plus long.`, resolution: (v: string) => `Résolutions disponibles : ${v}.`, video: 'Ce modèle n’accepte pas de vidéo en entrée.', image: 'Ce modèle ne permet pas de générer une vidéo à partir d’une image.', audio: 'Ce modèle ne génère pas d’audio natif.', iteration: 'Affinez votre prompt et comparez les variantes avant de retenir un résultat.' },
+    es: { duration: (v: string) => `Duración de los clips: ${v}. Combina varios clips para crear un video más largo.`, resolution: (v: string) => `Resoluciones disponibles: ${v}.`, video: 'Este modelo no acepta videos como entrada.', image: 'Este modelo no permite generar videos a partir de una imagen.', audio: 'Este modelo no genera audio nativo.', iteration: 'Ajusta tu prompt y compara las variantes antes de elegir un resultado.' },
+  }[locale];
+  if (!values) return [copy.iteration];
   const items: string[] = [];
-  const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration : null;
-  const resolution = values.maxResolution && !isPending(values.maxResolution) ? normalizeMaxResolution(values.maxResolution) : null;
-  if (duration) {
-    items.push(`Output is short-form (${duration}). For longer edits, stitch multiple clips.`);
-  }
-  if (resolution) {
-    items.push(`Resolution tops out at ${resolution} for this tier.`);
-  }
-  if (isUnsupported(values.videoToVideo)) {
-    items.push('No video input here — start from text or a single reference image.');
-  }
-  if (isUnsupported(values.imageToVideo)) {
-    items.push('Image-to-video is not supported on this tier.');
-  }
-  if (isUnsupported(values.audioOutput)) {
-    items.push('No native audio in this tier.');
-  }
-  if (!items.length) {
-    items.push('No fixed seeds — iteration = re-run + refine.');
-  } else if (!items.some((item) => item.toLowerCase().includes('seed'))) {
-    items.push('No fixed seeds — iteration = re-run + refine.');
-  }
+  if (values.maxDuration && !isPending(values.maxDuration)) items.push(copy.duration(values.maxDuration));
+  if (values.maxResolution && !isPending(values.maxResolution)) items.push(copy.resolution(normalizeMaxResolution(values.maxResolution)));
+  if (isUnsupported(values.videoToVideo)) items.push(copy.video);
+  if (isUnsupported(values.imageToVideo)) items.push(copy.image);
+  if (isUnsupported(values.audioOutput)) items.push(copy.audio);
+  items.push(copy.iteration);
   return items;
 }

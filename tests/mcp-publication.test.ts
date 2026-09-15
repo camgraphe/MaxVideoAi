@@ -1,8 +1,52 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import test from 'node:test';
+import { createRequire } from 'node:module';
+import test, { mock } from 'node:test';
+import fs from 'node:fs';
 
-import { getMcpPublicationState } from '../frontend/lib/mcp-publication';
+import {
+  getMcpIntegrationPublicationState,
+  getMcpPublicationState,
+} from '../frontend/lib/mcp-publication';
+import { getMcpPublicIntegrationPaths } from '../frontend/lib/mcp-integration-registry';
+
+const frontendRequire = createRequire(new URL('../frontend/package.json', import.meta.url));
+
+test('public integration paths come from the indexable registry projection', () => {
+  assert.deepEqual(getMcpPublicIntegrationPaths(), [
+    '/integrations/claude',
+    '/integrations/chatgpt',
+    '/integrations/codex',
+    '/integrations/openclaw',
+    '/integrations/n8n',
+  ]);
+  const publicationSource = readFileSync('frontend/lib/mcp-publication.ts', 'utf8');
+  const discoverySource = readFileSync('frontend/lib/sitemap/route-discovery.ts', 'utf8');
+  assert.match(publicationSource, /getMcpPublicIntegrationPaths/);
+  assert.match(discoverySource, /getMcpPublicIntegrationPaths/);
+});
+
+test('runtime sitemap discovery includes all five live integration routes', async () => {
+  const react = frontendRequire('react') as {
+    cache?: <TFunction extends (...args: never[]) => unknown>(fn: TFunction) => TFunction;
+  };
+  react.cache ??= (fn) => fn;
+  // A running next dev server has a partial manifest. Check the source routes,
+  // independently of which preview pages happened to be compiled.
+  const existsSync = fs.existsSync;
+  const manifest = mock.method(fs, 'existsSync', (path) => String(path).endsWith('app-paths-manifest.json') ? false : existsSync(path));
+  let paths: string[];
+  try {
+    const { getCanonicalPathEntries } = await import('../frontend/lib/sitemap/route-discovery.ts');
+    paths = (await getCanonicalPathEntries()).map(({ englishPath }) => englishPath);
+  } finally { manifest.mock.restore(); }
+
+  assert.ok(paths.includes('/integrations/claude'));
+  assert.ok(paths.includes('/integrations/chatgpt'));
+  assert.ok(paths.includes('/integrations/codex'));
+  assert.ok(paths.includes('/integrations/openclaw'));
+  assert.ok(paths.includes('/integrations/n8n'));
+});
 
 test('public MCP previews do not become indexable before every public capability is live', () => {
   assert.deepEqual(
@@ -55,16 +99,65 @@ test('connection availability is capability-derived and independent from SEO ind
   assert.equal(missingOAuth.indexable, false);
 });
 
+test('integration publication keeps all five live clients intact and fails hidden hosts closed', () => {
+  const liveGlobalState = getMcpPublicationState({
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+  });
+
+  for (const id of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const) {
+    assert.deepEqual(getMcpIntegrationPublicationState(id, liveGlobalState), liveGlobalState);
+  }
+  assert.equal(
+    getMcpIntegrationPublicationState('cursor', liveGlobalState).renderPublicPage,
+    false,
+  );
+
+  const globallyHidden = { ...liveGlobalState, renderPublicPage: false };
+  assert.equal(
+    getMcpIntegrationPublicationState('openclaw', globallyHidden).renderPublicPage,
+    false,
+  );
+});
+
+test('integration page data rejects accidental hidden-route indexation', async () => {
+  const { buildIntegrationPageData } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-page-data.ts'
+  );
+  assert.throws(
+    () => buildIntegrationPageData({
+      client: 'cursor',
+      locale: 'en',
+      publication: {
+        renderPublicPage: true,
+        connectionAvailable: true,
+        indexable: true,
+        showTrialClaim: false,
+        showPaidGenerationClaim: true,
+        showReferenceClaim: true,
+      },
+    }),
+    /cannot be indexable in hidden state/,
+  );
+});
+
 test('the sitemap composes every publication prerequisite from the common build-time source', () => {
   const sitemapConfig = readFileSync('frontend/next-sitemap.config.js', 'utf8');
   assert.match(sitemapConfig, /require\('\.\/config\/mcp-publication\.json'\)/);
+  assert.match(sitemapConfig, /require\('\.\/config\/mcp-integrations\.json'\)/);
   assert.match(
     sitemapConfig,
     /const mcpIndexable =\s*mcpPublication\.publicIndexing &&\s*mcpPublication\.transport &&\s*mcpPublication\.oauth &&\s*mcpPublication\.discovery &&\s*mcpPublication\.paidGeneration &&\s*mcpPublication\.referenceUploads;/
   );
   assert.match(
     sitemapConfig,
-    /const MCP_PUBLIC_INDEXABLE_PATHS = \[\s*'\/mcp',\s*'\/integrations\/chatgpt',\s*'\/integrations\/claude',\s*'\/integrations\/codex',\s*'\/docs\/mcp',\s*\];/
+    /Object\.values\(mcpIntegrations\.integrations\)[\s\S]*site\.publication === 'live'[\s\S]*site\.indexable === true[\s\S]*displayOrder[\s\S]*englishPath/
   );
   assert.match(
     sitemapConfig,

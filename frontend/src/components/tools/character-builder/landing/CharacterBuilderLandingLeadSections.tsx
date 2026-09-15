@@ -1,3 +1,5 @@
+import { resolveDictionary } from '@/lib/i18n/server';
+import { CharacterReferenceShowcase } from './CharacterReferenceShowcase.client';
 import Image from 'next/image';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
@@ -12,12 +14,13 @@ import {
 } from './character-builder-landing-assets';
 import {
   HeroProofCard,
-  HeroScreenshotPreview,
   HowItWorksPill,
   SectionHeader,
 } from './CharacterBuilderLandingPrimitives';
 
-export function CharacterBuilderHeroSection({ content }: { content: CharacterBuilderLandingContent }) {
+export async function CharacterBuilderHeroSection({ content }: { content: CharacterBuilderLandingContent }) {
+  const {dictionary}=await resolveDictionary();
+  const c=dictionary.toolMarketing.journey;
   return (
     <section className="tool-hero-surface character-builder-hero relative overflow-hidden border-b border-hairline bg-[radial-gradient(circle_at_top_left,rgba(244,127,94,0.12),transparent_28%),radial-gradient(circle_at_right,rgba(76,132,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,252,0.96))]">
       <div className="container-page relative max-w-[88rem] pb-10 pt-8 sm:pb-12 sm:pt-10 lg:pb-12 lg:pt-12">
@@ -45,7 +48,7 @@ export function CharacterBuilderHeroSection({ content }: { content: CharacterBui
             </div>
 
             <div className="stack-gap-sm">
-              <h1 className="max-w-[13ch] text-[clamp(3rem,5vw,4.8rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-text-primary">
+              <h1 className="max-w-[18ch] text-[clamp(3rem,5vw,4.8rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-text-primary">
                 {content.hero.title}
               </h1>
               <p className="max-w-2xl text-[1.02rem] leading-8 text-text-secondary sm:text-lg">{content.hero.body}</p>
@@ -75,8 +78,8 @@ export function CharacterBuilderHeroSection({ content }: { content: CharacterBui
             </div>
           </div>
 
-          <div className="lg:pt-12 xl:pt-14">
-            <HeroScreenshotPreview content={content.hero.showcase} />
+          <div className="character-hero-visual">
+            <CharacterReferenceShowcase sheet={c.sheet} portrait={c.portrait} note={c.proof} views={c.views} />
           </div>
         </div>
       </div>

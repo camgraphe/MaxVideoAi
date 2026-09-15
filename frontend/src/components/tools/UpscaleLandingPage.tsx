@@ -1,5 +1,9 @@
+import { resolveDictionary } from '@/lib/i18n/server';
+import { ToolJourneyNav } from '@/components/tools/landing/ToolJourneyNav';
+import { ToolWorkspacePreview } from '@/components/tools/landing/ToolWorkspacePreview';
+import { QUICK_TOOL_ART } from './toolbox-art';
 import Image from 'next/image';
-import { ArrowRight, CheckCircle2, Gauge, Layers3, Maximize2, Sparkles } from 'lucide-react';
+import { ArrowRight, Gauge, Layers3, Maximize2, Sparkles } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/types';
 import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -33,22 +37,24 @@ function SectionIntro({
   );
 }
 
-function HeroVisual({ imageAlt }: { imageAlt: string }) {
+function HeroVisual({ imageAlt, note }: { imageAlt: string; note: string }) {
   return (
     <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] shadow-[0_42px_120px_rgba(15,23,42,0.18)] dark:shadow-[0_42px_120px_rgba(0,0,0,0.42)]">
       <MarketingHeroImage
-        src="/assets/tools/upscale-hero-app-light.webp"
-        darkSrc="/assets/tools/upscale-hero-app-dark.webp"
+        src={QUICK_TOOL_ART['upscale-image']}
         alt={imageAlt}
         imageClassName="object-cover object-top"
         sizes="(max-width: 1024px) 100vw, 560px"
       />
+      <span className="tool-art-note">{note}</span>
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.00)_58%,rgba(255,255,255,0.10))] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.02),rgba(3,7,18,0.00)_58%,rgba(3,7,18,0.12))]" />
     </div>
   );
 }
 
-export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent }) {
+export async function UpscaleLandingPage({ content }: { content: UpscaleLandingContent }) {
+  const {dictionary}=await resolveDictionary();
+  const c=dictionary.toolMarketing.journey;
   const faqEntries = content.faq.map((entry) => ({ question: entry.q, answer: entry.a }));
   const modelGuide = content.modelGuide;
   const serviceJsonLd = {
@@ -66,7 +72,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
   };
 
   return (
-    <div className="bg-bg">
+    <div className="bg-bg tool-detail-page tool-upscale-page"><ToolJourneyNav active="upscale" />
       <FAQSchema questions={faqEntries} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }} />
 
@@ -100,10 +106,11 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
             </div>
           </div>
 
-          <HeroVisual imageAlt={content.meta.imageAlt} />
+          <HeroVisual imageAlt={`${content.hero.badge} — ${c.proof}`} note={c.proof} />
         </div>
       </section>
 
+      <ToolWorkspacePreview tool="upscale" title={content.hero.studioLabel} body={content.workflow.overlay.body} />
       <section className="section">
         <div className="container-page max-w-6xl stack-gap-md">
           <SectionIntro eyebrow={content.models.eyebrow} title={content.models.title} body={content.models.body} />
@@ -138,7 +145,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <details className="tool-model-details"><summary>{modelGuide.title}<span aria-hidden="true">+</span></summary><div className="overflow-x-auto">
               <table className="min-w-[920px] w-full border-collapse text-left">
                 <thead className="bg-surface-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">
                   <tr>
@@ -161,7 +168,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div></details>
           </div>
         </div>
       </section>
@@ -199,17 +206,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
         <div className="container-page max-w-5xl stack-gap-md">
           <SectionIntro eyebrow={content.faqSection.eyebrow} title={content.faqSection.title} />
           <div className="grid gap-3">
-            {content.faq.map((entry) => (
-              <div key={entry.q} className="rounded-[18px] border border-hairline bg-surface p-5">
-                <div className="flex gap-3">
-                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-brand" />
-                  <div>
-                    <h3 className="text-base font-semibold text-text-primary">{entry.q}</h3>
-                    <p className="mt-2 text-sm leading-7 text-text-secondary">{entry.a}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {content.faq.map((entry) => <details key={entry.q} name="upscale-faq" className="tool-faq-item"><summary>{entry.q}<span aria-hidden="true">+</span></summary><p>{entry.a}</p></details>)}
           </div>
         </div>
       </section>

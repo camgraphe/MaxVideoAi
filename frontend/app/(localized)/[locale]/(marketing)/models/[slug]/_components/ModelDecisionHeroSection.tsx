@@ -98,16 +98,8 @@ export function ModelDecisionHeroSection({
   mediaAltContext,
 }: ModelDecisionHeroSectionProps) {
   const homeCrumb = HOME_CRUMB[locale] ?? HOME_CRUMB.en;
-  const isLongHeroTitle = decision.hero.title.length > 13;
-  const heroTitleClassName = [
-    'max-w-3xl font-semibold leading-[0.98] text-[#071126] dark:text-white',
-    isLongHeroTitle
-      ? 'text-[clamp(3.05rem,9vw,3.55rem)] sm:text-[clamp(3.35rem,7.2vw,3.9rem)] lg:whitespace-nowrap lg:text-[clamp(3.1rem,4.1vw,3.45rem)] xl:text-[clamp(3.15rem,4vw,3.5rem)]'
-      : 'text-5xl sm:text-6xl lg:whitespace-nowrap lg:text-[clamp(3.75rem,5.2vw,4.35rem)] xl:text-[72px]',
-  ].join(' ');
-
   return (
-    <div id="top" className="space-y-7">
+    <div id="top" className="model-story space-y-7">
       <nav className="flex flex-wrap items-center gap-2 text-sm text-[#5d6b82] dark:text-white/60">
         <Link
           href={homeCrumb.href}
@@ -132,20 +124,16 @@ export function ModelDecisionHeroSection({
         <span className="font-semibold text-[#41516c] dark:text-white/75">{breadcrumbModelLabel}</span>
       </nav>
 
-      <section className="space-y-8">
-        <div className="grid gap-9 lg:grid-cols-[minmax(440px,0.9fr)_minmax(0,1.1fr)] lg:items-center xl:gap-12">
-          <div className="space-y-6">
+      <section className="model-story-stage space-y-8">
+        <div className="model-story-grid grid gap-9 lg:grid-cols-[minmax(440px,0.9fr)_minmax(0,1.1fr)] lg:items-center xl:gap-12">
+          <div className="model-story-copy space-y-6">
             <div className="space-y-5">
               <p className="inline-flex rounded-full bg-[#edf3ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#2f63f6] dark:border dark:border-white/10 dark:bg-white/[0.055] dark:text-cyan-200">
                 {decision.hero.eyebrow}
               </p>
               <div className="space-y-3">
-                <h1 className={heroTitleClassName}>
-                  {decision.hero.title}
-                </h1>
-                <p className="max-w-3xl text-[22px] font-semibold leading-[1.28] text-[#273654] dark:text-white/90 sm:text-[25px]">
-                  {renderHeroSubtitle(decision.hero.subtitle, decision.hero.subtitleHighlights)}
-                </p>
+                <h1 data-long-title={decision.hero.title.length > 18 || undefined}>{decision.hero.title}</h1>
+                <p className="model-story-subtitle">{renderHeroSubtitle(decision.hero.subtitle, decision.hero.subtitleHighlights)}</p>
               </div>
               <p className="max-w-2xl text-[15px] leading-7 text-[#42516c] dark:text-white/70 sm:text-base">{decision.hero.paragraph}</p>
             </div>
@@ -171,8 +159,23 @@ export function ModelDecisionHeroSection({
               </Link>
             </div>
 
+
+          </div>
+
+          <div className="model-story-media lg:-mr-2 xl:-mr-4">
+            <ModelDecisionMediaCard
+              media={heroMedia}
+              label={decision.media.caption}
+              description={decision.media.description}
+              badges={decision.media.badges}
+              locale={locale}
+              audioBadgeLabel={audioBadgeLabel}
+              renderLinkLabel={decision.media.renderLabel}
+              altContext={decision.media.altContext || mediaAltContext}
+            />
+          </div>
             {decision.hero.quickLinks.length ? (
-              <div className="flex flex-wrap gap-x-7 gap-y-3 text-sm">
+              <div className="model-story-quicklinks flex flex-wrap gap-x-7 gap-y-3 text-sm">
                 {decision.hero.quickLinks.map((link, index) => {
                   const Icon = QUICK_LINK_ICONS[index] ?? ArrowRight;
                   return (
@@ -190,23 +193,9 @@ export function ModelDecisionHeroSection({
                 })}
               </div>
             ) : null}
-          </div>
-
-          <div className="lg:-mr-2 xl:-mr-4">
-            <ModelDecisionMediaCard
-              media={heroMedia}
-              label={decision.media.caption}
-              description={decision.media.description}
-              badges={decision.media.badges}
-              locale={locale}
-              audioBadgeLabel={audioBadgeLabel}
-              renderLinkLabel={decision.media.renderLabel}
-              altContext={decision.media.altContext || mediaAltContext}
-            />
-          </div>
         </div>
 
-        <div className="grid grid-cols-2 overflow-hidden rounded-[24px] border border-[#dce4f0] bg-white shadow-[0_18px_52px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_24px_70px_rgba(0,0,0,0.30)] lg:grid-cols-6">
+        <div className="model-story-features grid grid-cols-2 overflow-hidden rounded-[24px] border border-[#dce4f0] bg-white shadow-[0_18px_52px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_24px_70px_rgba(0,0,0,0.30)] lg:grid-cols-6" style={{ gridTemplateColumns: `repeat(${Math.min(decision.features.length, 6)}, minmax(0, 1fr))` }}>
           {decision.features.map((feature, index) => {
             const Icon = FEATURE_ICON_MAP[feature.tone];
             return (

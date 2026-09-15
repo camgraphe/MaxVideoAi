@@ -9,7 +9,7 @@ export const QUICK_TOOL_ART = {
 } as const;
 
 export const WORKSHOP_ART = {
-  'character-builder': '/assets/tools/catalogue/workshop-character-builder.webp',
+  'character-builder': '/assets/tools/redesign/character-sheet-v1.webp',
   storyboard: '/assets/tools/catalogue/workshop-storyboard.webp',
   angle: '/assets/tools/catalogue/workshop-angle.webp',
 } as const;

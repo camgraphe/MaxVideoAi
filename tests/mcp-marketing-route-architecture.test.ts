@@ -25,17 +25,23 @@ const requiredFiles = [
   `${mcpRoot}/_components/McpClientActions.tsx`,
   `${mcpRoot}/_components/McpProofMedia.tsx`,
   `${mcpRoot}/_components/McpHostProofCard.tsx`,
-  `${mcpRoot}/_components/McpWorkflowStrip.tsx`,
-  `${mcpRoot}/_components/McpBudgetShortlist.tsx`,
+  `${mcpRoot}/_components/McpPlatformSelector.tsx`,
+  `${mcpRoot}/_components/McpProductionWorkflowSection.tsx`,
+  `${mcpRoot}/_components/McpFaqResourcesSection.tsx`,
   `${mcpRoot}/_components/McpEvidenceSection.tsx`,
-  `${mcpRoot}/_components/McpReferenceWorkflowSection.tsx`,
-  `${mcpRoot}/_components/McpAnswerPassagesSection.tsx`,
-  `${mcpRoot}/_components/McpTrustSections.tsx`,
   `${mcpRoot}/_components/McpJsonLdScripts.tsx`,
   `${integrationsRoot}/claude/page.tsx`,
   `${integrationsRoot}/chatgpt/page.tsx`,
   `${integrationsRoot}/codex/page.tsx`,
+  `${integrationsRoot}/openclaw/page.tsx`,
+  `${integrationsRoot}/n8n/page.tsx`,
   `${integrationsRoot}/_lib/integration-copy.ts`,
+  `${integrationsRoot}/_lib/integration-page-data.ts`,
+  `${integrationsRoot}/_content/types.ts`,
+  `${integrationsRoot}/_content/shared.ts`,
+  `${integrationsRoot}/_content/en.ts`,
+  `${integrationsRoot}/_content/fr.ts`,
+  `${integrationsRoot}/_content/es.ts`,
   `${integrationsRoot}/_components/IntegrationPageView.tsx`,
   `${integrationsRoot}/_components/IntegrationHeroSection.tsx`,
   `${integrationsRoot}/_components/IntegrationConversationPreview.tsx`,
@@ -46,7 +52,8 @@ const requiredFiles = [
   'frontend/app/integrations/claude/page.tsx',
   'frontend/app/integrations/chatgpt/page.tsx',
   'frontend/app/integrations/codex/page.tsx',
-  'frontend/config/mcp-compatibility.json',
+  'frontend/config/mcp-integrations.json',
+  'frontend/lib/mcp-integration-registry.ts',
 ] as const;
 
 function requireFile(path: string): string {
@@ -62,8 +69,6 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   assert.match(page, /englishPath:\s*['"]\/mcp['"]/);
   assert.match(page, /getMcpPublicationState/);
   assert.match(page, /FEATURES\.mcp/);
-  assert.match(page, /buildMcpBudgetOptions/);
-  assert.match(page, /getMcpProof/);
   assert.match(page, /getMcpHostProof/);
   assert.match(page, /notFound\(\)/);
   assert.match(page, /McpPageView/);
@@ -74,11 +79,10 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   const view = requireFile(`${mcpRoot}/_components/McpPageView.tsx`);
   for (const owner of [
     'McpHeroSection',
-    'McpWorkflowStrip',
-    'McpBudgetShortlist',
-    'McpReferenceWorkflowSection',
-    'McpAnswerPassagesSection',
-    'McpTrustSections',
+    'McpIntegrationCards',
+    'McpEditorialSections',
+    'McpTrustStrip',
+    'McpFaqResourcesSection',
   ]) {
     assert.match(view, new RegExp(owner));
   }
@@ -88,23 +92,17 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
 test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', () => {
   for (const client of ['chatgpt', 'claude', 'codex'] as const) {
     const page = requireFile(`${integrationsRoot}/${client}/page.tsx`);
-    assert.match(page, /buildSeoMetadata/);
-    assert.match(page, new RegExp(`englishPath:\\s*['"]\\/integrations\\/${client}['"]`));
-    assert.match(page, /getIntegrationCopy/);
+    assert.match(page, new RegExp(`const CLIENT = ['"]${client}['"] as const`));
+    assert.match(page, /buildIntegrationMetadata/);
+    assert.match(page, /buildIntegrationPageData/);
     assert.match(page, /getMcpPublicationState/);
     assert.match(page, /notFound\(\)/);
     assert.match(page, /IntegrationPageView/);
+    assert.match(page, /IntegrationJsonLdScripts/);
+    assert.doesNotMatch(page, /getIntegrationCopy|getMcpCompatibilityEvidence|getMcpHostProof|buildSeoMetadata|buildMetadataUrls/);
     assert.doesNotMatch(page, /['"]use client['"]/);
-    assert.ok(page.split('\n').length <= 250, `${client} page should stay below 250 lines`);
+    assert.ok(page.split('\n').length <= 45, `${client} page should stay at or below 45 lines`);
   }
-
-  const claudePage = requireFile(`${integrationsRoot}/claude/page.tsx`);
-  const chatgptPage = requireFile(`${integrationsRoot}/chatgpt/page.tsx`);
-  const codexPage = requireFile(`${integrationsRoot}/codex/page.tsx`);
-  assert.match(claudePage, /getMcpHostProof\(['"]claude['"]/);
-  assert.match(claudePage, /hostProof=\{hostProof\}/);
-  assert.doesNotMatch(chatgptPage, /getMcpHostProof|McpHostProofCard|claude-inline-video-proof/);
-  assert.doesNotMatch(codexPage, /getMcpHostProof|McpHostProofCard|claude-inline-video-proof/);
 
   for (const component of [
     'IntegrationPageView',
@@ -117,6 +115,123 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
     const source = requireFile(`${integrationsRoot}/_components/${component}.tsx`);
     assert.doesNotMatch(source, /['"]use client['"]/);
   }
+});
+
+test('OpenClaw and n8n use explicit thin indexable route owners', async () => {
+  for (const client of ['openclaw', 'n8n'] as const) {
+    requireFile(`frontend/app/integrations/${client}/page.tsx`);
+    const page = requireFile(`${integrationsRoot}/${client}/page.tsx`);
+    assert.match(page, new RegExp(`const CLIENT = ['"]${client}['"] as const`));
+    assert.match(page, /getMcpIntegrationPublicationState/);
+    assert.match(page, /buildIntegrationMetadata/);
+    assert.match(page, /buildIntegrationPageData/);
+    assert.match(page, /notFound\(\)/);
+    assert.match(page, /IntegrationPageView/);
+    assert.match(page, /IntegrationJsonLdScripts/);
+    assert.doesNotMatch(page, /['"]use client['"]/);
+    assert.ok(page.split('\n').length <= 45, `${client} page should stay at or below 45 lines`);
+  }
+
+  const openclaw = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/openclaw/page.tsx'
+  );
+  const n8n = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/n8n/page.tsx'
+  );
+  const paths = {
+    openclaw: {
+      en: 'https://maxvideoai.com/integrations/openclaw',
+      fr: 'https://maxvideoai.com/fr/integrations/openclaw',
+      es: 'https://maxvideoai.com/es/integraciones/openclaw',
+    },
+    n8n: {
+      en: 'https://maxvideoai.com/integrations/n8n',
+      fr: 'https://maxvideoai.com/fr/integrations/n8n',
+      es: 'https://maxvideoai.com/es/integraciones/n8n',
+    },
+  } as const;
+
+  for (const [client, route] of Object.entries({ openclaw, n8n }) as Array<
+    ['openclaw' | 'n8n', typeof openclaw]
+  >) {
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const metadata = await route.generateMetadata({ params: Promise.resolve({ locale }) });
+      assert.equal(metadata.alternates?.canonical, paths[client][locale]);
+      assert.deepEqual(metadata.alternates?.languages, {
+        en: paths[client].en,
+        fr: paths[client].fr,
+        es: paths[client].es,
+        'x-default': paths[client].en,
+      });
+      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.index : metadata.robots, true);
+      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.follow : undefined, true);
+    }
+  }
+});
+
+test('the integration page-data builder preserves metadata, evidence, proof, and schema boundaries', async () => {
+  const { buildIntegrationPageData } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-page-data.ts'
+  );
+  const publication = {
+    renderPublicPage: true,
+    connectionAvailable: true,
+    indexable: true,
+    showTrialClaim: false,
+    showPaidGenerationClaim: true,
+    showReferenceClaim: true,
+  };
+  const localizedPrefix = { en: '', fr: '/fr', es: '/es' } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
+      const data = buildIntegrationPageData({ client, locale, publication });
+      const segment = locale === 'es' ? 'integraciones' : 'integrations';
+      assert.equal(data.copy.client, client);
+      assert.equal(data.compatibility.client, client);
+      assert.equal(
+        data.canonicalUrl,
+        `https://maxvideoai.com${localizedPrefix[locale]}/${segment}/${client}`,
+      );
+      assert.equal(data.breadcrumb.itemListElement[1]?.item, data.canonicalUrl);
+      assert.equal(data.application === null, client === 'chatgpt');
+      assert.equal(data.hostProof?.host ?? null, client === 'claude' ? 'claude' : null);
+    }
+  }
+});
+
+test('localized integration copy has focused locale owners behind one dispatcher', () => {
+  const dispatcher = requireFile(`${integrationsRoot}/_lib/integration-copy.ts`);
+  assert.ok(dispatcher.split('\n').length < 80, 'integration copy dispatcher should stay below 80 lines');
+
+  for (const [locale, builder] of [
+    ['en', 'buildEnglishIntegrationCopy'],
+    ['fr', 'buildFrenchIntegrationCopy'],
+    ['es', 'buildSpanishIntegrationCopy'],
+  ] as const) {
+    assert.match(requireFile(`${integrationsRoot}/_content/${locale}.ts`), new RegExp(`export function ${builder}`));
+  }
+
+  for (const client of ['chatgpt', 'claude', 'codex'] as const) {
+    assert.doesNotMatch(
+      requireFile(`${integrationsRoot}/${client}/page.tsx`),
+      /integrations\/_content|\.\.\/_content/,
+    );
+  }
+});
+
+test('the MCP integration registry guide locks factual and operational ownership', () => {
+  const guide = requireFile('docs/engineering/mcp-integration-registry.md');
+  for (const owner of [
+    'frontend/config/mcp-integrations.json',
+    'frontend/lib/mcp-integration-registry.ts',
+    'docs/operations/mcp-host-compatibility-matrix.md',
+    'docs/marketing/mcp-directory-submissions.md',
+  ]) {
+    assert.match(guide, new RegExp(owner.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(guide, /external store state cannot disable the direct MCP endpoint/i);
+  assert.match(guide, /existing `verified` evidence cannot be weakened without a newer recorded checkpoint/i);
 });
 
 test('client setup copy does not contradict the publication status shown above it', async () => {
@@ -160,6 +275,16 @@ test('localized routing owns the exact MCP and integration route contract', asyn
     fr: '/integrations/codex',
     es: '/integraciones/codex',
   });
+  assert.deepEqual(routing.pathnames['/integrations/openclaw'], {
+    en: '/integrations/openclaw',
+    fr: '/integrations/openclaw',
+    es: '/integraciones/openclaw',
+  });
+  assert.deepEqual(routing.pathnames['/integrations/n8n'], {
+    en: '/integrations/n8n',
+    fr: '/integrations/n8n',
+    es: '/integraciones/n8n',
+  });
 });
 
 test('the MCP publication boundary recognizes exact localized source routes', () => {
@@ -170,6 +295,9 @@ test('the MCP publication boundary recognizes exact localized source routes', ()
     '/integrations/claude',
     '/integrations/chatgpt',
     '/fr/integrations/codex',
+    '/integrations/openclaw',
+    '/fr/integrations/n8n',
+    '/es/integraciones/openclaw',
     '/es/integraciones/claude',
     '/docs/mcp',
     '/fr/docs/mcp',
@@ -189,6 +317,9 @@ test('published MCP routes pass the middleware boundary without a gated rewrite'
     '/integrations/claude',
     '/integrations/chatgpt',
     '/fr/integrations/codex',
+    '/integrations/openclaw',
+    '/fr/integrations/n8n',
+    '/es/integraciones/openclaw',
     '/es/integraciones/claude',
     '/es/integraciones/codex',
     '/docs/mcp',
@@ -236,11 +367,9 @@ test('route views preserve the single marketing-layout main landmark in server o
   const compatibility = getMcpCompatibilityEvidence();
   const mcpHtml = renderToStaticMarkup(
     React.createElement(McpPageView, {
-      budgetOptions: [],
       compatibility,
       copy: getMcpPageCopy('en'),
       locale: 'en',
-      proof: null,
       publication,
     }),
   );
@@ -378,26 +507,31 @@ test('MCP schema builders fail closed and emit only factual live schema types', 
   }
 });
 
-test('visible compatibility dates are sourced from the recorded evidence config', () => {
-  const config = JSON.parse(requireFile('frontend/config/mcp-compatibility.json')) as {
-    evidenceKind: string;
-    lastChecked: string;
-    sourceEvidence: string;
-    hosts: Record<string, { status: string; version?: string }>;
-  };
-  assert.equal(config.evidenceKind, 'hosted-checkpoint');
-  assert.equal(config.lastChecked, '2026-08-27');
-  assert.equal(config.sourceEvidence, 'docs/operations/mcp-host-compatibility-matrix.md');
-  assert.match(requireFile(config.sourceEvidence), new RegExp(config.lastChecked));
-  assert.equal('lastVerified' in config, false);
-  assert.equal(config.hosts.claudeDesktop?.status, 'verified');
-  assert.equal(config.hosts.codexCli?.status, 'verified');
-  assert.equal(config.hosts.chatgptWeb?.status, 'not-run');
-  assert.equal('chatgptDesktop' in config.hosts, false);
-  assert.equal(config.hosts.claudeCode?.status, 'not-run');
+test('visible compatibility dates are sourced from the integration registry', async () => {
+  const registrySource = requireFile('frontend/lib/mcp-integration-registry.ts');
+  const compatibilitySource = requireFile(`${mcpRoot}/_lib/mcp-compatibility.ts`);
+  assert.match(compatibilitySource, /getMcpHost/);
+  assert.doesNotMatch(compatibilitySource, /mcp-compatibility\.json/);
+  assert.doesNotMatch(registrySource, /mcp-client-actions\.json|mcp-compatibility\.json/);
+
+  const { getMcpHost } = await import('../frontend/lib/mcp-integration-registry.ts');
+  const hosts = ['claudeDesktop', 'claudeCode', 'chatgptWeb', 'codexCli'] as const;
+  for (const hostId of hosts) {
+    const host = getMcpHost(hostId);
+    assert.equal(host.evidence.kind, 'hosted-checkpoint');
+    assert.equal(host.evidence.lastChecked, '2026-08-27');
+    assert.equal(host.evidence.source, 'docs/operations/mcp-host-compatibility-matrix.md');
+    assert.match(requireFile(host.evidence.source), new RegExp(host.evidence.lastChecked));
+  }
+  assert.equal(getMcpHost('claudeDesktop').evidence.status, 'verified');
+  assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
+  assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
+  assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
 
   const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);
-  const integrationCopy = requireFile(`${integrationsRoot}/_lib/integration-copy.ts`);
+  const integrationCopy = ['en', 'fr', 'es']
+    .map((locale) => requireFile(`${integrationsRoot}/_content/${locale}.ts`))
+    .join('\n');
   for (const source of [mcpCopy, integrationCopy]) {
     assert.doesNotMatch(source, /lastVerifiedLabel/);
     assert.doesNotMatch(source, /Hosted read-only[^\n]*passed|hébergé[^\n]*réussi|alojad[^\n]*pasaron/i);
@@ -423,6 +557,7 @@ test('the ChatGPT setup renders its machine compatibility state discreetly', asy
   }));
 
   assert.match(html, />not-run</);
-  assert.match(html, /Public listing.*approval/is);
-  assert.match(html, /Developer.*MCP/is);
+  assert.match(html, /Developer.*MCP|MCP.*developer/is);
+  assert.match(html, /not submitted.*OpenAI directory|OpenAI directory non-submission/is);
+  assert.doesNotMatch(html, /public listing.*approval|OpenAI approval.*public listing/is);
 });

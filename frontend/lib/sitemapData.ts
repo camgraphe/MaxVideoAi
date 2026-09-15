@@ -112,13 +112,19 @@ export async function buildSitemapIndexXml(): Promise<string> {
     const computedLastMod = getLatestEntryDate(localeEntries);
     entries.push({
       loc: buildAbsoluteUrl(sitemapPath),
-      lastModified: getManualSitemapLastModified(fileName) ?? computedLastMod,
+      lastModified: getLatestEntryDate([
+        { lastModified: getManualSitemapLastModified(fileName) },
+        { lastModified: computedLastMod },
+      ]),
     });
   }
 
   const modelsPath = '/sitemap-models.xml';
   const modelsFileName = getSitemapFileName(modelsPath);
-  const modelsLastMod = getManualSitemapLastModified(modelsFileName) ?? getModelsSitemapLastModified();
+  const modelsLastMod = getLatestEntryDate([
+    { lastModified: getManualSitemapLastModified(modelsFileName) },
+    { lastModified: getModelsSitemapLastModified() },
+  ]);
   entries.push({
     loc: buildAbsoluteUrl(modelsPath),
     lastModified: modelsLastMod,

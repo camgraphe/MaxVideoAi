@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 
-import clientActionFlagsJson from '@/config/mcp-client-actions.json';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import type { AppLocale } from '@/i18n/locales';
+import { getMcpClientActionConfig, getMcpIntegrationLabel } from '@/lib/mcp-integration-registry';
 import type {
   McpClientActionCopy,
   McpClientId,
@@ -13,20 +13,11 @@ import type {
 import { McpClientActions } from './McpClientActions';
 
 const NAVIGATION_WAIT_MS = 750;
-const clientActionFlags = clientActionFlagsJson as Record<
-  McpClientId,
-  { deepLinkEnabled: boolean; deepLink: string | null }
->;
-
 type CopyStatus = { client: McpClientId; state: 'copied' | 'error' } | null;
-
-function clientLabel(client: McpClientId): string {
-  return client === 'claude' ? 'Claude' : client === 'chatgpt' ? 'ChatGPT' : 'Codex';
-}
 
 function resolvedActions(actions: McpClientActionCopy[]): McpClientActionCopy[] {
   return actions.map((action) => {
-    const flag = clientActionFlags[action.client];
+    const flag = getMcpClientActionConfig(action.client);
     return flag.deepLinkEnabled && flag.deepLink
       ? { ...action, href: flag.deepLink }
       : action;
@@ -103,8 +94,8 @@ export function McpConnectActions({
   }, []);
 
   function trackConnectAction(client: McpClientId) {
-    const usesDeepLink =
-      clientActionFlags[client].deepLinkEnabled && Boolean(clientActionFlags[client].deepLink);
+    const flag = getMcpClientActionConfig(client);
+    const usesDeepLink = flag.deepLinkEnabled && Boolean(flag.deepLink);
     void dispatchGaEvent('mcp_landing_cta_clicked', {
       action: 'connect',
       client,
@@ -180,7 +171,7 @@ export function McpConnectActions({
           {copy.instructionBody}
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          {renderedActions.map((action) => (
+          {renderedActions.filter((action) => action.copyInstallInstruction).map((action) => (
             <button
               key={action.client}
               type="button"
@@ -188,14 +179,14 @@ export function McpConnectActions({
               onClick={() => void copyInstallInstruction(action)}
               className="min-h-11 rounded-[10px] bg-text-primary px-3 text-sm font-semibold text-bg transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:bg-white dark:text-black"
             >
-              {copy.copyInstruction} {clientLabel(action.client)}
+              {copy.copyInstruction} {getMcpIntegrationLabel(action.client)}
             </button>
           ))}
         </div>
         <p className="mt-2 min-h-5 text-xs text-text-secondary dark:text-white/68" role="status" aria-live="polite">
           {instructionStatus
             ? instructionStatus.state === 'copied'
-              ? `${copy.instructionCopied} ${clientLabel(instructionStatus.client)}`
+              ? `${copy.instructionCopied} ${getMcpIntegrationLabel(instructionStatus.client)}`
               : copy.copyError
             : ''}
         </p>
@@ -217,7 +208,7 @@ export function McpConnectActions({
               onClick={() => void copyEndpoint(action.client)}
               className="min-h-10 rounded-[10px] border border-hairline bg-bg px-3 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/[0.14] dark:bg-neutral-900 dark:text-white dark:hover:border-white/[0.28]"
             >
-              {copy.copyEndpoint} · {clientLabel(action.client)}
+              {copy.copyEndpoint} · {getMcpIntegrationLabel(action.client)}
             </button>
           ))}
         </div>

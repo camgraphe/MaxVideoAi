@@ -27,16 +27,15 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   veo: {
-    metaTitle: 'Ejemplos de Veo 3.1, prompts, ajustes e image-to-video | MaxVideoAI',
-    metaDescription:
-      'Consulta ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video, y abre la ficha de un video para ver el coste registrado del render en MaxVideoAI.',
-    heroTitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video',
+    metaTitle: "Ejemplos de Veo 3.1, prompts y ajustes de video | MaxVideoAI",
+    metaDescription: "Mira ejemplos de Veo 3.1 con prompts, ajustes y costos registrados. Explora cómo crear videos a partir de texto o imágenes y adapta un ejemplo.",
+    heroTitle: "Ejemplos de Veo 3.1, prompts y ajustes de video",
     subtitle: "Ejemplos de Veo 3.1 y Gemini Omni Flash 1.1: prompts, fuentes y ajustes para revisar.",
     intro: "Compara ejemplos de video de Google: Veo 3.1, Fast y Lite junto a Gemini Omni Flash 1.1. Abre un resultado para revisar su prompt y ajustes y adaptarlo en tu espacio de trabajo.",
-    summary: "Veo y Gemini Omni son modelos distintos de Google reunidos en esta galería. Toma como referencia el nombre indicado en cada ejemplo. Las fichas y comparativas ayudan a elegir el flujo adecuado; revisa después el presupuesto actual antes de generar.",
-    promptPatterns: "Describe primero el sujeto, la acción y el movimiento de cámara. Con una imagen inicial, indica qué cambia y qué se conserva. Mantén el mismo brief al comparar modelos y cambia una sola instrucción cada vez.",
+    summary: "Veo y Gemini Omni son modelos distintos de Google reunidos en esta galería. Toma como referencia el nombre indicado en cada ejemplo. Las fichas y comparativas ayudan a elegir el flujo adecuado; revisa después el precio actual antes de generar.",
+    promptPatterns: "Describe primero el sujeto, la acción y el movimiento de cámara. Con una imagen inicial, indica qué cambia y qué se conserva. Mantén la misma idea al comparar modelos y cambia una sola instrucción cada vez.",
     strengthsLimits: "Compara movimiento, encuadre y continuidad del sujeto en todo el clip. Veo y Omni no comparten todas las entradas ni opciones de edición: comprueba el modelo y el modo antes de añadir imágenes, referencias o un video fuente. Un ejemplo logrado no garantiza el mismo resultado con otro prompt.",
-    pricingNotes: "La ficha del ejemplo muestra el coste registrado del render. Tu siguiente generación utiliza el presupuesto actual según el modelo, las fuentes, la duración y la resolución. Reutiliza los ajustes disponibles, añade tus propias fuentes cuando sea necesario y revisa el presupuesto antes de enviar.",
+    pricingNotes: "La ficha del ejemplo muestra el costo registrado del render. Tu siguiente generación utiliza el precio actual según el modelo, las fuentes, la duración y la resolución. Reutiliza los ajustes disponibles, añade tus propias fuentes cuando sea necesario y revisa el precio antes de enviar.",
     faq: [
       {
         question: "¿Por qué hay ejemplos de Gemini Omni en esta galería de Veo?",
@@ -44,139 +43,116 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       },
       {
         question: "¿Cómo recreo un ejemplo de Veo u Omni?",
-        answer: "Abre su ficha para revisar el prompt, los ajustes y el coste registrado y utiliza la acción de recrear. Comprueba el modelo seleccionado, añade los medios fuente necesarios y revisa el nuevo presupuesto en el espacio de trabajo antes de generar.",
+        answer: "Abre su ficha para revisar el prompt, los ajustes y el costo registrado y utiliza la acción de recrear. Comprueba el modelo seleccionado, añade los medios fuente necesarios y revisa el nuevo precio en el espacio de trabajo antes de generar.",
       },
       {
         question: "¿Cómo comparo Veo 3.1, Fast, Lite y Omni?",
-        answer: "Mantén el mismo sujeto y objetivo creativo y compara el resultado completo y el presupuesto actual. Especifica el modo de entrada: los controles de referencia y edición varían según el modelo, por lo que no todos los ajustes se transfieren sin cambios.",
+        answer: "Mantén el mismo sujeto y objetivo creativo y compara el resultado completo y el precio actual. Especifica el modo de entrada: los controles de referencia y edición varían según el modelo, por lo que no todos los ajustes se transfieren sin cambios.",
       },
     ],
   },
   luma: {
     metaTitle: 'Ejemplos de Luma Ray 3.2 Modify y Reframe | MaxVideoAI',
-    metaDescription:
-      'Revisa ejemplos de Luma Ray 3.2 para Modify de video fuente, Reframe de video IA, cuadros guia, tests silenciosos 5 s / 10 s, prompts reutilizables y contexto Ray 2 / Flash.',
-    subtitle: 'Ejemplos de Luma Ray 3.2 para Modify de video fuente, Reframe, cuadros guia, formatos y tests silenciosos con control de coste.',
-    intro:
-      'Esta pagina es la vista de familia de Luma Ray dentro de MaxVideoAI. Ahora prioriza Ray 3.2 para Modify de video fuente, pasadas guiadas por cuadro o imagenes clave y Reframe de entregables, mientras Ray 2 y Ray 2 Flash siguen sirviendo como contexto de ejemplos anteriores y cobertura de respaldo. Las paginas de modelo cubren las caracteristicas detalladas; esta galeria sirve para leer patrones de prompt, ejemplos de edicion y ajustes con coste controlado.',
-    promptPatterns:
-      'Los ejemplos de Luma funcionan mejor cuando el prompt se adapta al modo. Para Modify, escribe que se conserva del video fuente antes del cambio solicitado. Para Reframe, nombra prioridad de sujeto y relleno de encuadre. Para generacion complementaria, conserva un sujeto, un movimiento, direccion de camara, formato objetivo y duracion/resolucion.',
-    strengthsLimits:
-      'Ray 3.2 es la ruta Luma actual para modificacion de video fuente, direccion visual por imagenes clave, reencuadre de entregables, pasadas de producto y pruebas cortas complementarias. No es un motor de audio ni lip sync en MaxVideoAI, asi que evalua los ejemplos por preservacion de fuente, encuadre, continuidad de producto, disciplina de edicion y control del prompt. Ray 2 y Ray 2 Flash quedan disponibles como contexto de produccion anterior.',
-    pricingNotes:
-      'Empieza con clips de 5 s en 540p o 720p para validar movimiento, y pasa solo las tomas aprobadas a renders mas largos o de mayor resolucion. El precio cliente sigue el presupuesto del sitio antes de generar; la ruta directa Luma conserva ese precio y el respaldo Fal protege disponibilidad.',
+    metaDescription: "Mira ejemplos de video Luma Ray 3.2 Modify y Reframe, con prompts y ajustes. Edita tu propio video y consulta el precio antes de generar.",
+    subtitle: "Cambia una escena con Modify o adapta su encuadre con Reframe: ejemplos de video Luma Ray 3.2.",
+    intro: "Explora ejemplos de Luma Ray 3.2 Modify y Reframe. Abre un video para ver el prompt y los ajustes utilizados. Los ejemplos de Ray 2 y Ray 2 Flash conservan el nombre del modelo que los generó.",
+    promptPatterns: "Para Modify, indica qué quieres conservar del video original y después qué quieres cambiar. Para Reframe, señala qué sujeto debe seguir visible y cómo completar el nuevo encuadre. Las imágenes guía y los fotogramas clave dependen del modo elegido.",
+    strengthsLimits: "Evalúa cuánto se conserva del video original, si se cumple el cambio solicitado y si el sujeto se mantiene consistente. Ray 3.2 no genera audio en MaxVideoAI. Las fuentes y los ajustes admitidos difieren de Ray 2 y Ray 2 Flash: revisa el modelo de cada ejemplo.",
+    pricingNotes: "La ficha muestra el costo registrado del ejemplo. Tu nuevo video tiene una cotización según el modo y los ajustes elegidos. Revisa el precio antes de generar y empieza con una prueba corta antes de editar un video más largo.",
     faq: [
       {
-        question: '¿Cuándo conviene empezar por la página de ejemplos de Luma?',
-        answer: 'Empieza aqui cuando quieras ver patrones Ray 3.2 Modify y Reframe antes de abrir la pagina del modelo o clonar un prompt en la app.',
+        question: "¿Cómo reutilizo una edición de video Luma?",
+        answer: "Abre el ejemplo para consultar su prompt y sus ajustes, y adapta las instrucciones a tu propio video. Los archivos fuente privados no están incluidos y una nueva generación puede producir un resultado diferente.",
       },
       {
-        question: '¿Ray 3.2 genera audio?',
-        answer: 'No. Trata los ejemplos Ray 3.2 como salidas de video silenciosas y añade voz, musica o sound design mas tarde.',
+        question: "¿Ray 3.2 genera audio?",
+        answer: "No. Los ejemplos de Ray 3.2 son videos sin sonido. Agrega voz, música o efectos de sonido por separado.",
       },
       {
-        question: '¿Conviene empezar con texto o con imagen?',
-        answer: 'Empieza desde un video fuente cuando el timing ya funciona. Usa texto o imagen solo para crear un nuevo clip corto y silencioso antes de una pasada Modify o Reframe.',
+        question: "¿Me conviene usar Modify o Reframe?",
+        answer: "Usa Modify para cambiar el contenido visual de un video original. Usa Reframe para adaptar su encuadre. Consulta la ficha del modelo para ver las fuentes y los ajustes admitidos en cada modo.",
       },
     ],
   },
   wan: {
-    subtitle: 'Ejemplos de Wan pensados para secuencias estructuradas, transiciones limpias y continuidad guiada.',
-    intro:
-      'Los ejemplos de Wan de esta página están pensados para secuencias cortas con beats claros y transiciones controladas. Funcionan como punto de partida operativo antes de reutilizar en producción, sobre todo cuando el ritmo importa tanto como el acabado final.',
-    promptPatterns:
-      'Usa prompts en 2 o 3 beats: arranque, acción y cierre. Las transiciones explícitas suelen mejorar la estabilidad.',
-    strengthsLimits:
-      'Wan funciona bien en secuencias cortas estructuradas y continuidad guiada por referencia. Mantén escenas simples para reducir deriva.',
-    pricingNotes:
-      'Valida primero un clip corto con el preset objetivo y luego amplía a variantes.',
+    subtitle: "Ejemplos de video Wan con prompts, ajustes y el modelo utilizado en cada resultado.",
+    intro: "Mira ejemplos de Wan para comparar movimiento, encuadre y continuidad. Abre un video para ver su prompt, sus ajustes y su costo registrado, y adáptalo a tu proyecto. Revisa la versión del modelo antes de reutilizar los ajustes.",
+    promptPatterns: "Describe un sujeto, una acción principal y un movimiento de cámara. Si la toma tiene varias etapas, indica su orden y mantén una secuencia fácil de seguir. Cambia una sola instrucción a la vez durante las pruebas.",
+    strengthsLimits: "Revisa todo el video para detectar cambios en el sujeto, cortes inesperados o movimientos que no siguen el prompt. Las fuentes, duraciones y opciones de salida varían según el modelo Wan y el modo elegido.",
+    pricingNotes: "La ficha del ejemplo muestra su costo registrado. El modelo, la duración y los demás ajustes determinan una nueva cotización en el estudio. Revisa el precio antes de generar y empieza con una prueba corta para evaluar el resultado.",
     faq: [
       {
-        question: '¿Estos ejemplos de Wan están pensados para prompts multi-beat?',
-        answer: 'Sí, están estructurados para secuencias cortas con transiciones claras.',
+        question: "¿Puedo partir de un ejemplo Wan para crear mi video?",
+        answer: "Sí. Consulta su prompt y sus ajustes, y adáptalos en el estudio. Agrega tus propios archivos cuando el modo lo requiera. Reutilizar un prompt no garantiza un resultado idéntico.",
       },
       {
-        question: '¿Puedo adaptar Wan a formatos verticales?',
-        answer: 'Sí, conserva la lógica de movimiento y ajusta encuadre y ritmo.',
+        question: "¿Puedo adaptar un ejemplo Wan al formato vertical?",
+        answer: "Comprueba que el modelo y el modo elegidos admitan el formato que necesitas. Ajusta el encuadre para mantener visibles al sujeto y la acción, y revisa el resultado de una prueba.",
       },
       {
-        question: '¿Cuál es la mejor forma de probar precio en Wan?',
-        answer: 'Haz una prueba corta en preset final antes de lanzar lotes.',
+        question: "¿Cambiar la duración modifica el precio de Wan?",
+        answer: "La duración es uno de los ajustes que pueden cambiar la cotización. Elige el modelo y las opciones que necesitas, y consulta el precio antes de generar.",
       },
     ],
   },
   kling: {
     metaTitle: 'Ejemplos de video IA Kling, prompts y ajustes | MaxVideoAI',
-    metaDescription:
-      'Revisa ejemplos de video IA de Kling con prompts, referencias visuales, storyboard, V2V desde video fuente, image-to-video con frame inicial y precios para Kling 3.0 Omni y Kling 3.',
+    metaDescription: "Mira ejemplos de video de Kling 3 y Kling 3.0 Omni: prompts, animación de imágenes, referencias, ajustes y costos registrados.",
     heroTitle: 'Ejemplos de video IA Kling, prompts y ajustes',
-    subtitle:
-      'Ejemplos de video IA Kling, prompts, ajustes, referencias, patrones de imagen a video y guía de modelo para Kling 3.0 Omni, Kling 3 y versiones anteriores aún compatibles.',
-    intro:
-      'Revisa ejemplos de video IA de Kling, prompts y ajustes reutilizables para Kling 3.0 Omni Pro, Standard y 4K, y compáralos con las rutas Kling 3 con frame inicial visible y versiones anteriores aún compatibles. Usa esta página para separar prompts O3 guiados por referencias de prompts Kling 3 image-to-video clásicos antes de abrir la página de modelo correspondiente.',
-    summary:
-      'Kling 3.0 Omni Pro y Standard son las rutas actuales para imágenes de referencia, storyboards y V2V desde video fuente. Kling 3 Pro y Standard siguen siendo las rutas image-to-video con frame inicial visible, mientras Kling 3.0 Omni 4K sirve para entregas 4K nativas guiadas por referencias.',
-    promptPatterns:
-      'Empieza decidiendo si el medio subido debe guiar el render como referencia o convertirse en el primer frame visible. Usa @Image y @Video1 para O3; usa lenguaje de frame inicial cuando la toma corresponda a Kling 3.',
-    strengthsLimits:
-      'O3 encaja mejor cuando las referencias guían estilo, identidad, estructura de storyboard o movimiento de un video fuente sin abrir el clip. Kling 3 encaja mejor cuando una imagen fuente debe aparecer como primer frame y el prompt debe animar desde esa imagen.',
-    pricingNotes:
-      'Mantén alineados duración, relación de aspecto, audio y resolución al comparar resultados Kling. Usa Standard para pruebas O3 de menor costo, Pro para pasadas con referencias/V2V más sólidas y 4K solo cuando la dirección ya esté aprobada.',
+    subtitle: "Ejemplos de Kling 3 y Kling 3.0 Omni: descubre cómo una imagen inicial o las referencias guían una toma.",
+    intro: "Mira ejemplos de video Kling y abre un resultado para ver su prompt y sus ajustes. Compara la animación de una imagen con Kling 3 y los usos de referencias y edición de video con Kling 3.0 Omni. Cada ejemplo indica el modelo utilizado.",
+    summary: "Kling 3.0 Omni Pro y Standard admiten imágenes de referencia, storyboards y edición de un video original. Kling 3 Pro y Standard animan una imagen inicial. Kling 3.0 Omni 4K ofrece video en 4K nativo guiado por referencias.",
+    promptPatterns: "Decide si una imagen debe guiar el video como referencia o aparecer como primer fotograma. Usa @Image1 y @Video1 para identificar las fuentes en los modos Omni compatibles. Para imagen a video con Kling 3, describe el movimiento desde la imagen inicial.",
+    strengthsLimits: "Kling 3.0 Omni usa referencias para guiar la identidad, el estilo, el storyboard o la edición de video. Una referencia no necesariamente será el primer fotograma. Kling 3 en imagen a video anima la imagen que subes. Revisa el modelo y el modo antes de reutilizar las fuentes.",
+    pricingNotes: "Compara duraciones, formatos, opciones de audio y resoluciones equivalentes en los modos disponibles. La ficha conserva el costo del ejemplo; el estudio muestra la cotización actual para el modelo y los ajustes elegidos. Revísala antes de generar.",
     faq: [
       {
         question: '¿Cuánto pueden durar los videos de Kling AI?',
         answer:
-          'Kling 3.0 Omni Standard y Pro admiten renders 1080p guiados por referencias de hasta 15 segundos, con V2V desde video fuente en Standard y Pro. La ruta O3 4K es para entregas 4K nativas guiadas por referencias, mientras Kling 3 sigue siendo la ruta image-to-video con frame inicial.',
+          'Kling 3.0 Omni Standard y Pro admiten renders 1080p guiados por referencias de hasta 15 segundos, con V2V desde video fuente en Standard y Pro. La ruta O3 4K es para entregas 4K nativas guiadas por referencias, mientras Kling 3 sigue siendo la ruta imagen a video con fotograma inicial.',
       },
       {
         question: '¿Cuánto tarda Kling AI en generar un video?',
-        answer:
-          'El tiempo de render depende del modelo Kling, la duración, los medios subidos, el audio, la resolución y la cola. Las pruebas cortas en Standard suelen ser la forma más rápida de validar una dirección, mientras O3 V2V, audio activo y 4K nativo tardan más.',
+        answer: "El tiempo de generación depende del modelo, la duración, las fuentes, el audio, la resolución y la demanda del momento. No hay un tiempo fijo para todos los videos. Una prueba corta te ayuda a evaluar el resultado y la espera con tus ajustes.",
       },
       {
         question: '¿Qué modelo de Kling AI debería usar para prompts y ejemplos?',
         answer:
-          'Usa Kling 3.0 Omni Standard o Pro cuando referencias, storyboard o @Video1 deben guiar el render sin convertirse en la apertura del clip. Usa Kling 3 Standard o Pro cuando la imagen subida debe ser el frame inicial visible.',
+          'Usa Kling 3.0 Omni Standard o Pro cuando referencias, storyboard o @Video1 deben guiar el render sin convertirse en la apertura del clip. Usa Kling 3 Standard o Pro cuando la imagen subida debe ser el fotograma inicial visible.',
       },
       {
-        question: '¿Cómo debería usar Kling AI para pruebas de prompt en image-to-video?',
+        question: '¿Cómo debería usar Kling AI para pruebas de prompt en imagen a video?',
         answer:
           'Para O3, asigna un rol claro a cada referencia con @Image1, @Image2 o @Video1. Para Kling 3, parte de una imagen fuente clara, una instrucción de movimiento y un objetivo de cámara, porque la imagen debe abrir el clip.',
       },
       {
         question: '¿Cómo debería adaptar prompts de Kling AI entre Kling 3 Pro y Kling 3 Standard?',
-        answer:
-          'Mantén el mismo sujeto, acción, dirección de cámara y duración al comparar tiers. Cambia solo la intención de ruta: O3 para referencias/storyboard/V2V, Kling 3 para frame inicial y 4K solo para renders de entrega aprobados.',
+        answer: "Mantén el mismo sujeto, acción, dirección de cámara y ajustes equivalentes al comparar Kling 3 Pro y Standard. Revisa los videos completos y las cotizaciones actuales. Ambos animan la imagen inicial; Omni es una opción distinta para trabajar con referencias.",
       },
     ],
   },
   seedance: {
     metaTitle: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
-    metaDescription:
-      'Explora ejemplos de video Seedance 2.5 y sus prompts, y compara los workflows Seedance 2.0, Fast, Mini y 1.5 Pro aún compatibles.',
+    metaDescription: "Mira ejemplos de video Seedance 2.5 con prompts y ajustes. Compara resultados de otras versiones y usa un ejemplo como punto de partida.",
     heroTitle: 'Ejemplos de video IA Seedance 2.5, prompts y ajustes',
-    subtitle:
-      'Ejemplos, prompts y ajustes de Seedance liderados por Seedance 2.5, con los workflows actuales y compatibles en contexto.',
-    intro:
-      'Empieza con Seedance 2.5 para los workflows actuales de 4 a 30 segundos hasta 1080p, con audio generado y referencias, y compara después ejemplos de Seedance 2.0, Fast y Mini sin presentar renders anteriores como salidas de Seedance 2.5. Abre primero un video para ver su prompt y ajustes; los enlaces de modelo y comparativa permanecen bajo la galería.',
-    summary:
-      'Seedance 2.5 es la ruta principal para workflows más largos hasta 1080p, audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para necesidades de 4K, Fast y Mini cubren borradores o lotes, y Seedance 1.5 Pro continúa compatible como referencia anterior.',
+    subtitle: "Seedance 2.5 y versiones anteriores: mira los resultados y encuentra un prompt para tu idea.",
+    intro: "Explora ejemplos de Seedance 2.5 junto a Seedance 2.0, Fast y Mini. Abre un video para ver su prompt, sus ajustes y su costo registrado. Cada resultado conserva el nombre del modelo que lo generó.",
+    summary: "Seedance 2.5 permite crear videos de 4 a 30 segundos hasta 1080p, con audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para 4K; Fast y Mini ofrecen otras opciones para pruebas y series de videos. Los ejemplos anteriores de 1.5 Pro conservan su nombre original.",
     promptPatterns:
       'Para Seedance 2.5, define una acción principal, la dirección de cámara y el papel de cada referencia antes de añadir detalles de escena. Mantén la misma estructura de prompt al comparar 2.5 con Seedance 2.0, Fast o Mini.',
     strengthsLimits:
-      'Usa Seedance 2.5 cuando importen una mayor duración, el audio generado, las referencias mixtas, la edición o la extensión. Su ruta pública de MaxVideoAI admite salida horizontal, cuadrada y vertical en 480p, 720p o 1080p; conserva Seedance 2.0 cuando necesites 4K.',
-    pricingNotes:
-      'La duración, el audio y el tipo de medio utilizado influyen en el precio. El generador muestra la tarifa antes de iniciar.',
+      'Usa Seedance 2.5 cuando importen una mayor duración, el audio generado, las referencias mixtas, la edición o la extensión. En MaxVideoAI, este modelo admite salida horizontal, cuadrada y vertical en 480p, 720p o 1080p; conserva Seedance 2.0 cuando necesites 4K.',
+    pricingNotes: "La duración, el audio y los archivos fuente pueden influir en el precio. La ficha muestra el costo registrado del ejemplo; el generador indica la cotización actual para tus ajustes antes de iniciar.",
     faq: [
       {
         question: '¿Todos los ejemplos de Seedance de esta página se generaron con Seedance 2.5?',
         answer:
-          'No. La galería conserva las etiquetas exactas de los renders Seedance 2.5, Seedance 2.0, Fast, Mini y 1.5 Pro aún compatibles para que puedas comparar la ruta realmente utilizada.',
+          'No. La galería conserva las etiquetas exactas de los renders Seedance 2.5, Seedance 2.0, Fast, Mini y 1.5 Pro aún compatibles para que puedas comparar el modelo utilizado.',
       },
       {
         question: '¿Con qué modelo Seedance debería empezar para ejemplos y pruebas de prompt?',
         answer:
-          'Empieza con Seedance 2.5 para el workflow principal actual hasta 1080p. Usa Seedance 2.0 para necesidades de 4K, Fast para borradores más rápidos y Mini para variantes repetibles por lotes.',
+          'Empieza con Seedance 2.5 para el modelo principal actual hasta 1080p. Usa Seedance 2.0 para necesidades de 4K, Fast para borradores más rápidos y Mini para variantes repetibles por lotes.',
       },
       {
         question: '¿Qué ajustes afectan más al precio de un video Seedance?',
@@ -186,21 +162,16 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   ltx: {
-    metaTitle: 'Ejemplos de LTX, prompts, ajustes y salidas | MaxVideoAI',
-    metaDescription:
-      "Explora ejemplos de video, prompts y ajustes de LTX 2.5 Pro y Fast, con ejemplos de LTX 2.3 y LTX 2 identificados para flujos anteriores.",
-    heroTitle: 'Ejemplos de LTX, prompts, ajustes y salidas',
-    subtitle: 'Ejemplos para los workflows actuales de LTX 2.5 Pro y LTX 2.5 Fast, más setups LTX anteriores aún compatibles.',
-    intro:
-      "Explora prompts, ajustes y resultados de LTX 2.5 Pro y Fast. La galería conserva ejemplos de LTX 2.3 Pro/Fast y LTX 2 Pro/Fast para flujos anteriores y comparaciones de migración. Cada video identifica el modelo que lo generó. Abre sus detalles para consultar el prompt, los ajustes y el precio registrado.",
+    metaTitle: "Ejemplos de video LTX, prompts y ajustes | MaxVideoAI",
+    metaDescription: "Mira ejemplos de video LTX 2.5 Pro y Fast, con prompts y ajustes. Compara también resultados de LTX 2.3 y LTX 2, identificados por modelo.",
+    heroTitle: "Ejemplos de video LTX, prompts y ajustes",
+    subtitle: "Ejemplos de LTX 2.5 Pro y Fast, con las versiones anteriores claramente identificadas.",
+    intro: "Mira ejemplos de LTX 2.5 Pro y Fast y abre un video para ver su prompt, sus ajustes y su costo registrado. Los resultados de LTX 2.3 y LTX 2 conservan el nombre del modelo que los generó.",
     summary:
       "LTX 2.5 Pro y Fast encabezan esta página. Los ejemplos de LTX 2.3 y LTX 2 conservan sus etiquetas originales para comparar generaciones sin confundir sus capacidades.",
-    promptPatterns:
-      'Empieza con estructuras de prompts reutilizables de LTX 2.5 para tomas de producto, clips cinematográficos cortos y pruebas de movimiento consistentes que se conviertan en salidas de video repetibles antes de adaptarlas a tu escena.',
-    strengthsLimits:
-      'Usa LTX 2.5 con una imagen fuente clara, una instrucción principal de movimiento y un único objetivo de cámara para comparar mejor las salidas entre Pro y Fast.',
-    pricingNotes:
-      'Mantén alineados la duración, la relación de aspecto, la complejidad del movimiento y los ajustes de salida al probar prompts para comparar con más claridad calidad, velocidad y coste.',
+    promptPatterns: "Describe el sujeto, la acción, el movimiento de cámara y el estilo visual. Para imagen a video, explica cómo debe moverse la escena desde la imagen inicial. Mantén ese punto de partida y cambia una sola instrucción a la vez.",
+    strengthsLimits: "Compara todo el video entre Pro y Fast: ¿el movimiento sigue el prompt y el sujeto se mantiene consistente? Usa la misma imagen para las pruebas de imagen a video. Un ejemplo logrado es un punto de partida, no una garantía de resultados idénticos.",
+    pricingNotes: "Especifica el modelo, el modo, la duración, la resolución y las opciones de audio disponibles al comparar costos. La ficha conserva el costo registrado del ejemplo; revisa la cotización actual en el estudio antes de generar tu versión.",
     faq: [
       {
         question: '¿Cuáles son los mejores ejemplos de prompts de LTX 2.5 para empezar?',
@@ -213,19 +184,19 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
           'Empieza con un sujeto claro, una acción principal, una instrucción de cámara y una referencia de estilo visual. Los prompts de LTX 2.5 suelen funcionar mejor cuando el objetivo de movimiento es explícito y la escena se mantiene compacta.',
       },
       {
-        question: '¿Qué ajustes importan más en las salidas de LTX 2.5?',
+        question: '¿Qué ajustes importan más en los resultados de LTX 2.5?',
         answer:
           'Los ajustes más importantes son la duración, la relación de aspecto, la imagen fuente para imagen a video y el nivel de complejidad de movimiento que pides en un solo prompt. Mantenerlos estables hace mucho más fácil probar prompts.',
       },
       {
         question: '¿Cómo debería escribir prompts para LTX 2.5 en imagen a video?',
         answer:
-          'Parte de una imagen fuente fuerte y añade una instrucción de movimiento, un movimiento de cámara y un objetivo de salida. LTX 2.5 funciona mejor cuando el prompt amplía la imagen original en lugar de intentar sustituirla por una escena totalmente distinta.',
+          'Parte de una imagen de partida bien definida y añade una instrucción de movimiento, un movimiento de cámara y un objetivo de salida. LTX 2.5 funciona mejor cuando el prompt amplía la imagen original en lugar de intentar sustituirla por una escena totalmente distinta.',
       },
       {
         question: '¿Qué modelo LTX debería usar: LTX 2.5 Pro o LTX 2.5 Fast?',
         answer:
-          'Compara LTX 2.5 Pro y Fast con el mismo prompt y los mismos ajustes. Usa los ejemplos para valorar el resultado y la página de precios para comparar costes actuales. Consulta cada modelo para sus modos y límites; los ejemplos anteriores describen la versión indicada en su etiqueta.',
+          'Compara LTX 2.5 Pro y Fast con el mismo prompt y los mismos ajustes. Usa los ejemplos para valorar el resultado y la página de precios para comparar costos actuales. Consulta cada modelo para sus modos y límites; los ejemplos anteriores describen la versión indicada en su etiqueta.',
       },
     ],
   },
@@ -255,24 +226,24 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   hailuo: {
-    subtitle: "Ejemplos de MiniMax H3 Max, H3 y Hailuo anteriores: prompts, movimiento y ajustes registrados.",
-    intro: "Explora MiniMax H3 Max y H3 junto a ejemplos anteriores de Hailuo. Mira el clip completo, abre su prompt y ajustes y adapta el ejemplo a tu proyecto en el espacio de trabajo.",
-    summary: "Los ejemplos de H3 Max y H3 permiten comparar movimiento, continuidad y el audio presente en cada clip. Los resultados anteriores de Hailuo siguen siendo referencias útiles. Elige según el resultado deseado y la ficha del modelo, sin limitar toda la familia a una herramienta para borradores.",
+    subtitle: "Ejemplos de video MiniMax H3 Max, H3 y versiones anteriores de Hailuo, con prompts y ajustes.",
+    intro: "Mira MiniMax H3 Max y H3 junto a ejemplos anteriores de Hailuo. Abre un video para consultar su prompt, sus ajustes y su costo registrado, y úsalo como punto de partida para tu propia escena.",
+    summary: "Cada ejemplo de MiniMax o Hailuo conserva el nombre del modelo que lo generó. Compara el movimiento, la continuidad y el audio, si lo tiene, en todo el video. Las fichas de H3 y H3 Max detallan las fuentes y los ajustes disponibles para tu proyecto.",
     promptPatterns: "Empieza por el sujeto, una acción clara y la dirección de cámara. Añade indicaciones de escena o sonido pertinentes para el modelo elegido. Si utilizas referencias, asigna una función clara a cada fuente autorizada y comprueba que el modelo admite esa entrada.",
     strengthsLimits: "Evalúa el resultado completo: identidad del sujeto, movimiento, encuadre y cualquier audio generado. H3 Max, H3 y los Hailuo anteriores tienen modos y opciones de salida diferentes. Un ejemplo muestra un resultado, sin garantizar coherencia perfecta ni controles idénticos en toda la familia.",
-    pricingNotes: "Compara H3 y H3 Max con el mismo brief y objetivo de salida. La ficha conserva el coste del ejemplo; el espacio de trabajo ofrece el presupuesto actual para tu siguiente render. Valida un plano corto y amplía las versiones que cumplan tus criterios visuales.",
+    pricingNotes: "Compara H3 y H3 Max con la misma idea y objetivo de salida. La ficha conserva el costo del ejemplo; el espacio de trabajo ofrece el precio actual para tu siguiente render. Valida un plano corto y amplía las versiones que cumplan tus criterios visuales.",
     faq: [
       {
-        question: "¿Hailuo solo sirve para borradores económicos?",
-        answer: "Esta galería incluye MiniMax H3 y H3 Max junto a ejemplos anteriores de Hailuo. Evalúa los resultados publicados para tu proyecto y compara las fichas de los modelos y el presupuesto actual; la familia no se limita a un único flujo de borradores.",
+        question: "¿Por qué MiniMax H3 y H3 Max aparecen en la galería Hailuo?",
+        answer: "Esta galería reúne modelos de video MiniMax, incluidos H3, H3 Max y versiones anteriores de Hailuo. Cada video indica el modelo utilizado. Los ejemplos anteriores no representan las capacidades de H3 o H3 Max.",
       },
       {
         question: "¿Cómo elijo entre MiniMax H3 y H3 Max?",
-        answer: "Abre la comparativa H3 frente a H3 Max y sus fichas. Compara las entradas admitidas, las resoluciones disponibles y el presupuesto actual con tu objetivo de salida y revisa ejemplos del modelo exacto que quieres utilizar.",
+        answer: "Abre la comparativa H3 frente a H3 Max y sus fichas. Compara las entradas admitidas, las resoluciones disponibles y el precio actual con tu objetivo de salida y revisa ejemplos del modelo exacto que quieres utilizar.",
       },
       {
         question: "¿Puedo reutilizar un ejemplo de MiniMax en mi espacio de trabajo?",
-        answer: "Abre su ficha, revisa el prompt y los ajustes registrados y utiliza la acción de recrear. Añade tus propios medios necesarios y comprueba el presupuesto actual antes de generar; un ejemplo público no da acceso a fuentes privadas.",
+        answer: "Abre su ficha, revisa el prompt y los ajustes registrados y utiliza la acción de recrear. Añade tus propios medios necesarios y comprueba el precio actual antes de generar; un ejemplo público no da acceso a fuentes privadas.",
       },
     ],
   },

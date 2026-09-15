@@ -19,21 +19,21 @@ const locales = ['en', 'fr', 'es'] as const;
 const expected = {
   en: {
     cta: 'Generate with MiniMax H3',
-    examplesHref: '/examples/minimax-h3',
+    examplesHref: '/examples/hailuo',
     compareHref: '/models/minimax-h3-max',
     legacyCompareHref: '/ai-video-engines/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
     pricingHref: '/pricing#minimax-h3-pricing',
   },
   fr: {
     cta: 'Générer avec MiniMax H3',
-    examplesHref: '/fr/galerie/minimax-h3',
+    examplesHref: '/fr/galerie/hailuo',
     compareHref: '/fr/modeles/minimax-h3-max',
     legacyCompareHref: '/fr/comparatif/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
     pricingHref: '/fr/tarifs#minimax-h3-pricing',
   },
   es: {
     cta: 'Generar con MiniMax H3',
-    examplesHref: '/es/galeria/minimax-h3',
+    examplesHref: '/es/galeria/hailuo',
     compareHref: '/es/modelos/minimax-h3-max',
     legacyCompareHref: '/es/comparativa/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
     pricingHref: '/es/precios#minimax-h3-pricing',
@@ -46,7 +46,7 @@ test('MiniMax H3 uses a visible production model-page template with all three wo
   assert.equal(template.intent, 'production');
   assert.equal(isPrelaunchModelPageTemplateSlug(slug), false);
   assert.equal(template.hero.primaryCtaHref, '/app?engine=minimax-h3');
-  assert.equal(template.hero.secondaryCtaHref, '/examples/minimax-h3');
+  assert.equal(template.hero.secondaryCtaHref, '/examples/hailuo');
   assert.equal(template.pricing.enabled, true);
   assert.deepEqual(
     template.pricing.presets.map((preset) => preset.id),

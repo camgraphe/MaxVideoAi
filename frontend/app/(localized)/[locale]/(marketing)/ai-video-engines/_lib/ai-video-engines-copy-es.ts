@@ -5,7 +5,7 @@ export const ES_HUB_COPY: HubCopy = {
       eyebrow: 'Comparar modelos',
       title: 'Comparar modelos de video con IA',
       intro:
-        'Elige dos modelos y abre una comparativa lado a lado con un clic. Usa este espacio para revisar comparativas útiles, filtrar por límites clave y validar precios antes de generar. Cubre texto a video, imagen a video y video a video, y te guía al modelo más adecuado para tu toma.',
+        'Elige dos modelos. Compara sus capacidades, la calidad de las escenas y los costos para encontrar el que necesita tu próximo video.',
       compareNow: {
         left: 'Modelo A',
         right: 'Modelo B',
@@ -15,6 +15,8 @@ export const ES_HUB_COPY: HubCopy = {
         strengthsLabel: 'Fortalezas',
         strengthsFallback: 'Uso general de video',
         modeLabels: {
+          extend: 'Extender',
+          retake: 'Rehacer una toma',
           t2v: 'Texto a video',
           i2v: 'Imagen a video',
           v2v: 'Video a video',
@@ -42,28 +44,28 @@ export const ES_HUB_COPY: HubCopy = {
       prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
       prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback:
-        'Los filtros interactivos ajustan recomendaciones al instante. Todos los enlaces siguen siendo rastreables y visibles en HTML estándar.',
+        'Elige un uso para encontrar las comparaciones que se ajustan a tu proyecto.',
     },
     tagLabels: {
       audio: 'Audio',
-      cinematic: 'Cinemático',
+      cinematic: 'Cine',
       quality: 'Mejor calidad',
       long: 'Larga duración',
-      ads: 'ANUNCIOS',
+      ads: 'Anuncios',
       product: 'Producto',
       value: 'Mejor precio',
       general: 'General',
       i2v: 'Imagen a video',
-      social: 'REDES SOCIALES',
+      social: 'Redes sociales',
       fast: 'Rápido',
-      storyboards: 'GUIONES VISUALES',
+      storyboards: 'Guiones visuales',
     },
     useCaseLabels: {
-      cinematic: 'Cinemático',
+      cinematic: 'Cine',
       ads: 'Anuncios y tomas de apoyo (B-roll)',
-      social: 'REDES SOCIALES',
+      social: 'Redes sociales',
       product: 'Producto',
-      storyboards: 'GUIONES VISUALES',
+      storyboards: 'Guiones visuales',
       audio: 'Audio',
       'no-audio': 'Sin audio',
       'best-value': 'Mejor precio',
@@ -76,7 +78,7 @@ export const ES_HUB_COPY: HubCopy = {
     catalogLabels: {
       sortAll: 'Todos',
       toggles: {
-        includeWaitlistEarlyAccess: 'Incluir waitlist / acceso anticipado',
+        includeWaitlistEarlyAccess: 'Incluir lista de espera y acceso anticipado',
       },
       filters: {
         mode: 'Modo',
@@ -131,7 +133,7 @@ export const ES_HUB_COPY: HubCopy = {
       {
         question: '¿Cómo comparo dos modelos rápidamente?',
         answer:
-          'Usa el widget Comparar de la parte superior, elige Modelo A y Modelo B, y haz clic en Comparar para abrir la página canónica. Usa el mismo prompt (o un prompt de texto simple) en ambos modelos de IA para comparar consistencia de movimiento y fidelidad al prompt antes de generar.',
+          'Usa el comparador de la parte superior, elige Modelo A y Modelo B, y haz clic en Comparar para ver la comparación detallada. Usa el mismo prompt (o un prompt de texto simple) en ambos modelos de IA para comparar consistencia de movimiento y fidelidad al prompt antes de generar.',
       },
       {
         question: '¿Por qué cambian las fortalezas entre comparativas?',

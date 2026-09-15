@@ -42,10 +42,10 @@ function readHomeSectionsSource() {
 }
 
 test('homepage real examples preview uses compact decision-oriented copy and CTAs', () => {
-  assert.equal(examplesCopy.title, 'Preview real outputs before you choose an engine.');
+  assert.equal(examplesCopy.title, 'A world of stories to create.');
   assert.equal(
     examplesCopy.subtitle,
-    'Compare real Seedance, Kling, LTX, Veo, Wan and Happy Horse outputs, then check full specs, limits, pricing and prompts before you generate.'
+    'Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation.'
   );
   assert.equal(examplesCopy.eyebrow, 'AI video examples');
   assert.equal(examplesCopy.cta, 'Browse all examples');
@@ -114,7 +114,7 @@ test('homepage examples preview keeps only real crawlable example routes', () =>
   assert.equal(cards.some((card) => card.title === 'Pika Text to Video' || card.engineId === 'pika-text-to-video'), false);
 });
 
-test('homepage real examples component uses compact two-column rows instead of the old large gallery', () => {
+test('homepage examples use image-led cards while preserving source and action contracts', () => {
   const source = readHomeSectionsSource();
   const homeRouteDataSource = readFileSync(
     "frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples.ts",
@@ -125,14 +125,9 @@ test('homepage real examples component uses compact two-column rows instead of t
     source.indexOf('function ComparisonScorecard')
   );
 
-  assert.match(previewSource, /divide-y/);
-  assert.match(previewSource, /dark:divide-white\/\[0\.07\]/);
-  assert.match(previewSource, /dark:border-white\/\[0\.08\]/);
-  assert.match(previewSource, /dark:bg-white\/\[0\.035\]/);
-  assert.match(previewSource, /dark:hover:border-white\/\[0\.16\]/);
-  assert.match(previewSource, /lg:grid-cols-\[132px_220px_165px_72px_82px_170px\]/);
-  assert.match(previewSource, /grid-cols-2[^"]*lg:grid-cols-1/);
-  assert.match(previewSource, /lg:border-l lg:border-t-0/);
+  assert.match(previewSource, /home-editorial-examples/);
+  assert.match(previewSource, /sm:grid-cols-2 lg:grid-cols-3/);
+  assert.match(previewSource, /loading="lazy"/);
   assert.match(previewSource, /Browse all examples/);
   assert.match(previewSource, /View all model specs/);
   assert.match(previewSource, /examplesCtaVisible/);
@@ -143,7 +138,6 @@ test('homepage real examples component uses compact two-column rows instead of t
   assert.doesNotMatch(previewSource, /supportingText/);
   assert.doesNotMatch(previewSource, /Compare AI video examples/);
   assert.doesNotMatch(previewSource, /lg:grid-cols-2/);
-  assert.doesNotMatch(previewSource, /lg:grid-cols-3/);
   assert.doesNotMatch(previewSource, /lg:grid-cols-\[132px_220px_165px_72px_82px_150px_140px\]/);
   assert.doesNotMatch(previewSource, /Want the full library\?/);
   assert.doesNotMatch(previewSource, /Open model/);
@@ -321,19 +315,12 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
   );
 });
 
-test('homepage hero defers mobile thumbnail images without changing desktop thumbnails', () => {
-  const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
-
-  assert.match(showcaseSource, /const \[shouldLoadMobileThumbnails, setShouldLoadMobileThumbnails\]/);
-  assert.match(showcaseSource, /const mobileThumbnailsRef = useRef<HTMLDivElement>\(null\)/);
-  assert.match(showcaseSource, /new IntersectionObserver/);
-  assert.match(showcaseSource, /observer\.observe\(mobileThumbnails\)/);
-  assert.match(showcaseSource, /rootMargin: '64px 0px'/);
-  assert.match(showcaseSource, /ref=\{mobileThumbnailsRef\}/);
-  assert.match(showcaseSource, /unoptimized=\{item\.unoptimizedPoster\}/);
-  assert.match(showcaseSource, /className="hidden object-cover md:block"/);
-  assert.match(showcaseSource, /shouldLoadMobileThumbnails \? \(/);
-  assert.match(showcaseSource, /className="object-cover md:hidden"/);
+test('homepage model selector stays text-only without additional thumbnail transfers', () => {
+  const source = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
+  const selector = source.slice(source.indexOf('<div className="cinema-film-selector">'));
+  assert.match(selector, /aria-pressed=\{index===selectedIndex\}/);
+  assert.match(selector, /selectAndPlay\(index\)/);
+  assert.doesNotMatch(selector, /<Image|<video|HOME_LCP_MOBILE_DELIVERY_SRC/);
 });
 
 test('homepage hero model CTA says specs and pricing instead of open model', () => {
@@ -343,8 +330,10 @@ test('homepage hero model CTA says specs and pricing instead of open model', () 
   );
   const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
 
-  assert.match(homeRouteDataSource, /function heroModelLabel\(\)/);
-  assert.match(homeRouteDataSource, /return 'Specs & pricing';/);
+  assert.match(homeRouteDataSource, /function heroModelLabel\(locale: AppLocale\)/);
+  assert.match(homeRouteDataSource, /Caractéristiques et tarifs/);
+  assert.match(homeRouteDataSource, /Características y precios/);
+  assert.match(homeRouteDataSource, /Specs & pricing/);
   assert.doesNotMatch(homeRouteDataSource, /Open `?\$\{name\} model|Ouvrir le modèle|Abrir modelo/);
   assert.doesNotMatch(showcaseSource, /Open \$\{selected\.name\} model/);
 });
@@ -376,8 +365,8 @@ test('homepage final sections keep alternating backgrounds before the footer', (
   );
   const faqSource = source.slice(source.indexOf('export function HomeFaq'));
 
-  assert.match(pricingSource, /<section className="dark-section-neon border-b border-hairline bg-surface section">/);
-  assert.match(faqSource, /<section className="dark-section-neon bg-bg section">/);
+  assert.match(pricingSource, /<section className="home-payg-chapter dark-section-neon border-b border-hairline bg-surface section">/);
+  assert.match(faqSource, /<section className="home-faq-chapter dark-section-neon bg-bg section">/);
   assert.match(faqSource, /dark-neon-panel group rounded-card border border-hairline bg-surface p-5/);
   assert.doesNotMatch(faqSource, /<section className="bg-surface section">/);
 });

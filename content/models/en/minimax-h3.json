@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "View MiniMax H3 examples",
-        "href": "/examples/minimax-h3"
+        "href": "/examples/hailuo"
       },
       {
         "label": "Open MiniMax H3 prompt examples",
@@ -104,22 +104,20 @@
   "decision": {
     "modelSlug": "minimax-h3",
     "hero": {
-      "eyebrow": "New · 5–15 seconds · Up to 4K · Native stereo audio",
+      "eyebrow": "AI video · MiniMax",
       "title": "MiniMax H3",
-      "subtitle": "Create 5–15-second videos from text, start and end frames, or image, video and audio references, with output up to 4K and native stereo audio.",
+      "subtitle": "Direct the scene. Shape the sound.",
       "subtitleHighlights": [
-        "5–15-second videos",
-        "up to 4K",
-        "native stereo audio"
+        "Direct the scene. Shape the sound"
       ],
-      "paragraph": "Use one MiniMax H3 engine for text-to-video, image-to-video and reference-to-video. Choose the duration and resolution, then direct character continuity, motion, camera and sound in one workflow.",
+      "paragraph": "MiniMax H3 creates AI videos from text, images or mixed references. Choose 5–15 seconds and up to 4K, with native stereo audio. Guide your characters, camera and movement in the same generation.",
       "primaryCta": {
         "label": "Generate with MiniMax H3",
         "href": "/app?engine=minimax-h3"
       },
       "secondaryCta": {
         "label": "View MiniMax H3 examples",
-        "href": "/examples/minimax-h3"
+        "href": "/examples/hailuo"
       },
       "quickLinks": [
         {

@@ -3,21 +3,15 @@
 import Image from 'next/image';
 import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { MarketingFooterAssistants } from '@/components/marketing/MarketingFooterAssistants';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
-import { getMcpDocsLink, getMcpInternalLink } from '@/lib/mcp-internal-links';
-import engineCatalog from '@/config/engine-catalog.json';
-import {
-  MARKETING_FOOTER_EXAMPLES,
-  MARKETING_NAV_BEST_FOR_HUB,
-  MARKETING_NAV_BEST_FOR_USE_CASES,
-  MARKETING_NAV_MODELS,
-} from '@/config/navigation';
+import { MARKETING_NAV_BEST_FOR_HUB } from '@/config/navigation';
+import { FOOTER_MODELS, FOOTER_COMPARISONS, FOOTER_EXAMPLES } from '@/config/marketing-footer';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
 type SupportedLocale = 'en' | 'fr' | 'es';
 
-const canonicalCompareSlug = (left: string, right: string) => [left, right].sort().join('-vs-');
 const OPEN_COOKIE_PREFERENCES_EVENT = 'consent:open-preferences';
 
 function localizeFooterPath(locale: SupportedLocale, englishPath: string) {
@@ -41,8 +35,6 @@ export function MarketingFooter() {
     window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT));
   };
 
-  const modelSlugSet = new Set(engineCatalog.map((entry) => entry.modelSlug));
-
   const defaultPolicyLinks: PolicyLink[] = [
     { label: 'Legal Center', href: '/legal', locale: false },
     { label: 'Refund & Return Policy', href: '/return-policy', locale: false },
@@ -58,82 +50,15 @@ export function MarketingFooter() {
     href: item.href.startsWith('/legal') ? localizeFooterPath(locale, item.href) : item.href,
   }));
 
-  const engineLinks: FooterLink[] = MARKETING_NAV_MODELS.map((item) => ({
+  const engineLinks: FooterLink[] = [...FOOTER_MODELS.map((item) => ({
     key: item.key,
     label: labelFor(`nav.dropdown.models.items.${item.key}`, item.label),
     href: item.href,
-  }));
+  })), { key: 'all-models', label: labelFor('nav.dropdown.allModels', 'All models'), href: '/models' }];
 
-  const comparisonItems = [
-    {
-      left: 'seedance-1-5-pro',
-      right: 'seedance-2-0',
-      labelKey: 'footer.sections.comparisons.items.seedance1_5pro_vs_seedance2_0',
-      fallback: 'Seedance 1.5 Pro vs Seedance 2.0',
-    },
-    {
-      left: 'ltx-2',
-      right: 'ltx-2-3-fast',
-      labelKey: 'footer.sections.comparisons.items.ltx2_vs_ltx23fast',
-      fallback: 'LTX 2 vs LTX 2.3 Fast',
-    },
-    {
-      left: 'ltx-2-3-fast',
-      right: 'seedance-2-0',
-      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_seedance2_0',
-      fallback: 'LTX 2.3 Fast vs Seedance 2.0',
-    },
-    {
-      left: 'ltx-2-3-fast',
-      right: 'veo-3-1',
-      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_veo3_1',
-      fallback: 'LTX 2.3 Fast vs Veo 3.1',
-    },
-    {
-      left: 'kling-3-pro',
-      right: 'ltx-2-3-pro',
-      labelKey: 'footer.sections.comparisons.items.kling3pro_vs_ltx23pro',
-      fallback: 'Kling 3 Pro vs LTX 2.3 Pro',
-    },
-    {
-      left: 'seedance-2-0',
-      right: 'veo-3-1',
-      labelKey: 'footer.sections.comparisons.items.seedance2_0_vs_veo3_1',
-      fallback: 'Seedance 2.0 vs Veo 3.1',
-    },
-    {
-      left: 'kling-3-pro',
-      right: 'veo-3-1',
-      labelKey: 'footer.sections.comparisons.items.kling3pro_vs_veo3_1',
-      fallback: 'Kling 3 Pro vs Veo 3.1',
-    },
-    {
-      left: 'ltx-2-3-pro',
-      right: 'veo-3-1',
-      labelKey: 'footer.sections.comparisons.items.ltx23pro_vs_veo3_1',
-      fallback: 'LTX 2.3 Pro vs Veo 3.1',
-    },
-    {
-      left: 'seedance-2-0',
-      right: 'seedance-2-0-fast',
-      labelKey: 'footer.sections.comparisons.items.seedance2_0_vs_seedance2_0fast',
-      fallback: 'Seedance 2.0 vs Seedance 2.0 Fast',
-    },
-    {
-      left: 'ltx-2-3-fast',
-      right: 'ltx-2-3-pro',
-      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_ltx23pro',
-      fallback: 'LTX 2.3 Fast vs Pro',
-    },
-  ];
   const comparisonLinks: FooterLink[] = [
-    ...comparisonItems
-    .filter((item) => modelSlugSet.has(item.left) && modelSlugSet.has(item.right))
-    .map((item) => ({
-      key: `${item.left}-vs-${item.right}`,
-      label: labelFor(item.labelKey, item.fallback),
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalCompareSlug(item.left, item.right) } },
-    })),
+    ...FOOTER_COMPARISONS.map(item => ({ ...item, label: labelFor(`nav.dropdown.compare.items.${item.key}`, item.label) })),
+    { key: 'all-comparisons', label: labelFor('nav.dropdown.allComparisons', 'All comparisons'), href: '/ai-video-engines' },
   ];
 
   const useCaseLinks: FooterLink[] = [
@@ -142,15 +67,10 @@ export function MarketingFooter() {
       label: labelFor('footer.sections.useCases.items.bestFor', MARKETING_NAV_BEST_FOR_HUB.label),
       href: MARKETING_NAV_BEST_FOR_HUB.href,
     },
-    ...MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => ({
-      key: item.key,
-      label: labelFor(`footer.sections.useCases.items.${item.key}`, item.label),
-      href: item.href,
-    })),
   ];
 
   const exampleLinks: FooterLink[] = [
-    ...MARKETING_FOOTER_EXAMPLES.map((item) => ({
+    ...FOOTER_EXAMPLES.map((item) => ({
       key: item.key,
       label: labelFor(`footer.sections.examples.items.${item.key}`, `${item.label} examples`),
       href: item.href,
@@ -161,9 +81,6 @@ export function MarketingFooter() {
       href: { pathname: '/examples' },
     },
   ];
-
-  const mcpLink = getMcpInternalLink(locale, 'footer');
-  const mcpDocsLink = getMcpDocsLink(locale, 'footer');
 
   const productLinks: FooterLink[] = [
     {
@@ -182,12 +99,12 @@ export function MarketingFooter() {
       label: labelFor('footer.sections.product.items.paygVideo', 'Pay-as-you-go AI video'),
       href: { pathname: '/pay-as-you-go-ai-video-generator' },
     },
-    { key: 'models', label: labelFor('footer.sections.product.items.models', 'All models'), href: { pathname: '/models' } },
-    ...(mcpLink ? [{ key: 'mcp', label: mcpLink.label, href: mcpLink.href }] : []),
-    ...(mcpDocsLink ? [{ key: 'mcpDocs', label: mcpDocsLink.label, href: mcpDocsLink.href }] : []),
+    { key: 'all-tools', label: labelFor('nav.dropdown.allTools', 'All tools'), href: '/tools' },
   ];
 
   const companyLinks: FooterLink[] = [
+    { key: 'getting-started', label: labelFor('nav.dropdown.tools.sections.resources.items.get-started', 'Getting started'), href: { pathname: '/docs/[slug]', params: { slug: 'get-started' } } },
+    { key: 'contact', label: labelFor('footer.sections.company.items.contact', 'Contact'), href: '/contact' },
     { key: 'blog', label: labelFor('footer.sections.company.items.blog', 'Blog'), href: { pathname: '/blog' } },
     {
       key: 'companyHub',
@@ -203,7 +120,7 @@ export function MarketingFooter() {
   const useCasesTitle = labelFor('footer.sections.useCases.title', 'Use cases');
   const examplesTitle = labelFor('footer.sections.examples.title', 'Real examples');
   const productTitle = labelFor('footer.sections.product.title', 'Product');
-  const companyTitle = labelFor('footer.sections.company.title', 'Company');
+  const companyTitle = labelFor('footer.sections.company.title', 'Resources');
   const policiesTitle = labelFor('footer.sections.policies.title', 'Policies');
   const manageCookiesLabel = labelFor('footer.sections.policies.manageCookies', 'Cookie settings');
   const sectionTitleClass = 'text-xs font-semibold uppercase tracking-micro text-text-primary';
@@ -211,8 +128,8 @@ export function MarketingFooter() {
     'text-sm text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
 
   return (
-    <footer className="border-t border-hairline bg-surface">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+    <footer className="marketing-editorial-footer border-t border-hairline bg-surface">
+      <div className="container-page flex flex-col gap-8 py-10">
         <div className="flex items-center justify-between gap-4 text-sm text-text-muted">
           <Link
             href="/"
@@ -229,7 +146,14 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-6 lg:gap-x-8">
+        <MarketingFooterAssistants copy={{
+          title: labelFor('footer.mcpFeature.title', 'Create with your AI assistant.'),
+          body: labelFor('footer.mcpFeature.body', 'Your models and credits, from your conversation.'),
+          cta: labelFor('footer.mcpFeature.cta', 'Discover MaxVideoAI MCP'),
+          docs: labelFor('footer.mcpFeature.docs', 'MCP documentation'),
+          anchors: Object.fromEntries(['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'].map(id => [id, labelFor(`footer.mcpFeature.anchors.${id}`, id)])),
+        }} />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-5 lg:gap-x-8">
           <div>
             <p className={sectionTitleClass}>{enginesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={enginesTitle}>
@@ -249,15 +173,9 @@ export function MarketingFooter() {
                 </Link>
               ))}
             </nav>
-          </div>
-          <div>
-            <p className={sectionTitleClass}>{useCasesTitle}</p>
+            <p className={`${sectionTitleClass} mt-6`}>{useCasesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={useCasesTitle}>
-              {useCaseLinks.map((item) => (
-                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
-                  {item.label}
-                </Link>
-              ))}
+              {useCaseLinks.map(item => <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>{item.label}</Link>)}
             </nav>
           </div>
           <div>

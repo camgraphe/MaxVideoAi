@@ -1,3 +1,6 @@
+import { Plus, ArrowUpRight } from 'lucide-react';
+import type { AppLocale } from '@/i18n/locales';
+import { getCompareDetailActions } from '../_lib/compare-editorial-copy';
 import type { ComparePageCopy } from '../_lib/compare-page-copy';
 import type { CompareFaqItem } from '../_lib/compare-page-faq';
 import {
@@ -8,6 +11,7 @@ import type { ComparePageOverride } from '../_lib/compare-page-overrides';
 import type { EngineCatalogEntry } from '../_lib/compare-page-types';
 
 type CompareFaqSectionProps = {
+  activeLocale: AppLocale;
   breadcrumbJsonLd: unknown;
   compareCopy: ComparePageCopy;
   faqItems: CompareFaqItem[];
@@ -19,6 +23,7 @@ type CompareFaqSectionProps = {
 };
 
 export function CompareFaqSection({
+  activeLocale,
   breadcrumbJsonLd,
   compareCopy,
   faqItems,
@@ -28,8 +33,11 @@ export function CompareFaqSection({
   right,
   webPageJsonLd,
 }: CompareFaqSectionProps) {
+  const actions = getCompareDetailActions(activeLocale);
   return (
-    <section className="stack-gap-sm">
+    <section id="faq" className="compare-faq stack-gap-sm">
+      <div className="compare-faq-layout"><div className="compare-faq-intro">
+      <span className="compare-faq-eyebrow">{actions.faqCount.replace('{count}', String(faqItems.length))}</span>
       <h2 className="text-2xl font-semibold text-text-primary">
         {pageOverride?.faq?.title ?? compareCopy.faq?.title ?? 'FAQ'}
       </h2>
@@ -41,11 +49,15 @@ export function CompareFaqSection({
           { left: formatEngineName(left), right: formatEngineName(right) }
         )}
       </p>
-      <div className="stack-gap-sm">
-        {faqItems.map((item) => (
-          <details key={item.question} className="rounded-card border border-hairline bg-surface p-4">
+      <nav aria-label={actions.jump} className="compare-faq-shortcuts">
+        {[['#examples', actions.examples], ['#scores', actions.scores], ['#pricing', actions.pricing], ['#specs', actions.specs]].map(([href, label]) => <a key={href} href={href}>{label}<ArrowUpRight size={16} aria-hidden="true" /></a>)}
+      </nav>
+      </div><div className="compare-faq-answers">
+      <p className="compare-faq-hint">{actions.faqHint}</p>
+        {faqItems.map((item, index) => (
+          <details key={item.question} name="compare-faq-answers" open={index === 0} className="compare-faq-item">
             <summary className="cursor-pointer text-sm font-semibold text-text-primary">
-              {item.question}
+              <span className="compare-faq-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{item.question}</span><Plus size={18} aria-hidden="true" />
             </summary>
             {Array.isArray(item.answer) ? (
               <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-text-secondary">
@@ -58,18 +70,18 @@ export function CompareFaqSection({
             )}
           </details>
         ))}
-      </div>
+      </div></div>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd).replace(/</g, '\\u003c') }}
       />
     </section>
   );

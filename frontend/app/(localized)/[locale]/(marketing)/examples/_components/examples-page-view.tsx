@@ -191,6 +191,7 @@ export function ExamplesPageView({
               durationSec={mainVideo.video.durationSec}
               engineLabel={mainVideo.card.engineLabel}
               exampleHref={mainVideo.card.href}
+              recreateHref={`/app?from=${encodeURIComponent(mainVideo.video.id)}`}
               hasAudio={mainVideo.video.hasAudio}
               heroLine={mainVideoFeature.heroLine}
               isPortrait={mainVideoFeature.isPortrait}
@@ -238,7 +239,7 @@ export function ExamplesPageView({
             sort={sort}
           />
 
-          {isModelLanding && heroLead !== heroBody ? (
+          {isModelLanding && heroBody ? (
             <section className="mx-auto w-full max-w-4xl">
               <details className="rounded-[12px] border border-hairline bg-surface/75 px-4 py-3 text-sm text-text-secondary shadow-sm">
                 <summary className="cursor-pointer font-semibold text-text-primary">{familyNotesLabel}</summary>

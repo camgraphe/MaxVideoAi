@@ -1,3 +1,4 @@
+import { ToolWorkspacePreview } from '@/components/tools/landing/ToolWorkspacePreview';
 import {
   ArrowRight,
   CheckCircle2,
@@ -25,7 +26,7 @@ import {
 function SectionIntro({ eyebrow, title, body, inverted = false }: { eyebrow: string; title: string; body?: string; inverted?: boolean }) {
   return (
     <div className="max-w-3xl">
-      <p className={inverted ? 'text-[11px] font-semibold uppercase tracking-[0.18em] text-lime-300' : 'text-[11px] font-semibold uppercase tracking-[0.18em] text-brand'}>
+      <p className={inverted ? 'text-[11px] font-semibold uppercase tracking-[0.18em] text-[#dab17b]' : 'text-[11px] font-semibold uppercase tracking-[0.18em] text-brand'}>
         {eyebrow}
       </p>
       <h2 className={inverted ? 'mt-3 text-3xl font-semibold text-white sm:text-4xl' : 'mt-3 text-3xl font-semibold text-text-primary sm:text-4xl'}>{title}</h2>
@@ -46,10 +47,10 @@ function HeroVisual({ compact = false, content }: { compact?: boolean; content: 
             src={BACKGROUND_REMOVAL_HERO_BEFORE_AFTER}
           />
           <div className="absolute left-3 top-3 rounded-[8px] border border-white/18 bg-slate-950/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white backdrop-blur">
-            Source
+            {content.visualLabels.source}
           </div>
-          <div className="absolute right-3 top-3 rounded-[8px] border border-lime-300/35 bg-lime-300 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-950 shadow-card">
-            Alpha matte
+          <div className="absolute right-3 top-3 rounded-[8px] border border-[#dab17b]/35 bg-[#dab17b] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-950 shadow-card">
+            {content.visualLabels.alpha}
           </div>
         </div>
       </div>
@@ -60,7 +61,7 @@ function HeroVisual({ compact = false, content }: { compact?: boolean; content: 
             const Icon = icons[index] ?? CheckCircle2;
             return (
               <div key={stat.label} className="flex items-center gap-3 rounded-[8px] bg-slate-50 px-3 py-3 dark:bg-white/[0.055]">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-lime-300/16 text-lime-700 dark:text-lime-200">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-[#dab17b]/16 text-[#805126] dark:text-[#e6c699]">
                   <Icon className="h-4 w-4" />
                 </span>
                 <span>
@@ -88,7 +89,7 @@ function HeroSection({ content }: { content: BackgroundRemovalLandingContent }) 
           </h1>
           <p className="mt-6 max-w-xl text-base leading-8 text-slate-300 sm:text-lg">{content.hero.body}</p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <ButtonLink href="/app/tools/background-removal" linkComponent={Link} size="lg" className="!bg-lime-300 !bg-none !text-slate-950 hover:!bg-lime-200">
+            <ButtonLink href="/app/tools/background-removal" linkComponent={Link} size="lg" className="!bg-[#dab17b] !bg-none !text-slate-950 hover:!bg-[#e6c699]">
               {content.hero.primaryCta}
               <ArrowRight className="h-4 w-4" />
             </ButtonLink>
@@ -105,7 +106,7 @@ function HeroSection({ content }: { content: BackgroundRemovalLandingContent }) 
               return (
                 <div key={item.label} className="rounded-[8px] border border-white/12 bg-white/[0.045] px-3 py-3">
                   <div className="flex items-center gap-2 text-sm font-medium text-white">
-                    <Icon className="h-4 w-4 text-lime-300" />
+                    <Icon className="h-4 w-4 text-[#dab17b]" />
                     {item.label}
                   </div>
                   <p className="mt-1 text-xs leading-5 text-slate-400">{item.body}</p>
@@ -147,8 +148,8 @@ function UseCasesSection({ content }: { content: BackgroundRemovalLandingContent
             {content.useCases.cards.map((card, index) => {
               const Icon = icons[index] ?? Eraser;
               return (
-                <article key={card.title} className="group rounded-[8px] border border-hairline bg-surface p-4 shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-lime-300/45">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-slate-950 text-lime-300 dark:bg-white/[0.08]">
+                <article key={card.title} className="group rounded-[8px] border border-hairline bg-surface p-4 shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-[#dab17b]/45">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-slate-950 text-[#dab17b] dark:bg-white/[0.08]">
                     <Icon className="h-4 w-4" />
                   </span>
                   <h3 className="mt-5 text-base font-semibold text-text-primary">{card.title}</h3>
@@ -175,7 +176,7 @@ function ModelGuideSection({ content }: { content: BackgroundRemovalLandingConte
             <div key={row.model} className="rounded-[8px] border border-white/12 bg-white/[0.045] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.22)]">
               <div className="flex flex-col gap-5 sm:flex-row">
                 <div className="min-w-[180px]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-lime-300">{content.modelGuide.columns.model}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#dab17b]">{content.modelGuide.columns.model}</p>
                   <h3 className="mt-2 text-lg font-semibold text-white">{row.model}</h3>
                 </div>
                 {[row.bestFor, row.price, row.useWhen].map((value, index) => {
@@ -183,7 +184,7 @@ function ModelGuideSection({ content }: { content: BackgroundRemovalLandingConte
                   const labels = [content.modelGuide.columns.bestFor, content.modelGuide.columns.price, content.modelGuide.columns.useWhen];
                   return (
                     <div key={labels[index]} className="flex flex-1 gap-3 border-t border-white/10 pt-4 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0">
-                      <Icon className="mt-1 h-4 w-4 shrink-0 text-lime-300" />
+                      <Icon className="mt-1 h-4 w-4 shrink-0 text-[#dab17b]" />
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{labels[index]}</p>
                         <p className="mt-2 text-sm leading-7 text-slate-300">{value}</p>
@@ -218,7 +219,7 @@ function WorkflowSection({ content }: { content: BackgroundRemovalLandingContent
               />
             </div>
             <div className="grid gap-2 border-t border-hairline bg-bg p-3 sm:grid-cols-3">
-              {['Source clip', 'Alpha matte', 'Campaign background'].map((label) => (
+              {content.visualLabels.stages.map((label) => (
                 <div key={label} className="rounded-[8px] border border-hairline bg-surface px-3 py-2 text-sm font-medium text-text-primary">
                   {label}
                 </div>
@@ -227,7 +228,7 @@ function WorkflowSection({ content }: { content: BackgroundRemovalLandingContent
           </div>
           <div className="stack-gap-md">
             <SectionIntro eyebrow={content.workflow.eyebrow} title={content.workflow.title} body={content.workflow.body} />
-            <div className="flex gap-3 rounded-[8px] border border-lime-300/35 bg-lime-300/12 p-4 text-sm leading-7 text-text-primary dark:text-slate-100">
+            <div className="flex gap-3 rounded-[8px] border border-[#dab17b]/35 bg-[#dab17b]/12 p-4 text-sm leading-7 text-text-primary dark:text-slate-100">
               <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-brand" />
               <p>{content.workflow.priceNote}</p>
             </div>
@@ -236,7 +237,7 @@ function WorkflowSection({ content }: { content: BackgroundRemovalLandingContent
                 const Icon = stepIcons[index] ?? CheckCircle2;
                 return (
                   <article id={`step-${index + 1}`} key={step.title} className="grid grid-cols-[48px_minmax(0,1fr)] gap-4 rounded-[8px] border border-hairline bg-surface p-4 shadow-card">
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-[8px] bg-slate-950 text-lime-300 dark:bg-white/[0.08]">
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-[8px] bg-slate-950 text-[#dab17b] dark:bg-white/[0.08]">
                       <Icon className="h-5 w-5" />
                     </span>
                     <span>
@@ -256,9 +257,9 @@ function WorkflowSection({ content }: { content: BackgroundRemovalLandingContent
 
 function ProductionSection({ content }: { content: BackgroundRemovalLandingContent }) {
   const formats = [
-    { icon: Film, label: 'WebM', detail: 'Transparent web' },
-    { icon: Palette, label: 'MP4', detail: 'Green plate' },
-    { icon: FileVideo, label: 'MOV', detail: 'Solid background' },
+    { icon: Film, label: 'WebM', detail: content.visualLabels.transparent },
+    { icon: Palette, label: 'MP4', detail: content.visualLabels.green },
+    { icon: FileVideo, label: 'MOV', detail: content.visualLabels.solid },
   ];
 
   return (
@@ -287,7 +288,7 @@ function ProductionSection({ content }: { content: BackgroundRemovalLandingConte
             <div className="absolute inset-x-0 bottom-0 grid gap-2 bg-gradient-to-t from-slate-950/86 to-transparent p-3 sm:grid-cols-3">
               {formats.map(({ icon: Icon, label, detail }) => (
                 <div key={label} className="rounded-[8px] border border-white/14 bg-white/10 p-3 text-white backdrop-blur">
-                  <Icon className="h-5 w-5 text-lime-300" />
+                  <Icon className="h-5 w-5 text-[#dab17b]" />
                   <p className="mt-3 text-sm font-semibold">{label}</p>
                   <p className="mt-1 text-xs leading-5 text-slate-200">{detail}</p>
                 </div>
@@ -308,9 +309,9 @@ function FaqSection({ content }: { content: BackgroundRemovalLandingContent }) {
         <SectionIntro eyebrow={content.faqSection.eyebrow} title={content.faqSection.title} body={content.faqSection.body} />
         <div className="stack-gap-sm">
           {content.faq.map((entry) => (
-            <details key={entry.q} className="rounded-[22px] border border-hairline bg-surface p-5 shadow-card">
+            <details name="background-removal-faq" key={entry.q} className="rounded-[22px] border border-hairline bg-surface p-5 shadow-card">
               <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">
-                {entry.q}
+                <span>{entry.q}</span><span aria-hidden="true">+</span>
               </summary>
               <p className="mt-4 text-sm leading-7 text-text-secondary">{entry.a}</p>
             </details>
@@ -327,12 +328,12 @@ function FinalCtaSection({ content }: { content: BackgroundRemovalLandingContent
       <div className="container-page max-w-[1240px]">
         <div className="grid gap-8 rounded-[8px] border border-slate-950/10 bg-slate-950 p-8 text-white shadow-[0_32px_90px_rgba(15,23,42,0.28)] sm:p-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-lime-300">{content.finalCta.eyebrow}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#dab17b]">{content.finalCta.eyebrow}</p>
             <h2 className="mt-3 max-w-3xl text-3xl font-semibold sm:text-4xl">{content.finalCta.title}</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">{content.finalCta.body}</p>
           </div>
           <div className="flex flex-wrap gap-3 lg:justify-end">
-            <ButtonLink href="/app/tools/background-removal" linkComponent={Link} size="lg" variant="outline" className="!border-lime-300 !bg-lime-300 !text-slate-950 hover:!bg-lime-200">
+            <ButtonLink href="/app/tools/background-removal" linkComponent={Link} size="lg" variant="outline" className="!border-[#dab17b] !bg-[#dab17b] !text-slate-950 hover:!bg-[#e6c699]">
               {content.finalCta.primaryCta}
               <ArrowRight className="h-4 w-4" />
             </ButtonLink>
@@ -350,9 +351,10 @@ export function BackgroundRemovalLandingSections({ content }: { content: Backgro
   return (
     <>
       <HeroSection content={content} />
+      <WorkflowSection content={content} />
+      <ToolWorkspacePreview tool="background-removal" title={content.hero.badge} body={content.workflow.body} />
       <UseCasesSection content={content} />
       <ModelGuideSection content={content} />
-      <WorkflowSection content={content} />
       <ProductionSection content={content} />
       <FaqSection content={content} />
       <FinalCtaSection content={content} />

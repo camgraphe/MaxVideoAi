@@ -1,21 +1,17 @@
+import type { AppLocale } from '@/i18n/locales';
 import type { FaqItem, ProviderItem } from '@/components/marketing/home/HomeRedesignSections';
 import type { RedesignContent } from './home-route-data';
 
-export function buildSoftwareSchema(content: RedesignContent) {
+export function buildSoftwareSchema(content: RedesignContent, locale: AppLocale = 'en') {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: 'MaxVideoAI',
     applicationCategory: 'VideoEditorApplication',
     operatingSystem: 'Web',
-    url: 'https://maxvideoai.com',
+    url: `https://maxvideoai.com${locale === 'en' ? '' : `/${locale}`}`,
+    inLanguage: locale,
     description: content.hero.subtitle,
-    offers: {
-      '@type': 'Offer',
-      price: '10.00',
-      priceCurrency: 'USD',
-      description: content.pricingTrust.subtitle,
-    },
     featureList: [
       'Pay-as-you-go multi-engine AI video generation workspace',
       'Compare AI video models before generating',

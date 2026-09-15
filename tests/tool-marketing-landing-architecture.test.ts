@@ -91,9 +91,9 @@ test('tool marketing landing entry files stay thin wrappers', () => {
 });
 
 test('tool marketing landing views own SEO orchestration and delegate sections', () => {
-  assert.match(angleViewSource, /export function AngleLandingView/, 'angle view should export the render orchestrator');
-  assert.match(characterViewSource, /export function CharacterBuilderLandingView/, 'character builder view should export the render orchestrator');
-  assert.match(backgroundRemovalViewSource, /export function BackgroundRemovalLandingView/, 'background removal view should export the render orchestrator');
+  assert.match(angleViewSource, /export async function AngleLandingView/, 'angle view should export the render orchestrator');
+  assert.match(characterViewSource, /export async function CharacterBuilderLandingView/, 'character builder view should export the render orchestrator');
+  assert.match(backgroundRemovalViewSource, /export async function BackgroundRemovalLandingView/, 'background removal view should export the render orchestrator');
   assert.match(angleViewSource, /AngleLandingSections/, 'angle view should delegate visible rendering to section components');
   assert.match(characterViewSource, /CharacterBuilderLandingSections/, 'character builder view should delegate visible rendering to section components');
   assert.match(backgroundRemovalViewSource, /BackgroundRemovalLandingSections/, 'background removal view should delegate visible rendering to section components');
@@ -354,25 +354,25 @@ test('Angle landing owns a page-scoped graphite dark theme contract', () => {
   }
 
   for (const [token, lightValue, darkValue] of [
-    ['--angle-surface-inset', '#fffaf1', '#0c131e'],
-    ['--angle-use-case-media-border', '#d3c8ba', 'rgb(174 191 255 / 22%)'],
+    ['--angle-surface-inset', '#f4f2ee', '#25221f'],
+    ['--angle-use-case-media-border', '#d3c8ba', 'rgb(205 186 155 / 22%)'],
     [
       '--angle-workspace-background',
-      'radial-gradient(circle at 86% 14%, rgb(23 105 255 / 8%), transparent 25rem), #ece5da',
-      'radial-gradient(circle at 86% 14%, rgb(23 105 255 / 10%), transparent 25rem), var(--angle-surface-elevated)',
+      'var(--angle-surface-elevated)',
+      'var(--angle-surface-elevated)',
     ],
     ['--angle-workspace-shadow', '0 38px 100px rgb(41 39 36 / 18%)', '0 38px 100px rgb(0 0 0 / 44%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
-    ['--angle-workspace-window-border', '#6a6d75', 'rgb(174 191 255 / 20%)'],
+    ['--angle-workspace-window-border', '#6a6d75', 'rgb(205 186 155 / 20%)'],
     ['--angle-workspace-chrome-dot', '#c4bcb1', '#909baa'],
     ['--angle-workspace-window-muted', '#736d65', '#909baa'],
-    ['--angle-workspace-placeholder', '#dfd8cd', '#111c29'],
+    ['--angle-workspace-placeholder', '#dfd8cd', '#2b2723'],
     ['--angle-limits-text', '#514c46', '#d0d6df'],
-    ['--angle-benefit-border', '#d8d0c5', 'rgb(174 191 255 / 14%)'],
-    ['--angle-related-border', '#d8d0c5', 'rgb(174 191 255 / 14%)'],
+    ['--angle-benefit-border', '#d8d0c5', 'rgb(205 186 155 / 14%)'],
+    ['--angle-related-border', '#d8d0c5', 'rgb(205 186 155 / 14%)'],
     ['--angle-final-shadow', '0 34px 100px rgb(41 39 36 / 20%)', '0 34px 100px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
-    ['--angle-final-orbit-node-border', '#2a2d36', '#070b12'],
+    ['--angle-final-orbit-node-border', '#2a2d36', '#1b1a18'],
   ] as const) {
-    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact historical light value`);
+    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact warm light value`);
     assert.ok(darkPageBlock.includes(`${token}: ${darkValue};`), `${token} should define its intended graphite value`);
   }
 
@@ -381,9 +381,9 @@ test('Angle landing owns a page-scoped graphite dark theme contract', () => {
     assert.match(angleStylesSource, new RegExp(`var\\(${token}\\)`), `${token} should be consumed by Angle styles`);
   }
 
-  assert.match(darkPageBlock, /--angle-canvas:\s*#050910/);
+  assert.match(darkPageBlock, /--angle-canvas:\s*#171614/);
   assert.match(darkPageBlock, /--angle-text:\s*#f4f1ea/);
-  assert.doesNotMatch(darkPageBlock, /#fffaf1|#f3eee5|#ece5da/);
+  assert.doesNotMatch(darkPageBlock, /#f4f2ee|#eae7e1|#ece5da/);
 
   for (const [selector, token] of [
     ['.hero', '--angle-hero-background'],
@@ -428,16 +428,16 @@ test('Angle lead sections consume semantic theme colors instead of light palette
   for (const [token, lightValue, darkValue] of [
     ['--angle-hero-breadcrumb', '#716c65', '#909baa'],
     ['--angle-hero-breadcrumb-current', '#4d4944', '#c2c9d3'],
-    ['--angle-hero-support-border', '#b9afa1', 'rgb(174 191 255 / 24%)'],
+    ['--angle-hero-support-border', '#b9afa1', 'rgb(205 186 155 / 24%)'],
     ['--angle-hero-support-copy', '#68625b', '#a7b1bf'],
     ['--angle-proof-label', '#766f67', '#909baa'],
-    ['--angle-proof-output-border', '#b9caff', 'rgb(112 153 255 / 60%)'],
+    ['--angle-proof-output-border', '#c3a579', 'rgb(201 163 106 / 60%)'],
     ['--angle-proof-output-shadow', '0 30px 80px rgba(41,39,36,0.08)', '0 30px 80px rgb(0 0 0 / 36%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
-    ['--angle-proof-media-placeholder', '#e8e0d4', '#111c29'],
+    ['--angle-proof-media-placeholder', '#e8e0d4', '#2b2723'],
     ['--angle-workflow-number', '#777169', '#909baa'],
-    ['--angle-workflow-soft-accent', '#dce6ff', '#20345f'],
+    ['--angle-workflow-soft-accent', '#ede0ce', '#20345f'],
   ] as const) {
-    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact historical light value`);
+    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact warm light value`);
     assert.ok(darkPageBlock.includes(`${token}: ${darkValue};`), `${token} should define its intended graphite value`);
   }
 

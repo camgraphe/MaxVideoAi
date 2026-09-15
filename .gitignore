@@ -60,3 +60,9 @@ frontend/.tmp/
 /frontend/app/(core)/(workspace)/app/tools/review/
 /frontend/public/toolbox-review/
 /frontend/.toolbox-review/
+
+# Public metadata snapshot for isolated local marketing review
+frontend/.local-review/
+
+# Local redesign review evidence (screenshots, logs and analytics exports)
+docs/redesign/qa/

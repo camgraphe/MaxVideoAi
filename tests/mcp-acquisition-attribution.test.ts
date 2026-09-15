@@ -492,7 +492,7 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     }));
     for (const href of expectedHrefs) assert.match(html, new RegExp(`href="${href}"`));
     assert.match(html, /https:\/\/api\.maxvideoai\.com\/mcp/);
-    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, 3);
+    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, copy.hero.actions.length);
   }
 
   const en = getMcpPageCopy('en').hero.connectActions;

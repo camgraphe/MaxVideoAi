@@ -168,8 +168,8 @@ export function CharacterBuilderFaqSection({ content }: { content: CharacterBuil
         <SectionHeader eyebrow={content.faq.eyebrow} title={content.faq.title} body={<p>{content.faq.body}</p>} />
         <div className="stack-gap-sm">
           {content.faq.items.map((faq) => (
-            <details key={faq.question} className="rounded-[24px] border border-hairline bg-surface/90 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]">
-              <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">{faq.question}</summary>
+            <details name="character-builder-faq" key={faq.question} className="rounded-[24px] border border-hairline bg-surface/90 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]">
+              <summary className="cursor-pointer list-none text-base font-semibold text-text-primary"><span>{faq.question}</span><span aria-hidden="true">+</span></summary>
               <p className="mt-4 text-sm leading-7 text-text-secondary">{faq.answer}</p>
             </details>
           ))}

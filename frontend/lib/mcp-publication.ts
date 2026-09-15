@@ -1,3 +1,9 @@
+import {
+  getMcpIntegration,
+  getMcpPublicIntegrationPaths,
+  type McpIntegrationId,
+} from '@/lib/mcp-integration-registry';
+
 export type McpPublicationState = {
   renderPublicPage: boolean;
   connectionAvailable: boolean;
@@ -21,12 +27,10 @@ type McpPublicationInputs = {
 const MCP_PUBLIC_SOURCE_PATHS = new Set([
   '/mcp',
   '/docs/mcp',
-  '/integrations/chatgpt',
-  '/integrations/claude',
-  '/integrations/codex',
-  '/integraciones/chatgpt',
-  '/integraciones/claude',
-  '/integraciones/codex',
+  ...getMcpPublicIntegrationPaths(),
+  ...getMcpPublicIntegrationPaths().map((path) =>
+    path.replace('/integrations/', '/integraciones/'),
+  ),
 ]);
 
 export function isMcpPublicSourcePath(pathname: string): boolean {
@@ -59,5 +63,37 @@ export function getMcpPublicationState({
     showTrialClaim: trial,
     showPaidGenerationClaim: paidGeneration,
     showReferenceClaim: referenceUploads,
+  };
+}
+
+export function getMcpIntegrationPublicationState(
+  integrationId: McpIntegrationId,
+  globalState: McpPublicationState,
+): McpPublicationState {
+  const integration = getMcpIntegration(integrationId);
+  if (!globalState.renderPublicPage || integration.site.publication === 'hidden') {
+    return {
+      renderPublicPage: false,
+      connectionAvailable: false,
+      indexable: false,
+      showTrialClaim: false,
+      showPaidGenerationClaim: false,
+      showReferenceClaim: false,
+    };
+  }
+  if (integration.site.publication === 'preview_noindex') {
+    return {
+      ...globalState,
+      renderPublicPage: true,
+      connectionAvailable: false,
+      indexable: false,
+      showTrialClaim: false,
+      showPaidGenerationClaim: false,
+      showReferenceClaim: false,
+    };
+  }
+  return {
+    ...globalState,
+    indexable: globalState.indexable && integration.site.indexable,
   };
 }

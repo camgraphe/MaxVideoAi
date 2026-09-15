@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { McpIntegrationId } from '@/lib/mcp-integration-registry';
 
 export type McpHostProofClient = 'chatgpt' | 'claude' | 'codex';
 
@@ -43,15 +44,15 @@ const copy: Record<AppLocale, Pick<McpHostProof, 'eyebrow' | 'heading' | 'captio
   },
   es: {
     eyebrow: 'Claude Desktop · Prueba controlada',
-    heading: 'Resultado de vídeo mostrado en Claude',
+    heading: 'Resultado de video mostrado en Claude',
     caption:
-      'Un vídeo MaxVideoAI terminado mostrado en línea en Claude Desktop durante una prueba controlada. El resultado se guarda en la biblioteca MaxVideoAI conectada. Los 0,95 $ mostrados corresponden a esta captura, no a un precio actual.',
+      'Un video MaxVideoAI terminado mostrado en línea en Claude Desktop durante una prueba controlada. El resultado se guarda en la biblioteca MaxVideoAI conectada. Los 0,95 $ mostrados corresponden a esta captura, no a un precio actual.',
     alt:
-      'Conversación de Claude Desktop con un vídeo MaxVideoAI terminado en un reproductor integrado, un importe de captura de 0,95 $, confirmación de guardado en la biblioteca y un botón para abrir MaxVideoAI.',
+      'Conversación de Claude Desktop con un video MaxVideoAI terminado en un reproductor integrado, un importe de captura de 0,95 $, confirmación de guardado en la biblioteca y un botón para abrir MaxVideoAI.',
   },
 };
 
-export function getMcpHostProof(client: McpHostProofClient, locale: AppLocale): McpHostProof | null {
+export function getMcpHostProof(client: McpIntegrationId, locale: AppLocale): McpHostProof | null {
   if (client !== 'claude') return null;
   return {
     host: 'claude',

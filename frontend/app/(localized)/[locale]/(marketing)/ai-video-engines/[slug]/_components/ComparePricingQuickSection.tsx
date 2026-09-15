@@ -1,3 +1,7 @@
+import { ArrowRight } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
+import { EngineIcon } from '@/components/ui/EngineIcon';
+import { getCompareEditorialCopy, getCompareDetailActions } from '../_lib/compare-editorial-copy';
 import type { AppLocale } from '@/i18n/locales';
 import { formatEngineName } from '../_lib/compare-page-helpers';
 import type { ComparePricingDisplay, EngineCatalogEntry } from '../_lib/compare-page-types';
@@ -9,28 +13,6 @@ type ComparePricingQuickSectionProps = {
   right: EngineCatalogEntry;
   rightPricingDisplay: ComparePricingDisplay;
 };
-
-function getPricingCopy(activeLocale: AppLocale) {
-  if (activeLocale === 'fr') {
-    return {
-      title: 'Tarifs rapides',
-      subtitle: 'Prix MaxVideoAI par seconde selon la resolution; le score pricing compare la meme ligne quand elle existe.',
-      comparable: 'Ligne comparable du score',
-    };
-  }
-  if (activeLocale === 'es') {
-    return {
-      title: 'Precios rapidos',
-      subtitle: 'Precio MaxVideoAI por segundo segun resolucion; el score de pricing compara la misma linea cuando existe.',
-      comparable: 'Linea comparable del score',
-    };
-  }
-  return {
-    title: 'Pricing snapshot',
-    subtitle: 'MaxVideoAI price per second by resolution; the pricing score compares the same tier when possible.',
-    comparable: 'Comparable score tier',
-  };
-}
 
 function getPricingLines(display: ComparePricingDisplay) {
   const lines = [display.headline, ...(display.secondaryLines ?? (display.subline ? [display.subline] : []))];
@@ -44,39 +26,34 @@ export function ComparePricingQuickSection({
   right,
   rightPricingDisplay,
 }: ComparePricingQuickSectionProps) {
-  const copy = getPricingCopy(activeLocale);
+  const pricingCopy = getCompareEditorialCopy(activeLocale);
+  const actions = getCompareDetailActions(activeLocale);
+  const copy = { title: pricingCopy.pricing, subtitle: pricingCopy.priceNote, comparable: activeLocale === 'fr' ? 'Références tarifaires de la grille' : activeLocale === 'es' ? 'Precios de referencia de la evaluación' : 'Scorecard price references' };
   const leftLines = getPricingLines(leftPricingDisplay);
   const rightLines = getPricingLines(rightPricingDisplay);
   const hasComparableLine = leftPricingDisplay.scoreLine && rightPricingDisplay.scoreLine;
 
   return (
-    <section className="mt-4 rounded-[16px] border border-hairline bg-surface p-4 shadow-card sm:p-6">
+    <section id="pricing" className="compare-price-panel">
       <div className="flex flex-col gap-1 text-center">
         <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
         <p className="text-sm text-text-secondary">{copy.subtitle}</p>
       </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="compare-price-tickets">
         {[
           { entry: left, lines: leftLines },
           { entry: right, lines: rightLines },
         ].map(({ entry, lines }) => (
-          <div key={entry.modelSlug} className="rounded-[12px] border border-hairline px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-              {formatEngineName(entry)}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {lines.map((line) => (
-                <span
-                  key={line}
-                  className="rounded-full border border-hairline bg-surface-2 px-3 py-1 text-xs font-semibold text-text-primary"
-                >
-                  {line}
-                </span>
-              ))}
-            </div>
-          </div>
+          <article key={entry.modelSlug} className="compare-price-ticket">
+            <h3><EngineIcon engine={{ id: entry.engineId, label: formatEngineName(entry), brandId: entry.brandId }} size={28} framed={false} />{formatEngineName(entry)}</h3>
+            <dl>{lines.map(line => {
+              const separator = line.indexOf(':');
+              return <div key={line}>{separator > -1 ? <><dt>{line.slice(0, separator)}</dt><dd>{line.slice(separator + 1).trim()}</dd></> : <dd>{line}</dd>}</div>;
+            })}</dl>
+          </article>
         ))}
       </div>
+      <div className="compare-price-next"><p>{actions.pricingNote}</p><Link href="/pricing">{actions.priceLink}<ArrowRight size={16} aria-hidden="true" /></Link></div>
       {hasComparableLine ? (
         <p className="mt-3 text-center text-xs font-semibold text-text-muted">
           {copy.comparable}: {leftPricingDisplay.scoreLine} vs {rightPricingDisplay.scoreLine}

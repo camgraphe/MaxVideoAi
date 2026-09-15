@@ -62,7 +62,7 @@ export function buildCompareWebPageJsonLd({
       (pairHasKling3Native4k
         ? `Compare {left} vs {right} across native 4K delivery, iteration cost, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`
         : compareCopy.meta?.description ??
-          `Compare {left} vs {right} with the same prompts, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`),
+          `Compare {left} vs {right} with pricing, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`),
     criteriaCount
   );
 
@@ -70,7 +70,7 @@ export function buildCompareWebPageJsonLd({
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: formatTemplate(
-      metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right}: specs, pricing & prompt test',
+      metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right}: specs, pricing & quality',
       { left: formatEngineName(left), right: formatEngineName(right) }
     ),
     url: comparisonCanonicalUrl,

@@ -257,7 +257,7 @@ export function MarketingModelPageLayout({
       : copy.specSections;
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const strengths = copy.strengths;
-  const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
+  const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues, locale) : [];
   const supportsNativeAudio = Boolean(
     keySpecValues &&
       (isSupported(keySpecValues.audioOutput) || isSupported(keySpecValues.nativeAudioGeneration))
@@ -426,7 +426,7 @@ export function MarketingModelPageLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <div className={['container-page model-page overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
+      <div className={['container-page model-page model-editorial overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
         <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
           {templateData ? (
             <>

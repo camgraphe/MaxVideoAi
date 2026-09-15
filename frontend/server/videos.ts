@@ -1,3 +1,4 @@
+import { getLocalPublicExample, listLocalModelExamples, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
 import { query } from '@/lib/db';
 import { getExampleFamilyEngineAliases } from '@/lib/model-families';
 import { removeVideosFromIndexablePlaylists } from '@/server/indexing';
@@ -18,14 +19,11 @@ import {
   type ListExamplesPageResult,
 } from './videos-examples';
 import { mapGalleryVideoRow, type GalleryVideo, type VideoRow } from './videos-normalization';
-
 export type { ExampleSort, ListExamplesPageOptions, ListExamplesPageResult } from './videos-examples';
 export type { GalleryVideo } from './videos-normalization';
 export { mergeUniqueGalleryVideos } from './videos-examples';
-
 export type GalleryTab = 'starter' | 'latest' | 'trending';
 function shouldSkipBuildTimeMarketingVideoQueries() { return process.env.NEXT_PHASE === 'phase-production-build'; }
-
 const imageThumbFallbackSelect = (jobAlias: string) => `
              SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
                FROM job_outputs jo
@@ -121,6 +119,12 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
 }
 
 export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
+  if (isLocalPublicExamplesEnabled()) {
+    return new Map(videoIds.flatMap(id => {
+      const video = getLocalPublicExample(id);
+      return video ? [[id, video] as const] : [];
+    }));
+  }
   if (shouldSkipBuildTimeMarketingVideoQueries()) return new Map();
   if (!videoIds.length) {
     return new Map();
@@ -193,6 +197,9 @@ async function listPlaylistVideosWithOptions({
   limit,
   engineAliases,
 }: PlaylistVideoQueryOptions): Promise<GalleryVideo[]> {
+  if (isLocalPublicExamplesEnabled()) {
+    return slug.startsWith('examples-') ? listLocalModelExamples(slug.slice('examples-'.length), limit) : [];
+  }
   const params: unknown[] = [slug];
   const aliasFilter =
     Array.isArray(engineAliases) && engineAliases.length
@@ -345,6 +352,7 @@ export async function listExampleFamilyPage(
   options: Omit<ListExamplesPageOptions, 'engineGroup'>
 ): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0 } = options;
+  if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(familyId, sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
   const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true });
   const sorted = sortVideosByPreference(merged, sort);
@@ -353,6 +361,7 @@ export async function listExampleFamilyPage(
 
 export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0, engineGroup } = options;
+  if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(engineGroup ?? '', sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
   const hubSlug = getExamplesHubPlaylistSlug();
   if (!hubSlug) {

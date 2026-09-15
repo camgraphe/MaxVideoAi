@@ -481,3 +481,98 @@ test('a native playback error announces a localized retry and remounts media bef
     await fixture.cleanup();
   }
 });
+
+test('natural end advances once, skips missing videos, wraps and retains sound preference', async () => {
+  const fixture = await mountHero({ desktop: true }, [items[0], { ...items[0], id: 'poster-only', videoSrc: undefined }, items[1]]);
+  try {
+    await fixture.intersectPlayer(true);
+    await fixture.flushIdle();
+    const first = fixture.video()!;
+    assert.equal(first.loop, false);
+    const sound = fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Turn preview sound on"]')!;
+    await act(async () => sound.click());
+    assert.equal(first.muted, false);
+    await act(async () => {
+      first.dispatchEvent(new fixture.dom.window.Event('ended'));
+      first.dispatchEvent(new fixture.dom.window.Event('ended'));
+    });
+    const second = fixture.video()!;
+    assert.equal(second.querySelector('source')?.getAttribute('src'), '/hero/two.mp4');
+    assert.equal(second.muted, false);
+    assert.equal(fixture.container.querySelector('button[aria-label="Play: Model 2"]')?.getAttribute('aria-pressed'), 'true');
+    await act(async () => first.dispatchEvent(new fixture.dom.window.Event('ended')));
+    assert.equal(fixture.video(), second, 'A stale end cannot advance the new selection');
+    await act(async () => second.dispatchEvent(new fixture.dom.window.Event('ended')));
+    assert.equal(fixture.video()?.querySelector('source')?.getAttribute('src'), '/hero/one.mp4');
+    assert.equal(fixture.container.querySelectorAll('video').length, 1);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('end events cannot override a user pause or environmental suspension', async () => {
+  const fixture = await mountHero({ desktop: true });
+  try {
+    await fixture.intersectPlayer(true);
+    await fixture.flushIdle();
+    const first = fixture.video()!;
+    await fixture.intersectPlayer(false);
+    await act(async () => first.dispatchEvent(new fixture.dom.window.Event('ended')));
+    assert.equal(fixture.video(), first);
+    await fixture.intersectPlayer(true);
+    Object.defineProperty(fixture.dom.window.document, 'visibilityState', { configurable: true, value: 'hidden' });
+    await act(async () => fixture.dom.window.document.dispatchEvent(new fixture.dom.window.Event('visibilitychange')));
+    await act(async () => first.dispatchEvent(new fixture.dom.window.Event('ended')));
+    assert.equal(fixture.video(), first);
+    Object.defineProperty(fixture.dom.window.document, 'visibilityState', { configurable: true, value: 'visible' });
+    await act(async () => fixture.dom.window.document.dispatchEvent(new fixture.dom.window.Event('visibilitychange')));
+    await act(async () => first.dispatchEvent(new fixture.dom.window.Event('playing')));
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Pause"]')!.click());
+    await act(async () => first.dispatchEvent(new fixture.dom.window.Event('ended')));
+    assert.equal(fixture.video(), first);
+    assert.equal(fixture.player().dataset.playbackState, 'paused');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('mobile manual selection starts the sequence from that model', async () => {
+  const fixture = await mountHero({ desktop: false });
+  try {
+    await fixture.intersectPlayer(true);
+    assert.equal(fixture.video(), null);
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 2"]')!.click());
+    await act(async () => fixture.video()!.dispatchEvent(new fixture.dom.window.Event('ended')));
+    assert.equal(fixture.video()?.querySelector('source')?.getAttribute('src'), '/hero/one.mp4');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('automatic advance retains the last frame until the next video presents a frame', async () => {
+  const fixture = await mountHero({desktop:true});
+  let draws = 0;
+  fixture.dom.window.HTMLCanvasElement.prototype.getContext = (() => ({drawImage: () => { draws += 1; }})) as unknown as typeof fixture.dom.window.HTMLCanvasElement.prototype.getContext;
+  try {
+    await fixture.intersectPlayer(true);
+    await fixture.flushIdle();
+    const first = fixture.video()!;
+    Object.defineProperties(first, {videoWidth:{value:1920},videoHeight:{value:1080},readyState:{value:4}});
+    await act(async () => first.dispatchEvent(new fixture.dom.window.Event('ended')));
+    const canvas = fixture.container.querySelector('canvas')!;
+    assert.equal(draws, 1);
+    assert.equal(canvas.width, 1280);
+    assert.equal(canvas.dataset.heroTransitionFrame, 'visible');
+    const second = fixture.video()!;
+    let present: (() => void) | undefined;
+    second.requestVideoFrameCallback = callback => {present = () => callback(0, {} as VideoFrameCallbackMetadata); return 1;};
+    await act(async () => second.dispatchEvent(new fixture.dom.window.Event('loadeddata')));
+    assert.equal(canvas.dataset.heroTransitionFrame, 'visible', 'Loaded data must not flash the new poster');
+    await act(async () => second.dispatchEvent(new fixture.dom.window.Event('playing')));
+    assert.equal(canvas.dataset.heroTransitionFrame, 'visible');
+    await act(async () => present!());
+    assert.equal(canvas.dataset.heroTransitionFrame, 'hidden');
+    assert.equal(fixture.container.querySelectorAll('video').length, 1);
+    assert.equal(second.className.includes('opacity-100'), true);
+  } finally { await fixture.cleanup(); }
+});

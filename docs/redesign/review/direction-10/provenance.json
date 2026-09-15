@@ -1,0 +1,137 @@
+{
+  "date": "2026-09-14",
+  "status": "visual-proposal-not-approved",
+  "tool": "built-in image_gen",
+  "applicationChanges": false,
+  "paidVideoGeneration": false,
+  "baseCommit": "2e32362d8",
+  "boards": {
+    "home": {
+      "active": "home-app-connect.png",
+      "superseded": "home-first-pass.png",
+      "prompt": "prompts/home.txt",
+      "correctionPrompt": "prompts/home-correction.txt",
+      "status": "app-composition-rejected-see-D56",
+      "targetedCorrectionPrompt": "prompts/home-correction-targeted.txt",
+      "knownArtifacts": [
+        "App UI in generated board is reinterpreted; exact guest-state captures shown separately are authoritative.",
+        "FAQ omitted in raster; restore in next desktop/mobile composition.",
+        "Compare markers and layout still to harmonize with detailed board."
+      ],
+      "generatedFile": "exec-3c2c8580-ab52-4f3d-a153-3740f56884b2.png",
+      "previous": "home-diversity.png",
+      "revisionPrompts": [
+        "prompts/home-diversity.txt",
+        "prompts/home-diversity-correction.txt",
+        "prompts/home-separate-journeys.txt",
+        "prompts/home-app-views.txt"
+      ],
+      "intermediate": "home-separate-journeys.png"
+    },
+    "compare": {
+      "active": "compare.png",
+      "prompt": "prompts/compare.txt",
+      "source": "../../../../data/benchmarks/engine-scores.v1.json",
+      "geometry": "illustrative-only-use-exact-data-for-rendering"
+    },
+    "websiteMove": {
+      "active": "website-move.png",
+      "prompt": "prompts/website-move.txt",
+      "product": "fictional graphite/copper over-ear headphones",
+      "filmProduced": false,
+      "knownArtifacts": [
+        "01:14 player duration is not a retained duration",
+        "MaxVideoAI mark on fictional product is not a commercial claim",
+        "Poster already available describes future load state, not completed media preparation"
+      ]
+    },
+    "appDevices": {
+      "active": "app-devices.png",
+      "status": "proposal-not-approved",
+      "sources": [
+        "local-assets/app-desktop.jpg",
+        "local-assets/app-mobile.jpg"
+      ],
+      "knownArtifacts": [
+        "Generated interface is illustrative; original captures remain authoritative.",
+        "Serif heading must be harmonized with existing site typography.",
+        "Mobile composition not yet drawn."
+      ]
+    }
+  },
+  "references": {
+    "sites": [
+      "../reference-film-09/references/arrakis-hero.png",
+      "../reference-film-09/references/arrakis-layers.png",
+      "../reference-film-09/references/pryzm-hero.png",
+      "../reference-film-09/references/localcan-agents-progress.png"
+    ],
+    "brand": "../art-direction-08/brand-reference.png",
+    "media": [
+      "local-assets/prism-poster.jpg",
+      "local-assets/sneaker-poster.jpg",
+      "local-assets/bag-product.webp",
+      "local-assets/bag-scene.webp",
+      "../reference-film-09/references/bag-action-board.jpg",
+      "local-assets/dance-poster.jpg",
+      "local-assets/bus-poster.jpg",
+      "local-assets/landscape-poster.jpg",
+      "local-assets/character-poster.jpg",
+      "local-assets/app-desktop.jpg",
+      "local-assets/app-mobile.jpg"
+    ],
+    "mediaInventory": "../reference-film-09/selection.json"
+  },
+  "constraints": [
+    "D47",
+    "D48",
+    "D49",
+    "D50",
+    "D52",
+    "D53",
+    "D54",
+    "D55",
+    "D56"
+  ],
+  "checks": {
+    "sourceScores": "verified local source and label mapping",
+    "visualReview": "each generated board inspected; limitations documented",
+    "coreWebVitals": "not measured",
+    "applicationTests": "not run; no application change",
+    "reviewViewer": "Desktop screenshot inspected; mobile 390x844 source table expanded and inspected; document scrollWidth=390."
+  },
+  "generationIssues": [
+    "Initial home invocation rejected before generation: at most five reference paths supported; prompt and inputs adjusted.",
+    "First home correction failed with network error; same targeted correction retried using persisted local references.",
+    "Second identical correction also failed with network error. Third narrower correction with three inputs succeeded."
+  ],
+  "launchAssumption": {
+    "userAuthorized": true,
+    "hosts": [
+      "OpenClaw",
+      "n8n"
+    ],
+    "designStatus": "available-at-launch",
+    "observedCurrentStatus": "validation-preview",
+    "source": "https://maxvideoai.com/mcp",
+    "checked": "2026-09-14",
+    "recheckBeforeRelease": true
+  },
+  "appCaptures": {
+    "url": "https://maxvideoai.com/app",
+    "state": "guest with built-in samples",
+    "date": "2026-09-14",
+    "viewports": [
+      [
+        1440,
+        1024
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "retouched": false,
+    "generationTriggered": false
+  }
+}

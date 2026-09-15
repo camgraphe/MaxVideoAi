@@ -13,7 +13,8 @@ test('Angle Orbit owns exactly fifteen unique WebP assets', () => {
   assert.equal(paths.length, 15);
   assert.equal(new Set(paths).size, 15);
   for (const assetPath of paths) {
-    assert.match(assetPath, /^\/assets\/tools\/angle-orbit-.+\.webp$/);
+    if (assetPath !== ANGLE_ORBIT_ASSETS.workspace) assert.match(assetPath, /^\/assets\/tools\/angle-orbit-.+\.webp$/);
+    else assert.equal(assetPath, '/assets/tools/redesign/angle-workspace-v1.webp');
     const filePath = join(root, 'frontend/public', assetPath);
     assert.ok(existsSync(filePath), `${assetPath} should exist`);
     assert.ok(readFileSync(filePath).byteLength <= 500_000, `${assetPath} must stay below 500 KB`);

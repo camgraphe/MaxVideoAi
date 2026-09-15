@@ -1,3 +1,4 @@
+import { getLocalPublicExample, isLocalPublicExamplesEnabled } from './local-public-examples';
 import { cache } from 'react';
 import { type SeoWatchVideoConfig, VIDEO_SEO_WATCHLIST } from '@/config/video-seo-watchlist';
 import type { VideoSeoEditorialEntry, VideoSeoIntent } from '@/config/video-seo-editorial';
@@ -222,6 +223,10 @@ export async function getSeoWatchVideoRowById(id?: string | null): Promise<SeoWa
 }
 
 export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchPageData | null> {
+  if (isLocalPublicExamplesEnabled()) {
+    const video = getLocalPublicExample(id);
+    return video ? { entry: null, video, signals: deriveWatchPageSignals({ video }), related: [], isSelected: false, isEligible: false } : null;
+  }
   const selectedRows = await listSeoWatchVideoRows();
   const requestedSlug = normalizeVideoSeoCanonicalSlug(decodeIdentifier(id));
   const selectedRow =

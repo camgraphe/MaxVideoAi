@@ -94,7 +94,7 @@ export function ModelDecisionTipsSection({
   if (!groups.length) return null;
 
   return (
-    <section id="tips" className={`${SECTION_SCROLL_MARGIN} space-y-5 py-6`}>
+    <section id="tips" className={`model-tips-guide ${SECTION_SCROLL_MARGIN} space-y-5 py-6`}>
       <div>
         <h2 className="!text-left text-3xl font-semibold leading-tight text-text-primary">
           {getTipsTitle(copy, locale)}
@@ -108,14 +108,14 @@ export function ModelDecisionTipsSection({
           return (
             <article
               key={group.title}
-              className="min-h-[320px] rounded-xl border border-slate-200/80 bg-white/92 p-6 shadow-[0_22px_58px_-38px_rgba(15,23,42,0.34)] dark:border-white/10 dark:bg-slate-950/72"
+              className="border-t border-hairline py-5"
             >
-              <span className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${meta.tone}`}>
-                <UIIcon icon={meta.icon} size={25} strokeWidth={1.9} className={MODEL_PAGE_ICON} />
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${meta.tone}`}>
+                <UIIcon icon={meta.icon} size={21} strokeWidth={1.9} className={MODEL_PAGE_ICON} />
               </span>
-              <h3 className="mt-5 !text-left text-base font-semibold text-text-primary">{group.title}</h3>
+              <h3 className="mt-3 !text-left text-base font-semibold text-text-primary">{group.title}</h3>
               <span className={`mt-3 block h-0.5 w-8 rounded-full ${meta.rule}`} aria-hidden />
-              <ul className="mt-7 space-y-4 text-sm leading-6 text-text-secondary">
+              <ul className="mt-4 space-y-2.5 text-sm leading-6 text-text-secondary">
                 {group.items.map((item) => (
                   <li key={item} className="flex gap-3">
                     <UIIcon

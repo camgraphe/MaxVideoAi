@@ -57,15 +57,13 @@
   "decision": {
     "modelSlug": "nano-banana-lite",
     "hero": {
-      "eyebrow": "MODELO DE IMAGEN RÁPIDO DE GOOGLE",
+      "eyebrow": "Imágenes con IA · Google",
       "title": "Nano Banana Lite - generación rápida de imágenes 1K",
-      "subtitle": "Nano Banana Lite es el modelo Google Nano Banana más rápido para imágenes 1K. Úsalo para borradores visuales, conceptos sociales, ediciones locales y exploración rápida antes de pasar a Nano Banana 2 o Pro.",
+      "subtitle": "Encuentra tu imagen antes de animarla.",
       "subtitleHighlights": [
-        "más rápido para imágenes 1K",
-        "ediciones locales",
-        "exploración rápida"
+        "Encuentra tu imagen antes de animarla"
       ],
-      "paragraph": "Usa la ruta directa Google Lite para crear borradores, ediciones locales y variaciones creativas rápidas.",
+      "paragraph": "Nano Banana Lite genera y edita imágenes con IA en 1K. Prueba una idea visual, crea variaciones o modifica parte de una imagen. Pasa a Nano Banana 2 o Pro si necesitas una salida en 2K o 4K.",
       "primaryCta": {
         "label": "Abrir Nano Banana Lite",
         "href": "/app/image?engine=nano-banana-lite"

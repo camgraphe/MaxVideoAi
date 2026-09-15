@@ -86,16 +86,16 @@
   ],
   "faqs": [
     {
-      "q": "GPT Image 2 supporte-t-il generation et edition ?",
-      "a": "Oui. MaxVideoAI expose GPT Image 2 dans une seule entrée Image Lab avec les modes Create et Edit."
+      "q": "Peut-on créer et retoucher des images avec GPT Image 2 ?",
+      "a": "Oui. Créez une image à partir d’un texte ou ajoutez des images de référence pour les retoucher. Vous pouvez aussi utiliser un masque pour délimiter la zone à modifier."
     },
     {
-      "q": "Quels contrôles image sont disponibles ?",
-      "a": "L'Image Lab expose les presets image_size, les tailles canoniques 1024x768, 1024x1024, 1024x1536, 1920x1080, 2560x1440 et 3840x2160, un mode Custom width/height, quality, num_images, output_format, les images de reference pour l'edit et mask_url optionnel."
+      "q": "Quels réglages sont disponibles pour les images ?",
+      "a": "Choisissez une taille d’image ou des dimensions personnalisées, puis la qualité, le nombre d’images et le format du fichier. Pour une retouche, ajoutez des images de référence et, si besoin, un masque pour délimiter la zone à modifier."
     },
     {
-      "q": "Combien coute GPT Image 2 ?",
-      "a": "Le coût varie selon la qualité et la taille d’image, mais MaxVideoAI affiche le devis live exact avant génération. Utilisez la carte pricing et le devis app comme prix client."
+      "q": "Combien coûte GPT Image 2 ?",
+      "a": "Le prix dépend de la taille, de la qualité et du nombre d’images choisis. MaxVideoAI affiche le devis avant de générer : vous pouvez ajuster les réglages selon votre budget."
     }
   ],
   "pricingNotes": "Les coûts varient selon la qualité et la taille d’image. MaxVideoAI affiche le prix final avant génération ; utilisez le devis app pour une estimation client.",
@@ -155,7 +155,7 @@
       "Le mode Edit exige au moins une image de reference.",
       "Le mask est saisi sous forme d'URL."
     ],
-    "safetyTitle": "Securite et ressemblance",
+    "safetyTitle": "Sécurité et droit à l’image",
     "safetyRules": [
       "Pas de contenu sexuel ni de contenu impliquant des mineurs.",
       "Pas de demandes haineuses, harcelantes ou de violence graphique.",
@@ -166,15 +166,13 @@
   "decision": {
     "modelSlug": "gpt-image-2",
     "hero": {
-      "eyebrow": "MODÈLE IMAGE OPENAI",
+      "eyebrow": "Image IA · OpenAI",
       "title": "GPT Image 2",
-      "subtitle": "Génération d’images orientée qualité pour texte lisible, packshots produit et retouches contrôlées.",
+      "subtitle": "L’image juste, jusque dans les détails.",
       "subtitleHighlights": [
-        "texte lisible",
-        "packshots produit",
-        "retouches contrôlées"
+        "L’image juste, jusque dans les détails"
       ],
-      "paragraph": "Utilisez GPT Image 2 quand l’image doit préserver du texte, des détails produit, des réglages qualité, des tailles personnalisées ou des retouches guidées par masque.",
+      "paragraph": "GPT Image 2 génère et retouche des images avec l’IA. Créez des visuels avec du texte lisible, affinez une photo produit ou modifiez une zone à l’aide d’un masque. Choisissez la taille, la qualité et le format du fichier avant de générer.",
       "primaryCta": {
         "label": "Générer avec GPT Image 2",
         "href": "/app/image?engine=gpt-image-2"
@@ -199,45 +197,45 @@
       ]
     },
     "media": {
-      "caption": "Exemple GPT Image 2",
-      "description": "Packshot avec texte et retouche contrôlée",
+      "caption": "Présentation de GPT Image 2",
+      "description": "Aperçu des styles et des possibilités du modèle",
       "renderLabel": "Voir l’image",
       "badges": [
         "Texte",
         "Retouches",
         "Format 4K"
       ],
-      "altContext": "packshot GPT Image 2 avec texte lisible"
+      "altContext": "Présentation de GPT Image 2 et de différents styles visuels"
     },
     "features": [
       {
         "title": "Texte lisible",
-        "body": "Utile pour packaging, labels, maquettes UI et visuels éditoriaux.",
+        "body": "Pour les emballages, étiquettes, maquettes d’interface et visuels éditoriaux.",
         "tone": "quality"
       },
       {
         "title": "Packshots produit",
-        "body": "Créez des images catalogue avec lumière et composition maîtrisées.",
+        "body": "Créez des images de catalogue à la lumière et à la composition maîtrisées.",
         "tone": "reference"
       },
       {
         "title": "Retouches image",
-        "body": "Chargez des références pour des modifications pilotées par prompt.",
+        "body": "Ajoutez des références et décrivez les modifications souhaitées.",
         "tone": "continuity"
       },
       {
         "title": "Tailles personnalisées",
-        "body": "Utilisez presets ou dimensions custom dans les limites exposées.",
+        "body": "Choisissez un format proposé ou indiquez vos propres dimensions.",
         "tone": "quality"
       },
       {
         "title": "Niveaux qualité",
-        "body": "Choisissez low, medium ou high selon coût et fidélité.",
+        "body": "Réglez la qualité selon le niveau de détail et votre budget.",
         "tone": "price"
       },
       {
         "title": "Variantes",
-        "body": "Générez jusqu’à 4 images pour explorer plusieurs compositions.",
+        "body": "Générez jusqu’à quatre images pour explorer plusieurs compositions.",
         "tone": "duration"
       }
     ],

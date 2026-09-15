@@ -43,7 +43,19 @@ export function isMcpApiHost(host: string, configuredApiHost: string): boolean {
 export function getMcpApiRewritePath(
   host: string,
   pathname: string,
-  configuredApiHost: string
+  configuredApiHost: string,
+  options: {
+    allowHtmlMarketing?: boolean;
+    method?: string;
+    accept?: string | null;
+  } = {},
 ): '/api/mcp' | null {
-  return pathname === '/mcp' && isMcpApiHost(host, configuredApiHost) ? '/api/mcp' : null;
+  if (pathname !== '/mcp' || !isMcpApiHost(host, configuredApiHost)) return null;
+  const method = options.method?.toUpperCase();
+  const accept = options.accept?.toLowerCase() ?? '';
+  const isHtmlNavigation = (method === 'GET' || method === 'HEAD')
+    && accept.includes('text/html')
+    && !accept.includes('application/json')
+    && !accept.includes('text/event-stream');
+  return options.allowHtmlMarketing && isHtmlNavigation ? null : '/api/mcp';
 }

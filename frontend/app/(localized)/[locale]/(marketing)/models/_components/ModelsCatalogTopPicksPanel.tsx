@@ -18,7 +18,7 @@ const TOP_PICK_ICON_CLASSES = [
 
 export function ModelsCatalogTopPicksPanel({ title, viewAllLabel, items }: ModelsCatalogTopPicksPanelProps) {
   return (
-    <aside className="min-w-0 rounded-[8px] border border-hairline bg-surface/94 p-4 shadow-[0_20px_62px_rgba(15,23,42,0.10)] backdrop-blur dark:bg-white/[0.06] sm:p-5">
+    <aside className="catalog-top-picks min-w-0 rounded-[8px] border border-hairline bg-surface/94 p-4 shadow-[0_20px_62px_rgba(15,23,42,0.10)] backdrop-blur dark:bg-white/[0.06] sm:p-5">
       <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
       <div className="mt-4 space-y-1.5">
         {items.map((item, index) => (
@@ -38,7 +38,7 @@ export function ModelsCatalogTopPicksPanel({ title, viewAllLabel, items }: Model
             <span className="min-w-0 flex-1">
               <span className="block text-xs font-semibold text-text-muted">{item.reason}</span>
               <span className="block truncate text-[13px] font-semibold leading-tight text-text-primary">{item.label}</span>
-              <span className="block truncate text-xs text-text-secondary">{item.detail}</span>
+              <span className="mt-1 block text-xs leading-5 text-text-secondary">{item.detail}</span>
             </span>
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-sm font-semibold text-text-primary">
               <span>

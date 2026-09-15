@@ -228,15 +228,13 @@
   "decision": {
     "modelSlug": "kling-3-pro",
     "hero": {
-      "eyebrow": "KLING PRO VIDEO MODEL",
+      "eyebrow": "AI video · Kling",
       "title": "Kling 3 Pro",
-      "subtitle": "Storyboard control, native audio, and 15s 1080p production clips for structured sequences.",
+      "subtitle": "Put your story in motion.",
       "subtitleHighlights": [
-        "storyboard control",
-        "native audio",
-        "15s 1080p production clips"
+        "Put your story in motion"
       ],
-      "paragraph": "Use Kling 3 Pro when you need text-to-video or image-led shots with strong narrative control: 3 to 15 seconds, 1080p output, three aspect ratios, negative prompts, CFG scale and optional end-frame guidance.",
+      "paragraph": "Create 3 to 15-second videos in 1080p from text or an image. Direct the camera, guide the final frame, and generate audio with the scene.",
       "primaryCta": {
         "label": "Generate with Kling 3 Pro",
         "href": "/app?engine=kling-3-pro"

@@ -51,7 +51,7 @@ export function BlogPostView({
           {articleCopy.backLink}
         </TextLink>
 
-        <article className="overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
+        <article className="blog-editorial-article overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
           <header className="relative border-b border-hairline bg-gradient-to-br from-surface to-bg/60">
             {post.image ? (
               <div className="relative h-64 w-full overflow-hidden bg-bg sm:h-80">

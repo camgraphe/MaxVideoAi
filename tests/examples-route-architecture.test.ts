@@ -120,7 +120,7 @@ test('examples hub metadata sends visitors to detail pages for recorded costs', 
 test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
   const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
   const description =
-    'Explore Kling AI examples with prompts, reference-to-video, source-video V2V, start-frame settings and pricing across Kling 3.0 Omni and Kling 3.';
+    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and recorded costs.';
   const landing = getExampleModelLanding('en', 'kling');
 
   assert.ok(landing);
@@ -149,10 +149,11 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   assert.ok(landing);
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
-  assert.match(landing.metaDescription, /^Explore Seedance 2\.5 video examples/);
+  assert.match(landing.metaDescription, /^Watch Seedance 2\.5 video examples/);
   assert.equal(landing.heroTitle, 'Seedance 2.5 AI Video Examples, Prompts & Settings');
-  assert.match(landing.intro, /^Start with Seedance 2\.5/);
-  assert.match(landing.summary, /^Seedance 2\.5 is the flagship route/);
+  assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
+  assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
+  assert.match(landing.summary, /Earlier 1\.5 Pro examples keep their original labels/);
   assert.doesNotMatch(landing.intro, /every example|all examples.*2\.5/i);
   assert.equal(family.defaultModelSlug, 'seedance-2-0');
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
@@ -169,9 +170,9 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   ]);
 
   const localizedLeadPatterns = {
-    en: /^Start with Seedance 2\.5/,
-    fr: /^Commencez par Seedance 2\.5/,
-    es: /^Empieza con Seedance 2\.5/,
+    en: /^Explore Seedance 2\.5/,
+    fr: /^Explorez les exemples Seedance 2\.5/,
+    es: /^Explora ejemplos de Seedance 2\.5/,
   } as const;
   const localizedMetaTitles = {
     en: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',

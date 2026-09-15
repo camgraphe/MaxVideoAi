@@ -39,9 +39,9 @@ const P0_MENU_REPRESENTATIVES = [
 ] as const;
 const P0_BOUNDED_NAV_MENU_ENTRIES = [
   'ltx-2-5-pro',
+  'ltx-2-5-fast',
   'wan-3',
   'wan-3-prime',
-  'grok-imagine-video-1-5',
 ] as const;
 
 function configuredLaunchSources(
@@ -385,9 +385,10 @@ test('published P0 identities enter public discovery with the two promoted Wan v
     navigation.MARKETING_MODEL_SLUGS.filter((slug) => P0_IDS.includes(slug as never)),
     P0_BOUNDED_NAV_MENU_ENTRIES,
   );
-  assert.deepEqual(navigation.MARKETING_NAV_EXAMPLES.map(({ key }) => key), navigation.MARKETING_FOOTER_EXAMPLES.map(({ key }) => key));
-  assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'grok'), true);
-  assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'flux'), true);
+  const menuFamilies = [...navigation.MARKETING_NAV_EXAMPLES, ...navigation.MARKETING_NAV_DROPDOWNS.examples!.sections!.flatMap(section => section.items)];
+  assert.deepEqual(menuFamilies.map(({ key }) => key).sort(), navigation.MARKETING_FOOTER_EXAMPLES.map(({ key }) => key).sort());
+  assert.equal(menuFamilies.some(({ key }) => key === 'grok'), true);
+  assert.equal(menuFamilies.some(({ key }) => key === 'flux'), true);
   assert.deepEqual(
     catalogSlugs.filter((slug) => P0_IDS.includes(slug as never)).sort(),
     [...P0_IDS].sort(),

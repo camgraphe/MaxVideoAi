@@ -72,7 +72,7 @@ test('localized Examples copy sends visitors to the detail page for recorded cos
     const description = getExamplesLongDescription(locale);
     const mainVideo = getExamplesMainVideoCopy(locale);
     const faq = getHubExamplesFaq(locale);
-    assert.match(description, /recorded (?:render )?cost|coût enregistré|coût du rendu|coste registrado|coste del render/i);
+    assert.match(description, /recorded (?:render )?cost|coût enregistré|coût du rendu|cost[eo] registrado|cost[eo] del render/i);
     assert.match(mainVideo.openExample, /settings|réglages|ajustes/i);
     assert.match(faq.items[2]?.answer ?? '', /open|ouvrez|abre/i);
   }

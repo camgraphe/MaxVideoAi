@@ -129,9 +129,9 @@ function textByLocale<T>(locale: AppLocale, values: Record<AppLocale | 'en', T>)
 
 function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
   const labels = textByLocale(locale, {
-    en: ['Price before render', 'Pay-as-you-go', 'Updated specs', 'Video, image & audio'],
-    fr: ['Prix avant rendu', "Paiement a l'usage", 'Specs a jour', 'Video, image & audio'],
-    es: ['Precio antes de renderizar', 'Pago por uso', 'Specs actualizadas', 'Video, imagen y audio'],
+    en: ['Price before render', 'Pay-as-you-go', 'Updated specs', 'Vidéo, image et audio'],
+    fr: ['Prix avant rendu', "Paiement à l’usage", 'Caractéristiques à jour', 'Vidéo, image et audio'],
+    es: ['Precio antes de renderizar', 'Pago por uso', 'Características actualizadas', 'Video, imagen y audio'],
   });
   return [
     { label: labels[0], icon: BadgeDollarSign },
@@ -144,10 +144,10 @@ function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
 function buildTopPickCopy(locale: AppLocale): Record<string, { reason: string; detail: string }> {
   return textByLocale(locale, {
     en: {
-      'ltx-2-5-pro': { reason: 'Latest LTX quality route', detail: 'Production-focused LTX 2.5 generation' },
-      'wan-3-prime': { reason: 'Latest Wan quality route', detail: 'Premium Wan 3 generation' },
-      'grok-imagine-video-1-5': { reason: 'Grok video route', detail: 'Text, opening-image, and reference workflows' },
-      'flux-3': { reason: 'FLUX video route', detail: 'Standard-quality generation and video extension' },
+      'ltx-2-5-pro': { reason: 'Create with LTX', detail: 'Production-focused LTX 2.5 generation' },
+      'wan-3-prime': { reason: 'Create with Wan', detail: 'Premium Wan 3 generation' },
+      'grok-imagine-video-1-5': { reason: 'Video with Grok', detail: 'Text, opening-image, and reference workflows' },
+      'flux-3': { reason: 'Video with FLUX', detail: 'Standard-quality generation and video extension' },
       'seedance-2-5': { reason: 'Current Seedance flagship', detail: '30-second cinematic, image, and reference workflows' },
       'seedance-2-0': { reason: 'Best native audio', detail: 'Native audio, lip sync, realistic motion' },
       'kling-3-pro': { reason: 'Best control', detail: 'Cinematic sequences and prompt control' },
@@ -155,26 +155,26 @@ function buildTopPickCopy(locale: AppLocale): Record<string, { reason: string; d
       'happy-horse-1-1': { reason: 'Best Alibaba audio route', detail: 'Text, image, and references with native audio' },
     },
     fr: {
-      'ltx-2-5-pro': { reason: 'Dernière route qualité LTX', detail: 'Génération LTX 2.5 orientée production' },
-      'wan-3-prime': { reason: 'Dernière route qualité Wan', detail: 'Génération premium Wan 3' },
-      'grok-imagine-video-1-5': { reason: 'Route vidéo Grok', detail: 'Texte, image d’ouverture et références' },
-      'flux-3': { reason: 'Route vidéo FLUX', detail: 'Génération standard et prolongation vidéo' },
-      'seedance-2-5': { reason: 'Flagship Seedance actuel', detail: 'Vidéo cinématique de 30 s, image et références' },
-      'seedance-2-0': { reason: 'Meilleur audio natif', detail: 'Audio natif, lip sync, mouvement realiste' },
-      'kling-3-pro': { reason: 'Meilleur controle', detail: 'Sequences cine et controle du prompt' },
-      'veo-3-1': { reason: 'Meilleure route Google', detail: 'Prompts pub, references et extension' },
-      'happy-horse-1-1': { reason: 'Meilleure route audio Alibaba', detail: 'Texte, image et references avec audio natif' },
+      'ltx-2-5-pro': { reason: 'Pour les projets vidéo LTX', detail: 'Génération LTX 2.5 orientée production' },
+      'wan-3-prime': { reason: 'Pour la vidéo avec Wan', detail: 'Génération premium Wan 3' },
+      'grok-imagine-video-1-5': { reason: 'Vidéo avec Grok', detail: 'Texte, image d’ouverture et références' },
+      'flux-3': { reason: 'Vidéo avec FLUX', detail: 'Génération standard et prolongation vidéo' },
+      'seedance-2-5': { reason: 'Le modèle phare de Seedance', detail: 'Vidéo cinématique de 30 s, image et références' },
+      'seedance-2-0': { reason: 'Meilleur audio natif', detail: 'Audio natif, synchronisation labiale et mouvement réaliste' },
+      'kling-3-pro': { reason: 'Contrôle de la scène', detail: 'Séquences de cinéma et suivi des instructions' },
+      'veo-3-1': { reason: 'Vidéo avec Google', detail: 'Publicité, références et prolongation' },
+      'happy-horse-1-1': { reason: 'Audio natif avec Alibaba', detail: 'Texte, image et références avec audio natif' },
     },
     es: {
-      'ltx-2-5-pro': { reason: 'Última ruta de calidad LTX', detail: 'Generación LTX 2.5 orientada a producción' },
-      'wan-3-prime': { reason: 'Última ruta de calidad Wan', detail: 'Generación premium Wan 3' },
-      'grok-imagine-video-1-5': { reason: 'Ruta de vídeo Grok', detail: 'Texto, imagen inicial y referencias' },
-      'flux-3': { reason: 'Ruta de vídeo FLUX', detail: 'Generación estándar y ampliación de vídeo' },
-      'seedance-2-5': { reason: 'Flagship actual de Seedance', detail: 'Video cinematográfico de 30 s, imagen y referencias' },
+      'ltx-2-5-pro': { reason: 'Video con LTX', detail: 'Generación LTX 2.5 orientada a producción' },
+      'wan-3-prime': { reason: 'Video con Wan', detail: 'Generación premium Wan 3' },
+      'grok-imagine-video-1-5': { reason: 'Video con Grok', detail: 'Texto, imagen inicial y referencias' },
+      'flux-3': { reason: 'Video con FLUX', detail: 'Generación estándar y extensión de video' },
+      'seedance-2-5': { reason: 'El modelo principal de Seedance', detail: 'Video cinematográfico de 30 s, imagen y referencias' },
       'seedance-2-0': { reason: 'Mejor audio nativo', detail: 'Audio nativo, lip sync y movimiento realista' },
-      'kling-3-pro': { reason: 'Mejor control', detail: 'Secuencias cinematicas y control de prompt' },
-      'veo-3-1': { reason: 'Mejor ruta Google', detail: 'Prompts para ads, referencias y extension' },
-      'happy-horse-1-1': { reason: 'Mejor ruta audio Alibaba', detail: 'Texto, imagen y referencias con audio nativo' },
+      'kling-3-pro': { reason: 'Mejor control', detail: 'Secuencias de cine y seguimiento del prompt' },
+      'veo-3-1': { reason: 'Video con Google', detail: 'Anuncios, referencias y extensión' },
+      'happy-horse-1-1': { reason: 'Audio nativo con Alibaba', detail: 'Texto, imagen y referencias con audio nativo' },
     },
   });
 }

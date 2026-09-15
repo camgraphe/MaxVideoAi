@@ -9,7 +9,6 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
-import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
@@ -85,7 +84,7 @@ function normalizeImageSrc(src?: string | null) {
 const localeDateMap: Record<AppLocale, string> = {
   en: 'en-US',
   fr: 'fr-FR',
-  es: 'es-ES',
+  es: 'es-MX',
 };
 
 const DEFAULT_BLOG_FAQ = {
@@ -191,18 +190,11 @@ export default async function BlogIndexPage(props: { params: Promise<{ locale: A
   const featuredLinkProps = getBlogLinkProps(locale, featured);
 
   return (
-    <div className="bg-bg">
+    <div className="blog-editorial bg-bg">
       <div className="stack-gap-lg">
-        <header className="relative min-h-[440px] overflow-hidden border-b border-hairline bg-bg">
-          <MarketingHeroImage
-            src="/assets/blog/blog-hero-reference.webp"
-            darkSrc="/assets/blog/blog-hero-reference-dark.webp"
-            className="opacity-55 dark:opacity-70"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.88)_34%,rgba(255,255,255,0.48)_62%,rgba(255,255,255,0.10)_100%)] dark:bg-[linear-gradient(90deg,rgba(3,7,18,0.30)_0%,rgba(3,7,18,0.18)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-bg to-transparent" />
-          <div className="container-page relative flex min-h-[440px] max-w-6xl items-center py-14">
-            <div className="max-w-[520px]">
+        <header className="journal-opening border-b border-hairline">
+          <div className="container-page py-14">
+            <div className="journal-opening-copy">
               <p className="text-xs font-semibold uppercase tracking-micro text-text-primary">
                 {content.hero.eyebrow ?? 'The Studio Journal'}
               </p>

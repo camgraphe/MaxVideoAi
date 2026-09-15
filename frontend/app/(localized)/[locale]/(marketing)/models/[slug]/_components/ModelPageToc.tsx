@@ -34,12 +34,12 @@ export function ModelPageToc({ items, variant = 'default', overviewLabel = 'On t
   if (variant === 'pill') {
     return (
       <nav
-        className={`${FULL_BLEED_SECTION} sticky top-16 z-30 border-b border-hairline bg-white before:bg-white dark:border-white/10 dark:bg-[#071126] dark:before:bg-[#071126]`}
+        className={`model-section-nav ${FULL_BLEED_SECTION} sticky top-16 z-30 border-b border-hairline bg-white before:bg-white dark:border-white/10 dark:bg-[#071126] dark:before:bg-[#071126]`}
         aria-label="Model page sections"
       >
         <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-5 lg:px-6">
           <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 py-1.5 sm:gap-2 sm:py-2 lg:flex-nowrap">
-            <span className="inline-flex min-h-[30px] items-center gap-1.5 px-1.5 text-xs font-semibold text-[#41516c] dark:text-white/75 sm:min-h-[36px] sm:gap-2 sm:px-3 sm:text-sm">
+            <span className="inline-flex shrink-0 whitespace-nowrap min-h-[30px] items-center gap-1.5 px-1.5 text-xs font-semibold text-[#41516c] dark:text-white/75 sm:min-h-[36px] sm:gap-2 sm:px-3 sm:text-sm">
               <UIIcon icon={LayoutList} size={15} strokeWidth={1.9} />
               {overviewLabel}
             </span>
@@ -49,7 +49,7 @@ export function ModelPageToc({ items, variant = 'default', overviewLabel = 'On t
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="inline-flex min-h-[30px] items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#41516c] transition hover:bg-[#f3f6fb] hover:text-[#071126] dark:text-white/60 dark:hover:bg-white/[0.08] dark:hover:text-white sm:min-h-[36px] sm:gap-2 sm:px-3 sm:text-sm"
+                  className="inline-flex shrink-0 whitespace-nowrap min-h-[30px] items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#41516c] transition hover:bg-[#f3f6fb] hover:text-[#071126] dark:text-white/60 dark:hover:bg-white/[0.08] dark:hover:text-white sm:min-h-[36px] sm:gap-2 sm:px-3 sm:text-sm"
                 >
                   <UIIcon icon={Icon} size={15} strokeWidth={1.85} />
                   {item.label}
@@ -64,7 +64,7 @@ export function ModelPageToc({ items, variant = 'default', overviewLabel = 'On t
 
   return (
     <nav
-      className={`${FULL_BLEED_SECTION} sticky top-16 z-30 border-b border-hairline bg-surface before:bg-surface`}
+      className={`model-section-nav ${FULL_BLEED_SECTION} sticky top-16 z-30 border-b border-hairline bg-surface before:bg-surface`}
       aria-label="Model page sections"
     >
       <div className="mx-auto w-full max-w-6xl px-6 sm:px-8">

@@ -1,0 +1,25 @@
+Create a production-quality high-fidelity UI DESIGN BOARD for MaxVideoAI's NEW Compare system. ONE coherent system across homepage preview, detailed comparison page and mobile. This is the second deliverable of a coherent art direction, not a style alternative. Name "Choose with evidence". Current date 14 September 2026. Board target 2400 x 1800 landscape. Main detailed desktop composition at 1440px conceptual width uses 65% of board; right side 390px mobile detail; bottom strip shows home preview and three small focus-state diagrams. Legible typography is essential.
+
+Attached reference inputs: Arrakis layers screenshot (precise layers and rhythm ONLY), LocalCan screenshot (clear task hierarchy ONLY, never terminal or payloads), true MaxVideoAI branding/app palette reference. This design must be original and not copy old scoreboard. Use Geist-like fine sans, ivory #F3EFE7, very dark olive #20271F, bronze #765020 accents. Genuine logo reference is attached. Open editorial UI, very fine dividers, compact typography, strong alignment, restrained depth. Avoid nested cards, colorful score bars, dashboards, arbitrary badges, unnecessary gradients, oversized empty spaces.
+
+DETAILED PAGE:
+Brand/nav at top consistent Models / Compare / Examples / Connect / Pricing. Breadcrumb "Compare / Kling 3 Pro vs Seedance 2.5".
+Large headline "Which model fits your next shot?"
+Names Kling 3 Pro and Seedance 2.5 in aligned fixed columns with source marks. Subheading "Compare the trade-offs." No fake winner or recommendation.
+Below model names: one spacious continuous horizontal reading surface, criterion label on left, a COMMON full 0–10 rule in middle with paired circular markers (bronze for Kling, dark olive for Seedance); exact numeric columns on right. Make visual distance proportional on full 0–10 scale, no truncated scale and no bar scoreboard. Difference is subtle, figures primary.
+FIVE exact rows (left Kling / right Seedance): "Prompt adherence" 8.6 / 9.1; "Visual quality" 8.4 / 9.2; "Motion realism" 8.4 / 9.2; "Temporal consistency" 8.0 / 9.0; "Controllability" 8.7 / 9.0.
+Show small "Editorial ratings · 0–10". One selected row Motion realism has a warm pale highlight and short explanation "Motion smoothness and physical plausibility." No broad card wrapper.
+Small method footer "Source dates: Kling 25 Apr 2026 · Seedance 8 Aug 2026". Link "Read the methodology". Date is source history, no new test claimed.
+Navigation sections "Image & motion / Direction & audio / Workflow & cost" as understated tabs.
+At bottom of detailed view introduce "Compare the settings, too." with "Resolution / Duration / Audio / Price" labels and sentence "Match the settings before comparing costs." No invented amounts, no numbered capability claims. Link "View model details". Do NOT use sneakers or other selected homepage clips as outputs of this pair; they are different models. No generic fake split-screen video proof.
+
+HOMEPAGE PREVIEW bottom-left:
+Dark olive background, concise "Choose with evidence." with lighter fine rules and exact first three paired scores, fixed model labels, link "Explore this comparison". Same marker grammar and typography, not old scoreboard. Home preview is obviously excerpt of detail.
+
+MOBILE:
+390px fully readable reflow, ivory, headline, pair names remain visible in two columns. For each of same five criteria put label above two aligned numbers. If axis fits below, thin 0–10 line with paired markers; prioritize numeric comprehension. No horizontal scroll, no microscopic desktop rendering, no phone bezel. Controls natural 44px tap targets. "Methodology" and model details easy to access.
+
+STATE STRIP:
+Three small views of same Motion realism row: "At rest" exact numbers already present, "Focus a criterion" description opens, "Open the detail" same selection follows. Use arrows only between UI states. Do not animate count-up numbers or randomize scores.
+
+Board labels outside UI only: "HOME PREVIEW", "COMPARE DETAIL", "MOBILE", "PROPOSED INTERACTION". No claims of implemented or tested UI. Distinctive professional editorial design, both screens drawn fully not lorem ipsum. No rounded dashboard containers.

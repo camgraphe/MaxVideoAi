@@ -1,0 +1,221 @@
+{
+  "/": {
+    "status": 200,
+    "url": "http://localhost:3008/"
+  },
+  "/ai-video-engines": {
+    "status": 200,
+    "url": "http://localhost:3008/ai-video-engines"
+  },
+  "/assets/tools/redesign/background-removal-workspace-v1.webp": {
+    "status": 200,
+    "type": "image/webp",
+    "bytes": 70176
+  },
+  "/assets/tools/redesign/character-builder-workspace-v1.webp": {
+    "status": 200,
+    "type": "image/webp",
+    "bytes": 55262
+  },
+  "/assets/tools/redesign/upscale-workspace-v1.webp": {
+    "status": 200,
+    "type": "image/webp",
+    "bytes": 52174
+  },
+  "/blog/ai-character-sheet-generator": {
+    "status": 200,
+    "url": "http://localhost:3008/blog/ai-character-sheet-generator"
+  },
+  "/blog/change-camera-angle-with-ai": {
+    "status": 200,
+    "url": "http://localhost:3008/blog/change-camera-angle-with-ai"
+  },
+  "/blog/how-to-create-consistent-ai-characters": {
+    "status": 200,
+    "url": "http://localhost:3008/blog/how-to-create-consistent-ai-characters"
+  },
+  "/blog/multiple-camera-angles-from-one-image": {
+    "status": 200,
+    "url": "http://localhost:3008/blog/multiple-camera-angles-from-one-image"
+  },
+  "/es": {
+    "status": 200,
+    "url": "http://localhost:3008/es"
+  },
+  "/es/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video": {
+    "status": 200,
+    "url": "http://localhost:3008/es/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video"
+  },
+  "/es/blog/como-explorar-multiples-angulos-de-camara-desde-una-imagen-aprobada": {
+    "status": 200,
+    "url": "http://localhost:3008/es/blog/como-explorar-multiples-angulos-de-camara-desde-una-imagen-aprobada"
+  },
+  "/es/blog/generador-de-fichas-de-personaje-con-ia": {
+    "status": 200,
+    "url": "http://localhost:3008/es/blog/generador-de-fichas-de-personaje-con-ia"
+  },
+  "/es/blog/la-ia-puede-cambiar-el-angulo-de-camara-de-una-foto": {
+    "status": 200,
+    "url": "http://localhost:3008/es/blog/la-ia-puede-cambiar-el-angulo-de-camara-de-una-foto"
+  },
+  "/es/comparativa": {
+    "status": 200,
+    "url": "http://localhost:3008/es/comparativa"
+  },
+  "/es/galeria": {
+    "status": 200,
+    "url": "http://localhost:3008/es/galeria"
+  },
+  "/es/herramientas": {
+    "status": 200,
+    "url": "http://localhost:3008/es/herramientas"
+  },
+  "/es/herramientas/angle": {
+    "status": 200,
+    "url": "http://localhost:3008/es/herramientas/angle"
+  },
+  "/es/herramientas/background-removal": {
+    "status": 200,
+    "url": "http://localhost:3008/es/herramientas/background-removal"
+  },
+  "/es/herramientas/character-builder": {
+    "status": 200,
+    "url": "http://localhost:3008/es/herramientas/character-builder"
+  },
+  "/es/herramientas/upscale": {
+    "status": 200,
+    "url": "http://localhost:3008/es/herramientas/upscale"
+  },
+  "/es/modelos": {
+    "status": 200,
+    "url": "http://localhost:3008/es/modelos"
+  },
+  "/es/modelos/kling-3-pro": {
+    "status": 200,
+    "url": "http://localhost:3008/es/modelos/kling-3-pro"
+  },
+  "/es/modelos/ltx-2-3-pro": {
+    "status": 200,
+    "url": "http://localhost:3008/es/modelos/ltx-2-3-pro"
+  },
+  "/es/modelos/nano-banana": {
+    "status": 200,
+    "url": "http://localhost:3008/es/modelos/nano-banana"
+  },
+  "/es/modelos/veo-3-1": {
+    "status": 200,
+    "url": "http://localhost:3008/es/modelos/veo-3-1"
+  },
+  "/examples": {
+    "status": 200,
+    "url": "http://localhost:3008/examples"
+  },
+  "/fr": {
+    "status": 200,
+    "url": "http://localhost:3008/fr"
+  },
+  "/fr/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video"
+  },
+  "/fr/blog/explorer-plusieurs-angles-de-camera-a-partir-dune-image-approuvee": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/blog/explorer-plusieurs-angles-de-camera-a-partir-dune-image-approuvee"
+  },
+  "/fr/blog/generateur-de-fiche-personnage-ia": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/blog/generateur-de-fiche-personnage-ia"
+  },
+  "/fr/blog/lia-peut-elle-changer-langle-de-camera-dune-photo": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/blog/lia-peut-elle-changer-langle-de-camera-dune-photo"
+  },
+  "/fr/comparatif": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/comparatif"
+  },
+  "/fr/galerie": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/galerie"
+  },
+  "/fr/modeles": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/modeles"
+  },
+  "/fr/modeles/kling-3-pro": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/modeles/kling-3-pro"
+  },
+  "/fr/modeles/ltx-2-3-pro": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/modeles/ltx-2-3-pro"
+  },
+  "/fr/modeles/nano-banana": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/modeles/nano-banana"
+  },
+  "/fr/modeles/veo-3-1": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/modeles/veo-3-1"
+  },
+  "/fr/outils": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/outils"
+  },
+  "/fr/outils/angle": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/outils/angle"
+  },
+  "/fr/outils/background-removal": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/outils/background-removal"
+  },
+  "/fr/outils/character-builder": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/outils/character-builder"
+  },
+  "/fr/outils/upscale": {
+    "status": 200,
+    "url": "http://localhost:3008/fr/outils/upscale"
+  },
+  "/models": {
+    "status": 200,
+    "url": "http://localhost:3008/models"
+  },
+  "/models/kling-3-pro": {
+    "status": 200,
+    "url": "http://localhost:3008/models/kling-3-pro"
+  },
+  "/models/ltx-2-3-pro": {
+    "status": 200,
+    "url": "http://localhost:3008/models/ltx-2-3-pro"
+  },
+  "/models/nano-banana": {
+    "status": 200,
+    "url": "http://localhost:3008/models/nano-banana"
+  },
+  "/models/veo-3-1": {
+    "status": 200,
+    "url": "http://localhost:3008/models/veo-3-1"
+  },
+  "/tools": {
+    "status": 200,
+    "url": "http://localhost:3008/tools"
+  },
+  "/tools/angle": {
+    "status": 200,
+    "url": "http://localhost:3008/tools/angle"
+  },
+  "/tools/background-removal": {
+    "status": 200,
+    "url": "http://localhost:3008/tools/background-removal"
+  },
+  "/tools/character-builder": {
+    "status": 200,
+    "url": "http://localhost:3008/tools/character-builder"
+  },
+  "/tools/upscale": {
+    "status": 200,
+    "url": "http://localhost:3008/tools/upscale"
+  }
+}

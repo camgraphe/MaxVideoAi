@@ -31,7 +31,7 @@ export function ModelsCatalogGallerySection({
   visibleFilters,
 }: ModelsCatalogGallerySectionProps) {
   return (
-    <section id="models-grid" className="scroll-mt-24">
+    <section id="models-grid" className="catalog-library scroll-mt-24">
       <div className="container-page max-w-[1248px]">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -40,7 +40,7 @@ export function ModelsCatalogGallerySection({
           </div>
         </div>
         <h2 className="sr-only">{srTitle}</h2>
-        <div className="rounded-[8px] border border-hairline bg-surface p-3 shadow-card sm:p-4">
+        <div className="catalog-library-controls">
           <ModelsGallery
             cards={cards}
             ctaLabel={ctaLabel}

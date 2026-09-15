@@ -15,7 +15,7 @@ export function RealExamplesPreview({
   providers?: ProviderItem[];
 }) {
   return (
-    <section className="dark-section-neon border-b border-hairline bg-surface py-14 sm:py-16">
+    <section className="home-examples-archive dark-section-neon border-b border-hairline bg-surface py-14 sm:py-16">
       <div className="container-page max-w-[1200px]">
         <div className="mx-auto max-w-[880px] text-center">
           <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow ?? 'AI video examples'}</p>
@@ -72,8 +72,8 @@ export function RealExamplesPreview({
           </div>
         </div>
 
-        <div className="dark-neon-panel mt-7 overflow-hidden rounded-[20px] border border-hairline bg-bg shadow-sm dark:border-white/[0.08]">
-          <div className="divide-y divide-hairline dark:divide-white/[0.07]">
+        <div className="home-editorial-examples mt-10">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {examples.map((example) => (
               <HomeExamplePreviewRow key={example.id} example={example} costUnavailable={copy.costUnavailable} />
             ))}
@@ -93,7 +93,7 @@ function HomeExamplePreviewRow({ example, costUnavailable = 'Cost not recorded' 
   const modelCtaLabel = example.modelCtaLabel ?? 'Specs & pricing';
 
   return (
-    <article className="grid grid-cols-[112px_1fr] gap-3 px-3 py-3 lg:grid-cols-[132px_220px_165px_72px_82px_170px] lg:items-center lg:gap-3 lg:px-5">
+    <article className="home-example-story grid grid-cols-[112px_1fr] gap-3 px-3 py-3 lg:grid-cols-[132px_220px_165px_72px_82px_170px] lg:items-center lg:gap-3 lg:px-5">
       <Link
         href={showExamplesCta ? example.href : modelHref}
         className="group relative row-span-4 h-[106px] overflow-hidden rounded-[10px] bg-surface-3 lg:row-span-1 lg:h-[72px] lg:w-[132px]"
@@ -107,7 +107,7 @@ function HomeExamplePreviewRow({ example, costUnavailable = 'Cost not recorded' 
           src={example.imageSrc}
           alt={example.imageAlt}
           fill
-          sizes="(max-width: 1023px) 112px, 132px"
+          sizes="(max-width: 639px) 90vw, (max-width: 1023px) 45vw, 400px"
           className="object-cover transition duration-500 group-hover:scale-[1.04]"
           loading="lazy"
         />

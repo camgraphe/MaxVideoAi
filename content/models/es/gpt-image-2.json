@@ -86,16 +86,16 @@
   ],
   "faqs": [
     {
-      "q": "GPT Image 2 soporta generacion y edicion?",
-      "a": "Sí. MaxVideoAI expone GPT Image 2 como una sola entrada del Image Lab con modos Create y Edit."
+      "q": "¿Puedo crear y editar imágenes con GPT Image 2?",
+      "a": "Sí. Crea una imagen a partir de un prompt de texto o agrega imágenes de referencia para editarlas. También puedes usar una máscara para seleccionar la zona que quieres modificar."
     },
     {
-      "q": "¿Qué controles de imagen están disponibles?",
-      "a": "Image Lab expone presets image_size, tamanos canonicos 1024x768, 1024x1024, 1024x1536, 1920x1080, 2560x1440 y 3840x2160, modo Custom width/height, quality, num_images, output_format, imagenes de referencia para edits y mask_url opcional."
+      "q": "¿Qué ajustes de imagen están disponibles?",
+      "a": "Elige un tamaño de imagen o introduce dimensiones personalizadas. Después selecciona la calidad, la cantidad de imágenes y el formato del archivo. Para editar, agrega imágenes de referencia y, si lo necesitas, una máscara que delimite la zona que quieres cambiar."
     },
     {
-      "q": "Cuanto cuesta GPT Image 2?",
-      "a": "El costo varía por quality e image_size, pero MaxVideoAI enseña la cotización live exacta antes de generar. Usa la tarjeta de precios y la cotización de la app como precio para cliente."
+      "q": "¿Cuánto cuesta GPT Image 2?",
+      "a": "El precio depende del tamaño, la calidad y la cantidad de imágenes que elijas. MaxVideoAI muestra la cotización antes de generar para que puedas ajustar la configuración a tu presupuesto."
     }
   ],
   "pricingNotes": "Los costos varían por quality e image_size. MaxVideoAI muestra el precio final antes de generar; usa la cotización de la app para estimaciones de cliente.",
@@ -166,15 +166,13 @@
   "decision": {
     "modelSlug": "gpt-image-2",
     "hero": {
-      "eyebrow": "MODELO DE IMAGEN OPENAI",
+      "eyebrow": "Imágenes con IA · OpenAI",
       "title": "GPT Image 2",
-      "subtitle": "Generación de imagen enfocada en calidad para texto legible, producto y ediciones controladas.",
+      "subtitle": "La imagen que buscas, hasta el último detalle.",
       "subtitleHighlights": [
-        "texto legible",
-        "producto",
-        "ediciones controladas"
+        "La imagen que buscas, hasta el último detalle"
       ],
-      "paragraph": "Usa GPT Image 2 cuando el still necesita texto preciso, fidelidad de producto, controles de calidad, tamaños personalizados o ediciones guiadas por máscara.",
+      "paragraph": "GPT Image 2 genera y edita imágenes con IA. Crea diseños con texto legible, mejora una foto de producto o edita una zona usando una máscara. Elige el tamaño, la calidad y el formato del archivo antes de generar.",
       "primaryCta": {
         "label": "Generar con GPT Image 2",
         "href": "/app/image?engine=gpt-image-2"
@@ -199,45 +197,45 @@
       ]
     },
     "media": {
-      "caption": "Ejemplo GPT Image 2",
-      "description": "Imagen de producto con texto y edición controlada",
+      "caption": "Presentación de GPT Image 2",
+      "description": "Un vistazo a los estilos y funciones del modelo",
       "renderLabel": "Ver imagen",
       "badges": [
         "Texto",
         "Edición",
         "Tamaño 4K"
       ],
-      "altContext": "imagen de producto GPT Image 2 con texto legible"
+      "altContext": "Presentación de GPT Image 2 con distintos estilos visuales"
     },
     "features": [
       {
         "title": "Texto legible",
-        "body": "Útil para packaging, etiquetas, layouts tipo UI y gráficos editoriales.",
+        "body": "Para empaques, etiquetas, maquetas de interfaces y diseños editoriales.",
         "tone": "quality"
       },
       {
         "title": "Producto",
-        "body": "Crea stills de catálogo con iluminación y composición controladas.",
+        "body": "Crea imágenes de catálogo con iluminación y composición cuidadas.",
         "tone": "reference"
       },
       {
         "title": "Edición de imagen",
-        "body": "Sube referencias para cambios guiados por prompt y máscara opcional.",
+        "body": "Agrega referencias y describe los cambios que quieres hacer.",
         "tone": "continuity"
       },
       {
         "title": "Tamaños custom",
-        "body": "Usa presets o dimensiones personalizadas dentro de los límites expuestos.",
+        "body": "Elige un formato disponible o introduce tus propias dimensiones.",
         "tone": "quality"
       },
       {
         "title": "Niveles de calidad",
-        "body": "Elige low, medium o high según costo y fidelidad.",
+        "body": "Ajusta la calidad según el detalle que necesites y tu presupuesto.",
         "tone": "price"
       },
       {
         "title": "Variantes",
-        "body": "Genera hasta 4 imágenes para explorar composiciones.",
+        "body": "Genera hasta cuatro imágenes para explorar distintas composiciones.",
         "tone": "duration"
       }
     ],

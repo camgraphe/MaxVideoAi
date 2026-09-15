@@ -2,6 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 
 const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
   fr: {
+    'Native-audio multimodal character video': 'Personnages cohérents et audio natif',
     'Ads and B-roll': 'Publicités et plans B-roll',
     'Budget Veo drafts': 'Tests Veo à petit budget',
     'Cinematic dialogue': 'Dialogue cinématographique',
@@ -25,6 +26,7 @@ const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
     'Stylised text or image motion': 'Animation stylisée de texte ou d’image',
   },
   es: {
+    'Native-audio multimodal character video': 'Personajes coherentes y audio nativo',
     'Ads and B-roll': 'Anuncios y tomas de apoyo (B-roll)',
     'Budget Veo drafts': 'Borradores Veo de bajo coste',
     'Cinematic dialogue': 'Diálogo cinematográfico',

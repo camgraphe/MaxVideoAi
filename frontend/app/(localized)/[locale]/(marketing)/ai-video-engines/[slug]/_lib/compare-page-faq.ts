@@ -195,7 +195,7 @@ export function buildCompareFaqItems({
           }
     : null;
 
-  return [
+  const items: CompareFaqItem[] = [
     {
       question: formatTemplate(
         faqTemplates.q1 ?? 'What are {left} and {right}?',
@@ -339,6 +339,8 @@ export function buildCompareFaqItems({
       ),
     },
   ];
+  return prioritizeCompareFaq(items, pageOverride?.quickVerdict?.body);
+
 }
 
 export function buildCompareFaqJsonLd(faqItems: CompareFaqItem[]) {
@@ -359,4 +361,12 @@ export function buildCompareFaqJsonLd(faqItems: CompareFaqItem[]) {
       },
     })),
   };
+}
+
+
+/** Keep authored FAQs untouched; lead the generated list with the buying decision. */
+export function prioritizeCompareFaq(items: CompareFaqItem[], verdict?: string): CompareFaqItem[] {
+  const [about, choice, ...details] = items;
+  if (!choice) return items;
+  return [{ ...choice, answer: verdict ?? choice.answer }, ...details, about];
 }

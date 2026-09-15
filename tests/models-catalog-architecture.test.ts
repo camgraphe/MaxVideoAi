@@ -243,7 +243,8 @@ test('models catalog helper module exposes the route contract', () => {
   assert.match(sectionsSource, /Texte→image/, 'section module should own localized outcome fallback data');
   assert.match(sectionsSource, /FALLBACK_FAQ_ITEMS_BY_SCOPE/, 'section module should own fallback FAQ data');
   assert.match(heroSource, /export function ModelsCatalogHero/, 'hero component should be exported');
-  assert.match(heroSource, /MODELS_HERO_IMAGE_URL/, 'hero component should own hero image rendering');
+  assert.match(heroSource, /catalog-editorial-hero/, 'catalog hero should own its editorial layout');
+  assert.doesNotMatch(heroSource, /MODELS_HERO_IMAGE_URL|priority/, 'decorative image must not compete with catalog content');
   assert.match(heroSource, /lg:min-h-\[430px\]/, 'hero component should own hero layout');
   assert.match(gallerySectionSource, /export function ModelsCatalogGallerySection/, 'gallery section should be exported');
   assert.match(gallerySectionSource, /id="models-grid"/, 'gallery section should own gallery markup');

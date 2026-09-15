@@ -1,20 +1,20 @@
+import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
+import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
+import { buildHomePriceDemo } from './_lib/home-price-demo-data';
+import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
+import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
+import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
+import { HomeToolsGallery } from '@/components/marketing/home/HomeToolsGallery';
+import { loadEngineScores } from '../ai-video-engines/[slug]/_lib/compare-page-data-loaders';
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { normalizeAppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
 import {
-  AiVideoToolbox,
-  ComparisonPreview,
   HomeFaq,
-  HomeAssistantWorkflow,
   HomeHero,
-  RealExamplesPreview,
-  ReferenceWorkflow,
-  ShotTypeEngineSelector,
-  TransparentPricingBlock,
   WorkflowSeoSummary,
   type WorkflowSeoSummaryCopy,
 } from '@/components/marketing/home/HomeRedesignSections';
@@ -22,13 +22,11 @@ import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import {
   BEST_FOR_MAIN_SLUGS,
   buildBestForGuideCards,
-  buildComparisonCardsWithExampleMedia,
   buildHeroContent,
   buildProgrammedHeroItems,
   buildProofStats,
   computeEngineStats,
   filterProviderItems,
-  filterToolCards,
   loadHomepageExamples,
   selectHomepageHeroPreviews,
   loadProgrammedHomepageHeroSlots,
@@ -71,57 +69,40 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const proofStats = buildProofStats(content, stats, locale, successfulGenerationCount);
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
-  const comparisons = await buildComparisonCardsWithExampleMedia(content, examples);
+  const engineScores = await loadEngineScores();
+  const comparisonScores = buildHomeComparisonData(engineScores);
   const providers = filterProviderItems(content);
-  const tools = filterToolCards(content, stats);
   const mcpLink = getMcpInternalLink(locale, 'home');
-  const softwareSchema = buildSoftwareSchema(content);
+  const softwareSchema = buildSoftwareSchema(content, locale);
   const faqSchema = buildFaqSchema(content.faq.items);
   const itemListSchema = buildItemListSchema(content, providers);
 
   return (
-    <div className="home-monochrome">
+    <div className="home-monochrome home-cinema">
       <HomeHero
         copy={hero}
         proofStats={proofStats}
         previews={selectHomepageHeroPreviews(examples)}
         programmedHeroItems={programmedHeroItems}
-        assistantLink={getMcpInternalLink(locale, 'homeHero')}
       />
+      <DeferredMarketingContent><HomeCreationSection locale={locale} assistantHref={mcpLink?.href} /></DeferredMarketingContent>
+      <DeferredMarketingContent><HomeCreativeWorlds locale={locale} cards={primaryBestForCards} examples={examples} providers={providers} examplesCopy={content.examples} /></DeferredMarketingContent>
       <DeferredMarketingContent>
-        <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
+        <HomeModelChoice locale={locale} scores={comparisonScores} startupFameLabel={startupFameLabel} comparisons={buildHomeComparisonLinks()}/>
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <RealExamplesPreview copy={content.examples} examples={examples} providers={providers} />
+        <HomeToolsGallery locale={locale} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
-      </DeferredMarketingContent>
-      {mcpLink ? (
-        <DeferredMarketingContent>
-          <HomeAssistantWorkflow locale={locale} href={mcpLink.href} />
-        </DeferredMarketingContent>
-      ) : null}
-      <DeferredMarketingContent>
-        <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
+        <HomePricingSection locale={locale} models={buildHomePriceDemo(locale)} copy={content.pricingTrust} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <AiVideoToolbox copy={content.toolbox} tools={tools} />
-      </DeferredMarketingContent>
-      <DeferredMarketingContent>
-        <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
-      </DeferredMarketingContent>
-      <DeferredMarketingContent>
-        {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} /> : null}
+        {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} locale={locale} /> : null}
         <HomeFaq copy={content.faq} items={content.faq.items} />
       </DeferredMarketingContent>
-      <Script id="home-webapp-jsonld" type="application/ld+json">
-        {JSON.stringify(softwareSchema)}
-      </Script>
+      <script id="home-webapp-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareSchema) }} />
       <script id="home-faq-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqSchema) }} />
-      <Script id="home-provider-itemlist-jsonld" type="application/ld+json">
-        {JSON.stringify(itemListSchema)}
-      </Script>
+      <script id="home-provider-itemlist-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListSchema) }} />
     </div>
   );
 }

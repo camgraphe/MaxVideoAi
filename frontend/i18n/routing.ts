@@ -198,5 +198,15 @@ export const routing = defineRouting({
       fr: '/integrations/codex',
       es: '/integraciones/codex',
     },
+    '/integrations/openclaw': {
+      en: '/integrations/openclaw',
+      fr: '/integrations/openclaw',
+      es: '/integraciones/openclaw',
+    },
+    '/integrations/n8n': {
+      en: '/integrations/n8n',
+      fr: '/integrations/n8n',
+      es: '/integraciones/n8n',
+    },
   },
 });

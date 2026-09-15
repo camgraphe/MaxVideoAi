@@ -8,7 +8,7 @@ import styles from './AngleLanding.module.css';
 
 function AngleWorkspaceSection({ content }: { content: AngleLandingContent }) {
   return (
-    <section className={styles.workspaceSection} aria-labelledby="angle-workspace-title">
+    <section id="workspace" className={styles.workspaceSection} aria-labelledby="angle-workspace-title">
       <div className="container-page max-w-6xl">
         <AngleSectionIntro
           eyebrow={content.workspace.eyebrow}
@@ -23,20 +23,16 @@ function AngleWorkspaceSection({ content }: { content: AngleLandingContent }) {
             <span>{content.workspace.topRight}</span>
           </div>
           <div className={styles.workspaceWindow}>
-            <div className={styles.workspaceChrome} aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
             <p>{content.workspace.windowLabel}</p>
             <div className={styles.workspaceImage}>
               <Image
                 src={ANGLE_ORBIT_ASSETS.workspace}
+                unoptimized
                 alt={content.workspace.imageAlt}
                 fill
                 loading="lazy"
                 sizes="(max-width: 1440px) 100vw, 1152px"
-                className="object-cover object-top"
+                className="object-contain"
               />
             </div>
           </div>
@@ -96,7 +92,7 @@ function AngleQuestionsSection({ content }: { content: AngleLandingContent }) {
         <p className={styles.limitsParagraph}>{content.faq.limits}</p>
         <div className={styles.questionList}>
           {content.faq.items.map((item) => (
-            <details key={item.question}>
+            <details key={item.question} name="angle-faq">
               <summary>
                 <span>{item.question}</span>
                 <ChevronDown aria-hidden="true" />

@@ -1,3 +1,6 @@
+import { McpIntegrationCards } from '@/components/marketing/mcp/McpIntegrationCards';
+import { McpHostProofCard } from '../../mcp/_components/McpHostProofCard';
+import { getMcpEditorialCopy } from '@/components/marketing/mcp/mcp-editorial-copy';
 import type { AppLocale } from '@/i18n/locales';
 import { AssistantFirstRequest } from '@/components/marketing/AssistantFirstRequest';
 import type { McpPublicationState } from '@/lib/mcp-publication';
@@ -23,14 +26,16 @@ export function IntegrationPageView({
   hostProof?: McpHostProof | null;
 }) {
   return (
-    <div className="border-t border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg dark:text-white">
-      <IntegrationHeroSection copy={copy} publication={publication} locale={locale} hostProof={hostProof} />
+    <div className="mcp-redesign">
+      <IntegrationHeroSection copy={copy} publication={publication} locale={locale} />
+      {hostProof && publication.showPaidGenerationClaim ? <section id="real-result" className="mcp-integration-proof mcp-section"><div className="container-page mcp-proof-grid"><div><p className="mcp-eyebrow">{getMcpEditorialCopy(locale).proofEyebrow}</p><h2>{getMcpEditorialCopy(locale).proofTitle}</h2><p className="mcp-lead">{getMcpEditorialCopy(locale).proofBody}</p></div><McpHostProofCard proof={hostProof}/></div></section> : null}
       <IntegrationSetupSection compatibility={compatibility} copy={copy} locale={locale} />
       {publication.connectionAvailable && publication.showPaidGenerationClaim ? (
         <AssistantFirstRequest locale={locale} />
       ) : null}
       <IntegrationWorkflowSection copy={copy} publication={publication} />
       <IntegrationTroubleshootingSection copy={copy} locale={locale} publication={publication} />
+      <McpIntegrationCards locale={locale} compact />
     </div>
   );
 }

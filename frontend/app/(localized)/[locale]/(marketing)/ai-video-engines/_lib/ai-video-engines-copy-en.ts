@@ -15,6 +15,8 @@ export const EN_HUB_COPY: HubCopy = {
         strengthsLabel: 'Strengths',
         strengthsFallback: 'General purpose video',
         modeLabels: {
+          extend: 'Extend',
+          retake: 'Retake',
           t2v: 'Text-to-video',
           i2v: 'Image-to-video',
           v2v: 'Video-to-video',

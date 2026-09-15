@@ -227,9 +227,9 @@ export const SPEC_TITLE_BASE: Record<AppLocale, string> = {
 };
 
 export const SPECS_DECISION_NOTES: Record<AppLocale, string> = {
-  en: 'The limits that shape your renders.',
-  fr: 'Les limites qui structurent vos rendus.',
-  es: 'Los límites que definen tus renders.',
+  en: 'Formats, settings and limits to check before creating.',
+  fr: 'Les formats, réglages et limites à connaître avant de créer.',
+  es: 'Los formatos, ajustes y límites que conviene conocer antes de crear.',
 };
 
 export const SPEC_STATUS_LABELS: Record<AppLocale, { supported: string; notSupported: string; pending: string }> = {

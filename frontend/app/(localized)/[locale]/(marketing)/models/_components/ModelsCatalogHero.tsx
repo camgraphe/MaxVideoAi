@@ -1,8 +1,8 @@
 import Image from 'next/image';
+import { CREATIVE_FILMS } from '@/components/marketing/creative-films';
 import { ArrowRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { MODELS_HERO_IMAGE_URL } from '../_lib/models-catalog-utils';
 import type { ModelsCatalogDecisionBadge, ModelsCatalogTopPick } from '../_lib/models-catalog-decision-data';
 import { ModelsCatalogTopPicksPanel } from './ModelsCatalogTopPicksPanel';
 
@@ -38,22 +38,9 @@ export function ModelsCatalogHero({
   topPicksViewAllLabel,
 }: ModelsCatalogHeroProps) {
   return (
-    <section className="relative isolate overflow-hidden border-b border-hairline bg-bg">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <Image
-          src={MODELS_HERO_IMAGE_URL}
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center opacity-45 mix-blend-multiply dark:opacity-25 dark:mix-blend-screen dark:invert"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--bg)_0%,rgba(255,255,255,0.88)_48%,rgba(255,255,255,0.18)_100%)] dark:bg-[linear-gradient(90deg,var(--bg)_0%,rgba(7,11,18,0.82)_48%,rgba(7,11,18,0.22)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent_0%,var(--bg)_100%)]" />
-      </div>
+    <section className="catalog-editorial-hero relative isolate overflow-hidden border-b border-hairline bg-bg">
       <div className="container-page relative z-10 max-w-[1248px] py-10 sm:py-12 lg:min-h-[430px] lg:py-10">
-        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_352px] lg:items-start xl:grid-cols-[minmax(0,1fr)_370px]">
+        <div className="catalog-opening">
           <div className="min-w-0">
             <header className="min-w-0 max-w-[720px]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{eyebrow}</p>
@@ -102,10 +89,9 @@ export function ModelsCatalogHero({
             </div>
           </div>
 
-          {topPicks.length ? (
-            <ModelsCatalogTopPicksPanel title={topPicksTitle} viewAllLabel={topPicksViewAllLabel} items={topPicks} />
-          ) : null}
+          <div className="catalog-creative-stack" aria-hidden="true">{[CREATIVE_FILMS[0],CREATIVE_FILMS[3],CREATIVE_FILMS[1]].map((film)=><div key={film.key}><Image src={film.poster} alt="" fill sizes="(max-width: 700px) 55vw, 360px"/><span>{film.model}</span></div>)}</div>
         </div>
+        {topPicks.length ? <ModelsCatalogTopPicksPanel title={topPicksTitle} viewAllLabel={topPicksViewAllLabel} items={topPicks}/> : null}
       </div>
     </section>
   );

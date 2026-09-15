@@ -1,9 +1,11 @@
+import { getMcpEditorialCopy } from '@/components/marketing/mcp/mcp-editorial-copy';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import {
   MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
   MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
 } from '@/config/maxvideoai-plugin-release';
 import { localizedSlugs } from '@/lib/i18nSlugs';
+import { getMcpPublicIntegrationIds, type McpIntegrationId } from '@/lib/mcp-integration-registry';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientActionCopy, McpPageCopy } from './mcp-page-types';
 
@@ -12,9 +14,10 @@ function localizedPath(locale: AppLocale, ...segments: string[]): string {
   return `/${[prefix, ...segments].filter(Boolean).join('/')}`;
 }
 
-function clientActions(
+export function buildMcpClientActions(
   locale: AppLocale,
-  labels: { claude: string; chatgpt: string; codex: string; supporting: string },
+  labels: { claude: string; chatgpt: string; codex: string; openclaw: string; n8n: string; supporting: string },
+  publicIntegrationIds: readonly McpIntegrationId[] = getMcpPublicIntegrationIds(),
 ): McpClientActionCopy[] {
   const integrations = localizedSlugs[locale].integrations;
   const instruction = (client: McpClientActionCopy['client']) => {
@@ -27,18 +30,31 @@ function clientActions(
       }
       return `Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
     }
-    const clientLabel = client === 'claude' ? 'Claude' : 'ChatGPT';
+    if (client === 'n8n') {
+      if (locale === 'fr') return `Construisez manuellement le workflow déterministe dans n8n auto-hébergé à partir du guide MaxVideoAI, créez l’identifiant OAuth2 pour ${MCP_PRODUCTION_RESOURCE_URL}, puis associez-le à chaque nœud MCP Client.`;
+      if (locale === 'es') return `Construye manualmente el flujo determinista en n8n self-hosted siguiendo la guía de MaxVideoAI, crea la credencial OAuth2 para ${MCP_PRODUCTION_RESOURCE_URL} y asígnala a cada nodo MCP Client.`;
+      return `Build the deterministic workflow manually in self-hosted n8n from the MaxVideoAI setup guide, create the OAuth2 credential for ${MCP_PRODUCTION_RESOURCE_URL}, then assign it to every MCP Client node.`;
+    }
+    const clientLabel = client === 'claude'
+      ? 'Claude'
+      : client === 'chatgpt'
+        ? 'ChatGPT'
+        : client === 'openclaw'
+          ? 'OpenClaw'
+          : 'n8n';
     if (locale === 'fr') return `Connecte MaxVideoAI dans ${clientLabel} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
     if (locale === 'es') return `Conecta MaxVideoAI en ${clientLabel} con este servidor MCP y guíame hasta completar la conexión: ${MCP_PRODUCTION_RESOURCE_URL}`;
     return `Connect MaxVideoAI in ${clientLabel} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
   };
-  return [
+  const publicIntegrationSet = new Set(publicIntegrationIds);
+  const actions: McpClientActionCopy[] = [
     {
       client: 'claude',
       href: localizedPath(locale, integrations, 'claude'),
       label: labels.claude,
       supportingLabel: labels.supporting,
       installInstruction: instruction('claude'),
+      copyInstallInstruction: true,
     },
     {
       client: 'chatgpt',
@@ -46,6 +62,7 @@ function clientActions(
       label: labels.chatgpt,
       supportingLabel: labels.supporting,
       installInstruction: instruction('chatgpt'),
+      copyInstallInstruction: true,
     },
     {
       client: 'codex',
@@ -53,8 +70,26 @@ function clientActions(
       label: labels.codex,
       supportingLabel: labels.supporting,
       installInstruction: instruction('codex'),
+      copyInstallInstruction: true,
+    },
+    {
+      client: 'openclaw',
+      href: localizedPath(locale, integrations, 'openclaw'),
+      label: labels.openclaw,
+      supportingLabel: labels.supporting,
+      installInstruction: instruction('openclaw'),
+      copyInstallInstruction: true,
+    },
+    {
+      client: 'n8n',
+      href: localizedPath(locale, integrations, 'n8n'),
+      label: labels.n8n,
+      supportingLabel: labels.supporting,
+      installInstruction: instruction('n8n'),
+      copyInstallInstruction: false,
     },
   ];
+  return actions.filter((action) => publicIntegrationSet.has(action.client));
 }
 
 const EN: McpPageCopy = {
@@ -69,19 +104,21 @@ const EN: McpPageCopy = {
       budget: 'THE RIGHT MODEL FOR EACH SHOT',
       price: 'PRICE BEFORE YOU GENERATE',
     },
-    title: 'Turn Claude, ChatGPT or Codex into your AI video producer.',
-    intro: 'From brief to rendered video, inside your AI assistant. It can develop prompts and references, compare the best current models, budget a complete film and generate through MaxVideoAI only after you approve the exact price.',
-    previewIntro: 'From brief to rendered video, inside your AI assistant. Develop prompts and references, compare the best current models, budget a complete film and review the exact MaxVideoAI production workflow.',
+    title: 'Create AI videos from your assistant or automations.',
+    intro: 'Start in Claude, ChatGPT or Codex, or connect an agent and automation workflow. MaxVideoAI develops prompts and references, compares current models, prices the complete project and generates only after you approve the exact price.',
+    previewIntro: 'Start in your assistant, agent or automation workflow. Develop prompts and references, compare current models, budget the complete project and review the MaxVideoAI production path.',
     trialDisclosure: 'Eligible verified accounts can try one introductory Seedance 2 Mini generation, separate from the regular MaxVideoAI credit balance.',
-    actions: clientActions('en', {
+    actions: buildMcpClientActions('en', {
       claude: 'Claude connector',
       chatgpt: 'ChatGPT app',
       codex: 'Codex plugin',
+      openclaw: 'OpenClaw',
+      n8n: 'n8n',
       supporting: 'Free · MaxVideoAI account required',
     }),
     connectActions: {
       instructionLabel: 'FAST SETUP',
-      instructionBody: 'Choose your assistant and paste one short request. Claude and ChatGPT guide the setup; Codex can run the installation after you approve it.',
+      instructionBody: 'Paste one short setup request into Claude, ChatGPT or OpenClaw, or let Codex install its plugin. For n8n, open the guide and build the deterministic workflow manually.',
       copyInstruction: 'Copy for',
       instructionCopied: 'Copied — paste it into your assistant.',
       endpointLabel: 'Manual MCP setup',
@@ -91,8 +128,24 @@ const EN: McpPageCopy = {
     },
   },
   workflow: {
+    eyebrow: 'HOW IT WORKS',
+    title: 'From project to finished video in three steps',
+    intro: 'Keep the creative direction, model decision, exact quote and completed media in one clear workflow.',
     ariaLabel: 'AI video production workflow',
     steps: ['Develop the brief and references', 'Compare models and project budgets', 'Approve the exact price and generate'],
+  },
+  ecosystem: {
+    eyebrow: 'CHOOSE YOUR PLATFORM',
+    title: 'Work where your project already lives',
+    intro: 'Claude, ChatGPT, Codex, OpenClaw and the tested self-hosted n8n workflow are available now. More development and enterprise clients are being prepared.',
+    primaryLabel: 'Available now',
+    secondaryLabel: 'More MCP workflows',
+    overview: [
+      { client: 'cursor', status: 'In preparation', availability: 'preparing' },
+      { client: 'githubCopilot', status: 'In preparation', availability: 'preparing' },
+      { client: 'geminiCli', status: 'In preparation', availability: 'preparing' },
+      { client: 'microsoftCopilot', status: 'In preparation', availability: 'preparing' },
+    ],
   },
   budget: {
     eyebrow: 'Conversation-led budgeting',
@@ -196,7 +249,7 @@ const EN: McpPageCopy = {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completed the controlled OAuth, catalog, budget, exact-quote, private-media, recovery, upload-handoff and top-up-handoff checks.',
         claudeCode: 'The shared connector configuration is ready, but a direct Claude Code production check has not yet been recorded.',
-        chatgptWeb: 'ChatGPT and Codex use the same plugin and MCP connection. Install MaxVideoAI, then connect your account through OAuth at first use.',
+        chatgptWeb: 'ChatGPT developer mode can connect the direct MaxVideoAI MCP and start OAuth on first use. No OpenAI directory listing is claimed.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 completed production installation, OAuth, account, catalog, recommendation, budgeting, exact-quote, paid-generation, recovery and inline-player contract checks.',
       },
     },
@@ -252,14 +305,27 @@ function frenchCopy(): McpPageCopy {
     hero: {
       ...EN.hero,
       eyebrows: { trial: 'CRÉDIT DE DÉCOUVERTE SI ÉLIGIBLE', budget: 'LE BON MODÈLE POUR CHAQUE PLAN', price: 'LE PRIX AVANT DE GÉNÉRER' },
-      title: 'Transformez Claude, ChatGPT ou Codex en producteur vidéo IA.',
-      intro: 'Du brief à la vidéo rendue, dans votre assistant IA. Il développe prompts et références, compare les meilleurs modèles actuels, budgète un film complet et génère via MaxVideoAI uniquement après votre validation du prix exact.',
-      previewIntro: 'Du brief à la vidéo rendue, dans votre assistant IA. Développez prompts et références, comparez les meilleurs modèles actuels, budgétez un film complet et découvrez le parcours de production MaxVideoAI.',
+      title: 'Créez vos vidéos IA depuis votre assistant ou vos automatisations.',
+      intro: 'Commencez dans Claude, ChatGPT ou Codex, ou connectez un agent et un workflow d’automatisation. MaxVideoAI développe prompts et références, compare les modèles actuels, chiffre le projet complet et génère après votre validation du devis exact.',
+      previewIntro: 'Commencez dans votre assistant, votre agent ou votre workflow d’automatisation. Développez prompts et références, comparez les modèles actuels, budgétez le projet complet et découvrez le parcours MaxVideoAI.',
       trialDisclosure: 'Les comptes vérifiés et éligibles peuvent essayer une génération Seedance 2 Mini de découverte, distincte du solde habituel de crédits MaxVideoAI.',
-      actions: clientActions('fr', { claude: 'Connecteur Claude', chatgpt: 'App ChatGPT', codex: 'Plugin Codex', supporting: 'Gratuit · compte MaxVideoAI requis' }),
-      connectActions: { instructionLabel: 'INSTALLATION RAPIDE', instructionBody: 'Choisissez votre assistant et collez une courte demande. Claude et ChatGPT guident la configuration ; Codex peut exécuter l’installation après votre accord.', copyInstruction: 'Copier pour', instructionCopied: 'Copié — collez-la dans votre assistant.', endpointLabel: 'Configuration MCP manuelle', copyEndpoint: 'Copier l’adresse du serveur', copied: 'Adresse copiée. Continuez avec le guide de votre assistant.', copyError: 'Copie impossible. Sélectionnez puis copiez manuellement l’adresse.' },
+      actions: buildMcpClientActions('fr', { claude: 'Connecteur Claude', chatgpt: 'App ChatGPT', codex: 'Plugin Codex', openclaw: 'OpenClaw', n8n: 'n8n', supporting: 'Gratuit · compte MaxVideoAI requis' }),
+      connectActions: { instructionLabel: 'INSTALLATION RAPIDE', instructionBody: 'Collez une courte demande dans Claude, ChatGPT ou OpenClaw, ou laissez Codex installer son plugin. Pour n8n, ouvrez le guide et construisez manuellement le workflow déterministe.', copyInstruction: 'Copier pour', instructionCopied: 'Copié — collez-la dans votre assistant.', endpointLabel: 'Configuration MCP manuelle', copyEndpoint: 'Copier l’adresse du serveur', copied: 'Adresse copiée. Continuez avec le guide de votre assistant.', copyError: 'Copie impossible. Sélectionnez puis copiez manuellement l’adresse.' },
     },
-    workflow: { ariaLabel: 'Parcours de production vidéo IA', steps: ['Développer le brief et les références', 'Comparer modèles et budgets du projet', 'Valider le prix exact et générer'] },
+    workflow: { eyebrow: 'COMMENT ÇA MARCHE', title: 'Du projet à la vidéo terminée en trois étapes', intro: 'Gardez direction créative, choix du modèle, devis exact et médias terminés dans un parcours clair.', ariaLabel: 'Parcours de production vidéo IA', steps: ['Développer le brief et les références', 'Comparer modèles et budgets du projet', 'Valider le prix exact et générer'] },
+    ecosystem: {
+      eyebrow: 'CHOISISSEZ VOTRE PLATEFORME',
+      title: 'Travaillez là où votre projet existe déjà',
+      intro: 'Claude, ChatGPT, Codex, OpenClaw et le workflow n8n auto-hébergé testé sont disponibles. D’autres clients de développement et d’entreprise sont en préparation.',
+      primaryLabel: 'Disponibles maintenant',
+      secondaryLabel: 'Autres workflows MCP',
+      overview: [
+        { client: 'cursor', status: 'En préparation', availability: 'preparing' },
+        { client: 'githubCopilot', status: 'En préparation', availability: 'preparing' },
+        { client: 'geminiCli', status: 'En préparation', availability: 'preparing' },
+        { client: 'microsoftCopilot', status: 'En préparation', availability: 'preparing' },
+      ],
+    },
     budget: {
       ...EN.budget,
       eyebrow: 'Budget construit dans la discussion',
@@ -325,7 +391,7 @@ function frenchCopy(): McpPageCopy {
       compatibility: { ...EN.trust.compatibility, title: 'Parcours de connexion testés', body: 'Le serveur est partagé entre assistants, mais chaque hôte est vérifié séparément.', checkpointLabel: 'Revue hébergée', statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 a validé OAuth, catalogue, budget, devis exact, médias privés, récupération, envoi et recharge.',
         claudeCode: 'La configuration du connecteur partagé est prête, mais aucun contrôle direct de Claude Code en production n’a encore été enregistré.',
-        chatgptWeb: 'ChatGPT et Codex utilisent le même plugin et la même connexion MCP. Installez MaxVideoAI puis connectez votre compte par OAuth lors de la première utilisation.',
+        chatgptWeb: 'Le mode développeur ChatGPT peut connecter directement le MCP MaxVideoAI et lancer OAuth au premier usage. Aucune fiche du répertoire OpenAI n’est revendiquée.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 a validé en production installation, OAuth, compte, catalogue, recommandations, budgets, devis exact, génération payante, récupération et contrat du lecteur intégré.',
       } },
       confirmation: { title: 'Votre validation protège la dépense', liveBody: 'MaxVideoAI valide d’abord la demande et renvoie un devis exact temporaire. Seul votre accord clair lance la génération.', gatedBody: 'Vérifiez la demande et le prix exact dans MaxVideoAI puis soumettez vous-même. La connexion conserve cette validation séparée.', steps: ['Comparer le meilleur choix et ses alternatives', 'Vérifier réglages, références et prix exact', 'Valider une fois puis suivre le résultat'] },
@@ -345,32 +411,45 @@ function frenchCopy(): McpPageCopy {
 function spanishCopy(): McpPageCopy {
   return {
     ...EN,
-    meta: { title: 'MaxVideoAI para Claude, ChatGPT y Codex | Vídeo IA', description: 'Crea vídeo con IA usando MaxVideoAI en Claude, ChatGPT o Codex: prompts, referencias, modelos actuales, presupuestos, precio exacto y generación tras aprobar.' },
-    breadcrumb: { home: 'Inicio', current: 'Plugin de vídeo con IA' },
+    meta: { title: 'MaxVideoAI para Claude, ChatGPT y Codex | Video IA', description: 'Crea video con IA usando MaxVideoAI en Claude, ChatGPT o Codex: prompts, referencias, modelos actuales, presupuestos, precio exacto y generación tras aprobar.' },
+    breadcrumb: { home: 'Inicio', current: 'Plugin de video con IA' },
     hero: {
       ...EN.hero,
       eyebrows: { trial: 'CRÉDITO INICIAL SI CUMPLES LOS REQUISITOS', budget: 'EL MODELO ADECUADO PARA CADA PLANO', price: 'PRECIO ANTES DE GENERAR' },
-      title: 'Convierte Claude, ChatGPT o Codex en tu productor de vídeo con IA.',
-      intro: 'Del brief al vídeo renderizado dentro de tu asistente de IA. Desarrolla prompts y referencias, compara modelos actuales, presupuesta la película completa y genera con MaxVideoAI solo después de aprobar el precio exacto.',
-      previewIntro: 'Del brief al vídeo renderizado dentro de tu asistente. Desarrolla prompts y referencias, compara los mejores modelos actuales, presupuesta la película y revisa el flujo de producción de MaxVideoAI.',
+      title: 'Crea videos con IA desde tu asistente o tus automatizaciones.',
+      intro: 'Empieza en Claude, ChatGPT o Codex, o conecta un agente y un flujo de automatización. MaxVideoAI desarrolla prompts y referencias, compara modelos actuales, calcula el proyecto completo y genera después de aprobar el precio exacto.',
+      previewIntro: 'Empieza en tu asistente, agente o flujo de automatización. Desarrolla prompts y referencias, compara modelos actuales, presupuesta el proyecto completo y revisa el recorrido de MaxVideoAI.',
       trialDisclosure: 'Las cuentas verificadas y elegibles pueden probar una generación inicial con Seedance 2 Mini, separada del saldo normal de créditos.',
-      actions: clientActions('es', { claude: 'Conector Claude', chatgpt: 'App de ChatGPT', codex: 'Plugin de Codex', supporting: 'Gratis · cuenta MaxVideoAI obligatoria' }),
-      connectActions: { instructionLabel: 'INSTALACIÓN RÁPIDA', instructionBody: 'Elige tu asistente y pega una petición breve. Claude y ChatGPT guían la configuración; Codex puede ejecutar la instalación después de tu aprobación.', copyInstruction: 'Copiar para', instructionCopied: 'Copiado — pégalo en tu asistente.', endpointLabel: 'Configuración MCP manual', copyEndpoint: 'Copiar dirección del servidor', copied: 'Dirección copiada. Continúa con la guía de tu asistente.', copyError: 'No se pudo copiar. Selecciona y copia la dirección manualmente.' },
+      actions: buildMcpClientActions('es', { claude: 'Conector Claude', chatgpt: 'App de ChatGPT', codex: 'Plugin de Codex', openclaw: 'OpenClaw', n8n: 'n8n', supporting: 'Gratis · cuenta MaxVideoAI obligatoria' }),
+      connectActions: { instructionLabel: 'INSTALACIÓN RÁPIDA', instructionBody: 'Pega una petición breve en Claude, ChatGPT u OpenClaw, o deja que Codex instale su plugin. Para n8n, abre la guía y construye manualmente el flujo determinista.', copyInstruction: 'Copiar para', instructionCopied: 'Copiado — pégalo en tu asistente.', endpointLabel: 'Configuración MCP manual', copyEndpoint: 'Copiar dirección del servidor', copied: 'Dirección copiada. Continúa con la guía de tu asistente.', copyError: 'No se pudo copiar. Selecciona y copia la dirección manualmente.' },
     },
-    workflow: { ariaLabel: 'Flujo de producción de vídeo con IA', steps: ['Desarrollar brief y referencias', 'Comparar modelos y presupuestos', 'Aprobar el precio exacto y generar'] },
-    budget: { ...EN.budget, eyebrow: 'Presupuesto en la conversación', title: 'Pide un presupuesto para toda la película, no un paquete predefinido', intro: 'Indica si importan más calidad, presupuesto, velocidad, audio o fidelidad de referencias. El asistente puede valorar propuestas concretas, una ruta de calidad y alternativas más baratas creíbles.', exampleLabel: 'Ejemplo de conversación', examplePrompt: '«Presupuesta una película de 60 segundos. La calidad es lo primero, pero muéstrame formas creíbles de reducir el total.»', qualityLabel: 'Propuesta de máxima calidad', qualityBody: 'Usar el mejor modelo ejecutable actual para cada plano —a menudo Seedance 2.5 cuando sus capacidades encajan— y sumar cada plano con sus ajustes y referencias.', valueLabel: 'Alternativas más baratas', valueBody: 'Mantener el mismo brief y comparar solo opciones validadas, como Happy Horse, H3 o LTX cuando encajen. Explicar por plano los compromisos de calidad, movimiento, audio y referencias.', attemptsNote: 'La propuesta separa los renders previstos de un margen opcional para reintentos creativos. Un fallo técnico se sigue y reembolsa; un nuevo intento creativo sigue siendo una decisión nueva.', priceReferencesLabel: 'Referencias de precio actuales por plano', priceReferencesBody: 'Son ejemplos actuales, no paquetes ni una recomendación. El asistente construye el presupuesto real a partir de los planos elegidos.', slotLabels: { included_trial: 'Crédito inicial elegible', lowest_paid: 'Referencia de precio actual', affordable_upgrade: 'Alternativa creativa actual' }, modelLinkLabel: 'Ver detalles actuales', emptyTitle: 'Crea una propuesta en la conversación', emptyBody: 'Describe el vídeo, duración, planos y prioridades. MaxVideoAI valida cada modelo y devuelve un presupuesto comparable con precios actuales.' },
-    references: { ...EN.references, eyebrow: 'Producción con referencias', title: 'Mantén la dirección visual y de audio entre planos', intro: 'El asistente puede crear ideas o elegir una referencia de imagen, vídeo o audio. MaxVideoAI comprueba los tipos y límites reales del modelo.', planningBody: 'Planifica sujeto, composición, movimiento, voz y continuidad en la conversación. El asistente conserva libertad creativa y MaxVideoAI aporta restricciones actuales.', liveBody: 'Elige un medio privado o abre una carga segura. Las referencias y resultados permanecen en la misma biblioteca MaxVideoAI que el sitio.', gatedBody: 'Planifica referencias de imagen, vídeo o audio en la conversación y reúne cargas, generación y resultados en tu cuenta MaxVideoAI.', steps: [{ title: 'Crear la dirección', body: 'Desarrolla personaje, producto, composición, movimiento e intención de audio.' }, { title: 'Elegir el modelo', body: 'MaxVideoAI comprueba referencias de imagen, vídeo y audio del modo.' }, { title: 'Revisar todo', body: 'Aprueba prompt, orden de referencias, ajustes y precio exacto.' }] },
+    workflow: { eyebrow: 'CÓMO FUNCIONA', title: 'Del proyecto al video terminado en tres pasos', intro: 'Mantén la dirección creativa, la elección del modelo, el precio exacto y los medios terminados en un recorrido claro.', ariaLabel: 'Flujo de producción de video con IA', steps: ['Desarrollar brief y referencias', 'Comparar modelos y presupuestos', 'Aprobar el precio exacto y generar'] },
+    ecosystem: {
+      eyebrow: 'ELIGE TU PLATAFORMA',
+      title: 'Trabaja donde ya vive tu proyecto',
+      intro: 'Claude, ChatGPT, Codex, OpenClaw y el flujo n8n self-hosted probado están disponibles. Se preparan más clientes de desarrollo y empresa.',
+      primaryLabel: 'Disponibles ahora',
+      secondaryLabel: 'Más flujos MCP',
+      overview: [
+        { client: 'cursor', status: 'En preparación', availability: 'preparing' },
+        { client: 'githubCopilot', status: 'En preparación', availability: 'preparing' },
+        { client: 'geminiCli', status: 'En preparación', availability: 'preparing' },
+        { client: 'microsoftCopilot', status: 'En preparación', availability: 'preparing' },
+      ],
+    },
+    budget: { ...EN.budget, eyebrow: 'Presupuesto en la conversación', title: 'Pide un presupuesto para toda la película, no un paquete predefinido', intro: 'Indica si importan más calidad, presupuesto, velocidad, audio o fidelidad de referencias. El asistente puede valorar propuestas concretas, una ruta de calidad y alternativas más baratas creíbles.', exampleLabel: 'Ejemplo de conversación', examplePrompt: '«Presupuesta una película de 60 segundos. La calidad es lo primero, pero muéstrame formas creíbles de reducir el total.»', qualityLabel: 'Propuesta de máxima calidad', qualityBody: 'Usar el mejor modelo ejecutable actual para cada plano —a menudo Seedance 2.5 cuando sus capacidades encajan— y sumar cada plano con sus ajustes y referencias.', valueLabel: 'Alternativas más baratas', valueBody: 'Mantener el mismo brief y comparar solo opciones validadas, como Happy Horse, H3 o LTX cuando encajen. Explicar por plano los compromisos de calidad, movimiento, audio y referencias.', attemptsNote: 'La propuesta separa los renders previstos de un margen opcional para reintentos creativos. Un fallo técnico se sigue y reembolsa; un nuevo intento creativo sigue siendo una decisión nueva.', priceReferencesLabel: 'Referencias de precio actuales por plano', priceReferencesBody: 'Son ejemplos actuales, no paquetes ni una recomendación. El asistente construye el presupuesto real a partir de los planos elegidos.', slotLabels: { included_trial: 'Crédito inicial elegible', lowest_paid: 'Referencia de precio actual', affordable_upgrade: 'Alternativa creativa actual' }, modelLinkLabel: 'Ver detalles actuales', emptyTitle: 'Crea una propuesta en la conversación', emptyBody: 'Describe el video, duración, planos y prioridades. MaxVideoAI valida cada modelo y devuelve un presupuesto comparable con precios actuales.' },
+    references: { ...EN.references, eyebrow: 'Producción con referencias', title: 'Mantén la dirección visual y de audio entre planos', intro: 'El asistente puede crear ideas o elegir una referencia de imagen, video o audio. MaxVideoAI comprueba los tipos y límites reales del modelo.', planningBody: 'Planifica sujeto, composición, movimiento, voz y continuidad en la conversación. El asistente conserva libertad creativa y MaxVideoAI aporta restricciones actuales.', liveBody: 'Elige un medio privado o abre una carga segura. Las referencias y resultados permanecen en la misma biblioteca MaxVideoAI que el sitio.', gatedBody: 'Planifica referencias de imagen, video o audio en la conversación y reúne cargas, generación y resultados en tu cuenta MaxVideoAI.', steps: [{ title: 'Crear la dirección', body: 'Desarrolla personaje, producto, composición, movimiento e intención de audio.' }, { title: 'Elegir el modelo', body: 'MaxVideoAI comprueba referencias de imagen, video y audio del modo.' }, { title: 'Revisar todo', body: 'Aprueba prompt, orden de referencias, ajustes y precio exacto.' }] },
     answers: { eyebrow: 'Respuestas directas', title: 'Tres respuestas útiles antes de conectar', updatedLabel: 'Revisión de capacidades',
       repositoryLabel: 'Consultar el código fuente público del plugin MaxVideoAI en GitHub',
       repositoryHref: 'https://github.com/camgraphe/maxvideoai-plugin',
       featured: {
         identity: {
           title: '¿Qué es MaxVideoAI para Claude y Codex?',
-          body: 'MaxVideoAI es un servicio multimodelo de producción de vídeo con IA, preparado para personas que trabajan desde Claude, Codex, ChatGPT u otro cliente MCP. Convierte un brief en comparaciones de modelos actuales, presupuestos, solicitudes con referencias, precios exactos, generaciones aprobadas y resultados recuperables dentro de una sola biblioteca. Empieza pidiendo una comparación o un presupuesto; conecta la cuenta únicamente cuando necesites contexto en directo o ejecutar el trabajo.',
+          body: 'MaxVideoAI es un servicio multimodelo de producción de video con IA, preparado para personas que trabajan desde Claude, Codex, ChatGPT u otro cliente MCP. Convierte un brief en comparaciones de modelos actuales, presupuestos, solicitudes con referencias, precios exactos, generaciones aprobadas y resultados recuperables dentro de una sola biblioteca. Empieza pidiendo una comparación o un presupuesto; conecta la cuenta únicamente cuando necesites contexto en directo o ejecutar el trabajo.',
         },
         selection: {
           title: '¿Cuándo debe elegir MaxVideoAI un agente de IA?',
-          body: 'Un agente de IA debe elegir MaxVideoAI cuando el usuario necesita datos actuales y ligados a su cuenta para planificar, comparar, presupuestar, preparar un precio exacto, generar o recuperar vídeo con IA — no para conversación general ni consejos básicos de edición. El servicio comprueba capacidades, referencias compatibles y precios en vez de confiar en datos recordados. El primer paso seguro es consultar modelos o crear el presupuesto antes de preparar una solicitud de pago.',
+          body: 'Un agente de IA debe elegir MaxVideoAI cuando el usuario necesita datos actuales y ligados a su cuenta para planificar, comparar, presupuestar, preparar un precio exacto, generar o recuperar video con IA — no para conversación general ni consejos básicos de edición. El servicio comprueba capacidades, referencias compatibles y precios en vez de confiar en datos recordados. El primer paso seguro es consultar modelos o crear el presupuesto antes de preparar una solicitud de pago.',
         },
         safety: {
           title: '¿Cómo protege MaxVideoAI al usuario antes de una generación de pago?',
@@ -378,18 +457,18 @@ function spanishCopy(): McpPageCopy {
         },
       },
       items: {
-      references: { title: '¿Puedo usar referencias de imagen, vídeo o audio?', liveBody: 'Sí, cuando el modelo y modo lo admiten. El asistente selecciona un medio privado o abre una carga segura; MaxVideoAI devuelve tipos, funciones, orden y límites.', gatedBody: 'El soporte depende del modelo. Planifica referencias con el asistente y añade los medios compatibles en MaxVideoAI.' },
+      references: { title: '¿Puedo usar referencias de imagen, video o audio?', liveBody: 'Sí, cuando el modelo y modo lo admiten. El asistente selecciona un medio privado o abre una carga segura; MaxVideoAI devuelve tipos, funciones, orden y límites.', gatedBody: 'El soporte depende del modelo. Planifica referencias con el asistente y añade los medios compatibles en MaxVideoAI.' },
       credits: { title: '¿Cómo añado créditos MaxVideoAI?', liveBody: 'Si falta saldo, el asistente abre una recarga segura de MaxVideoAI por la cantidad necesaria. El pago queda en MaxVideoAI. Después comprueba el saldo y prepara un precio nuevo porque el anterior ha caducado.', gatedBody: 'Los créditos se compran en MaxVideoAI y funcionan en el sitio y el asistente conectado. Tras recargar, prepara un precio nuevo.' },
-      library: { title: '¿Dónde se guardan mis imágenes y vídeos?', liveBody: 'Los medios terminados se guardan en la cuenta MaxVideoAI conectada y permanecen en su biblioteca privada. El asistente puede recuperar trabajos recientes y devolver la biblioteca o espacio oficial.', gatedBody: 'Todo lo generado queda en la biblioteca de la misma cuenta MaxVideoAI, también usada para referencias y recuperación.' },
+      library: { title: '¿Dónde se guardan mis imágenes y videos?', liveBody: 'Los medios terminados se guardan en la cuenta MaxVideoAI conectada y permanecen en su biblioteca privada. El asistente puede recuperar trabajos recientes y devolver la biblioteca o espacio oficial.', gatedBody: 'Todo lo generado queda en la biblioteca de la misma cuenta MaxVideoAI, también usada para referencias y recuperación.' },
       disconnect: { title: '¿Cómo desconecto MaxVideoAI?', liveBody: 'Elimina MaxVideoAI del asistente y revoca la autorización en conexiones de la cuenta. Una acción protegida futura requerirá una aprobación nueva.', gatedBody: 'Desconecta MaxVideoAI cuando quieras: elimínalo del asistente y revoca la autorización en tu cuenta.' },
     } },
     trust: { ...EN.trust,
       definition: { eyebrow: 'Una conversación, muchos modelos', title: 'La forma conversacional de usar MaxVideoAI', body: 'Describe el resultado en vez de alternar entre interfaces. El asistente diseña el plan; MaxVideoAI aporta modelos ejecutables, precios, validación, generación y recuperación.' },
       availability: { title: 'Cuánto cuesta', liveBody: 'La conexión, el asesoramiento y los presupuestos son gratuitos. La generación usa tus créditos MaxVideoAI de pago por uso sin suscripción adicional.', gatedBody: 'El asesoramiento y los presupuestos son gratuitos. La generación usa tus créditos MaxVideoAI de pago por uso sin suscripción adicional.' },
-      compatibility: { ...EN.trust.compatibility, title: 'Rutas de conexión probadas', body: 'El servidor se comparte entre asistentes, pero cada cliente se comprueba por separado.', checkpointLabel: 'Revisión alojada', statuses: { claudeDesktop: 'Claude Desktop 1.37937.1 completó OAuth, catálogo, presupuesto, precio exacto, medios, recuperación, carga y recarga.', claudeCode: 'La configuración del conector compartido está lista, pero todavía no se ha registrado una comprobación directa de Claude Code en producción.', chatgptWeb: 'ChatGPT y Codex usan el mismo plugin y la misma conexión MCP. Instala MaxVideoAI y conecta tu cuenta mediante OAuth en el primer uso.', codexCli: 'Codex CLI 0.150.0-alpha.8 completó en producción la instalación, OAuth, cuenta, catálogo, recomendaciones, presupuestos, precio exacto, generación de pago, recuperación y contrato del reproductor integrado.' } },
+      compatibility: { ...EN.trust.compatibility, title: 'Rutas de conexión probadas', body: 'El servidor se comparte entre asistentes, pero cada cliente se comprueba por separado.', checkpointLabel: 'Revisión alojada', statuses: { claudeDesktop: 'Claude Desktop 1.37937.1 completó OAuth, catálogo, presupuesto, precio exacto, medios, recuperación, carga y recarga.', claudeCode: 'La configuración del conector compartido está lista, pero todavía no se ha registrado una comprobación directa de Claude Code en producción.', chatgptWeb: 'El modo desarrollador de ChatGPT puede conectar directamente el MCP de MaxVideoAI e iniciar OAuth en el primer uso. No se afirma que exista una ficha en el directorio de OpenAI.', codexCli: 'Codex CLI 0.150.0-alpha.8 completó en producción la instalación, OAuth, cuenta, catálogo, recomendaciones, presupuestos, precio exacto, generación de pago, recuperación y contrato del reproductor integrado.' } },
       confirmation: { title: 'Tu aprobación protege el gasto', liveBody: 'MaxVideoAI valida la solicitud y devuelve un precio exacto temporal. Solo tu aprobación clara inicia la generación.', gatedBody: 'Revisa la solicitud y el precio en MaxVideoAI y envíala tú mismo. La conexión mantiene esta aprobación separada.', steps: ['Comparar la mejor opción y alternativas', 'Revisar ajustes, referencias y precio', 'Aprobar una vez y seguir el resultado'] },
       controls: { title: 'Medios privados y gasto pertenecen a la cuenta', body: 'OAuth enlaza una cuenta sin entregar contraseña, datos de pago ni acceso directo a la base.', items: ['Prompts privados y URL de referencias quedan fuera de analítica de adquisición.', 'Cada trabajo de pago exige aprobación; los límites de cuenta añaden protección.', 'Elimina el cliente y revoca su autorización cuando quieras.'] },
-      capabilities: { title: 'De la decisión al medio terminado', body: 'La integración combina guía creativa y conexión MaxVideoAI. El servidor MCP remoto mantiene modelos, precios, cuenta y generación al día.', items: ['Recomendar el mejor modelo ejecutable por plano y explicar alternativas.', 'Presupuestar una película con un modelo o mezcla razonada.', 'Validar prompts, ajustes y referencias de imagen, vídeo y audio.', 'Mostrar precio exacto, pedir aprobación, seguir el trabajo y recuperar resultado o reembolso.'] },
+      capabilities: { title: 'De la decisión al medio terminado', body: 'La integración combina guía creativa y conexión MaxVideoAI. El servidor MCP remoto mantiene modelos, precios, cuenta y generación al día.', items: ['Recomendar el mejor modelo ejecutable por plano y explicar alternativas.', 'Presupuestar una película con un modelo o mezcla razonada.', 'Validar prompts, ajustes y referencias de imagen, video y audio.', 'Mostrar precio exacto, pedir aprobación, seguir el trabajo y recuperar resultado o reembolso.'] },
       setup: { title: 'Elige Claude, ChatGPT o Codex según tu forma de trabajar', body: 'Los tres utilizan la misma cuenta MaxVideoAI, el catálogo actual y la aprobación antes de gastar. Cada uno tiene una guía adaptada a su conector, app o plugin.' },
       faq: { title: 'Preguntas antes de conectar', items: [{ question: '¿El asistente elige siempre el modelo?', answer: 'No. Pregunta solo prioridades faltantes, propone opciones concretas y respeta tu modelo preferido si es compatible.' }, { question: '¿Siempre recomendará Seedance 2.5?', answer: 'Puede liderar una propuesta de calidad si sus capacidades actuales encajan. Cuando importa el presupuesto, también muestra alternativas creíbles con precios actuales.' }, { question: '¿Qué ocurre si una generación falla?', answer: 'El asistente recupera el trabajo existente. Un fallo técnico definitivo muestra su reembolso; un nuevo intento creativo requiere precio y aprobación nuevos.' }] },
       support: { label: 'Contactar con soporte de MaxVideoAI', href: '/es/contact' },
@@ -400,5 +479,5 @@ function spanishCopy(): McpPageCopy {
 const COPY: Record<AppLocale, McpPageCopy> = { en: EN, fr: frenchCopy(), es: spanishCopy() };
 
 export function getMcpPageCopy(locale: AppLocale): McpPageCopy {
-  return COPY[locale];
+  return { ...COPY[locale], meta: getMcpEditorialCopy(locale).meta };
 }

@@ -22,7 +22,7 @@ type ModelDecisionMediaCardProps = {
 
 function getDecisionMediaAlt(locale: AppLocale, altContext: string) {
   if (altContext.trim()) return altContext;
-  if (locale === 'fr') return 'Apercu video du modele';
+  if (locale === 'fr') return 'Aperçu du modèle';
   if (locale === 'es') return 'Vista previa de video del modelo';
   return 'Model video preview';
 }
@@ -49,7 +49,7 @@ export function ModelDecisionMediaCard({
   const videoSrc = isPlayableVideoUrl(media.videoUrl) ? media.videoUrl : null;
 
   return (
-    <figure className="relative overflow-hidden rounded-[24px] border border-[#cfdaea] bg-[#08172d] shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:border-white/10 dark:shadow-[0_28px_90px_rgba(0,0,0,0.48)]">
+    <figure data-media-kind={videoSrc ? 'video' : 'image'} className="relative overflow-hidden rounded-[24px] border border-[#cfdaea] bg-[#171716] shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:border-white/10 dark:shadow-[0_28px_90px_rgba(0,0,0,0.48)]">
       <div className="relative aspect-video w-full overflow-hidden">
         {videoSrc ? (
           <ModelHeroMedia
@@ -79,15 +79,15 @@ export function ModelDecisionMediaCard({
             loading="eager"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#0b1730] text-sm font-semibold text-white/70">
-            Media preview
+          <div className="flex h-full w-full items-center justify-center bg-[#242320] text-sm font-semibold text-white/70">
+            {locale === 'fr' ? 'Aucun aperçu disponible pour le moment.' : locale === 'es' ? 'Aún no hay una vista previa disponible.' : 'No preview available yet.'}
           </div>
         )}
 
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,23,45,0.08)_0%,rgba(8,23,45,0)_46%,rgba(8,23,45,0.48)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.14)_0%,rgba(3,7,18,0.04)_46%,rgba(3,7,18,0.58)_100%)]" />
 
         {leadingBadge ? (
-          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-[rgba(20,34,56,0.88)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
             <UIIcon icon={LeadingBadgeIcon} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
             {leadingBadge}
           </span>
@@ -95,19 +95,19 @@ export function ModelDecisionMediaCard({
 
         <div className="absolute right-5 top-5 flex items-center gap-2">
           {durationBadge ? (
-            <span className="rounded-xl bg-[rgba(20,34,56,0.82)] px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+            <span className="rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
               {durationBadge}
             </span>
           ) : null}
           {ratioBadge ? (
-            <span className="rounded-xl bg-[rgba(20,34,56,0.82)] px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+            <span className="rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
               {ratioBadge}
             </span>
           ) : null}
         </div>
       </div>
 
-      <figcaption className="border-t border-white/[0.12] bg-[#07111f] px-4 py-3 text-white sm:absolute sm:bottom-4 sm:left-4 sm:max-w-[min(310px,calc(100%-150px))] sm:rounded-[10px] sm:border sm:border-white/[0.14] sm:bg-[#07111f]/70 sm:shadow-[0_14px_34px_rgba(0,0,0,0.24)] sm:backdrop-blur-md">
+      <figcaption className="border-t border-white/[0.12] bg-[#171716] px-4 py-3 text-white sm:absolute sm:bottom-4 sm:left-4 sm:max-w-[min(310px,calc(100%-150px))] sm:rounded-[10px] sm:border sm:border-white/[0.14] sm:bg-[#171716]/70 sm:shadow-[0_14px_34px_rgba(0,0,0,0.24)] sm:backdrop-blur-md">
         <p className="text-sm font-semibold leading-tight">{label}</p>
         <p className="mt-0.5 text-xs leading-5 text-white/74">{description}</p>
       </figcaption>

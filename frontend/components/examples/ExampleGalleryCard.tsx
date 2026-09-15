@@ -87,7 +87,9 @@ export function ExampleGalleryCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={video.href} className="absolute inset-0 z-0" aria-label={watchAnchorText} prefetch={false}>
+      <Link href={video.href} className="absolute inset-0 z-0" aria-label={watchAnchorText} prefetch={false}
+        data-analytics-event="cta_click" data-analytics-cta-name="view_example_details"
+        data-analytics-cta-location="examples_gallery">
         <span className="sr-only">{watchAnchorText}</span>
       </Link>
       <div className="pointer-events-none relative z-10">

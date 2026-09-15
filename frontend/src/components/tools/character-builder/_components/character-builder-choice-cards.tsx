@@ -51,9 +51,9 @@ export const REALISM_CARD_META: Record<string, { background: string; accent: str
 };
 
 const CHARACTER_SHEET_PREVIEW_URL =
-  'https://media.maxvideoai.com/marketing/marketing/effc3c18-125d-4460-9adc-75216ac599cb.png';
+  '/assets/tools/redesign/character-sheet-v1.webp';
 const PORTRAIT_REFERENCE_PREVIEW_URL =
-  'https://media.maxvideoai.com/marketing/marketing/cf56ca3b-ee2f-4daa-b328-e88b43efc390.png';
+  '/assets/tools/redesign/character-portrait-v1.webp';
 
 export function VisualChoiceCard({
   selected,
@@ -224,7 +224,7 @@ export function OutputPreviewCard({
             <img
               src={CHARACTER_SHEET_PREVIEW_URL}
               alt={title}
-              className="h-full w-full object-cover object-top"
+              className="h-full w-full object-contain object-center pb-14 bg-[#b9aa97]"
               loading="lazy"
             />
           ) : mode === 'portrait-reference' ? (

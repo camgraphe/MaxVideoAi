@@ -35,7 +35,7 @@ export function ModelDecisionPromptingSection({
   const { demo, ui } = viewModel;
 
   return (
-    <section id={viewModel.id} className={`${SECTION_SCROLL_MARGIN} space-y-4`}>
+    <section id={viewModel.id} className={`model-prompt-studio ${SECTION_SCROLL_MARGIN} space-y-4`}>
       <div className="rounded-[28px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-7">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-[2rem] font-semibold leading-tight tracking-normal text-slate-950 dark:text-white sm:text-[2.45rem]">
@@ -65,8 +65,8 @@ export function ModelDecisionPromptingSection({
         </div>
 
         {viewModel.referenceWorkflows.length ? (
-          <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:!bg-white/[0.035]">
-            <h3 className="!text-left text-base font-semibold text-slate-950 dark:text-white">{viewModel.section.referencesTitle}</h3>
+          <details className="model-disclosure model-reference-guide mt-6">
+            <summary><h3>{viewModel.section.referencesTitle}</h3><span className="model-disclosure-sign" aria-hidden="true" /></summary>
             <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-5">
               {viewModel.referenceWorkflows.map((workflow, index) => {
                 const Icon = REFERENCE_ICONS[index] ?? Sparkles;
@@ -81,7 +81,7 @@ export function ModelDecisionPromptingSection({
                 );
               })}
             </div>
-          </div>
+          </details>
         ) : null}
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.18fr)_minmax(340px,0.82fr)]">

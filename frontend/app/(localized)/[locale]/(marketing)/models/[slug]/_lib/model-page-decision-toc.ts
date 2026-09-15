@@ -35,7 +35,7 @@ const DECISION_TOC_COPY: Record<
     useCases: 'Conseils',
   },
   es: {
-    overview: 'En esta pagina',
+    overview: 'En esta página',
     pricing: 'Precios',
     useCases: 'Consejos',
   },

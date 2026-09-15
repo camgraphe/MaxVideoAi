@@ -369,15 +369,13 @@
   "decision": {
     "modelSlug": "veo-3-1",
     "hero": {
-      "eyebrow": "MODELO DE VIDEO PREMIUM DE GOOGLE",
+      "eyebrow": "Video con IA · Google",
       "title": "Veo 3.1",
-      "subtitle": "Clips cortos pulidos con audio nativo, tomas guiadas por referencias, salida 4K y flujos first-last o extend.",
+      "subtitle": "Una escena de cine, con sonido.",
       "subtitleHighlights": [
-        "clips cortos pulidos",
-        "audio nativo",
-        "salida 4K"
+        "Una escena de cine, con sonido"
       ],
-      "paragraph": "Usa Veo 3.1 para tomas premium de 4, 6 u 8 segundos cuando necesitas texto a video, imágenes iniciales, referencias fijas, control first/last-frame, salida 4K o extensión de clip dentro de MaxVideoAI.",
+      "paragraph": "Google Veo 3.1 genera videos con IA a partir de texto o imágenes, con audio nativo. Crea tomas de 4, 6 u 8 segundos, guíalas con referencias visuales o extiende un clip existente. Los ajustes disponibles dependen del modo de creación.",
       "primaryCta": {
         "label": "Generar con Veo 3.1",
         "href": "/app?engine=veo-3-1"

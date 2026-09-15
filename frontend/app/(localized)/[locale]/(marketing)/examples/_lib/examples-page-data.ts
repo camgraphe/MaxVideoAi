@@ -216,9 +216,7 @@ export function buildExamplesGalleryPresentation({
 export function buildExamplesMainVideoFeatureData({
   locale,
   mainVideo,
-  modelLandingSummary,
   modelLandingLabel,
-  modelLandingHeroSubtitle,
 }: {
   locale: AppLocale;
   mainVideo: {
@@ -241,9 +239,9 @@ export function buildExamplesMainVideoFeatureData({
           mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null,
           mainVideo?.video.durationSec ?? null
         );
-  const promptFull = locale === 'en' ? mainVideo?.video.prompt?.trim() || null : null;
+  const promptFull = mainVideo?.video.prompt?.trim() || null;
   const heroLine = mainVideo
-    ? buildMainVideoHeroLine(locale, mainVideoModelLabel, modelLandingHeroSubtitle ?? modelLandingSummary ?? null)
+    ? buildMainVideoHeroLine(locale, mainVideo.card.engineLabel)
     : null;
   const contentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
   const poster =

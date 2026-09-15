@@ -77,19 +77,18 @@ const readiness: ModelLaunchReadinessEntry[] = [
   { waveId: 'p1', modelId: 'minimax-h3-max', familyId: 'hailuo', acceptedAssetCount: 2, familyPlaylistSlug: 'family-hailuo', modelPlaylistSlug: 'examples-minimax-h3-max' },
 ];
 
-test('the P1 model and comparison menus publish atomically without changing canonicals', () => {
+test('editorial menus remain bounded and filter unpublished P1 models and pairs', () => {
   const models = publishedP1Models();
   const modelMenu = buildMarketingModelMenu(models);
   const compareMenu = buildMarketingCompareMenu(models);
-
   assert.ok(modelMenu.length <= 11);
-  for (const id of NEW_MODEL_IDS) assert.ok(modelMenu.some(({ slug }) => slug === id), id);
-  assert.ok(modelMenu.some(({ slug, label }) => slug === 'gemini-omni-flash' && label === 'Gemini Omni Flash 1.1'));
-  assert.ok(modelMenu.some(({ slug }) => slug === 'minimax-h3'), 'generic H3 canonical stays visible');
-  assert.equal(modelMenu.some(({ slug }) => slug === 'gemini-omni-flash-1-1'), false);
-
+  for (const slug of ['minimax-h3', 'minimax-h3-max', 'kling-3-turbo-pro']) assert.ok(modelMenu.some(item => item.slug === slug));
   assert.ok(compareMenu.length <= 10);
-  for (const slug of P1_COMPARISONS) assert.ok(compareMenu.some((item) => item.slug === slug), slug);
+  assert.ok(compareMenu.some(item => item.slug === 'minimax-h3-vs-minimax-h3-max'));
+  const gated = models.map(model => model.id === 'minimax-h3-max' ? {...model, publication: {...model.publication, model: {...model.publication.model, published: false}, compare: {...model.publication.compare, published: false}}} : model);
+  assert.ok(!buildMarketingModelMenu(gated).some(item => item.slug === 'minimax-h3-max'));
+  assert.ok(!buildMarketingCompareMenu(gated).some(item => item.slug.includes('minimax-h3-max')));
+  // Menu promotion is editorial; registry publication/canonical coverage is tested below.
 });
 
 test('P1 family and examples projections attach every model to the existing family routes', () => {
