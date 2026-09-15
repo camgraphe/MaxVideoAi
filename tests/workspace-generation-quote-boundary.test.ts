@@ -4,6 +4,8 @@ import { JSDOM } from 'jsdom';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import type { GroupMemberSummary } from '../frontend/types/groups';
+import type { VideoGroup } from '../frontend/types/video-groups';
 
 async function mount() {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
@@ -12,14 +14,18 @@ async function mount() {
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const wallet: Array<(response: Response) => void> = [];
   const generated: RequestInit[] = [];
+  const generationResponses: Array<(response: Response) => void> = [];
   const walletRequests: RequestInit[] = [];
-  for (const [key, value] of Object.entries({ window: dom.window, self: dom.window, document: dom.window.document, navigator: dom.window.navigator, React, IS_REACT_ACT_ENVIRONMENT: true, BroadcastChannel: undefined,
+  for (const [key, value] of Object.entries({ window: dom.window, self: dom.window, document: dom.window.document, navigator: dom.window.navigator, CustomEvent: dom.window.CustomEvent, Event: dom.window.Event, React, IS_REACT_ACT_ENVIRONMENT: true, BroadcastChannel: undefined,
     fetch: (url: string, init: RequestInit) => {
       if (url === '/api/wallet') { walletRequests.push(init); return new Promise<Response>(resolve => wallet.push(resolve)); }
-      assert.equal(url, '/api/generate'); generated.push(init); return new Promise<Response>(() => {});
+      assert.equal(url, '/api/generate'); generated.push(init); return new Promise<Response>(resolve => generationResponses.push(resolve));
     },
   })) { previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key)); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value }); }
   const { useWorkspaceGenerationRunner } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner');
+  const { useWorkspaceRouteFormState } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState');
+  const { useWorkspaceRenderState } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRenderState');
+  const { useWorkspacePreviewState } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePreviewState');
   const { supabase } = await import('../frontend/src/lib/supabaseClient');
   const original = supabase.auth.getSession;
   const sessions: Array<(value: Awaited<ReturnType<typeof original>>) => void> = [];
@@ -115,13 +121,50 @@ async function mount() {
   } as Parameters<typeof useWorkspaceGenerationRunner>[0];
 
   let generation!: ReturnType<typeof useWorkspaceGenerationRunner>;
-  function Fixture() { generation = useWorkspaceGenerationRunner(options); return null; }
+  let routeForm!: ReturnType<typeof useWorkspaceRouteFormState>;
+  let preview!: ReturnType<typeof useWorkspacePreviewState>;
+  const recentJobs: never[] = [];
+  const engineIdByLabel = new Map<string, string>();
+  function Fixture() {
+    routeForm = useWorkspaceRouteFormState('fixture-user');
+    const renders = useWorkspaceRenderState({ recentJobs, engineIdByLabel, provider: 'fal',
+      storageScope: 'fixture-user', hydratedForScope: 'fixture-user', formIterations: options.form?.iterations,
+      compositeOverride: routeForm.compositeOverride, compositeOverrideSummary: routeForm.compositeOverrideSummary,
+      writeScopedStorage: noOp, workspaceCopy: options.workspaceCopy });
+    generation = useWorkspaceGenerationRunner({ ...options, ...renders,
+      onRenderStarted: routeForm.clearCompositePreview });
+    preview = useWorkspacePreviewState({ provider: 'fal', recentJobs, selectedPreview: renders.selectedPreview,
+      pendingSummaryMap: renders.pendingSummaryMap, compositeOverride: routeForm.compositeOverride,
+      activeVideoGroup: renders.activeVideoGroup, initialPreviewGroup: null, effectiveRequestedEngineId: null,
+      effectiveRequestedEngineToken: null, requestedJobId: null, fromVideoId: null });
+    return null;
+  }
   const root = createRoot(dom.window.document.getElementById('root')!);
   let mounted = true;
   let submission: Promise<void> | undefined;
   await act(async () => root.render(React.createElement(Fixture)));
   return {
     wallet, walletRequests, generated, errors, topups,
+    get preview() { return preview.displayCompositeGroup; },
+    async complete() {
+      await act(async () => {
+        generationResponses[0](new Response(JSON.stringify({ ok: true, jobId: 'job_completed_fixture',
+          status: 'completed', videoUrl: 'https://example.com/ready.mp4' })));
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+    },
+    async selectExisting() {
+      const group: VideoGroup = { id: 'previous-job', provider: 'fal', layout: 'x1', status: 'ready',
+        createdAt: '2026-09-15T00:00:00Z', items: [{ id: 'previous-job', jobId: 'previous-job',
+          url: 'https://example.com/previous.mp4', aspect: '16:9' }] };
+      const member: GroupMemberSummary = { id: 'previous-job', jobId: 'previous-job', engineLabel: 'Test Video',
+        durationSec: 5, createdAt: group.createdAt, source: 'job', status: 'completed', videoUrl: group.items[0].url };
+      await act(async () => {
+        routeForm.setCompositeOverride(group);
+        routeForm.setCompositeOverrideSummary({ id: group.id, source: 'history', count: 1,
+          totalPriceCents: null, createdAt: group.createdAt, hero: member, previews: [], members: [member] });
+      });
+    },
     sessionHint() { dom.window.sessionStorage.setItem('last-known:user-id', 'fixture-user'); },
     get pendingSessions() { return sessions.length; },
     get options() { return options; },
@@ -223,5 +266,60 @@ test('implicit authFetch callers still resolve session and attach its token', as
     await f.session(); assert.equal(f.wallet.length, 1);
     assert.equal(new Headers(f.walletRequests[0].headers).get('Authorization'), 'Bearer fixture-a');
     await f.balance(); await response;
+  } finally { await f.dispose(); }
+});
+
+
+test('a launched render replaces the previous rail preview and displays its completed video without a click', async () => {
+  const f = await mount();
+  try {
+    await f.selectExisting();
+    assert.equal(f.preview?.items[0].id, 'previous-job');
+    await f.start(); await f.session();
+    assert.equal(f.preview?.items[0].id, 'previous-job', 'preflight does not clear the preview');
+    await f.balance();
+    assert.equal(f.generated.length, 1);
+    assert.equal(f.preview?.status, 'loading');
+    assert.notEqual(f.preview?.items[0].id, 'previous-job');
+    assert.equal(f.preview?.items[0].meta?.observation?.stage, 'submitting');
+    await f.complete();
+    assert.equal(f.preview?.status, 'ready');
+    assert.equal(f.preview?.items[0].url, 'https://example.com/ready.mp4');
+    await f.selectExisting();
+    assert.equal(f.preview?.items[0].id, 'previous-job', 'manual selection remains possible while rendering');
+  } finally { await f.dispose(); }
+});
+
+test('an insufficient balance keeps the selected preview', async () => {
+  const f = await mount();
+  try {
+    await f.selectExisting(); await f.start(); await f.session(); await f.balance(0);
+    assert.equal(f.generated.length, 0);
+    assert.equal(f.preview?.items[0].id, 'previous-job');
+  } finally { await f.dispose(); }
+});
+
+
+test('choosing a previous video during generation is not overridden by completion', async () => {
+  const f = await mount();
+  try {
+    await f.start(); await f.session(); await f.balance();
+    assert.equal(f.preview?.status, 'loading');
+    await f.selectExisting(); await f.complete();
+    assert.equal(f.preview?.items[0].id, 'previous-job');
+  } finally { await f.dispose(); }
+});
+
+
+test('launching several takes selects the whole new batch in the main preview', async () => {
+  const f = await mount();
+  try {
+    await f.selectExisting();
+    await f.update({ form: { ...f.options.form!, iterations: 3 } });
+    await f.start(); await f.session(); await f.balance();
+    assert.equal(f.generated.length, 3);
+    assert.equal(f.preview?.status, 'loading');
+    assert.equal(f.preview?.items.length, 3);
+    assert.ok(f.preview?.items.every(item => item.id !== 'previous-job'));
   } finally { await f.dispose(); }
 });

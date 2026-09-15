@@ -74,6 +74,15 @@ This is an operating cadence, not a guaranteed latency bound during provider fai
 worker crashes, large backlogs or durable media-copy retries. Existing quota/batch
 limits remain; no second submission or paid generation is made by this mechanism.
 
+Launching a valid local render clears both prior composite selection overrides through
+`useWorkspaceRouteFormState.clearCompositePreview`, called by the iteration runner
+before selecting the new batch. This selects the new waiting screen in the main
+player on desktop and mobile without a rail click. Validation or wallet rejection
+preserves the previous selection. Later completion updates do not clear a manual
+selection made while the render is running. The submission/preview integration is
+covered in `tests/workspace-generation-quote-boundary.test.ts` using simulated API
+responses; no paid render is needed.
+
 Selected previews keep their selected layout/identity but refresh their items from
 live pending groups and recent history. Completion cannot revert to an older pending
 snapshot. The same rule applies in the expanded viewer, including after active rows
