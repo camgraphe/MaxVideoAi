@@ -271,43 +271,10 @@
 
 .hostedCheckout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr;
   align-items: center;
   gap: 16px;
   margin-top: 16px;
-}
-
-.hostedCheckout > div {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.paymentIcon {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 34px;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  color: var(--brand);
-  background: var(--brand-soft);
-}
-
-.hostedCheckout > div > span:last-child {
-  display: grid;
-}
-
-.hostedCheckout strong {
-  color: var(--text-primary);
-  font-size: 0.8rem;
-}
-
-.hostedCheckout small {
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  line-height: 1.35;
 }
 
 .checkoutButton {
@@ -317,40 +284,26 @@
 
 .checkoutNote {
   margin-top: 8px;
-  text-align: right;
+  text-align: center;
 }
 
-.secondaryPayment,
 .securityCheck {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
-.secondaryPayment > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.secondaryPayment strong,
 .securityCheck strong {
   display: block;
   color: var(--text-primary);
   font-size: 0.78rem;
 }
 
-.secondaryPayment p,
 .securityCheck p {
   margin-top: 2px;
   color: var(--text-muted);
   font-size: 0.69rem;
   line-height: 1.4;
-}
-
-.secondaryPayment button {
-  min-height: 44px;
 }
 
 .firstTopupNotice {
@@ -366,11 +319,11 @@
 
   .fundingHeader,
   .fundingBody {
-    padding-inline: 15px;
+    padding: 16px 15px;
   }
 
   .amountGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     border: 0;
     gap: 7px;
     overflow: visible;
@@ -378,14 +331,25 @@
 
   .amountButton,
   .amountButton + .amountButton {
-    min-height: 60px;
+    min-height: 50px;
+    align-items: center;
+    padding: 8px 4px;
     border: 1px solid var(--border);
     border-radius: 10px;
   }
 
   .amountButton:last-child {
     grid-column: 1 / -1;
+    min-height: 44px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
   }
+
+  .amountButton > small { display: none; }
+
+  .customAmountEditor input,
+  .currencyField select { font-size: 16px; }
 
   .customAmountEditor > div,
   .hostedCheckout {
@@ -393,13 +357,19 @@
   }
 
   .reviewHeading {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
+  .reviewHeading .stepHeading { margin-bottom: 0; }
+
   .currencyField {
-    min-width: 0;
+    min-width: 96px;
+    max-width: 104px;
   }
+
+  .reviewSection { margin-top: 16px; padding-top: 16px; }
+  .quoteRows > div { min-height: 44px; }
 
   .hostedCheckout {
     align-items: stretch;
@@ -413,8 +383,5 @@
     text-align: left;
   }
 
-  .secondaryPayment > div {
-    align-items: stretch;
-    flex-direction: column;
-  }
+
 }

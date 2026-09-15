@@ -416,6 +416,7 @@ export async function POST(req: NextRequest) {
           checkoutAttemptId: reusableSession.checkoutAttemptId,
           clientSecret: reusableSession.clientSecret,
           client_secret: reusableSession.clientSecret,
+          expiresAt: reusableSession.expiresAt,
           reused: true,
         });
       }
@@ -575,6 +576,7 @@ export async function POST(req: NextRequest) {
         checkoutAttemptId: checkoutGuard.attemptId,
         clientSecret: session.client_secret,
         client_secret: session.client_secret,
+        expiresAt: session.expires_at,
       });
     }
 

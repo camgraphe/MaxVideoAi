@@ -175,12 +175,15 @@ export function canExpireCheckoutSessionFromReport({
 }
 
 export function classifyCheckoutAbandonmentSignal(
-  events: Array<{ eventName: string }>
+  events: Array<{ eventName: string; metadata?: Record<string, unknown> | null }>,
+  hasReceipt = false,
 ): CheckoutAbandonmentSignal {
+  // A canonical receipt wins over earlier failures or missing browser events.
+  if (hasReceipt) return 'none';
   const eventNames = new Set(events.map((event) => event.eventName));
   if (
     eventNames.has('express_checkout_loaderror') ||
-    eventNames.has('express_checkout_unavailable') ||
+    events.some((event) => event.eventName === 'express_checkout_unavailable' && event.metadata?.reason !== 'no_available_methods') ||
     eventNames.has('express_checkout_confirm_failed')
   ) {
     return 'technical_error';
@@ -196,6 +199,7 @@ export function classifyCheckoutAbandonmentSignal(
   }
   if (
     eventNames.has('express_checkout_ready') ||
+    eventNames.has('express_checkout_unavailable') ||
     eventNames.has('express_checkout_session_ready') ||
     eventNames.has('express_checkout_revealed')
   ) {
@@ -340,7 +344,7 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
           stripeCheckoutSessionId: row.stripe_checkout_session_id,
         }),
         createdAt: row.created_at,
-        abandonmentSignal: classifyCheckoutAbandonmentSignal(events),
+        abandonmentSignal: classifyCheckoutAbandonmentSignal(events, Boolean(row.has_receipt)),
         events,
       };
     }),

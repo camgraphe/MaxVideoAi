@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, LockKeyhole } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { BillingCopy } from '../_lib/billing-copy';
 import styles from './billing-topup.module.css';
@@ -13,6 +14,7 @@ type WalletCheckoutSummaryProps = {
   quoteError: string | null;
   isTopupStarting: boolean;
   onCheckout: () => void;
+  children?: ReactNode;
 };
 
 export function WalletCheckoutSummary({
@@ -23,12 +25,13 @@ export function WalletCheckoutSummary({
   quoteError,
   isTopupStarting,
   onCheckout,
+  children,
 }: WalletCheckoutSummaryProps) {
   const paymentValue = quoteLoading
     ? copy.wallet.quoteLoading
     : quoteError
       ? copy.wallet.quoteUnavailable
-      : paymentAmountLabel ?? copy.wallet.quoteLoading;
+      : paymentAmountLabel ?? copy.wallet.quoteUnavailable;
 
   return (
     <div className={styles.checkoutSummary}>
@@ -44,14 +47,9 @@ export function WalletCheckoutSummary({
       </dl>
       <p className={styles.quoteCaption}>{quoteError ?? copy.wallet.quoteCurrent}</p>
 
+      {children}
+
       <div className={styles.hostedCheckout}>
-        <div>
-          <span className={styles.paymentIcon} aria-hidden="true"><LockKeyhole size={17} /></span>
-          <span>
-            <strong>{copy.wallet.hostedPaymentTitle}</strong>
-            <small>{copy.wallet.hostedPaymentDescription}</small>
-          </span>
-        </div>
         <Button
           type="button"
           size="lg"
@@ -59,6 +57,7 @@ export function WalletCheckoutSummary({
           onClick={onCheckout}
           className={styles.checkoutButton}
         >
+          <LockKeyhole size={17} aria-hidden="true" />
           {copy.wallet.checkoutCta}
           <ArrowRight size={17} aria-hidden="true" />
         </Button>

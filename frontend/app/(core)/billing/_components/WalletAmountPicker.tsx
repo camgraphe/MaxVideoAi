@@ -21,6 +21,7 @@ type WalletAmountPickerProps = {
   onOpenCustomAmountEditor: () => void;
   onPresetSelected: (amountCents: number) => void;
   selectedTopupCents: number;
+  disabled?: boolean;
 };
 
 export function WalletAmountPicker({
@@ -37,9 +38,10 @@ export function WalletAmountPicker({
   onOpenCustomAmountEditor,
   onPresetSelected,
   selectedTopupCents,
+  disabled = false,
 }: WalletAmountPickerProps) {
   return (
-    <fieldset className={styles.amountPicker}>
+    <fieldset className={styles.amountPicker} disabled={disabled}>
       <legend className={styles.stepHeading}>
         <span>1</span>
         <span>

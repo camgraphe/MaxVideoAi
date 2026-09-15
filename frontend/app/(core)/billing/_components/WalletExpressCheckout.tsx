@@ -22,7 +22,7 @@ import {
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
-import { buildWalletExpressCheckoutRequestKey } from '../_lib/express-checkout-session-cache';
+import { buildWalletExpressCheckoutRequestKey, createWalletExpressSessionCache } from '../_lib/express-checkout-session-cache';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
 type StripeWithCheckoutElements = Stripe & {
@@ -30,7 +30,7 @@ type StripeWithCheckoutElements = Stripe & {
 };
 
 type CheckoutSessionResult =
-  | { type: 'success'; checkoutAttemptId: number | null; clientSecret: string; sessionId: string | null }
+  | { type: 'success'; checkoutAttemptId: number | null; clientSecret: string; sessionId: string | null; expiresAt?: number }
   | { type: 'captcha_required'; payload: unknown }
   | { type: 'rate_limited'; payload: unknown; retryAfterSeconds: number }
   | { type: 'error'; error: string };
@@ -38,18 +38,16 @@ type CheckoutSessionResult =
 const EXPRESS_CHECKOUT_READY_TIMEOUT_MS = 10_000;
 
 type WalletExpressCheckoutProps = {
+  enabled: boolean;
   amountCents: number;
   chargeCurrency: string;
-  localAmountLabel?: string | null;
   locale: string;
   captchaToken?: string | null;
   session: BillingSession;
   stripePromise: Promise<Stripe | null> | null;
   labels: Pick<
     BillingCopy['wallet'],
-    | 'selectedAmount'
     | 'expressTitle'
-    | 'expressSubtitle'
     | 'expressLoading'
     | 'expressUnavailable'
     | 'expressError'
@@ -63,9 +61,9 @@ type WalletExpressCheckoutProps = {
 };
 
 export function WalletExpressCheckout({
+  enabled,
   amountCents,
   chargeCurrency,
-  localAmountLabel = null,
   locale,
   captchaToken = null,
   session,
@@ -84,17 +82,11 @@ export function WalletExpressCheckout({
     onPaymentFailed,
     onPaymentStarted,
   });
-  const checkoutSessionCacheRef = useRef<{
-    checkoutAttemptId: number | null;
-    clientSecret: string;
-    key: string;
-    sessionId: string | null;
-  } | null>(null);
-  const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
+  const checkoutSessionCacheRef = useRef(createWalletExpressSessionCache());
+  const pendingCheckoutSessionRef = useRef(new Map<string, Promise<CheckoutSessionResult>>());
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(hasAnalyticsConsentCookieInBrowser);
-  const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const sessionUserId = session?.user?.id ?? null;
 
@@ -144,7 +136,7 @@ export function WalletExpressCheckout({
     }
 
     async function mountExpressCheckout() {
-      if (!sessionUserId || !stripePromise || !mountRef.current) {
+      if (!enabled || !sessionUserId || !stripePromise || !mountRef.current) {
         setStatus('idle');
         setMessage(null);
         return;
@@ -180,6 +172,7 @@ export function WalletExpressCheckout({
       const ga4Context = analyticsConsentGranted
         ? await readGa4CheckoutContext()
         : { clientId: null, sessionId: null };
+      if (cancelled || readyTimedOut) return;
       const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}:${ga4Context.clientId ?? 'no-client'}:${ga4Context.sessionId ?? 'no-session'}`;
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
@@ -191,9 +184,9 @@ export function WalletExpressCheckout({
       });
 
       try {
-        const cachedCheckoutSession = checkoutSessionCacheRef.current;
+        const cachedCheckoutSession = checkoutSessionCacheRef.current.get(requestKey);
         const checkoutSessionResult =
-          cachedCheckoutSession?.key === requestKey
+          cachedCheckoutSession
             ? {
                 type: 'success' as const,
                 checkoutAttemptId: cachedCheckoutSession.checkoutAttemptId,
@@ -202,7 +195,7 @@ export function WalletExpressCheckout({
               }
             : await getCheckoutSessionResult(requestKey, analyticsJourney, ga4Context);
 
-        if (readyTimedOut) return;
+        if (cancelled || readyTimedOut) return;
         if (checkoutSessionResult.type !== 'success') {
           clearExpressCheckoutReadyTimeout();
           if (checkoutSessionResult.type === 'captcha_required') {
@@ -240,9 +233,9 @@ export function WalletExpressCheckout({
         const checkout = initCheckout.call(stripe, { clientSecret: checkoutSessionResult.clientSecret });
         const loadActionsPromise: Promise<StripeCheckoutLoadActionsResult> = checkout.loadActions();
         expressElement = checkout.createExpressCheckoutElement({
-          buttonHeight: 44,
+          buttonHeight: 50,
+          buttonType: { applePay: 'buy', googlePay: 'pay', paypal: 'buynow' },
           layout: { maxColumns: 2, maxRows: 2, overflow: 'auto' },
-          paymentMethodOrder: ['apple_pay', 'google_pay', 'paypal', 'link'],
           paymentMethods: {
             applePay: 'always',
             googlePay: 'auto',
@@ -259,7 +252,7 @@ export function WalletExpressCheckout({
           const methods = event.availablePaymentMethods;
           const hasAnyMethod = Boolean(methods && Object.values(methods).some(Boolean));
           setStatus(hasAnyMethod ? 'ready' : 'unavailable');
-          setMessage(hasAnyMethod ? null : labelsRef.current.expressUnavailable);
+          setMessage(null);
           recordCheckoutInteractionEvent({
             amountCents,
             checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
@@ -290,7 +283,7 @@ export function WalletExpressCheckout({
           });
         });
         expressElement.on('cancel', () => {
-          if (confirmStartedRef.current) return;
+          if (cancelled || readyTimedOut || confirmStartedRef.current) return;
           setMessage(labelsRef.current.expressClosed);
           recordCheckoutInteractionEvent({
             amountCents,
@@ -301,7 +294,9 @@ export function WalletExpressCheckout({
           });
         });
         expressElement.on('confirm', async (event) => {
+          if (cancelled || readyTimedOut || confirmStartedRef.current) return;
           confirmStartedRef.current = true;
+          setMessage(null);
           handlersRef.current.onPaymentStarted(amountCents);
           recordCheckoutInteractionEvent({
             amountCents,
@@ -312,15 +307,19 @@ export function WalletExpressCheckout({
           });
           try {
             const loadActionsResult = await loadActionsPromise;
+            if (cancelled || readyTimedOut) return;
             if (loadActionsResult.type !== 'success') {
               throw new Error(loadActionsResult.error.message);
             }
             const result = await loadActionsResult.actions.confirm({
               expressCheckoutConfirmEvent: event,
             });
+            if (cancelled || readyTimedOut) return;
             if (result.type === 'error') {
+              confirmStartedRef.current = false;
               event.paymentFailed({ reason: 'fail', message: result.error.message });
               handlersRef.current.onPaymentFailed(amountCents, result.error.message);
+              setMessage(result.error.message);
               recordCheckoutInteractionEvent({
                 amountCents,
                 checkoutAttemptId: checkoutSessionResult.checkoutAttemptId,
@@ -352,10 +351,13 @@ export function WalletExpressCheckout({
             });
             window.location.href = `/billing?${params.toString()}`;
           } catch (error) {
+            if (cancelled || readyTimedOut) return;
+            confirmStartedRef.current = false;
             const reason = error instanceof Error ? error.message : 'express_checkout_failed';
             event.paymentFailed({ reason: 'fail', message: labelsRef.current.expressError });
             handlersRef.current.onPaymentFailed(amountCents, reason);
-            setStatus('error');
+            // Keep the same session and buttons available for a deliberate retry.
+            // Recreating sessions here would bypass Stripe's per-session failure limit.
             setMessage(labelsRef.current.expressError);
             recordCheckoutInteractionEvent({
               amountCents,
@@ -401,26 +403,22 @@ export function WalletExpressCheckout({
       analyticsJourney: WalletAnalyticsJourney | null,
       ga4Context: { clientId: string | null; sessionId: string | null },
     ): Promise<CheckoutSessionResult> {
-      const pendingCheckoutSession = pendingCheckoutSessionRef.current;
-      if (pendingCheckoutSession?.key === requestKey) {
-        return pendingCheckoutSession.promise;
+      const pendingCheckoutSession = pendingCheckoutSessionRef.current.get(requestKey);
+      if (pendingCheckoutSession) {
+        return pendingCheckoutSession;
       }
 
       const promise = createCheckoutSessionResult(analyticsJourney, ga4Context);
-      pendingCheckoutSessionRef.current = { key: requestKey, promise };
-      const result = await promise;
-      if (pendingCheckoutSessionRef.current?.key === requestKey) {
-        pendingCheckoutSessionRef.current = null;
+      pendingCheckoutSessionRef.current.set(requestKey, promise);
+      try {
+        const result = await promise;
+        if (result.type === 'success' && result.expiresAt) {
+          checkoutSessionCacheRef.current.set(requestKey, result, result.expiresAt * 1000 - 30_000);
+        }
+        return result;
+      } finally {
+        pendingCheckoutSessionRef.current.delete(requestKey);
       }
-      if (result.type === 'success') {
-        checkoutSessionCacheRef.current = {
-          key: requestKey,
-          checkoutAttemptId: result.checkoutAttemptId,
-          clientSecret: result.clientSecret,
-          sessionId: result.sessionId,
-        };
-      }
-      return result;
     }
 
     async function createCheckoutSessionResult(
@@ -478,16 +476,21 @@ export function WalletExpressCheckout({
             : null,
         clientSecret,
         sessionId: typeof payload?.id === 'string' ? payload.id : null,
+        expiresAt: typeof payload?.expiresAt === 'number' ? payload.expiresAt : undefined,
       };
     }
 
-    void mountExpressCheckout();
+    // Wait for a settled selection. A quick tap through several amounts must not
+    // create payable sessions or consume the anti-card-testing session limits.
+    const mountTimeoutId = window.setTimeout(() => { void mountExpressCheckout(); }, 300);
     return () => {
       cancelled = true;
+      window.clearTimeout(mountTimeoutId);
       clearExpressCheckoutReadyTimeout();
       expressElement?.destroy();
     };
   }, [
+    enabled,
     amountCents,
     analyticsConsentGranted,
     locale,
@@ -497,31 +500,26 @@ export function WalletExpressCheckout({
     stripePromise,
   ]);
 
-  if (!session) {
+  if (!session || !enabled) {
     return null;
   }
 
   const hideExpressElement = status === 'unavailable' || status === 'error';
 
   return (
-    <div className="mt-4 rounded-input border border-border bg-bg p-3">
-      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mt-4" hidden={status === 'unavailable' && !message}>
+      <div className="mb-2">
         <div>
           <p className="text-sm font-semibold text-text-primary">{labels.expressTitle}</p>
-          <p className="mt-0.5 text-xs text-text-secondary">{labels.expressSubtitle}</p>
         </div>
-        <p className="text-xs text-text-secondary">
-          {labels.selectedAmount}: <span className="font-semibold text-text-primary">{amountLabel}</span>
-          {localAmountLabel ? <span className="ml-1 text-text-muted">{localAmountLabel}</span> : null}
-        </p>
       </div>
       <div
         ref={mountRef}
-        className={`min-h-[44px] ${hideExpressElement ? 'hidden' : ''}`}
+        className={`min-h-[50px] ${hideExpressElement ? 'hidden' : ''}`}
         aria-label={labels.expressAriaLabel}
       />
-      {status === 'loading' && <p className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
-      {message && <p className="mt-2 text-xs text-state-warning">{message}</p>}
+      {status === 'loading' && <p role="status" className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
+      {message && <p role="status" className="mt-2 text-xs text-text-secondary">{message}</p>}
     </div>
   );
 }
