@@ -34,10 +34,10 @@ const COPY: Record<AppLocale, FirstRequestCopy> = {
     proofLabel: 'Voir un résultat réel affiché dans Claude',
   },
   es: {
-    eyebrow: 'TU PRIMER VÍDEO',
+    eyebrow: 'TU PRIMER VIDEO',
     title: 'Parte del proyecto que ya está en tu conversación.',
     intro: 'Una vez conectado MaxVideoAI, pega esta petición en la conversación donde preparas tu web, producto o campaña.',
-    prompt: 'A partir del proyecto que estamos preparando, propón un vídeo corto de lanzamiento con MaxVideoAI. Compara dos modelos disponibles y adecuados, con sus ventajas, limitaciones y precios para los ajustes propuestos. Pídeme el contexto o las referencias que falten. Espera mi elección y después mi autorización del precio exacto antes de generar nada.',
+    prompt: 'A partir del proyecto que estamos preparando, propón un video corto de lanzamiento con MaxVideoAI. Compara dos modelos disponibles y adecuados, con sus ventajas, limitaciones y precios para los ajustes propuestos. Pídeme el contexto o las referencias que falten. Espera mi elección y después mi autorización del precio exacto antes de generar nada.',
     copyLabel: 'Copiar mi primera petición',
     copiedLabel: 'Petición copiada',
     note: 'La planificación es gratuita en MaxVideoAI. La generación utiliza tus créditos de MaxVideoAI cuando autorizas el precio exacto.',

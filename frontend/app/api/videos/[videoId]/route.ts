@@ -3,6 +3,11 @@ import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getVideoById, updateVideoIndexableForUser } from '@/server/videos';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { canReadVideo } from './_lib/video-read-access';
+
+function privateJson(body: unknown, status = 200) {
+  return NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
+}
 
 type RouteParams = {
   params: Promise<{
@@ -13,24 +18,28 @@ type RouteParams = {
 export async function GET(_req: NextRequest, props: RouteParams) {
   const params = await props.params;
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+    return privateJson({ ok: false, error: 'Database unavailable' }, 503);
   }
 
   const { videoId } = params;
   if (!videoId) {
-    return NextResponse.json({ ok: false, error: 'Missing video id' }, { status: 400 });
+    return privateJson({ ok: false, error: 'Missing video id' }, 400);
   }
 
   try {
     await ensureBillingSchema();
     const video = await getVideoById(videoId);
     if (!video) {
-      return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
+      return privateJson({ ok: false, error: 'Not found' }, 404);
     }
-    return NextResponse.json({ ok: true, video });
+    const viewerId = video.visibility === 'public' ? null : (await getRouteAuthContext(_req)).userId;
+    if (!canReadVideo(video, viewerId)) {
+      return privateJson({ ok: false, error: 'Not found' }, 404);
+    }
+    return privateJson({ ok: true, video });
   } catch (error) {
     console.error('[api/videos/:id] failed', error);
-    return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
+    return privateJson({ ok: false, error: 'Server error' }, 500);
   }
 }
 

@@ -95,7 +95,7 @@ test('the homepage and contextual links own a prospect-facing assistant workflow
   const sections = source('frontend/components/marketing/home/HomeRedesignSections.tsx');
   const internalLinks = source('frontend/lib/mcp-internal-links.ts');
 
-  assert.match(home, /HomeAssistantWorkflow/);
+  assert.match(home, /HomeCreationSection locale=\{locale\} assistantHref=\{mcpLink\?\.href\}/);
   assert.match(sections, /HomeAssistantWorkflow/);
   assert.match(internalLinks, /'home'/);
   assert.match(internalLinks, /ChatGPT/);

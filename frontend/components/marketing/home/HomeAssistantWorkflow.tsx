@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { BadgeCheck, CircleDollarSign, Images, Sparkles } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { ButtonLink } from '@/components/ui/Button';
-import { UIIcon } from '@/components/ui/UIIcon';
+import { AssistantJourney } from '@/components/marketing/AssistantJourney.client';
+import { ASSISTANT_JOURNEY_COPY } from '@/components/marketing/assistant-journey-copy';
 
 const COPY: Record<
   AppLocale,
@@ -23,9 +23,9 @@ const COPY: Record<
 > = {
   en: {
     eyebrow: 'FROM CONVERSATION TO RENDER',
-    title: 'Your project is already in Claude, ChatGPT or Codex. Create its videos there too.',
-    body: 'Continue the conversation about your website, product or campaign. Your assistant uses the context you have shared to develop prompts and references, compare current models and show the price. You approve each generation; the result stays in your MaxVideoAI library.',
-    cta: 'Use MaxVideoAI with Claude, ChatGPT or Codex',
+    title: 'Create from the conversation.',
+    body: 'Turn a project you are discussing with your assistant into a video. Review the proposal and price, approve the generation, then find the result in your MaxVideoAI library.',
+    cta: 'Choose your assistant',
     claude: 'Claude',
     chatgpt: 'ChatGPT',
     codex: 'Codex',
@@ -36,9 +36,9 @@ const COPY: Record<
   },
   fr: {
     eyebrow: 'DE LA CONVERSATION AU RENDU',
-    title: 'Votre projet est déjà dans Claude, ChatGPT ou Codex. Créez aussi ses vidéos au même endroit.',
-    body: 'Poursuivez la discussion sur votre site, votre produit ou votre campagne. Votre assistant utilise le contexte partagé pour préparer prompts et références, comparer les modèles actuels et afficher le prix. Vous validez chaque génération ; le résultat reste dans votre bibliothèque MaxVideoAI.',
-    cta: 'Utiliser MaxVideoAI avec Claude, ChatGPT ou Codex',
+    title: 'Créez depuis la conversation.',
+    body: 'Transformez un projet discuté avec votre assistant en vidéo. Vérifiez sa proposition et le prix, validez la génération, puis retrouvez le résultat dans votre bibliothèque MaxVideoAI.',
+    cta: 'Choisir mon assistant',
     claude: 'Claude',
     chatgpt: 'ChatGPT',
     codex: 'Codex',
@@ -49,14 +49,14 @@ const COPY: Record<
   },
   es: {
     eyebrow: 'DE LA CONVERSACIÓN AL RESULTADO',
-    title: 'Tu proyecto ya está en Claude, ChatGPT o Codex. Crea también sus vídeos allí.',
-    body: 'Continúa la conversación sobre tu web, producto o campaña. Tu asistente utiliza el contexto compartido para preparar prompts y referencias, comparar modelos actuales y mostrar el precio. Tú autorizas cada generación; el resultado queda en tu biblioteca MaxVideoAI.',
-    cta: 'Usar MaxVideoAI con Claude, ChatGPT o Codex',
+    title: 'Crea desde la conversación.',
+    body: 'Convierte un proyecto que estás preparando con tu asistente en un video. Revisa la propuesta y el precio, autoriza la generación y encuentra el resultado en tu biblioteca de MaxVideoAI.',
+    cta: 'Elegir mi asistente',
     claude: 'Claude',
     chatgpt: 'ChatGPT',
     codex: 'Codex',
-    prompt: 'A partir del proyecto que estamos preparando, propón un vídeo corto de lanzamiento. Compara dos modelos adecuados antes de que elija.',
-    answer: 'Usaré nuestro brief, comprobaré las capacidades actuales y compararé costes y ventajas. Tú eliges la propuesta y autorizas el precio exacto antes de generar.',
+    prompt: 'A partir del proyecto que estamos preparando, propón un video corto de lanzamiento. Compara dos modelos adecuados antes de que elija.',
+    answer: 'Usaré nuestro brief, comprobaré las capacidades actuales y compararé costos y ventajas. Tú eliges la propuesta y autorizas el precio exacto antes de generar.',
     catalogLabel: 'Catálogo actual',
     facts: ['Modelos y precios actuales', 'Precio exacto antes de generar', 'Resultados en tu biblioteca MaxVideoAI'],
   },
@@ -73,8 +73,8 @@ export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; hre
   const labels = { claude: copy.claude, chatgpt: copy.chatgpt, codex: copy.codex };
 
   return (
-    <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg section">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_22%,rgba(59,130,246,0.13),transparent_32%),radial-gradient(circle_at_12%_80%,rgba(99,102,241,0.08),transparent_28%)] dark:bg-[radial-gradient(circle_at_82%_22%,rgba(96,165,250,0.16),transparent_34%)]" />
+    <section className="assistant-editorial dark-section-neon relative overflow-hidden border-b border-hairline bg-bg section">
+
       <div className="container-page relative grid max-w-[1280px] gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-16">
         <div className="max-w-[590px]">
           <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow}</p>
@@ -87,6 +87,7 @@ export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; hre
               </span>
             ))}
           </div>
+          <p className="mt-4 text-xs text-text-muted">OpenClaw · n8n · MCP</p>
           <h2 className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-5xl">{copy.title}</h2>
           <p className="mt-5 text-base leading-8 text-text-secondary sm:text-lg">{copy.body}</p>
           <ButtonLink
@@ -104,32 +105,7 @@ export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; hre
           </ButtonLink>
         </div>
 
-        <div className="relative rounded-[28px] border border-hairline bg-surface p-4 shadow-float dark:border-white/[0.14] dark:bg-white/[0.055] sm:p-6">
-          <div className="flex items-center justify-between border-b border-hairline pb-4 dark:border-white/[0.1]">
-            <span className="flex items-center gap-2 text-sm font-semibold text-text-primary dark:text-white">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-[11px] bg-brand/10 text-brand"><UIIcon icon={Sparkles} size={18} /></span>
-              MaxVideoAI
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> {copy.catalogLabel}
-            </span>
-          </div>
-          <div className="space-y-4 py-5">
-            <div className="ml-auto max-w-[88%] rounded-[18px_18px_5px_18px] bg-[image:var(--brand-gradient)] px-4 py-3 text-sm leading-6 text-on-brand shadow-sm">{copy.prompt}</div>
-            <div className="max-w-[92%] rounded-[18px_18px_18px_5px] border border-hairline bg-bg px-4 py-3 text-sm leading-6 text-text-primary dark:border-white/[0.12] dark:bg-black/20 dark:text-white/90">{copy.answer}</div>
-          </div>
-          <div className="grid gap-2 border-t border-hairline pt-4 dark:border-white/[0.1] sm:grid-cols-3">
-            {copy.facts.map((fact, index) => {
-              const icons = [BadgeCheck, CircleDollarSign, Images] as const;
-              return (
-                <div key={fact} className="flex items-center gap-2 rounded-[12px] bg-bg px-3 py-2.5 text-xs font-semibold leading-5 text-text-secondary dark:bg-black/20 dark:text-white/70">
-                  <UIIcon icon={icons[index] ?? BadgeCheck} size={16} className="shrink-0 text-brand" />
-                  {fact}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <AssistantJourney {...ASSISTANT_JOURNEY_COPY[locale]}/>
       </div>
     </section>
   );

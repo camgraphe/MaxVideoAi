@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Voir les exemples MiniMax H3",
-        "href": "/fr/galerie/minimax-h3"
+        "href": "/fr/galerie/hailuo"
       },
       {
         "label": "Ouvrir les exemples de prompts H3",
@@ -104,22 +104,20 @@
   "decision": {
     "modelSlug": "minimax-h3",
     "hero": {
-      "eyebrow": "Nouveau · 5–15 secondes · Jusqu’en 4K · Audio stéréo natif",
+      "eyebrow": "Vidéo IA · MiniMax",
       "title": "MiniMax H3",
-      "subtitle": "Créez des vidéos de 5 à 15 secondes depuis du texte, des images de départ et de fin, ou des références image, vidéo et audio, jusqu’en 4K avec audio stéréo natif.",
+      "subtitle": "Dirigez la scène. Donnez-lui une voix.",
       "subtitleHighlights": [
-        "5 à 15 secondes",
-        "jusqu’en 4K",
-        "audio stéréo natif"
+        "Dirigez la scène. Donnez-lui une voix"
       ],
-      "paragraph": "Utilisez un seul moteur MiniMax H3 pour le texte vers vidéo, l’image vers vidéo et les références vers vidéo. Choisissez durée et résolution, puis dirigez continuité, mouvement, caméra et son dans le même flux.",
+      "paragraph": "MiniMax H3 crée des vidéos IA à partir de texte, d’images ou de références combinées. Choisissez de 5 à 15 secondes, jusqu’en 4K, avec un son stéréo natif. Guidez les personnages, la caméra et le mouvement dans une même génération.",
       "primaryCta": {
         "label": "Générer avec MiniMax H3",
         "href": "/app?engine=minimax-h3"
       },
       "secondaryCta": {
         "label": "Voir les exemples MiniMax H3",
-        "href": "/fr/galerie/minimax-h3"
+        "href": "/fr/galerie/hailuo"
       },
       "quickLinks": [
         {

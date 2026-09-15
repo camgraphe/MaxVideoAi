@@ -1,0 +1,1334 @@
+{
+  "/tools": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/tools",
+    "before": {
+      "title": [
+        "AI Pre-Production Tools for Image & Video Workflows"
+      ],
+      "h1": [
+        "Build Reusable Assets Before Image-to-Video"
+      ],
+      "description": "Build reusable character references and stronger first frames before you generate. Explore MaxVideoAI tools for consistent character creation and AI camera…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "AI Pre-Production Tools for Image & Video Workflows"
+      ],
+      "h1": [
+        "Shape the next part of your story."
+      ],
+      "description": "Build reusable character references and stronger first frames before you generate. Explore MaxVideoAI tools for consistent character creation and AI camera…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/tools/character-builder": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/tools/character-builder",
+    "before": {
+      "title": [
+        "Consistent Character AI Tool | Reusable Character References for Image & Video"
+      ],
+      "h1": [
+        "Create a reusable character reference for consistent AI images and video"
+      ],
+      "description": "Create reusable portrait anchors and 8-panel AI character sheets from one photo, optional outfit reference, or scratch. Reuse the same character across scenes,…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Consistent Character AI Tool | Reusable Character References for Image & Video"
+      ],
+      "h1": [
+        "AI characters. A consistent reference."
+      ],
+      "description": "Create reusable portrait anchors and 8-panel AI character sheets from one photo, optional outfit reference, or scratch. Reuse the same character across scenes,…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/tools/angle": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/tools/angle",
+    "before": {
+      "title": [
+        "AI Camera Angle Generator | New Views from One Image"
+      ],
+      "h1": [
+        "Change Camera Angle with AI from One Image"
+      ],
+      "description": "Change a camera angle with AI from one image. Create product views, storyboard coverage, ad perspectives, and stronger image-to-video first frames.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/angle"
+        }
+      ],
+      "schemaTypes": [
+        "BreadcrumbList",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "AI Camera Angle Generator | New Views from One Image"
+      ],
+      "h1": [
+        "Change Camera Angle with AI from One Image"
+      ],
+      "description": "Change a camera angle with AI from one image. Create product views, storyboard coverage, ad perspectives, and stronger image-to-video first frames.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/angle"
+        }
+      ],
+      "schemaTypes": [
+        "BreadcrumbList",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/tools/upscale": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/tools/upscale",
+    "before": {
+      "title": [
+        "AI Image & Video Upscale | SeedVR2, Topaz, FlashVSR, Recraft"
+      ],
+      "h1": [
+        "Upscale assets before they move through the pipeline"
+      ],
+      "description": "Upscale images and short videos with current AI enhancement models including SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in MaxVideoAI workflows.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/upscale"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "AI Image & Video Upscale | SeedVR2, Topaz, FlashVSR, Recraft"
+      ],
+      "h1": [
+        "AI upscale for images and videos."
+      ],
+      "description": "Upscale images and short videos with current AI enhancement models including SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in MaxVideoAI workflows.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/upscale"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/tools/background-removal": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/tools/background-removal",
+    "before": {
+      "title": [
+        "Video Background Remover | Green Screen & AI Rotoscoping"
+      ],
+      "h1": [
+        "Remove video backgrounds and turn subjects into reusable cutouts"
+      ],
+      "description": "Remove video backgrounds in MaxVideoAI. Create green-screen-style cutouts, AI rotoscoping assets, alpha mattes, transparent WebM, or solid-color clips.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Video Background Remover | Green Screen & AI Rotoscoping"
+      ],
+      "h1": [
+        "Remove the background from your video."
+      ],
+      "description": "Remove video backgrounds in MaxVideoAI. Create green-screen-style cutouts, AI rotoscoping assets, alpha mattes, transparent WebM, or solid-color clips.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/fr/tools": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/fr/outils",
+    "before": {
+      "title": [
+        "Outils IA de préproduction pour l'image et la vidéo"
+      ],
+      "h1": [
+        "Créez le point de départ de votre prochaine vidéo."
+      ],
+      "description": "Créez des références personnage réutilisables et de meilleurs premiers plans avant de générer. Découvrez les outils MaxVideoAI pour garder un personnage…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Outils IA de préproduction pour l'image et la vidéo"
+      ],
+      "h1": [
+        "Donnez forme à la suite de votre projet."
+      ],
+      "description": "Créez des références personnage réutilisables et de meilleurs premiers plans avant de générer. Découvrez les outils MaxVideoAI pour garder un personnage…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/fr/tools/character-builder": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/fr/outils/character-builder",
+    "before": {
+      "title": [
+        "Personnage IA cohérent | Références réutilisables pour l'image et la vidéo"
+      ],
+      "h1": [
+        "Créez une référence personnage réutilisable pour garder des images et vidéos IA cohérentes"
+      ],
+      "description": "Créez une ancre portrait ou une planche personnage IA à 8 panneaux à partir d'un portrait, d'une référence tenue optionnelle ou de zéro. Réutilisez le même…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Personnage IA cohérent | Références réutilisables pour l'image et la vidéo"
+      ],
+      "h1": [
+        "Créez des personnages IA cohérents."
+      ],
+      "description": "Créez une ancre portrait ou une planche personnage IA à 8 panneaux à partir d'un portrait, d'une référence tenue optionnelle ou de zéro. Réutilisez le même…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/fr/tools/angle": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/fr/outils/angle",
+    "before": {
+      "title": [
+        "Changer l’angle d’une image avec l’IA | MaxVideoAI"
+      ],
+      "h1": [
+        "Changez l’angle de caméra d’une image avec l’IA"
+      ],
+      "description": "Changez l’angle de caméra d’une image avec l’IA. Créez des vues produit, des cadrages storyboard et de meilleures premières images vidéo.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/angle"
+        }
+      ],
+      "schemaTypes": [
+        "BreadcrumbList",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Changer l’angle d’une image avec l’IA | MaxVideoAI"
+      ],
+      "h1": [
+        "Changez l’angle de caméra d’une image avec l’IA"
+      ],
+      "description": "Changez l’angle de caméra d’une image avec l’IA. Créez des vues produit, des cadrages storyboard et de meilleures premières images vidéo.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/angle"
+        }
+      ],
+      "schemaTypes": [
+        "BreadcrumbList",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/fr/tools/upscale": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/fr/outils/upscale",
+    "before": {
+      "title": [
+        "Upscale IA image et vidéo | SeedVR2, Topaz, FlashVSR, Recraft"
+      ],
+      "h1": [
+        "Upscalez vos assets avant de les envoyer dans le pipeline"
+      ],
+      "description": "Upscalez images et courtes vidéos avec les modèles d'amélioration IA actuels comme SeedVR2, Topaz, FlashVSR et Recraft avant de les réutiliser dans MaxVideoAI.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/upscale"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Upscale IA image et vidéo | SeedVR2, Topaz, FlashVSR, Recraft"
+      ],
+      "h1": [
+        "Agrandissez vos images et vidéos avec l’IA."
+      ],
+      "description": "Upscalez images et courtes vidéos avec les modèles d'amélioration IA actuels comme SeedVR2, Topaz, FlashVSR et Recraft avant de les réutiliser dans MaxVideoAI.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/upscale"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/fr/tools/background-removal": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/fr/outils/background-removal",
+    "before": {
+      "title": [
+        "Supprimer l’arrière-plan vidéo | Fond vert et rotoscopie IA"
+      ],
+      "h1": [
+        "Supprimer l’arrière-plan vidéo et transformer un sujet en asset réutilisable"
+      ],
+      "description": "Supprimez l’arrière-plan vidéo dans MaxVideoAI. Créez des détourages type fond vert, des assets de rotoscopie IA, des caches alpha, du WebM transparent ou des…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Supprimer l’arrière-plan vidéo | Fond vert et rotoscopie IA"
+      ],
+      "h1": [
+        "Supprimez l’arrière-plan de vos vidéos."
+      ],
+      "description": "Supprimez l’arrière-plan vidéo dans MaxVideoAI. Créez des détourages type fond vert, des assets de rotoscopie IA, des caches alpha, du WebM transparent ou des…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/es/tools": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/es/herramientas",
+    "before": {
+      "title": [
+        "Herramientas de preproducción con IA para imagen y video"
+      ],
+      "h1": [
+        "Prepara el punto de partida de tu próximo video."
+      ],
+      "description": "Crea referencias de personaje reutilizables y mejores fotogramas iniciales antes de generar. Descubre las herramientas de MaxVideoAI para mantener personajes…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Herramientas de preproducción con IA para imagen y video"
+      ],
+      "h1": [
+        "Dale forma a lo que sigue en tu proyecto."
+      ],
+      "description": "Crea referencias de personaje reutilizables y mejores fotogramas iniciales antes de generar. Descubre las herramientas de MaxVideoAI para mantener personajes…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/es/tools/character-builder": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/es/herramientas/character-builder",
+    "before": {
+      "title": [
+        "Personajes IA consistentes | Referencias reutilizables para imagen y video"
+      ],
+      "h1": [
+        "Crea una referencia de personaje reutilizable para imágenes y video con IA consistente"
+      ],
+      "description": "Crea un ancla de retrato o una hoja de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero. Reutiliza el mismo…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Personajes IA consistentes | Referencias reutilizables para imagen y video"
+      ],
+      "h1": [
+        "Crea personajes con IA consistentes."
+      ],
+      "description": "Crea un ancla de retrato o una hoja de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero. Reutiliza el mismo…",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/es/tools/angle": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/es/herramientas/angle",
+    "before": {
+      "title": [
+        "Cambiar el ángulo de una imagen con IA | MaxVideoAI"
+      ],
+      "h1": [
+        "Cambia el ángulo de cámara de una imagen con IA"
+      ],
+      "description": "Cambia el ángulo de cámara de una imagen con IA. Crea vistas de producto, encuadres de storyboard y mejores fotogramas para image-to-video.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/angle"
+        }
+      ],
+      "schemaTypes": [
+        "BreadcrumbList",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Cambiar el ángulo de una imagen con IA | MaxVideoAI"
+      ],
+      "h1": [
+        "Cambia el ángulo de cámara de una imagen con IA"
+      ],
+      "description": "Cambia el ángulo de cámara de una imagen con IA. Crea vistas de producto, encuadres de storyboard y mejores fotogramas para image-to-video.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/angle"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/angle"
+        }
+      ],
+      "schemaTypes": [
+        "BreadcrumbList",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/es/tools/upscale": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/es/herramientas/upscale",
+    "before": {
+      "title": [
+        "Upscale IA de imagen y video | SeedVR2, Topaz, FlashVSR, Recraft"
+      ],
+      "h1": [
+        "Upscalea assets antes de enviarlos por el pipeline"
+      ],
+      "description": "Upscalea imágenes y videos cortos con modelos actuales de mejora IA como SeedVR2, Topaz, FlashVSR y Recraft antes de reutilizarlos en MaxVideoAI.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/upscale"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Upscale IA de imagen y video | SeedVR2, Topaz, FlashVSR, Recraft"
+      ],
+      "h1": [
+        "Amplía imágenes y videos con IA."
+      ],
+      "description": "Upscalea imágenes y videos cortos con modelos actuales de mejora IA como SeedVR2, Topaz, FlashVSR y Recraft antes de reutilizarlos en MaxVideoAI.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/upscale"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/upscale"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "Service",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  },
+  "/es/tools/background-removal": {
+    "status": 200,
+    "finalUrl": "http://localhost:3008/es/herramientas/background-removal",
+    "before": {
+      "title": [
+        "Eliminar fondos de video | Pantalla verde y rotoscopia IA"
+      ],
+      "h1": [
+        "Eliminar fondos de video y convertir sujetos en recortes reutilizables"
+      ],
+      "description": "Elimina fondos de video en MaxVideoAI. Crea recortes tipo pantalla verde, assets de rotoscopia IA, mates alfa, WebM transparente o clips con color sólido.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    },
+    "after": {
+      "title": [
+        "Eliminar fondos de video | Pantalla verde y rotoscopia IA"
+      ],
+      "h1": [
+        "Elimina el fondo de tus videos."
+      ],
+      "description": "Elimina fondos de video en MaxVideoAI. Crea recortes tipo pantalla verde, assets de rotoscopia IA, mates alfa, WebM transparente o clips con color sólido.",
+      "robots": null,
+      "links": [
+        {
+          "rel": "canonical",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "en",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/background-removal"
+        },
+        {
+          "rel": "alternate",
+          "hreflang": "x-default",
+          "href": "https://maxvideoai.com/tools/background-removal"
+        }
+      ],
+      "schemaTypes": [
+        "FAQPage",
+        "BreadcrumbList",
+        "Service",
+        "HowTo",
+        "Organization",
+        "WebSite"
+      ]
+    }
+  }
+}

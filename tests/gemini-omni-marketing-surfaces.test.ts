@@ -240,7 +240,7 @@ test('Gemini Omni Flash limited preview is not labeled as pre-launch on compare 
   assert.equal(isPrelaunchAvailability(entry), false);
 });
 
-test('Gemini Omni Flash has benchmark scores and a promoted model-nav link', () => {
+test('Gemini Omni Flash has benchmark scores and a promoted comparison while the bounded menu prioritizes Veo', () => {
   const score = scoresFile.scores.find((entry) => entry.modelSlug === 'gemini-omni-flash');
   assert.ok(score, 'Gemini Omni Flash should have a benchmark score row for compare scorecards');
   for (const field of SCORE_FIELDS) {
@@ -249,16 +249,7 @@ test('Gemini Omni Flash has benchmark scores and a promoted model-nav link', () 
   assert.equal(score.controllability, 9.2);
   assert.equal(score.pricing, 8.1);
 
-  assert.ok(MARKETING_MODEL_SLUGS.includes('gemini-omni-flash'));
-  assert.ok(MARKETING_NAV_MODELS.some((item) => item.key === 'gemini-omni-flash'));
   assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === PRIMARY_COMPARE_SLUG));
-  assert.ok(
-    MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') > MARKETING_MODEL_SLUGS.indexOf('veo-3-1'),
-    'Gemini Omni Flash should sit inside the Google/Veo model cluster'
-  );
-  const veoLiteIndex = MARKETING_MODEL_SLUGS.indexOf('veo-3-1-lite');
-  assert.ok(
-    veoLiteIndex === -1 || MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') < veoLiteIndex,
-    'Gemini Omni Flash should be promoted before the Lite variant when both fit the bounded menu'
-  );
+  assert.ok(MARKETING_NAV_MODELS.some((item) => item.key === 'veo-3-1'));
+  assert.ok(MARKETING_MODEL_SLUGS.length <= 11);
 });

@@ -151,15 +151,13 @@
   "decision": {
     "modelSlug": "nano-banana-lite",
     "hero": {
-      "eyebrow": "GOOGLE FAST IMAGE MODEL",
+      "eyebrow": "AI images · Google",
       "title": "Nano Banana Lite - fast 1K image generation",
-      "subtitle": "Nano Banana Lite is the fast, efficient 1K member of the Google Nano Banana image family. Use it for high-volume still drafts, social concepts, local image edits, and quick visual exploration before moving selected ideas to Nano Banana 2 or Nano Banana Pro.",
+      "subtitle": "Explore the image before the video.",
       "subtitleHighlights": [
-        "fast, efficient 1K",
-        "local image edits",
-        "quick visual exploration"
+        "Explore the image before the video"
       ],
-      "paragraph": "Use the direct Google Lite route for fast still-image drafts, quick local edits, and high-volume creative exploration.",
+      "paragraph": "Nano Banana Lite generates and edits 1K AI images. Try a visual idea, create variations or adjust part of an image. Move to Nano Banana 2 or Pro when you need 2K or 4K output.",
       "primaryCta": {
         "label": "Launch Nano Banana Lite",
         "href": "/app/image?engine=nano-banana-lite"

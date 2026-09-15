@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import test from 'node:test';
+import test, { mock } from 'node:test';
+import fs from 'node:fs';
 
 import {
   getMcpIntegrationPublicationState,
@@ -30,10 +31,15 @@ test('runtime sitemap discovery includes all five live integration routes', asyn
     cache?: <TFunction extends (...args: never[]) => unknown>(fn: TFunction) => TFunction;
   };
   react.cache ??= (fn) => fn;
-  const { getCanonicalPathEntries } = await import(
-    '../frontend/lib/sitemap/route-discovery.ts'
-  );
-  const paths = (await getCanonicalPathEntries()).map(({ englishPath }) => englishPath);
+  // A running next dev server has a partial manifest. Check the source routes,
+  // independently of which preview pages happened to be compiled.
+  const existsSync = fs.existsSync;
+  const manifest = mock.method(fs, 'existsSync', (path) => String(path).endsWith('app-paths-manifest.json') ? false : existsSync(path));
+  let paths: string[];
+  try {
+    const { getCanonicalPathEntries } = await import('../frontend/lib/sitemap/route-discovery.ts');
+    paths = (await getCanonicalPathEntries()).map(({ englishPath }) => englishPath);
+  } finally { manifest.mock.restore(); }
 
   assert.ok(paths.includes('/integrations/claude'));
   assert.ok(paths.includes('/integrations/chatgpt'));

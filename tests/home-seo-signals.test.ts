@@ -4,7 +4,7 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { buildLocalizedModelPath } from '../frontend/config/model-registry.ts';
-import { MARKETING_NAV_MODELS } from '../frontend/config/navigation.ts';
+import { FOOTER_MODELS } from '../frontend/config/marketing-footer.ts';
 import {
   DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
 } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/constants.ts';
@@ -67,11 +67,11 @@ test('homepage proof card stays on Seedance 2.0 while discovery surfaces lead wi
   }
 
   const footerSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
-  const footerModelIds = MARKETING_NAV_MODELS.map((item) => item.key);
+  const footerModelIds = FOOTER_MODELS.map((item) => item.key);
   const seedance25Index = footerModelIds.indexOf('seedance-2-5');
-  assert.match(footerSource, /MARKETING_NAV_MODELS\.map/);
+  assert.match(footerSource, /FOOTER_MODELS\.map/);
   assert.ok(seedance25Index >= 0, 'Footer should include Seedance 2.5');
-  assert.equal(seedance25Index, 0, 'Footer should lead with Seedance 2.5');
+  assert.deepEqual(footerModelIds.slice(0, 2), ['minimax-h3', 'seedance-2-5']);
 });
 
 test('localized homepage keeps the Seedance 2.0 proof and renders a separate Seedance 2.5 discovery CTA', () => {
@@ -234,15 +234,15 @@ test('homepage FAQ targets search-intent questions and shares the same items wit
   assert.match(homeSource, /<script id="home-faq-jsonld" type="application\/ld\+json" dangerouslySetInnerHTML=/);
   assert.match(answerText, /AI video generator/);
   assert.match(answerText, /AI-generated videos/);
-  assert.match(answerText, /text-to-video AI/);
-  assert.match(answerText, /image-to-video AI/);
+  assert.match(answerText, /text-to-video AI/i);
+  assert.match(answerText, /image-to-video AI/i);
   assert.match(answerText, /AI video prompt examples/);
   assert.match(answerText, /AI video examples/);
   assert.match(answerText, /AI video model/);
   assert.match(answerText, /AI video generation cost/);
   assert.match(answerText, /model limits/);
   assert.match(answerText, /price before you generate/);
-  assert.match(answerText, /compare AI video engines/);
+  assert.match(answerText, /compare AI video engines/i);
   assert.match(answerText, /pay-as-you-go AI video generator/);
   assert.doesNotMatch(answerText, /creative tools/i);
   assert.doesNotMatch(expectedQuestions.join(' '), /What is MaxVideoAI\?/);
@@ -256,34 +256,29 @@ test('homepage renders existing workflow SEO terms as visible HTML content', () 
   assert.match(homeSource, /WorkflowSeoSummary/);
   assert.match(homeSource, /dictionary\.home\.seoContent/);
   assert.match(homeSource, /copy={workflowSeoCopy}/);
-  assert.match(workflowSource, /AI video generator basics/);
-  assert.match(workflowSource, /pay-as-you-go AI video generator/);
-  assert.match(workflowSource, /Generate scenes from prompts\./);
-  assert.match(workflowSource, /Animate a still image\./);
-  assert.match(workflowSource, /Transform existing footage\./);
-  assert.match(workflowSource, /copy\.generateWays\?\.items/);
-  assert.match(workflowSource, /border-y border-hairline bg-surface py-6 sm:py-8/);
-  assert.match(workflowSource, /container-page max-w-\[1280px\]/);
-  assert.match(workflowSource, /lg:grid-cols-\[minmax\(0,0\.9fr\)_minmax\(0,1\.1fr\)\]/);
-  assert.match(workflowSource, /grid grid-cols-3 gap-2 sm:gap-3/);
-  assert.doesNotMatch(workflowSource, /rounded-\[24px\]/);
-  assert.doesNotMatch(workflowSource, /shadow-\[0_20px_60px/);
-  assert.doesNotMatch(workflowSource, /text\.includes\('genera'\)/);
-  assert.doesNotMatch(workflowSource, /<h2[^>]*>\{copy\.definition\.title\}/);
+  assert.match(workflowSource, /What are you starting with/);
+  assert.match(workflowSource, /Text-to-video/);
+  assert.match(workflowSource, /Image-to-video/);
+  assert.match(workflowSource, /Video-to-video/);
+  assert.match(workflowSource, /locale: AppLocale/);
+  assert.match(workflowSource, /<Link href=\{LINKS\[index\]\}/);
+  assert.match(workflowSource, /home-workflow-summary/);
+  assert.match(workflowSource, /<dl>/);
+  assert.doesNotMatch(workflowSource, /resolveWorkflowBasicsLocale|text.includes/);
+
 });
 
-test('homepage keeps the Startup Fame dofollow link under the best-for hub CTA', () => {
-  const selectorSource = homeSectionsSource.slice(
-    homeSectionsSource.indexOf('export function ShotTypeEngineSelector'),
-    homeSectionsSource.indexOf('export function RealExamplesPreview')
-  );
-  const hubCtaIndex = selectorSource.indexOf('data-analytics-cta-name="best-for-hub"');
+test('homepage keeps the Startup Fame dofollow link in the unified model-choice chapter', () => {
+  const selectorSource = readFileSync('frontend/components/marketing/home/HomeModelChoice.tsx', 'utf8');
+  const gallerySource = readFileSync('frontend/components/marketing/home/HomeCreativeWorlds.tsx', 'utf8');
+  const hubCtaIndex = gallerySource.indexOf('href="/ai-video-engines/best-for"');
   const startupFameIndex = selectorSource.indexOf('<StartupFameLink');
   const startupComponentSource = readFileSync('frontend/components/marketing/home/HomeStartupFameLink.tsx', 'utf8');
 
   assert.match(homeSource, /startupFameLabel={startupFameLabel}/);
   assert.ok(hubCtaIndex >= 0, 'Best-for hub CTA should render inside the selector');
-  assert.ok(startupFameIndex > hubCtaIndex, 'Startup Fame should stay below the best-for hub CTA');
+  assert.ok(startupFameIndex >= 0);
+  assert.ok(homeSource.indexOf('<HomeModelChoice') > homeSource.indexOf('<HomeCreativeWorlds'), 'Attribution stays after the gallery and its best-for links');
   assert.match(homeSource, /dictionary\.home\.partners\?\.startupFameLabel/);
   assert.match(startupComponentSource, /https:\/\/startupfa\.me\/s\/maxvideoai\?utm_source=maxvideoai\.com/);
   assert.doesNotMatch(startupComponentSource, /nofollow/);
@@ -318,4 +313,38 @@ test('homepage scorecard image avoids duplicate long accessible text', () => {
   assert.match(scorecardSource, /src="\/assets\/marketing\/comparison-scorecard-transparent\.webp"[\s\S]*alt=""/);
   assert.match(scorecardSource, /src="\/assets\/marketing\/comparison-scorecard-transparent\.webp"[\s\S]*aria-hidden="true"/);
   assert.doesNotMatch(scorecardSource, /Side-by-side AI video model scorecard comparing/);
+});
+
+
+test('home schemas are server rendered, escaped and do not invent a flat application price', () => {
+  assert.doesNotMatch(homeSource, /import Script from/);
+  for (const id of ['home-webapp-jsonld','home-faq-jsonld','home-provider-itemlist-jsonld']) {
+    assert.ok(homeSource.includes(`<script id="${id}" type="application/ld+json" dangerouslySetInnerHTML=`));
+  }
+  assert.doesNotMatch(homeJsonLdSource, /price: '10.00'/);
+});
+
+test('every FAQ answer has a contextual route and keeps the supported-input caveat', () => {
+  for (const locale of ['en','fr','es']) {
+    const data = JSON.parse(readFileSync(`frontend/messages/${locale}.json`,'utf8'));
+    const items = data.home.redesign.faq.items;
+    assert.equal(items.length,8);
+    assert.ok(items.every((item: {links?: unknown[]}) => item.links?.length));
+  }
+  assert.match(homeSectionsSource, /item.links\?\.map/);
+  assert.match(homeSectionsSource, /prefetch=\{false\}/);
+});
+
+
+test('homepage promotes published current comparisons without reviving older editions', async () => {
+  const { buildHomeComparisonLinks, buildHomeComparisonData } = await import('../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-comparison-data.ts');
+  const { isPublishedComparisonSlug } = await import('../frontend/lib/compare-hub/data.ts');
+  const links = buildHomeComparisonLinks();
+  assert.equal(links.length, 3);
+  assert.ok(links.every(link => isPublishedComparisonSlug(link.slug)));
+  assert.ok(links.some(link => link.slug.includes('seedance-2-5')));
+  assert.ok(links.some(link => link.slug.includes('ltx-2-5')));
+  assert.ok(links.every(link => !/seedance-1-5|seedance-2-0|ltx-2-3/.test(link.slug)));
+  // A new model must never inherit the scores of its predecessor.
+  assert.deepEqual(buildHomeComparisonData(new Map()).opponents, []);
 });

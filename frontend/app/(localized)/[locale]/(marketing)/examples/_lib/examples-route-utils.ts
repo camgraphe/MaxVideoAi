@@ -240,12 +240,12 @@ export function buildMainVideoHeroLine(locale: AppLocale, modelLabel: string, sp
     return compactLeadCopy(normalizedSpecificLine, 110);
   }
   if (locale === 'fr') {
-    return `Exemple de video IA ${modelLabel} avec prompt, reglages, duree, format et prix.`;
+    return `${modelLabel} en vidéo`;
   }
   if (locale === 'es') {
-    return `Ejemplo de video con IA de ${modelLabel} con prompt, ajustes, duracion, formato y precio.`;
+    return `${modelLabel} en acción`;
   }
-  return `${modelLabel} AI video example with prompt, settings, duration, aspect ratio, and pricing.`;
+  return `See ${modelLabel} in action`;
 }
 
 export function buildLocalizedExampleLabel(

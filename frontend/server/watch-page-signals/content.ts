@@ -153,7 +153,9 @@ export function buildDetailRows(
       value: new Intl.NumberFormat('en-US', { style: 'currency', currency: video.currency }).format(video.finalPriceCents / 100),
     });
   }
-  rows.push({ key: 'created', label: 'Created', value: new Date(video.createdAt).toISOString().slice(0, 10) });
+  if (Number.isFinite(Date.parse(video.createdAt))) {
+    rows.push({ key: 'created', label: 'Created', value: new Date(video.createdAt).toISOString().slice(0, 10) });
+  }
   return rows;
 }
 

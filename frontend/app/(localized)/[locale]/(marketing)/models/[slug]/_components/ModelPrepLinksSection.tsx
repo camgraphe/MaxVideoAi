@@ -19,7 +19,16 @@ type ModelPrepLinksSectionProps = {
 
 export function ModelPrepLinksSection({ prepLinksSection, locale }: ModelPrepLinksSectionProps) {
   const mcpLink = getMcpInternalLink(locale, 'model');
-  return prepLinksSection ? (
+  if (!prepLinksSection) {
+    return mcpLink ? (
+      <aside className="border-y border-hairline py-5">
+        <Link href={mcpLink.href} prefetch={false} className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-text-primary underline decoration-hairline underline-offset-4 hover:decoration-current">
+          {mcpLink.label}<span aria-hidden="true">→</span>
+        </Link>
+      </aside>
+    ) : null;
+  }
+  return (
           <section
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
@@ -78,5 +87,5 @@ export function ModelPrepLinksSection({ prepLinksSection, locale }: ModelPrepLin
               ) : null}
             </div>
           </section>
-  ) : null;
+  );
 }

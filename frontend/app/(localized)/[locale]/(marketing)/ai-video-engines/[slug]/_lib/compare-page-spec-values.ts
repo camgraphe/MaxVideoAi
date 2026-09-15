@@ -1,3 +1,4 @@
+import { localizeCapabilityDetail } from '@/lib/marketing/spec-capability-copy';
 import type { AppLocale } from '@/i18n/locales';
 import type { CompareSpecValues, EngineCatalogEntry } from './compare-page-types';
 
@@ -142,6 +143,8 @@ export function localizeSpecDetailValue(
 ): string {
   const normalized = value.trim();
   const lower = normalized.toLowerCase();
+  const capability = localizeCapabilityDetail(normalized, locale);
+  if (capability !== null) return capability;
   if (lower === 'supported') return labels.supported;
   if (lower === 'not supported') return labels.notSupported;
   if (lower === 'data pending') return labels.pending;
@@ -161,16 +164,16 @@ export function localizeSpecDetailValue(
   }
   if (lower === 'not exposed in current maxvideoai route') {
     return locale === 'fr'
-      ? 'non exposé dans la route MaxVideoAI actuelle'
+      ? 'non disponible dans MaxVideoAI actuellement'
       : locale === 'es'
-        ? 'no expuesto en la ruta actual de MaxVideoAI'
+        ? 'no disponible actualmente en MaxVideoAI'
         : normalized;
   }
   if (lower === 'multi reference stills') {
     return locale === 'fr'
-      ? 'plusieurs stills de référence'
+      ? 'plusieurs images de référence'
       : locale === 'es'
-        ? 'varios stills de referencia'
+        ? 'varias imágenes de referencia'
         : normalized;
   }
   if (lower === 'source clip for extend / retake') {

@@ -31,7 +31,7 @@ function buildSpanishGuides(client: McpClientId): IntegrationHostGuide[] {
         ],
         commands: [],
         setupValues: [{ label: 'Servidor MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],
-        limitation: 'Los créditos, referencias privadas y vídeos terminados quedan en la misma cuenta MaxVideoAI que usas en la web.',
+        limitation: 'Los créditos, referencias privadas y videos terminados quedan en la misma cuenta MaxVideoAI que usas en la web.',
       },
       {
         hostId: 'claudeCode',
@@ -107,8 +107,8 @@ export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPag
   const setupDescription = client === 'chatgpt'
     ? 'Conecta MaxVideoAI a ChatGPT mediante MCP directo en modo desarrollador; usa OAuth al empezar, compara modelos, aprueba precios y recupera resultados.'
     : client === 'claude'
-      ? 'Configura el conector remoto en Claude para preparar prompts y referencias, comparar modelos de vídeo con IA, revisar el precio y aprobar la generación.'
-      : 'Instala el plugin de Codex para preparar prompts y referencias, comparar modelos de vídeo con IA, revisar el precio exacto y aprobar la generación.';
+      ? 'Configura el conector remoto en Claude para preparar prompts y referencias, comparar modelos de video con IA, revisar el precio y aprobar la generación.'
+      : 'Instala el plugin de Codex para preparar prompts y referencias, comparar modelos de video con IA, revisar el precio exacto y aprobar la generación.';
   const setupIntro = client === 'chatgpt'
     ? 'ChatGPT y Codex usan la misma conexión MCP de MaxVideoAI. Conéctala directamente en el modo desarrollador de ChatGPT, inicia un chat nuevo y completa OAuth en el primer uso. MaxVideoAI no se presenta al directorio de OpenAI bajo la política comercial actual; esa decisión independiente no desactiva el MCP directo.'
     : client === 'claude'
@@ -123,7 +123,7 @@ export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPag
     hero: {
       ...base.hero,
       eyebrow: client === 'chatgpt' ? 'APP MAXVIDEOAI' : client === 'claude' ? 'CONECTOR MAXVIDEOAI' : 'PLUGIN MAXVIDEOAI',
-      title: `Crea vídeo con IA usando MaxVideoAI en ${clientLabel}`,
+      title: `Crea video con IA usando MaxVideoAI en ${clientLabel}`,
       intro: setupIntro,
       unavailable: 'Prepara prompts y referencias, compara modelos, presupuesta el proyecto y revisa el flujo de producción de MaxVideoAI.',
       liveStatus: client === 'chatgpt'
@@ -174,7 +174,7 @@ export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPag
       ],
     },
     references: {
-      title: 'Usa referencias de imagen, vídeo o audio cuando el modelo lo permita',
+      title: 'Usa referencias de imagen, video o audio cuando el modelo lo permita',
       planningBody: `${clientLabel} puede crear o mejorar ideas de referencia y elegir el activo adecuado para cada plano.`,
       liveBody: 'Selecciona un medio privado existente en tu biblioteca MaxVideoAI o abre una carga segura. Los tipos y límites proceden de los detalles actuales del modelo.',
       gatedBody: 'Planifica referencias en la conversación y reúne cargas privadas, generación y resultados en tu cuenta MaxVideoAI.',

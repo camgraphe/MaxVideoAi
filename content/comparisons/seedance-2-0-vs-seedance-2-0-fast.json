@@ -3,7 +3,7 @@
   "en": {
     "meta": {
       "title": "Seedance 2.0 vs Fast: Quality, Speed, Price & Best Uses",
-      "description": "Compare Seedance 2.0 and Fast with identical prompts, side-by-side video outputs, pricing, speed, quality tradeoffs and when to use each model.",
+      "description": "Compare Seedance 2.0 and Fast with independent video examples, pricing, speed, quality tradeoffs and when to use each model.",
       "titleBranding": "none"
     },
     "heroIntro": "Choose Seedance 2.0 for polished 1080p or 4K output, and Fast for lower-cost 480p or 720p drafts. Compare the outputs and settings below; actual waiting time depends on the route, settings and provider queue.",
@@ -60,7 +60,7 @@
   "fr": {
     "meta": {
       "title": "Seedance 2.0 vs Fast : qualité, vitesse, prix et usages",
-      "description": "Comparez Seedance 2.0 et Fast avec des prompts identiques, des vidéos côte à côte, les prix, la vitesse, les écarts de qualité et les usages de chaque modèle.",
+      "description": "Comparez Seedance 2.0 et Fast avec des exemples vidéo indépendants, les prix, la vitesse, les écarts de qualité et les usages de chaque modèle.",
       "titleBranding": "none"
     },
     "heroIntro": "Choisissez Seedance 2.0 pour une sortie soignée en 1080p ou 4K, et Fast pour des brouillons 480p ou 720p moins coûteux. Comparez les résultats et les réglages ci-dessous ; le temps d’attente dépend de la route, des paramètres et de la file du fournisseur.",
@@ -117,7 +117,7 @@
   "es": {
     "meta": {
       "title": "Seedance 2.0 vs Fast: calidad, velocidad, precio y usos",
-      "description": "Compara Seedance 2.0 y Fast con prompts idénticos, videos lado a lado, precios, velocidad, diferencias de calidad y los mejores usos de cada modelo.",
+      "description": "Compara Seedance 2.0 y Fast con videos lado a lado, precios, velocidad, diferencias de calidad y los mejores usos de cada modelo.",
       "titleBranding": "none"
     },
     "heroIntro": "Elige Seedance 2.0 para resultados pulidos en 1080p o 4K, y Fast para borradores más económicos en 480p o 720p. Compara los resultados y ajustes; la espera real depende de la ruta, los parámetros y la cola del proveedor.",

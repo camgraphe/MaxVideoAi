@@ -69,8 +69,6 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   assert.match(page, /englishPath:\s*['"]\/mcp['"]/);
   assert.match(page, /getMcpPublicationState/);
   assert.match(page, /FEATURES\.mcp/);
-  assert.match(page, /buildMcpBudgetOptions/);
-  assert.match(page, /getMcpProof/);
   assert.match(page, /getMcpHostProof/);
   assert.match(page, /notFound\(\)/);
   assert.match(page, /McpPageView/);
@@ -81,9 +79,9 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   const view = requireFile(`${mcpRoot}/_components/McpPageView.tsx`);
   for (const owner of [
     'McpHeroSection',
-    'McpPlatformSelector',
-    'McpProductionWorkflowSection',
-    'McpProjectDemo',
+    'McpIntegrationCards',
+    'McpEditorialSections',
+    'McpTrustStrip',
     'McpFaqResourcesSection',
   ]) {
     assert.match(view, new RegExp(owner));
@@ -369,11 +367,9 @@ test('route views preserve the single marketing-layout main landmark in server o
   const compatibility = getMcpCompatibilityEvidence();
   const mcpHtml = renderToStaticMarkup(
     React.createElement(McpPageView, {
-      budgetOptions: [],
       compatibility,
       copy: getMcpPageCopy('en'),
       locale: 'en',
-      proof: null,
       publication,
     }),
   );

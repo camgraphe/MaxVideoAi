@@ -1,13 +1,12 @@
 'use client';
 
+
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { HomeLcpPoster } from '@/components/marketing/home/HomeLcpPoster';
 import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
-import { HOME_LCP_DESKTOP_DELIVERY_SRC, HOME_LCP_MOBILE_DELIVERY_SRC } from './home-lcp-delivery';
 import { useHeroVideoPlayback } from '@/components/marketing/home/useHeroVideoPlayback';
 
 export type HeroVideoShowcaseItem = {
@@ -91,6 +90,10 @@ export function HeroVideoShowcase({
   loadingLabel,
   errorLabel,
   retryLabel,
+  fullscreenLabel = 'Fullscreen preview',
+  soundOnLabel = 'Turn preview sound on',
+  soundOffLabel = 'Turn preview sound off',
+  progressLabel = 'Preview progress',
 }: {
   items: HeroVideoShowcaseItem[];
   playLabel: string;
@@ -98,34 +101,16 @@ export function HeroVideoShowcase({
   loadingLabel: string;
   errorLabel: string;
   retryLabel: string;
+  fullscreenLabel?: string;
+  soundOnLabel?: string;
+  soundOffLabel?: string;
+  progressLabel?: string;
 }) {
-  const [shouldLoadMobileThumbnails, setShouldLoadMobileThumbnails] = useState(false);
-  const mobileThumbnailsRef = useRef<HTMLDivElement>(null);
   const {
     selectedIndex, selected, status, isPlaying, hasUserPaused, isMuted, currentTime, progress,
     shouldLoadVideo, canAutoplay, isFrameReady, playbackAttempt, playerRef, videoRef, selectAndPlay,
-    handlePlayToggle, handleMuteToggle, mediaHandlers, onSourceError,
+    handlePlayToggle, handleMuteToggle, mediaHandlers, onSourceError, transitionCanvasRef, hasTransitionFrame,
   } = useHeroVideoPlayback(items);
-
-  useEffect(() => {
-    const mobileThumbnails = mobileThumbnailsRef.current;
-    if (!mobileThumbnails) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShouldLoadMobileThumbnails(true);
-        observer.disconnect();
-      },
-      { rootMargin: '64px 0px', threshold: 0.01 }
-    );
-
-    observer.observe(mobileThumbnails);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   if (!selected) return null;
 
@@ -140,7 +125,7 @@ export function HeroVideoShowcase({
   const timeLabel = formatPlaybackTime(currentTime);
 
   return (
-    <div className="relative mx-auto w-full max-w-[710px] overflow-visible px-0 xl:mr-0">
+    <div className="cinema-player relative mx-auto w-full overflow-visible">
       <div className="relative">
         <div className="absolute -inset-3 rounded-[34px] bg-[radial-gradient(circle_at_58%_10%,rgba(17,24,39,0.14),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(120,113,108,0.10),transparent_36%)] blur-xl dark:bg-[radial-gradient(circle_at_92%_6%,rgba(217,70,239,0.13),transparent_32%),radial-gradient(circle_at_16%_4%,rgba(96,165,250,0.16),transparent_36%),radial-gradient(circle_at_48%_108%,rgba(59,130,246,0.055),transparent_40%)]" />
         <div
@@ -165,20 +150,20 @@ export function HeroVideoShowcase({
                 priority
                 fetchPriority="high"
                 unoptimized={selected.unoptimizedPoster}
-                sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
+                sizes="(max-width: 767px) 100vw, (max-width: 1099px) 52vw, 1240px"
                 className="object-cover"
               />
             )}
+            <canvas ref={transitionCanvasRef} aria-hidden="true" data-hero-transition-frame={hasTransitionFrame ? 'visible' : 'hidden'} className={`pointer-events-none absolute inset-0 h-full w-full object-cover ${hasTransitionFrame ? 'opacity-100' : 'opacity-0'}`} />
             {selected.videoSrc && shouldLoadVideo && playbackAttempt ? (
               <video
                 ref={videoRef}
                 key={`${selected.id}:${playbackAttempt.id}`}
                 aria-label={`${selected.name} preview video`}
-                className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isFrameReady ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 h-full w-full object-cover ${isFrameReady ? 'opacity-100' : 'opacity-0'}`}
                 preload={canAutoplay ? 'metadata' : 'auto'}
                 muted={isMuted}
                 playsInline
-                loop
                 {...mediaHandlers}
               >
                 <source
@@ -190,7 +175,7 @@ export function HeroVideoShowcase({
             ) : null}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
 
-            <div className="absolute left-5 top-5 max-w-[58%] text-white sm:left-7 sm:top-7">
+            <div className="cinema-film-caption absolute left-5 top-5 max-w-[58%] text-white sm:left-7 sm:top-7">
               <p className="text-xl font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
                 {selected.name}
               </p>
@@ -206,7 +191,7 @@ export function HeroVideoShowcase({
               </div>
             </div>
 
-          <div className="absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
+          <div className="cinema-film-quote hidden sm:block absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
             <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
             <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
               {primaryPrice}
@@ -253,14 +238,14 @@ export function HeroVideoShowcase({
               <div
                 className="h-1.5 min-w-[88px] flex-1 overflow-hidden rounded-full bg-white/13"
                 role="progressbar"
-                aria-label={`${selected.name} preview progress`}
+                aria-label={`${selected.name} — ${progressLabel}`}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={Math.round(progress)}
               >
                 <div
                   className="h-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.88),rgba(229,231,235,0.98))] transition-[width] duration-300"
-                  style={{ width: `${Math.max(12, progress)}%` }}
+                  style={{ width: `${Math.max(0, progress)}%` }}
                 />
               </div>
               <span className="hidden rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white dark:bg-white/[0.08] dark:ring-1 dark:ring-white/[0.08] sm:inline-flex">
@@ -268,7 +253,7 @@ export function HeroVideoShowcase({
               </span>
               <button
                 type="button"
-                aria-label={isMuted ? 'Turn preview sound on' : 'Turn preview sound off'}
+                aria-label={isMuted ? soundOnLabel : soundOffLabel}
                 aria-pressed={!isMuted}
                 onClick={handleMuteToggle}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)]"
@@ -277,7 +262,8 @@ export function HeroVideoShowcase({
               </button>
               <button
                 type="button"
-                aria-label="Fullscreen preview"
+                aria-label={fullscreenLabel}
+                onClick={() => { void playerRef.current?.requestFullscreen?.().catch(() => undefined); }}
                 className="hidden h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)] sm:inline-flex"
               >
                 <UIIcon icon={Maximize2} size={18} />
@@ -288,62 +274,15 @@ export function HeroVideoShowcase({
       </div>
       </div>
 
-      <div ref={mobileThumbnailsRef} className="relative z-20 mt-4">
-        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
-          {items.map((item, index) => {
-            const selectedThumb = index === selectedIndex;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                aria-label={`${playLabel}: ${item.name}`}
-                aria-pressed={selectedThumb}
-                onClick={() => selectAndPlay(index)}
-                className={
-                  selectedThumb
-                    ? 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.24),0_18px_34px_-24px_rgba(3,7,18,0.76)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/[0.18] dark:shadow-[0_0_0_1px_rgba(143,183,255,0.34),0_18px_34px_-24px_rgba(0,0,0,0.9)]'
-                    : 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/70 bg-[#070b14] shadow-[0_12px_26px_-24px_rgba(15,23,42,0.7)] transition hover:-translate-y-0.5 hover:border-white/90 hover:shadow-[0_14px_30px_-24px_rgba(3,7,18,0.6)] focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:border-white/[0.08] dark:hover:border-white/[0.16]'
-                }
-              >
-                <Image
-                  src={item.posterSrc === HOME_LCP_POSTER_SRC ? HOME_LCP_DESKTOP_DELIVERY_SRC : item.posterSrc}
-                  alt={item.imageAlt}
-                  fill
-                  unoptimized={item.unoptimizedPoster}
-                  sizes="118px"
-                  className="hidden object-cover md:block"
-                  loading="lazy"
-                />
-                {shouldLoadMobileThumbnails ? (
-                  <Image
-                    src={item.posterSrc === HOME_LCP_POSTER_SRC ? HOME_LCP_MOBILE_DELIVERY_SRC : item.posterSrc}
-                    alt={item.imageAlt}
-                    fill
-                    unoptimized={item.unoptimizedPoster}
-                    sizes="(max-width: 639px) 33vw, 118px"
-                    className="object-cover md:hidden"
-                    loading="lazy"
-                  />
-                ) : null}
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.06)_40%,rgba(0,0,0,0.50)_72%,rgba(0,0,0,0.82)_100%)]" />
-                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(0,0,0,0.62),rgba(0,0,0,0.26)_48%,transparent_78%)]" />
-                <span className="absolute bottom-7 left-2.5 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white/94 text-[#151827] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.9)]">
-                  <UIIcon icon={Play} size={10} />
-                </span>
-                <span className="absolute bottom-2 left-2.5 right-2 truncate text-left text-[10.5px] font-semibold leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.92)]">
-                  {item.name}
-                </span>
-                {selectedThumb ? <span className="absolute bottom-3 right-2.5 h-2 w-2 rounded-full bg-white" /> : null}
-              </button>
-            );
-          })}
-        </div>
+      <div className="cinema-film-selector">
+        <div className="cinema-film-tabs">{items.map((item,index)=><button key={item.id} type="button" aria-label={`${playLabel}: ${item.name}`} aria-pressed={index===selectedIndex} onClick={()=>selectAndPlay(index)}><span>{item.name}</span></button>)}</div>
+        <details className="cinema-quote-details"><summary>{selected.estimateLabel} <strong>{primaryPrice}</strong></summary><p>{quoteRenderMeta}{ratePerSecond ? ` · ${ratePerSecond}` : ''}</p></details>
         {(selected.examplesHref || selected.modelHref) ? (
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
+          <div className="cinema-film-links mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
             {selected.examplesHref ? (
               <Link
                 href={selected.examplesHref}
-                className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-text-primary shadow-[0_12px_30px_-22px_rgba(15,23,42,0.55)] transition hover:border-text-muted hover:bg-white dark:border-white/[0.10] dark:bg-surface-glass-70 dark:text-white/88 dark:hover:border-white/[0.16] dark:hover:bg-surface-glass-80"
+                className="inline-flex items-center gap-1 rounded-full border border-hairline bg-surface px-3 py-1.5 text-text-primary shadow-[0_12px_30px_-22px_rgba(15,23,42,0.55)] transition hover:border-text-muted hover:bg-white dark:border-white/[0.10] dark:bg-surface-glass-70 dark:text-white/88 dark:hover:border-white/[0.16] dark:hover:bg-surface-glass-80"
               >
                 {selected.examplesLabel ?? `View ${selected.name} examples`}
                 <span aria-hidden="true">→</span>

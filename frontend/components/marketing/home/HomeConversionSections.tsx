@@ -3,7 +3,6 @@ import {
   BadgeCheck,
   BadgeDollarSign,
   BarChart3,
-  Box,
   CircleDollarSign,
   ClipboardList,
   RefreshCcw,
@@ -16,7 +15,6 @@ import { UIIcon } from '@/components/ui/UIIcon';
 import {
   COMPARISON_CARD_MEDIA,
   REFERENCE_WORKFLOW_VISUALS,
-  TOOLBOX_VISUALS,
   TOOL_ICONS,
 } from '@/components/marketing/home/home-redesign-visuals';
 import type {
@@ -264,71 +262,33 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
 
 export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: ToolCard[] }) {
   return (
-    <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg section">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(15,23,42,0.055),transparent_34%),linear-gradient(180deg,transparent,rgba(148,163,184,0.08))] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.030),transparent_38%)]" />
-      <div className="container-page relative max-w-[1200px] stack-gap-lg">
-        <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <section id="toolkit" className="home-toolkit-chapter section border-b border-hairline">
+      <div className="container-page toolkit-layout">
+        <header>
+          <h2 className="editorial-heading">{copy.title}</h2>
+          <p className="editorial-body">{copy.subtitle}</p>
+          <Link href={{ pathname: '/tools' }} className="editorial-action"
+            data-analytics-event="tool_card_click" data-analytics-cta-name="browse_tools"
+            data-analytics-cta-location="toolbox_cta" data-analytics-target-family="tools">
+            {copy.secondaryCta ?? 'Browse all tools'}<span aria-hidden="true">↗</span>
+          </Link>
+          <Link href="/app" prefetch={false} className="toolkit-workspace"
+            data-analytics-event="tool_card_click" data-analytics-cta-name="open_workspace"
+            data-analytics-cta-location="toolbox_cta" data-analytics-target-family="workspace">
+            {copy.primaryCta ?? 'Open workspace'}<span aria-hidden="true">→</span>
+          </Link>
+        </header>
+        <div className="toolkit-links">
           {tools.map((tool) => (
-            <Link
-              key={tool.id}
-              href={tool.href}
-              prefetch={isWorkspaceHref(tool.href) ? false : undefined}
-              className="dark-neon-panel group relative min-h-[158px] overflow-hidden rounded-card border border-hairline bg-surface p-3 pb-11 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[188px] sm:p-4 sm:pb-12"
-              data-analytics-event="tool_card_click"
-              data-analytics-cta-name={tool.id}
-              data-analytics-cta-location="toolbox"
-              data-analytics-tool-name={tool.id}
-              data-analytics-tool-surface="public"
-            >
-              <Image
-                src={TOOLBOX_VISUALS[tool.id] ?? '/hero/showcase-seedance-2-0-business-workflow.webp'}
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="(max-width: 767px) 50vw, (max-width: 1199px) 25vw, 280px"
-                className="object-cover saturate-[1.06] contrast-[1.06] transition duration-500 group-hover:scale-[1.04]"
-                loading="lazy"
-              />
-              <span className="absolute inset-0 bg-[linear-gradient(112deg,rgba(3,7,18,0.66)_0%,rgba(3,7,18,0.48)_42%,rgba(3,7,18,0.22)_72%,rgba(3,7,18,0.10)_100%)]" />
-              <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
-              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-[11px] border border-white/25 bg-white/15 text-white shadow-sm backdrop-blur dark:bg-white/10 sm:h-9 sm:w-9">
-                <UIIcon icon={TOOL_ICONS[tool.icon]} size={18} strokeWidth={1.9} />
-              </span>
-              <h3 className="relative z-10 mt-4 pr-6 text-sm font-semibold leading-5 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.48)] sm:text-base">{tool.title}</h3>
-              <p className="relative z-10 mt-1.5 pr-6 text-xs leading-5 text-white/80 drop-shadow-[0_1px_6px_rgba(0,0,0,0.42)] sm:hidden">{tool.shortBody ?? tool.body}</p>
-              <p className="relative z-10 mt-2 hidden pr-7 text-sm leading-6 text-white/80 drop-shadow-[0_1px_6px_rgba(0,0,0,0.42)] sm:block">{tool.body}</p>
-              <span className="absolute bottom-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/15 text-white shadow-sm backdrop-blur transition group-hover:translate-x-0.5 group-hover:bg-white/20">
-                <span aria-hidden="true">→</span>
-              </span>
+            <Link key={tool.id} href={tool.href} prefetch={isWorkspaceHref(tool.href) ? false : undefined}
+              className="toolkit-link" data-analytics-event="tool_card_click"
+              data-analytics-cta-name={tool.id} data-analytics-cta-location="toolbox"
+              data-analytics-tool-name={tool.id} data-analytics-tool-surface="public">
+              <UIIcon icon={TOOL_ICONS[tool.icon]} size={22} strokeWidth={1.5} />
+              <span><h3>{tool.title}</h3><p>{tool.shortBody ?? tool.body}</p></span>
+              <span className="toolkit-arrow" aria-hidden="true">↗</span>
             </Link>
           ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-3">
-          <ButtonLink
-            href="/app"
-            prefetch={false}
-            linkComponent={Link}
-            size="lg"
-            data-analytics-event="tool_card_click"
-            data-analytics-cta-name="open_workspace"
-            data-analytics-cta-location="toolbox_cta"
-            data-analytics-target-family="workspace"
-          >
-            {copy.primaryCta ?? 'Open workspace'}
-          </ButtonLink>
-          <ButtonLink
-            href={{ pathname: '/tools' }}
-            linkComponent={Link}
-            variant="outline"
-            size="lg"
-            data-analytics-event="tool_card_click"
-            data-analytics-cta-name="browse_tools"
-            data-analytics-cta-location="toolbox_cta"
-            data-analytics-target-family="tools"
-          >
-            {copy.secondaryCta ?? 'Browse all tools'}
-          </ButtonLink>
         </div>
       </div>
     </section>
@@ -344,7 +304,7 @@ export function TransparentPricingBlock({ copy, cards }: { copy: SectionCopy; ca
   ];
 
   return (
-    <section className="dark-section-neon border-b border-hairline bg-surface section">
+    <section className="home-payg-chapter dark-section-neon border-b border-hairline bg-surface section">
       <div className="container-page max-w-[1280px]">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.86fr)_1px_minmax(0,1.14fr)] lg:items-center lg:gap-12">
           <div className="max-w-[520px]">
@@ -452,7 +412,7 @@ export function ProviderEngineStrip({ copy, providers }: { copy: SectionCopy; pr
 
 export function HomeFaq({ copy, items }: { copy: SectionCopy; items: FaqItem[] }) {
   return (
-    <section className="dark-section-neon bg-bg section">
+    <section className="home-faq-chapter dark-section-neon bg-bg section">
       <div className="container-page max-w-[900px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
         <div className="space-y-3">
@@ -460,9 +420,10 @@ export function HomeFaq({ copy, items }: { copy: SectionCopy; items: FaqItem[] }
             <details key={item.question} className="dark-neon-panel group rounded-card border border-hairline bg-surface p-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-semibold text-text-primary">
                 <span>{item.question}</span>
-                <UIIcon icon={Box} size={18} className="text-text-muted transition group-open:rotate-45" />
+                <span aria-hidden className="text-text-muted transition group-open:rotate-45">+</span>
               </summary>
               <p className="mt-3 text-sm leading-7 text-text-secondary">{item.answer}</p>
+              {item.links?.map(link => <Link key={link.label} href={link.href} prefetch={false} className="home-faq-resource">{link.label} <span aria-hidden>→</span></Link>)}
             </details>
           ))}
         </div>

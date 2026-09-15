@@ -107,7 +107,7 @@ export function runInternalLinkGuard({ scanRoot: requestedScanRoot } = {}) {
 
   assert(/pathname:\s*'\/company'/.test(footerSource), 'Footer must include /company as trust hub entry.');
   assert(!/pathname:\s*'\/about'/.test(footerSource), 'Footer must not link directly to /about.');
-  assert(!/pathname:\s*'\/contact'/.test(footerSource), 'Footer must not link directly to /contact.');
+  assert(/key: 'contact'[^\n]*href: '\/contact'/.test(footerSource), 'Footer must retain its direct contact entry.');
   assert(!/pathname:\s*'\/workflows'/.test(footerSource), 'Footer must not link directly to /workflows.');
   assert(!/\/legal\/takedown/.test(footerSource), 'Footer policies must not include /legal/takedown.');
 
@@ -178,7 +178,7 @@ export function runInternalLinkGuard({ scanRoot: requestedScanRoot } = {}) {
     );
     assert(!Object.prototype.hasOwnProperty.call(productItems, 'workflows'), `${localeFile}: footer product links must not include workflows.`);
     assert(!Object.prototype.hasOwnProperty.call(companyItems, 'about'), `${localeFile}: footer company links must not include about.`);
-    assert(!Object.prototype.hasOwnProperty.call(companyItems, 'contact'), `${localeFile}: footer company links must not include contact.`);
+    assert(Object.prototype.hasOwnProperty.call(companyItems, 'contact'), `${localeFile}: footer contact label must be localized.`);
     assert(Object.prototype.hasOwnProperty.call(companyItems, 'companyHub'), `${localeFile}: footer company links must include companyHub.`);
   }
 

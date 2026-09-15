@@ -1,0 +1,84 @@
+{
+  "clips": [
+    {
+      "key": "bag-short",
+      "title": "How I made this AI scene",
+      "video": "local-assets/bag-short.mp4",
+      "poster": "references/bag-short-poster.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Montage C08 · MiniMax H3",
+      "placement": "Archive de production — Short exclu du site",
+      "note": "Version finale V2 : références → action → dialogue. Le Short de 21,875 s remplace les trois fragments abandonnés.",
+      "motion": "Extraire seulement les images et plans utiles pour une démonstration propre au site. Aucun Short complet ni présentateur parlant.",
+      "caution": "Ne pas intégrer cet export ni sa version sans sous-titres au site. Écarter les plans de présentateur, le commentaire et l’habillage YouTube.",
+      "measured": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 21.875,
+        "fps": 24.0
+      },
+      "status": "archived-source-only"
+    },
+    {
+      "key": "site-before",
+      "title": "Le site avant animation",
+      "video": "local-assets/site-before.mp4",
+      "poster": "references/site-before.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Capture du site de démonstration",
+      "placement": "Archive — réalisation écartée, non retenue pour la refonte",
+      "note": "Capture existante du site local de démonstration, avant l’intégration de la vidéo.",
+      "motion": "Idée de site animé conservée, réalisation à recréer entièrement avec un nouveau produit.",
+      "caution": "Site de démonstration conçu pour la production YouTube. Il ne s’agit pas d’un site client.",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 7.875,
+        "fps": 24.0
+      },
+      "status": "archived-rejected-website-move"
+    },
+    {
+      "key": "site-after",
+      "title": "Le site prend vie",
+      "video": "local-assets/site-after.mp4",
+      "poster": "references/site-after.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Capture du site de démonstration",
+      "placement": "Archive — réalisation écartée, non retenue pour la refonte",
+      "note": "Capture existante du même site local avec une vidéo de produit intégrée.",
+      "motion": "Idée de site animé conservée, réalisation à recréer entièrement avec un nouveau produit.",
+      "caution": "Cette capture prouve le résultat intégré. Elle ne montre pas une conversation réelle de génération avec Codex.",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 16.0,
+        "fps": 24.0
+      },
+      "status": "archived-rejected-website-move"
+    },
+    {
+      "key": "desktop-phone",
+      "title": "Un résultat, deux formats",
+      "video": "local-assets/desktop-phone.mp4",
+      "poster": "references/desktop-phone.jpg",
+      "category": "Production existante",
+      "origin": "Dossier YouTube",
+      "model": "Capture du site de démonstration",
+      "placement": "Archive — réalisation écartée, non retenue pour la refonte",
+      "note": "Capture existante présentant la création sur ordinateur et téléphone.",
+      "motion": "Idée de site animé conservée, réalisation à recréer entièrement avec un nouveau produit.",
+      "caution": "La vue composée n’est pas un test sur téléphone physique. Vérifier les vrais recadrages au moment de l’intégration.",
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "duration": 20.041667,
+        "fps": 24.0
+      },
+      "status": "archived-rejected-website-move"
+    }
+  ]
+}

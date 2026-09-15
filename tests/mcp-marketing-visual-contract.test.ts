@@ -1,376 +1,42 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-
-(globalThis as typeof globalThis & { React: typeof React }).React = React;
-
-const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)/mcp';
-const componentsRoot = `${routeRoot}/_components`;
-const integrationComponentsRoot = 'frontend/app/(localized)/[locale]/(marketing)/integrations/_components';
-
-function requireFile(path: string): string {
-  assert.equal(existsSync(path), true, `${path} should exist`);
-  return readFileSync(path, 'utf8');
-}
-
-test('Claude, ChatGPT, and Codex use the shared marks through one equal neutral action component', () => {
-  const source = requireFile(`${componentsRoot}/McpClientActions.tsx`);
-  const integrationHero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
-  const sharedMarks = requireFile('frontend/components/marketing/mcp/McpIntegrationMark.tsx');
-  const openAiDark = requireFile('frontend/public/brand/partners/openai/openai-mark-dark.svg');
-  const claudeDark = requireFile('frontend/public/brand/partners/anthropic/claude-mark-dark.svg');
-  assert.match(sharedMarks, /\/brand\/partners\/anthropic\/claude-mark-light\.svg/);
-  assert.match(sharedMarks, /\/brand\/partners\/anthropic\/claude-mark-dark\.svg/);
-  assert.match(sharedMarks, /\/brand\/partners\/openai\/openai-mark-light\.svg/);
-  assert.match(sharedMarks, /\/brand\/partners\/openai\/openai-mark-dark\.svg/);
-  assert.match(source, /McpIntegrationMark integration=\{action\.client\}/);
-  assert.match(integrationHero, /McpIntegrationMark integration=\{copy\.client\}/);
-  assert.match(source, /function McpClientAction/);
-  assert.match(source, /clients\.map/);
-  assert.match(source, /neutral|bg-surface/);
-  assert.match(openAiDark, /fill="#FFFFFF"/i);
-  assert.match(claudeDark, /fill="#D97757"/i);
-  assert.match(source, /bg-white[^"\n]*dark:bg-neutral-900/);
-  assert.match(integrationHero, /bg-white[^"\n]*dark:bg-neutral-900/);
-  assert.doesNotMatch(source, /bg-white[^"\n]*dark:bg-white/);
-  assert.doesNotMatch(integrationHero, /bg-white[^"\n]*dark:bg-white/);
-  assert.match(source, /sm:grid-cols-3/);
-  assert.doesNotMatch(source, /preferred|primaryClient|OpenAI['"]/);
+import { McpStoryVisual } from '../frontend/components/marketing/mcp/McpStoryVisual.client';
+import { McpIntegrationCards } from '../frontend/components/marketing/mcp/McpIntegrationCards';
+import { getMcpPublicIntegrationIds } from '../frontend/lib/mcp-integration-registry';
+(globalThis as typeof globalThis & {React:typeof React}).React=React;
+const read=(p:string)=>readFileSync(p,'utf8');
+test('hero illustration has fixed image geometry, a clear label and no automatic video download',()=>{
+ const html=renderToStaticMarkup(React.createElement(McpStoryVisual,{locale:'fr',client:'claude'}));
+ assert.match(html,/PARCOURS ILLUSTRÉ/);assert.match(html,/width="1200"/);assert.match(html,/height="615"/);
+ assert.doesNotMatch(html,/<video|autoplay|preload="auto"/i);
+ assert.equal((html.match(/role="tab"/g)??[]).length,3);assert.equal((html.match(/aria-selected="true"/g)??[]).length,1);
+ assert.match(html,/role="tabpanel"/);
 });
-
-test('the platform selector renders a local brand mark for every MCP integration', async () => {
-  const { McpPlatformSelector } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPlatformSelector.tsx'
-  );
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const copy = getMcpPageCopy('en');
-  const html = renderToStaticMarkup(React.createElement(McpPlatformSelector, {
-    actions: copy.hero.actions,
-    copy: copy.ecosystem,
-  }));
-
-  for (const client of [
-    'claude',
-    'chatgpt',
-    'codex',
-    'openclaw',
-    'n8n',
-    'cursor',
-    'githubCopilot',
-    'geminiCli',
-    'microsoftCopilot',
-  ] as const) {
-    assert.match(html, new RegExp(`data-mcp-integration-mark="${client}"`));
-    assert.match(html, new RegExp(`data-mcp-mark-kind="logo"[^>]*data-mcp-integration-mark="${client}"|data-mcp-integration-mark="${client}"[^>]*data-mcp-mark-kind="logo"`));
-  }
-  assert.doesNotMatch(html, /data-mcp-mark-kind="monogram"/);
+test('public integrations all have real logos and preparing clients never receive setup links',()=>{
+ const html=renderToStaticMarkup(React.createElement(McpIntegrationCards,{locale:'en'}));
+ for(const id of getMcpPublicIntegrationIds())assert.ok(html.includes(`data-mcp-integration-mark="${id}"`));
+ for(const label of ['Cursor','GitHub Copilot','Gemini CLI','Microsoft Copilot'])assert.ok(html.includes(label));
+ assert.equal((html.match(/class="mcp-integration-card"/g)??[]).length,5);
+ assert.doesNotMatch(html,/href="\/integrations\/(cursor|gemini|microsoft|github)/);
 });
-
-test('new MCP surfaces remain light-first, restrained, and dark-compatible', () => {
-  const visualComponents = [
-    'McpPageView.tsx',
-    'McpHeroSection.tsx',
-    'McpConversationPreview.tsx',
-    'McpClientActions.tsx',
-    'McpConnectActions.client.tsx',
-    'McpProofMedia.tsx',
-    'McpHostProofCard.tsx',
-    'McpPlatformSelector.tsx',
-    'McpProductionWorkflowSection.tsx',
-    'McpFaqResourcesSection.tsx',
-    'McpWorkflowStrip.tsx',
-    'McpBudgetShortlist.tsx',
-    'McpEvidenceSection.tsx',
-    'McpReferenceWorkflowSection.tsx',
-    'McpTrustSections.tsx',
-  ];
-  for (const component of visualComponents) {
-    const source = requireFile(`${componentsRoot}/${component}`);
-    assert.match(source, /bg-(?:bg|surface|white)/, `${component} should use existing light surfaces`);
-    assert.match(source, /text-text-(?:primary|secondary|muted)/, `${component} should use existing text tokens`);
-    assert.match(source, /border-(?:hairline|white)/, `${component} should retain thin borders`);
-    assert.match(source, /dark:/, `${component} should include dark-mode parity`);
-    assert.doesNotMatch(source, /ThemeProvider|next-themes/, `${component} must use the existing theme`);
-  }
+test('motion respects reduced motion, and step controls support keyboard navigation',()=>{
+ const css=read('frontend/src/styles/marketing-mcp.css');
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);assert.match(css,/animation:none!important/);
+ const component=read('frontend/components/marketing/mcp/McpStoryVisual.client.tsx');
+ for(const key of ['ArrowLeft','ArrowRight','Home','End'])assert.ok(component.includes(key));
+ assert.doesNotMatch(component,/setInterval|setTimeout|fetch\(/);
 });
-
-test('the hero stays prospect-facing and contains no internal setup vocabulary', () => {
-  const source = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
-  assert.doesNotMatch(source, /OAuth|scope|endpoint|staging|API key/i);
-  assert.doesNotMatch(source, /McpConnectActions|McpConversationPreview|McpClientActions/);
-  assert.match(source, /showTrialClaim/);
+test('manual endpoint copy reports success only after clipboard resolution',()=>{
+ const component=read('frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationInstallCopy.client.tsx');
+ assert.match(component,/await navigator.clipboard.writeText\(value\);\s*setState\(nextState\)/);
+ assert.match(component,/setState\('error'\)/);assert.match(component,/role="status"/);assert.match(component,/copy.copyInstructionEnabled/);
 });
-
-test('marketing setup surfaces prioritize copy-paste instructions and keep the MCP address secondary', () => {
-  const integrationSetup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
-  const integrationCopy = requireFile(`${integrationComponentsRoot}/IntegrationInstallCopy.client.tsx`);
-  const hubCopy = requireFile(`${componentsRoot}/McpConnectActions.client.tsx`);
-
-  assert.match(integrationSetup, /IntegrationInstallCopy/);
-  assert.match(integrationCopy, /data-copy-install-instructions/);
-  assert.match(integrationCopy, /data-copy-endpoint/);
-  assert.match(integrationCopy, /navigator\.clipboard\.writeText/);
-  assert.match(integrationCopy, /aria-live="polite"/);
-  assert.match(integrationCopy, /<details/);
-  assert.match(integrationCopy, /copy\.showInstruction/);
-  assert.ok(
-    integrationCopy.indexOf('data-copy-install-instructions') < integrationCopy.indexOf('<details'),
-    'the primary copy action should appear before the expandable instruction text',
-  );
-  assert.match(integrationSetup, /copy\.setup\.installAction\.detailEyebrow/);
-  assert.match(integrationSetup, /copy\.setup\.installAction\.detailTitle/);
-  assert.ok(
-    integrationSetup.indexOf('IntegrationInstallCopy') < integrationSetup.indexOf('detailEyebrow'),
-    'fast setup should render before detailed setup',
-  );
-  assert.match(hubCopy, /data-copy-install-instructions/);
-  assert.match(hubCopy, /data-copy-endpoint/);
-  assert.match(hubCopy, /navigator\.clipboard\.writeText/);
-  assert.match(hubCopy, /aria-live="polite"/);
-});
-
-test('the production workflow keeps three steps and current price references in one section', async () => {
-  requireFile(`${componentsRoot}/McpProductionWorkflowSection.tsx`);
-  requireFile(`${routeRoot}/_lib/mcp-page-copy.ts`);
-  const { McpProductionWorkflowSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpProductionWorkflowSection.tsx'
-  );
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const copy = getMcpPageCopy('en');
-  const options = [
-    {
-      slot: 'included_trial',
-      engineId: 'seedance-2-0-mini',
-      modelSlug: 'dreamina-seedance-2-0-mini',
-      name: 'Dreamina Seedance 2.0 Mini',
-      mode: 't2v',
-      durationSeconds: 5,
-      resolution: '480p',
-      audioState: 'enabled',
-      amountCents: null,
-      currency: 'USD',
-      priceLabel: 'Included',
-      scenarioLabel: '5s · 480p · Audio enabled',
-      modelHref: '/models/dreamina-seedance-2-0-mini',
-      priceSource: 'included_trial',
-    },
-    {
-      slot: 'lowest_paid',
-      engineId: 'pika-text-to-video',
-      modelSlug: 'pika-text-to-video',
-      name: 'Pika Text to Video',
-      mode: 't2v',
-      durationSeconds: 5,
-      resolution: '720p',
-      audioState: 'silent',
-      amountCents: 26,
-      currency: 'USD',
-      priceLabel: '$0.26',
-      scenarioLabel: '5s · 720p · Silent',
-      modelHref: '/models/pika-text-to-video',
-      priceSource: 'canonical_public_quote',
-    },
-  ] as const;
-  const workflow = renderToStaticMarkup(
-    React.createElement(McpProductionWorkflowSection, {
-      copy,
-      options,
-      publication: {
-        renderPublicPage: true,
-        connectionAvailable: true,
-        indexable: true,
-        showTrialClaim: true,
-        showPaidGenerationClaim: true,
-        showReferenceClaim: true,
-      },
-    }),
-  );
-  assert.equal((workflow.match(/data-production-step=/g) ?? []).length, 3);
-  copy.workflow.steps.forEach((step: string) => assert.ok(workflow.includes(step.replace('&', '&amp;'))));
-  assert.equal((workflow.match(/data-price-reference=/g) ?? []).length, 2);
-  assert.ok(workflow.includes('Quality-first proposal'));
-  assert.ok(workflow.includes('Lower-cost alternatives'));
-  assert.ok(workflow.includes('not packages or a recommendation'));
-  assert.ok(workflow.includes('Included'));
-  assert.ok(workflow.includes('$0.26'));
-});
-
-test('proof media is poster-backed, controlled, captioned, and never auto-plays', () => {
-  const source = requireFile(`${componentsRoot}/McpProofMedia.tsx`);
-  assert.equal(existsSync(`${componentsRoot}/McpProofMedia.client.tsx`), false);
-  assert.doesNotMatch(source, /['"]use client['"]/);
-  assert.match(source, /<video/);
-  assert.match(source, /controls/);
-  assert.match(source, /preload="metadata"/);
-  assert.match(source, /poster=\{proof\.posterSrc\}/);
-  assert.match(source, /kind="captions"/);
-  assert.match(source, /src=\{proof\.captionsSrc\}/);
-  assert.match(source, /<figcaption/);
-  assert.doesNotMatch(source, /autoPlay/);
-
-  const proofContract = requireFile(`${routeRoot}/_lib/mcp-proof.ts`);
-  assert.match(proofContract, /captionsSrc: string/);
-  assert.match(proofContract, /captionsLocale: AppLocale/);
-});
-
-test('Claude host proof is a captioned light-first image, not a simulated video claim', () => {
-  const source = requireFile(`${componentsRoot}/McpHostProofCard.tsx`);
-  assert.doesNotMatch(source, /['"]use client['"]/);
-  assert.match(source, /<figure/);
-  assert.match(source, /<Image/);
-  assert.match(source, /src=\{proof\.assetSrc\}/);
-  assert.match(source, /alt=\{proof\.alt\}/);
-  assert.match(source, /<figcaption/);
-  assert.match(source, /bg-white/);
-  assert.match(source, /dark:/);
-  assert.doesNotMatch(source, /<video|autoPlay/);
-});
-
-test('integration heroes lead with visual product evidence and link directly to setup', () => {
-  const hero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
-  const view = requireFile(`${integrationComponentsRoot}/IntegrationPageView.tsx`);
-  const preview = requireFile(`${integrationComponentsRoot}/IntegrationConversationPreview.tsx`);
-  const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
-
-  assert.match(hero, /hostProof/);
-  assert.match(hero, /McpHostProofCard/);
-  assert.match(hero, /IntegrationConversationPreview/);
-  assert.match(hero, /href="#setup"/);
-  assert.match(view, /hostProof=\{hostProof\}/);
-  assert.doesNotMatch(view, /hostProof \? \(/);
-  assert.match(setup, /id="setup"/);
-  assert.match(preview, /<video/);
-  assert.match(preview, /controls/);
-  assert.match(preview, /preload="none"/);
-  assert.match(preview, /buildPublicVideoPosterUrl/);
-  assert.match(preview, /poster=/);
-  assert.doesNotMatch(preview, /autoPlay/);
-});
-
-test('public integration setup steps render only currently publishable proof assets', async () => {
-  const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
-  assert.match(setup, /import Image from ['"]next\/image['"]/);
-  assert.match(setup, /step\.proof/);
-  assert.match(setup, /<figcaption/);
-  assert.match(setup, /loading="lazy"/);
-
-  const { getIntegrationCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
-  );
-  const manifest = JSON.parse(requireFile('docs/marketing/github-asset-manifest.json')) as {
-    assets: Array<{ path: string; state: string }>;
-  };
-  const stateByPublicSrc = new Map(
-    manifest.assets
-      .filter((asset) => asset.path.startsWith('frontend/public/'))
-      .map((asset) => [asset.path.replace(/^frontend\/public/, ''), asset.state]),
-  );
-
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
-      for (const guide of getIntegrationCopy(locale, client).setup.hostGuides) {
-        for (const step of guide.steps) {
-          if (!step.proof) continue;
-          assert.equal(existsSync(`frontend/public${step.proof.src}`), true);
-          assert.equal(
-            stateByPublicSrc.get(step.proof.src),
-            'publishable_proof',
-            `${locale}/${client}/${step.title} must not publish a reference-only capture`,
-          );
-        }
-      }
-    }
-  }
-});
-
-test('homepage assistant workflow localizes the live catalog label and uses account library language', () => {
-  const source = requireFile('frontend/components/marketing/home/HomeAssistantWorkflow.tsx');
-  assert.match(source, /catalogLabel/);
-  assert.doesNotMatch(source, /> Live catalog</);
-  assert.doesNotMatch(source, /galerie MaxVideoAI/);
-});
-
-test('the shared hub stays host-neutral before showing the controlled Claude capture', () => {
-  const hero = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
-  const view = requireFile(`${componentsRoot}/McpPageView.tsx`);
-  const answers = requireFile(`${componentsRoot}/McpFaqResourcesSection.tsx`);
-  assert.doesNotMatch(hero, /McpConversationPreview|McpHostProofCard/);
-  assert.doesNotMatch(hero, /McpHostProofCard/);
-  assert.match(view, /hostProof=\{hostProof\}/);
-  assert.match(answers, /McpHostProofCard/);
-  assert.match(answers, /hostProof \? \(/);
-});
-
-test('the three GEO answer passages stay adjacent to current captioned evidence', async () => {
-  const { McpFaqResourcesSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpFaqResourcesSection.tsx'
-  );
-  const { getMcpHostProof } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
-  );
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const hostProof = getMcpHostProof('claude', 'en');
-  assert.ok(hostProof);
-  const html = renderToStaticMarkup(React.createElement(McpFaqResourcesSection, {
-    copy: getMcpPageCopy('en'),
-    hostProof,
-    lastChecked: '2026-08-28',
-    locale: 'en',
-    publication: {
-      renderPublicPage: true,
-      connectionAvailable: true,
-      indexable: true,
-      showTrialClaim: false,
-      showPaidGenerationClaim: true,
-      showReferenceClaim: true,
-    },
-  }));
-
-  assert.equal((html.match(/data-answer-passage=/g) ?? []).length, 3);
-  assert.equal((html.match(/data-faq-item=/g) ?? []).length, 5);
-  assert.equal((html.match(/data-answer-evidence=/g) ?? []).length, 1);
-  assert.match(html, /data-answer-with-evidence=/);
-  assert.match(html, /data-mcp-host-proof="claude"/);
-  const identityIndex = html.indexOf('data-answer-passage="identity"');
-  const evidenceIndex = html.indexOf('data-answer-evidence=');
-  const selectionIndex = html.indexOf('data-answer-passage="selection"');
-  assert.ok(identityIndex < evidenceIndex, 'the first answer should introduce the evidence');
-  assert.ok(
-    evidenceIndex < selectionIndex,
-    'mobile source order should show evidence after one answer instead of after all three passages',
-  );
-  assert.ok(
-    html.indexOf('data-answer-evidence=') < html.indexOf('data-faq-item='),
-    'the short FAQ should follow the visual proof pair',
-  );
-
-  const view = requireFile(`${componentsRoot}/McpPageView.tsx`);
-  assert.match(view, /hostProof=\{hostProof\}/);
-  assert.doesNotMatch(view, /hostProof \? \(\s*<section/);
-});
-
-test('priority and added public client actions point to factual localized guides', async () => {
-  requireFile(`${routeRoot}/_lib/mcp-page-copy.ts`);
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const expectations = {
-    en: ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex', '/integrations/openclaw', '/integrations/n8n'],
-    fr: ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex', '/fr/integrations/openclaw', '/fr/integrations/n8n'],
-    es: ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex', '/es/integraciones/openclaw', '/es/integraciones/n8n'],
-  } as const;
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    assert.deepEqual(
-      getMcpPageCopy(locale).hero.actions.map((action: { href: string }) => action.href),
-      expectations[locale],
-    );
-  }
+test('FAQ uses native readable server content and mutually exclusive groups',()=>{
+ for(const name of ['mcp/_components/McpFaqResourcesSection.tsx','integrations/_components/IntegrationTroubleshootingSection.tsx']){
+  const source=read('frontend/app/(localized)/[locale]/(marketing)/'+name);
+  assert.match(source,/<details/);assert.match(source,/name="(?:mcp|integration)-faq"/);assert.doesNotMatch(source,/use client|dangerouslySetInnerHTML/);
+ }
 });

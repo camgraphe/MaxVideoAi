@@ -9,15 +9,13 @@
   "decision": {
     "modelSlug": "minimax-h3-max",
     "hero": {
-      "eyebrow": "ROUTE H3 MAX DE PRODUCTION RAPIDE",
+      "eyebrow": "Vidéo IA · MiniMax",
       "title": "MiniMax H3 Max",
-      "subtitle": "Créez des vidéos soignées de 5 à 15 secondes jusqu’en 768P depuis du texte, des images de début et fin ou des références mixtes.",
+      "subtitle": "Donnez vie à plus d’idées.",
       "subtitleHighlights": [
-        "480P / 768P",
-        "5–15s",
-        "Mixed references"
+        "Donnez vie à plus d’idées"
       ],
-      "paragraph": "Choisissez H3 Max pour produire vite en 480P ou 768P avec expansion du prompt et bonne finition. Conservez MiniMax H3 pour l’intention large 2K/4K.",
+      "paragraph": "MiniMax H3 Max génère des vidéos IA de 5 à 15 secondes en 480P ou 768P, avec audio natif. Partez d’un texte, d’images de début et de fin ou de références combinées. Pour une sortie 2K ou 4K, choisissez MiniMax H3.",
       "primaryCta": {
         "label": "Générer avec MiniMax H3 Max",
         "href": "/app?engine=minimax-h3-max"

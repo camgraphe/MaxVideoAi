@@ -1,0 +1,95 @@
+[
+  {
+    "key": "task-light",
+    "width": 1344,
+    "height": 768,
+    "fps": "24/1",
+    "duration": 7.296,
+    "hasAudio": true
+  },
+  {
+    "key": "prism-run",
+    "width": 1344,
+    "height": 768,
+    "fps": "24/1",
+    "duration": 8,
+    "hasAudio": true
+  },
+  {
+    "key": "bag-reference",
+    "width": 2544,
+    "height": 1456,
+    "fps": "24/1",
+    "duration": 5.166667,
+    "hasAudio": true
+  },
+  {
+    "key": "ripple-dance",
+    "width": 1344,
+    "height": 768,
+    "fps": "24/1",
+    "duration": 8,
+    "hasAudio": true
+  },
+  {
+    "key": "red-kettle",
+    "width": 1344,
+    "height": 768,
+    "fps": "24/1",
+    "duration": 8,
+    "hasAudio": true
+  },
+  {
+    "key": "last-bus",
+    "width": 854,
+    "height": 480,
+    "fps": "24/1",
+    "duration": 10.041667,
+    "hasAudio": true
+  },
+  {
+    "key": "salt-valley",
+    "width": 1920,
+    "height": 1080,
+    "fps": "24/1",
+    "duration": 8,
+    "hasAudio": true
+  },
+  {
+    "key": "bouquet",
+    "width": 1440,
+    "height": 1440,
+    "fps": "24/1",
+    "duration": 5.041667,
+    "hasAudio": true
+  },
+  {
+    "key": "tiny-machine",
+    "width": 2544,
+    "height": 1456,
+    "fps": "24/1",
+    "duration": 12.25,
+    "hasAudio": true
+  },
+  {
+    "key": "sneaker-kling",
+    "width": 1920,
+    "height": 1080,
+    "duration": 10.041667,
+    "fps": "24/1"
+  },
+  {
+    "key": "sneaker-happyhorse",
+    "width": 1280,
+    "height": 720,
+    "duration": 10.122667,
+    "fps": "24/1"
+  },
+  {
+    "key": "sneaker-seedance",
+    "width": 864,
+    "height": 496,
+    "duration": 10.1,
+    "fps": "24/1"
+  }
+]

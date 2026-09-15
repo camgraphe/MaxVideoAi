@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>MaxVideoAI — dossier de conception initial</title>
+  <link rel="stylesheet" href="review.css"><script src="review.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Aller au contenu</a>
+  <header class="top"><a class="wordmark" href="#">MAXVIDEOAI<span> / DESIGN REVIEW 01</span></a><nav aria-label="Sections de la revue"><a href="#story">Parcours</a><a href="#motion">Mouvement</a><a href="#mcp">MCP</a><a href="#references">Références</a><a href="#details">Détails</a><button id="phone-open" class="quiet">Vue mobile ↗</button></nav></header>
+  <main id="main">
+    <aside class="wrap note" style="margin-top:28px"><strong>Après ton retour :</strong> la montre et son découpage en rectangles sont écartés de la direction proposée. <a href="direction.html">Voir la nouvelle scène illustrée : objet qui sort du cadre, assemblage et mouvement de caméra ↗</a>. Le dossier ci-dessous conserve les recherches et l’ordre de page proposés ; son style n’est pas validé.</aside>
+    <section class="intro wrap">
+      <p class="eyebrow">REVUE V1 · 09 SEPTEMBRE 2026 · PROPOSITION À DISCUTER</p>
+      <h1>Le produit devient<br><em>le spectacle.</em></h1>
+      <div class="intro-bottom"><p>Une création que l’on voit naître.<br>Deux façons d’y arriver.<br>Un site qui donne envie de passer à l’action.</p><p class="annotation">Support de conception, avant refonte intégrée.<br>Les médias existants servent à éprouver le récit.<br>Palette, typographie et nouvelle collection restent à valider.</p></div>
+    </section>
+    <section class="hero-proof" aria-labelledby="proof-title">
+      <img src="../../../frontend/public/media/mcp/project-demo/watch-static.webp" width="1672" height="941" alt="Montre cobalt et titanium, création de démonstration MaxVideoAI">
+      <div class="proof-copy"><p class="eyebrow">01 / MONTRER AVANT D’EXPLIQUER</p><h2 id="proof-title">Votre projet.<br>En mouvement.</h2><p>Une vraie création, au cœur de la page.</p><button class="light" data-open-video>Voir la vidéo existante <span>↗</span></button></div>
+      <div class="proof-caption"><span>Image : ImageGen · Vidéo : Wan 3 Prime</span><span>Démo approuvée du 6 septembre · 6 s · sans audio</span></div>
+    </section>
+    <section id="story" class="wrap section">
+      <div class="section-head"><p class="eyebrow">LE PARCOURS COMPLET</p><h2>Chaque séquence<br>a une raison d’être.</h2><p>Voici l’ordre recommandé pour l’accueil. Les pages modèles, exemples et comparaisons gardent leur rôle de réponse précise.</p></div>
+      <div id="story-rows" class="story-rows"></div>
+      <aside class="note"><strong>Studio :</strong> hors promesse principale tant que l’accès reste réservé aux administrateurs. Un emplacement secondaire est prévu après les outils, activable lorsqu’un vrai parcours d’accès public sera prêt.</aside>
+    </section>
+    <section id="motion" class="dark section">
+      <div class="wrap"><div class="section-head"><p class="eyebrow">EFFET SIGNATURE / CONSTRUCTION & DÉCONSTRUCTION</p><h2>La scène s’ouvre.<br>Puis tout s’assemble.</h2><p>Déplacer le curseur pour examiner les états. Cette étude anime des plans graphiques ; elle ne prétend pas extraire la géométrie 3D de l’image.</p></div>
+      <div class="motion-stage" id="motion-stage" aria-label="Étude visuelle de décomposition en trois plans">
+        <div class="motion-ghost" aria-hidden="true"></div><div class="slice slice-a" aria-hidden="true"></div><div class="slice slice-b" aria-hidden="true"></div><div class="slice slice-c" aria-hidden="true"></div><span class="stage-label" id="stage-label">01 — Une référence</span>
+      </div>
+      <div class="motion-controls"><label for="scrub">Explorer la séquence</label><input id="scrub" type="range" min="0" max="100" value="0" aria-describedby="motion-explanation"><output id="scrub-value" for="scrub">0 %</output></div>
+      <div class="beats"><span>Référence</span><span>Plans séparés</span><span>Recomposition</span><span>Passage à la vidéo</span></div>
+      <p id="motion-explanation" class="annotation">Prototype final envisagé : progression liée au scroll natif et réversible. Sur mobile : trois étapes courtes en flux, sans écran bloqué. Sans mouvement : référence, transformation, résultat visibles. La vidéo se lit à la demande ; le scrub vidéo existant sera évalué séparément.</p>
+      <button class="light" data-open-video>Ouvrir le résultat existant ↗</button>
+      <div class="direction"><p class="eyebrow">LA NOUVELLE COLLECTION PROPOSÉE</p><h3>Une matière reconnaissable.<br>Un sujet que l’on peut suivre.</h3><p>Un objet cinétique original en verre fumé et métal, avec un cœur lumineux : image de référence, trois compositions contrôlées, puis mouvement. Une seconde preuve de produit réel montre que l’univers artistique sert aussi un usage concret. ImageGen pour les états ; MaxVideoAI pour les sorties vidéo vérifiables. Le choix du sujet précède les générations.</p></div>
+      </div>
+    </section>
+    <section id="mcp" class="section wrap">
+      <div class="section-head"><p class="eyebrow">SECONDE VOIE DE CRÉATION / MCP</p><h2>Votre site.<br>Votre assistant.<br><em>Votre vidéo.</em></h2><p>Placer cette démonstration juste après la transformation suivie. Codex et Claude deviennent des points d’entrée concrets vers MaxVideoAI.</p></div>
+      <div class="mcp-tabs" role="group" aria-label="Étapes de la démonstration MCP"><button data-mcp="0" aria-pressed="true">1. Le contexte</button><button data-mcp="1" aria-pressed="false">2. Le choix & le devis</button><button data-mcp="2" aria-pressed="false">3. Le résultat</button></div>
+      <div class="mcp-scene">
+        <div class="site-preview"><div class="site-title">SITE DE DÉMONSTRATION PROPOSÉ <span>↗</span></div><img src="../../../frontend/public/media/mcp/project-demo/watch-static.webp" alt="Image produit partagée comme contexte" width="1672" height="941" loading="lazy"><h3>Une nouvelle façon<br>de marquer le temps.</h3><p>La référence reste identifiable du site au résultat.</p></div>
+        <div class="assistant-step"><p class="eyebrow">CODEX OU CLAUDE → MAXVIDEOAI</p><div class="assistant-brands"><img src="../../../frontend/public/brand/partners/openai/openai-mark-dark.svg" alt="" width="26" height="26"><span>Codex</span><span class="or">/</span><img src="../../../frontend/public/brand/partners/anthropic/claude-mark-dark.svg" alt="" width="26" height="26"><span>Claude</span></div><h3 id="mcp-title">Votre projet est déjà là.</h3><p id="mcp-text">« Prépare une vidéo de lancement à partir de ce site et de cette image produit. »</p><div class="connection" aria-hidden="true"><i></i></div><p id="mcp-result" class="mcp-result" aria-live="polite">L’assistant utilise le contexte partagé et prépare une proposition.</p></div>
+      </div>
+      <p class="annotation">Storyboard illustratif du parcours, pas une capture d’assistant ni un import automatique d’URL. Le résultat ci-dessus existe ; ce site de démonstration est une composition de revue. Signe OpenAI existant associé au libellé Codex, marque spécifique à vérifier. Une future capture devra documenter l’hôte, les références transmises, le devis et le résultat réel.</p>
+      <div class="mobile-rule"><span>Sur mobile</span><p>Contexte → proposition et validation → résultat. Le devis reste lisible. Les détails d’installation s’ouvrent depuis une action explicite vers la page MCP.</p></div>
+    </section>
+    <section id="references" class="section pale">
+      <div class="wrap"><div class="section-head"><p class="eyebrow">SIX RÉFÉRENCES PRÉCISES</p><h2>Des mécanismes utiles.<br>Une composition à nous.</h2><p>Les petits dessins sont nos schémas d’adaptation, pas des captures des bibliothèques. Chaque source permet d’examiner la démo ou son code.</p></div><div id="reference-grid" class="reference-grid"></div><p class="annotation">Aucun code tiers intégré. Versions, licence exacte, dépendances, clavier et tactile seront qualifiés avant sélection technique. La recherche élargie et les forums restent documentés dans <a href="../creative-research.md">le dossier de recherche</a>.</p></div>
+    </section>
+    <section id="details" class="section wrap">
+      <div class="section-head"><p class="eyebrow">LA QUALITÉ SE JOUE AUSSI ICI</p><h2>Ouvrir. Choisir.<br>Attendre. Revenir.</h2><p>Six contrats de détail pour éviter que le soin s’arrête au premier écran. Les deux essais ci-dessous sont locaux et ne lancent aucune action produit.</p></div>
+      <div class="detail-lab"><div><span class="eyebrow">A / LECTEUR</span><button class="video-card" data-open-video aria-label="Ouvrir la vidéo de démonstration"><img src="../../../frontend/public/media/mcp/project-demo/watch-wan-3-prime-poster.webp" width="1920" height="1080" loading="lazy" alt="Poster de la vidéo Wan 3 Prime"><span>↗</span></button><h3>La création occupe l’espace.</h3><p>Poster conservé, fermeture visible, Échap et retour du focus. La vidéo s’arrête à la fermeture. Sur mobile, lecteur dans la largeur utile.</p></div><div><span class="eyebrow">B / RETOUR D’ACTION</span><div class="button-lab"><button id="state-demo">Essayer les états</button><p id="state-copy" aria-live="polite">Étude locale · aucune génération</p></div><h3>Une réponse claire, à chaque étape.</h3><p>Exemple à cliquer : prêt → attente → échec → nouvel essai → succès. Dans le produit, ces états dépendront de la vraie réponse, jamais d’un délai décoratif.</p></div></div>
+      <div id="detail-contracts" class="detail-contracts"></div>
+    </section>
+    <section id="evidence" class="section dark"><div class="wrap">
+      <div class="section-head"><p class="eyebrow">LES DONNÉES QUI ORIENTENT LE PILOTE</p><h2>Le visuel doit aussi<br>faire progresser l’usage.</h2></div>
+      <div class="numbers"><div><strong>39,2 %</strong><p>des clics GSC Web viennent du mobile.<br>10 août–6 septembre · 695 / 1 775.</p></div><div><strong>84</strong><p>sessions « AI Assistant » dans GA4.<br>Même période · 7,33 % des sessions observées.</p></div><div><strong>3,5 s</strong><p>LCP affiché par Clarity, tous parcours.<br>Derniers 28 jours au 9 septembre · pas une mesure du seul accueil.</p></div></div>
+      <div class="evidence-copy"><p><strong>Protéger les exemples.</strong> LTX reste une entrée importante : 285 clics contre 386 sur les 28 jours précédents. En parallèle, Seedance progresse. La refonte doit conserver les URL et réponses utiles ; ces variations ne prouvent pas un effet du design.</p><p><strong>Fiabiliser la mesure.</strong> 94,07 % du revenu GA4 apparaît dans « Unassigned ». Vérifier attribution, événements et retours paiement avant toute conclusion commerciale. Clarity signale des clics sans effet et une erreur de plein écran : enquêter sur les parcours concernés.</p></div>
+      <a class="source-link" href="../measurement.md">Relevés, filtres, limites et prochaines investigations ↗</a>
+    </div></section>
+    <section class="section wrap" id="decision"><div class="section-head"><p class="eyebrow">LA PROCHAINE VALIDATION</p><h2>Valider la hiérarchie.<br>Puis créer la collection.</h2><p>Recommandation : ce parcours, deux moments forts et un système d’interface sobre autour des créations.</p></div>
+      <ol class="next"><li><strong>Accueil : résultat → transformation → MCP → choix.</strong><span>Le MCP monte dans la page. Les informations modèles et paiement restent faciles à trouver.</span></li><li><strong>Une collection originale, suivie de bout en bout.</strong><span>États ImageGen + vidéo MaxVideoAI après choix du sujet et devis du lot. La montre reste une preuve existante, pas la nouvelle identité du site.</span></li><li><strong>Une direction appliquée à quatre gabarits.</strong><span>Accueil, catalogue, fiche, exemples ; desktop et mobile ; contenus EN/FR/espagnol LATAM. Les comparaisons sont incluses dans la recette SEO/GEO.</span></li></ol>
+      <p class="annotation">Cette revue ne clôture pas l’audit : sessions Clarity détaillées, funnel GA4, crawl SEO et contrats CRM/Zoho restent à vérifier. Le prototype intégré devra apporter des mesures comparables de performance.</p>
+      <a class="source-link" href="../README.md">Ouvrir le plan directeur ↗</a>
+    </section>
+  </main>
+  <footer class="wrap">MAXVIDEOAI / CONCEPTION <span>Revue locale · aucune modification de production</span></footer>
+  <dialog id="video-dialog" aria-labelledby="video-title"><div class="dialog-head"><h2 id="video-title">Du visuel au mouvement</h2><button id="video-close" autofocus>Fermer ×</button></div><video id="demo-video" controls playsinline preload="none" poster="../../../frontend/public/media/mcp/project-demo/watch-wan-3-prime-poster.webp"><source src="../../../frontend/public/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4" type="video/mp4"></video><p>Wan 3 Prime · démo existante · 6 secondes · lecture manuelle</p></dialog>
+  <dialog id="phone-dialog" aria-labelledby="phone-title"><div class="dialog-head"><h2 id="phone-title">Lecture à 390 px</h2><button id="phone-close" autofocus>Fermer ×</button></div><iframe title="Revue dans une largeur mobile" id="phone-frame"></iframe><p>Aperçu de mise en page, pas une recette sur appareil physique.</p></dialog>
+</body>
+</html>

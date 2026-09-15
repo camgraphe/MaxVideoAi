@@ -43,11 +43,13 @@ import {
   type VideoJobPayload,
 } from '../_lib/workspace-video-settings';
 import { buildWorkspaceStoryboardHandoffState } from '../_lib/workspace-storyboard-handoff';
+import { sharedVideoLoadFailureCopy } from '../_lib/workspace-shared-video-copy';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
 
 type UseWorkspaceVideoSettingsOptions = {
+  locale?: string;
   accountScope?: string | null;
   activeDraftReady?: boolean;
   hasActiveSetup?: boolean;
@@ -91,6 +93,7 @@ type UseWorkspaceVideoSettingsOptions = {
 };
 
 export function useWorkspaceVideoSettings({
+  locale = 'en',
   accountScope,
   activeDraftReady = true,
   hasActiveSetup = false,
@@ -397,10 +400,12 @@ export function useWorkspaceVideoSettings({
         const res = await authFetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, {
           cache: 'no-store',
         });
-        if (!res.ok) return;
+        if (!res.ok) throw new Error('Shared video request failed');
         const json = await res.json();
-        if (!json?.ok || !json.video || cancelled || !valid() || revisionRef.current !== revision)
-          return;
+        if (cancelled || !valid() || revisionRef.current !== revision) return;
+        if (!json?.ok || !json.video || typeof json.video.id !== 'string') {
+          throw new Error('Shared video response unavailable');
+        }
         const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
         const overrideGroup = mapSharedVideoToGroup(video, provider);
         setCompositeOverride(overrideGroup);
@@ -418,6 +423,9 @@ export function useWorkspaceVideoSettings({
         shouldStripParam = true;
       } catch (error) {
         console.warn('[app] failed to load shared video', error);
+        if (!cancelled && valid() && revisionRef.current === revision) {
+          setNotice(sharedVideoLoadFailureCopy(locale));
+        }
       } finally {
         if (cancelled || !valid() || revisionRef.current !== revision) return;
         if (shouldStripParam && searchString.includes('from=')) {
@@ -435,6 +443,7 @@ export function useWorkspaceVideoSettings({
     activeDraftReady,
     valid,
     fromVideoId,
+    locale,
     provider,
     replaceRoute,
     searchString,
@@ -443,6 +452,7 @@ export function useWorkspaceVideoSettings({
     setSelectedPreview,
     setSharedPrompt,
     setSharedVideoSettings,
+    setNotice,
   ]);
 
   useEffect(() => {

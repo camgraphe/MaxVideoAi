@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { useLocale } from 'next-intl';
 import { Check, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -209,6 +210,8 @@ export function CompareEngineFamilySelect({
   buttonClassName,
   onChange,
 }: CompareEngineFamilySelectProps) {
+  const locale = useLocale();
+  const modelNoun = locale === 'fr' ? 'modèle' : locale === 'es' ? 'modelo' : 'model';
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
@@ -369,7 +372,7 @@ export function CompareEngineFamilySelect({
                         />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[12px] font-semibold">{group.label}</span>
-                          <span className="block text-[9px] text-text-muted">{group.options.length} models</span>
+                          <span className="block text-[9px] text-text-muted">{group.options.length} {modelNoun}{group.options.length === 1 ? '' : 's'}</span>
                         </span>
                         <ChevronRight aria-hidden="true" className={clsx('hidden h-3.5 w-3.5 sm:block', active ? 'text-brand' : 'text-text-muted')} />
                       </button>

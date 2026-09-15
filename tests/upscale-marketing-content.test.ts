@@ -73,7 +73,7 @@ test('upscale marketing explains model fit, quality, and MaxVideoAI pricing in e
 test('upscale marketing copy does not expose provider implementation branding', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const upscale = readLocale(locale).toolMarketing.upscale;
-    assert.doesNotMatch(JSON.stringify(upscale).toLowerCase(), /fal(?:\.ai|-ai|\s+ai)?/);
+    assert.doesNotMatch(JSON.stringify(upscale).toLowerCase(), /\bfal(?:\.ai|-ai|\s+ai)?\b/);
   }
 });
 
@@ -84,19 +84,19 @@ test('upscale landing renders the model guide table', () => {
   assert.match(source, /modelGuide\.rows\.map/);
 });
 
-test('upscale landing hero uses app screenshots with default preview media in light and dark mode', () => {
+test('upscale landing separates illustrative hero from the versioned current workspace capture', () => {
   const source = fs.readFileSync(path.join(process.cwd(), 'frontend/src/components/tools/UpscaleLandingPage.tsx'), 'utf8');
   const pageSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/tools/upscale/page.tsx'),
     'utf8'
   );
 
-  assert.match(source, /upscale-hero-app-light\.webp/);
-  assert.match(source, /upscale-hero-app-dark\.webp/);
+  assert.match(source, /QUICK_TOOL_ART\['upscale-image'\]/);
+  assert.match(source, /<ToolWorkspacePreview tool="upscale"/);
+  assert.doesNotMatch(source, /upscale-hero-app-(light|dark)\.webp/);
   assert.match(source, /<MarketingHeroImage/);
   assert.match(source, /alt=\{imageAlt\}/);
   assert.doesNotMatch(source, /SOURCE_IMAGE_URL|OUTPUT_IMAGE_URL/);
-  assert.doesNotMatch(source, /hero\.studioLabel|hero\.stackLabel/);
   assert.doesNotMatch(source, /<HeroVisual imageAlt=\{content\.meta\.imageAlt\} hero=/);
-  assert.match(pageSource, /image: '\/assets\/tools\/upscale-hero-app-light\.webp'/);
+  assert.match(pageSource, /image: '\/assets\/tools\/redesign\/upscale-workspace-v1\.webp'/);
 });

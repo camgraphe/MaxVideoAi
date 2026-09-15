@@ -36,7 +36,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /^title:\s*['"].+['"]$/m);
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
-    assert.match(markdown, /^updatedAt:\s*['"]2026-08-28['"]$/m);
+    assert.match(markdown, /^updatedAt:\s*['"]2026-09-15['"]$/m);
     assert.match(markdown, /^authorId:\s*['"]adrien-millot['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, /```text\s+https:\/\/api\.maxvideoai\.com\/mcp\s+```/);
@@ -45,8 +45,8 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /ChatGPT/i);
     assert.match(markdown, /Claude/i);
     assert.match(markdown, /Codex/i);
-    assert.match(markdown, /sign in or create|connectez-vous ou créez|inicia sesión o crea/i);
-    assert.match(markdown, /free to connect|connexion.*gratuite|conectar.*gratis/i);
+    assert.match(markdown, /sign in to MaxVideoAI or create|connectez-vous à MaxVideoAI ou créez|inicia sesión en MaxVideoAI o crea/i);
+    assert.match(markdown, /connecting is free|connexion.*gratuite|conectar.*gratis/i);
     assert.doesNotMatch(markdown, /localhost|staging[^\n]*\/mcp/i, `${locale} must not publish a non-production endpoint`);
   }
 });
@@ -91,9 +91,9 @@ test('references cover image, video, audio, account ownership, and the precise L
 
 test('credits, top-up, fresh quote, and gallery continuity are unambiguous', () => {
   const expectations = {
-    en: [/same user wallet/i, /pay-as-you-go/i, /previous quote is no longer valid/i, /same private MaxVideoAI account library/i],
-    fr: [/même portefeuille utilisateur/i, /pay-as-you-go/i, /ancien devis n’est plus valide/i, /même bibliothèque privée MaxVideoAI/i],
-    es: [/misma billetera de usuario/i, /pay-as-you-go/i, /cotización anterior ya no es válida/i, /misma biblioteca privada MaxVideoAI/i],
+    en: [/same MaxVideoAI credit balance as the website/i, /pay-as-you-go/i, /previous quote is no longer valid/i, /same private MaxVideoAI account library/i],
+    fr: [/même solde de crédits MaxVideoAI que le site/i, /pay-as-you-go/i, /ancien devis n’est plus valide/i, /même bibliothèque privée MaxVideoAI/i],
+    es: [/mismo saldo de créditos MaxVideoAI que el sitio/i, /pay-as-you-go/i, /cotización anterior ya no es válida/i, /misma biblioteca privada MaxVideoAI/i],
   } as const;
   for (const locale of Object.keys(DOCS) as Array<keyof typeof DOCS>) {
     const markdown = source(DOCS[locale]);
@@ -151,7 +151,8 @@ test('guides avoid static prices, directory approval, and general API-key claims
   for (const path of Object.values(DOCS)) {
     const markdown = source(path);
     assert.doesNotMatch(markdown, /(?:[$€£]\s*\d|(?:USD|EUR|GBP)\s*\d)/);
-    assert.doesNotMatch(markdown, /directory approval|directory listing|one[- ]click/i);
+    assert.doesNotMatch(markdown, /one[- ]click|(?:approved|available|listed) in (?:the )?(?:OpenAI|ChatGPT) directory/i);
+    assert.match(markdown, /No public directory listing is claimed|Aucune présence dans le répertoire public n’est revendiquée|No se afirma.*ficha pública/i);
     assert.match(markdown, /not a general-purpose REST API|n’est pas une API REST généraliste|No es una API REST de uso general/i);
     assert.match(markdown, /API (?:keys?|key)|clé API|claves API/i);
   }

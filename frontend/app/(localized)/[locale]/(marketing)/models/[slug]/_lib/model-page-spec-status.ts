@@ -1,3 +1,4 @@
+import { localizeCapabilityDetail } from '@/lib/marketing/spec-capability-copy';
 import type { AppLocale } from '@/i18n/locales';
 import { SPEC_STATUS_LABELS } from './model-page-specs-constants';
 
@@ -22,6 +23,8 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
   const labels = resolveSpecStatusLabels(locale);
   const normalized = value.trim();
   const lower = normalized.toLowerCase();
+  const capability = localizeCapabilityDetail(normalized, locale);
+  if (capability !== null) return capability;
   if (isSupported(normalized)) return labels.supported;
   if (isUnsupported(normalized)) return labels.notSupported;
   if (isPending(normalized)) return labels.pending;
@@ -41,16 +44,16 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
   }
   if (lower === 'not exposed in current maxvideoai route') {
     return locale === 'fr'
-      ? 'Non exposé dans la route MaxVideoAI actuelle'
+      ? 'Non disponible dans MaxVideoAI actuellement'
       : locale === 'es'
-        ? 'No expuesto en la ruta actual de MaxVideoAI'
+        ? 'No disponible actualmente en MaxVideoAI'
         : normalized;
   }
   if (lower === 'multi reference stills') {
     return locale === 'fr'
-      ? 'plusieurs stills de référence'
+      ? 'plusieurs images de référence'
       : locale === 'es'
-        ? 'varios stills de referencia'
+        ? 'varias imágenes de referencia'
         : normalized;
   }
   if (lower === 'source clip for extend / retake') {
@@ -62,9 +65,9 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
   }
   if (lower === 'source clip for modify / reframe') {
     return locale === 'fr'
-      ? 'clip source pour modify / reframe'
+      ? 'clip source à modifier ou recadrer'
       : locale === 'es'
-        ? 'clip fuente para modify / reframe'
+        ? 'clip de origen para modificar o reencuadrar'
         : normalized;
   }
   if (lower === 'start + end image in i2v') {
@@ -110,24 +113,31 @@ export function localizeSpecStatus(value: string, locale: AppLocale): string {
         : normalized;
   }
   if (lower === 'reframe workflow') {
-    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'workflow reframe' : normalized;
+    return locale === 'fr' ? 'recadrage' : locale === 'es' ? 'reencuadre' : normalized;
   }
   if (lower === 'modify / reframe workflows') {
     return locale === 'fr'
-      ? 'workflows modify / reframe'
+      ? 'modification et recadrage'
       : locale === 'es'
-        ? 'workflows modify / reframe'
+        ? 'modificación y reencuadre'
         : normalized;
   }
   if (lower === 'extend / retake workflows') {
     return locale === 'fr'
-      ? 'workflows extension / retake'
+      ? 'extension et reprise'
       : locale === 'es'
-        ? 'workflows de extensión / retake'
+        ? 'extensión y nueva toma'
         : normalized;
   }
   if (lower === 'no (maxvideoai)') {
     return locale === 'fr' ? 'Non (MaxVideoAI)' : locale === 'es' ? 'No (MaxVideoAI)' : normalized;
+  }
+  if (locale !== 'en') {
+    const month = normalized.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})$/);
+    if (month) {
+      const index = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(month[1]);
+      return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(Number(month[2]), index, 1)));
+    }
   }
   return value;
 }

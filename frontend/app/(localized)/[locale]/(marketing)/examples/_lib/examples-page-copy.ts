@@ -66,7 +66,7 @@ export function getExamplesLongDescription(locale: AppLocale) {
     return 'Parcourez des exemples vidéo IA par famille de modèles. Ouvrez un exemple pour consulter son prompt, ses réglages, sa durée et le coût enregistré du rendu, puis recréez-le dans votre studio.';
   }
   if (locale === 'es') {
-    return 'Explora ejemplos de video IA por modelo. Abre un ejemplo para consultar su prompt, ajustes, duración y coste registrado del render, y después recréalo en tu espacio de trabajo.';
+    return 'Explora ejemplos de video IA por modelo. Abre un ejemplo para consultar su prompt, ajustes, duración y costo registrado de la generación, y después recréalo en tu espacio de trabajo.';
   }
   return 'Browse AI video examples by model. Open any example to inspect its prompt, settings, duration, and recorded render cost, then recreate it in your workspace.';
 }
@@ -106,7 +106,7 @@ export function getExamplesModelPageLabels({
           : 'Choose your Kling model'
       : isLtxLanding
         ? locale === 'fr'
-          ? 'Choisissez votre modele LTX'
+          ? 'Choisissez votre modèle LTX'
           : locale === 'es'
             ? 'Elige tu modelo LTX'
             : 'Choose your LTX model'
@@ -124,9 +124,9 @@ export function getExamplesModelPageLabels({
           : 'Supported older Kling models'
       : isLtxLanding
         ? locale === 'fr'
-          ? 'Modeles LTX plus anciens encore pris en charge'
+          ? 'Modèles LTX plus anciens encore pris en charge'
           : locale === 'es'
-            ? 'Modelos LTX anteriores aun compatibles'
+            ? 'Modelos LTX anteriores aún compatibles'
             : 'Supported older LTX models'
       : locale === 'fr'
         ? 'Version plus ancienne prise en charge'
@@ -163,252 +163,55 @@ export function buildExamplesNextStepLinks({
   locale: AppLocale;
   pricingPath: string;
 }): ExamplesNextStepLink[] {
-  const rawNextStepLinks = familySlug === 'hailuo'
-    ? [
-        ['minimax-h3-vs-minimax-h3-max', 'MiniMax H3 vs H3 Max'],
-        ['minimax-h3-vs-veo-3-1', 'MiniMax H3 vs Veo 3.1'],
-        ['minimax-h3-max-vs-seedance-2-5', 'MiniMax H3 Max vs Seedance 2.5'],
-        ['minimax-hailuo-02-text-vs-veo-3-1-fast', 'Hailuo 02 vs Veo 3.1 Fast'],
-      ].map(([slug, title]) => ({
-        href: buildCompareHref(appLocale, slug),
-        label: `${locale === 'fr' ? 'Comparer' : locale === 'es' ? 'Comparar' : 'Compare'} ${title}`,
-      }))
-    : isSeedanceLanding
-    ? [
-        {
-          href: buildModelHref(appLocale, 'seedance-2-5'),
-          label:
-            locale === 'fr'
-              ? 'Découvrir Seedance 2.5 pour la vidéo cinématique de 30 secondes'
-              : locale === 'es'
-                ? 'Descubrir Seedance 2.5 para video cinematográfico de 30 segundos'
-                : 'Discover Seedance 2.5 for 30-second cinematic video',
-        },
-        {
-          href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-5'),
-          label:
-            locale === 'fr'
-              ? 'Comparer Seedance 2.0 vs Seedance 2.5'
-              : locale === 'es'
-                ? 'Comparar Seedance 2.0 vs Seedance 2.5'
-                : 'Compare Seedance 2.0 vs Seedance 2.5',
-        },
-        {
-          href: buildCompareHref(appLocale, 'seedance-2-0-vs-veo-3-1'),
-          label:
-            locale === 'fr'
-              ? 'Comparer Seedance 2.0 vs Veo 3.1'
-              : locale === 'es'
-                ? 'Comparar Seedance 2.0 vs Veo 3.1'
-                : 'Compare Seedance 2.0 vs Veo 3.1',
-        },
-        {
-          href: buildCompareHref(appLocale, 'seedance-1-5-pro-vs-seedance-2-0'),
-          label:
-            locale === 'fr'
-              ? 'Comparer Seedance 1.5 Pro vs Seedance 2.0'
-              : locale === 'es'
-                ? 'Comparar Seedance 1.5 Pro vs Seedance 2.0'
-                : 'Compare Seedance 1.5 Pro vs Seedance 2.0',
-        },
-        {
-          href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-seedance-2-0'),
-          label:
-            locale === 'fr'
-              ? 'Comparer LTX 2.3 Pro vs Seedance 2.0'
-              : locale === 'es'
-                ? 'Comparar LTX 2.3 Pro vs Seedance 2.0'
-                : 'Compare LTX 2.3 Pro vs Seedance 2.0',
-        },
-      ]
-    : isKlingLanding
-      ? [
-          {
-            href: buildModelHref(appLocale, 'kling-o3-pro'),
-            label:
-              locale === 'fr'
-                ? 'Ouvrir la page modèle Kling 3.0 Omni Pro'
-                : locale === 'es'
-                  ? 'Abrir la página del modelo Kling 3.0 Omni Pro'
-                  : 'Open Kling 3.0 Omni Pro model page',
-          },
-          {
-            href: buildModelHref(appLocale, 'kling-o3-standard'),
-            label:
-              locale === 'fr'
-                ? 'Ouvrir la page modèle Kling 3.0 Omni Standard'
-                : locale === 'es'
-                  ? 'Abrir la página del modelo Kling 3.0 Omni Standard'
-                  : 'Open Kling 3.0 Omni Standard model page',
-          },
-          {
-            href: buildCompareHref(appLocale, 'kling-3-pro-vs-kling-o3-pro'),
-            label:
-              locale === 'fr'
-                ? 'Comparer Kling 3 Pro vs Kling 3.0 Omni Pro'
-                : locale === 'es'
-                  ? 'Comparar Kling 3 Pro vs Kling 3.0 Omni Pro'
-                  : 'Compare Kling 3 Pro vs Kling 3.0 Omni Pro',
-          },
-          {
-            href: buildCompareHref(appLocale, 'kling-o3-4k-vs-kling-o3-pro'),
-            label:
-              locale === 'fr'
-                ? 'Comparer Kling 3.0 Omni 4K vs O3 Pro'
-                : locale === 'es'
-                  ? 'Comparar Kling 3.0 Omni 4K vs O3 Pro'
-                  : 'Compare Kling 3.0 Omni 4K vs O3 Pro',
-          },
-          {
-            href: buildCompareHref(appLocale, 'kling-o3-pro-vs-seedance-2-0'),
-            label:
-              locale === 'fr'
-                ? 'Comparer Kling 3.0 Omni Pro vs Seedance 2.0'
-                : locale === 'es'
-                  ? 'Comparar Kling 3.0 Omni Pro vs Seedance 2.0'
-                  : 'Compare Kling 3.0 Omni Pro vs Seedance 2.0',
-          },
-        ]
-      : isVeoLanding
-        ? [
-            {
-              href: buildCompareHref(appLocale, 'gemini-omni-flash-vs-veo-3-1'),
-              label:
-                locale === 'fr'
-                  ? 'Comparer Gemini Omni Flash 1.1 et Veo 3.1'
-                  : locale === 'es'
-                    ? 'Comparar Gemini Omni Flash 1.1 y Veo 3.1'
-                    : 'Compare Gemini Omni Flash 1.1 and Veo 3.1',
-            },
-            {
-              href: buildCompareHref(appLocale, 'veo-3-1-vs-veo-3-1-fast'),
-              label:
-                locale === 'fr'
-                  ? 'Comparer Veo 3.1 vs Veo 3.1 Fast'
-                  : locale === 'es'
-                    ? 'Comparar Veo 3.1 vs Veo 3.1 Fast'
-                    : 'Compare Veo 3.1 vs Veo 3.1 Fast',
-            },
-            {
-              href: buildCompareHref(appLocale, 'veo-3-1-fast-vs-veo-3-1-lite'),
-              label:
-                locale === 'fr'
-                  ? 'Comparer Veo 3.1 Fast vs Veo 3.1 Lite'
-                  : locale === 'es'
-                    ? 'Comparar Veo 3.1 Fast vs Veo 3.1 Lite'
-                    : 'Compare Veo 3.1 Fast vs Veo 3.1 Lite',
-            },
-            {
-              href: buildCompareHref(appLocale, 'seedance-2-0-vs-veo-3-1'),
-              label:
-                locale === 'fr'
-                  ? 'Comparer Seedance 2.0 vs Veo 3.1'
-                  : locale === 'es'
-                    ? 'Comparar Seedance 2.0 vs Veo 3.1'
-                    : 'Compare Seedance 2.0 vs Veo 3.1',
-            },
-            {
-              href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
-              label:
-                locale === 'fr'
-                  ? 'Comparer Kling 3 Pro vs Veo 3.1'
-                  : locale === 'es'
-                    ? 'Comparar Kling 3 Pro vs Veo 3.1'
-                    : 'Compare Kling 3 Pro vs Veo 3.1',
-            },
-            {
-              href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-veo-3-1'),
-              label:
-                locale === 'fr'
-                  ? 'Comparer LTX 2.3 Pro vs Veo 3.1'
-                  : locale === 'es'
-                    ? 'Comparar LTX 2.3 Pro vs Veo 3.1'
-                    : 'Compare LTX 2.3 Pro vs Veo 3.1',
-            },
-          ]
-        : isLtxLanding
-          ? [
-              {
-                href: buildCompareHref(appLocale, 'ltx-2-3-fast-vs-ltx-2-3-pro'),
-                label:
-                  locale === 'fr'
-                    ? 'Comparer LTX 2.3 Fast vs LTX 2.3 Pro'
-                    : locale === 'es'
-                      ? 'Comparar LTX 2.3 Fast vs LTX 2.3 Pro'
-                      : 'Compare LTX 2.3 Fast vs LTX 2.3 Pro',
-              },
-              {
-                href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-seedance-2-0'),
-                label:
-                  locale === 'fr'
-                    ? 'Comparer LTX 2.3 Pro vs Seedance 2.0'
-                    : locale === 'es'
-                      ? 'Comparar LTX 2.3 Pro vs Seedance 2.0'
-                      : 'Compare LTX 2.3 Pro vs Seedance 2.0',
-              },
-              {
-                href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-veo-3-1'),
-                label:
-                  locale === 'fr'
-                    ? 'Comparer LTX 2.3 Pro vs Veo 3.1'
-                    : locale === 'es'
-                      ? 'Comparar LTX 2.3 Pro vs Veo 3.1'
-                      : 'Compare LTX 2.3 Pro vs Veo 3.1',
-              },
-              {
-                href: buildCompareHref(appLocale, 'ltx-2-3-fast-vs-seedance-2-0-fast'),
-                label:
-                  locale === 'fr'
-                    ? 'Comparer LTX 2.3 Fast vs Seedance 2.0 Fast'
-                    : locale === 'es'
-                      ? 'Comparar LTX 2.3 Fast vs Seedance 2.0 Fast'
-                      : 'Compare LTX 2.3 Fast vs Seedance 2.0 Fast',
-              },
-            ]
-          : [
-              {
-                href: buildModelHref(appLocale, 'veo-3-1-fast'),
-                label:
-                  locale === 'fr'
-                    ? 'Voir le profil Veo 3.1 Fast'
-                    : locale === 'es'
-                      ? 'Ver el perfil de Veo 3.1 Fast'
-                      : 'View Veo 3.1 Fast profile',
-              },
-              {
-                href: buildModelHref(appLocale, 'seedance-2-0'),
-                label:
-                  locale === 'fr'
-                    ? 'Voir le profil Seedance 2.0'
-                    : locale === 'es'
-                      ? 'Ver el perfil de Seedance 2.0'
-                      : 'View Seedance 2.0 profile',
-              },
-              {
-                href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
-                label:
-                  locale === 'fr'
-                    ? 'Comparer Kling 3 Pro vs Veo 3.1'
-                    : locale === 'es'
-                      ? 'Comparar Kling 3 Pro vs Veo 3.1'
-                      : 'Compare Kling 3 Pro vs Veo 3.1',
-              },
-              {
-                href: buildCompareHref(appLocale, 'seedance-2-0-vs-sora-2'),
-                label:
-                  locale === 'fr'
-                    ? 'Comparer Seedance 2.0 vs Sora 2'
-                    : locale === 'es'
-                      ? 'Comparar Seedance 2.0 vs Sora 2'
-                      : 'Compare Seedance 2.0 vs Sora 2',
-              },
-            ];
-  const repeatedModelStepHrefs = new Set<string>([pricingPath]);
-  return rawNextStepLinks.filter(
-    (item, index, items) =>
-      !repeatedModelStepHrefs.has(item.href) &&
-      items.findIndex((candidate) => candidate.href === item.href) === index
-  );
+  const compareLabel = locale === 'fr' ? 'Comparer' : locale === 'es' ? 'Comparar' : 'Compare';
+  const family = familySlug ?? (isLtxLanding ? 'ltx' : isKlingLanding ? 'kling' : isSeedanceLanding ? 'seedance' : isVeoLanding ? 'veo' : '');
+  // Lead with the current generation; retain selected historical comparisons for
+  // visitors evaluating older examples. Published routes remain unchanged.
+  const comparisons: Record<string, Array<[string, string]>> = {
+    ltx: [
+      ['ltx-2-5-fast-vs-ltx-2-5-pro', 'LTX 2.5 Fast vs Pro'],
+      ['ltx-2-5-pro-vs-seedance-2-5', 'LTX 2.5 Pro vs Seedance 2.5'],
+      ['ltx-2-5-pro-vs-veo-3-1', 'LTX 2.5 Pro vs Veo 3.1'],
+      ['ltx-2-3-fast-vs-ltx-2-3-pro', 'LTX 2.3 Fast vs Pro'],
+    ],
+    kling: [
+      ['kling-3-pro-vs-seedance-2-5', 'Kling 3 Pro vs Seedance 2.5'],
+      ['kling-3-pro-vs-minimax-h3', 'Kling 3 Pro vs MiniMax H3'],
+      ['kling-3-pro-vs-veo-3-1', 'Kling 3 Pro vs Veo 3.1'],
+      ['kling-3-pro-vs-kling-3-standard', 'Kling 3 Pro vs Standard'],
+    ],
+    seedance: [
+      ['seedance-2-5-vs-minimax-h3', 'Seedance 2.5 vs MiniMax H3'],
+      ['seedance-2-5-vs-kling-3-pro', 'Seedance 2.5 vs Kling 3 Pro'],
+      ['seedance-2-5-vs-veo-3-1', 'Seedance 2.5 vs Veo 3.1'],
+      ['seedance-2-0-vs-seedance-2-0-fast', 'Seedance 2.0 vs Fast'],
+    ],
+    veo: [
+      ['gemini-omni-flash-vs-veo-3-1', 'Gemini Omni Flash 1.1 vs Veo 3.1'],
+      ['veo-3-1-vs-seedance-2-5', 'Veo 3.1 vs Seedance 2.5'],
+      ['veo-3-1-vs-minimax-h3', 'Veo 3.1 vs MiniMax H3'],
+      ['veo-3-1-vs-veo-3-1-fast', 'Veo 3.1 vs Fast'],
+    ],
+    hailuo: [
+      ['minimax-h3-vs-minimax-h3-max', 'MiniMax H3 vs H3 Max'],
+      ['minimax-h3-vs-veo-3-1', 'MiniMax H3 vs Veo 3.1'],
+      ['minimax-h3-max-vs-seedance-2-5', 'MiniMax H3 Max vs Seedance 2.5'],
+      ['minimax-hailuo-02-text-vs-veo-3-1-fast', 'Hailuo 02 vs Veo 3.1 Fast'],
+    ],
+    wan: [
+      ['wan-3-vs-wan-3-prime', 'Wan 3 vs Wan 3 Prime'],
+      ['wan-3-prime-vs-seedance-2-5', 'Wan 3 Prime vs Seedance 2.5'],
+      ['wan-3-vs-kling-3-pro', 'Wan 3 vs Kling 3 Pro'],
+    ],
+  };
+  const selected = comparisons[family];
+  if (selected) return selected.map(([slug, label]) => ({ href: buildCompareHref(appLocale, slug), label: `${compareLabel} ${label}` }));
+  return [
+    { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5' },
+    { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3' },
+    { href: buildCompareHref(appLocale, 'kling-3-pro-vs-seedance-2-5'), label: `${compareLabel} Kling 3 Pro vs Seedance 2.5` },
+    { href: pricingPath, label: locale === 'fr' ? 'Voir les tarifs' : locale === 'es' ? 'Ver precios' : 'View pricing' },
+  ];
 }
 
 export function getExamplesMainVideoCopy(locale: AppLocale, familySlug?: string) {
@@ -416,7 +219,7 @@ export function getExamplesMainVideoCopy(locale: AppLocale, familySlug?: string)
   if (locale === 'fr') {
     return {
       recreationHint: showRecreationHint
-        ? 'Depuis la fiche, reprenez cet exemple dans le workspace, ajoutez vos sources et vérifiez le devis avant de générer.'
+        ? 'Depuis la fiche, reprenez cet exemple dans le studio, ajoutez vos sources et vérifiez le devis avant de générer.'
         : undefined,
       preview: 'Aperçu',
       openExample: 'Voir réglages et prix',

@@ -270,6 +270,6 @@ test('Kling marketing family promotes Turbo without changing the O3 family canon
   ]);
 
   assert.ok(MARKETING_MODEL_SLUGS.includes('kling-3-turbo-pro'));
-  assert.ok(!MARKETING_MODEL_SLUGS.includes('kling-3-pro'));
-  assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === 'kling-3-pro-vs-kling-3-turbo-pro'));
+  assert.ok(MARKETING_MODEL_SLUGS.includes('kling-3-pro'));
+  assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === 'kling-3-pro-vs-seedance-2-5'));
 });

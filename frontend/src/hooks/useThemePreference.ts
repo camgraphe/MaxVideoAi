@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-export const THEME_STORAGE_KEY = 'mv-theme';
-export const THEME_CHANGE_EVENT = 'mv-theme-change';
+export const THEME_STORAGE_KEY = 'mv-app-theme';
+export const THEME_CHANGE_EVENT = 'mv-app-theme-change';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
 
-const DEFAULT_THEME_PREFERENCE: ThemePreference = 'system';
+const DEFAULT_THEME_PREFERENCE: ThemePreference = 'dark';
 
 type ThemeSnapshot = {
   preference: ThemePreference;
@@ -89,7 +89,7 @@ export function subscribeToThemePreference(browserWindow: Window, notify: (snaps
   };
 }
 
-const SERVER_SNAPSHOT: ThemeSnapshot = { preference: 'system', resolvedTheme: 'light' };
+const SERVER_SNAPSHOT: ThemeSnapshot = { preference: 'dark', resolvedTheme: 'dark' };
 
 export function useThemePreference() {
   const [snapshot, setSnapshot] = useState<ThemeSnapshot>(SERVER_SNAPSHOT);

@@ -1,0 +1,5 @@
+Make a minimal precision edit of this supplied MaxVideoAI desktop/mobile homepage board. Keep ALL imagery, composition, section placements, typography and colors exactly unchanged. Correct factual UI text only:
+1. Compare table in BOTH desktop and mobile: Kling 3 Pro values must be Prompt adherence 8.6, Visual quality 8.4, Motion realism 8.4. Seedance 2.5 values must be 9.1, 9.2, 9.2 respectively. Show each value once in its proper column and row. In particular change the incorrect desktop Visual quality 8.6 to 8.4. No new scores.
+2. MOBILE model-logo row below dancer and rabbit: labels must be "Kling", "Seedance", "MiniMax", NOT "Film", "Animation", "Social". These are model marks. Keep "Film / Animation / Social" ONLY in hero usage labels if shown elsewhere.
+3. Remove the duplicated "Create with your assistant" text immediately above the three assistant logos in desktop References section; preserve the actual CTA button and Claude / Codex / ChatGPT labels.
+Do not change anything else. This is still a static visual proposal. Same full portrait board and desktop/mobile columns.

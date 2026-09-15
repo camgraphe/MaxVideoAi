@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { EXAMPLES_HERO_POSTER_SIZES } from './hero-poster';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePublicVideoPlayback } from '@/components/media/usePublicVideoPlayback';
@@ -182,7 +183,7 @@ export function ExamplesHeroVideo({
           fill
           priority
           fetchPriority="high"
-          sizes="(max-width: 768px) 100vw, 920px"
+          sizes={EXAMPLES_HERO_POSTER_SIZES}
           aria-hidden="true"
           className={`${className ?? ''} pointer-events-none absolute inset-0 z-10 transition-opacity duration-300`}
           style={posterStyle}

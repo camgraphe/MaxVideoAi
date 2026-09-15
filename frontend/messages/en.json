@@ -23,8 +23,8 @@
         "href": "/pricing"
       },
       {
-        "key": "blog",
-        "href": "/blog"
+        "key": "connect",
+        "href": "/mcp"
       }
     ],
     "login": "Log in",
@@ -37,7 +37,8 @@
       "compare": "Compare",
       "pricing": "Pricing",
       "docs": "Docs",
-      "blog": "Blog"
+      "blog": "Blog",
+      "connect": "Assistants"
     },
     "badges": {
       "new": "New"
@@ -67,7 +68,19 @@
           "ltx-2-fast": "LTX 2 Fast",
           "pika-text-to-video": "Pika Text to Video",
           "wan-2-6": "Wan 2.6",
-          "minimax-hailuo-02-text": "MiniMax Hailuo 02"
+          "minimax-hailuo-02-text": "MiniMax Hailuo 02",
+          "happy-horse-1-1": "Happy Horse 1.1",
+          "ltx-2-5-fast": "LTX 2.5 Fast"
+        },
+        "heading": "Meet your next video model.",
+        "intro": "Capabilities, examples and prices. Choose what your project needs.",
+        "sections": {
+          "resources": {
+            "items": {
+              "blog": "Blog",
+              "get-started": "Getting started"
+            }
+          }
         }
       },
       "examples": {
@@ -83,7 +96,7 @@
           "happy-horse": "Happy Horse",
           "luma": "Luma Ray",
           "pika": "Pika",
-          "hailuo": "Hailuo",
+          "hailuo": "MiniMax",
           "grok": "Grok Imagine Video",
           "flux": "FLUX",
           "veo-3-1": "Veo 3.1",
@@ -96,7 +109,9 @@
           "wan-2-6": "Wan 2.6",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02",
           "ltx-2-fast": "LTX 2 Fast"
-        }
+        },
+        "heading": "Watch before you choose.",
+        "intro": "Real videos, prompts and model details."
       },
       "compare": {
         "items": {
@@ -122,15 +137,33 @@
           "seedance-1-5-pro-vs-veo-3-1": "Seedance 1.5 Pro vs Veo 3.1",
           "ltx-2-3-pro-vs-veo-3-1": "LTX 2.3 Pro vs Veo 3.1",
           "sora-2-vs-wan-2-6": "Sora 2 vs Wan 2.6",
-          "ltx-2-vs-veo-3-1": "LTX 2 vs Veo 3.1"
-        }
+          "ltx-2-vs-veo-3-1": "LTX 2 vs Veo 3.1",
+          "ltx-2-5-fast-vs-ltx-2-5-pro": "LTX 2.5 Fast vs Pro",
+          "gemini-omni-flash-vs-veo-3-1": "Gemini Omni Flash 1.1 vs Veo 3.1",
+          "seedance-2-0-vs-seedance-2-0-fast": "Seedance 2.0 vs Fast"
+        },
+        "heading": "Two models. A clearer choice.",
+        "intro": "Compare scores, video examples, capabilities and costs."
       },
       "tools": {
         "items": {
           "ai-video-assistant": "Claude, ChatGPT & Codex video assistant",
           "character-builder": "Consistent Character AI",
           "angle": "Change Camera Angle",
-          "image": "Generate image"
+          "image": "Generate image",
+          "audio": "Generate audio",
+          "background-removal": "Remove a video background",
+          "upscale": "AI Upscale"
+        },
+        "heading": "Shape the next part of your story.",
+        "intro": "Create your references, change an angle and finish the details.",
+        "sections": {
+          "resources": {
+            "items": {
+              "blog": "Blog",
+              "get-started": "Getting started"
+            }
+          }
         }
       },
       "workflows": {
@@ -153,7 +186,52 @@
           "sora-2-sequenced-prompts": "Sora 2 sequenced prompts",
           "veo-3-updates": "Veo 3 updates"
         }
-      }
+      },
+      "guideTitle": "Find your model",
+      "useCaseTitle": "Choose by use case",
+      "moreExamples": "More to explore",
+      "connectGuides": "Connect and create",
+      "allAssistants": "Explore assistants & MCP",
+      "connect": {
+        "heading": "Your assistant. Your video studio.",
+        "intro": "Choose a model, review the price and generate through MCP.",
+        "items": {
+          "claude": "Claude",
+          "chatgpt": "ChatGPT",
+          "codex": "Codex",
+          "openclaw": "OpenClaw",
+          "n8n": "n8n"
+        },
+        "descriptions": {
+          "claude": "Add the MaxVideoAI MCP connector.",
+          "chatgpt": "Custom MCP app · eligible workspaces.",
+          "codex": "Add the MaxVideoAI plugin.",
+          "openclaw": "Install the MaxVideoAI skill.",
+          "n8n": "Self-hosted AI video workflows."
+        },
+        "sections": {
+          "connectGuides": {
+            "items": {
+              "mcp-guide": "How MCP works",
+              "mcp-docs": "MCP server documentation"
+            }
+          }
+        }
+      },
+      "moreModels": "More creative possibilities",
+      "resourcesTitle": "Guides & resources"
+    },
+    "primaryNavigation": "Main navigation",
+    "lightTheme": "Use light theme",
+    "darkTheme": "Use dark theme",
+    "mobileToggle": "Open menu",
+    "mobileClose": "Close menu",
+    "menuCreate": "Create",
+    "menuExplore": "Explore",
+    "menuMedia": {
+      "video": "Video",
+      "image": "Image",
+      "audio": "Audio"
     }
   },
   "footer": {
@@ -185,7 +263,7 @@
     ],
     "sections": {
       "engines": {
-        "title": "AI Video Engines",
+        "title": "AI video models",
         "items": {
           "ltx23fast": "LTX 2.3 Fast",
           "seedance2_0": "Seedance 2.0",
@@ -203,7 +281,7 @@
         }
       },
       "comparisons": {
-        "title": "Popular comparisons",
+        "title": "Compare models",
         "items": {
           "seedance1_5pro_vs_seedance2_0": "Seedance 1.5 Pro vs Seedance 2.0",
           "ltx2_vs_ltx23fast": "LTX 2 vs LTX 2.3 Fast",
@@ -246,7 +324,7 @@
           "ltx": "LTX examples",
           "wan": "Wan examples",
           "seedance": "Seedance examples",
-          "hailuo": "Hailuo examples",
+          "hailuo": "MiniMax examples",
           "pika": "Pika examples",
           "happy-horse": "Happy Horse examples",
           "luma": "Luma Ray examples",
@@ -258,7 +336,7 @@
       "product": {
         "title": "Product",
         "items": {
-          "angle": "Change Camera Angle",
+          "angle": "Change the camera angle",
           "characterBuilder": "Character Builder",
           "pricing": "Pricing",
           "paygVideo": "Pay-as-you-go AI video",
@@ -266,11 +344,12 @@
         }
       },
       "company": {
-        "title": "Company",
+        "title": "Resources",
         "items": {
           "blog": "Blog",
-          "status": "Status",
-          "companyHub": "Company & Trust"
+          "status": "Service status",
+          "companyHub": "Company & Trust",
+          "contact": "Contact"
         }
       },
       "policies": {
@@ -278,21 +357,35 @@
         "manageCookies": "Cookie settings"
       }
     },
-    "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility."
+    "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility.",
+    "mcpFeature": {
+      "title": "Create with your AI assistant.",
+      "body": "Create with Claude, ChatGPT, Codex or OpenClaw. Build video workflows in n8n. Your models and credits, connected through MCP.",
+      "cta": "Discover MaxVideoAI MCP",
+      "section": "Assistants & MCP",
+      "docs": "MCP documentation",
+      "anchors": {
+        "claude": "Connect Claude",
+        "chatgpt": "MaxVideoAI for ChatGPT",
+        "codex": "MaxVideoAI plugin for Codex",
+        "openclaw": "MaxVideoAI skill for OpenClaw",
+        "n8n": "Video automation with n8n"
+      }
+    }
   },
   "home": {
     "redesign": {
       "hero": {
-        "eyebrow": "Pay-as-you-go multi-engine AI video workspace",
+        "eyebrow": "Pay-as-you-go AI video generator",
         "badgeChips": [
           "Multi-engine AI video generator",
           "Price before you generate",
           "Pay-as-you-go · no subscription"
         ],
-        "title": "Stop guessing which AI video model to use.",
-        "subtitle": "Compare MiniMax H3 Max, Seedance 2.5, Wan 3 Prime, Kling 3 and LTX 2.5, preview real outputs, see the cost before you generate, and choose the right AI video engine for every shot.",
-        "primaryCta": "Generate",
-        "secondaryCta": "See examples",
+        "title": "AI video.\nPay as you go.",
+        "subtitle": "Choose your model. Bring your ideas to life. Pay only for what you create.",
+        "primaryCta": "Create a video",
+        "secondaryCta": "Explore examples",
         "examplesCta": "Compare engines",
         "trustBadges": [
           "Live price before you generate",
@@ -480,7 +573,11 @@
           "pauseLabel": "Pause engine preview",
           "loadingLabel": "Loading preview",
           "errorLabel": "Preview unavailable",
-          "retryLabel": "Retry preview"
+          "retryLabel": "Retry preview",
+          "fullscreenLabel": "Fullscreen preview",
+          "soundOnLabel": "Turn preview sound on",
+          "soundOffLabel": "Turn preview sound off",
+          "progressLabel": "Preview progress"
         }
       },
       "proof": {
@@ -521,13 +618,13 @@
       },
       "shotTypes": {
         "title": "Find the right engine by use case.",
-        "subtitle": "Explore a few high-impact creative decisions, or browse the full Best-For hub for every workflow.",
-        "eyebrow": "Best for X",
+        "subtitle": "Cinematic stories, animation, social videos or quick experiments: start with the creative goal.",
+        "eyebrow": "Find your direction",
         "cta": "View all best-for guides",
         "hubCtaTitle": "View all best-for guides",
         "hubCtaBody": "Browse all use cases and find the right engine for every job.",
         "guideLabel": "Best-for guide",
-        "topPicksLabel": "Top picks",
+        "topPicksLabel": "Suggested models",
         "cards": [
           {
             "slug": "cinematic-realism",
@@ -556,8 +653,8 @@
         ]
       },
       "examples": {
-        "title": "Preview real outputs before you choose an engine.",
-        "subtitle": "Compare real Seedance, Kling, LTX, Veo, Wan and Happy Horse outputs, then check full specs, limits, pricing and prompts before you generate.",
+        "title": "A world of stories to create.",
+        "subtitle": "Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation.",
         "eyebrow": "AI video examples",
         "cta": "Browse all examples",
         "modelsCta": "View all model specs",
@@ -842,8 +939,8 @@
         ]
       },
       "toolbox": {
-        "title": "Prepare, compare, and generate in one workspace.",
-        "subtitle": "Create source images, build consistent characters, adjust angles, compare engines, and generate videos without switching tools.",
+        "title": "The tools behind your next scene.",
+        "subtitle": "Create a starting image, keep a character consistent, change the angle or refine a video. Pick the tool for your next step.",
         "primaryCta": "Open workspace",
         "secondaryCta": "Browse all tools",
         "cards": [
@@ -1012,40 +1109,93 @@
         ]
       },
       "faq": {
-        "title": "AI video workspace FAQ",
-        "subtitle": "Short answers for choosing the right AI video model before you spend credits.",
+        "title": "Your questions about AI video creation",
+        "subtitle": "Models, references and pricing: what to know before you start.",
         "items": [
           {
             "question": "What is the best AI video generator right now?",
-            "answer": "The best AI video generator depends on the shot. Seedance is strong for cinematic motion and reference-guided workflows, Kling is useful for camera movement, Veo is strong for polished realism, LTX is good for fast drafts, and Wan or Pika can fit specific styles or budget tests. MaxVideoAI helps you compare engines before you generate."
+            "answer": "There is no single best AI video generator for every project. Compare real outputs for the scene you want, then check reference support, duration, resolution, audio and price. MaxVideoAI brings several AI video models into one workspace, so you can choose without subscribing to each one.",
+            "links": [
+              {
+                "label": "Compare AI video models",
+                "href": "/ai-video-engines"
+              }
+            ]
           },
           {
             "question": "How do I make AI-generated videos?",
-            "answer": "To make AI-generated videos, start with a text prompt, image, or existing clip. Then choose the engine that matches the shot, check the price, and generate a short test. On MaxVideoAI, you can preview real examples, compare AI video engines, and see the cost before spending credits."
+            "answer": "To make AI-generated videos, describe your scene or import a starting image, choose a model and check its settings. Review the price, generate a short test, then refine the prompt or references. You can also create your starting image in MaxVideoAI. Existing clips can be used with models and modes that support video inputs.",
+            "links": [
+              {
+                "label": "Start creating",
+                "href": "/app"
+              }
+            ]
           },
           {
             "question": "Can I generate AI videos from an image?",
-            "answer": "Yes. Image-to-video AI turns a still image, product shot, character frame, or reference image into a moving clip. It is often the best option when you want to keep the composition, character, product, or visual style grounded."
+            "answer": "Yes. Image-to-video AI animates a still image: a character, a landscape, a drawing or a product photo. Import an image you have the rights to use, or create one in MaxVideoAI, then describe the motion. Supported reference types and how closely the result follows them depend on the model.",
+            "links": [
+              {
+                "label": "Explore image-to-video models",
+                "href": {
+                  "pathname": "/ai-video-engines/best-for/[usecase]",
+                  "params": {
+                    "usecase": "image-to-video"
+                  }
+                }
+              }
+            ]
           },
           {
             "question": "What is the difference between text-to-video and image-to-video AI?",
-            "answer": "A text-to-video AI workflow starts from a written prompt and creates a scene from scratch. An image-to-video AI workflow starts from a still image and adds motion to it. Text-to-video is better for ideation, while image-to-video is usually better for controlled visuals, products, characters, and branded shots."
+            "answer": "Text-to-video AI creates a scene from a written description. Image-to-video AI starts from an image and adds motion. Video-to-video workflows use an existing clip when the selected model supports it. Choose your starting material first, then check the compatible models.",
+            "links": [
+              {
+                "label": "Browse models and supported inputs",
+                "href": "/models"
+              }
+            ]
           },
           {
             "question": "Where can I find AI video prompt examples?",
-            "answer": "For AI video prompt examples, use the examples hub to browse real AI video examples with prompts, engines, formats, duration, and pricing. You can compare Seedance, Kling, LTX, Veo, Wan, Happy Horse and more before building your own generation."
+            "answer": "The examples gallery includes AI video prompt examples and real outputs, with the model and available generation details. Browse AI video examples by model, open a result and use its prompt as a starting point. The same prompt can produce different results: examples show possibilities, not guaranteed reproductions.",
+            "links": [
+              {
+                "label": "Explore videos and prompts",
+                "href": "/examples"
+              }
+            ]
           },
           {
             "question": "How much does AI video generation cost?",
-            "answer": "AI video generation cost depends on the engine, duration, resolution, mode, and audio support. MaxVideoAI shows the estimated price before each generation, so you can compare options before spending credits."
+            "answer": "AI video generation cost depends on the model and supported settings, including duration, resolution and, for some models, audio or reference inputs. You see the price before you generate. Choose only the settings you need; the final quote in the app is the amount to check before confirming.",
+            "links": [
+              {
+                "label": "See pricing options",
+                "href": "/pricing"
+              }
+            ]
           },
           {
             "question": "Is there a pay-as-you-go AI video generator?",
-            "answer": "Yes. MaxVideoAI is a pay-as-you-go AI video generator instead of forcing a subscription. You add credits when needed, see the price before you generate, and failed generations are refunded automatically."
+            "answer": "Yes. MaxVideoAI is a pay-as-you-go AI video generator: add credits when you need them and use them for your generations, without a subscription. A failed generation is automatically recredited. A completed result that does not match your creative expectations is not the same as a technical failure.",
+            "links": [
+              {
+                "label": "How pay-as-you-go works",
+                "href": "/pay-as-you-go-ai-video-generator"
+              }
+            ]
           },
           {
             "question": "What limits should I check before choosing an AI video model?",
-            "answer": "Before choosing an AI video model, check model limits such as duration, resolution, aspect ratio, audio support, text-to-video or image-to-video support, reference image support, and price. Some models are better for short fast drafts, while others are better for cinematic realism, camera motion, or polished commercial outputs."
+            "answer": "Check model limits before choosing: supported inputs, video length, resolution, aspect ratio, audio and reference requirements. Compare AI video engines using the model pages and examples. Available settings vary by model and generation mode; a feature supported by one model is not available on all of them.",
+            "links": [
+              {
+                "label": "Check model capabilities",
+                "href": "/models"
+              }
+            ]
           }
         ]
       },
@@ -1454,18 +1604,18 @@
   "pricing": {
     "hero": {
       "eyebrow": "MaxVideoAI Pricing",
-      "title": "AI Video Pricing Comparison",
-      "subtitle": "Compare video, image, audio and tool costs before you generate.",
-      "supportingLine": "Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.",
+      "title": "See the price. Then make the shot.",
+      "subtitle": "Compare video, image, audio and tool costs before you create.",
+      "supportingLine": "Pay as you go. Confirm the exact price in the app before generating. Failed generations are refunded.",
       "quickStartTitle": "Three starting points for your next video",
       "quickStartNote": "Indicative total per video, in USD. Select a scenario to see the full comparison. Confirm the live quote in the app before generating.",
-      "primaryCta": "Open app for live pricing before you generate",
+      "primaryCta": "Check a price in the app",
       "secondaryCta": "Compare prices below",
       "badges": [
         "No subscription",
-        "Guest preview",
-        "Wallet funding in Billing",
-        "Refunds on failed generations"
+        "Explore the app before signing up",
+        "Add credit when you need it",
+        "Failed generations are refunded"
       ],
       "link": {
         "before": "See how pricing compares across engines in our ",
@@ -1835,9 +1985,9 @@
   },
   "models": {
     "hero": {
-      "title": "AI Models (All Specs, Limits & Pricing)",
-      "subtitle": "Model catalog for video and image generation workflows.",
-      "body": "Use this page as a model catalog to review capabilities, runtime limits, and pricing signals in one place. Keep side-by-side engine comparisons on the video engines page and use this page as the broader technical reference."
+      "title": "Find the model for your next idea.",
+      "subtitle": "AI video and image models, all in one place.",
+      "body": "Explore examples, compare capabilities and check the price before choosing a model."
     },
     "intro": {
       "paragraphs": [
@@ -1987,8 +2137,8 @@
     "listing": {
       "decision": {
         "eyebrow": "AI video & image model directory",
-        "heroTitle": "Compare AI video & image models before you generate",
-        "heroSubtitle": "Browse video, image, audio, and preparation models. Compare pricing, max duration, resolution, audio support, input modes, and strengths before choosing the right model.",
+        "heroTitle": "Find the model for your next idea.",
+        "heroSubtitle": "Explore examples, compare capabilities and check the price before choosing a model.",
         "primaryCta": "Browse models",
         "secondaryCta": "Compare engines",
         "topPicksTitle": "Recommended starting points",
@@ -2353,9 +2503,9 @@
     "engineFilterLabel": "Engines",
     "engineFilterAllLabel": "All",
     "hero": {
-      "title": "AI video examples you can clone.",
-      "subtitle": "Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.",
-      "body": "Open any example to inspect its prompt, settings and recorded render cost, then recreate it in your workspace."
+      "title": "A world of stories to create.",
+      "subtitle": "Explore real AI videos: characters, cinematic scenes, animation and visual experiments.",
+      "body": "Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation."
     },
     "items": [
       {
@@ -2679,10 +2829,10 @@
   },
   "blog": {
     "hero": {
-      "title": "The MaxVideoAI Journal.",
-      "subtitle": "Reference-first workflows, tool guides, model notes, and production lessons for teams building images and video inside MaxVideoAI.",
-      "eyebrow": "Workflow Journal",
-      "ctaLabel": "Latest workflow guide →"
+      "title": "Ideas, experiments and ways to create.",
+      "subtitle": "Practical guides to AI video, images, references and choosing the right model.",
+      "eyebrow": "The MaxVideoAI journal",
+      "ctaLabel": "Explore the latest guide →"
     },
     "featured": {
       "eyebrow": "Featured story",
@@ -3851,30 +4001,30 @@
         "testMode": "Test Mode"
       },
       "wallet": {
-      "title": "Wallet",
-      "addCreditsTitle": "Add credits",
-      "description": "Your balance pays for successful generations only. Unused credits stay in your wallet.",
-      "balanceLabel": "Current balance",
-      "balanceReady": "Available to create",
-      "balanceLoading": "Loading balance…",
-      "balanceRefreshing": "Refreshing balance…",
-      "balanceUnavailable": "Balance unavailable. Try again.",
-      "guestBalance": "Sign in to view your balance",
-      "refreshBalance": "Refresh balance",
-      "stepChoose": "Choose wallet credits",
-      "stepChooseHint": "Credits are stored in USD and do not expire while your account remains active.",
-      "stepReview": "Review payment",
-      "stepReviewHint": "Choose the currency charged by Stripe.",
-      "paymentAmount": "Payment amount",
-      "creditsReceived": "Credits received",
-      "quoteCurrent": "Current quote. Taxes, if applicable, are finalized by Stripe.",
-      "quoteUnavailable": "Finalized in Stripe Checkout",
-      "hostedPaymentTitle": "Secure Stripe Checkout",
-      "hostedPaymentDescription": "Cards and available local methods continue on Stripe.",
+        "title": "Wallet",
+        "addCreditsTitle": "Add credits",
+        "description": "Your balance pays for successful generations only. Unused credits stay in your wallet.",
+        "balanceLabel": "Current balance",
+        "balanceReady": "Available to create",
+        "balanceLoading": "Loading balance…",
+        "balanceRefreshing": "Refreshing balance…",
+        "balanceUnavailable": "Balance unavailable. Try again.",
+        "guestBalance": "Sign in to view your balance",
+        "refreshBalance": "Refresh balance",
+        "stepChoose": "Choose wallet credits",
+        "stepChooseHint": "Credits are stored in USD and do not expire while your account remains active.",
+        "stepReview": "Review payment",
+        "stepReviewHint": "Choose the currency charged by Stripe.",
+        "paymentAmount": "Payment amount",
+        "creditsReceived": "Credits received",
+        "quoteCurrent": "Current quote. Taxes, if applicable, are finalized by Stripe.",
+        "quoteUnavailable": "Finalized in Stripe Checkout",
+        "hostedPaymentTitle": "Secure Stripe Checkout",
+        "hostedPaymentDescription": "Cards and available local methods continue on Stripe.",
         "addFunds": "{amount}",
         "quickAmount": "{amount}",
         "selectedAmount": "Selected amount",
-      "checkoutCta": "Continue to secure Stripe Checkout",
+        "checkoutCta": "Continue to secure Stripe Checkout",
         "checkoutNote": "Taxes and receipt are finalized by Stripe before payment.",
         "firstTopupAmexNotice": "For security reasons, American Express may be unavailable for a first top-up.",
         "customLabel": "Custom amount",
@@ -3936,9 +4086,9 @@
         },
         "note": "Note: You’ll be charged only if the generation succeeds."
       },
-    "receipts": {
-      "ledgerLabel": "Billing documents",
-      "title": "Receipts & invoices",
+      "receipts": {
+        "ledgerLabel": "Billing documents",
+        "title": "Receipts & invoices",
         "subtitle": "Download Stripe documents for wallet top-ups and review charges or refunds.",
         "openDocuments": "Receipts & invoices",
         "empty": "No payment documents or wallet activity yet.",
@@ -3956,9 +4106,9 @@
           "refund": "Refund",
           "topup": "Top-up"
         },
-      "fields": {
-        "total": "Total",
-        "walletMovement": "Wallet movement",
+        "fields": {
+          "total": "Total",
+          "walletMovement": "Wallet movement",
           "tax": "Tax",
           "discount": "Discount",
           "document": "Document"
@@ -3968,16 +4118,16 @@
         "receiptLabel": "Receipt",
         "invoiceLabel": "Invoice",
         "contactSupport": "Contact support"
-    },
-    "checkoutReturn": {
-      "successTitle": "Payment returned",
-      "cancelledTitle": "Checkout cancelled",
-      "refreshingDetail": "Refreshing your balance and payment history…",
-      "refreshedDetail": "Latest wallet and payment history loaded.",
-      "delayedDetail": "Payment returned. Account updates may still be processing; refresh again shortly.",
-      "cancelledDetail": "No charge was completed. Your selected amount has been kept."
-    },
-    "refunds": {
+      },
+      "checkoutReturn": {
+        "successTitle": "Payment returned",
+        "cancelledTitle": "Checkout cancelled",
+        "refreshingDetail": "Refreshing your balance and payment history…",
+        "refreshedDetail": "Latest wallet and payment history loaded.",
+        "delayedDetail": "Payment returned. Account updates may still be processing; refresh again shortly.",
+        "cancelledDetail": "No charge was completed. Your selected amount has been kept."
+      },
+      "refunds": {
         "title": "Protections",
         "points": [
           "Failed generations are refunded automatically.",
@@ -6663,87 +6813,87 @@
     "meta": {
       "title": "{left} vs {right} — Specs & Pricing | MaxVideoAI",
       "titleFallback": "AI video engines — Specs & Pricing | MaxVideoAI",
-      "description": "Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across 11 criteria.",
+      "description": "Compare {left} vs {right} on MaxVideoAI with key specs, and a scorecard across 11 criteria.",
       "slugOverrides": {
         "kling-2-6-pro-vs-ltx-2": {
           "title": "Kling 2.6 Pro vs LTX 2 — Speed vs Quality | MaxVideoAI",
-          "description": "Side-by-side test with identical prompts: quality, speed, pricing, modes, and an 11-point scorecard. Pick the winner by use case."
+          "description": "Compare models by quality, speed, pricing, modes, and an 11-point scorecard. Pick the winner by use case."
         },
         "ltx-2-fast-vs-wan-2-6": {
           "title": "LTX 2 Fast vs WAN 2.6 — Quality, Speed & Cost | MaxVideoAI",
-          "description": "Compare LTX 2 Fast vs WAN 2.6 with the same prompts, key specs, pricing, and an 11-point scorecard. See speed/stability vs video-to-video support."
+          "description": "Compare LTX 2 Fast vs WAN 2.6 with key specs, pricing, and an 11-point scorecard. See speed/stability vs video-to-video support."
         },
         "wan-2-5-vs-wan-2-6": {
           "title": "WAN 2.5 vs WAN 2.6 — What's New + Specs | MaxVideoAI",
-          "description": "See what changed in WAN 2.6 vs 2.5: longer clips, multi-shot output, video-to-video support, pricing, and an 11-point scorecard with identical prompts."
+          "description": "See what changed in WAN 2.6 vs 2.5: longer clips, multi-shot output, video-to-video support, pricing, and an 11-point scorecard."
         },
         "ltx-2-fast-vs-wan-2-5": {
           "title": "LTX 2 Fast vs WAN 2.5 — Quality, Speed & Cost | MaxVideoAI",
-          "description": "Compare LTX 2 Fast vs WAN 2.5 with identical prompts, key specs, pricing, and an 11-point scorecard. Pick the best engine for your workflow."
+          "description": "Compare LTX 2 Fast vs WAN 2.5 with key specs, pricing, and an 11-point scorecard. Pick the best engine for your workflow."
         },
         "kling-3-pro-vs-wan-2-6": {
           "title": "Kling 3 Pro vs WAN 2.6 — Quality, Audio & Cost | MaxVideoAI",
-          "description": "Compare Kling 3 Pro vs WAN 2.6 with identical prompts: quality, audio, speed, modes, pricing, and an 11-point scorecard."
+          "description": "Compare Kling 3 Pro vs WAN 2.6 by quality, audio, speed, modes, pricing, and an 11-point scorecard."
         },
         "kling-3-pro-vs-veo-3-1": {
           "title": "Kling 3 Pro vs Veo 3.1 | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare Kling 3 Pro vs Veo 3.1 on MaxVideoAI with identical prompts: specs, pricing, scene control, native audio behavior, and side-by-side output quality."
+          "description": "Compare Kling 3 Pro vs Veo 3.1 on MaxVideoAI by specs, pricing, scene control, native audio behavior, and output quality."
         },
         "ltx-2-3-pro-vs-veo-3-1": {
           "title": "LTX 2.3 Pro vs Veo 3.1 | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare LTX 2.3 Pro vs Veo 3.1 on MaxVideoAI with identical prompts: specs, pricing, audio behavior, and side-by-side output quality."
+          "description": "Compare LTX 2.3 Pro vs Veo 3.1 on MaxVideoAI by specs, pricing, audio behavior, and output quality."
         },
         "ltx-2-vs-veo-3-1-fast": {
           "title": "LTX 2 vs Veo 3.1 Fast — Speed vs Quality | MaxVideoAI",
-          "description": "Compare LTX 2 vs Veo 3.1 Fast: speed/queue time, cost, max duration, and output quality, tested with identical prompts and a scorecard."
+          "description": "Compare LTX 2 vs Veo 3.1 Fast: speed/queue time, cost, max duration, and output quality, with a detailed scorecard."
         },
         "ltx-2-vs-veo-3-1": {
           "title": "LTX 2 vs Veo 3.1 — Quality, Cost & Modes | MaxVideoAI",
-          "description": "Compare LTX 2 vs Google Veo 3.1 with identical prompts: quality, motion realism, text legibility, modes, pricing, and an 11-point scorecard."
+          "description": "Compare LTX 2 vs Google Veo 3.1 by quality, motion realism, text legibility, modes, pricing, and an 11-point scorecard."
         },
         "seedance-2-0-vs-veo-3-1": {
           "title": "Seedance 2.0 vs Veo 3.1 | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare Seedance 2.0 vs Veo 3.1 on MaxVideoAI with identical prompts: specs, pricing, audio workflows, and side-by-side model results."
+          "description": "Compare Seedance 2.0 vs Veo 3.1 on MaxVideoAI by specs, pricing, audio workflows, and model capabilities."
         },
         "kling-3-pro-vs-seedance-2-0": {
           "title": "Kling 3 Pro vs Seedance 2.0 | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare Kling 3 Pro vs Seedance 2.0 on MaxVideoAI with identical prompts: specs, pricing, scene control, and multi-shot output quality."
+          "description": "Compare Kling 3 Pro vs Seedance 2.0 on MaxVideoAI by specs, pricing, scene control, and multi-shot output quality."
         },
         "seedance-2-0-fast-vs-veo-3-1-fast": {
           "title": "Seedance 2.0 Fast vs Veo 3.1 Fast | Fast AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare Seedance 2.0 Fast vs Veo 3.1 Fast on MaxVideoAI with identical prompts: fast draft speed, specs, pricing, and side-by-side output quality."
+          "description": "Compare Seedance 2.0 Fast vs Veo 3.1 Fast on MaxVideoAI by fast draft speed, specs, pricing, and output quality."
         },
         "ltx-2-3-pro-vs-seedance-2-0": {
           "title": "LTX 2.3 Pro vs Seedance 2.0 | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare LTX 2.3 Pro vs Seedance 2.0 on MaxVideoAI with identical prompts: specs, pricing, audio behavior, and side-by-side output quality."
+          "description": "Compare LTX 2.3 Pro vs Seedance 2.0 on MaxVideoAI by specs, pricing, audio behavior, and output quality."
         },
         "seedance-2-0-vs-sora-2": {
           "title": "Seedance 2.0 vs Sora 2 | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare Seedance 2.0 vs Sora 2 on MaxVideoAI with identical prompts: specs, pricing, audio behavior, and side-by-side cinematic output quality."
+          "description": "Compare Seedance 2.0 vs Sora 2 on MaxVideoAI by specs, pricing, audio behavior, and cinematic output quality."
         },
         "seedance-1-5-pro-vs-veo-3-1": {
           "title": "Seedance 1.5 Pro vs Veo 3.1 — Speed vs Quality | MaxVideoAI",
-          "description": "Compare Seedance 1.5 Pro vs Google Veo 3.1 with identical prompts: cinematic quality, speed, pricing, modes, and an 11-point scorecard."
+          "description": "Compare Seedance 1.5 Pro vs Google Veo 3.1 by cinematic quality, speed, pricing, modes, and an 11-point scorecard."
         },
         "ltx-2-vs-seedance-2-0": {
           "title": "LTX 2 vs Seedance 2 — Scores & Pricing | MaxVideoAI",
-          "description": "Compare LTX 2 vs Seedance 2.0 using the same prompts: quality, speed, modes, pricing, and an 11-point scorecard to pick by use case."
+          "description": "Compare LTX 2 vs Seedance 2.0 by quality, speed, modes, pricing, and an 11-point scorecard to pick by use case."
         },
         "kling-3-standard-vs-veo-3-1": {
           "title": "Kling 3 Std vs Veo 3.1 — Scores & Pricing | MaxVideoAI",
-          "description": "Compare Kling 3 Standard vs Google Veo 3.1 with identical prompts: quality, speed, pricing, modes, and an 11-point scorecard."
+          "description": "Compare Kling 3 Standard vs Google Veo 3.1 by quality, speed, pricing, modes, and an 11-point scorecard."
         },
         "kling-3-pro-vs-sora-2": {
           "title": "Kling 3 Pro vs Sora 2 — Scores & Pricing | MaxVideoAI",
-          "description": "Compare Kling 3 Pro vs OpenAI Sora 2 with identical prompts: quality, speed, max duration, pricing, and an 11-point scorecard."
+          "description": "Compare Kling 3 Pro vs OpenAI Sora 2 by quality, speed, max duration, pricing, and an 11-point scorecard."
         },
         "kling-3-pro-vs-sora-2-pro": {
           "title": "Kling 3 Pro vs Sora 2 Pro | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare Kling 3 Pro vs Sora 2 Pro on MaxVideoAI with identical prompts: specs, pricing, scene control, audio behavior, and side-by-side output quality."
+          "description": "Compare Kling 3 Pro vs Sora 2 Pro on MaxVideoAI by specs, pricing, scene control, audio behavior, and output quality."
         },
         "sora-2-vs-sora-2-pro": {
           "title": "Sora 2 vs Sora 2 Pro — Differences & Cost | MaxVideoAI",
-          "description": "Compare Sora 2 vs Sora 2 Pro: output quality, native audio, max resolution/duration, and pricing—tested with identical prompts and a scorecard."
+          "description": "Compare Sora 2 vs Sora 2 Pro: output quality, native audio, max resolution/duration, and pricing—with a detailed scorecard."
         },
         "kling-3-4k-vs-kling-3-pro": {
           "title": "Kling 3 4K vs Kling 3 Pro | Native 4K vs 1080p | MaxVideoAI",
@@ -6751,19 +6901,19 @@
         },
         "kling-2-6-pro-vs-seedance-2-0": {
           "title": "Kling 2.6 Pro vs Seedance 2 — Scores & Pricing | MaxVideoAI",
-          "description": "Compare Kling 2.6 Pro vs Seedance 2.0 using identical prompts: quality, audio, speed, pricing, and an 11-point scorecard."
+          "description": "Compare Kling 2.6 Pro vs Seedance 2.0 by quality, audio, speed, pricing, and an 11-point scorecard."
         },
         "kling-3-standard-vs-ltx-2": {
           "title": "Kling 3 Std vs LTX 2 — Speed vs Quality | MaxVideoAI",
-          "description": "Compare Kling 3 Standard vs LTX 2 with identical prompts: quality, speed, pricing, modes, and an 11-point scorecard."
+          "description": "Compare Kling 3 Standard vs LTX 2 by quality, speed, pricing, modes, and an 11-point scorecard."
         },
         "ltx-2-3-fast-vs-ltx-2-3-pro": {
           "title": "LTX 2.3 Fast vs LTX 2.3 Pro | AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare LTX 2.3 Fast vs LTX 2.3 Pro on MaxVideoAI with identical prompts: current fast vs current pro tradeoffs, specs, pricing, and side-by-side output quality."
+          "description": "Compare LTX 2.3 Fast vs LTX 2.3 Pro on MaxVideoAI by current fast vs current pro tradeoffs, specs, pricing, and output quality."
         },
         "ltx-2-3-fast-vs-seedance-2-0-fast": {
           "title": "LTX 2.3 Fast vs Seedance 2.0 Fast | Fast AI Video Model Comparison | MaxVideoAI",
-          "description": "Compare LTX 2.3 Fast vs Seedance 2.0 Fast on MaxVideoAI with identical prompts: fast draft speed, specs, pricing, and side-by-side output quality."
+          "description": "Compare LTX 2.3 Fast vs Seedance 2.0 Fast on MaxVideoAI by fast draft speed, specs, pricing, and output quality."
         }
       },
       "descriptionFallback": "Side-by-side comparison of AI video engines with MaxVideoAI metrics and guidance."
@@ -6771,17 +6921,17 @@
     "hero": {
       "back": "Back to comparisons",
       "kicker": "Compare engines",
-      "intro": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.",
-      "introPrelaunch": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.",
+      "intro": "Compare {left} and {right} by quality, controls, pricing and a scorecard across 11 criteria. Explore each model’s examples and full specifications.",
+      "introPrelaunch": "Compare {left} and {right} by announced capabilities, available pricing and provisional scores. Availability and specifications may change before launch.",
       "takeawaysTitle": "Key takeaways",
       "lastUpdatedLabel": "Last updated"
     },
     "scorecard": {
-      "title": "Scorecard (Side-by-Side)",
+      "title": "Compare the strengths.",
       "subtitle": "Scores reflect quality and control on MaxVideoAI across 11 criteria.",
       "provisionalNote": "Pre-launch scores are provisional and will update once runtime renders and final pricing are available.",
       "strengthsLabel": "Strengths",
-      "winnerSummary": "Winner summary",
+      "winnerSummary": "At a glance",
       "winnerSummaryPrelaunch": "Current leader (pre-launch)",
       "generateWith": "Generate with {engine}",
       "fullProfile": "Full engine profile"
@@ -6806,7 +6956,7 @@
     },
     "keySpecs": {
       "title": "Key Specs (Side-by-Side)",
-      "subtitle": "Compare key AI video model specs side-by-side (pricing, inputs, resolution, duration, aspect ratios, audio, and core controls). This is a high-level snapshot — see the full engine profile for the complete feature set and prompt examples.",
+      "subtitle": "Check duration, resolution, supported inputs and controls. Open each model’s guide for its full feature set.",
       "keyLabel": "Key spec",
       "latencyNote": "Observed production times over 30 days; settings and queues vary. P90 means 90% of measured renders finished within this time. These are not controlled speed tests.",
       "latencySource": "Measurement method and limitations"
@@ -6837,7 +6987,7 @@
       "subtitle": "Side-by-side renders from the same prompt on MaxVideoAI. Prompts are identical; outputs may vary by model.",
       "subtitlePrelaunch": "Side-by-side prompts and renders (when available) on MaxVideoAI. Prompts are identical; outputs may vary by model.",
       "note": "Showing up to 3 prompt pairs for clarity.",
-      "footer": "This side-by-side AI video comparison uses identical prompts to highlight differences in motion, realism, human fidelity, and text legibility. For full specs, controls, and more prompt examples, open each engine profile."
+      "footer": "Explore each model’s examples to understand its visual possibilities. The galleries use different prompts and settings; they are not a controlled video test."
     },
     "prelaunch": {
       "title": "Pre-launch comparison",
@@ -6861,13 +7011,13 @@
       "q3": "Which is cheaper on MaxVideoAI?",
       "a3": "Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).",
       "q4": "What are the biggest differences between {left} and {right}?",
-      "q5": "Do they support Text-to-Video / Image-to-Video / Video-to-Video?",
+      "q5": "Can I start from text, an image or a video?",
       "a5": "On MaxVideoAI: Text-to-Video is {t2vLeft} vs {t2vRight}; Image-to-Video is {i2vLeft} vs {i2vRight}; Video-to-Video is {v2vLeft} vs {v2vRight}. Some fields may still be under validation.",
-      "q6": "Do they support First/Last frame or references?",
+      "q6": "Can I use start and end frames or references?",
       "a6": "First/Last frame is {firstLeft} vs {firstRight}. Reference image/style is {refImgLeft} vs {refImgRight}; Reference video is {refVidLeft} vs {refVidRight}.",
-      "q7": "What are the max resolution, duration, and aspect ratios?",
+      "q7": "What resolutions, durations and aspect ratios are available?",
       "a7": "Max output is {resLeft} / {durLeft} for {left} and {resRight} / {durRight} for {right}. Supported aspect ratios include {arLeft} vs {arRight} (see Key Specs for the full list).",
-      "q8": "Do they support audio generation and lip sync?",
+      "q8": "Can the models generate audio and lip sync?",
       "a8": "Audio output is {audioOutLeft} vs {audioOutRight}. Native audio generation is {audioGenLeft} vs {audioGenRight}, and lip sync is {lipLeft} vs {lipRight} (some fields may still be under validation).",
       "q9": "Does MaxVideoAI add a watermark?",
       "a9": "No. MaxVideoAI exports are watermark-free (“Watermark: No (MaxVideoAI)”).",
@@ -6958,8 +7108,8 @@
       },
       "hero": {
         "badge": "MaxVideoAI Tools",
-        "title": "Build Reusable Assets Before Image-to-Video",
-        "body": "These tools are built for the step before generation: lock the character, fix the angle, then carry stronger visual inputs into image creation, image-to-video, and the MaxVideoAI model hub.",
+        "title": "Shape the next part of your story.",
+        "body": "Build a character, change the camera angle, refine an image or finish a video. Choose what your scene needs.",
         "primaryCta": "Consistent Character AI",
         "secondaryCta": "Change Camera Angle with AI"
       },
@@ -7052,12 +7202,12 @@
           "flashvsr upscale",
           "recraft crisp upscale"
         ],
-        "imageAlt": "AI image and video upscale before and after preview."
+        "imageAlt": "Current MaxVideoAI Upscale interface in English, visitor view."
       },
       "hero": {
         "badge": "Image + video upscale",
-        "title": "Upscale assets before they move through the pipeline",
-        "body": "Use the latest AI upscale models in one MaxVideoAI tool: SeedVR2 for general image and video, Topaz for premium enhancement, FlashVSR for fast video passes, and Recraft Crisp for detail-focused stills.",
+        "title": "AI upscale for images and videos.",
+        "body": "Increase resolution and refine the details. Choose the model and output size, check the price, then save the result to your media library.",
         "primaryCta": "Open Upscale",
         "secondaryCta": "View all tools",
         "beforeLabel": "Source",
@@ -7068,16 +7218,16 @@
         "deliveryLabel": "Delivery asset",
         "stats": [
           {
-            "value": "6",
-            "label": "AI models"
+            "value": "Image + video",
+            "label": "Supported media"
           },
           {
-            "value": "Live",
-            "label": "provider limits"
+            "value": "2× / 4×",
+            "label": "Depending on model"
           },
           {
-            "value": "1",
-            "label": "shared surface"
+            "value": "Your choice",
+            "label": "Model and output size"
           }
         ],
         "metrics": [
@@ -7096,9 +7246,9 @@
         ]
       },
       "models": {
-        "eyebrow": "Model routing",
-        "title": "Best upscale models for each asset type",
-        "body": "The first version exposes the models that matter most now, with dynamic pricing for video and a shared surface that can later appear across Image, Video, Library, and job actions.",
+        "eyebrow": "Choose your model",
+        "title": "The right upscale for your source.",
+        "body": "Compare image and video models by the result you need: a larger frame, sharper references or a more polished final video.",
         "cards": [
           {
             "title": "SeedVR2 Image + Video",
@@ -7124,8 +7274,8 @@
       },
       "modelGuide": {
         "eyebrow": "Quality and price guide",
-        "title": "Pick the model by asset type, quality target, and MaxVideoAI price behavior",
-        "body": "MaxVideoAI shows the price before generation. Image routes use the configured run price; video routes can adjust dynamically from duration, resolution, frames, and the selected upscale model.",
+        "title": "Compare quality, controls and price.",
+        "body": "In MaxVideoAI, choose your model and output size, then check the quote. Video pricing also depends on your source duration and resolution.",
         "columns": {
           "model": "Model",
           "bestFor": "Best for",
@@ -7166,10 +7316,10 @@
       },
       "workflow": {
         "eyebrow": "Workflow",
-        "title": "Designed as a standalone tool first, reusable everywhere next",
+        "title": "Import. Adjust. Keep the result.",
         "overlay": {
-          "title": "One output, reused everywhere",
-          "body": "The same upscale surface is ready for Library, job actions, and future generation flows."
+          "title": "Your finished file, ready to use.",
+          "body": "Choose an image or video, set the output size and review the price before you start."
         },
         "steps": [
           {
@@ -7182,22 +7332,30 @@
           },
           {
             "title": "Reuse the output",
-            "body": "Save the result back to Library and prepare the same action for future in-context upscale buttons."
+            "body": "Download the result or save it to your media library for your next project."
           }
         ]
       },
       "faq": [
         {
-          "q": "Can it upscale video?",
-          "a": "Yes. MaxVideoAI no longer applies a fixed 20 second cap. Video runs use metadata-based dynamic pricing and then follow the selected provider model's own limits."
+          "q": "Can I upscale both images and videos?",
+          "a": "Yes. Choose Image or Video, then a compatible model. Available output sizes and duration limits depend on that model."
         },
         {
-          "q": "Which model is the default?",
-          "a": "SeedVR2 is the default for image and video because it supports current target-resolution and factor controls."
+          "q": "How do I choose the output size?",
+          "a": "Choose a target resolution or an enlargement factor from the options available for your model. The tool shows the estimated price before you start."
         },
         {
-          "q": "Will Upscale appear elsewhere?",
-          "a": "Yes. The implementation uses a dedicated upscale surface so the same action can later be exposed from Library, generated jobs, Image, and Video flows."
+          "q": "How much does upscaling cost?",
+          "a": "The estimate depends on the model, your source file and the output settings. For video, duration also affects the price. Check the quote in the app before confirming."
+        },
+        {
+          "q": "Will it restore every missing detail?",
+          "a": "Upscaling can improve resolution and perceived detail, but it cannot guarantee an exact reconstruction. Check faces, text and fine textures before using the result."
+        },
+        {
+          "q": "Can I keep the result for another project?",
+          "a": "Yes. Download the finished file or save it to your media library for later use."
         }
       ],
       "faqSection": {
@@ -7242,7 +7400,7 @@
       "hero": {
         "eyebrow": "One image in. New camera angle out.",
         "title": "Change Camera Angle with AI from One Image",
-        "body": "Generate alternate viewpoints from a single shot and keep the best result as your first frame before image-to-video.",
+        "body": "Explore new viewpoints from a single image. Adjust the camera, choose your view and use it as the starting image for a video.",
         "primaryCta": "Open Tool",
         "secondaryCta": "View Angle Examples",
         "supportText": "Best when the subject is already right and only the viewpoint needs to change.",
@@ -7365,8 +7523,8 @@
         "body": "The source image, angle controls, and outputs stay side by side so you can compare fast and pick the frame you want.",
         "topLeft": "Angle workspace",
         "topRight": "Source image + controls + outputs",
-        "windowLabel": "source image, angle picker, output review",
-        "imageAlt": "Full screenshot of the MaxVideoAI Angle workspace.",
+        "windowLabel": "Current interface · English · visitor view",
+        "imageAlt": "Angle workspace — Current interface · English · visitor view",
         "callouts": [
           {
             "title": "Source image",
@@ -7707,8 +7865,8 @@
       "hero": {
         "badge": "Consistent Character AI Tool",
         "secondaryBadge": "Portrait anchor + 8-panel character sheet",
-        "title": "Create a reusable character reference for consistent AI images and video",
-        "body": "Upload one identity photo, add optional outfit inspiration, or start from scratch. Generate a reusable portrait anchor or 8-panel character sheet you can reuse across scenes, edits, and reference-based video workflows.",
+        "title": "AI characters. A consistent reference.",
+        "body": "Start with a portrait or an idea. Create a portrait reference or an eight-panel character sheet, then reuse it in your images and videos.",
         "primaryCta": "Open Character Builder",
         "proofs": [
           "Start with one identity photo, optional outfit inspiration, or a scratch-built concept",
@@ -8050,8 +8208,8 @@
       },
       "hero": {
         "badge": "Green screen, alpha, and AI rotoscoping",
-        "title": "Remove video backgrounds and turn subjects into reusable cutouts",
-        "body": "Upload a short clip or choose a library video, see the price before generating, remove the background, and save an alpha matte, green-screen-style plate, or solid-color output for the next edit.",
+        "title": "Remove the background from your video.",
+        "body": "Keep your subject and choose a transparent, green or solid background. Preview the price, process your clip and take the result into your edit.",
         "primaryCta": "Open Video Background Remover",
         "secondaryCta": "View all tools",
         "assurances": [
@@ -8210,7 +8368,47 @@
         "body": "Open the workspace, estimate the run, and turn short source videos into reusable subject cutouts, alpha mattes, green-screen plates, or solid-background assets.",
         "primaryCta": "Open Video Background Remover",
         "secondaryCta": "View all tools"
+      },
+      "visualLabels": {
+        "source": "Source",
+        "alpha": "Alpha matte",
+        "stages": [
+          "Source clip",
+          "Alpha matte",
+          "New background"
+        ],
+        "transparent": "Transparent web",
+        "green": "Green screen",
+        "solid": "Solid background"
       }
+    },
+    "journey": {
+      "all": "All tools",
+      "open": "Open tool",
+      "nav": "Explore creative tools",
+      "character": "Character",
+      "angle": "Camera angle",
+      "upscale": "Upscale",
+      "background": "Video cutout",
+      "workspace": "Inside the tool",
+      "capture": "Current interface · English · visitor view",
+      "full": "View full screenshot",
+      "proof": "Reference illustration",
+      "sheet": "Character sheet",
+      "portrait": "Portrait",
+      "views": "Front, profile, three-quarter and back. Full body and close-ups.",
+      "workshops": "Build your next scene.",
+      "finishing": "Give your video the finishing touch.",
+      "start": "Create your starting point.",
+      "startBody": "No source image yet? Generate one in MaxVideoAI. You can also create voices, music and sound in the Audio workspace.",
+      "image": "Create an image",
+      "audio": "Create audio",
+      "browse": "Choose your tool",
+      "studio": "Open the toolbox",
+      "next": "Continue your project",
+      "faq": "Questions before you start",
+      "details": "Explore the models and their limits",
+      "learn": "Explore the tool"
     }
   },
   "notFound": {

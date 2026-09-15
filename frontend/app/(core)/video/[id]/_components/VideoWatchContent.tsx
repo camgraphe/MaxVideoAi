@@ -26,10 +26,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const aspect = parseAspectRatio(signals.aspectRatio ?? video.aspectRatio);
   const hasControls = Boolean(signals.promptRows.length || signals.inputRows.length);
 
-  const containerStyle: CSSProperties = {
-    maxHeight: '62vh',
-    width: '100%',
-  };
+  const containerStyle: CSSProperties = { maxHeight: '62vh', width: '100%' };
   if (aspect) {
     containerStyle.aspectRatio = `${aspect.width} / ${aspect.height}`;
     const maxWidth = 54 * (aspect.width / aspect.height);
@@ -137,9 +134,10 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
           </ol>
         </nav>
 
-        <ButtonLink href={signals.recreatePath} size="sm" prefetch={false} className="bg-text-primary text-bg shadow-card hover:bg-text-primary/90">
+        <ButtonLink href={signals.recreatePath} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
+          data-analytics-cta-location="watch_hero" data-analytics-target-family="workspace" size="sm" prefetch={false} className="bg-text-primary text-bg shadow-card hover:bg-text-primary/90">
           <Sparkles className="h-4 w-4" aria-hidden />
-          Start a render
+          Start from this example
         </ButtonLink>
       </div>
 
@@ -187,9 +185,10 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
               ) : null}
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <ButtonLink href={signals.recreatePath} size="lg" prefetch={false} className="w-full bg-text-primary text-bg hover:bg-text-primary/90">
+                <ButtonLink href={signals.recreatePath} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
+          data-analytics-cta-location="watch_hero" data-analytics-target-family="workspace" size="lg" prefetch={false} className="w-full bg-text-primary text-bg hover:bg-text-primary/90">
                   <Sparkles className="h-4 w-4" aria-hidden />
-                  Recreate this video
+                  Start from this example
                 </ButtonLink>
                 {signals.modelPath ? (
                   <ButtonLink href={signals.modelPath} variant="outline" size="lg" prefetch={false} className="w-full">
@@ -203,6 +202,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
                   </ButtonLink>
                 ) : null}
               </div>
+              <p className="mt-3 text-xs leading-5 text-text-secondary">Use this as a starting point. Add your own source images or clips when needed; private references are not included. The recorded cost belongs to this example. Check your current price in the workspace before generating.</p>
             </div>
           </VideoWatchCard>
 

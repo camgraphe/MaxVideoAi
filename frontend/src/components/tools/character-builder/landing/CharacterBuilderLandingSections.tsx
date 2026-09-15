@@ -1,3 +1,4 @@
+import { ToolWorkspacePreview } from '@/components/tools/landing/ToolWorkspacePreview';
 import type { CharacterBuilderLandingContent } from './character-builder-landing-assets';
 import {
   CharacterBuilderFaqSection,
@@ -18,6 +19,7 @@ export function CharacterBuilderLandingSections({ content }: { content: Characte
       <CharacterBuilderHeroSection content={content} />
       <CharacterBuilderWhySection content={content} />
       <CharacterBuilderHowItWorksSection content={content} />
+      <ToolWorkspacePreview tool="character-builder" title={content.hero.showcase.topLabel} body={content.hero.showcase.windowLabel} />
       <CharacterBuilderOutputsWorkflowSection content={content} />
       <CharacterBuilderUseCasesSection content={content} />
       <CharacterBuilderRelatedSection content={content} />

@@ -1,0 +1,62 @@
+/* D85: shared editorial navigation. Public colors do not depend on app preferences. */
+.marketing-site > header { z-index:40; }
+.marketing-desktop-nav { align-items:center; gap:22px; font-weight:400; font-size:14px; letter-spacing:-.015em; }
+.marketing-site > header .marketing-nav-trigger { display:inline-flex; align-items:center; gap:6px; min-height:48px; padding:0; border:0; background:none; white-space:nowrap; color:var(--text-secondary); font-weight:400; }
+.marketing-site > header .marketing-nav-trigger:hover,.marketing-site > header .marketing-nav-trigger[aria-expanded="true"],.marketing-site > header .marketing-nav-trigger.is-active {color:var(--text-primary)}
+.marketing-site > header .marketing-nav-trigger svg {transition:transform .18s}
+.marketing-site > header .marketing-nav-trigger[aria-expanded="true"] svg {transform:rotate(180deg)}
+.marketing-site > header nav a::after {display:none}
+.marketing-mcp-tag {font-size:9px;letter-spacing:.06em;border:1px solid var(--hairline);border-radius:4px;padding:2px 4px;margin-left:2px;color:var(--brand);line-height:1.3;font-weight:550}
+.marketing-mega-menu {position:absolute;left:50%;top:100%;transform:translateX(-50%);width:min(1010px,calc(100vw - 48px));max-height:calc(100dvh - 110px);overflow-y:auto;border:1px solid var(--hairline);border-radius:0 0 12px 12px;background:#fffefa;box-shadow:0 20px 50px #29221a1c;color:var(--text-primary)}
+.marketing-mega-menu[hidden] {display:none}
+.marketing-mega-heading {display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 28px;border-bottom:1px solid var(--hairline)}
+.marketing-mega-heading p {font-size:22px;letter-spacing:-.035em;font-weight:450;line-height:1.2}
+.marketing-mega-heading span {display:block;color:var(--text-muted);font-size:12px;margin-top:7px}
+.marketing-site > header .marketing-mega-heading>a {display:inline-flex;gap:12px;align-items:center;flex-shrink:0;font-size:12px;font-weight:500;color:var(--brand)}
+.marketing-mega-content {display:grid}
+.marketing-mega-content.has-aside {grid-template-columns:minmax(0,1fr) 270px}
+.marketing-mega-links {padding:16px;display:grid;gap:3px;align-content:start}
+.marketing-mega-links.two-columns {grid-template-columns:repeat(2,minmax(0,1fr))}
+.marketing-site > header .marketing-mega-link {display:flex;flex-direction:column;align-items:stretch;justify-content:center;min-height:48px;padding:10px 12px;border-radius:7px;font-size:13px;color:var(--text-primary);transition:background .16s}
+.marketing-site > header .marketing-mega-link:hover {background:var(--surface-2)}
+.marketing-mega-link small {color:var(--text-muted);font-size:11px;line-height:1.5;padding-left:36px;margin-top:3px;font-weight:400}
+.marketing-entry-content {font-weight:450;line-height:1.4}
+.marketing-entry-logo {width:28px;height:28px;object-fit:contain;flex-shrink:0}
+.marketing-new-badge {display:inline-flex;align-items:center;gap:4px;flex-shrink:0;border:1px solid #b991623d;background:#b991620d;color:#805126;padding:2px 6px;border-radius:5px;font-size:9px;font-weight:500;line-height:1.3;letter-spacing:0;text-transform:none}
+.marketing-new-badge::before {content:'';width:3px;height:3px;border-radius:50%;background:currentColor}
+.marketing-mega-aside {background:#f1eee7;padding:24px 20px;border-left:1px solid var(--hairline)}
+.marketing-menu-caption {font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;color:var(--text-muted)}
+.marketing-site > header .marketing-aside-link {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;min-height:38px;font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.marketing-aside-link:hover {color:var(--brand)!important}
+.marketing-menu-row {font-weight:450}
+.marketing-menu-subnav a {min-height:42px;align-content:center}
+.marketing-menu-subnav .marketing-entry-content {font-size:13px}
+.marketing-menu-settings {border-top:1px solid var(--hairline);padding-top:12px}
+@media(min-width:1024px) and (max-width:1199px){.marketing-desktop-nav{gap:14px;font-size:13px}.marketing-site > header .marketing-mcp-tag{display:none}}
+@media(prefers-reduced-motion:no-preference){.marketing-mega-menu:not([hidden]){animation:marketing-menu-in .16s ease-out}@keyframes marketing-menu-in{from{opacity:0;translate:0 -5px}to{opacity:1;translate:0 0}}}
+.marketing-site > .marketing-editorial-footer {padding-top:0;background:#eeebe5}
+.marketing-footer-assistants {display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:30px 0 34px;border-bottom:1px solid var(--hairline)}
+.marketing-footer-assistants h2 {font-size:clamp(24px,2.5vw,34px);line-height:1.15;margin:8px 0 12px;font-weight:450}
+.marketing-footer-assistants p:not(.marketing-menu-caption) {font-size:14px;line-height:1.7;max-width:58ch;color:var(--text-secondary)}
+.marketing-footer-assistants-access {display:flex;flex-direction:column;gap:22px;align-items:flex-start}
+.marketing-footer-assistants-links {display:flex;align-items:center;flex-wrap:wrap;gap:16px 24px}
+.marketing-footer-docs-link {font-size:12px;color:var(--text-secondary);min-height:36px;display:inline-flex;align-items:center}
+.marketing-footer-assistant-logos {display:flex;flex-wrap:wrap;gap:16px 22px}
+.marketing-footer-assistant-logos a {display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--text-primary)}
+.marketing-footer-assistant-logos img {width:24px;height:24px;object-fit:contain}
+.marketing-site > footer .marketing-footer-assistants-cta {display:inline-flex;align-items:center;gap:22px;border-bottom:1px solid var(--brand);padding-bottom:7px;font-size:14px;color:var(--brand);font-weight:500}
+.marketing-editorial-footer nav a {font-size:12px;font-weight:400}
+.marketing-editorial-footer .text-xs.font-semibold {font-size:10px;letter-spacing:.08em;font-weight:500}
+@media(max-width:700px){.marketing-footer-assistants{grid-template-columns:1fr;gap:24px;padding-block:10px 28px}.marketing-footer-assistant-logos{gap:12px 18px}.marketing-footer-assistants-access{gap:22px}.marketing-editorial-footer nav a{font-size:13px}}
+
+.marketing-entry-pair {display:inline-flex;align-items:center;flex-shrink:0;width:46px;gap:0}
+.marketing-entry-pair>span {display:flex;width:27px;height:30px;align-items:center;justify-content:center;background:#f1eee7;border:2px solid #fffefa;border-radius:7px}
+.marketing-entry-pair>span+span {margin-left:-7px;translate:0 4px}
+.marketing-mega-link:hover .marketing-entry-pair>span {border-color:var(--surface-2)}
+.marketing-entry-picto {background:#f1eee7;color:#806347}
+.marketing-aside-link .marketing-entry-content {gap:9px;font-size:12px}
+.marketing-aside-link .marketing-entry-picto {width:25px;height:25px;background:transparent}
+.marketing-aside-link .marketing-entry-picto svg {width:16px;height:16px}
+.marketing-mega-aside>div+div {margin-top:20px;padding-top:16px;border-top:1px solid var(--hairline)}
+/* At 320 px, sign-in stays available in the mobile drawer. */
+@media(max-width:360px){.marketing-site>header a[href^="/login"]{display:none}}

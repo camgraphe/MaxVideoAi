@@ -100,15 +100,13 @@
   "decision": {
     "modelSlug": "seedance-2-5",
     "hero": {
-      "eyebrow": "New · Up to 30 seconds · 1080p · Native audio",
+      "eyebrow": "From text, images or video",
       "title": "Seedance 2.5",
-      "subtitle": "Create 4–30-second videos from text, start and end images, multimodal references or source video, with output up to 1080p and optional generated audio.",
+      "subtitle": "Direct the scene. From first frame to last.",
       "subtitleHighlights": [
-        "4–30-second videos",
-        "multimodal references",
-        "optional generated audio"
+        "Direct the scene."
       ],
-      "paragraph": "Build from text, start and end frames, or multimodal references. You can also edit source video, extend clips and decide whether the final render includes generated audio.",
+      "paragraph": "Create videos from 4 to 30 seconds, up to 1080p. Start with text or images, guide the motion with references, and choose whether to generate sound.",
       "primaryCta": {
         "label": "Generate with Seedance 2.5",
         "href": "/app?engine=seedance-2-5"

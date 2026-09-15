@@ -1,0 +1,40 @@
+Create one exceptionally refined, realistic, production-quality art-direction board for the English master homepage of MaxVideoAI. This is ONE consolidated design, not alternative options. It combines the user's chosen elements from three attached reference images. Current date: 10 September 2026.
+
+REFERENCE ROLES:
+1. frame-shift.png: keep its breadth of actual creative uses (cinematic film, social vertical video, product/web advertising), confident composition and visual density. Do NOT keep the cobalt interface colour.
+2. from-the-source.png: keep its warm alabaster background, amber/copper photographic light, tactile material richness and editorial refinement. Do NOT turn the whole homepage into a beverage brand store, and do NOT copy its unsupported "Real results" claim.
+3. brand-reference.png: actual MaxVideoAI mark, product palette, bronze CTA and original model/assistant logos. Ground the interface in these exact product sources. This reference is a source sheet, not a layout to clone.
+
+CANVAS AND PRESENTATION:
+Landscape board requested at 2400 x 1800. A carefully composed large desktop homepage excerpt occupies the left approximately 70%, a properly RECOMPOSED narrow mobile excerpt occupies the right approximately 25%, separated by calm paper space. No phone hardware, browser frame, device shadows or UI mockup floating in a card. Small outside labels "DESKTOP" and "MOBILE". Make the website take most of the board. Desktop shows the refined hero, a readable compact comparison chapter, and a strong Connect chapter. Mobile shows hero and first supporting chapter in true mobile proportions. Three small carefully composed storyboard frames along the bottom show the SAME Connect project at three scroll positions. Tiny outside caption "Concept imagery · motion keyframes". This is one site design with its responsive and motion views.
+
+DESIGN SYSTEM:
+Warm light canvas #F3EFE7, app-related pale surfaces #EEEEE7 and #FAFAF4, deep green-black text #20271F, supporting sage ink #57634F, restrained bronze CTA #765020 with cream text #FFF9E8, hairlines #C4C9BB only where necessary. Distinctive rich colour comes from imagery, not random glowing interface gradients. Accurate exquisite typography: clean Geist-like sans for UI, tightly composed contemporary serif allowed sparingly in a headline. Maximum two fonts; no handwriting or third decorative type. Flat open composition, exceptionally intentional optical alignment and compact spacing. 8px control corners; no capsule overload, no giant shadows, double dividers, nested boxes, huge empty inter-section voids, glassmorphism, cheap 3D cubes or generic SaaS template. Readable text before decoration. The aesthetic is creative production, cinema, advertising, web and AI together, sophisticated rather than corporate stock.
+
+HERO:
+Real MaxVideoAI mark and name at left, understated navigation "Models", "Compare", "Examples", "Connect", "Pricing", "Sign in". Main headline exact: "AI video. Pay as you go."
+Supporting sentence exact: "From films to feeds and product pages. Choose a model, bring your references, and see the price before you generate."
+Primary bronze button "Create a video", quiet secondary "Explore examples".
+Express creative breadth with an art-directed montage: one wide cinematic coastal road shot with a small car at dusk, one vertical contemporary movement/dance shot with elegant warm directional light, and premium copper-orange over-ear headphones presented as a precise tactile product cutout or still-life. These are three useful frame shapes, not a collection of generic stock cards. Preserve cinematic depth and a calm readable headline. Small captions "Film", "Social", "Product". No model attribution on concept photos.
+On mobile DOCUMENT ORDER: headline, supporting copy, Create a video / Explore examples actions, then a large immediate visual poster. No Compare, assistant strip, ancillary links or badges before that mobile poster. Recompose images intelligently without horizontally shrinking desktop text.
+Below visual proof, a very clean row of actual brand marks from reference, labelled Kling, Seedance, MiniMax, Wan, LTX. It introduces model choice, not a sponsor endorsement. No invented model capabilities.
+
+COMPARE CHAPTER:
+Headline exact: "Choose with evidence."
+Model names "Kling 3 Pro" and "Seedance 2.5"; credible editorial scoreboard integrated into the open page, with highly readable rows and fine calibrated bars on a 0–10 scale.
+Only these exact values: "Prompt adherence" 8.6 / 9.1; "Visual quality" 8.4 / 9.2; "Motion realism" 8.4 / 9.2.
+Small caption "Editorial scores · 3 of 11 criteria", text link "Explore model comparisons".
+No fake live rankings, moving random scores, independent scientific benchmark claims, invented prices or pass-off of illustrative photographs as actual model outputs.
+At the frozen composition state all final scores are legible. On mobile keep labels and both numeric columns. This needs the refinement of a serious published comparison, not a toy infographic.
+
+CONNECT CHAPTER:
+Benefit-facing eyebrow "CONNECT"; headline exact: "Your project. Your assistant. Your video."
+Short copy "Bring your website and references into the conversation."
+Marks and names Claude, Codex, ChatGPT using source assets; MCP appears secondarily as "Powered by MCP".
+Create an elegant, legible, physically convincing staged composition: source website plus headphone reference photograph at left; a precise three-shot creative plan and "Review price" checkpoint at centre; a beautiful cinematic product film frame at right, all using the SAME copper-orange headphones. Carefully tilted planes with restrained depth, directionally consistent shadows and studio light, no random floating widgets or impossible objects. The source visibly persists into the final result, and references are visibly meaningful. This is a conceptual assistant workflow illustration, not a fake screenshot of shipping Studio software.
+Text action "Create with your assistant".
+Three bottom storyboard keyframes: "01 Bring references", "02 Plan & review price", "03 Create the shot". Maintain the exact same headphone design and identity through all three. Show meaningful progression: source fragments take focus, three shot compositions organise, one shot becomes the finished film with a vertical derivative alongside. No chopped raster puzzle strips; coherent independently layered objects. Viewers should understand what scroll would do without an animation.
+
+REALISM AND SCOPE:
+Pay-as-you-go and model comparison are established brand strengths; Connect/MCP and references are important new product benefits even without historical search data. Give all three commercial/product pillars clear hierarchy. Keep Angle and Studio out of this focused excerpt; other page sections exist in the accompanying blueprint. No unsupported claims: no "best model", no fake customer counts, no "real results", no invented price, no unlimited access, no guaranteed exact asset consistency or instant completion. No auto-publishing to social networks. No availability dates. Brand marks belong to their owners; render from attached reference as closely as possible, not decorative invented logos.
+Make this board feel like an exceptionally meticulous creative director's developed proposal: beautiful photographic material, precise rhythm, purposeful depth, credible data, clear product value, with every edge, label and alignment considered.

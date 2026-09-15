@@ -16,12 +16,14 @@ export function CompareRelatedSection({ compareCopy, locale, relatedLinks }: Com
 
   return (
     <section className="stack-gap-sm">
+      {relatedLinks.length ? <>
       <h2 className="text-2xl font-semibold text-text-primary">
         {compareCopy.related?.title ?? 'Related comparisons'}
       </h2>
       <p className="text-sm text-text-secondary">
         {compareCopy.related?.subtitle ?? 'Explore a few more popular side-by-side matchups.'}
       </p>
+      </> : null}
       {relatedLinks.length ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {relatedLinks.map((item) => (
           <Link

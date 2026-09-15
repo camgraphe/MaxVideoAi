@@ -95,6 +95,7 @@ export default function AppClientPage({
   });
   const handleRefreshJob = useWorkspaceJobRefresh();
   const videoSettings = useWorkspaceVideoSettings({
+    locale: app.uiLocale,
     ...routeForm,
     ...assetState,
     accountScope: draftOwner,

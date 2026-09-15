@@ -1,3 +1,5 @@
+import { CreativeWorlds } from '@/components/marketing/CreativeWorlds';
+import { normalizeAppLocale } from '@/i18n/locales';
 import Link from 'next/link';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
@@ -59,10 +61,10 @@ function resolveExamplesPricingCallout(selectedEngine: string | null, locale: Ap
       title: locale === 'fr' ? 'Tarifs Kling' : locale === 'es' ? 'Precios de Kling' : 'Kling pricing',
       body:
         locale === 'fr'
-          ? 'Comparez les prix Kling 3.0 Omni Standard, Pro et 4K avec les routes Kling 3 start-frame encore prises en charge.'
+          ? 'Comparez Kling 3 et Kling 3.0 Omni selon vos images de départ, la durée et la résolution souhaitées.'
           : locale === 'es'
-            ? 'Compara precios de Kling 3.0 Omni Standard, Pro y 4K con las rutas Kling 3 start-frame aún compatibles.'
-            : 'Compare Kling 3.0 Omni Standard, Pro and 4K pricing with the supported Kling 3 start-frame routes.',
+            ? 'Compara Kling 3 y Kling 3.0 Omni según tus imágenes de referencia, la duración y la resolución.'
+            : 'Compare Kling 3 and Kling 3.0 Omni prices for your source images, duration and resolution.',
     };
   }
   return null;
@@ -127,11 +129,10 @@ type ExamplesFaqSectionProps = {
 
 export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
   return (
-    <section className="halo-hero stack-gap-sm text-center sm:stack-gap-md">
+    <section className="examples-editorial-hero halo-hero stack-gap-sm text-center sm:stack-gap-md">
       <header className="mx-auto max-w-3xl stack-gap-sm text-center">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
-        <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle}</p>
-        <p className="mx-auto max-w-2xl text-sm leading-relaxed text-text-secondary/90">{heroLead}</p>
+        <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle || heroLead}</p>
       </header>
     </section>
   );
@@ -245,7 +246,11 @@ export function ExamplesGallerySection({
   show,
   sort,
 }: ExamplesGallerySectionProps) {
-  if (!show) return null;
+  // Keep a useful public selection when the unfiltered first page has no live entries.
+  // Never substitute unrelated films for a model filter or a later pagination page.
+  if (!show) return !engineFilter && initialOffset === 0
+    ? <CreativeWorlds locale={normalizeAppLocale(locale)} compact />
+    : null;
 
   return (
     <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">

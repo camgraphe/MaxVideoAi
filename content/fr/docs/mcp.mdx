@@ -1,8 +1,8 @@
 ---
-title: "Guide de l’app MaxVideoAI pour ChatGPT, du connecteur Claude et du MCP"
-description: "Connectez MaxVideoAI à ChatGPT, Claude ou Codex avec OAuth : modèles actuels, budget de film, références, prix exact, validation et galerie."
+title: "MaxVideoAI MCP : connecteurs, plugins et workflows"
+description: "Connectez MaxVideoAI à Claude, ChatGPT, Codex, OpenClaw ou n8n auto-hébergé : OAuth, devis exact, accord, références et récupération."
 date: "2026-07-14"
-updatedAt: "2026-08-28"
+updatedAt: "2026-09-15"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -14,28 +14,38 @@ keywords:
 slug: "mcp"
 ---
 
-MaxVideoAI relie un assistant IA aux mêmes modèles, crédits, références, jobs et médias privés que le site. ChatGPT, Claude ou Codex prépare le film ; MaxVideoAI fournit les capacités et prix actuels, valide la demande et ne génère qu’après votre accord sur le prix exact.
+MaxVideoAI relie les assistants et outils d’automatisation compatibles aux modèles, aux crédits et à la bibliothèque privée de votre compte MaxVideoAI. Comparez les modèles vidéo actuels, préparez un devis, autorisez la génération et retrouvez le résultat.
+
+## Choisir son intégration
+
+| Environnement | Connexion | À savoir |
+| --- | --- | --- |
+| [Connecteur Claude](/fr/integrations/claude) | Connecteur MCP distant personnalisé | Claude Desktop testé ; le parcours Claude Code est distinct et non vérifié. |
+| [App MCP ChatGPT](/fr/integrations/chatgpt) | Mode développeur | Les actions d’écriture du MCP complet nécessitent un espace Business, Enterprise ou Edu éligible. Pro est limité à la lecture et à la récupération. Aucune présence dans le répertoire public n’est revendiquée. |
+| [Plugin Codex](/fr/integrations/codex) | Plugin MaxVideoAI 0.3.3 ou MCP distant | Codex CLI testé. |
+| [Skill OpenClaw](/fr/integrations/openclaw) | MCP direct ou skill ClawHub publié | Testé avec limites ; import de références privées et affichage intégré par canal non vérifiés. |
+| [Workflow vidéo n8n](/fr/integrations/n8n) | MCP Client auto-hébergé, configuration manuelle | Testé sur 2.38.7 avec accord explicite. Aucun workflow publié dans le catalogue ni support n8n Cloud revendiqué. |
+
+Cursor, GitHub Copilot, Gemini CLI et Microsoft Copilot sont en préparation. Leurs pages de connexion MaxVideoAI ne sont pas publiées.
 
 ## Adresse du serveur MCP
-
-Utilisez cette ressource Streamable HTTP lorsqu’un client demande une adresse MCP manuelle :
 
 ```text
 https://api.maxvideoai.com/mcp
 ```
 
-N’ajoutez ni token, ni paramètre, ni mot de passe, ni clé API. Le client ouvre MaxVideoAI dans le navigateur pour la connexion et le consentement OAuth 2.1 avec `openid,email,profile`. MCP est le mécanisme technique ; MaxVideoAI est présenté comme une app pour ChatGPT, un connecteur pour Claude et un plugin pour Codex.
+Utilisez Streamable HTTP avec OAuth 2.1. Les permissions demandées sont `openid,email,profile`. N’ajoutez ni jeton, ni mot de passe, ni paramètre, ni clé API. Suivez le guide de votre client : il ouvre la connexion MaxVideoAI et le consentement OAuth dans le navigateur.
 
-## Connecter son compte
+## Autoriser son compte
 
-1. Choisissez MaxVideoAI dans ChatGPT ou Codex, ajoutez-le comme connecteur personnalisé dans Claude, ou saisissez manuellement l’adresse MCP distante.
-2. Connectez-vous ou créez votre compte MaxVideoAI dans le navigateur, puis confirmez votre e-mail si nécessaire.
-3. Vérifiez puis autorisez la connexion ; la connexion est gratuite et n’ajoute aucun abonnement.
-4. Revenez dans l’assistant et demandez-lui de vérifier votre compte MaxVideoAI.
+1. Configurez la connexion à l’aide du guide adapté ci-dessus.
+2. Connectez-vous à MaxVideoAI ou créez un compte, puis confirmez votre e-mail si demandé.
+3. Vérifiez l’autorisation, revenez dans le client et contrôlez le compte connecté.
+4. Vérifiez puis approuvez le devis exact avant toute génération payante.
 
-OAuth ne communique jamais votre mot de passe, vos données de paiement ou un accès à la base. Le site et l’assistant connecté partagent le même portefeuille utilisateur et la même bibliothèque MaxVideoAI privée.
+La connexion est gratuite et la préparation ne demande aucun abonnement MaxVideoAI. Les générations payantes utilisent le même solde de crédits MaxVideoAI que le site ; votre assistant peut imposer ses propres conditions d’abonnement. Pour vous déconnecter, retirez l’intégration du client et révoquez son autorisation dans MaxVideoAI.
 
-La compatibilité est vérifiée séparément pour chaque client. Claude Desktop `1.37937.1` a validé OAuth, compte, catalogue, budgets, devis exact, médias, récupération, envoi et recharge. Codex CLI `0.149.0-alpha.4.3` a validé OAuth, compte, catalogue, budgets, devis exact et recharge. ChatGPT desktop et Claude Code conservent leur propre contrôle final avant lancement.
+La compatibilité est vérifiée par hôte. Claude Desktop et Codex CLI ont des contrôles validés ; aucun contrôle complet n’est enregistré pour ChatGPT web et Claude Code. OpenClaw et MCP Client sur n8n auto-hébergé restent testés avec limites. Les guides précisent les dates et les restrictions.
 
 ## Ce que l’assistant doit faire
 

@@ -7,7 +7,7 @@ export const minimaxH3TemplateConfig: ModelPageTemplateConfig = {
     eyebrow: 'New · 5–15 seconds · Up to 4K · Native stereo audio',
     subtitleHighlightTerms: ['5–15-second videos', 'up to 4K', 'native stereo audio'],
     primaryCtaHref: '/app?engine=minimax-h3',
-    secondaryCtaHref: '/examples/minimax-h3',
+    secondaryCtaHref: '/examples/hailuo',
     quickLinks: [
       {
         labelKey: 'compareKlingO3Pro',

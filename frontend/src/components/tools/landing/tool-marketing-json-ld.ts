@@ -1,3 +1,6 @@
+import type { AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
+
 type ToolBreadcrumbCopy = {
   home: string;
   tools: string;
@@ -16,7 +19,9 @@ export function serializeJsonLd(data: object) {
 export function buildToolBreadcrumbJsonLd({
   breadcrumb,
   canonicalUrl,
+  locale = 'en',
 }: {
+  locale?: AppLocale;
   breadcrumb: ToolBreadcrumbCopy;
   canonicalUrl: string;
 }) {
@@ -28,13 +33,13 @@ export function buildToolBreadcrumbJsonLd({
         '@type': 'ListItem',
         position: 1,
         name: breadcrumb.home,
-        item: 'https://maxvideoai.com',
+        item: `https://maxvideoai.com${localizePathFromEnglish(locale, '/')}`,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: breadcrumb.tools,
-        item: 'https://maxvideoai.com/tools',
+        item: `https://maxvideoai.com${localizePathFromEnglish(locale, '/tools')}`,
       },
       {
         '@type': 'ListItem',

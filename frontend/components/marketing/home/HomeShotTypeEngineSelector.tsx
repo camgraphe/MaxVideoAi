@@ -46,7 +46,7 @@ export function ShotTypeEngineSelector({
   const topPicksLabel = copy.topPicksLabel ?? 'Top picks';
 
   return (
-    <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-20">
+    <section className="home-usecase-chapter dark-section-neon relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-20">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(17,24,39,0.08),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0)_48%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.035),transparent_40%),linear-gradient(180deg,rgba(3,7,18,0.95),rgba(3,7,18,0)_56%)]" />
       <div className="container-page relative max-w-[1360px] stack-gap-lg">
         <div className="mx-auto max-w-4xl text-center">

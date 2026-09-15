@@ -4,7 +4,6 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -134,17 +133,11 @@ export default async function AiVideoEnginesPage() {
   }));
 
   return (
-    <div className="bg-bg">
-      <section className="relative overflow-hidden border-b border-hairline bg-bg px-4 py-14 sm:px-8 sm:py-20">
-        <MarketingHeroImage
-          src="/assets/compare/compare-hero-reference-light.webp"
-          darkSrc="/assets/compare/compare-hero-reference-dark.webp"
-          className="opacity-55 dark:opacity-70"
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.58)_34%,rgba(247,249,253,0.14)_70%,rgba(247,249,253,0.02)_100%)] dark:bg-[radial-gradient(circle_at_50%_24%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
+    <div className="compare-editorial-page bg-bg">
+      <section className="compare-editorial-opening">
 
-        <div className="container-page relative z-10 mx-auto max-w-[1220px]">
-            <header className="mx-auto max-w-[760px] text-center">
+        <div className="container-page compare-opening-grid">
+            <header className="compare-opening-copy">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-text-muted">{copy.hero.eyebrow}</p>
               <h1 className="mt-3 text-4xl font-semibold leading-[1.04] text-text-primary sm:text-6xl">
                 {copy.hero.title}
@@ -174,7 +167,7 @@ export default async function AiVideoEnginesPage() {
               ) : null}
             </header>
 
-            <div className="mx-auto mt-8 max-w-[980px] stack-gap-sm">
+            <div className="compare-workbench stack-gap-sm">
               <CompareNowWidget
                 options={engineOptions}
                 defaultLeft="seedance-2-0"

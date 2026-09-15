@@ -1,18 +1,18 @@
 .page {
-  --angle-canvas: #fffaf1;
-  --angle-canvas-alt: #f3eee5;
-  --angle-hero-background: radial-gradient(circle at 82% 16%, rgb(68 125 255 / 10%), transparent 28rem), linear-gradient(135deg, #fffdf8 0%, #f6f0e6 54%, #fffaf1 100%);
-  --angle-surface: #fffdf8;
+  --angle-canvas: #f4f2ee;
+  --angle-canvas-alt: #eae7e1;
+  --angle-hero-background: var(--angle-canvas);
+  --angle-surface: #fffefa;
   --angle-surface-translucent: rgb(255 253 248 / 72%);
   --angle-surface-elevated: #ece5da;
-  --angle-surface-inset: #fffaf1;
+  --angle-surface-inset: #f4f2ee;
   --angle-media-matte: #e7dfd3;
   --angle-media-placeholder: #ded6cb;
   --angle-use-case-media-border: #d3c8ba;
   --angle-orbit-placeholder: #e8e0d4;
   --angle-proof-media-placeholder: #e8e0d4;
   --angle-proof-label: #766f67;
-  --angle-proof-output-border: #b9caff;
+  --angle-proof-output-border: #c3a579;
   --angle-proof-output-shadow: 0 30px 80px rgba(41,39,36,0.08);
   --angle-hero-border: rgb(188 178 164 / 72%);
   --angle-hero-breadcrumb: #716c65;
@@ -27,16 +27,16 @@
   --angle-text-muted: #6d675f;
   --angle-border: #d8d0c5;
   --angle-border-strong: #cfc5b8;
-  --angle-output-border: #aebfff;
-  --angle-accent: #1769ff;
-  --angle-accent-soft: #aebfff;
+  --angle-output-border: #c3a579;
+  --angle-accent: #805126;
+  --angle-accent-soft: #c3a579;
   --angle-shadow-soft: 0 28px 75px rgb(50 43 34 / 10%);
   --angle-shadow-elevated: 0 32px 90px rgb(50 43 34 / 12%);
   --angle-workspace-shell: #20232a;
   --angle-workspace-border: #3e4148;
   --angle-workspace-text: #d6d0c8;
   --angle-workspace-muted: #9fa3ad;
-  --angle-workspace-background: radial-gradient(circle at 86% 14%, rgb(23 105 255 / 8%), transparent 25rem), #ece5da;
+  --angle-workspace-background: var(--angle-surface-elevated);
   --angle-workspace-shadow: 0 38px 100px rgb(41 39 36 / 18%);
   --angle-workspace-window-border: #6a6d75;
   --angle-workspace-chrome-dot: #c4bcb1;
@@ -46,38 +46,38 @@
   --angle-benefit-border: #d8d0c5;
   --angle-related-border: #d8d0c5;
   --angle-final-section: #e9e1d5;
-  --angle-final-background: radial-gradient(circle at 20% 20%, rgb(83 130 255 / 24%), transparent 23rem), linear-gradient(135deg, #171a20 0%, #252833 55%, #111319 100%);
+  --angle-final-background: #1b1a18;
   --angle-final-border: #343743;
   --angle-final-copy: #d4d2d0;
   --angle-final-shadow: 0 34px 100px rgb(41 39 36 / 20%);
   --angle-final-orbit-node-border: #2a2d36;
   --angle-workflow-number: #777169;
-  --angle-workflow-soft-accent: #dce6ff;
+  --angle-workflow-soft-accent: #ede0ce;
   overflow: clip;
   color: var(--angle-text);
   background: var(--angle-canvas);
 }
 
 :global([data-theme='dark']) .page {
-  --angle-canvas: #050910;
+  --angle-canvas: #171614;
   --angle-canvas-alt: #0a1019;
-  --angle-hero-background: radial-gradient(circle at 82% 16%, rgb(77 124 255 / 18%), transparent 30rem), linear-gradient(135deg, #070c14 0%, #0b121d 54%, #050910 100%);
-  --angle-surface: #0f1722;
+  --angle-hero-background: var(--angle-canvas);
+  --angle-surface: #211f1c;
   --angle-surface-translucent: rgb(14 22 34 / 86%);
-  --angle-surface-elevated: #111b29;
-  --angle-surface-inset: #0c131e;
-  --angle-media-matte: #0b121c;
-  --angle-media-placeholder: #111c29;
-  --angle-use-case-media-border: rgb(174 191 255 / 22%);
-  --angle-orbit-placeholder: #111c29;
-  --angle-proof-media-placeholder: #111c29;
+  --angle-surface-elevated: #292622;
+  --angle-surface-inset: #25221f;
+  --angle-media-matte: #211f1c;
+  --angle-media-placeholder: #2b2723;
+  --angle-use-case-media-border: rgb(205 186 155 / 22%);
+  --angle-orbit-placeholder: #2b2723;
+  --angle-proof-media-placeholder: #2b2723;
   --angle-proof-label: #909baa;
-  --angle-proof-output-border: rgb(112 153 255 / 60%);
+  --angle-proof-output-border: rgb(201 163 106 / 60%);
   --angle-proof-output-shadow: 0 30px 80px rgb(0 0 0 / 36%), inset 0 1px 0 rgb(255 255 255 / 4%);
   --angle-hero-border: rgb(38 56 77 / 88%);
   --angle-hero-breadcrumb: #909baa;
   --angle-hero-breadcrumb-current: #c2c9d3;
-  --angle-hero-support-border: rgb(174 191 255 / 24%);
+  --angle-hero-support-border: rgb(205 186 155 / 24%);
   --angle-hero-support-copy: #a7b1bf;
   --angle-controls-text: #a7b1bf;
   --angle-button-border: #26384d;
@@ -85,32 +85,32 @@
   --angle-text: #f4f1ea;
   --angle-text-secondary: #c2c9d3;
   --angle-text-muted: #909baa;
-  --angle-border: rgb(174 191 255 / 14%);
-  --angle-border-strong: rgb(174 191 255 / 22%);
-  --angle-output-border: rgb(112 153 255 / 60%);
-  --angle-accent: #7da2ff;
-  --angle-accent-soft: #aebfff;
+  --angle-border: rgb(205 186 155 / 14%);
+  --angle-border-strong: rgb(205 186 155 / 22%);
+  --angle-output-border: rgb(201 163 106 / 60%);
+  --angle-accent: #dab17b;
+  --angle-accent-soft: #c3a579;
   --angle-shadow-soft: 0 28px 75px rgb(0 0 0 / 30%);
   --angle-shadow-elevated: 0 32px 90px rgb(0 0 0 / 44%), inset 0 1px 0 rgb(255 255 255 / 4%);
-  --angle-workspace-shell: #070b12;
-  --angle-workspace-border: rgb(174 191 255 / 20%);
+  --angle-workspace-shell: #1b1a18;
+  --angle-workspace-border: rgb(205 186 155 / 20%);
   --angle-workspace-text: #dde4ee;
   --angle-workspace-muted: #8e99a8;
-  --angle-workspace-background: radial-gradient(circle at 86% 14%, rgb(23 105 255 / 10%), transparent 25rem), var(--angle-surface-elevated);
+  --angle-workspace-background: var(--angle-surface-elevated);
   --angle-workspace-shadow: 0 38px 100px rgb(0 0 0 / 44%), inset 0 1px 0 rgb(255 255 255 / 4%);
-  --angle-workspace-window-border: rgb(174 191 255 / 20%);
+  --angle-workspace-window-border: rgb(205 186 155 / 20%);
   --angle-workspace-chrome-dot: #909baa;
   --angle-workspace-window-muted: #909baa;
-  --angle-workspace-placeholder: #111c29;
+  --angle-workspace-placeholder: #2b2723;
   --angle-limits-text: #d0d6df;
-  --angle-benefit-border: rgb(174 191 255 / 14%);
-  --angle-related-border: rgb(174 191 255 / 14%);
+  --angle-benefit-border: rgb(205 186 155 / 14%);
+  --angle-related-border: rgb(205 186 155 / 14%);
   --angle-final-section: #060a11;
-  --angle-final-background: radial-gradient(circle at 20% 20%, rgb(83 130 255 / 28%), transparent 23rem), linear-gradient(135deg, #080d16 0%, #111a29 55%, #05080e 100%);
-  --angle-final-border: rgb(174 191 255 / 22%);
+  --angle-final-background: #1b1a18;
+  --angle-final-border: rgb(205 186 155 / 22%);
   --angle-final-copy: #cbd3df;
   --angle-final-shadow: 0 34px 100px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 4%);
-  --angle-final-orbit-node-border: #070b12;
+  --angle-final-orbit-node-border: #1b1a18;
   --angle-workflow-number: #909baa;
   --angle-workflow-soft-accent: #20345f;
 }
@@ -133,7 +133,7 @@
 
 .heroSupport { color: var(--angle-hero-support-copy); border-left-color: var(--angle-hero-support-border); }
 
-.heroStage { position: relative; min-width: 0; padding: clamp(0.65rem, 1.6vw, 1.15rem); background: var(--angle-surface-translucent); border: 1px solid; border-color: var(--angle-hero-border); border-radius: clamp(1.5rem, 4vw, 2.75rem); box-shadow: var(--angle-shadow-elevated); transition: transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+.heroStage { position: relative; min-width: 0; padding: clamp(0.65rem, 1.6vw, 1.15rem); background: var(--angle-surface-translucent); border: 1px solid; border-color: var(--angle-hero-border); border-radius: 8px; box-shadow: var(--angle-shadow-elevated); transition: transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1); }
 
 .heroStage:hover { transform: translateY(-3px); }
 
@@ -272,7 +272,7 @@
 
 .workspaceSection { background: var(--angle-workspace-background); }
 
-.workspaceFrame { margin-top: clamp(2.5rem, 5vw, 4.5rem); overflow: hidden; padding: clamp(0.6rem, 1.7vw, 1.25rem); background: var(--angle-workspace-shell); border: 1px solid; border-color: var(--angle-workspace-border); border-radius: clamp(1.5rem, 4vw, 2.75rem); box-shadow: var(--angle-workspace-shadow); }
+.workspaceFrame { margin-top: clamp(2.5rem, 5vw, 4.5rem); overflow: hidden; padding: clamp(0.6rem, 1.7vw, 1.25rem); background: var(--angle-workspace-shell); border: 1px solid; border-color: var(--angle-workspace-border); border-radius: 8px; box-shadow: var(--angle-workspace-shadow); }
 
 .workspaceTopline { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.35rem 0.4rem 1rem; color: var(--angle-workspace-text); font-size: 0.6875rem; font-weight: 650; line-height: 1.5; letter-spacing: 0.14em; text-transform: uppercase; }
 
@@ -280,7 +280,7 @@
 
 .workspaceTopline span:last-child { color: var(--angle-workspace-muted); text-align: right; }
 
-.workspaceWindow { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; overflow: hidden; background: var(--angle-surface); border: 1px solid; border-color: var(--angle-workspace-window-border); border-radius: clamp(1rem, 3vw, 2rem); }
+.workspaceWindow { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; overflow: hidden; background: var(--angle-surface); border: 1px solid; border-color: var(--angle-workspace-window-border); border-radius: 6px; }
 
 .workspaceChrome { display: flex; gap: 0.38rem; padding: 0.8rem 0.25rem 0.8rem 1rem; }
 
@@ -369,15 +369,15 @@
 
 .finalActions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 2rem; }
 
-.finalOrbit { position: absolute; right: clamp(-8rem, -4vw, -2rem); width: min(43vw, 32rem); aspect-ratio: 1; border: 1px solid rgb(174 191 255 / 18%); border-radius: 50%; transform: rotate(-18deg); }
+.finalOrbit { position: absolute; right: clamp(-8rem, -4vw, -2rem); width: min(43vw, 32rem); aspect-ratio: 1; border: 1px solid rgb(205 186 155 / 18%); border-radius: 50%; transform: rotate(-18deg); }
 
 .finalOrbit::before,
 .finalOrbit::after { position: absolute; content: ''; border: 1px solid rgb(255 255 255 / 12%); border-radius: 50%; inset: 13%; }
 
-.finalOrbit::after { inset: 29%; border-color: rgb(174 191 255 / 22%); }
+.finalOrbit::after { inset: 29%; border-color: rgb(205 186 155 / 22%); }
 
 .finalOrbit span,
-.finalOrbit i { position: absolute; width: 0.7rem; height: 0.7rem; background: var(--angle-accent-soft); border: 3px solid; border-color: var(--angle-final-orbit-node-border); border-radius: 50%; box-sizing: content-box; box-shadow: 0 0 28px rgb(174 191 255 / 72%); }
+.finalOrbit i { position: absolute; width: 0.7rem; height: 0.7rem; background: var(--angle-accent-soft); border: 3px solid; border-color: var(--angle-final-orbit-node-border); border-radius: 50%; box-sizing: content-box; box-shadow: 0 0 28px rgb(205 186 155 / 72%); }
 
 .finalOrbit span:first-child { top: 8%; left: 48%; }
 

@@ -2,6 +2,24 @@
 
 Read this guide when changing image/video presentation, poster URLs, generated media, thumbnail repairs, or public model examples. Keep model identity in `frontend/config/model-registry.json`; media delivery is not another model registry.
 
+## Portrait backdrops on examples pages
+
+`ExamplesMainVideoFeature` keeps its blurred portrait backdrop on the same responsive
+Next Image source as `ExamplesHeroVideo`. Both use `EXAMPLES_HERO_POSTER_SIZES` from
+`components/examples/hero-poster.ts`; only the foreground poster has high priority.
+The backdrop must not request the original through a CSS `background-image`: that
+extra request was the LCP bottleneck in the D91 mobile production-build fixture.
+The original video/source identity, main poster geometry and manual mobile playback
+remain unchanged. Verify matching `currentSrc` and one network transfer for both
+images when changing either side; `tests/examples-acquisition-journey.test.ts`
+covers the server-rendered URL selection contract.
+
+## Comparison detail galleries
+
+Comparison detail pages load optional public `examples-<modelSlug>` playlists through the route-local `compare-gallery-loader.ts`. `compare-gallery-data.ts` rechecks exact normalized model identity, public visibility, usable poster/original URLs, deduplication and the three-item limit. Prelaunch models skip media lookup; missing media must not break the page or substitute a sibling model. The historical same-prompt showdown configuration remains separate and is not used by this template.
+
+`CompareGalleryCard.client.tsx` owns intent and visibility only, delegating incidental muted previews to `useExampleCardPlayback`. Preserve responsive lazy covers, the configured image quality and fixed geometry. Ordinary activation opens `CompareVideoDialog.client.tsx`, loaded on demand; modified clicks and the underlying HTML link retain the watch-page URL. The modal delegates focus, Escape and restoration to `useAccessibleModal` and full playback to `PublicVideoPlayer`, with original fidelity and `preload="none"`. No automatic playback of all gallery items. Show independent-example labeling; do not imply identical prompts or controlled test conditions.
+
 ## Existing ownership
 
 Homepage mobile composition puts the main video before the comparison and assistant
@@ -9,8 +27,19 @@ links. When its thumbnail strip becomes visible, the first thumbnail reuses
 `HOME_LCP_MOBILE_DELIVERY_SRC`, already loaded by the critical poster; do not request
 the larger desktop asset for that mobile thumbnail. Its observer, lazy scheduling,
 fixed geometry and exact original/derivative playback policy remain independent.
-`HomeHeroSecondaryLinks` owns the comparison/assistant destinations after the player
-in mobile document order; keep those secondary actions outside the main intro.
+`HomeHeroSecondaryLinks` owns comparison and guarantees after the player in mobile
+document order; assistant access lives in the following app section. Keep secondary
+actions outside the main intro.
+
+Automatic hero transitions retain the previous decoded frame on a local canvas (at most 1280 px wide) until the new video presents a frame. The canvas is never exported or read back, and no next-video prefetch is added. Explicit selection and terminal failure restore the ordinary poster path. Keep current-node/generation guards around frame callbacks.
+
+`useHeroVideoPlayback` advances the selected model on the current video’s natural
+`ended` event and wraps after the last playable item. Do not add native `loop` or a
+timer: the selected model, price and links must follow the playing source. Automatic
+transitions preserve the sound preference, respect user pause and visibility, and
+load only the next selected source through the shared playback policy. Initial
+mobile/reduced-motion/data-saving playback remains manual; desktop initial playback
+retains visible idle scheduling. Late end events from replaced videos are ignored.
 
 The critical homepage poster's authored identity and geometry stay in
 `home-lcp-image.ts`. `pnpm --prefix frontend media:home-posters:prepare` copies those
@@ -235,3 +264,14 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 - Production build and browser smoke for changed public surfaces; explicit before/after performance evidence for initial-load changes.
 - Supported browser checks for media behavior, including Safari/iOS before broad rollout; record any untested environment rather than claiming coverage.
 - Documentation describes shipped code without treating incomplete browser, device or field-performance validation as finished.
+
+### Model editorial hero framing (redesign D81)
+
+The redesign's `ModelDecisionMediaCard` declares `data-media-kind` from the resolved playable source. `frontend/src/styles/marketing-models.css` crops video and its poster together with `object-fit: cover` inside the existing 2.15 desktop / 16:9 mobile frame, following the explicit design review. The full-render link preserves access to the uncropped original. Image-only heroes use a 16:9 frame and `contain` so typography and composition are not cut off. This is presentation only: keep `ModelHeroMedia`, priority, source identity and public playback policy unchanged. Do not claim loading gains from a crop or a shorter introduction; compare equivalent production builds before shipping changes to initial media loading.
+
+
+### Tools illustrations and workspace captures (redesign D84)
+
+`src/components/tools/toolbox-art.ts` owns the shared curated illustrations used by `ToolboxScene`, the marketing hub and tool cards. Empty app states keep their Illustration label. Character Builder’s generated fictional portrait and eight-view sheet are illustrations, not recorded app outputs; real workflow demos retain their existing sources and manual playback.
+
+`src/components/tools/landing/tool-workspace-assets.ts` owns versioned WebP captures of the current local tool UI. Capture the actual interface, preserve visible settings, state the locale and visitor/authenticated context, and do not fabricate outputs. Replace captures with new versioned files after UI changes. `ToolWorkspacePreview` preserves intrinsic geometry and lazy loading with a full-size link. Angle keeps its route-local frame; its interactive orbit assets and responsive preparation policy remain separate. New direct WebP captures are bounded below 150 KB; validate loading and production-build performance before rollout, without inferring CWV improvements from byte size alone.

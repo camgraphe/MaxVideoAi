@@ -1,3 +1,5 @@
+import { ChevronDown, Timer, Monitor, AudioLines, Ratio } from 'lucide-react';
+import { getCompareEditorialCopy, getCompareDetailActions } from '../_lib/compare-editorial-copy';
 import clsx from 'clsx';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
@@ -6,6 +8,7 @@ import type { ComparePageOverride } from '../_lib/compare-page-overrides';
 import type { CompareSpecRow } from '../_lib/compare-page-spec-rows';
 import {
   formatEngineName,
+  localizeSpecDetailValue,
   stripAudioReferencesForSilentPair,
 } from '../_lib/compare-page-helpers';
 import type { EngineCatalogEntry } from '../_lib/compare-page-types';
@@ -32,10 +35,20 @@ export function CompareSpecsSection({
   right,
   specRows,
 }: CompareSpecsSectionProps) {
+  const editorialCopy = getCompareEditorialCopy(activeLocale);
+  const actions = getCompareDetailActions(activeLocale);
+  const previewRows = [
+    { key: 'maxDuration', fallback: 'Max duration', Icon: Timer },
+    { key: 'maxResolution', fallback: 'Max resolution', Icon: Monitor },
+    pairHasNativeAudio ? { key: 'audioOutput', fallback: 'Audio output', Icon: AudioLines } : { key: 'aspectRatios', fallback: 'Aspect ratios', Icon: Ratio },
+  ].flatMap(({ key, fallback, Icon }) => {
+    const row = specRows.find(item => item.label === (compareCopy.specLabels?.[key] ?? fallback));
+    return row ? [{ row, Icon }] : [];
+  });
   return (
-    <section className="mt-4 rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
+    <section id="specs" className="compare-spec-panel">
       <h2 className="text-center text-2xl font-semibold text-text-primary">
-        {compareCopy.keySpecs?.title ?? 'Key Specs (Side-by-Side)'}
+        {editorialCopy.specs}
       </h2>
       <p className="mt-2 text-center text-sm text-text-secondary">
         {stripAudioReferencesForSilentPair(
@@ -45,6 +58,23 @@ export function CompareSpecsSection({
         )}
       </p>
 
+      <div className="compare-spec-preview">
+        {previewRows.map(({ row, Icon }) => <article key={row.label}>
+          <h3><Icon size={20} aria-hidden="true" />{row.label}</h3>
+          <dl>{[{ entry: left, value: row.left }, { entry: right, value: row.right }].map(({ entry, value }) => <div key={entry.modelSlug}>
+            <dt>{formatEngineName(entry)}</dt><dd>{localizeSpecDetailValue(value, activeLocale, { pending: labels.pending, supported: labels.supported, notSupported: labels.notSupported })}</dd>
+          </div>)}</dl>
+        </article>)}
+      </div>
+      <details className="compare-spec-details">
+        <summary className="compare-disclosure-trigger">
+          <span className="compare-disclosure-copy">
+            <strong className="compare-when-closed">{actions.allSpecs.replace('{count}', String(specRows.length))}</strong>
+            <strong className="compare-when-open">{actions.closeSpecs}</strong>
+            <small>{actions.specHint}</small>
+          </span>
+          <span className="compare-disclosure-arrow"><ChevronDown size={22} aria-hidden="true" /></span>
+        </summary>
       <div className="mt-4 rounded-card border border-hairline bg-surface shadow-card">
         <div className="grid grid-cols-[minmax(90px,1fr)_minmax(80px,0.8fr)_minmax(90px,1fr)] gap-2 border-b border-hairline px-3 py-3 text-[10px] font-semibold uppercase tracking-micro text-text-muted min-[840px]:grid-cols-[minmax(200px,2fr)_minmax(220px,1fr)_minmax(200px,2fr)] min-[840px]:gap-4 min-[840px]:px-6 min-[840px]:py-4 min-[840px]:text-xs">
           <span className="text-left">{formatEngineName(left)}</span>
@@ -96,20 +126,7 @@ export function CompareSpecsSection({
         </p>
       ) : null}
 
-      {pageOverride?.topCards?.length ? (
-        <section className="mt-6 rounded-[24px] border border-hairline bg-surface-2/70 p-4 shadow-sm sm:p-5">
-          <div className="grid gap-3 md:grid-cols-2">
-            {pageOverride.topCards.map((card) => (
-              <article key={card.title} className="rounded-[18px] border border-hairline bg-surface/90 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                  {card.title}
-                </p>
-                <p className="mt-1.5 text-sm leading-6 text-text-secondary">{card.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      </details>
 
       {pageOverride?.primaryLinks?.length ? (
         <section className="mt-4 rounded-[24px] border border-hairline bg-surface/90 px-4 py-4 shadow-sm sm:px-5">

@@ -9,17 +9,20 @@ import type { ComparePageOverride } from '../_lib/compare-page-overrides';
 import type { RelatedComparisonLink } from '../_lib/compare-page-related-links';
 import type { CompareMetric, CompareSummaryRow } from '../_lib/compare-page-scorecard';
 import type { CompareSpecRow } from '../_lib/compare-page-spec-rows';
-import type { ComparePricingDisplay, CompareShowdownSlot, EngineCatalogEntry } from '../_lib/compare-page-types';
+import type { ComparePricingDisplay, EngineCatalogEntry } from '../_lib/compare-page-types';
 import { CompareDetailHero } from './CompareDetailHero';
 import { CompareEngineHeroCards } from './CompareEngineHeroCards';
 import { CompareFaqSection } from './CompareFaqSection';
 import { ComparePricingQuickSection } from './ComparePricingQuickSection';
 import { CompareRelatedSection } from './CompareRelatedSection';
 import { CompareScorecardSection } from './CompareScorecardSection';
-import { CompareShowdownSection } from './CompareShowdownSection';
+import { CompareModelGalleries } from './CompareModelGalleries';
+import type { CompareGalleryVideo } from '../_lib/compare-gallery-data';
 import { CompareSpecsSection } from './CompareSpecsSection';
 
 type CompareDetailContentProps = {
+  galleries: { left: CompareGalleryVideo[]; right: CompareGalleryVideo[] };
+  returnPath: string;
   activeLocale: AppLocale;
   breadcrumbJsonLd: unknown;
   compareCopy: ComparePageCopy;
@@ -27,7 +30,6 @@ type CompareDetailContentProps = {
   comparisonMetrics: CompareMetric[];
   criteriaCount: number;
   engineScoresBySlug: Record<string, number>;
-  exposeSourcePrompt: boolean;
   faqItems: CompareFaqItem[];
   faqJsonLd: unknown;
   generateWithLabel: string;
@@ -36,11 +38,9 @@ type CompareDetailContentProps = {
   left: EngineCatalogEntry;
   leftAccent: EngineAccent;
   leftCanGenerate: boolean;
-  leftIsPrelaunch: boolean;
   leftOverall: number | null;
   leftPricingDisplay: ComparePricingDisplay;
   leftScoreStyle: CSSProperties;
-  localizedPromptNote: string;
   pageOverride?: ComparePageOverride | null;
   pairHasNativeAudio: boolean;
   prelaunchNotice: { title: string; body: string } | null;
@@ -50,17 +50,11 @@ type CompareDetailContentProps = {
   right: EngineCatalogEntry;
   rightAccent: EngineAccent;
   rightCanGenerate: boolean;
-  rightIsPrelaunch: boolean;
   rightOverall: number | null;
   rightPricingDisplay: ComparePricingDisplay;
   rightScoreStyle: CSSProperties;
   scorecardCriteriaLabel: string;
   scorecardProvisionalNote: string | null;
-  showdownActionHint: string;
-  showdownActionLabel: string;
-  showdownSlots: CompareShowdownSlot[];
-  showdownSubtitle: string;
-  slug: string;
   specRows: CompareSpecRow[];
   summaryRows: CompareSummaryRow[];
   webPageJsonLd: unknown;
@@ -68,6 +62,7 @@ type CompareDetailContentProps = {
 };
 
 export function CompareDetailContent({
+  galleries, returnPath,
   activeLocale,
   breadcrumbJsonLd,
   compareCopy,
@@ -75,7 +70,6 @@ export function CompareDetailContent({
   comparisonMetrics,
   criteriaCount,
   engineScoresBySlug,
-  exposeSourcePrompt,
   faqItems,
   faqJsonLd,
   generateWithLabel,
@@ -84,11 +78,9 @@ export function CompareDetailContent({
   left,
   leftAccent,
   leftCanGenerate,
-  leftIsPrelaunch,
   leftOverall,
   leftPricingDisplay,
   leftScoreStyle,
-  localizedPromptNote,
   pageOverride,
   pairHasNativeAudio,
   prelaunchNotice,
@@ -98,37 +90,22 @@ export function CompareDetailContent({
   right,
   rightAccent,
   rightCanGenerate,
-  rightIsPrelaunch,
   rightOverall,
   rightPricingDisplay,
   rightScoreStyle,
   scorecardCriteriaLabel,
   scorecardProvisionalNote,
-  showdownActionHint,
-  showdownActionLabel,
-  showdownSlots,
-  showdownSubtitle,
-  slug,
   specRows,
   summaryRows,
   webPageJsonLd,
   winnerSummaryHeading,
 }: CompareDetailContentProps) {
   return (
-    <div className="relative isolate overflow-hidden">
-      <div
-        className="pointer-events-none absolute right-0 top-24 -z-10 h-[760px] w-[46vw] opacity-70 dark:opacity-30"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at center, color-mix(in srgb, var(--brand) 30%, transparent) 1px, transparent 1px)',
-          backgroundSize: '16px 16px',
-          maskImage: 'linear-gradient(90deg, transparent, black 24%, black 74%, transparent)',
-        }}
-        aria-hidden
-      />
-      <div className="container-page max-w-[1040px] section">
+    <div className="compare-editorial relative isolate">
+      <div className="container-page max-w-[1280px] section">
         <div className="space-y-4 sm:space-y-5">
           <CompareDetailHero
+            activeLocale={activeLocale}
             compareCopy={compareCopy}
             compareHubHref={compareHubHref}
             heroIntroTemplate={heroIntroTemplate}
@@ -152,14 +129,8 @@ export function CompareDetailContent({
             rightScoreStyle={rightScoreStyle}
           />
 
+          <CompareModelGalleries locale={activeLocale} left={left} right={right} galleries={galleries} returnPath={returnPath} />
           <section className="mx-auto max-w-[940px]">
-            <ComparePricingQuickSection
-              activeLocale={activeLocale}
-              left={left}
-              leftPricingDisplay={leftPricingDisplay}
-              right={right}
-              rightPricingDisplay={rightPricingDisplay}
-            />
             <CompareScorecardSection
               activeLocale={activeLocale}
               compareCopy={compareCopy}
@@ -178,6 +149,13 @@ export function CompareDetailContent({
               summaryRows={summaryRows}
               winnerSummaryHeading={winnerSummaryHeading}
             />
+            <ComparePricingQuickSection
+              activeLocale={activeLocale}
+              left={left}
+              leftPricingDisplay={leftPricingDisplay}
+              right={right}
+              rightPricingDisplay={rightPricingDisplay}
+            />
             <CompareSpecsSection
               activeLocale={activeLocale}
               compareCopy={compareCopy}
@@ -189,24 +167,9 @@ export function CompareDetailContent({
               specRows={specRows}
             />
           </section>
-          <CompareShowdownSection
-            activeLocale={activeLocale}
-            compareCopy={compareCopy}
-            exposeSourcePrompt={exposeSourcePrompt}
-            labels={labels}
-            left={left}
-            leftIsPrelaunch={leftIsPrelaunch}
-            localizedPromptNote={localizedPromptNote}
-            right={right}
-            rightIsPrelaunch={rightIsPrelaunch}
-            showdownActionHint={showdownActionHint}
-            showdownActionLabel={showdownActionLabel}
-            showdownSlots={showdownSlots}
-            showdownSubtitle={showdownSubtitle}
-            slug={slug}
-          />
           <CompareRelatedSection compareCopy={compareCopy} locale={activeLocale} relatedLinks={relatedLinks} />
           <CompareFaqSection
+            activeLocale={activeLocale}
             breadcrumbJsonLd={breadcrumbJsonLd}
             compareCopy={compareCopy}
             faqItems={faqItems}

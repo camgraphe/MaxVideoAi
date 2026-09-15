@@ -37,7 +37,7 @@ const priorityComparisonModels = {
 
 const expectedLaunchCopy = {
   en: {
-    badge: 'New · Up to 30 seconds · 1080p · Native audio',
+    badge: 'From text, images or video',
     primaryCta: 'Generate with Seedance 2.5',
     secondaryCta: 'View Seedance examples',
     compareCta: 'Compare with Seedance 2.0',
@@ -46,7 +46,7 @@ const expectedLaunchCopy = {
     pricingHref: '/pricing#seedance-2-5-pricing',
   },
   fr: {
-    badge: 'Nouveau · Jusqu’à 30 secondes · 1080p · Audio natif',
+    badge: 'À partir de texte, d’images ou de vidéos',
     primaryCta: 'Générer avec Seedance 2.5',
     secondaryCta: 'Voir les exemples Seedance',
     compareCta: 'Comparer avec Seedance 2.0',
@@ -55,7 +55,7 @@ const expectedLaunchCopy = {
     pricingHref: '/fr/tarifs#seedance-2-5-pricing',
   },
   es: {
-    badge: 'Nuevo · Hasta 30 segundos · 1080p · Audio nativo',
+    badge: 'A partir de texto, imágenes o videos',
     primaryCta: 'Generar con Seedance 2.5',
     secondaryCta: 'Ver ejemplos de Seedance',
     compareCta: 'Comparar con Seedance 2.0',
@@ -212,7 +212,7 @@ test('Seedance 2.5 localized marketing content converts in EN, FR, and ES withou
     });
     assert.equal(decision.modelSlug, slug);
     assert.equal(decision.hero.eyebrow, launchCopy.badge);
-    assert.match(decision.hero.subtitle, /1080p/i);
+    assert.match(JSON.stringify(decision.features), /1080p/i);
     assert.match(decision.features[0]?.body ?? '', /1080p/i);
     assert.doesNotMatch(
       decision.hero.subtitle,

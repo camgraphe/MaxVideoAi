@@ -117,9 +117,9 @@ export function ModelHeroSection({
               <span className="font-semibold text-text-muted">{breadcrumbModelLabel}</span>
             </nav>
 
-            <section className={`${FULL_BLEED_SECTION} ${HERO_BG} stack-gap rounded-3xl bg-surface/80 p-6 sm:p-8`}>
-              <div className="stack-gap-lg">
-            <div className="stack-gap-sm text-center">
+            <section className={`model-editorial-hero ${FULL_BLEED_SECTION} ${HERO_BG} stack-gap rounded-3xl bg-surface/80 p-6 sm:p-8`}>
+              <div className="model-opening-content stack-gap-lg">
+            <div className="model-opening-copy stack-gap-sm">
               {heroEyebrow ? (
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
                   {heroEyebrow}
@@ -176,7 +176,7 @@ export function ModelHeroSection({
                 <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p>
               ) : null}
             </div>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="model-opening-actions flex flex-wrap gap-4">
               {resolvedPrimaryCta ? (
                 <ButtonLink
                   href={normalizedPrimaryCtaHref}
@@ -236,7 +236,7 @@ export function ModelHeroSection({
                 </ol>
               </section>
             ) : null}
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <div className="model-opening-proof grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
               <div className="flex justify-center">
                 <div className="w-full max-w-5xl">
                   <MediaPreview

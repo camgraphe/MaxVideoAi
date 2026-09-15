@@ -217,3 +217,31 @@ Use tighter caps once a route has been split:
 - route views: usually below 250-450 lines
 - focused section components: usually below 150-250 lines
 - large helper modules: allowed when they are pure and covered by contract tests, but still split when responsibilities diverge
+
+## Marketing and workspace appearance
+
+The marketing layout imports `marketing-navigation.css`; public pages keep their fixed art direction and do not expose a theme toggle. `MarketingNav` clears the root dark attribute when entering a public marketing route. The static `theme-bootstrap.ts` script in the root layout resolves the first paint without cookies or personalized server rendering. `AppExperienceRoot` re-applies and subscribes to the app preference on app routes using `app-experience-path.ts`.
+
+`useThemePreference` owns `mv-app-theme`, defaulting to dark; an explicit light or system choice remains supported in app controls. The historical shared `mv-theme` key is intentionally left untouched and not imported. Keep the bootstrap and hook defaults aligned, including blocked storage. `tests/marketing-theme-boundary.test.ts` and `tests/theme-preference.test.ts` cover that boundary. Marketing page visits must not overwrite the workspace preference.
+
+## Sitemap discovery and dates
+
+Runtime sitemap ownership stays in `frontend/lib/sitemapData.ts` and its helpers
+under `frontend/lib/sitemap/`. Development discovers the source routes directly:
+Next.js's incremental development manifest only contains routes already compiled
+and cannot establish complete coverage. Production uses the complete build
+manifest, with the existing source fallback when no manifest is available.
+
+Locale and model sitemap entries in the sitemap index use the latest of their
+manual timestamp and child dates. A historical launch timestamp must never mask
+newer content. Video sitemap availability and dates still require the existing
+eligible public-video source; do not substitute empty successful sitemaps when
+the database is unavailable. These contracts are covered by
+`tests/sitemap-preview-index.test.ts` and `tests/sitemap-index-dates.test.ts`.
+
+
+## Public example acquisition
+
+`ExamplesMainVideoFeature` offers an explicit workspace continuation (`/app?from=<public video id>`) beside the watch/details link. The linked model name remains the model entry point. Keep the card media lifecycle unchanged and do not prefetch the workspace from public galleries. `example-reuse-copy.ts` describes available settings, user references and the next quote; it must not promise an exact clone. Full family copy remains in the server-rendered disclosure when the hero is condensed. CTA analytics uses the existing bridge and bounded labels, not prompts or video identifiers.
+
+`useWorkspaceVideoSettings` owns failed shared-example loading notices, including locale and stale/account guards. The public video GET enforces visibility before returning data: public shares remain available independently of search indexability; private videos require their owner. Keep its no-store response, original payload boundary and identical missing/unauthorized 404. `tests/examples-acquisition-journey.test.ts`, `tests/workspace-shared-video-load-dom.test.ts` and `tests/video-read-access-route.test.ts` cover these contracts.

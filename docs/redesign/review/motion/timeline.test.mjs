@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {sampleTimeline} from './timeline.mjs';
+test('invalid and overscrolled inputs remain in safe finite bounds',()=>{for(const p of [NaN,Infinity,-3,0,.4,1,9]){const s=sampleTimeline(p);for(const v of Object.values(s))assert.ok(Number.isFinite(v));assert.ok(s.p>=0&&s.p<=1);}});
+test('backtracking reproduces the same scene without accumulated rotation',()=>{const expected=sampleTimeline(.52);for(const p of [.8,.95,.2,.52])sampleTimeline(p);assert.deepEqual(sampleTimeline(.52),expected);});
+test('last act completes a full turn, with assembly finished',()=>{const start=sampleTimeline(.73),end=sampleTimeline(1);assert.ok(Math.abs((end.shoeAngle-start.shoeAngle)-2*Math.PI)<1e-9);assert.equal(end.assemble,1);assert.equal(end.open,1);});
+test('mobile preserves each narrative stage and turn',()=>{for(const p of [0,.37,.65,1]){const a=sampleTimeline(p),b=sampleTimeline(p,true);assert.equal(a.act,b.act);assert.equal(a.shoeAngle,b.shoeAngle);assert.ok(b.cameraDistance>a.cameraDistance);}});

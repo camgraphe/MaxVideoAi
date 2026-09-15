@@ -4,19 +4,17 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { Button } from '@/components/ui/Button';
-import { UIIcon } from '@/components/ui/UIIcon';
 import { MarketingAccountMenu } from '@/components/marketing/MarketingAccountMenu';
 import { MarketingDesktopNav } from '@/components/marketing/MarketingDesktopNav';
 import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
 import { hasSupabaseAuthCookie, installSupabaseAuthClientGate } from '@/lib/supabase-session-hint';
-import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
+import { MARKETING_SITE_NAV_LINKS } from '@/config/navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 
 type MarketingNavProps = {
@@ -35,22 +33,19 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const brand = t('nav.brand', 'MaxVideoAI') ?? 'MaxVideoAI';
   const compactBrand = brand.replace(/\s+/g, '');
-  const maybeLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
-  const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : MARKETING_TOP_NAV_LINKS;
+  const links = MARKETING_SITE_NAV_LINKS;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Generate');
   const generateLabel = t('nav.generate', 'Generate');
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
-  const generateLabelMobile = locale === 'fr' ? 'Generer' : locale === 'es' ? 'Generar' : 'Generate';
+  const generateLabelMobile = locale === 'fr' ? 'Générer' : locale === 'es' ? 'Generar' : 'Generate';
   const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
   const isAuthenticated = Boolean(email);
-  const themeStorageKey = 'mv-theme';
 
   const handleAdminNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
     setAccountMenuOpen(false);
@@ -59,27 +54,9 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem(themeStorageKey);
-    const resolved = stored === 'dark' || stored === 'light' ? stored : 'light';
-    setTheme(resolved);
-    if (resolved === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    if (nextTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-    window.localStorage.setItem(themeStorageKey, nextTheme);
-  };
+    // Public art direction is independent of the visitor's workspace preference.
+    document.documentElement.removeAttribute('data-theme');
+  }, [pathname]);
 
   useEffect(() => {
     let mounted = true;
@@ -333,24 +310,16 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
             pathname={pathname}
             t={t}
             onCloseDesktopDropdown={closeDesktopDropdown}
-            onOpenDesktopDropdown={setDesktopDropdownOpen}
+            onOpenDesktopDropdown={(key) => {
+              if (desktopDropdownCloseTimeout.current) window.clearTimeout(desktopDropdownCloseTimeout.current);
+              setDesktopDropdownOpen(key);
+            }}
           />
         </div>
         <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3 lg:gap-4">
           <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
-              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-              onClick={toggleTheme}
-            >
-              <span className="inline-flex h-4 w-4 items-center justify-center">
-                <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
-              </span>
-            </Button>
+
           </div>
           {isAuthenticated ? (
             <>
@@ -417,7 +386,6 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
           mobileDropdownOpen={mobileDropdownOpen}
           pathname={pathname}
           t={t}
-          theme={theme}
           onClose={() => setMobileMenuOpen(false)}
           onSignOut={() => signOut({ closeMobileMenu: true })}
           onToggleDropdown={(key) =>
@@ -426,7 +394,6 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               [key]: !prev[key],
             }))
           }
-          onToggleTheme={toggleTheme}
         />
       ) : null}
     </>

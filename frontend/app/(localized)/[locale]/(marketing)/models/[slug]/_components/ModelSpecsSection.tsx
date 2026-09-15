@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Clock3,
   Crop,
-  ExternalLink,
   FileVideo,
   Film,
   Gauge,
@@ -74,12 +73,6 @@ const SPEC_ICON_META: Record<KeySpecKey, { icon: typeof Check; tone: string }> =
   watermark: { icon: ShieldCheck, tone: MODEL_PAGE_ICON_WRAP },
 };
 
-function getFullSpecsLabel(locale: AppLocale) {
-  if (locale === 'fr') return 'Voir toutes les specs';
-  if (locale === 'es') return 'Ver specs completas';
-  return 'View full specs';
-}
-
 function getDetailsLabel(locale: AppLocale) {
   if (locale === 'fr') return 'Détails';
   if (locale === 'es') return 'Detalles';
@@ -87,9 +80,9 @@ function getDetailsLabel(locale: AppLocale) {
 }
 
 function getDecisionSpecFallbackNote(locale: AppLocale) {
-  if (locale === 'fr') return 'Les limites qui structurent vos rendus.';
-  if (locale === 'es') return 'Los límites que definen tus renders.';
-  return 'The limits that shape your renders.';
+  if (locale === 'fr') return 'Les formats, réglages et limites à connaître avant de créer.';
+  if (locale === 'es') return 'Los formatos, ajustes y límites que conviene conocer antes de crear.';
+  return 'Formats, settings and limits to check before creating.';
 }
 
 function renderDecisionSpecValue(row: KeySpecRow, locale: AppLocale, supportedLabel: string) {
@@ -127,12 +120,12 @@ function ModelDecisionSpecsPanel({
   const detailsLabel = getDetailsLabel(locale);
 
   return (
-    <section id="specs" className={SECTION_SCROLL_MARGIN}>
+    <section id="specs" className={`model-spec-sheet ${SECTION_SCROLL_MARGIN}`}>
       <div className="rounded-[28px] border border-slate-200/80 bg-white/92 p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72 dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="!text-left text-[1.7rem] font-semibold leading-tight tracking-normal text-slate-950 dark:text-white">
-              {specTitle ?? 'Specs'}
+              {specTitle && specTitle !== 'Specs' ? specTitle : locale === 'fr' ? 'Caractéristiques' : locale === 'es' ? 'Características' : 'Specifications'}
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
               {specNote ?? getDecisionSpecFallbackNote(locale)}
@@ -140,13 +133,7 @@ function ModelDecisionSpecsPanel({
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {showBenchmarkLink ? <BenchmarkMethodologyLink locale={locale} variant="pill" /> : null}
-            <a
-              href="#specs"
-              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-            >
-              <span>{getFullSpecsLabel(locale)}</span>
-              <UIIcon icon={ExternalLink} size={14} />
-            </a>
+
           </div>
         </div>
 
@@ -180,7 +167,7 @@ function ModelDecisionSpecsPanel({
 
         {specSectionsToShow.length ? (
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            {specSectionsToShow.slice(0, 2).map((section, index) => {
+            {specSectionsToShow.map((section, index) => {
               const Icon = index === 0 ? Sparkles : Box;
               return (
                 <article

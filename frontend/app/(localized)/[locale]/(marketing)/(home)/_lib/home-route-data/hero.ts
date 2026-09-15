@@ -71,8 +71,8 @@ function heroExampleLabel(locale: AppLocale, name: string, family: HomepageExamp
   return `View ${familyLabel} examples`;
 }
 
-function heroModelLabel() {
-  return 'Specs & pricing';
+function heroModelLabel(locale: AppLocale) {
+  return locale === 'fr' ? 'Caractéristiques et tarifs' : locale === 'es' ? 'Características y precios' : 'Specs & pricing';
 }
 
 function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName: string): HeroEngineLinks {
@@ -87,7 +87,7 @@ function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName:
       examplesHref: family ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref) : undefined,
       modelHref: { pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref,
       examplesLabel: family ? heroExampleLabel(locale, fallbackName, family) : undefined,
-      modelLabel: heroModelLabel(),
+      modelLabel: heroModelLabel(locale),
     };
   }
   return {
@@ -98,7 +98,7 @@ function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName:
       : undefined,
     modelHref: { pathname: '/models/[slug]', params: { slug: target.modelSlug } } satisfies LocalizedLinkHref,
     examplesLabel: target.exampleFamily ? heroExampleLabel(locale, target.name, target.exampleFamily) : undefined,
-    modelLabel: heroModelLabel(),
+    modelLabel: heroModelLabel(locale),
     mode: target.mode,
   };
 }

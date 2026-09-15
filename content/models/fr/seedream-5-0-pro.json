@@ -57,15 +57,13 @@
   "decision": {
     "modelSlug": "seedream-5-0-pro",
     "hero": {
-      "eyebrow": "MODÈLE IMAGE BYTEDANCE PROFESSIONNEL",
+      "eyebrow": "Image IA · ByteDance",
       "title": "Seedream 5.0 Pro - production image professionnelle",
-      "subtitle": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation.",
+      "subtitle": "Composez l’image, soignez chaque détail.",
       "subtitleHighlights": [
-        "route image professionnelle ByteDance",
-        "infographies denses",
-        "frames propres"
+        "Composez l’image, soignez chaque détail"
       ],
-      "paragraph": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne.",
+      "paragraph": "Seedream 5.0 Pro génère et retouche des images IA pour vos infographies, compositions multilingues et visuels de campagne. Créez une image en 4K ou préparez une référence à animer avec un modèle vidéo.",
       "primaryCta": {
         "label": "Lancer Seedream Pro",
         "href": "/app/image?engine=seedream-5-0-pro"

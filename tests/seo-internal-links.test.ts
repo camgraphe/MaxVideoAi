@@ -70,9 +70,10 @@ test('Seedance 2.5 launch-link matrix covers examples, Seedance 2.0, and relevan
       locale,
       pricingPath: locale === 'fr' ? '/fr/tarifs' : locale === 'es' ? '/es/precios' : '/pricing',
     });
-    assert.equal(examplesLinks[0]?.href, target, `${locale} Seedance examples should lead with the 2.5 profile`);
-    assert.equal(examplesLinks[1]?.href, EXPECTED_SEEDANCE_25_COMPARISON_TARGETS[locale]);
-    assert.equal(examplesLinks.length, 5);
+    assert.match(examplesLinks[0]?.href ?? '', /seedance-2-5-vs-minimax-h3$/, `${locale} leads with a current comparison`);
+    assert.match(examplesLinks[1]?.href ?? '', /seedance-2-5-vs-kling-3-pro$/);
+    assert.ok(examplesLinks.some(({href}) => href.endsWith('/seedance-2-0-vs-seedance-2-0-fast')), 'retain the established comparison');
+    assert.equal(examplesLinks.length, 4);
 
     const seedance20Path = `content/models/${locale}/seedance-2-0.json`;
     assert.match(readRepositoryFile(seedance20Path), new RegExp(target.replaceAll('/', '\\/')));

@@ -1,0 +1,24 @@
+Edit image 1, the complete MaxVideoAI homepage desktop/mobile board. The user says it is far too product-focused. Correct the IMAGE DISTRIBUTION, preserving the dark olive/ivory/bronze style, precise typography, navigation and usable page hierarchy. Same portrait board showing full desktop on left and mobile on right. One revised homepage, not alternate concepts.
+
+Images 2–5 are REAL existing video posters: 2 = woman dancing on a dark stage with projected light circles; 3 = narrative yellow bus at a Mediterranean ferry terminal with people; 4 = vast misty mineral landscape; 5 = animated white rabbit carrying a bouquet. Use their existing compositions, don't invent new model output imagery. Keep characters, faces and natural ratios visible.
+
+EXACT CHANGE BOTH DESKTOP AND MOBILE:
+- Keep the large sci-fi runner HERO (cinema/action). Replace BOTH product images directly below it: the shoe components become the DANCER (image 2), and the orange bag becomes the ANIMATED CHARACTER (image 5). These are two supporting windows, not a row of commerce product shots. Hero usage labels "Film / Animation / Social". Primary actions remain BEFORE main poster on mobile.
+- In EXAMPLES chapter remove ALL shoe components, bag closeups and product shots. Give this chapter more visual weight: two spacious images, narrative BUS scene (image 3) and mineral LANDSCAPE (image 4). Heading "A world of stories to create." Short text "Characters, action, animation and imagined worlds." Labels "Storytelling" and "Worlds & atmosphere". Link "Explore examples". No fake aspect-ratio or output-format claims. On mobile show both images, not just a single tiny thumbnail.
+- Keep orange bag ONLY in the References / Connect section: existing Product reference and Existing video frame relationship is correct in image 1. Do not redraw it, duplicate it into another section or replace it with generic material. Retain four steps and assistant marks. This is a demonstration of references, not a product gallery.
+- Keep headphones ONLY ONCE in the dedicated Website Move chapter. It is the only dedicated product focus. Remove any product-ish closeup imagery from PAYG, leaving an elegant text-based conclusion "See the price. Then make the shot." No invented price.
+- Remove EVERY sneaker/sole/component image from the entire page. No kettles, lamps, toy products, watches, product packshots or commerce mockups elsewhere. Main visual impression is film/people/animation/story/worlds, not ecommerce.
+- Preserve Compare data exactly and the navigation and genuine brand identity from image 1. No new badges or features. Retain existing headlines except the examples heading specified above. Keep FAQ on mobile and show the same concise FAQ rows above footer on desktop if space allows.
+- Update outer board title "Motion, with intent · Broader creative worlds". Small footer "Visual proposal · existing media references · motion not yet built."
+Keep imagery and type polished, visible and natural, no squashing. Avoid nested boxes, decorative gradients, random fake data or all-product repetition. Raster study, not a claim that these are new original video exports.
+
+ADDITIONAL USER FEEDBACK — COMPOSITION, not only changing pictures:
+The user wants a more deliberately composed desktop page instead of every section repeating text-left/image-right. Revise DESKTOP composition purposefully:
+1. Hero stays clear headline/actions left, dominant runner film right, dancer + animated character as supporting imagery below.
+2. Compare is a full-width aligned editorial reading surface with heading above; not another left-copy/right-image pair.
+3. References / Connect REVERSES orientation: original bag reference and existing result occupy LEFT 60%, heading "Your references. Your next scene.", short explanation and "Create with your assistant" action on RIGHT 40%. Four small workflow steps can run below the whole composition. Preserve original bag pictures and labels exactly.
+4. Examples is an OPEN visual gallery, headline ABOVE and two large staggered but well-aligned bus and landscape frames across the width, captions underneath. Not another two-column text-and-image block. Keep natural landscape frames and people visible. Refined varied spacing, no decorative card shells.
+5. Website Move reverses compared with hero: HEADPHONE occupies LEFT 55%, heading/message and action on RIGHT. Only one product chapter.
+6. PAYG and FAQ form a clean typographic close without new pictures.
+
+MOBILE is NOT a miniature desktop zigzag: chapter title/explanation and action first, then relevant imagery in logical order; source before result; no CSS visual reordering that would hide semantic order. Maintain title/actions then hero poster then supporting content. Show the full mobile page corresponding to this desktop. The result should feel rhythmically composed with purposeful variety rather than mechanically mirrored sections.

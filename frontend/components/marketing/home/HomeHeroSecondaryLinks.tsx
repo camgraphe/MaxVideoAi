@@ -1,15 +1,14 @@
 import { Link } from '@/i18n/navigation';
-import { HomeAssistantLink } from './HomeAssistantLink';
 
 export function HomeHeroSecondaryLinks({
   compareLabel,
-  assistantLink,
+  trustBadges,
 }: {
   compareLabel: string;
-  assistantLink: { href: string; label: string } | null;
+  trustBadges: string[];
 }) {
   return (
-    <div className="min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-3">
+    <div className="home-hero-reassurance">
       <Link
         href={{ pathname: '/ai-video-engines' }}
         prefetch={false}
@@ -21,7 +20,7 @@ export function HomeHeroSecondaryLinks({
       >
         {compareLabel}<span aria-hidden="true">→</span>
       </Link>
-      <HomeAssistantLink link={assistantLink} />
+      <div className="home-hero-guarantees">{trustBadges.slice(0, 3).map(badge => <span key={badge}>{badge}</span>)}</div>
     </div>
   );
 }

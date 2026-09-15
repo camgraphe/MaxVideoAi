@@ -10,6 +10,7 @@ import {
   MARKETING_NAV_MODELS,
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
+import { FOOTER_MODELS, FOOTER_COMPARISONS, FOOTER_EXAMPLES } from '../frontend/config/marketing-footer';
 import { getPartnerBrandMark } from '../frontend/src/lib/brand-partners.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
@@ -57,7 +58,7 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   };
   const modelsUseCases = modelsDropdown.sections?.[0];
   assert.ok(modelsUseCases, 'Models dropdown should expose use-case guide links');
-  assert.equal(modelsUseCases.hideTitle, true);
+  assert.notEqual(modelsUseCases.hideTitle, true);
   assert.notEqual(modelsUseCases.titleFallback, 'Choose by use case');
   assert.deepEqual(
     modelsUseCases.items.map((item) => [item.label, hrefPath(item.href), Boolean(item.emphasized)]),
@@ -76,7 +77,7 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   };
   const compareUseCases = compareDropdown.sections?.[0];
   assert.ok(compareUseCases, 'Compare dropdown should expose decision guide links');
-  assert.equal(compareUseCases.hideTitle, true);
+  assert.notEqual(compareUseCases.hideTitle, true);
   assert.notEqual(compareUseCases.titleFallback, 'Decision guides');
   assert.deepEqual(
     compareUseCases.items.map((item) => [item.label, hrefPath(item.href), Boolean(item.emphasized)]),
@@ -97,9 +98,9 @@ test('public dropdowns limit launch badges to five current models with none on c
     .map(({ key }) => key);
 
   assert.deepEqual(badgedEntries, [
-    'seedance-2-5',
     'minimax-h3',
     'minimax-h3-max',
+    'seedance-2-5',
     'wan-3',
     'wan-3-prime',
   ]);
@@ -163,18 +164,18 @@ test('model dropdown entries show the shared engine logo before every model name
   }
 });
 
-test('P1 navigation preserves the priority P0 model and upgrade links that fit the bounded menu', () => {
+test('editorial navigation promotes current models and preserves comparisons with search demand', () => {
   assert.deepEqual(
     MARKETING_NAV_MODELS
-      .filter(({ key }) => ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'].includes(key))
+      .filter(({ key }) => ['ltx-2-5-pro', 'wan-3-prime', 'happy-horse-1-1'].includes(key))
       .map(({ key }) => key),
-    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'],
+    ['ltx-2-5-pro', 'wan-3-prime', 'happy-horse-1-1'],
   );
   const expectedComparisons = [
-    'ltx-2-3-pro-vs-ltx-2-5-pro',
-    'wan-2-6-vs-wan-3',
-    'flux-3-vs-grok-imagine-video-1-5',
-    'grok-imagine-video-1-5-vs-sora-2',
+    'minimax-h3-vs-seedance-2-5',
+    'ltx-2-5-fast-vs-ltx-2-5-pro',
+    'gemini-omni-flash-vs-veo-3-1',
+    'seedance-2-0-vs-seedance-2-0-fast',
   ];
   const actualComparisons = MARKETING_NAV_DROPDOWNS.compare?.items
     .map(({ key }) => key)
@@ -235,30 +236,19 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
 test('examples navigation can expose every public family without a one-column desktop menu', () => {
   const examplesDropdown = MARKETING_NAV_DROPDOWNS.examples;
   assert.equal(examplesDropdown?.desktopColumns, 2);
-  assert.deepEqual(examplesDropdown?.items.map((item) => item.key), [
-    'veo',
-    'seedance',
-    'ltx',
-    'kling',
-    'wan',
-    'happy-horse',
-    'sora',
-    'luma',
-    'grok',
-    'flux',
-    'pika',
-    'hailuo',
-  ]);
+  assert.deepEqual(examplesDropdown?.items.map((item) => item.key), ['ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse']);
+  const allEntries = [...examplesDropdown!.items, ...examplesDropdown!.sections!.flatMap(section => section.items)];
+  assert.deepEqual(allEntries.map(item => item.key).sort(), ['veo','seedance','ltx','kling','wan','happy-horse','sora','luma','grok','flux','pika','hailuo'].sort());
+  assert.equal(new Set(allEntries.map(item => item.key)).size, allEntries.length);
   assert.match(marketingDesktopNavSource, /dropdown\.desktopColumns === 2/);
-  assert.match(headerBarSource, /dropdown\.desktopColumns === 2/);
-  for (const source of [marketingDesktopNavSource, headerBarSource]) {
-    assert.match(source, /grid grid-cols-2 gap-1/);
-    assert.match(source, /col-span-2/);
-  }
+  assert.match(marketingDesktopNavSource, /two-columns/);
+  assert.match(headerBarSource, /grid grid-cols-2 gap-1/);
 });
 
 test('marketing footer projects the current bounded model menu instead of a second stale roster', () => {
-  assert.match(marketingFooterSource, /MARKETING_NAV_MODELS\.map/);
+  assert.match(marketingFooterSource, /FOOTER_MODELS\.map/);
+  assert.ok(FOOTER_MODELS.length <= 8);
+  for (const item of FOOTER_MODELS) assert.ok(MARKETING_NAV_MODELS.some(model => model.key === item.key));
   assert.doesNotMatch(marketingFooterSource, /slug: 'ltx-2-3-fast'/);
   assert.doesNotMatch(marketingFooterSource, /slug: 'wan-2-6'/);
 });
@@ -300,7 +290,8 @@ test('marketing footer separates Best-For use cases from popular comparisons', (
   assert.doesNotMatch(comparisonBlock, /MARKETING_NAV_BEST_FOR_HUB/);
   assert.doesNotMatch(comparisonBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
   assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_HUB/);
-  assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
+  assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_HUB/);
+  assert.equal(useCaseBlock.includes('MARKETING_NAV_BEST_FOR_USE_CASES'), false);
 });
 
 test('marketing brand logo images are decorative when brand text is visible', () => {
@@ -312,20 +303,14 @@ test('marketing brand logo images are decorative when brand text is visible', ()
   assert.doesNotMatch(marketingFooterSource, /alt="MaxVideoAI"/);
 });
 
-test('marketing footer preserves crawl equity for ranking comparison targets', () => {
-  const source = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
-  const comparisonItemsBlock = source.slice(source.indexOf('const comparisonItems'), source.indexOf('const comparisonLinks'));
-  const rankingComparisonTargets = [
-    ['seedance-1-5-pro', 'seedance-2-0'],
-    ['ltx-2', 'ltx-2-3-fast'],
-    ['ltx-2-3-fast', 'seedance-2-0'],
-    ['ltx-2-3-fast', 'veo-3-1'],
-    ['kling-3-pro', 'ltx-2-3-pro'],
-  ] as const;
-
-  for (const [left, right] of rankingComparisonTargets) {
-    assert.match(comparisonItemsBlock, new RegExp(`left: '${left}'[\\s\\S]+right: '${right}'`));
+test('marketing footer promotes the current shared comparison selection', () => {
+  assert.match(marketingFooterSource, /FOOTER_COMPARISONS\.map/);
+  for (const key of ['seedance-2-0-vs-seedance-2-0-fast', 'gemini-omni-flash-vs-veo-3-1']) {
+    assert.ok(FOOTER_COMPARISONS.some(item => item.key === key), 'Preserve comparisons with recorded search demand');
   }
+  assert.ok(FOOTER_COMPARISONS.length <= 4);
+  assert.equal(FOOTER_EXAMPLES[0]?.key, 'ltx');
+  assert.doesNotMatch(marketingFooterSource, /seedance-1-5-pro|ltx-2-3/);
 });
 
 test('marketing footer links to the pay-as-you-go support page without promoting it to top nav', () => {
@@ -385,4 +370,29 @@ test('middleware avoids self-rewriting default-locale marketing routes on loopba
   assert.match(bypassBlock, /if \(defaultPrefix\)/);
   assert.match(bypassBlock, /response = NextResponse\.rewrite\(rewriteUrl\);/);
   assert.match(bypassBlock, /else \{\s*response = NextResponse\.next\(\);/s);
+});
+
+test('every example family has a real logo or a deliberate pictogram', () => {
+  const entries = [...MARKETING_NAV_DROPDOWNS.examples!.items, ...MARKETING_NAV_DROPDOWNS.examples!.sections!.flatMap(section => section.items)];
+  for (const entry of entries) {
+    assert.ok(entry.icon || getPartnerBrandMark({id:entry.key, brandId:entry.brandId}), entry.key);
+  }
+  assert.equal(entries.find(entry => entry.key === 'sora')?.brandId, undefined);
+  for (const entry of MARKETING_NAV_DROPDOWNS.compare!.items) {
+    assert.equal(entry.comparisonBrands?.length, 2);
+    for (const brand of entry.comparisonBrands!) assert.ok(getPartnerBrandMark(brand), brand.id);
+  }
+});
+
+test('MCP anchors describe the destination and Blog remains discoverable in resources', () => {
+  assert.ok(MARKETING_NAV_DROPDOWNS.tools!.sections!.some(section => section.items.some(item => item.href === '/blog')));
+  for (const locale of ['en', 'fr', 'es']) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    const anchors = dictionary.footer.mcpFeature.anchors;
+    assert.match(anchors.codex, /plugin.*Codex/i);
+    assert.match(anchors.chatgpt, /ChatGPT/);
+    assert.match(anchors.claude, /Claude/);
+    assert.match(anchors.openclaw, /[Ss]kill.*OpenClaw/);
+    assert.match(anchors.n8n, /n8n/);
+  }
 });

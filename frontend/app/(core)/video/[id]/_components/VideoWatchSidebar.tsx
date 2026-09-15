@@ -5,7 +5,6 @@ import {
   Box,
   CalendarDays,
   Clock3,
-  ExternalLink,
   Film,
   GalleryHorizontal,
   Monitor,
@@ -105,7 +104,7 @@ export function VideoWatchSidebar({
   createdLabel: string;
   signals: WatchPageData['signals'];
 }) {
-  const sidebarDetailRows = signals.detailRows.some((row) => row.key === 'created')
+  const sidebarDetailRows = !createdLabel || signals.detailRows.some((row) => row.key === 'created')
     ? signals.detailRows
     : [...signals.detailRows, { key: 'created', label: 'Created', value: createdLabel }];
   const highlightItems = buildHighlightItems(signals);
@@ -131,14 +130,13 @@ export function VideoWatchSidebar({
           })}
         </div>
         <div className="mt-5 space-y-2">
-          <ButtonLink href={signals.recreatePath} prefetch={false} className="w-full bg-text-primary text-bg hover:bg-text-primary/90">
+          <ButtonLink href={signals.recreatePath} prefetch={false} className="w-full bg-text-primary text-bg hover:bg-text-primary/90"
+            data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
+            data-analytics-cta-location="watch_sidebar" data-analytics-target-family="workspace">
             <Sparkles className="h-4 w-4" aria-hidden />
-            Recreate in workspace
+            Start from this example
           </ButtonLink>
-          <ButtonLink href={signals.recreatePath} variant="outline" prefetch={false} className="w-full">
-            <ExternalLink className="h-4 w-4" aria-hidden />
-            Open in workspace
-          </ButtonLink>
+          <p className="text-xs leading-5 text-text-secondary">Reuse the prompt and available settings. Your next generation gets a fresh quote before you run it.</p>
         </div>
       </VideoWatchCard>
 

@@ -5,7 +5,7 @@ export const FR_HUB_COPY: HubCopy = {
       eyebrow: 'Comparer les modèles',
       title: 'Comparatifs de modèles vidéo IA',
       intro:
-        'Choisissez deux modèles et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant de générer. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le modèle le plus adapté à votre plan.',
+        'Choisissez deux modèles. Comparez leurs possibilités, la qualité des scènes et les coûts pour trouver celui qui convient à votre prochaine vidéo.',
       compareNow: {
         left: 'Modèle A',
         right: 'Modèle B',
@@ -13,8 +13,10 @@ export const FR_HUB_COPY: HubCopy = {
         searchPlaceholder: 'Rechercher un modèle...',
         noResults: 'Aucun résultat',
         strengthsLabel: 'Points forts',
-        strengthsFallback: 'Usage général vidéo',
+        strengthsFallback: 'Création vidéo polyvalente',
         modeLabels: {
+          extend: 'Prolonger',
+          retake: 'Reprendre un plan',
           t2v: 'Texte-vers-vidéo',
           i2v: 'Image-vers-vidéo',
           v2v: 'Vidéo-vers-vidéo',
@@ -27,13 +29,13 @@ export const FR_HUB_COPY: HubCopy = {
       useCasesTitle: 'Comparer par cas d’usage',
       useCasesIntro: 'Choisissez un objectif, puis ouvrez un comparatif recommandé.',
       enginesTitle: 'Choisir un modèle à comparer',
-      enginesIntro: 'Spécifications orientées comparaison uniquement. Le détail éditorial reste sur les pages modèles.',
+      enginesIntro: 'Repérez les différences utiles à votre projet. Chaque fiche modèle vous permet ensuite d’aller plus loin.',
       enginesToggle: 'Afficher le catalogue modèles ({count})',
       enginesToggleHintClosed: 'Cliquer pour déplier',
       enginesToggleHintOpen: 'Cliquer pour replier',
       allComparisonsTitle: 'Tous les comparatifs',
       allComparisonsIntro:
-        'Parcourez d’abord les comparatifs prioritaires, puis cherchez dans le catalogue canonique complet. Besoin de conformité? Consultez nos notes dédiées.',
+        'Parcourez la sélection ou recherchez directement les modèles qui vous intéressent.',
       faqTitle: 'FAQ comparatif des modèles vidéo IA',
       complianceLabel: 'Voir les notes de conformité',
       quickStartLabel: 'Accès rapide',
@@ -42,11 +44,11 @@ export const FR_HUB_COPY: HubCopy = {
       prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
       prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback:
-        'Les puces interactives affinent les recommandations instantanément. Tous les liens restent crawlables et présents en HTML standard.',
+        'Choisissez un usage pour trouver les comparatifs adaptés à votre projet.',
     },
     tagLabels: {
       audio: 'Audio',
-      cinematic: 'Cinématique',
+      cinematic: 'Cinéma',
       quality: 'Qualité',
       long: 'Longue durée',
       ads: 'Publicité',
@@ -59,7 +61,7 @@ export const FR_HUB_COPY: HubCopy = {
       storyboards: 'Storyboards',
     },
     useCaseLabels: {
-      cinematic: 'Cinématique',
+      cinematic: 'Cinéma',
       ads: 'Publicité',
       social: 'Social',
       product: 'Produit',
@@ -131,7 +133,7 @@ export const FR_HUB_COPY: HubCopy = {
       {
         question: 'Comment comparer deux modèles rapidement ?',
         answer:
-          'Utilisez le module Comparer en haut de page, choisissez Modèle A et Modèle B, puis cliquez sur Comparer pour ouvrir la page canonique. Utilisez le même prompt (ou un prompt texte simple) sur les deux modèles IA pour comparer la régularité du mouvement et la fidélité au prompt avant de générer.',
+          'Utilisez le module Comparer en haut de page, choisissez Modèle A et Modèle B, puis cliquez sur Comparer pour afficher le comparatif détaillé. Utilisez le même prompt (ou un prompt texte simple) sur les deux modèles IA pour comparer la régularité du mouvement et la fidélité au prompt avant de générer.',
       },
       {
         question: 'Pourquoi les points forts changent selon les comparatifs ?',

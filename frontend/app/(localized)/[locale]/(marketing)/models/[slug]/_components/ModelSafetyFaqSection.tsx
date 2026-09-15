@@ -1,5 +1,4 @@
 import { FAQSchema } from '@/components/seo/FAQSchema';
-import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import type { AppLocale } from '@/i18n/locales';
 import {
   FULL_BLEED_SECTION,
@@ -105,15 +104,10 @@ export function ModelSafetyFaqSection({
             ) : null}
             <div className="stack-gap-sm">
               {faqList.map((entry) => (
-                <ResponsiveDetails
-                  openOnDesktop
-                  key={entry.question}
-                  className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                  summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
-                  summary={entry.question}
-                >
-                  <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
-                </ResponsiveDetails>
+                <details key={entry.question} className="model-disclosure border-b border-hairline py-4">
+                  <summary className="cursor-pointer font-semibold text-text-primary">{entry.question}</summary>
+                  <p className="mt-3 text-sm leading-6 text-text-secondary">{entry.answer}</p>
+                </details>
               ))}
             </div>
           </section>

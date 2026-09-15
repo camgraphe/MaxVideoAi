@@ -11,6 +11,7 @@ import {
 import { listRuntimeModels } from '../frontend/config/model-runtime.ts';
 import {
   MARKETING_NAV_EXAMPLES,
+  MARKETING_NAV_DROPDOWNS,
   MARKETING_NAV_MODELS,
 } from '../frontend/config/navigation.ts';
 import { buildLlmsModelDiscoveryProjection } from '../frontend/lib/seo/llms-text.ts';
@@ -117,12 +118,13 @@ test('the complete P0 graph publishes atomically across public discovery surface
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.filter(({ key }) => P0.includes(key as (typeof P0)[number])).map(({ key }) => key),
-    ['ltx-2-5-pro', 'wan-3', 'wan-3-prime', 'grok-imagine-video-1-5'],
+    ['ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime'],
   );
   for (const familyId of ['wan', 'ltx', 'grok', 'flux']) {
     const family = MODEL_FAMILIES.find(({ id }) => id === familyId);
     assert.equal(family?.examplesPage?.stage, 'indexed', familyId);
-    assert.ok(MARKETING_NAV_EXAMPLES.some(({ key }) => key === familyId), familyId);
+    const entries = [...MARKETING_NAV_EXAMPLES, ...(MARKETING_NAV_DROPDOWNS.examples?.sections ?? []).flatMap(section => section.items)];
+    assert.ok(entries.some(({ key }) => key === familyId), familyId);
   }
 
   const discovery = buildLlmsModelDiscoveryProjection();

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
+import { THEME_BOOTSTRAP } from '@/lib/theme-bootstrap';
 import './globals.css';
 import { GtmLazyLoader } from '@/components/analytics/GtmLazyLoader';
 import { SupabaseHashSessionHandler } from '@/components/auth/SupabaseHashSessionHandler';
@@ -36,6 +37,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <script id="theme-bootstrap" dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <link rel="preconnect" href="https://media.maxvideoai.com" crossOrigin="anonymous" />
         {themeStyle ? <style id="theme-tokens" dangerouslySetInnerHTML={{ __html: themeStyle }} /> : null}
         {GTM_ID ? (

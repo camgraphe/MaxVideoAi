@@ -27,7 +27,7 @@ export const ANGLE_ORBIT_ASSETS = {
     source: '/assets/tools/angle-orbit-video-source.webp',
     output: '/assets/tools/angle-orbit-video-45.webp',
   },
-  workspace: '/assets/tools/angle-orbit-workspace.webp',
+  workspace: '/assets/tools/redesign/angle-workspace-v1.webp',
 } as const;
 
 export const ANGLE_SOURCE_URL =

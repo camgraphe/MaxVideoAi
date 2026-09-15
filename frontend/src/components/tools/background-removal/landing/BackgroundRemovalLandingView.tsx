@@ -1,3 +1,6 @@
+import { resolveLocale } from '@/lib/i18n/server';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
+import { ToolJourneyNav } from '@/components/tools/landing/ToolJourneyNav';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 import {
@@ -8,9 +11,11 @@ import {
 import { BackgroundRemovalLandingSections } from './BackgroundRemovalLandingSections';
 import type { BackgroundRemovalLandingContent } from './background-removal-landing-assets';
 
-export function BackgroundRemovalLandingView({ content }: { content: BackgroundRemovalLandingContent }) {
-  const canonicalUrl = 'https://maxvideoai.com/tools/background-removal';
+export async function BackgroundRemovalLandingView({ content }: { content: BackgroundRemovalLandingContent }) {
+  const locale = await resolveLocale();
+  const canonicalUrl = `https://maxvideoai.com${localizePathFromEnglish(locale, '/tools/background-removal')}`;
   const breadcrumbJsonLd = buildToolBreadcrumbJsonLd({
+    locale,
     breadcrumb: content.breadcrumb,
     canonicalUrl,
   });
@@ -29,7 +34,7 @@ export function BackgroundRemovalLandingView({ content }: { content: BackgroundR
   });
 
   return (
-    <div className="background-removal-page">
+    <div className="background-removal-page tool-detail-page"><ToolJourneyNav active="background-removal" />
       <BackgroundRemovalLandingSections content={content} />
       <FAQSchema questions={content.faq.map((entry) => ({ question: entry.q, answer: entry.a }))} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />

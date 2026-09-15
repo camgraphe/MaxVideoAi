@@ -65,6 +65,10 @@ export type HomeHeroContent = {
     loadingLabel: string;
     errorLabel: string;
     retryLabel: string;
+    fullscreenLabel?: string;
+    soundOnLabel?: string;
+    soundOffLabel?: string;
+    progressLabel?: string;
   };
 };
 
@@ -172,6 +176,7 @@ export type ProviderItem = {
 export type FaqItem = {
   question: string;
   answer: string;
+  links?: Array<{ label: string; href: LocalizedLinkHref }>;
 };
 
 export type SectionCopy = {

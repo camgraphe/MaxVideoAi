@@ -150,6 +150,11 @@ function shouldExcludeMcpPath(englishPath: string): boolean {
 }
 
 function discoverLocalizedRouteTemplates(): RouteTemplate[] {
+  // next dev's manifest contains only routes visited so far. It is not a
+  // complete inventory, even when nonempty; production keeps its build manifest.
+  if (process.env.NODE_ENV === 'development') {
+    return discoverTemplatesFromFilesystem();
+  }
   const manifestTemplates = discoverTemplatesFromManifest();
   if (manifestTemplates.length > 0) {
     return manifestTemplates;

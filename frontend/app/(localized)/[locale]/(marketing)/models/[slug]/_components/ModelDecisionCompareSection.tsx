@@ -1,8 +1,10 @@
-import { ArrowRight, CheckCircle2, CircleDot, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Zap } from 'lucide-react';
 
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
+import { EngineIcon } from '@/components/ui/EngineIcon';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 import {
@@ -49,23 +51,19 @@ type ModelDecisionCompareSectionProps = {
 };
 
 function getFocusSubtitle(locale: AppLocale) {
-  if (locale === 'fr') return 'Deux routes, une famille. Choisissez selon votre etape.';
-  if (locale === 'es') return 'Dos rutas, una familia. Elige segun tu etapa.';
-  return 'Two routes, one series. Pick the right one for your stage.';
+  if (locale === 'fr') return 'Deux versions, des besoins différents.';
+  if (locale === 'es') return 'Dos versiones para necesidades distintas.';
+  return 'Two versions for different needs.';
 }
 
 function getCompareIntro(locale: AppLocale) {
   if (locale === 'fr') {
-    return 'Ces comparaisons clarifient les arbitrages de prix, resolution, audio, vitesse et style motion pour choisir vite le bon moteur.';
+    return 'Comparez les prix, les formats et les possibilités de chaque modèle avant de choisir.';
   }
   if (locale === 'es') {
-    return 'Estas comparaciones explican precio, resolucion, audio, velocidad y estilo de motion para elegir rapido el motor correcto.';
+    return 'Compara precios, formatos y funciones de cada modelo antes de elegir.';
   }
-  return 'These side-by-side comparisons break down price, resolution, audio, speed, and motion style so you can pick the right engine fast.';
-}
-
-function getCardIcon(index: number) {
-  return [Sparkles, Zap, CircleDot, CheckCircle2][index % 4] ?? Sparkles;
+  return 'Compare prices, formats, and capabilities before choosing your model.';
 }
 
 function getCardTitle({
@@ -108,7 +106,7 @@ export function ModelDecisionCompareSection({
       }));
 
   return (
-    <section id={compareAnchorId} className={`${SECTION_SCROLL_MARGIN} space-y-9 py-6`}>
+    <section id={compareAnchorId} className={`model-compare-guide ${SECTION_SCROLL_MARGIN} space-y-9 py-6`}>
       {focusVsConfig ? (
         <div className="space-y-5 text-center">
           <div>
@@ -169,40 +167,36 @@ export function ModelDecisionCompareSection({
 
       {hasCompareGrid ? (
         <div className="space-y-5">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="max-w-3xl">
             <h2 className="text-3xl font-semibold leading-tight text-text-primary">{compareCopy.title}</h2>
             <p className="mt-2 text-sm leading-6 text-text-secondary">{getCompareIntro(locale)}</p>
-            <p className="mt-1 text-sm text-text-secondary">{compareCopy.subline}</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {compareCards
               .filter((entry) => Boolean(entry.modelSlug))
-              .map((entry, index) => {
+              .map((entry) => {
                 const label = entry.title ?? '';
-                const canCompare =
-                  !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '');
                 const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                const compareHref = entry.href
+                const canCompare = !COMPARE_EXCLUDED_SLUGS.has(engineSlug) &&
+                  !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '') && isPublishedComparisonSlug(compareSlug);
+                const compareHref = entry.href && !entry.href.includes('-vs-')
                   ? entry.href
                   : canCompare
                   ? CANONICAL_ONLY_COMPARE_SLUGS.has(compareSlug)
                     ? localizeComparePath(compareSlug)
                     : localizeComparePath(compareSlug, engineSlug)
                   : localizeModelsPath(entry.modelSlug ?? '');
-                const ctaLabel = entry.ctaLabel ?? (canCompare ? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label));
-                const description = entry.description || compareCopy.cardDescription(label);
-                const Icon = getCardIcon(index);
-                const cardTitle = getCardTitle({ heroTitle, label, modelSlug: entry.modelSlug });
+                const ctaLabel = canCompare ? entry.ctaLabel ?? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label);
+                const description = locale === 'en' ? entry.description || compareCopy.cardDescription(label) : compareCopy.cardDescription(label);
+                const cardTitle = canCompare ? getCardTitle({ heroTitle, label, modelSlug: entry.modelSlug }) : label;
                 return (
                   <article
                     key={entry.modelSlug}
-                    className="rounded-xl border border-slate-200/80 bg-white/92 p-5 shadow-[0_18px_48px_-36px_rgba(15,23,42,0.34)] transition hover:-translate-y-0.5 hover:border-blue-200 dark:border-white/10 dark:bg-slate-950/72"
+                    className="model-compare-card border-t border-hairline py-5"
                   >
                     <div className="flex gap-4">
-                      <span className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
-                        <UIIcon icon={Icon} size={22} className={MODEL_PAGE_ICON} />
-                      </span>
+                      <EngineIcon engine={{ id: entry.modelSlug ?? '', label, brandId: entry.brand ?? undefined }} size={36} framed={false} />
                       <div>
                         <h3 className="!text-left text-base font-semibold text-text-primary">
                           {cardTitle}

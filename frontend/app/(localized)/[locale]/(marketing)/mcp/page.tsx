@@ -7,12 +7,10 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { McpJsonLdScripts } from './_components/McpJsonLdScripts';
 import { McpPageView } from './_components/McpPageView';
-import { buildMcpBudgetOptions } from './_lib/mcp-budget-options';
 import { getMcpCompatibilityEvidence } from './_lib/mcp-compatibility';
 import { buildMcpBreadcrumbJsonLd, buildMcpWebApplicationJsonLd } from './_lib/mcp-jsonld';
 import { getMcpHostProof } from './_lib/mcp-host-proof';
 import { getMcpPageCopy } from './_lib/mcp-page-copy';
-import { getMcpProof } from './_lib/mcp-proof';
 
 export const revalidate = 3600;
 
@@ -53,9 +51,7 @@ export default async function McpPage({
   if (!publication.renderPublicPage) notFound();
 
   const copy = getMcpPageCopy(locale);
-  const [proof] = await Promise.all([getMcpProof(locale)]);
   const hostProof = getMcpHostProof('claude', locale);
-  const budgetOptions = buildMcpBudgetOptions(locale, publication);
   const compatibility = getMcpCompatibilityEvidence();
   const canonicalUrl = buildMetadataUrls(locale, undefined, { englishPath: '/mcp' }).canonical;
   const application = buildMcpWebApplicationJsonLd({
@@ -69,11 +65,9 @@ export default async function McpPage({
   return (
     <>
       <McpPageView
-        budgetOptions={budgetOptions}
         compatibility={compatibility}
         copy={copy}
         locale={locale}
-        proof={proof}
         hostProof={hostProof}
         publication={publication}
       />

@@ -1,3 +1,4 @@
+import { isLocalPublicExamplesEnabled } from '@/server/local-public-examples';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { listExampleFamilyPage, listExamplesPage, type ExampleSort, type GalleryVideo } from '@/server/videos';
@@ -162,7 +163,7 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!isDatabaseConfigured()) {
+  if (!isDatabaseConfigured() && !isLocalPublicExamplesEnabled()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
@@ -190,7 +191,7 @@ export async function GET(req: NextRequest) {
       offset: page.offset,
       hasMore: page.hasMore,
     });
-    response.headers.set('Cache-Control', CACHE_CONTROL_HEADER);
+    response.headers.set('Cache-Control', isLocalPublicExamplesEnabled() ? 'no-store' : CACHE_CONTROL_HEADER);
     return response;
   } catch (error) {
     console.error('[api/examples] failed', error);

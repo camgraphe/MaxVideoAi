@@ -1,3 +1,4 @@
+import { getMcpPublicIntegrationIds, getMcpIntegration } from '@/lib/mcp-integration-registry';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import mcpPublication from '@/config/mcp-publication.json';
 import { getModelFamilyDefinition } from '@/config/model-families';
@@ -14,6 +15,10 @@ export type MarketingNavItem = {
   brandId?: string;
   emphasized?: boolean;
   badge?: 'new';
+  description?: string;
+  logo?: string;
+  icon?: 'cinema' | 'image' | 'speed' | 'ads' | 'guides' | 'character' | 'angle' | 'upscale' | 'cutout' | 'audio' | 'connect' | 'docs';
+  comparisonBrands?: Array<{ id: string; brandId?: string }>;
 };
 
 export type MarketingNavSection = {
@@ -31,23 +36,31 @@ export type MarketingNavDropdown = {
   allHref: LocalizedLinkHref;
   allLabelKey: string;
   allLabelFallback: string;
+  intro?: string;
+  heading?: string;
 };
 
-export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'compare' | 'pricing' | 'blog';
+export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'compare' | 'pricing' | 'blog' | 'connect';
 
 export type MarketingTopNavLink = {
   key: MarketingTopNavKey;
   href: string;
 };
 
-export const MARKETING_TOP_NAV_LINKS: readonly MarketingTopNavLink[] = [
+export const MARKETING_TOP_NAV_LINKS = [
   { key: 'models', href: '/models' },
   { key: 'examples', href: '/examples' },
   { key: 'compare', href: '/ai-video-engines' },
   { key: 'tools', href: '/tools' },
   { key: 'pricing', href: '/pricing' },
   { key: 'blog', href: '/blog' },
-] as const;
+] as const satisfies readonly MarketingTopNavLink[];
+
+export const MARKETING_SITE_NAV_LINKS: readonly MarketingTopNavLink[] = [
+  ...MARKETING_TOP_NAV_LINKS.filter((item) => item.key !== 'blog' && item.key !== 'pricing'),
+  { key: 'connect', href: '/mcp' },
+  { key: 'pricing', href: '/pricing' },
+];
 
 type LabeledSlug = {
   slug: string;
@@ -95,56 +108,25 @@ const docLink = (slug: string): LocalizedLinkHref => ({
   params: { slug },
 });
 
-const BASE_MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
-  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
-  { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
-  { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro' },
-  { slug: 'wan-3', label: 'Wan 3', badge: 'new' },
-  { slug: 'wan-3-prime', label: 'Wan 3 Prime', badge: 'new' },
-  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5' },
-  { slug: 'flux-3', label: 'FLUX 3' },
-  { slug: 'seedance-2-0', label: 'Seedance 2.0' },
-  { slug: 'veo-3-1', label: 'Veo 3.1' },
-  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1' },
-  { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
-  { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
-  { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
-  { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
-  { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
-] as const;
-
-const P1_MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
-  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
+// D85 editorial promotion. Publication and canonical identity remain registry-owned.
+const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
-  { slug: 'kling-3-turbo-pro', label: 'Kling 3.0 Turbo Pro' },
-  { slug: 'kling-3-turbo-standard', label: 'Kling 3.0 Turbo Standard' },
+  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
+  { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
+  { slug: 'kling-3-turbo-pro', label: 'Kling 3 Turbo Pro' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
-  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1' },
   { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro' },
+  { slug: 'ltx-2-5-fast', label: 'LTX 2.5 Fast' },
   { slug: 'wan-3', label: 'Wan 3', badge: 'new' },
   { slug: 'wan-3-prime', label: 'Wan 3 Prime', badge: 'new' },
-  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5' },
-  { slug: 'flux-3', label: 'FLUX 3' },
-  { slug: 'seedance-2-0', label: 'Seedance 2.0' },
-  { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
-] as const;
-
-const P1_NEW_MODEL_SLUGS = [
-  'minimax-h3-max',
-  'kling-3-turbo-pro',
-  'kling-3-turbo-standard',
-] as const;
+  { slug: 'happy-horse-1-1', label: 'Happy Horse 1.1' },
+];
 
 export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const bySlug = new Map(models.map((model) => [model.slug, model]));
   const byId = new Map(models.map((model) => [model.id, model]));
-  const p1Published = P1_NEW_MODEL_SLUGS.every(
-    (slug) => bySlug.get(slug)?.publication.model.published === true,
-  );
-  const candidates = p1Published ? P1_MODEL_MENU_CANDIDATES : BASE_MODEL_MENU_CANDIDATES;
-
-  return candidates
+  return MODEL_MENU_CANDIDATES
     .filter(({ slug }) => {
       const model = bySlug.get(slug);
       if (!model?.publication.model.published || model.lifecycle === 'retired') return false;
@@ -171,50 +153,24 @@ const EXAMPLES_MENU: LabeledSlug[] = orderExamplesHubFamilyIds(AVAILABLE_EXAMPLE
   .map((family) => ({
     slug: family.id,
     label: family.label,
+    brandId: family.brandId,
   }));
 
-const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...EXAMPLES_MENU];
-
-const P1_COMPARE_MENU: LabeledSlug[] = [
-  {
-    slug: 'minimax-h3-vs-minimax-h3-max',
-    label: 'MiniMax H3 vs H3 Max',
-  },
-  {
-    slug: 'kling-3-turbo-pro-vs-kling-3-turbo-standard',
-    label: 'Kling 3 Turbo Pro vs Standard',
-  },
-  {
-    slug: 'kling-3-pro-vs-kling-3-turbo-pro',
-    label: 'Kling 3 Pro vs Turbo Pro',
-  },
-  {
-    slug: 'gemini-omni-flash-vs-kling-3-turbo-pro',
-    label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro',
-  },
-  {
-    slug: 'gemini-omni-flash-vs-veo-3-1',
-    label: 'Gemini Omni Flash 1.1 vs Veo 3.1',
-  },
-];
+const PRIORITY_EXAMPLE_FAMILIES = ['ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse'];
+const PRIORITY_EXAMPLES = PRIORITY_EXAMPLE_FAMILIES.flatMap(id => EXAMPLES_MENU.filter(item => item.slug === id));
+const OTHER_EXAMPLES = EXAMPLES_MENU.filter(item => !PRIORITY_EXAMPLE_FAMILIES.includes(item.slug));
+const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...PRIORITY_EXAMPLES, ...OTHER_EXAMPLES];
 
 const COMPARE_MENU: LabeledSlug[] = [
-  {
-    slug: 'minimax-h3-vs-seedance-2-5',
-    label: 'MiniMax H3 vs Seedance 2.5',
-  },
-  {
-    slug: 'ltx-2-3-pro-vs-ltx-2-5-pro',
-    label: 'LTX 2.3 Pro vs LTX 2.5 Pro',
-  },
-  { slug: 'wan-2-6-vs-wan-3', label: 'Wan 2.6 vs Wan 3' },
-  { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5' },
-  { slug: 'grok-imagine-video-1-5-vs-sora-2', label: 'Grok Imagine Video 1.5 vs Sora 2' },
-  { slug: 'kling-o3-pro-vs-minimax-h3', label: 'Kling 3.0 Omni Pro vs MiniMax H3' },
+  { slug: 'minimax-h3-vs-seedance-2-5', label: 'MiniMax H3 vs Seedance 2.5' },
+  { slug: 'minimax-h3-vs-minimax-h3-max', label: 'MiniMax H3 vs H3 Max' },
+  { slug: 'kling-3-pro-vs-seedance-2-5', label: 'Kling 3 Pro vs Seedance 2.5' },
+  { slug: 'seedance-2-5-vs-wan-3', label: 'Seedance 2.5 vs Wan 3' },
+  { slug: 'ltx-2-5-fast-vs-ltx-2-5-pro', label: 'LTX 2.5 Fast vs Pro' },
+  { slug: 'wan-3-vs-wan-3-prime', label: 'Wan 3 vs Wan 3 Prime' },
   { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
-  { slug: 'kling-3-pro-vs-kling-o3-pro', label: 'Kling 3 Pro vs Kling 3.0 Omni Pro' },
-  { slug: 'ltx-2-3-pro-vs-veo-3-1', label: 'LTX 2.3 Pro vs Veo 3.1' },
-  { slug: 'minimax-h3-vs-veo-3-1', label: 'MiniMax H3 vs Veo 3.1' },
+  // Established search demand: retain this route even as newer models are promoted.
+  { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
 ];
 
 const BEST_FOR_USE_CASES: Array<LabeledSlug & { key: string }> = [
@@ -234,21 +190,25 @@ export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) =>
   badge: item.badge,
 }));
 
-export const MARKETING_NAV_EXAMPLES: MarketingNavItem[] = EXAMPLES_MENU.map((item) => ({
+export const MARKETING_NAV_EXAMPLES: MarketingNavItem[] = PRIORITY_EXAMPLES.map((item) => ({
   key: item.slug,
   label: item.label,
   href: exampleLink(item.slug),
+  brandId: ['sora', 'flux'].includes(item.slug) ? undefined : item.brandId,
+  ...(['sora', 'flux'].includes(item.slug) ? { icon: 'cinema' as const } : {}),
 }));
 
 export const MARKETING_FOOTER_EXAMPLES: MarketingNavItem[] = FOOTER_EXAMPLES_MENU.map((item) => ({
   key: item.slug,
   label: item.label,
   href: exampleLink(item.slug),
+  brandId: ['sora', 'flux'].includes(item.slug) ? undefined : item.brandId,
+  ...(['sora', 'flux'].includes(item.slug) ? { icon: 'cinema' as const } : {}),
 }));
 
 export function buildMarketingCompareMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const publishedSlugs = new Set(buildPublishedComparisonSlugsFromModels(models, () => true));
-  return [...P1_COMPARE_MENU, ...COMPARE_MENU]
+  return COMPARE_MENU
     .filter(({ slug }) => publishedSlugs.has(slug))
     .slice(0, 10);
 }
@@ -257,6 +217,10 @@ export const MARKETING_NAV_COMPARE: MarketingNavItem[] = buildMarketingCompareMe
   key: item.slug,
   label: item.label,
   href: compareLink(item.slug),
+  comparisonBrands: item.slug.split('-vs-').map(slug => {
+    const model = listRuntimeModels().find(model => model.slug === slug);
+    return { id: slug, brandId: model?.family ? getModelFamilyDefinition(model.family)?.brandId : undefined };
+  }),
   badge: item.badge,
 }));
 
@@ -264,22 +228,26 @@ export const MARKETING_NAV_BEST_FOR_USE_CASES: MarketingNavItem[] = BEST_FOR_USE
   key: item.key,
   label: item.label,
   href: bestForLink(item.slug),
+  icon: ({ 'cinematic-realism': 'cinema', 'image-to-video': 'image', 'fast-drafts': 'speed', ads: 'ads' } as const)[item.key as 'cinematic-realism' | 'image-to-video' | 'fast-drafts' | 'ads'],
 }));
 
 export const MARKETING_NAV_BEST_FOR_HUB: MarketingNavItem = {
   key: 'best-for',
   label: 'Best models by use case',
   href: bestForLink(),
+  icon: 'guides',
 };
 
 const MARKETING_MODELS_USE_CASE_SECTION: MarketingNavSection = {
   key: 'useCaseGuides',
-  hideTitle: true,
+  titleKey: 'nav.dropdown.guideTitle',
+  titleFallback: 'Find your model',
   items: [
     {
       key: 'all-use-case-guides',
       label: 'All use-case guides',
       href: bestForLink(),
+  icon: 'guides',
       emphasized: true,
     },
     ...MARKETING_NAV_BEST_FOR_USE_CASES,
@@ -288,19 +256,18 @@ const MARKETING_MODELS_USE_CASE_SECTION: MarketingNavSection = {
 
 const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
   key: 'useCaseGuides',
-  hideTitle: true,
+  titleKey: 'nav.dropdown.useCaseTitle',
+  titleFallback: 'Choose by use case',
   items: [{ ...MARKETING_NAV_BEST_FOR_HUB, emphasized: true }, ...MARKETING_NAV_BEST_FOR_USE_CASES],
 };
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
-  ...(getMcpPublicationState(mcpPublication).indexable
-    ? [{ key: 'ai-video-assistant', label: 'Claude, ChatGPT & Codex video assistant', href: '/mcp' as const }]
-    : []),
-  { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
-  { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
-  { key: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
-  { key: 'background-removal', label: 'Video Background Remover', href: toolLink('background-removal') },
-  { key: 'image', label: 'Generate image', href: '/app/image' },
+  { key: 'character-builder', icon: 'character', label: 'Consistent Character AI', href: toolLink('character-builder') },
+  { key: 'angle', icon: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
+  { key: 'upscale', icon: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
+  { key: 'background-removal', icon: 'cutout', label: 'Video Background Remover', href: toolLink('background-removal') },
+  { key: 'image', icon: 'image', label: 'Generate image', href: '/app/image' },
+  { key: 'audio', icon: 'audio', label: 'Generate audio', href: '/app/audio' },
 ];
 
 export const MARKETING_NAV_WORKFLOWS: MarketingNavItem[] = [
@@ -321,16 +288,40 @@ export const MARKETING_NAV_BLOG: MarketingNavItem[] = [
   { key: 'veo-3-updates', label: 'Veo 3 updates', href: blogLink('veo-3-updates') },
 ];
 
+const ASSISTANT_LOGOS: Record<string,string> = {claude:'/brand/partners/anthropic/claude-mark-light.svg',chatgpt:'/brand/partners/openai/openai-mark-light.svg',codex:'/brand/partners/openai/openai-mark-light.svg',openclaw:'/brand/partners/mcp/openclaw-mark.svg',n8n:'/brand/partners/mcp/n8n-mark.svg'};
+export const MARKETING_NAV_ASSISTANTS: MarketingNavItem[] = getMcpPublicationState(mcpPublication).indexable ? getMcpPublicIntegrationIds().map(id => ({key:id,label:getMcpIntegration(id).label,href:getMcpIntegration(id).englishPath as LocalizedLinkHref,logo:ASSISTANT_LOGOS[id]})) : [];
+
+const MARKETING_RESOURCES_SECTION: MarketingNavSection = {
+  key: 'resources', titleKey: 'nav.dropdown.resourcesTitle', titleFallback: 'Guides & resources',
+  items: [
+    {key:'blog', label:'Blog', href:'/blog', icon:'docs'},
+    {key:'get-started', label:'Getting started', href:docLink('get-started'), icon:'guides'},
+  ],
+};
+
 export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdown>> = {
   models: {
     items: MARKETING_NAV_MODELS,
-    sections: [MARKETING_MODELS_USE_CASE_SECTION],
+    desktopColumns: 2,
+    heading: 'Meet your next video model.',
+    intro: 'Capabilities, examples and prices. Choose what your project needs.',
+    sections: [MARKETING_MODELS_USE_CASE_SECTION, {
+      key: 'moreModels', titleKey: 'nav.dropdown.moreModels', titleFallback: 'More creative possibilities',
+      items: ['gpt-image-2', 'flux-3', 'gemini-omni-flash'].flatMap(slug => {
+        const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.lifecycle !== 'retired');
+        if (!model) return [];
+        return [{key: slug, label: slug === 'gpt-image-2' ? 'GPT Image 2' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.1', href: modelLink(slug), icon: slug === 'gpt-image-2' ? 'image' as const : 'cinema' as const}];
+      }),
+    }],
     allHref: { pathname: '/models' },
     allLabelKey: 'nav.dropdown.allModels',
     allLabelFallback: 'All models',
   },
   examples: {
     items: MARKETING_NAV_EXAMPLES,
+    heading: 'Watch before you choose.',
+    intro: 'Real videos, prompts and model details.',
+    sections: [{ key: 'moreExamples', titleKey: 'nav.dropdown.moreExamples', titleFallback: 'More to explore', items: OTHER_EXAMPLES.map(item => ({key:item.slug,label:item.label,href:exampleLink(item.slug),brandId:['sora', 'flux'].includes(item.slug) ? undefined : item.brandId,...(['sora', 'flux'].includes(item.slug) ? {icon:'cinema' as const} : {})})) }],
     desktopColumns: 2,
     allHref: { pathname: '/examples' },
     allLabelKey: 'nav.dropdown.allExamples',
@@ -338,13 +329,32 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
   },
   compare: {
     items: MARKETING_NAV_COMPARE,
+    heading: 'Two models. A clearer choice.',
+    intro: 'Compare scores, video examples, capabilities and costs.',
     sections: [MARKETING_COMPARE_DECISION_GUIDES_SECTION],
     allHref: { pathname: '/ai-video-engines' },
     allLabelKey: 'nav.dropdown.allComparisons',
     allLabelFallback: 'All comparisons',
   },
+  connect: {
+    items: MARKETING_NAV_ASSISTANTS,
+    desktopColumns: 2,
+    heading: 'Your assistant. Your video studio.',
+    intro: 'Choose a model, review the price and generate through MCP.',
+    allHref: '/mcp',
+    allLabelKey: 'nav.dropdown.allAssistants',
+    allLabelFallback: 'Explore AI assistants & MCP',
+    sections: [{ key:'connectGuides', titleKey:'nav.dropdown.connectGuides',titleFallback:'Connect and create',items:[
+      {key:'mcp-guide',icon:'connect',label:'How MCP works',href:'/mcp'},
+      {key:'mcp-docs',icon:'docs',label:'MCP documentation',href:docLink('mcp')},
+    ]}],
+  },
   tools: {
     items: MARKETING_NAV_TOOLS,
+    desktopColumns: 2,
+    heading: 'Shape the next part of your story.',
+    intro: 'Create your references, change an angle and finish the details.',
+    sections: [MARKETING_RESOURCES_SECTION],
     allHref: { pathname: '/tools' },
     allLabelKey: 'nav.dropdown.allTools',
     allLabelFallback: 'All tools',
