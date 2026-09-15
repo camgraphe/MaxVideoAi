@@ -29,9 +29,9 @@ const expectedEndpoints = {
 
 const expectedMarketingImages = {
   'gpt-image-2-5-flare':
-    'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/6c1fb061-f94e-497f-8f33-7b85d3bceb78.png',
+    'https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/eb9ab949-13ac-474a-b945-4f89d6effdd8.png',
   'gpt-image-2-5-sunburst':
-    'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/61ed3009-b76c-4a5b-acf4-b332563f5e99.png',
+    'https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/4e0c6297-2c04-4d32-a75a-f82ba3337548.png',
 } as const;
 
 for (const [engineId, endpoints] of Object.entries(expectedEndpoints)) {

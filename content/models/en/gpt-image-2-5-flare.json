@@ -4,7 +4,7 @@
   "seo": {
     "title": "GPT Image 2.5 Flare - Text-to-Image & Editing | MaxVideoAI",
     "description": "Generate and edit images with GPT Image 2.5 Flare in MaxVideoAI. Text-to-image, image-to-image, image-size presets, custom size, quality levels, output formats, and optional mask URL control.",
-    "image": "https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/6c1fb061-f94e-497f-8f33-7b85d3bceb78.png"
+    "image": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/eb9ab949-13ac-474a-b945-4f89d6effdd8.png"
   },
   "overview": "GPT Image 2.5 Flare is a quality-first image model inside MaxVideoAI. One Image Lab entry covers text-to-image and image-to-image, with image-size presets, custom width/height, quality, number of outputs, output format, and mask URL when an edit needs a constrained region.",
   "hero": {
@@ -444,63 +444,34 @@
     ],
     "fallbackItems": [
       {
-        "id": "product",
-        "title": "Product still with text",
-        "category": "Product",
-        "aspectRatio": "1024x768 · High",
-        "alt": "GPT Image 2.5 Flare product still with readable packaging label",
-        "tags": [
-          "product"
-        ]
-      },
-      {
-        "id": "typography",
-        "title": "Readable typography poster",
-        "category": "Readable text",
-        "aspectRatio": "4K",
-        "alt": "GPT Image 2.5 Flare poster with crisp typography hierarchy",
+        "id": "portrait",
+        "title": "VANTA — fashion cover",
+        "category": "Portrait & typography",
+        "aspectRatio": "1024x1536",
+        "alt": "GPT Image 2.5 Flare fashion cover titled VANTA with a strong pose and readable editorial text",
         "tags": [
           "typography"
         ]
       },
       {
-        "id": "ui",
-        "title": "UI mockup",
-        "category": "UI",
-        "aspectRatio": "1920x1080",
-        "alt": "GPT Image 2.5 Flare app screen mockup with readable interface copy",
+        "id": "cinema",
+        "title": "AFTERLIGHT — cinematic architecture",
+        "category": "Cinema & typography",
+        "aspectRatio": "4K · 16:9",
+        "alt": "GPT Image 2.5 Flare editorial spread titled AFTERLIGHT with stormy architecture and a dancer",
         "tags": [
-          "ui"
-        ]
-      },
-      {
-        "id": "edit",
-        "title": "Controlled product edit",
-        "category": "Image edit",
-        "aspectRatio": "Auto",
-        "alt": "GPT Image 2.5 Flare edit preserving product shape and label",
-        "tags": [
-          "edit"
-        ]
-      },
-      {
-        "id": "mask",
-        "title": "Mask-guided edit",
-        "category": "Mask edit",
-        "aspectRatio": "Mask URL",
-        "alt": "GPT Image 2.5 Flare edit constrained to a masked region",
-        "tags": [
-          "mask"
-        ]
-      },
-      {
-        "id": "final",
-        "title": "4K hero still",
-        "category": "Final",
-        "aspectRatio": "3840x2160",
-        "alt": "GPT Image 2.5 Flare 4K hero still with sharp product details",
-        "tags": [
+          "typography",
           "final"
+        ]
+      },
+      {
+        "id": "afterlight",
+        "title": "After-dark arts direction",
+        "category": "Editorial campaign",
+        "aspectRatio": "Portrait",
+        "alt": "GPT Image 2.5 Flare artistic after-dark campaign artwork with editorial typography",
+        "tags": [
+          "typography"
         ]
       }
     ],

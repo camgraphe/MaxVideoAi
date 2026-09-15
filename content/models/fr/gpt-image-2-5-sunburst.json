@@ -4,7 +4,7 @@
   "seo": {
     "title": "GPT Image 2.5 Sunburst - text-to-image et édition | MaxVideoAI",
     "description": "Générez et éditez des images avec GPT Image 2.5 Sunburst dans MaxVideoAI. Text-to-image, image-to-image, presets de taille, taille custom, niveaux de qualité, formats de sortie et mask URL optionnel.",
-    "image": "https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/61ed3009-b76c-4a5b-acf4-b332563f5e99.png"
+    "image": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/4e0c6297-2c04-4d32-a75a-f82ba3337548.png"
   },
   "overview": "GPT Image 2.5 Sunburst est un modèle image quality-first dans MaxVideoAI. Une seule entrée Image Lab couvre text-to-image et image-to-image, avec presets de taille, width/height custom, qualité, nombre de sorties, format et mask URL si l’edit doit rester dans une zone précise.",
   "hero": {
@@ -444,62 +444,23 @@
     ],
     "fallbackItems": [
       {
-        "id": "product",
-        "title": "Packshot produit texte",
-        "category": "Produit",
-        "aspectRatio": "1024x768 · High",
-        "alt": "Packshot GPT Image 2.5 Sunburst avec label produit lisible",
-        "tags": [
-          "product"
-        ]
-      },
-      {
-        "id": "typography",
-        "title": "Poster typographique",
-        "category": "Texte lisible",
-        "aspectRatio": "4K",
-        "alt": "Poster GPT Image 2.5 Sunburst avec hiérarchie typographique nette",
+        "id": "cover",
+        "title": "PARALLAX — magazine du futur",
+        "category": "Portrait et design d’information",
+        "aspectRatio": "1024x1536",
+        "alt": "Couverture PARALLAX GPT Image 2.5 Sunburst avec portrait futuriste et informations lisibles superposées",
         "tags": [
           "typography"
         ]
       },
       {
-        "id": "ui",
-        "title": "Mockup UI",
-        "category": "UI",
-        "aspectRatio": "1920x1080",
-        "alt": "Mockup d’écran GPT Image 2.5 Sunburst avec interface lisible",
+        "id": "architecture",
+        "title": "COMMON GROUND — atlas urbain",
+        "category": "Architecture et design d’information",
+        "aspectRatio": "4K · 16:9",
+        "alt": "Atlas urbain GPT Image 2.5 Sunburst intitulé COMMON GROUND avec légendes, cartes et modules éditoriaux",
         "tags": [
-          "ui"
-        ]
-      },
-      {
-        "id": "edit",
-        "title": "Retouche produit",
-        "category": "Edit image",
-        "aspectRatio": "Auto",
-        "alt": "Retouche GPT Image 2.5 Sunburst qui préserve produit et label",
-        "tags": [
-          "edit"
-        ]
-      },
-      {
-        "id": "mask",
-        "title": "Edit guidé par masque",
-        "category": "Masque",
-        "aspectRatio": "Mask URL",
-        "alt": "Retouche GPT Image 2.5 Sunburst limitée à une zone masquée",
-        "tags": [
-          "mask"
-        ]
-      },
-      {
-        "id": "final",
-        "title": "Hero still 4K",
-        "category": "Final",
-        "aspectRatio": "3840x2160",
-        "alt": "Still hero GPT Image 2.5 Sunburst en 4K avec détails produit nets",
-        "tags": [
+          "typography",
           "final"
         ]
       }

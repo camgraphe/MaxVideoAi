@@ -18,8 +18,8 @@ const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];
 type Variant = 'flare' | 'sunburst';
 
 const MARKETING_IMAGE_BY_VARIANT: Record<Variant, string> = {
-  flare: 'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/6c1fb061-f94e-497f-8f33-7b85d3bceb78.png',
-  sunburst: 'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/61ed3009-b76c-4a5b-acf4-b332563f5e99.png',
+  flare: 'https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/eb9ab949-13ac-474a-b945-4f89d6effdd8.png',
+  sunburst: 'https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/4e0c6297-2c04-4d32-a75a-f82ba3337548.png',
 };
 
 function buildEngine(variant: Variant): EngineCaps {
@@ -179,8 +179,8 @@ function buildEntry(variant: Variant): RawFalEngineEntry {
       videoUrl: MARKETING_IMAGE_BY_VARIANT[variant],
       imagePath: MARKETING_IMAGE_BY_VARIANT[variant],
       altText: variant === 'flare'
-        ? 'GPT Image 2.5 Flare render of a monumental after-dark arts festival poster'
-        : 'GPT Image 2.5 Sunburst render of a text-rich illustrated city atlas',
+        ? 'GPT Image 2.5 Flare editorial scene titled Afterlight, with architecture, weather and a dancer'
+        : 'GPT Image 2.5 Sunburst COMMON GROUND city atlas with architecture, maps and layered editorial information',
     },
     prompts: [
       { title: 'Product campaign', prompt: 'Premium product campaign still, exact readable label, controlled studio light, polished catalog composition.', mode: 't2i' },

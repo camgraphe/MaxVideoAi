@@ -3,7 +3,8 @@
   "versionLabel": "Uni-1 Max",
   "seo": {
     "title": "Luma Uni-1 Max : tarifs, images 2K et retouche | MaxVideoAI",
-    "description": "Utilisez Luma Uni-1 Max dans MaxVideoAI pour images 2K haut de gamme, visuels produit, compositions sensibles à la typographie, retouches source et flux image guidés par références."
+    "description": "Utilisez Luma Uni-1 Max dans MaxVideoAI pour images 2K haut de gamme, visuels produit, compositions sensibles à la typographie, retouches source et flux image guidés par références.",
+    "image": "/assets/model-examples/luma-uni-1-max/hero-product.webp"
   },
   "overview": "Luma Uni-1 Max est la route Uni plus haute fidélité dans MaxVideoAI pour les images retenues qui demandent plus de détail produit, des révisions soignées, des compositions sensibles à la typographie et une direction créative par références.",
   "pricingNotes": "Les prix affichés utilisent les prix publics de référence MaxVideoAI. Uni-1 Max n’est pas présenté comme moins cher ou plus rapide que Uni-1; choisissez-le quand l’image demande une route plus fidèle.",
