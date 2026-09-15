@@ -540,3 +540,18 @@ Aucune migration, modification de flags MCP, génération payante ou opération
 Stripe n’est exécutée pendant la publication. La version précédente est
 conservée comme référence de retour arrière. Voir le
 [bilan D93](production-release-2026-09-15.md) pour les preuves et limites.
+
+
+## D94 — Tests en production et performance mesurée
+
+Adrien demande la recette et les Core Web Vitals après publication. Il autorise
+explicitement une génération unique, plafond 1 $. Cette autorisation est
+consommée par un test MiniMax H3 Max réussi de 0,98 $, résultat et débit vérifiés.
+Aucun achat de crédits ni deuxième génération.
+
+24 mesures Lighthouse avec navigateur neuf couvrent six gabarits. Les mesures
+Google de laboratoire sont encourageantes ; les données terrain sur 28 jours
+restent mobiles non validées et ne permettent pas encore de conclure sur la
+refonte. Character Builder présente un LCP variable ; le menu FR connecté
+a deux libellés anglais. Aucun changement visuel ni nouveau déploiement dans
+cette passe de tests. Voir le [bilan D94](production-tests-cwv-2026-09-15.md).
