@@ -43,6 +43,8 @@ async function mountWorkspace(initialJobs = jobs, localOnly = false) {
   const { useWorkspaceRenderState } = await import(
     '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRenderState'
   );
+  const { useWorkspacePreviewState } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePreviewState');
+  let preview!: ReturnType<typeof useWorkspacePreviewState>;
   let state!: ReturnType<typeof useWorkspaceRenderState>;
   let recentJobs = localOnly ? [] : initialJobs;
   const options = {
@@ -55,6 +57,11 @@ async function mountWorkspace(initialJobs = jobs, localOnly = false) {
   const commits: string[][] = [];
   function Fixture() {
     state = useWorkspaceRenderState({ ...options, recentJobs });
+    preview = useWorkspacePreviewState({ provider: 'fal', recentJobs, selectedPreview: state.selectedPreview,
+      pendingSummaryMap: state.pendingSummaryMap, compositeOverride: options.compositeOverride,
+      activeVideoGroup: state.activeVideoGroup, initialPreviewGroup: { id:'old-preview', provider:'fal',
+        layout:'x1',status:'ready',createdAt:jobs[0].createdAt,items:[{id:'old-preview',url:'/old.mp4',aspect:'16:9'}] },
+      effectiveRequestedEngineId:null,effectiveRequestedEngineToken:null,requestedJobId:null,fromVideoId:null });
     React.useLayoutEffect(() => { commits.push(state.renders.map((render) => render.jobId!)); });
     return null;
   }
@@ -67,6 +74,7 @@ async function mountWorkspace(initialJobs = jobs, localOnly = false) {
   return {
     requests, commits,
     get state() { return state; },
+    get preview() { return preview; },
     async respond(index: number, payload: Record<string, unknown> = {}, status = 200) {
       await act(async () => requests[index].resolve(new Response(JSON.stringify({
         ok: true, jobId: requests[index].jobId, status: 'pending', message: 'IN_PROGRESS', ...payload,
@@ -191,3 +199,27 @@ test('the completed selected preview survives removal from the active render lis
     assert.equal(fixture.requests.length,1);
   } finally { await fixture.dispose(); }
 });
+
+
+for (const via of ['history', 'poll'] as const) {
+  for (const otherActive of [false, true]) {
+    test(`selected output remains in the main player after ${via} completion with other active job=${otherActive}`, async () => {
+      const fixture = await mountWorkspace(jobs.slice(0, otherActive ? 2 : 1), true);
+      try {
+        const render = fixture.state.renders.find(item => item.jobId === jobs[0].jobId)!;
+        await act(async () => {
+          fixture.state.setSelectedPreview({ id:render.jobId!, localKey:render.localKey, batchId:render.batchId,
+            status:'pending',thumbUrl:'/placeholder.jpg',aspectRatio:'16:9' });
+          fixture.state.setActiveGroupId(render.groupId ?? render.batchId ?? render.localKey);
+        });
+        assert.equal(fixture.preview.displayCompositeGroup?.items[0].jobId, jobs[0].jobId);
+        const finished = { ...jobs[0], status:'completed',videoUrl:'/new-result.mp4',thumbUrl:'/new-result.jpg' };
+        if (via === 'poll') await fixture.respond(fixture.requests.findIndex(request=>request.jobId===jobs[0].jobId), finished);
+        await fixture.update(otherActive ? [finished,jobs[1]] : [finished]);
+        assert.equal(fixture.state.renders.some(item => item.jobId===jobs[0].jobId), false);
+        assert.equal(fixture.preview.displayCompositeGroup?.items[0].jobId, jobs[0].jobId);
+        assert.equal(fixture.preview.displayCompositeGroup?.items[0].url, '/new-result.mp4');
+      } finally { await fixture.dispose(); }
+    });
+  }
+}
