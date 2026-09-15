@@ -73,7 +73,7 @@ test('checkout summary separates the quoted payment from USD wallet credits', as
   ]);
   assert.match(
     document.querySelector('button')?.textContent ?? '',
-    /Pay by card/,
+    /Card or other methods/,
   );
 });
 

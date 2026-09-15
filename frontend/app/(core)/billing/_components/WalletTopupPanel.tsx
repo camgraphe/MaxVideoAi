@@ -97,7 +97,6 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
     turnstileSiteKey,
     wallet,
   } = props;
-  const shouldShowFirstTopupAmexNotice = wallet?.hasCompletedTopUp === false;
 
   return (
     <section className={styles.fundingSurface} aria-labelledby="billing-funding-title">
@@ -202,7 +201,6 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
           </WalletCheckoutSummary>
         </section>
 
-        {shouldShowFirstTopupAmexNotice ? <p className={styles.firstTopupNotice}>{copy.wallet.firstTopupAmexNotice}</p> : null}
         {wallet && wallet.balance < 2 ? <p className="mt-3 text-sm text-state-warning">{copy.wallet.lowBalance}</p> : null}
       </div>
     </section>

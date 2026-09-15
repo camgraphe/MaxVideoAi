@@ -306,12 +306,6 @@
   line-height: 1.4;
 }
 
-.firstTopupNotice {
-  margin-top: 12px;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-}
-
 @media (max-width: 640px) {
   .fundingSurface {
     border-radius: 15px;

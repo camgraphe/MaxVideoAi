@@ -37,7 +37,7 @@ const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
 const STRIPE_API_VERSION = '2023-10-16';
-const STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION = '2025-02-24.acacia' as Stripe.LatestApiVersion;
+const STRIPE_HOSTED_CHECKOUT_API_VERSION = '2025-02-24.acacia' as Stripe.LatestApiVersion;
 const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
 const CHECKOUT_COPY_BY_LOCALE: Record<
   AppLocale,
@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
       ? STRIPE_API_VERSION
       : isExpressCheckoutTopUp
         ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION
-        : STRIPE_CHECKOUT_BRAND_RESTRICTIONS_API_VERSION;
+        : STRIPE_HOSTED_CHECKOUT_API_VERSION;
   const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, {
     apiVersion: stripeApiVersion,
   });
@@ -393,7 +393,6 @@ export async function POST(req: NextRequest) {
     // Create a one-off Checkout Session for top-up
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
-    const shouldBlockAmexForCheckoutSession = isFirstTopUp && !isExpressCheckoutTopUp;
 
     if (isExpressCheckoutTopUp && !isFirstTopUp) {
       const reusableSession = await findReusableExpressCheckoutSession(stripe, {
@@ -436,9 +435,6 @@ export async function POST(req: NextRequest) {
         currency: resolvedCurrencyUpper,
         locale: checkoutLocale,
         checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
-        amexBlocked: shouldBlockAmexForCheckoutSession,
-        brandsBlocked: shouldBlockAmexForCheckoutSession ? ['american_express'] : [],
-        amexBlockSkippedReason: isFirstTopUp && isExpressCheckoutTopUp ? 'checkout_elements_unsupported' : null,
         ...buildCheckoutAttemptAttributionMetadata(walletAttribution),
       },
     });
@@ -488,12 +484,6 @@ export async function POST(req: NextRequest) {
       checkout_captcha_passed: String(checkoutGuard.captchaPassed),
     };
     Object.assign(sessionMetadata, walletAttributionMetadata);
-    if (shouldBlockAmexForCheckoutSession) {
-      sessionMetadata.amex_block_required = 'true';
-      sessionMetadata.brands_blocked = 'american_express';
-    } else if (isFirstTopUp && isExpressCheckoutTopUp) {
-      sessionMetadata.amex_block_skipped_reason = 'checkout_elements_unsupported';
-    }
     sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
     if (tier?.label) {
       sessionMetadata.topup_tier_label = tier.label;
@@ -543,7 +533,6 @@ export async function POST(req: NextRequest) {
         address: 'auto',
         name: 'auto',
       },
-      blockAmexCards: shouldBlockAmexForCheckoutSession,
     });
 
     const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
