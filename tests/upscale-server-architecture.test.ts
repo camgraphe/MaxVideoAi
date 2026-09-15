@@ -22,6 +22,11 @@ const outputPersistenceSource = readFileSync(outputPersistencePath, 'utf8');
 const errorsSource = readFileSync(errorsPath, 'utf8');
 const constantsSource = readFileSync(constantsPath, 'utf8');
 
+test('upscale outputs must be owned by MaxVideoAI before completion', () => {
+  assert.match(outputPersistenceSource, /MaxVideoAI storage is required for upscale outputs/);
+  assert.doesNotMatch(outputPersistenceSource, /catch \(error\) \{[\s\S]*?return output;/);
+});
+
 test('upscale server delegates request and provider normalization helpers', () => {
   assert.ok(existsSync(requestUtilsPath), 'upscale request helpers should live in a server-local utility module');
   assert.ok(existsSync(pricingContextPath), 'upscale pricing context should live in a focused server module');

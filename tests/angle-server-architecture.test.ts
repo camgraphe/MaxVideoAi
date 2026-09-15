@@ -20,6 +20,11 @@ const angleReceiptsSource = readFileSync(angleReceiptsPath, 'utf8');
 const angleInitialJobSource = readFileSync(angleInitialJobPath, 'utf8');
 const angleEventLogSource = readFileSync(angleEventLogPath, 'utf8');
 
+test('angle outputs must be owned by MaxVideoAI before completion', () => {
+  assert.match(outputPersistenceSource, /MaxVideoAI storage is required for angle outputs/);
+  assert.doesNotMatch(outputPersistenceSource, /catch \(error\) \{[\s\S]*?return output;/);
+});
+
 test('angle server delegates request and provider normalization helpers', () => {
   assert.ok(existsSync(requestUtilsPath), 'angle request helpers should live in a server-local utility module');
   assert.match(

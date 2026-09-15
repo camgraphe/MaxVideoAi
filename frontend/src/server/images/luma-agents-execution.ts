@@ -424,6 +424,7 @@ export async function executeLumaAgentsImageGenerationWithFalFallback(
     images: completed.images,
     jobId: params.jobId,
     userId: params.userId,
+    requireOwnedOutput: true,
   });
   assertStableLumaImageCopies({
     originalImages: completed.images,

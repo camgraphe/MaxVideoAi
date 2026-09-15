@@ -11,8 +11,11 @@ async function persistAngleOutput(params: {
   engineLabel: string;
 }): Promise<AngleToolOutput> {
   const { output, outputIndex, userId, jobId, providerJobId, engineId, engineLabel } = params;
-  if (!isStorageConfigured() || !output.url) {
-    return output;
+  if (!isStorageConfigured()) {
+    throw new Error('MaxVideoAI storage is required for angle outputs');
+  }
+  if (!output.url) {
+    throw new Error('Angle output URL is missing');
   }
 
   try {
@@ -88,7 +91,7 @@ async function persistAngleOutput(params: {
       outputIndex,
       error: error instanceof Error ? error.message : String(error),
     });
-    return output;
+    throw error;
   }
 }
 

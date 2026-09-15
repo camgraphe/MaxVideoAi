@@ -27,6 +27,13 @@ const expectedEndpoints = {
   },
 } as const;
 
+const expectedMarketingImages = {
+  'gpt-image-2-5-flare':
+    'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/6c1fb061-f94e-497f-8f33-7b85d3bceb78.png',
+  'gpt-image-2-5-sunburst':
+    'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/61ed3009-b76c-4a5b-acf4-b332563f5e99.png',
+} as const;
+
 for (const [engineId, endpoints] of Object.entries(expectedEndpoints)) {
   test(`${engineId} exposes the two exact fal.ai routes`, () => {
     const entry = listFalEngines().find((candidate) => candidate.id === engineId);
@@ -34,6 +41,16 @@ for (const [engineId, endpoints] of Object.entries(expectedEndpoints)) {
     assert.ok(entry);
     assert.equal(entry.modes.find((mode) => mode.mode === 't2i')?.falModelId, endpoints.t2i);
     assert.equal(entry.modes.find((mode) => mode.mode === 'i2i')?.falModelId, endpoints.i2i);
+  });
+
+  test(`${engineId} uses its reviewed MaxVideoAI generation as model-page media`, () => {
+    const entry = listFalEngines().find((candidate) => candidate.id === engineId);
+    const expectedImage = expectedMarketingImages[engineId as keyof typeof expectedMarketingImages];
+
+    assert.ok(entry);
+    assert.equal(entry.media?.imagePath, expectedImage);
+    assert.equal(entry.media?.videoUrl, expectedImage);
+    assert.match(entry.media?.altText ?? '', /GPT Image 2\.5/);
   });
 
   test(`${engineId} exposes deterministic quality, background, and edit-reference controls`, () => {

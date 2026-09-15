@@ -53,6 +53,7 @@ async function copyImageToStorage(params: {
   index: number;
   jobId: string;
   userId: string;
+  requireOwnedOutput: boolean;
   deps: Required<ImageOutputStorageDeps>;
 }): Promise<GeneratedImage> {
   const sourceUrl = normalizeMediaUrl(params.image.url) ?? params.image.url;
@@ -69,9 +70,13 @@ async function copyImageToStorage(params: {
       prefix: 'renders/images',
       fileName: `${params.jobId}-${params.index + 1}.${inferImageExtension(mime, sourceUrl)}`,
     });
+    const storedUrl = normalizeMediaUrl(upload.url) ?? upload.url;
+    if (params.requireOwnedOutput && !params.deps.extractStorageKeyFromUrl(storedUrl)) {
+      throw new Error('Uploaded image URL is not owned by MaxVideoAI storage');
+    }
     return {
       ...params.image,
-      url: normalizeMediaUrl(upload.url) ?? upload.url,
+      url: storedUrl,
       width: upload.width ?? params.image.width ?? null,
       height: upload.height ?? params.image.height ?? null,
       mimeType: upload.mime ?? params.image.mimeType ?? mime,
@@ -83,6 +88,9 @@ async function copyImageToStorage(params: {
       sourceUrl,
       error,
     });
+    if (params.requireOwnedOutput) {
+      throw new Error('Could not persist generated image to MaxVideoAI storage', { cause: error });
+    }
     return params.image;
   }
 }
@@ -91,6 +99,7 @@ export async function copyGeneratedImagesToStorage(params: {
   images: GeneratedImage[];
   jobId: string;
   userId: string;
+  requireOwnedOutput?: boolean;
   deps?: ImageOutputStorageDeps;
 }): Promise<GeneratedImage[]> {
   const deps: Required<ImageOutputStorageDeps> = {
@@ -100,7 +109,18 @@ export async function copyGeneratedImagesToStorage(params: {
     uploadImageToStorage: params.deps?.uploadImageToStorage ?? uploadImageToStorage,
   };
 
-  if (!params.images.length || !deps.isStorageConfigured()) {
+  if (!params.images.length) {
+    return params.images;
+  }
+
+  const hasExternalOutput = params.images.some((image) => {
+    const sourceUrl = normalizeMediaUrl(image.url) ?? image.url;
+    return /^https?:\/\//i.test(sourceUrl) && !deps.extractStorageKeyFromUrl(sourceUrl);
+  });
+  if (!deps.isStorageConfigured()) {
+    if (params.requireOwnedOutput && hasExternalOutput) {
+      throw new Error('MaxVideoAI storage is required for generated image outputs');
+    }
     return params.images;
   }
 
@@ -111,6 +131,7 @@ export async function copyGeneratedImagesToStorage(params: {
         index,
         jobId: params.jobId,
         userId: params.userId,
+        requireOwnedOutput: params.requireOwnedOutput === true,
         deps,
       })
     )

@@ -147,6 +147,7 @@ export async function executeBytePlusSeedreamGeneration(params: {
       images: normalizedImages,
       jobId: params.jobId,
       userId: params.userId,
+      requireOwnedOutput: true,
     });
     const thumbUrls = await createImageThumbnailBatch({
       jobId: params.jobId,

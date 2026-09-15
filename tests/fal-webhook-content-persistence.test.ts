@@ -22,6 +22,7 @@ test('real webhook persists the same content refusal in job, output, refund and 
     '@/server/media/detect-has-audio': 'export const detectHasAudioStream = async () => false; export const detectVideoDimensions = async () => null;',
     '@/server/media-library': 'export const upsertLegacyJobOutputs = async (value) => fixture.outputs.push(value);',
     './upscale-duration-integrity': 'export const checkUpscaleDuration = async () => "complete"; export const rejectTruncatedUpscale = async () => {};',
+    './fal-webhook-image-output': 'export const persistFalWebhookImageOutputs = async () => { throw Error("Unexpected image persistence"); };',
   };
   const bundle = await build({
     absWorkingDir: frontend, bundle: true, format: 'cjs', platform: 'node', write: false,

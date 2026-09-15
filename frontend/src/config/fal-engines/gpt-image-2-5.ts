@@ -17,6 +17,11 @@ const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];
 
 type Variant = 'flare' | 'sunburst';
 
+const MARKETING_IMAGE_BY_VARIANT: Record<Variant, string> = {
+  flare: 'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/6c1fb061-f94e-497f-8f33-7b85d3bceb78.png',
+  sunburst: 'https://media.maxvideoai.com/media-assets/301cc489-d689-477f-94c4-0b051deda0bc/61ed3009-b76c-4a5b-acf4-b332563f5e99.png',
+};
+
 function buildEngine(variant: Variant): EngineCaps {
   const id = `gpt-image-2-5-${variant}`;
   const variantLabel = variant === 'flare' ? 'Flare' : 'Sunburst';
@@ -170,6 +175,13 @@ function buildEntry(variant: Variant): RawFalEngineEntry {
     },
     type: 'image',
     seoText: `GPT Image 2.5 ${variantLabel} provides ${positioning} in the MaxVideoAI Image workspace.`,
+    media: {
+      videoUrl: MARKETING_IMAGE_BY_VARIANT[variant],
+      imagePath: MARKETING_IMAGE_BY_VARIANT[variant],
+      altText: variant === 'flare'
+        ? 'GPT Image 2.5 Flare render of a monumental after-dark arts festival poster'
+        : 'GPT Image 2.5 Sunburst render of a text-rich illustrated city atlas',
+    },
     prompts: [
       { title: 'Product campaign', prompt: 'Premium product campaign still, exact readable label, controlled studio light, polished catalog composition.', mode: 't2i' },
       { title: 'Controlled edit', prompt: 'Preserve the subject and typography, replace the environment, and keep materials and lighting coherent.', mode: 'i2i' },
