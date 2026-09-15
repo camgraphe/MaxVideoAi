@@ -518,3 +518,25 @@ ont aussi été nettoyées pour que le diff complet contre main passe le contrô
 
 Résultat actuel du build, de la CI et lien d’aperçu :
 [PR #298](https://github.com/camgraphe/MaxVideoAi/pull/298).
+
+
+## D93 — Publication de la refonte marketing
+
+Le 15 septembre 2026, Adrien demande explicitement de publier la refonte et de
+vérifier directement en production. Cette instruction remplace la proposition
+D92 de provisionner une préproduction transactionnelle isolée avant publication.
+
+La PR #298 est fusionnée après succès de la CI sur `37634c614`. Le merge
+`f60aa0c974769eb9df2849daa225a07fb305cd4d` déclenche un nouveau build Production ;
+l’aperçu Preview n’est pas promu. Le déploiement
+`dpl_8j6ryLom1qXxJ7bWpW2QNqpNBvGk` devient la cible de production.
+
+18 contrôles publics HTTP/SEO et les six sitemaps passent. La couverture des
+sitemaps est identique au relevé de production avant fusion. L’accueil, sa FAQ
+ouverte, la galerie LTX, sa lecture manuelle, Character Builder, OpenClaw ES et
+le comparatif MiniMax H3 / Seedance 2.5 sont inspectés dans le navigateur.
+
+Aucune migration, modification de flags MCP, génération payante ou opération
+Stripe n’est exécutée pendant la publication. La version précédente est
+conservée comme référence de retour arrière. Voir le
+[bilan D93](production-release-2026-09-15.md) pour les preuves et limites.
