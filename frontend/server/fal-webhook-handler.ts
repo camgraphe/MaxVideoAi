@@ -25,6 +25,7 @@ import { toUserFacingFailureMessage } from '@/server/user-facing-failure-message
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { checkUpscaleDuration, rejectTruncatedUpscale } from './upscale-duration-integrity';
+import { persistFalWebhookImageOutputs } from './fal-webhook-image-output';
 import {
   extractFalErrorMessage,
   extractIdentifiersFromPayload,
@@ -40,7 +41,6 @@ import {
   normalizeStatus,
   type FalWebhookPayload,
 } from './fal-webhook-mapping';
-
 export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void> {
   const payload = (rawPayload ?? {}) as FalWebhookPayload;
   const requestId = payload.request_id ?? payload.requestId;
@@ -49,7 +49,6 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   const identifiers = extractIdentifiersFromPayload(payload);
-
   let jobRows = await query<AppJobRow>(
     `SELECT job_id, user_id, engine_id, engine_label, payment_status, pricing_snapshot, vendor_account_id, currency, final_price_cents, duration_sec, status, progress, video_url, to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url, to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id, created_at, settings_snapshot
      FROM app_jobs
@@ -209,15 +208,11 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     ingest(payload.data);
     ingest(finalPayload);
   }
-  const imageUrls = isImageEngine ? Array.from(imageUrlSet) : [];
+  let imageUrls = isImageEngine ? Array.from(imageUrlSet) : [];
+  const heroImageIndex = existingHeroImage ? imageUrls.indexOf(existingHeroImage) : -1;
+  if (imageUrls.length) imageUrls = await persistFalWebhookImageOutputs({ imageUrls, jobId: job.job_id, userId: job.user_id });
   let heroImageUrl: string | null = null;
-  if (isImageEngine && imageUrls.length) {
-    if (existingHeroImage && imageUrlSet.has(existingHeroImage)) {
-      heroImageUrl = existingHeroImage;
-    } else {
-      heroImageUrl = imageUrls[0] ?? null;
-    }
-  }
+  if (isImageEngine && imageUrls.length) heroImageUrl = imageUrls[heroImageIndex >= 0 ? heroImageIndex : 0] ?? null;
   if (isImageEngine && heroImageUrl && !nextThumbUrl) {
     nextThumbUrl = heroImageUrl;
   }

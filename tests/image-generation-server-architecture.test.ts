@@ -248,7 +248,8 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(lumaAgentsImageResponseSource, /normalizeLumaAgentsImageGeneration/);
   assert.match(lumaAgentsImageErrorSource, /shouldFallbackFromLumaAgentsImageSubmit/);
   assert.match(executorSource, /copyGeneratedImagesToStorage/);
-  assert.match(executorSource, /jobSurface === 'storyboard'/);
+  assert.doesNotMatch(executorSource, /const stableImages = jobSurface === 'storyboard'/);
+  assert.match(executorSource, /copyGeneratedImagesToStorage\(\{[\s\S]*requireOwnedOutput: true/);
   assert.match(completionSource, /export async function persistCompletedImageGeneration/);
   assert.match(completionSource, /paymentStatus\?: string/);
   assert.match(completionSource, /payment_status = \$15/);
