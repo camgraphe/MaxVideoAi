@@ -472,3 +472,23 @@ Recette : 21 routes SEO et 90 destinations, 115 tests ciblés ; builds isolés s
 Après le « ok go », sauvegarde du travail D89 puis intégration locale de `origin/main` (PR 297). Les derniers choix visuels restent prioritaires ; aucune nouvelle section marketing. Les fondations MCP/OAuth sont fusionnées, les contrats anciens alignés sur les menus, galeries et palette approuvés. Derniers libellés OpenClaw/n8n FR/ES localisés.
 
 Build isolé validé, 5 531 tests principaux réussis et 1 ignoré ; 69 routes SEO et quatre sitemaps stables avant/après. Les cinq cas Studio/MCP intégrés restent bloqués au démarrage par la résolution d’une dépendance AWS dans le snapshot temporaire, erreur reproduite sur main seul. Recette authentifiée, sitemaps vidéo avec données et mesures CWV restent nécessaires. Ce lot ne donne pas un feu vert de publication. Aucun push ou déploiement. Bilan : [main-integration-review-2026-09-15.md](main-integration-review-2026-09-15.md).
+
+
+## D91 — Recette locale complète et fond vidéo allégé (15 septembre 2026)
+
+Après le « ok go », le blocage de résolution des dépendances Node est isolé et corrigé
+uniquement dans les processus des tests Studio. Les onze scénarios d’intégration
+passent, sans affaiblir les contrôles d’accès. Une base jetable avec les 297 cartes
+publiques permet de vérifier 81 routes et les sitemaps vidéo, dont l’exclusion des
+médias privés et non indexables. Aucun accès à la base de production.
+
+La mesure mobile révèle une requête d’image originale inutile pour le fond flouté
+des exemples verticaux. Le fond réutilise désormais la vignette responsive du héros ;
+composition, géométrie et lecture restent identiques. Cas vertical LTX du jeu public :
+LCP médian froid 5,03 → 3,77 s, score 80 → 88, CLS nul, mesures répétées sur mobile
+et desktop. Cela ne constitue pas une certification CWV et ne s’applique pas au héros
+horizontal actuellement sélectionné dans la revue locale.
+
+Le blocage technique D90 est levé ; la recette du vrai environnement de préproduction
+et des clients MCP externes demeure distincte. Aucun push ni déploiement.
+Bilan : [prelaunch-validation-review-2026-09-15.md](prelaunch-validation-review-2026-09-15.md).
