@@ -7,30 +7,43 @@ const root = process.cwd();
 const falPollPath = join(root, 'frontend/server/fal-poll.ts');
 const falPollSource = readFileSync(falPollPath, 'utf8');
 
-test('Fal poll timeout failures remain wallet-refund eligible', () => {
+test('Fal poll preserves accepted requests through timeouts and read failures', () => {
   assert.match(falPollSource, /getFalPollTiming\(job\.engine_id, job\.created_at, now\)/);
   assert.match(
     falPollSource,
-    /const markRefundEligiblePollFailure = async \(reason: string\) => \{[\s\S]*autoRefundEligible: true,[\s\S]*failureOrigin: 'poll_internal'/,
-    'poll timeout failures should pass auto-refund eligibility through the webhook handler'
+    /const deferPoll = async \(reason: string\)/,
+    'poll read failures must stay recoverable'
   );
 
   for (const reason of [
     'Unable to determine render engine for this job.',
     'Render status remained unavailable after timeout grace period.',
-    'Render polling exceeded expected window after timeout grace period.',
+    'Render still processing beyond the expected window.',
   ]) {
     assert.match(
       falPollSource,
-      new RegExp(`markRefundEligiblePollFailure\\(['"]${reason.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
-      `${reason} should use the timeout refund helper`
+      new RegExp(`deferPoll\\(['"]${reason.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
+      `${reason} should defer without refunding`
     );
   }
 
   assert.match(
     falPollSource,
-    /markRefundEligiblePollFailure\(providerError \?\? 'Render returned no result after timeout grace period\.'\)/,
-    'missing-result timeout failures should use the timeout refund helper'
+    /deferPoll\(providerError \?\? 'Render returned no result after timeout grace period\.'\)/,
+    'a temporarily missing result must remain recoverable'
+  );
+});
+
+test('Fal poll transactionally refunds stale charged jobs that never received a provider id', () => {
+  assert.match(
+    falPollSource,
+    /import \{ reconcileStaleFalProvisionals \} from '@\/server\/fal-stale-provisionals';/,
+    'stale provisional settlement should live in its transaction-focused module'
+  );
+  assert.match(
+    falPollSource,
+    /const \{ failed: provisionalFailures \} = await reconcileStaleFalProvisionals\(\);/,
+    'the Fal poll should run stale provisional settlement before processing provider jobs'
   );
 });
 

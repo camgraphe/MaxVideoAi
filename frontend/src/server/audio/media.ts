@@ -11,6 +11,7 @@ import { ensureJobThumbnail } from '@/server/thumbnails';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadFileBuffer } from '@/server/storage';
 import type { AudioIntensity } from '@/lib/audio-generation';
+import { buildVideoPreservingMuxArgs } from './video-mux-args';
 
 const requireForRuntime = createRequire(import.meta.url);
 
@@ -277,31 +278,7 @@ export async function muxAudioBufferIntoVideo(params: {
     await writeFile(sourcePath, source.bytes);
     await writeFile(audioPath, params.audioBuffer);
 
-    const args = [
-      '-y',
-      '-protocol_whitelist',
-      'file,pipe',
-      '-format_whitelist',
-      'mov,matroska,webm',
-      '-i',
-      sourcePath,
-      '-i',
-      audioPath,
-      '-map',
-      '0:v:0',
-      '-map',
-      '1:a:0',
-      '-c:v',
-      'copy',
-      '-c:a',
-      'aac',
-      '-b:a',
-      '192k',
-      '-movflags',
-      '+faststart',
-      '-shortest',
-      outputPath,
-    ];
+    const args = buildVideoPreservingMuxArgs(sourcePath, audioPath, outputPath);
 
     await new Promise<void>((resolve, reject) => {
       execFile(executableFfmpegPath, args, (error) => {

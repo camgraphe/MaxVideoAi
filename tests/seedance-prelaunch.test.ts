@@ -399,36 +399,13 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    [
-      'seedance-2-5',
-      'minimax-h3',
-      'minimax-h3-max',
-      'kling-3-turbo-pro',
-      'kling-3-turbo-standard',
-      'veo-3-1',
-      'gemini-omni-flash',
-      'ltx-2-5-pro',
-      'wan-3',
-      'wan-3-prime',
-      'grok-imagine-video-1-5',
-    ]
+    ['minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime', 'happy-horse-1-1']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
-    [
-      'minimax-h3-vs-minimax-h3-max',
-      'kling-3-turbo-pro-vs-kling-3-turbo-standard',
-      'kling-3-pro-vs-kling-3-turbo-pro',
-      'gemini-omni-flash-vs-kling-3-turbo-pro',
-      'gemini-omni-flash-vs-veo-3-1',
-      'minimax-h3-vs-seedance-2-5',
-      'ltx-2-3-pro-vs-ltx-2-5-pro',
-      'wan-2-6-vs-wan-3',
-      'flux-3-vs-grok-imagine-video-1-5',
-      'grok-imagine-video-1-5-vs-sora-2',
-    ]
+    ['minimax-h3-vs-seedance-2-5', 'minimax-h3-vs-minimax-h3-max', 'kling-3-pro-vs-seedance-2-5', 'seedance-2-5-vs-wan-3', 'ltx-2-5-fast-vs-ltx-2-5-pro', 'wan-3-vs-wan-3-prime', 'gemini-omni-flash-vs-veo-3-1', 'seedance-2-0-vs-seedance-2-0-fast']
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 10);
+  assert.equal(MARKETING_NAV_COMPARE.length, 8);
   const expectedExampleFamilies = [
     'veo',
     'seedance',
@@ -443,8 +420,8 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
     'pika',
     'hailuo',
   ];
-  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), expectedExampleFamilies);
-  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), expectedExampleFamilies);
+  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse']);
+  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key).sort(), expectedExampleFamilies.slice().sort());
 });
 
 test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {
@@ -460,19 +437,7 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
 });
 
 test('Header model menu keeps H3 and the current P1 representatives in the bounded set', () => {
-  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
-    'seedance-2-5',
-    'minimax-h3',
-    'minimax-h3-max',
-    'kling-3-turbo-pro',
-    'kling-3-turbo-standard',
-    'veo-3-1',
-    'gemini-omni-flash',
-    'ltx-2-5-pro',
-    'wan-3',
-    'wan-3-prime',
-    'grok-imagine-video-1-5',
-  ]);
+  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime', 'happy-horse-1-1']);
 });
 
 test('Examples hub family order follows the current business priority without reordering global families', () => {

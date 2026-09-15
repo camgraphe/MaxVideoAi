@@ -2,6 +2,7 @@ import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import type { VideoProviderRoutingPlan } from '@/server/video-providers/router';
 import { submitFalGenerateTask } from './fal-submission';
+import { submitAlibabaModelStudioGenerateTask } from './alibaba-model-studio-submission';
 import { submitGoogleVertexOmniGenerateTask } from './google-vertex-omni-submission';
 import { submitGoogleVertexVeoGenerateTask } from './google-vertex-veo-submission';
 import { submitKlingDirectGenerateTask } from './kling-direct-submission';
@@ -62,6 +63,49 @@ export async function submitGenerateProviderTask(params: {
   logMetricFn: LogMetricFn;
   clientErrorPolicy?: ProviderClientErrorPolicy;
 }): Promise<GenerateProviderSubmissionResult> {
+  if (params.providerRoutingPlan.kind === 'alibaba_model_studio_primary') {
+    const alibabaSubmission = await submitAlibabaModelStudioGenerateTask({
+      jobId: params.jobId,
+      userId: params.userId,
+      engineId: params.engineId,
+      engineLabel: params.engineLabel,
+      mode: params.mode,
+      prompt: params.prompt,
+      negativePrompt: typeof params.negativePrompt === 'string' ? params.negativePrompt : null,
+      durationSec: params.durationSec,
+      aspectRatio: params.aspectRatio,
+      audioEnabled: params.audioEnabled,
+      effectiveResolution: params.effectiveResolution,
+      imageUrl: params.imageUrl,
+      placeholderThumb: params.placeholderThumb,
+      pricing: params.pricing,
+      paymentStatus: params.paymentStatus,
+      pendingReceipt: params.pendingReceipt,
+      paymentMode: params.paymentMode,
+      walletChargeReserved: params.walletChargeReserved,
+      fallbackToFalEnabled: params.providerRoutingPlan.fallbackEnabled,
+      falPayload: params.falPayload,
+      falInputSummary: params.falInputSummary,
+      isLumaRay2: params.isLumaRay2,
+      batchId: params.batchId,
+      groupId: params.groupId,
+      iterationIndex: params.iterationIndex,
+      iterationCount: params.iterationCount,
+      renderIds: params.renderIds,
+      heroRenderId: params.heroRenderId,
+      localKey: params.localKey,
+      logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
+    });
+    if (!alibabaSubmission.ok) {
+      return { kind: 'error_response', status: alibabaSubmission.status, body: alibabaSubmission.body };
+    }
+    if (alibabaSubmission.kind === 'accepted') {
+      return { kind: 'accepted_response', body: alibabaSubmission.body };
+    }
+    return { kind: 'generation_result', generationResult: alibabaSubmission.generationResult };
+  }
+
   if (params.providerRoutingPlan.kind === 'luma_agents_direct_primary') {
     const lumaSubmission = await submitLumaAgentsGenerateTask({
       jobId: params.jobId,
@@ -235,7 +279,7 @@ export async function submitGenerateProviderTask(params: {
     inputSummary: params.falInputSummary,
   });
   const falSubmission = await submitFalGenerateTask({
-    falPayload: params.falPayload,
+    falPayload: { ...params.falPayload, submissionMode: 'enqueue' },
     jobId: params.jobId,
     engineId: params.engineId,
     engineLabel: params.engineLabel,
@@ -254,7 +298,7 @@ export async function submitGenerateProviderTask(params: {
   if (!falSubmission.ok) {
     return { kind: 'error_response', status: falSubmission.status, body: falSubmission.body };
   }
-  if (params.falPayload.submissionMode === 'enqueue') {
+  if (falSubmission.generationResult.providerJobId) {
     // The initial job and charge already exist. Do not overwrite a fast terminal webhook
     // with a queued finalization (including its media and refund state).
     return {

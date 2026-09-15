@@ -154,9 +154,12 @@ the route-local `McpGenerationOverview` renders them ahead of tool-call activity
 - Global users are deduplicated across applications. Application rows may overlap for users,
   while each video job has one application. Account application uses the latest observed
   activity for its user/OAuth-client pair; video attribution uses evidence at submission time.
-- Migration 41 and the existing audit bootstrap add nullable `client_family`. Successful MCP
-  initialization stores only a normalized family from self-reported `clientInfo.name`; raw
-  metadata is discarded. This field is analytics only and must never authorize access.
+- Migration 41 and the audit bootstrap add nullable `client_family`; migration 42 widens its
+  database constraint for the complete ecosystem. Successful MCP initialization stores only
+  a normalized family from self-reported
+  `clientInfo.name`; raw metadata is discarded. The admin application breakdown covers the
+  nine integration-registry families plus `Other / unidentified`, while ambiguous names stay
+  unidentified. This field is analytics only and must never authorize access.
   Recorded connection-link attribution is the fallback for the same user/OAuth-client pair.
   A bounded server-only lookup of current registered OAuth client names supplies an
   indicative historical fallback when event-time evidence is missing.
@@ -164,6 +167,10 @@ the route-local `McpGenerationOverview` renders them ahead of tool-call activity
   an earlier video through event-time evidence; the current OAuth registry fallback is
   explicitly labeled as indicative. Old schemas continue to serve outcomes using the
   available attribution.
+- The separate acquisition-source split remains limited to acquisition-enabled landing-page
+  clients. Direct, preview, hidden, and unidentified hosts remain in its `Other / unidentified`
+  row until their acquisition gate is deliberately enabled; this does not prevent their
+  self-reported family from appearing in the application breakdown.
 
 The commercial funnel capability flags must not be flipped merely because tables exist.
 Paid preparation/acceptance/completion funnel events are not yet fully produced, so the

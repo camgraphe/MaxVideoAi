@@ -98,16 +98,17 @@ test('score order keeps H3 just below Kling O3 Pro and below Seedance 2.5', () =
   assert.equal(scoreFor('minimax-h3'), 8.5);
 });
 
-test('bounded discovery surfaces feature H3 immediately after Seedance 2.5', () => {
+test('bounded discovery surfaces lead with the two H3 variants and retain Seedance 2.5', () => {
   assert.deepEqual(
     MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
     [
-      { key: 'seedance-2-5', badge: 'new' },
       { key: 'minimax-h3', badge: 'new' },
+      { key: 'minimax-h3-max', badge: 'new' },
     ],
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 10);
-  assert.equal(MARKETING_NAV_COMPARE[0]?.key, 'minimax-h3-vs-minimax-h3-max');
+  assert.equal(MARKETING_NAV_MODELS[2]?.key, 'seedance-2-5');
+  assert.equal(MARKETING_NAV_COMPARE.length, 8);
+  assert.equal(MARKETING_NAV_COMPARE[0]?.key, 'minimax-h3-vs-seedance-2-5');
   assert.ok(MARKETING_NAV_COMPARE.some(({ key }) => key === 'minimax-h3-vs-seedance-2-5'));
 
   const popular = getPopularComparisons();

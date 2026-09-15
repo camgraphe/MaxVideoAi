@@ -45,7 +45,7 @@ test('home merges inspiration and examples while retaining discovery data in the
   assert.match(route, /HomeCreativeWorlds locale=\{locale\} cards=\{primaryBestForCards\} examples=\{examples\} providers=\{providers\}/);
   assert.doesNotMatch(section, /'use client'/);
   assert.match(section, /href=\{example.href\}/);
-  assert.match(section, /href=\{example.modelHref \?\? example.href\}/);
+  assert.match(section, /example.modelHref \?\? example.href/);
   assert.match(section, /examplesCtaVisible !== false/);
 });
 

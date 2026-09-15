@@ -298,12 +298,13 @@ export function WorkspaceComposerSurface({
     inputAssets, isUnifiedSeedance, isUnifiedKlingO3, klingO3VideoToVideoSupported,
     hasAnyVideoInput: klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason, workflowCopy,
     showOmniStudioPanel, showLumaRay32KeyframeEditor,
+    previousInteractionId: form.extraInputValues.previous_interaction_id,
   }).map((entry) => ({ ...entry,
     guidance: isUnifiedSeedance && shouldShowSeedanceReferenceGuidance(entry.field)
       ? getSeedanceReferenceGuidance(uiLocale) : entry.guidance,
   })), [inputSchemaSummary.assetFields, inputAssets, isUnifiedSeedance, isUnifiedKlingO3,
     klingO3VideoToVideoSupported, klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason,
-    workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, uiLocale]);
+    workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, uiLocale, form.extraInputValues.previous_interaction_id]);
 
   const omniExtraFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
@@ -529,19 +530,11 @@ export function WorkspaceComposerSurface({
             ) : null}
             {showOmniStudioPanel ? (
               <OmniStudioPanel
-                engine={selectedEngine}
-                caps={capability}
                 form={form}
                 setForm={setForm}
                 submissionMode={submissionMode}
-                assetFields={inputSchemaSummary.assetFields}
                 extraFields={omniExtraFields}
                 inputAssets={inputAssets}
-                onAssetAdd={handleAssetAdd}
-                onAssetRemove={handleAssetRemove}
-                onOpenLibrary={handleOpenAssetLibrary}
-                onNotice={showNotice}
-                disabledReason={guestUploadLockedReason}
               />
             ) : null}
             {showRetakeWorkflowAction ? (

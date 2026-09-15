@@ -62,3 +62,18 @@ test('capability answers distinguish image generation from gated standalone audi
 test('historical Claude evidence stays separate from the illustrated workflow',()=>{
  for(const locale of locales){const proof=getMcpHostProof('claude',locale);assert.ok(proof);assert.match(proof.caption,/not a current quote|pas.*devis actuel|no.*precio actual/);assert.ok(getMcpEditorialCopy(locale).visualLabel);}
 });
+
+test('localized host setup titles and introductions do not inherit the English guide', () => {
+  for (const client of getMcpPublicIntegrationIds()) {
+    const en = getIntegrationCopy('en', client).setup.hostGuides;
+    for (const locale of ['fr', 'es'] as const) {
+      const translated = getIntegrationCopy(locale, client).setup.hostGuides;
+      for (const guide of translated) {
+        const original = en.find(item => item.hostId === guide.hostId);
+        assert.ok(original, `${client}/${guide.hostId}`);
+        assert.notEqual(guide.title, original.title, `${locale}/${client} setup title`);
+        assert.notEqual(guide.intro, original.intro, `${locale}/${client} setup introduction`);
+      }
+    }
+  }
+});

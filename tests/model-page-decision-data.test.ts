@@ -522,8 +522,8 @@ test('image templates preserve GPT Image 2 and Nano Banana route intent', () => 
   assert.ok(esNanoPro);
 
   assert.equal(gptImage.hero.title, 'GPT Image 2');
-  assert.match(gptImage.hero.subtitle, /readable text/);
-  assert.match(gptImage.hero.subtitle, /controlled edits/);
+  assert.match(visibleDecisionText(gptImage), /readable text/i);
+  assert.match(visibleDecisionText(gptImage), /controlled edits/);
   assert.equal(gptImage.hero.primaryCta.href, '/app/image?engine=gpt-image-2');
   assert.equal(gptImage.hero.quickLinks[2]?.href, '#prompting');
   assert.deepEqual(
@@ -572,9 +572,9 @@ test('Veo 3.1 returns production decision data with Standard 4K claims', () => {
   assert.ok(es);
 
   assert.equal(en.hero.title, 'Veo 3.1');
-  assert.match(en.hero.subtitle, /short polished/i);
-  assert.match(en.hero.subtitle, /native audio/i);
-  assert.match(en.hero.subtitle, /reference/i);
+  assert.match(en.hero.subtitle, /cinematic scene, with sound/i);
+  assert.match(visibleDecisionText(en), /native audio/i);
+  assert.match(visibleDecisionText(en), /reference/i);
   assert.match(visibleDecisionText(en), /first-last|extend/i);
   assert.equal(en.hero.primaryCta.href, '/app?engine=veo-3-1');
   assert.equal(en.features[0]?.tone, 'quality');
@@ -746,7 +746,7 @@ test('Seedream returns reference-prep decision data for still preparation', () =
   assert.equal(en.hero.secondaryCta.href, '/models/seedance-2-0');
   assert.match(visibleDecisionText(en), /reference prep|still/i);
   assert.match(visibleDecisionText(en), /video/i);
-  assert.match(en.hero.subtitle, /reference/i);
+  assert.match(visibleDecisionText(en), /reference/i);
   assert.doesNotMatch(visibleDecisionText(en), /direct video generation|generate videos|text-to-video|image-to-video/i);
   assert.doesNotMatch(visibleDecisionText(fr), /direct video generation|generate videos|text-to-video|image-to-video/i);
   assert.doesNotMatch(visibleDecisionText(es), /direct video generation|generate videos|text-to-video|image-to-video/i);
@@ -1020,7 +1020,7 @@ test('model page demo media can reuse a verified fallback clip when no public jo
   assert.deepEqual(pickDemoMedia([], fallback.id, null, fallback, { allowFallbackReuse: true }), fallback);
 });
 
-test('Seedance 2.0 schema can use decision metadata without a free price offer', () => {
+test('Seedance 2.0 schema omits Product when no truthful offer is available', () => {
   const seedance = getEngine('seedance-2-0');
   const decision = buildModelDecisionDataFromContent({ engine: seedance, locale: 'en' });
   assert.ok(decision);
@@ -1047,6 +1047,5 @@ test('Seedance 2.0 schema can use decision metadata without a free price offer',
 
   assert.equal(webPage?.name, decision.meta.title);
   assert.equal(webPage?.description, decision.meta.description);
-  assert.equal(product?.description, decision.meta.description);
-  assert.ok(product && !('offers' in product), 'variable pay-as-you-go model schema should not emit a price: 0 offer');
+  assert.equal(product, undefined, 'variable pay-as-you-go model schema should omit an ineligible Product node');
 });

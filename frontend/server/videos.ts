@@ -95,11 +95,7 @@ export async function getVideosByIds(videoIds: string[]): Promise<Map<string, Ga
     `${BASE_SELECT} WHERE job_id = ANY($1::text[])`,
     [uniqueIds]
   );
-  const map = new Map<string, GalleryVideo>();
-  rows.forEach((row) => {
-    map.set(row.job_id, mapGalleryVideoRow(row));
-  });
-  return map;
+  return new Map(rows.map((row) => [row.job_id, mapGalleryVideoRow(row)]));
 }
 
 export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
@@ -111,11 +107,7 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
     `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
     [uniqueIds]
   );
-  const map = new Map<string, GalleryVideo>();
-  rows.forEach((row) => {
-    map.set(row.job_id, mapGalleryVideoRow(row));
-  });
-  return map;
+  return new Map(rows.map((row) => [row.job_id, mapGalleryVideoRow(row)]));
 }
 
 export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
@@ -134,11 +126,7 @@ export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<stri
     `${BASE_SELECT} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
     [uniqueIds]
   );
-  const map = new Map<string, GalleryVideo>();
-  rows.forEach((row) => {
-    map.set(row.job_id, mapGalleryVideoRow(row));
-  });
-  return map;
+  return new Map(rows.map((row) => [row.job_id, mapGalleryVideoRow(row)]));
 }
 
 export async function listPublicVideoPagesForSeoAudit(limit = 1000): Promise<GalleryVideo[]> {

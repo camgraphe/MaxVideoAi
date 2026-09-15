@@ -92,76 +92,9 @@ test('dark gradients are strongly attenuated while CTAs stay bright like the ref
   assert.doesNotMatch(globalsSource, /rgba\(168, 85, 247, 0\.06\)/);
 });
 
-test('homepage dark sections use a darker base and reusable neon contour treatment', () => {
-  const sectionNeonMatches = homeSource.match(/dark-section-neon/g) ?? [];
 
-  assert.match(globalsSource, /linear-gradient\(180deg, #030712 0%, #040816 46%, #030712 100%\);/);
-  assert.match(globalsSource, /\[data-theme="dark"\] \.dark-section-neon::before/);
-  assert.match(globalsSource, /\[data-theme="dark"\] \.dark-neon-panel/);
-  assert.match(globalsSource, /rgba\(96, 165, 250, 0\.46\)/);
-  assert.match(globalsSource, /rgba\(217, 70, 239, 0\.30\)/);
-  assert.ok(sectionNeonMatches.length >= 9, `Expected dark-section-neon on each homepage section, saw ${sectionNeonMatches.length}`);
-  assert.match(homeSource, /dark-neon-panel/);
-  assert.doesNotMatch(globalsSource, /rgba\(80, 112, 255, 0\.20\)/);
-  assert.doesNotMatch(globalsSource, /rgba\(168, 85, 247, 0\.13\)/);
-});
 
-test('homepage dark mode follows the reference with luminous hero and tokenized glass surfaces', () => {
-  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
 
-  assert.match(homeHeroSource, /<section className="home-hero-section dark-section-neon relative overflow-hidden border-b border-hairline bg-bg">/);
-  assert.match(homeHeroSource, /radial-gradient\(ellipse_at_78%_16%,rgba\(255,255,255,0\.055\),transparent_46%\)/);
-  assert.match(homeHeroSource, /radial-gradient\(ellipse_at_94%_26%,rgba\(125,211,252,0\.035\),transparent_42%\)/);
-  assert.match(homeSource, /dark:bg-surface-glass-80/);
-  assert.match(homeSource, /dark:bg-surface-glass-70/);
-  assert.doesNotMatch(homeSource, /dark:bg-white\/\[0\.055\]/);
-});
-
-test('homepage hero uses a compact mobile eyebrow and keeps desktop badges wrapping', () => {
-  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
-
-  assert.match(homeHeroSource, /hidden min-w-0 flex-wrap gap-2 min-\[900px\]:col-span-2 min-\[900px\]:flex/);
-  assert.match(homeHeroSource, /min-\[900px\]:hidden">\{copy\.eyebrow\}/);
-  assert.match(homeHeroSource, /inline-flex max-w-full shrink-0 items-center/);
-  assert.match(homeHeroSource, /whitespace-normal/);
-  assert.doesNotMatch(homeHeroSource, /-mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto/);
-});
-
-test('homepage hero preview uses subdued dark borders instead of bright white outlines', () => {
-  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
-
-  assert.match(globalsSource, /\.home-hero-dark-grid/);
-  assert.match(homeHeroSource, /home-hero-dark-grid/);
-  assert.match(homeHeroSource, /dark:bg-\[linear-gradient\(135deg,rgba\(15,23,42,0\.78\),rgba\(30,41,59,0\.32\)\)\]/);
-  assert.match(homeHeroSource, /dark:shadow-\[inset_0_1px_0_rgba\(255,255,255,0\.04\),0_18px_50px_-34px_rgba\(0,0,0,0\.9\)\]/);
-  assert.doesNotMatch(homeHeroSource, /VALUE_CARD_ICONS/);
-  assert.doesNotMatch(homeHeroSource, /copy\.trustBadges/);
-  assert.match(heroShowcaseSource, /<div className="relative">\n        <div className="absolute -inset-3 rounded-\[34px\][\s\S]*blur-xl[\s\S]*rgba\(217,70,239,0\.13\)/);
-  assert.match(heroShowcaseSource, /dark:bg-\[linear-gradient\(135deg,rgba\(96,165,250,0\.74\)_0%,rgba\(125,211,252,0\.36\)_43%,rgba\(217,70,239,0\.76\)_100%\)\]/);
-  assert.match(heroShowcaseSource, /dark:opacity-80 dark:shadow-\[0_0_18px_rgba\(96,165,250,0\.20\),22px_-14px_34px_-22px_rgba\(217,70,239,0\.58\)\]/);
-  assert.match(heroShowcaseSource, /data-hero-player="main"[\s\S]*dark:border-\[rgba\(147,197,253,0\.30\)\]/);
-  assert.match(heroShowcaseSource, /dark:shadow-\[0_0_0_1px_rgba\(96,165,250,0\.18\),0_0_36px_-20px_rgba\(59,130,246,0\.62\)/);
-  assert.match(heroShowcaseSource, /22px_-18px_46px_-32px_rgba\(217,70,239,0\.74\)/);
-  assert.match(heroShowcaseSource, /-18px_6px_44px_-32px_rgba\(96,165,250,0\.58\)/);
-  assert.match(heroShowcaseSource, /dark:border-white\/\[0\.14\]/);
-  assert.match(heroShowcaseSource, /dark:border-white\/\[0\.18\]/);
-  assert.match(heroShowcaseSource, /dark:border-white\/\[0\.08\]/);
-  assert.match(heroShowcaseSource, /dark:hover:border-white\/\[0\.16\]/);
-  assert.match(heroShowcaseSource, /dark:focus:ring-\[rgba\(143,183,255,0\.34\)\]/);
-  assert.match(heroShowcaseSource, /dark:bg-surface-glass-70/);
-  assert.match(homeHeroSource, /dark:border-white\/\[0\.08\]/);
-  assert.match(homeHeroSource, /dark:bg-white\/\[0\.035\]/);
-  assert.match(heroShowcaseSource, /focus:ring-white\/90/);
-  assert.match(heroShowcaseSource, /focus:ring-white\/80/);
-
-  assert.doesNotMatch(heroShowcaseSource, /dark:border-white\/70/);
-  assert.doesNotMatch(heroShowcaseSource, /dark:shadow-\[0_0_0_2px_rgba\(255,255,255,0\.20\)/);
-  assert.doesNotMatch(heroShowcaseSource, /0_0_72px_-20px_rgba\(96,165,250,0\.88\)/);
-  assert.doesNotMatch(heroShowcaseSource, /0_0_70px_-22px_rgba\(59,130,246,0\.80\)/);
-  assert.doesNotMatch(heroShowcaseSource, /28px_-24px_76px_-26px_rgba\(217,70,239,0\.82\)/);
-  assert.doesNotMatch(heroShowcaseSource, /rgba\(45,212,191,0\.34\)/);
-  assert.doesNotMatch(heroShowcaseSource, /rgba\(34,211,238,0\.82\)/);
-});
 
 test('homepage workflow cards avoid light image wash in dark mode', () => {
   const referenceWorkflowSource = homeSource.slice(homeSource.indexOf('export function ReferenceWorkflow'), homeSource.indexOf('export function AiVideoToolbox'));
@@ -174,42 +107,6 @@ test('homepage workflow cards avoid light image wash in dark mode', () => {
   assert.doesNotMatch(referenceWorkflowSource, /rgba\(5,11,20,0\.66\)_100%/);
 });
 
-test('tools pricing and blog hero images use compare-style derived dark assets', () => {
-  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const heroAssets = [
-    {
-      name: 'tools',
-      source: toolsHubSource,
-      lightUrl: '/assets/tools/tools-hero-reference.webp',
-      darkUrl: '/assets/tools/tools-hero-reference-dark.webp',
-      darkFile: 'frontend/public/assets/tools/tools-hero-reference-dark.webp',
-      overlay:
-        /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.24\)_0%,rgba\(3,7,18,0\.16\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
-    },
-    {
-      name: 'blog',
-      source: blogPageSource,
-      lightUrl: '/assets/blog/blog-hero-reference.webp',
-      darkUrl: '/assets/blog/blog-hero-reference-dark.webp',
-      darkFile: 'frontend/public/assets/blog/blog-hero-reference-dark.webp',
-      overlay:
-        /dark:bg-\[linear-gradient\(90deg,rgba\(3,7,18,0\.30\)_0%,rgba\(3,7,18,0\.18\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
-    },
-  ] as const;
-
-  assert.match(comparePageSource, /src="\/assets\/compare\/compare-hero-reference-light\.webp"/);
-  assert.match(comparePageSource, /darkSrc="\/assets\/compare\/compare-hero-reference-dark\.webp"/);
-  assert.match(comparePageSource, /className="opacity-55 dark:opacity-70"/);
-
-  for (const hero of heroAssets) {
-    assert.ok(existsSync(hero.darkFile), `${hero.name} should have a derived dark hero asset`);
-    assert.match(hero.source, new RegExp(`src="${escapeRegExp(hero.lightUrl)}"`));
-    assert.match(hero.source, new RegExp(`darkSrc="${escapeRegExp(hero.darkUrl)}"`));
-    assert.match(hero.source, /className="opacity-55 dark:opacity-70"/);
-    assert.match(hero.source, hero.overlay);
-    assert.doesNotMatch(hero.source, /dark:(brightness|contrast|saturate|invert)/, `${hero.name} should use a dark asset instead of CSS image filters`);
-  }
-});
 
 test('decorative marketing hero images stay hidden from assistive tech', () => {
   assert.match(marketingHeroImageSource, /<div aria-hidden=\{alt \? undefined : 'true'\}/);
@@ -227,4 +124,24 @@ test('marketing navigation authenticated generate CTA turns white in dark mode',
   assert.match(navSource, /marketing_nav_start_app/);
   assert.match(navSource, /dark:bg-white dark:text-\[#030712\]/);
   assert.match(navSource, /dark:hover:bg-slate-100/);
+});
+
+// D85 gives marketing a fixed palette; the app keeps its independent dark theme.
+test('cinema hero uses the fixed ivory surface and subdued player without ambient neon', () => {
+  const cinema = readFileSync('frontend/src/styles/marketing-cinema.css', 'utf8');
+  const hero = readFileSync('frontend/components/marketing/home/HomeHeroSection.tsx', 'utf8');
+  assert.match(hero, /home-hero-section cinema-opening/);
+  assert.doesNotMatch(hero, /home-hero-dark-grid|dark-section-neon/);
+  assert.match(cinema, /\.marketing-site \.cinema-opening\{background:#f4f2ee/);
+  assert.match(cinema, /\.marketing-site \.cinema-player>div:first-child>div.absolute\{display:none\}/);
+  assert.match(cinema, /\.marketing-site \.cinema-player \[data-hero-player\]\{border:0/);
+});
+
+test('tools hero uses the actual catalogue artwork in a fixed composition', () => {
+  assert.match(toolsHubSource, /tools-hub-montage/);
+  assert.match(toolsHubSource, /WORKSHOP_ART\['character-builder'\]/);
+  assert.match(toolsHubSource, /WORKSHOP_ART.angle/);
+  assert.match(toolsHubSource, /QUICK_TOOL_ART\['upscale-image'\]/);
+  assert.match(toolsHubSource, /aria-hidden="true"/);
+  assert.doesNotMatch(toolsHubSource, /tools-hero-reference-dark|dark:invert/);
 });

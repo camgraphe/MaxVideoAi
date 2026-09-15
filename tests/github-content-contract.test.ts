@@ -94,7 +94,7 @@ test('release-facing install copy follows VERSION and the focused public reposit
   assert.doesNotMatch(sourceReadme, /checked-in[^.\n]*candidate|Latest public release:\s*v\d/i);
 });
 
-test('the ChatGPT guide presents the shared plugin journey with qualified proof and fallback', () => {
+test('the ChatGPT guide keeps direct MCP available without promising an OpenAI directory listing', () => {
   const guide = readFileSync(path.join(repositoryRoot, 'plugins', 'maxvideoai', 'docs', 'chatgpt.md'), 'utf8');
   const officialSources = [
     'https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta',
@@ -102,30 +102,27 @@ test('the ChatGPT guide presents the shared plugin journey with qualified proof 
     'https://help.openai.com/en/articles/20001256-plugins-in-codex',
     'https://maxvideoai.com/docs/mcp',
   ];
-  const publicPluginPath = guide.match(/### Public directory plugin\n([\s\S]*?)(?=\n### |\n## )/)?.[1] ?? '';
-  const developerFallbackPath = guide.match(/### Direct developer MCP fallback\n([\s\S]*?)(?=\n### |\n## )/)?.[1] ?? '';
+  const developerPath = guide.match(/### Direct developer MCP connection\n([\s\S]*?)(?=\n### |\n## )/)?.[1] ?? '';
   const disconnectPath = guide.match(/## How do I disconnect and revoke access\?\n([\s\S]*?)(?=\n## )/)?.[1] ?? '';
 
   assert.match(guide, /^# Use MaxVideoAI with ChatGPT\s*$/m);
-  assert.match(guide, /ChatGPT and Codex use the same MaxVideoAI plugin and (?:the same )?MCP connection/i);
-  assert.match(guide, /install or connect[\s\S]*OAuth on the first use/i);
-  assert.match(guide, /public directory availability[\s\S]{0,80}listing is approved/i);
-  assert.match(guide, /developer MCP URL fallback[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`/i);
+  assert.match(guide, /ChatGPT and Codex use the same MaxVideoAI MCP connection/i);
+  assert.match(guide, /connect it in ChatGPT developer mode[\s\S]*OAuth on the first use/i);
+  assert.match(guide, /not submitted to the OpenAI directory[\s\S]*current commerce policy/i);
+  assert.match(guide, /directory decision[\s\S]*does not disable the live developer-mode setup/i);
   assert.match(
     guide,
     /\[OpenAI: Plugins in ChatGPT and Codex\]\(https:\/\/help\.openai\.com\/en\/articles\/20001256-plugins-in-codex\)/,
   );
-  assert.match(publicPluginPath, /\*\*Plugins\*\* in ChatGPT[\s\S]*\*\*Apps\*\* if (?:that is|it is) shown[\s\S]*select MaxVideoAI[\s\S]*\*\*Install plugin\*\* if shown[\s\S]*\*\*Connect\*\* if prompted[\s\S]*complete OAuth/i);
-  assert.match(publicPluginPath, /@MaxVideoAI[\s\S]*\+ → More[\s\S]*when (?:those controls|the control) (?:are|is) available/i);
-  assert.match(developerFallbackPath, /developer mode[\s\S]*Apps → Create[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`[\s\S]*Scan Tools/i);
-  assert.match(disconnectPath, /workspace admins[\s\S]*Workspace settings → Plugins/i);
-  assert.match(disconnectPath, /users[\s\S]*app connection[\s\S]*connected account[\s\S]*where shown/i);
+  assert.match(developerPath, /developer mode[\s\S]*Apps → Create[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`[\s\S]*Scan Tools/i);
+  assert.match(disconnectPath, /users manage the app connection[\s\S]*connected account[\s\S]*where shown/i);
   assert.match(disconnectPath, /revoke[\s\S]*MaxVideoAI OAuth/i);
   assert.doesNotMatch(disconnectPath, /sync deletion|delete (?:the )?sync|delete synced|destructive removal/i);
   assert.match(guide, /Full MCP beta: Business and Enterprise\/Edu on ChatGPT web[\s\S]*Pro: read\/fetch MCP permissions in developer mode/i);
   assert.match(guide, /!\[Completed MaxVideoAI video continuing from the production workspace into the Library\]\(\.\.\/assets\/demos\/brief-to-video-workflow\.webp\)/);
   assert.match(guide, /MaxVideoAI product proof[\s\S]*workspace[\s\S]*Library[\s\S]*not native ChatGPT host proof/i);
-  assert.match(guide, /Install or connect → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library/i);
+  assert.match(guide, /Connect direct MCP → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library/i);
+  assert.doesNotMatch(guide, /after (?:OpenAI )?approval|public listing approval|when it is available in the public directory/i);
   assert.doesNotMatch(guide, /unverified|not yet recorded|setup guide to validate|not an availability promise/i);
   for (const source of officialSources) {
     assert.match(guide, new RegExp(source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));

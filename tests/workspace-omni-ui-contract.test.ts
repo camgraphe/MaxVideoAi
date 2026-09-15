@@ -47,22 +47,22 @@ test('Gemini Omni Studio UI is isolated below WorkspaceComposerSurface', () => {
   assert.doesNotMatch(appClientSource, /OmniStudioPanel/, 'AppClient must not import provider-specific Omni UI');
 });
 
-test('Gemini Omni Studio owns Omni assets and hides duplicate generic controls', () => {
+test('Gemini Omni uses shared media controls and keeps only directives in its panel', () => {
   const source = readFileSync(composerSurfacePath, 'utf8');
   assert.match(source, /OMNI_CUSTOM_FIELD_IDS/, 'custom Omni field ids should be centralized');
   assert.match(source, /showOmniStudioPanel/, 'surface should compute an Omni panel gate');
   assert.match(source, /getWorkspaceReferenceFields/, 'Composer delegates generic asset availability to the shared owner');
   const availability = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-reference-fields.ts', 'utf8');
-  assert.match(availability, /fields\.filter\(\(\{ field \}\) => !showOmniStudioPanel/, 'the shared owner excludes Omni assets from generic controls');
+  assert.doesNotMatch(availability, /=> !showOmniStudioPanel/, 'Omni assets stay in the shared media controls');
+  assert.match(availability, /getGeminiOmniAssetFieldDisabledReason/, 'shared controls retain Omni compatibility rules');
   assert.match(source, /OMNI_CUSTOM_FIELD_IDS\.has\(field\.id\)/, 'generic advanced settings should hide Omni custom fields');
 });
 
 test('Gemini Omni Studio exposes expected controls and uses shared asset primitives', () => {
   const source = readFileSync(omniPanelPath, 'utf8');
-  assert.match(source, /AssetDropzone/, 'Omni media slots should reuse AssetDropzone');
+  assert.doesNotMatch(source, /AssetDropzone/, 'the directive panel must not duplicate shared media controls');
   assert.doesNotMatch(source, /OMNI_MODE_OPTIONS/, 'Omni workflow buttons should not be rendered manually');
   assert.doesNotMatch(source, /onModeToggle/, 'Omni workflow should route from assets instead of manual buttons');
-  assert.match(source, /getGeminiOmniAssetFieldDisabledReason/, 'Omni media slots should gray incompatible inputs');
   assert.match(source, /omniAssetState\.hasSourceVideo/, 'video edit settings should depend on a source video');
   assert.match(source, /showEditField/, 'video edit settings should be conditionally rendered');
   assert.match(source, /prompt_audio_direction/);
@@ -128,6 +128,9 @@ test('Gemini Omni unified schema keeps media slots visible from text and refine 
     textSchema.assetFields.map(({ field }) => field.id),
     ['image_url', 'reference_images', 'video_url']
   );
+
+  const unifiedFrames = summarizeWorkspaceInputSchema({ ...base, activeMode: 't2v', allowsUnifiedVeoFirstLast: true });
+  assert.ok(unifiedFrames.assetFields.some(({ field }) => field.id === 'image_url'), 'first/last capability must preserve its own source image field');
 
   const refineSchema = summarizeWorkspaceInputSchema({ ...base, activeMode: 'retake' });
   assert.deepEqual(

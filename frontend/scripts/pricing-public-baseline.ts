@@ -26,7 +26,25 @@ async function main(): Promise<void> {
   const audioChange = JSON.parse(await readFile(new URL('../../tests/fixtures/audio-pricing-change-2026-09-08.json', import.meta.url), 'utf8')) as { rows: Array<{ id: string; previousCents: number; totalCents: number }> };
   const audioChanges = new Map(audioChange.rows.map(row => [row.id, row]));
   if (audioChanges.size !== audioChange.rows.length || audioChanges.size !== 15) throw new Error('Invalid reviewed Audio pricing change matrix.');
+  const productOfferFix = JSON.parse(await readFile(new URL('../../tests/fixtures/product-schema-offer-fix-2026-09-10.json', import.meta.url), 'utf8')) as {
+    rows: Array<{
+      id: string;
+      previousStatus: 'unavailable';
+      status: 'exact';
+      currency: string;
+      customerTotalCents: number;
+      unit: 'offer';
+      quantity: 1;
+      structuredDataAmount: string;
+      compatibilityProfile: 'schema-current';
+    }>;
+  };
+  const productOfferFixes = new Map(productOfferFix.rows.map(row => [row.id, row]));
+  if (productOfferFixes.size !== productOfferFix.rows.length || productOfferFixes.size !== 2) {
+    throw new Error('Invalid reviewed Product schema offer fix matrix.');
+  }
   const appliedChanges = new Set<string>();
+  const appliedProductOfferFixes = new Set<string>();
   const byId = new Map(fixture.rows.map((row) => [row.id, row]));
   const expected = fixture.rows.map((row) => {
     const standardId = row.id.replace(/:(plus|pro):/u, ':member:');
@@ -38,9 +56,29 @@ async function main(): Promise<void> {
       appliedChanges.add(row.id);
       return { ...standard, id: row.id, customerTotalCents: audio.totalCents, displayedAmount: `$${(audio.totalCents / 100).toFixed(2)}`, compatibilityProfile: 'audio-tripled-rounded' };
     }
+    const productOffer = productOfferFixes.get(row.id);
+    if (productOffer) {
+      if (row.surface !== 'json-ld' || row.status !== productOffer.previousStatus) {
+        throw new Error(`Product schema offer fix does not match historical evidence: ${row.id}`);
+      }
+      appliedProductOfferFixes.add(row.id);
+      return {
+        id: row.id,
+        surface: row.surface,
+        engineId: row.engineId,
+        status: productOffer.status,
+        currency: productOffer.currency,
+        customerTotalCents: productOffer.customerTotalCents,
+        unit: productOffer.unit,
+        quantity: productOffer.quantity,
+        structuredDataAmount: productOffer.structuredDataAmount,
+        compatibilityProfile: productOffer.compatibilityProfile,
+      };
+    }
     return { ...standard, id: row.id };
   });
   if (appliedChanges.size !== audioChanges.size) throw new Error('Missing Audio pricing change scenario.');
+  if (appliedProductOfferFixes.size !== productOfferFixes.size) throw new Error('Missing Product schema offer fix scenario.');
   if (!isDeepStrictEqual(rows, expected)) {
     const expectedById = new Map(expected.map((row) => [row.id, row]));
     const changed = rows.filter((row) => !isDeepStrictEqual(row, expectedById.get(row.id))).map((row) => row.id);

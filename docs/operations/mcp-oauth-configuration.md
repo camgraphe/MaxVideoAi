@@ -14,6 +14,14 @@ This runbook records dashboard settings only. Never copy project secrets, access
 - Use an asymmetric JWT signing key before requesting `openid`; publish and verify the project JWKS endpoint.
 - Keep access-token lifetime short enough for account revocation requirements and verify refresh-token rotation.
 
+For MCP resource requests, keep revocation enforcement on the two authoritative
+Supabase boundaries: `getUser(accessToken)` must validate that the JWT's
+`session_id` still exists, and `/user/oauth/grants` must contain an active grant
+for the signed `client_id`. Supabase grant revocation deletes the client-bound
+sessions as well as invalidating refresh tokens. Do not infer a consent or token
+generation by comparing JWT `iat` with `granted_at`; those timestamps have
+different precision and are not an identity binding.
+
 Supabase authorization-server discovery is available at:
 
 ```text
@@ -56,7 +64,8 @@ mutate raw events. Keep it a positive whole number no larger than 365 days.
 3. Start authorization with PKCE and confirm login returns to the same `authorization_id`.
 4. Deny once and verify the registered redirect receives the OAuth error.
 5. Approve once and verify token exchange succeeds with HTTP 200.
-6. Refresh the token, revoke the grant, and confirm subsequent access is rejected according to token lifetime and session policy.
-7. Confirm logs and audit events contain no token, authorization code, prompt, or private media URL.
+6. Refresh the token, revoke the grant, and confirm both the prior access token and refresh token are rejected immediately.
+7. Reauthorize the same client immediately and confirm the old access token remains rejected while the new session succeeds, including when both JWTs share the same whole-second `iat`.
+8. Confirm logs and audit events contain no token, authorization code, prompt, or private media URL.
 
 Supabase OAuth 2.1 Server is beta. Re-check the official changelog and OAuth Server documentation before enabling production discovery.

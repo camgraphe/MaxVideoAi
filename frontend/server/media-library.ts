@@ -27,10 +27,11 @@ export {
 } from './media-library/job-outputs';
 
 export {
-  deleteLibraryAsset,
   ensureReusableAsset,
   findLibraryAssetByOrigin,
   listLibraryAssets,
   listLibraryAssetPage,
   saveJobOutputToLibrary,
 } from './media-library/assets';
+
+export { deleteLibraryAsset } from './media-library/asset-deletion';

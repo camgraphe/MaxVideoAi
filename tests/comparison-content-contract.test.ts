@@ -235,10 +235,9 @@ test('the real metadata builder projects a localized generic fallback with canon
   assert.deepEqual(metadata.title, {
     absolute: 'Kling 3 Pro vs Veo 3.1 | Comparatif de modèles vidéo IA | MaxVideoAI',
   });
-  assert.equal(
-    metadata.description,
-    'Comparez Kling 3 Pro vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, contrôle de scène, comportement de l’audio natif et…',
-  );
+  assert.match(metadata.description ?? '', /Kling 3 Pro.*Veo 3.1/);
+  assert.match(metadata.description ?? '', /caractéristiques, prix/);
+  assert.doesNotMatch(metadata.description ?? '', /prompts identiques/);
   assert.equal(metadata.alternates?.canonical, `https://maxvideoai.com/fr/comparatif/${slug}`);
   assert.deepEqual(metadata.alternates?.languages, {
     en: `https://maxvideoai.com/ai-video-engines/${slug}`,

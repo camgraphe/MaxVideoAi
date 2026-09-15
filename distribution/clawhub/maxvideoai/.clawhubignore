@@ -1,0 +1,5 @@
+evidence/
+operations/
+*.log
+.env*
+.DS_Store

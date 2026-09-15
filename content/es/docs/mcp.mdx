@@ -34,7 +34,7 @@ Cursor, GitHub Copilot, Gemini CLI y Microsoft Copilot están en preparación. S
 https://api.maxvideoai.com/mcp
 ```
 
-Usa Streamable HTTP. No añadas tokens, contraseñas, parámetros ni claves API. Sigue la guía de tu cliente: abrirá el inicio de sesión y el consentimiento OAuth de MaxVideoAI en el navegador.
+Usa Streamable HTTP con OAuth 2.1. Los permisos solicitados son `openid,email,profile`. No añadas tokens, contraseñas, parámetros ni claves API. Sigue la guía de tu cliente: abrirá el inicio de sesión y el consentimiento OAuth de MaxVideoAI en el navegador.
 
 ## Autoriza tu cuenta
 
@@ -43,7 +43,7 @@ Usa Streamable HTTP. No añadas tokens, contraseñas, parámetros ni claves API.
 3. Revisa la autorización, regresa al cliente y comprueba la cuenta conectada.
 4. Revisa y aprueba el precio exacto antes de cualquier generación de pago.
 
-La conexión y la planificación no añaden una suscripción MaxVideoAI. Las generaciones de pago usan tus créditos MaxVideoAI; tu asistente puede tener sus propios requisitos de plan. Para desconectar, elimina la integración del cliente y revoca su autorización en MaxVideoAI.
+Conectar es gratis y planificar no requiere una suscripción MaxVideoAI. Las generaciones de pago usan el mismo saldo de créditos MaxVideoAI que el sitio; tu asistente puede tener sus propios requisitos de plan. Para desconectar, elimina la integración del cliente y revoca su autorización en MaxVideoAI.
 
 La compatibilidad se verifica por entorno. Claude Desktop y Codex CLI tienen pruebas verificadas; no se ha registrado una prueba completa de ChatGPT web ni Claude Code. OpenClaw y MCP Client en n8n autoalojado siguen probados con límites. Las guías indican las fechas y restricciones.
 

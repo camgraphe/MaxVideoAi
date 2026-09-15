@@ -37,6 +37,11 @@ export async function POST(req: Request) {
   }
 
   try {
+    // A configured shared token authenticates the callback correlation, including a lost submit acknowledgment.
+    const jobId = url.searchParams.get('jobId');
+    if (expectedToken && jobId && /^(tool_upscale_|job_)[a-zA-Z0-9_-]+$/.test(jobId) && payload && typeof payload === 'object') {
+      payload = { ...payload, job_id: jobId };
+    }
     await updateJobFromFalWebhook(payload);
     return NextResponse.json({ ok: true });
   } catch (error) {

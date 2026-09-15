@@ -1,3 +1,5 @@
+import { MCP_CLIENT_FAMILIES } from '@/server/mcp/client-family';
+
 export type McpOutcomeRelations = {
   audit: boolean;
   quotes: boolean;
@@ -6,6 +8,11 @@ export type McpOutcomeRelations = {
   funnel: boolean;
   clientFamily: boolean;
 };
+
+const REPORTED_CLIENTS_SQL = MCP_CLIENT_FAMILIES
+  .filter((client) => client !== 'other')
+  .map((client) => `'${client}'`)
+  .join(', ');
 
 export const MCP_OUTCOME_RELATIONS_SQL = `/* admin-mcp:outcome-relations */
   SELECT
@@ -23,7 +30,7 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
   const reportedClients = relations.clientFamily
     ? `SELECT user_id, oauth_client_id, client_family AS client, created_at AS observed_at, 0 AS priority
          FROM mcp_audit_events WHERE event_type = 'connection_initialized'
-          AND outcome = 'success' AND client_family IN ('chatgpt', 'claude', 'codex')`
+          AND outcome = 'success' AND client_family IN (${REPORTED_CLIENTS_SQL})`
     : `SELECT NULL::text AS user_id, NULL::text AS oauth_client_id, NULL::text AS client,
          NULL::timestamptz AS observed_at, 0 AS priority WHERE FALSE`;
   const landingClients = relations.funnel

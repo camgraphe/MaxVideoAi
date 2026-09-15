@@ -275,7 +275,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         let thumbUrl = normalizedThumbUrl ?? null;
         let message = job.message ?? null;
         let providerVideoCopyStateJson: string | null = null;
-        if (vUrl) {
+        if (vUrl && !queueResult && surface !== 'upscale') {
           const normalizedProviderVideoUrl = normalizeMediaUrl(vUrl) ?? vUrl;
           const strictCopyRequired = shouldFailVideoJobOnProviderCopyMiss({
             provider: job.provider ?? 'fal',

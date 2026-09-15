@@ -26,10 +26,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const aspect = parseAspectRatio(signals.aspectRatio ?? video.aspectRatio);
   const hasControls = Boolean(signals.promptRows.length || signals.inputRows.length);
 
-  const containerStyle: CSSProperties = {
-    maxHeight: '62vh',
-    width: '100%',
-  };
+  const containerStyle: CSSProperties = { maxHeight: '62vh', width: '100%' };
   if (aspect) {
     containerStyle.aspectRatio = `${aspect.width} / ${aspect.height}`;
     const maxWidth = 54 * (aspect.width / aspect.height);

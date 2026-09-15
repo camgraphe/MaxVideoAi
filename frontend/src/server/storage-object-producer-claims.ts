@@ -6,6 +6,7 @@ export const STORAGE_OBJECT_PRODUCER_LEASE_MS = 5 * 60_000;
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const CONTENT_KEY_PREFIX = 'user-assets/by-content/';
+const STAGING_CONTENT_KEY_PREFIX = `mcp-reference-staging/${CONTENT_KEY_PREFIX}`;
 
 export type StorageObjectProducerClaim = {
   objectKey: string;
@@ -15,7 +16,8 @@ export type StorageObjectProducerClaim = {
 
 function requireObjectKey(objectKey: string): string {
   if (objectKey !== objectKey.trim() || objectKey.length < CONTENT_KEY_PREFIX.length + 1
-    || objectKey.length > 1024 || !objectKey.startsWith(CONTENT_KEY_PREFIX)) {
+    || objectKey.length > 1024
+    || (!objectKey.startsWith(CONTENT_KEY_PREFIX) && !objectKey.startsWith(STAGING_CONTENT_KEY_PREFIX))) {
     throw new Error('Invalid content-addressed storage key.');
   }
   return objectKey;
@@ -106,11 +108,11 @@ export async function settleStorageObjectProducer(input: {
     `UPDATE mcp_reference_upload_object_fences
         SET state = CASE
               WHEN EXISTS (SELECT 1 FROM user_assets AS assets
-                WHERE position($1 in assets.url) > 0
-                  OR position($1 in COALESCE(assets.metadata->>'thumbUrl', '')) > 0)
+                WHERE reference_storage_object_key(assets.url) = $1
+                  OR reference_storage_object_key(assets.metadata->>'thumbUrl') = $1)
                 OR EXISTS (SELECT 1 FROM media_assets AS media
-                  WHERE media.deleted_at IS NULL AND (position($1 in media.url) > 0
-                    OR position($1 in COALESCE(media.thumb_url, '')) > 0))
+                  WHERE media.deleted_at IS NULL AND (reference_storage_object_key(media.url) = $1
+                    OR reference_storage_object_key(media.thumb_url) = $1))
               THEN 'referenced' ELSE 'orphaned' END,
             producer_claim_id = NULL, producer_lease_expires_at = NULL, updated_at = $3
       WHERE object_key = $1 AND state IN ('producing','referenced') AND producer_claim_id = $2

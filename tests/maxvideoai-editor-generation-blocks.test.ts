@@ -881,7 +881,7 @@ test('Generate Video does not route a storyboard-only model for a plain prompt',
   }), /not compatible/i);
 });
 
-test('legacy modify video shots without preset ids retain the V1 model allowlist', () => {
+test('legacy modify video shots without preset ids retain the certified V1 model allowlist', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const modifyVideo = getWorkspaceBlockPreset('modify-video')?.defaultShot;
   assert.ok(modifyVideo);
@@ -892,7 +892,7 @@ test('legacy modify video shots without preset ids retain the V1 model allowlist
     capabilities,
   }).map((capability) => capability.id);
 
-  assert.deepEqual(compatibleModelIds, ['seedance-2-5', 'luma-ray-3-2']);
+  assert.deepEqual(compatibleModelIds, ['seedance-2-5', 'luma-ray-3-2', 'wan-3', 'wan-3-prime']);
 });
 
 test('Studio V1 input connectors disable inputs unsupported by the selected real engine', () => {

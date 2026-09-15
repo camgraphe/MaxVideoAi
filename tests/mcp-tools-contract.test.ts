@@ -181,6 +181,25 @@ function record(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+function assertSchemaAllowsNull(value: unknown, field: string): void {
+  const schema = record(value);
+  const variants = Array.isArray(schema.anyOf) ? schema.anyOf : [];
+  assert.ok(
+    schema.type === 'null'
+      || (Array.isArray(schema.type) && schema.type.includes('null'))
+      || variants.some((variant) => record(variant).type === 'null'),
+    `${field} must accept null for hosts that materialize optional tool arguments`,
+  );
+}
+
+function nonNullSchema(value: unknown): Record<string, unknown> {
+  const schema = record(value);
+  const variants = Array.isArray(schema.anyOf) ? schema.anyOf : [];
+  return variants.length > 0
+    ? record(variants.find((variant) => record(variant).type !== 'null'))
+    : schema;
+}
+
 function assertAccountStatus(value: unknown): asserts value is AgentAccountStatus {
   const status = record(value);
   assert.equal(typeof status.accountId, 'string');
@@ -279,8 +298,11 @@ test('server advertises only the five read-only discovery tools with narrow guid
   const listTool = result.tools.find((tool) => tool.name === 'list_models');
   assert.ok(listTool);
   const listProperties = record(listTool.inputSchema.properties);
-  assert.equal(record(listProperties.limit).minimum, 1);
-  assert.equal(record(listProperties.limit).maximum, 50);
+  for (const [field, schema] of Object.entries(listProperties)) {
+    assertSchemaAllowsNull(schema, `list_models.${field}`);
+  }
+  assert.equal(nonNullSchema(listProperties.limit).minimum, 1);
+  assert.equal(nonNullSchema(listProperties.limit).maximum, 50);
   const budgetTool = result.tools.find((tool) => tool.name === 'calculate_project_budget');
   assert.ok(budgetTool);
   assert.equal(budgetTool.inputSchema.additionalProperties, false);
@@ -292,6 +314,10 @@ test('server advertises only the five read-only discovery tools with narrow guid
   const settingsSchema = record(record(lineSchema.properties).settings);
   const aspectRatioSchema = record(record(settingsSchema.properties).aspectRatio);
   const audioSchema = record(record(settingsSchema.properties).audio);
+  for (const field of ['aspectRatio', 'fps', 'audio', 'loop']) {
+    assertSchemaAllowsNull(record(settingsSchema.properties)[field], `calculate_project_budget.settings.${field}`);
+  }
+  assertSchemaAllowsNull(record(lineSchema.properties).referenceRoles, 'calculate_project_budget.referenceRoles');
   assert.match(String(aspectRatioSchema.description), /aspectRatios.*non-empty.*include/i);
   assert.match(String(aspectRatioSchema.description), /empty.*omit/i);
   assert.match(String(audioSchema.description), /omit.*always_generated/i);
@@ -304,6 +330,9 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.match(recommendationTool.description ?? '', /already chose.*do not use|do not use.*already chose/i);
   assert.equal(recommendationTool.inputSchema.additionalProperties, false);
   const recommendationProperties = record(recommendationTool.inputSchema.properties);
+  for (const [field, schema] of Object.entries(recommendationProperties)) {
+    assertSchemaAllowsNull(schema, `recommend_models.${field}`);
+  }
   for (const field of ['useCase', 'priorities', 'preferredModelIds', 'excludedModelIds', 'budgetCeilingCents']) {
     assert.equal(typeof record(recommendationProperties[field]).description, 'string');
   }
@@ -375,13 +404,20 @@ test('paid prepare schema exposes canonical settings and accepts full video refe
 
   const prepareTool = (await client.listTools()).tools.find((tool) => tool.name === 'prepare_generation');
   assert.ok(prepareTool);
+  assert.match(prepareTool.description ?? '', /nullable.*send null.*not explicitly.*live details.*user/is);
   const prepareProperties = record(prepareTool.inputSchema.properties);
-  const settingsSchema = record(prepareProperties.settings);
+  for (const field of ['schemaVersion', 'settings', 'references', 'outputCount']) {
+    assertSchemaAllowsNull(prepareProperties[field], `prepare_generation.${field}`);
+  }
+  const settingsSchema = nonNullSchema(prepareProperties.settings);
   assert.equal(settingsSchema.additionalProperties, false);
   const settingsProperties = record(settingsSchema.properties);
+  for (const [field, schema] of Object.entries(settingsProperties)) {
+    assertSchemaAllowsNull(schema, `prepare_generation.settings.${field}`);
+  }
   assert.equal('duration' in settingsProperties, false);
   const durationSecSchema = record(settingsProperties.durationSec);
-  assert.equal(durationSecSchema.type, 'integer');
+  assert.equal(nonNullSchema(durationSecSchema).type, 'integer');
   assert.match(String(durationSecSchema.description), /durationSec.*seconds.*never.*duration/is);
 
   const invalidReferences = [
@@ -403,6 +439,27 @@ test('paid prepare schema exposes canonical settings and accepts full video refe
     assert.equal(result.isError, true);
   }
   assert.deepEqual(preparedInputs.map((input) => record(input).mode), ['v2v', 'extend']);
+
+  const nullablePrepareResult = await client.callTool({
+    name: 'prepare_generation',
+    arguments: {
+      schemaVersion: null,
+      surface: 'video',
+      engineId: 'seedance-2-0',
+      mode: 't2v',
+      prompt: 'A clean compatibility check.',
+      settings: null,
+      references: null,
+      outputCount: null,
+    },
+  });
+  assert.notEqual(nullablePrepareResult.isError, true);
+  assert.deepEqual(preparedInputs.at(-1), {
+    surface: 'video',
+    engineId: 'seedance-2-0',
+    mode: 't2v',
+    prompt: 'A clean compatibility check.',
+  });
 });
 
 test('all fifteen operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
@@ -715,6 +772,74 @@ test('tools return structured content and pass validated filters to facade servi
     budgetCeilingCents: 1_000,
   });
   assert.deepEqual(budgetInput, budgetArguments);
+
+  const nullableBudgetResult = await connected.client.callTool({
+    name: 'calculate_project_budget',
+    arguments: {
+      proposals: [{
+        name: 'Nullable compatibility',
+        lines: [{
+          purpose: 'Opening',
+          engineId: 'seedance-2-5',
+          mode: 't2v',
+          settings: {
+            durationSec: 4,
+            resolution: '480p',
+            aspectRatio: null,
+            fps: null,
+            audio: null,
+            loop: null,
+          },
+          referenceRoles: null,
+          clipCount: 1,
+          attemptsPerClip: 1,
+        }],
+      }],
+    },
+  });
+  assert.notEqual(nullableBudgetResult.isError, true);
+  assert.deepEqual(budgetInput, {
+    proposals: [{
+      name: 'Nullable compatibility',
+      lines: [{
+        purpose: 'Opening',
+        engineId: 'seedance-2-5',
+        mode: 't2v',
+        settings: { durationSec: 4, resolution: '480p' },
+        clipCount: 1,
+        attemptsPerClip: 1,
+      }],
+    }],
+  });
+
+  const nullableListArguments = Object.fromEntries(
+    Object.keys(record((await connected.client.listTools()).tools.find((tool) => tool.name === 'list_models')?.inputSchema.properties))
+      .map((field) => [field, null]),
+  );
+  const nullableRecommendationArguments = Object.fromEntries(
+    Object.keys(record((await connected.client.listTools()).tools.find((tool) => tool.name === 'recommend_models')?.inputSchema.properties))
+      .map((field) => [field, null]),
+  );
+  const nullableModelsResult = await connected.client.callTool({
+    name: 'list_models',
+    arguments: nullableListArguments,
+  });
+  const nullableRecommendationResult = await connected.client.callTool({
+    name: 'recommend_models',
+    arguments: nullableRecommendationArguments,
+  });
+  assert.notEqual(nullableModelsResult.isError, true);
+  assert.notEqual(nullableRecommendationResult.isError, true);
+  assert.deepEqual(listFilter, {}, 'null discovery fields must be omitted before calling the facade');
+  assert.deepEqual(recommendationInput, {}, 'null recommendation fields must be omitted before calling the facade');
+
+  const omittedModelsResult = await connected.client.callTool({ name: 'list_models', arguments: {} });
+  const omittedRecommendationResult = await connected.client.callTool({ name: 'recommend_models', arguments: {} });
+  assert.notEqual(omittedModelsResult.isError, true);
+  assert.notEqual(omittedRecommendationResult.isError, true);
+  assert.deepEqual(listFilter, {}, 'legacy clients may continue omitting discovery fields');
+  assert.deepEqual(recommendationInput, {}, 'legacy clients may continue omitting recommendation fields');
+
   rejectedBudgetResults.forEach((result) => assert.equal(result.isError, true));
   rejectedRecommendationResults.forEach((result) => assert.equal(result.isError, true));
   assertAccountStatus(accountResult.structuredContent);

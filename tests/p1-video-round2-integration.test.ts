@@ -38,7 +38,12 @@ function supabasePrincipalResolver(input: {
         async getClaims(accessToken) {
           assert.equal(accessToken, 'test-session-access-token');
           return {
-            data: { claims: { sub: input.userId, ...(input.clientId ? { client_id: input.clientId } : {}) } },
+            data: {
+              claims: {
+                sub: input.userId,
+                ...(input.clientId ? { client_id: input.clientId, iat: 1_789_372_800 } : {}),
+              },
+            },
             error: null,
           };
         },
@@ -56,6 +61,10 @@ function supabasePrincipalResolver(input: {
           };
         },
       };
+    },
+    async hasActiveGrant(accessToken, clientId) {
+      assert.equal(accessToken, 'test-session-access-token');
+      return clientId === input.clientId;
     },
   });
 }

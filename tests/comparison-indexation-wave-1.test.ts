@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import test from 'node:test';
+import test, { mock } from 'node:test';
+import fs from 'node:fs';
 
 import {
   buildCanonicalCompareSlug,
@@ -200,7 +201,10 @@ test('wave 1 keeps English and every comparison carrying a positive safety signa
   }
 });
 
-test('wave 1 sitemap contains exactly the indexable localized comparison URLs', async () => {
+test('wave 1 sitemap contains exactly the indexable localized comparison URLs', async (t) => {
+  const originalExists = fs.existsSync;
+  const manifest = mock.method(fs, 'existsSync', (path) => String(path).endsWith('app-paths-manifest.json') ? false : originalExists(path));
+  t.after(() => manifest.mock.restore());
   const { getCanonicalPathEntries } = await import('../frontend/lib/sitemap/route-discovery.ts');
   const comparisonPathByLocale = {
     en: '/ai-video-engines',

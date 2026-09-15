@@ -11,10 +11,11 @@ const viewPath = join(root, 'frontend/app/(core)/admin/mcp/_components/AdminMcpV
 const helpersPath = join(root, 'frontend/app/(core)/admin/mcp/_lib/admin-mcp-helpers.ts');
 const serverPath = join(root, 'frontend/server/admin-mcp-metrics.ts');
 const queriesPath = join(root, 'frontend/server/admin-mcp-metrics-queries.ts');
+const providerOperationsPath = join(root, 'frontend/server/admin-mcp-provider-operations.ts');
 const publicationPath = join(root, 'frontend/config/mcp-publication.json');
 
 test('admin MCP route remains a thin authenticated server orchestrator', () => {
-  for (const path of [pagePath, viewPath, helpersPath, serverPath, queriesPath]) {
+  for (const path of [pagePath, viewPath, helpersPath, serverPath, queriesPath, providerOperationsPath]) {
     assert.equal(existsSync(path), true, `${path} should exist`);
   }
   const page = readFileSync(pagePath, 'utf8');
@@ -34,7 +35,7 @@ test('admin MCP view owns decision surfaces and explicit unavailable, empty, and
   for (const owner of ['AdminPageHeader', 'AdminMetricGrid', 'AdminSection', 'AdminNotice', 'AdminEmptyState']) {
     assert.match(view, new RegExp(owner));
   }
-  for (const label of ['Funnel', 'Cohort conversion', 'Client split', 'Errors', 'Cost guardrails', 'Publication flags', 'Operations alerts']) {
+  for (const label of ['Funnel', 'Cohort conversion', 'Acquisition source split', 'Errors', 'Cost guardrails', 'Publication flags', 'Operations alerts']) {
     assert.match(view, new RegExp(label, 'i'));
   }
   assert.match(view, /Unavailable/i);
@@ -58,6 +59,7 @@ test('route helpers own UTC range parsing, display formatting, and view-model bu
 test('server metrics stay privacy-safe, read-only, and externally inert', () => {
   const server = readFileSync(serverPath, 'utf8');
   const queries = readFileSync(queriesPath, 'utf8');
+  const providerOperations = readFileSync(providerOperationsPath, 'utf8');
   assert.match(server, /export async function loadAdminMcpMetrics/);
   assert.match(server, /export function evaluateMcpOperationsAlerts/);
   assert.match(server, /export async function routeMcpOperationsAlerts/);
@@ -65,6 +67,10 @@ test('server metrics stay privacy-safe, read-only, and externally inert', () => 
   assert.match(server, /recommendationToQuote: MetricAvailability/);
   assert.match(server, /to_regclass/);
   assert.match(server, /from '@\/server\/admin-mcp-metrics-queries'/);
+  assert.match(server, /loadAdminMcpProviderOperations/);
+  assert.match(server, /loadAdminMcpProviderCosts/);
+  assert.match(providerOperations, /export async function loadAdminMcpProviderOperations/);
+  assert.match(providerOperations, /export async function loadAdminMcpProviderCosts/);
   assert.match(queries, /provider_attempts/);
   assert.match(queries, /app_receipts/);
   assert.match(queries, /mcp_audit_events/);
@@ -72,8 +78,10 @@ test('server metrics stay privacy-safe, read-only, and externally inert', () => 
   assert.doesNotMatch(server, /INSERT\s+INTO|UPDATE\s+\w+|DELETE\s+FROM/i);
   assert.doesNotMatch(server, /\b(prompt|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i);
   assert.doesNotMatch(queries, /\b(prompt|email|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i);
+  assert.doesNotMatch(providerOperations, /\b(prompt|email|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i);
   assert.ok(server.split('\n').length <= 500, 'focused server owner should stay below 500 lines');
   assert.ok(queries.split('\n').length <= 500, 'focused query owner should stay below 500 lines');
+  assert.ok(providerOperations.split('\n').length <= 200, 'provider operations owner should stay below 200 lines');
 });
 
 test('MCP acquisition is in Analytics navigation and publication matches the production release', () => {

@@ -336,6 +336,11 @@ export function cloneUpscalePricingWithDynamicTotal(
   };
 }
 
+export function usdToCredits(value: number | null | undefined): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return Math.max(1, Math.round(value * 100));
+}
+
 export function toUpscaleValidationMessage(error: ValidationError): string {
   const messages = error.fieldErrors
     .map((entry) => {

@@ -45,6 +45,74 @@ an import-specific override: ordinary product uploads keep their existing
 storage defaults. Do not replace this explicit visibility intent with the
 deployment-wide `S3_UPLOAD_ACL` setting.
 
+Operational staging additionally prefixes both content-addressed originals and
+thumbnails with the exact `mcp-reference-staging/` namespace. Durable cleanup
+rows, object fences, and URL parsing preserve that namespace end to end; they
+must never collapse a staging key onto the production `user-assets/` or
+`user-asset-thumbs/` keyspace. Thumbnail failures log only stable event codes,
+not filenames, object keys, user identifiers, or raw storage errors.
+
+## Library deletion and storage cleanup
+
+Deleting a canonical library asset remains an authenticated library operation; it
+does not add a destructive MCP tool. The request transaction locks and soft-deletes
+the exact owned `media_assets` row, removes same-owner `user_assets` projections
+whose URL exactly matches the canonical URL (while preserving a projection whose
+`asset_id` belongs to another live canonical row at that URL), and changes retained
+final/thumbnail cleanup records to `released` only for the completed direct-upload
+attempt whose `staged_asset_id` is that canonical public ID. Migration 43 installs
+the same transactional soft-delete trigger for rolling deployments. Tombstones that
+predate the migration are reconciled by one bounded worker CTE per cleanup run; the
+migration performs no unbounded projection, ledger, or fence backfill.
+
+The request does not call storage. The reference-upload cleanup worker groups
+released records by object key, rejects live exact final or thumbnail references and
+pending/retained upload owners, then claims the shared durable object fence and a
+bounded deletion lease. The fence covers both `user-assets/by-content/` final keys
+and `user-asset-thumbs/` thumbnail keys, so persistence and competing workers cannot
+win while deletion is in flight. Historical thumbnail rows acquire a missing fence
+lazily immediately before the claim and exact reference recheck. A successful storage
+effect marks every released ledger owner for that key deleted; failure restores the
+fence and leaves the records released for retry.
+
+`released` is the cleanup authority even if an older or manually repaired attempt is
+later recorded as `aborted`. The strict ledger transition proves that the object was
+previously retained and explicitly relinquished; requiring the attempt to remain
+`completed` would strand that durable release forever. Live URL owners,
+pending/retained ledger owners, prefix scope, and the shared fence still protect the
+object before every deletion.
+
+The claim may recover a stale `referenced` fence left by concurrent deletion of the
+last two owners, but only inside the same atomic `NOT EXISTS` reference check and only
+when no producer lease is active. The tombstone reconciliation scan uses the partial
+`(deleted_at, id)` index and keeps `public_id IS NOT NULL` aligned between its predicate
+and query.
+
+Reference checks parse the complete storage URL path rather than searching for a key
+substring. Both final and thumbnail keys are recognized in `user_assets.url` and
+`media_assets.url`; thumbnail projections in `media_assets.thumb_url` and
+`user_assets.metadata.thumbUrl` use the same strict parser. A key appearing only in
+a query string or fragment is not an owner. URL schemes are parsed case-insensitively,
+and an unrelated authority is not an owner even when its path mimics an owned key.
+The namespace may follow a configured base pathname such as `/public`; matching is
+still confined to complete pathname segments and never reads query or fragment data.
+The HTTPS scheme and authority are compared case-insensitively, while the owned
+namespace segments remain exact lowercase strings. Plain HTTP and uppercase namespace
+lookalikes are never recognized owners; a shaped HTTP URL may only enter quarantine.
+Because PostgreSQL cannot see runtime `S3_PUBLIC_BASE_URL` or
+`ASSET_HOST_ALLOWLIST`, only exact first-party authorities are recognized owners;
+generic multi-tenant cloud authorities are not trusted as a class. An unrecognized
+authority with an owned-key-shaped pathname is a conservative per-key quarantine at
+deletion claim time. Its persistence and removal still acquire/release the same fence,
+so it cannot race an in-flight deletion, but it is not promoted to `retained` ownership.
+Supporting cleanup for a new custom storage authority therefore requires an explicit
+shared database authority contract; until then the object is retained rather than
+risking a false-negative owner check.
+
+This lifecycle applies only to the direct MCP upload handoff backed by
+`mcp_reference_upload_attempts`. Native `import_reference_files` imports do not yet
+have that durable upload ledger and are not claimed as storage-cleanup participants.
+
 ## Trust boundaries
 
 Native host handles are untrusted URLs even when the user authorized the file.

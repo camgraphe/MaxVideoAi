@@ -11,6 +11,7 @@ import {
   ERROR_SQL,
   FUNNEL_SQL,
   PROVIDER_COST_SQL,
+  PROVIDER_OPERATIONS_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
   TOOL_USAGE_SQL,
@@ -99,7 +100,14 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     );
     CREATE TABLE app_jobs (id BIGSERIAL PRIMARY KEY, job_id TEXT NOT NULL UNIQUE);
     CREATE TABLE provider_attempts (
+      id BIGSERIAL PRIMARY KEY,
       job_id BIGINT NOT NULL REFERENCES app_jobs(id),
+      provider TEXT NOT NULL,
+      status TEXT NOT NULL,
+      started_at TIMESTAMPTZ,
+      accepted_at TIMESTAMPTZ,
+      finished_at TIMESTAMPTZ,
+      fallback_to_attempt_id BIGINT,
       provider_cost_usd NUMERIC(12, 6),
       created_at TIMESTAMPTZ NOT NULL
     );
@@ -156,18 +164,19 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
       ('charge', 300, 'USD', 'mcp-paid-inside', '2026-06-30 23:59:59Z'),
       ('charge', 700, 'USD', 'not-mcp', '2026-07-03 00:00Z');
 
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 1.50, '2026-07-01 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, NULL, '2026-07-05 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 9.00, '2026-07-08 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 0.25, '2026-07-04 00:00Z' FROM app_jobs WHERE job_id = 'mcp-trial-old';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 0.75, '2026-06-30 23:59:59Z' FROM app_jobs WHERE job_id = 'mcp-paid-inside';
-    INSERT INTO provider_attempts (job_id, provider_cost_usd, created_at)
-    SELECT id, 7.00, '2026-07-03 00:00Z' FROM app_jobs WHERE job_id = 'not-mcp';
+    INSERT INTO provider_attempts (job_id, provider, status, started_at, accepted_at, finished_at, provider_cost_usd, created_at)
+    SELECT id, 'alibaba_model_studio', 'completed', '2026-07-01 00:00Z', '2026-07-01 00:00:01Z', '2026-07-01 00:00:11Z', 1.50, '2026-07-01 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
+    INSERT INTO provider_attempts (job_id, provider, status, started_at, finished_at, provider_cost_usd, created_at)
+    SELECT id, 'alibaba_model_studio', 'polling_stalled', '2026-07-05 00:00Z', '2026-07-05 00:03Z', NULL, '2026-07-05 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
+    INSERT INTO provider_attempts (job_id, provider, status, provider_cost_usd, created_at)
+    SELECT id, 'alibaba_model_studio', 'completed', 9.00, '2026-07-08 00:00Z' FROM app_jobs WHERE job_id = 'mcp-paid-old';
+    INSERT INTO provider_attempts (job_id, provider, status, started_at, finished_at, provider_cost_usd, created_at)
+    SELECT id, 'fal', 'failed', '2026-07-04 00:00Z', '2026-07-04 00:00:02Z', 0.25, '2026-07-04 00:00Z' FROM app_jobs WHERE job_id = 'mcp-trial-old';
+    UPDATE provider_attempts SET fallback_to_attempt_id = id WHERE provider = 'fal';
+    INSERT INTO provider_attempts (job_id, provider, status, provider_cost_usd, created_at)
+    SELECT id, 'fal', 'completed', 0.75, '2026-06-30 23:59:59Z' FROM app_jobs WHERE job_id = 'mcp-paid-inside';
+    INSERT INTO provider_attempts (job_id, provider, status, provider_cost_usd, created_at)
+    SELECT id, 'fal', 'completed', 7.00, '2026-07-03 00:00Z' FROM app_jobs WHERE job_id = 'not-mcp';
   `);
 
   const params = [new Date('2026-07-01T00:00:00.000Z'), new Date('2026-07-08T00:00:00.000Z')];
@@ -236,6 +245,28 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     assert.equal(Number(row.trial_cost_cents), 25);
   });
 
+  await t.test('provider operations group Alibaba lifecycle, fallback, cost, and latency without payloads', async () => {
+    const rows = (await client.query(PROVIDER_OPERATIONS_SQL, params)).rows;
+    assert.deepEqual(rows.map((row) => ({
+      provider: row.provider,
+      attempts: Number(row.attempt_count),
+      accepted: Number(row.accepted_count),
+      completed: Number(row.completed_count),
+      failed: Number(row.failed_count),
+      fallbacks: Number(row.fallback_count),
+      stalled: Number(row.stalled_polling_count),
+      costCents: row.provider_cost_cents === null ? null : Number(row.provider_cost_cents),
+      acceptanceLatencyMs: row.average_acceptance_latency_ms === null ? null : Number(row.average_acceptance_latency_ms),
+      terminalLatencyMs: row.average_terminal_latency_ms === null ? null : Number(row.average_terminal_latency_ms),
+    })), [{
+      provider: 'alibaba_model_studio', attempts: 2, accepted: 1, completed: 1, failed: 0,
+      fallbacks: 0, stalled: 1, costCents: 150, acceptanceLatencyMs: 1000, terminalLatencyMs: 95_500,
+    }, {
+      provider: 'fal', attempts: 1, accepted: 0, completed: 0, failed: 1,
+      fallbacks: 1, stalled: 0, costCents: 25, acceptanceLatencyMs: null, terminalLatencyMs: 2000,
+    }]);
+  });
+
   await t.test('video outcomes deduplicate users, exclude web/image jobs, and attribute each job to its own application', async () => {
     await client.query(`
       CREATE SCHEMA outcomes_fixture;
@@ -245,13 +276,17 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
       CREATE TABLE mcp_generation_quotes (user_id text, oauth_client_id text, job_id text UNIQUE, created_at timestamptz);
       CREATE TABLE app_jobs (job_id text UNIQUE, user_id text, surface text, status text, created_at timestamptz);
       CREATE TABLE profiles (id text PRIMARY KEY, created_at timestamptz, synced_from_supabase boolean);
-      INSERT INTO profiles VALUES ('a', '2026-06-01Z', true), ('b', '2026-07-01Z', true), ('c', '2026-07-02Z', true);
+      INSERT INTO profiles VALUES
+        ('a', '2026-06-01Z', true), ('b', '2026-07-01Z', true), ('c', '2026-07-02Z', true),
+        ('d', '2026-07-03Z', true), ('e', '2026-07-03Z', true);
       INSERT INTO mcp_audit_events VALUES
         ('connection_initialized', 'a', 'codex-id', 'success', 'codex', '2026-06-01Z'),
         ('connection_initialized', 'a', 'codex-id', 'success', 'codex', '2026-07-02Z'),
         ('connection_initialized', 'a', 'claude-id', 'success', 'claude', '2026-07-03Z'),
         ('connection_initialized', 'b', 'chatgpt-id', 'success', NULL, '2026-07-01Z'),
         ('connection_initialized', 'c', 'unknown-id', 'success', 'other', '2026-07-02Z'),
+        ('connection_initialized', 'd', 'openclaw-id', 'success', 'openclaw', '2026-07-03Z'),
+        ('connection_initialized', 'e', 'n8n-id', 'success', 'n8n', '2026-07-03Z'),
         ('connection_initialized', 'future', 'codex-id', 'success', 'codex', '2026-07-08Z');
       INSERT INTO mcp_funnel_events VALUES ('oauth_connection_completed', 'b', 'chatgpt-id', 'chatgpt', '2026-07-01Z');
       INSERT INTO app_jobs VALUES
@@ -262,6 +297,8 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
         ('b1', 'b', 'video', 'queued', '2026-07-02Z'),
         ('b2', 'b', 'video', 'failed', '2026-07-03Z'),
         ('c1', 'c', 'video', 'completed', '2026-07-04Z'),
+        ('d1', 'd', 'video', 'completed', '2026-07-05Z'),
+        ('e1', 'e', 'video', 'queued', '2026-07-05Z'),
         ('web', 'a', 'video', 'completed', '2026-07-04Z'),
         ('wrong-owner', 'outsider', 'video', 'completed', '2026-07-04Z'),
         ('before', 'a', 'video', 'completed', '2026-06-30Z'),
@@ -271,7 +308,8 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
           FROM app_jobs WHERE job_id IN ('a1', 'a2', 'a3', 'image', 'before', 'after', 'wrong-owner');
       INSERT INTO mcp_generation_quotes VALUES
         ('b', 'chatgpt-id', 'b1', '2026-07-02Z'), ('b', 'chatgpt-id', 'b2', '2026-07-03Z'),
-        ('c', 'unknown-id', 'c1', '2026-07-04Z'), ('c', 'unknown-id', NULL, '2026-07-04Z');
+        ('c', 'unknown-id', 'c1', '2026-07-04Z'), ('c', 'unknown-id', NULL, '2026-07-04Z'),
+        ('d', 'openclaw-id', 'd1', '2026-07-05Z'), ('e', 'n8n-id', 'e1', '2026-07-05Z');
     `);
     const relations = { audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true };
     const load = (readAuthMetadata?: typeof readMcpAuthMetadata) => loadAdminMcpOutcomes({ from: params[0], to: params[1], timeZone: 'UTC', conversionWindowSeconds: 60 }, {
@@ -283,12 +321,14 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     });
     const result = await load();
     assert.deepEqual(result.notices, []);
-    assert.deepEqual(result.totals, { accounts: 3, newSignups: 2, generators: 2, submitted: 6, videos: 4, failed: 1, pending: 1 });
+    assert.deepEqual(result.totals, { accounts: 5, newSignups: 4, generators: 3, submitted: 8, videos: 5, failed: 1, pending: 2 });
     assert.equal(result.clients.find((row) => row.client === 'codex')?.videos, 2);
     assert.equal(result.clients.find((row) => row.client === 'claude')?.videos, 1);
     assert.equal(result.clients.find((row) => row.client === 'chatgpt')?.newSignups, 1);
+    assert.equal(result.clients.find((row) => row.client === 'openclaw')?.videos, 1);
+    assert.equal(result.clients.find((row) => row.client === 'n8n')?.pending, 1);
     assert.equal(result.clients.find((row) => row.client === 'other')?.videos, 1);
-    assert.equal(result.clients.reduce((sum, row) => sum + row.generators, 0), 3, 'one user uses two applications while the global count remains distinct');
+    assert.equal(result.clients.reduce((sum, row) => sum + row.generators, 0), 4, 'one user uses two applications while the global count remains distinct');
 
     await client.query(`INSERT INTO mcp_audit_events VALUES ('connection_initialized', 'c', 'unknown-id', 'success', 'codex', '2026-07-06Z')`);
     const laterIdentity = await load();
@@ -297,38 +337,42 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     await client.query(`UPDATE profiles SET synced_from_supabase = false WHERE id = 'b'`);
     const missingProfile = await load();
     assert.equal(missingProfile.totals?.newSignups, null);
-    assert.equal(missingProfile.totals?.videos, 4, 'registration gaps do not hide video outcomes');
+    assert.equal(missingProfile.totals?.videos, 5, 'registration gaps do not hide video outcomes');
     assert.equal(missingProfile.notices.length, 1);
     const recovered = await load(async (users, clients) => {
       assert.deepEqual(users, ['b']);
       assert.deepEqual(clients, ['unknown-id']);
       return { profiles: [{ user_id: 'b', registered_at: '2026-07-01Z' }], clients: [{ oauth_client_id: 'unknown-id', family: 'chatgpt' }] };
     });
-    assert.equal(recovered.totals?.newSignups, 2);
+    assert.equal(recovered.totals?.newSignups, 4);
     assert.equal(recovered.clients.find((row) => row.client === 'chatgpt')?.videos, 1);
     assert.equal(recovered.clients.find((row) => row.client === 'codex')?.videos, 2, 'recorded attribution wins over the registry fallback');
     assert.doesNotMatch(JSON.stringify(recovered), /user_id|oauth_client_id|missing_user_ids|unknown_client_ids/);
     const authOutage = await load(async () => { throw new Error('auth unavailable'); });
-    assert.equal(authOutage.totals?.videos, 4);
+    assert.equal(authOutage.totals?.videos, 5);
     assert.equal(authOutage.totals?.newSignups, null);
 
     await client.query('ALTER TABLE mcp_audit_events DROP COLUMN client_family');
     const legacy = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
-    assert.equal(Number(legacy.rows.find((row) => row.client === 'all').videos), 4);
+    assert.equal(Number(legacy.rows.find((row) => row.client === 'all').videos), 5);
     assert.equal(Number(legacy.rows.find((row) => row.client === 'chatgpt').accounts), 1, 'signed landing attribution works on the old schema');
     await client.query('DROP TABLE mcp_funnel_events');
     const noAttribution = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false, funnel: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
-    assert.equal(Number(noAttribution.rows.find((row) => row.client === 'other').videos), 4);
+    assert.equal(Number(noAttribution.rows.find((row) => row.client === 'other').videos), 5);
 
     await client.query('TRUNCATE mcp_audit_events, mcp_generation_quotes, app_jobs');
     const empty = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false, funnel: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
     assert.equal(Number(empty.rows[0].videos), 0);
     assert.equal(Number(empty.rows[0].accounts), 0);
     const migration = readFileSync(join(process.cwd(), 'neon/migrations/41_mcp_client_family.sql'), 'utf8');
+    const ecosystemMigration = readFileSync(join(process.cwd(), 'neon/migrations/42_mcp_client_family_ecosystem.sql'), 'utf8');
     await client.query(migration);
-    await client.query(migration);
+    await client.query(ecosystemMigration);
+    await client.query(ecosystemMigration);
     await assert.rejects(() => client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('raw-client-name')`), /check constraint/);
-    await client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('codex'), ('claude'), ('chatgpt'), ('other'), (NULL)`);
+    await client.query(`INSERT INTO mcp_audit_events (client_family) VALUES
+      ('codex'), ('claude'), ('chatgpt'), ('openclaw'), ('n8n'), ('cursor'),
+      ('githubCopilot'), ('geminiCli'), ('microsoftCopilot'), ('other'), (NULL)`);
     await client.query('SET search_path TO public');
   });
 

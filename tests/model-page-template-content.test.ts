@@ -1230,7 +1230,7 @@ test('existing Seedance content links to Mini only as a lower-cost batch value a
   }
 });
 
-test('migrated template product schemas avoid free price offers', () => {
+test('model schema payloads omit Product when no truthful offer is available', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
     const decision = buildModelDecisionDataFromContent({ engine, locale: 'en' });
@@ -1255,8 +1255,7 @@ test('migrated template product schemas avoid free price offers', () => {
 
     const product = schemas.find((schema) => schema['@type'] === 'Product');
 
-    assert.ok(product, `${slug} should emit Product schema`);
-    assert.ok(!('offers' in product), `${slug} Product schema should not emit a free price offer`);
+    assert.equal(product, undefined, `${slug} should not emit an ineligible Product schema`);
   }
 });
 
@@ -1309,5 +1308,48 @@ test('new Luma model product schemas emit priced offers without synthetic rating
     assert.ok((returnPolicy.returnPolicyCountry as string[]).includes('US'), `${slug} Product return policy should cover US`);
     assert.ok(!('review' in product), `${slug} should not invent reviews`);
     assert.ok(!('aggregateRating' in product), `${slug} should not invent aggregate ratings`);
+  }
+});
+
+test('indexed legacy model schemas reuse their authored prices without republishing them in the estimator', () => {
+  const expectedOfferPrices = [
+    ['luma-ray-2', '0.65'],
+    ['luma-ray-2-flash', '0.26'],
+    ['wan-2-5', '0.75'],
+    ['ltx-2-fast', '0.31'],
+    ['ltx-2', '0.47'],
+  ] as const;
+
+  for (const [slug, expectedPrice] of expectedOfferPrices) {
+    const engine = getEngine(slug);
+    const decision = buildModelDecisionDataFromContent({ engine, locale: 'en' });
+    assert.ok(decision, `${slug}/en decision data should exist`);
+    assert.equal(engine.surfaces.pricing.includeInEstimator, false, `${slug} should stay out of the estimator`);
+
+    const schemas = buildModelSchemaPayloads({
+      canonical: `https://maxvideoai.com/models/${slug}`,
+      description: decision.meta.description,
+      engine,
+      heroPosterAbsolute: `https://maxvideoai.com/hero/${slug}.jpg`,
+      heroTitle: decision.hero.title,
+      inLanguage: 'en-US',
+      localizedCanonical: `https://maxvideoai.com/models/${slug}`,
+      localizedHomeUrl: 'https://maxvideoai.com/',
+      localizedModelsUrl: 'https://maxvideoai.com/models',
+      pageTitle: decision.meta.title,
+      pricingEngine: engine.engine,
+      resolvedBreadcrumb: {
+        home: 'Home',
+        models: 'Models',
+      },
+    }) as Array<Record<string, unknown>>;
+
+    const product = schemas.find((schema) => schema['@type'] === 'Product') as
+      | (Record<string, unknown> & { offers?: Record<string, unknown> })
+      | undefined;
+
+    assert.ok(product, `${slug} should emit Product schema from its authored price`);
+    assert.equal(product.offers?.price, expectedPrice);
+    assert.equal(product.offers?.priceCurrency, 'USD');
   }
 });

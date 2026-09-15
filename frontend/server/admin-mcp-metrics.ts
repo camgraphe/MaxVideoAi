@@ -2,10 +2,14 @@ import mcpPublication from '@/config/mcp-publication.json';
 import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
 import { buildMcpActivityMetrics, buildMcpToolUsage, type McpActivityMetrics, type McpActivitySummaryRow, type McpToolUsage, type McpToolUsageSummaryRow } from '@/server/admin-mcp-activity';
 import {
+  loadAdminMcpProviderCosts,
+  loadAdminMcpProviderOperations,
+  type AdminMcpProviderOperation,
+} from '@/server/admin-mcp-provider-operations';
+import {
   AUDIT_SUMMARY_SQL,
   ERROR_SQL,
   FUNNEL_SQL,
-  PROVIDER_COST_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
   TOOL_USAGE_SQL,
@@ -85,6 +89,7 @@ export type AdminMcpMetrics = {
   revenueCents: number | null;
   providerCostCents: number | null;
   trialCostCents: number | null;
+  providerOperations: AdminMcpProviderOperation[] | null;
   refundsCents: number | null;
   refundRate: number | null;
   releaseRate: number | null;
@@ -138,14 +143,6 @@ type ReceiptRow = {
   charged_jobs: number | string | null;
   refunded_jobs: number | string | null;
   non_usd_receipts: number | string | null;
-};
-
-type ProviderCostRow = {
-  attempt_count: number | string | null;
-  trial_attempt_count: number | string | null;
-  missing_cost_attempts: number | string | null;
-  provider_cost_cents: number | string | null;
-  trial_cost_cents: number | string | null;
 };
 
 type AdminMcpMetricsDeps = {
@@ -218,6 +215,7 @@ function baseMetrics(range: AdminMcpRange, flags: Record<string, boolean>, reaso
     revenueCents: null,
     providerCostCents: null,
     trialCostCents: null,
+    providerOperations: null,
     refundsCents: null,
     refundRate: null,
     releaseRate: null,
@@ -406,20 +404,21 @@ export async function loadAdminMcpMetrics(
     metrics.availability.providerCosts = unavailable('The MCP provider-cost attribution producer capability is not live.');
   } else if (relations.mcp_funnel_events && relations.app_jobs && relations.provider_attempts) {
     try {
-      const row = (await deps.executor.query<ProviderCostRow>(PROVIDER_COST_SQL, [range.from, range.to]))[0];
-      if (!row) throw new Error('Missing provider cost aggregate.');
-      const attemptCount = count(row.attempt_count);
-      const trialAttemptCount = count(row.trial_attempt_count);
-      const missingCostAttempts = count(row.missing_cost_attempts);
-      if (missingCostAttempts > 0) {
-        metrics.availability.providerCosts = unavailable(`Provider cost coverage is partial: ${missingCostAttempts} attempt(s) have no recorded cost.`);
+      const costs = await loadAdminMcpProviderCosts(deps.executor, range);
+      if (costs.missingCostAttempts > 0) {
+        metrics.availability.providerCosts = unavailable(`Provider cost coverage is partial: ${costs.missingCostAttempts} attempt(s) have no recorded cost.`);
       } else {
         metrics.availability.providerCosts = available();
-        metrics.providerCostCents = attemptCount === 0 ? 0 : count(row.provider_cost_cents);
-        metrics.trialCostCents = trialAttemptCount === 0 ? 0 : count(row.trial_cost_cents);
+        metrics.providerCostCents = costs.providerCostCents;
+        metrics.trialCostCents = costs.trialCostCents;
       }
     } catch {
       metrics.availability.providerCosts = unavailable('Authoritative provider cost aggregate query failed.');
+    }
+    try {
+      metrics.providerOperations = await loadAdminMcpProviderOperations(deps.executor, range);
+    } catch {
+      metrics.providerOperations = null;
     }
   } else {
     const missing = [!relations.app_jobs && 'app_jobs', !relations.provider_attempts && 'provider_attempts'].filter(Boolean).join(', ');

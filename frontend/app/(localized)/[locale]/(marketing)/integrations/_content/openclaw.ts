@@ -88,7 +88,7 @@ function french(): IntegrationText {
     setupEyebrow: 'CONNECTER OPENCLAW',
     setupTitle: 'Configurez le MCP distant sans stocker d’identifiants MaxVideoAI',
     setupIntro: 'OpenClaw propose un OAuth opérateur partagé et un mode d’identité par demandeur. Choisissez la frontière d’identité du canal avant la connexion ; aucun mode n’autorise des identifiants dans les prompts ou la configuration versionnée.',
-    guides: [{ ...copy.guides[0], installInstruction: getIntegrationInstallInstruction('fr', 'openclawGateway'), steps: [
+    guides: [{ ...copy.guides[0], title: 'Ajouter MaxVideoAI à OpenClaw', intro: 'Enregistrez le serveur Streamable HTTP avec OAuth, puis ouvrez l’autorisation dans votre navigateur depuis OpenClaw.', installInstruction: getIntegrationInstallInstruction('fr', 'openclawGateway'), steps: [
       { title: 'Choisir le modèle d’identité', body: 'Utilisez OAuth partagé pour un agent contrôlé par l’opérateur. Utilisez OAuth par demandeur si chaque expéditeur de confiance doit connecter son propre compte.' },
       { title: 'Enregistrer le serveur distant', body: 'Ajoutez le point HTTPS en Streamable HTTP avec OAuth, sans jeton ni mot de passe dans la configuration.' },
       { title: 'S’authentifier et vérifier', body: 'Lancez la connexion navigateur, puis consultez le compte et le catalogue actuel avant de préparer un devis.' },
@@ -141,7 +141,7 @@ function spanish(): IntegrationText {
     setupEyebrow: 'CONECTAR OPENCLAW',
     setupTitle: 'Configura el MCP remoto sin guardar credenciales de MaxVideoAI',
     setupIntro: 'OpenClaw admite OAuth compartido del operador y un modo de identidad por solicitante. Elige el límite de identidad del canal antes de conectar; ningún modo permite credenciales en prompts o configuración versionada.',
-    guides: [{ ...copy.guides[0], installInstruction: getIntegrationInstallInstruction('es', 'openclawGateway'), steps: [
+    guides: [{ ...copy.guides[0], title: 'Agregar MaxVideoAI a OpenClaw', intro: 'Guarda el servidor Streamable HTTP con OAuth y abre la autorización en el navegador desde OpenClaw.', installInstruction: getIntegrationInstallInstruction('es', 'openclawGateway'), steps: [
       { title: 'Elegir el modelo de identidad', body: 'Usa OAuth compartido para un agente del operador y OAuth por solicitante cuando cada remitente de confianza conecte su propia cuenta.' },
       { title: 'Guardar el servidor remoto', body: 'Registra el endpoint HTTPS como Streamable HTTP con OAuth, sin tokens ni contraseñas en la configuración.' },
       { title: 'Autenticar e inspeccionar', body: 'Completa el consentimiento en el navegador y consulta cuenta y catálogo antes de preparar un precio exacto.' },

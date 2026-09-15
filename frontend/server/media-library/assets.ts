@@ -321,21 +321,6 @@ export async function saveJobOutputToLibrary(params: {
     previewUrl: output.previewUrl,
   });
 }
-
-export async function deleteLibraryAsset(params: { userId: string; assetId: string }): Promise<'deleted' | 'not_found'> {
-  await ensureMediaLibrarySchema();
-  const rows = await query<{ id: string }>(
-    `UPDATE media_assets
-        SET deleted_at = NOW(), updated_at = NOW(), status = 'deleted'
-      WHERE id = $1
-        AND user_id = $2
-        AND deleted_at IS NULL
-      RETURNING id`,
-    [params.assetId, params.userId]
-  );
-  if (!rows.length) return 'not_found';
-  return 'deleted';
-}
 export async function readOwnedLibraryAssetsByIds(params: {
   userId: string;
   assetIds: readonly string[];

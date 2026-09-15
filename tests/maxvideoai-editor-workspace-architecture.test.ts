@@ -179,6 +179,7 @@ const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
 const capabilitiesPath = join(workspaceDir, '_lib/workspace-capabilities.ts');
 const modelCapabilityRegistryPath = join(workspaceDir, '_lib/models/model-capability-registry.ts');
 const modelCertificationPath = join(workspaceDir, '_lib/models/workspace-model-certification.ts');
+const workspaceV1BlockMatrixPath = join(workspaceDir, '_lib/models/workspace-v1-block-matrix.ts');
 const modelEngineFieldsPath = join(workspaceDir, '_lib/models/model-engine-fields.ts');
 const modelInputConnectorsPath = join(workspaceDir, '_lib/models/model-input-connectors.ts');
 const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-adapter.ts');
@@ -3152,6 +3153,20 @@ test('MaxVideoAI editor block policy remains the source for generation mode, con
   assert.doesNotMatch(renderNodesSource, /getWorkspaceShotTargetHandles\(validation\.capability\)/, 'rendered shot nodes should not bypass policy connectors');
   assert.doesNotMatch(shotInspectorSource, /\.required_inputs\.includes|\.optional_inputs\.includes/, 'inspector should not duplicate connector requirement rules');
   assert.doesNotMatch(shotNodeControlsSource, /\.required_inputs\.includes|\.optional_inputs\.includes/, 'node controls should not duplicate connector requirement rules');
+});
+
+test('Studio projects Alibaba-backed video models through shared block and connector contracts', () => {
+  const certificationSource = source(modelCertificationPath);
+  const matrixSource = source(workspaceV1BlockMatrixPath);
+  const connectorSource = source(modelInputConnectorsPath);
+  const factsSource = source(generationFactsPath);
+
+  assert.match(certificationSource, /'wan-3'/);
+  assert.match(certificationSource, /'wan-3-prime'/);
+  assert.match(matrixSource, /compatibleModelIds:[\s\S]*'wan-3'[\s\S]*'wan-3-prime'/);
+  for (const sharedSource of [connectorSource, factsSource]) {
+    assert.doesNotMatch(sharedSource, /DASHSCOPE|ALIBABA_MODEL_STUDIO|alibaba-model-studio/i);
+  }
 });
 
 test('MaxVideoAI editor generation resolves connected output media references', async () => {

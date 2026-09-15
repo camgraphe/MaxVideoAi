@@ -13,6 +13,7 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/im
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { BackgroundRemovalToolRequest, BackgroundRemovalToolResponse } from '@/types/tools-background-removal';
 import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
+import { upscaleClientAttempt, waitForAcceptedUpscale } from '@/lib/upscale-client-lifecycle';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -294,10 +295,11 @@ export async function runAngleTool(payload: AngleToolRequest): Promise<AngleTool
 }
 
 export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<UpscaleToolResponse> {
+  const attempt = payload.mediaType === 'video' ? await upscaleClientAttempt(payload) : null;
   const response = await authFetch(`/api/tools/upscale/${payload.mediaType}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, ...(attempt ? { requestId: attempt.requestId } : {}) }),
   });
   const data = (await response.json().catch(() => null)) as
     | (UpscaleToolResponse & { error?: { code?: string; message?: string; detail?: unknown } })
@@ -308,6 +310,7 @@ export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<Upsca
   }
 
   if (!response.ok || !data.ok) {
+    if ([400, 401, 403, 404, 409, 422].includes(response.status)) attempt?.finish();
     const error = new Error(data.error?.message ?? `Upscale tool failed (${response.status})`);
     Object.assign(error, {
       code: data.error?.code ?? 'upscale_tool_failed',
@@ -317,7 +320,7 @@ export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<Upsca
     throw error;
   }
 
-  return data;
+  return attempt ? waitForAcceptedUpscale(data, attempt) : data;
 }
 
 export async function runBackgroundRemovalTool(

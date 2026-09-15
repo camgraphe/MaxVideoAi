@@ -13,6 +13,7 @@ import {
   isWorkspaceModelCertifiedForBlock,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
 import { getWorkspaceModelCapabilities } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
+import { resolveWorkspaceGenerationFacts } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-facts';
 import {
   getWorkspaceBlockPreset,
   WORKSPACE_BLOCK_PRESETS,
@@ -180,10 +181,27 @@ test('Studio certification declares exact new-engine block and workflow tuples',
     presetId: 'extend-video',
     workflowType: 'video_to_video',
   }), false);
+
+  for (const modelId of ['wan-3', 'wan-3-prime']) {
+    for (const workflowType of ['text_to_video', 'image_to_video', 'storyboard_to_video'] as const) {
+      assert.equal(isWorkspaceModelCertifiedForBlock({ modelId, presetId: 'generate-video', workflowType }), true);
+    }
+    assert.equal(isWorkspaceModelCertifiedForBlock({ modelId, presetId: 'modify-video', workflowType: 'video_to_video' }), true);
+    assert.equal(isWorkspaceModelCertifiedForBlock({ modelId, presetId: 'extend-video', workflowType: 'video_to_video' }), true);
+  }
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'happy-horse-1-1', presetId: 'generate-video', workflowType: 'storyboard_to_video',
+  }), true);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'happy-horse-1-1', presetId: 'modify-video', workflowType: 'video_to_video',
+  }), false);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'happy-horse-1-1', presetId: 'extend-video', workflowType: 'video_to_video',
+  }), false);
 });
 
-test('Extend Video is a Seedance 2.5-only block with a three-source capacity', () => {
-  assert.deepEqual(compatibleIds('extend-video'), ['seedance-2-5']);
+test('Extend Video exposes only certified models and preserves their exact source connectors', () => {
+  assert.deepEqual(compatibleIds('extend-video'), ['seedance-2-5', 'wan-3', 'wan-3-prime']);
   const preset = getWorkspaceBlockPreset('extend-video');
   const capability = getWorkspaceModelCapabilities().find((candidate) => candidate.id === 'seedance-2-5');
   assert.ok(preset?.defaultShot);
@@ -197,6 +215,45 @@ test('Extend Video is a Seedance 2.5-only block with a three-source capacity', (
   assert.equal(policy.mode, 'video-extend');
   assert.equal(sourceConnector?.fieldId, 'extension_source_videos');
   assert.equal(sourceConnector?.maxCount, 3);
+
+  for (const modelId of ['wan-3', 'wan-3-prime']) {
+    const wanCapability = getWorkspaceModelCapabilities().find((candidate) => candidate.id === modelId);
+    assert.ok(wanCapability);
+    for (const presetId of ['modify-video', 'extend-video'] as const) {
+      const wanPreset = getWorkspaceBlockPreset(presetId);
+      assert.ok(wanPreset?.defaultShot);
+      const wanPolicy = resolveWorkspaceBlockPolicy({
+        settings: { ...wanPreset.defaultShot, modelId },
+        capability: wanCapability,
+        connectedInputs: ['prompt', 'video_reference'],
+      });
+      const wanSources = wanPolicy.inputConnectors.filter((connector) => connector.kind === 'video_reference');
+      assert.equal(wanPolicy.mode, presetId === 'modify-video' ? 'video-edit' : 'video-extend');
+      assert.deepEqual(wanSources.map((connector) => ({
+        fieldId: connector.fieldId,
+        maxCount: connector.maxCount,
+        maxDurationSec: connector.maxDurationSec,
+      })), [{ fieldId: 'video_url', maxCount: 1, maxDurationSec: 15 }]);
+    }
+
+    const facts = resolveWorkspaceGenerationFacts({
+      settings: {
+        ...getWorkspaceBlockPreset('extend-video')!.defaultShot!,
+        modelId,
+        durationSec: 16,
+      },
+      capability: wanCapability,
+      connectedInputs: ['prompt', 'video_reference'],
+      mediaInputs: [{
+        semanticKind: 'video_reference',
+        kind: 'video',
+        url: `https://assets.example.com/${modelId}.mp4`,
+        durationSec: 15,
+        mimeType: 'video/mp4',
+      }],
+    });
+    assert.ok(facts.issues.some((issue) => issue.code === 'source_output_duration'));
+  }
 });
 
 test('MiniMax H3 exposes exact render choices and derives framing from image inputs', () => {

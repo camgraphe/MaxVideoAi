@@ -33,7 +33,55 @@ type OAuthAuthClient = {
 
 export type OAuthAdapterDeps = {
   createAuthClient(): Promise<OAuthAuthClient>;
+  hasActiveGrant(
+    accessToken: string,
+    clientId: string,
+  ): Promise<boolean>;
 };
+
+type ActiveOAuthGrantLookupDeps = {
+  supabaseUrl?: string;
+  anonKey?: string;
+  fetcher?: typeof fetch;
+};
+
+export async function hasActiveOAuthGrant(
+  accessToken: string,
+  clientId: string,
+  deps: ActiveOAuthGrantLookupDeps = {},
+): Promise<boolean> {
+  const supabaseUrl = deps.supabaseUrl ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = deps.anonKey ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl?.trim() || !anonKey?.trim()) return false;
+
+  try {
+    const grantsUrl = new URL('/auth/v1/user/oauth/grants', supabaseUrl);
+    const response = await (deps.fetcher ?? fetch)(grantsUrl, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        apikey: anonKey,
+        authorization: `Bearer ${accessToken}`,
+      },
+      cache: 'no-store',
+    });
+    if (!response.ok) return false;
+
+    const grants: unknown = await response.json();
+    if (!Array.isArray(grants)) return false;
+    for (const grant of grants) {
+      if (!grant || typeof grant !== 'object') continue;
+      const client = (grant as { client?: unknown }).client;
+      if (!client || typeof client !== 'object' || (client as { id?: unknown }).id !== clientId) {
+        continue;
+      }
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 const defaultOAuthAdapterDeps: OAuthAdapterDeps = {
   async createAuthClient() {
@@ -64,15 +112,19 @@ const defaultOAuthAdapterDeps: OAuthAdapterDeps = {
       },
     };
   },
+  async hasActiveGrant(accessToken, clientId) {
+    return hasActiveOAuthGrant(accessToken, clientId);
+  },
 };
 
 function authenticationRequired(): AgentApiError {
   return new AgentApiError('AUTH_REQUIRED', 'Authentication required.');
 }
 
-export async function resolveAgentPrincipal(
+async function resolveOAuthPrincipal(
   request: Request,
-  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps
+  deps: OAuthAdapterDeps,
+  requireClientBinding: boolean,
 ): Promise<AgentPrincipal> {
   const accessToken = readRequestBearerAccessToken(request);
   if (!accessToken) {
@@ -89,14 +141,29 @@ export async function resolveAgentPrincipal(
     throw authenticationRequired();
   }
 
-  const userResult = await auth.getUser(accessToken);
+  const rawClientId = claimsResult.data?.claims.client_id;
+  const clientId = typeof rawClientId === 'string' && rawClientId.trim() ? rawClientId.trim() : null;
+  if (requireClientBinding && !clientId) {
+    throw authenticationRequired();
+  }
+  // Supabase revocation deletes every session bound to this client. getUser()
+  // validates that session_id; the grants endpoint independently validates consent.
+  // Neither check should infer token generations from lossy timestamps.
+  const userPromise = auth.getUser(accessToken);
+  const activeGrantPromise = clientId
+    ? deps.hasActiveGrant(accessToken, clientId).catch(() => false)
+    : Promise.resolve(true);
+  const [userResult, hasActiveGrant] = await Promise.all([
+    userPromise,
+    activeGrantPromise,
+  ]);
   const user = userResult.data.user;
   if (userResult.error || !user || user.id !== subject) {
     throw authenticationRequired();
   }
-
-  const rawClientId = claimsResult.data?.claims.client_id;
-  const clientId = typeof rawClientId === 'string' && rawClientId.trim() ? rawClientId.trim() : null;
+  if (!hasActiveGrant) {
+    throw authenticationRequired();
+  }
 
   return {
     userId: subject,
@@ -105,6 +172,20 @@ export async function resolveAgentPrincipal(
       typeof user.email_confirmed_at === 'string' && user.email_confirmed_at.trim().length > 0,
     authMethod: 'oauth',
   };
+}
+
+export function resolveAgentPrincipal(
+  request: Request,
+  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+): Promise<AgentPrincipal> {
+  return resolveOAuthPrincipal(request, deps, false);
+}
+
+export function resolveMcpAgentPrincipal(
+  request: Request,
+  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+): Promise<AgentPrincipal> {
+  return resolveOAuthPrincipal(request, deps, true);
 }
 
 export type AuthenticatedMcpConnection = {

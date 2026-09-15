@@ -77,7 +77,7 @@ test('home redesign sections do not regain extracted type ownership', () => {
   assert.doesNotMatch(sectionsSource, /const\s+WORKFLOW_BASICS_COPY/);
   assert.match(visualsSource, /export\s+const\s+TOOLBOX_VISUALS/);
   assert.match(visualsSource, /export\s+const\s+HERO_ENGINE_MEDIA/);
-  assert.match(workflowSummarySource, /const\s+WORKFLOW_BASICS_COPY/);
+  assert.match(workflowSummarySource, /const\s+COPY/);
   assert.match(workflowSummarySource, /export\s+function\s+WorkflowSeoSummary/);
   assert.match(conversionSectionsSource, /export function ComparisonPreview/);
   assert.match(conversionSectionsSource, /export function ReferenceWorkflow/);

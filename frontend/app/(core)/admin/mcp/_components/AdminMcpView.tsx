@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { AdminMcpOutcomes } from '@/server/admin-mcp-outcomes';
+import { MCP_CLIENT_LABELS } from '@/server/admin-mcp-outcomes';
 import { McpGenerationOverview } from './McpGenerationOverview';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
@@ -181,9 +182,12 @@ export function AdminMcpView({ metrics, outcomes, selectedRange }: AdminMcpViewP
       {metrics.clientSplit !== null || hasCostMetrics ? (
         <div className="grid gap-5 xl:grid-cols-2">
           {metrics.clientSplit !== null ? (
-            <AdminSection title="Client split" description="Completed OAuth connections by attributed client.">
+            <AdminSection
+              title="Acquisition source split"
+              description="Completed OAuth connections from acquisition-enabled landing pages. Direct, preview, hidden, or unidentified clients remain Other / unidentified here; the application breakdown above uses separate self-reported initialization metadata."
+            >
               {metrics.clientSplit.some((row) => row.connections > 0) ? (
-                <MetricRows rows={metrics.clientSplit.map((row) => [row.client, formatMcpNumber(row.connections)])} />
+                <MetricRows rows={metrics.clientSplit.map((row) => [MCP_CLIENT_LABELS[row.client], formatMcpNumber(row.connections)])} />
               ) : (
                 <AdminEmptyState>No MCP client connection was recorded in this window.</AdminEmptyState>
               )}

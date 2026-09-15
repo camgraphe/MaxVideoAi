@@ -41,6 +41,11 @@ export function useUpscaleRecentJobs({
   const defaultGeneratedImageAppliedRef = useRef(false);
   const { stableJobs: recentJobs, mutate } = useInfiniteJobs(12, { surface: 'upscale' });
   const { stableJobs: recentGeneratedImageJobs } = useInfiniteJobs(8, { surface: 'image' });
+  useEffect(() => {
+    const refresh = () => { void mutate(); };
+    window.addEventListener('upscale:accepted', refresh);
+    return () => window.removeEventListener('upscale:accepted', refresh);
+  }, [mutate]);
 
   const recentGroups = useMemo(() => {
     const jobs = recentJobs.map((job) => (!job.videoUrl && job.readyVideoUrl ? { ...job, videoUrl: job.readyVideoUrl } : job));
@@ -74,9 +79,13 @@ export function useUpscaleRecentJobs({
   useEffect(() => {
     if (typeof window === 'undefined' || !pendingRecentJobKey) return undefined;
     let cancelled = false;
+    let polling = false;
     const jobIds = pendingRecentJobKey.split('|').filter(Boolean);
     const pollPendingJobs = async () => {
-      await Promise.all(jobIds.map((jobId) => getJobStatus(jobId).catch(() => null)));
+      if (polling) return;
+      polling = true;
+      try { await Promise.all(jobIds.map((jobId) => getJobStatus(jobId).catch(() => null))); }
+      finally { polling = false; }
       if (!cancelled) {
         void mutate();
       }

@@ -405,8 +405,8 @@ export async function cleanupReferenceUploadObject(input: {
   const ownerPrefix = String(row.owner_prefix);
   const scoped = objectKey.startsWith(ownerPrefix) && (
     (row.object_role === 'part' && ownerPrefix === `${input.attempt.storageKey}/parts/`)
-    || (row.object_role === 'thumbnail' && ownerPrefix.startsWith('user-asset-thumbs/'))
-    || (row.object_role === 'final' && ownerPrefix.startsWith('user-assets/'))
+    || (row.object_role === 'thumbnail' && hasReferenceCleanupRoot(ownerPrefix, 'user-asset-thumbs/'))
+    || (row.object_role === 'final' && hasReferenceCleanupRoot(ownerPrefix, 'user-assets/by-content/'))
   );
   if (!scoped) return false;
   try {
@@ -422,6 +422,12 @@ export async function cleanupReferenceUploadObject(input: {
   return updated.length === 1;
 }
 
+const MCP_REFERENCE_STAGING_OBJECT_PREFIX = 'mcp-reference-staging/';
+
+function hasReferenceCleanupRoot(value: string, root: string): boolean {
+  return value.startsWith(root) || value.startsWith(`${MCP_REFERENCE_STAGING_OBJECT_PREFIX}${root}`);
+}
+
 function cleanupObjectOwnerPrefix(input: {
   attempt: ReferenceUploadAttempt; objectKey: string; objectRole: ReferenceUploadCleanupRole; safeToDelete: boolean;
 }): string {
@@ -429,7 +435,7 @@ function cleanupObjectOwnerPrefix(input: {
   const separator = objectKey.lastIndexOf('/');
   const expectedRoot = input.objectRole === 'final' ? 'user-assets/by-content/' : 'user-asset-thumbs/';
   if (objectKey !== input.objectKey || objectKey.length < 1 || objectKey.length > 1024
-    || separator < expectedRoot.length || !objectKey.startsWith(expectedRoot)
+    || separator < expectedRoot.length || !hasReferenceCleanupRoot(objectKey, expectedRoot)
     || (input.objectRole === 'thumbnail' && !input.safeToDelete)) {
     throw new Error('Invalid reference upload cleanup object scope.');
   }
@@ -488,31 +494,51 @@ type ReferenceUploadCleanupCandidate = {
   object_role: unknown; attempt_storage_key: unknown;
 };
 
-async function claimReferenceUploadFinalDeletion(
+async function claimReferenceUploadObjectDeletion(
   row: ReferenceUploadCleanupCandidate,
   executor: QueryExecutor,
   now: Date,
 ): Promise<string | null> {
   const claimId = randomUUID();
   const leaseExpiresAt = new Date(now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS);
+  await executor.query(
+    `INSERT INTO mcp_reference_upload_object_fences (
+       object_key, state, created_at, updated_at
+     ) VALUES ($1, 'available', $2, $2)
+     ON CONFLICT (object_key) DO NOTHING`,
+    [String(row.object_key), now],
+  );
   const rows = await executor.query<{ delete_claim_id: unknown }>(
     `UPDATE mcp_reference_upload_object_fences AS fences
         SET state = 'deleting', producer_claim_id = NULL, producer_lease_expires_at = NULL,
             delete_claim_id = $3, delete_lease_expires_at = $4, updated_at = $2
       WHERE fences.object_key = $1
         AND (fences.state IN ('available','orphaned','deleted')
+          OR (fences.state = 'referenced' AND (fences.producer_claim_id IS NULL
+            OR fences.producer_lease_expires_at <= $2))
           OR (fences.state = 'producing' AND fences.producer_lease_expires_at <= $2)
           OR (fences.state = 'deleting' AND fences.delete_lease_expires_at <= $2))
         AND NOT EXISTS (
           SELECT 1 FROM user_assets AS assets
-           WHERE position($1 in assets.url) > 0
-              OR position($1 in COALESCE(assets.metadata->>'thumbUrl', '')) > 0
+           WHERE reference_storage_object_key(assets.url) = $1
+              OR reference_storage_object_key(assets.metadata->>'thumbUrl') = $1
         )
         AND NOT EXISTS (
           SELECT 1 FROM media_assets AS media
            WHERE media.deleted_at IS NULL
-             AND (position($1 in media.url) > 0
-               OR position($1 in COALESCE(media.thumb_url, '')) > 0)
+             AND (reference_storage_object_key(media.url) = $1
+               OR reference_storage_object_key(media.thumb_url) = $1)
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM user_assets AS assets
+           WHERE unrecognized_reference_storage_object_key(assets.url) = $1
+              OR unrecognized_reference_storage_object_key(assets.metadata->>'thumbUrl') = $1
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM media_assets AS media
+           WHERE media.deleted_at IS NULL
+             AND (unrecognized_reference_storage_object_key(media.url) = $1
+               OR unrecognized_reference_storage_object_key(media.thumb_url) = $1)
         )
         AND NOT EXISTS (
           SELECT 1 FROM mcp_reference_upload_cleanup_objects AS owners
@@ -528,6 +554,137 @@ async function claimReferenceUploadFinalDeletion(
     [String(row.object_key), now, claimId, leaseExpiresAt, String(row.cleanup_id)],
   );
   return rows.length === 1 ? String(rows[0].delete_claim_id) : null;
+}
+
+async function reconcileDeletedReferenceUploadAssets(input: {
+  limit: number; now: Date;
+}, executor: QueryExecutor): Promise<void> {
+  await executor.query(
+    `WITH tombstones AS (
+       SELECT media.id, media.public_id, media.user_id, media.url
+         FROM media_assets AS media
+        WHERE media.deleted_at IS NOT NULL
+          AND media.public_id IS NOT NULL
+          AND EXISTS (
+            SELECT 1 FROM mcp_reference_upload_attempts AS attempts
+            JOIN mcp_reference_upload_cleanup_objects AS cleanup
+              ON cleanup.session_id = attempts.session_id AND cleanup.upload_id = attempts.upload_id
+             AND cleanup.user_id = attempts.user_id AND cleanup.media_kind = attempts.media_kind
+             AND cleanup.state = 'retained' AND cleanup.object_role IN ('final', 'thumbnail')
+           WHERE attempts.user_id = media.user_id
+             AND attempts.staged_asset_id = media.public_id
+             AND attempts.state = 'completed'
+          )
+        ORDER BY media.deleted_at ASC, media.id ASC
+        LIMIT $2
+        FOR UPDATE OF media SKIP LOCKED
+     ), removed_projections AS (
+       DELETE FROM user_assets AS legacy
+        USING tombstones
+        WHERE legacy.user_id = tombstones.user_id
+          AND legacy.url = tombstones.url
+          AND NOT EXISTS (SELECT 1 FROM media_assets AS live
+            WHERE live.id = legacy.asset_id
+              AND live.user_id = legacy.user_id
+              AND live.url = legacy.url
+              AND live.deleted_at IS NULL)
+       RETURNING legacy.asset_id
+     ), released AS (
+       UPDATE mcp_reference_upload_cleanup_objects AS cleanup
+          SET state = 'released', updated_at = $1
+         FROM mcp_reference_upload_attempts AS attempts, tombstones
+        WHERE attempts.session_id = cleanup.session_id
+          AND attempts.upload_id = cleanup.upload_id
+          AND attempts.user_id = cleanup.user_id
+          AND attempts.media_kind = cleanup.media_kind
+          AND attempts.user_id = tombstones.user_id
+          AND attempts.staged_asset_id = tombstones.public_id
+          AND attempts.state = 'completed'
+          AND cleanup.state = 'retained'
+          AND cleanup.object_role IN ('final', 'thumbnail')
+       RETURNING cleanup.cleanup_id
+     )
+     SELECT (SELECT count(*) FROM removed_projections)::text AS removed,
+            (SELECT count(*) FROM released)::text AS released`,
+    [input.now, input.limit],
+  );
+}
+
+async function cleanupReleasedReferenceUploadObjects(input: {
+  limit: number; now: Date;
+}, dependencies: { executor: QueryExecutor; deleteStorageObjectKey(key: string): Promise<unknown> }): Promise<{
+  selected: number; deleted: number;
+}> {
+  if (input.limit < 1) return { selected: 0, deleted: 0 };
+  const rows = await dependencies.executor.query<ReferenceUploadCleanupCandidate>(
+    `SELECT DISTINCT ON (cleanup.object_key)
+       cleanup.cleanup_id, cleanup.object_key, cleanup.owner_prefix, cleanup.object_role,
+       attempts.storage_key AS attempt_storage_key
+       FROM mcp_reference_upload_cleanup_objects AS cleanup
+       JOIN mcp_reference_upload_attempts AS attempts
+         ON attempts.session_id = cleanup.session_id AND attempts.upload_id = cleanup.upload_id
+        AND attempts.user_id = cleanup.user_id AND attempts.media_kind = cleanup.media_kind
+      WHERE cleanup.state = 'released'
+        AND cleanup.object_role IN ('final', 'thumbnail')
+        AND NOT EXISTS (SELECT 1 FROM user_assets AS assets
+          WHERE reference_storage_object_key(assets.url) = cleanup.object_key
+             OR reference_storage_object_key(assets.metadata->>'thumbUrl') = cleanup.object_key)
+        AND NOT EXISTS (SELECT 1 FROM media_assets AS media
+          WHERE media.deleted_at IS NULL
+            AND (reference_storage_object_key(media.url) = cleanup.object_key
+              OR reference_storage_object_key(media.thumb_url) = cleanup.object_key))
+        AND NOT EXISTS (SELECT 1 FROM mcp_reference_upload_cleanup_objects AS owners
+          WHERE owners.object_key = cleanup.object_key AND owners.state IN ('pending', 'retained'))
+      ORDER BY cleanup.object_key, cleanup.created_at ASC, cleanup.cleanup_id ASC
+      LIMIT $1`,
+    [input.limit],
+  );
+  const scopedRows = rows.filter((row) => {
+    const objectKey = String(row.object_key);
+    const ownerPrefix = String(row.owner_prefix);
+    return objectKey.startsWith(ownerPrefix)
+      && ((row.object_role === 'final' && hasReferenceCleanupRoot(ownerPrefix, 'user-assets/by-content/'))
+        || (row.object_role === 'thumbnail' && hasReferenceCleanupRoot(ownerPrefix, 'user-asset-thumbs/')));
+  });
+  const claimed: Array<{ row: ReferenceUploadCleanupCandidate; claimId: string }> = [];
+  for (const row of scopedRows) {
+    const claimId = await claimReferenceUploadObjectDeletion(row, dependencies.executor, input.now);
+    if (claimId) claimed.push({ row, claimId });
+  }
+  const effects = await Promise.allSettled(
+    claimed.map(({ row }) => dependencies.deleteStorageObjectKey(String(row.object_key))),
+  );
+  let deleted = 0;
+  for (let index = 0; index < claimed.length; index += 1) {
+    const entry = claimed[index];
+    if (!entry) continue;
+    const didDelete = effects[index]?.status === 'fulfilled';
+    if (!didDelete) {
+      await dependencies.executor.query(
+        `UPDATE mcp_reference_upload_object_fences
+            SET state = 'available', delete_claim_id = NULL, delete_lease_expires_at = NULL, updated_at = $3
+          WHERE object_key = $1 AND state = 'deleting' AND delete_claim_id = $2`,
+        [String(entry.row.object_key), entry.claimId, input.now],
+      );
+      continue;
+    }
+    const settled = await dependencies.executor.query<{ cleanup_id: unknown }>(
+      `WITH settled_fence AS (
+         UPDATE mcp_reference_upload_object_fences
+            SET state = 'deleted', delete_claim_id = NULL, delete_lease_expires_at = NULL, updated_at = $3
+          WHERE object_key = $1 AND state = 'deleting' AND delete_claim_id = $2
+          RETURNING object_key
+       )
+       UPDATE mcp_reference_upload_cleanup_objects AS cleanup
+          SET state = 'deleted', updated_at = $3
+         FROM settled_fence
+        WHERE cleanup.object_key = settled_fence.object_key AND cleanup.state = 'released'
+       RETURNING cleanup.cleanup_id`,
+      [String(entry.row.object_key), entry.claimId, input.now],
+    );
+    if (settled.length > 0) deleted += 1;
+  }
+  return { selected: claimed.length, deleted };
 }
 
 async function settleReferenceUploadFinalDeletion(input: {
@@ -575,13 +732,20 @@ async function cleanupOrphanedStorageObjectProducers(input: {
         WHERE (fences.state = 'orphaned'
           OR (fences.state = 'producing' AND fences.producer_lease_expires_at <= $1))
           AND NOT EXISTS (SELECT 1 FROM user_assets AS assets
-            WHERE position(fences.object_key in assets.url) > 0
-              OR position(fences.object_key in COALESCE(assets.metadata->>'thumbUrl', '')) > 0)
+            WHERE reference_storage_object_key(assets.url) = fences.object_key
+              OR reference_storage_object_key(assets.metadata->>'thumbUrl') = fences.object_key)
           AND NOT EXISTS (SELECT 1 FROM media_assets AS media
-            WHERE media.deleted_at IS NULL AND (position(fences.object_key in media.url) > 0
-              OR position(fences.object_key in COALESCE(media.thumb_url, '')) > 0))
+            WHERE media.deleted_at IS NULL AND (reference_storage_object_key(media.url) = fences.object_key
+              OR reference_storage_object_key(media.thumb_url) = fences.object_key))
+          AND NOT EXISTS (SELECT 1 FROM user_assets AS assets
+            WHERE unrecognized_reference_storage_object_key(assets.url) = fences.object_key
+              OR unrecognized_reference_storage_object_key(assets.metadata->>'thumbUrl') = fences.object_key)
+          AND NOT EXISTS (SELECT 1 FROM media_assets AS media
+            WHERE media.deleted_at IS NULL
+              AND (unrecognized_reference_storage_object_key(media.url) = fences.object_key
+                OR unrecognized_reference_storage_object_key(media.thumb_url) = fences.object_key))
           AND NOT EXISTS (SELECT 1 FROM mcp_reference_upload_cleanup_objects AS cleanup
-            WHERE cleanup.object_key = fences.object_key AND cleanup.state IN ('pending','retained'))
+            WHERE cleanup.object_key = fences.object_key AND cleanup.state IN ('pending','retained','released'))
         ORDER BY fences.updated_at ASC, fences.object_key ASC
         LIMIT $2 FOR UPDATE SKIP LOCKED
      )
@@ -657,11 +821,11 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
           AND cleanup.state = 'pending' AND cleanup.object_role IN ('final','thumbnail','legacy_staging')
           AND (
             EXISTS (SELECT 1 FROM user_assets AS assets
-              WHERE position(cleanup.object_key in assets.url) > 0
-                OR position(cleanup.object_key in COALESCE(assets.metadata->>'thumbUrl', '')) > 0)
+              WHERE reference_storage_object_key(assets.url) = cleanup.object_key
+                OR reference_storage_object_key(assets.metadata->>'thumbUrl') = cleanup.object_key)
             OR EXISTS (SELECT 1 FROM media_assets AS media WHERE media.deleted_at IS NULL
-              AND (position(cleanup.object_key in media.url) > 0
-                OR position(cleanup.object_key in COALESCE(media.thumb_url, '')) > 0))
+              AND (reference_storage_object_key(media.url) = cleanup.object_key
+                OR reference_storage_object_key(media.thumb_url) = cleanup.object_key))
           )
        RETURNING cleanup.cleanup_id
      )
@@ -680,18 +844,18 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
     const ownerPrefix = String(row.owner_prefix);
     if (!objectKey.startsWith(ownerPrefix)) return false;
     if (row.object_role === 'part') return ownerPrefix === `${String(row.attempt_storage_key)}/parts/`;
-    if (row.object_role === 'thumbnail') return ownerPrefix.startsWith('user-asset-thumbs/');
+    if (row.object_role === 'thumbnail') return hasReferenceCleanupRoot(ownerPrefix, 'user-asset-thumbs/');
     if (row.object_role === 'legacy_staging') return ownerPrefix.startsWith('mcp-reference-')
       && objectKey === String(row.attempt_storage_key);
-    return row.object_role === 'final' && ownerPrefix.startsWith('user-assets/');
+    return row.object_role === 'final' && hasReferenceCleanupRoot(ownerPrefix, 'user-assets/by-content/');
   });
   const claimedRows: Array<{ row: ReferenceUploadCleanupCandidate; claimId: string | null }> = [];
   for (const row of scopedRows) {
-    if (row.object_role !== 'final') {
+    if (row.object_role !== 'final' && row.object_role !== 'thumbnail') {
       claimedRows.push({ row, claimId: null });
       continue;
     }
-    const claimId = await claimReferenceUploadFinalDeletion(row, executor, now);
+    const claimId = await claimReferenceUploadObjectDeletion(row, executor, now);
     if (claimId) claimedRows.push({ row, claimId });
   }
   const results = await Promise.allSettled(claimedRows.map(({ row }) => dependencies.deleteStorageObjectKey(String(row.object_key))));
@@ -718,12 +882,16 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
       WHERE cleanup_id = ANY($1::uuid[]) AND state = 'pending'`,
     [nonFinalDeletedIds],
   );
-  const orphaned = await cleanupOrphanedStorageObjectProducers({
+  await reconcileDeletedReferenceUploadAssets({ limit, now }, executor);
+  const released = await cleanupReleasedReferenceUploadObjects({
     limit: limit - claimedRows.length, now,
   }, { executor, deleteStorageObjectKey: dependencies.deleteStorageObjectKey });
+  const orphaned = await cleanupOrphanedStorageObjectProducers({
+    limit: limit - claimedRows.length - released.selected, now,
+  }, { executor, deleteStorageObjectKey: dependencies.deleteStorageObjectKey });
   return {
-    selected: claimedRows.length + orphaned.selected,
-    deleted: deletedIds.length + orphaned.deleted,
+    selected: claimedRows.length + released.selected + orphaned.selected,
+    deleted: deletedIds.length + released.deleted + orphaned.deleted,
   };
 }
 

@@ -8,6 +8,7 @@ const serverPath = join(root, 'frontend/src/server/tools/upscale.ts');
 const requestUtilsPath = join(root, 'frontend/src/server/tools/upscale-request-utils.ts');
 const pricingContextPath = join(root, 'frontend/src/server/tools/upscale-pricing-context.ts');
 const jobPersistencePath = join(root, 'frontend/src/server/tools/upscale-job-persistence.ts');
+const providerSubmissionPath = join(root, 'frontend/src/server/tools/upscale-provider-submission.ts');
 const outputPersistencePath = join(root, 'frontend/src/server/tools/upscale-output-persistence.ts');
 const errorsPath = join(root, 'frontend/src/server/tools/upscale-errors.ts');
 const constantsPath = join(root, 'frontend/src/server/tools/upscale-constants.ts');
@@ -16,6 +17,7 @@ const serverSource = readFileSync(serverPath, 'utf8');
 const requestUtilsSource = readFileSync(requestUtilsPath, 'utf8');
 const pricingContextSource = readFileSync(pricingContextPath, 'utf8');
 const jobPersistenceSource = readFileSync(jobPersistencePath, 'utf8');
+const providerSubmissionSource = readFileSync(providerSubmissionPath, 'utf8');
 const outputPersistenceSource = readFileSync(outputPersistencePath, 'utf8');
 const errorsSource = readFileSync(errorsPath, 'utf8');
 const constantsSource = readFileSync(constantsPath, 'utf8');
@@ -24,6 +26,7 @@ test('upscale server delegates request and provider normalization helpers', () =
   assert.ok(existsSync(requestUtilsPath), 'upscale request helpers should live in a server-local utility module');
   assert.ok(existsSync(pricingContextPath), 'upscale pricing context should live in a focused server module');
   assert.ok(existsSync(jobPersistencePath), 'upscale job persistence should live in a focused server module');
+  assert.ok(existsSync(providerSubmissionPath), 'upscale provider submission should live in a focused server module');
   assert.ok(existsSync(outputPersistencePath), 'upscale output persistence should live in a focused server module');
   assert.ok(existsSync(errorsPath), 'upscale errors should live in a small shared server module');
   assert.ok(existsSync(constantsPath), 'upscale constants should live in a small shared server module');
@@ -34,6 +37,7 @@ test('upscale server delegates request and provider normalization helpers', () =
   );
   assert.match(serverSource, /from '\.\/upscale-pricing-context'/);
   assert.match(serverSource, /from '\.\/upscale-job-persistence'/);
+  assert.match(serverSource, /from '\.\/upscale-provider-submission'/);
   assert.match(serverSource, /from '\.\/upscale-output-persistence'/);
   assert.match(serverSource, /from '\.\/upscale-errors'/);
   assert.match(serverSource, /from '\.\/upscale-constants'/);
@@ -104,9 +108,15 @@ test('upscale persistence modules expose job, event, output, and error contracts
   assert.match(pricingContextSource, /computeBillingProductSnapshot/);
   assert.match(pricingContextSource, /estimateImageUpscaleCostUsd/);
   assert.match(pricingContextSource, /estimateVideoUpscaleCostUsd/);
-  for (const exportName of ['recordUpscaleRefundReceipt', 'createAtomicInitialUpscaleJob', 'insertUpscaleToolEvent']) {
+  for (const exportName of [
+    'recordUpscaleRefundReceipt',
+    'createAtomicInitialUpscaleJob',
+    'persistQueuedUpscaleRequest',
+    'insertUpscaleToolEvent',
+  ]) {
     assert.match(jobPersistenceSource, new RegExp(`export async function ${exportName}`));
   }
+  assert.match(providerSubmissionSource, /export async function runDurablyTrackedUpscaleRequest/);
   assert.match(jobPersistenceSource, /export type PendingUpscaleReceipt/);
   assert.match(jobPersistenceSource, /export type CreateUpscaleInitialJobParams/);
   assert.match(outputPersistenceSource, /export async function persistUpscaleOutput/);

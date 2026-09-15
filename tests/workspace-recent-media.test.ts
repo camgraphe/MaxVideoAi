@@ -78,7 +78,7 @@ test('roles honor kind, format, duration, size, per-role capacity and shared bud
 test('composer and recents share workflow, auth and specialized-role visibility without changing exact field objects', () => {
   assert.equal(getWorkspaceReferenceFields([entry], available)[0].field, entry.field);
   assert.equal(getWorkspaceReferenceFields([entry], { ...available, guestUploadLockedReason: 'Sign in' })[0].disabled, true);
-  assert.equal(getWorkspaceReferenceFields([entry], { ...available, showOmniStudioPanel: true }).length, 0);
+  assert.equal(getWorkspaceReferenceFields([entry], { ...available, showOmniStudioPanel: true })[0].field, entry.field);
   const start = { ...entry, field: { ...entry.field, id: 'image_url' } };
   assert.equal(getWorkspaceReferenceFields([start], { ...available, isUnifiedSeedance: true, inputAssets: { image_urls: [buildReferenceAssetFromLibraryAsset(entry.field, asset())] } })[0].disabledReason, 'clear refs');
   const frame = { ...entry, field: { ...entry.field, id: 'start_image_url' } };

@@ -125,6 +125,7 @@ export async function handleUpscaleToolRequest(
   try {
     const result = await runUpscale({
       userId,
+      requestId: typeof body?.requestId === 'string' ? body.requestId : undefined,
       acceptedQuote: body?.acceptedQuote,
       mediaType,
       mediaUrl,
@@ -139,7 +140,7 @@ export async function handleUpscaleToolRequest(
       imageHeight: optionalNumber(body?.imageHeight),
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { status: result.status === 'pending' ? 202 : 200 });
   } catch (error) {
     const status = error instanceof UpscaleToolError ? error.status : 502;
     const code = error instanceof UpscaleToolError ? error.code : 'upscale_tool_error';

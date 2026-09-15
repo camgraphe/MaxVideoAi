@@ -13,10 +13,11 @@ import {
 } from '@/server/agent-api/mcp-funnel';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { resolveMcpConfig, type McpConfig } from '@/server/mcp/config';
-import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
+import { resolveMcpAgentPrincipal } from '@/server/mcp/oauth-adapter';
 import {
   createDefaultMaxVideoAiMcpServices,
   createMaxVideoAiMcpServer,
+  type MaxVideoAiMcpServices,
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import {
@@ -38,6 +39,7 @@ export type McpHttpHandlerDeps = {
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
   recordConnection?(principal: AgentPrincipal): Promise<McpConnectionBindingResult>;
   accountStatusDeps?: AgentAccountStatusWalletDeps;
+  services?: MaxVideoAiMcpServices;
   runtimeCapabilities?: McpRuntimeCapabilities;
 };
 
@@ -281,7 +283,7 @@ export async function handleMcpHttpRequest(
 
   let principal: AgentPrincipal;
   try {
-    principal = await (injectedDeps?.resolvePrincipal ?? resolveAgentPrincipal)(request);
+    principal = await (injectedDeps?.resolvePrincipal ?? resolveMcpAgentPrincipal)(request);
   } catch (error) {
     if (error instanceof AgentApiError && error.code === 'AUTH_REQUIRED') return unauthorized(config);
     return jsonRpcError(500, -32603, 'Authentication could not be completed.');
@@ -296,7 +298,7 @@ export async function handleMcpHttpRequest(
 
   const server = createMaxVideoAiMcpServer(
     principal,
-    createDefaultMaxVideoAiMcpServices(
+    injectedDeps?.services ?? createDefaultMaxVideoAiMcpServices(
       config,
       resolveTrialRiskRequestContext(request.headers),
       capabilities,

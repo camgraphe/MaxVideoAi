@@ -411,7 +411,7 @@ test('paid MCP provider slots are selected from each active P0 schema', () => {
   });
 });
 
-test('all 23 P0 engine modes have exact whole site and paid MCP request bodies', () => {
+test('all 27 P0 engine modes have exact whole site and paid MCP request bodies', () => {
   const p0Ids = new Set([
     'wan-3', 'wan-3-prime', 'ltx-2-5-fast', 'ltx-2-5-pro',
     'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
@@ -419,7 +419,7 @@ test('all 23 P0 engine modes have exact whole site and paid MCP request bodies',
   const cases = listFalEngines()
     .filter((entry) => p0Ids.has(entry.id))
     .flatMap((entry) => entry.modes.map(({ mode, falModelId }) => ({ entry, mode, falModelId })));
-  assert.equal(cases.length, 23);
+  assert.equal(cases.length, 27);
 
   for (const { entry, mode, falModelId } of cases) {
     const isWan = entry.id === 'wan-3' || entry.id === 'wan-3-prime';
@@ -483,6 +483,15 @@ test('all 23 P0 engine modes have exact whole site and paid MCP request bodies',
         Object.assign(expectedPaid, {
           referenceImages: [imageUrl],
           inputs: [{ kind: 'image', slotId: 'reference_image_urls', url: imageUrl }],
+        });
+      } else if (mode === 'v2v' || mode === 'extend') {
+        payload.videoUrl = videoUrl;
+        payload.inputs = [attachment('video', 'video_url', videoUrl)];
+        expectedSite.video_url = videoUrl;
+        references.push({ kind: 'https', url: videoUrl, role: 'source', mediaKind: 'video' });
+        Object.assign(expectedPaid, {
+          videoUrl,
+          inputs: [{ kind: 'video', slotId: 'video_url', url: videoUrl }],
         });
       }
     } else if (isLtx) {

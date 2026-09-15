@@ -61,7 +61,12 @@ export async function middleware(req: NextRequest) {
   const mcpRewritePath = getMcpApiRewritePath(
     host,
     req.nextUrl.pathname,
-    process.env.MCP_API_HOST ?? 'api.maxvideoai.com'
+    process.env.MCP_API_HOST ?? 'api.maxvideoai.com',
+    {
+      allowHtmlMarketing: isLoopbackRequest || process.env.MCP_STAGING_ENABLED === 'true',
+      method: req.method,
+      accept: req.headers.get('accept'),
+    },
   );
   if (mcpRewritePath) {
     const target = req.nextUrl.clone();

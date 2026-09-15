@@ -1,4 +1,3 @@
-import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
 import {
   ANALYTICS_JOURNEY_TTL_MS,
   ANALYTICS_JOURNEY_VERSION,
@@ -9,6 +8,7 @@ import {
   type PreparedAnalyticsEvent,
 } from './journey-contract';
 import { getPublicVideoRenditionAssetIds } from '@/lib/public-video-renditions';
+import { getMcpPublicIntegrationPaths } from '@/lib/mcp-integration-registry';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

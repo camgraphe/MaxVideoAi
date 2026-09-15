@@ -19,12 +19,15 @@ test('ChatGPT is a first-class localized acquisition route beside Claude and Cod
 
   const routing = source('frontend/i18n/routing.ts');
   const publication = source('frontend/lib/mcp-publication.ts');
+  const registry = source('frontend/config/mcp-integrations.json');
   const sitemap = source('frontend/next-sitemap.config.js');
   const llms = source('frontend/lib/seo/llms-text.ts');
 
-  for (const value of [routing, publication, sitemap, llms]) {
+  for (const value of [routing, registry, llms]) {
     assert.match(value, /\/integrations\/chatgpt/);
   }
+  assert.match(publication, /getMcpPublicIntegrationPaths/);
+  assert.match(sitemap, /mcpIntegrations\.integrations/);
 });
 
 test('the commercial copy leads with the outcome and removes stale internal preview language', () => {
@@ -53,16 +56,26 @@ test('the commercial copy leads with the outcome and removes stale internal prev
   }
 });
 
-test('Claude, ChatGPT, and Codex are three equal primary actions', () => {
+test('Claude, ChatGPT, and Codex stay first while OpenClaw and n8n are public actions', async () => {
   const copy = source(copyPath);
-  assert.match(copy, /clientActions\('en',[\s\S]*claude:[\s\S]*chatgpt:[\s\S]*codex:/);
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  assert.deepEqual(
+    getMcpPageCopy('en').hero.actions.map((action: { client: string }) => action.client),
+    ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'],
+  );
   assert.match(copy, /integrations, 'chatgpt'/);
   assert.match(copy, /integrations, 'claude'/);
   assert.match(copy, /integrations, 'codex'/);
+  assert.match(copy, /integrations, 'openclaw'/);
+  assert.match(copy, /integrations, 'n8n'/);
 
   const actions = source(`${marketingRoot}/mcp/_components/McpClientActions.tsx`);
-  assert.match(actions, /openai-mark-light\.svg/);
-  assert.match(actions, /claude-mark-light\.svg/);
+  const marks = source('frontend/components/marketing/mcp/McpIntegrationMark.tsx');
+  assert.match(actions, /McpIntegrationMark integration=\{action\.client\}/);
+  assert.match(marks, /openai-mark-light\.svg/);
+  assert.match(marks, /claude-mark-light\.svg/);
   assert.match(actions, /sm:grid-cols-3/);
 });
 

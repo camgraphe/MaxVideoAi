@@ -68,6 +68,7 @@ function buildEnabledPostbuildSitemap(): string {
     copyFixtureFile('frontend/next-sitemap.config.js', fixtureRoot);
     copyFixtureFile('frontend/config/model-roster.json', fixtureRoot);
     copyFixtureFile('frontend/config/localized-slugs.json', fixtureRoot);
+    copyFixtureFile('frontend/config/mcp-integrations.json', fixtureRoot);
     mkdirSync(join(fixtureRoot, 'frontend/config'), { recursive: true });
     writeFileSync(
       join(fixtureRoot, 'frontend/config/mcp-publication.json'),
@@ -158,7 +159,7 @@ test('llms response is built deterministically from publication state without a 
   sourceUrls.forEach((url) => assert.equal(enabledText.split(url).length - 1, 1));
   assert.doesNotMatch(falseText, /publication gate|acquisition sources are omitted|shared.*closed/i);
   assert.doesNotMatch(enabledText, /publication gate is closed/i);
-  assert.match(enabledText, /MaxVideoAI for ChatGPT, Claude, and Codex/);
+  assert.match(enabledText, /MaxVideoAI for assistants and automation/);
   assert.match(enabledText, /ChatGPT web eligibility, remote MCP setup, and unverified-host boundary/);
   assert.match(enabledText, /Claude connector setup and revocation/);
   assert.match(enabledText, /Codex-specific plugin and MCP setup/);

@@ -14,7 +14,7 @@ const acquisitionPath = 'frontend/lib/mcp-acquisition.ts';
 const routePath = 'frontend/app/api/mcp/acquisition/route.ts';
 const actionsPath =
   'frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpConnectActions.client.tsx';
-const actionFlagsPath = 'frontend/config/mcp-client-actions.json';
+const integrationRegistryPath = 'frontend/lib/mcp-integration-registry.ts';
 const reportPath = '.superpowers/sdd/task-5-report.md';
 const secret = 'task-5-test-signing-secret-with-32-bytes';
 const validInput = {
@@ -39,12 +39,23 @@ function signRaw(prefix: string, payload: string): string {
 }
 
 test('Task 5 has focused acquisition, route, and client-action owners', () => {
-  for (const path of [acquisitionPath, routePath, actionsPath, actionFlagsPath]) requireFile(path);
+  for (const path of [acquisitionPath, routePath, actionsPath, integrationRegistryPath]) requireFile(path);
 
   const actions = requireFile(actionsPath);
   assert.match(actions, /^['"]use client['"];?/);
   assert.match(actions, /McpClientActions/);
   assert.match(actions, /\/api\/mcp\/acquisition/);
+  assert.match(actions, /getMcpClientActionConfig/);
+  assert.doesNotMatch(actions, /mcp-client-actions\.json/);
+});
+
+test('analytics landing sanitization consumes registry-owned integration paths', () => {
+  const journey = requireFile('frontend/lib/analytics/journey.ts');
+  assert.match(journey, /getMcpPublicIntegrationPaths/);
+  assert.doesNotMatch(
+    journey,
+    /'\/integrations\/chatgpt',\s*'\/integrations\/claude',\s*'\/integrations\/codex'/,
+  );
 });
 
 test('landing acquisition accepts only the exact coarse allowlist and rejects extra data', async () => {
@@ -74,6 +85,18 @@ test('landing acquisition accepts only the exact coarse allowlist and rejects ex
     { ...validInput, prompt: 'private prompt' },
   ]) {
     assert.equal(parseMcpAcquisitionRequest(invalid), null, JSON.stringify(invalid));
+  }
+});
+
+test('the acquisition registry enables exactly the five live clients', async () => {
+  const { isEnabledMcpAcquisitionClient } = await import(
+    '../frontend/lib/mcp-integration-registry.ts'
+  );
+  for (const client of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']) {
+    assert.equal(isEnabledMcpAcquisitionClient(client), true);
+  }
+  for (const value of ['cursor', 'githubCopilot', 'other', '', [], {}]) {
+    assert.equal(isEnabledMcpAcquisitionClient(value), false);
   }
 });
 
@@ -373,7 +396,7 @@ test('direct_mcp classification is an explicit post-auth seam, not a live-lookin
           async getClaims(accessToken: string) {
             calls.push(`claims:${accessToken}`);
             return {
-              data: { claims: { sub: 'user-1', client_id: 'oauth-client-1' } },
+              data: { claims: { sub: 'user-1', client_id: 'oauth-client-1', iat: 1_789_372_800 } },
               error: null,
             };
           },
@@ -396,11 +419,19 @@ test('direct_mcp classification is an explicit post-auth seam, not a live-lookin
           },
         };
       },
+      async hasActiveGrant(accessToken: string, clientId: string) {
+        calls.push(`grant:${accessToken}:${clientId}`);
+        return true;
+      },
     },
   );
   const resolved = createDirectAuthenticatedMcpConnection(principal);
 
-  assert.deepEqual(calls, ['claims:access-token', 'user:access-token']);
+  assert.deepEqual(calls, [
+    'claims:access-token',
+    'user:access-token',
+    'grant:access-token:oauth-client-1',
+  ]);
   assert.deepEqual(resolved.principal, {
     userId: 'user-1',
     clientId: 'oauth-client-1',
@@ -461,14 +492,18 @@ test('Task 5 reports durable Task 7 binding through acquisitionId rather than th
 });
 
 test('client deep links remain disabled and localized setup plus endpoint copy always render', async () => {
-  const flags = JSON.parse(requireFile(actionFlagsPath)) as Record<
-    'claude' | 'chatgpt' | 'codex',
-    { deepLinkEnabled: boolean; deepLink: string | null }
-  >;
+  const { getMcpClientActionConfig } = await import(
+    '../frontend/lib/mcp-integration-registry.ts'
+  );
+  const flags = Object.fromEntries(
+    (['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
+  );
   assert.deepEqual(flags, {
     claude: { deepLinkEnabled: false, deepLink: null },
     chatgpt: { deepLinkEnabled: false, deepLink: null },
     codex: { deepLinkEnabled: false, deepLink: null },
+    openclaw: { deepLinkEnabled: false, deepLink: null },
+    n8n: { deepLinkEnabled: false, deepLink: null },
   });
 
   requireFile(actionsPath);
@@ -479,9 +514,9 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   for (const [locale, expectedHrefs] of [
-    ['en', ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex']],
-    ['fr', ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex']],
-    ['es', ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex']],
+    ['en', ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex', '/integrations/openclaw', '/integrations/n8n']],
+    ['fr', ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex', '/fr/integrations/openclaw', '/fr/integrations/n8n']],
+    ['es', ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex', '/es/integraciones/openclaw', '/es/integraciones/n8n']],
   ] as const) {
     const copy = getMcpPageCopy(locale);
     const html = renderToStaticMarkup(React.createElement(McpConnectActions, {
@@ -492,7 +527,9 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     }));
     for (const href of expectedHrefs) assert.match(html, new RegExp(`href="${href}"`));
     assert.match(html, /https:\/\/api\.maxvideoai\.com\/mcp/);
-    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, copy.hero.actions.length);
+    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, 5);
+    assert.equal((html.match(/data-copy-install-instructions=/g) ?? []).length, 4);
+    assert.doesNotMatch(html, /data-copy-install-instructions="n8n"/);
   }
 
   const en = getMcpPageCopy('en').hero.connectActions;

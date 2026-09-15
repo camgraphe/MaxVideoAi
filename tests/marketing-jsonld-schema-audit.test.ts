@@ -146,6 +146,13 @@ function assertRequiredProperties(record: JsonRecord, path: string) {
       assert.ok(hasPresentProperty(record, property), `${path} ${type} should include ${property}`);
     }
 
+    if (type === 'Product') {
+      assert.ok(
+        ['offers', 'review', 'aggregateRating'].some((property) => hasPresentProperty(record, property)),
+        `${path} Product should include offers, review, or aggregateRating for Google Product snippets`
+      );
+    }
+
     if (type === 'ImageObject') {
       assert.ok(
         hasPresentProperty(record, 'url') || hasPresentProperty(record, 'contentUrl'),

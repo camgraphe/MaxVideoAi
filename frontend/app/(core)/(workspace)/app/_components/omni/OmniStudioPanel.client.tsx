@@ -3,12 +3,9 @@
 import { useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Camera, Film, History, Volume2 } from 'lucide-react';
-import { AssetDropzone } from '@/components/AssetDropzone';
-import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
 import { Button } from '@/components/ui/Button';
-import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
+import type { EngineInputField, Mode } from '@/types/engines';
 import {
-  getGeminiOmniAssetFieldDisabledReason,
   getGeminiOmniAssetState,
   hasGeminiOmniPreviousInteraction,
 } from '../../_lib/gemini-omni-unified-workflow';
@@ -17,19 +14,11 @@ import type { FormState } from '../../_lib/workspace-form-state';
 import type { WorkspaceInputFieldEntry } from '../../_lib/workspace-input-schema';
 
 export type OmniStudioPanelProps = {
-  engine: EngineCaps;
-  caps?: EngineModeUiCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   submissionMode: Mode;
-  assetFields: AssetFieldConfig[];
   extraFields: WorkspaceInputFieldEntry[];
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
-  onAssetAdd: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
-  onAssetRemove: (field: EngineInputField, index: number) => void;
-  onOpenLibrary: (field: EngineInputField, slotIndex: number) => void;
-  onNotice: (message: string) => void;
-  disabledReason?: string | null;
 };
 
 function fieldAppliesToMode(field: EngineInputField, mode: Mode): boolean {
@@ -50,19 +39,11 @@ function trimOrDelete(value: string): string | undefined {
 }
 
 export function OmniStudioPanel({
-  engine,
-  caps,
   form,
   setForm,
   submissionMode,
-  assetFields,
   extraFields,
   inputAssets,
-  onAssetAdd,
-  onAssetRemove,
-  onOpenLibrary,
-  onNotice,
-  disabledReason = null,
 }: OmniStudioPanelProps) {
   const omniAssetState = useMemo(() => getGeminiOmniAssetState(inputAssets), [inputAssets]);
   const omniWorkflowState = useMemo(
@@ -72,7 +53,6 @@ export function OmniStudioPanel({
     }),
     [form.extraInputValues.previous_interaction_id, omniAssetState]
   );
-  const visibleAssetFields = assetFields;
   const audioField = fieldById(extraFields, 'prompt_audio_direction');
   const cameraField = fieldById(extraFields, 'prompt_camera_direction');
   const editField = fieldById(extraFields, 'prompt_edit_instruction');
@@ -116,33 +96,6 @@ export function OmniStudioPanel({
             <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             Store
           </Button>
-        </div>
-      ) : null}
-
-      {visibleAssetFields.length ? (
-        <div className="grid gap-3 lg:grid-cols-2">
-          {visibleAssetFields.map((entry) => {
-            const workflowDisabledReason = getGeminiOmniAssetFieldDisabledReason(entry.field.id, omniWorkflowState);
-            const resolvedDisabledReason = entry.disabledReason ?? workflowDisabledReason ?? disabledReason;
-            return (
-              <AssetDropzone
-                key={entry.field.id}
-                engine={engine}
-                caps={caps}
-                field={entry.field}
-                required={entry.required}
-                role={entry.role}
-                assets={inputAssets[entry.field.id] ?? []}
-                density="compact"
-                onSelect={onAssetAdd}
-                onRemove={onAssetRemove}
-                onOpenLibrary={onOpenLibrary}
-                onError={onNotice}
-                disabled={entry.disabled || Boolean(resolvedDisabledReason)}
-                disabledReason={resolvedDisabledReason}
-              />
-            );
-          })}
         </div>
       ) : null}
 

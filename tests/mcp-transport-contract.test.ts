@@ -9,6 +9,7 @@ import {
   type McpHttpHandlerDeps,
 } from '../frontend/src/server/mcp/http-handler';
 import { resolveAgentPrincipal } from '../frontend/src/server/mcp/oauth-adapter';
+import type { MaxVideoAiMcpServices } from '../frontend/src/server/mcp/server';
 
 const principal: AgentPrincipal = {
   userId: 'user-1',
@@ -195,6 +196,43 @@ test('authenticated initialize uses uncompressed SSE Streamable HTTP and private
   assert.equal(payload.jsonrpc, '2.0');
   assert.equal(payload.id, 1);
   assert.equal(payload.result.serverInfo.name, 'maxvideoai');
+});
+
+test('authenticated tool calls use explicitly injected MCP services', async () => {
+  let listModelsCalls = 0;
+  const services = {
+    async getAccountStatus() { throw new Error('not exercised'); },
+    async listModels() {
+      listModelsCalls += 1;
+      return [];
+    },
+    async getModelDetails() { throw new Error('not exercised'); },
+    async recommendModels() { throw new Error('not exercised'); },
+    async calculateProjectBudget() { throw new Error('not exercised'); },
+    async prepareGeneration() { throw new Error('not exercised'); },
+    async confirmGeneration() { throw new Error('not exercised'); },
+    async getGenerationStatus() { throw new Error('not exercised'); },
+    async createGenerationDownload() { throw new Error('not exercised'); },
+    async listRecentGenerations() { throw new Error('not exercised'); },
+    async createTopupLink() { throw new Error('not exercised'); },
+    async listMedia() { throw new Error('not exercised'); },
+    async createReferenceUploadLink() { throw new Error('not exercised'); },
+    async importReferenceFiles() { throw new Error('not exercised'); },
+  } satisfies MaxVideoAiMcpServices;
+  const response = await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: { name: 'list_models', arguments: {} },
+    }),
+    deps({ services }),
+  );
+  const payload = await readProtocolPayload(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(listModelsCalls, 1);
+  assert.deepEqual(payload.result.structuredContent, { models: [] });
 });
 
 test('exact hosted staging exposes the complete operational tool inventory', async () => {
