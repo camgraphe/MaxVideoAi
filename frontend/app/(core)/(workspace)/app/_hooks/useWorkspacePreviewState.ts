@@ -1,3 +1,5 @@
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
+import type { Job } from '@/types/jobs';
 import { useMemo, useState } from 'react';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import {
@@ -7,11 +9,12 @@ import {
 import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import type { GroupSummary } from '@/types/groups';
 import type { ResultProvider, VideoGroup } from '@/types/video-groups';
-import { getCompositePreviewPosterSrc } from '../_lib/composite-preview';
+import { getCompositePreviewPosterSrc, refreshCompositePreview } from '../_lib/composite-preview';
 import type { WorkspaceViewerTarget } from '../_components/WorkspacePreviewDock';
 
 type UseWorkspacePreviewStateOptions = {
   provider: ResultProvider;
+  recentJobs: Job[];
   selectedPreview: SelectedVideoPreview | null;
   pendingSummaryMap: Map<string, GroupSummary>;
   compositeOverride: VideoGroup | null;
@@ -25,6 +28,7 @@ type UseWorkspacePreviewStateOptions = {
 
 export function useWorkspacePreviewState({
   provider,
+  recentJobs,
   selectedPreview,
   pendingSummaryMap,
   compositeOverride,
@@ -37,7 +41,13 @@ export function useWorkspacePreviewState({
 }: UseWorkspacePreviewStateOptions) {
   const [viewerTarget, setViewerTarget] = useState<WorkspaceViewerTarget>(null);
 
-  const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
+  const liveGroups = useMemo(() => [
+    ...groupJobsIntoSummaries(recentJobs, { includeSinglesAsGroups: true }).groups,
+    ...pendingSummaryMap.values(),
+  ].map(summary => adaptGroupSummary(normalizeGroupSummary(summary), provider)), [recentJobs, pendingSummaryMap, provider]);
+  const liveOverride = useMemo(() => compositeOverride
+    ? refreshCompositePreview(compositeOverride, liveGroups) : null, [compositeOverride, liveGroups]);
+  const compositeGroup = liveOverride ?? activeVideoGroup ?? null;
   const selectedPreviewGroup = useMemo(
     () => mapSelectedPreviewToGroup(selectedPreview, provider),
     [selectedPreview, provider]
@@ -60,10 +70,10 @@ export function useWorkspacePreviewState({
       return adaptGroupSummary(normalizeGroupSummary(summary), provider);
     }
     if (viewerTarget.kind === 'group') {
-      return viewerTarget.group;
+      return refreshCompositePreview(viewerTarget.group, liveGroups);
     }
     return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
-  }, [viewerTarget, pendingSummaryMap, provider]);
+  }, [viewerTarget, pendingSummaryMap, provider, liveGroups]);
 
   return {
     viewerTarget,

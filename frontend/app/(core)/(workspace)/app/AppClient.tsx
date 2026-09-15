@@ -82,6 +82,7 @@ export default function AppClientPage({
   });
 
   const previewState = useWorkspacePreviewState({
+    recentJobs: app.recentJobs,
     provider: app.provider,
     selectedPreview: renderState.selectedPreview,
     pendingSummaryMap: renderState.pendingSummaryMap,

@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -38,6 +39,7 @@ test('Alibaba poll copies the expiring provider output before completing the exi
   const outputs: unknown[] = [];
   const response = await runAlibabaModelStudioPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [baseJob] as never;
@@ -90,6 +92,7 @@ test('Alibaba poll refunds a terminally failed paid-wallet job once', async () =
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const response = await runAlibabaModelStudioPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [baseJob] as never;

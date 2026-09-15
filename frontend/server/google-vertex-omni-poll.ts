@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import {
@@ -61,6 +62,7 @@ type GoogleVertexOmniPendingJob = {
 
 type GoogleVertexOmniPollDeps = {
   queryFn?: QueryFn;
+  claimPollFn?: typeof claimGenerationPoll;
   getGoogleVertexOmniClientFn?: typeof getGoogleVertexOmniClient;
   isStorageConfiguredFn?: typeof isStorageConfigured;
   uploadFileBufferFn?: typeof uploadFileBuffer;
@@ -317,7 +319,7 @@ async function copyGoogleOmniOutputToStorage(params: {
   return upload.url;
 }
 
-export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmniPollDeps } = {}) {
+export async function runGoogleVertexOmniPoll(options: { jobId?: string; deps?: GoogleVertexOmniPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const getGoogleVertexOmniClientFn = deps.getGoogleVertexOmniClientFn ?? getGoogleVertexOmniClient;
@@ -350,9 +352,10 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
           status <> $3
           OR created_at >= NOW() - INTERVAL '${STALLED_RECOVERY_WINDOW_HOURS} hours'
         )
+      AND ($4::text IS NULL OR job_id = $4)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [GOOGLE_VERTEX_OMNI_PROVIDER, POLLABLE_JOB_STATUSES, STALLED_JOB_STATUS]
+    [GOOGLE_VERTEX_OMNI_PROVIDER, POLLABLE_JOB_STATUSES, STALLED_JOB_STATUS, options.jobId ?? null]
   );
 
   if (!rows.length) {
@@ -376,6 +379,8 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       continue;
     }
 
+    const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
+    if (!pollClaim) continue;
     try {
       const attempt = await findProviderAttemptForJob({
         publicJobId: job.job_id,
@@ -387,6 +392,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       const task = normalizeGoogleVertexOmniInteraction(interaction, job.provider_job_id);
       const estimate = estimateGoogleVertexOmniJobCost(job, attempt?.requestSnapshot);
 
+      await pollClaim.checked();
       if (task.status === 'queued' || task.status === 'running') {
         if (recoveringStalledJob) {
           // Re-read the already accepted provider task without reviving it or
@@ -556,6 +562,8 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
         );
         if (failed) updates += 1;
       }
+    } finally {
+      await pollClaim.release();
     }
   }
 

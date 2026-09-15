@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -76,6 +77,7 @@ test('Gemini Omni Flash poll advances accepted jobs after new direct submissions
   try {
     const response = await runGoogleVertexOmniPoll({
       deps: {
+      claimPollFn: allowGenerationPoll,
         queryFn: async (sql) => {
           queries.push(sql);
           if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -337,6 +339,7 @@ test('Gemini Omni provider pricing snapshot survives price-only job receipts thr
   const pollQueries: Array<{ sql: string; params?: unknown[] }> = [];
   const response = await runGoogleVertexOmniPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         pollQueries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -583,6 +586,7 @@ test('Gemini Omni Flash poll copies Interactions video output before marking the
 
   const response = await runGoogleVertexOmniPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -644,6 +648,7 @@ test('Gemini Omni Flash poll can recover a recently stalled accepted job without
 
   const response = await runGoogleVertexOmniPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -714,6 +719,7 @@ test('Gemini Omni Flash poll copies inline Interactions video data before markin
 
   const response = await runGoogleVertexOmniPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -761,6 +767,7 @@ test('Gemini Omni Flash poll fails and refunds an accepted job when Google canno
 
   const response = await runGoogleVertexOmniPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -809,6 +816,7 @@ test('Gemini Omni Flash poll marks unresolved jobs for manual review after 45 mi
 
   const response = await runGoogleVertexOmniPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {

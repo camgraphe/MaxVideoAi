@@ -50,8 +50,8 @@ export function jobHasRenderableMedia(job: Pick<Job, 'videoUrl' | 'audioUrl' | '
 }
 
 const STATUS_RETRY_TIMERS = new Map<string, StatusRetryMeta>();
-const STATUS_RETRY_BASE_DELAY_MS = 60_000;
-const STATUS_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
+const STATUS_RETRY_BASE_DELAY_MS = 15_000;
+const STATUS_RETRY_MAX_DELAY_MS = 15_000;
 
 export function clearStatusRetry(jobId: string): void {
   if (typeof window === 'undefined') return;
@@ -90,6 +90,7 @@ export function clearMissingStatusRetries(seenJobIds: Set<string>): void {
   });
 }
 
+const RECENT_STATUS = new Map<string, { until: number; result: JobStatusResult }>();
 const IN_FLIGHT_STATUS = new Map<string, Promise<JobStatusResult>>();
 
 export function getJobStatus(jobId: string): Promise<JobStatusResult> {
@@ -97,9 +98,16 @@ export function getJobStatus(jobId: string): Promise<JobStatusResult> {
   // Only coalesce in the authenticated browser scope; never share server requests.
   if (typeof window === 'undefined' || !principal) return fetchJobStatus(jobId);
   const key = JSON.stringify([principal, jobId]);
+  const recent = RECENT_STATUS.get(key);
+  if (recent && recent.until > Date.now()) return Promise.resolve(recent.result);
   const existing = IN_FLIGHT_STATUS.get(key);
   if (existing) return existing;
-  const request = fetchJobStatus(jobId).finally(() => IN_FLIGHT_STATUS.delete(key));
+  const startedAt = Date.now();
+  const request = fetchJobStatus(jobId).then(result => {
+    RECENT_STATUS.set(key, { until: startedAt + 15_000, result });
+    if (RECENT_STATUS.size > 1000) RECENT_STATUS.delete(RECENT_STATUS.keys().next().value!);
+    return result;
+  }).finally(() => IN_FLIGHT_STATUS.delete(key));
   IN_FLIGHT_STATUS.set(key, request);
   return request;
 }
@@ -164,7 +172,7 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
   if (normalizedStatus === 'pending' && observation.stage === 'completed') observation.stage = 'finalizing';
   const result: JobStatusResult = {
     createdAt: payload.createdAt,
-    observation: { ...observation, ...(observation.degraded ? {} : { checkedAt }) },
+    observation: { ...observation, ...(observation.degraded ? {} : { checkedAt: observation.checkedAt ?? checkedAt }) },
     ok: true,
     jobId: payload.jobId ?? jobId,
     status: normalizedStatus,

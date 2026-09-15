@@ -224,7 +224,7 @@ export function useWorkspaceRenderState({
     }
     pendingPollRef.current = window.setInterval(() => {
       void poll();
-    }, 4000);
+    }, 15_000);
 
     return () => {
       cancelled = true;
@@ -301,7 +301,8 @@ export function useWorkspaceRenderState({
     setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
     setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
     setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setSelectedPreview((current) => clearSelectedPreviewForRemovedRenders(current, removedRefs));
+    setSelectedPreview((current) => current?.status === 'completed' && current.videoUrl
+      ? current : clearSelectedPreviewForRemovedRenders(current, removedRefs));
   }, [recentJobs, renders]);
 
   useEffect(() => {
