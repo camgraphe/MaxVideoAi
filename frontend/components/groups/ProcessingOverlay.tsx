@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { CircleAlert } from 'lucide-react';
 import { GenerationPendingStatus, type GenerationPendingStatusProps } from './GenerationPendingStatus';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
@@ -56,7 +57,7 @@ export function ProcessingOverlay({
           aria-live={state === 'error' ? 'assertive' : 'off'}
           aria-atomic="true"
         >
-          <div className="processing-overlay__spinner" aria-hidden />
+          {state === 'error' ? <CircleAlert className="processing-overlay__error" aria-hidden="true" /> : null}
           {state === 'error' || (typeof tileCount === 'number' && tileCount > 1) ? <span className="processing-overlay__title text-xs font-semibold" role="presentation">
             {state === 'error' ? processingCopy.errorTitle : processingCopy.takeLabel.replace('{current}', String(tileIndex)).replace('{total}', String(tileCount))}
           </span> : null}
@@ -72,6 +73,8 @@ export function ProcessingOverlay({
           --overlay-ink: rgba(226, 232, 240, 0.92);
           --overlay-muted: rgba(203, 213, 225, 0.8);
           backdrop-filter: blur(6px);
+          container: generation-overlay / size;
+          overflow: hidden;
         }
         .processing-overlay--light {
           --overlay-bg: rgba(245, 247, 252, 0.92);
@@ -94,47 +97,23 @@ export function ProcessingOverlay({
           position: relative;
           z-index: 1;
           color: var(--overlay-muted);
+          width: 100%;
+          max-height: 100%;
+          overflow-y: auto;
         }
         .processing-overlay__title {
           color: var(--overlay-ink);
         }
-        .processing-overlay__spinner {
-          width: 20px;
-          height: 20px;
-          border-radius: 9999px;
-          border: 3px solid rgba(255, 255, 255, 0.22);
-          border-top-color: rgba(255, 255, 255, 0.85);
-          animation: spinner 0.8s linear infinite;
-        }
-        .processing-overlay--light .processing-overlay__spinner {
-          border: 3px solid rgba(148, 163, 184, 0.3);
-          border-top-color: rgba(51, 94, 234, 0.9);
-        }
-        :global([data-theme='dark']) .processing-overlay--light .processing-overlay__spinner {
-          border: 3px solid rgba(255, 255, 255, 0.22);
-          border-top-color: rgba(255, 255, 255, 0.85);
+        .processing-overlay__error {
+          width: 28px;
+          height: 28px;
+          margin-bottom: 6px;
+          color: var(--overlay-ink);
         }
         :global(.app-experience) .processing-overlay {
           --overlay-bg: var(--app-panel);
           --overlay-ink: var(--app-ink);
           --overlay-muted: var(--app-muted);
-        }
-        :global(.app-experience) .processing-overlay .processing-overlay__spinner {
-          border-color: var(--app-line);
-          border-top-color: var(--app-accent);
-        }
-        @keyframes spinner {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .processing-overlay__spinner {
-            animation: none;
-          }
         }
       `}</style>
     </>

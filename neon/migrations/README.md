@@ -59,3 +59,12 @@ runtime that creates 45-minute quotes.
 Migration 44 follows the MCP reference-asset deletion migration and preserves the dedicated
 `mcp-reference-staging/` namespace in storage ownership, fences, and cleanup. Apply it before
 deploying a staging runtime that prefixes reusable originals and thumbnails.
+
+## Generation timing collector
+
+`45_generation_timing_samples.sql` installs the generic video-completion collector and
+recovers available historical completion evidence. Apply before deploying the adaptive
+`/api/engines/averages` reader. It is independent of the MCP tables but expects existing
+`app_jobs`, `fal_queue_log` and `provider_attempts`. Test on a production branch copy
+before promotion; see `docs/engineering/generation-observations.md` for semantics and
+rollback. The migration does not repair or update source jobs.

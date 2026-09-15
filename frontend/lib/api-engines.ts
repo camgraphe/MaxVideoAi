@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import type { EnginesResponse } from '@/types/engines';
+import type { GenerationTimingCell } from './generation-timing';
 import { authFetch } from '@/src/lib/authFetch';
 
 export type EngineCategory = 'video' | 'image' | 'all';
@@ -70,7 +71,7 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
       dedupingInterval: 5 * 60 * 1000,
     }
   );
-  const { data: timings } = useSWR<{ averages: Record<string, number>; samples?: Record<string, number>; source?: string }>(
+  const { data: timings, mutate: refreshTimings } = useSWR<{ averages: Record<string, number>; samples?: Record<string, number>; source?: string; matrix?: Record<string, GenerationTimingCell[]> }>(
     enabled && cachePrincipal && options?.includeAverages && category !== 'image'
       ? ['engine-averages', cachePrincipal, category] : null,
     async () => {
@@ -78,14 +79,29 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
       if (!response.ok) throw new Error('Engine averages unavailable');
       return response.json();
     },
-    { dedupingInterval: 5 * 60 * 1000, shouldRetryOnError: false }
+    { dedupingInterval: 5 * 60 * 1000, refreshInterval: 5 * 60 * 1000, shouldRetryOnError: false }
   );
+  useEffect(() => {
+    if (!enabled || !cachePrincipal || !options?.includeAverages || category === 'image') return;
+    const completedJobs = new Set<string>();
+    const onStatus = (event: Event) => {
+      const detail = (event as CustomEvent<{ jobId?: string; status?: string }>).detail;
+      if (detail?.status !== 'completed' || !detail.jobId || completedJobs.has(detail.jobId)) return;
+      completedJobs.add(detail.jobId);
+      // Bound memory on a long-lived workspace, while coalescing repeated polling events.
+      if (completedJobs.size > 1000) completedJobs.delete(completedJobs.values().next().value!);
+      void refreshTimings().catch(() => undefined);
+    };
+    window.addEventListener('jobs:status', onStatus);
+    return () => window.removeEventListener('jobs:status', onStatus);
+  }, [enabled, cachePrincipal, options?.includeAverages, category, refreshTimings]);
   const data = useMemo(() => {
     if (!catalog.data || !timings || timings.source !== 'completion_event') return catalog.data;
     return { ...catalog.data, engines: catalog.data.engines.map((engine) => ({
       ...engine,
       avgDurationMs: timings.averages?.[engine.id] ?? null,
       durationSampleCount: timings.samples?.[engine.id] ?? null,
+      timingCells: timings.matrix?.[engine.id],
       durationSource: 'completion_event' as const,
     })) };
   }, [catalog.data, timings]);

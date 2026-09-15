@@ -23,7 +23,8 @@ export type PrepareLocalGenerationRenderOptions = {
   iterationIndex: number;
   iterationCount: number;
   selectedEngine: EngineCaps;
-  form: Pick<FormState, 'aspectRatio'>;
+  form: Pick<FormState, 'aspectRatio'> & Partial<Pick<FormState, 'resolution'>>;
+  submissionMode?: string;
   effectiveDurationSec: number;
   effectivePrompt: string;
   preflight?: PreflightResponse | null;
@@ -38,6 +39,7 @@ export function prepareLocalGenerationRender({
   selectedEngine,
   form,
   effectiveDurationSec,
+  submissionMode,
   effectivePrompt,
   preflight,
   formatTakeLabel,
@@ -46,7 +48,7 @@ export function prepareLocalGenerationRender({
   const localKey = `local_${batchId}_${iterationIndex + 1}`;
   const id = localKey;
   const thumb = resolveRenderThumb({ aspectRatio: form.aspectRatio });
-  const { seconds: etaSeconds, label: etaLabel, source: etaSource } = getRenderEta(selectedEngine, effectiveDurationSec);
+  const { seconds: etaSeconds, label: etaLabel, source: etaSource } = getRenderEta(selectedEngine, effectiveDurationSec, { resolution: form.resolution, mode: submissionMode });
   const friendlyMessage = iterationCount > 1 ? formatTakeLabel(iterationIndex + 1, iterationCount) : '';
   const startedAt = now ?? Date.now();
   // Legacy persisted fields remain readable, but never delay available output.

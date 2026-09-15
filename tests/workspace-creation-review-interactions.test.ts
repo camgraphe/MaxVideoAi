@@ -62,7 +62,9 @@ test('audio keeps its actual preview node through empty, pending, running, resul
     assert.equal(section.dataset.audioPreviewState, 'pending');
     await show({ activeJob: job });
     assert.equal(section.dataset.audioPreviewState, 'pending');
-    assert.doesNotMatch(section.textContent!, /50|IN_PROGRESS/);
+    const visibleCopy = section.cloneNode(true) as HTMLElement;
+    visibleCopy.querySelectorAll('style, script').forEach((node) => node.remove());
+    assert.doesNotMatch(visibleCopy.textContent!, /50|IN_PROGRESS/);
     assert.equal(section.querySelector('audio,video'), null);
     await show({ activeJob: { ...job, status: 'running' } });
     assert.equal(section.dataset.audioPreviewState, 'running');
