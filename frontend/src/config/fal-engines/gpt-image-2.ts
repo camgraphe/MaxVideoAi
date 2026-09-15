@@ -295,9 +295,9 @@ export const GPT_IMAGE_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'GPT Image 2 brings OpenAI’s quality-first image model into the same MaxVideoAI image workspace as Nano Banana: one model selector for text-to-image and image-to-image, with image_size presets, custom width/height, quality, output format, and mask URL controls.',
     media: {
-      videoUrl: 'https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png',
-      imagePath: 'https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png',
-      altText: 'GPT Image 2 sample infographic image preview',
+      videoUrl: 'https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/4ea3493c-6831-4f08-bedc-803506e0792f.png',
+      imagePath: 'https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/4ea3493c-6831-4f08-bedc-803506e0792f.png',
+      altText: 'GPT Image 2 editorial cinema spread titled Oblique, with monumental architecture and a fashion portrait',
     },
     prompts: [
       {

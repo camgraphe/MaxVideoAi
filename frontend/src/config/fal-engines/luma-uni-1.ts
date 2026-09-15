@@ -167,6 +167,11 @@ export const LUMA_UNI_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Image generation and editing',
     seoText:
       'Luma Uni-1 is available in MaxVideoAI as a public image generation and image editing engine with source and reference image controls.',
+    media: {
+      videoUrl: '/assets/model-examples/luma-uni-1/product.webp',
+      imagePath: '/assets/model-examples/luma-uni-1/product.webp',
+      altText: 'Luma Uni-1 2K product still with controlled studio lighting',
+    },
     prompts: [
       {
         title: 'Reference-led product image',

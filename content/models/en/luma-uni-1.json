@@ -3,7 +3,8 @@
   "versionLabel": "Uni-1",
   "seo": {
     "title": "Luma Uni-1: Image Pricing, References and Editing | MaxVideoAI",
-    "description": "Use Luma Uni-1 in MaxVideoAI for 2K text-to-image, source-image edits, multi-reference layouts, optional web-grounded visual research and MaxVideoAI display pricing."
+    "description": "Use Luma Uni-1 in MaxVideoAI for 2K text-to-image, source-image edits, multi-reference layouts, optional web-grounded visual research and MaxVideoAI display pricing.",
+    "image": "/assets/model-examples/luma-uni-1/product.webp"
   },
   "overview": "Luma Uni-1 is a 2K image generation and editing model in MaxVideoAI for still-image concepts, source edits, layout reasoning, multi-reference guidance and visual research. It is an image-only route.",
   "pricingNotes": "Display prices use MaxVideoAI pricing. Reference and edit examples include source/reference image counts where shown, and the exact app quote appears before generation.",

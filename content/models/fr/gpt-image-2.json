@@ -4,7 +4,7 @@
   "seo": {
     "title": "GPT Image 2 - text-to-image et édition | MaxVideoAI",
     "description": "Générez et éditez des images avec GPT Image 2 dans MaxVideoAI. Text-to-image, image-to-image, presets de taille, taille custom, niveaux de qualité, formats de sortie et mask URL optionnel.",
-    "image": "https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png"
+    "image": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/4ea3493c-6831-4f08-bedc-803506e0792f.png"
   },
   "overview": "GPT Image 2 est un modèle image quality-first dans MaxVideoAI. Une seule entrée Image Lab couvre text-to-image et image-to-image, avec presets de taille, width/height custom, qualité, nombre de sorties, format et mask URL si l’edit doit rester dans une zone précise.",
   "hero": {
@@ -444,63 +444,24 @@
     ],
     "fallbackItems": [
       {
-        "id": "product",
-        "title": "Packshot produit texte",
-        "category": "Produit",
-        "aspectRatio": "1024x768 · High",
-        "alt": "Packshot GPT Image 2 avec label produit lisible",
+        "id": "cinema",
+        "title": "OBLIQUE — éditorial cinéma",
+        "category": "Cinéma et typographie",
+        "aspectRatio": "4K · 16:9",
+        "alt": "Double page cinéma GPT Image 2 intitulée OBLIQUE avec architecture monumentale et portrait mode",
         "tags": [
-          "product"
+          "typography",
+          "final"
         ]
       },
       {
-        "id": "typography",
-        "title": "Poster typographique",
-        "category": "Texte lisible",
-        "aspectRatio": "4K",
-        "alt": "Poster GPT Image 2 avec hiérarchie typographique nette",
+        "id": "portrait",
+        "title": "FORM — portrait éditorial",
+        "category": "Portrait et typographie",
+        "aspectRatio": "1024x1536",
+        "alt": "Couverture mode GPT Image 2 intitulée FORM avec titraille lisible et portrait sculptural",
         "tags": [
           "typography"
-        ]
-      },
-      {
-        "id": "ui",
-        "title": "Mockup UI",
-        "category": "UI",
-        "aspectRatio": "1920x1080",
-        "alt": "Mockup d’écran GPT Image 2 avec interface lisible",
-        "tags": [
-          "ui"
-        ]
-      },
-      {
-        "id": "edit",
-        "title": "Retouche produit",
-        "category": "Edit image",
-        "aspectRatio": "Auto",
-        "alt": "Retouche GPT Image 2 qui préserve produit et label",
-        "tags": [
-          "edit"
-        ]
-      },
-      {
-        "id": "mask",
-        "title": "Edit guidé par masque",
-        "category": "Masque",
-        "aspectRatio": "Mask URL",
-        "alt": "Retouche GPT Image 2 limitée à une zone masquée",
-        "tags": [
-          "mask"
-        ]
-      },
-      {
-        "id": "final",
-        "title": "Hero still 4K",
-        "category": "Final",
-        "aspectRatio": "3840x2160",
-        "alt": "Still hero GPT Image 2 en 4K avec détails produit nets",
-        "tags": [
-          "final"
         ]
       }
     ],
