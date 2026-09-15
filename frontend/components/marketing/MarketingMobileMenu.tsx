@@ -59,7 +59,7 @@ export function MarketingMobileMenu({
       className="marketing-menu-panel"
     >
       <div className="marketing-menu-header">
-        <span className="flex items-center gap-2 text-base font-semibold"><Image src="/assets/branding/logo-mark.svg" alt="" width={28} height={28} />MaxVideoAI</span>
+        <span className="flex items-center gap-2 text-base font-semibold"><Image src="/assets/branding/logo-mark.svg" alt="" aria-hidden="true" width={28} height={28} />MaxVideoAI</span>
         <Button
           type="button"
           size="sm"

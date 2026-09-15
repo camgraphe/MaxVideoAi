@@ -41,9 +41,9 @@ export function HomeComparisonScores({ metrics, label, right, overallLabel, left
 
   return <div ref={root} className="comparison-duel">
     <div className="comparison-contenders">
-      <div><Image src="/brand/partners/kling/kling-mark-light.png" alt="" width={36} height={36}/><strong><span className="score-left" aria-hidden>● </span>Kling 3 Pro</strong></div>
+      <div><Image src="/brand/partners/kling/kling-mark-light.png" alt="" aria-hidden="true" width={36} height={36}/><strong><span className="score-left" aria-hidden>● </span>Kling 3 Pro</strong></div>
       <span className="comparison-vs">VS</span>
-      <div><Image src={right?.logo ?? '/brand/partners/bytedance/bytedance-mark-dark.svg'} alt="" width={36} height={36}/><strong><span className="score-right" aria-hidden>◆ </span>{right?.name ?? 'Seedance 2.5'}</strong></div>
+      <div><Image src={right?.logo ?? '/brand/partners/bytedance/bytedance-mark-dark.svg'} alt="" aria-hidden="true" width={36} height={36}/><strong><span className="score-right" aria-hidden>◆ </span>{right?.name ?? 'Seedance 2.5'}</strong></div>
     </div>
     {overallLabel ? <div className="comparison-overall"><strong>{leftOverall?.toFixed(1) ?? '—'}<small>/10</small></strong><span>{overallLabel}</span><strong>{right?.overall == null ? '—' : right.overall.toFixed(1)}<small>/10</small></strong></div> : null}
     <p className="comparison-scale">{label}</p>

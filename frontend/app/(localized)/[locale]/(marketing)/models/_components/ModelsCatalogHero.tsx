@@ -89,7 +89,7 @@ export function ModelsCatalogHero({
             </div>
           </div>
 
-          <div className="catalog-creative-stack" aria-hidden="true">{[CREATIVE_FILMS[0],CREATIVE_FILMS[3],CREATIVE_FILMS[1]].map((film)=><div key={film.key}><Image src={film.poster} alt="" fill sizes="(max-width: 700px) 55vw, 360px"/><span>{film.model}</span></div>)}</div>
+          <div className="catalog-creative-stack" aria-hidden="true">{[CREATIVE_FILMS[0],CREATIVE_FILMS[3],CREATIVE_FILMS[1]].map((film)=><div key={film.key}><Image src={film.poster} alt="" aria-hidden="true" fill sizes="(max-width: 700px) 55vw, 360px"/><span>{film.model}</span></div>)}</div>
         </div>
         {topPicks.length ? <ModelsCatalogTopPicksPanel title={topPicksTitle} viewAllLabel={topPicksViewAllLabel} items={topPicks}/> : null}
       </div>

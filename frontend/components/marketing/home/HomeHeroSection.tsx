@@ -170,7 +170,7 @@ export function HomeHero({
           ['grok-imagine-video-1-5','Grok','/brand/partners/xai/grok-app-icon.png'],
           ['luma-ray-3-2','Luma','/brand/partners/luma/luma-mark-light.png'],
           ['pika-text-to-video','Pika','/brand/partners/pika/pika-mark-light.png'],
-        ].map(([slug,label,src])=><Link key={slug} href={{pathname:'/models/[slug]',params:{slug}}} prefetch={false}><Image src={src} alt="" width={30} height={24}/><span>{label}</span></Link>)}</div>
+        ].map(([slug,label,src])=><Link key={slug} href={{pathname:'/models/[slug]',params:{slug}}} prefetch={false}><Image src={src} alt="" aria-hidden="true" width={30} height={24}/><span>{label}</span></Link>)}</div>
       </div>
     </section>
   );

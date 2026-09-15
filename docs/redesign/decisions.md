@@ -492,3 +492,29 @@ horizontal actuellement sélectionné dans la revue locale.
 Le blocage technique D90 est levé ; la recette du vrai environnement de préproduction
 et des clients MCP externes demeure distincte. Aucun push ni déploiement.
 Bilan : [prelaunch-validation-review-2026-09-15.md](prelaunch-validation-review-2026-09-15.md).
+
+
+## D92 — PR de revue et aperçu protégé (15 septembre 2026)
+
+Adrien autorise la préparation de la PR et de l’aperçu après D91. La branche
+`codex/site-redesign` est poussée et la PR #298 ouverte en brouillon. Un fetch
+confirme que main reste `faa71e098`, déjà intégré. Aucune fusion ni promotion
+vers la production. Le déploiement de production de référence reste
+`dpl_GhLWvmKa5qV2GcQiWDvtvDc32fwG`.
+
+Le projet Vercel déclenche automatiquement un aperçu protégé pour cette branche.
+La comparaison en mémoire de la configuration révèle toutefois une base, un
+projet Supabase et un bucket communs avec la production, ainsi qu’une clé Stripe
+live. Aucune valeur de secret n’est conservée dans le rapport. Les contrôles
+hébergés sont donc limités aux lectures des pages publiques ; la recette
+transactionnelle et les clients MCP externes demandent une isolation distincte.
+
+La première CI détecte 14 images à alt vide dont le statut décoratif n’est pas
+explicite pour le contrôleur. Logos accompagnés de leur nom, miniatures de liens
+libellés et fonds illustratifs reçoivent `aria-hidden="true"`. Aucun texte utile
+ni contrôle n’est masqué ; aucun style ni chargement média n’est modifié. Le
+contrôle `qa:image-alt` passe sur les 275 fichiers examinés. Quatre fins de fichier
+ont aussi été nettoyées pour que le diff complet contre main passe le contrôle.
+
+Résultat actuel du build, de la CI et lien d’aperçu :
+[PR #298](https://github.com/camgraphe/MaxVideoAi/pull/298).

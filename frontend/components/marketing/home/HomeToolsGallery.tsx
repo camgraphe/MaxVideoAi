@@ -35,7 +35,7 @@ export function HomeToolsGallery({locale}: {locale:AppLocale}) {
         <span><span><small>{copy.names[index]}</small><h3>{copy.labels[index]}</h3></span><span aria-hidden>↗</span></span>
       </Link>)}</div>
       <div className="home-tool-shortcuts">{smallCards.map((card, index) => <Link key={card.key} href={card.href} prefetch={false} className="home-tool-shortcut" data-analytics-event="tool_card_click" data-analytics-cta-name={card.key} data-analytics-cta-location="toolbox" data-analytics-tool-name={card.key} data-analytics-tool-surface="public">
-        <Image src={card.src} alt="" width={64} height={48} sizes="64px" loading="lazy"/>
+        <Image src={card.src} alt="" aria-hidden="true" width={64} height={48} sizes="64px" loading="lazy"/>
         <span>{smallLabels[index]}</span><span aria-hidden>↗</span>
       </Link>)}</div>
       <p className="tool-gallery-note">{copy.note}</p>

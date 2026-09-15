@@ -19,7 +19,7 @@ export function MarketingNavEntryContent({
   const Icon = entry.icon ? NAV_ICONS[entry.icon] : null;
   return (
     <span className="marketing-entry-content inline-flex min-w-0 items-center gap-2">
-      {entry.logo ? <Image src={entry.logo} alt="" width={28} height={28} className="marketing-entry-logo" /> : null}
+      {entry.logo ? <Image src={entry.logo} alt="" aria-hidden="true" width={28} height={28} className="marketing-entry-logo" /> : null}
       {Icon ? <span className="marketing-entry-picto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-text-secondary" aria-hidden="true"><Icon size={18} strokeWidth={1.5} /></span> : null}
       {entry.comparisonBrands ? <span className="marketing-entry-pair" aria-hidden="true">{entry.comparisonBrands.map((brand, index) => <span key={`${brand.id}-${index}`}><EngineIcon engine={{ ...brand, label: '' }} size={23} framed={false} /></span>)}</span> : null}
       {(showModelLogo || entry.brandId) && !entry.logo && !entry.comparisonBrands && !Icon ? (

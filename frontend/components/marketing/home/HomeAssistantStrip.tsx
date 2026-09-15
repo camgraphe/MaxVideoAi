@@ -14,9 +14,9 @@ export function HomeAssistantStrip({locale, href}: {locale:AppLocale; href:strin
     <div className="home-assistant-strip-copy"><h3>{copy.title}</h3><p>{copy.body}</p></div>
     <div className="home-assistant-strip-access">
       <div className="home-assistant-strip-brands">
-        <span><Image src="/brand/partners/anthropic/claude-mark-dark.svg" alt="" width={24} height={24}/>Claude</span>
-        <span><Image src="/brand/partners/openai/openai-mark-dark.svg" alt="" width={24} height={24}/>ChatGPT</span>
-        <span><Image src="/brand/partners/openclaw/openclaw-icon.png" alt="" width={24} height={24}/>OpenClaw</span>
+        <span><Image src="/brand/partners/anthropic/claude-mark-dark.svg" alt="" aria-hidden="true" width={24} height={24}/>Claude</span>
+        <span><Image src="/brand/partners/openai/openai-mark-dark.svg" alt="" aria-hidden="true" width={24} height={24}/>ChatGPT</span>
+        <span><Image src="/brand/partners/openclaw/openclaw-icon.png" alt="" aria-hidden="true" width={24} height={24}/>OpenClaw</span>
       </div>
       <p>{copy.more}</p>
       <Link href={href} className="home-assistant-strip-link" data-analytics-event="cta_click" data-analytics-cta-name="home_assistant_connections" data-analytics-cta-location="home_creation">{copy.cta}<span aria-hidden>↗</span></Link>
