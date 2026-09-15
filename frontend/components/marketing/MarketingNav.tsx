@@ -41,7 +41,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const links = MARKETING_SITE_NAV_LINKS;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Generate');
-  const generateLabel = t('nav.generate', 'Generate');
+  const generateLabel = cta;
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
   const generateLabelMobile = locale === 'fr' ? 'Générer' : locale === 'es' ? 'Generar' : 'Generate';
   const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });

@@ -1,3 +1,4 @@
+import '@/styles/marketing-home.css';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
 import { buildHomePriceDemo } from './_lib/home-price-demo-data';

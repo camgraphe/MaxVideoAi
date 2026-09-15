@@ -13,6 +13,10 @@ A page should answer four questions:
 
 Everything else should usually live outside `page.tsx`.
 
+### Marketing style ownership
+
+The home, model-detail and comparison-detail pages import their own `marketing-home.css`, `marketing-models.css` and `marketing-compare.css`. Keep these imports out of the shared marketing layout so unrelated routes do not download all three stylesheets. Shared marketing styling stays in the layout. Moving an import must preserve the cascade and be checked on direct loads and client navigation, including mobile; `tests/marketing-route-styles-contract.test.ts` locks the ownership boundary.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.
