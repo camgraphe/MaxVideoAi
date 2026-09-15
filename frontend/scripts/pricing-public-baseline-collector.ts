@@ -6,6 +6,7 @@ import {
 } from '@/components/marketing/price-estimator/price-estimator-options';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import { supportsImageGeneration } from '@/lib/models/catalog';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { buildPublicPricingFacts, buildPublicUnitPricingFacts } from '@/lib/pricing-public-facts';
@@ -203,13 +204,13 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
   for (const entry of entries.filter((candidate) => supportsImageGeneration(candidate))) {
     const resolutions = entry.engine.resolutions.map(String).filter(Boolean);
     const standardResolution =
-      entry.engine.id === 'gpt-image-2'
+      isGptImageFamilyEngineId(entry.engine.id)
         ? '1024x768'
         : resolutions.includes('1k')
           ? '1k'
           : resolutions[0] ?? 'default';
     const highResolution =
-      entry.engine.id === 'gpt-image-2'
+      isGptImageFamilyEngineId(entry.engine.id)
         ? '3840x2160'
         : resolutions.includes('4k')
           ? '4k'

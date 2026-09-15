@@ -1,4 +1,6 @@
 export type GptImage2Quality = 'low' | 'medium' | 'high';
+export type GptImage25Quality = GptImage2Quality | 'xhigh' | 'max';
+export type GptImageQuality = GptImage25Quality;
 
 export type GptImage2ImageSize = {
   width: number;
@@ -12,6 +14,10 @@ export type GptImage2PricingTier = {
   height: number;
   prices: Record<GptImage2Quality, number>;
   estimatedFromNearestCanonical: boolean;
+};
+
+export type GptImage25PricingTier = Omit<GptImage2PricingTier, 'prices'> & {
+  prices: Record<GptImage25Quality, number>;
 };
 
 export const GPT_IMAGE_2_DEFAULT_QUALITY: GptImage2Quality = 'high';
@@ -44,6 +50,34 @@ export const GPT_IMAGE_2_PRICE_TABLE_CENTS: Record<string, Record<GptImage2Quali
   '2560x1440': { low: 1, medium: 6, high: 23 },
   '3840x2160': { low: 2, medium: 11, high: 41 },
 };
+
+export const GPT_IMAGE_2_5_PRICE_TABLE_EXACT_CENTS: Record<string, Record<GptImage25Quality, number>> = {
+  '1024x768': { low: 0.402, medium: 0.903, high: 3.612, xhigh: 6.42, max: 14.445 },
+  '1024x1024': { low: 0.588, medium: 1.317, high: 5.268, xhigh: 9.366, max: 21.072 },
+  '1024x1536': { low: 0.474, medium: 1.029, high: 4.116, xhigh: 7.377, max: 16.464 },
+  '1920x1080': { low: 0.441, medium: 1.029, high: 3.96, xhigh: 7.041, max: 15.84 },
+  '2560x1440': { low: 0.615, medium: 1.434, high: 5.529, xhigh: 9.828, max: 22.11 },
+  '3840x2160': { low: 1.113, medium: 2.595, high: 10.008, xhigh: 17.79, max: 40.026 },
+};
+
+export function isGptImage25EngineId(engineId: string | null | undefined): boolean {
+  return engineId === 'gpt-image-2-5-flare' || engineId === 'gpt-image-2-5-sunburst';
+}
+
+export function isGptImageFamilyEngineId(engineId: string | null | undefined): boolean {
+  return engineId === 'gpt-image-2' || isGptImage25EngineId(engineId);
+}
+
+export function normalizeGptImageQuality(
+  value: string | null | undefined,
+  engineId: string
+): GptImageQuality {
+  const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (isGptImage25EngineId(engineId) && (normalized === 'xhigh' || normalized === 'max')) {
+    return normalized;
+  }
+  return normalizeGptImage2Quality(normalized);
+}
 
 const GPT_IMAGE_2_PRESET_SIZE_MAP: Record<string, GptImage2ImageSize & { billingKey: string }> = {
   auto: { width: 1024, height: 1024, billingKey: '1024x1024' },
@@ -235,5 +269,46 @@ export function resolveGptImage2PricingTier(
     height: requestedSize.height,
     prices: billing.prices,
     estimatedFromNearestCanonical: Boolean(!presetBilling && !exact),
+  };
+}
+
+export function resolveGptImage25PricingTier(
+  imageSize: string | null | undefined,
+  customImageSize?: GptImage2ImageSize | null
+): GptImage25PricingTier {
+  const legacyTier = resolveGptImage2PricingTier(imageSize, customImageSize);
+  return {
+    ...legacyTier,
+    prices: GPT_IMAGE_2_5_PRICE_TABLE_EXACT_CENTS[legacyTier.billingKey]
+      ?? GPT_IMAGE_2_5_PRICE_TABLE_EXACT_CENTS['1024x768'],
+  };
+}
+
+export function calculateGptImage25ProviderPrice(params: {
+  mode: 't2i' | 'i2i';
+  imageSize: string | null | undefined;
+  customImageSize?: GptImage2ImageSize | null;
+  quality: GptImage25Quality;
+  outputCount: number;
+  referenceImageCount?: number;
+}) {
+  const tier = resolveGptImage25PricingTier(params.imageSize, params.customImageSize);
+  const outputCount = Math.max(1, Math.round(params.outputCount));
+  const referenceImageCount = Math.max(0, Math.round(params.referenceImageCount ?? 0));
+  const paidReferenceImageCount = params.mode === 'i2i' ? Math.max(0, referenceImageCount - 1) : 0;
+  const referenceUnitExactCents = tier.billingKey === '3840x2160' ? 1.2 : 0.8;
+  const outputUnitExactCents = tier.prices[params.quality];
+  const outputSubtotalExactCents = outputUnitExactCents * outputCount;
+  const referenceSubtotalExactCents = referenceUnitExactCents * paidReferenceImageCount;
+  return {
+    tier,
+    outputCount,
+    referenceImageCount,
+    paidReferenceImageCount,
+    outputUnitExactCents,
+    outputSubtotalExactCents,
+    referenceUnitExactCents,
+    referenceSubtotalExactCents,
+    providerSubtotalExactCents: outputSubtotalExactCents + referenceSubtotalExactCents,
   };
 }

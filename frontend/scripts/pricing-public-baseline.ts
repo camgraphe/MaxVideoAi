@@ -23,6 +23,12 @@ async function main(): Promise<void> {
     throw new Error('The historical public pricing fixture is frozen; do not regenerate it for membership retirement.');
   }
   const fixture = JSON.parse(await readFile(fixturePath, 'utf8')) as { rows: typeof rows };
+  const launchAdditions = JSON.parse(
+    await readFile(
+      new URL('../../tests/fixtures/gpt-image-2-5-public-pricing-launch-2026-09-15.json', import.meta.url),
+      'utf8',
+    ),
+  ) as { rows: typeof rows };
   const audioChange = JSON.parse(await readFile(new URL('../../tests/fixtures/audio-pricing-change-2026-09-08.json', import.meta.url), 'utf8')) as { rows: Array<{ id: string; previousCents: number; totalCents: number }> };
   const audioChanges = new Map(audioChange.rows.map(row => [row.id, row]));
   if (audioChanges.size !== audioChange.rows.length || audioChanges.size !== 15) throw new Error('Invalid reviewed Audio pricing change matrix.');
@@ -79,8 +85,22 @@ async function main(): Promise<void> {
   });
   if (appliedChanges.size !== audioChanges.size) throw new Error('Missing Audio pricing change scenario.');
   if (appliedProductOfferFixes.size !== productOfferFixes.size) throw new Error('Missing Product schema offer fix scenario.');
-  if (!isDeepStrictEqual(rows, expected)) {
-    const expectedById = new Map(expected.map((row) => [row.id, row]));
+  const historicalIds = new Set(expected.map((row) => row.id));
+  const launchIds = new Set(launchAdditions.rows.map((row) => row.id));
+  if (
+    launchIds.size !== launchAdditions.rows.length ||
+    launchAdditions.rows.length !== 18 ||
+    launchAdditions.rows.some(
+      (row) => historicalIds.has(row.id) || !row.engineId.startsWith('gpt-image-2-5-'),
+    )
+  ) {
+    throw new Error('Invalid reviewed GPT Image 2.5 public pricing launch matrix.');
+  }
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows].sort((left, right) =>
+    left.id.localeCompare(right.id),
+  );
+  if (!isDeepStrictEqual(rows, expectedWithLaunch)) {
+    const expectedById = new Map(expectedWithLaunch.map((row) => [row.id, row]));
     const changed = rows.filter((row) => !isDeepStrictEqual(row, expectedById.get(row.id))).map((row) => row.id);
     console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', changed);
     process.exitCode = 1;

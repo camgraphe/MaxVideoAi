@@ -72,6 +72,8 @@ const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
   'happy-horse-1-1': 'Best for Alibaba text, image, and reference-to-video workflows with native audio and lip sync.',
   'happy-horse-1-0': 'Legacy Alibaba route for source-video edit workflows and older Happy Horse jobs.',
   'gpt-image-2': 'Best for text-heavy stills, product photography, controlled edits, and reference images.',
+  'gpt-image-2-5-flare': 'Best for fast high-quality stills, readable text, product work, and everyday edits.',
+  'gpt-image-2-5-sunburst': 'Best for maximum detail, precision edits, typography, and premium campaign finals.',
   seedream: 'Best for clean reference images, product visuals, and Seedance-ready stills.',
   'seedream-5-0-pro': 'Best for professional stills, dense infographics, and 4K campaign-ready images.',
   'nano-banana-lite': 'Best for fast 1K image drafts, social visuals, and local reference edits.',
@@ -253,6 +255,8 @@ export async function buildModelsCatalogCards({
       'nano-banana-pro',
       'nano-banana-2',
       'gpt-image-2',
+      'gpt-image-2-5-flare',
+      'gpt-image-2-5-sunburst',
       'seedream',
       'seedream-5-0-pro',
     ].includes(engine.modelSlug);

@@ -36,7 +36,7 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   for (const record of records) {
     assert.match(record.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.match(record.url, /^https:\/\//);
-    assert.match(record.reviewedAt, /^2026-(08-28|09-01)$/);
+    assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15)$/);
     assert.ok(record.modelIds.length >= 1);
     assert.ok(record.modes.length >= 1);
     assert.ok(Object.isFrozen(record));
@@ -50,6 +50,8 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
 
   assert.ok(records.some((record) => record.modelIds.includes('gemini-omni-flash')));
   assert.ok(records.some((record) => record.modelIds.includes('gpt-image-2')));
+  assert.ok(records.some((record) => record.modelIds.includes('gpt-image-2-5-flare')));
+  assert.ok(records.some((record) => record.modelIds.includes('gpt-image-2-5-sunburst')));
   assert.ok(records.some((record) => record.modelIds.includes('minimax-h3')));
   assert.ok(records.some((record) => record.modelIds.includes('seedance-2-0')));
   assert.ok(records.some((record) => record.modelIds.includes('seedance-2-5')));

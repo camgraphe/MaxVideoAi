@@ -19,6 +19,7 @@ import {
 } from '@/app/api/images/utils';
 import {
   parseGptImage2SizeKey,
+  isGptImageFamilyEngineId,
   resolveGptImage2AutoInputImageSize,
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
@@ -128,11 +129,11 @@ export async function executeImageGeneration({
   }
   const resolution = resolutionResult.resolution;
   const shouldSendResolution = resolutionResult.configurable;
-  const parsedResolutionImageSize = engine.id === 'gpt-image-2' ? parseGptImage2SizeKey(resolution) : null;
+  const parsedResolutionImageSize = isGptImageFamilyEngineId(engine.id) ? parseGptImage2SizeKey(resolution) : null;
   let customImageSize: GptImage2ImageSize | null = parsedResolutionImageSize;
   let providerImageSize: string | GptImage2ImageSize | null =
     parsedResolutionImageSize ?? (shouldSendResolution ? normalizeFalImageResolution(resolution) : null);
-  if (engine.id === 'gpt-image-2' && mode === 'i2i' && resolution === 'auto') {
+  if (isGptImageFamilyEngineId(engine.id) && mode === 'i2i' && resolution === 'auto') {
     const storedReferenceSizes = combinedImageUrls
       .map((url) => storedAssetInfoByUrl.get(url))
       .filter((size) => typeof size?.width === 'number' && typeof size.height === 'number');
@@ -142,7 +143,7 @@ export async function executeImageGeneration({
     );
   }
 
-  if (engine.id === 'gpt-image-2' && resolution === 'custom') {
+  if (isGptImageFamilyEngineId(engine.id) && resolution === 'custom') {
     const customSizeResult = validateGptImage2CustomImageSize(body.customImageSize);
     if (!customSizeResult.ok) {
       fail(
@@ -190,6 +191,22 @@ export async function executeImageGeneration({
       'Selected quality is not available for this engine.',
       400,
       { allowed: qualityValues },
+      engineResponseExtras
+    );
+  }
+
+  const backgroundValues = getImageFieldValues(engine, 'background', mode);
+  const background =
+    typeof body.background === 'string'
+      ? canonicalizeImageFieldValue(backgroundValues, body.background)
+      : null;
+  if (typeof body.background === 'string' && body.background.trim().length && !background) {
+    fail(
+      mode,
+      'background_invalid',
+      'Selected background mode is not available for this engine.',
+      400,
+      { allowed: backgroundValues },
       engineResponseExtras
     );
   }
@@ -308,6 +325,7 @@ export async function executeImageGeneration({
         ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
         ...(outputFormat ? { outputFormat } : {}),
         ...(quality ? { quality } : {}),
+        ...(background ? { background } : {}),
         ...(style ? { style } : {}),
         ...(maskUrl ? { maskUrl } : {}),
         ...(enableWebSearch ? { enableWebSearch } : {}),
@@ -349,6 +367,7 @@ export async function executeImageGeneration({
         normalizedSeed,
         outputFormat,
         quality,
+        background,
         style,
         maskUrl,
         enableWebSearch,
@@ -490,7 +509,7 @@ export async function executeImageGeneration({
         const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
           await executeImageProviderWithLumaAgentsDirectFallback({
           falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
-          providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
+          providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, background, maskUrl, enableWebSearch,
           thinkingLevel, limitGenerations, style, engine, engineEntry, jobId, userId, requestId: jobId,
           useLumaDirect:
             isLumaAgentsImageEngineId(engine.id) && lumaAgentsImageDirectEnabled({ isAdmin: isAdminForDirectProvider }),

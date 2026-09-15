@@ -6,6 +6,7 @@ import {
   type MembershipPricingContext,
 } from '@/server/membership/user-membership-status';
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 
 import { computeGenerationCatalogRevision } from './catalog-revision';
 import { AgentApiError, withMediaNeutralReferenceMessage } from './errors';
@@ -261,7 +262,7 @@ function validateRepresentablePricingFacts(request: CanonicalGenerationRequest):
   const resolution = request.settings.resolution;
   if (
     request.surface === 'image'
-    && request.engineId === 'gpt-image-2'
+    && isGptImageFamilyEngineId(request.engineId)
     && request.mode === 'i2i'
     && resolution === 'auto'
     && request.references.some((reference) => reference.role !== 'mask' && reference.kind !== 'asset')

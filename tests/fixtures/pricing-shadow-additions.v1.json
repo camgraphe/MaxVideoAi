@@ -75,6 +75,78 @@
       "equivalenceKey": "flux-3:t2v:1:720p:pro"
     },
     {
+      "scenarioId": "billing:gpt-image-2-5-flare:t2i:4:landscape_4_3:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 19,
+      "unit": "image",
+      "quantity": 4,
+      "equivalenceKey": "gpt-image-2-5-flare:t2i:4:landscape_4_3:member"
+    },
+    {
+      "scenarioId": "billing:gpt-image-2-5-flare:t2i:4:landscape_4_3:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 18,
+      "unit": "image",
+      "quantity": 4,
+      "equivalenceKey": "gpt-image-2-5-flare:t2i:4:landscape_4_3:plus"
+    },
+    {
+      "scenarioId": "billing:gpt-image-2-5-flare:t2i:4:landscape_4_3:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 17,
+      "unit": "image",
+      "quantity": 4,
+      "equivalenceKey": "gpt-image-2-5-flare:t2i:4:landscape_4_3:pro"
+    },
+    {
+      "scenarioId": "billing:gpt-image-2-5-sunburst:t2i:4:landscape_4_3:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 19,
+      "unit": "image",
+      "quantity": 4,
+      "equivalenceKey": "gpt-image-2-5-sunburst:t2i:4:landscape_4_3:member"
+    },
+    {
+      "scenarioId": "billing:gpt-image-2-5-sunburst:t2i:4:landscape_4_3:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 18,
+      "unit": "image",
+      "quantity": 4,
+      "equivalenceKey": "gpt-image-2-5-sunburst:t2i:4:landscape_4_3:plus"
+    },
+    {
+      "scenarioId": "billing:gpt-image-2-5-sunburst:t2i:4:landscape_4_3:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 17,
+      "unit": "image",
+      "quantity": 4,
+      "equivalenceKey": "gpt-image-2-5-sunburst:t2i:4:landscape_4_3:pro"
+    },
+    {
       "scenarioId": "billing:grok-imagine-video-1-5:t2v:6:720p:member",
       "surface": "billing",
       "currency": "USD",
@@ -843,6 +915,32 @@
       "quantity": 5,
       "displayedAmount": "$1.11",
       "equivalenceKey": "flux-3:t2v:1:720p:member"
+    },
+    {
+      "scenarioId": "estimator:gpt-image-2-5-flare:4:landscape_4_3",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 19,
+      "unit": "image",
+      "quantity": 4,
+      "displayedAmount": "$0.19",
+      "equivalenceKey": "gpt-image-2-5-flare:t2i:4:landscape_4_3:member"
+    },
+    {
+      "scenarioId": "estimator:gpt-image-2-5-sunburst:4:landscape_4_3",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 14,
+      "marginCents": 5,
+      "surchargeCents": 0,
+      "customerTotalCents": 19,
+      "unit": "image",
+      "quantity": 4,
+      "displayedAmount": "$0.19",
+      "equivalenceKey": "gpt-image-2-5-sunburst:t2i:4:landscape_4_3:member"
     },
     {
       "scenarioId": "estimator:grok-imagine-video-1-5:6:720p",

@@ -17,6 +17,8 @@ export const EXCLUDED_ENGINE_SLUGS = new Set([
   'nano-banana-pro',
   'nano-banana-2',
   'gpt-image-2',
+  'gpt-image-2-5-flare',
+  'gpt-image-2-5-sunburst',
   'seedream',
   'luma-uni-1',
   'luma-uni-1-max',

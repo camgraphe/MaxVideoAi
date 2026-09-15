@@ -7,6 +7,7 @@ import type { EngineCaps, Mode, Resolution } from '@/types/engines';
 import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import type { AudioPackId, AudioVoiceMode } from '@/lib/audio-generation';
 import type { GptImage2Quality } from '@/lib/image/gptImage2';
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { buildCanonicalCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import {
@@ -988,7 +989,7 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
       const engine = entry.engine;
       const resolutions = engine.resolutions.map(String);
       const standardResolution =
-        engine.id === 'gpt-image-2'
+        isGptImageFamilyEngineId(engine.id)
           ? '1024x768'
           : resolutions.includes('1k')
             ? '1k'
@@ -996,7 +997,7 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
               ? 'square_hd'
               : resolutions[0] ?? 'auto';
       const highResolution =
-        engine.id === 'gpt-image-2'
+        isGptImageFamilyEngineId(engine.id)
           ? '3840x2160'
           : resolutions.includes('4k')
             ? '4k'

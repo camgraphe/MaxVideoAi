@@ -66,10 +66,13 @@ const canonicalSettingsSchema = z.object({
   enableWebSearch: z.boolean().nullable().default(null),
   limitGenerations: z.boolean().nullable().default(null),
   imageHeight: z.number().int().positive().nullable().default(null).describe(
-    'GPT Image 2 only: custom output height in pixels when resolution is custom.',
+    'GPT Image family only: custom output height in pixels when resolution is custom.',
   ),
   imageWidth: z.number().int().positive().nullable().default(null).describe(
-    'GPT Image 2 only: custom output width in pixels when resolution is custom.',
+    'GPT Image family only: custom output width in pixels when resolution is custom.',
+  ),
+  background: z.enum(['auto', 'transparent', 'opaque']).nullable().default(null).describe(
+    'Use only when get_model_details reports a background setting for the selected image model.',
   ),
   outputFormat: z.string().trim().min(1).max(64).nullable().default(null),
   promptExpansionMode: z.enum(['balanced', 'quality']).nullable().default(null).describe(

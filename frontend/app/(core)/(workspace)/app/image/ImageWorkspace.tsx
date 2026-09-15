@@ -44,6 +44,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   const [seed, setSeed] = useState<string>('');
   const [outputFormat, setOutputFormat] = useState<string | null>(null);
   const [quality, setQuality] = useState<string | null>(null);
+  const [background, setBackground] = useState<string | null>(null);
   const [style, setStyle] = useState<string | null>(null);
   const [maskUrl, setMaskUrl] = useState<string>('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
@@ -63,6 +64,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     aspectRatioField,
     aspectRatioSelectOptions,
     booleanSelectOptions,
+    backgroundField,
+    backgroundSelectOptions,
     enableWebSearchField,
     imageCountOptions,
     isResolutionLocked,
@@ -75,6 +78,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolutionSelectOptions,
     seedField,
     showAspectRatioControl,
+    showBackgroundControl,
     showCustomImageSizeControl,
     showEnableWebSearchControl,
     showLimitGenerationsControl,
@@ -99,6 +103,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolvedCopy,
     selectedEngineCaps,
     setAspectRatio,
+    setBackground,
     setCustomImageHeight,
     setCustomImageWidth,
     setEnableWebSearch,
@@ -183,6 +188,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     prompt,
     numImages,
     aspectRatio,
+    background,
     resolution,
     customImageWidth,
     customImageHeight,
@@ -201,6 +207,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setPrompt,
     setNumImages,
     setAspectRatio,
+    setBackground,
     setResolution,
     setCustomImageWidth,
     setCustomImageHeight,
@@ -221,6 +228,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     genericError: resolvedCopy.errors.generic,
     searchParams,
     setAspectRatio,
+    setBackground,
     setCustomImageHeight,
     setCustomImageWidth,
     setEnableWebSearch,
@@ -274,11 +282,13 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
 
   const handleRun = useImageGenerationRunner({
     aspectRatio,
+    background,
     combinedReferenceUrls,
     customImageHeight,
     customImageWidth,
     enableWebSearch,
     hasAspectRatioField: Boolean(aspectRatioField),
+    hasBackgroundField: Boolean(backgroundField),
     hasEnableWebSearchField: Boolean(enableWebSearchField),
     hasLimitGenerationsField: Boolean(limitGenerationsField),
     hasMaskUrlField: Boolean(maskUrlField),
@@ -428,6 +438,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               enableWebSearch={enableWebSearch}
               engineCapsList={engineCapsList}
               estimatedCostAmount={estimatedCostAmount}
+              background={background}
+              backgroundSelectOptions={backgroundSelectOptions}
               handleAddToLibrary={handleAddToLibrary}
               handleCopy={handleCopy}
               handleDownload={handleDownload}
@@ -465,6 +477,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               selectedPreviewImageIndex={selectedPreviewImageIndex}
               style={style}
               styleSelectOptions={styleSelectOptions}
+              setBackground={setBackground}
+              showBackgroundControl={showBackgroundControl}
               {...composerSetterProps}
               {...composerVisibilityProps}
               statusMessage={statusMessage}

@@ -3708,6 +3708,7 @@
         "outputFormatLabel": "Output format",
         "outputFormatHint": "Choose the file type for the final images.",
         "qualityLabel": "Quality",
+        "backgroundLabel": "Background",
         "qualityHint": "Controls model fidelity and cost when supported.",
         "customWidthLabel": "Width",
         "customHeightLabel": "Height",

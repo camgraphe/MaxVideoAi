@@ -7,6 +7,7 @@ import { quotePublicPricing } from '@/lib/pricing-public-quote';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { GPT_IMAGE_2_5_PRICE_TABLE_EXACT_CENTS, type GptImage25Quality } from '@/lib/image/gptImage2';
 
 export type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -53,10 +54,20 @@ export const SUPPORTED_MODES = new Set<Mode>(['t2v', 'i2v', 't2i', 'i2i']);
 
 const MIN_DURATION_SEC = 2;
 const FAL_ENGINE_ORDER = new Map<string, number>(FAL_ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
+const GPT_IMAGE_25_ESTIMATOR_QUALITIES: GptImage25Quality[] = ['low', 'medium', 'high', 'xhigh', 'max'];
+const GPT_IMAGE_25_ESTIMATOR_RATES = Object.entries(GPT_IMAGE_2_5_PRICE_TABLE_EXACT_CENTS).flatMap(
+  ([size, prices]) => GPT_IMAGE_25_ESTIMATOR_QUALITIES.map((quality) => ({
+    value: `${size}-${quality}`,
+    label: `${size.replace('x', ' x ')} · ${quality === 'xhigh' ? 'XHigh' : `${quality[0].toUpperCase()}${quality.slice(1)}`}`,
+    rate: prices[quality] / 100,
+  }))
+);
 const PER_IMAGE_ENGINE_CONFIG = new Map<
   string,
   { rates: Array<{ value: string; label: string; rate: number }> }
 >([
+  ['gpt-image-2-5-flare', { rates: GPT_IMAGE_25_ESTIMATOR_RATES }],
+  ['gpt-image-2-5-sunburst', { rates: GPT_IMAGE_25_ESTIMATOR_RATES }],
   [
     'nano-banana',
     {

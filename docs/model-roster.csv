@@ -42,7 +42,9 @@ luma-uni-1-max,Luma Uni-1 Max,luma,luma-uni-1-max,luma-uni,current,,,Uni-1 Max,a
 minimax-h3,MiniMax H3,minimax,minimax-h3,hailuo,current,,,H3,available,logoAllowed,true,true
 minimax-h3-max,MiniMax H3 Max,minimax,minimax-h3-max,hailuo,current,,,H3 Max,limited,logoAllowed,true,true
 minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,current,,,Standard,available,logoAllowed,true,true
-gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,current,,,2,available,logoAllowed,true,true
+gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,legacy,gpt-image-2-5-flare,gpt-image-2-5-flare,2,available,logoAllowed,true,true
+gpt-image-2-5-flare,GPT Image 2.5 Flare,openai,gpt-image-2-5-flare,gpt-image,current,,,2.5 Flare,available,logoAllowed,true,true
+gpt-image-2-5-sunburst,GPT Image 2.5 Sunburst,openai,gpt-image-2-5-sunburst,gpt-image,current,,,2.5 Sunburst,available,logoAllowed,true,true
 sora-2,OpenAI Sora 2,openai,sora-2,sora,current,,,2,available,logoAllowed,true,true
 sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,current,,,Pro,available,logoAllowed,true,true
 pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,current,,,2.2,available,logoAllowed,true,true

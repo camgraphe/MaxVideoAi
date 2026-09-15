@@ -40,6 +40,7 @@ interface UseImageWorkspaceQueryHydrationParams {
   genericError: string;
   searchParams: SearchParamsReader;
   setAspectRatio: Dispatch<SetStateAction<string | null>>;
+  setBackground: Dispatch<SetStateAction<string | null>>;
   setCustomImageHeight: Dispatch<SetStateAction<string>>;
   setCustomImageWidth: Dispatch<SetStateAction<string>>;
   setEnableWebSearch: Dispatch<SetStateAction<boolean>>;
@@ -68,6 +69,7 @@ export function useImageWorkspaceQueryHydration({
   genericError,
   searchParams,
   setAspectRatio,
+  setBackground,
   setCustomImageHeight,
   setCustomImageWidth,
   setEnableWebSearch,
@@ -205,6 +207,7 @@ export function useImageWorkspaceQueryHydration({
         typeof core.seed === 'number' && Number.isFinite(core.seed) ? Math.round(core.seed) : null;
       const outputFormatRaw = typeof core.outputFormat === 'string' ? core.outputFormat : null;
       const qualityRaw = typeof core.quality === 'string' ? core.quality : null;
+      const backgroundRaw = typeof core.background === 'string' ? core.background : null;
       const styleRaw = typeof core.style === 'string' ? core.style : null;
       const maskUrlRaw = typeof core.maskUrl === 'string' ? core.maskUrl : null;
       const enableWebSearchRaw = core.enableWebSearch === true;
@@ -253,6 +256,12 @@ export function useImageWorkspaceQueryHydration({
         const defaultQuality =
           getImageFieldDefaultString(engineMatch.engineCaps, 'quality', resolvedMode) ?? qualityValues[0] ?? null;
         setQuality(qualityRaw && qualityValues.includes(qualityRaw) ? qualityRaw : defaultQuality);
+        const backgroundValues = getImageFieldValues(engineMatch.engineCaps, 'background', resolvedMode);
+        const defaultBackground =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'background', resolvedMode) ?? backgroundValues[0] ?? null;
+        setBackground(
+          backgroundRaw && backgroundValues.includes(backgroundRaw) ? backgroundRaw : defaultBackground
+        );
         const styleValues = getImageFieldValues(engineMatch.engineCaps, 'style', resolvedMode);
         const defaultStyle =
           getImageFieldDefaultString(engineMatch.engineCaps, 'style', resolvedMode) ?? styleValues[0] ?? null;
@@ -286,6 +295,7 @@ export function useImageWorkspaceQueryHydration({
         setSeed(seedRaw == null ? '' : String(seedRaw));
         setOutputFormat(outputFormatRaw);
         setQuality(qualityRaw);
+        setBackground(backgroundRaw);
         setStyle(styleRaw);
         setMaskUrl(maskUrlRaw ?? '');
         setEnableWebSearch(enableWebSearchRaw);
@@ -328,6 +338,7 @@ export function useImageWorkspaceQueryHydration({
     [
       engines,
       setAspectRatio,
+      setBackground,
       setCustomImageHeight,
       setCustomImageWidth,
       setEnableWebSearch,

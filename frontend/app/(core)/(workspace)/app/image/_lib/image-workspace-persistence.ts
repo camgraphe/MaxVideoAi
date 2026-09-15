@@ -38,6 +38,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
     const seed = typeof raw.seed === 'number' && Number.isFinite(raw.seed) ? Math.round(raw.seed) : null;
     const outputFormat = typeof raw.outputFormat === 'string' ? raw.outputFormat : null;
     const quality = typeof raw.quality === 'string' ? raw.quality : null;
+    const background = typeof raw.background === 'string' ? raw.background : null;
     const style = typeof raw.style === 'string' ? raw.style : null;
     const maskUrl = typeof raw.maskUrl === 'string' ? raw.maskUrl : null;
     const enableWebSearch = raw.enableWebSearch === true;
@@ -91,6 +92,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       seed,
       outputFormat,
       quality,
+      background,
       style,
       maskUrl,
       enableWebSearch,

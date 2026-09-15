@@ -1,4 +1,5 @@
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/engines';
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import {
@@ -93,7 +94,7 @@ function conditionalOwnedReferenceAsset(
   mode: AgentGenerationMode,
   engineId: string,
 ): AgentModelReferenceFieldDetails['assetRequiredWhen'] | null {
-  return engineId === 'gpt-image-2'
+  return isGptImageFamilyEngineId(engineId)
     && mode === 'i2i'
     && !roles.includes('mask')
     ? Object.freeze({ setting: 'resolution' as const, values: Object.freeze(['auto']) })

@@ -1,0 +1,509 @@
+{
+  "marketingName": "GPT Image 2.5 Sunburst",
+  "versionLabel": "2.5 Sunburst",
+  "seo": {
+    "title": "GPT Image 2.5 Sunburst - Text-to-Image & Editing | MaxVideoAI",
+    "description": "Generate and edit images with GPT Image 2.5 Sunburst in MaxVideoAI. Text-to-image, image-to-image, image-size presets, custom size, quality levels, output formats, and optional mask URL control.",
+    "image": "https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png"
+  },
+  "overview": "GPT Image 2.5 Sunburst is a quality-first image model inside MaxVideoAI. One Image Lab entry covers text-to-image and image-to-image, with image-size presets, custom width/height, quality, number of outputs, output format, and mask URL when an edit needs a constrained region.",
+  "hero": {
+    "title": "GPT Image 2.5 Sunburst - quality-first image generation and edits",
+    "intro": "Image generation for crisp typography, photoreal product shots, UI mockups, infographics, and controlled reference edits.",
+    "badge": "Text -> Image · Image -> Image · Low / Medium / High / XHigh / Max quality",
+    "ctaPrimary": {
+      "label": "Launch GPT Image 2.5 Sunburst",
+      "href": "/app/image?engine=gpt-image-2-5-sunburst"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Open the Image Lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Check live pricing",
+        "href": "/pricing"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "Readable text in ads, posters, and infographics",
+        "icon": "layout"
+      },
+      {
+        "title": "Product photography with sharp labels",
+        "icon": "sparkles"
+      },
+      {
+        "title": "UI and app-screen mockups",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Reference edits with optional masks",
+        "icon": "layers"
+      }
+    ]
+  },
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "Scene, subject, important details, use case, constraints, and for edits: change this while preserving that.",
+    "description": "GPT Image 2.5 Sunburst rewards structured prompts. Separate scene, subject, composition, text that must appear, and edit constraints. For text-heavy images, write exact copy and describe where it belongs.",
+    "steps": [
+      "Scene and environment",
+      "Subject and framing",
+      "Exact text or labels to render",
+      "Materials, lighting, camera feel, and style",
+      "Use case such as product photo, UI screen, poster, or infographic",
+      "Constraints for edits, masks, and preserved elements"
+    ]
+  },
+  "tips": {
+    "title": "Tips and limits",
+    "items": [
+      "Use High quality for final typography, packaging, and photoreal product shots.",
+      "Use Low or Medium for cheaper layout exploration before final renders.",
+      "Use auto image size in Edit mode when the source image should drive the output frame.",
+      "For custom sizes, keep dimensions divisible by 16, max edge 3840px, and total area between 655,360 and 8,294,400 pixels.",
+      "Add a mask URL only when the edit must stay inside a specific region."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Packaging campaign still",
+      "prompt": "A premium catalog product photo of a coffee bag labeled \"Summit Roast\", mountain artwork, readable tasting notes, rustic wooden table, soft morning light, shallow depth of field."
+    },
+    {
+      "title": "Infographic with precise labels",
+      "prompt": "A clean editorial infographic titled \"Creator Launch Checklist\", 12 labeled modules, crisp typography, white background, precise spacing, subtle blue and graphite accents."
+    },
+    {
+      "title": "Reference product edit",
+      "prompt": "Keep the exact product shape and label hierarchy from the reference, replace the background with a bright e-commerce tabletop scene, remove distracting reflections, preserve readable text."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Can I create and edit images with GPT Image 2.5 Sunburst?",
+      "a": "Yes. Create an image from a text prompt or add reference images to edit. You can also use a mask to select the area you want to change."
+    },
+    {
+      "q": "Which image controls are available?",
+      "a": "Choose an image size or enter custom dimensions, then set quality, the number of images and the output format. For edits, add reference images and optionally a mask to select the area to change."
+    },
+    {
+      "q": "How much does GPT Image 2.5 Sunburst cost?",
+      "a": "The price depends on your selected size, quality and number of images. MaxVideoAI shows the quote before you generate, so you can adjust the settings to fit your budget."
+    }
+  ],
+  "pricingNotes": "Image costs vary by quality and size. MaxVideoAI shows the final display price before generation; use the app quote for customer-facing estimates.",
+  "custom": {
+    "heroEyebrow": "GPT Image 2.5 Sunburst Image Model",
+    "heroSupportLine": "Best for text-heavy images, product photography, UI mockups, and controlled edits.",
+    "heroSpecChips": [
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Quality control"
+      },
+      {
+        "label": "PNG / JPEG / WEBP"
+      },
+      {
+        "label": "Mask URL"
+      }
+    ],
+    "whyTitle": "Why GPT Image 2.5 Sunburst stands out",
+    "heroDesc1": "GPT Image 2.5 Sunburst is built for high-fidelity stills where text rendering, product detail, and prompt adherence matter more than raw speed.",
+    "heroDesc2": "In MaxVideoAI it runs in the Image Lab as one model entry for Create and Edit, with shared wallet, reusable references, quality controls, and live pricing before you run.",
+    "heroHighlights": [
+      "Readable text||Use it for posters, labels, infographics, and UI screens that need clean typography.",
+      "Product fidelity||Strong fit for packaging, catalog shots, and e-commerce images with visible labels.",
+      "Image controls||Image size preset or custom width/height, quality, output format, and mask URL are available in the Image Lab.",
+      "Unified image workflow||Switch between Create and Edit without leaving the Image Lab."
+    ],
+    "whatTitle": "How GPT Image 2.5 Sunburst works here",
+    "whatIntro1": "Select GPT Image 2.5 Sunburst, choose Create or Edit, set image count, image size, quality, and output format, then run from the same wallet as your other image models.",
+    "whatIntro2": "For edits, add reference images. Add a mask URL only when the transformation should be constrained to a specific area.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Select GPT Image 2.5 Sunburst in the Image Lab",
+      "Choose text-to-image or edit mode",
+      "Pick image size, quality, number of outputs, and output format",
+      "Add references and an optional mask URL for edits",
+      "Check the live price chip and launch"
+    ],
+    "tipsTitle": "Tips and limits",
+    "tipsIntro": "GPT Image 2.5 Sunburst performs best when the prompt separates subject, composition, exact text, and constraints.",
+    "strengths": [
+      "Use High quality for typography and product-final renders.",
+      "Use Low or Medium for cheaper layout exploration.",
+      "For edit prompts, write what should change and what must remain unchanged.",
+      "When using a mask URL, keep the mask public and aligned with the source image."
+    ],
+    "boundaries": [
+      "Still images only.",
+      "The MaxVideoAI composer currently allows up to 4 outputs per request.",
+      "Edit mode requires at least one reference image.",
+      "Mask input is URL-based."
+    ],
+    "safetyTitle": "Safety and likeness",
+    "safetyRules": [
+      "No sexual content or content involving minors.",
+      "No hateful, harassing, or graphic-violence requests.",
+      "Do not impersonate real people or public figures without consent.",
+      "Do not include private personal data or sensitive documents."
+    ]
+  },
+  "decision": {
+    "modelSlug": "gpt-image-2-5-sunburst",
+    "hero": {
+      "eyebrow": "AI images · OpenAI",
+      "title": "GPT Image 2.5 Sunburst",
+      "subtitle": "Get the image—and the details—right.",
+      "subtitleHighlights": [
+        "Get the image—and the details—right"
+      ],
+      "paragraph": "GPT Image 2.5 Sunburst generates and edits images with AI. Create visuals with readable text, refine a product image or edit a selected area using a mask. Choose the size, quality and file format before generating.",
+      "primaryCta": {
+        "label": "Generate with GPT Image 2.5 Sunburst",
+        "href": "/app/image?engine=gpt-image-2-5-sunburst"
+      },
+      "secondaryCta": {
+        "label": "View pricing",
+        "href": "/pricing#gpt-image-2-5-sunburst-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=gpt-image-2-5-sunburst"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#gpt-image-2-5-sunburst-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "GPT Image 2.5 Sunburst presentation",
+      "description": "An overview of image styles and capabilities",
+      "renderLabel": "View image",
+      "badges": [
+        "Text",
+        "Edits",
+        "4K size"
+      ],
+      "altContext": "GPT Image 2.5 Sunburst presentation with examples of visual styles"
+    },
+    "features": [
+      {
+        "title": "Readable text",
+        "body": "Useful for packaging, labels, UI-style layouts and editorial graphics.",
+        "tone": "quality"
+      },
+      {
+        "title": "Product stills",
+        "body": "Build catalog-style shots with controlled lighting and composition.",
+        "tone": "reference"
+      },
+      {
+        "title": "Image edits",
+        "body": "Upload references for prompt-led edits, with optional mask control.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Custom sizes",
+        "body": "Use presets or custom dimensions up to the exposed route limits.",
+        "tone": "quality"
+      },
+      {
+        "title": "Quality levels",
+        "body": "Choose low, medium, high, xhigh or max depending on cost and fidelity.",
+        "tone": "price"
+      },
+      {
+        "title": "Batch output",
+        "body": "Generate up to 4 images when exploring variants.",
+        "tone": "duration"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "GPT Image 2.5 Sunburst or Nano Banana 2?",
+        "body": "Use GPT Image 2.5 Sunburst for text-heavy stills and controlled edits. Use Nano Banana 2 for broader ratios and grounded Google image workflows.",
+        "cta": {
+          "label": "View Nano Banana 2",
+          "href": "/models/nano-banana-2"
+        }
+      },
+      {
+        "title": "Working on product text?",
+        "body": "Write the exact label hierarchy, lighting, camera angle and edit constraints before generating.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need cleaner source control?",
+        "body": "Prepare the product source, mask or exact text hierarchy first, then render or edit the final still in GPT Image 2.5 Sunburst.",
+        "cta": {
+          "label": "Open GPT Image 2.5 Sunburst",
+          "href": "/app/image?engine=gpt-image-2-5-sunburst"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Specify subject, exact text, layout, lighting, lens and output size."
+      },
+      {
+        "title": "Image edit",
+        "body": "Upload the source image and describe what should change and what must stay locked."
+      },
+      {
+        "title": "Mask-guided edit",
+        "body": "Use a mask only when an edit should be constrained to a specific region."
+      },
+      {
+        "title": "Quality choice",
+        "body": "Draft lower, then switch to high when typography or product detail matters."
+      },
+      {
+        "title": "Batch variants",
+        "body": "Generate multiple images for composition exploration before selecting a final."
+      }
+    ],
+    "pricingCopy": {
+      "title": "GPT Image 2.5 Sunburst pricing at a glance",
+      "subtitle": "Preset image totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 4 images",
+      "ctaHref": "/pricing#gpt-image-2-5-sunburst-pricing"
+    },
+    "meta": {
+      "title": "GPT Image 2.5 Sunburst: Pricing, Text Rendering & Editing | MaxVideoAI",
+      "description": "Explore GPT Image 2.5 Sunburst pricing, readable text rendering, product stills, custom image sizes, reference edits and mask-guided image workflows on MaxVideoAI."
+    }
+  },
+  "prompting": {
+    "modelSlug": "gpt-image-2-5-sunburst",
+    "section": {
+      "title": "How to write a strong GPT Image 2.5 Sunburst prompt",
+      "intro": "Use structured prompts with scene, subject, exact text, visual details, use case, and constraints.",
+      "tip": "Tip: put exact words in quotation marks and describe where each text block should appear.",
+      "guide": null,
+      "referencesTitle": "How GPT Image 2.5 Sunburst uses sources and masks"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "State the target artifact: poster, product photo, UI screen, infographic, or concept frame.",
+      "Give exact text when typography matters.",
+      "For edits, separate preserve instructions from change instructions."
+    ],
+    "engineWhy": [
+      "The model is especially useful when text and layout accuracy are part of the image brief.",
+      "Quality affects cost, so draft cheaper and rerun approved frames at High.",
+      "Reference edits improve when each source image has a clear role."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "GPT Image 2.5 Sunburst image prompt examples",
+      "intro": "GPT Image 2.5 Sunburst prompts for readable text, product stills, UI mockups, controlled edits, masks and 4K finals.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "image-1",
+          "title": "Product still with readable label",
+          "badge": "High · 1024x768",
+          "kind": "image",
+          "prompt": "Catalog product photo of a premium coffee bag titled \"SUMMIT ROAST\", readable tasting notes, light wood table, soft daylight, clean framing, e-commerce background."
+        },
+        {
+          "id": "typography-2",
+          "title": "Exact-text poster",
+          "badge": "4K text",
+          "kind": "typography",
+          "prompt": "Vertical 4K poster with exact title \"CREATOR LAUNCH CHECKLIST\", 8 numbered modules, crisp typography, white background, navy and cyan accents, even margins."
+        },
+        {
+          "id": "layout-3",
+          "title": "UI mockup",
+          "badge": "1920x1080",
+          "kind": "layout",
+          "prompt": "1920x1080 SaaS analytics dashboard screen mockup, white cards, left navigation, readable headings, realistic metrics, premium product UI style."
+        },
+        {
+          "id": "edit-4",
+          "title": "Controlled image edit",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Using this product image, preserve shape, label, proportions and main reflection. Replace the background with a bright studio, remove dust and distracting reflections."
+        },
+        {
+          "id": "quality-5",
+          "title": "Mask-guided edit",
+          "badge": "Mask URL",
+          "kind": "quality",
+          "prompt": "Modify only the masked region: replace the secondary copy with \"LIMITED RESERVE\", keep logo, packaging color, shadow and perspective unchanged."
+        },
+        {
+          "id": "layout-6",
+          "title": "4K hero still",
+          "badge": "3840x2160",
+          "kind": "layout",
+          "prompt": "4K product-page hero still, black smartphone on graphite surface, readable screen text, controlled reflection, premium studio lighting, negative space on the right."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "gpt-image-2-5-sunburst",
+    "section": {
+      "title": "GPT Image 2.5 Sunburst examples",
+      "intro": "Explore real community outputs and see how GPT Image 2.5 Sunburst performs inside MaxVideoAI workflows.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recreate this still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "id": "typography",
+        "label": "Readable text"
+      },
+      {
+        "id": "ui",
+        "label": "UI mockup"
+      },
+      {
+        "id": "edit",
+        "label": "Image edit"
+      },
+      {
+        "id": "mask",
+        "label": "Mask edit"
+      },
+      {
+        "id": "final",
+        "label": "4K final"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Still image examples",
+        "body": "Prompt patterns tailored to GPT Image 2.5 Sunburst.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typography control",
+        "body": "Exact copy, hierarchy and placement stay explicit.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Reference edits",
+        "body": "Keep product identity, palette, layout or style.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "4K finals",
+        "body": "Validate at 2K, then finish at 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Owned references and built-in guardrails.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Product still with text",
+        "category": "Product",
+        "aspectRatio": "1024x768 · High",
+        "alt": "GPT Image 2.5 Sunburst product still with readable packaging label",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Readable typography poster",
+        "category": "Readable text",
+        "aspectRatio": "4K",
+        "alt": "GPT Image 2.5 Sunburst poster with crisp typography hierarchy",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "ui",
+        "title": "UI mockup",
+        "category": "UI",
+        "aspectRatio": "1920x1080",
+        "alt": "GPT Image 2.5 Sunburst app screen mockup with readable interface copy",
+        "tags": [
+          "ui"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Controlled product edit",
+        "category": "Image edit",
+        "aspectRatio": "Auto",
+        "alt": "GPT Image 2.5 Sunburst edit preserving product shape and label",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "mask",
+        "title": "Mask-guided edit",
+        "category": "Mask edit",
+        "aspectRatio": "Mask URL",
+        "alt": "GPT Image 2.5 Sunburst edit constrained to a masked region",
+        "tags": [
+          "mask"
+        ]
+      },
+      {
+        "id": "final",
+        "title": "4K hero still",
+        "category": "Final",
+        "aspectRatio": "3840x2160",
+        "alt": "GPT Image 2.5 Sunburst 4K hero still with sharp product details",
+        "tags": [
+          "final"
+        ]
+      }
+    ],
+    "showWhenEmpty": false
+  }
+}

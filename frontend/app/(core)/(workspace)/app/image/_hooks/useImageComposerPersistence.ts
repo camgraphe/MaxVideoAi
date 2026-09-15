@@ -49,6 +49,7 @@ type UseImageComposerPersistenceParams = {
   seed: string;
   outputFormat: string | null;
   quality: string | null;
+  background: string | null;
   style: string | null;
   maskUrl: string;
   enableWebSearch: boolean;
@@ -67,6 +68,7 @@ type UseImageComposerPersistenceParams = {
   setSeed: Dispatch<SetStateAction<string>>;
   setOutputFormat: Dispatch<SetStateAction<string | null>>;
   setQuality: Dispatch<SetStateAction<string | null>>;
+  setBackground: Dispatch<SetStateAction<string | null>>;
   setStyle: Dispatch<SetStateAction<string | null>>;
   setMaskUrl: Dispatch<SetStateAction<string>>;
   setEnableWebSearch: Dispatch<SetStateAction<boolean>>;
@@ -90,6 +92,7 @@ export function useImageComposerPersistence({
   seed,
   outputFormat,
   quality,
+  background,
   style,
   maskUrl,
   enableWebSearch,
@@ -108,6 +111,7 @@ export function useImageComposerPersistence({
   setSeed,
   setOutputFormat,
   setQuality,
+  setBackground,
   setStyle,
   setMaskUrl,
   setEnableWebSearch,
@@ -193,6 +197,12 @@ export function useImageComposerPersistence({
         const defaultQuality =
           getImageFieldDefaultString(engineMatch.engineCaps, 'quality', nextMode) ?? qualityValues[0] ?? null;
         setQuality(parsed.quality && qualityValues.includes(parsed.quality) ? parsed.quality : defaultQuality);
+        const backgroundValues = getImageFieldValues(engineMatch.engineCaps, 'background', nextMode);
+        const defaultBackground =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'background', nextMode) ?? backgroundValues[0] ?? null;
+        setBackground(
+          parsed.background && backgroundValues.includes(parsed.background) ? parsed.background : defaultBackground
+        );
         const styleValues = getImageFieldValues(engineMatch.engineCaps, 'style', nextMode);
         const defaultStyle =
           getImageFieldDefaultString(engineMatch.engineCaps, 'style', nextMode) ?? styleValues[0] ?? null;
@@ -265,6 +275,7 @@ export function useImageComposerPersistence({
     setOutputFormat,
     setPrompt,
     setQuality,
+    setBackground,
     setReferenceSlots,
     setResolution,
     setSeed,
@@ -288,6 +299,7 @@ export function useImageComposerPersistence({
       seed: seed.trim().length ? Math.round(Number(seed)) : null,
       outputFormat,
       quality,
+      background,
       style,
       maskUrl: maskUrl.trim().length ? maskUrl.trim() : null,
       enableWebSearch,
@@ -338,6 +350,7 @@ export function useImageComposerPersistence({
     persistableReferenceSlots,
     prompt,
     quality,
+    background,
     resolution,
     seed,
     storageHydrated,

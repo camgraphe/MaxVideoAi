@@ -1,6 +1,10 @@
 import type { ModelPageTemplateConfig } from './model-page-template-types';
 import { geminiOmniFlashTemplateConfig } from './model-page-templates/gemini-omni-flash';
 import { gptImage2TemplateConfig } from './model-page-templates/gpt-image-2';
+import {
+  gptImage25FlareTemplateConfig,
+  gptImage25SunburstTemplateConfig,
+} from './model-page-templates/gpt-image-2-5';
 import { grokImagineVideo15TemplateConfig } from './model-page-templates/grok-imagine-video-1-5';
 import { happyHorse10TemplateConfig } from './model-page-templates/happy-horse-1-0';
 import { happyHorse11TemplateConfig } from './model-page-templates/happy-horse-1-1';
@@ -54,6 +58,8 @@ import { wan3PrimeTemplateConfig } from './model-page-templates/wan-3-prime';
 const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [geminiOmniFlashTemplateConfig.slug]: geminiOmniFlashTemplateConfig,
   [gptImage2TemplateConfig.slug]: gptImage2TemplateConfig,
+  [gptImage25FlareTemplateConfig.slug]: gptImage25FlareTemplateConfig,
+  [gptImage25SunburstTemplateConfig.slug]: gptImage25SunburstTemplateConfig,
   [grokImagineVideo15TemplateConfig.slug]: grokImagineVideo15TemplateConfig,
   [happyHorse10TemplateConfig.slug]: happyHorse10TemplateConfig,
   [happyHorse11TemplateConfig.slug]: happyHorse11TemplateConfig,

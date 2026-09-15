@@ -25,6 +25,7 @@ export function buildFalImageGenerationInput(params: {
   normalizedSeed: number | null;
   outputFormat: string | null;
   quality: string | null;
+  background?: string | null;
   style?: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;
@@ -54,6 +55,7 @@ export function buildFalImageGenerationInput(params: {
     ...(params.normalizedSeed != null ? { seed: params.normalizedSeed } : {}),
     ...(params.outputFormat ? { output_format: params.outputFormat } : {}),
     ...(params.quality ? { quality: params.quality } : {}),
+    ...(params.background ? { background: params.background } : {}),
     ...(params.style ? { style: params.style } : {}),
     ...(params.maskUrl ? { mask_url: params.maskUrl } : {}),
     ...(params.enableWebSearch ? { enable_web_search: true } : {}),
@@ -74,6 +76,7 @@ export async function runFalImageGeneration(params: {
   normalizedSeed: number | null;
   outputFormat: string | null;
   quality: string | null;
+  background?: string | null;
   style?: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;
@@ -114,6 +117,7 @@ export async function runFalImageGeneration(params: {
       normalizedSeed: params.normalizedSeed,
       outputFormat: params.outputFormat,
       quality: params.quality,
+      background: params.background,
       style: params.style,
       maskUrl: params.maskUrl,
       enableWebSearch: params.enableWebSearch,

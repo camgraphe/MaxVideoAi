@@ -64,6 +64,92 @@
       "successorSlug": null
     },
     {
+      "id": "gpt-image-2-5-flare",
+      "slug": "gpt-image-2-5-flare",
+      "family": "gpt-image",
+      "category": "image",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": 6,
+          "variantGroup": "gpt-image-2.5",
+          "variantLabel": "Flare"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "fast high-quality image"
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
+      "id": "gpt-image-2-5-sunburst",
+      "slug": "gpt-image-2-5-sunburst",
+      "family": "gpt-image",
+      "category": "image",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": 7,
+          "variantGroup": "gpt-image-2.5",
+          "variantLabel": "Sunburst"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "precision image edit"
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
       "id": "gpt-image-2",
       "slug": "gpt-image-2",
       "family": "gpt-image",
@@ -102,9 +188,9 @@
           "published": true
         }
       },
-      "lifecycle": "current",
-      "successorId": null,
-      "successorSlug": null
+      "lifecycle": "legacy",
+      "successorId": "gpt-image-2-5-flare",
+      "successorSlug": "gpt-image-2-5-flare"
     },
     {
       "id": "happy-horse-1-0",

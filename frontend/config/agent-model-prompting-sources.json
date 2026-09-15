@@ -30,10 +30,10 @@
     "id": "openai-gpt-image-prompting",
     "provider": "OpenAI",
     "title": "GPT Image prompting guide",
-    "url": "https://developers.openai.com/cookbook/examples/multimodal/image-gen-models-prompting-guide",
-    "modelIds": ["gpt-image-2"],
+    "url": "https://developers.openai.com/api/docs/guides/image-prompting",
+    "modelIds": ["gpt-image-2", "gpt-image-2-5-flare", "gpt-image-2-5-sunburst"],
     "modes": ["t2i", "i2i"],
-    "reviewedAt": "2026-08-28"
+    "reviewedAt": "2026-09-15"
   },
   {
     "id": "openai-sora-video-generation",

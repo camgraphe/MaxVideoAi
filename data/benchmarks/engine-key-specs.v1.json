@@ -1332,6 +1332,46 @@
       }
     },
     {
+      "modelSlug": "gpt-image-2-5-flare",
+      "sources": [
+        "https://developers.openai.com/api/docs/models/gpt-image-2.5-flare",
+        "https://fal.ai/models/openai/gpt-image-2.5/flare/text-to-image/api",
+        "https://fal.ai/models/openai/gpt-image-2.5/flare/edit/api"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "maxResolution": "Up to 4K canonical sizes",
+        "outputFormats": [
+          "PNG",
+          "JPEG",
+          "WEBP"
+        ],
+        "referenceImageStyle": "Supported (up to 16 images)",
+        "releaseDate": "Sep 2026"
+      }
+    },
+    {
+      "modelSlug": "gpt-image-2-5-sunburst",
+      "sources": [
+        "https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst",
+        "https://fal.ai/models/openai/gpt-image-2.5/sunburst/text-to-image/api",
+        "https://fal.ai/models/openai/gpt-image-2.5/sunburst/edit/api"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "maxResolution": "Up to 4K canonical sizes",
+        "outputFormats": [
+          "PNG",
+          "JPEG",
+          "WEBP"
+        ],
+        "referenceImageStyle": "Supported (up to 16 images)",
+        "releaseDate": "Sep 2026"
+      }
+    },
+    {
       "modelSlug": "nano-banana",
       "sources": [
         "https://developers.googleblog.com/introducing-gemini-2-5-flash-image/",

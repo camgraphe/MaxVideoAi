@@ -31,11 +31,13 @@ import type {
 
 interface UseImageGenerationRunnerParams {
   aspectRatio: string | null;
+  background: string | null;
   combinedReferenceUrls: string[];
   customImageHeight: string;
   customImageWidth: string;
   enableWebSearch: boolean;
   hasAspectRatioField: boolean;
+  hasBackgroundField: boolean;
   hasEnableWebSearchField: boolean;
   hasLimitGenerationsField: boolean;
   hasMaskUrlField: boolean;
@@ -75,11 +77,13 @@ interface UseImageGenerationRunnerParams {
 
 export function useImageGenerationRunner({
   aspectRatio,
+  background,
   combinedReferenceUrls,
   customImageHeight,
   customImageWidth,
   enableWebSearch,
   hasAspectRatioField,
+  hasBackgroundField,
   hasEnableWebSearchField,
   hasLimitGenerationsField,
   hasMaskUrlField,
@@ -195,7 +199,12 @@ export function useImageGenerationRunner({
           outputFormat: hasOutputFormatField
             ? ((outputFormat ?? undefined) as 'jpeg' | 'png' | 'webp' | undefined)
             : undefined,
-          quality: hasQualityField ? ((quality ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
+          quality: hasQualityField
+            ? ((quality ?? undefined) as 'low' | 'medium' | 'high' | 'xhigh' | 'max' | undefined)
+            : undefined,
+          background: hasBackgroundField
+            ? ((background ?? undefined) as 'auto' | 'transparent' | 'opaque' | undefined)
+            : undefined,
           style: hasStyleField ? style ?? undefined : undefined,
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
@@ -253,11 +262,13 @@ export function useImageGenerationRunner({
     },
     [
       aspectRatio,
+      background,
       combinedReferenceUrls,
       customImageHeight,
       customImageWidth,
       enableWebSearch,
       hasAspectRatioField,
+      hasBackgroundField,
       hasEnableWebSearchField,
       hasLimitGenerationsField,
       hasMaskUrlField,

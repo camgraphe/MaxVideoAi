@@ -4101,6 +4101,7 @@
         "outputFormatLabel": "Format de sortie",
         "outputFormatHint": "Choisissez le type de fichier des images finales.",
         "qualityLabel": "Qualité",
+        "backgroundLabel": "Arrière-plan",
         "qualityHint": "Ajuste la fidélité du modèle et le coût lorsque cette option est disponible.",
         "customWidthLabel": "Largeur",
         "customHeightLabel": "Hauteur",

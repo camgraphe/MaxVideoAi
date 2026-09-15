@@ -55,6 +55,7 @@ export type ExecuteLumaAgentsImageGenerationParams = {
   normalizedSeed: number | null;
   outputFormat: string | null;
   quality: string | null;
+  background?: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
@@ -199,6 +200,7 @@ async function runFalFallback(params: ExecuteLumaAgentsImageGenerationParams): P
     normalizedSeed: params.normalizedSeed,
     outputFormat: params.outputFormat,
     quality: params.quality,
+    background: params.background,
     style: params.style,
     maskUrl: params.maskUrl,
     enableWebSearch: params.enableWebSearch,
