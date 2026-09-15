@@ -5,42 +5,6 @@ export type Currency = 'eur' | 'usd' | 'gbp' | 'chf';
 
 export type CurrencyResolutionSource = 'user_pref' | 'geo' | 'default' | 'manual';
 
-const EU_COUNTRIES = new Set([
-  'FR',
-  'BE',
-  'DE',
-  'ES',
-  'IT',
-  'NL',
-  'PT',
-  'IE',
-  'AT',
-  'FI',
-  'GR',
-  'LU',
-  'SI',
-  'SK',
-  'EE',
-  'LV',
-  'LT',
-  'MT',
-  'CY',
-  'MC',
-  'SM',
-  'AD',
-  'CZ',
-  'PL',
-  'HU',
-  'RO',
-  'BG',
-  'HR',
-  'SE',
-  'DK',
-]);
-
-const GBP_COUNTRIES = new Set(['GB', 'UK', 'GG', 'JE', 'IM']);
-const CHF_COUNTRIES = new Set(['CH', 'LI']);
-
 const KNOWN_CURRENCIES: Currency[] = ['eur', 'usd', 'gbp', 'chf'];
 
 export function normalizeCurrencyCode(value: string | null | undefined): Currency | null {
@@ -50,7 +14,7 @@ export function normalizeCurrencyCode(value: string | null | undefined): Currenc
 }
 
 export function resolveEnabledCurrencies(): Currency[] {
-  const raw = process.env.ENABLED_CURRENCIES ?? 'eur,usd,gbp,chf';
+  const raw = process.env.ENABLED_CURRENCIES ?? 'eur,usd';
   const parsed = raw
     .split(',')
     .map((entry) => normalizeCurrencyCode(entry))
@@ -87,16 +51,7 @@ export function resolveCurrency(
   const preferCurrency = (desired: Currency): Currency => (enabled.includes(desired) ? desired : fallback);
 
   if (country) {
-    if (GBP_COUNTRIES.has(country)) {
-      return { currency: preferCurrency('gbp'), source: 'geo', country };
-    }
-    if (CHF_COUNTRIES.has(country)) {
-      return { currency: preferCurrency('chf'), source: 'geo', country };
-    }
-    if (EU_COUNTRIES.has(country)) {
-      return { currency: preferCurrency('eur'), source: 'geo', country };
-    }
-    return { currency: preferCurrency('usd'), source: 'geo', country };
+    return { currency: preferCurrency(country === 'US' ? 'usd' : 'eur'), source: 'geo', country };
   }
 
   return { currency: fallback, source: 'default' };

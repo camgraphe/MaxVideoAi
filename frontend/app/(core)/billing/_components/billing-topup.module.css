@@ -287,6 +287,29 @@
   text-align: center;
 }
 
+.checkoutTrust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.stripeWordmark {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 42px;
+  height: 20px;
+  background-color: #0a2540;
+  mask: url('/assets/payments/stripe-wordmark.svg') center / contain no-repeat;
+}
+
+:global([data-theme='dark']) .stripeWordmark {
+  background-color: #fff;
+}
+
 .securityCheck {
   margin-top: 16px;
   padding-top: 16px;

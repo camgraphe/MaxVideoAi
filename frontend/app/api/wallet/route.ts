@@ -203,6 +203,9 @@ export async function POST(req: NextRequest) {
   let currencyResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
   const enabledCurrencies = resolveEnabledCurrencies();
   const requestedCurrency = normalizeCurrencyCode(body.currency);
+  if (requestedCurrency && !enabledCurrencies.includes(requestedCurrency)) {
+    return NextResponse.json({ error: 'Unsupported currency' }, { status: 400 });
+  }
   if (requestedCurrency && enabledCurrencies.includes(requestedCurrency)) {
     currencyResolution = {
       currency: requestedCurrency,

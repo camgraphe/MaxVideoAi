@@ -6,6 +6,7 @@ import {
   normalizeCurrencyCode,
   resolveDefaultCurrency,
   resolveEnabledCurrencies,
+  resolveCurrency,
   setUserPreferredCurrency,
   type Currency,
 } from '@/lib/currency';
@@ -52,6 +53,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const preferred = await getUserPreferredCurrency(userId, { throwOnError: true });
+    const resolution = resolveCurrency(req, preferred ? { preferred_currency: preferred } : undefined);
     const balances = await getWalletBalancesByCurrency(userId, { throwOnError: true });
     const formattedBalances = balances.map((entry) => ({
       currency: entry.currency ? entry.currency.toUpperCase() : null,
@@ -61,11 +63,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
-        currency: normalizeForResponse(preferred),
+        currency: normalizeForResponse(resolution.currency),
         defaultCurrency,
         enabled: enabledUpper,
         balances: formattedBalances,
-        locked: Boolean(preferred),
+        locked: resolution.source === 'user_pref',
       } satisfies CurrencySummaryResponse
     );
   } catch (error) {

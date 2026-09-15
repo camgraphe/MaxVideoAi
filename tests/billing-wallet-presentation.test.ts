@@ -75,6 +75,8 @@ test('checkout summary separates the quoted payment from USD wallet credits', as
     document.querySelector('button')?.textContent ?? '',
     /Card or other methods/,
   );
+  assert.ok(document.querySelector('[role="img"][aria-label="Stripe"]'));
+  assert.match(document.querySelector('.checkoutTrust')?.textContent ?? '', /Secure payment by/);
 });
 
 test('billing copy exposes the paid-versus-received distinction in every locale', () => {

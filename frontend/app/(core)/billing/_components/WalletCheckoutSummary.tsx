@@ -57,11 +57,15 @@ export function WalletCheckoutSummary({
           onClick={onCheckout}
           className={styles.checkoutButton}
         >
-          <LockKeyhole size={17} aria-hidden="true" />
           {copy.wallet.checkoutCta}
           <ArrowRight size={17} aria-hidden="true" />
         </Button>
       </div>
+      <p className={styles.checkoutTrust}>
+        <LockKeyhole size={14} aria-hidden="true" />
+        <span>{copy.wallet.checkoutSecure}</span>
+        <span className={styles.stripeWordmark} role="img" aria-label="Stripe" />
+      </p>
       <p className={styles.checkoutNote}>{copy.wallet.checkoutNote}</p>
     </div>
   );
