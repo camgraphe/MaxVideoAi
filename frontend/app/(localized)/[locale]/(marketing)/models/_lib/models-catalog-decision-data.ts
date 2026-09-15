@@ -109,7 +109,7 @@ export function buildModelCompareHref(left: string, right: string): ModelsGaller
 }
 
 export function buildDefaultModelCompareHref(modelSlug: string): ModelsGalleryCompareHref | null {
-  if (['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'seedream'].includes(modelSlug)) {
+  if (['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'gpt-image-2-5-flare', 'gpt-image-2-5-sunburst', 'seedream'].includes(modelSlug)) {
     return null;
   }
   const opponent = modelSlug === 'seedance-2-0' ? 'kling-3-pro' : 'seedance-2-0';

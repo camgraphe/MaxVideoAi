@@ -16,6 +16,8 @@ const engineCatalog = JSON.parse(readFileSync('frontend/config/engine-catalog.js
 const CATALOG_MODEL_SLUGS = new Set(engineCatalog.map((entry) => entry.modelSlug));
 const imageModelPageSlugs = [
   'gpt-image-2',
+  'gpt-image-2-5-flare',
+  'gpt-image-2-5-sunburst',
   'luma-uni-1',
   'luma-uni-1-max',
   'nano-banana',
@@ -27,6 +29,8 @@ const imageModelPageSlugs = [
 ] as const;
 const imageMaxResolutionExpectations: Record<(typeof imageModelPageSlugs)[number], string> = {
   'gpt-image-2': 'Up to 4K canonical sizes',
+  'gpt-image-2-5-flare': 'Up to 4K canonical sizes',
+  'gpt-image-2-5-sunburst': 'Up to 4K canonical sizes',
   'luma-uni-1': '2048px / 2K',
   'luma-uni-1-max': '2048px / 2K',
   'nano-banana': 'HD still presets',
@@ -285,6 +289,8 @@ test('template registry enables Seedance production and draft model templates', 
     'flux-3-draft',
     'gemini-omni-flash',
     'gpt-image-2',
+    'gpt-image-2-5-flare',
+    'gpt-image-2-5-sunburst',
     'grok-imagine-video-1-5',
     'happy-horse-1-0',
     'happy-horse-1-1',

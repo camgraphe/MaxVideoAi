@@ -39,6 +39,8 @@ export const CURRENT_MODEL_CATALOG_PRIORITY = [
   'kling-2-5-turbo',
   'minimax-hailuo-02-text',
   'happy-horse-1-0',
+  'gpt-image-2-5-flare',
+  'gpt-image-2-5-sunburst',
   'gpt-image-2',
   'seedream',
   'seedream-5-0-pro',

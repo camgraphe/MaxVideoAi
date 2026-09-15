@@ -90,6 +90,7 @@ export type PersistedImageComposerState = {
   seed: number | null;
   outputFormat: string | null;
   quality: string | null;
+  background: string | null;
   style: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;

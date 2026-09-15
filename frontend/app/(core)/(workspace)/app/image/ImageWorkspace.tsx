@@ -44,6 +44,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   const [seed, setSeed] = useState<string>('');
   const [outputFormat, setOutputFormat] = useState<string | null>(null);
   const [quality, setQuality] = useState<string | null>(null);
+  const [background, setBackground] = useState<string | null>(null);
   const [style, setStyle] = useState<string | null>(null);
   const [maskUrl, setMaskUrl] = useState<string>('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
@@ -63,6 +64,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     aspectRatioField,
     aspectRatioSelectOptions,
     booleanSelectOptions,
+    backgroundField,
+    backgroundSelectOptions,
     enableWebSearchField,
     imageCountOptions,
     isResolutionLocked,
@@ -75,6 +78,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolutionSelectOptions,
     seedField,
     showAspectRatioControl,
+    showBackgroundControl,
     showCustomImageSizeControl,
     showEnableWebSearchControl,
     showLimitGenerationsControl,
@@ -99,6 +103,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolvedCopy,
     selectedEngineCaps,
     setAspectRatio,
+    setBackground,
     setCustomImageHeight,
     setCustomImageWidth,
     setEnableWebSearch,
@@ -183,6 +188,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     prompt,
     numImages,
     aspectRatio,
+    background,
     resolution,
     customImageWidth,
     customImageHeight,
@@ -201,6 +207,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setPrompt,
     setNumImages,
     setAspectRatio,
+    setBackground,
     setResolution,
     setCustomImageWidth,
     setCustomImageHeight,
@@ -221,6 +228,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     genericError: resolvedCopy.errors.generic,
     searchParams,
     setAspectRatio,
+    setBackground,
     setCustomImageHeight,
     setCustomImageWidth,
     setEnableWebSearch,
@@ -274,11 +282,13 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
 
   const handleRun = useImageGenerationRunner({
     aspectRatio,
+    background,
     combinedReferenceUrls,
     customImageHeight,
     customImageWidth,
     enableWebSearch,
     hasAspectRatioField: Boolean(aspectRatioField),
+    hasBackgroundField: Boolean(backgroundField),
     hasEnableWebSearchField: Boolean(enableWebSearchField),
     hasLimitGenerationsField: Boolean(limitGenerationsField),
     hasMaskUrlField: Boolean(maskUrlField),
@@ -384,15 +394,21 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     supportsCharacterReferences,
   });
   const composerSetterProps = {
-    setAspectRatio, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId, setError,
+    setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId, setError,
     setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat,
     setPrompt, setQuality, setResolutionPreset, setSeed, setSelectedPreviewImageIndex, setStyle, setThinkingLevel,
     setWatermark,
   };
   const composerVisibilityProps = {
-    showAspectRatioControl, showCustomImageSizeControl, showEnableWebSearchControl, showLimitGenerationsControl,
+    showAspectRatioControl, showBackgroundControl, showCustomImageSizeControl, showEnableWebSearchControl, showLimitGenerationsControl,
     showMaskUrlControl: Boolean(maskUrlField), showNumImagesControl, showOutputFormatControl, showQualityControl,
     showResolutionControl, showSeedControl, showStyleControl, showThinkingLevelControl, showWatermarkControl,
+  };
+  const composerSettingsProps = {
+    aspectRatio, aspectRatioSelectOptions, background, backgroundSelectOptions, booleanSelectOptions,
+    customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, numImages,
+    outputFormat, outputFormatSelectOptions, quality, qualitySelectOptions, resolution, resolutionSelectOptions,
+    seed, style, styleSelectOptions, thinkingLevel, thinkingLevelSelectOptions, watermark,
   };
 
   if (!selectedEngine || !selectedEngineCaps) {
@@ -415,17 +431,11 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
       >
         <ImageWorkspaceComposerSurface
               advancedSettingsTitle={advancedSettingsTitle}
-              aspectRatio={aspectRatio}
-              aspectRatioSelectOptions={aspectRatioSelectOptions}
-              booleanSelectOptions={booleanSelectOptions}
               composerError={composerError}
               composerReferenceAssets={composerReferenceAssets}
               compositePreviewEntry={compositePreviewEntry}
               copiedUrl={copiedUrl}
               currency={estimatedCostCurrency}
-              customImageHeight={customImageHeight}
-              customImageWidth={customImageWidth}
-              enableWebSearch={enableWebSearch}
               engineCapsList={engineCapsList}
               estimatedCostAmount={estimatedCostAmount}
               handleAddToLibrary={handleAddToLibrary}
@@ -444,33 +454,19 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               isRemovingFromLibrary={isRemovingFromLibrary}
               isResolutionLocked={isResolutionLocked}
               isSavingToLibrary={isSavingToLibrary}
-              limitGenerations={limitGenerations}
-              maskUrl={maskUrl}
               mode={mode}
-              numImages={numImages}
               openLibraryForSlot={openLibraryForSlot}
-              outputFormat={outputFormat}
-              outputFormatSelectOptions={outputFormatSelectOptions}
               previewEntry={previewEntry}
               prompt={prompt}
-              quality={quality}
-              qualitySelectOptions={qualitySelectOptions}
               referenceAssetFields={referenceAssetFields}
-              resolution={resolution}
-              resolutionSelectOptions={resolutionSelectOptions}
               resolvedCopy={resolvedCopy}
-              seed={seed}
               selectedEngineCaps={selectedEngineCaps}
               selectedEngineId={selectedEngine.id}
               selectedPreviewImageIndex={selectedPreviewImageIndex}
-              style={style}
-              styleSelectOptions={styleSelectOptions}
               {...composerSetterProps}
+              {...composerSettingsProps}
               {...composerVisibilityProps}
               statusMessage={statusMessage}
-              thinkingLevel={thinkingLevel}
-              thinkingLevelSelectOptions={thinkingLevelSelectOptions}
-              watermark={watermark}
         />
       </ImageWorkspaceShell>
       <ImageWorkspaceRuntimeModals

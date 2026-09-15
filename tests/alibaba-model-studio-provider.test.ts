@@ -173,6 +173,41 @@ test('Wan 3 frame interpolation uses first and last frame and rejects mixed refe
   }), /cannot combine frame interpolation with reference media/);
 });
 
+test('Wan 3 reference mode maps document and webpage URLs to direct Alibaba media', () => {
+  assert.deepEqual(buildAlibabaVideoPayload({
+    engineId: 'wan-3-prime', mode: 'ref2v',
+    prompt: 'Turn the source into a concise product film',
+    durationSec: 10, resolution: '1080p', aspectRatio: 'adaptive',
+    fileUrl: 'https://media.example/brief.pdf', promptExtend: true,
+  }), {
+    model: 'wan3.0-video-prime',
+    input: {
+      prompt: 'Turn the source into a concise product film',
+      media: [{ type: 'file', url: 'https://media.example/brief.pdf' }],
+    },
+    parameters: {
+      resolution: '1080P', ratio: 'adaptive', duration: 10,
+      audio: false, prompt_extend: true, watermark: false,
+    },
+  });
+
+  assert.deepEqual(buildAlibabaVideoPayload({
+    engineId: 'wan-3', mode: 'ref2v', prompt: '', durationSec: 5,
+    resolution: '720p', webUrl: 'https://example.com/public-article',
+  }).input.media, [{ type: 'link', url: 'https://example.com/public-article' }]);
+
+  assert.throws(() => buildAlibabaVideoPayload({
+    engineId: 'wan-3', mode: 'ref2v', prompt: '', durationSec: 5,
+    fileUrl: 'https://media.example/brief.pdf',
+    webUrl: 'https://example.com/public-article',
+  }), /cannot combine document and webpage references/);
+
+  assert.throws(() => buildAlibabaVideoPayload({
+    engineId: 'wan-3', mode: 'ref2v', prompt: '', durationSec: 5,
+    fileUrl: 'https://media.example/brief.pdf', promptExtend: false,
+  }), /require prompt expansion/);
+});
+
 test('Wan 3 edit and extension require source video and enforce the 30 second total', () => {
   assert.throws(() => buildAlibabaVideoPayload({
     engineId: 'wan-3',

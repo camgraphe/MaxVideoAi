@@ -5,7 +5,7 @@ const FALLBACK_RESOLUTION = 'square_hd';
 const DEFAULT_IMAGE_COUNT_MIN = 1;
 const DEFAULT_IMAGE_COUNT_MAX = 8;
 const DEFAULT_REFERENCE_LIMIT = 4;
-export const MAX_REFERENCE_IMAGES = 14;
+export const MAX_REFERENCE_IMAGES = 16;
 
 export type ResolvedEnumValue =
   | { ok: true; value: string; allowed: string[]; configurable: boolean }

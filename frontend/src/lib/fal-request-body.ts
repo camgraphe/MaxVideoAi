@@ -424,6 +424,13 @@ export function buildFalGenerationRequest(
       requestBody[key] = value;
     });
   }
+  if (
+    (payload.engineId === 'wan-3' || payload.engineId === 'wan-3-prime')
+    && payload.mode === 'ref2v'
+    && (requestBody.file_url || requestBody.web_url)
+  ) {
+    requestBody.enable_thinking = true;
+  }
 
   if (payload.engineId.startsWith('kling-3') && requestBody.image_url && !requestBody.start_image_url) {
     requestBody.start_image_url = requestBody.image_url;

@@ -342,6 +342,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
 
   let acceptedProviderJobId: string | null = null;
   try {
+    const extraInputValues = params.falPayload.extraInputValues ?? {};
     const payload = buildAlibabaVideoPayload({
       engineId: params.engineId,
       mode: params.mode,
@@ -356,6 +357,12 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       referenceVideoUrls: media.referenceVideos,
       referenceAudioUrls: media.referenceAudio,
       inputVideoDurationSec: media.inputVideoDurationSec,
+      fileUrl: cleanUrl(extraInputValues.file_url),
+      webUrl: cleanUrl(extraInputValues.web_url),
+      promptExtend:
+        typeof extraInputValues.enable_prompt_expansion === 'boolean'
+          ? extraInputValues.enable_prompt_expansion
+          : undefined,
       seed: params.falPayload.seed,
     });
     const task = await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().createVideo(payload);

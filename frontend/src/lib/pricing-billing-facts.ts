@@ -3,7 +3,13 @@ import {
   type PricingFacts,
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
-import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
+import {
+  isGptImage25EngineId,
+  calculateGptImage25ProviderPrice,
+  normalizeGptImage2Quality,
+  normalizeGptImageQuality,
+  resolveGptImage2PricingTier,
+} from '@/lib/image/gptImage2';
 import { isLumaAgentsImageEngineId, isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import {
   calculateLumaAgentsImageReferencePrice,
@@ -336,6 +342,50 @@ export function buildBillingPricingFacts(
         workflow: reference.breakdown.workflow,
         seconds: reference.breakdown.seconds,
         rate_per_second_usd: reference.breakdown.rate_per_second_usd,
+      },
+    });
+  }
+
+  if (isGptImage25EngineId(engine.id)) {
+    const quality = normalizeGptImageQuality(context.quality, engine.id);
+    const imageCount = Math.max(1, Math.round(durationSec));
+    const price = calculateGptImage25ProviderPrice({
+      mode: mode === 'i2i' ? 'i2i' : 't2i',
+      imageSize: resolution,
+      customImageSize: context.customImageSize,
+      quality,
+      outputCount: imageCount,
+      referenceImageCount: context.referenceImageCount,
+    });
+    const { tier, outputUnitExactCents: unitExactCents, providerSubtotalExactCents } = price;
+    const presentedCents = Math.ceil(price.outputSubtotalExactCents - 1e-9);
+    return resultFromFacts({
+      engineId: engine.id,
+      currency,
+      vendorSubtotalExactCents: providerSubtotalExactCents,
+      base: {
+        seconds: imageCount,
+        rate: unitExactCents / 100,
+        unit: 'image',
+        amountCents: presentedCents,
+      },
+      addons: price.referenceSubtotalExactCents > 0
+        ? [{ type: 'reference_images', amountCents: Math.ceil(price.referenceSubtotalExactCents - 1e-9) }]
+        : [],
+      meta: {
+        pricing_model: 'gpt_image_2_5_quality_size',
+        provider_cost_source: 'fal_gpt_image_2_5_pricing_table',
+        billed_image_size: tier.billingKey,
+        requested_image_size: tier.requestedKey,
+        requested_image_width: tier.width,
+        requested_image_height: tier.height,
+        quality,
+        base_unit_price_exact_cents: unitExactCents,
+        reference_image_count: price.referenceImageCount,
+        paid_reference_image_count: price.paidReferenceImageCount,
+        reference_image_subtotal_exact_cents: price.referenceSubtotalExactCents,
+        estimated_from_nearest_canonical: tier.estimatedFromNearestCanonical,
+        source: 'fal.ai GPT Image 2.5 pricing table',
       },
     });
   }

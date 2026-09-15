@@ -22,6 +22,7 @@ export type ImageAdvancedSettingsProps = ImageAdvancedSettingsContentProps & {
 export function ImageAdvancedSettings({
   title,
   open,
+  background,
   seed,
   maskUrl,
   customImageSize,
@@ -33,8 +34,8 @@ export function ImageAdvancedSettings({
   const [isOpen, setIsOpen] = useState(false);
   const expanded = open ?? isOpen;
   const hasContent = useMemo(
-    () => Boolean(seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations || watermark),
-    [customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
+    () => Boolean(background || seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations || watermark),
+    [background, customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
   );
 
   if (!hasContent) return null;
@@ -62,6 +63,7 @@ export function ImageAdvancedSettings({
       </Button> : null}
       {expanded ? (
         <ImageAdvancedSettingsContent
+          background={background}
           seed={seed}
           maskUrl={maskUrl}
           customImageSize={customImageSize}

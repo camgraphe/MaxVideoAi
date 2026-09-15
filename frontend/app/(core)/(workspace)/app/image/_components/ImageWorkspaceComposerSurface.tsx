@@ -27,6 +27,8 @@ interface ImageWorkspaceComposerSurfaceProps {
   aspectRatio: string | null;
   aspectRatioSelectOptions: ControlOption[];
   booleanSelectOptions: ControlOption[];
+  background: string | null;
+  backgroundSelectOptions: ControlOption[];
   composerError: string | null;
   composerReferenceAssets: Record<string, (ComposerAttachment | null)[]>;
   compositePreviewEntry: ImageCompositePreviewEntry | null;
@@ -75,6 +77,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   style: string | null;
   styleSelectOptions: ControlOption[];
   setAspectRatio: (value: string | null) => void;
+  setBackground: (value: string | null) => void;
   setCustomImageHeight: (value: string) => void;
   setCustomImageWidth: (value: string) => void;
   setEnableWebSearch: (value: boolean) => void;
@@ -94,6 +97,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   setThinkingLevel: (value: string | null) => void;
   setWatermark: (value: boolean) => void;
   showAspectRatioControl: boolean;
+  showBackgroundControl: boolean;
   showCustomImageSizeControl: boolean;
   showEnableWebSearchControl: boolean;
   showLimitGenerationsControl: boolean;
@@ -117,6 +121,8 @@ export function ImageWorkspaceComposerSurface({
   aspectRatio,
   aspectRatioSelectOptions,
   booleanSelectOptions,
+  background,
+  backgroundSelectOptions,
   composerError,
   composerReferenceAssets,
   compositePreviewEntry,
@@ -165,6 +171,7 @@ export function ImageWorkspaceComposerSurface({
   style,
   styleSelectOptions,
   setAspectRatio,
+  setBackground,
   setCustomImageHeight,
   setCustomImageWidth,
   setEnableWebSearch,
@@ -184,6 +191,7 @@ export function ImageWorkspaceComposerSurface({
   setThinkingLevel,
   setWatermark,
   showAspectRatioControl,
+  showBackgroundControl,
   showCustomImageSizeControl,
   showEnableWebSearchControl,
   showLimitGenerationsControl,
@@ -374,6 +382,16 @@ export function ImageWorkspaceComposerSurface({
               <ImageAdvancedSettings
                 open={optionsOpen}
                 title={advancedSettingsTitle}
+                background={
+                  showBackgroundControl
+                    ? {
+                        label: resolvedCopy.composer.backgroundLabel,
+                        value: background ?? String(backgroundSelectOptions[0]?.value ?? 'auto'),
+                        options: backgroundSelectOptions,
+                        onChange: setBackground,
+                      }
+                    : undefined
+                }
                 seed={
                   showSeedControl
                     ? {

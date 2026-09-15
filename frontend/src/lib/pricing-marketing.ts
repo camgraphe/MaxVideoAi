@@ -2,7 +2,9 @@ import type { EngineCaps } from '@/types/engines';
 import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import {
   GPT_IMAGE_2_CANONICAL_SIZE_VALUES,
+  isGptImage25EngineId,
   type GptImage2Quality,
+  type GptImage25Quality,
 } from '@/lib/image/gptImage2';
 
 type MemberTier = 'member' | 'plus' | 'pro';
@@ -10,6 +12,7 @@ type MemberTier = 'member' | 'plus' | 'pro';
 const DEFAULT_DURATION_SEC = 5;
 const PREFERRED_RESOLUTIONS = ['720p', '1080p', '4k', '1440p', '768p', '512p'];
 const GPT_IMAGE_2_MARKETING_QUALITIES: GptImage2Quality[] = ['low', 'medium', 'high'];
+const GPT_IMAGE_2_5_MARKETING_QUALITIES: GptImage25Quality[] = ['low', 'medium', 'high', 'xhigh', 'max'];
 
 function isPerImageEngine(engine: EngineCaps) {
   return engine.pricing?.unit === 'image' || engine.modes.every((mode) => mode === 't2i' || mode === 'i2i');
@@ -45,12 +48,15 @@ export async function computeMarketingPricePoints(
   const memberTier = options?.memberTier ?? 'member';
   const resolutionLimit = options?.limit === null ? 0 : options?.limit ?? 3;
   const resolutions =
-    engine.id === 'gpt-image-2'
+    engine.id === 'gpt-image-2' || isGptImage25EngineId(engine.id)
       ? [...GPT_IMAGE_2_CANONICAL_SIZE_VALUES]
       : selectMarketingResolutions(engine.resolutions ?? [], resolutionLimit);
   if (!resolutions.length) return [];
-  const qualities: Array<GptImage2Quality | undefined> =
-    engine.id === 'gpt-image-2' ? GPT_IMAGE_2_MARKETING_QUALITIES : [undefined];
+  const qualities: Array<GptImage25Quality | undefined> = isGptImage25EngineId(engine.id)
+    ? GPT_IMAGE_2_5_MARKETING_QUALITIES
+    : engine.id === 'gpt-image-2'
+      ? GPT_IMAGE_2_MARKETING_QUALITIES
+      : [undefined];
 
   const points: MarketingPricePoint[] = [];
   for (const resolution of resolutions) {

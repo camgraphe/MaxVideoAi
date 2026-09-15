@@ -10,7 +10,7 @@ import {
 import type { EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
-import { validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
+import { isGptImageFamilyEngineId, validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
 import { SEEDREAM_MAX_IMAGE_SET_IMAGES } from '@/lib/image/seedream';
 import {
   isVideoDurationSupported,
@@ -72,6 +72,7 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   startTimeSec: 'start_time',
 };
 const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
+  background: 'background',
   enableWebSearch: 'enable_web_search',
   imageHeight: 'image_height',
   imageWidth: 'image_width',
@@ -319,7 +320,7 @@ function validateDerivedSourceFacts(
     }
   }
   if (
-    request.engineId === 'gpt-image-2'
+    isGptImageFamilyEngineId(request.engineId)
     && request.mode === 'i2i'
     && request.settings.resolution === 'auto'
     && options.resolvedReferences

@@ -10,7 +10,6 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import {
-  canonicalizeImageFieldValue,
   getImageFieldDefaultBoolean,
   getImageFieldValues,
   getImageInputField,
@@ -19,6 +18,7 @@ import {
 } from '@/app/api/images/utils';
 import {
   parseGptImage2SizeKey,
+  isGptImageFamilyEngineId,
   resolveGptImage2AutoInputImageSize,
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
@@ -38,7 +38,7 @@ import { prepareImageGenerationReferences } from './image-generation-references'
 import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeDirectImageProviderIfAvailable } from './image-direct-provider-execution';
 import { assertGoogleVertexImageAvailable } from './google-vertex-image-execution';
-import { normalizeImageGenerationMetadata, normalizeOptionalBoolean } from './image-generation-normalization';
+import { normalizeImageGenerationMetadata, normalizeOptionalBoolean, resolveImageEnumSetting } from './image-generation-normalization';
 import {
   executeImageProviderWithLumaAgentsDirectFallback,
   lumaAgentsImageDirectEnabled,
@@ -128,11 +128,11 @@ export async function executeImageGeneration({
   }
   const resolution = resolutionResult.resolution;
   const shouldSendResolution = resolutionResult.configurable;
-  const parsedResolutionImageSize = engine.id === 'gpt-image-2' ? parseGptImage2SizeKey(resolution) : null;
+  const parsedResolutionImageSize = isGptImageFamilyEngineId(engine.id) ? parseGptImage2SizeKey(resolution) : null;
   let customImageSize: GptImage2ImageSize | null = parsedResolutionImageSize;
   let providerImageSize: string | GptImage2ImageSize | null =
     parsedResolutionImageSize ?? (shouldSendResolution ? normalizeFalImageResolution(resolution) : null);
-  if (engine.id === 'gpt-image-2' && mode === 'i2i' && resolution === 'auto') {
+  if (isGptImageFamilyEngineId(engine.id) && mode === 'i2i' && resolution === 'auto') {
     const storedReferenceSizes = combinedImageUrls
       .map((url) => storedAssetInfoByUrl.get(url))
       .filter((size) => typeof size?.width === 'number' && typeof size.height === 'number');
@@ -142,7 +142,7 @@ export async function executeImageGeneration({
     );
   }
 
-  if (engine.id === 'gpt-image-2' && resolution === 'custom') {
+  if (isGptImageFamilyEngineId(engine.id) && resolution === 'custom') {
     const customSizeResult = validateGptImage2CustomImageSize(body.customImageSize);
     if (!customSizeResult.ok) {
       fail(
@@ -162,50 +162,51 @@ export async function executeImageGeneration({
     getImageInputField(engine, 'seed', mode) && typeof body.seed === 'number' && Number.isFinite(body.seed)
       ? Math.round(body.seed)
       : null;
-  const outputFormatValues = getImageFieldValues(engine, 'output_format', mode);
-  const outputFormat =
-    typeof body.outputFormat === 'string'
-      ? canonicalizeImageFieldValue(outputFormatValues, body.outputFormat)
-      : null;
-  if (typeof body.outputFormat === 'string' && body.outputFormat.trim().length && !outputFormat) {
+  const outputFormatSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'output_format', mode), body.outputFormat);
+  const outputFormat = outputFormatSetting.value;
+  if (outputFormatSetting.invalid) {
     fail(
       mode,
       'output_format_invalid',
       'Selected output format is not available for this engine.',
       400,
-      { allowed: outputFormatValues },
+      { allowed: outputFormatSetting.allowed },
       engineResponseExtras
     );
   }
-
-  const qualityValues = getImageFieldValues(engine, 'quality', mode);
-  const quality =
-    typeof body.quality === 'string'
-      ? canonicalizeImageFieldValue(qualityValues, body.quality)
-      : null;
-  if (typeof body.quality === 'string' && body.quality.trim().length && !quality) {
+  const qualitySetting = resolveImageEnumSetting(getImageFieldValues(engine, 'quality', mode), body.quality);
+  const quality = qualitySetting.value;
+  if (qualitySetting.invalid) {
     fail(
       mode,
       'quality_invalid',
       'Selected quality is not available for this engine.',
       400,
-      { allowed: qualityValues },
+      { allowed: qualitySetting.allowed },
       engineResponseExtras
     );
   }
-
-  const styleValues = getImageFieldValues(engine, 'style', mode);
-  const style =
-    typeof body.style === 'string'
-      ? canonicalizeImageFieldValue(styleValues, body.style)
-      : null;
-  if (typeof body.style === 'string' && body.style.trim().length && !style) {
+  const backgroundSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'background', mode), body.background);
+  const background = backgroundSetting.value;
+  if (backgroundSetting.invalid) {
+    fail(
+      mode,
+      'background_invalid',
+      'Selected background mode is not available for this engine.',
+      400,
+      { allowed: backgroundSetting.allowed },
+      engineResponseExtras
+    );
+  }
+  const styleSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'style', mode), body.style);
+  const style = styleSetting.value;
+  if (styleSetting.invalid) {
     fail(
       mode,
       'style_invalid',
       'Selected style is not available for this engine.',
       400,
-      { allowed: styleValues },
+      { allowed: styleSetting.allowed },
       engineResponseExtras
     );
   }
@@ -224,18 +225,15 @@ export async function executeImageGeneration({
     );
   }
 
-  const thinkingLevelValues = getImageFieldValues(engine, 'thinking_level', mode);
-  const thinkingLevel =
-    typeof body.thinkingLevel === 'string'
-      ? canonicalizeImageFieldValue(thinkingLevelValues, body.thinkingLevel)
-      : null;
-  if (typeof body.thinkingLevel === 'string' && body.thinkingLevel.trim().length && !thinkingLevel) {
+  const thinkingLevelSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'thinking_level', mode), body.thinkingLevel);
+  const thinkingLevel = thinkingLevelSetting.value;
+  if (thinkingLevelSetting.invalid) {
     fail(
       mode,
       'thinking_level_invalid',
       'Selected thinking level is not available for this engine.',
       400,
-      { allowed: thinkingLevelValues },
+      { allowed: thinkingLevelSetting.allowed },
       engineResponseExtras
     );
   }
@@ -308,6 +306,7 @@ export async function executeImageGeneration({
         ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
         ...(outputFormat ? { outputFormat } : {}),
         ...(quality ? { quality } : {}),
+        ...(background ? { background } : {}),
         ...(style ? { style } : {}),
         ...(maskUrl ? { maskUrl } : {}),
         ...(enableWebSearch ? { enableWebSearch } : {}),
@@ -349,6 +348,7 @@ export async function executeImageGeneration({
         normalizedSeed,
         outputFormat,
         quality,
+        background,
         style,
         maskUrl,
         enableWebSearch,
@@ -490,7 +490,7 @@ export async function executeImageGeneration({
         const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
           await executeImageProviderWithLumaAgentsDirectFallback({
           falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
-          providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
+          providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, background, maskUrl, enableWebSearch,
           thinkingLevel, limitGenerations, style, engine, engineEntry, jobId, userId, requestId: jobId,
           useLumaDirect:
             isLumaAgentsImageEngineId(engine.id) && lumaAgentsImageDirectEnabled({ isAdmin: isAdminForDirectProvider }),

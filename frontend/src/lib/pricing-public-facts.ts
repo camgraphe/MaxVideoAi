@@ -12,7 +12,13 @@ import { isLumaRay2EngineId, isLumaRay2GenerateMode } from '@/lib/luma-ray2';
 import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
-import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
+import {
+  isGptImage25EngineId,
+  calculateGptImage25ProviderPrice,
+  normalizeGptImage2Quality,
+  normalizeGptImageQuality,
+  resolveGptImage2PricingTier,
+} from '@/lib/image/gptImage2';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
@@ -298,6 +304,39 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     });
   }
 
+  if (isGptImage25EngineId(engine.id)) {
+    const quality = normalizeGptImageQuality(context.quality, engine.id);
+    const quantity = Math.max(1, Math.round(durationSec));
+    const price = calculateGptImage25ProviderPrice({
+      mode: mode === 'i2i' ? 'i2i' : 't2i',
+      imageSize: resolution,
+      quality,
+      outputCount: quantity,
+      referenceImageCount: context.referenceImageCount,
+    });
+    const { tier } = price;
+    return resultFromExactFacts({
+      engineId: engine.id,
+      currency,
+      exactCents: price.providerSubtotalExactCents,
+      quantity,
+      unit: 'image',
+      rate: price.outputUnitExactCents / 100,
+      presentedBaseCents: Math.ceil(price.outputSubtotalExactCents - 1e-9),
+      addons: price.referenceSubtotalExactCents > 0
+        ? [{ type: 'reference_images', amountCents: Math.ceil(price.referenceSubtotalExactCents - 1e-9) }]
+        : [],
+      meta: {
+        quality,
+        pricingTier: tier.billingKey,
+        pricing_model: 'gpt_image_2_5_quality_size',
+        provider_cost_source: 'fal_gpt_image_2_5_pricing_table',
+        reference_image_count: price.referenceImageCount,
+        paid_reference_image_count: price.paidReferenceImageCount,
+      },
+    });
+  }
+
   if (engine.id === 'gpt-image-2') {
     const tier = resolveGptImage2PricingTier(resolution);
     const quality = normalizeGptImage2Quality(context.quality ?? undefined);
@@ -376,7 +415,9 @@ export function buildPublicUnitPricingFacts(input: {
     exactCents: Math.max(0, input.unitPriceCents) * quantity,
     quantity,
     unit: input.unit,
-    compatibilityProfileId: 'public-rounded-vendor-current',
+    compatibilityProfileId: isGptImage25EngineId(input.engineId)
+      ? 'standard'
+      : 'public-rounded-vendor-current',
     rate: input.unitPriceCents / 100,
   });
 }

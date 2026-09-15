@@ -307,10 +307,10 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     intro: 'Capabilities, examples and prices. Choose what your project needs.',
     sections: [MARKETING_MODELS_USE_CASE_SECTION, {
       key: 'moreModels', titleKey: 'nav.dropdown.moreModels', titleFallback: 'More creative possibilities',
-      items: ['gpt-image-2', 'flux-3', 'gemini-omni-flash'].flatMap(slug => {
+      items: ['gpt-image-2-5-flare', 'flux-3', 'gemini-omni-flash'].flatMap(slug => {
         const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.lifecycle !== 'retired');
         if (!model) return [];
-        return [{key: slug, label: slug === 'gpt-image-2' ? 'GPT Image 2' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.1', href: modelLink(slug), icon: slug === 'gpt-image-2' ? 'image' as const : 'cinema' as const}];
+        return [{key: slug, label: slug === 'gpt-image-2-5-flare' ? 'GPT Image 2.5 Flare' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.1', href: modelLink(slug), icon: slug === 'gpt-image-2-5-flare' ? 'image' as const : 'cinema' as const}];
       }),
     }],
     allHref: { pathname: '/models' },

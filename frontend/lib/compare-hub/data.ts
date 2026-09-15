@@ -7,6 +7,8 @@ const EXCLUDED_ENGINE_SLUGS = new Set([
   'nano-banana-pro',
   'nano-banana-2',
   'gpt-image-2',
+  'gpt-image-2-5-flare',
+  'gpt-image-2-5-sunburst',
   'seedream',
   'seedream-5-0-pro',
   'luma-uni-1',

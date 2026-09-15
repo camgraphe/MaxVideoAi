@@ -13,6 +13,22 @@ const FALLBACK_POSTERS: Readonly<Record<string, Readonly<Record<string, string>>
     mask: '/assets/model-examples/gpt-image-2/mask.webp',
     final: '/assets/model-examples/gpt-image-2/final.webp',
   },
+  'gpt-image-2-5-flare': {
+    product: '/assets/model-examples/gpt-image-2/product.webp',
+    typography: '/assets/model-examples/gpt-image-2/typography.webp',
+    ui: '/assets/model-examples/gpt-image-2/ui.webp',
+    edit: '/assets/model-examples/gpt-image-2/edit.webp',
+    mask: '/assets/model-examples/gpt-image-2/mask.webp',
+    final: '/assets/model-examples/gpt-image-2/final.webp',
+  },
+  'gpt-image-2-5-sunburst': {
+    product: '/assets/model-examples/gpt-image-2/product.webp',
+    typography: '/assets/model-examples/gpt-image-2/typography.webp',
+    ui: '/assets/model-examples/gpt-image-2/ui.webp',
+    edit: '/assets/model-examples/gpt-image-2/edit.webp',
+    mask: '/assets/model-examples/gpt-image-2/mask.webp',
+    final: '/assets/model-examples/gpt-image-2/final.webp',
+  },
   'nano-banana': {
     campaign: '/assets/model-examples/nano-banana/campaign.webp',
     typography: '/assets/model-examples/nano-banana/typography.webp',

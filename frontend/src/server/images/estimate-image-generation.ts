@@ -17,6 +17,8 @@ import {
 } from '@/lib/image/inputSchema';
 import {
   parseGptImage2SizeKey,
+  isGptImageFamilyEngineId,
+  isGptImage25EngineId,
   resolveGptImage2AutoInputImageSize,
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
@@ -135,7 +137,7 @@ async function estimateImageGenerationInternal(
   const rawReferenceSizes = Array.isArray(input.referenceImageSizes) ? input.referenceImageSizes : [];
   const referenceImageSizes = normalizeReferenceImageSizes(rawReferenceSizes);
   let customImageSize = parseGptImage2SizeKey(resolutionResult.resolution);
-  if (engine.id === 'gpt-image-2' && resolutionResult.resolution === 'custom') {
+  if (isGptImageFamilyEngineId(engine.id) && resolutionResult.resolution === 'custom') {
     const result = validateGptImage2CustomImageSize(webExtensions ? input.customImageSize : undefined);
     if (!result.ok) {
       throw new ImageEstimateError('image_size_invalid', 400, {
@@ -144,7 +146,7 @@ async function estimateImageGenerationInternal(
     }
     customImageSize = result.size;
   }
-  if (engine.id === 'gpt-image-2' && mode === 'i2i' && resolutionResult.resolution === 'auto') {
+  if (isGptImageFamilyEngineId(engine.id) && mode === 'i2i' && resolutionResult.resolution === 'auto') {
     customImageSize = resolveGptImage2AutoInputImageSize(rawReferenceSizes);
   }
 
@@ -160,7 +162,9 @@ async function estimateImageGenerationInternal(
     ? mode === 'i2i'
       ? Math.max(0, referenceImageCount - 1)
       : referenceImageCount
-    : undefined;
+    : isGptImage25EngineId(engine.id) && mode === 'i2i'
+      ? referenceImageCount
+      : undefined;
 
   const pricing = await computeCanonicalPublicSnapshot({
     engine,

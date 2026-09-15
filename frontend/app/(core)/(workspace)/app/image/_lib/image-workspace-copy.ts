@@ -46,6 +46,7 @@ export interface ImageWorkspaceCopy {
     seedLabel: string;
     seedPlaceholder: string;
     outputFormatLabel: string;
+    backgroundLabel: string;
     outputFormatHint: string;
     qualityLabel: string;
     qualityHint: string;
@@ -215,6 +216,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     seedLabel: 'Seed',
     seedPlaceholder: 'Optional',
     outputFormatLabel: 'Output format',
+    backgroundLabel: 'Background',
     outputFormatHint: 'Choose the file type for the final images.',
     qualityLabel: 'Quality',
     qualityHint: 'Controls model fidelity and cost when supported.',

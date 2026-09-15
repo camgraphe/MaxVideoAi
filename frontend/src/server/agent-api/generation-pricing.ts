@@ -17,6 +17,7 @@ import {
 import type { EngineCaps, PreflightRequest, PreflightResponse, PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import {
+  isGptImageFamilyEngineId,
   resolveGptImage2AutoInputImageSize,
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
@@ -199,7 +200,7 @@ function canonicalEffectiveCustomImageSize(
   const explicit = canonicalCustomImageSize(request);
   if (explicit) return explicit;
   if (
-    request.engineId !== 'gpt-image-2'
+    !isGptImageFamilyEngineId(request.engineId)
     || request.mode !== 'i2i'
     || request.settings.resolution !== 'auto'
   ) return null;

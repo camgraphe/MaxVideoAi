@@ -32,6 +32,7 @@ type UseImageSettingsFieldsParams = {
   resolvedCopy: ImageWorkspaceCopy;
   selectedEngineCaps: EngineCaps | undefined;
   setAspectRatio: Dispatch<SetStateAction<string | null>>;
+  setBackground: Dispatch<SetStateAction<string | null>>;
   setCustomImageHeight: Dispatch<SetStateAction<string>>;
   setCustomImageWidth: Dispatch<SetStateAction<string>>;
   setEnableWebSearch: Dispatch<SetStateAction<boolean>>;
@@ -53,6 +54,7 @@ export function useImageSettingsFields({
   resolvedCopy,
   selectedEngineCaps,
   setAspectRatio,
+  setBackground,
   setCustomImageHeight,
   setCustomImageWidth,
   setEnableWebSearch,
@@ -119,6 +121,14 @@ export function useImageSettingsFields({
   );
   const qualityOptions = useMemo(
     () => getImageFieldValues(selectedEngineCaps ?? null, 'quality', mode),
+    [selectedEngineCaps, mode]
+  );
+  const backgroundField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'background', mode),
+    [selectedEngineCaps, mode]
+  );
+  const backgroundOptions = useMemo(
+    () => getImageFieldValues(selectedEngineCaps ?? null, 'background', mode),
     [selectedEngineCaps, mode]
   );
   const styleField = useMemo(
@@ -286,6 +296,16 @@ export function useImageSettingsFields({
   }, [styleField, styleOptions, selectedEngineCaps, mode, setStyle]);
 
   useEffect(() => {
+    if (!backgroundField || !backgroundOptions.length) {
+      setBackground(null);
+      return;
+    }
+    const defaultValue =
+      getImageFieldDefaultString(selectedEngineCaps ?? null, 'background', mode) ?? backgroundOptions[0] ?? null;
+    setBackground((previous) => previous && backgroundOptions.includes(previous) ? previous : defaultValue);
+  }, [backgroundField, backgroundOptions, selectedEngineCaps, mode, setBackground]);
+
+  useEffect(() => {
     if (!maskUrlField) {
       setMaskUrl('');
     }
@@ -393,6 +413,13 @@ export function useImageSettingsFields({
       })),
     [styleOptions]
   );
+  const backgroundSelectOptions = useMemo(
+    () => backgroundOptions.map((option) => ({
+      value: option,
+      label: option === 'auto' ? 'Auto' : option === 'transparent' ? 'Transparent' : 'Opaque',
+    })),
+    [backgroundOptions]
+  );
   const thinkingLevelSelectOptions = useMemo(
     () =>
       thinkingLevelOptions.map((option) => ({
@@ -416,6 +443,7 @@ export function useImageSettingsFields({
   const showSeedControl = Boolean(seedField);
   const showStyleControl = Boolean(styleField) && styleSelectOptions.length > 0;
   const showOutputFormatControl = Boolean(outputFormatField) && outputFormatSelectOptions.length > 0;
+  const showBackgroundControl = Boolean(backgroundField) && backgroundSelectOptions.length > 0;
   const showCustomImageSizeControl =
     Boolean(customImageWidthField && customImageHeightField) && resolution === 'custom';
   const showEnableWebSearchControl = Boolean(enableWebSearchField);
@@ -428,6 +456,9 @@ export function useImageSettingsFields({
     aspectRatioOptions,
     aspectRatioSelectOptions,
     booleanSelectOptions,
+    backgroundField,
+    backgroundOptions,
+    backgroundSelectOptions,
     customImageHeightField,
     customImageWidthField,
     enableWebSearchField,
@@ -448,6 +479,7 @@ export function useImageSettingsFields({
     resolutionSelectOptions,
     seedField,
     showAspectRatioControl,
+    showBackgroundControl,
     showCustomImageSizeControl,
     showEnableWebSearchControl,
     showLimitGenerationsControl,

@@ -258,13 +258,28 @@ export function validateProviderSpecificConstraints(params: {
     }
   }
   if (params.engineId === 'wan-3' || params.engineId === 'wan-3-prime') {
-    const hasFile = typeof params.payload.file_url === 'string' && params.payload.file_url.trim().length > 0;
-    const hasWeb = typeof params.payload.web_url === 'string' && params.payload.web_url.trim().length > 0;
-    if (hasFile || hasWeb) {
+    const fileUrl = typeof params.payload.file_url === 'string' ? params.payload.file_url.trim() : '';
+    const webUrl = typeof params.payload.web_url === 'string' ? params.payload.web_url.trim() : '';
+    if (fileUrl && webUrl) {
+      return minimaxH3Error('file_url', 'Wan accepts either one document URL or one webpage URL, not both.');
+    }
+    if ((fileUrl || webUrl) && params.payload.enable_prompt_expansion === false) {
       return minimaxH3Error(
-        hasFile ? 'file_url' : 'web_url',
-        'Wan document and web references are not available on this execution surface.',
+        'enable_prompt_expansion',
+        'Wan document and webpage references require prompt expansion.',
       );
+    }
+    for (const [field, value] of [['file_url', fileUrl], ['web_url', webUrl]] as const) {
+      if (!value) continue;
+      if (params.normalizedMode !== 'ref2v') {
+        return minimaxH3Error(field, `Wan ${field} is available in reference mode only.`);
+      }
+      try {
+        const parsed = new URL(value);
+        if (parsed.protocol !== 'https:' || parsed.username || parsed.password) throw new Error('invalid URL');
+      } catch {
+        return minimaxH3Error(field, `Wan ${field} must be a public HTTPS URL.`);
+      }
     }
     if (params.normalizedMode === 'v2v' || params.normalizedMode === 'extend') {
       const sourceVideo = typeof params.payload.video_url === 'string'

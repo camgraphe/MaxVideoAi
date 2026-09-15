@@ -8,6 +8,12 @@ type ControlOption = {
 };
 
 export type ImageAdvancedSettingsContentProps = {
+  background?: {
+    label: string;
+    value: string;
+    options: ControlOption[];
+    onChange: (value: string) => void;
+  };
   seed?: {
     label: string;
     placeholder: string;
@@ -83,6 +89,7 @@ function AdvancedSelect({
 }
 
 export function ImageAdvancedSettingsContent({
+  background,
   seed,
   maskUrl,
   customImageSize,
@@ -113,6 +120,14 @@ export function ImageAdvancedSettingsContent({
           value={thinkingLevel.value}
           options={thinkingLevel.options}
           onChange={(value) => thinkingLevel.onChange(String(value))}
+        />
+      ) : null}
+      {background ? (
+        <AdvancedSelect
+          label={background.label}
+          value={background.value}
+          options={background.options}
+          onChange={(value) => background.onChange(String(value))}
         />
       ) : null}
       {customImageSize ? (

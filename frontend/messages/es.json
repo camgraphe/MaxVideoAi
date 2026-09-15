@@ -4093,6 +4093,7 @@
         "outputFormatLabel": "Formato de salida",
         "outputFormatHint": "Elige el tipo de archivo de las imágenes finales.",
         "qualityLabel": "Calidad",
+        "backgroundLabel": "Fondo",
         "qualityHint": "Controla la fidelidad del modelo y el costo cuando está disponible.",
         "customWidthLabel": "Ancho",
         "customHeightLabel": "Alto",

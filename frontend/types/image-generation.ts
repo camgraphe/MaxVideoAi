@@ -29,7 +29,8 @@ export interface ImageGenerationRequest {
   visibility?: 'public' | 'private';
   seed?: number;
   outputFormat?: 'jpeg' | 'png' | 'webp';
-  quality?: 'low' | 'medium' | 'high';
+  quality?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+  background?: 'auto' | 'transparent' | 'opaque';
   style?: string;
   maskUrl?: string;
   enableWebSearch?: boolean;

@@ -12,16 +12,16 @@ const comparisonPaths = getHubComparisonSlugsForSitemap().map(
 const modelPaths = modelRoster.map(({ modelSlug }) => `/models/${modelSlug}`);
 const dynamicPaths = new Set([...modelPaths, ...comparisonPaths]);
 
-test('P1 adds nine English routes while the safe GSC cleanup prunes 82 weak localized locs', () => {
-  assert.equal(modelPaths.length - fixture.publishedModelCount, 3);
+test('P1 plus GPT Image 2.5 add eleven English routes while the safe GSC cleanup prunes 82 weak localized locs', () => {
+  assert.equal(modelPaths.length - fixture.publishedModelCount, 5);
   assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 6);
-  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 9);
+  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 11);
 
   const localizedLocCount = modelRoster.length * 3 + getHubComparisonSlugsForSitemap().reduce(
     (total, slug) => total + getIndexableComparisonLocales(slug).length,
     0,
   );
-  assert.equal(localizedLocCount - fixture.localizedLocCount, 23 - 82);
+  assert.equal(localizedLocCount - fixture.localizedLocCount, 29 - 82);
   for (const path of fixture.expectedNewEnglishPaths) assert.equal(dynamicPaths.has(path), true, path);
   for (const path of [
     '/ai-video-engines/seedance-2-5-vs-wan-3',
