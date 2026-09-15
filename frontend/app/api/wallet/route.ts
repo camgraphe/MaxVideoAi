@@ -25,11 +25,13 @@ import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
   evaluateWalletCheckoutGuard,
+  hashCheckoutIp,
   markCheckoutAttemptSessionCreated,
   markCheckoutAttemptSessionFailed,
   resolveCheckoutClientIp,
 } from '@/server/checkout-guard';
 import { findReusableExpressCheckoutSession } from '@/server/checkout-session-reuse';
+import { withCheckoutSessionPreparationLock } from '@/server/checkout-session-coordination';
 import { getWalletSummary } from '@/server/wallet-summary';
 import { buildCheckoutAttemptAttributionMetadata, buildWalletAttributionMetadata, normalizeWalletAttribution } from '@/server/wallet-attribution';
 import { resolveWalletDirectPricingGate } from '@/lib/wallet-direct-pricing';
@@ -391,8 +393,9 @@ export async function POST(req: NextRequest) {
   }
 
   let checkoutAttemptId: number | null = null;
+  const checkoutClientIp = resolveCheckoutClientIp(req.headers);
 
-  try {
+  const prepareCheckoutSession = async () => {
     // Create a one-off Checkout Session for top-up
     const hasCompletedTopUp = await hasCompletedWalletTopUp(userId);
     const isFirstTopUp = !hasCompletedTopUp;
@@ -406,7 +409,6 @@ export async function POST(req: NextRequest) {
         amountCents,
         attribution: walletAttribution,
         currency: resolvedCurrencyUpper,
-        gaSessionId: walletGa4Context.sessionId,
       });
       if (reusableSession) {
         console.info('[payments] reusable checkout session returned', {
@@ -431,7 +433,7 @@ export async function POST(req: NextRequest) {
     const captchaToken = typeof body.captchaToken === 'string' ? body.captchaToken : null;
     const checkoutGuard = await evaluateWalletCheckoutGuard({
       userId,
-      clientIp: resolveCheckoutClientIp(req.headers),
+      clientIp: checkoutClientIp,
       amountCents,
       mode: isExpressCheckoutTopUp ? 'express_checkout' : 'hosted',
       hasCompletedTopUp,
@@ -576,6 +578,14 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ id: session.id, checkoutAttemptId: checkoutGuard.attemptId, url: session.url });
+  };
+
+  try {
+    if (!isExpressCheckoutTopUp) return await prepareCheckoutSession();
+    return await withCheckoutSessionPreparationLock(
+      { userId, ipHash: hashCheckoutIp(checkoutClientIp) },
+      prepareCheckoutSession,
+    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Stripe error creating checkout session';
     if (checkoutAttemptId) {

@@ -4,7 +4,6 @@ import {
   matchesWalletAttribution,
   type NormalizedWalletAttribution,
 } from '@/server/wallet-attribution';
-import { normalizeGa4SessionId } from '@/lib/analytics/ga-session-id';
 
 export const EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS = 30 * 60;
 
@@ -20,7 +19,6 @@ export type ReusableStripeCheckoutSessionInput = {
   clientSecret?: string | null;
   created?: number | null;
   expiresAt?: number | null;
-  gaSessionId?: string | null;
   metadata?: Record<string, string> | null;
   now?: number;
   paymentStatus?: string | null;
@@ -31,7 +29,6 @@ export function isReusableStripeCheckoutSession({
   attribution,
   clientSecret,
   expiresAt,
-  gaSessionId,
   metadata,
   now = Math.floor(Date.now() / 1000),
   paymentStatus,
@@ -44,8 +41,7 @@ export function isReusableStripeCheckoutSession({
       paymentStatus === 'unpaid' &&
       expiresAtSeconds !== null &&
       expiresAtSeconds > now &&
-      matchesWalletAttribution(metadata ?? {}, attribution ?? null) &&
-      normalizeGa4SessionId(metadata?.ga_session_id) === normalizeGa4SessionId(gaSessionId)
+      matchesWalletAttribution(metadata ?? {}, attribution ?? null)
   );
 }
 
@@ -55,14 +51,12 @@ export async function findReusableExpressCheckoutSession(
     amountCents,
     attribution,
     currency,
-    gaSessionId,
     hasCompletedTopUp = false,
     userId,
   }: {
     amountCents: number;
     attribution?: NormalizedWalletAttribution | null;
     currency: string;
-    gaSessionId?: string | null;
     userId: string;
     hasCompletedTopUp?: boolean;
   }
@@ -100,7 +94,6 @@ export async function findReusableExpressCheckoutSession(
           attribution,
           clientSecret: session.client_secret,
           expiresAt: session.expires_at,
-          gaSessionId,
           metadata: session.metadata,
           now,
           paymentStatus: session.payment_status,
