@@ -224,6 +224,7 @@ export function summarizeWorkspaceInputSchema({
       if (!appliesToMode(field)) return;
       const localizedField = localizeLtxField(field, uiLocale, selectedEngine?.id);
       const normalizedId = normalizeFieldId(localizedField.id);
+      const required = isRequired(localizedField, origin);
       if (localizedField.type === 'text') {
         const normalizedIdValue = (localizedField.id ?? '').toLowerCase();
         const normalizedIdCompact = normalizedIdValue.replace(/[^a-z0-9]/g, '');
@@ -246,13 +247,14 @@ export function summarizeWorkspaceInputSchema({
           return;
         }
         const isPrompt = normalizedIdValue === 'prompt';
-        if (!promptField || isPrompt) {
+        if (isPrompt) {
           promptField = localizedField;
           promptFieldOrigin = origin;
+        } else if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
+          secondaryFields.push({ field: localizedField, required });
         }
         return;
       }
-      const required = isRequired(localizedField, origin);
       if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
         if (isUnifiedKlingO3 && localizedField.id === 'start_image_url') {
           return;

@@ -81,6 +81,8 @@ export const WAN_3_INPUT_SCHEMA: NonNullable<EngineCaps['inputSchema']> = {
     { id: 'reference_image_urls', type: 'image', label: 'Reference images', modes: ['ref2v'], minCount: 0, maxCount: 10, maxSizeMB: 20, source: 'either' },
     { id: 'reference_video_urls', type: 'video', label: 'Reference videos', modes: ['ref2v'], minCount: 0, maxCount: 5, maxDurationSec: 15, maxSizeMB: 100, source: 'either', description: 'Combined video duration <=15 seconds; each video must be >=16 fps.' },
     { id: 'reference_audio_urls', type: 'audio', label: 'Reference audio', modes: ['ref2v'], minCount: 0, maxCount: 5, maxDurationSec: 15, maxSizeMB: 15, source: 'either', description: 'Combined audio duration <=15 seconds.' },
+    { id: 'file_url', type: 'text', label: 'Document URL', modes: ['ref2v'], description: 'Public HTTPS document URL. Supports PDF, Office, iWork, Markdown, and text files up to 100 MB / 50 pages. Cannot be combined with a webpage URL.' },
+    { id: 'web_url', type: 'text', label: 'Public webpage URL', modes: ['ref2v'], description: 'Public HTTPS webpage that does not require login. Cannot be combined with a document URL.' },
     { id: 'duration', type: 'number', label: 'Duration (seconds)', modes: COMMON_MODES, min: 2, max: 30, step: 1, default: 5, description: 'Choose a whole-number output duration from 2 to 30 seconds.' },
     { id: 'resolution', type: 'enum', label: 'Resolution', modes: COMMON_MODES, values: [...WAN_3_RESOLUTIONS], default: '1080p' },
     { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', modes: COMMON_MODES, values: [...WAN_3_PROVIDER_ASPECT_RATIOS], default: 'adaptive' },
@@ -93,7 +95,7 @@ export const WAN_3_INPUT_SCHEMA: NonNullable<EngineCaps['inputSchema']> = {
     maxCombinedAudioDurationSec: 15,
     maxSourcePlusOutputDurationSec: 30,
     minimumReferenceVideoFps: 16,
-    atLeastOneReferenceField: ['reference_image_urls', 'reference_video_urls', 'reference_audio_urls'],
+    atLeastOneReferenceField: ['reference_image_urls', 'reference_video_urls', 'reference_audio_urls', 'file_url', 'web_url'],
   },
 };
 

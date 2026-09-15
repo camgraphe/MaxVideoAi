@@ -20,6 +20,8 @@ export type AlibabaVideoPayloadInput = {
   referenceImageUrls?: Array<string | AlibabaReferenceAsset> | null;
   referenceVideoUrls?: Array<string | AlibabaReferenceAsset> | null;
   referenceAudioUrls?: Array<string | AlibabaReferenceAsset> | null;
+  fileUrl?: string | null;
+  webUrl?: string | null;
   inputVideoDurationSec?: number | null;
   promptExtend?: boolean;
   seed?: number | null;
@@ -141,8 +143,16 @@ function buildWanPayload(input: AlibabaVideoPayloadInput, model: 'wan3.0-video' 
   const referenceImages = normalizeAssets(input.referenceImageUrls, 'reference image', 10);
   const referenceVideos = normalizeAssets(input.referenceVideoUrls, 'reference video', 5);
   const referenceAudio = normalizeAssets(input.referenceAudioUrls, 'reference audio', 5);
+  const file = cleanString(input.fileUrl) ? normalizeAsset(input.fileUrl as string, 'document') : null;
+  const link = cleanString(input.webUrl) ? normalizeAsset(input.webUrl as string, 'webpage') : null;
   validateTimedReferences(referenceVideos, 'video');
   validateTimedReferences(referenceAudio, 'audio');
+  if (file && link) {
+    invalidRequest('Wan 3 cannot combine document and webpage references.', 'ALIBABA_FILE_LINK_CONFLICT');
+  }
+  if ((file || link) && input.promptExtend === false) {
+    invalidRequest('Wan 3 document and webpage references require prompt expansion.', 'ALIBABA_PROMPT_EXPANSION_REQUIRED');
+  }
 
   const startImage = cleanString(input.startImageUrl)
     ? normalizeAsset(input.startImageUrl as string, 'start image')
@@ -153,7 +163,7 @@ function buildWanPayload(input: AlibabaVideoPayloadInput, model: 'wan3.0-video' 
   if (endImage && !startImage) {
     invalidRequest('Wan 3 last-frame input requires a first frame.', 'ALIBABA_LAST_FRAME_REQUIRES_FIRST_FRAME');
   }
-  if ((startImage || endImage) && (referenceImages.length || referenceVideos.length || referenceAudio.length)) {
+  if ((startImage || endImage) && (referenceImages.length || referenceVideos.length || referenceAudio.length || file || link)) {
     invalidRequest(
       'Wan 3 cannot combine frame interpolation with reference media.',
       'ALIBABA_FRAME_REFERENCE_CONFLICT'
@@ -162,7 +172,7 @@ function buildWanPayload(input: AlibabaVideoPayloadInput, model: 'wan3.0-video' 
   if (input.mode === 'i2v' && !startImage) {
     invalidRequest('Wan 3 image-to-video requires a first frame.', 'ALIBABA_FIRST_FRAME_REQUIRED');
   }
-  if (input.mode === 'ref2v' && referenceImages.length + referenceVideos.length + referenceAudio.length === 0) {
+  if (input.mode === 'ref2v' && referenceImages.length + referenceVideos.length + referenceAudio.length === 0 && !file && !link) {
     invalidRequest('Wan 3 reference-to-video requires reference media.', 'ALIBABA_REFERENCE_REQUIRED');
   }
   if ((input.mode === 'v2v' || input.mode === 'extend') && referenceVideos.length !== 1) {
@@ -180,6 +190,8 @@ function buildWanPayload(input: AlibabaVideoPayloadInput, model: 'wan3.0-video' 
   pushMedia(media, 'reference_image', referenceImages);
   pushMedia(media, 'reference_video', referenceVideos);
   pushMedia(media, 'reference_audio', referenceAudio);
+  if (file) media.push({ type: 'file', url: file.url });
+  if (link) media.push({ type: 'link', url: link.url });
   return {
     model,
     input: {

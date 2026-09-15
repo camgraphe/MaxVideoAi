@@ -123,7 +123,7 @@ test('Wan 3 and Prime preserve the complete provider schema and reference contra
   ];
   const referenceFields = [
     'prompt', ...commonControls, 'reference_image_urls', 'reference_video_urls',
-    'reference_audio_urls',
+    'reference_audio_urls', 'file_url', 'web_url',
   ].sort();
 
   for (const id of ['wan-3', 'wan-3-prime'] as const) {
@@ -141,7 +141,7 @@ test('Wan 3 and Prime preserve the complete provider schema and reference contra
     assert.equal(field(id, 'ref2v', 'reference_audio_urls').maxCount, 5);
     assert.equal(field(id, 'ref2v', 'reference_audio_urls').maxSizeMB, 15);
     assert.deepEqual(entry(id).engine.inputSchema?.constraints?.atLeastOneReferenceField, [
-      'reference_image_urls', 'reference_video_urls', 'reference_audio_urls',
+      'reference_image_urls', 'reference_video_urls', 'reference_audio_urls', 'file_url', 'web_url',
     ]);
     assert.equal(entry(id).engine.inputLimits?.promptMaxChars, 20_000);
     assert.equal(entry(id).engine.extend, true);

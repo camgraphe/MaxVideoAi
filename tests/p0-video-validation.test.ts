@@ -105,18 +105,18 @@ test('site validation uses Wan provider field names and accepts audio-only refer
   }).ok, false);
 });
 
-test('Wan file and web references remain unavailable on the shared execution surface', () => {
+test('Wan file and web references are valid direct reference sources', () => {
   const schema = candidate('wan-3').engine.inputSchema;
   const context = { inputSchema: schema, referenceValuesByField: {} };
   for (const field of ['file_url', 'web_url'] as const) {
     assert.equal(validateRequest('wan-3', 'ref2v', {
       prompt: 'P', duration: 5, resolution: '720p', aspect_ratio: 'auto', audio: true,
-      [field]: 'https://example.com/reference', enable_thinking: true,
-    }, context).ok, false);
+      [field]: 'https://example.com/reference',
+    }, context).ok, true);
   }
 });
 
-test('site generation pipeline rejects unavailable Wan document and web references', () => {
+test('site generation pipeline accepts one secure Wan document or web reference', () => {
   const engine = candidate('wan-3').engine;
   const base = {
     engineId: engine.id, mode: 'ref2v' as const, prompt: 'P', multiPrompt: null,
@@ -134,22 +134,26 @@ test('site generation pipeline rejects unavailable Wan document and web referenc
     const extra = validateExtraInputValues({
       engine,
       mode: 'ref2v',
-      rawExtraInputValues: { [field]: 'https://example.com/reference', enable_thinking: true },
+      rawExtraInputValues: { [field]: 'https://example.com/reference' },
     });
-    assert.equal(extra.ok, false, field);
+    assert.equal(extra.ok, true, field);
   }
 
   for (const rawExtraInputValues of [
-    { file_url: 'https://example.com/reference.pdf', enable_thinking: false },
-    { web_url: 'https://example.com/reference', enable_thinking: false },
     {
       file_url: 'https://example.com/reference.pdf',
       web_url: 'https://example.com/reference',
-      enable_thinking: true,
     },
+    { file_url: 'http://example.com/reference.pdf' },
+    { web_url: 'not-a-url' },
+    { file_url: 'https://example.com/reference.pdf', enable_prompt_expansion: false },
   ]) {
     const extra = validateExtraInputValues({ engine, mode: 'ref2v', rawExtraInputValues });
-    assert.equal(extra.ok, false);
+    assert.equal(extra.ok, true);
+    assert.equal(validateRequest('wan-3', 'ref2v', {
+      prompt: 'P', duration: 5, resolution: '720p', aspect_ratio: 'auto', audio: true,
+      ...extra.values,
+    }, { inputSchema: engine.inputSchema, referenceValuesByField: {} }).ok, false);
   }
 });
 

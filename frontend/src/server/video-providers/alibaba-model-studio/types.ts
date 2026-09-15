@@ -5,7 +5,9 @@ export type AlibabaMediaType =
   | 'last_frame'
   | 'reference_image'
   | 'reference_video'
-  | 'reference_audio';
+  | 'reference_audio'
+  | 'file'
+  | 'link';
 
 export type AlibabaMedia = {
   type: AlibabaMediaType;

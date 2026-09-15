@@ -187,7 +187,6 @@ test('Wan ref2v preserves validated document and web references in exact Fal bod
       audio: true,
       extraInputValues: {
         [field]: `https://example.com/${field === 'file_url' ? 'reference.pdf' : 'reference'}`,
-        enable_thinking: true,
       },
     }, 'alibaba/wan-3.0/reference-to-video', {
       prompt,

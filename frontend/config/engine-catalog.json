@@ -21224,6 +21224,24 @@
             "description": "Combined audio duration <=15 seconds."
           },
           {
+            "id": "file_url",
+            "type": "text",
+            "label": "Document URL",
+            "modes": [
+              "ref2v"
+            ],
+            "description": "Public HTTPS document URL. Supports PDF, Office, iWork, Markdown, and text files up to 100 MB / 50 pages. Cannot be combined with a webpage URL."
+          },
+          {
+            "id": "web_url",
+            "type": "text",
+            "label": "Public webpage URL",
+            "modes": [
+              "ref2v"
+            ],
+            "description": "Public HTTPS webpage that does not require login. Cannot be combined with a document URL."
+          },
+          {
             "id": "duration",
             "type": "number",
             "label": "Duration (seconds)",
@@ -21329,7 +21347,9 @@
           "atLeastOneReferenceField": [
             "reference_image_urls",
             "reference_video_urls",
-            "reference_audio_urls"
+            "reference_audio_urls",
+            "file_url",
+            "web_url"
           ]
         }
       },
@@ -21879,6 +21899,24 @@
             "description": "Combined audio duration <=15 seconds."
           },
           {
+            "id": "file_url",
+            "type": "text",
+            "label": "Document URL",
+            "modes": [
+              "ref2v"
+            ],
+            "description": "Public HTTPS document URL. Supports PDF, Office, iWork, Markdown, and text files up to 100 MB / 50 pages. Cannot be combined with a webpage URL."
+          },
+          {
+            "id": "web_url",
+            "type": "text",
+            "label": "Public webpage URL",
+            "modes": [
+              "ref2v"
+            ],
+            "description": "Public HTTPS webpage that does not require login. Cannot be combined with a document URL."
+          },
+          {
             "id": "duration",
             "type": "number",
             "label": "Duration (seconds)",
@@ -21984,7 +22022,9 @@
           "atLeastOneReferenceField": [
             "reference_image_urls",
             "reference_video_urls",
-            "reference_audio_urls"
+            "reference_audio_urls",
+            "file_url",
+            "web_url"
           ]
         }
       },
