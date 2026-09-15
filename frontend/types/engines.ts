@@ -237,6 +237,7 @@ export interface EngineCaps {
   latencyTier: LatencyTier;
   avgDurationMs?: number | null;
   durationSampleCount?: number | null;
+  timingCells?: import('@/lib/generation-timing').GenerationTimingCell[];
   durationSource?: 'completion_event' | null;
   queueDepth?: number;
   region?: string;

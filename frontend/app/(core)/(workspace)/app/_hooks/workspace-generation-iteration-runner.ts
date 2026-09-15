@@ -196,6 +196,7 @@ export async function runWorkspaceGenerationIteration({
   }
 
   const localRender = prepareLocalGenerationRender({
+    submissionMode,
     batchId,
     iterationIndex,
     iterationCount,

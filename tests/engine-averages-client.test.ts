@@ -39,6 +39,16 @@ test('optional engine timing cannot block or replace the fast catalog, and arriv
     assert.equal(latest.data?.engines[0]?.avgDurationMs, 98000);
     assert.equal(latest.data?.engines[0]?.durationSampleCount, 6);
     assert.equal(latest.data?.engines[0]?.durationSource, 'completion_event');
+    const completion = () => window.dispatchEvent(new dom.window.CustomEvent('jobs:status', { detail: { jobId: 'ready-1', status: 'completed' } }));
+    await act(async () => completion());
+    assert.equal(requests.filter((url) => url.includes('/averages')).length, 2, 'completion bypasses five-minute deduplication');
+    const timingCell = { mode: 'i2v', durationSec: 5, resolution: '720p', sampleCount: 7, averageDurationMs: 125000, recentSampleCount: 7, recentAverageDurationMs: 125000 };
+    await act(async () => resolveTiming(new Response(JSON.stringify({ source: 'completion_event', averages: { 'veo-3-1': 125000 }, samples: { 'veo-3-1': 7 }, matrix: { 'veo-3-1': [timingCell] } }))));
+    assert.equal(latest.data?.engines[0]?.avgDurationMs, 125000);
+    assert.deepEqual(latest.data?.engines[0]?.timingCells, [timingCell]);
+    await act(async () => completion());
+    assert.equal(requests.filter((url) => url.includes('/averages')).length, 2, 'duplicate completion does not refresh again');
+
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

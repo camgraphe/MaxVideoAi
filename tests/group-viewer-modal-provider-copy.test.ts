@@ -65,7 +65,7 @@ test('group viewer carries honest pending provenance and timing into the lightbo
 
   assert.doesNotMatch(html, /90%/);
   assert.match(html, /0%/);
-  for (const copy of ['Traitement en cours', 'Écoulé', 'Moyenne observée', 'Vérification indisponible', 'Vérifié il y a']) {
+  for (const copy of ['Traitement en cours', 'Écoulé', 'Moyenne observée', 'Actualisation du statut en cours', 'Dernière actualisation il y a']) {
     assert.ok(html.includes(copy), copy);
   }
   assert.doesNotMatch(html, /Preview unavailable|Media will be available once the render completes/);

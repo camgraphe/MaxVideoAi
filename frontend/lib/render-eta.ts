@@ -1,4 +1,7 @@
 import type { EngineCaps } from '@/types/engines';
+import { selectGenerationTiming } from './generation-timing';
+
+type TimingSettings = { resolution?: string | null; mode?: string | null };
 
 const ENGINE_RENDER_ETAS: Record<string, number> = {
   sora2: 42,
@@ -16,7 +19,9 @@ const MIN_RENDER_SECONDS = 15;
 const FAST_DEFAULT_SECONDS = 18;
 const STANDARD_DEFAULT_SECONDS = 28;
 
-export function estimateRenderSeconds(engine: EngineCaps | null | undefined, durationSec: number | null | undefined): number {
+export function estimateRenderSeconds(engine: EngineCaps | null | undefined, durationSec: number | null | undefined, settings?: TimingSettings): number {
+  const matched = selectGenerationTiming(engine?.timingCells, { ...settings, durationSec });
+  if (matched) return Math.max(1, Math.round(matched.averageDurationMs / 1000));
   if (typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0) {
     return Math.max(1, Math.round(engine.avgDurationMs / 1000));
   }
@@ -50,8 +55,9 @@ export function formatEtaLabel(seconds: number): string {
   return `≈ ${seconds}s`;
 }
 
-export function getRenderEta(engine: EngineCaps | null | undefined, durationSec: number | null | undefined): { seconds: number; label: string; source: 'observed' | 'heuristic'; sampleCount: number | null } {
-  const seconds = estimateRenderSeconds(engine, durationSec);
+export function getRenderEta(engine: EngineCaps | null | undefined, durationSec: number | null | undefined, settings?: TimingSettings): { seconds: number; label: string; source: 'observed' | 'heuristic'; sampleCount: number | null } {
+  const seconds = estimateRenderSeconds(engine, durationSec, settings);
+  const matched = selectGenerationTiming(engine?.timingCells, { ...settings, durationSec });
   const observed = typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0;
-  return { seconds, label: formatEtaLabel(seconds), source: observed ? 'observed' : 'heuristic', sampleCount: observed ? engine?.durationSampleCount ?? null : null };
+  return { seconds, label: formatEtaLabel(seconds), source: matched || observed ? 'observed' : 'heuristic', sampleCount: matched?.sampleCount ?? (observed ? engine?.durationSampleCount ?? null : null) };
 }
