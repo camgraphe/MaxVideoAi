@@ -348,6 +348,8 @@ export async function runWorkspaceGenerationIteration({
 
     const jobId = acceptedResult.jobId;
     const poll = async () => {
+      if (!isSubmissionCurrent() || !rendersRef.current.some(render => render.jobId === jobId
+        && render.status !== 'failed' && !(render.status === 'completed' && render.videoUrl))) return;
       try {
         const status = await getJobStatus(jobId);
         const localizedStatus = {
@@ -381,7 +383,7 @@ export async function runWorkspaceGenerationIteration({
           ? { ...render, observation: degradedGenerationObservation(render.observation) } : render));
         setSelectedPreview((current) => current?.id === jobId && current.status === 'pending'
           ? { ...current, observation: degradedGenerationObservation(current.observation) } : current);
-        window.setTimeout(poll, 3000);
+        window.setTimeout(poll, 15_000);
       }
     };
     window.setTimeout(poll, 1500);

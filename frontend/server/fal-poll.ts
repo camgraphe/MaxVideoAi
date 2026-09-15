@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { reconcileFinishingJobs } from '@/server/tools/finishing-poll';
@@ -21,15 +22,15 @@ type FalPendingJob = {
   created_at: string;
 };
 
-const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000, 120_000];
+const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000];
 const POLL_INITIAL_DELAY_MS = 5_000;
 const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED']);
 const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED', 'OK']);
 
-const defaults = { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals };
+const defaults = { claimGenerationPoll, query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals };
 
 export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
-  const { query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals } = { ...defaults, ...dependencies };
+  const { claimGenerationPoll, query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals } = { ...defaults, ...dependencies };
   const rows = await query<FalPendingJob>(
     `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
 	     FROM app_jobs
@@ -112,6 +113,8 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       updates += 1;
     };
 
+    const pollClaim = await claimGenerationPoll(job.job_id, query);
+    if (!pollClaim) continue;
     try {
       const now = Date.now();
       const updatedAtMs = Date.parse(job.updated_at);
@@ -200,6 +203,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
           console.warn('[fal-poll] fal status fetch failed', job.job_id, error);
           return null;
         })) as Record<string, unknown> | null;
+      if (statusInfo) await pollClaim.checked();
       await recordPollEvent(
         'poll:status',
         {
@@ -339,6 +343,8 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       console.warn('[fal-poll] failed to sync job', job.job_id, error);
       await recordPollEvent('poll:deferred', { reason: 'Render sync failed.' });
       await query(`UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status IN ('pending','queued','running','processing','in_progress')`, [job.job_id]);
+    } finally {
+      await pollClaim.release();
     }
   }
 

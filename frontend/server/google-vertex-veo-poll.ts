@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import {
@@ -58,6 +59,7 @@ type GoogleVertexVeoPendingJob = {
 
 type GoogleVertexVeoPollDeps = {
   queryFn?: QueryFn;
+  claimPollFn?: typeof claimGenerationPoll;
   getGoogleVertexVeoClientFn?: typeof getGoogleVertexVeoClient;
   isStorageConfiguredFn?: typeof isStorageConfigured;
   uploadFileBufferFn?: typeof uploadFileBuffer;
@@ -292,7 +294,7 @@ async function copyGoogleVeoOutputToStorage(params: {
   return upload.url;
 }
 
-export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPollDeps } = {}) {
+export async function runGoogleVertexVeoPoll(options: { jobId?: string; deps?: GoogleVertexVeoPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const getGoogleVertexVeoClientFn = deps.getGoogleVertexVeoClientFn ?? getGoogleVertexVeoClient;
@@ -316,9 +318,10 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
       WHERE provider = $1
         AND provider_job_id IS NOT NULL
         AND status = ANY($2::text[])
+      AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [GOOGLE_VERTEX_VEO_PROVIDER, ACTIVE_JOB_STATUSES]
+    [GOOGLE_VERTEX_VEO_PROVIDER, ACTIVE_JOB_STATUSES, options.jobId ?? null]
   );
 
   if (!rows.length) {
@@ -341,6 +344,8 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
       continue;
     }
 
+    const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
+    if (!pollClaim) continue;
     try {
       const route = resolveGoogleVertexVeoModelRoute(job.engine_id);
       const attempt = await findProviderAttemptForJob({
@@ -361,6 +366,7 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
         resolution: getResolutionFromSettingsSnapshot(job.settings_snapshot),
       });
 
+      await pollClaim.checked();
       if (task.status === 'queued' || task.status === 'running') {
         await queryFn(
           `UPDATE app_jobs
@@ -506,6 +512,8 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+    } finally {
+      await pollClaim.release();
     }
   }
 

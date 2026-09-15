@@ -26,7 +26,7 @@ export async function fetchGenerationTimingMatrix(options?: {
       SELECT unnest($1::text[]) AS alias, unnest($2::text[]) AS engine_id
     ), samples AS (
       SELECT COALESCE(a.engine_id, s.engine_id) AS engine_id, s.mode, s.duration_sec, s.resolution,
-        s.completed_at, EXTRACT(EPOCH FROM (s.completed_at - s.started_at)) * 1000 AS duration_ms
+        s.completed_at, COALESCE(s.provider_duration_ms, EXTRACT(EPOCH FROM (s.completed_at - s.started_at)) * 1000) AS duration_ms
       FROM generation_timing_samples s
       LEFT JOIN aliases a ON a.alias = LOWER(TRIM(s.engine_id))
     )

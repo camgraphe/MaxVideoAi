@@ -13,7 +13,7 @@ The migration recovers all available historical successful completion logs (earl
 
 `frontend/server/generation-timing.ts` reads aggregate cells for engine, engine+mode and engine+mode+duration+resolution. Catalog aliases are resolved before aggregation and resolution casing/whitespace is normalized during capture. Provider identity is retained in the ledger for diagnosis; the first estimator pools providers within a model/mode because the client does not know the final provider before submission. Aspect ratio does not select a timing cell. No per-job information, prompts or media URLs are returned to the browser.
 
-`frontend/lib/generation-timing.ts` selects a matching cell. Five or more observations use the cell mean; fewer blend progressively with the parent mean. A child cell falls back to its parent when its standard deviation divided by the square root of its sample count exceeds one quarter of its mean. This heuristic guards against unstable cohorts without deleting slow samples; it is not a formal confidence interval. All historical observations seed empty/recently sparse cases. Once a cell has five completions in the last 30 days, its recent mean replaces its historical mean. Below that threshold, historical evidence has at most five observations' weight alongside recent measurements. The threshold is a conservative initial policy, not a confidence guarantee. Long real waits are retained; no arbitrary resolution/duration multiplier is applied to observed cells. New models without observations retain the explicit heuristic fallback.
+`frontend/lib/generation-timing.ts` selects a matching cell. Five or more observations use the cell mean; fewer blend progressively with the parent mean. An unstable engine-level cell is rejected; a child cell falls back to its parent when its standard deviation divided by the square root of its sample count exceeds one quarter of its mean. This heuristic guards against unstable cohorts without deleting slow samples; it is not a formal confidence interval. All historical observations seed empty/recently sparse cases. Once a cell has five completions in the last 30 days, its recent mean replaces its historical mean. Below that threshold, historical evidence has at most five observations' weight alongside recent measurements. The threshold is a conservative initial policy, not a confidence guarantee. Long real waits are retained; no arbitrary resolution/duration multiplier is applied to observed cells. New models without observations retain the explicit heuristic fallback.
 
 `/api/engines/averages` returns this matrix plus compatible engine-level averages/counts and `source=completion_event`. If the migration is not installed, it falls back to the legacy log-based means. The optional principal-scoped SWR request remains independent of catalog loading, refreshes every five minutes while active, and revalidates on a new `jobs:status` completion event. Duplicate completion events are coalesced by job, and listeners are removed on scope change/unmount. The selected submission mode and resolution now accompany duration into local render preparation. Running jobs retain their original estimate; new estimates never postpone playable output.
 
@@ -31,7 +31,7 @@ Production read-only audit on 2026-09-15 identified 3,150 recoverable completion
 
 Stages reflect stored queued/running status, the provider's explicit IN_PROGRESS state, and evidenced delivery-copy state. Unknown pending remains unknown. A completed status with no available media is displayed as finalizing while the existing poller resolves delivery. Terminal results and newer checks cannot regress to stale pending status. The Fal status update is guarded against racing a terminal webhook, and rereads the owned record if that update loses the race.
 
-`GenerationPendingStatus` is a presentation clock only. Existing workspace polling owners retain their cadence/backoff. Concurrent authenticated browser status requests coalesce per principal/job while in flight; no response cache is retained. Audio polling holds one request in flight and keeps its five-second interval stable across state updates. A failed transport or degraded server check retains the last successful check time; silence over 30 seconds is shown as a stale check. Elapsed time, estimated total, overdue and degraded checks remain separate. Clocks are outside live announcements. Completed media is shown immediately, including saved pending records with legacy `minReadyAt` values.
+`GenerationPendingStatus` is a presentation clock only. Active workspace polling uses a 15-second cadence and stops on completed media or failure, including completed videos with no thumbnail. Concurrent authenticated browser status requests coalesce per principal/job while in flight; successful responses are reused for 15 seconds within the same principal/job scope. Audio polling holds one request in flight and keeps its five-second interval stable across state updates. A failed transport or degraded server check retains the last successful check time; silence over 30 seconds is shown as a stale check. Elapsed time, estimated total, overdue and degraded checks remain separate. Clocks are outside live announcements. Completed media is shown immediately, including saved pending records with legacy `minReadyAt` values.
 
 Validation uses injected query results, mocked HTTP and local browser fixtures only; it does not establish production sample availability, SQL execution plans or provider health. No production database, storage, provider generation or schema setup is required for these tests.
 
@@ -55,3 +55,42 @@ evidence of an overall accuracy gain. The implementation supplies the requested
 reference cells and automatic collection; any precision claim needs subsequent
 predictions evaluated against real completions. Keep this distinction when
 communicating “learning” to customers.
+
+## Active job reconciliation (September 2026 correction)
+
+The seven provider cron fallbacks run once a minute. An empty queue makes no provider calls.
+Authenticated `/api/jobs/[jobId]` reads also refresh the single active direct job through
+`refresh-direct-generation.ts`, which reuses the same six direct provider poll owners.
+Fal retains its existing status owner. The dispatcher exhaustively covers `VideoProviderKey`.
+
+Migration 47 and `generation-poll-state.ts` provide a shared per-job 15-second throttle
+and lease across browser tabs, request workers and cron. Completed/cancelled jobs cannot
+acquire it. Success records `checked_at`; database rereads and failed lookups do not
+advance it. The lease is released in `finally`; a crashed worker expires after two
+minutes. Browser clocks use this provider evidence. Browser request coalescing/cache
+prevents duplicate panel requests, and the iteration loop stops when its scope or
+tracked job is gone. Closing the browser leaves the one-minute cron recovery active.
+This is an operating cadence, not a guaranteed latency bound during provider failures,
+worker crashes, large backlogs or durable media-copy retries. Existing quota/batch
+limits remain; no second submission or paid generation is made by this mechanism.
+
+Selected previews keep their selected layout/identity but refresh their items from
+live pending groups and recent history. Completion cannot revert to an older pending
+snapshot. The same rule applies in the expanded viewer, including after active rows
+are removed on synchronization into history.
+
+Migration 46 retains original app completion timestamps and adds optional
+`provider_duration_ms`. Alibaba's explicit submit/end timestamps are subtracted in
+their common timezone (no guessed timezone conversion). This includes its queue and
+generation, but excludes app detection/copy delay. The estimator prefers this evidence
+where available; other providers keep the existing delivery-time sample. These are
+approximate estimates with different measurement coverage, not an SLA. Original
+end-to-end delivery evidence is preserved for auditing delay. Malformed/missing provider
+timestamps fall back to the original sample. Existing data is backfilled and both
+completion orderings (provider attempt first or app completion first) are supported.
+Older `settings.resolution` snapshots are recovered without changing any job or media.
+
+The WAN 3 Prime incident was caused by two historical 38-minute app reconciliation
+records for provider jobs lasting 209.530 and 167.981 seconds. Their engine-wide mean
+was accepted without the child-cell stability guard. That guard now also covers the
+root cell, and rejected matrix means cannot return through the legacy average fallback.

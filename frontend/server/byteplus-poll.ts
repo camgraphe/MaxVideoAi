@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
@@ -37,12 +38,11 @@ import {
   shouldRetryBytePlusStorageCopy,
   type BytePlusStorageCopyState,
 } from './byteplus-storage-copy';
-
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
-
 type BytePlusPollDeps = {
   nowFn?: () => number;
   queryFn?: QueryFn;
+  claimPollFn?: typeof claimGenerationPoll;
   getBytePlusArkConfigFn?: typeof getBytePlusArkConfig;
   getBytePlusModelArkClientFn?: typeof getBytePlusModelArkClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
@@ -54,7 +54,6 @@ type BytePlusPollDeps = {
   markBytePlusJobFailedFn?: typeof markBytePlusJobFailed;
   recordBytePlusPollEventFn?: typeof recordBytePlusPollEvent;
 };
-
 export {
   getBytePlusAccounting,
   getBytePlusUnitPriceUsdPer1kTokens,
@@ -68,12 +67,10 @@ export {
   shouldApplyBytePlusProviderTimeout,
   shouldRetryBytePlusStorageCopy,
 } from './byteplus-storage-copy';
-
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
-
 async function deferStorageCopyRetry(
   job: BytePlusPendingJob,
   state: BytePlusStorageCopyState,
@@ -103,7 +100,6 @@ async function deferStorageCopyRetry(
     maxAttempts: resolveBytePlusStorageCopyMaxAttempts(),
   });
 }
-
 async function markBytePlusJobPollingStalled(
   job: BytePlusPendingJob,
   queryFn: QueryFn,
@@ -125,7 +121,7 @@ async function markBytePlusJobPollingStalled(
   });
 }
 
-export async function runBytePlusPoll(options: { deps?: BytePlusPollDeps } = {}) {
+export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlusPollDeps } = {}) {
   const deps = options.deps ?? {};
   const nowFn = deps.nowFn ?? Date.now;
   const queryFn = deps.queryFn ?? query;
@@ -156,9 +152,10 @@ export async function runBytePlusPoll(options: { deps?: BytePlusPollDeps } = {})
       WHERE provider = $1
         AND provider_job_id IS NOT NULL
         AND status = ANY($2::text[])
+      AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [BYTEPLUS_MODELARK_PROVIDER, ACTIVE_JOB_STATUSES]
+    [BYTEPLUS_MODELARK_PROVIDER, ACTIVE_JOB_STATUSES, options.jobId ?? null]
   );
 
   if (!rows.length) {
@@ -174,6 +171,8 @@ export async function runBytePlusPoll(options: { deps?: BytePlusPollDeps } = {})
     if (Number.isFinite(updatedAtMs) && now - updatedAtMs < POLL_INITIAL_DELAY_MS) {
       continue;
     }
+    const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
+    if (!pollClaim) continue;
     try {
       const transport = resolveBytePlusPollTransport({
         providerJobId: job.provider_job_id,
@@ -191,6 +190,7 @@ export async function runBytePlusPoll(options: { deps?: BytePlusPollDeps } = {})
         hasVideoUrl: Boolean(task.videoUrl),
       });
 
+      await pollClaim.checked();
       if (task.status === 'queued' || task.status === 'running') {
         if (shouldApplyBytePlusProviderTimeout({
           createdAt: job.created_at,
@@ -417,6 +417,8 @@ export async function runBytePlusPoll(options: { deps?: BytePlusPollDeps } = {})
         await markBytePlusJobPollingStalled(job, queryFn, recordBytePlusPollEventFn);
         updates += 1;
       }
+    } finally {
+      await pollClaim.release();
     }
   }
 

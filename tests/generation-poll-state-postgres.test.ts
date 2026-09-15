@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+import { claimGenerationPoll } from '../frontend/server/generation-poll-state';
+import { startDisposablePostgres, missingDisposablePostgresCommand } from './helpers/disposable-postgres';
+
+test('shared active-job polling throttles concurrent tabs, preserves successful checks and stops at terminal states', {timeout: 90_000}, async t => {
+  const missing = missingDisposablePostgresCommand();
+  if (missing) return t.skip(missing);
+  const db = await startDisposablePostgres('generation-poll');
+  t.after(() => db.cleanup());
+  await db.pool.query("CREATE TABLE app_jobs(job_id text PRIMARY KEY,status text); INSERT INTO app_jobs VALUES ('active','running'),('done','completed'),('abandoned','cancelled')");
+  await db.pool.query(readFileSync('neon/migrations/47_generation_poll_state.sql','utf8'));
+  const queryFn = async <T,>(sql: string, params?: unknown[]): Promise<T[]> => (await db.pool.query(sql,params)).rows;
+  const claims = await Promise.all(Array.from({length: 8}, () => claimGenerationPoll('active',queryFn)));
+  assert.equal(claims.filter(Boolean).length,1);
+  const winner = claims.find(Boolean)!;
+  await winner.checked();
+  const checked = (await db.pool.query("SELECT checked_at FROM generation_poll_state WHERE job_id='active'")).rows[0].checked_at;
+  await winner.release();
+  assert.equal(await claimGenerationPoll('active',queryFn), null,'a released claim still respects 15 seconds');
+  await db.pool.query("UPDATE generation_poll_state SET started_at=NOW()-INTERVAL '16 seconds' WHERE job_id='active'");
+  const next = await claimGenerationPoll('active',queryFn);
+  assert.ok(next);
+  await winner.release();
+  assert.equal(await claimGenerationPoll('active',queryFn),null,'an old owner cannot release a newer lease');
+  await next.release();
+  assert.deepEqual((await db.pool.query("SELECT checked_at FROM generation_poll_state WHERE job_id='active'")).rows[0].checked_at,checked,'a failed check never advances freshness');
+  assert.equal(await claimGenerationPoll('done',queryFn),null);
+  assert.equal(await claimGenerationPoll('abandoned',queryFn),null);
+  await db.pool.query("UPDATE generation_poll_state SET started_at=NOW()-INTERVAL '3 minutes',lease_until=NOW()-INTERVAL '1 second' WHERE job_id='active'");
+  assert.ok(await claimGenerationPoll('active',queryFn),'a crashed worker does not lock a job forever');
+});

@@ -74,7 +74,7 @@ async function mountWorkspace(initialJobs = jobs, localOnly = false) {
     },
     async tick() {
       await act(async () => {
-        [...intervals.values()].filter((timer) => timer.delay === 4000).forEach((timer) => timer.callback());
+        [...intervals.values()].filter((timer) => timer.delay === 15_000).forEach((timer) => timer.callback());
       });
     },
     async update(nextJobs: Job[]) {
@@ -108,7 +108,7 @@ test('seven in-flight renders do not restart polling on each status response or 
   } finally { await fixture.dispose(); }
 });
 
-test('polling keeps completion, delayed thumbnails, failures and missing-job cleanup working', async () => {
+test('polling stops for completed media even without thumbnails and handles failures and missing jobs', async () => {
   const fixture = await mountWorkspace(jobs.slice(0, 4), true);
   try {
     const ids = fixture.requests.map((request) => request.jobId);
@@ -120,10 +120,7 @@ test('polling keeps completion, delayed thumbnails, failures and missing-job cle
     assert.equal(fixture.state.renders.find((render) => render.jobId === ids[1])?.status, 'failed');
     assert.equal(fixture.state.renders.some((render) => render.jobId === ids[2]), false);
     await fixture.tick();
-    assert.deepEqual(fixture.requests.slice(4).map((request) => request.jobId), [ids[3]], 'only a missing thumbnail still needs polling');
-    await fixture.respond(4, { status: 'completed', videoUrl: '/video.mp4', thumbUrl: '/thumb.jpg' });
-    await fixture.tick();
-    assert.equal(fixture.requests.length, 5);
+    assert.equal(fixture.requests.length, 4, 'completed media stops all status polling even without a thumbnail');
   } finally { await fixture.dispose(); }
 });
 
@@ -177,5 +174,20 @@ test('failed status checks retain the last observation time and recover on the e
     assert.equal(fixture.state.renders[0]?.observation?.stage, 'finalizing');
     assert.equal(fixture.state.renders[0]?.observation?.degraded, undefined);
     assert.equal(fixture.requests.length, 3);
+  } finally { await fixture.dispose(); }
+});
+
+
+test('the completed selected preview survives removal from the active render list', async () => {
+  const fixture = await mountWorkspace(jobs.slice(0,1));
+  try {
+    const render = fixture.state.renders[0];
+    await act(async () => fixture.state.setSelectedPreview({ id:render.jobId!, localKey:render.localKey, batchId:render.batchId,
+      status:'pending', videoUrl:'', aspectRatio:'16:9' }));
+    await fixture.respond(0,{status:'completed',videoUrl:'/ready.mp4'});
+    assert.equal(fixture.state.renders.length,0);
+    assert.equal(fixture.state.selectedPreview?.videoUrl,'/ready.mp4');
+    await fixture.tick();
+    assert.equal(fixture.requests.length,1);
   } finally { await fixture.dispose(); }
 });

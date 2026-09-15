@@ -99,7 +99,7 @@ test('getRendersNeedingStatusRefresh keeps only incomplete or media-incomplete r
 
   assert.deepEqual(
     getRendersNeedingStatusRefresh([pending, completedMissingThumb, completedReady, failed]).map((render) => render.jobId),
-    ['pending', 'missing_thumb']
+    ['pending']
   );
 });
 

@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { runFalPoll } from '../frontend/server/fal-poll';
@@ -13,6 +14,7 @@ test('completed queue with a structured content rejection settles as failed, whi
   for (const { httpStatus, state, body, terminal } of cases) {
     const updates: Array<Record<string, unknown>> = [];
     const dependencies = {
+      claimGenerationPoll: allowGenerationPoll,
       query: async <T>(sql: string): Promise<T[]> => {
         if (sql.includes('SELECT job_id, surface, engine_id')) return [{ job_id: 'content-rejection', engine_id: 'seedvr-video', surface: 'video', provider_job_id: 'fal-request', status: 'running', created_at: '2026-01-01', updated_at: '2026-01-01' }] as T[];
         if (sql.includes('COUNT(*)::int')) return [{ attempts: 0, last_attempt_at: null }] as T[];
@@ -44,6 +46,7 @@ test('real Fal poll keeps old jobs active through transient errors and only fail
     const events: string[] = [];
     let submissions = 0;
     const dependencies = {
+      claimGenerationPoll: allowGenerationPoll,
       query: async <T>(sql: string, values?: readonly unknown[]): Promise<T[]> => {
         if (sql.includes('SELECT job_id, surface, engine_id')) return [{ job_id: 'one', engine_id: 'seedvr-video', surface: 'upscale', provider_job_id: 'fal-one', status: 'running', created_at: new Date(Date.now() - 4 * 3600_000).toISOString(), updated_at: new Date(Date.now() - 10 * 60_000).toISOString() }] as T[];
         if (sql.includes('COUNT(*)::int')) return [{ attempts: 0, last_attempt_at: null }] as T[];

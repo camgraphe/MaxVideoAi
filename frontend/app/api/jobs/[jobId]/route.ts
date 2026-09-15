@@ -1,3 +1,5 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
+import { refreshDirectGeneration } from '@/server/refresh-direct-generation';
 import { generationStage, type GenerationObservation } from '@/lib/generation-observation';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
@@ -132,6 +134,16 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   }
   // Finishing tools own their original output and provider reconciliation.
   if (job.surface === 'tool') return json(mapGenerationStatusRecordToWeb(job));
+  let statusCheckDegraded = false;
+  if (job.provider && job.provider !== 'fal' && job.status !== 'completed' && job.status !== 'failed') {
+    try {
+      await refreshDirectGeneration(job.provider, job.job_id);
+      job = await readOwnedGenerationRecord({ userId, jobId }) ?? job;
+    } catch {
+      statusCheckDegraded = true;
+      console.warn('[api/jobs] direct status refresh deferred', { jobId });
+    }
+  }
   let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   let normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);
   let normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
@@ -188,11 +200,10 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     console.warn('[api/jobs] media output detail enrichment failed', { jobId, error });
   }
 
-  let statusCheckDegraded = false;
   let providerCompleted = false;
   let providerPercent: GenerationObservation['providerPercent'];
   // Optionally poll FAL once if pending and we have provider job id
-  if (
+  const canPollFal = (
     surface !== 'audio' &&
     surface !== 'tool' &&
     shouldUseFalApis() &&
@@ -200,7 +211,9 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     job.provider_job_id &&
     job.status !== 'completed' &&
     job.status !== 'failed'
-  ) {
+  );
+  const pollClaim = canPollFal ? await claimGenerationPoll(jobId) : null;
+  if (pollClaim && job.provider_job_id) {
     try {
       const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
       const falClient = getFalClient();
@@ -209,6 +222,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         .catch(() => null)) as Record<string, unknown> | null;
       if (!statusInfo) statusCheckDegraded = true;
       if (statusInfo) {
+        await pollClaim.checked();
         const state = typeof statusInfo.status === 'string' ? statusInfo.status.toUpperCase() : undefined;
         providerCompleted = Boolean(state && FAL_COMPLETED_STATES.has(state));
         const queueResult =
@@ -384,6 +398,8 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
       }
     } catch {
       statusCheckDegraded = true;
+    } finally {
+      await pollClaim.release();
     }
   }
 
@@ -461,9 +477,12 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     }
   }
 
+  const checks = await query<{ checked_at: string | null }>(
+    'SELECT checked_at FROM generation_poll_state WHERE job_id=$1', [jobId]);
+  const checkedAt = checks[0]?.checked_at ? new Date(checks[0].checked_at).getTime() : undefined;
   return json(
     mapGenerationStatusRecordToWeb(job, {
-      observation: { stage: generationStage(job.status, providerCompleted || getProviderVideoCopyState(job.settings_snapshot).attempts > 0), providerPercent, degraded: statusCheckDegraded },
+      observation: { stage: generationStage(job.status, providerCompleted || getProviderVideoCopyState(job.settings_snapshot).attempts > 0), providerPercent, checkedAt, degraded: statusCheckDegraded || (!checkedAt && job.status !== 'completed' && job.status !== 'failed') },
       videoUrl: responseVideoUrl,
       previewVideoUrl: normalizedPreviewVideoUrl,
       audioUrl: normalizedAudioUrl,

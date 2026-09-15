@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import {
@@ -63,6 +64,7 @@ type LumaAgentsPendingJob = {
 
 type LumaAgentsPollDeps = {
   queryFn?: QueryFn;
+  claimPollFn?: typeof claimGenerationPoll;
   getLumaAgentsClientFn?: () => LumaAgentsPollClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
   detectVideoDimensionsFn?: typeof detectVideoDimensions;
@@ -342,7 +344,7 @@ async function deferStorageCopyRetry(
   );
 }
 
-export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } = {}) {
+export async function runLumaAgentsPoll(options: { jobId?: string; deps?: LumaAgentsPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const getLumaAgentsClientFn = deps.getLumaAgentsClientFn ?? getLumaAgentsClient;
@@ -371,9 +373,10 @@ export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } =
       WHERE provider = $1
         AND provider_job_id IS NOT NULL
         AND status = ANY($2::text[])
+      AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [LUMA_AGENTS_DIRECT_PROVIDER, ACTIVE_JOB_STATUSES]
+    [LUMA_AGENTS_DIRECT_PROVIDER, ACTIVE_JOB_STATUSES, options.jobId ?? null]
   );
 
   if (!rows.length) {
@@ -399,12 +402,15 @@ export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } =
       continue;
     }
 
+    const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
+    if (!pollClaim) continue;
     try {
       const attempt = await findLumaAttempt(job, queryFn);
       const rawGeneration = await client.getGeneration(job.provider_job_id);
       const task = normalizePolledGeneration(rawGeneration, job.provider_job_id);
       const estimate = estimateCostForJob(job);
 
+      await pollClaim.checked();
       if (task.status === 'queued' || task.status === 'running') {
         const progressRows = await queryFn<{ job_id: string }>(
           `UPDATE app_jobs
@@ -574,6 +580,8 @@ export async function runLumaAgentsPoll(options: { deps?: LumaAgentsPollDeps } =
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+    } finally {
+      await pollClaim.release();
     }
   }
 

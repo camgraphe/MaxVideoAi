@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import {
@@ -61,6 +62,7 @@ type AlibabaPendingJob = {
 
 type AlibabaPollDeps = {
   queryFn?: QueryFn;
+  claimPollFn?: typeof claimGenerationPoll;
   getAlibabaModelStudioClientFn?: () => AlibabaPollClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
   detectVideoDimensionsFn?: typeof detectVideoDimensions;
@@ -309,7 +311,7 @@ async function deferStorageCopyRetry(
   );
 }
 
-export async function runAlibabaModelStudioPoll(options: { deps?: AlibabaPollDeps } = {}) {
+export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?: AlibabaPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   if (!flagEnabled(process.env.ALIBABA_MODEL_STUDIO_ENABLED) && !deps.queryFn) {
@@ -323,9 +325,10 @@ export async function runAlibabaModelStudioPoll(options: { deps?: AlibabaPollDep
             currency, payment_status, updated_at, created_at
        FROM app_jobs
       WHERE provider = $1 AND provider_job_id IS NOT NULL AND status = ANY($2::text[])
+      AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [ALIBABA_MODEL_STUDIO_PROVIDER, ACTIVE_JOB_STATUSES]
+    [ALIBABA_MODEL_STUDIO_PROVIDER, ACTIVE_JOB_STATUSES, options.jobId ?? null]
   );
   if (!rows.length) return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
 
@@ -351,9 +354,12 @@ export async function runAlibabaModelStudioPoll(options: { deps?: AlibabaPollDep
       continue;
     }
 
+    const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
+    if (!pollClaim) continue;
     try {
       const attempt = await findAttempt(job, queryFn);
       const task = normalizePolledTask(await client.getTask(job.provider_job_id), job.provider_job_id);
+      await pollClaim.checked();
       const estimate = costForJob(job, task);
       if (task.status === 'queued' || task.status === 'running') {
         const progressRows = await queryFn<{ job_id: string }>(
@@ -499,6 +505,8 @@ export async function runAlibabaModelStudioPoll(options: { deps?: AlibabaPollDep
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+    } finally {
+      await pollClaim.release();
     }
   }
 
