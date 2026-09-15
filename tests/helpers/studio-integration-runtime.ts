@@ -132,7 +132,7 @@ export async function startStudioIntegrationRuntime(options: {
       PATH: `${dirname(process.execPath)}:${process.env.PATH ?? '/usr/bin:/bin'}`,
       ...(process.env.HOME ? { HOME: process.env.HOME } : {}),
       ...(process.env.TMPDIR ? { TMPDIR: process.env.TMPDIR } : {}),
-      NODE_ENV: 'development', NEXT_TELEMETRY_DISABLED: '1',
+      NODE_ENV: 'development', NEXT_TELEMETRY_DISABLED: '1', STUDIO_INTEGRATION_RUNTIME: '1',
       NEXT_PUBLIC_SUPABASE_URL: auth.origin, NEXT_PUBLIC_SUPABASE_ANON_KEY: auth.anonKey,
       NEXT_PUBLIC_SITE_URL: browserOrigin, SITE_URL: browserOrigin,
       NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS: 'false',
@@ -144,7 +144,7 @@ export async function startStudioIntegrationRuntime(options: {
         STUDIO_MONTAGE_LOCAL_ENABLED: options.mcp.studioMontageCreation === true ? 'true' : 'false',
       } : {}),
     };
-    child = spawn(process.execPath, [next, 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
+    child = spawn(process.execPath, ['--require', join(root, 'tests/helpers/studio-node-realpath.cjs'), next, 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
       cwd: join(temporaryRoot, 'frontend'), env: environment, stdio: ['ignore', 'pipe', 'pipe'], detached: true,
     });
     childExit = new Promise<void>((resolve, reject) => { child!.once('exit', () => resolve()); child!.once('error', reject); });

@@ -146,3 +146,25 @@ La matrice géométrique `editor-canvas-clarity.spec.ts` prépare la qualificati
 Le lot médias `bd7aeb3cb` est figé, avec rapport `28475b388` :429tests ciblés,45tests upload et11parcours navigateur réussis, TypeScript/exposure/diff sans erreur, lint sans erreur avec2warnings hérités. Les six contrats provisoirement en échec pendant Task3 passent dans ce dernier run. Revue indépendante Approved, puis correctif du seul Minor cache upload canevas `f426be90c` avec5/5tests DOM et re-revue Approved. Les parcours navigateur prouvent l'édition et la sauvegarde locale ; le test HTTP séparé `7cbafa1db`, également revu Approved, qualifie le résolveur authentifié, sans confondre les deux environnements.
 
 Commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, polish de densité des blocs, qualification responsive du lot complet et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères ; les21tests MCP existants ciblés passent avant Task4, sans prétendre prouver une écriture.
+
+
+## 15 septembre 2026 — Résolution Node dans les snapshots isolés (D91)
+
+La recette de la branche marketing a reproduit un échec de démarrage également sur
+main : le SDK S3 ne retrouvait pas sa dépendance transitive. Une reproduction sans
+Next ni SDK montre que Node 22.23.2 peut renvoyer un chemin de lien non résolu après
+`statSync` sur un socket Unix, avec son cache de résolution déjà amorcé. La même
+résolution native donne le chemin réel. Les liens pnpm perdent alors leur contexte
+de dépendances ; le symptôme n’est pas une absence de paquet installé.
+
+`tests/helpers/studio-node-realpath.cjs` utilise `fs.realpathSync.native` uniquement
+dans le processus enfant Next de la fixture (`STUDIO_INTEGRATION_RUNTIME=1`, mode
+développement). Il refuse un processus normal ou de production. Aucun patch Node,
+configuration ou comportement n’est ajouté au site déployé. Retirer ce preload
+lorsque la version Node requise passe la reproduction sans aide.
+
+`tests/studio-node-runtime.test.ts` vérifie la dépendance transitive après le stat
+socket et le refus hors fixture. Le cas a été observé rouge avant correction.
+Les quatre fichiers d’intégration passent désormais : 11 tests et sous-scénarios,
+dont lecture privée signée, expiration/refus, isolation de comptes, édition et
+sauvegarde, conflits de version et migration manquante sans DDL implicite.
