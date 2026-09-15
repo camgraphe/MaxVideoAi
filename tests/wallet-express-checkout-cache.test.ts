@@ -22,7 +22,7 @@ assert.equal(
   'the cache key must be stable across currency casing'
 );
 
-assert.notEqual(
+assert.equal(
   buildWalletExpressCheckoutRequestKey({
     userId: 'user_123',
     amountCents: 1000,
@@ -39,7 +39,7 @@ assert.notEqual(
     captchaToken: 'turnstile-token',
     attributionKey: 'journey-a',
   }),
-  'a solved captcha must use a distinct cache key from the pre-captcha request'
+  'CAPTCHA is a creation credential, not the identity of an already created session'
 );
 
 assert.notEqual(

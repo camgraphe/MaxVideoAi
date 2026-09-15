@@ -21,6 +21,9 @@ export function useBillingCurrencyState({ authLoading, copy, session }: UseBilli
   const [currencyLoading, setCurrencyLoading] = useState(false);
   const [currencyError, setCurrencyError] = useState<string | null>(null);
   const userCurrencyOverrideRef = useRef(false);
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+  const sessionUserId = session?.user?.id ?? null;
   const autoCurrencyRef = useRef('USD');
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const normalizedAutoCurrency = (autoCurrency || 'USD').toUpperCase();
@@ -41,7 +44,7 @@ export function useBillingCurrencyState({ authLoading, copy, session }: UseBilli
     if (authLoading) return;
     let canceled = false;
     async function loadCurrencySummary() {
-      if (!session) {
+      if (!sessionUserId) {
         setCurrencyOptions(['USD']);
         if (!userCurrencyOverrideRef.current) {
           setChargeCurrency((autoCurrencyRef.current || 'USD').toUpperCase());
@@ -50,7 +53,7 @@ export function useBillingCurrencyState({ authLoading, copy, session }: UseBilli
       }
       setCurrencyLoading(true);
       setCurrencyError(null);
-      const token = session?.access_token ?? null;
+      const token = sessionRef.current?.access_token ?? null;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       try {
         const res = await fetch('/api/me/currency', { headers });
@@ -81,7 +84,7 @@ export function useBillingCurrencyState({ authLoading, copy, session }: UseBilli
     return () => {
       canceled = true;
     };
-  }, [authLoading, session, walletCurrencyLoadError]);
+  }, [authLoading, sessionUserId, walletCurrencyLoadError]);
 
   const handleCurrencyChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const next = String(event.target.value || 'USD').toUpperCase();

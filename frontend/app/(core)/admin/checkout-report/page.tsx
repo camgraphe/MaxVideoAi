@@ -13,6 +13,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { CheckoutGuardPolicy } from './_components/CheckoutGuardPolicy';
 import { CheckoutSessionExpireButton } from './_components/CheckoutSessionExpireButton.client';
 import {
   type CheckoutAbandonmentSignal,
@@ -61,8 +62,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
 });
 
 const STATUS_META: Record<CheckoutReportStatus, { label: string; className: string }> = {
-  passed: { label: 'Passed', className: 'border-success-border bg-success-bg text-success' },
-  abandoned: { label: 'Abandoned', className: 'border-warning-border bg-warning-bg text-warning' },
+  passed: { label: 'Paid', className: 'border-success-border bg-success-bg text-success' },
+  abandoned: { label: 'Unpaid after 30 min', className: 'border-warning-border bg-warning-bg text-warning' },
   blocked: { label: 'Blocked', className: 'border-error-border bg-error-bg text-error' },
   challenged: { label: 'Challenged', className: 'border-brand/25 bg-brand/10 text-brand' },
   open: { label: 'Open', className: 'border-border bg-surface text-text-secondary' },
@@ -71,7 +72,7 @@ const STATUS_META: Record<CheckoutReportStatus, { label: string; className: stri
 
 const SIGNAL_META: Record<CheckoutAbandonmentSignal, { label: string; className: string }> = {
   none: { label: 'No event', className: 'border-border bg-surface text-text-muted' },
-  passive_open: { label: 'Passive open', className: 'border-warning-border bg-warning-bg text-warning' },
+  passive_open: { label: 'Prepared only', className: 'border-warning-border bg-warning-bg text-warning' },
   user_cancelled: { label: 'User cancelled', className: 'border-border bg-surface text-text-secondary' },
   payment_started_no_receipt: { label: 'Started, no receipt', className: 'border-error-border bg-error-bg text-error' },
   technical_error: { label: 'Technical error', className: 'border-error-border bg-error-bg text-error' },
@@ -98,7 +99,6 @@ export default async function CheckoutReportPage(props: PageProps) {
 
   const report = await fetchCheckoutReport(selectedRange);
   const cards = buildReportCards(report);
-  const conversionRate = report.summary.total ? report.summary.passed / report.summary.total : 0;
   const protectionRate = report.summary.total
     ? (report.summary.blocked + report.summary.challenged) / report.summary.total
     : 0;
@@ -106,6 +106,8 @@ export default async function CheckoutReportPage(props: PageProps) {
   return (
     <div className="space-y-5">
       <HubHeader selectedRange={report.range} />
+
+      <CheckoutGuardPolicy />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-8" aria-label="Checkout guard metrics">
         {cards.map((card) => (
@@ -119,14 +121,14 @@ export default async function CheckoutReportPage(props: PageProps) {
           action={<span className="rounded-full border border-border bg-bg px-3 py-1 text-xs font-semibold text-text-secondary">{formatNumber(report.summary.total)} attempts</span>}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <StatusBlock label="Conversion" value={formatPercent(conversionRate)} helper={`${formatNumber(report.summary.passed)} completed top-ups`} tone="green" icon={CheckCircle2} />
-            <StatusBlock label="Protected" value={formatPercent(protectionRate)} helper={`${formatNumber(report.summary.blocked + report.summary.challenged)} stopped or challenged`} tone="rose" icon={ShieldAlert} />
-            <StatusBlock label="Checkout abandon" value={formatNumber(report.summary.abandoned)} helper="Session created, no wallet top-up after 30 min" tone="amber" icon={TimerReset} />
-            <StatusBlock label="Fast pay" value={formatNumber(report.summary.express)} helper={`${formatNumber(report.summary.hosted)} hosted Checkout attempts`} tone="blue" icon={WalletCards} />
+            <StatusBlock label="Stripe sessions created" value={formatNumber(report.summary.sessionsCreated)} helper="Includes automatic wallet preparation; this is not a customer conversion rate" tone="green" icon={CheckCircle2} />
+            <StatusBlock label="Guard interventions" value={formatPercent(protectionRate)} helper={`${formatNumber(report.summary.blocked + report.summary.challenged)} stopped or challenged; not necessarily fraud`} tone="rose" icon={ShieldAlert} />
+            <StatusBlock label="Unpaid after 30 min" value={formatNumber(report.summary.abandoned)} helper="Includes passive preparation without opening a payment window" tone="amber" icon={TimerReset} />
+            <StatusBlock label="Native wallet requests" value={formatNumber(report.summary.express)} helper={`${formatNumber(report.summary.hosted)} hosted Checkout attempts`} tone="blue" icon={WalletCards} />
           </div>
         </Panel>
 
-        <Panel title="Top reasons">
+        <Panel title="Intervention and error reasons">
           {report.reasons.length ? (
             <div className="space-y-3">
               {report.reasons.map((reason) => (
@@ -134,7 +136,7 @@ export default async function CheckoutReportPage(props: PageProps) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-text-secondary">No guard events in this range.</p>
+            <p className="text-sm text-text-secondary">No guard interventions or session errors in this range.</p>
           )}
         </Panel>
       </section>
@@ -152,7 +154,7 @@ export default async function CheckoutReportPage(props: PageProps) {
                   <th className="px-3 py-3 font-semibold">Status</th>
                   <th className="px-3 py-3 font-semibold">Signal</th>
                   <th className="px-3 py-3 font-semibold">Mode</th>
-                  <th className="px-3 py-3 font-semibold">Amount</th>
+                  <th className="px-3 py-3 font-semibold">Credits / payment currency</th>
                   <th className="px-3 py-3 font-semibold">Reason</th>
                   <th className="px-3 py-3 font-semibold">Events</th>
                   <th className="px-3 py-3 font-semibold">User</th>
@@ -170,8 +172,8 @@ export default async function CheckoutReportPage(props: PageProps) {
                     </td>
                     <td className="px-3 py-3"><StatusPill status={attempt.status} /></td>
                     <td className="px-3 py-3"><SignalPill signal={attempt.abandonmentSignal} /></td>
-                    <td className="px-3 py-3">{attempt.mode === 'express_checkout' ? 'Fast pay' : 'Hosted'}</td>
-                    <td className="px-3 py-3 font-semibold text-text-primary">{formatAmount(attempt.amountCents)}</td>
+                    <td className="px-3 py-3">{attempt.mode === 'express_checkout' ? 'Native wallet' : 'Hosted'}</td>
+                    <td className="px-3 py-3 font-semibold text-text-primary">{formatAmount(attempt.amountCents)} credits<span className="block text-xs font-normal text-text-secondary">Payment: {attempt.paymentCurrency ?? 'Unknown (legacy)'}</span></td>
                     <td className="px-3 py-3">{formatReason(attempt.reason ?? attempt.outcome)}</td>
                     <td className="px-3 py-3 text-xs">{formatEventTrail(attempt.events.map((event) => event.eventName))}</td>
                     <td className="px-3 py-3 font-mono text-xs">{truncateId(attempt.userId)}</td>
@@ -202,7 +204,7 @@ function HubHeader({ selectedRange }: { selectedRange: CheckoutReportRange }) {
       <div className="min-w-0">
         <h1 className="text-[1.7rem] font-semibold leading-tight text-text-primary sm:text-[2rem]">Checkout guard</h1>
         <p className="mt-1 text-sm leading-6 text-text-secondary">
-          Report des sessions wallet Checkout : bloqué, challenge, abandonné et passé.
+          Payment preparation, guard decisions and confirmed top-ups. A prepared session is not a payment attempt.
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -326,11 +328,11 @@ function SignalPill({ signal }: { signal: CheckoutAbandonmentSignal }) {
 function buildReportCards(report: Awaited<ReturnType<typeof fetchCheckoutReport>>): ReportCard[] {
   return [
     { label: 'Total', value: formatNumber(report.summary.total), helper: `${formatNumber(report.summary.distinctUsers)} users · ${formatNumber(report.summary.distinctIps)} IP hashes`, tone: 'slate', icon: Gauge },
-    { label: 'Passed', value: formatNumber(report.summary.passed), helper: 'Top-ups recorded after Checkout', tone: 'green', icon: CheckCircle2 },
-    { label: 'Abandoned', value: formatNumber(report.summary.abandoned), helper: 'Session created, no receipt after 30 min', tone: 'amber', icon: Clock3 },
+    { label: 'Paid', value: formatNumber(report.summary.passed), helper: 'Top-ups recorded after Checkout', tone: 'green', icon: CheckCircle2 },
+    { label: 'Unpaid after 30 min', value: formatNumber(report.summary.abandoned), helper: 'May be passive preparation; no receipt after 30 min', tone: 'amber', icon: Clock3 },
     { label: 'Blocked', value: formatNumber(report.summary.blocked), helper: 'Rate limited or CAPTCHA failed', tone: 'rose', icon: LockKeyhole },
-    { label: 'AMEX restriction applied', value: formatNumber(report.summary.amexBlocked), helper: 'Sessions with the brand restriction; this is not a count of declined Amex cards', tone: 'rose', icon: ShieldCheck },
-    { label: 'Card failures', value: formatNumber(report.summary.failedCardAttempts), helper: `${formatNumber(report.summary.failedCardLimitedSessions)} sessions expired after repeated declines`, tone: 'rose', icon: CreditCard },
+    { label: 'Legacy Amex restriction', value: formatNumber(report.summary.amexBlocked), helper: 'Historical sessions only. New sessions accept Amex; this is not a decline count', tone: 'slate', icon: ShieldCheck },
+    { label: 'Card failures', value: formatNumber(report.summary.failedCardAttempts), helper: `First top-ups only; ${formatNumber(report.summary.failedCardLimitedSessions)} sessions expired after repeated declines`, tone: 'rose', icon: CreditCard },
     { label: 'Challenged', value: formatNumber(report.summary.challenged), helper: `${formatNumber(report.summary.captchaPassed)} CAPTCHA passes`, tone: 'violet', icon: ShieldAlert },
     { label: 'Open', value: formatNumber(report.summary.open), helper: 'Recent Checkout sessions still pending', tone: 'blue', icon: WalletCards },
   ];

@@ -40,7 +40,8 @@ test('failed-payment protection and refund analytics have separate owners', () =
   assert.match(processor, /stripe-webhook-failed-payments/);
   assert.match(processor, /stripe-webhook-refunds/);
   assert.doesNotMatch(route, /FAILED_CARD_ATTEMPT_LIMIT|topup_refunded/);
-  assert.match(failedPayments, /const FAILED_CARD_ATTEMPT_LIMIT = 5/);
+  assert.match(failedPayments, /const FAILED_CARD_ATTEMPT_LIMIT = CHECKOUT_GUARD_LIMITS.failedCardAttempts/);
+  assert.match(readFileSync('frontend/server/checkout-guard-policy.ts', 'utf8'), /failedCardAttempts: 5/);
   assert.match(failedPayments, /stripe_checkout_session_expired_for_failed_cards/);
   assert.match(refunds, /name: 'topup_refunded'/);
 });

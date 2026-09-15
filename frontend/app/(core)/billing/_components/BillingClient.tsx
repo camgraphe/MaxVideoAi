@@ -158,8 +158,7 @@ export function BillingClient({
     authLoading,
     session,
     normalizedChargeCurrency,
-    customAmountCents,
-    customAmountValid,
+    selectedTopupCents,
     quoteErrorMessage: walletQuoteError,
   });
   const {

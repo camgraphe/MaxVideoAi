@@ -76,6 +76,16 @@ export function WalletExpressCheckout({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const confirmStartedRef = useRef(false);
   const sessionRef = useRef(session);
+  const captchaTokenRef = useRef(captchaToken);
+  const awaitingCaptchaRef = useRef(false);
+  const [captchaRetry, setCaptchaRetry] = useState(0);
+  useEffect(() => {
+    captchaTokenRef.current = captchaToken;
+    if (captchaToken && awaitingCaptchaRef.current) {
+      awaitingCaptchaRef.current = false;
+      setCaptchaRetry((value) => value + 1);
+    }
+  }, [captchaToken]);
   const labelsRef = useRef(labels);
   const handlersRef = useRef({
     onCaptchaRequired,
@@ -142,6 +152,7 @@ export function WalletExpressCheckout({
         return;
       }
 
+      awaitingCaptchaRef.current = false;
       setStatus('loading');
       setMessage(null);
       confirmStartedRef.current = false;
@@ -179,7 +190,6 @@ export function WalletExpressCheckout({
         amountCents,
         currency: normalizedChargeCurrency,
         locale,
-        captchaToken,
         attributionKey,
       });
 
@@ -201,6 +211,7 @@ export function WalletExpressCheckout({
           if (checkoutSessionResult.type === 'captcha_required') {
             setStatus('unavailable');
             setMessage(null);
+            awaitingCaptchaRef.current = true;
             handlersRef.current.onCaptchaRequired();
             return;
           }
@@ -438,7 +449,7 @@ export function WalletExpressCheckout({
           currency: normalizedChargeCurrency.toLowerCase(),
           mode: 'express_checkout',
           locale,
-          captchaToken: captchaToken ?? undefined,
+          captchaToken: captchaTokenRef.current ?? undefined,
           ...(ga4Context.clientId ? { gaClientId: ga4Context.clientId } : {}),
           ...(ga4Context.sessionId ? { gaSessionId: ga4Context.sessionId } : {}),
           ...(analyticsJourney ? { analyticsJourney } : {}),
@@ -494,7 +505,7 @@ export function WalletExpressCheckout({
     amountCents,
     analyticsConsentGranted,
     locale,
-    captchaToken,
+    captchaRetry,
     normalizedChargeCurrency,
     sessionUserId,
     stripePromise,

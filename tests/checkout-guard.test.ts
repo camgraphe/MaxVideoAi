@@ -111,3 +111,15 @@ assert.deepEqual(
   },
   'returning paying users must not be cooled down by the first-top-up failed-card guard'
 );
+
+// Four presets in two currencies plus a hosted fallback fit after verification.
+for (const count of [6, 8, 11]) {
+  const input = { hasCompletedTopUp: false, isPresetTopupTier: true, captchaConfigured: true,
+    captchaPassed: true, userAttempts15m: count, userAttempts1h: count, ipAttempts15m: count };
+  assert.equal(classifyCheckoutGuardDecision(input).action, 'allow');
+  assert.equal(classifyCheckoutGuardDecision({ ...input, captchaPassed: false }).action, 'captcha_required');
+  assert.equal(classifyCheckoutGuardDecision({ ...input, captchaConfigured: false, captchaPassed: false }).action, 'rate_limited');
+  assert.equal(classifyCheckoutGuardDecision({ ...input, userFailedCardLimits30m: 1 }).reason, 'failed_card_attempt_cooldown');
+}
+assert.equal(classifyCheckoutGuardDecision({ hasCompletedTopUp: false, isPresetTopupTier: true,
+  captchaConfigured: true, captchaPassed: true, userAttempts15m: 12, userAttempts1h: 12, ipAttempts15m: 12 }).action, 'rate_limited');

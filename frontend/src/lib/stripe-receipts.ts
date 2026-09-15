@@ -87,13 +87,47 @@ function documentFromCachedReceipt(source: StripeReceiptSource): StripeReceiptDo
   return { type: 'receipt', label: 'Receipt', url };
 }
 
+// Deduplicate document reads within each Stripe client (and therefore account/key).
+// Missing historical objects are retried after an hour; temporary failures are not cached.
+const documentLookups = new WeakMap<StripeReceiptLookupClient, Map<string, {
+  pending?: Promise<unknown>;
+  missingUntil?: number;
+}>>();
+
+async function lookupDocumentObject<T>(
+  stripe: StripeReceiptLookupClient,
+  key: string,
+  retrieve: () => Promise<T>,
+): Promise<T | null> {
+  let cache = documentLookups.get(stripe);
+  if (!cache) { cache = new Map(); documentLookups.set(stripe, cache); }
+  const previous = cache.get(key);
+  if (previous?.pending) return previous.pending as Promise<T | null>;
+  if (previous?.missingUntil && previous.missingUntil > Date.now()) return null;
+  if (cache.size >= 256) cache.delete(cache.keys().next().value!);
+  const entry: { pending?: Promise<unknown>; missingUntil?: number } = {};
+  const pending = Promise.resolve().then(retrieve).catch((error: unknown) => {
+    const failure = error as { code?: string; statusCode?: number } | null;
+    if (failure?.code === 'resource_missing' && failure.statusCode === 404) {
+      entry.missingUntil = Date.now() + 60 * 60 * 1000;
+    }
+    return null;
+  }).finally(() => {
+    entry.pending = undefined;
+    if (!entry.missingUntil && cache.get(key) === entry) cache.delete(key);
+  });
+  entry.pending = pending;
+  cache.set(key, entry);
+  return pending;
+}
+
 async function retrieveInvoiceDocument(
   stripe: StripeReceiptLookupClient | null,
   invoiceId: string | null
 ): Promise<StripeBillingDocument | null> {
   if (!stripe?.invoices || !invoiceId) return null;
   try {
-    const invoice = await stripe.invoices.retrieve(invoiceId);
+    const invoice = await lookupDocumentObject(stripe, `invoice:${invoiceId}`, () => stripe.invoices!.retrieve(invoiceId));
     return documentFromInvoice(invoice);
   } catch {
     return null;
@@ -106,7 +140,7 @@ async function retrieveChargeDocument(
 ): Promise<StripeReceiptDocument | null> {
   if (!stripe || !chargeId) return null;
   try {
-    const charge = await stripe.charges.retrieve(chargeId);
+    const charge = await lookupDocumentObject(stripe, `charge:${chargeId}`, () => stripe.charges.retrieve(chargeId));
     return documentFromCharge(charge);
   } catch {
     return null;
@@ -125,10 +159,10 @@ async function resolveFreshReceiptDocument(
   if (!stripe || !paymentIntentId) return null;
 
   try {
-    const intent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+    const intent = await lookupDocumentObject(stripe, `intent:${paymentIntentId}`, () => stripe.paymentIntents.retrieve(paymentIntentId, {
       expand: ['latest_charge'],
-    });
-    const latestCharge = intent.latest_charge;
+    }));
+    const latestCharge = intent?.latest_charge;
     if (typeof latestCharge === 'string') {
       return retrieveChargeDocument(stripe, latestCharge);
     }

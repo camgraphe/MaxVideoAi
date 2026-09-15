@@ -1,17 +1,9 @@
 import { createHmac } from 'crypto';
 import { query } from '@/lib/db';
+import { CHECKOUT_GUARD_LIMITS as limits } from '@/server/checkout-guard-policy';
 
 const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const CHECKOUT_GUARD_HASH_FALLBACK = 'maxvideoai-checkout-guard-local-fallback';
-const FIRST_TOPUP_USER_WINDOW_LIMIT = 3;
-const FIRST_TOPUP_USER_HARD_LIMIT = 6;
-const IP_WINDOW_LIMIT = 8;
-const IP_HARD_LIMIT = 16;
-const RETURNING_USER_CAPTCHA_LIMIT = 8;
-const RETURNING_USER_HARD_LIMIT = 12;
-const FIFTEEN_MINUTES_SECONDS = 15 * 60;
-const FAILED_CARD_ATTEMPT_COOLDOWN_SECONDS = 30 * 60;
-const ONE_HOUR_SECONDS = 60 * 60;
 
 export type CheckoutGuardMode = 'hosted' | 'express_checkout';
 export type CheckoutGuardAction = 'allow' | 'captcha_required' | 'rate_limited';
@@ -85,34 +77,34 @@ export function classifyCheckoutGuardDecision({
   ipAttempts15m: number;
   userFailedCardLimits30m?: number;
 }): CheckoutGuardDecision {
-  if (ipAttempts15m >= IP_HARD_LIMIT) {
-    return { action: 'rate_limited', reason: 'ip_window_hard_limit', retryAfterSeconds: FIFTEEN_MINUTES_SECONDS };
+  if (ipAttempts15m >= limits.ipHard) {
+    return { action: 'rate_limited', reason: 'ip_window_hard_limit', retryAfterSeconds: limits.windowSeconds };
   }
 
   if (!hasCompletedTopUp && userFailedCardLimits30m > 0) {
     return {
       action: 'rate_limited',
       reason: 'failed_card_attempt_cooldown',
-      retryAfterSeconds: FAILED_CARD_ATTEMPT_COOLDOWN_SECONDS,
+      retryAfterSeconds: limits.failedCardCooldownSeconds,
     };
   }
 
-  if (!hasCompletedTopUp && userAttempts15m >= FIRST_TOPUP_USER_HARD_LIMIT) {
-    return { action: 'rate_limited', reason: 'first_topup_user_hard_limit', retryAfterSeconds: FIFTEEN_MINUTES_SECONDS };
+  if (!hasCompletedTopUp && userAttempts15m >= (captchaConfigured ? limits.firstTopupWithCaptcha : limits.firstTopupWithoutCaptcha)) {
+    return { action: 'rate_limited', reason: 'first_topup_user_hard_limit', retryAfterSeconds: limits.windowSeconds };
   }
 
-  if (hasCompletedTopUp && userAttempts1h >= RETURNING_USER_HARD_LIMIT) {
-    return { action: 'rate_limited', reason: 'returning_user_hard_limit', retryAfterSeconds: ONE_HOUR_SECONDS };
+  if (hasCompletedTopUp && userAttempts1h >= limits.returningHard) {
+    return { action: 'rate_limited', reason: 'returning_user_hard_limit', retryAfterSeconds: limits.returningWindowSeconds };
   }
 
   const softReason =
     !hasCompletedTopUp && !isPresetTopupTier
       ? 'first_topup_custom_amount'
-      : !hasCompletedTopUp && userAttempts15m >= FIRST_TOPUP_USER_WINDOW_LIMIT
+      : !hasCompletedTopUp && userAttempts15m >= limits.firstTopupCaptcha
         ? 'first_topup_user_window'
-        : ipAttempts15m >= IP_WINDOW_LIMIT
+        : ipAttempts15m >= limits.ipCaptcha
           ? 'ip_window'
-          : hasCompletedTopUp && userAttempts1h >= RETURNING_USER_CAPTCHA_LIMIT
+          : hasCompletedTopUp && userAttempts1h >= limits.returningCaptcha
             ? 'returning_user_window'
             : null;
 
@@ -163,17 +155,17 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
     `SELECT
        COUNT(*) FILTER (
          WHERE user_id = $1
-           AND outcome = 'session_created'
+           AND stripe_checkout_session_id IS NOT NULL
            AND created_at >= NOW() - INTERVAL '15 minutes'
        ) AS user_attempts_15m,
        COUNT(*) FILTER (
          WHERE user_id = $1
-           AND outcome = 'session_created'
+           AND stripe_checkout_session_id IS NOT NULL
            AND created_at >= NOW() - INTERVAL '1 hour'
        ) AS user_attempts_1h,
        COUNT(*) FILTER (
          WHERE ip_hash = $2
-           AND outcome = 'session_created'
+           AND stripe_checkout_session_id IS NOT NULL
            AND created_at >= NOW() - INTERVAL '15 minutes'
        ) AS ip_attempts_15m,
        (

@@ -100,3 +100,13 @@ assert.match(expireHelperSource, /Checkout session already has a wallet top-up r
 assert.match(expireHelperSource, /admin_checkout_session_expired/);
 assert.match(expireHelperSource, /already_expired/);
 assert.match(expireHelperSource, /logAdminAction/);
+
+assert.doesNotMatch(checkoutReportPageSource, /label="Conversion"|label="Protected"|label="Fast pay"/);
+assert.match(checkoutReportPageSource, /CheckoutGuardPolicy/);
+assert.match(checkoutReportPageSource, /Legacy Amex restriction/);
+assert.match(checkoutReportPageSource, /paymentCurrency/);
+const policySource = readFileSync('frontend/app/(core)/admin/checkout-report/_components/CheckoutGuardPolicy.tsx', 'utf8');
+assert.match(policySource, /CHECKOUT_GUARD_LIMITS/);
+assert.match(policySource, /isCheckoutCaptchaConfigured/);
+assert.match(policySource, /resolveEnabledCurrencies/);
+assert.match(policySource, /does not count as a new session or a failed card/);
