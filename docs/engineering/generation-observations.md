@@ -16,3 +16,11 @@ Stages reflect stored queued/running status, the provider's explicit IN_PROGRESS
 `GenerationPendingStatus` is a presentation clock only. Existing workspace polling owners retain their cadence/backoff. Concurrent authenticated browser status requests coalesce per principal/job while in flight; no response cache is retained. Audio polling holds one request in flight and keeps its five-second interval stable across state updates. A failed transport or degraded server check retains the last successful check time; silence over 30 seconds is shown as a stale check. Elapsed time, estimated total, overdue and degraded checks remain separate. Clocks are outside live announcements. Completed media is shown immediately, including saved pending records with legacy `minReadyAt` values.
 
 Validation uses injected query results, mocked HTTP and local browser fixtures only; it does not establish production sample availability, SQL execution plans or provider health. No production database, storage, provider generation or schema setup is required for these tests.
+
+## Waiting presentation
+
+`GenerationPendingStatus` owns the localized stage, display clock and timing labels. `GenerationPendingArtwork` owns only the decorative eight-pose sprite loop. Its transparent 4×2 PNG sheet uses 256px cells with aligned baselines; it never implies provider progress. CSS animation respects reduced motion and stops for terminal observations. Unmounting the status component disposes the display interval.
+
+`ProcessingOverlay` uses the existing app panel, ink and muted tokens for both themes. Named size-container queries scale the waiting layout to the preview tile; very small multi-take tiles prioritize status and timing over decoration and secondary notes. The shared status component stays transparent for audio and lightbox consumers.
+
+Retry copy says “Refreshing the status…” and overdue copy explains that creation time can vary. These presentation changes preserve degraded/stale detection and the last successful check time; actual failures still render the error state. `tests/generation-completion-preview.test.ts` covers the real preview tile switching from pending to playable output (or error) and disposing its clock. No estimate delays completed output.

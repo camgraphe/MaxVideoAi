@@ -11,12 +11,12 @@ function markup(props: GenerationPendingStatusProps) {
   return renderToStaticMarkup(React.createElement(I18nProvider, {
     locale: 'fr', dictionary: {} as Dictionary, fallback: {} as Dictionary,
     children: React.createElement(GenerationPendingStatus, props),
-  }));
+  })).replace(/<style[\s\S]*?<\/style>/g, '');
 }
 
 test('pending reader renders observed total, elapsed, overdue and degraded evidence without synthetic percentage', () => {
   const html = markup({ startedAt: Date.now() - 180_000, etaSeconds: 100, etaSource: 'observed', observation: { stage: 'processing', checkedAt: Date.now() - 10_000, degraded: true } });
-  for (const copy of ['Traitement en cours', 'Écoulé', 'Moyenne observée', 'Plus long que prévu', 'Vérification indisponible', 'Vérifié il y a']) assert.ok(html.includes(copy), copy);
+  for (const copy of ['Traitement en cours', 'Écoulé', 'Moyenne observée', 'Le temps de création peut varier.', 'Actualisation du statut en cours', 'Dernière actualisation il y a']) assert.ok(html.includes(copy), copy);
   assert.doesNotMatch(html, /\d+%|Warming|Stitching/);
   assert.match(html, /aria-live="off"/);
   assert.match(html, /<strong aria-live="polite">Traitement en cours/);
