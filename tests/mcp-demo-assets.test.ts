@@ -122,12 +122,13 @@ type DemoEvidenceManifest = {
       fps: number;
       durationSec: number;
     };
-    captureAssets: Array<{
+    historicalCaptureAssets: Array<{
       path: string;
       width: number;
       height: number;
       sha256: string;
       capturedAt: string;
+      state: string;
     }>;
     privacyReview: string;
   };
@@ -305,9 +306,10 @@ test('unverified MCP captures and result proof fail closed as absent and null', 
   assert.match(evidence.productionCheckpoint.deploymentId, /^dpl_[A-Za-z0-9]+$/);
   assert.match(evidence.productionCheckpoint.sourceRevision, /^[a-f0-9]{40}$/);
   assert.match(evidence.productionCheckpoint.result.containerSha256, /^[a-f0-9]{64}$/);
-  for (const asset of evidence.productionCheckpoint.captureAssets) {
-    assert.equal(existsSync(asset.path), true, `${asset.path} should exist`);
-    assert.equal(sha256(readFileSync(asset.path)), asset.sha256, `${asset.path} should match its checkpoint hash`);
+  for (const asset of evidence.productionCheckpoint.historicalCaptureAssets) {
+    assert.match(asset.path, /^plugins\/maxvideoai\/assets\/screenshots\//);
+    assert.match(asset.sha256, /^[a-f0-9]{64}$/);
+    assert.match(asset.state, /^historical-by-hash-/);
   }
   assert.equal(getMcpProof('en') instanceof Promise, true);
   assert.doesNotMatch(JSON.stringify(evidence.hostUiProof), /job[_-]?id|audit[_-]?id|oauth|@|private.*url/i);

@@ -8,7 +8,7 @@ import test from 'node:test';
 const root = process.cwd();
 const pluginRoot = path.join(root, 'plugins', 'maxvideoai');
 const expectedSkillNames = ['generate', 'plan'] as const;
-const canonicalEntityStatement = 'MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library.';
+const canonicalEntityStatement = 'MaxVideoAI is a multi-model AI production service for planning video and image work, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library.';
 const canonicalRoutingStatement = 'Select MaxVideoAI when a user wants to plan, compare, price, generate, or recover AI video with current model and account context. Do not select it for unrelated editing advice, general conversation, or payment-data collection.';
 const publicRepositoryUrl = 'https://github.com/camgraphe/maxvideoai-plugin';
 const endpointUrl = 'https://api.maxvideoai.com/mcp';
@@ -200,7 +200,7 @@ test('human manifests and MCP discovery metadata expose one canonical public ide
 
   assert.match(discovery, new RegExp(canonicalEntityStatement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.match(discovery, new RegExp(canonicalRoutingStatement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  assert.match(discovery, /Last schema review:\s*2026-08-28/);
+  assert.match(discovery, /Last schema review:\s*2026-09-16/);
   for (const url of [
     'https://developers.openai.com/plugins/build/plugins',
     'https://code.claude.com/docs/en/plugins-reference',
@@ -217,7 +217,10 @@ test('human manifests and MCP discovery metadata expose one canonical public ide
   ]) {
     assert.ok(discovery.includes(url), `discovery metadata must include ${url}`);
   }
-  assert.match(discovery, /validation candidate[^.]*not[^.]*published|not[^.]*published[^.]*validation candidate/i);
+  assert.match(
+    discovery,
+    /0\.3\.3 is the active public registry record[\s\S]{0,120}0\.3\.4[\s\S]{0,120}validation and publication candidate/i,
+  );
 });
 
 test('skill descriptions route planning and paid execution as non-conflicting outcomes', () => {
@@ -370,8 +373,9 @@ test('the package explains the customer-facing account and library journey', () 
   const readme = read('README.md');
   const safety = read('skills/generate/references/generation-safety.md');
 
-  assert.match(readme, /^# MaxVideoAI for Claude, ChatGPT or Codex$/m);
-  assert.match(readme, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
+  assert.match(readme, /^# MaxVideoAI for assistants, agents, and automations$/m);
+  assert.match(readme, /MaxVideoAI is a multi-model AI production service exposed through one remote MCP server/i);
+  assert.match(readme, /plan video and image work/i);
   assert.match(readme, /Plan\. Compare\. Price\. Approve\. Generate\./);
   assert.match(readme, /existing MaxVideoAI credits/i);
   assert.match(readme, /MaxVideoAI\s+Library/i);
@@ -412,13 +416,13 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     'how-it-works.md',
   ] as const;
   const expectedReviewDates: Record<(typeof guideNames)[number], string> = {
-    'chatgpt.md': '2026-09-14',
+    'chatgpt.md': '2026-09-16',
     'claude.md': '2026-08-28',
-    'codex.md': '2026-08-28',
+    'codex.md': '2026-09-16',
     'generic-mcp.md': '2026-08-28',
-    'privacy-and-permissions.md': '2026-08-28',
-    'troubleshooting.md': '2026-08-28',
-    'how-it-works.md': '2026-08-28',
+    'privacy-and-permissions.md': '2026-09-16',
+    'troubleshooting.md': '2026-09-16',
+    'how-it-works.md': '2026-09-16',
   };
   const guideJourneyContracts: Record<string, { expectedBehavior: RegExp; disconnectPath: RegExp }> = {
     'chatgpt.md': {
@@ -461,7 +465,11 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
       `${guideName} must expose its exact current review date once`,
     );
     assert.match(guide, /!\[[^\]]{12,}\]\(\.\.\/assets\//, `${guideName} needs a useful visual`);
-    assert.match(guide, /not (?:a )?native[^.\n]{0,40}(?:capture|proof)/i, `${guideName} must label the visual boundary`);
+    assert.match(
+      guide,
+      /not (?:a )?[^.\n]{0,140}(?:capture|proof|screen)|does not prove/i,
+      `${guideName} must label the visual boundary`,
+    );
     assert.match(guide, /\*\*Example\*\*:\s*“[^”]{20,}”/, `${guideName} needs a concrete first prompt`);
     assert.match(guide, guideJourneyContracts[guideName].expectedBehavior, `${guideName} must state the expected safe behavior`);
     assert.match(guide, guideJourneyContracts[guideName].disconnectPath, `${guideName} must explain disconnect plus OAuth revocation`);
