@@ -4,7 +4,7 @@ These examples show how a producer can move from a brief to a deliberate, recove
 
 ![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/readme-proof-hero.webp)
 
-*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove the workflows below, native Codex or ChatGPT execution, or behavior on every Claude surface.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove the workflows below, native Codex or ChatGPT execution, or behavior on every Claude surface.*
 
 ## Which outcome matches your next job?
 

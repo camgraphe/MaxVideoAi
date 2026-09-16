@@ -8,7 +8,7 @@ Turn one launch brief into multiple shots, compare a quality-first proposal with
 
 ![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove that a host performed this launch brief, quote, approval, or generation sequence, or that matching videos appear across product screens.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove that a host performed this launch brief, quote, approval, or generation sequence, or that matching videos appear across product screens.*
 
 ## What prompt can I copy?
 

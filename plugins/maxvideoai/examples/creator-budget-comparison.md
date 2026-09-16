@@ -8,7 +8,7 @@ Compare current AI video models for one creator project, understand the quality,
 
 ![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/model-choice-and-budget.webp)
 
-*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove model selection, a budget, an exact quote, approval, or execution in another host.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove model selection, a budget, an exact quote, approval, or execution in another host.*
 
 ## What prompt can I copy?
 

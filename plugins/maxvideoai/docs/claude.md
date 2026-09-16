@@ -6,7 +6,7 @@
 
 ![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label from the public MCP page. It does not prove installation, OAuth, a quote, approval, or execution in every Claude surface. Use the steps below to validate your own eligible Claude account.
+This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove installation, OAuth, a quote, approval, or execution in every Claude surface. Use the steps below to validate your own eligible Claude account.
 
 ## Who can currently use this route?
 

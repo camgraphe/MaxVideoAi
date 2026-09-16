@@ -4,7 +4,7 @@
 
 ![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove the installation, quote, approval, or generation sequence in this example, or execution on every Claude surface.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove the installation, quote, approval, or generation sequence in this example, or execution on every Claude surface.*
 
 ## What are you trying to produce?
 

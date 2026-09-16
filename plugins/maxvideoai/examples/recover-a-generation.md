@@ -8,7 +8,7 @@ Find the outcome of one approved generation and restore result continuity withou
 
 ![Public MCP Claude-result section paired with the public MaxVideoAI home page](../assets/demos/library-continuity.webp)
 
-*This composite pairs Claude-specific result evidence and a saved-to-Library label with the public home page. It does not prove a recovery operation, quote, approval, transaction history, or matching videos across product screens.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove a recovery operation, quote, approval, transaction history, or matching videos across product screens.*
 
 ## What prompt can I copy?
 
