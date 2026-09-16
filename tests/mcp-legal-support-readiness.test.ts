@@ -554,6 +554,36 @@ test('readiness packages follow the live registry and canonical localized route 
   assert.doesNotMatch(launchEvidence, /migrations? 30–32 (?:are )?absent/i);
 });
 
+test('active MCP truth records follow the enabled production boundary', () => {
+  assert.deepEqual(publication, {
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+    montagePreparation: false,
+    audioGeneration: false,
+    studioMontageCreation: false,
+  });
+
+  assert.doesNotMatch(
+    claims,
+    /publicMarketing=false|publicIndexing=false|Production transport disabled|MCP production disabled|Production OAuth disabled|public marketing off/i,
+  );
+  assert.match(claims, /fourteen model-visible tools plus one app-only helper/i);
+  assert.match(claims, /trial=false/i);
+  assert.doesNotMatch(
+    support,
+    /production OAuth is off|no quote tool is public|generation enforcement is future-gated/i,
+  );
+  assert.match(support, /fourteen model-visible tools plus one app-only/i);
+  assert.doesNotMatch(directory, /launch product is a 13-tool|every publication flag is false/i);
+  assert.match(directory, /fourteen model-visible tools plus one app-only/i);
+});
+
 test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(claims, /graphical Codex\/ChatGPT directory install has not been recorded/i);
   assert.match(compatibility, /Last hosted checkpoint: 2026-08-27/);
