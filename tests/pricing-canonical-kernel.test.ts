@@ -166,6 +166,33 @@ test('canonical compatibility can round the historical commercial subtotal befor
   assert.equal(quote.customerTotalCents, 6);
 });
 
+test('subtotal rounding keeps settlement allocated to rounded vendor cents', async () => {
+  const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');
+  const quote = quoteCanonicalPricing({
+    facts: { engineId: 'audio-engine', currency: 'USD', vendorSubtotalExactCents: 6.25, unit: 'request', quantity: 1 },
+    scenario: { id: 'audio-rounded', engineId: 'audio-engine', membershipTier: 'member', discountPercent: 0 },
+    policy: {
+      ...resolvedPolicy,
+      rule: {
+        ...resolvedPolicy.rule,
+        marginPercent: 2,
+      },
+    },
+    compatibilityProfile: {
+      ...standardProfile,
+      id: 'audio-tripled-rounded',
+      subtotalRounding: 'up',
+      subtotalRoundingIncrementCents: 5,
+    },
+  });
+
+  assert.equal(quote.vendorSubtotalCents, 6);
+  assert.equal(quote.vendorShareCents, 6);
+  assert.equal(quote.platformFeeCents, 14);
+  assert.equal(quote.marginCents, 14);
+  assert.equal(quote.customerTotalCents, 20);
+});
+
 test('canonical quote rejects invalid facts, currency mismatches, and unsupported surcharge keys', async () => {
   assert.equal(existsSync(canonicalPath), true, `${canonicalPath} should exist`);
   const { PricingDomainError, quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');

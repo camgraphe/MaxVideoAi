@@ -169,7 +169,7 @@ export function quoteCanonicalPricing(input: {
       (pricingBasisExactCents * (1 + marginPercent + surchargePercent) + marginFlatCents) / increment,
       compatibilityProfile.subtotalRounding
     ) * increment;
-    marginCents = Math.max(0, subtotalBeforeDiscountExactCents - pricingBaseForMath - surchargeCents);
+    marginCents = Math.max(0, subtotalBeforeDiscountExactCents - vendorSubtotalCents - surchargeCents);
   }
   subtotalBeforeDiscountExactCents =
     Math.max(subtotalBeforeDiscountExactCents, minimumCustomerTotalCents) + fixedCustomerCents;
