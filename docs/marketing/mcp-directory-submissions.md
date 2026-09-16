@@ -1,11 +1,26 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-09-15
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.3 ACTIVE — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; ONE N8N WORKFLOW UNDER REVIEW**
+Checked: 2026-09-16
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; ONE N8N WORKFLOW UNDER REVIEW**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## 0.3.5 observed publication — 2026-09-16
+
+This checkpoint records observed immutable release state. It does not promote a
+host, create another directory submission, or claim that downstream aggregators
+have refreshed.
+
+| Evidence | Observed result |
+| --- | --- |
+| Accepted source | `c4061163dc24478c01ab8224d6509e14d6612c03`; annotated source tag and zero-asset pointer release [`maxvideoai-plugin-v0.3.5`](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.3.5). The cancelled 0.3.4 source tag remains immutable and unpublished. |
+| Protected publication | [Workflow run `35145481448`](https://github.com/camgraphe/MaxVideoAi/actions/runs/35145481448) completed successfully after the prepared tree, complete diff, checksum, and two allowed Linux-only skips were reviewed. |
+| Canonical package | Public commit `a9af2bd1248953f6a68a603be9c8bb87811b7c7d`, tag `v0.3.5`, and [focused release](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.5). The release has exactly the installable ZIP and `.zip.sha256`; downloaded bytes matched the pinned candidate. |
+| Package checksum | `5d7a99f97eeebf6d79bd7ab32cb405ba6f4f397b2028a875cc25001c4e29dc1c`. |
+| Official MCP Registry | `com.maxvideoai/maxvideoai` `0.3.5` is `active` with `isLatest=true`; `publishedAt`, `updatedAt`, and `statusChangedAt` are `2026-09-16T20:25:15.392142Z`. Version 0.3.4 still returns HTTP 404 and remains unpublished. |
+| Downstream scope | Independent directories may continue to show 0.3.3 until their own refresh. That lag is not release failure, host compatibility evidence, or permission to mutate their records without a separately authorized action. |
 
 ## Implementation-date primary-source recheck
 

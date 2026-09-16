@@ -219,7 +219,7 @@ test('human manifests and MCP discovery metadata expose one canonical public ide
   }
   assert.match(
     discovery,
-    /0\.3\.3 is the active public registry record[\s\S]{0,120}0\.3\.5[\s\S]{0,120}validation and publication candidate/i,
+    /0\.3\.5 is the active latest public Registry record[\s\S]{0,220}0\.3\.4[\s\S]{0,120}unpublished/i,
   );
 });
 
