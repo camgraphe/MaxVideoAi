@@ -126,12 +126,13 @@ function relativeMarkdownLinks(markdown: string): string[] {
 }
 
 function expectedPublicFilesForVersion(version: string): string[] {
-  const [major, minor] = version.split('.').map(Number);
+  const [major, minor, patch] = version.split('.').map(Number);
   return [
     ...baseExpectedPublicFiles,
     ...(major > 0 || minor >= 3
-      ? [...version03ExpectedPublicFiles, `assets/social/release-${version}.png`]
+      ? version03ExpectedPublicFiles
       : []),
+    ...(major === 0 && minor === 3 && patch < 5 ? [`assets/social/release-${version}.png`] : []),
   ].sort();
 }
 
@@ -296,6 +297,31 @@ test('release builder exports the exact deterministic public surface with checks
     'ZIP entries must store exact bytes so archive digests do not depend on runtime deflate',
   );
   assert.ok(archiveEntries.every((entry) => entry.time === 0 && entry.date === 0x5021));
+});
+
+test('0.3.5 exports current proof without a release card and preserves the cancelled 0.3.4 source asset', (t) => {
+  const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-recovery-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  const fixture = join(temporary, 'source');
+  cpSync(source, fixture, { recursive: true });
+  setPackageVersion(fixture, '0.3.5');
+  setMarketplacePluginVersion(fixture, '0.3.5');
+  const serverPath = join(fixture, 'server.json');
+  const server = JSON.parse(readFileSync(serverPath, 'utf8'));
+  server.version = '0.3.5';
+  writeFileSync(serverPath, `${JSON.stringify(server, null, 2)}\n`);
+  const historicalCard = join(fixture, 'assets/social/release-0.3.4.png');
+  const historicalHash = sha256(historicalCard);
+
+  const out = join(temporary, 'out');
+  const result = runBuilder(fixture, out);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const bundle = join(out, 'maxvideoai-plugin');
+  const names = filesAt(bundle).map((file) => relative(bundle, file)).sort();
+  assert.deepEqual(names, [...baseExpectedPublicFiles, ...version03ExpectedPublicFiles, 'checksums.json'].sort());
+  assert.ok(!names.some((name) => /^assets\/social\/release-/.test(name)));
+  assert.equal(sha256(historicalCard), historicalHash, 'historical repository evidence must remain untouched');
+  assert.ok(existsSync(join(out, 'maxvideoai-plugin-0.3.5.zip')));
 });
 
 test('asset-manifest validation remains portable for a copied source fixture', (t) => {

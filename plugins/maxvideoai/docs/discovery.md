@@ -15,7 +15,7 @@ The public live surface is the server-advertised tool inventory, not a copied li
 - Transport: Streamable HTTP
 - Dedicated source repository: `https://github.com/camgraphe/maxvideoai-plugin`
 - Product and setup page: `https://maxvideoai.com/mcp`
-- Package version: `0.3.4`, authored in `VERSION` and mirrored into the manifests
+- Package version: `0.3.5`, authored in `VERSION` and mirrored into the manifests
 
 Human-facing package manifests may name the assistant hosts they are designed to help. The transport configuration, MCP Registry metadata, and routing contract remain protocol-generic so other compatible clients can discover the same service without host-specific technical claims.
 
@@ -35,4 +35,4 @@ Human-facing package manifests may name the assistant hosts they are designed to
 - Remote-server `remotes` and Streamable HTTP guidance: https://modelcontextprotocol.io/registry/remote-servers
 - Exact `server.json` schema used here: https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json
 
-The reviewed sources require the package manifests, remote endpoint, and registry document to express distinct distribution concerns. The MCP Registry is still in preview. Version 0.3.3 is the active public registry record; the 0.3.4 `server.json` in this source tree is a validation and publication candidate until the authorized release and registry update complete.
+The reviewed sources require the package manifests, remote endpoint, and registry document to express distinct distribution concerns. The MCP Registry is still in preview. Version 0.3.3 is the active public registry record; the 0.3.5 `server.json` in this source tree is a validation and publication candidate until the authorized release and registry update complete. The immutable 0.3.4 source tag remains unpublished: evidence-copy review stopped its publication before a focused release or Registry record was created.

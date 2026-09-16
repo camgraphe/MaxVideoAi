@@ -10,6 +10,32 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const checkerPath = path.join(repositoryRoot, 'scripts/check-github-content.mjs');
 const fixturesDirectory = path.join(repositoryRoot, 'tests/fixtures/github-content');
 
+// These consumers share refreshed public-page composites, not the former
+// workspace/Library captures. Check their visible alt text and proof caption.
+for (const consumer of [
+  'examples/creator-budget-comparison.md',
+  'examples/recover-a-generation.md',
+  'docs/claude.md',
+  'docs/generic-mcp.md',
+  'examples/claude-video-production.md',
+  'examples/product-launch-plan.md',
+  'examples/README.md',
+]) {
+  test(`${consumer} describes the public home/Claude composite without stale workspace proof claims`, () => {
+    const document = readFileSync(path.join(repositoryRoot, 'plugins/maxvideoai', consumer), 'utf8');
+    const proof = document.match(/!\[([^\]]+)\]\(\.\.\/assets\/demos\/[^)]+\)\s*\n\s*\n([^\n]+)/);
+    assert.ok(proof, `${consumer} needs an adjacent proof caption`);
+    const [, alt, caption] = proof;
+    assert.match(alt, /public.*home page/i, 'alt must describe the actual public homepage');
+    assert.match(alt, /Claude.*result|result.*Claude/i);
+    assert.match(caption, /public.*home page/i);
+    assert.match(caption, /Claude-specific.*(?:result|evidence)/i);
+    assert.match(caption, /does not prove/i, 'keep the host-specific proof limit explicit');
+    assert.doesNotMatch(`${alt}\n${caption}`, /model selector|proves current MaxVideoAI product selection|same saved video|workspace to Library|completed.*workspace result/i);
+    assert.doesNotMatch(caption, /not native Claude host proof|native Claude, Codex, or ChatGPT run|end-to-end generation evidence has not been published/i);
+  });
+}
+
 function checkFixture(name: string) {
   return spawnSync(process.execPath, [checkerPath, path.join(fixturesDirectory, name)], {
     cwd: repositoryRoot,

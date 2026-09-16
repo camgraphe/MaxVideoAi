@@ -5,8 +5,6 @@ import test from 'node:test';
 
 import { readImageDimensions, validateImageDecode } from '../scripts/register-github-asset.mjs';
 
-const pluginVersion = readFileSync('plugins/maxvideoai/VERSION', 'utf8').trim();
-
 const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.json', 'utf8')) as {
   assets: Array<{
     id: string;
@@ -30,7 +28,6 @@ const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/release-0.3.2.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/release-0.3.3.png', [1200, 630]],
-  [`plugins/maxvideoai/assets/social/release-${pluginVersion}.png`, [1200, 630]],
   ['plugins/maxvideoai/assets/social/directory-thumbnail.png', [1200, 675]],
 ] as const);
 
@@ -45,6 +42,15 @@ const liveScreenshotDimensions = new Map([
 ] as const);
 
 const brandHeroPath = 'plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp';
+
+test('the cancelled 0.3.4 release card remains historical evidence outside active placements', () => {
+  const record = manifest.assets.find((asset) => asset.id === 'release-0-3-4');
+  assert.ok(record);
+  assert.equal(record.state, 'reference_only');
+  assert.deepEqual(record.placements, ['historical_release_candidate']);
+  assert.match(record.claim, /cancelled before.*publication/i);
+  assert.equal(sha256(readFileSync(record.path)), '9af267e52a6a77eff229912d2b4685ac504914f346c342558f32e138811acf8d');
+});
 
 const allowedProofIds = new Set([
   'maxvideoai-workspace-production',

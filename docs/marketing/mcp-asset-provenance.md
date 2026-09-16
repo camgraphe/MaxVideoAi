@@ -33,6 +33,13 @@ n8n execution. Client names on social and release cards describe the documented
 public paths and setup guides. OpenClaw remains tested with limits; n8n remains a
 manual deterministic self-hosted workflow, not an n8n Cloud claim.
 
+Version 0.3.5 corrects stale captions in seven remaining consumers of these
+composites. No raster bytes were changed or generated for this recovery. The
+0.3.4 release card remains unchanged as historical repository evidence with
+`reference_only` state and no active release/social placement. The 0.3.5 public
+bundle uses the existing colorful product captures and has no version-specific
+release card. The failed generated replacement was not selected or imported.
+
 The ImageGen source was created in August from the then-current bytes at the two
 same paths. Those source screenshots were refreshed on September 16. Their old
 hashes are retained below as historical generation inputs; the current captures
@@ -117,7 +124,7 @@ were not inputs to ImageGen and are used only by the deterministic compositor.
       {
         "path": "plugins/maxvideoai/assets/social/release-0.3.4.png",
         "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
-        "proofBoundary": "Current public home page and Claude-specific MCP result evidence with documented client-path copy; no other client execution is proved."
+        "proofBoundary": "Historical cancelled 0.3.4 candidate only; not an active release/social asset. Public home and Claude-specific result evidence do not prove a published release."
       },
       {
         "path": "plugins/maxvideoai/assets/social/directory-thumbnail.png",
