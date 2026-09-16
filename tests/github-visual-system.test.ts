@@ -134,6 +134,51 @@ test('model-directory capture provenance describes only the visible public hero'
   assert.match(record.reviewTrigger, /hero.*actions.*pricing.*specification cues.*artwork/i);
 });
 
+test('gallery capture provenance excludes off-crop examples and detail destinations', () => {
+  const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-examples-gallery-live');
+  assert.ok(record);
+  for (const text of [record.claim, record.alt, record.reviewTrigger]) {
+    assert.doesNotMatch(text, /product.style|duration|settings|price destinations/i);
+  }
+  for (const text of [record.claim, record.alt]) {
+    assert.match(text, /public.*gallery hero.*filters/i);
+    assert.match(text, /cinematic Paris.*animated runner previews/i);
+    assert.match(text, /partial model labels/i);
+  }
+  assert.match(record.reviewTrigger, /gallery hero.*filters.*previews.*model labels/i);
+});
+
+test('pricing capture provenance separates video prices from other-category navigation', () => {
+  const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-pricing-comparison-live');
+  assert.ok(record);
+  for (const text of [record.claim, record.alt]) {
+    assert.doesNotMatch(text, /prices across video, image, audio, and tools/i);
+  }
+  assert.match(record.claim, /three.*video starting.point prices/i);
+  assert.match(record.claim, /navigation tabs for Image, Audio, and Tools/i);
+  assert.match(record.alt, /video, image, audio, and tools navigation/i);
+});
+
+test('comparison capture provenance describes visible strengths instead of collapsed trade-offs', () => {
+  const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-engine-scoreboard-live');
+  assert.ok(record);
+  for (const text of [record.claim, record.alt, record.reviewTrigger]) {
+    assert.doesNotMatch(text, /trade.offs/i);
+  }
+  for (const text of [record.claim, record.alt]) {
+    assert.match(text, /MiniMax H3.*Seedance 2\.5/i);
+    assert.match(text, /scores.*strengths.*colorful independent video examples/i);
+  }
+});
+
+test('narrow composite provenance disclaims current price proof without denying historical price pixels', () => {
+  const record = manifest.assets.find((asset) => asset.id === 'model-choice-and-budget');
+  assert.ok(record);
+  assert.doesNotMatch(record.claim, /does not show|no price pixels/i);
+  assert.match(record.claim, /public MaxVideoAI home page.*public MCP Claude.result section/i);
+  assert.match(record.claim, /does not prove a current budget, quote, price, approval, or native host execution/i);
+});
+
 test('ships a dedicated editorial hero without presenting it as product or host proof', async () => {
   const bytes = readFileSync(brandHeroPath);
   await validateImageDecode(bytes);
@@ -187,7 +232,7 @@ test('composition code uses only accepted public proof sources, stays light, and
   }
 
   const modelRecord = manifest.assets.find((asset) => asset.id === 'model-choice-and-budget');
-  assert.match(modelRecord?.claim ?? '', /does not show or prove a budget, quote, price, approval, or native host execution/i);
+  assert.match(modelRecord?.claim ?? '', /does not prove a current budget, quote, price, approval, or native host execution/i);
 });
 
 test('the narrow proof uses the complete current public page instead of stale workspace-coordinate crops', () => {
