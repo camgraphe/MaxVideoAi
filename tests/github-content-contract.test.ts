@@ -26,10 +26,11 @@ test('the plugin README covers the current assistant, agent, and automation ecos
   const definition = readme.split(/\n{2,}/)[1] ?? '';
   const definitionWords = definition.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) ?? [];
 
-  assert.equal(lines[0], '# MaxVideoAI for assistants, agents and automations');
+  assert.equal(lines[0], '# MaxVideoAI for assistants, agents, and automations');
   assert.ok(words.length < 1_800, `README must stay under 1,800 words; found ${words.length}`);
   assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
-  assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through one remote MCP server/i);
+  assert.match(definition, /MaxVideoAI is a multi-model AI production service exposed through one remote MCP server/i);
+  assert.match(definition, /plan video and image work/i);
   assert.match(opening, /assets\/screenshots\/maxvideoai-assistant-workflow-live\.webp/);
   assert.match(opening, /codex plugin marketplace add camgraphe\/maxvideoai-plugin --ref v\d+\.\d+\.\d+/);
   assert.match(opening, /https:\/\/maxvideoai\.com\/docs\/mcp/);
