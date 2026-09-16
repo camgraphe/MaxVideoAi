@@ -96,13 +96,14 @@ tag or release.
 1. Merge the reviewed checked-in convergence changes to the source repository.
 2. Create the immutable source tag `maxvideoai-plugin-v0.3.4` at the accepted
    source commit.
-3. Create the matching source release without replacing previous assets.
-4. Dispatch `publish-maxvideoai-plugin.yml` from that exact tag and approve the
+3. Dispatch `publish-maxvideoai-plugin.yml` from that exact tag and approve the
    `maxvideoai-plugin-publication` environment only after reviewing the prepared
    public diff.
-5. Verify the focused repository publishes version and tag `v0.3.4`, the
+4. Verify the focused repository publishes version and tag `v0.3.4`, the
    deterministic ZIP and SHA-256 assets, the refreshed README, and the reviewed
    screenshots.
+5. Create the matching zero-asset source-repository pointer release only after
+   the focused public release exists, so it never links to an absent artifact.
 6. Validate and publish `plugins/maxvideoai/server.json` version 0.3.4 through
    the Official MCP Registry publisher, then verify the API returns one active,
    latest 0.3.4 record for `com.maxvideoai/maxvideoai`.
