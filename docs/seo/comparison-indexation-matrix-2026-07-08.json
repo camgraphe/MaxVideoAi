@@ -51,10 +51,10 @@
       "es": 312
     },
     "byClassification": {
-      "keep": 352,
+      "keep": 350,
       "enrich": 28,
-      "review": 346,
-      "noindex_candidate": 210
+      "review": 345,
+      "noindex_candidate": 213
     }
   },
   "rows": [
@@ -72,7 +72,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -124,7 +123,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -388,6 +386,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "scoreboard"
@@ -501,7 +500,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph"
@@ -575,7 +573,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -648,7 +645,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -2171,12 +2167,10 @@
         "https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-pika-text-to-video"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
-      "classification": "keep",
+      "strategicSignals": [],
+      "classification": "review",
       "rationale": [
-        "english_strategic_surface"
+        "gsc_review_opportunity"
       ]
     },
     {
@@ -2216,7 +2210,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -2305,7 +2298,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "related_graph",
         "use_case_bucket"
@@ -2329,7 +2321,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -2620,12 +2611,10 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
-      "classification": "keep",
+      "strategicSignals": [],
+      "classification": "noindex_candidate",
       "rationale": [
-        "english_strategic_surface"
+        "no_gsc_row_or_editorial_signal"
       ]
     },
     {
@@ -3026,6 +3015,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -3188,7 +3178,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "use_case_bucket"
       ],
@@ -3565,7 +3554,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -3660,6 +3648,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -4852,7 +4841,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -4978,7 +4966,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -5623,7 +5610,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -5729,7 +5715,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "related_graph",
         "trophy"
       ],
@@ -6420,6 +6405,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -6445,7 +6431,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -6494,7 +6479,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -6749,6 +6733,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "scoreboard"
@@ -6854,7 +6839,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph"
@@ -6923,7 +6907,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -6994,7 +6977,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -8448,13 +8430,10 @@
         "https://maxvideoai.com/fr/comparatif/kling-3-pro-vs-pika-text-to-video"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
+      "strategicSignals": [],
       "classification": "review",
       "rationale": [
-        "gsc_top_10_review",
-        "strategic_localization_review"
+        "gsc_top_10_review"
       ]
     },
     {
@@ -8491,7 +8470,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -8575,7 +8553,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "related_graph",
         "use_case_bucket"
@@ -8597,7 +8574,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -8871,12 +8847,10 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
-      "classification": "review",
+      "strategicSignals": [],
+      "classification": "noindex_candidate",
       "rationale": [
-        "strategic_localization_review"
+        "no_gsc_row_or_editorial_signal"
       ]
     },
     {
@@ -9260,6 +9234,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -9412,7 +9387,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "use_case_bucket"
       ],
@@ -9771,7 +9745,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -9868,6 +9841,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -10982,7 +10956,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -11100,7 +11073,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -11704,7 +11676,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -11807,7 +11778,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "related_graph",
         "trophy"
       ],
@@ -12465,6 +12435,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -12487,7 +12458,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -12536,7 +12506,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -12795,6 +12764,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "scoreboard"
@@ -12903,7 +12873,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph"
@@ -12975,7 +12944,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -13042,7 +13010,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -14532,12 +14499,10 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
-      "classification": "review",
+      "strategicSignals": [],
+      "classification": "noindex_candidate",
       "rationale": [
-        "strategic_localization_review"
+        "no_gsc_row_or_editorial_signal"
       ]
     },
     {
@@ -14577,7 +14542,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -14660,7 +14624,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "related_graph",
         "use_case_bucket"
@@ -14682,7 +14645,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -14976,13 +14938,10 @@
         "https://maxvideoai.com/es/comparativa/kling-3-standard-vs-pika-text-to-video"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
+      "strategicSignals": [],
       "classification": "review",
       "rationale": [
-        "gsc_review_opportunity",
-        "strategic_localization_review"
+        "gsc_review_opportunity"
       ]
     },
     {
@@ -15378,6 +15337,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -15540,7 +15500,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "use_case_bucket"
       ],
@@ -15914,7 +15873,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -16012,6 +15970,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -17156,7 +17115,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -17276,7 +17234,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -17904,7 +17861,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -18009,7 +17965,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "related_graph",
         "trophy"
       ],
@@ -18678,6 +18633,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",

@@ -15,10 +15,10 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 | URLs avec au moins un clic | 144 |
 | Lignes GSC hors du périmètre publié | 21 |
 | Lignes hors périmètre avec clics | 2 |
-| Keep | 352 |
+| Keep | 350 |
 | Enrich | 28 |
-| Review | 346 |
-| Noindex candidate | 210 |
+| Review | 345 |
+| Noindex candidate | 213 |
 
 ## Règles conservatrices
 
@@ -47,9 +47,9 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 | en | [ltx-2-3-fast-vs-ltx-2-3-pro](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro) | 11 | 2766 | 12.4 | opponent_override, popular, related_graph, showdown, trophy, use_case_bucket, gsc_clicks, gsc_high_impressions, english_strategic_surface |
 | en | [ltx-2-vs-wan-2-6](https://maxvideoai.com/ai-video-engines/ltx-2-vs-wan-2-6) | 9 | 5846 | 10.7 | override localise, use_case_bucket, gsc_clicks, gsc_high_impressions, localized_editorial_override, english_strategic_surface |
 | en | [kling-2-5-turbo-vs-kling-3-standard](https://maxvideoai.com/ai-video-engines/kling-2-5-turbo-vs-kling-3-standard) | 9 | 2195 | 7.6 | gsc_clicks, gsc_high_impressions |
-| en | [ltx-2-3-fast-vs-seedance-2-0-fast](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast) | 9 | 1369 | 8.7 | best_for_related, opponent_override, use_case_bucket, gsc_clicks, gsc_high_impressions, english_strategic_surface |
+| en | [ltx-2-3-fast-vs-seedance-2-0-fast](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast) | 9 | 1369 | 8.7 | opponent_override, use_case_bucket, gsc_clicks, gsc_high_impressions, english_strategic_surface |
 | en | [luma-ray-2-vs-seedance-2-0](https://maxvideoai.com/ai-video-engines/luma-ray-2-vs-seedance-2-0) | 9 | 723 | 6.3 | gsc_clicks, gsc_high_impressions |
-| en | [happy-horse-1-1-vs-seedance-2-0](https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-seedance-2-0) | 9 | 281 | 10.3 | best_for_related, opponent_override, popular, related_graph, use_case_bucket, gsc_clicks, english_strategic_surface |
+| en | [happy-horse-1-1-vs-seedance-2-0](https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-seedance-2-0) | 9 | 281 | 10.3 | opponent_override, popular, related_graph, use_case_bucket, gsc_clicks, english_strategic_surface |
 | en | [seedance-1-5-pro-vs-seedance-2-0-fast](https://maxvideoai.com/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0-fast) | 8 | 2385 | 8.8 | gsc_clicks, gsc_high_impressions |
 | en | [ltx-2-3-pro-vs-ltx-2-fast](https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-ltx-2-fast) | 7 | 5044 | 11.3 | override localise, gsc_clicks, gsc_high_impressions, localized_editorial_override |
 | en | [ltx-2-fast-vs-seedance-2-0](https://maxvideoai.com/ai-video-engines/ltx-2-fast-vs-seedance-2-0) | 7 | 2357 | 6.5 | gsc_clicks, gsc_high_impressions |
@@ -115,6 +115,7 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 | en | [luma-ray-2-vs-sora-2](https://maxvideoai.com/ai-video-engines/luma-ray-2-vs-sora-2) | 0 | 71 | 6.6 | gsc_review_opportunity |
 | en | [kling-2-5-turbo-vs-wan-2-5](https://maxvideoai.com/ai-video-engines/kling-2-5-turbo-vs-wan-2-5) | 0 | 69 | 8.1 | gsc_review_opportunity |
 | en | [kling-o3-pro-vs-seedance-2-0](https://maxvideoai.com/ai-video-engines/kling-o3-pro-vs-seedance-2-0) | 0 | 67 | 9.2 | gsc_review_opportunity |
+| en | [kling-3-pro-vs-pika-text-to-video](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-pika-text-to-video) | 0 | 66 | 12.2 | gsc_review_opportunity |
 | en | [pika-text-to-video-vs-sora-2-pro](https://maxvideoai.com/ai-video-engines/pika-text-to-video-vs-sora-2-pro) | 0 | 65 | 7.2 | gsc_review_opportunity |
 | en | [kling-2-6-pro-vs-seedance-2-0-fast](https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-seedance-2-0-fast) | 0 | 64 | 9.5 | gsc_review_opportunity |
 | en | [kling-3-pro-vs-kling-o3-pro](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-kling-o3-pro) | 0 | 64 | 8 | gsc_review_opportunity |
@@ -128,7 +129,6 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 | en | [kling-3-pro-vs-luma-ray-2-flash](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-luma-ray-2-flash) | 0 | 56 | 10.7 | gsc_review_opportunity |
 | en | [ltx-2-fast-vs-pika-text-to-video](https://maxvideoai.com/ai-video-engines/ltx-2-fast-vs-pika-text-to-video) | 0 | 55 | 9.6 | gsc_review_opportunity |
 | en | [luma-ray-2-vs-veo-3-1-lite](https://maxvideoai.com/ai-video-engines/luma-ray-2-vs-veo-3-1-lite) | 0 | 55 | 8.3 | gsc_review_opportunity |
-| en | [kling-3-standard-vs-sora-2](https://maxvideoai.com/ai-video-engines/kling-3-standard-vs-sora-2) | 0 | 54 | 14.5 | gsc_review_opportunity |
 
 ## Premier lot de candidates à valider manuellement
 
@@ -143,6 +143,7 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | en | [kling-2-6-pro-vs-ltx-2-fast](https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-ltx-2-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [kling-2-6-pro-vs-veo-3-1-fast](https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-veo-3-1-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [kling-3-pro-vs-ltx-2-3-fast](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-ltx-2-3-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
+| en | [kling-3-standard-vs-pika-text-to-video](https://maxvideoai.com/ai-video-engines/kling-3-standard-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [ltx-2-3-fast-vs-minimax-hailuo-02-text](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-minimax-hailuo-02-text) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [ltx-2-3-fast-vs-seedance-1-5-pro](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-seedance-1-5-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [ltx-2-3-pro-vs-minimax-hailuo-02-text](https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-minimax-hailuo-02-text) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
@@ -170,6 +171,7 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | es | [kling-3-4k-vs-luma-ray-2-flash](https://maxvideoai.com/es/comparativa/kling-3-4k-vs-luma-ray-2-flash) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-3-pro-vs-ltx-2-3-pro](https://maxvideoai.com/es/comparativa/kling-3-pro-vs-ltx-2-3-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-3-pro-vs-luma-ray-2](https://maxvideoai.com/es/comparativa/kling-3-pro-vs-luma-ray-2) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
+| es | [kling-3-pro-vs-pika-text-to-video](https://maxvideoai.com/es/comparativa/kling-3-pro-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-3-pro-vs-luma-ray-2](https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-luma-ray-2) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-3-pro-vs-pika-text-to-video](https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-3-pro-vs-sora-2-pro](https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-sora-2-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
@@ -184,8 +186,6 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | es | [luma-ray-2-flash-vs-minimax-hailuo-02-text](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-minimax-hailuo-02-text) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [luma-ray-2-flash-vs-pika-text-to-video](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [luma-ray-2-flash-vs-seedance-1-5-pro](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-seedance-1-5-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
-| es | [luma-ray-2-flash-vs-sora-2](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-sora-2) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
-| es | [luma-ray-2-flash-vs-sora-2-pro](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-sora-2-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 
 ## URLs GSC hors du périmètre publié
 

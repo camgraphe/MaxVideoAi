@@ -54,7 +54,7 @@ function readRepositoryFile(path: string) {
   return readFileSync(join(PROJECT_ROOT, path), 'utf8');
 }
 
-test('Seedance 2.5 launch-link matrix covers examples, Seedance 2.0, and relevant best-for clusters', () => {
+test('Seedance 2.5 leads relevant best-for clusters while Seedance 2.0 stays 4K-specific', () => {
   const compareConfig = JSON.parse(readRepositoryFile('frontend/config/compare-config.json')) as {
     bestForPages: Array<{ slug: string; topPicks?: string[] }>;
   };
@@ -83,19 +83,33 @@ test('Seedance 2.5 launch-link matrix covers examples, Seedance 2.0, and relevan
       const source = readRepositoryFile(sourcePath);
       const firstPickHref = source.match(/## (?:Best picks|Meilleurs choix|Mejores opciones)[\s\S]*?1\. \*\*\[[^\]]+\]\(([^)]+)\)/)?.[1];
       assert.equal(firstPickHref, target, `${sourcePath} should rank the localized Seedance 2.5 profile first`);
-      assert.match(
+      assert.doesNotMatch(
         source,
         new RegExp(buildLocalizedModelPath(locale, 'seedance-2-0').replaceAll('/', '\\/')),
-        `${sourcePath} should retain Seedance 2.0 as an alternative`,
+        `${sourcePath} should not keep superseded Seedance 2.0 in the current shortlist`,
       );
     }
+
+    const fourKPath = `content/${locale}/best-for/4k-video.mdx`;
+    assert.match(
+      readRepositoryFile(fourKPath),
+      new RegExp(buildLocalizedModelPath(locale, 'seedance-2-0').replaceAll('/', '\\/')),
+      `${fourKPath} should retain Seedance 2.0 for its direct 4K output`,
+    );
   }
 
   for (const slug of SEEDANCE_25_BEST_FOR_SLUGS) {
     const entry = compareConfig.bestForPages.find((candidate) => candidate.slug === slug);
     assert.equal(entry?.topPicks?.[0], 'seedance-2-5', `${slug} ranked cards should lead with Seedance 2.5`);
-    assert.ok(entry?.topPicks?.includes('seedance-2-0'), `${slug} ranked cards should retain Seedance 2.0`);
+    assert.equal(
+      entry?.topPicks?.includes('seedance-2-0'),
+      false,
+      `${slug} ranked cards should not keep superseded Seedance 2.0`,
+    );
   }
+
+  const fourKEntry = compareConfig.bestForPages.find((candidate) => candidate.slug === '4k-video');
+  assert.ok(fourKEntry?.topPicks?.includes('seedance-2-0'), '4K ranked cards should retain Seedance 2.0');
 });
 
 test('Seedance 2.0 routes stay published, self-owned, and 4K-specific after the 2.5 launch', () => {
