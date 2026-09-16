@@ -1,14 +1,14 @@
 # MaxVideoAI Plugin GEO Analysis
 
-Checked: 2026-08-29
+Checked: 2026-09-16
 
 Scope: the public MCP/plugin acquisition surfaces, source contracts, current production availability of `maxvideoai.com`, and the shared documented plugin journey. Organic rankings, earned citations, directory approval, and separately scored real-host discovery remain independent evidence gates.
 
 ## Terminology Decision
 
-The commercial umbrella is **“MaxVideoAI for Claude, ChatGPT or Codex”** or **“AI video plugin”**, with the three host entries composed as equals. Client-specific installation copy uses the name shown by that client: **Claude plugin or custom connector**, **ChatGPT app/plugin**, and **Codex plugin**. **MCP server** remains the precise protocol term for technical documentation, developers, and long-tail search intent.
+The commercial umbrella is **“MaxVideoAI for assistants, agents and automations”** or **“AI video plugin”**. The current public paths are Claude, ChatGPT, Codex, OpenClaw, and a bounded self-hosted n8n workflow. Client-specific installation copy still uses the name shown by each client, while **MCP server** remains the precise protocol term for technical documentation, developers, and long-tail search intent.
 
-This prevents “MCP” from becoming a comprehension barrier without hiding the interoperable mechanism. It also avoids claiming that one tested OpenAI surface automatically proves every ChatGPT and Codex surface. Compatibility remains recorded per host and install path.
+This prevents “MCP” from becoming a comprehension barrier without hiding the interoperable mechanism. It also avoids turning a documented path into universal execution proof. OpenClaw remains tested with limits; n8n remains a manually configured deterministic MCP Client workflow on tested self-hosted n8n, not an n8n Cloud or MCP Client Tool claim. Compatibility remains recorded per host and install path.
 
 ChatGPT and Codex share the same MaxVideoAI MCP connection. ChatGPT's documented journey is direct developer-mode connection followed by OAuth on first use; MaxVideoAI is deliberately not submitted to the OpenAI directory under the current commerce policy. Claude uses the same host-neutral MCP core through its plugin or custom-connector presentation. Separately reviewed host-result evidence remains in internal measurement columns rather than visible acquisition warnings.
 
@@ -26,18 +26,18 @@ Primary terminology references to recheck before publication:
 
 ## GEO Readiness Score: 93/100
 
-This is a **reviewed implementation-readiness score**, not an organic-traffic forecast or a claim that an answer engine already cites MaxVideoAI. Production exposes the localized MCP intent owners, and the live `/mcp` page links people directly to the dedicated plugin repository. The focused repository now carries the proof-led README, six distinct product captures, and checksum-backed releases through v0.3.3. The score remains below 100 because authoritative external citations and listings are unverified, real-host evidence columns remain incomplete, and no clean post-change acquisition window has been observed.
+This is a **reviewed implementation-readiness score**, not an organic-traffic forecast or a claim that an answer engine already cites MaxVideoAI. Production exposes the localized MCP intent owners, and the live `/mcp` page links people directly to the dedicated plugin repository. The reviewed source candidate now carries seven distinct current public captures and prepares v0.3.4; the focused public repository remains checksum-backed through v0.3.3 until the protected publication workflow completes. The score remains below 100 because authoritative external citations and listings are unverified, real-host evidence columns remain incomplete, and no clean post-change acquisition window has been observed.
 
 ## Live production vs reviewed branch
 
-Fresh read-only probes on 2026-08-28 establish this boundary:
+Fresh read-only production captures on 2026-09-16 establish this boundary:
 
 | Surface | Live production | Reviewed branch readiness |
 | --- | --- | --- |
 | `/llms.txt` | The deployed repository-aware change belongs to the current production line; retain a direct post-release re-probe before using it as external evidence. | Keeps the dedicated repository and five owned MCP pages as first-party sources. |
-| `/mcp` HTML | Public, reachable, and verified on 2026-08-29 with a people-visible link to `github.com/camgraphe/maxvideoai-plugin`. | Preserves the approved “Claude, ChatGPT or Codex” composition and adds no host-specific proof claim. |
+| `/mcp` HTML | Public and reachable with five visible paths—Claude, ChatGPT, Codex, OpenClaw, and n8n—and four clients explicitly marked in preparation. | Mirrors the five-path boundary without converting the integration grid into execution proof for every client. |
 | `/integrations/chatgpt` HTML | Observed on 2026-08-28 as public and reachable with the shared ChatGPT/Codex journey, installation then first-use OAuth, a directory-approval boundary, and developer MCP fallback. | Corrects the source copy to make direct developer-mode MCP the primary live route and state the OpenAI directory non-submission boundary without implying that wording was already deployed. |
-| Focused plugin repository | Public with the proof-led README, six current non-repeating product captures, and checksum-backed v0.3.0 through v0.3.3 releases. | The deterministic source bundle and public tree match with zero reported drift for v0.3.3. |
+| Focused plugin repository | Public with checksum-backed v0.3.0 through v0.3.3 releases. | The reviewed v0.3.4 source candidate expands the README, adds the current tools and five-path MCP content, and carries seven refreshed public captures; it is not public release evidence until synchronization completes. |
 
 Treat the public v0.3.3 tree and release assets as installation and publication evidence only; they do not prove native-host execution or an end-to-end paid generation in every named host.
 
@@ -45,7 +45,7 @@ Treat the public v0.3.3 tree and release assets as installation and publication 
 | --- | ---: | --- |
 | Passage-level citability | 24/25 | Server-rendered site answers and both GitHub READMEs independently define the entity, model-comparison decision, pricing boundary, Library continuity, technical architecture, and safe next action. |
 | Structural readability | 20/20 | Five localized intent owners, question-led GitHub sections, short supporting answers, visual interruptions, breadcrumbs, client guides, and a technical reference create distinct extractable passages. |
-| Multi-modal proof | 14/15 | Six fresh public-product captures cover the app, examples, comparison scoreboard, models, pricing, and assistant path without repeating one result; a separate Library capture closes the workflow, and the complete sequence is public in v0.3.3. |
+| Multi-modal proof | 14/15 | Seven refreshed public-product captures cover the home page, examples, comparison detail, models, pricing, tools, and MCP paths without repeating one screenshot; a separate Claude-specific result section records saved-to-Library continuity. The refreshed sequence is a reviewed source candidate, not yet public v0.3.4 evidence. |
 | Authority and brand signals | 15/20 | A dedicated synchronized public repository, releases through v0.3.3, current manifests, maintained profiles, compatibility records, a protected publication trail, and people-visible first-party source attribution exist. Earned mentions and authoritative listings remain unverified. |
 | Technical accessibility | 20/20 | Server-rendered answers, localized sitemap owners, five-page `llms.txt`, repository-aware entity links, crawler controls, and private-route exclusions are covered by production surfaces and deterministic contracts. |
 

@@ -4,9 +4,9 @@
 
 ## What can MaxVideoAI read?
 
-![MaxVideoAI production Library with the completed glass-ribbon video saved as the newest video asset](../assets/screenshots/maxvideoai-library-continuity-production.jpg)
+![Public MaxVideoAI MCP result section with a finished video shown in Claude and saved to the MaxVideoAI Library](../assets/screenshots/maxvideoai-library-continuity-production.jpg)
 
-This is current MaxVideoAI product proof, not native host proof. It shows the connected product Library, not a host's permission screen or exact-host media access.
+This public page embeds controlled Claude-specific evidence and a saved-to-Library label. It is not a host permission screen, does not expose private Library contents, and does not prove media access in every client.
 
 Depending on the request, the workflow can read current model facts, authorized account status, generation status, recent generations, and private Library media you ask it to use. It should request only the information needed for planning, quoting, reference selection, recovery, or presentation.
 
@@ -24,7 +24,7 @@ An unclear reply is not approval. A refund closes the previous attempt and does 
 
 ## How are private references handled?
 
-![Completed MaxVideoAI workspace result paired with the same saved video in the MaxVideoAI Library](../assets/demos/brief-to-video-workflow.webp)
+![Current MaxVideoAI home page paired with the public MCP result section for Claude](../assets/demos/brief-to-video-workflow.webp)
 
 References remain in the connected MaxVideoAI Library. Use them only when the selected model and mode support that media type. Avoid attaching secrets, payment data, or media you do not have permission to process. A host may retain conversation content under its own policies, so review both the host's terms and MaxVideoAI's privacy policy.
 
@@ -38,4 +38,4 @@ Disconnect or remove MaxVideoAI in the host's connector or plugin settings, then
 - [MaxVideoAI terms](https://maxvideoai.com/legal/terms)
 - [MaxVideoAI connection guide](https://maxvideoai.com/docs/mcp)
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-09-16.

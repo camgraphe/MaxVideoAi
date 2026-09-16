@@ -29,9 +29,9 @@ const colors = {
   white: '#FFFFFF',
 };
 
-const HEADLINE = 'AI video production\nfor agent workflows';
-const SETUP_GUIDES = 'Claude · ChatGPT · Codex setup guides';
-const RHYTHM = 'Plan. Compare. Price. Approve. Generate.';
+const HEADLINE = 'AI production\nfor assistants & automations';
+const SETUP_GUIDES = 'Claude · ChatGPT · Codex · OpenClaw · n8n';
+const RHYTHM = 'Plan. Compare. Price. Approve. Create.';
 
 function solid(width, height, color) {
   return sharp({ create: { width, height, channels: 4, background: color } }).png().toBuffer();
@@ -154,22 +154,22 @@ async function readmeProofHero() {
     { input: await solid(520, 8, colors.cobalt), left: 72, top: 92 },
     { input: await logoLayer(54), left: 72, top: 126 },
   ];
-  const result = await croppedImage(paths.workspace, { left: 650, top: 145, width: 620, height: 360 });
-  const workspace = await fittedImage(paths.workspace, 1080, 391);
-  await addProof(layers, result, 900, 116, { border: '#DDE5F0', shadowOpacity: 0.28 });
-  await addProof(layers, workspace, 110, 452, { border: '#DDE5F0', shadowOpacity: 0.22 });
+  const workspace = await fittedImage(paths.workspace, 1200, 435);
+  const library = await fittedImage(paths.library, 700, 413);
+  await addProof(layers, workspace, 120, 190, { border: '#DDE5F0', shadowOpacity: 0.22 });
+  await addProof(layers, library, 820, 430, { border: '#DDE5F0', shadowOpacity: 0.28 });
   await writeOutput(canvas.composite(layers), path.join(paths.demos, 'readme-proof-hero.webp'), 'webp');
 }
 
 async function briefToVideoWorkflow() {
   const width = 1600;
   const height = 900;
-  const canvas = await base(width, height, 'dark', 0.52);
+  const canvas = await base(width, height, 'light', 0.34);
   const layers = [{ input: await solid(440, 8, colors.cobalt), left: 86, top: 84 }];
-  const workspace = await fittedImage(paths.workspace, 980, 355);
-  const library = await fittedImage(paths.library, 620, 365);
-  await addProof(layers, workspace, 100, 150, { border: '#15233A', shadowOpacity: 0.34 });
-  await addProof(layers, library, 880, 445, { border: '#15233A', shadowOpacity: 0.38 });
+  const workspace = await fittedImage(paths.workspace, 1080, 391);
+  const library = await fittedImage(paths.library, 700, 413);
+  await addProof(layers, workspace, 70, 140, { border: '#DDE5F0', shadowOpacity: 0.24 });
+  await addProof(layers, library, 820, 400, { border: '#DDE5F0', shadowOpacity: 0.3 });
   await writeOutput(canvas.composite(layers), path.join(paths.demos, 'brief-to-video-workflow.webp'), 'webp');
 }
 
@@ -178,16 +178,10 @@ async function modelChoiceAndBudget() {
   const height = 640;
   const canvas = await base(width, height, 'light', 0.32);
   const layers = [{ input: await solid(380, 5, colors.cobalt), left: 50, top: 28 }];
-  const selector = await croppedImage(paths.workspace, { left: 220, top: 86, width: 380, height: 75 });
-  const result = await fittedImage(
-    (await croppedImage(paths.workspace, { left: 650, top: 145, width: 620, height: 360 })).buffer,
-    420,
-    244,
-  );
   const workspace = await fittedImage(paths.workspace, 420, 152);
-  await addProof(layers, selector, 50, 55, { border: '#DDE5F0', shadowOpacity: 0.2 });
-  await addProof(layers, result, 30, 172, { border: '#DDE5F0', shadowOpacity: 0.24 });
-  await addProof(layers, workspace, 30, 445, { border: '#DDE5F0', shadowOpacity: 0.18 });
+  const library = await fittedImage(paths.library, 420, 247);
+  await addProof(layers, workspace, 30, 70, { border: '#DDE5F0', shadowOpacity: 0.2 });
+  await addProof(layers, library, 30, 300, { border: '#DDE5F0', shadowOpacity: 0.24 });
   await writeOutput(canvas.composite(layers), path.join(paths.demos, 'model-choice-and-budget.webp'), 'webp');
 }
 
@@ -215,29 +209,30 @@ async function githubSocialPreview() {
     { input: await textLayer(SETUP_GUIDES, { width: 450, height: 50, size: 16, color: colors.muted, weight: 700 }), left: 72, top: 382 },
     { input: await textLayer(RHYTHM, { width: 450, height: 55, size: 16, color: colors.muted, weight: 400 }), left: 72, top: 480 },
   ];
-  const result = await croppedImage(paths.workspace, { left: 650, top: 145, width: 620, height: 360 });
   const workspace = await fittedImage(paths.workspace, 620, 225);
-  await addProof(layers, result, 610, 100, { border: '#DDE5F0', shadowOpacity: 0.24 });
-  await addProof(layers, workspace, 610, 382, { border: '#DDE5F0', shadowOpacity: 0.2 });
+  const library = await fittedImage(paths.library, 520, 306);
+  await addProof(layers, workspace, 610, 72, { border: '#DDE5F0', shadowOpacity: 0.2 });
+  await addProof(layers, library, 710, 292, { border: '#DDE5F0', shadowOpacity: 0.24 });
   await writeOutput(canvas.composite(layers), path.join(paths.social, 'github-social-preview.png'), 'png');
 }
 
 async function releaseCard() {
   const width = 1200;
   const height = 630;
-  const canvas = await base(width, height, 'dark', 0.5);
+  const canvas = await base(width, height, 'light', 0.34);
   const layers = [
-    { input: await solid(460, 530, { r: 5, g: 11, b: 20, alpha: 0.76 }), left: 34, top: 44 },
+    { input: await solid(460, 530, { r: 246, g: 248, b: 252, alpha: 0.88 }), left: 34, top: 44 },
+    { input: await solid(8, 500, colors.cobalt), left: 34, top: 58 },
     { input: await logoLayer(52), left: 58, top: 54 },
-    { input: await textLayer(`RELEASE ${pluginVersion}`, { width: 330, height: 45, size: 18, color: colors.white, weight: 700 }), left: 132, top: 64 },
-    { input: await textLayer(HEADLINE, { width: 420, height: 190, size: 34, color: colors.white, weight: 700 }), left: 58, top: 164 },
-    { input: await textLayer(SETUP_GUIDES, { width: 420, height: 50, size: 15, color: '#CBD5E1', weight: 700 }), left: 58, top: 386 },
-    { input: await textLayer(RHYTHM, { width: 420, height: 55, size: 15, color: '#CBD5E1', weight: 400 }), left: 58, top: 490 },
+    { input: await textLayer(`RELEASE ${pluginVersion}`, { width: 330, height: 45, size: 18, color: colors.ink, weight: 700 }), left: 132, top: 64 },
+    { input: await textLayer(HEADLINE, { width: 420, height: 190, size: 34, color: colors.ink, weight: 700 }), left: 58, top: 164 },
+    { input: await textLayer(SETUP_GUIDES, { width: 420, height: 70, size: 15, color: colors.muted, weight: 700 }), left: 58, top: 386 },
+    { input: await textLayer(RHYTHM, { width: 420, height: 55, size: 15, color: colors.muted, weight: 400 }), left: 58, top: 490 },
   ];
-  const result = await croppedImage(paths.workspace, { left: 650, top: 145, width: 620, height: 360 });
   const workspace = await fittedImage(paths.workspace, 610, 221);
-  await addProof(layers, result, 530, 92, { border: '#15233A', shadowOpacity: 0.42 });
-  await addProof(layers, workspace, 530, 376, { border: '#15233A', shadowOpacity: 0.36 });
+  const library = await fittedImage(paths.library, 500, 295);
+  await addProof(layers, workspace, 530, 74, { border: '#DDE5F0', shadowOpacity: 0.22 });
+  await addProof(layers, library, 640, 286, { border: '#DDE5F0', shadowOpacity: 0.26 });
   await writeOutput(canvas.composite(layers), path.join(paths.social, `release-${pluginVersion}.png`), 'png');
 }
 

@@ -1,13 +1,11 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { createRequire } from 'node:module';
 import { readFileSync, statSync } from 'node:fs';
 import test from 'node:test';
 
 import { readImageDimensions, validateImageDecode } from '../scripts/register-github-asset.mjs';
 
-const requireFromFrontend = createRequire(new URL('../frontend/package.json', import.meta.url));
-const sharp = requireFromFrontend('sharp');
+const pluginVersion = readFileSync('plugins/maxvideoai/VERSION', 'utf8').trim();
 
 const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.json', 'utf8')) as {
   assets: Array<{
@@ -32,6 +30,7 @@ const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/release-0.3.2.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/release-0.3.3.png', [1200, 630]],
+  [`plugins/maxvideoai/assets/social/release-${pluginVersion}.png`, [1200, 630]],
   ['plugins/maxvideoai/assets/social/directory-thumbnail.png', [1200, 675]],
 ] as const);
 
@@ -41,6 +40,7 @@ const liveScreenshotDimensions = new Map([
   ['plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp', [1268, 713]],
   ['plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp', [1268, 713]],
   ['plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp', [1268, 713]],
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-tools-workflow-live.webp', [1268, 713]],
   ['plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp', [1268, 713]],
 ] as const);
 
@@ -53,13 +53,6 @@ const allowedProofIds = new Set([
 
 function sha256(bytes: Buffer) {
   return createHash('sha256').update(bytes).digest('hex');
-}
-
-function meanAbsoluteDifference(left: Buffer, right: Buffer): number {
-  assert.equal(left.length, right.length);
-  let difference = 0;
-  for (let index = 0; index < left.length; index += 1) difference += Math.abs(left[index] - right[index]);
-  return difference / left.length;
 }
 
 test('ships the registered visual-system outputs at their exact target dimensions', async () => {
@@ -83,7 +76,7 @@ test('ships the registered visual-system outputs at their exact target dimension
   );
 });
 
-test('ships six distinct current product captures for the proof-led README journey', async () => {
+test('ships seven distinct current public product captures for the proof-led README journey', async () => {
   const hashes = new Set<string>();
   for (const [path, [expectedWidth, expectedHeight]] of liveScreenshotDimensions) {
     const bytes = readFileSync(path);
@@ -145,15 +138,17 @@ test('pins the built-in ImageGen source as draft editorial, never product proof'
   await validateImageDecode(bytes);
 });
 
-test('composition code uses only the accepted proof sources and makes no native host-proof claim', () => {
+test('composition code uses only accepted public proof sources, stays light, and makes no native host-proof claim', () => {
   const source = readFileSync('scripts/compose-github-visual-system.mjs', 'utf8');
   assert.match(source, /maxvideoai-workspace-production\.jpg/);
   assert.match(source, /maxvideoai-library-continuity-production\.jpg/);
   assert.doesNotMatch(source, /frontend\/public\/media\/mcp|brand\/partners\/(?:openai|anthropic)|codex-plugin/i);
   assert.doesNotMatch(source, /AI video production inside\s+ChatGPT/i);
-  assert.match(source, /AI video production\\nfor agent workflows/);
-  assert.match(source, /Claude · ChatGPT · Codex setup guides/);
-  assert.doesNotMatch(source, /Claude · Codex · ChatGPT setup guides/);
+  assert.match(source, /AI production\\nfor assistants & automations/);
+  assert.match(source, /Claude · ChatGPT · Codex · OpenClaw · n8n/);
+  assert.match(source, /Plan\. Compare\. Price\. Approve\. Create\./);
+  assert.doesNotMatch(source, /base\(width, height, 'dark'/, 'all refreshed GitHub artwork must use the light visual system');
+  assert.doesNotMatch(source, /alpha: 0\.76/, 'release artwork must not place copy on a black panel');
   assert.match(source, /withoutEnlargement: true/);
   assert.match(source, /fontfile:/, 'text composition must pin a repository-resolved font file');
   assert.doesNotMatch(source, /font_family="Helvetica"/, 'system Helvetica would make recomposition platform-dependent');
@@ -171,27 +166,11 @@ test('composition code uses only the accepted proof sources and makes no native 
   assert.match(modelRecord?.claim ?? '', /does not show or prove a budget, quote, price, approval, or native host execution/i);
 });
 
-test('the narrow model-choice proof keeps the real selector readable around a 390px GitHub viewport', async () => {
-  const assetPath = 'plugins/maxvideoai/assets/demos/model-choice-and-budget.webp';
-  const workspacePath = 'plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg';
-  const asset = readFileSync(assetPath);
-  const expectedSelector = await sharp(workspacePath)
-    .extract({ left: 220, top: 86, width: 380, height: 75 })
-    .removeAlpha()
-    .raw()
-    .toBuffer();
-  const renderedSelector = await sharp(asset)
-    .extract({ left: 50, top: 55, width: 380, height: 75 })
-    .removeAlpha()
-    .raw()
-    .toBuffer();
+test('the narrow proof uses the complete current public page instead of stale workspace-coordinate crops', () => {
+  const source = readFileSync('scripts/compose-github-visual-system.mjs', 'utf8');
+  const functionBody = source.match(/async function modelChoiceAndBudget\(\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
 
-  assert.ok(
-    meanAbsoluteDifference(expectedSelector, renderedSelector) < 18,
-    'the selector region must remain a real native-scale crop, not redrawn or materially resampled UI',
-  );
-
-  const githubContentWidthAt390 = 358;
-  const renderedSelectorHeight = 75 * (githubContentWidthAt390 / 480);
-  assert.ok(renderedSelectorHeight >= 55, 'the selector must stay at least 55px tall in the narrow README render');
+  assert.match(functionBody, /fittedImage\(paths\.workspace/);
+  assert.doesNotMatch(functionBody, /croppedImage\(paths\.workspace/);
+  assert.doesNotMatch(functionBody, /left: 220, top: 86/);
 });

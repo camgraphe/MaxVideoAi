@@ -4,9 +4,9 @@
 
 **Compare AI video models. Know the price. Create in one workspace.**
 
-MaxVideoAI is a multi-model AI video production platform for turning a brief into finished, reusable work. Explore real examples, compare current engines side by side, review model capabilities and pricing, generate video, image, or audio, and keep outputs and references together in the MaxVideoAI Library.
+MaxVideoAI is a multi-model AI video production platform for turning a brief into finished, reusable work. Explore real examples, compare current engines side by side, review model capabilities and pricing, prepare characters and shots with production tools, generate video, image, or audio, and keep outputs and references together in the MaxVideoAI Library.
 
-[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
+[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Connect MaxVideoAI to your assistant or automation](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
 
 [Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Plugin releases](https://github.com/camgraphe/maxvideoai-plugin/releases)
 
@@ -14,17 +14,17 @@ MaxVideoAI is a multi-model AI video production platform for turning a brief int
 
 ## What does the MaxVideoAI workspace bring together?
 
-MaxVideoAI brings model choice, prompts, references, settings, live pricing, previews, results, and next-shot context into one production workspace. That workspace is the main product; the GitHub plugin extends the same production path to Claude, ChatGPT, and Codex later in this page.
+MaxVideoAI brings model choice, prompts, references, settings, live pricing, previews, results, and next-shot context into one production workspace. That workspace is the main product; the GitHub plugin extends the same production path to Claude, ChatGPT, Codex, OpenClaw, and a bounded self-hosted n8n workflow later in this page.
 
-![Current MaxVideoAI workspace with Seedance 2.5, storyboard controls, generation settings, and varied sample renders](plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp)
+![Public MaxVideoAI home page with a colorful MiniMax H3 Max film preview and pay-as-you-go creation actions](plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp)
 
-*The current public workspace, captured from production on August 29, 2026.*
+*The current public production experience, captured from production on September 16, 2026.*
 
 ## What can you make with MaxVideoAI?
 
 Use MaxVideoAI to develop a single shot, animate an image, build a multi-shot sequence, create supporting images or audio, and continue from earlier work. The workspace keeps model selection, prompts, references, settings, price, previews, results, and the Library in one production path instead of scattering them across provider tabs.
 
-![MaxVideoAI examples gallery showing three different cinematic, animated, and product-style AI video outputs](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
+![MaxVideoAI examples gallery showing colorful Seedance cinematic and animated AI video stories](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
 
 Every public example opens into its prompt, settings, model, duration, and recorded render cost. Browse the [AI video examples gallery](https://maxvideoai.com/examples), then recreate a useful starting point in your own workspace.
 
@@ -39,40 +39,50 @@ Every public example opens into its prompt, settings, model, duration, and recor
 
 MaxVideoAI compares AI video engines by workflow, supported inputs, duration, resolution, audio, pricing, strengths, and a documented editorial score. The side-by-side hub is designed for an actual production decision: choose two engines, inspect the trade-offs, open the detailed matchup, and move to the model that fits the shot.
 
-![MaxVideoAI side-by-side engine comparator showing Seedance 2.0 and Google Veo 3.1 with scores and supported workflows](plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
+![MaxVideoAI comparison page showing MiniMax H3 and Seedance 2.5 scores, strengths, and colorful video examples](plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
 
 The broader [model directory](https://maxvideoai.com/models) adds recommended starting points and routes for video, image, audio, and preparation work.
 
-![MaxVideoAI model directory with current recommended starting points, capability summaries, and editorial scores](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
+![MaxVideoAI model directory with colorful MiniMax and Kling examples beside current model discovery actions](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
 
-Model families such as Sora, Veo, Kling, Seedance, LTX, MiniMax, Wan, and Pika are examples rather than a frozen catalogue. Use the live directory for current availability and pricing.
+Model families such as Sora, Veo, Kling, Seedance, LTX, MiniMax, Wan, Happy Horse, Gemini Omni, and Pika are examples rather than a frozen catalogue. Use the live directory for current availability and pricing.
 
 ## How do project pricing and approval work?
 
 MaxVideoAI is pay as you go. The pricing surface compares common scenarios across video, image, audio, and production tools, while the workspace shows the live price for the selected request before launch. In the assistant workflow, a concrete request becomes an exact quote and one explicit approval authorizes one paid attempt.
 
-![MaxVideoAI AI video pricing comparison with current scenario cards and engine pricing navigation](plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp)
+![MaxVideoAI pricing page with three current video starting points and navigation across video, image, audio, and tools](plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp)
 
 1. Choose the model, mode, duration, resolution, and supported extras.
 2. Compare the current [AI video pricing](https://maxvideoai.com/pricing).
 3. Review the live workspace price or assistant quote.
 4. Launch from the web app, or explicitly approve one prepared assistant attempt.
 
+## What can you prepare before generation?
+
+The public [production toolbox](https://maxvideoai.com/tools) brings repeatable preparation and finishing work into the same product path. Build a consistent character sheet, explore camera angles, refine or remove an image background, and finish a video without pretending that every useful step needs a new generation model.
+
+![MaxVideoAI tools page showing a colorful character sheet, camera-angle work, image refinement, and video finishing options](plugins/maxvideoai/assets/screenshots/maxvideoai-tools-workflow-live.webp)
+
+Tool availability and price still come from the live product. The exact input, output, and billing boundary is shown before a tool runs.
+
 ## How do references and continuity work?
 
 Supported workflows can use image, video, or audio references for composition, subject, motion, timing, or sound direction. The selected model and mode determine the accepted reference roles and limits. Finished results and reusable assets remain in the connected MaxVideoAI Library, ready for the next shot or another production route.
 
-![MaxVideoAI production Library with saved videos, media filters, and a reusable completed result](plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg)
+![Public MaxVideoAI MCP page showing a finished colorful video in Claude with confirmation that it was saved to the connected Library](plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg)
 
 [Open the Library](https://maxvideoai.com/app/library) to browse saved media and continue where the production stopped.
 
-## Can Claude, ChatGPT or Codex use MaxVideoAI?
+## Which assistants, agents and automations can use MaxVideoAI?
 
-Yes. MaxVideoAI exposes one remote MCP production service with three equal entry points: a Claude connector or plugin, a ChatGPT app/plugin path, and a Codex plugin. The connected assistant can help shape the brief, compare current model options, calculate project budgets, prepare an exact quote, wait for approval, and recover the accepted result in the same MaxVideoAI account.
+MaxVideoAI exposes one remote MCP production service through five public paths: Claude, ChatGPT, Codex, OpenClaw, and a tested self-hosted n8n workflow. A connected assistant or automation can help shape the brief, compare current model options, calculate project budgets, prepare an exact quote, wait for explicit approval, and recover the accepted result in the same MaxVideoAI account.
 
-![MaxVideoAI MCP page presenting equal Claude, ChatGPT, and Codex paths beside a production-planning conversation](plugins/maxvideoai/assets/screenshots/maxvideoai-assistant-workflow-live.webp)
+![Public MaxVideoAI MCP integration grid for Claude, ChatGPT, Codex, OpenClaw, and n8n on a light background](plugins/maxvideoai/assets/screenshots/maxvideoai-assistant-workflow-live.webp)
 
-[Claude setup](plugins/maxvideoai/docs/claude.md) · [ChatGPT setup](plugins/maxvideoai/docs/chatgpt.md) · [Codex setup](plugins/maxvideoai/docs/codex.md) · [MCP technical reference](https://maxvideoai.com/docs/mcp) · [Public plugin source](https://github.com/camgraphe/maxvideoai-plugin)
+[Claude setup](plugins/maxvideoai/docs/claude.md) · [ChatGPT setup](plugins/maxvideoai/docs/chatgpt.md) · [Codex setup](plugins/maxvideoai/docs/codex.md) · [OpenClaw setup](https://maxvideoai.com/integrations/openclaw) · [n8n setup](https://maxvideoai.com/integrations/n8n) · [MCP technical reference](https://maxvideoai.com/docs/mcp) · [Public plugin source](https://github.com/camgraphe/maxvideoai-plugin)
+
+OpenClaw is tested with limits and has a listed ClawHub skill. n8n is tested on self-hosted n8n through a manual setup of the deterministic MCP Client workflow; n8n Cloud and MCP Client Tool agent invocation are not claimed. Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot remain in preparation and do not yet have public setup paths.
 
 ```text
 Brief → compare models → budget shots → prepare exact quote → approve one attempt → recover result
@@ -87,7 +97,7 @@ This repository contains the production application, its public marketing and co
 ```mermaid
 flowchart LR
   B[Creative brief] --> W[Next.js workspace]
-  B --> A[Claude, ChatGPT or Codex]
+  B --> A[Assistant, agent or automation]
   A --> M[Remote MCP + OAuth]
   M --> W
   W --> C[Capability-driven model catalogue]
@@ -105,7 +115,7 @@ flowchart LR
 | Media storage | Amazon S3 |
 | Billing | Stripe and server-owned price/approval controls |
 | Model execution | Capability-driven registry plus provider adapters owned by the server |
-| Assistant integration | Remote Streamable HTTP MCP, OAuth, checked-in Claude/Codex manifests and skills |
+| Assistant integration | Remote Streamable HTTP MCP, OAuth, checked-in Claude/Codex manifests and skills, plus documented OpenClaw and n8n paths |
 | Quality | Node test contracts, Playwright browser checks, lint, typecheck, exposure and asset gates |
 
 | Repository area | Responsibility |
@@ -157,4 +167,4 @@ Small, reviewable contributions are welcome when they preserve public URLs, the 
 
 The repository uses the [Business Source License 1.1](LICENSE), with its terms and change date defined in the license file. Commercial deployments require a separate licence; see the [dual-license guide](docs/licensing/dual-license.md), email [licensing@maxvideo.ai](mailto:licensing@maxvideo.ai), and review [`NOTICE`](NOTICE).
 
-Last reviewed: 2026-08-29.
+Last reviewed: 2026-09-16.

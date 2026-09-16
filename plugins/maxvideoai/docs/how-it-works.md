@@ -4,9 +4,9 @@
 
 ## What does the planning workflow do?
 
-![MaxVideoAI workspace with the Luma Ray 2 Flash selector and completed glass-ribbon video](../assets/demos/model-choice-and-budget.webp)
+![Narrow composite of the current MaxVideoAI home page and public MCP Claude-result section](../assets/demos/model-choice-and-budget.webp)
 
-This is current MaxVideoAI product proof, not native host proof. The image shows product selection and a completed result; it is not a quote, approval, or budget proof.
+This is current public MaxVideoAI product proof plus Claude-specific evidence. It is not a planning, model-selection, quote, approval, budget, or every-client execution proof.
 
 Planning asks the live MaxVideoAI catalogue for current executable options. It can inspect model details, recommend options for each shot, and calculate comparable named project budgets. A budget is a decision aid, not an exact generation quote, and planning does not authorize paid work.
 
@@ -20,7 +20,7 @@ MaxVideoAI is free to connect and has no separate plugin subscription. Approved 
 
 ## What happens if the conversation is interrupted?
 
-![Same completed glass-ribbon video shown in the MaxVideoAI workspace and saved Library asset](../assets/demos/library-continuity.webp)
+![Public MaxVideoAI MCP Claude-result section paired with the current MaxVideoAI home page](../assets/demos/library-continuity.webp)
 
 After MaxVideoAI accepts a paid job, a timeout or lost response is not permission to submit again. Ask for that job's status or recent generations first. Present the completed result, or report the refunded outcome, from the existing job.
 
@@ -45,4 +45,4 @@ MaxVideoAI: revoke the matching OAuth connection
 - [Planning workflow contract](../skills/plan/SKILL.md)
 - [Generation workflow contract](../skills/generate/SKILL.md)
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-09-16.

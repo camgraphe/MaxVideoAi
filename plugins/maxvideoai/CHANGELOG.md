@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.4 — 2026-09-16
+
+- Refresh both GitHub product stories against the redesigned public MaxVideoAI
+  site with seven distinct production captures on light, colorful surfaces.
+- Add the live OpenClaw and tested self-hosted n8n paths while keeping their
+  host, package, store, and automation limits explicit.
+- Cover the current production toolbox and newer model-comparison surface
+  without embedding a stale model list or price table in the plugin.
+- State the live video/image MCP boundary explicitly while keeping Audio
+  generation and Studio montage described as server-gated, not live features.
+
 ## 0.3.3 — 2026-08-29
 
 - Point the Codex installation path at the focused public plugin repository and

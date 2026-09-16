@@ -2,9 +2,9 @@
 
 **Short answer:** Start with the shot list and ask MaxVideoAI for comparable project budgets. Request an exact quote only for the concrete model and settings you are ready to approve, so a planning conversation cannot quietly become paid work.
 
-![MaxVideoAI workspace showing a selected model and a completed glass-ribbon video](../assets/demos/model-choice-and-budget.webp)
+![Narrow composite of the current MaxVideoAI home page and public MCP Claude-result section](../assets/demos/model-choice-and-budget.webp)
 
-*This current MaxVideoAI product visual proves a selector and completed result. It does not prove a displayed budget, an exact quote, approval, or execution in a named host.*
+*This current public MaxVideoAI visual includes Claude-specific result evidence. It does not prove a selected model, displayed budget, exact quote, approval, or execution in every named host.*
 
 ## What are you pricing?
 

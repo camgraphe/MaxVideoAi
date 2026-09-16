@@ -2,9 +2,9 @@
 
 **Short answer:** Install the reviewed MaxVideoAI package, begin with `$maxvideoai:plan`, then prepare one concrete request only when you are ready for its exact quote. Package discovery is not proof that every Codex build or the full production path is verified.
 
-![MaxVideoAI production workspace showing the completed glass-ribbon video](../assets/demos/readme-proof-hero.webp)
+![Current MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude](../assets/demos/readme-proof-hero.webp)
 
-*This current MaxVideoAI product visual proves a completed workspace result. It does not prove native Codex installation, OAuth, quote, approval, or generation execution.*
+*This current MaxVideoAI product visual includes Claude-specific public evidence. It does not prove native Codex installation, OAuth, quote, approval, or generation execution.*
 
 ## What is the safe sequence?
 

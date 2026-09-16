@@ -17,7 +17,7 @@ function checkFixture(name: string) {
   });
 }
 
-test('the plugin README is a proof-led conversion surface with safe compatibility language', () => {
+test('the plugin README covers the current assistant, agent, and automation ecosystem with safe compatibility language', () => {
   const readmePath = path.join(repositoryRoot, 'plugins', 'maxvideoai', 'README.md');
   const readme = readFileSync(readmePath, 'utf8');
   const lines = readme.split(/\r?\n/);
@@ -26,10 +26,10 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   const definition = readme.split(/\n{2,}/)[1] ?? '';
   const definitionWords = definition.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) ?? [];
 
-  assert.equal(lines[0], '# MaxVideoAI for Claude, ChatGPT or Codex');
+  assert.equal(lines[0], '# MaxVideoAI for assistants, agents and automations');
   assert.ok(words.length < 1_800, `README must stay under 1,800 words; found ${words.length}`);
   assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
-  assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
+  assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through one remote MCP server/i);
   assert.match(opening, /assets\/screenshots\/maxvideoai-assistant-workflow-live\.webp/);
   assert.match(opening, /codex plugin marketplace add camgraphe\/maxvideoai-plugin --ref v\d+\.\d+\.\d+/);
   assert.match(opening, /https:\/\/maxvideoai\.com\/docs\/mcp/);
@@ -37,6 +37,9 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
     'https://maxvideoai.com/mcp',
     'https://maxvideoai.com/models',
     'https://maxvideoai.com/pricing',
+    'https://maxvideoai.com/tools',
+    'https://maxvideoai.com/integrations/openclaw',
+    'https://maxvideoai.com/integrations/n8n',
     'https://maxvideoai.com/app/library',
     'https://maxvideoai.com/legal/privacy',
     'https://maxvideoai.com/legal/terms',
@@ -49,11 +52,17 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
     'assets/screenshots/maxvideoai-examples-gallery-live.webp',
     'assets/screenshots/maxvideoai-engine-scoreboard-live.webp',
     'assets/screenshots/maxvideoai-pricing-comparison-live.webp',
+    'assets/screenshots/maxvideoai-tools-workflow-live.webp',
     'assets/screenshots/maxvideoai-library-continuity-production.jpg',
   ]) {
     assert.match(readme, new RegExp(visual.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(readme, /recommendation is a capability match[^\n]*not a guarantee[^\n]*paid quote/i);
+  assert.match(readme, /OpenClaw[\s\S]*tested with limits[\s\S]*ClawHub/i);
+  assert.match(readme, /n8n[\s\S]*self-hosted[\s\S]*deterministic MCP Client workflow/i);
+  assert.match(readme, /Cursor[\s\S]*GitHub Copilot[\s\S]*Gemini CLI[\s\S]*Microsoft Copilot[\s\S]*in preparation/i);
+  assert.match(readme, /current live MCP surface[\s\S]*video and image[\s\S]*planning, quoting, generation, recovery/i);
+  assert.match(readme, /Audio generation[\s\S]*Studio montage[\s\S]*behind server publication gates[\s\S]*not claimed as live/i);
   assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
 
   const setupGuideOrder = [
@@ -119,8 +128,8 @@ test('the ChatGPT guide keeps direct MCP available without promising an OpenAI d
   assert.match(disconnectPath, /revoke[\s\S]*MaxVideoAI OAuth/i);
   assert.doesNotMatch(disconnectPath, /sync deletion|delete (?:the )?sync|delete synced|destructive removal/i);
   assert.match(guide, /Full MCP beta: Business and Enterprise\/Edu on ChatGPT web[\s\S]*Pro: read\/fetch MCP permissions in developer mode/i);
-  assert.match(guide, /!\[Completed MaxVideoAI video continuing from the production workspace into the Library\]\(\.\.\/assets\/demos\/brief-to-video-workflow\.webp\)/);
-  assert.match(guide, /MaxVideoAI product proof[\s\S]*workspace[\s\S]*Library[\s\S]*not native ChatGPT host proof/i);
+  assert.match(guide, /!\[Current MaxVideoAI home page paired with the public MCP result section for Claude\]\(\.\.\/assets\/demos\/brief-to-video-workflow\.webp\)/);
+  assert.match(guide, /MaxVideoAI product proof[\s\S]*public home page[\s\S]*saved-to-Library[\s\S]*not native ChatGPT host proof/i);
   assert.match(guide, /Connect direct MCP → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library/i);
   assert.doesNotMatch(guide, /after (?:OpenAI )?approval|public listing approval|when it is available in the public directory/i);
   assert.doesNotMatch(guide, /unverified|not yet recorded|setup guide to validate|not an availability promise/i);

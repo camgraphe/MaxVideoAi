@@ -2,9 +2,9 @@
 
 **Short answer:** Ask MaxVideoAI for current model options and comparable named budgets before you prepare a paid request. The useful decision is the route that fits this shot’s quality, control, duration, reference, and cost trade-offs—not a permanent winner.
 
-![MaxVideoAI workspace with the Luma Ray 2 Flash selector and a completed glass-ribbon result](../assets/demos/model-choice-and-budget.webp)
+![Narrow composite of the current MaxVideoAI home page and public MCP Claude-result section](../assets/demos/model-choice-and-budget.webp)
 
-*This current MaxVideoAI product visual proves a model selector and completed result. It does not prove a budget, exact quote, approval, model ranking, or native ChatGPT, Claude, or Codex execution.*
+*This current public MaxVideoAI visual includes Claude-specific result evidence. It does not prove a budget, exact quote, approval, model ranking, or native ChatGPT or Codex execution.*
 
 ## What are you deciding?
 
