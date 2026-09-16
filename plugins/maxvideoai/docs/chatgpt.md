@@ -46,9 +46,9 @@ OAuth opens MaxVideoAI in your browser so you can sign in or create an account w
 
 Planning reads current product facts and can calculate named budgets without spending credits. Generation tools prepare the selected model, prompt, settings, and supported references, then return an exact quote. Only an explicit approval authorizes one paid attempt; a changed request needs a fresh quote.
 
-![Completed MaxVideoAI video continuing from the production workspace into the Library](../assets/demos/brief-to-video-workflow.webp)
+![Current MaxVideoAI home page paired with the public MCP result section for Claude](../assets/demos/brief-to-video-workflow.webp)
 
-*MaxVideoAI product proof: this composite shows the same completed result continuing from the MaxVideoAI production workspace into the Library. It is not native ChatGPT host proof and does not prove an assistant quote, approval, or generation.*
+*MaxVideoAI product proof: this composite pairs the current public home page with Claude-specific result and saved-to-Library evidence from the public MCP page. It is not native ChatGPT host proof and does not prove a ChatGPT quote, approval, or generation.*
 
 ## How do I verify without spending credits?
 
@@ -79,4 +79,4 @@ Disconnect the app connection → revoke the MaxVideoAI OAuth connection
 - [OpenAI: Plugins in ChatGPT and Codex](https://help.openai.com/en/articles/20001256-plugins-in-codex)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
 
-Last reviewed: 2026-09-14.
+Last reviewed: 2026-09-16.

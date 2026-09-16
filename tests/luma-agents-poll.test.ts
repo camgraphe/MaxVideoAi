@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -39,6 +40,7 @@ test('Luma Agents poll copies provider output before marking the job completed',
 
   const response = await runLumaAgentsPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -115,6 +117,7 @@ test('Luma Agents poll refunds failed paid wallet jobs once and marks the attemp
 
   const response = await runLumaAgentsPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -181,6 +184,7 @@ test('Luma Agents poll does not mark attempts polling when progress update loses
 
   const response = await runLumaAgentsPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -231,6 +235,7 @@ test('Luma Agents poll marks stalled jobs and provider attempts as polling_stall
 
   const response = await runLumaAgentsPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -291,6 +296,7 @@ test('Luma Agents poll does not mark attempts when stalled job transition loses 
 
   const response = await runLumaAgentsPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {

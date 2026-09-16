@@ -1,6 +1,5 @@
 import { isStaleGenerationUpdate, mergeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
-import { isPlaceholderMediaUrl } from '@/lib/media';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import { resolvePolledThumbUrl, type LocalRender } from './render-persistence';
 
@@ -48,8 +47,7 @@ export function projectGenerationPollStatus({
   now: number;
 }): GenerationPollProjection {
   const hasVideo = Boolean(status.videoUrl);
-  const hasThumb = Boolean(status.thumbUrl && !isPlaceholderMediaUrl(status.thumbUrl));
-  const shouldKeepPolling = status.status !== 'failed' && (status.status !== 'completed' || !hasVideo || !hasThumb);
+  const shouldKeepPolling = status.status !== 'failed' && (status.status !== 'completed' || !hasVideo);
 
   return {
     status,
@@ -60,8 +58,8 @@ export function projectGenerationPollStatus({
     deferUntilReady: false,
     shouldApplyState: true,
     shouldKeepPolling,
-    shouldStopProgressTracking: status.status === 'failed' || (status.status === 'completed' && hasVideo && hasThumb),
-    nextPollDelayMs: shouldKeepPolling ? (status.status === 'completed' && !hasVideo ? 4000 : 2000) : null,
+    shouldStopProgressTracking: status.status === 'failed' || (status.status === 'completed' && hasVideo),
+    nextPollDelayMs: shouldKeepPolling ? 15_000 : null,
     progressMessage: status.message ?? undefined,
   };
 }

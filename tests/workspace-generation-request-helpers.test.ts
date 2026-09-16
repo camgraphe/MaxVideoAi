@@ -794,6 +794,85 @@ test('workspace sends Kling 3.0 Omni 4K audio even without a pricing toggle', ()
   assert.equal(falRequest.requestBody.generate_audio, true);
 });
 
+test('workspace forwards Wan 3 audio choices from the canonical audio field', () => {
+  for (const engineId of ['wan-3', 'wan-3-prime'] as const) {
+    const engine = listFalEngines().find((entry) => entry.id === engineId)?.engine;
+    assert.ok(engine);
+
+    const capability = getModeCaps(engine, 't2v');
+    assert.equal(supportsModeAudioControl(engine, 't2v', capability), true, engineId);
+
+    for (const audio of [true, false]) {
+      const form = baseForm({
+        engineId,
+        mode: 't2v',
+        durationSec: 5,
+        durationOption: 5,
+        resolution: '720p',
+        audio,
+      });
+      const result = buildWorkspaceGeneratePayload({
+        selectedEngineId: engineId,
+        activeMode: 't2v',
+        submissionMode: 't2v',
+        form,
+        trimmedPrompt: 'A cinematic landscape with synchronized ambient sound.',
+        trimmedNegativePrompt: '',
+        effectiveDurationSec: 5,
+        memberTier: 'member',
+        paymentMode: 'wallet',
+        capability,
+        supportsNegativePrompt: false,
+        supportsAudioToggle: supportsModeAudioControl(engine, 't2v', capability),
+        isSeedance: false,
+        supportsKlingV3Controls: false,
+        supportsKlingV3VoiceControl: false,
+        voiceIds: [],
+        voiceControlEnabled: false,
+        shotType: 'customize',
+        localKey: `local-${engineId}`,
+        batchId: `batch-${engineId}`,
+        iterationIndex: 0,
+        iterationCount: 1,
+        friendlyMessage: 'Take 1',
+        lumaContext: getLumaRay2GenerationContext({
+          selectedEngineId: engineId,
+          submissionMode: 't2v',
+          form,
+        }),
+        inputsPayload: [],
+        referenceImageUrls: [],
+        extraInputValues: {},
+      });
+
+      assert.equal(result.payload.audio, audio, `${engineId} audio=${audio}`);
+    }
+  }
+});
+
+test('workspace reserves the Wan 3 native audio field for the core audio control', () => {
+  for (const engineId of ['wan-3', 'wan-3-prime'] as const) {
+    const engine = listFalEngines().find((entry) => entry.id === engineId)?.engine;
+    assert.ok(engine);
+
+    const schema = summarizeWorkspaceInputSchema({
+      selectedEngine: engine,
+      activeMode: 't2v',
+      allowsUnifiedVeoFirstLast: false,
+      isUnifiedHappyHorse: false,
+      isUnifiedSeedance: false,
+      isUnifiedGeminiOmni: false,
+      uiLocale: 'en',
+    });
+
+    assert.equal(
+      schema.secondaryFields.some(({ field }) => field.id === 'audio'),
+      false,
+      engineId,
+    );
+  }
+});
+
 test('iteration guard allows Kling 3.0 Omni reference mode from subject elements only', () => {
   const guardOptions = {
     selectedEngineId: 'kling-o3-pro',

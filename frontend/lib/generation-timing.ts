@@ -57,7 +57,7 @@ export function selectGenerationTiming(
     const deviation = useRecent ? cell.recentStdDevDurationMs : cell.stdDevDurationMs;
     // A volatile small cohort is not a better reference merely because it matches.
     // This is a stability guard, not a statistical confidence guarantee.
-    if (result && deviation != null && deviation / Math.sqrt(count) > estimate.averageDurationMs / 4) continue;
+    if (deviation != null && deviation / Math.sqrt(count) > estimate.averageDurationMs / 4) continue;
     const weight = Math.min(1, cell.sampleCount / MIN_REFERENCE_SAMPLES);
     result = result ? { averageDurationMs: estimate.averageDurationMs * weight + result.averageDurationMs * (1 - weight), sampleCount: estimate.sampleCount } : estimate;
   }

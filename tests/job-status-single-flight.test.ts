@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
 
-test('authenticated status calls coalesce only within the same principal and release after completion', async () => {
+test('authenticated status calls coalesce only within the same principal and throttle repeat reads for 15 seconds', async () => {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
   const dom = new JSDOM('<div/>', { url: 'http://localhost/app' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
+  const originalNow = Date.now;
+  let now = originalNow();
+  Date.now = () => now;
   const requests: Array<{ resolve: (response: Response) => void }> = [];
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, navigator: dom.window.navigator, CustomEvent: dom.window.CustomEvent, BroadcastChannel: undefined,
     fetch: (input: string) => {
@@ -38,11 +41,15 @@ test('authenticated status calls coalesce only within the same principal and rel
     assert.equal(firstResult.observation?.providerPercent?.value, 0);
     assert.ok(firstResult.observation?.checkedAt);
     assert.equal(degraded.observation?.checkedAt, undefined);
+    assert.equal(await getJobStatus('job_fixture'), degraded);
+    assert.equal(requests.length, 2, 'repeat reads use the scoped 15-second cache');
+    now += 15_001;
     const next = getJobStatus('job_fixture');
     await waitForRequests(3);
     requests[2].resolve(new Response(JSON.stringify({ ok: true, jobId: 'job_fixture', status: 'completed', videoUrl: '/fixture.mp4' })));
     assert.equal((await next).status, 'completed');
   } finally {
+    Date.now = originalNow;
     dom.window.close();
     for (const [key, descriptor] of previous) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);

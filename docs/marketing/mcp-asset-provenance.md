@@ -19,24 +19,30 @@ begins `Editorial illustration:`.
 
 ## Proof-led GitHub visual system
 
-Task 5 uses one built-in ImageGen output as restrained editorial material and
-keeps the two owner-approved Task 4 JPEGs as the only product-proof sources.
-The generated source is never product UI, a host capture, or evidence of a
-ChatGPT, Claude, or Codex execution. The composition script performs only
-deterministic downscaling, bounded source crops, layering, neutral borders,
-shadows, raster copy, and PNG/WebP encoding. It never upscales a proof source,
-redraws UI, or adds platform chrome or marks.
+The visual system uses one historical built-in ImageGen output as restrained
+editorial material and two current owner-approved public-page captures as its
+only product-proof sources. The source artwork is never product UI or execution
+evidence. The composition script performs deterministic downscaling, layering,
+neutral borders, shadows, raster copy, and PNG/WebP encoding. It never upscales
+a proof source, redraws UI, or invents platform chrome or marks.
 
-The platform names on the three social/release cards refer only to the setup
-guides required by the release plan. Those cards must not ship before the
-Task 6 Claude, ChatGPT, and Codex guides are present, and their imagery remains
-MaxVideoAI web-app proof only.
+The two current sources show the public MaxVideoAI home page and the public MCP
+result section. The latter embeds controlled Claude-specific evidence, including
+a saved-to-Library label; it is not evidence for ChatGPT, Codex, OpenClaw, or
+n8n execution. Client names on social and release cards describe the documented
+public paths and setup guides. OpenClaw remains tested with limits; n8n remains a
+manual deterministic self-hosted workflow, not an n8n Cloud claim.
+
+The ImageGen source was created in August from the then-current bytes at the two
+same paths. Those source screenshots were refreshed on September 16. Their old
+hashes are retained below as historical generation inputs; the current captures
+were not inputs to ImageGen and are used only by the deterministic compositor.
 
 <!-- github-visual-system-provenance:v1 -->
 ```json
 {
   "version": 1,
-  "generatedAt": "2026-08-29",
+  "generatedAt": "2026-09-16",
   "imageGen": {
     "method": "OpenAI built-in ImageGen",
     "selectedOutputPath": "plugins/maxvideoai/assets/sources/maxvideoai-editorial-branch-converge-source.png",
@@ -47,11 +53,13 @@ MaxVideoAI web-app proof only.
     "inputImages": [
       {
         "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg",
-        "role": "palette and product-mood reference only; do not reproduce or redraw UI"
+        "historicalInputSha256": "fceb27abb935eada8b040232d8f0006bf3a3f4c19acccd11fb4ae6e3eaf697d6",
+        "role": "historical palette and product-mood reference only; the path now contains a refreshed capture"
       },
       {
         "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg",
-        "role": "palette and finished-result material reference only; do not reproduce or redraw UI"
+        "historicalInputSha256": "f55edf446261983352b15ac1ddff55f6eaf587195efda1025aaae061938d1ce7",
+        "role": "historical palette and finished-result material reference only; the path now contains a refreshed capture"
       }
     ],
     "prompt": "Use case: stylized-concept\nAsset type: editorial background source for MaxVideoAI GitHub launch assets\nInput images: Image 1 and Image 2 are verified MaxVideoAI product-proof screenshots used only to ground the restrained palette, real product mood, and finished glass-ribbon result; do not reproduce, redraw, or imitate their UI.\nPrimary request: one abstract visual idea — a single creative brief branching into several controlled AI video-production paths, then converging into one finished result.\nStyle/medium: premium editorial abstract image, crisp geometry, subtle cinematic depth, quiet confidence.\nComposition/framing: wide 2:1 landscape with generous negative space, designed to sit behind real screenshots and sparse copy; no device or UI framing.\nLighting/mood: subtle cinematic light, controlled contrast, calm and precise rather than futuristic spectacle.\nColor palette: clean black, white, and MaxVideoAI cobalt with restrained teal/peach accents inspired by the verified finished result.\nConstraints: no text, no letters, no numbers, no logos, no brand marks, no UI, no browser chrome, no platform marks, no fake screenshots, no price, no people presenting a product, no watermark.\nAvoid: neon sci-fi dashboard, glowing chat bubbles, robot imagery, generic AI brain/network clichés, busy particles, decorative clutter."
@@ -68,28 +76,28 @@ MaxVideoAI web-app proof only.
     "assets": [
       {
         "path": "plugins/maxvideoai/assets/demos/readme-proof-hero.webp",
-        "sourceProofIds": ["maxvideoai-workspace-production"],
-        "proofBoundary": "Completed MaxVideoAI workspace result only; no native host compatibility proof."
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "Current public home page plus Claude-specific public MCP result evidence; no other client execution is proved."
       },
       {
         "path": "plugins/maxvideoai/assets/demos/brief-to-video-workflow.webp",
         "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
-        "proofBoundary": "Completed result and Library continuity only; no brief, quote, approval, or native host flow is shown."
+        "proofBoundary": "Current public home page plus Claude-specific public MCP result evidence; no brief, quote, approval, or execution in every listed client is shown."
       },
       {
         "path": "plugins/maxvideoai/assets/demos/model-choice-and-budget.webp",
-        "sourceProofIds": ["maxvideoai-workspace-production"],
-        "proofBoundary": "Visible Luma Ray 2 Flash selection and completed result only; the real 380×75 selector crop stays at native scale on a narrow stacked canvas, with no redrawn UI, budget, price, quote, approval, or native host execution."
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "Complete downscaled public home and Claude-result captures only; no budget, price, quote, approval, or native host execution is proved."
       },
       {
         "path": "plugins/maxvideoai/assets/demos/library-continuity.webp",
         "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
-        "proofBoundary": "Same completed video in the MaxVideoAI workspace and Library only."
+        "proofBoundary": "Claude-specific result and saved-to-Library continuity only; the paired home page adds no client execution evidence."
       },
       {
         "path": "plugins/maxvideoai/assets/social/github-social-preview.png",
-        "sourceProofIds": ["maxvideoai-workspace-production"],
-        "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "Current public home page and Claude-specific MCP result evidence with documented client-path copy; no other client execution is proved."
       },
       {
         "path": "plugins/maxvideoai/assets/social/release-0.3.0.png",
@@ -107,9 +115,14 @@ MaxVideoAI web-app proof only.
         "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
       },
       {
+        "path": "plugins/maxvideoai/assets/social/release-0.3.4.png",
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "Current public home page and Claude-specific MCP result evidence with documented client-path copy; no other client execution is proved."
+      },
+      {
         "path": "plugins/maxvideoai/assets/social/directory-thumbnail.png",
         "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
-        "proofBoundary": "MaxVideoAI workspace and Library continuity proof with release-gated setup-guide copy; no native host proof."
+        "proofBoundary": "Current public home page and Claude-specific MCP result evidence with documented client-path copy; no other client execution is proved."
       }
     ]
   }

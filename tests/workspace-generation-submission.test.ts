@@ -109,6 +109,7 @@ test('workspace generation ignores a second submission while session preflight i
     setActiveBatchId: noOp,
     setBatchHeroes: noOp,
     setRenders: noOp,
+    onRenderStarted: noOp,
     setSelectedPreview: noOp,
     setViewMode: noOp,
     rendersRef: { current: [] },

@@ -69,8 +69,8 @@ must never be attached to the older unverified historical result.
 | Completed job with audit-backed provenance | Job completed and saved to Library; container independently decoded and hashed, but no separately publishable audit record exists | Product captures publishable; complete result proof remains `null` |
 | Claude inline host rendering | Claude Desktop 1.37937.1, controlled staging deployment, native controls and first-party CTA; manual playback recorded separately | Publishable only as Claude host-UI evidence |
 | Codex production execution | One owner-approved USD 0.25 Luma Ray 2 Flash job recovered after a lost confirmation response, completed once, and saved to Library | Verified service and MaxVideoAI product flow; exact-host Codex UI proof withheld because no safe native capture was available |
-| MaxVideoAI workspace | Finished public-safe frame, Luma Ray 2 Flash selector, and native playback controls in Production | Publishable product proof: `plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg` |
-| MaxVideoAI Library continuity | Matching newest video asset, 960×544, 752.6 KB, dated 2026-08-28 00:05:54 CEST | Publishable product proof: `plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg` |
+| Historical MaxVideoAI workspace capture | Finished public-safe frame, Luma Ray 2 Flash selector, and native playback controls were captured in Production on 2026-08-27 | Historical hash retained below; the reusable file path was refreshed on 2026-09-16 and no longer contains those bytes |
+| Historical MaxVideoAI Library capture | Matching newest video asset, 960×544, 752.6 KB, dated 2026-08-28 00:05:54 CEST | Historical hash retained below; the reusable file path was refreshed on 2026-09-16 and now shows the public MCP Claude-result section |
 | ChatGPT Production host | Catalog search returned only a personal `MaxVideoAI Staging` plugin | `not_verified`; no Production install or flow captured |
 | Claude Production host | Agent-created Chrome tab reached Claude sign-in | `not_verified`; no credentials entered and no host flow captured |
 
@@ -170,20 +170,22 @@ Future proof requires all of the following together: a publishable result, a job
       "fps": 24,
       "durationSec": 5.208333
     },
-    "captureAssets": [
+    "historicalCaptureAssets": [
       {
         "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg",
         "width": 1450,
         "height": 525,
         "sha256": "fceb27abb935eada8b040232d8f0006bf3a3f4c19acccd11fb4ae6e3eaf697d6",
-        "capturedAt": "2026-08-27T22:09:53Z"
+        "capturedAt": "2026-08-27T22:09:53Z",
+        "state": "historical-by-hash-path-reused-2026-09-16"
       },
       {
         "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg",
         "width": 1010,
         "height": 595,
         "sha256": "f55edf446261983352b15ac1ddff55f6eaf587195efda1025aaae061938d1ce7",
-        "capturedAt": "2026-08-27T22:09:32Z"
+        "capturedAt": "2026-08-27T22:09:32Z",
+        "state": "historical-by-hash-path-reused-2026-09-16"
       }
     ],
     "privacyReview": "passed-cropped-no-email-balance-internal-identifiers-private-urls-or-unrelated-media"

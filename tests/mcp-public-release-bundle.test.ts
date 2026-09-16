@@ -55,6 +55,7 @@ const baseExpectedPublicFiles = [
   'assets/screenshots/maxvideoai-library-continuity-production.jpg',
   'assets/screenshots/maxvideoai-model-directory-live.webp',
   'assets/screenshots/maxvideoai-pricing-comparison-live.webp',
+  'assets/screenshots/maxvideoai-tools-workflow-live.webp',
   'assets/screenshots/maxvideoai-workspace-live.webp',
   'assets/screenshots/maxvideoai-workspace-production.jpg',
   'assets/social/directory-thumbnail.png',

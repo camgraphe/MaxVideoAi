@@ -31,7 +31,7 @@ test('the flagship README opens with the product outcome, three destinations, an
   const trackedDestinations = [
     '[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try)',
     '[Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models)',
-    '[Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)',
+    '[Connect MaxVideoAI to your assistant or automation](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)',
   ];
   let previousDestination = -1;
   for (const destination of trackedDestinations) {
@@ -88,8 +88,9 @@ test('the flagship README tells the commercial story before contributor setup', 
     'What can you make with MaxVideoAI?',
     'How do you compare current AI video models?',
     'How do project pricing and approval work?',
+    'What can you prepare before generation?',
     'How do references and continuity work?',
-    'Can Claude, ChatGPT or Codex use MaxVideoAI?',
+    'Which assistants, agents and automations can use MaxVideoAI?',
     'How is MaxVideoAI built?',
     'Local development',
     'Contributing, security, and license',
@@ -102,9 +103,12 @@ test('the flagship README tells the commercial story before contributor setup', 
     previous = current;
   }
 
-  assert.match(readme, /Sora[\s\S]*Veo[\s\S]*Kling[\s\S]*Seedance[\s\S]*LTX/i);
+  assert.match(readme, /Sora[\s\S]*Veo[\s\S]*Kling[\s\S]*Seedance[\s\S]*LTX[\s\S]*MiniMax[\s\S]*Wan/i);
   assert.match(readme, /current availability and pricing/i);
-  assert.match(readme, /three equal entry points[\s\S]*Claude connector or plugin[\s\S]*ChatGPT app\/plugin[\s\S]*Codex plugin/i);
+  assert.match(readme, /five public paths[\s\S]*Claude[\s\S]*ChatGPT[\s\S]*Codex[\s\S]*OpenClaw[\s\S]*n8n/i);
+  assert.match(readme, /OpenClaw[\s\S]*tested with limits[\s\S]*ClawHub/i);
+  assert.match(readme, /n8n[\s\S]*self-hosted[\s\S]*manual setup/i);
+  assert.match(readme, /Cursor[\s\S]*GitHub Copilot[\s\S]*Gemini CLI[\s\S]*Microsoft Copilot[\s\S]*in preparation/i);
   assert.match(readme, /plugin repository[\s\S]*tagged, checksum-backed releases[\s\S]*release page for the current installable package/i);
   assert.doesNotMatch(readme, /next source candidate|closed candidate/i);
   assert.doesNotMatch(readme, /first release lands|bootstrap-only|no tagged release/i);
@@ -121,6 +125,7 @@ test('the flagship README keeps a varied product story before the engineering de
     'maxvideoai-engine-scoreboard-live.webp',
     'maxvideoai-model-directory-live.webp',
     'maxvideoai-pricing-comparison-live.webp',
+    'maxvideoai-tools-workflow-live.webp',
     'maxvideoai-library-continuity-production.jpg',
     'maxvideoai-assistant-workflow-live.webp',
   ];
@@ -146,7 +151,7 @@ test('the flagship README keeps a varied product story before the engineering de
   ]) {
     assert.match(readme, new RegExp(technicalSignal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
-  assert.ok(headingOffset(readme, 'How is MaxVideoAI built?') > headingOffset(readme, 'Can Claude, ChatGPT or Codex use MaxVideoAI?'));
+  assert.ok(headingOffset(readme, 'How is MaxVideoAI built?') > headingOffset(readme, 'Which assistants, agents and automations can use MaxVideoAI?'));
 });
 
 test('developer setup and environment operations live in dedicated engineering guides', () => {

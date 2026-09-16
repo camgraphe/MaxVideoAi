@@ -40,3 +40,12 @@ test('an unstable matching cohort retains all measurements but falls back to its
   assert.equal(selectGenerationTiming([cell(), unstable], settings)?.averageDurationMs, 100_000);
   assert.equal(unstable.averageDurationMs, 600_000, 'no observation or raw mean is discarded');
 });
+
+test('a volatile engine-wide mean is rejected and cannot return through the legacy average', () => {
+  const volatile = cell({ sampleCount: 3, recentSampleCount: 3, averageDurationMs: 1_551_997, recentAverageDurationMs: 1_551_997,
+    stdDevDurationMs: 1_270_000, recentStdDevDurationMs: 1_270_000 });
+  assert.equal(selectGenerationTiming([volatile], {}), null);
+  const result = getRenderEta({ id: 'wan-3-prime', timingCells: [volatile], avgDurationMs: 1_551_997 } as EngineCaps, 15);
+  assert.equal(result.source, 'heuristic');
+  assert.notEqual(result.seconds, 1552);
+});

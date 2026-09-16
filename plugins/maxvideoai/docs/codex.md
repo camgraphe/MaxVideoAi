@@ -4,9 +4,9 @@
 
 ## What does this guide prove today?
 
-![MaxVideoAI production workspace showing the completed glass-ribbon video as the dominant proof](../assets/demos/readme-proof-hero.webp)
+![Current MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude](../assets/demos/readme-proof-hero.webp)
 
-This is current MaxVideoAI product proof, not native Codex host proof. Codex service behavior was exercised during launch work, but no fresh privacy-reviewed native Codex capture is published here.
+This is current public MaxVideoAI product proof plus Claude-specific evidence, not native Codex host proof. Codex service behavior was exercised during launch work, but no fresh privacy-reviewed native Codex capture is published here.
 
 ## Who can currently use this route?
 
@@ -17,7 +17,7 @@ Use this route in a Codex build that exposes plugin marketplace installation and
 Run the reviewed release-tag commands from your terminal:
 
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.3
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.4
 codex plugin add maxvideoai@maxvideoai
 ```
 
@@ -62,6 +62,6 @@ Remove the package in Codex → revoke the Codex OAuth connection in MaxVideoAI 
 
 - [MaxVideoAI package repository](https://github.com/camgraphe/maxvideoai-plugin)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
-- Public `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json` at release tag `v0.3.3`
+- Public `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json` at release tag `v0.3.4`
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-09-16.

@@ -4,9 +4,9 @@
 
 ## OAuth opens, but the connection does not finish
 
-![MaxVideoAI production workspace showing a completed Luma Ray 2 Flash video and playback controls](../assets/screenshots/maxvideoai-workspace-production.jpg)
+![Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame](../assets/screenshots/maxvideoai-workspace-production.jpg)
 
-This is current MaxVideoAI product proof, not native host proof. It confirms the production workspace result, not the host's OAuth screen or connection state.
+This is current public MaxVideoAI product proof, not native host proof. It confirms only the public product entry point, not a host OAuth screen, account connection, or generation result.
 
 Remove the incomplete connector, then add `https://api.maxvideoai.com/mcp` again without a token, query string, password, or API key. Allow the browser redirect to return to the host. If your organization manages connectors, confirm your plan, role, and admin policy before retrying.
 
@@ -36,7 +36,7 @@ If credits are insufficient, use the secure MaxVideoAI top-up destination return
 
 ## A reference is missing or rejected
 
-![Same completed glass-ribbon video shown in the MaxVideoAI workspace and saved Library asset](../assets/demos/library-continuity.webp)
+![Public MaxVideoAI MCP Claude-result section paired with the current MaxVideoAI home page](../assets/demos/library-continuity.webp)
 
 Confirm the reference belongs to the connected MaxVideoAI Library and that the selected model mode accepts that image, video, or audio type. If it is not yet in the Library, request a secure upload destination. Never replace a rejected reference with unrelated media or expose raw private identifiers in public reports.
 
@@ -60,4 +60,4 @@ Use the [MaxVideoAI contact page](https://maxvideoai.com/contact) or email [supp
 - [MaxVideoAI security policy](../SECURITY.md)
 - [Generation safety contract](../skills/generate/references/generation-safety.md)
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-09-16.

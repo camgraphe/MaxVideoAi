@@ -82,6 +82,7 @@ export default function AppClientPage({
   });
 
   const previewState = useWorkspacePreviewState({
+    recentJobs: app.recentJobs,
     provider: app.provider,
     selectedPreview: renderState.selectedPreview,
     pendingSummaryMap: renderState.pendingSummaryMap,
@@ -220,6 +221,7 @@ export default function AppClientPage({
     setActiveBatchId: renderState.setActiveBatchId,
     setBatchHeroes: renderState.setBatchHeroes,
     setRenders: renderState.setRenders,
+    onRenderStarted: routeForm.clearCompositePreview,
     setSelectedPreview: renderState.setSelectedPreview,
     setViewMode: renderState.setViewMode,
     rendersRef: renderState.rendersRef,

@@ -224,7 +224,7 @@ export function useWorkspaceRenderState({
     }
     pendingPollRef.current = window.setInterval(() => {
       void poll();
-    }, 4000);
+    }, 15_000);
 
     return () => {
       cancelled = true;
@@ -301,7 +301,17 @@ export function useWorkspaceRenderState({
     setBatchHeroes((prev) => pruneBatchHeroes(prev, removedRefs.removedGroupIds));
     setActiveBatchId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
     setActiveGroupId((current) => clearRemovedGroupId(current, removedRefs.removedGroupIds));
-    setSelectedPreview((current) => clearSelectedPreviewForRemovedRenders(current, removedRefs));
+    setSelectedPreview((current) => {
+      if (!current) return current;
+      // History can deliver completion before the status poll. Transfer the final
+      // media before removing its local row, so the selected preview stays alive.
+      const completed = renders.find(render => render.jobId === current.id || render.localKey === current.localKey);
+      if (completed?.status === 'completed' && completed.videoUrl) {
+        return applyPolledJobStatusToSelectedPreview(current, completed, completed);
+      }
+      return current?.status === 'completed' && current.videoUrl
+        ? current : clearSelectedPreviewForRemovedRenders(current, removedRefs);
+    });
   }, [recentJobs, renders]);
 
   useEffect(() => {
@@ -353,7 +363,7 @@ export function useWorkspaceRenderState({
   const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
 
   useEffect(() => {
-    if (compositeOverrideSummary) {
+    if (compositeOverrideSummary || selectedPreview) {
       return;
     }
     if (!pendingGroups.length) {
@@ -365,14 +375,19 @@ export function useWorkspaceRenderState({
     if (!activeGroupId || !pendingGroups.some((group) => group.id === activeGroupId)) {
       setActiveGroupId(pendingGroups[0].id);
     }
-  }, [pendingGroups, activeGroupId, compositeOverrideSummary]);
+  }, [pendingGroups, activeGroupId, compositeOverrideSummary, selectedPreview]);
 
   const activeVideoGroup = useMemo<VideoGroup | null>(() => {
     if (compositeOverride) return null;
     if (!activeVideoGroups.length) return null;
+    if (selectedPreview) {
+      // An unrelated active job must not replace an explicitly selected result.
+      return activeVideoGroups.find(group => group.id === selectedPreview.batchId ||
+        group.items.some(item => (item.jobId ?? item.id) === selectedPreview.id)) ?? null;
+    }
     if (!activeGroupId) return activeVideoGroups[0] ?? null;
     return activeVideoGroups.find((group) => group.id === activeGroupId) ?? activeVideoGroups[0] ?? null;
-  }, [activeVideoGroups, activeGroupId, compositeOverride]);
+  }, [activeVideoGroups, activeGroupId, compositeOverride, selectedPreview]);
 
   const isGenerationLoading = useMemo(() => isGenerationGroupLoading(pendingGroups), [pendingGroups]);
   const generationSkeletonCount = useMemo(

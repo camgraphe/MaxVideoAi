@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -40,6 +41,7 @@ test('Google Vertex Veo poll finishes accepted jobs after public submissions are
   try {
     const response = await runGoogleVertexVeoPoll({
       deps: {
+      claimPollFn: allowGenerationPoll,
         queryFn: async (sql) => {
           queries.push(sql);
           if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -93,6 +95,7 @@ test('Google Vertex Veo poll copies provider output before marking the job compl
 
   const response = await runGoogleVertexVeoPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -162,6 +165,7 @@ test('Google Vertex Veo poll defers completion when output cannot be copied to M
 
   await runGoogleVertexVeoPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {

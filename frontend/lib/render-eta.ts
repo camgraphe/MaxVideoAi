@@ -22,7 +22,7 @@ const STANDARD_DEFAULT_SECONDS = 28;
 export function estimateRenderSeconds(engine: EngineCaps | null | undefined, durationSec: number | null | undefined, settings?: TimingSettings): number {
   const matched = selectGenerationTiming(engine?.timingCells, { ...settings, durationSec });
   if (matched) return Math.max(1, Math.round(matched.averageDurationMs / 1000));
-  if (typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0) {
+  if (!engine?.timingCells?.length && typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0) {
     return Math.max(1, Math.round(engine.avgDurationMs / 1000));
   }
   const baseId = engine?.id?.toLowerCase().replace(/[^a-z0-9]/g, '') ?? null;
@@ -58,6 +58,6 @@ export function formatEtaLabel(seconds: number): string {
 export function getRenderEta(engine: EngineCaps | null | undefined, durationSec: number | null | undefined, settings?: TimingSettings): { seconds: number; label: string; source: 'observed' | 'heuristic'; sampleCount: number | null } {
   const seconds = estimateRenderSeconds(engine, durationSec, settings);
   const matched = selectGenerationTiming(engine?.timingCells, { ...settings, durationSec });
-  const observed = typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0;
+  const observed = !engine?.timingCells?.length && typeof engine?.avgDurationMs === 'number' && Number.isFinite(engine.avgDurationMs) && engine.avgDurationMs > 0;
   return { seconds, label: formatEtaLabel(seconds), source: matched || observed ? 'observed' : 'heuristic', sampleCount: matched?.sampleCount ?? (observed ? engine?.durationSampleCount ?? null : null) };
 }

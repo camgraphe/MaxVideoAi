@@ -1,3 +1,4 @@
+import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import {
@@ -58,6 +59,7 @@ type KlingDirectPendingJob = {
 
 type KlingDirectPollDeps = {
   queryFn?: QueryFn;
+  claimPollFn?: typeof claimGenerationPoll;
   getKlingDirectClientFn?: typeof getKlingDirectClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
   detectVideoDimensionsFn?: typeof detectVideoDimensions;
@@ -268,7 +270,7 @@ function buildCostBreakdown(job: KlingDirectPendingJob, task: NormalizedVideoPro
   };
 }
 
-export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps } = {}) {
+export async function runKlingDirectPoll(options: { jobId?: string; deps?: KlingDirectPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const getKlingDirectClientFn = deps.getKlingDirectClientFn ?? getKlingDirectClient;
@@ -294,9 +296,10 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
       WHERE provider = $1
         AND provider_job_id IS NOT NULL
         AND status = ANY($2::text[])
+      AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    ['kling_direct', ACTIVE_JOB_STATUSES]
+    ['kling_direct', ACTIVE_JOB_STATUSES, options.jobId ?? null]
   );
 
   if (!rows.length) {
@@ -319,6 +322,8 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
       continue;
     }
 
+    const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
+    if (!pollClaim) continue;
     try {
       const route = resolveKlingDirectModelRoute(job.engine_id);
       const attempt = await findProviderAttemptForJob({
@@ -335,6 +340,7 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
         providerJobId: job.provider_job_id,
       });
 
+      await pollClaim.checked();
       if (task.status === 'queued' || task.status === 'running') {
         await queryFn(
           `UPDATE app_jobs
@@ -493,6 +499,8 @@ export async function runKlingDirectPoll(options: { deps?: KlingDirectPollDeps }
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+    } finally {
+      await pollClaim.release();
     }
   }
 

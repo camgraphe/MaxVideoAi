@@ -138,9 +138,8 @@ export function getRendersNeedingStatusRefresh(renders: LocalRender[]): LocalRen
     if (typeof render.jobId !== 'string' || render.jobId.length === 0) return false;
     if (render.status === 'failed') return false;
     const hasVideo = Boolean(render.videoUrl);
-    const hasThumb = Boolean(render.thumbUrl && !isPlaceholderMediaUrl(render.thumbUrl));
     if ((render.status ?? 'pending') !== 'completed') return true;
-    return !hasVideo || !hasThumb;
+    return !hasVideo;
   });
 }
 

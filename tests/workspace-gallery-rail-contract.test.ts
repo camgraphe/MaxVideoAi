@@ -124,7 +124,7 @@ test('composite preview modal button opens direct preview groups', () => {
   );
 
   assert.match(previewDockSource, /\|\s*\{\s*kind:\s*'group';\s*group:\s*VideoGroup\s*\}/);
-  assert.match(previewStateHookSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return viewerTarget\.group;\s*\}/);
+  assert.match(previewStateHookSource, /if\s*\(viewerTarget\.kind === 'group'\)\s*\{\s*return refreshCompositePreview\(viewerTarget\.group, liveGroups\);\s*\}/);
   assert.match(previewDockSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group:\s*nextGroup\s*\}\)/);
 });
 

@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -37,6 +38,7 @@ test('Kling direct poll copies provider output before marking the job completed'
   const deps: NonNullable<Parameters<typeof runKlingDirectPoll>[0]>['deps'] & {
     detectVideoDimensionsFn: () => Promise<{ width: number; height: number }>;
   } = {
+    claimPollFn: allowGenerationPoll,
     queryFn: async (sql, params) => {
       queries.push({ sql, params });
       if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -110,6 +112,7 @@ test('Kling direct poll defers completion when provider output cannot be copied'
 
   await runKlingDirectPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
@@ -151,6 +154,7 @@ test('Kling direct poll uses the endpoint family stored on the accepted provider
 
   await runKlingDirectPoll({
     deps: {
+      claimPollFn: allowGenerationPoll,
       queryFn: async (sql) => {
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
           return [{ ...baseJob, status: 'queued', provider_job_id: 'task_i2v' }] as never;

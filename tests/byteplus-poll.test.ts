@@ -1,3 +1,4 @@
+import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -57,6 +58,7 @@ function runWithDeps(params: {
     outputs,
     response: run({
       deps: {
+      claimPollFn: allowGenerationPoll,
         nowFn: () => nowMs,
         queryFn: createQueryFn(params.queries),
         getBytePlusModelArkClientFn: () => ({

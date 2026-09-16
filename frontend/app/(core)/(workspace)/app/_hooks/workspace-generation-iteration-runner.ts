@@ -87,6 +87,7 @@ type RunWorkspaceGenerationIterationOptions = {
   setActiveGroupId: Dispatch<SetStateAction<string | null>>;
   setBatchHeroes: Dispatch<SetStateAction<Record<string, string>>>;
   setRenders: Dispatch<SetStateAction<LocalRender[]>>;
+  onRenderStarted: () => void;
   setSelectedPreview: Dispatch<SetStateAction<SelectedVideoPreview | null>>;
   setViewMode: Dispatch<SetStateAction<'single' | 'quad'>>;
   shotType: ShotType;
@@ -138,6 +139,7 @@ export async function runWorkspaceGenerationIteration({
   setActiveGroupId,
   setBatchHeroes,
   setRenders,
+  onRenderStarted,
   setSelectedPreview,
   setViewMode,
   shotType,
@@ -219,6 +221,8 @@ export async function runWorkspaceGenerationIteration({
     selectedPreview: initialSelectedPreview,
   } = localRender;
 
+  // A prior rail/example selection must not mask the newly launched batch.
+  onRenderStarted();
   setRenders((prev) => [initialRender, ...prev]);
   setBatchHeroes((prev) => {
     if (prev[batchId]) return prev;
@@ -348,6 +352,8 @@ export async function runWorkspaceGenerationIteration({
 
     const jobId = acceptedResult.jobId;
     const poll = async () => {
+      if (!isSubmissionCurrent() || !rendersRef.current.some(render => render.jobId === jobId
+        && render.status !== 'failed' && !(render.status === 'completed' && render.videoUrl))) return;
       try {
         const status = await getJobStatus(jobId);
         const localizedStatus = {
@@ -381,7 +387,7 @@ export async function runWorkspaceGenerationIteration({
           ? { ...render, observation: degradedGenerationObservation(render.observation) } : render));
         setSelectedPreview((current) => current?.id === jobId && current.status === 'pending'
           ? { ...current, observation: degradedGenerationObservation(current.observation) } : current);
-        window.setTimeout(poll, 3000);
+        window.setTimeout(poll, 15_000);
       }
     };
     window.setTimeout(poll, 1500);

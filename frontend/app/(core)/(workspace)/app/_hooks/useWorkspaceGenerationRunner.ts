@@ -2,12 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import type {
-  EngineCaps,
-  EngineModeUiCaps,
-  Mode,
-  PreflightResponse,
-} from '@/types/engines';
+import type { EngineCaps, EngineModeUiCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { JobsPage } from '@/types/jobs';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import type { SWRInfiniteKeyedMutator } from 'swr/infinite';
@@ -81,6 +76,7 @@ type UseWorkspaceGenerationRunnerOptions = {
   setActiveBatchId: Dispatch<SetStateAction<string | null>>;
   setBatchHeroes: Dispatch<SetStateAction<Record<string, string>>>;
   setRenders: Dispatch<SetStateAction<LocalRender[]>>;
+  onRenderStarted: () => void;
   setSelectedPreview: Dispatch<SetStateAction<SelectedVideoPreview | null>>;
   setViewMode: Dispatch<SetStateAction<'single' | 'quad'>>;
   rendersRef: MutableRefObject<LocalRender[]>;
@@ -143,6 +139,7 @@ export function useWorkspaceGenerationRunner({
   setActiveBatchId,
   setBatchHeroes,
   setRenders,
+  onRenderStarted,
   setSelectedPreview,
   setViewMode,
   rendersRef,
@@ -326,6 +323,7 @@ export function useWorkspaceGenerationRunner({
           setActiveGroupId,
           setBatchHeroes,
           setRenders,
+          onRenderStarted,
           setSelectedPreview,
           setViewMode,
           shotType,
@@ -376,6 +374,7 @@ export function useWorkspaceGenerationRunner({
     setActiveBatchId,
     setBatchHeroes,
     setRenders,
+    onRenderStarted,
     setSelectedPreview,
     setViewMode,
     rendersRef,
