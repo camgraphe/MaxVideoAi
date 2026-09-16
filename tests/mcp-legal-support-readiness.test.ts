@@ -481,7 +481,8 @@ test('owned-site launch payload is exact, localized, complete, and contains nega
   );
   assert.match(directory, /Production publication is enabled for direct installation/);
   for (const tool of OPERATIONAL_TOOLS) assert.match(directory, new RegExp(`\\b${tool}\\b`));
-  assert.match(directory, /real screenshots and end-to-end demo: NOT AVAILABLE/);
+  assert.match(directory, /Current public product screenshots and Claude-specific UI evidence exist/);
+  assert.match(directory, /`getMcpProof\(\)` remains null for a standalone job-and-audit-backed end-to-end proof bundle/);
   assert.match(directory, /Owner checklist[\s\S]*Legal[\s\S]*Security[\s\S]*MCP engineering[\s\S]*Growth/);
 });
 
@@ -592,7 +593,7 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(compatibility, /ChatGPT web custom app \/ full MCP[\s\S]+Not run/i);
   assert.match(
     directory,
-    /launch product is a 13-tool[\s\S]{0,300}Claude Desktop\s+1\.37937\.1[\s\S]{0,180}Codex CLI/i,
+    /fourteen model-visible tools plus one app-only[\s\S]{0,500}Claude Desktop\s+1\.37937\.1[\s\S]{0,260}Codex CLI/i,
   );
   assert.match(support, /graphical\s+ChatGPT\/Codex installation, and Claude Code remain unverified for the dated\s+Claude Desktop and Codex CLI checkpoints/i);
   assert.match(support, /For every other host, defer\s+to its own dated compatibility-matrix record/i);
