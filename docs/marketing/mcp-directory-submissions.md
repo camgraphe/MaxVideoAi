@@ -122,10 +122,15 @@ explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
 continuity. The `get_generation_download` helper is not a model-visible
 workflow choice.
 Claude Desktop 1.37937.1 has dated controlled-staging OAuth/tool evidence,
-while Codex CLI 0.150.0-alpha.8 has a bounded production checkpoint. Refresh,
-revocation, reconnect, graphical ChatGPT installation, and a deliberately
-small paid result remain post-cutover validation, not blockers to the
-owner-approved direct release.
+while Codex CLI 0.150.0-alpha.8 has a bounded production checkpoint on
+2026-08-27: one explicitly approved Luma Ray 3.2 image-to-video job charged
+`$0.62`, completed, and was saved to the production library. OAuth refresh,
+revocation, and reconnect remain unverified for those dated Claude Desktop
+and Codex CLI checkpoints; fresh paid generation remains unrecorded for Claude Desktop.
+Graphical ChatGPT/Codex installation and ChatGPT web or Claude Code production
+workflows require their own evidence. These remaining checks do not block the
+owner-approved direct release. For every other host, use its own dated
+compatibility-matrix record; the Codex result does not establish another host's readiness.
 
 ## Acquisition decision
 
@@ -246,10 +251,11 @@ The current blockers are all release-critical:
 - current public product screenshots and Claude-specific UI evidence exist, but
   `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end
   proof bundle and no review-ready test account procedure exists;
-- dated Claude Desktop staging and bounded Codex production checkpoints exist,
-  but no public
-  ChatGPT/Codex plugin install, fresh paid generation, trial, or completed
-  private-reference transfer has been recorded;
+- the bounded Codex CLI production checkpoint includes an explicitly approved,
+  charged, completed generation. A public graphical ChatGPT/Codex plugin install
+  and the ChatGPT web review workflow still require their own paid-generation
+  and private-reference-transfer evidence; the Codex result does not satisfy
+  those host-specific checks. Trial remains disabled;
 - Claude Code, graphical ChatGPT/Codex, and other host-selection scorecards have
   no real decision evidence;
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.

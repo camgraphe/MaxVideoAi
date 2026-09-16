@@ -13,6 +13,7 @@
 ## Global Constraints
 
 - Run only after the checked-in truth PR passes and merges to `main`.
+- Run Tasks 1–4 in one fail-fast shell, from a clean detached worktree pinned to the accepted `SOURCE_SHA`. Recheck source identity and cleanliness before and after local gates/builds and Registry validation, and immediately before Registry publication. Never substitute metadata from another checkout.
 - Publish source tag `maxvideoai-plugin-v0.3.4` and focused-repository tag `v0.3.4`; never move an existing tag.
 - The main repository release is a zero-asset pointer; the focused public release alone owns the installable ZIP and SHA-256 asset.
 - Dispatch the existing protected workflow from the exact source tag and review its prepared diff before environment approval.
@@ -39,20 +40,38 @@
 - [ ] **Step 1: Resolve and verify the source commit**
 
 ```bash
+set -euo pipefail
 git fetch origin main --tags
 SOURCE_SHA=$(git rev-parse origin/main)
+readonly SOURCE_SHA
+MCP_SOURCE_TMP=$(mktemp -d)
+MCP_SOURCE_WORKTREE="$MCP_SOURCE_TMP/source"
+readonly MCP_SOURCE_WORKTREE
+git worktree add --detach "$MCP_SOURCE_WORKTREE" "$SOURCE_SHA"
+MCP_SERVER_JSON="$MCP_SOURCE_WORKTREE/plugins/maxvideoai/server.json"
+readonly MCP_SERVER_JSON
+
+assert_release_source() {
+  cd "$MCP_SOURCE_WORKTREE"
+  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+  test -z "$(git status --porcelain=v1 --untracked-files=all)"
+  test "$(git hash-object "$MCP_SERVER_JSON")" = "$(git rev-parse "$SOURCE_SHA:plugins/maxvideoai/server.json")"
+}
+assert_release_source
 test "$(git show "$SOURCE_SHA":plugins/maxvideoai/VERSION | tr -d '\r\n')" = "0.3.4"
 test "$(git show "$SOURCE_SHA":plugins/maxvideoai/server.json | jq -r .version)" = "0.3.4"
 git ls-remote --exit-code --tags origin refs/tags/maxvideoai-plugin-v0.3.4 && exit 1 || true
 gh release view maxvideoai-plugin-v0.3.4 --repo camgraphe/MaxVideoAi >/dev/null 2>&1 && exit 1 || true
 ```
 
-Expected: both version checks succeed and neither the source tag nor source release exists.
+Expected: confirm `SOURCE_SHA` is the accepted merged truth-convergence source before proceeding. Both version checks succeed, the detached worktree is clean at that exact commit, and neither the source tag nor source release exists. If the resolved `origin/main` is not the accepted source, stop; do not silently advance the release candidate. Keep this shell and its pinned variables for Tasks 1–4.
 
 - [ ] **Step 2: Run the exact protected-workflow gate locally**
 
 ```bash
+assert_release_source
 pnpm install --frozen-lockfile
+assert_release_source
 pnpm github:assets:release-check
 node scripts/check-github-content.mjs plugins/maxvideoai/README.md
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -63,6 +82,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
   tests/mcp-reference-local-helper.test.ts \
   tests/github-content-contract.test.ts \
   tests/github-assets.test.ts
+assert_release_source
 ```
 
 Expected: release checks and all focused tests pass with no skips.
@@ -70,12 +90,14 @@ Expected: release checks and all focused tests pass with no skips.
 - [ ] **Step 3: Build the deterministic candidate outside the repository**
 
 ```bash
+assert_release_source
 MCP_RELEASE_TMP=$(mktemp -d)
 node scripts/build-maxvideoai-plugin-release.mjs \
   --source plugins/maxvideoai \
   --out "$MCP_RELEASE_TMP/release"
 shasum -a 256 "$MCP_RELEASE_TMP/release/maxvideoai-plugin-0.3.4.zip"
 sed -n '1p' "$MCP_RELEASE_TMP/release/maxvideoai-plugin-0.3.4.zip.sha256"
+assert_release_source
 ```
 
 Expected: the calculated archive SHA-256 equals the checksum file and no repository file changes.
@@ -92,6 +114,7 @@ Expected: the calculated archive SHA-256 equals the checksum file and no reposit
 - [ ] **Step 1: Create and push the annotated source tag**
 
 ```bash
+assert_release_source
 git tag -a maxvideoai-plugin-v0.3.4 "$SOURCE_SHA" -m "MaxVideoAI plugin v0.3.4"
 git push origin refs/tags/maxvideoai-plugin-v0.3.4
 ```
@@ -151,11 +174,14 @@ gh release download v0.3.4 \
   --repo camgraphe/maxvideoai-plugin \
   --dir "$MCP_PUBLIC_TMP" \
   --pattern 'maxvideoai-plugin-0.3.4.zip*'
-cd "$MCP_PUBLIC_TMP"
-shasum -a 256 -c maxvideoai-plugin-0.3.4.zip.sha256
+(
+  cd "$MCP_PUBLIC_TMP"
+  shasum -a 256 -c maxvideoai-plugin-0.3.4.zip.sha256
+)
+cmp "$MCP_RELEASE_TMP/release/maxvideoai-plugin-0.3.4.zip" "$MCP_PUBLIC_TMP/maxvideoai-plugin-0.3.4.zip"
 ```
 
-Expected: `maxvideoai-plugin-0.3.4.zip: OK`.
+Expected: `maxvideoai-plugin-0.3.4.zip: OK` and byte-for-byte equality with the candidate built from `SOURCE_SHA`. The checksum subshell leaves the release worktree as the working directory.
 
 - [ ] **Step 5: Create the zero-asset main-repository pointer release**
 
@@ -203,10 +229,12 @@ Expected: checksum OK and official publisher help output.
 - [ ] **Step 2: Validate exact metadata**
 
 ```bash
-test "$(jq -r .version plugins/maxvideoai/server.json)" = "0.3.4"
-test "$(jq -r .name plugins/maxvideoai/server.json)" = "com.maxvideoai/maxvideoai"
-test "$(jq -r '.remotes[0].url' plugins/maxvideoai/server.json)" = "https://api.maxvideoai.com/mcp"
-"$MCP_PUBLISHER_TMP/mcp-publisher" validate plugins/maxvideoai/server.json
+assert_release_source
+test "$(jq -r .version "$MCP_SERVER_JSON")" = "0.3.4"
+test "$(jq -r .name "$MCP_SERVER_JSON")" = "com.maxvideoai/maxvideoai"
+test "$(jq -r '.remotes[0].url' "$MCP_SERVER_JSON")" = "https://api.maxvideoai.com/mcp"
+"$MCP_PUBLISHER_TMP/mcp-publisher" validate "$MCP_SERVER_JSON"
+assert_release_source
 ```
 
 - [ ] **Step 3: Authenticate without exposing the existing key**
@@ -224,7 +252,8 @@ If the variable or existing owner-controlled key is unavailable, stop. Do not ge
 - [ ] **Step 4: Publish once and verify the API**
 
 ```bash
-"$MCP_PUBLISHER_TMP/mcp-publisher" publish plugins/maxvideoai/server.json
+assert_release_source
+"$MCP_PUBLISHER_TMP/mcp-publisher" publish "$MCP_SERVER_JSON"
 curl -fsSL 'https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai' | \
   jq -e '.metadata.count == 1 and .servers[0].server.version == "0.3.4" and .servers[0]._meta["io.modelcontextprotocol.registry/official"].status == "active" and .servers[0]._meta["io.modelcontextprotocol.registry/official"].isLatest == true'
 ```
@@ -244,6 +273,8 @@ Expected: one active latest 0.3.4 record.
 **Interfaces:**
 - Consumes: exact source/public commits, releases, checksum, workflow result, and Registry timestamp.
 - Produces: checked-in public evidence that no longer calls 0.3.4 a candidate.
+
+Use a separate `codex/mcp-034-publication-evidence` worktree based on the accepted `SOURCE_SHA` for this intentionally mutable post-publication evidence change and its review gates. Keep the detached release worktree unchanged; these later documentation gates do not replace or rerun the publication gates against different source bytes.
 
 - [ ] **Step 1: Add failing public-version evidence assertions**
 

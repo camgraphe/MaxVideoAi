@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import { getLocalizedUrl } from '../frontend/lib/metadataUrls';
@@ -14,6 +15,7 @@ import {
 } from '../frontend/src/server/mcp/http-handler';
 import {
   createMaxVideoAiMcpServer,
+  type MaxVideoAiMcpServerOptions,
   type MaxVideoAiMcpServices,
 } from '../frontend/src/server/mcp/server';
 
@@ -130,40 +132,51 @@ function httpsUrls(value: string): string[] {
   return Array.from(value.matchAll(/https:\/\/[^`\s;|]+/g), (match) => match[0]).sort();
 }
 
-async function getLiveToolNames(): Promise<string[]> {
+async function getLiveTools(options: MaxVideoAiMcpServerOptions = {}): Promise<Tool[]> {
   const unavailable = async (): Promise<never> => {
     throw new Error('tool listing must not invoke a service');
   };
   const services: MaxVideoAiMcpServices = {
     getAccountStatus: unavailable,
     listModels: unavailable,
+    getModelDetails: unavailable,
     recommendModels: unavailable,
+    calculateProjectBudget: unavailable,
+    listMedia: unavailable,
+    createReferenceUploadLink: unavailable,
+    importReferenceFiles: unavailable,
+    prepareGeneration: unavailable,
+    confirmGeneration: unavailable,
+    getGenerationStatus: unavailable,
+    createGenerationDownload: unavailable,
+    listRecentGenerations: unavailable,
+    createTopupLink: unavailable,
   };
-  const server = createMaxVideoAiMcpServer(principal, services, {
-    paidGeneration: false,
-    referenceUploads: false,
-  });
+  const server = createMaxVideoAiMcpServer(principal, services, options);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: 'task-10-readiness', version: '1.0.0' });
   await server.connect(serverTransport);
   await client.connect(clientTransport);
   try {
-    return (await client.listTools()).tools
-      .filter((tool) => {
-        const ui = tool._meta?.ui;
-        const visibility = ui && typeof ui === 'object' && !Array.isArray(ui)
-          ? (ui as { visibility?: unknown }).visibility
-          : null;
-        return !Array.isArray(visibility)
-          || !visibility.includes('app')
-          || visibility.includes('model');
-      })
-      .map((tool) => tool.name)
-      .sort();
+    return (await client.listTools()).tools;
   } finally {
     await client.close();
     await server.close();
   }
+}
+
+function toolVisibility(tool: Tool): unknown {
+  const ui = tool._meta?.ui;
+  return ui && typeof ui === 'object' && !Array.isArray(ui)
+    ? (ui as { visibility?: unknown }).visibility
+    : null;
+}
+
+function modelVisibleToolNames(tools: Tool[]): string[] {
+  return tools.filter((tool) => {
+    const visibility = toolVisibility(tool);
+    return !Array.isArray(visibility) || visibility.includes('model');
+  }).map((tool) => tool.name).sort();
 }
 
 test('Task 10 creates separate support and distribution readiness owners', () => {
@@ -487,7 +500,10 @@ test('owned-site launch payload is exact, localized, complete, and contains nega
 });
 
 test('readiness packages follow the live registry and canonical localized route owners', async () => {
-  const liveTools = await getLiveToolNames();
+  const liveTools = modelVisibleToolNames(await getLiveTools({
+    paidGeneration: false,
+    referenceUploads: false,
+  }));
   const supportRegistryBlock = markdownRow(support, 'Default discovery');
   const supportTools = Array.from(
     supportRegistryBlock.matchAll(/`([a-z][a-z0-9_]*)`/g),
@@ -517,6 +533,22 @@ test('readiness packages follow the live registry and canonical localized route 
   assert.deepEqual(toolNames(markdownRow(support, 'Default discovery')), DEFAULT_DISCOVERY_TOOLS);
   assert.deepEqual(toolNames(markdownRow(support, 'Production model-visible tools')), OPERATIONAL_TOOLS);
   assert.deepEqual(toolNames(markdownRow(support, 'App-only helper')), ['get_generation_download']);
+
+  // Omit overrides so the production inventory follows the authored publication gates.
+  const productionTools = await getLiveTools();
+  const productionModelTools = modelVisibleToolNames(productionTools);
+  assert.deepEqual(productionModelTools, [...OPERATIONAL_TOOLS].sort());
+  assert.deepEqual(directoryTools, productionModelTools);
+  assert.deepEqual(
+    toolNames(markdownRow(support, 'Production model-visible tools')).sort(),
+    productionModelTools,
+  );
+  const appOnlyTools = productionTools.filter((tool) => !productionModelTools.includes(tool.name));
+  assert.deepEqual(
+    appOnlyTools.map((tool) => tool.name).sort(),
+    toolNames(markdownRow(support, 'App-only helper')).sort(),
+  );
+  assert.deepEqual(toolVisibility(appOnlyTools[0]), ['app']);
 
   const migrations = readdirSync(join(root, 'neon/migrations'));
   for (let id = 30; id <= 44; id += 1) {
@@ -584,6 +616,10 @@ test('active MCP truth records follow the enabled production boundary', () => {
   assert.match(support, /fourteen model-visible tools plus one app-only/i);
   assert.doesNotMatch(directory, /launch product is a 13-tool|every publication flag is false/i);
   assert.match(directory, /fourteen model-visible tools plus one app-only/i);
+  assert.doesNotMatch(directory, /no public\s+ChatGPT\/Codex plugin install, fresh paid generation/i);
+  assert.doesNotMatch(directory, /small paid result remain post-cutover validation/i);
+  assert.match(directory, /Codex CLI 0\.150\.0-alpha\.8[\s\S]{0,250}explicitly approved[\s\S]{0,100}charged[\s\S]{0,100}completed/i);
+  assert.match(directory, /fresh paid generation remains unrecorded for Claude Desktop/i);
 });
 
 test('directory facts do not outrun checked-in claims or host evidence', () => {
