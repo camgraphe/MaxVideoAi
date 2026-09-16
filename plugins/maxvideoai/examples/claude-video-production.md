@@ -2,9 +2,9 @@
 
 **Short answer:** In an eligible Claude setup, use MaxVideoAI for a no-spend plan first, then request a concrete exact quote only when the production is ready. Host controls and connector availability can change, so validate the path in your own account before relying on it.
 
-![Completed MaxVideoAI workspace result paired with the same saved video in the MaxVideoAI Library](../assets/demos/brief-to-video-workflow.webp)
+![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-*This current MaxVideoAI product visual proves a completed result continuing into the Library. It does not prove a native Claude install, quote, approval, or generation run.*
+*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove the installation, quote, approval, or generation sequence in this example, or execution on every Claude surface.*
 
 ## What are you trying to produce?
 

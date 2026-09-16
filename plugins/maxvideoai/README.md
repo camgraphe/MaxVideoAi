@@ -13,7 +13,7 @@ Setup guides: [Claude](docs/claude.md) · [ChatGPT](docs/chatgpt.md) · [Codex](
 ### Install the repository-validated Codex package
 
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.4
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.5
 codex plugin add maxvideoai@maxvideoai
 ```
 

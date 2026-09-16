@@ -6,9 +6,9 @@ Use `$plan` to compare live executable model options and named project budgets w
 
 Compare current AI video models for one creator project, understand the quality, speed, control, and budget trade-offs, and stop before paid generation.
 
-![MaxVideoAI model selector and completed production video framed as a comparison workflow](../assets/demos/model-choice-and-budget.webp)
+![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/model-choice-and-budget.webp)
 
-*This visual proves current MaxVideoAI product selection and a completed result are visible together. It does not prove a budget, exact quote, approval, host session, or permanent model recommendation.*
+*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove model selection, a budget, an exact quote, approval, or execution in another host.*
 
 ## What prompt can I copy?
 

@@ -626,8 +626,13 @@ function versionAtLeast(version, minimum) {
 
 function publicFilesForVersion(version) {
   const files = versionAtLeast(version, '0.3.0')
-    ? [...CURRENT_PUBLIC_FILES, ...VERSION_0_3_PUBLIC_FILES, `assets/social/release-${version}.png`]
+    ? [...CURRENT_PUBLIC_FILES, ...VERSION_0_3_PUBLIC_FILES]
     : [...CURRENT_PUBLIC_FILES];
+  // Keep older bundle contracts reproducible. From 0.3.5 the reviewed product
+  // captures are sufficient; version cards are historical, not release inputs.
+  if (versionAtLeast(version, '0.3.0') && !versionAtLeast(version, '0.3.5')) {
+    files.push(`assets/social/release-${version}.png`);
+  }
   return files.sort();
 }
 

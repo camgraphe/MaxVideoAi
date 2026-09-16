@@ -2,9 +2,9 @@
 
 These examples show how a producer can move from a brief to a deliberate, recoverable AI video request. Each path separates no-spend planning from a fresh exact quote and explicit approval, then keeps the accepted job connected to the MaxVideoAI Library.
 
-![Completed MaxVideoAI production result framed by an editorial workflow composition](../assets/demos/readme-proof-hero.webp)
+![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/readme-proof-hero.webp)
 
-*This visual proves a current MaxVideoAI product result is available as the foundation for these examples. It does not prove a native Claude, Codex, or ChatGPT run.*
+*This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove the workflows below, native Codex or ChatGPT execution, or behavior on every Claude surface.*
 
 ## Which outcome matches your next job?
 

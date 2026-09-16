@@ -4,9 +4,9 @@
 
 ## What does this guide prove today?
 
-![Completed MaxVideoAI workspace result paired with the same saved video in the MaxVideoAI Library](../assets/demos/brief-to-video-workflow.webp)
+![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-This is current MaxVideoAI product proof, not native host proof for your MCP client. It proves a completed MaxVideoAI result and Library continuity, not your client's connection, interface, or approval behavior.
+This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label. It does not prove your MCP client's connection, interface, approval behavior, or execution; compatibility in another client requires its own evidence.
 
 ## Who can use this route?
 

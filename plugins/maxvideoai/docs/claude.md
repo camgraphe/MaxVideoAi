@@ -4,9 +4,9 @@
 
 ## What does this guide prove today?
 
-![Completed MaxVideoAI workspace result paired with the same saved video in the MaxVideoAI Library](../assets/demos/brief-to-video-workflow.webp)
+![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-This is current MaxVideoAI product proof, not native Claude host proof. Fresh exact-host Claude installation and end-to-end generation evidence has not been published. Use the steps below to validate the setup in your own eligible Claude account.
+This composite pairs the public home page with Claude-specific result evidence and a saved-to-Library label from the public MCP page. It does not prove installation, OAuth, a quote, approval, or execution in every Claude surface. Use the steps below to validate your own eligible Claude account.
 
 ## Who can currently use this route?
 

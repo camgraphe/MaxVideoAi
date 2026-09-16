@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Repair the existing mcp.film and Glama records after canonical 0.3.4 publication, then record current MCPBeat, mcpdirectory.dev, and n8n states without adding a new directory.
+**Goal:** Repair the existing mcp.film and Glama records after canonical 0.3.5 publication, then record current MCPBeat, mcpdirectory.dev, and n8n states without adding a new directory.
 
-**Architecture:** Treat canonical 0.3.4 publication as the prerequisite. Send one disclosed factual correction to mcp.film, repair Glama's owner-controlled test profile without weakening OAuth, and observe registry-derived records before contacting them. Keep every external state independent and write one sanitized evidence update after actions finish.
+**Architecture:** Treat canonical 0.3.5 publication as the prerequisite. Send one disclosed factual correction to mcp.film, repair Glama's owner-controlled test profile without weakening OAuth, and observe registry-derived records before contacting them. Keep every external state independent and write one sanitized evidence update after actions finish.
 
 **Tech Stack:** Browser UI, public HTTP probes, GitHub and MCP Registry evidence, Markdown distribution ledger, TypeScript contract tests.
 
@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Start only after the focused public repository and Official MCP Registry both expose 0.3.4.
+- Start only after the focused public repository and Official MCP Registry both expose 0.3.5.
 - Do not request favorable rankings, reciprocal links, testimonials, or endorsements.
 - Disclose MaxVideoAI maintainer status in correction messages.
 - Do not weaken OAuth, expose anonymous tools, or use a personal production credential to satisfy an aggregator health check.
@@ -22,26 +22,26 @@
 
 ---
 
-### Task 1: Capture the Post-0.3.4 External Baseline
+### Task 1: Capture the Post-0.3.5 External Baseline
 
 **Files:**
 - Verify: `docs/marketing/mcp-directory-submissions.md`
 - External reads: Official MCP Registry, focused GitHub release, mcp.film, Glama, MCPBeat, mcpdirectory.dev, n8n Creator Portal
 
 **Interfaces:**
-- Consumes: canonical 0.3.4 release evidence.
+- Consumes: canonical 0.3.5 release evidence.
 - Produces: dated before-action observations for every existing record.
 
 - [ ] **Step 1: Verify canonical prerequisites**
 
 ```bash
-test "$(gh api repos/camgraphe/maxvideoai-plugin/contents/VERSION --jq .content | base64 --decode | tr -d '\r\n')" = "0.3.4"
-gh release view v0.3.4 --repo camgraphe/maxvideoai-plugin --json url,isDraft,isPrerelease,assets
+test "$(gh api repos/camgraphe/maxvideoai-plugin/contents/VERSION --jq .content | base64 --decode | tr -d '\r\n')" = "0.3.5"
+gh release view v0.3.5 --repo camgraphe/maxvideoai-plugin --json url,isDraft,isPrerelease,assets
 curl -fsSL 'https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai' | \
-  jq -e '.metadata.count == 1 and .servers[0].server.version == "0.3.4" and .servers[0]._meta["io.modelcontextprotocol.registry/official"].status == "active"'
+  jq -e '.metadata.count == 1 and .servers[0].server.version == "0.3.5" and .servers[0]._meta["io.modelcontextprotocol.registry/official"].status == "active"'
 ```
 
-Expected: both canonical sources are public at 0.3.4.
+Expected: both canonical sources are public at 0.3.5.
 
 - [ ] **Step 2: Record public record fields without authentication**
 
@@ -75,7 +75,7 @@ Do not upload another workflow.
 - Later modify: `docs/marketing/mcp-directory-submissions.md`
 
 **Interfaces:**
-- Consumes: public 0.3.4 release, exact inventory, endpoint, and compatibility matrix.
+- Consumes: public 0.3.5 release, exact inventory, endpoint, and compatibility matrix.
 - Produces: one disclosed correction and its acknowledgement or issue URL.
 
 - [ ] **Step 1: Submit this exact correction packet**
@@ -83,7 +83,7 @@ Do not upload another workflow.
 ```text
 Maintainer correction from MaxVideoAI:
 
-The MaxVideoAI record was last verified on August 31 and several factual fields are now stale. The canonical public plugin release and Official MCP Registry record are now version 0.3.4.
+The MaxVideoAI record was last verified on August 31 and several factual fields are now stale. The canonical public plugin release and Official MCP Registry record are now version 0.3.5.
 
 The MCP server does not expose two tools named `plan` and `generate`. It exposes fourteen model-visible tools: get_account_status, list_models, get_model_details, recommend_models, calculate_project_budget, list_media, create_reference_upload_link, import_reference_files, prepare_generation, confirm_generation, get_generation_status, list_recent_generations, present_generation, and create_topup_link. `get_generation_download` is a separate app-only helper.
 
@@ -133,7 +133,7 @@ Record `Healthy` only if the public page shows a successful current check. Other
 - Later modify: `docs/marketing/mcp-directory-submissions.md`
 
 **Interfaces:**
-- Consumes: 0.3.4 Registry record and downstream crawl time.
+- Consumes: 0.3.5 Registry record and downstream crawl time.
 - Produces: current downstream states and at most one correction per stale service.
 
 - [ ] **Step 1: Re-read MCPBeat**
@@ -146,7 +146,7 @@ Record version and tool/capability description. If it still shows 0.3.3 or `plan
 
 - [ ] **Step 3: Preserve independent measurements**
 
-Do not ask MCPBeat to change uptime, latency, or auth-hidden tool observations. Contact it only for a stale derived version or source URL after the Registry exposes 0.3.4.
+Do not ask MCPBeat to change uptime, latency, or auth-hidden tool observations. Contact it only for a stale derived version or source URL after the Registry exposes 0.3.5.
 
 ### Task 5: Record Sanitized External Outcomes
 
@@ -166,7 +166,7 @@ assert.match(directory, /mcp\.film[\s\S]*maintainer correction[\s\S]*2026-09-16/
 assert.match(directory, /Glama[\s\S]*(?:Healthy|Unhealthy)[\s\S]*Last Tested/i);
 assert.match(
   directory,
-  /MCPBeat[\s\S]*(?:version `0\.3\.4`|still derived `0\.3\.3`)/i,
+  /MCPBeat[\s\S]*(?:version `0\.3\.5`|still derived `0\.3\.3`)/i,
 );
 assert.match(
   directory,

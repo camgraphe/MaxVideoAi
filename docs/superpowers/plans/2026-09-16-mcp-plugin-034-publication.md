@@ -1,5 +1,12 @@
 # MCP Plugin 0.3.4 Publication Implementation Plan
 
+> CANCELLED: source tag `maxvideoai-plugin-v0.3.4` was created at
+> `b56e340a1e36c46382b6b49a84c5b71c0402a883`, but workflow run
+> `35125303782` was cancelled before publication after evidence-copy review
+> failed. Keep this plan as history; never execute its remaining release steps,
+> move/delete its source tag, or publish a 0.3.4 release/Registry record.
+> The current plan is [0.3.5 recovery](2026-09-16-mcp-plugin-035-recovery.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Publish the accepted 0.3.4 plugin source immutably to both GitHub repositories and the Official MCP Registry, then record verifiable release evidence.

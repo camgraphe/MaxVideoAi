@@ -1,5 +1,11 @@
 # MCP 0.3.4 Convergence Release Design
 
+> Publication amendment: the 0.3.4 source tag is immutable but unpublished.
+> Evidence-copy review cancelled its workflow before public repository or
+> Registry publication. Version 0.3.5 supersedes that candidate under the
+> [recovery plan](../plans/2026-09-16-mcp-plugin-035-recovery.md). Historical
+> 0.3.4 milestones below are not authorization to resume that release.
+
 ## Goal
 
 Make the checked-in MaxVideoAI MCP truth, the public plugin repository, the
