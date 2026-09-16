@@ -114,13 +114,23 @@ Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transp
 `discovery=true`, `paidGeneration=true`, `trial=false`, `referenceUploads=true`, and
 `montagePreparation=false`, `audioGeneration=false`, and `studioMontageCreation=false`.
 
-The launch product is a 13-tool conversational production profile: free model
+The launch product exposes fourteen model-visible tools plus the app-only
+`get_generation_download` helper. Its operational profile therefore has
+fourteen model-visible tools plus one app-only helper. It supports free model
 advice and project budgets, private image/video/audio references, exact quotes,
 explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
-continuity. Controlled staging has real OAuth/tool evidence for Claude Desktop
-1.37937.1 and Codex CLI 0.149.0-alpha.4.3. Refresh, revocation, reconnect,
-graphical ChatGPT installation, and a deliberately small paid result remain
-post-cutover validation, not blockers to the owner-approved direct release.
+continuity. The `get_generation_download` helper is not a model-visible
+workflow choice.
+Claude Desktop 1.37937.1 has dated controlled-staging OAuth/tool evidence,
+while Codex CLI 0.150.0-alpha.8 has a bounded production checkpoint on
+2026-08-27: one explicitly approved Luma Ray 3.2 image-to-video job charged
+`$0.62`, completed, and was saved to the production library. OAuth refresh,
+revocation, and reconnect remain unverified for those dated Claude Desktop
+and Codex CLI checkpoints; fresh paid generation remains unrecorded for Claude Desktop.
+Graphical ChatGPT/Codex installation and ChatGPT web or Claude Code production
+workflows require their own evidence. These remaining checks do not block the
+owner-approved direct release. For every other host, use its own dated
+compatibility-matrix record; the Codex result does not establish another host's readiness.
 
 ## Acquisition decision
 
@@ -163,8 +173,8 @@ legal document, URL, or publication flag changes.
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
 | Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Media and production: `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
 | Negative cases | A project estimate is not an exact quote; `prepare_generation` does not debit; `confirm_generation` requires explicit approval of that quote. Payment data never enters chat. The assistant must recover an accepted job instead of submitting a duplicate and must not retry a creative result automatically. Unsupported model modes remain unavailable without disabling supported modes. |
-| Screenshots and demo | **real screenshots and end-to-end demo: NOT AVAILABLE**. `getMcpProof()` is null and no current proof asset may be substituted with provider marketing media or a synthetic testimonial. |
-| Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. Neither has an MCP-specific entry/component because no live release or monitored MCP health feed exists. |
+| Screenshots and demo | Current public product screenshots and Claude-specific UI evidence exist. `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end proof bundle, so product captures are not universal native-host proof. |
+| Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. The direct MCP release is live. The owned status page does not yet expose a dedicated MCP component or first-party monitored health feed. |
 | Owner checklist | Legal: approve disclosure/terms and directory terms. Security: threat model, OAuth, test account, incident intake. MCP engineering: public endpoint, exact tools/annotations, negative tests, compatibility. Growth: final copy/assets/countries. Support/Operations: runbook, monitoring, escalation. Billing/Risk: only after generation/trial tooling exists. |
 
 ### Prepared positive cases
@@ -236,12 +246,16 @@ read-only and intended paid-generation scope, or a policy change removes the blo
 
 The current blockers are all release-critical:
 
-- every publication flag is false and the public landing/docs/endpoint are fail-closed;
+- The direct production MCP path is live, but the platform-directory policy blocker remains independent and unresolved.
 - Legal has not approved the MCP-specific disclosure patch;
-- there is no real proof media, complete public demo, or review-ready test account procedure;
-- controlled Claude Desktop and Codex CLI decisions exist, but no public
-  ChatGPT/Codex plugin install, fresh paid generation, trial, or completed
-  private-reference transfer has been recorded;
+- current public product screenshots and Claude-specific UI evidence exist, but
+  `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end
+  proof bundle and no review-ready test account procedure exists;
+- the bounded Codex CLI production checkpoint includes an explicitly approved,
+  charged, completed generation. A public graphical ChatGPT/Codex plugin install
+  and the ChatGPT web review workflow still require their own paid-generation
+  and private-reference-transfer evidence; the Codex result does not satisfy
+  those host-specific checks. Trial remains disabled;
 - Claude Code, graphical ChatGPT/Codex, and other host-selection scorecards have
   no real decision evidence;
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.
