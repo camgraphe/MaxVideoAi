@@ -1,6 +1,6 @@
-# MaxVideoAI for assistants, agents and automations
+# MaxVideoAI for assistants, agents, and automations
 
-MaxVideoAI is a multi-model AI video production service exposed through one remote MCP server. It gives assistants, agents, and approved automations a controlled path to compare current models, budget shots, prepare exact quotes, approve one paid attempt, recover results, and keep work in the connected MaxVideoAI Library.
+MaxVideoAI is a multi-model AI production service exposed through one remote MCP server. It gives assistants, agents, and approved automations a controlled path to plan video and image work, compare current models, budget projects, prepare exact quotes, approve one paid attempt, recover results, and keep work in the connected MaxVideoAI Library.
 
 **Plan. Compare. Price. Approve. Generate. Recover.**
 
