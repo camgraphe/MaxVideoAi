@@ -51,7 +51,10 @@ Dated host evidence and remaining checkpoints:
 - Claude Desktop 1.37937.1 and Codex CLI 0.149.0-alpha.4.3 have controlled
   staging OAuth and tool-rendering evidence;
 - OAuth denial, refresh, revocation, authentication loss, reconnect, graphical
-  ChatGPT/Codex installation, Claude Code, and other hosts remain unverified.
+  ChatGPT/Codex installation, and Claude Code remain unverified for the dated
+  Claude Desktop and Codex CLI checkpoints above. For every other host, defer
+  to its own dated compatibility-matrix record; OpenClaw and n8n have bounded
+  lifecycle checkpoints with explicit limitations.
 
 Checked-in authorities remain separate: the public claims matrix owns permissible and prohibited public claims; the
 host compatibility matrix owns local-versus-real-host evidence; this support runbook owns support procedures and
@@ -106,10 +109,11 @@ future application code `PARAMETER_INVALID`. Ask the user to correct only the do
 An unexpected operation inside a registered tool returns **`INTERNAL_ERROR`** with a redacted message and a generated
 `correlationId`. Retain that identifier, stop repeated calls, and escalate if the failure persists.
 
-Every uppercase application code used below is a **contract code that is not
-observable from the default five-tool discovery registry**. Some require
-model-visible tools beyond that default discovery profile. Do not tell a user
-that a specific code occurred unless the live tool actually returned it.
+Application error codes have tool-specific reachability. `REFERENCE_INVALID`
+and `REFERENCE_REQUIRED` can be returned by default-discovery
+`calculate_project_budget`; other codes may require model-visible tools beyond
+that profile. Do not tell a user that a specific code occurred unless the live
+tool actually returned it.
 
 ## Support decision trees
 
@@ -216,10 +220,14 @@ supported; paid Audio generation and montage creation remain unpublished.
 
 1. Do not send an arbitrary URL to a provider or fetch loopback, private-network, metadata-service, redirected, or
    unsupported content.
-2. A future `REFERENCE_INVALID` response should identify a safe corrective category (ownership, type, size, decoding,
-   URL policy, or expiry) without echoing the private URL.
-3. If the selected mode requires a reference, a future flow may return `REFERENCE_REQUIRED`; the current registry does
-   not.
+2. `REFERENCE_INVALID` can be returned by `calculate_project_budget` or
+   generation preparation. Identify the safe corrective category (ownership,
+   type, size, decoding, URL policy, or expiry) without echoing the private URL,
+   then correct the declared reference and rerun the affected tool.
+3. `REFERENCE_REQUIRED` can be returned by `calculate_project_budget` when a
+   proposed line omits a required reference. Use the selected mode's live
+   requirements, then list or import the account-scoped reference before
+   rerunning the budget or preparation; never invent a reference.
 4. Suspected malicious files or SSRF attempts go to Security; content-policy failures go to Trust + Safety.
 
 ### Provider rejection or job failure

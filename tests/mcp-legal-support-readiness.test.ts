@@ -194,7 +194,7 @@ test('readiness records the owner-approved direct production publication state',
     assert.match(directory, new RegExp(`\\b${flag}=${value}\\b`));
   });
 
-  assert.match(support, /DIRECT PRODUCTION RELEASE APPROVED/);
+  assert.match(support, /DIRECT PRODUCTION RELEASE LIVE/);
   assert.match(directory, /NOT SUBMITTED/);
   assert.doesNotMatch(directory, /(?:Status|State):\s*(?:approved|listed|live|published)\b/i);
 });
@@ -227,12 +227,13 @@ test('support runbook covers every requested current and gated decision tree', (
     'SPENDING_LIMIT_EXCEEDED',
     'PARAMETER_INVALID',
     'REFERENCE_INVALID',
+    'REFERENCE_REQUIRED',
     'PROVIDER_REJECTED',
     'JOB_FAILED',
   ]) {
     assert.match(support, new RegExp('`' + code + '`'));
   }
-  assert.match(support, /contract code that is not\s+observable from the default five-tool discovery registry/i);
+  assert.match(support, /REFERENCE_INVALID[\s\S]*REFERENCE_REQUIRED[\s\S]*default-discovery\s+`calculate_project_budget`/i);
 });
 
 test('runbook protocol envelopes are produced by the real handler and stay separate from tool failures', async () => {
@@ -513,7 +514,7 @@ test('readiness packages follow the live registry and canonical localized route 
   const toolNames = (value: string): string[] =>
     Array.from(value.matchAll(/`([a-z][a-z0-9_]+)`/g), (match) => match[1] as string);
   assert.deepEqual(toolNames(markdownRow(support, 'Default discovery')), DEFAULT_DISCOVERY_TOOLS);
-  assert.deepEqual(toolNames(markdownRow(support, 'Operational staging')), OPERATIONAL_TOOLS);
+  assert.deepEqual(toolNames(markdownRow(support, 'Production model-visible tools')), OPERATIONAL_TOOLS);
   assert.deepEqual(toolNames(markdownRow(support, 'App-only helper')), ['get_generation_download']);
 
   const migrations = readdirSync(join(root, 'neon/migrations'));
@@ -593,7 +594,8 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
     directory,
     /launch product is a 13-tool[\s\S]{0,300}Claude Desktop\s+1\.37937\.1[\s\S]{0,180}Codex CLI/i,
   );
-  assert.match(support, /graphical\s+ChatGPT\/Codex installation, Claude Code, and other hosts remain unverified/i);
+  assert.match(support, /graphical\s+ChatGPT\/Codex installation, and Claude Code remain unverified for the dated\s+Claude Desktop and Codex CLI checkpoints/i);
+  assert.match(support, /For every other host, defer\s+to its own dated compatibility-matrix record/i);
   assert.match(support, /migration files 30–37 are present locally/i);
   assert.match(support, /hosted application used quote,[\s\S]{0,120}media,[\s\S]{0,120}recovery,[\s\S]{0,120}handoff paths/i);
   assert.match(directory, /https:\/\/modelcontextprotocol\.io\/registry\/moderation-policy/);
