@@ -13,6 +13,8 @@ const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.j
     state: string;
     sha256: string;
     claim: string;
+    alt: string;
+    reviewTrigger: string;
     placements?: string[];
     sourceProofIds?: string[];
     editorialSourceId?: string;
@@ -114,6 +116,22 @@ test('ships seven distinct current public product captures for the proof-led REA
     assert.doesNotMatch(rootReadme, new RegExp(obsoleteComposite.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     assert.doesNotMatch(pluginReadme, new RegExp(obsoleteComposite.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
+});
+
+test('model-directory capture provenance describes only the visible public hero', () => {
+  const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-model-directory-live');
+  assert.ok(record);
+  for (const text of [record.claim, record.alt]) {
+    assert.match(text, /public.*model.directory hero/i);
+    assert.match(text, /Browse models.*Compare engines/i);
+    assert.match(text, /pricing.*specification cues/i);
+    assert.match(text, /colorful model artwork/i);
+  }
+  for (const text of [record.claim, record.alt, record.reviewTrigger]) {
+    assert.doesNotMatch(text, /recommended starting points|capability summaries|editorial scores/i);
+    assert.doesNotMatch(text, /recommendation|ranking|generation|assistant execution/i);
+  }
+  assert.match(record.reviewTrigger, /hero.*actions.*pricing.*specification cues.*artwork/i);
 });
 
 test('ships a dedicated editorial hero without presenting it as product or host proof', async () => {
