@@ -1,6 +1,27 @@
 # MCP production deployment runbook
 
-Checked: 2026-08-27
+Checked: 2026-09-17
+
+## MCP follow-up deployment checkpoint — 2026-09-17
+
+Production deployment `dpl_8hcsz9kAv5AGbchrVdaeL5Xy2FGL` for merged main
+commit `21b3393183b598e1f771edaad0efcad6a15ec056` failed before compilation
+with Vercel `Resource provisioning timed out`; it had no build-log events.
+Quality CI and the PR Preview for that change were successful. The previous
+Production deployment stayed available while the exact failed artifact was
+redeployed, without a code, environment, DNS, database, or flag change, as
+`dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ`. Its Next.js build completed in six
+minutes and Vercel marked it `READY` with `maxvideoai.com` and
+`api.maxvideoai.com` among its Production aliases.
+
+A public read-only smoke check returned HTTP 200 with HTML and a canonical
+link for all 18 MCP marketing routes: hub plus Claude, ChatGPT, Codex,
+OpenClaw, and n8n pages in EN/FR/ES. The public Glama challenge on
+`api.maxvideoai.com` returned HTTP 200; Vercel reported no grouped runtime
+errors for the touched routes in the checked one-hour window. These checks
+verify routing and initial rendering, not authenticated OAuth or paid tool
+execution on this deployment. The n8n template annotation revision documented
+separately is source-only and is not part of this deployed commit.
 
 ## Owner-approved direct cutover — 2026-08-27
 

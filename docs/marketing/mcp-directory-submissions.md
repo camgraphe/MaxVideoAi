@@ -1,11 +1,33 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-09-16
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; ONE N8N WORKFLOW UNDER REVIEW**
+Checked: 2026-09-17
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; N8N WORKFLOW 19591 CHANGES REQUESTED**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## n8n review follow-up — 2026-09-17
+
+The private Creator Portal workflow [`19591`](https://creators.n8n.io/workflows/19591)
+is now `Pending` / `Implement changes`, not under review or publicly listed.
+The reviewer email from `creators@n8n.io` asks for explanatory stickies so
+readers can understand the workflow before publication. `Share new template`
+is enabled again; the other two candidates are still unsubmitted. The earlier
+2026-09-15 checkpoint below remains a dated record, not current portal state.
+
+The revised brief candidate retains the original overview Sticky Note and adds
+three nearby, non-connected notes for quote preparation, exact human approval,
+and single confirmation with bounded status recovery. No executable node,
+connection, credential, setting, or activation state changed. Local review and
+re-submission of this exact revision remain separate actions; this source edit
+does not upload or submit anything to n8n.
+
+| Candidate | Local SHA-256 | Current external state |
+| --- | --- | --- |
+| `distribution/n8n/brief-to-approved-generation.json` | `6b908227526baf76b5185fe3bd1f3224d9c43fb50de873c84420fa8d9a8f7472` | `revised_not_resubmitted`; workflow `19591` still contains the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
+| `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; independent submission is possible again but has not occurred. |
+| `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `queued_unsubmitted`; no public listing exists. |
 
 ## 0.3.5 observed publication — 2026-09-16
 

@@ -71,7 +71,8 @@ test('each n8n candidate includes one isolated submission-guideline note with co
     const workflow = load(file);
     const notes = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote');
 
-    assert.equal(notes.length, 1, `${file}: expected exactly one Sticky Note`);
+    assert.equal(notes.length, file === 'brief-to-approved-generation.json' ? 4 : 1,
+      `${file}: expected a guide and, for the reviewed brief, three stage annotations`);
     const [note] = notes;
     const content = String(note.parameters.content ?? '');
     const position = note.position;
@@ -100,17 +101,40 @@ test('each n8n candidate includes one isolated submission-guideline note with co
       assert.match(content, pattern, `${file}: missing ${pattern}`);
     }
 
-    assert.equal(note.name in workflow.connections, false, `${file}: note must not be a connection source`);
-    for (const outputs of Object.values(workflow.connections)) {
-      for (const branch of outputs.main ?? []) {
-        assert.equal(
-          (branch ?? []).some((edge) => edge.node === note.name),
-          false,
-          `${file}: note must not be a connection target`,
-        );
+    for (const annotation of notes) {
+      assert.equal(annotation.name in workflow.connections, false, `${file}: note must not be a connection source`);
+      for (const outputs of Object.values(workflow.connections)) {
+        for (const branch of outputs.main ?? []) {
+          assert.equal(
+            (branch ?? []).some((edge) => edge.node === annotation.name),
+            false,
+            `${file}: note must not be a connection target`,
+          );
+        }
       }
     }
   }
+});
+
+test('reviewed n8n brief explains each execution stage in a nearby non-executable Sticky Note', () => {
+  const workflow = load('brief-to-approved-generation.json');
+  const annotations = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote').slice(1);
+  assert.deepEqual(annotations.map((node) => node.name), [
+    'Step 1: prepare a fresh quote',
+    'Step 2: require exact human approval',
+    'Step 3: confirm once and recover by job ID',
+  ]);
+  for (const [index, annotation] of annotations.entries()) {
+    assert.ok(String(annotation.parameters.content).length >= 180);
+    assert.ok(Number(annotation.parameters.width) >= 600);
+    assert.ok(Number(annotation.parameters.height) >= 200);
+    assert.equal((annotation.position as number[])[1], -380);
+    assert.equal((annotation.position as number[])[0], [-900, 200, 860][index]);
+  }
+  assert.match(String(annotations[0].parameters.content), /recommend_models.*calculate_project_budget.*prepare_generation/s);
+  assert.match(String(annotations[1].parameters.content), /approved: true.*quoteId.*rejection/s);
+  assert.match(String(annotations[2].parameters.content), /confirm_generation.*jobId.*never/s);
+  assert.match(String(annotations[2].parameters.content), /bounded recovery/i);
 });
 
 test('n8n candidates are import-shaped, credential-free and internally connected', () => {

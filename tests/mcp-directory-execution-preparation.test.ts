@@ -88,19 +88,25 @@ test('0.3.5 evidence records the immutable source, focused release, workflow, ch
   assert.match(nextQueue, /downstream[\s\S]{0,120}(?:lag|refresh)/i);
 });
 
-test('n8n evidence pins the reviewed candidates and records only one private pending submission', () => {
+test('n8n evidence pins current candidate bytes and distinguishes changes requested from historical review', () => {
   const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', 'submitted_pending_review'],
-    ['distribution/n8n/campaign-queue.json', 'queued_platform_blocked'],
-    ['distribution/n8n/completion-notification.json', 'queued_platform_blocked'],
+    ['distribution/n8n/brief-to-approved-generation.json', 'revised_not_resubmitted'],
+    ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
+    ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
   ]);
 
+  const current = evidence.split('## n8n review follow-up — 2026-09-17')[1]?.split('## 0.3.5 observed publication')[0] ?? '';
+  assert.match(current, /`Pending` \/ `Implement changes`/);
+  assert.match(current, /reviewer email.*explanatory stickies/s);
+  assert.match(current, /`Share new template`\s+is enabled again/);
+  assert.match(current, /does not upload or submit anything to n8n/);
+
   for (const [path, state] of candidates) {
-    const candidateRow = checklist
+    const candidateRow = current
       .split('\n')
       .find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
     const documentedDigest = candidateRow.match(
-      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '` \\|$'),
+      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '`'),
     )?.[1];
     const actualDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
 
