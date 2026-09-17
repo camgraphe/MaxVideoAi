@@ -1,11 +1,39 @@
 # MaxVideoAI MCP distribution packages
 
 Checked: 2026-09-17
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; N8N WORKFLOW 19591 RESUBMITTED UNDER REVIEW**
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT OWNERSHIP CONFIRMED; GLAMA OWNERSHIP AND AUTHENTICATED HEALTH CONFIRMED; N8N WORKFLOW 19591 RESUBMITTED UNDER REVIEW**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## Glama authenticated-health follow-up — 2026-09-17
+
+The owner [test profile](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai/admin/test-profile)
+now shows `OAuth Authenticated` and a successful connection test at
+2026-09-17 23:01:04 Europe/Madrid. The [public connector record](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai)
+showed `Ownership verified`, `Healthy`, `OAuth` / `Works in Glama`, and 15
+discovered tools at its 23:03 check. This supersedes the earlier `Unhealthy`
+snapshot below; that snapshot remains as the diagnosis before authentication.
+
+The persistent Glama OAuth grant belongs to a new isolated MaxVideoAI test
+account without a payment method, not the owner CamGraph account. A read-only
+Supabase Auth check confirmed the active Glama consent for that account with
+`openid email profile` and no revocation. No paid tool, generation, or wallet
+action was used to establish health. The grant can nevertheless reach the
+account's MCP capabilities; the displayed scopes are not a per-tool spending
+limit. Production request logs show one successful consent POST (HTTP 303)
+followed about one second later by a second POST (HTTP 400), which displayed
+`authorization_failed`. The later error does not undo the first approval; its
+exact duplicate-submit trigger was not established. Do not reauthorize solely
+because of that second screen.
+
+Glama currently displays an access-token expiry on 2026-09-18. The existing
+daily MCP follow-up now checks whether Glama remains authenticated and its
+health check still passes after that expiry, without reauthenticating or
+invoking paid tools. This checkpoint proves Glama's own authenticated health
+and tool discovery, not a complete third-party host lifecycle, token refresh,
+or a service-level availability guarantee.
 
 ## n8n review follow-up — 2026-09-17
 
@@ -16,7 +44,7 @@ readers can understand the workflow before publication. `Share new template`
 is disabled again; the other two candidates are still unsubmitted. The earlier
 2026-09-15 checkpoint below remains a dated record, not current portal state.
 
-On 2026-09-17, the public Glama connector still displayed `Ownership verified`,
+At the earlier 2026-09-17 checkpoint, the public Glama connector displayed `Ownership verified`,
 `Unhealthy`, and `OAuth` / `Works in Glama`. Glama explicitly said its latest
 health check could not complete. The owner [test profile](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai/admin/test-profile)
 is set to OAuth 2.0 but says `Not Authenticated`; its connection history shows
@@ -34,9 +62,10 @@ calls for an isolated sandbox credential or dedicated test account for
 repeated introspection, not live user credentials or data. Do not authenticate
 the owner CamGraph account into Glama's persistent test profile, change the
 production connector URL to staging, or weaken MaxVideoAI's OAuth requirement
-to turn the badge green. A separately authorized isolated test environment and
-account, plus an exact decision about which connector Glama should test, are
-needed before entering credentials or granting OAuth access.
+to turn the badge green. At that point, a separately authorized isolated test
+account and an explicit decision about which connector Glama should test were
+required before granting OAuth access. The newer checkpoint above records that
+the isolated-account grant and authenticated health check have since succeeded.
 
 Glama's `by com.maxvideoai` label is the namespace of the existing official
 Registry identity, not the public brand spelling. The authored
@@ -158,7 +187,7 @@ challenge, or third-party health label proves only its own recorded result.
 | n8n workflow library | In the [Creator Portal](https://creators.n8n.io/), `distribution/n8n/brief-to-approved-generation.json` passed AI review and was submitted for human review as private Creator Portal workflow ID `19591`, with generated title `Turn creative briefs into approved MaxVideoAI generations with human approval`. The dashboard shows `Pending` / `Under review`; its confirmation says review typically takes 3–5 business days. `Share new template` is disabled while this review is pending, so the other two exact workflows were not submitted and remain queued. No public [workflow library](https://n8n.io/workflows/) URL exists, and no personal account data is recorded. | Wait for workflow `19591` to reach a terminal review result. Submit the next exact queued candidate only when the portal enables `Share new template`; preserve one-at-a-time sequencing and do not add credentials or claim n8n Cloud or MCP Client Tool execution. | `submitted` | Keep this state non-public and non-verified while the dashboard remains pending. Use `verified` only after a final public library URL is readable and matches the reviewed JSON; record rejection or requested changes exactly if review does not pass. |
 | GitHub MCP registry discovery | The [public API search](https://api.mcp.github.com/v0.1/servers?search=maxvideoai) returns no MaxVideoAI result. GitHub documents [registry discovery in Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) and organization-owned [custom registries](https://docs.github.com/en/copilot/how-tos/administer-copilot/manage-mcp-usage/configure-mcp-registry), but the checked public documentation exposes no third-party submission control for GitHub's default public registry. | Do not improvise a PR, support request, or custom-registry setup. Recheck for a documented public third-party submission route; proceed only if GitHub publishes one. | `unavailable_no_documented_submission` | A first-party GitHub submission route plus an accepted result and a positive public API search are required. The Official MCP Registry record is not substitute evidence. |
 | MCPBeat owner claim | The public [MaxVideoAI MCPBeat record](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/) shows `OWNER CONFIRMED` and version `0.3.5`. On 2026-09-17 its top badge said `not responding` after two missed checks, while the endpoint row independently said `answering` and the 24-hour window showed 90/92 successful checks. That time-window observation is not a MaxVideoAI SLA. Ownership verification used the repository file flow. The temporary public file was removed after confirmation, while its add and remove commits remain recoverable Git history in the canonical repository. | No further claim mutation. Preserve MCPBeat's independent health measurement and do not convert ownership into host compatibility or uptime guarantees. | `claimed` | Re-read the public owner, version, and health labels before a later status update. A claim remains separate from exact-host execution evidence. |
-| Glama owner claim | The owner profile was created and the HTTP challenge was selected for the existing [MaxVideoAI Glama record](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai). After reviewed PR [#296](https://github.com/camgraphe/MaxVideoAi/pull/296) reached Production, Production returned the exact challenge body at [`https://api.maxvideoai.com/.well-known/glama.json`](https://api.maxvideoai.com/.well-known/glama.json). The public record showed `Ownership verified`, and the authenticated connector administration page was accessible. On 2026-09-17 it still showed `Unhealthy` and `OAuth` / `Works in Glama`; the OAuth test profile said `Not Authenticated` and its connection history showed HTTP 401. | No further claim mutation. Keep the permanent challenge route available. Arrange an isolated test account and explicit grant decision before supplying a Glama test credential; do not use the owner CamGraph account or weaken the production OAuth boundary. | `claimed` | A successful authenticated Glama test with an isolated account and a later healthy public badge are required to close health. Ownership does not prove health, availability, OAuth lifecycle coverage, or exact-host compatibility. |
+| Glama owner claim and health | The owner profile was created and the HTTP challenge was selected for the existing [MaxVideoAI Glama record](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai). After reviewed PR [#296](https://github.com/camgraphe/MaxVideoAi/pull/296) reached Production, Production returned the exact challenge body at [`https://api.maxvideoai.com/.well-known/glama.json`](https://api.maxvideoai.com/.well-known/glama.json). The earlier unauthenticated profile check returned 401; the later isolated test-account OAuth grant passed, the owner test profile showed a successful connection test, and the public record showed `Ownership verified`, `Healthy`, and 15 discovered tools at 2026-09-17 23:03 Europe/Madrid. | No further claim mutation or reauthorization. Keep the permanent challenge route and isolated test account available; monitor the next token refresh and authenticated health without paid calls. | `claimed` (health observed `Healthy`) | Ownership and authenticated health are observed. Token refresh, sustained availability, and complete exact-host compatibility remain separate and unverified. |
 | Docker MCP Catalog | Docker's [contribution guide](https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md) supports remote Streamable HTTP servers with OAuth through a reviewed pull request, but its contribution rules require a license that permits catalog consumption and identify permissive licenses such as MIT or Apache-2.0 as acceptable while rejecting non-permissive licensing. MaxVideoAI remains under [Business Source License 1.1](https://github.com/camgraphe/MaxVideoAi/blob/main/LICENSE). | Do not fork, create catalog files, open a PR, or relicense MaxVideoAI in this task. | `blocked_by_license` | A separate owner-and-Legal-approved permissive-license change, followed by a fresh Docker policy review, would be required before preparing a submission. Technical remote-OAuth eligibility alone does not remove the license blocker. |
 
 The exact n8n candidates authorized for identity-bound submission are:
@@ -202,7 +231,7 @@ listing, or proof that MaxVideoAI works in a particular host.
 | Canonical public source and release | The canonical repository is [`camgraphe/maxvideoai-plugin`](https://github.com/camgraphe/maxvideoai-plugin), and its matching public release is [`v0.3.3`](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3). It remains the owner of the single installable ZIP and SHA-256 asset. Repository publication does not prove host compatibility. |
 | ClawHub | [MaxVideoAI](https://clawhub.ai/camgraphe/skills/maxvideoai) is listed at `1.0.0`. This package listing is separate from direct MCP host evidence. |
 | MCPBeat | [MCPBeat](https://mcpbeat.com/mcp-servers/maxvideoai/maxvideoai/) publicly shows `OWNER CONFIRMED`, version `0.3.3`, and `ANSWERING`. Its independently reported 96.9% prior-week uptime is a dated third-party observation, not a MaxVideoAI SLA or exact-host compatibility proof. |
-| Other independent downstream records | [mcpdirectory.dev](https://mcpdirectory.dev/s/maxvideoai/) and [Glama](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) expose independently maintained records. Glama now shows `Ownership verified`, while its independent `Unhealthy` and `OAuth` / `Works in Glama` labels still conflict. These records are not platform endorsements, first-party store listings, health guarantees, or proof of host compatibility. |
+| Other independent downstream records | [mcpdirectory.dev](https://mcpdirectory.dev/s/maxvideoai/) and [Glama](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) expose independently maintained records. Glama showed `Ownership verified`, `Healthy`, and 15 tools at the later 2026-09-17 23:03 Europe/Madrid check, after an isolated test-account OAuth grant. These records are not platform endorsements, first-party store listings, health guarantees, or proof of complete host compatibility. |
 | GitHub MCP registry | The checked [GitHub MCP registry API query](https://api.mcp.github.com/v0.1/servers?search=maxvideoai) returned no MaxVideoAI result on 2026-09-14. The Official MCP Registry record must not be represented as a GitHub registry or Copilot listing. |
 | n8n workflow library | The brief-to-approved-generation candidate passed Creator Portal AI review and is privately `Pending` / `Under review` as workflow `19591`; no public library URL exists. The other two exact candidates remain unsubmitted because the pending review disables the portal's next-template action. |
 | OpenAI and Anthropic directories | MaxVideoAI is deliberately not submitted under the current first-party commerce and AI-media directory policies described above. These store decisions remain independent from the live direct MCP setup paths. |

@@ -39,11 +39,16 @@ revoke/access-loss/reconnect lifecycle is still separate work.
   returns HTTP 401, and an anonymous production `initialize` probe returns the
   same expected OAuth challenge. `Ownership verified` and `Works in Glama` do
   not imply authenticated health.
-- [ ] Decide on an isolated, non-production Glama test identity/environment
-  and explicitly authorize any persistent OAuth grant before authenticating
-  the test profile. Do not use the owner CamGraph account or weaken production
-  OAuth merely to satisfy the directory badge. Recheck the public health state
-  only after an authenticated test succeeds.
+- [x] Use a separately authorized, isolated MaxVideoAI test account without a
+  payment method for Glama's persistent OAuth test profile. The active Glama
+  grant belongs to that account, not the CamGraph owner account; no paid tool,
+  generation, or wallet action was run. On 2026-09-17 the owner profile showed
+  `OAuth Authenticated` and a successful connection test at 23:01:04
+  Europe/Madrid; the public record showed `Healthy` and 15 tools at 23:03.
+  A second consent POST returned `authorization_failed` after the successful
+  303, without undoing the grant. Keep OAuth enforced and monitor refresh after
+  the displayed access-token expiry on 2026-09-18; no sustained-health or
+  third-party host-lifecycle claim follows from this one checkpoint.
 - [x] Confirm `com.maxvideoai/maxvideoai` is the domain-verified, lowercase,
   immutable Official MCP Registry identity, while `MaxVideoAI` is the display
   title. Glama mirrors its namespace; preserve the existing record rather than
