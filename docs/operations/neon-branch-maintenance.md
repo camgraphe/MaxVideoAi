@@ -29,3 +29,9 @@ Verified pricing: https://neon.com/pricing (5 September 2026). The API branch li
 ## Staging
 
 Keep `preview/mcp-staging` separate from completed PR previews. Polling schedules can keep its compute active when they run at the five-minute suspension interval. Before pausing staging crons, confirm that no tests or nonterminal jobs depend on them. Preserve the production project and staging database. Record any pause and the resumption procedure in the operational audit.
+
+The owner-approved default since 5 September 2026 is to keep the dedicated
+staging project's cron execution disabled between attended test sessions.
+Follow [the staging idle and resumption procedure](mcp-staging-deployment.md#default-idle-policy--2026-09-05).
+Resume polling and cleanup before new staging generations or uploads. Leave
+the production project's schedules and compute settings unchanged.

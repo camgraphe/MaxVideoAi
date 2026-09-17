@@ -71,7 +71,8 @@ test('each n8n candidate includes one isolated submission-guideline note with co
     const workflow = load(file);
     const notes = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote');
 
-    assert.equal(notes.length, 1, `${file}: expected exactly one Sticky Note`);
+    assert.equal(notes.length, file === 'brief-to-approved-generation.json' ? 4 : 1,
+      `${file}: expected a guide and, for the reviewed brief, three stage annotations`);
     const [note] = notes;
     const content = String(note.parameters.content ?? '');
     const position = note.position;
@@ -88,8 +89,9 @@ test('each n8n candidate includes one isolated submission-guideline note with co
     assert.ok(content.length >= 800, `${file}: note should contain substantive instructions`);
     assert.match(content, /^# /);
     assert.match(content, /## Intended user and outcome/i);
-    assert.match(content, /## How it works/i);
-    assert.match(content, /## Setup/i);
+    const overviewHeading = file === 'brief-to-approved-generation.json' ? '###' : '##';
+    assert.match(content, new RegExp(`^${overviewHeading} How it works$`, 'im'));
+    assert.match(content, new RegExp(`^${overviewHeading} Setup$`, 'im'));
     assert.match(content, /self-hosted n8n/i);
     assert.match(content, /MaxVideoAI MCP OAuth/i);
     assert.match(content, /https:\/\/api\.maxvideoai\.com\/mcp/);
@@ -100,17 +102,52 @@ test('each n8n candidate includes one isolated submission-guideline note with co
       assert.match(content, pattern, `${file}: missing ${pattern}`);
     }
 
-    assert.equal(note.name in workflow.connections, false, `${file}: note must not be a connection source`);
-    for (const outputs of Object.values(workflow.connections)) {
-      for (const branch of outputs.main ?? []) {
-        assert.equal(
-          (branch ?? []).some((edge) => edge.node === note.name),
-          false,
-          `${file}: note must not be a connection target`,
-        );
+    for (const annotation of notes) {
+      assert.equal(annotation.name in workflow.connections, false, `${file}: note must not be a connection source`);
+      for (const outputs of Object.values(workflow.connections)) {
+        for (const branch of outputs.main ?? []) {
+          assert.equal(
+            (branch ?? []).some((edge) => edge.node === annotation.name),
+            false,
+            `${file}: note must not be a connection target`,
+          );
+        }
       }
     }
   }
+});
+
+test('reviewed n8n brief uses concise white section notes behind the execution stages', () => {
+  const workflow = load('brief-to-approved-generation.json');
+  const [guide, ...annotations] = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote');
+  assert.ok(guide);
+  assert.equal(guide.parameters.color, 1, 'the upper-left guide should use the yellow main-note color');
+  const guideWords = String(guide.parameters.content).trim().split(/\s+/);
+  assert.ok(guideWords.length >= 100 && guideWords.length <= 300,
+    'the main guide should fit n8n’s 100–300 word recommendation');
+  assert.deepEqual(annotations.map((node) => node.name), [
+    'Step 1: prepare a fresh quote',
+    'Step 2: require exact human approval',
+    'Step 3: confirm once and recover by job ID',
+  ]);
+  for (const [index, annotation] of annotations.entries()) {
+    const content = String(annotation.parameters.content);
+    assert.match(content, /^## /);
+    assert.ok(content.trim().split(/\s+/).length < 50,
+      'section notes should stay below n8n’s 50-word limit');
+    assert.equal(annotation.parameters.color, 7, 'section notes should use n8n’s neutral white color');
+    const [x, y] = annotation.position as number[];
+    assert.equal(y, -230);
+    assert.equal(x, [-940, 360, 860][index]);
+    assert.ok(Number(annotation.parameters.height) >= 490, 'section note should extend behind its nodes');
+  }
+  assert.ok(Number(annotations[0].parameters.width) >= 1300);
+  assert.ok(Number(annotations[1].parameters.width) >= 500);
+  assert.ok(Number(annotations[2].parameters.width) >= 1300);
+  assert.match(String(annotations[0].parameters.content), /recommend_models.*calculate_project_budget.*prepare_generation/s);
+  assert.match(String(annotations[1].parameters.content), /approved: true.*quoteId.*rejection/s);
+  assert.match(String(annotations[2].parameters.content), /confirm_generation.*jobId.*never/s);
+  assert.match(String(annotations[2].parameters.content), /bounded recovery/i);
 });
 
 test('n8n candidates are import-shaped, credential-free and internally connected', () => {

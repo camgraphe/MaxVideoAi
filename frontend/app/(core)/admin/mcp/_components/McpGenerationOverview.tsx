@@ -38,7 +38,7 @@ export function McpGenerationOverview({ outcomes }: { outcomes: AdminMcpOutcomes
               </table>
             </div>
             <p className="text-xs leading-5 text-text-muted">
-              Application names come from self-reported MCP initialization metadata, with recorded connection links and current registered OAuth application names as fallbacks. This is an analytics indication, not a verified identity. Historical attribution from current OAuth names is indicative; missing metadata stays Other / unidentified. A user can appear under several applications; the overall total counts each user once.
+              Application names come from self-reported MCP initialization metadata, with recorded connection links and current registered OAuth application names as fallbacks. This is an analytics indication, not a verified identity. Glama denotes an identified MCP client, not a verified directory referral. Historical attribution from current OAuth names is indicative; missing metadata stays Other / unidentified. A user can appear under several applications; the overall total counts each user once.
             </p>
           </>
         ) : null}

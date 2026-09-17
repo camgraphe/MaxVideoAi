@@ -235,34 +235,25 @@ test('Pika Text-to-Video benchmark specs avoid image route overclaims', () => {
   assert.deepEqual(pika.keySpecs?.aspectRatios, ['1:1', '16:9', '9:16', '4:5', '5:4', '3:2', '2:3']);
 });
 
-test('Happy Horse is distributed across relevant best-for pages', () => {
+test('Happy Horse remains only in best-for pages where its UGC and dialogue workflow is distinctive', () => {
   const comparePath = path.join(process.cwd(), 'frontend/config/compare-config.json');
   const compareData = JSON.parse(fs.readFileSync(comparePath, 'utf8')) as {
     bestForPages?: Array<{ slug: string; topPicks?: string[] }>;
   };
   const topPicksBySlug = new Map(compareData.bestForPages?.map((entry) => [entry.slug, entry.topPicks ?? []]) ?? []);
 
-  [
-    'image-to-video',
-    'cinematic-realism',
-    'character-reference',
-    'reference-to-video',
-    'ads',
-    'ugc-ads',
-    'product-videos',
-    'lipsync-dialogue',
-  ].forEach((slug) => {
+  ['ugc-ads', 'lipsync-dialogue'].forEach((slug) => {
     assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-1'), true, `${slug} should include Happy Horse`);
     assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-1', `${slug} should not rank Happy Horse first`);
   });
 
-  assert.deepEqual(topPicksBySlug.get('cinematic-realism')?.slice(0, 2), ['seedance-2-5', 'seedance-2-0']);
-  assert.deepEqual(topPicksBySlug.get('ads')?.slice(0, 2), ['seedance-2-5', 'seedance-2-0']);
-  assert.deepEqual(topPicksBySlug.get('character-reference')?.slice(0, 2), ['kling-3-pro', 'seedance-2-0']);
+  assert.equal(topPicksBySlug.get('ugc-ads')?.[1], 'happy-horse-1-1');
+  assert.equal(topPicksBySlug.get('lipsync-dialogue')?.[1], 'happy-horse-1-1');
 
-  ['4k-video', 'fast-drafts', 'stylized-anime'].forEach((slug) => {
-    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-1'), false, `${slug} should not include Happy Horse`);
-  });
+  for (const [slug, topPicks] of topPicksBySlug) {
+    if (slug === 'ugc-ads' || slug === 'lipsync-dialogue') continue;
+    assert.equal(topPicks.includes('happy-horse-1-1'), false, `${slug} should not include Happy Horse`);
+  }
 });
 
 test('Happy Horse benchmark score is calibrated below Seedance and Kling 3 Pro for realism and motion', () => {

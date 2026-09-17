@@ -158,8 +158,10 @@ the route-local `McpGenerationOverview` renders them ahead of tool-call activity
   database constraint for the complete ecosystem. Successful MCP initialization stores only
   a normalized family from self-reported
   `clientInfo.name`; raw metadata is discarded. The admin application breakdown covers the
-  nine integration-registry families plus `Other / unidentified`, while ambiguous names stay
-  unidentified. This field is analytics only and must never authorize access.
+  nine integration-registry families, the separate Glama MCP-client family, and
+  `Other / unidentified`. Glama is an analytics label for a client identifying itself
+  as Glama, not a first-party host integration or proof that a directory listing
+  sent the user. Ambiguous names stay unidentified. This field must never authorize access.
   Recorded connection-link attribution is the fallback for the same user/OAuth-client pair.
   A bounded server-only lookup of current registered OAuth client names supplies an
   indicative historical fallback when event-time evidence is missing.
@@ -167,6 +169,9 @@ the route-local `McpGenerationOverview` renders them ahead of tool-call activity
   an earlier video through event-time evidence; the current OAuth registry fallback is
   explicitly labeled as indicative. Old schemas continue to serve outcomes using the
   available attribution.
+- Migration 48 admits `glama` in the Neon audit constraint without rewriting historical
+  rows. Apply it before deploying runtime code that records this family; old `other`
+  entries are not force-reclassified.
 - The separate acquisition-source split remains limited to acquisition-enabled landing-page
   clients. Direct, preview, hidden, and unidentified hosts remain in its `Other / unidentified`
   row until their acquisition gate is deliberately enabled; this does not prevent their

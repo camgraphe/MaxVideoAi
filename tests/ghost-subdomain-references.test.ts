@@ -31,6 +31,7 @@ const ignoredDirectories = new Set([
   'build',
   'dist',
   'node_modules',
+  'output',
 ]);
 const ignoredFiles = new Set(['tests/ghost-subdomain-references.test.ts']);
 

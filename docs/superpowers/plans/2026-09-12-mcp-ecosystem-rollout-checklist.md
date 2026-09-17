@@ -10,6 +10,58 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-12-mcp-integration-ecosystem-design.md`
 
+## Current closeout checklist — 2026-09-17
+
+The task narratives below retain their original checkpoint dates. In particular,
+the 2026-09-14 statement that the active-grant fix is branch-local has been
+superseded by deployed main revision `21b339318`, which includes `a6a655f5e`.
+The hosted old-token rejection check now passes; a complete host-specific
+revoke/access-loss/reconnect lifecycle is still separate work.
+
+- [x] Recover the Vercel resource-provisioning failure by redeploying the exact
+  main revision; all 18 MCP marketing routes returned HTTP 200 with canonicals.
+- [x] Confirm official MCP Registry and canonical GitHub package release at
+  `0.3.5`, ClawHub `1.0.0`, and MCPBeat's downstream `0.3.5` refresh.
+- [x] Review the n8n reviewer email and prepare the non-executable Sticky Note
+  revision locally without changing credentials, connections, or activation.
+- [x] Upload the exact Sticky Note revision to existing Creator Portal workflow
+  `19591` through `Implement changes` → `Upload workflow JSON file` → `Submit
+  for human review`. On 2026-09-17 the portal confirmed `Your template has been
+  re-submitted`; the dashboard changed to `Pending` / `Under review` dated
+  2026-09-17 and disabled `Share new template`. This is a private review, not
+  human approval or a public listing. Four earlier attempts through the
+  separate `Upload new version` action failed without a specific error; their
+  cause remains unconfirmed and no duplicate template was created.
+- [ ] Submit the other two n8n workflows one at a time only after reviewing
+  each portal form and independently recording its accepted state.
+- [x] Diagnose Glama's independent `Unhealthy` check from the owner admin
+  surface: the OAuth test profile says `Not Authenticated`, its test history
+  returns HTTP 401, and an anonymous production `initialize` probe returns the
+  same expected OAuth challenge. `Ownership verified` and `Works in Glama` do
+  not imply authenticated health.
+- [x] Use a separately authorized, isolated MaxVideoAI test account without a
+  payment method for Glama's persistent OAuth test profile. The active Glama
+  grant belongs to that account, not the CamGraph owner account; no paid tool,
+  generation, or wallet action was run. On 2026-09-17 the owner profile showed
+  `OAuth Authenticated` and a successful connection test at 23:01:04
+  Europe/Madrid; the public record showed `Healthy` and 15 tools at 23:03.
+  A second consent POST returned `authorization_failed` after the successful
+  303, without undoing the grant. Keep OAuth enforced and monitor refresh after
+  the displayed access-token expiry on 2026-09-18; no sustained-health or
+  third-party host-lifecycle claim follows from this one checkpoint.
+- [x] Confirm `com.maxvideoai/maxvideoai` is the domain-verified, lowercase,
+  immutable Official MCP Registry identity, while `MaxVideoAI` is the display
+  title. Glama mirrors its namespace; preserve the existing record rather than
+  introducing a duplicate identity for a cosmetic change.
+- [x] Re-test old-token rejection after grant revocation on the exact hosted
+  production deployment `dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ`: an isolated
+  OpenClaw 2026.9.4 client used only `get_account_status` (HTTP 200), its own
+  grant was revoked (HTTP 204), and the same already-issued token was refused
+  by the MCP endpoint (HTTP 401 / JSON-RPC `-32001`). No paid call ran. This
+  proves the shared server boundary, not Copilot or another host's reconnect.
+- [ ] Complete the remaining exact-host checks and the 14-day GSC/funnel review
+  after 2026-09-27; retain each host's current scoped status in the meantime.
+
 ## Global Constraints
 
 - Preserve `/mcp`, `/docs/mcp`, and the Claude, ChatGPT, and Codex integration pages in English, French, and Spanish.

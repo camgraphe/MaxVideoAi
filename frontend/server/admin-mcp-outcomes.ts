@@ -10,6 +10,7 @@ export const MCP_CLIENT_LABELS = {
   codex: 'Codex',
   openclaw: 'OpenClaw',
   n8n: 'n8n',
+  glama: 'Glama',
   cursor: 'Cursor',
   githubCopilot: 'GitHub Copilot',
   geminiCli: 'Gemini CLI',

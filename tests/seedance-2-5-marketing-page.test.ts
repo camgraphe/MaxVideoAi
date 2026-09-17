@@ -122,7 +122,7 @@ test('Seedance 2.5 launches with three localized, indexable comparison decisions
   }
 });
 
-test('the three priority Seedance 2.5 comparisons remain promoted behind the trend and H3 launches', () => {
+test('the three priority Seedance 2.5 comparisons remain published while best-for links follow current leaders', () => {
   const compareConfig = JSON.parse(readFileSync('frontend/config/compare-config.json', 'utf8')) as {
     trophyComparisons: string[];
     bestForPages: Array<{ slug: string; relatedComparisons: string[] }>;
@@ -154,13 +154,14 @@ test('the three priority Seedance 2.5 comparisons remain promoted behind the tre
   ]);
 
   const bestForBySlug = new Map(compareConfig.bestForPages.map((entry) => [entry.slug, entry.relatedComparisons]));
-  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('kling-3-pro-vs-seedance-2-5'));
-  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('seedance-2-5-vs-veo-3-1'));
-  assert.ok(bestForBySlug.get('ads')?.includes('seedance-2-5-vs-veo-3-1'));
-  assert.ok(bestForBySlug.get('reference-to-video')?.includes('kling-3-pro-vs-seedance-2-5'));
-  assert.ok(bestForBySlug.get('reference-to-video')?.includes('seedance-2-5-vs-veo-3-1'));
-  assert.ok(bestForBySlug.get('multi-shot-video')?.includes('seedance-2-0-vs-seedance-2-5'));
-  assert.ok(bestForBySlug.get('multi-shot-video')?.includes('kling-3-pro-vs-seedance-2-5'));
+  for (const usecase of ['cinematic-realism', 'ads', 'reference-to-video', 'multi-shot-video']) {
+    assert.ok(bestForBySlug.get(usecase)?.includes('seedance-2-5-vs-wan-3'), `${usecase} should compare Seedance 2.5 with Wan 3`);
+    assert.ok(bestForBySlug.get(usecase)?.includes('minimax-h3-vs-seedance-2-5'), `${usecase} should compare Seedance 2.5 with H3`);
+  }
+  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('minimax-h3-max-vs-seedance-2-5'));
+  assert.ok(bestForBySlug.get('ads')?.includes('kling-o3-pro-vs-minimax-h3'));
+  assert.ok(bestForBySlug.get('reference-to-video')?.includes('wan-3-vs-wan-3-prime'));
+  assert.ok(bestForBySlug.get('multi-shot-video')?.includes('kling-o3-pro-vs-minimax-h3'));
 });
 
 test('the indexation matrix keeps all nine localized Seedance 2.5 comparison URLs', () => {

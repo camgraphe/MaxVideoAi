@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { Client } from 'pg';
+import { getDb } from '../frontend/src/lib/db.ts';
+import { ensureMcpSchema } from '../frontend/src/lib/schema/mcp-schema.ts';
 
 import {
   AUDIT_SUMMARY_SQL,
@@ -352,6 +354,23 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     assert.equal(authOutage.totals?.videos, 5);
     assert.equal(authOutage.totals?.newSignups, null);
 
+    await client.query(`
+      INSERT INTO profiles VALUES ('glama-user', '2026-07-04Z', true);
+      INSERT INTO mcp_audit_events VALUES ('connection_initialized', 'glama-user', 'glama-id', 'success', 'glama', '2026-07-04Z');
+      INSERT INTO app_jobs VALUES ('glama-video', 'glama-user', 'video', 'completed', '2026-07-05Z');
+      INSERT INTO mcp_generation_quotes VALUES ('glama-user', 'glama-id', 'glama-video', '2026-07-04Z');
+    `);
+    const glamaOutcome = await load();
+    assert.equal(glamaOutcome.clients.find((row) => row.client === 'glama')?.accounts, 1);
+    assert.equal(glamaOutcome.clients.find((row) => row.client === 'glama')?.videos, 1);
+    assert.equal(glamaOutcome.totals?.videos, 6);
+    await client.query(`
+      DELETE FROM mcp_generation_quotes WHERE job_id = 'glama-video';
+      DELETE FROM app_jobs WHERE job_id = 'glama-video';
+      DELETE FROM mcp_audit_events WHERE user_id = 'glama-user';
+      DELETE FROM profiles WHERE id = 'glama-user';
+    `);
+
     await client.query('ALTER TABLE mcp_audit_events DROP COLUMN client_family');
     const legacy = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
     assert.equal(Number(legacy.rows.find((row) => row.client === 'all').videos), 5);
@@ -366,14 +385,57 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     assert.equal(Number(empty.rows[0].accounts), 0);
     const migration = readFileSync(join(process.cwd(), 'neon/migrations/41_mcp_client_family.sql'), 'utf8');
     const ecosystemMigration = readFileSync(join(process.cwd(), 'neon/migrations/42_mcp_client_family_ecosystem.sql'), 'utf8');
+    const glamaMigrationPath = join(process.cwd(), 'neon/migrations/48_mcp_client_family_glama.sql');
+    assert.equal(existsSync(glamaMigrationPath), true, 'Glama needs a forward-only client-family migration');
+    const glamaMigration = readFileSync(glamaMigrationPath, 'utf8');
     await client.query(migration);
     await client.query(ecosystemMigration);
     await client.query(ecosystemMigration);
+    await assert.rejects(() => client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('glama')`), /check constraint/);
+    await client.query(glamaMigration);
+    await client.query(glamaMigration);
     await assert.rejects(() => client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('raw-client-name')`), /check constraint/);
     await client.query(`INSERT INTO mcp_audit_events (client_family) VALUES
-      ('codex'), ('claude'), ('chatgpt'), ('openclaw'), ('n8n'), ('cursor'),
+      ('codex'), ('claude'), ('chatgpt'), ('openclaw'), ('n8n'), ('glama'), ('cursor'),
       ('githubCopilot'), ('geminiCli'), ('microsoftCopilot'), ('other'), (NULL)`);
+    await client.query(ecosystemMigration);
+    await client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('glama')`);
+
+    await client.query(`
+      ALTER TABLE mcp_audit_events DROP CONSTRAINT mcp_audit_events_client_family_check;
+      ALTER TABLE mcp_audit_events ADD CONSTRAINT mcp_audit_events_client_family_check
+        CHECK (client_family IS NULL OR client_family IN (
+          'chatgpt', 'claude', 'codex', 'openclaw', 'n8n', 'glama', 'cursor',
+          'githubCopilot', 'geminiCli', 'microsoftCopilot', 'other', 'future-client'
+        ));
+    `);
+    const before = await client.query(`SELECT pg_get_constraintdef(oid) AS definition
+      FROM pg_constraint WHERE conrelid = 'mcp_audit_events'::regclass
+        AND conname = 'mcp_audit_events_client_family_check'`);
+    await assert.rejects(() => client.query(ecosystemMigration), /unexpected MCP client-family constraint/);
+    await assert.rejects(() => client.query(glamaMigration), /unexpected MCP client-family constraint/);
+    const after = await client.query(`SELECT pg_get_constraintdef(oid) AS definition
+      FROM pg_constraint WHERE conrelid = 'mcp_audit_events'::regclass
+        AND conname = 'mcp_audit_events_client_family_check'`);
+    assert.equal(after.rows[0]?.definition, before.rows[0]?.definition, 'a later constraint change must survive unchanged');
+    await client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('future-client')`);
     await client.query('SET search_path TO public');
+  });
+
+  await t.test('runtime audit bootstrap accepts the same Glama family as the migration', async () => {
+    const priorDatabaseUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = `postgresql://postgres@localhost/postgres?host=${encodeURIComponent(socketDirectory)}`;
+    try {
+      await ensureMcpSchema();
+      await client.query(`INSERT INTO public.mcp_audit_events (event_type, user_id, outcome, client_family, created_at)
+        VALUES ('connection_initialized', 'bootstrap-glama', 'success', 'glama', NOW())`);
+      await assert.rejects(() => client.query(`INSERT INTO public.mcp_audit_events (event_type, user_id, outcome, client_family, created_at)
+        VALUES ('connection_initialized', 'bootstrap-unknown', 'success', 'glama-proxy', NOW())`), /check constraint/);
+    } finally {
+      await getDb().end();
+      if (priorDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+      else process.env.DATABASE_URL = priorDatabaseUrl;
+    }
   });
 
 });

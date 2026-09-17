@@ -572,7 +572,8 @@ test('readiness packages follow the live registry and canonical localized route 
   assert.match(stagingDeployment, /hosted checkpoint\s+exercised account, quote, media, recovery, upload-handoff, and top-up-handoff/i);
   assert.doesNotMatch(stagingDeployment, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
   assert.doesNotMatch(stagingDeployment, /Revocation \|.*Authentication required|Reconnect \|.*succeeded/i);
-  assert.match(oauthRunbook, /Codex and Claude OAuth, refresh, revocation, and requested-scope behavior remain unverified/i);
+  assert.match(oauthRunbook, /same unexpired access token immediately[\s\S]{0,100}received MCP HTTP 401 \/ JSON-RPC `-32001`/i);
+  assert.match(oauthRunbook, /Refresh-token rejection and\s+host-specific reconnect lifecycles were not tested here/i);
   assert.doesNotMatch(oauthRunbook, /Codex CLI \d|requested all four during local testing/i);
   const smokeInventory = foundationSmoke
     .split('\n')
@@ -624,7 +625,8 @@ test('active MCP truth records follow the enabled production boundary', () => {
 
 test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(claims, /graphical Codex\/ChatGPT directory install has not been recorded/i);
-  assert.match(compatibility, /Last hosted checkpoint: 2026-08-27/);
+  assert.match(compatibility, /Last production routing checkpoint: 2026-09-17/);
+  assert.match(compatibility, /shared-server old-token rejection check, \*\*not\*\* refresh-token rejection or\s+Copilot's own revoke\/access-loss\/reconnect lifecycle/i);
   assert.match(compatibility, /Publication: transport, OAuth, discovery, paid generation, reference uploads,[\s\S]{0,100}enabled/i);
   assert.match(compatibility, /ChatGPT web custom app \/ full MCP[\s\S]+Not run/i);
   assert.match(

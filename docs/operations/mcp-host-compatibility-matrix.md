@@ -1,11 +1,38 @@
 # MaxVideoAI MCP host compatibility matrix
 
-Last hosted checkpoint: 2026-08-27
+Last production routing checkpoint: 2026-09-17. The host-specific lifecycle
+checkpoints below retain their individual dates.
 
 Marketing pages project their integration identity, host labels, checkpoint dates,
 and status facts from `frontend/config/mcp-integrations.json`. This matrix remains
 the owner of detailed tested-host evidence, exact versions, exercised behavior,
 limitations, and explicit non-claims.
+
+The registry's legacy `2026-08-27` checkpoint date for Claude Desktop, Claude
+Code, ChatGPT web, and Codex CLI is the original registry metadata checkpoint.
+It does not assert a completed host lifecycle for Claude Code or ChatGPT web;
+their later documentation preflights and current `not-run` status remain
+separate. The newer dated rows below supersede only the facts they explicitly
+retested, without silently promoting a sibling host.
+
+## Revocation-fix deployment correction — 2026-09-17
+
+The Copilot IDE and CLI rows below describe their 2026-09-14 observations and
+say the active-grant fix was branch-local at that time. That source statement
+is now superseded: commit `a6a655f5e` is an ancestor of deployed main
+`21b339318` (Production redeployment `dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ`).
+Public routing checks alone did **not** establish that a revoked,
+already-issued access token is rejected on this exact deployment. A separate
+hosted production test on 2026-09-17 did: Vercel inspection confirmed this
+deployment as the `READY` target of `api.maxvideoai.com`; a fresh, isolated
+OpenClaw 2026.9.4 OAuth client called only `get_account_status` (HTTP 200),
+its exact new grant was revoked (HTTP 204), and the same unexpired token
+received MCP HTTP 401 / JSON-RPC `-32001` with no result. No generation or
+paid tool was invoked; local test credentials were cleared. This closes the
+shared-server old-token rejection check, **not** refresh-token rejection or
+Copilot's own revoke/access-loss/reconnect lifecycle. Copilot host records,
+marketing, indexation, acquisition, and install actions retain their existing
+restrictions; no previously verified host is demoted.
 
 ## Production checkpoint
 

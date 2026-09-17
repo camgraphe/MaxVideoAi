@@ -28,31 +28,34 @@ function createPick(slug: string): RankedPick {
   };
 }
 
-test('4K best-for shortlist ranks H3 below Kling 4K and ahead of Veo Fast', () => {
+test('4K best-for shortlist ranks H3 first and keeps capability-specific alternatives', () => {
   assert.ok(fourKEntry, '4K best-for entry should exist');
-  assert.deepEqual(fourKEntry.topPicks?.slice(0, 4), ['veo-3-1', 'kling-3-4k', 'minimax-h3', 'veo-3-1-fast']);
+  assert.deepEqual(fourKEntry.topPicks?.slice(0, 4), ['minimax-h3', 'veo-3-1', 'kling-3-4k', 'veo-3-1-fast']);
   assert.equal(fourKEntry.topPicks?.[4], 'seedance-2-0');
   assert.deepEqual(getPublishedRelatedComparisons(fourKEntry, 'en').slice(0, 3), [
-    'kling-3-4k-vs-veo-3-1',
     'minimax-h3-vs-veo-3-1',
-    'veo-3-1-vs-veo-3-1-fast',
+    'kling-3-4k-vs-veo-3-1',
+    'minimax-h3-vs-seedance-2-5',
   ]);
   assert.ok(getPublishedRelatedComparisons(fourKEntry, 'en').includes('seedance-2-0-vs-veo-3-1'));
 });
 
-test('localized 4K best-for editorial content reflects the Veo 4K ranking', () => {
+test('localized 4K best-for editorial content reflects the H3-first ranking', () => {
   for (const [locale, filePath] of Object.entries(localeContentPaths)) {
     const source = readFileSync(filePath, 'utf8');
+    const h3Index = source.indexOf('minimax-h3)');
     const veoIndex = source.indexOf('veo-3-1)');
     const klingIndex = source.indexOf('kling-3-4k)');
     const veoFastIndex = source.indexOf('veo-3-1-fast)');
     const seedanceIndex = source.indexOf('seedance-2-0)');
     const ltxProIndex = source.indexOf('ltx-2-3-pro)');
 
+    assert.ok(h3Index > -1, `${locale} content should link to MiniMax H3`);
     assert.ok(veoIndex > -1, `${locale} content should link to Veo 3.1`);
     assert.ok(klingIndex > -1, `${locale} content should link to Kling 3 4K`);
     assert.ok(veoFastIndex > -1, `${locale} content should link to Veo 3.1 Fast`);
     assert.ok(seedanceIndex > -1, `${locale} content should link to Seedance 2.0`);
+    assert.ok(h3Index < veoIndex, `${locale} content should place MiniMax H3 before Veo 3.1`);
     assert.ok(veoIndex < klingIndex, `${locale} content should place Veo 3.1 before Kling 3 4K`);
     assert.ok(klingIndex < veoFastIndex, `${locale} content should place Kling 3 4K before Veo Fast`);
     assert.ok(veoFastIndex < seedanceIndex, `${locale} content should keep Seedance below the top three`);

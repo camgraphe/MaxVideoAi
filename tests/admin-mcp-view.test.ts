@@ -126,7 +126,7 @@ test('account and completed-video metrics precede tool activity and explain attr
     outcomes: { totals: counts, clients: [
       { ...counts, client: 'chatgpt' }, { ...counts, client: 'claude' },
       { ...counts, client: 'codex' }, { ...counts, client: 'openclaw' },
-      { ...counts, client: 'n8n' }, { ...counts, client: 'cursor' },
+      { ...counts, client: 'n8n' }, { ...counts, client: 'glama' }, { ...counts, client: 'cursor' },
       { ...counts, client: 'githubCopilot' }, { ...counts, client: 'geminiCli' },
       { ...counts, client: 'microsoftCopilot' }, { ...counts, client: 'other' },
     ], notices: [] },
@@ -134,12 +134,13 @@ test('account and completed-video metrics precede tool activity and explain attr
   for (const label of [
     'MCP accounts (total)', 'New signups using MCP', 'Users who generated videos',
     'Videos generated', 'ChatGPT', 'Claude', 'Codex', 'OpenClaw', 'n8n', 'Cursor',
-    'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot', 'Other / unidentified',
+    'Glama', 'GitHub Copilot', 'Gemini CLI', 'Microsoft Copilot', 'Other / unidentified',
   ]) {
     assert.ok(html.includes(label), label);
   }
   assert.match(html, /9 video jobs submitted · 1 in progress · 2 failed or cancelled/);
   assert.match(html, /this does not establish the signup source/);
   assert.match(html, /self-reported/);
+  assert.match(html, /Glama.*not a verified directory referral/i);
   assert.ok(html.indexOf('MCP accounts and videos') < html.indexOf('Decision overview'));
 });

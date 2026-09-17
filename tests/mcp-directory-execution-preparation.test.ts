@@ -27,14 +27,18 @@ test('Task 15 checklist advances only externally observed distribution results',
     ['n8n workflow library', 'submitted'],
     ['GitHub MCP registry discovery', 'unavailable_no_documented_submission'],
     ['MCPBeat owner claim', 'claimed'],
-    ['Glama owner claim', 'claimed'],
+    ['Glama owner claim and health', 'claimed'],
     ['Docker MCP Catalog', 'blocked_by_license'],
   ]);
 
   for (const [surface, state] of expectedStates) {
     const currentRow = row(surface);
     assert.ok(currentRow, `missing Task 15 row: ${surface}`);
-    assert.match(currentRow, new RegExp('\\| `' + state + '` \\|'));
+    if (surface === 'Glama owner claim and health') {
+      assert.match(currentRow, /\| `claimed` \(health observed `Healthy`\) \|/);
+    } else {
+      assert.match(currentRow, new RegExp('\\| `' + state + '` \\|'));
+    }
   }
 
   for (const surface of [
@@ -50,15 +54,14 @@ test('release preparation preserves the canonical artifact owner and latest-rele
   const canonicalRelease = row('Canonical `camgraphe/maxvideoai-plugin` release');
 
   assert.match(mainRelease, /https:\/\/api\.github\.com\/repos\/camgraphe\/MaxVideoAi\/releases\/latest/);
-  assert.match(mainRelease, /maxvideoai-plugin-v0\.3\.3/);
-  assert.match(mainRelease, /created from the existing tag on 2026-09-14/i);
-  assert.match(mainRelease, /public, non-draft, and non-prerelease/i);
+  assert.match(mainRelease, /maxvideoai-plugin-v0\.3\.5/);
+  assert.match(mainRelease, /latest public, non-draft, non-prerelease release/i);
   assert.match(mainRelease, /zero uploaded assets/i);
-  assert.match(mainRelease, /latest-release API.*resolves to that tag/i);
-  assert.match(canonicalRelease, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.3/);
+  assert.match(mainRelease, /latest-release API/i);
+  assert.match(canonicalRelease, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.5/);
   assert.match(canonicalRelease, /installation artifact owner/i);
   assert.match(canonicalRelease, /one installable ZIP and its SHA-256 checksum/i);
-  assert.match(canonicalRelease, /two source archives.*generated automatically by GitHub/i);
+  assert.match(canonicalRelease, /GitHub's generated source archives are separate/i);
 
   assert.match(releaseNote, /one installable ZIP and its SHA-256\s+checksum remain owned by the canonical plugin release/i);
   assert.match(releaseNote, /two source archives.*generated automatically by GitHub/is);
@@ -88,19 +91,26 @@ test('0.3.5 evidence records the immutable source, focused release, workflow, ch
   assert.match(nextQueue, /downstream[\s\S]{0,120}(?:lag|refresh)/i);
 });
 
-test('n8n evidence pins the reviewed candidates and records only one private pending submission', () => {
+test('n8n evidence pins the resubmitted candidate and distinguishes private review from a public listing', () => {
   const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', 'submitted_pending_review'],
-    ['distribution/n8n/campaign-queue.json', 'queued_platform_blocked'],
-    ['distribution/n8n/completion-notification.json', 'queued_platform_blocked'],
+    ['distribution/n8n/brief-to-approved-generation.json', 'resubmitted_under_review'],
+    ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
+    ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
   ]);
 
+  const current = evidence.split('## n8n review follow-up — 2026-09-17')[1]?.split('## 0.3.5 observed publication')[0] ?? '';
+  assert.match(current, /`Pending` \/ `Under review`/);
+  assert.match(current, /reviewer email.*explanatory stickies/s);
+  assert.match(current, /`Share new template`\s+is disabled again/);
+  assert.match(current, /Your template has been\s+re-submitted/i);
+  assert.match(current, /no public listing/i);
+
   for (const [path, state] of candidates) {
-    const candidateRow = checklist
+    const candidateRow = current
       .split('\n')
       .find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
     const documentedDigest = candidateRow.match(
-      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '` \\|$'),
+      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '`'),
     )?.[1];
     const actualDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
 
@@ -131,7 +141,7 @@ test('n8n evidence pins the reviewed candidates and records only one private pen
 test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats explicit', () => {
   const github = row('GitHub MCP registry discovery');
   const mcpbeat = row('MCPBeat owner claim');
-  const glama = row('Glama owner claim');
+  const glama = row('Glama owner claim and health');
   const docker = row('Docker MCP Catalog');
 
   assert.match(github, /api\.mcp\.github\.com\/v0\.1\/servers\?search=maxvideoai/);
@@ -140,9 +150,10 @@ test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats 
 
   assert.match(mcpbeat, /https:\/\/mcpbeat\.com\/mcp-servers\/maxvideoai\/maxvideoai\//);
   assert.match(mcpbeat, /`OWNER CONFIRMED`/);
-  assert.match(mcpbeat, /version `0\.3\.3`/i);
-  assert.match(mcpbeat, /`ANSWERING`/);
-  assert.match(mcpbeat, /96\.9% uptime over the prior week/i);
+  assert.match(mcpbeat, /version `0\.3\.5`/i);
+  assert.match(mcpbeat, /`not responding`/);
+  assert.match(mcpbeat, /`answering`/);
+  assert.match(mcpbeat, /90\/92 successful checks/i);
   assert.match(mcpbeat, /not a MaxVideoAI SLA/i);
   assert.match(mcpbeat, /repository file flow/i);
   assert.match(mcpbeat, /temporary public file was removed/i);
@@ -153,10 +164,17 @@ test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats 
   assert.match(glama, /HTTP challenge was selected/i);
   assert.match(glama, /Production returned the exact challenge body/i);
   assert.match(glama, /Ownership verified/i);
-  assert.match(glama, /administration page was accessible/i);
-  assert.match(glama, /`Unhealthy`/);
-  assert.match(glama, /`Works in Glama`/);
-  assert.match(glama, /ownership does not prove health/i);
+  assert.match(glama, /earlier unauthenticated profile check returned 401/i);
+  assert.match(glama, /isolated test-account OAuth grant passed/i);
+  assert.match(glama, /successful connection test/i);
+  assert.match(glama, /`Healthy`, and 15 discovered tools/i);
+  assert.match(glama, /monitor the next token refresh/i);
+  assert.match(glama, /Ownership and authenticated health are observed/i);
+  assert.match(glama, /complete exact-host compatibility remain separate and unverified/i);
+  assert.match(evidence, /`com\.maxvideoai\/maxvideoai` at version `0\.3\.5`/);
+  assert.match(evidence, /reverse DNS.*`maxvideoai\.com` becomes\s+`com\.maxvideoai`/i);
+  assert.match(evidence, /immutable identifier/i);
+  assert.match(evidence, /Keep the current identity and ownership\/history intact/i);
 
   assert.match(docker, /github\.com\/docker\/mcp-registry\/blob\/main\/CONTRIBUTING\.md/);
   assert.match(docker, /Business Source License 1\.1/);

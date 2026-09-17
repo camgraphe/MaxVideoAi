@@ -6,6 +6,7 @@ export const MCP_CLIENT_FAMILIES = [
   'codex',
   'openclaw',
   'n8n',
+  'glama',
   'cursor',
   'githubCopilot',
   'geminiCli',
@@ -26,6 +27,7 @@ export function classifyMcpClient(body: unknown): McpClientFamily {
   if (/^claude(?:[-_ /]|$)/u.test(normalized)) return 'claude';
   if (/^(?:openclaw|open[-_ ]claw)(?:[-_ /]|$)/u.test(normalized)) return 'openclaw';
   if (/^n8n(?:[-_ /]|$)/u.test(normalized)) return 'n8n';
+  if (/^glama(?:[-_ ./]|$)/u.test(normalized)) return 'glama';
   if (/^cursor(?:[-_ /]|$)/u.test(normalized)) return 'cursor';
   if (/^(?:github[-_ ]copilot|copilot[-_ ]cli)(?:[-_ /]|$)/u.test(normalized)) return 'githubCopilot';
   if (/^(?:gemini(?:[-_ ]cli)?|google[-_ ]gemini[-_ ]cli)(?:[-_ /]|$)/u.test(normalized)) return 'geminiCli';

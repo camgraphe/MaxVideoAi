@@ -203,27 +203,10 @@ test('Luma Uni model pages use the strict content-driven image example fallback 
   assert.doesNotMatch(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1(?:-max)?'/);
 });
 
-test('Luma Ray 3.2 discovery stays behind current video leaders', () => {
-  const expectedPlacements: Record<string, string[]> = {
-    'image-to-video': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-    'cinematic-realism': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'kling-o3-pro', 'minimax-h3', 'veo-3-1'],
-    'reference-to-video': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'kling-o3-pro', 'minimax-h3', 'veo-3-1', 'happy-horse-1-1'],
-    'product-videos': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
-  };
-
-  for (const [slug, leaders] of Object.entries(expectedPlacements)) {
-    const picks = topPicks(slug);
-
-    assert.equal(picks.includes('luma-ray-3-2'), true, `${slug} should include Luma Ray 3.2`);
-    assert.deepEqual(picks.slice(0, leaders.length), leaders);
-    assert.ok(picks.indexOf('luma-ray-3-2') >= leaders.length);
-  }
-
+test('Luma Ray 3.2 stays available in the catalog but exits current best-for shortlists', () => {
+  assert.equal(catalogEntry('luma-ray-3-2').modelSlug, 'luma-ray-3-2');
+  assert.ok(score('luma-ray-3-2'));
   for (const page of compareConfig.bestForPages) {
-    if (Object.hasOwn(expectedPlacements, page.slug)) {
-      continue;
-    }
-
     assert.equal(page.topPicks.includes('luma-ray-3-2'), false, `${page.slug} should not include Luma Ray 3.2`);
   }
 });
