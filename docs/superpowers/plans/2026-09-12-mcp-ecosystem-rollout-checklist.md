@@ -15,7 +15,8 @@
 The task narratives below retain their original checkpoint dates. In particular,
 the 2026-09-14 statement that the active-grant fix is branch-local has been
 superseded by deployed main revision `21b339318`, which includes `a6a655f5e`.
-Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
+The hosted old-token rejection check now passes; a complete host-specific
+revoke/access-loss/reconnect lifecycle is still separate work.
 
 - [x] Recover the Vercel resource-provisioning failure by redeploying the exact
   main revision; all 18 MCP marketing routes returned HTTP 200 with canonicals.
@@ -47,8 +48,12 @@ Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
   immutable Official MCP Registry identity, while `MaxVideoAI` is the display
   title. Glama mirrors its namespace; preserve the existing record rather than
   introducing a duplicate identity for a cosmetic change.
-- [ ] Re-test old-token rejection after grant revocation on the exact hosted
-  production revision before promoting Copilot or other blocked hosts.
+- [x] Re-test old-token rejection after grant revocation on the exact hosted
+  production deployment `dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ`: an isolated
+  OpenClaw 2026.9.4 client used only `get_account_status` (HTTP 200), its own
+  grant was revoked (HTTP 204), and the same already-issued token was refused
+  by the MCP endpoint (HTTP 401 / JSON-RPC `-32001`). No paid call ran. This
+  proves the shared server boundary, not Copilot or another host's reconnect.
 - [ ] Complete the remaining exact-host checks and the 14-day GSC/funnel review
   after 2026-09-27; retain each host's current scoped status in the meantime.
 

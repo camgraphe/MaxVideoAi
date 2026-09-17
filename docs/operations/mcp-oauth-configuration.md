@@ -20,8 +20,19 @@ name, redirect URI, and requested scopes. Do not treat successful dynamic
 registration alone as account takeover, but do not dismiss consent-phishing
 risk. No OAuth setting, client, grant, or production flag was changed during
 this triage. The active-grant revocation check is present in source revision
-`a6a655f5e`, an ancestor of deployed main `21b339318`; an exact hosted
-post-revocation test is still required before promoting affected hosts.
+`a6a655f5e`, an ancestor of deployed main `21b339318`. A separate,
+explicitly authorized hosted test later on 2026-09-17 verified the shared
+server boundary: Vercel inspection confirmed `api.maxvideoai.com` targeted
+Production deployment `dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ` in `READY` state;
+a fresh isolated OpenClaw 2026.9.4 OAuth client called only read-only
+`get_account_status` (HTTP 200), its exact new grant was revoked through
+Supabase Auth (HTTP 204), and the same unexpired access token immediately
+received MCP HTTP 401 / JSON-RPC `-32001`, with no tool result. The test
+client's local OAuth credentials were cleared and its isolated profile moved
+to the Trash. No existing grant, generation, paid tool, OAuth setting,
+or production flag was changed by this test. Refresh-token rejection and
+host-specific reconnect lifecycles were not tested here; do not promote a host
+on this shared-boundary result alone.
 
 ## Supabase Auth
 

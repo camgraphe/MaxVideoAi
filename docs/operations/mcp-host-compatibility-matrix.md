@@ -21,11 +21,18 @@ The Copilot IDE and CLI rows below describe their 2026-09-14 observations and
 say the active-grant fix was branch-local at that time. That source statement
 is now superseded: commit `a6a655f5e` is an ancestor of deployed main
 `21b339318` (Production redeployment `dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ`).
-Public routing checks do **not** establish that a revoked, already-issued
-access token is rejected on this exact deployment. The hosted revoke → old
-token rejection → reconnect check remains open. Until it passes, the Copilot
-host records, marketing, indexation, acquisition, and install actions retain
-their existing restrictions; no previously verified host is demoted.
+Public routing checks alone did **not** establish that a revoked,
+already-issued access token is rejected on this exact deployment. A separate
+hosted production test on 2026-09-17 did: Vercel inspection confirmed this
+deployment as the `READY` target of `api.maxvideoai.com`; a fresh, isolated
+OpenClaw 2026.9.4 OAuth client called only `get_account_status` (HTTP 200),
+its exact new grant was revoked (HTTP 204), and the same unexpired token
+received MCP HTTP 401 / JSON-RPC `-32001` with no result. No generation or
+paid tool was invoked; local test credentials were cleared. This closes the
+shared-server old-token rejection check, **not** refresh-token rejection or
+Copilot's own revoke/access-loss/reconnect lifecycle. Copilot host records,
+marketing, indexation, acquisition, and install actions retain their existing
+restrictions; no previously verified host is demoted.
 
 ## Production checkpoint
 
