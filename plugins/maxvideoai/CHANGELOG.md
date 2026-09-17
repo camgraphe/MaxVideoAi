@@ -1,6 +1,20 @@
 # Changelog
 
+## 0.3.5 — 2026-09-16
+
+- Supersede the cancelled 0.3.4 publication candidate with corrected proof
+  captions in all seven remaining guide and example consumers.
+- Describe the public homepage and Claude-result composite without claiming a
+  model selector or matching videos in workspace and Library screens.
+- Preserve host-specific evidence limits and the existing colorful product
+  captures; omit a version-specific release card from the current bundle.
+
 ## 0.3.4 — 2026-09-16
+
+Publication cancelled: the immutable source tag `maxvideoai-plugin-v0.3.4`
+was created, but evidence-copy review failed before public repository release
+or Official MCP Registry publication. Version 0.3.5 supersedes this candidate.
+The 0.3.4 source tag must never be moved, deleted, or released.
 
 - Refresh both GitHub product stories against the redesigned public MaxVideoAI
   site with seven distinct production captures on light, colorful surfaces.

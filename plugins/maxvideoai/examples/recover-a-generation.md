@@ -6,9 +6,9 @@ After approval, recover the accepted or recent job before considering a second p
 
 Find the outcome of one approved generation and restore result continuity without creating a duplicate paid attempt.
 
-![Completed MaxVideoAI workspace result paired with the same saved video in the MaxVideoAI Library](../assets/demos/library-continuity.webp)
+![Public MCP Claude-result section paired with the public MaxVideoAI home page](../assets/demos/library-continuity.webp)
 
-*This visual proves a completed MaxVideoAI result can remain continuous from workspace to Library. It does not prove a native host recovery, quote, approval, or transaction history.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove a recovery operation, quote, approval, transaction history, or matching videos across product screens.*
 
 ## What prompt can I copy?
 

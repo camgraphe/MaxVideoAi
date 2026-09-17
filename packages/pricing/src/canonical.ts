@@ -19,6 +19,11 @@ export type PricingScenario = {
   membershipTier: 'member' | 'plus' | 'pro';
   discountPercent: number;
   surcharge?: 'audio' | 'upscale';
+  commercialAdjustment?: {
+    pricingBasisExactCents: number;
+    minimumCustomerTotalCents?: number;
+    fixedCustomerCents?: number;
+  };
 };
 
 export type CanonicalPricingQuote = {
@@ -42,6 +47,9 @@ export type CanonicalPricingQuote = {
     marginFlatCents: number;
     surchargePercent: number;
     discountPercent: number;
+    pricingBasisExactCents?: number;
+    minimumCustomerTotalCents?: number;
+    fixedCustomerCents?: number;
   };
   policyProvenance: {
     source: 'database' | 'versioned';
@@ -108,20 +116,34 @@ export function quoteCanonicalPricing(input: {
     throw new PricingDomainError('currency_mismatch', `facts use ${factsCurrency || 'no currency'} but policy uses ${policyCurrency}`);
   }
 
-  const vendorBaseForMath =
-    compatibilityProfile.vendorSubtotalRounding === 'preserve'
-      ? facts.vendorSubtotalExactCents
-      : roundCents(facts.vendorSubtotalExactCents, compatibilityProfile.vendorSubtotalRounding);
+  const commercialAdjustment = scenario.commercialAdjustment;
+  const pricingBasisExactCents = commercialAdjustment?.pricingBasisExactCents ?? facts.vendorSubtotalExactCents;
+  const minimumCustomerTotalCents = commercialAdjustment?.minimumCustomerTotalCents ?? 0;
+  const fixedCustomerCents = commercialAdjustment?.fixedCustomerCents ?? 0;
+  assertFiniteNonNegative(pricingBasisExactCents, 'invalid_scenario', 'pricingBasisExactCents');
+  assertFiniteNonNegative(minimumCustomerTotalCents, 'invalid_scenario', 'minimumCustomerTotalCents');
+  assertFiniteNonNegative(fixedCustomerCents, 'invalid_scenario', 'fixedCustomerCents');
+  if (pricingBasisExactCents > facts.vendorSubtotalExactCents) {
+    throw new PricingDomainError(
+      'invalid_scenario',
+      'pricingBasisExactCents cannot exceed vendorSubtotalExactCents'
+    );
+  }
+
   const vendorSubtotalCents =
     compatibilityProfile.vendorSubtotalRounding === 'preserve'
       ? roundCents(facts.vendorSubtotalExactCents, 'nearest')
-      : vendorBaseForMath;
+      : roundCents(facts.vendorSubtotalExactCents, compatibilityProfile.vendorSubtotalRounding);
+  const pricingBaseForMath =
+    compatibilityProfile.vendorSubtotalRounding === 'preserve'
+      ? pricingBasisExactCents
+      : roundCents(pricingBasisExactCents, compatibilityProfile.vendorSubtotalRounding);
   const marginPercent = compatibilityProfile.marginPercentOverride ?? policy.rule.marginPercent;
   const marginFlatCents = compatibilityProfile.marginFlatCentsOverride ?? policy.rule.marginFlatCents;
   let marginCents = Math.max(
     0,
     roundCents(
-      vendorBaseForMath * marginPercent + marginFlatCents,
+      pricingBaseForMath * marginPercent + marginFlatCents,
       compatibilityProfile.marginRounding
     )
   );
@@ -135,20 +157,22 @@ export function quoteCanonicalPricing(input: {
   else if (scenario.surcharge != null) {
     throw new PricingDomainError('unknown_surcharge', `unsupported surcharge ${String(scenario.surcharge)}`);
   }
-  const surchargeCents = Math.max(
+  let surchargeCents = Math.max(
     0,
-    roundCents(vendorBaseForMath * surchargePercent, compatibilityProfile.surchargeRounding)
+    roundCents(pricingBaseForMath * surchargePercent, compatibilityProfile.surchargeRounding)
   );
-  let subtotalBeforeDiscountExactCents = vendorBaseForMath + marginCents + surchargeCents;
+  let subtotalBeforeDiscountExactCents = pricingBaseForMath + marginCents + surchargeCents;
   if (compatibilityProfile.subtotalRounding) {
     const increment = compatibilityProfile.subtotalRoundingIncrementCents ?? 1;
     if (!Number.isSafeInteger(increment) || increment < 1) throw new PricingDomainError('invalid_scenario', 'subtotal rounding increment must be a positive integer');
     subtotalBeforeDiscountExactCents = roundCents(
-      (facts.vendorSubtotalExactCents * (1 + marginPercent + surchargePercent) + marginFlatCents) / increment,
+      (pricingBasisExactCents * (1 + marginPercent + surchargePercent) + marginFlatCents) / increment,
       compatibilityProfile.subtotalRounding
     ) * increment;
     marginCents = Math.max(0, subtotalBeforeDiscountExactCents - vendorSubtotalCents - surchargeCents);
   }
+  subtotalBeforeDiscountExactCents =
+    Math.max(subtotalBeforeDiscountExactCents, minimumCustomerTotalCents) + fixedCustomerCents;
   const discountPercent = compatibilityProfile.discountPercentOverride ?? scenario.discountPercent;
   const discountCents = Math.max(
     0,
@@ -160,11 +184,19 @@ export function quoteCanonicalPricing(input: {
   );
   const commercialCents = marginCents + surchargeCents;
   const discountAppliedToCommercial = Math.min(commercialCents, discountCents);
-  const platformFeeCents = Math.max(0, commercialCents - discountAppliedToCommercial);
+  const platformFeeCents = commercialAdjustment
+    ? Math.max(0, customerTotalCents - vendorSubtotalCents)
+    : Math.max(0, commercialCents - discountAppliedToCommercial);
   const vendorShareCents =
     compatibilityProfile.vendorShareMode === 'zero'
       ? 0
-      : Math.max(0, customerTotalCents - platformFeeCents);
+      : commercialAdjustment
+        ? Math.min(customerTotalCents, vendorSubtotalCents)
+        : Math.max(0, customerTotalCents - platformFeeCents);
+  if (commercialAdjustment) {
+    marginCents = platformFeeCents;
+    surchargeCents = 0;
+  }
 
   return {
     engineId: facts.engineId,
@@ -187,6 +219,13 @@ export function quoteCanonicalPricing(input: {
       marginFlatCents,
       surchargePercent,
       discountPercent,
+      ...(commercialAdjustment
+        ? {
+            pricingBasisExactCents,
+            minimumCustomerTotalCents,
+            fixedCustomerCents,
+          }
+        : {}),
     },
     policyProvenance: {
       source: policy.source,

@@ -1,4 +1,4 @@
-export const MAXVIDEOAI_PUBLIC_PLUGIN_VERSION = '0.3.4' as const;
+export const MAXVIDEOAI_PUBLIC_PLUGIN_VERSION = '0.3.5' as const;
 export const MAXVIDEOAI_PUBLIC_PLUGIN_SOURCE_TAG =
   `v${MAXVIDEOAI_PUBLIC_PLUGIN_VERSION}` as const;
 

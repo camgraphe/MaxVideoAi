@@ -6,9 +6,9 @@ One launch brief can become a coherent shot plan, a deliberate model choice, and
 
 Turn one launch brief into multiple shots, compare a quality-first proposal with a genuinely comparable lower-cost proposal, then prepare one selected concrete shot for approval.
 
-![Completed MaxVideoAI workspace result paired with the saved result in the MaxVideoAI Library](../assets/demos/brief-to-video-workflow.webp)
+![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
 
-*This visual proves a completed MaxVideoAI result can continue into the connected Library. It does not prove that a native host performed the brief, quote, approval, or generation shown in this example.*
+*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove that a host performed this launch brief, quote, approval, or generation sequence, or that matching videos appear across product screens.*
 
 ## What prompt can I copy?
 

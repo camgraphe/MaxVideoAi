@@ -1,11 +1,48 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-09-15
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.3 ACTIVE — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; ONE N8N WORKFLOW UNDER REVIEW**
+Checked: 2026-09-17
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; N8N WORKFLOW 19591 CHANGES REQUESTED**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## n8n review follow-up — 2026-09-17
+
+The private Creator Portal workflow [`19591`](https://creators.n8n.io/workflows/19591)
+is now `Pending` / `Implement changes`, not under review or publicly listed.
+The reviewer email from `creators@n8n.io` asks for explanatory stickies so
+readers can understand the workflow before publication. `Share new template`
+is enabled again; the other two candidates are still unsubmitted. The earlier
+2026-09-15 checkpoint below remains a dated record, not current portal state.
+
+The revised brief candidate retains the original overview Sticky Note and adds
+three nearby, non-connected notes for quote preparation, exact human approval,
+and single confirmation with bounded status recovery. No executable node,
+connection, credential, setting, or activation state changed. Local review and
+re-submission of this exact revision remain separate actions; this source edit
+does not upload or submit anything to n8n.
+
+| Candidate | Local SHA-256 | Current external state |
+| --- | --- | --- |
+| `distribution/n8n/brief-to-approved-generation.json` | `6b908227526baf76b5185fe3bd1f3224d9c43fb50de873c84420fa8d9a8f7472` | `revised_not_resubmitted`; workflow `19591` still contains the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
+| `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; independent submission is possible again but has not occurred. |
+| `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `queued_unsubmitted`; no public listing exists. |
+
+## 0.3.5 observed publication — 2026-09-16
+
+This checkpoint records observed immutable release state. It does not promote a
+host, create another directory submission, or claim that downstream aggregators
+have refreshed.
+
+| Evidence | Observed result |
+| --- | --- |
+| Accepted source | `c4061163dc24478c01ab8224d6509e14d6612c03`; annotated source tag and zero-asset pointer release [`maxvideoai-plugin-v0.3.5`](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.3.5). The cancelled 0.3.4 source tag remains immutable and unpublished. |
+| Protected publication | [Workflow run `35145481448`](https://github.com/camgraphe/MaxVideoAi/actions/runs/35145481448) completed successfully after the prepared tree, complete diff, checksum, and two allowed Linux-only skips were reviewed. |
+| Canonical package | Public commit `a9af2bd1248953f6a68a603be9c8bb87811b7c7d`, tag `v0.3.5`, and [focused release](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.5). The release has exactly the installable ZIP and `.zip.sha256`; downloaded bytes matched the pinned candidate. |
+| Package checksum | `5d7a99f97eeebf6d79bd7ab32cb405ba6f4f397b2028a875cc25001c4e29dc1c`. |
+| Official MCP Registry | `com.maxvideoai/maxvideoai` `0.3.5` is `active` with `isLatest=true`; `publishedAt`, `updatedAt`, and `statusChangedAt` are `2026-09-16T20:25:15.392142Z`. Version 0.3.4 still returns HTTP 404 and remains unpublished. |
+| Downstream scope | Independent directories may continue to show 0.3.3 until their own refresh. That lag is not release failure, host compatibility evidence, or permission to mutate their records without a separately authorized action. |
 
 ## Implementation-date primary-source recheck
 
@@ -114,13 +151,23 @@ Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transp
 `discovery=true`, `paidGeneration=true`, `trial=false`, `referenceUploads=true`, and
 `montagePreparation=false`, `audioGeneration=false`, and `studioMontageCreation=false`.
 
-The launch product is a 13-tool conversational production profile: free model
+The launch product exposes fourteen model-visible tools plus the app-only
+`get_generation_download` helper. Its operational profile therefore has
+fourteen model-visible tools plus one app-only helper. It supports free model
 advice and project budgets, private image/video/audio references, exact quotes,
 explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
-continuity. Controlled staging has real OAuth/tool evidence for Claude Desktop
-1.37937.1 and Codex CLI 0.149.0-alpha.4.3. Refresh, revocation, reconnect,
-graphical ChatGPT installation, and a deliberately small paid result remain
-post-cutover validation, not blockers to the owner-approved direct release.
+continuity. The `get_generation_download` helper is not a model-visible
+workflow choice.
+Claude Desktop 1.37937.1 has dated controlled-staging OAuth/tool evidence,
+while Codex CLI 0.150.0-alpha.8 has a bounded production checkpoint on
+2026-08-27: one explicitly approved Luma Ray 3.2 image-to-video job charged
+`$0.62`, completed, and was saved to the production library. OAuth refresh,
+revocation, and reconnect remain unverified for those dated Claude Desktop
+and Codex CLI checkpoints; fresh paid generation remains unrecorded for Claude Desktop.
+Graphical ChatGPT/Codex installation and ChatGPT web or Claude Code production
+workflows require their own evidence. These remaining checks do not block the
+owner-approved direct release. For every other host, use its own dated
+compatibility-matrix record; the Codex result does not establish another host's readiness.
 
 ## Acquisition decision
 
@@ -163,8 +210,8 @@ legal document, URL, or publication flag changes.
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
 | Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Media and production: `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
 | Negative cases | A project estimate is not an exact quote; `prepare_generation` does not debit; `confirm_generation` requires explicit approval of that quote. Payment data never enters chat. The assistant must recover an accepted job instead of submitting a duplicate and must not retry a creative result automatically. Unsupported model modes remain unavailable without disabling supported modes. |
-| Screenshots and demo | **real screenshots and end-to-end demo: NOT AVAILABLE**. `getMcpProof()` is null and no current proof asset may be substituted with provider marketing media or a synthetic testimonial. |
-| Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. Neither has an MCP-specific entry/component because no live release or monitored MCP health feed exists. |
+| Screenshots and demo | Current public product screenshots and Claude-specific UI evidence exist. `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end proof bundle, so product captures are not universal native-host proof. |
+| Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. The direct MCP release is live. The owned status page does not yet expose a dedicated MCP component or first-party monitored health feed. |
 | Owner checklist | Legal: approve disclosure/terms and directory terms. Security: threat model, OAuth, test account, incident intake. MCP engineering: public endpoint, exact tools/annotations, negative tests, compatibility. Growth: final copy/assets/countries. Support/Operations: runbook, monitoring, escalation. Billing/Risk: only after generation/trial tooling exists. |
 
 ### Prepared positive cases
@@ -236,12 +283,16 @@ read-only and intended paid-generation scope, or a policy change removes the blo
 
 The current blockers are all release-critical:
 
-- every publication flag is false and the public landing/docs/endpoint are fail-closed;
+- The direct production MCP path is live, but the platform-directory policy blocker remains independent and unresolved.
 - Legal has not approved the MCP-specific disclosure patch;
-- there is no real proof media, complete public demo, or review-ready test account procedure;
-- controlled Claude Desktop and Codex CLI decisions exist, but no public
-  ChatGPT/Codex plugin install, fresh paid generation, trial, or completed
-  private-reference transfer has been recorded;
+- current public product screenshots and Claude-specific UI evidence exist, but
+  `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end
+  proof bundle and no review-ready test account procedure exists;
+- the bounded Codex CLI production checkpoint includes an explicitly approved,
+  charged, completed generation. A public graphical ChatGPT/Codex plugin install
+  and the ChatGPT web review workflow still require their own paid-generation
+  and private-reference-transfer evidence; the Codex result does not satisfy
+  those host-specific checks. Trial remains disabled;
 - Claude Code, graphical ChatGPT/Codex, and other host-selection scorecards have
   no real decision evidence;
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.

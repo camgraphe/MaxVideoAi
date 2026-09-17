@@ -1,24 +1,24 @@
 # MaxVideoAI MCP support and disclosure readiness
 
-Checked: 2026-08-28
-Readiness: **DIRECT PRODUCTION RELEASE APPROVED — CUTOVER IN PROGRESS**
+Checked: 2026-09-16
+Readiness: **DIRECT PRODUCTION RELEASE LIVE**
 
 This runbook is the support and disclosure boundary for the MaxVideoAI MCP production release. It is not a directory
-approval or a legal policy. Production registers 14 model-visible tools plus one app-only download-refresh helper listed
-separately below. Marketing, indexation, transport, OAuth, discovery, paid generation, and reference uploads are approved
+approval or a legal policy. Production registers fourteen model-visible tools plus one app-only helper, the
+download-refresh helper listed separately below. Marketing, indexation, transport, OAuth, discovery, paid generation, and reference uploads are approved
 for direct first-party publication. The promotional trial remains disabled: users must sign in and use their MaxVideoAI
 credit balance before confirming a paid generation.
 
 | Tool profile | Exact tool inventory |
 | --- | --- |
 | Default discovery | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget` |
-| Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
+| Production model-visible tools | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
 | App-only helper | `get_generation_download` |
 
-The current inventory is checked in and covered by local contracts. The hosted
-staging revision in the host compatibility matrix predates
+The current inventory is checked in and covered by local contracts. The dated
+hosted staging revision in the host compatibility matrix predates
 `import_reference_files`; its Claude Desktop and Codex CLI evidence therefore
-covers the previous 13-tool profile rather than the new direct-file path.
+covers the previous 13-tool profile rather than the later direct-file path.
 
 ## Authoritative checked-in state
 
@@ -36,18 +36,25 @@ covers the previous 13-tool profile rather than the new direct-file path.
 | `audioGeneration` | false | Paid Audio generation remains unpublished pending qualification. |
 | `studioMontageCreation` | false | Persisted Studio montage creation remains unpublished pending qualification. |
 
-Post-cutover validation items:
+Dated host evidence and remaining checkpoints:
 
 - migration files 30–37 are present locally; the hosted application used quote,
   media, recovery, and handoff paths, but a sanitized schema/admin reconciliation
   is still required;
-- a prior completed provider result and library recovery were observed, but no
-  fresh provider submission, charge/refund reconciliation, or uploaded file was
-  performed in the 2026-08-26 checkpoint;
+- the 2026-08-27 production checkpoint records one explicitly approved paid
+  confirmation, completed generation, library save, and recovery path through
+  Codex CLI 0.150.0-alpha.8; this is not evidence for every host or client
+  version;
+- the earlier 2026-08-26 staging checkpoint observed a completed provider
+  result and library recovery but did not perform a fresh provider submission,
+  charge/refund reconciliation, or uploaded file;
 - Claude Desktop 1.37937.1 and Codex CLI 0.149.0-alpha.4.3 have controlled
   staging OAuth and tool-rendering evidence;
 - OAuth denial, refresh, revocation, authentication loss, reconnect, graphical
-  ChatGPT/Codex installation, Claude Code, and other hosts remain unverified.
+  ChatGPT/Codex installation, and Claude Code remain unverified for the dated
+  Claude Desktop and Codex CLI checkpoints above. For every other host, defer
+  to its own dated compatibility-matrix record; OpenClaw and n8n have bounded
+  lifecycle checkpoints with explicit limitations.
 
 Checked-in authorities remain separate: the public claims matrix owns permissible and prohibited public claims; the
 host compatibility matrix owns local-versus-real-host evidence; this support runbook owns support procedures and
@@ -102,112 +109,136 @@ future application code `PARAMETER_INVALID`. Ask the user to correct only the do
 An unexpected operation inside a registered tool returns **`INTERNAL_ERROR`** with a redacted message and a generated
 `correlationId`. Retain that identifier, stop repeated calls, and escalate if the failure persists.
 
-Every uppercase application code used below is a **contract code that is not
-observable from the default five-tool discovery registry**. Some are reachable
-only in the controlled 13-tool profile. Do not tell a user that a specific code
-occurred unless the live tool actually returned it.
+Application error codes have tool-specific reachability. `REFERENCE_INVALID`
+and `REFERENCE_REQUIRED` can be returned by default-discovery
+`calculate_project_budget`; other codes may require model-visible tools beyond
+that profile. Do not tell a user that a specific code occurred unless the live
+tool actually returned it.
 
 ## Support decision trees
 
 ### OAuth connection and consent
 
-Availability: controlled Claude Desktop and Codex CLI staging evidence only;
-production OAuth is off.
+Availability: production OAuth is live. A 401 starts protected-resource
+discovery and browser authorization; denial leaves protected tools unavailable.
+The compatibility matrix remains the owner of dated host evidence and limits.
 
 1. If the client receives HTTP 401 / JSON-RPC `-32001`, let it follow protected-resource discovery and open browser
    authorization. Never paste a token into the endpoint URL.
 2. If consent is denied, leave the connection unauthenticated; do not describe denial as a product failure.
 3. The intended least-privilege scopes are `openid,email,profile`. Stop or deny any consent that requests additional
-   access. The tested hosts completed authorization with the intended staging
-   policy, but additional host/version behavior still requires separate evidence.
+   access. Host-specific refresh, logout, and reconnect behavior requires its
+   own recorded checkpoint; do not generalize one host's behavior to another.
 4. If consent completes but the protected call still fails, capture the client/version, UTC time, and correlation ID,
    then escalate to Auth + MCP engineering. Do not repeatedly reauthorize.
-5. Classify only Claude Desktop 1.37937.1 and Codex CLI
-   0.149.0-alpha.4.3 as controlled staging passes. Treat every other host or
-   version as unverified until it has its own record.
+5. The matrix's Claude Desktop 1.37937.1 and Codex CLI 0.149.0-alpha.4.3
+   records are controlled staging evidence, and its Codex CLI 0.150.0-alpha.8
+   record is a production checkpoint. Treat every unrecorded host or version as
+   unverified.
 
 ### Email verification
 
-Availability: `get_account_status` can read verification state in controlled testing; trial/generation enforcement is
-future-gated.
+Availability: `get_account_status` reports the connected account state.
 
 1. If account status is unverified, send the user to the MaxVideoAI web account verification flow.
 2. Do not bypass verification, manually toggle entitlement state, or accept an emailed identity document in support.
-3. A future trial or generation tool may return `EMAIL_VERIFICATION_REQUIRED`; this is a reserved code, not a current
-   default five-tool discovery failure.
+3. If `EMAIL_VERIFICATION_REQUIRED` is returned, treat it as the service's
+   verification requirement; support must not work around it.
 4. If verification is complete in the web account but remains stale after a fresh connection, escalate to Auth.
 
 ### Quote expiry
 
-Availability: no quote tool is public. Local migration files do not prove a staging schema or live quote producer.
+Availability: `prepare_generation` is public and creates no job or debit.
 
-1. Do not inspect or repair a quote because no public MCP quote can exist today.
-2. When a later live quote returns `QUOTE_EXPIRED`, require a new server-priced quote. Never extend an expired quote or
+1. When `QUOTE_EXPIRED` is returned, require a fresh server-priced quote. Never extend an expired quote or
    reuse a displayed amount.
-3. If funding happened after a quote was prepared, require a fresh quote so model availability, price, and balance are
+2. If funding happened after a quote was prepared, require a fresh quote so model availability, price, and balance are
    current.
-4. Repeated expiry after immediate preparation belongs to Pricing + MCP engineering with opaque quote and correlation
+3. Repeated expiry after immediate preparation belongs to Pricing + MCP engineering with opaque quote and correlation
    IDs only, never the prompt or raw request body.
+
+### Generation confirmation and recovery
+
+Availability: `confirm_generation` is public only after explicit user approval.
+
+1. Confirm only the exact fresh quote the user explicitly approved. Never infer approval from a host's general tool
+   permission or an earlier quote.
+2. If confirmation times out or the caller loses context, recover through `list_recent_generations` and
+   `get_generation_status`. Never advise a duplicate `confirm_generation` call.
+3. Preserve the opaque quote, job, and correlation identifiers needed for recovery, not the prompt, raw request, or
+   credentials.
 
 ### Insufficient funds
 
-Availability: no MCP wallet mutation, quote confirmation, or top-up tool is public.
+Availability: `create_topup_link` returns a first-party billing handoff; card
+data stays outside chat.
 
-1. A future `INSUFFICIENT_FUNDS` response must redirect the user to the MaxVideoAI web Billing surface.
-2. The agent must not collect payment details or claim that a top-up happened until Stripe and the wallet receipt are
-   authoritative.
-3. After confirmed funding, prepare a new quote; do not retry a stale confirmation.
+1. For `INSUFFICIENT_FUNDS`, use `create_topup_link` or direct the user to the
+   MaxVideoAI Billing surface. Do not collect payment details in chat.
+2. Do not claim that a top-up happened until the first-party billing flow and a
+   fresh `get_account_status` read are authoritative.
+3. After funding, prepare a fresh quote; do not retry a stale confirmation.
 4. Escalate wallet/receipt mismatches to Billing with receipt ID, amount, currency, and UTC time only.
 
 ### Spending limit
 
-Availability: no spending action is public. Controlled staging can prepare and
-confirm an exact quote, but the 2026-08-26 checkpoint stopped before
-confirmation and left the wallet unchanged.
+Availability: `prepare_generation` creates no job or debit, and
+`confirm_generation` requires explicit approval for the quoted generation.
 
 1. Treat a null limit as “no connected spending capability,” not as unlimited spending.
-2. A future `SPENDING_LIMIT_EXCEEDED` response must stop confirmation and use the server-provided web approval or
-   settings action when verified.
+2. `SPENDING_LIMIT_EXCEEDED` must stop confirmation and use the server-provided web approval or settings action when
+   available.
 3. Host auto-approval never overrides server quote confirmation, idempotency, or account limits.
 4. Do not raise a limit from a support ticket without the authenticated account-control flow and Billing approval.
 
 ### Upload handoff
 
-Availability: `import_reference_files` and `create_reference_upload_link` are
-registered when the public `referenceUploads` capability is enabled.
+Availability: `list_media`, `import_reference_files`, and
+`create_reference_upload_link` are public. Private assets remain scoped to the
+connected account.
 
 1. Use `import_reference_files` only with user-authorized host file handles.
-   Never invent a URL or pass a raw local path, base64 file, or credential.
+   Never invent a URL or pass a raw local path, base64 file, or credential into
+   MCP.
 2. The direct tool imports up to eight files. Preserve successful `assetId`
    values and retry only failed inputs; no `list_media` call is needed after a
    successful direct import.
 3. The handoff is short-lived, user-scoped, and selects the requested image,
    video, or audio kind. A compatible host may render its in-chat importer. The
    first-party browser page remains the manual fallback.
-4. Codex and Claude Code may use one handoff per local file with the packaged
-   helper. The helper reads local bytes without publishing a public URL or using
-   Computer Use.
+4. Use a host-specific helper or attachment path only where its compatibility
+   record says it is supported. Do not generalize file handling across hosts.
 5. A handoff alone is not proof that bytes were uploaded. Claim completion only
    from the returned asset ID or a subsequent browser-fallback `list_media` result.
 
 ### Reference validation
 
-Availability: reference listing, bounded private ingestion, and reuse are in the public operational profile.
+Availability: private account-scoped reference listing and ingestion are public
+through `list_media`, `import_reference_files`, and
+`create_reference_upload_link`. Existing Audio may be used as a reference where
+supported; paid Audio generation and montage creation remain unpublished.
 
 1. Do not send an arbitrary URL to a provider or fetch loopback, private-network, metadata-service, redirected, or
    unsupported content.
-2. A future `REFERENCE_INVALID` response should identify a safe corrective category (ownership, type, size, decoding,
-   URL policy, or expiry) without echoing the private URL.
-3. If the selected mode requires a reference, a future flow may return `REFERENCE_REQUIRED`; the current registry does
-   not.
+2. `REFERENCE_INVALID` can be returned by `calculate_project_budget` or
+   generation preparation. Identify the safe corrective category (ownership,
+   type, size, decoding, URL policy, or expiry) without echoing the private URL,
+   then correct the declared reference and rerun the affected tool.
+3. `REFERENCE_REQUIRED` can be returned by `calculate_project_budget` when a
+   proposed line omits a required reference. Use the selected mode's live
+   requirements, then list or import the account-scoped reference before
+   rerunning the budget or preparation; never invent a reference.
 4. Suspected malicious files or SSRF attempts go to Security; content-policy failures go to Trust + Safety.
 
 ### Provider rejection or job failure
 
-Availability: no MCP provider submission or polling tool is public.
+Availability: a user-approved `confirm_generation` can submit a paid job, and
+`get_generation_status` and `list_recent_generations` are public recovery paths.
 
-1. `PROVIDER_REJECTED` and `JOB_FAILED` are future reserved codes. Do not manufacture them from a generic web error.
-2. For a web job, preserve the job ID, stop duplicate submissions, and inspect the canonical job/refund state.
+1. Do not manufacture `PROVIDER_REJECTED` or `JOB_FAILED` from a generic transport or web error; use only a live tool
+   result.
+2. Preserve the job ID, stop duplicate confirmations, and inspect the canonical job/refund state through the recovery
+   tools.
 3. Never expose raw provider bodies, routing secrets, provider job tokens, or internal risk decisions.
 4. Escalate broad engine impact to Generation + provider operations; a single policy rejection goes to Trust + Safety
    when applicable.
@@ -240,12 +271,15 @@ and `trial=false`.
 
 ### Revoked connection
 
-Availability: Claude and Codex revocation behavior remains unverified, production OAuth is off, and no staging funnel
-revocation producer is proven.
+Availability: production OAuth is live. Client-specific logout, revocation,
+authentication-loss, and reconnect behavior remains limited to the dated
+records in the compatibility matrix.
 
 1. Remove or disconnect the connector in the client.
 2. Revoke the grant at `/account/connections` when that gated account surface is available.
-3. Verify that the next protected call returns HTTP 401 / JSON-RPC `-32001` and requires fresh browser approval.
+3. Verify the next protected call through the applicable host checkpoint; a
+   successful 401 / JSON-RPC `-32001` requires fresh browser approval, but do
+   not claim that untested hosts behave the same way.
 4. If a revoked token still succeeds, treat it as a security incident: stop testing, retain sanitized timestamps and
    client ID, and escalate immediately to Security + Auth.
 
@@ -261,12 +295,12 @@ Read the journey in this order:
 2. connection to model recommendation and prepared quote;
 3. prepared quote to explicit generation acceptance;
 4. accepted generation to completed media or a coarse failure/refund outcome;
-5. completed trial to funded wallet;
-6. first paid generation to repeat paid generation.
+5. first paid generation to repeat paid generation.
 
-Use client split, quote-confirmation rate, trial-to-wallet rate, repeat generation, refund rate, provider cost, polling,
-upload failures, and coarse error codes to find the largest drop-off. Pair the aggregate with opt-in support feedback;
-never reconstruct a user prompt or private creative brief from analytics.
+Use client split, quote-confirmation rate, repeat generation, refund rate,
+provider cost, polling, upload failures, and coarse error codes to find the
+largest drop-off. Pair the aggregate with opt-in support feedback; never
+reconstruct a user prompt or private creative brief from analytics.
 
 Improve one decision point at a time. Record the page/plugin version, client, model/mode, coarse outcome, and UTC
 comparison window; change copy, tool guidance, or the workflow behind an independent release flag; then compare the
@@ -301,9 +335,10 @@ analytics ledgers must be disclosed separately.
 
 ### Media and reference retention
 
-MCP media listing and reference upload are disabled in production. Controlled
-staging listed private account media and created a temporary upload handoff
-without uploading bytes. The current Privacy Policy describes content processing and
+Production MCP media listing and reference upload are available only to the
+connected account. The dated controlled staging checkpoint listed private
+account media and created a temporary upload handoff without uploading bytes.
+The current Privacy Policy describes content processing and
 high-level account/log retention, but it does not provide a specific MCP upload-session, copied-reference, generated
 media, signed-link, audit-event, OAuth-binding, or funnel-event retention period. Do not invent “ephemeral,” “never
 stored,” or a day count. The retention period for each category is an owner decision requiring Legal, Privacy,
@@ -319,18 +354,21 @@ eligibility or restoration promise is allowed.
 
 ### Spending confirmation
 
-No default/public MCP tool spends money. The controlled operational contract
-uses a short-lived server-owned quote, a separate explicit confirmation,
-idempotency, server limits, and web approval above configured thresholds.
-Wallet funding remains on the MaxVideoAI web product through Stripe. A host’s
-“always allow” setting is not a substitute for MaxVideoAI confirmation.
+`prepare_generation` is public and creates no job or debit. A short-lived,
+server-owned quote must receive separate explicit confirmation through
+`confirm_generation`; server idempotency, limits, and web approval above
+configured thresholds still apply. Wallet funding remains on the MaxVideoAI web
+product through Stripe via the first-party `create_topup_link` handoff. A
+host’s “always allow” setting is not a substitute for MaxVideoAI confirmation.
 
 ### Provider processing
 
-The five default discovery tools do not submit prompts or media to an inference provider. A confirmed operational generation sends
-the necessary prompt, settings, and owned reference assets to the selected provider under the published Privacy Policy
-and current subprocessor list. Legal/Privacy must verify that every actual provider, region, data category, onward
-transfer, retention rule, and user choice is current before enabling a generation tool.
+The five default discovery tools do not submit prompts or media to an inference
+provider. An explicitly confirmed production generation sends the necessary
+prompt, settings, and account-scoped reference assets to the selected provider
+under the published Privacy Policy and current subprocessor list. Legal/Privacy
+must verify that every actual provider, region, data category, onward transfer,
+retention rule, and user choice is current.
 
 ### Incident handling
 

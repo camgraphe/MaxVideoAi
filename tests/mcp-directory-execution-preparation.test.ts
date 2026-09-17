@@ -5,6 +5,8 @@ import test from 'node:test';
 
 const evidence = readFileSync('docs/marketing/mcp-directory-submissions.md', 'utf8');
 const releaseNote = readFileSync('docs/operations/mcp-main-repository-release-v0.3.3.md', 'utf8');
+const release035 = readFileSync('docs/operations/mcp-main-repository-release-v0.3.5.md', 'utf8');
+const nextQueue = readFileSync('docs/marketing/github-next-task-queue.md', 'utf8');
 
 const checklist = evidence.match(
   /### Task 15 observed external execution checklist — 2026-09-15[\s\S]*?(?=\n### Observed public records)/,
@@ -65,19 +67,46 @@ test('release preparation preserves the canonical artifact owner and latest-rele
   assert.doesNotMatch(releaseNote, /gh release upload|\.zip\s|\.sha256\s/);
 });
 
-test('n8n evidence pins the reviewed candidates and records only one private pending submission', () => {
+test('0.3.5 evidence records the immutable source, focused release, workflow, checksum, and Registry result', () => {
+  const checksum = '5d7a99f97eeebf6d79bd7ab32cb405ba6f4f397b2028a875cc25001c4e29dc1c';
+
+  for (const document of [evidence, release035, nextQueue]) {
+    assert.match(document, /c4061163dc24478c01ab8224d6509e14d6612c03/);
+    assert.match(document, /a9af2bd1248953f6a68a603be9c8bb87811b7c7d/);
+    assert.ok(document.includes(checksum));
+    assert.match(document, /35145481448/);
+    assert.match(document, /maxvideoai-plugin-v0\.3\.5/);
+    assert.match(document, /releases\/tag\/v0\.3\.5/);
+  }
+
+  assert.match(evidence, /Official MCP Registry[\s\S]{0,240}`0\.3\.5`[\s\S]{0,240}`active`[\s\S]{0,120}`isLatest=true`/i);
+  assert.match(evidence, /2026-09-16T20:25:15\.392142Z/);
+  assert.match(evidence, /0\.3\.4[\s\S]{0,120}(?:404|unpublished)/i);
+  assert.match(release035, /exactly two uploaded assets/i);
+  assert.match(release035, /zero uploaded assets/i);
+  assert.match(release035, /byte-identical/i);
+  assert.match(nextQueue, /downstream[\s\S]{0,120}(?:lag|refresh)/i);
+});
+
+test('n8n evidence pins current candidate bytes and distinguishes changes requested from historical review', () => {
   const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', 'submitted_pending_review'],
-    ['distribution/n8n/campaign-queue.json', 'queued_platform_blocked'],
-    ['distribution/n8n/completion-notification.json', 'queued_platform_blocked'],
+    ['distribution/n8n/brief-to-approved-generation.json', 'revised_not_resubmitted'],
+    ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
+    ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
   ]);
 
+  const current = evidence.split('## n8n review follow-up — 2026-09-17')[1]?.split('## 0.3.5 observed publication')[0] ?? '';
+  assert.match(current, /`Pending` \/ `Implement changes`/);
+  assert.match(current, /reviewer email.*explanatory stickies/s);
+  assert.match(current, /`Share new template`\s+is enabled again/);
+  assert.match(current, /does not upload or submit anything to n8n/);
+
   for (const [path, state] of candidates) {
-    const candidateRow = checklist
+    const candidateRow = current
       .split('\n')
       .find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
     const documentedDigest = candidateRow.match(
-      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '` \\|$'),
+      new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '`'),
     )?.[1];
     const actualDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
 
