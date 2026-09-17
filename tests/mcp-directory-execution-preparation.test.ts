@@ -88,18 +88,19 @@ test('0.3.5 evidence records the immutable source, focused release, workflow, ch
   assert.match(nextQueue, /downstream[\s\S]{0,120}(?:lag|refresh)/i);
 });
 
-test('n8n evidence pins current candidate bytes and distinguishes changes requested from historical review', () => {
+test('n8n evidence pins the resubmitted candidate and distinguishes private review from a public listing', () => {
   const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', 'upload_failed_not_resubmitted'],
+    ['distribution/n8n/brief-to-approved-generation.json', 'resubmitted_under_review'],
     ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
     ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
   ]);
 
   const current = evidence.split('## n8n review follow-up — 2026-09-17')[1]?.split('## 0.3.5 observed publication')[0] ?? '';
-  assert.match(current, /`Pending` \/ `Implement changes`/);
+  assert.match(current, /`Pending` \/ `Under review`/);
   assert.match(current, /reviewer email.*explanatory stickies/s);
-  assert.match(current, /`Share new template`\s+is enabled again/);
-  assert.match(current, /no renewed human review or public listing/i);
+  assert.match(current, /`Share new template`\s+is disabled again/);
+  assert.match(current, /Your template has been\s+re-submitted/i);
+  assert.match(current, /no public listing/i);
 
   for (const [path, state] of candidates) {
     const candidateRow = current

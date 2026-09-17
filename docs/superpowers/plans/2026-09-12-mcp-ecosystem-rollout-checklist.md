@@ -23,17 +23,14 @@ Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
   `0.3.5`, ClawHub `1.0.0`, and MCPBeat's downstream `0.3.5` refresh.
 - [x] Review the n8n reviewer email and prepare the non-executable Sticky Note
   revision locally without changing credentials, connections, or activation.
-- [ ] Upload that exact revision to Creator Portal workflow `19591` and verify
-  the subsequent private review state; four attempts on 2026-09-17, including
-  a fresh-page retry and a video-guideline-aligned JSON, returned `Could not
-  upload new version` and left `Pending` / `Implement changes` unchanged. The
-  correct candidate path found on the dashboard is `Implement changes` →
-  `Upload workflow JSON file` → `Submit for human review`; the failed attempts
-  used the separate `Upload new version` action. The local JSON now matches
-  n8n's exact sticky-note heading, color, length, and grouping rules. Pause
-  before using the correction form; do not create a duplicate submission. If
-  that distinct correction action fails once, capture its exact HTTP error or
-  ask `creators@n8n.io` to inspect workflow `19591` before further retries.
+- [x] Upload the exact Sticky Note revision to existing Creator Portal workflow
+  `19591` through `Implement changes` → `Upload workflow JSON file` → `Submit
+  for human review`. On 2026-09-17 the portal confirmed `Your template has been
+  re-submitted`; the dashboard changed to `Pending` / `Under review` dated
+  2026-09-17 and disabled `Share new template`. This is a private review, not
+  human approval or a public listing. Four earlier attempts through the
+  separate `Upload new version` action failed without a specific error; their
+  cause remains unconfirmed and no duplicate template was created.
 - [ ] Submit the other two n8n workflows one at a time only after reviewing
   each portal form and independently recording its accepted state.
 - [ ] Diagnose Glama's independent `Unhealthy` check from the owner admin

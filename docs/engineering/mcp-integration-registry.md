@@ -70,24 +70,18 @@ n8n is `live`, indexable, and acquisition-enabled only for the tested
 self-hosted deterministic MCP Client workflow. The MCP Client host remains
 `tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
 claimed. The template-library store state is `submitted` only for private
-Creator Portal workflow `19591`, which is now `Pending` / `Implement changes`
-after the 2026-09-17 reviewer request for explanatory Sticky Notes. A locally
-revised, credential-free JSON exists but has not been uploaded or resubmitted.
-Four `Upload new version` attempts on 2026-09-17, including a fresh-page retry
-and a version adjusted to the reviewer's visual-guidelines video, returned the
-portal's generic `Could not upload new version` error. `Pending` / `Implement
-changes` remained unchanged; do not treat the attempted upload as a renewed
-review submission or infer that the sticky-note format caused the upload error.
-The official sticky-note checklist has now been applied to the local overview
-headings, color, word count, and multi-node section layout. The dashboard's
-`Implement changes` dialog exposes a separate `Upload workflow JSON file` and
-`Submit for human review` path for this existing workflow; use that correction
-path for a future authorized resubmission. n8n also documents Cloudflare WAF
-false positives during JSON upload, but the four generic toasts exposed no
-HTTP status, so the cause of those failures remains unconfirmed. No fifth
-upload was attempted in this diagnostic pass.
-The other two reviewed JSON workflows remain unsubmitted; the portal has
-re-enabled the next-template action. No public listing or verification is claimed.
+Creator Portal workflow `19591`, which is now `Pending` / `Under review` dated
+2026-09-17. After the reviewer requested explanatory Sticky Notes, the local
+credential-free JSON was aligned with n8n's overview and section-note rules.
+Four earlier `Upload new version` attempts returned the portal's generic error
+and did not resubmit the workflow; their exact cause remains unknown. The
+owner-authorized correction then used the existing workflow's distinct
+`Implement changes` → `Upload workflow JSON file` → `Submit for human review`
+path once. The portal confirmed `Your template has been re-submitted` and
+returned the dashboard to `Pending` / `Under review`. That is private review,
+not human approval or a public library listing. The other two reviewed JSON
+workflows remain unsubmitted, and `Share new template` is disabled again during
+review. No public listing or verification is claimed.
 
 ## Later-host promotion sequence
 

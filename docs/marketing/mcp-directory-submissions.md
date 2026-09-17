@@ -1,7 +1,7 @@
 # MaxVideoAI MCP distribution packages
 
 Checked: 2026-09-17
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; N8N WORKFLOW 19591 CHANGES REQUESTED**
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT AND GLAMA OWNERSHIP CONFIRMED; N8N WORKFLOW 19591 RESUBMITTED UNDER REVIEW**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
@@ -10,10 +10,10 @@ linked primary sources on the day an owner authorizes a new submission.
 ## n8n review follow-up — 2026-09-17
 
 The private Creator Portal workflow [`19591`](https://creators.n8n.io/workflows/19591)
-is now `Pending` / `Implement changes`, not under review or publicly listed.
-The reviewer email from `creators@n8n.io` asks for explanatory stickies so
+is now `Pending` / `Under review`, dated 2026-09-17, and is not publicly listed.
+The reviewer email from `creators@n8n.io` asked for explanatory stickies so
 readers can understand the workflow before publication. `Share new template`
-is enabled again; the other two candidates are still unsubmitted. The earlier
+is disabled again; the other two candidates are still unsubmitted. The earlier
 2026-09-15 checkpoint below remains a dated record, not current portal state.
 
 On 2026-09-17, the public Glama connector still displayed `Ownership verified`,
@@ -35,12 +35,12 @@ section notes extend behind their node groups. No executable node, connection,
 credential, setting, or activation state changed. Two upload attempts with the
 earlier annotated revision failed; a fresh-page retry with that revision and
 another after the visual-guideline adjustment also returned `Could not upload
-new version. Please try again.` The dashboard still showed `Pending` /
-`Implement changes` with its original 2026-09-14 date. The upload did not
-complete, and no renewed human review or public listing is claimed. The portal
-did not expose a specific cause in the visible error.
+new version. Please try again.` At that point the dashboard still showed
+`Pending` / `Implement changes` with its original 2026-09-14 date. Those four
+version-upload attempts did not complete; the portal did not expose a specific
+cause in the visible error.
 
-Before another attempt, the [official sticky-note rules](https://n8n.notion.site/Sticky-note-guidelines-for-templates-2aa5b6e0c94f8058b0aefddd02655887)
+Before the correction submission, the [official sticky-note rules](https://n8n.notion.site/Sticky-note-guidelines-for-templates-2aa5b6e0c94f8058b0aefddd02655887)
 were checked against the file: exactly one upper-left yellow overview (267 words),
 `### How it works` and `### Setup`, and three white section notes below 50
 words spanning multiple nodes. A red warning note is optional, not a review
@@ -50,18 +50,20 @@ or instance metadata, and contains none of the common WAF patterns `=>`, `?.`,
 still makes a Cloudflare false positive possible; the generic portal toast did
 not provide an HTTP status, so WAF blocking is not established here.
 
-More importantly, the Creator Portal dashboard's `Implement changes` action
-for workflow `19591` exposes its own `Upload workflow JSON file` control and
-`Submit for human review` button. The four failed attempts used the separate
-`Upload new version` action. For the next authorized attempt, use the review
-correction form on the existing workflow, not a new-template submission or
-the version-upload action; inspect its result before any repeat. No upload or
-review resubmission was performed during this diagnostic pass.
+The Creator Portal dashboard's `Implement changes` action for workflow `19591`
+exposed its own `Upload workflow JSON file` control and `Submit for human
+review` button, separate from the failed `Upload new version` action. On
+2026-09-17, the exact local candidate below was selected through that
+correction form and submitted once. The portal showed `Your template has been
+re-submitted. Reviews typically take 3-5 business days.` The dashboard then
+showed `Pending` / `Under review`, dated 2026-09-17, and disabled `Share new
+template`. This proves a private review resubmission, not human approval,
+acceptance into the public workflow library, or a live public listing.
 
 | Candidate | Local SHA-256 | Current external state |
 | --- | --- | --- |
-| `distribution/n8n/brief-to-approved-generation.json` | `8ff097dd42bed75d5fa95c812c71f76acbce81b522af1531460da6de4e41ce3d` | `upload_failed_not_resubmitted`; workflow `19591` still appears to contain the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
-| `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; independent submission is possible again but has not occurred. |
+| `distribution/n8n/brief-to-approved-generation.json` | `8ff097dd42bed75d5fa95c812c71f76acbce81b522af1531460da6de4e41ce3d` | `resubmitted_under_review`; existing private workflow `19591` is pending human review after the portal confirmed the correction submission. No public listing or approval yet. |
+| `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; the portal currently disables the next-template action during review. |
 | `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `queued_unsubmitted`; no public listing exists. |
 
 ## 0.3.5 observed publication — 2026-09-16
