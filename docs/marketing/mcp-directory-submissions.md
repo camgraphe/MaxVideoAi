@@ -28,13 +28,17 @@ current downstream version.
 The revised brief candidate retains the original overview Sticky Note and adds
 three nearby, non-connected notes for quote preparation, exact human approval,
 and single confirmation with bounded status recovery. No executable node,
-connection, credential, setting, or activation state changed. Local review and
-re-submission of this exact revision remain separate actions; this source edit
-does not upload or submit anything to n8n.
+connection, credential, setting, or activation state changed. The exact local
+revision was selected in Creator Portal's `Upload new version` form for workflow
+`19591` on 2026-09-17. Both upload attempts returned `Could not upload new
+version. Please try again.` The dashboard still showed `Pending` / `Implement
+changes` with its original 2026-09-14 date. The upload did not complete, and
+no renewed human review or public listing is claimed. The portal did not expose
+a specific cause in the visible error.
 
 | Candidate | Local SHA-256 | Current external state |
 | --- | --- | --- |
-| `distribution/n8n/brief-to-approved-generation.json` | `6b908227526baf76b5185fe3bd1f3224d9c43fb50de873c84420fa8d9a8f7472` | `revised_not_resubmitted`; workflow `19591` still contains the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
+| `distribution/n8n/brief-to-approved-generation.json` | `6b908227526baf76b5185fe3bd1f3224d9c43fb50de873c84420fa8d9a8f7472` | `upload_failed_not_resubmitted`; workflow `19591` still appears to contain the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
 | `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; independent submission is possible again but has not occurred. |
 | `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `queued_unsubmitted`; no public listing exists. |
 

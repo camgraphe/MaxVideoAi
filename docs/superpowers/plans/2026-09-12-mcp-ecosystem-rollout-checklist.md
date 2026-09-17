@@ -24,7 +24,9 @@ Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
 - [x] Review the n8n reviewer email and prepare the non-executable Sticky Note
   revision locally without changing credentials, connections, or activation.
 - [ ] Upload that exact revision to Creator Portal workflow `19591` and verify
-  the subsequent private review state; the portal currently requires login.
+  the subsequent private review state; two attempts on 2026-09-17 returned
+  `Could not upload new version` and left `Pending` / `Implement changes`
+  unchanged. Retry only after diagnosing the portal rejection.
 - [ ] Submit the other two n8n workflows one at a time only after reviewing
   each portal form and independently recording its accepted state.
 - [ ] Diagnose Glama's independent `Unhealthy` check from the owner admin

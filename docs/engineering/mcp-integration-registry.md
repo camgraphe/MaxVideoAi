@@ -73,6 +73,9 @@ claimed. The template-library store state is `submitted` only for private
 Creator Portal workflow `19591`, which is now `Pending` / `Implement changes`
 after the 2026-09-17 reviewer request for explanatory Sticky Notes. A locally
 revised, credential-free JSON exists but has not been uploaded or resubmitted.
+Two `Upload new version` attempts on 2026-09-17 returned the portal's generic
+`Could not upload new version` error, leaving `Pending` / `Implement changes`
+unchanged; do not treat the attempted upload as a renewed review submission.
 The other two reviewed JSON workflows remain unsubmitted; the portal has
 re-enabled the next-template action. No public listing or verification is claimed.
 
