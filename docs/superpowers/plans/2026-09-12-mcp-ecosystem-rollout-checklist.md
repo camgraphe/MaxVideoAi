@@ -33,8 +33,20 @@ Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
   cause remains unconfirmed and no duplicate template was created.
 - [ ] Submit the other two n8n workflows one at a time only after reviewing
   each portal form and independently recording its accepted state.
-- [ ] Diagnose Glama's independent `Unhealthy` check from the owner admin
-  surface; `Ownership verified` and `Works in Glama` do not imply health.
+- [x] Diagnose Glama's independent `Unhealthy` check from the owner admin
+  surface: the OAuth test profile says `Not Authenticated`, its test history
+  returns HTTP 401, and an anonymous production `initialize` probe returns the
+  same expected OAuth challenge. `Ownership verified` and `Works in Glama` do
+  not imply authenticated health.
+- [ ] Decide on an isolated, non-production Glama test identity/environment
+  and explicitly authorize any persistent OAuth grant before authenticating
+  the test profile. Do not use the owner CamGraph account or weaken production
+  OAuth merely to satisfy the directory badge. Recheck the public health state
+  only after an authenticated test succeeds.
+- [x] Confirm `com.maxvideoai/maxvideoai` is the domain-verified, lowercase,
+  immutable Official MCP Registry identity, while `MaxVideoAI` is the display
+  title. Glama mirrors its namespace; preserve the existing record rather than
+  introducing a duplicate identity for a cosmetic change.
 - [ ] Re-test old-token rejection after grant revocation on the exact hosted
   production revision before promoting Copilot or other blocked hosts.
 - [ ] Complete the remaining exact-host checks and the 14-day GSC/funnel review

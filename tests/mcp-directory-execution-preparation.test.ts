@@ -50,15 +50,14 @@ test('release preparation preserves the canonical artifact owner and latest-rele
   const canonicalRelease = row('Canonical `camgraphe/maxvideoai-plugin` release');
 
   assert.match(mainRelease, /https:\/\/api\.github\.com\/repos\/camgraphe\/MaxVideoAi\/releases\/latest/);
-  assert.match(mainRelease, /maxvideoai-plugin-v0\.3\.3/);
-  assert.match(mainRelease, /created from the existing tag on 2026-09-14/i);
-  assert.match(mainRelease, /public, non-draft, and non-prerelease/i);
+  assert.match(mainRelease, /maxvideoai-plugin-v0\.3\.5/);
+  assert.match(mainRelease, /latest public, non-draft, non-prerelease release/i);
   assert.match(mainRelease, /zero uploaded assets/i);
-  assert.match(mainRelease, /latest-release API.*resolves to that tag/i);
-  assert.match(canonicalRelease, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.3/);
+  assert.match(mainRelease, /latest-release API/i);
+  assert.match(canonicalRelease, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.5/);
   assert.match(canonicalRelease, /installation artifact owner/i);
   assert.match(canonicalRelease, /one installable ZIP and its SHA-256 checksum/i);
-  assert.match(canonicalRelease, /two source archives.*generated automatically by GitHub/i);
+  assert.match(canonicalRelease, /GitHub's generated source archives are separate/i);
 
   assert.match(releaseNote, /one installable ZIP and its SHA-256\s+checksum remain owned by the canonical plugin release/i);
   assert.match(releaseNote, /two source archives.*generated automatically by GitHub/is);
@@ -147,9 +146,10 @@ test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats 
 
   assert.match(mcpbeat, /https:\/\/mcpbeat\.com\/mcp-servers\/maxvideoai\/maxvideoai\//);
   assert.match(mcpbeat, /`OWNER CONFIRMED`/);
-  assert.match(mcpbeat, /version `0\.3\.3`/i);
-  assert.match(mcpbeat, /`ANSWERING`/);
-  assert.match(mcpbeat, /96\.9% uptime over the prior week/i);
+  assert.match(mcpbeat, /version `0\.3\.5`/i);
+  assert.match(mcpbeat, /`not responding`/);
+  assert.match(mcpbeat, /`answering`/);
+  assert.match(mcpbeat, /90\/92 successful checks/i);
   assert.match(mcpbeat, /not a MaxVideoAI SLA/i);
   assert.match(mcpbeat, /repository file flow/i);
   assert.match(mcpbeat, /temporary public file was removed/i);
@@ -163,7 +163,14 @@ test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats 
   assert.match(glama, /administration page was accessible/i);
   assert.match(glama, /`Unhealthy`/);
   assert.match(glama, /`Works in Glama`/);
+  assert.match(glama, /`Not Authenticated`/);
+  assert.match(glama, /HTTP 401/);
+  assert.match(glama, /isolated test account/i);
   assert.match(glama, /ownership does not prove health/i);
+  assert.match(evidence, /`com\.maxvideoai\/maxvideoai` at version `0\.3\.5`/);
+  assert.match(evidence, /reverse DNS.*`maxvideoai\.com` becomes\s+`com\.maxvideoai`/i);
+  assert.match(evidence, /immutable identifier/i);
+  assert.match(evidence, /Keep the current identity and ownership\/history intact/i);
 
   assert.match(docker, /github\.com\/docker\/mcp-registry\/blob\/main\/CONTRIBUTING\.md/);
   assert.match(docker, /Business Source License 1\.1/);

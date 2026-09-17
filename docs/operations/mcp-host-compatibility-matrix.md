@@ -8,6 +8,13 @@ and status facts from `frontend/config/mcp-integrations.json`. This matrix remai
 the owner of detailed tested-host evidence, exact versions, exercised behavior,
 limitations, and explicit non-claims.
 
+The registry's legacy `2026-08-27` checkpoint date for Claude Desktop, Claude
+Code, ChatGPT web, and Codex CLI is the original registry metadata checkpoint.
+It does not assert a completed host lifecycle for Claude Code or ChatGPT web;
+their later documentation preflights and current `not-run` status remain
+separate. The newer dated rows below supersede only the facts they explicitly
+retested, without silently promoting a sibling host.
+
 ## Revocation-fix deployment correction — 2026-09-17
 
 The Copilot IDE and CLI rows below describe their 2026-09-14 observations and
