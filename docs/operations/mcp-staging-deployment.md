@@ -4,6 +4,67 @@ This runbook describes the disposable, public staging environment used to
 validate the MaxVideoAI MCP integration with Claude Desktop and other remote
 MCP clients. It is deliberately isolated from production.
 
+## Default idle policy — 2026-09-05
+
+The owner approved pausing staging schedules between attended test sessions.
+At 14:45:48 UTC on 5 September 2026, Vercel cron execution was disabled for
+`maxvideoai-mcp-staging` (`prj_OsS8N2tQBAvjxnPO2rGDWbLJeReJ`) only. The
+application and its saved cron definitions remain available. This is a
+project-level setting, separate from the schedules packaged in a deployment;
+keep it disabled outside an attended operational session and check it after
+every staging deployment.
+
+The live deployment had ten schedules, including six five-minute provider
+pollers and production-oriented maintenance schedules. This differs from the
+five-schedule staging package below. All ten are paused. In particular,
+`/api/cron/reconcile-missing-jobs` had been invoked every ten minutes despite
+its feature flag being unset, producing repeated HTTP 503 responses. Do not
+enable that feature merely to silence the staging error. Before resuming,
+reconcile the deployment's schedules with the required staging provider set
+using the dedicated deployment wrapper; do not copy `frontend/vercel.json`
+from production into staging.
+
+Pre-pause checks found 22 completed jobs, two failed jobs, no nonterminal
+jobs, and no pending reference cleanup objects. Retained media were preserved.
+The prior 24 hours of MCP audit events contained only connection initialization
+and tool discovery. The staging database keeps its existing 300-second
+automatic suspension setting: it can sleep after activity stops and wakes on
+the next query. A client that keeps connecting can still consume resources;
+pausing schedules does not make storage or on-demand requests free.
+
+### Attended session and resumption
+
+Staging read-only connections remain available while schedules are paused.
+**Resume the required staging schedules before starting test generations or
+reference uploads**, since polling and cleanup depend on them. Finish the
+session by waiting for all jobs to become terminal, checking for active
+uploads and pending cleanup, and pausing the schedules again.
+
+Use the exact staging project ID and team ID. The following commands toggle
+only staging cron execution; they do not deploy code or change environment
+variables. After either command, read the project again and verify
+`crons.disabledAt` (a timestamp when paused, `null` when enabled):
+
+```bash
+# Pause after the session has drained.
+vercel api '/v1/projects/prj_OsS8N2tQBAvjxnPO2rGDWbLJeReJ/crons?teamId=team_rUdjN9tY7X7x1VLMOHQ1Pv0s' --method PATCH --field enabled=false
+
+# Resume only after reviewing the effective staging schedules.
+vercel api '/v1/projects/prj_OsS8N2tQBAvjxnPO2rGDWbLJeReJ/crons?teamId=team_rUdjN9tY7X7x1VLMOHQ1Pv0s' --method PATCH --field enabled=true
+
+# Show only non-secret project and scheduling metadata.
+vercel api '/v9/projects/prj_OsS8N2tQBAvjxnPO2rGDWbLJeReJ?teamId=team_rUdjN9tY7X7x1VLMOHQ1Pv0s' | jq '{id,name,crons}'
+```
+
+Before and after an operational change, compare the production project's
+deployment, domains, cron settings, environment fingerprint, and protection
+settings. Verify the production homepage and MCP resource discovery return
+HTTP 200, unauthenticated MCP initialization returns its expected HTTP 401
+challenge, and the production OAuth discovery and JWKS return HTTP 200.
+These read-only checks passed around the 5 September pause, with the same
+production deployment `dpl_6VwVm9NwSxyTDD8dTVBLvYqhpe9z` and unchanged
+production configuration. No paid generation was submitted for verification.
+
 ## Supabase Auth project
 
 | Setting | Staging value |

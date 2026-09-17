@@ -14,12 +14,13 @@ test('client families are coarse self-reported metadata with an explicit unknown
     ['ChatGPT', 'chatgpt'], ['OpenAI ChatGPT', 'chatgpt'],
     ['OpenClaw', 'openclaw'], ['open-claw gateway', 'openclaw'],
     ['n8n', 'n8n'], ['n8n-mcp-client', 'n8n'],
+    ['Glama', 'glama'], ['glama.ai MCP inspector', 'glama'],
     ['Cursor', 'cursor'], ['cursor-agent', 'cursor'],
     ['GitHub Copilot', 'githubCopilot'], ['copilot-cli', 'githubCopilot'],
     ['Gemini CLI', 'geminiCli'], ['google-gemini-cli', 'geminiCli'],
     ['Microsoft Copilot', 'microsoftCopilot'], ['Copilot Studio', 'microsoftCopilot'],
     ['openai', 'other'], ['my-claude-proxy', 'other'], ['unrelated', 'other'],
-    ['copilot', 'other'], ['visual-studio-code', 'other'],
+    ['copilot', 'other'], ['visual-studio-code', 'other'], ['glamorous-client', 'other'],
     ['Claude'.repeat(30), 'other'], ['', 'other'],
   ]) {
     assert.equal(classifyMcpClient({ params: { clientInfo: { name } } }), expected, name);
@@ -34,7 +35,7 @@ test('audit accepts only the optional family enum on initialize and does not sto
   const calls: unknown[][] = [];
   const deps = { ensureSchema: async () => {}, executor: { async query<T>(_sql: string, params?: ReadonlyArray<unknown>): Promise<T[]> { calls.push([...(params ?? [])]); return []; } } };
   const families = [
-    'chatgpt', 'claude', 'codex', 'openclaw', 'n8n', 'cursor',
+    'chatgpt', 'claude', 'codex', 'openclaw', 'n8n', 'glama', 'cursor',
     'githubCopilot', 'geminiCli', 'microsoftCopilot', 'other',
   ];
   assert.deepEqual(Object.keys(MCP_CLIENT_LABELS), families);
@@ -70,9 +71,10 @@ test('admin outcomes expose every registered application family while preserving
     async query<T>(sql: string): Promise<T[]> {
       if (sql.includes('admin-mcp:outcome-relations')) return [relations] as T[];
       return [
-        { ...row, client: 'all', accounts: 2, generators: 1, submitted: 1, videos: 1 },
+        { ...row, client: 'all', accounts: 3, generators: 1, submitted: 1, videos: 1 },
         { ...row, client: 'openclaw', accounts: 1, generators: 1, submitted: 1, videos: 1 },
         { ...row, client: 'n8n', accounts: 1 },
+        { ...row, client: 'glama', accounts: 1 },
       ] as T[];
     },
   };
@@ -85,6 +87,7 @@ test('admin outcomes expose every registered application family while preserving
     'codex',
     'openclaw',
     'n8n',
+    'glama',
     'cursor',
     'githubCopilot',
     'geminiCli',
@@ -93,6 +96,7 @@ test('admin outcomes expose every registered application family while preserving
   ]);
   assert.equal(result.clients.find(({ client }) => client === 'openclaw')?.videos, 1);
   assert.equal(result.clients.find(({ client }) => client === 'n8n')?.accounts, 1);
+  assert.equal(result.clients.find(({ client }) => client === 'glama')?.accounts, 1);
   assert.equal(result.clients.find(({ client }) => client === 'other')?.accounts, 0);
 });
 

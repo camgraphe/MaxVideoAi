@@ -7,6 +7,32 @@ This file records evidence and owner decisions. It does not authorize another su
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
 
+## Store website links — 2026-09-17
+
+The owner approved adding useful first-party destination links to existing
+store profiles and checking the same field during later authorized submissions.
+Keep this distinct from store acceptance and host-compatibility evidence:
+
+| Surface | Link state observed | Follow-up |
+| --- | --- | --- |
+| [Glama connector](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai) | The claimed Publisher profile was saved with `Operator website` = `https://maxvideoai.com/mcp`, `Documentation` = `https://maxvideoai.com/docs/mcp`, operator `MaxVideoAI`, and first-party relationship. The public connector now renders both destinations as clickable links. Its `/mcp` anchor currently has `rel="nofollow noreferrer"`: this is a direct referral link, not a promise of ranking credit. The trust-center field was left `Unknown`; the restrictions field states account/OAuth and exact-quote approval requirements. | Recheck the public anchor after Glama profile or registry synchronization changes; do not alter technical connection metadata for link placement. |
+| [n8n Creator profile](https://creators.n8n.io/dashboard) | `Custom Link` was saved as `https://maxvideoai.com/integrations/n8n`; the portal confirmed `Creator profile updated` and says public changes can take up to 12 hours. The [public profile](https://n8n.io/creators/maxvideoai/) still returned 404 while workflow `19591` remained `Pending` / `Under review`. This is **not yet a public backlink**. The submitted workflow JSON was not changed. | Once n8n publishes the profile or workflow, inspect the actual public `<a href>`, link attributes, and HTTP destination. Do not count a private profile field as a public link. |
+| Official MCP Registry | Active `0.3.5` metadata already carries `websiteUrl: https://maxvideoai.com/mcp`. The API value is useful for downstream ingestion but is not by itself an HTML backlink. | Check each downstream listing's rendered link separately. |
+| [GitHub repository](https://github.com/camgraphe/maxvideoai-plugin) | The rendered README includes several direct MaxVideoAI links, including the MCP and host guides, but the inspected outbound anchors have `rel="nofollow"`. | Keep the links for users and referrals; do not count them as verified followed links. |
+| MCPBeat | Its public record already offers a website link to `https://maxvideoai.com/mcp`; no edit was needed. Its security challenge prevented an inspection of the live anchor's `rel` value. | Recheck the rendered target and link attributes during the next directory review; do not label it followed without evidence. |
+| ClawHub and mcpdirectory.dev | Their checked public records exposed the MCP endpoint and/or GitHub repository, but no direct link to the MaxVideoAI marketing site was verified. | Add a relevant first-party guide link only through a documented owner-edit or next reviewed package-version path; do not republish solely to manufacture a backlink. |
+
+For each **future authorized** store submission, choose one useful canonical
+destination by audience (`/mcp` for general MCP discovery or the exact
+integration guide for a host). Use an official website/custom-link field when
+the store offers one; never substitute the authenticated API endpoint for a
+marketing destination. After publication, verify the public HTML contains a
+clickable anchor to the intended HTTPS URL, record its `rel` value, and check
+the destination resolves. Track referral traffic and Search Console discovery
+separately. A nofollow link or a private/pending listing must not be reported
+as proven SEO ranking benefit. Preserve existing submission hashes and review
+state unless a separately reviewed content update is required.
+
 ## Glama authenticated-health follow-up — 2026-09-17
 
 The owner [test profile](https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai/admin/test-profile)

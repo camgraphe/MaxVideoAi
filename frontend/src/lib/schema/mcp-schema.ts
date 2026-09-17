@@ -22,7 +22,7 @@ async function createMcpSchema(): Promise<void> {
   await query(`
     ALTER TABLE mcp_audit_events ADD COLUMN IF NOT EXISTS client_family TEXT
       CHECK (client_family IS NULL OR client_family IN (
-        'chatgpt', 'claude', 'codex', 'openclaw', 'n8n', 'cursor',
+        'chatgpt', 'claude', 'codex', 'openclaw', 'n8n', 'glama', 'cursor',
         'githubCopilot', 'geminiCli', 'microsoftCopilot', 'other'
       ))
   `);

@@ -27,14 +27,18 @@ test('Task 15 checklist advances only externally observed distribution results',
     ['n8n workflow library', 'submitted'],
     ['GitHub MCP registry discovery', 'unavailable_no_documented_submission'],
     ['MCPBeat owner claim', 'claimed'],
-    ['Glama owner claim', 'claimed'],
+    ['Glama owner claim and health', 'claimed'],
     ['Docker MCP Catalog', 'blocked_by_license'],
   ]);
 
   for (const [surface, state] of expectedStates) {
     const currentRow = row(surface);
     assert.ok(currentRow, `missing Task 15 row: ${surface}`);
-    assert.match(currentRow, new RegExp('\\| `' + state + '` \\|'));
+    if (surface === 'Glama owner claim and health') {
+      assert.match(currentRow, /\| `claimed` \(health observed `Healthy`\) \|/);
+    } else {
+      assert.match(currentRow, new RegExp('\\| `' + state + '` \\|'));
+    }
   }
 
   for (const surface of [
@@ -137,7 +141,7 @@ test('n8n evidence pins the resubmitted candidate and distinguishes private revi
 test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats explicit', () => {
   const github = row('GitHub MCP registry discovery');
   const mcpbeat = row('MCPBeat owner claim');
-  const glama = row('Glama owner claim');
+  const glama = row('Glama owner claim and health');
   const docker = row('Docker MCP Catalog');
 
   assert.match(github, /api\.mcp\.github\.com\/v0\.1\/servers\?search=maxvideoai/);
@@ -160,13 +164,13 @@ test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats 
   assert.match(glama, /HTTP challenge was selected/i);
   assert.match(glama, /Production returned the exact challenge body/i);
   assert.match(glama, /Ownership verified/i);
-  assert.match(glama, /administration page was accessible/i);
-  assert.match(glama, /`Unhealthy`/);
-  assert.match(glama, /`Works in Glama`/);
-  assert.match(glama, /`Not Authenticated`/);
-  assert.match(glama, /HTTP 401/);
-  assert.match(glama, /isolated test account/i);
-  assert.match(glama, /ownership does not prove health/i);
+  assert.match(glama, /earlier unauthenticated profile check returned 401/i);
+  assert.match(glama, /isolated test-account OAuth grant passed/i);
+  assert.match(glama, /successful connection test/i);
+  assert.match(glama, /`Healthy`, and 15 discovered tools/i);
+  assert.match(glama, /monitor the next token refresh/i);
+  assert.match(glama, /Ownership and authenticated health are observed/i);
+  assert.match(glama, /complete exact-host compatibility remain separate and unverified/i);
   assert.match(evidence, /`com\.maxvideoai\/maxvideoai` at version `0\.3\.5`/);
   assert.match(evidence, /reverse DNS.*`maxvideoai\.com` becomes\s+`com\.maxvideoai`/i);
   assert.match(evidence, /immutable identifier/i);

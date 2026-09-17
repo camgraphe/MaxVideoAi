@@ -60,6 +60,15 @@ Migration 44 follows the MCP reference-asset deletion migration and preserves th
 `mcp-reference-staging/` namespace in storage ownership, fences, and cleanup. Apply it before
 deploying a staging runtime that prefixes reusable originals and thumbnails.
 
+Migration 48 admits the coarse `glama` MCP client-family value in the audit
+constraint. Apply `48_mcp_client_family_glama.sql` before deploying the runtime
+that records Glama initialization events; it does not rewrite existing
+`other` or NULL attribution. Because the runner replays every file, migrations
+42 and 48 both preserve the already-expanded Glama constraint. They accept
+only the known 41/42/48 constraint definitions and stop for manual review if
+another change has altered that constraint. Test the ordered 42 → 48 sequence
+on a branch of production before applying it to production.
+
 ## Generation timing collector
 
 `45_generation_timing_samples.sql` installs the generic video-completion collector and
