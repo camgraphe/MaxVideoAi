@@ -90,7 +90,7 @@ test('0.3.5 evidence records the immutable source, focused release, workflow, ch
 
 test('n8n evidence pins current candidate bytes and distinguishes changes requested from historical review', () => {
   const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', 'revised_not_resubmitted'],
+    ['distribution/n8n/brief-to-approved-generation.json', 'upload_failed_not_resubmitted'],
     ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
     ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
   ]);
@@ -99,7 +99,7 @@ test('n8n evidence pins current candidate bytes and distinguishes changes reques
   assert.match(current, /`Pending` \/ `Implement changes`/);
   assert.match(current, /reviewer email.*explanatory stickies/s);
   assert.match(current, /`Share new template`\s+is enabled again/);
-  assert.match(current, /does not upload or submit anything to n8n/);
+  assert.match(current, /no renewed human review or public listing/i);
 
   for (const [path, state] of candidates) {
     const candidateRow = current

@@ -24,9 +24,16 @@ Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
 - [x] Review the n8n reviewer email and prepare the non-executable Sticky Note
   revision locally without changing credentials, connections, or activation.
 - [ ] Upload that exact revision to Creator Portal workflow `19591` and verify
-  the subsequent private review state; two attempts on 2026-09-17 returned
-  `Could not upload new version` and left `Pending` / `Implement changes`
-  unchanged. Retry only after diagnosing the portal rejection.
+  the subsequent private review state; four attempts on 2026-09-17, including
+  a fresh-page retry and a video-guideline-aligned JSON, returned `Could not
+  upload new version` and left `Pending` / `Implement changes` unchanged. The
+  correct candidate path found on the dashboard is `Implement changes` →
+  `Upload workflow JSON file` → `Submit for human review`; the failed attempts
+  used the separate `Upload new version` action. The local JSON now matches
+  n8n's exact sticky-note heading, color, length, and grouping rules. Pause
+  before using the correction form; do not create a duplicate submission. If
+  that distinct correction action fails once, capture its exact HTTP error or
+  ask `creators@n8n.io` to inspect workflow `19591` before further retries.
 - [ ] Submit the other two n8n workflows one at a time only after reviewing
   each portal form and independently recording its accepted state.
 - [ ] Diagnose Glama's independent `Unhealthy` check from the owner admin

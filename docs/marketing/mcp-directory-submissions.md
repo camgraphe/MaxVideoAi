@@ -26,19 +26,41 @@ checkpoint. MCPBeat had independently refreshed to version `0.3.5` and
 current downstream version.
 
 The revised brief candidate retains the original overview Sticky Note and adds
-three nearby, non-connected notes for quote preparation, exact human approval,
-and single confirmation with bounded status recovery. No executable node,
-connection, credential, setting, or activation state changed. The exact local
-revision was selected in Creator Portal's `Upload new version` form for workflow
-`19591` on 2026-09-17. Both upload attempts returned `Could not upload new
-version. Please try again.` The dashboard still showed `Pending` / `Implement
-changes` with its original 2026-09-14 date. The upload did not complete, and
-no renewed human review or public listing is claimed. The portal did not expose
-a specific cause in the visible error.
+three non-connected notes for quote preparation, exact human approval, and
+single confirmation with bounded status recovery. After checking the
+[reviewer's visual-guidelines video](https://www.youtube.com/watch?v=RScKsGfrhs4)
+and [official annotation template](https://n8n.io/workflows/13868-auto-generate-sticky-notes-and-rename-nodes/),
+the 267-word main guide is explicitly yellow, while the three short white
+section notes extend behind their node groups. No executable node, connection,
+credential, setting, or activation state changed. Two upload attempts with the
+earlier annotated revision failed; a fresh-page retry with that revision and
+another after the visual-guideline adjustment also returned `Could not upload
+new version. Please try again.` The dashboard still showed `Pending` /
+`Implement changes` with its original 2026-09-14 date. The upload did not
+complete, and no renewed human review or public listing is claimed. The portal
+did not expose a specific cause in the visible error.
+
+Before another attempt, the [official sticky-note rules](https://n8n.notion.site/Sticky-note-guidelines-for-templates-2aa5b6e0c94f8058b0aefddd02655887)
+were checked against the file: exactly one upper-left yellow overview (267 words),
+`### How it works` and `### Setup`, and three white section notes below 50
+words spanning multiple nodes. A red warning note is optional, not a review
+requirement. The JSON is valid, disabled, credential-free, has no pinned data
+or instance metadata, and contains none of the common WAF patterns `=>`, `?.`,
+`${...}`, `<script`, or emojis. n8n's [upload-error guidance](https://support.n8n.io/article/fetch-error-post-https-api-n-8-n-io-api-workflows-no-response-failed-to-fetch-error)
+still makes a Cloudflare false positive possible; the generic portal toast did
+not provide an HTTP status, so WAF blocking is not established here.
+
+More importantly, the Creator Portal dashboard's `Implement changes` action
+for workflow `19591` exposes its own `Upload workflow JSON file` control and
+`Submit for human review` button. The four failed attempts used the separate
+`Upload new version` action. For the next authorized attempt, use the review
+correction form on the existing workflow, not a new-template submission or
+the version-upload action; inspect its result before any repeat. No upload or
+review resubmission was performed during this diagnostic pass.
 
 | Candidate | Local SHA-256 | Current external state |
 | --- | --- | --- |
-| `distribution/n8n/brief-to-approved-generation.json` | `6b908227526baf76b5185fe3bd1f3224d9c43fb50de873c84420fa8d9a8f7472` | `upload_failed_not_resubmitted`; workflow `19591` still appears to contain the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
+| `distribution/n8n/brief-to-approved-generation.json` | `8ff097dd42bed75d5fa95c812c71f76acbce81b522af1531460da6de4e41ce3d` | `upload_failed_not_resubmitted`; workflow `19591` still appears to contain the previously submitted `c21b22387336292a3348ca10b65772143c67313ce7330eb0a433920f4024959f` candidate and awaits a new human review. |
 | `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; independent submission is possible again but has not occurred. |
 | `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `queued_unsubmitted`; no public listing exists. |
 

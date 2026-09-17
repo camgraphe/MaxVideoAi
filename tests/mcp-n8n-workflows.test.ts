@@ -89,8 +89,9 @@ test('each n8n candidate includes one isolated submission-guideline note with co
     assert.ok(content.length >= 800, `${file}: note should contain substantive instructions`);
     assert.match(content, /^# /);
     assert.match(content, /## Intended user and outcome/i);
-    assert.match(content, /## How it works/i);
-    assert.match(content, /## Setup/i);
+    const overviewHeading = file === 'brief-to-approved-generation.json' ? '###' : '##';
+    assert.match(content, new RegExp(`^${overviewHeading} How it works$`, 'im'));
+    assert.match(content, new RegExp(`^${overviewHeading} Setup$`, 'im'));
     assert.match(content, /self-hosted n8n/i);
     assert.match(content, /MaxVideoAI MCP OAuth/i);
     assert.match(content, /https:\/\/api\.maxvideoai\.com\/mcp/);
@@ -116,21 +117,33 @@ test('each n8n candidate includes one isolated submission-guideline note with co
   }
 });
 
-test('reviewed n8n brief explains each execution stage in a nearby non-executable Sticky Note', () => {
+test('reviewed n8n brief uses concise white section notes behind the execution stages', () => {
   const workflow = load('brief-to-approved-generation.json');
-  const annotations = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote').slice(1);
+  const [guide, ...annotations] = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.stickyNote');
+  assert.ok(guide);
+  assert.equal(guide.parameters.color, 1, 'the upper-left guide should use the yellow main-note color');
+  const guideWords = String(guide.parameters.content).trim().split(/\s+/);
+  assert.ok(guideWords.length >= 100 && guideWords.length <= 300,
+    'the main guide should fit n8n’s 100–300 word recommendation');
   assert.deepEqual(annotations.map((node) => node.name), [
     'Step 1: prepare a fresh quote',
     'Step 2: require exact human approval',
     'Step 3: confirm once and recover by job ID',
   ]);
   for (const [index, annotation] of annotations.entries()) {
-    assert.ok(String(annotation.parameters.content).length >= 180);
-    assert.ok(Number(annotation.parameters.width) >= 600);
-    assert.ok(Number(annotation.parameters.height) >= 200);
-    assert.equal((annotation.position as number[])[1], -380);
-    assert.equal((annotation.position as number[])[0], [-900, 200, 860][index]);
+    const content = String(annotation.parameters.content);
+    assert.match(content, /^## /);
+    assert.ok(content.trim().split(/\s+/).length < 50,
+      'section notes should stay below n8n’s 50-word limit');
+    assert.equal(annotation.parameters.color, 7, 'section notes should use n8n’s neutral white color');
+    const [x, y] = annotation.position as number[];
+    assert.equal(y, -230);
+    assert.equal(x, [-940, 360, 860][index]);
+    assert.ok(Number(annotation.parameters.height) >= 490, 'section note should extend behind its nodes');
   }
+  assert.ok(Number(annotations[0].parameters.width) >= 1300);
+  assert.ok(Number(annotations[1].parameters.width) >= 500);
+  assert.ok(Number(annotations[2].parameters.width) >= 1300);
   assert.match(String(annotations[0].parameters.content), /recommend_models.*calculate_project_budget.*prepare_generation/s);
   assert.match(String(annotations[1].parameters.content), /approved: true.*quoteId.*rejection/s);
   assert.match(String(annotations[2].parameters.content), /confirm_generation.*jobId.*never/s);
