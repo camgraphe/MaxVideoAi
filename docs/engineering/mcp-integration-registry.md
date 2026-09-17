@@ -70,10 +70,11 @@ n8n is `live`, indexable, and acquisition-enabled only for the tested
 self-hosted deterministic MCP Client workflow. The MCP Client host remains
 `tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
 claimed. The template-library store state is `submitted` only for private
-Creator Portal workflow `19591`, which is `Pending` / `Under review`. The other
-two reviewed JSON workflows are not submitted because the portal disables the
-next-template action during that review. No public listing or verification is
-claimed.
+Creator Portal workflow `19591`, which is now `Pending` / `Implement changes`
+after the 2026-09-17 reviewer request for explanatory Sticky Notes. A locally
+revised, credential-free JSON exists but has not been uploaded or resubmitted.
+The other two reviewed JSON workflows remain unsubmitted; the portal has
+re-enabled the next-template action. No public listing or verification is claimed.
 
 ## Later-host promotion sequence
 

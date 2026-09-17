@@ -16,6 +16,15 @@ readers can understand the workflow before publication. `Share new template`
 is enabled again; the other two candidates are still unsubmitted. The earlier
 2026-09-15 checkpoint below remains a dated record, not current portal state.
 
+On 2026-09-17, the public Glama connector still displayed `Ownership verified`,
+`Unhealthy`, and `OAuth` / `Works in Glama`. Glama explicitly said its latest
+health check could not complete and that a missing or expired authenticated
+test profile may be the cause. Ownership, OAuth support, and anonymous health
+remain independent signals; no test credential or profile was supplied in this
+checkpoint. MCPBeat had independently refreshed to version `0.3.5` and
+`ANSWERING`; its earlier `0.3.3` row below is a dated snapshot, not the
+current downstream version.
+
 The revised brief candidate retains the original overview Sticky Note and adds
 three nearby, non-connected notes for quote preparation, exact human approval,
 and single confirmation with bounded status recovery. No executable node,

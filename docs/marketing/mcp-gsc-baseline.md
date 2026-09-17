@@ -3,6 +3,18 @@
 This baseline records the read-only Google Search Console view used to set intent boundaries before MCP promotion. It
 is not a forecast, launch result, or indexation claim.
 
+## Later publication state — 2026-09-17
+
+The 2026-09-13 observation-window entry below is a dated starting snapshot,
+not the current indexation roster. The integration registry now marks OpenClaw
+and n8n `live` and indexable in EN/FR/ES alongside the hub, Claude, ChatGPT,
+and Codex. The exact redeployment of main revision `21b339318` returned HTTP
+200 and a canonical link for all 18 routes on 2026-09-17. Cursor, GitHub
+Copilot, Gemini CLI, and Microsoft Copilot remain hidden. The 14-day GSC
+measurement window still ends no earlier than 2026-09-27; this publication
+change is not evidence of impressions, clicks, ranking, or a completed host
+compatibility test.
+
 ## Current site-level capture
 
 - Property: `sc-domain:maxvideoai.com`

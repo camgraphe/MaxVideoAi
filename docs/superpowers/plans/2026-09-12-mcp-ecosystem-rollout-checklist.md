@@ -10,6 +10,30 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-12-mcp-integration-ecosystem-design.md`
 
+## Current closeout checklist — 2026-09-17
+
+The task narratives below retain their original checkpoint dates. In particular,
+the 2026-09-14 statement that the active-grant fix is branch-local has been
+superseded by deployed main revision `21b339318`, which includes `a6a655f5e`.
+Deployment is not a substitute for a hosted revoke/access-loss/reconnect test.
+
+- [x] Recover the Vercel resource-provisioning failure by redeploying the exact
+  main revision; all 18 MCP marketing routes returned HTTP 200 with canonicals.
+- [x] Confirm official MCP Registry and canonical GitHub package release at
+  `0.3.5`, ClawHub `1.0.0`, and MCPBeat's downstream `0.3.5` refresh.
+- [x] Review the n8n reviewer email and prepare the non-executable Sticky Note
+  revision locally without changing credentials, connections, or activation.
+- [ ] Upload that exact revision to Creator Portal workflow `19591` and verify
+  the subsequent private review state; the portal currently requires login.
+- [ ] Submit the other two n8n workflows one at a time only after reviewing
+  each portal form and independently recording its accepted state.
+- [ ] Diagnose Glama's independent `Unhealthy` check from the owner admin
+  surface; `Ownership verified` and `Works in Glama` do not imply health.
+- [ ] Re-test old-token rejection after grant revocation on the exact hosted
+  production revision before promoting Copilot or other blocked hosts.
+- [ ] Complete the remaining exact-host checks and the 14-day GSC/funnel review
+  after 2026-09-27; retain each host's current scoped status in the meantime.
+
 ## Global Constraints
 
 - Preserve `/mcp`, `/docs/mcp`, and the Claude, ChatGPT, and Codex integration pages in English, French, and Spanish.
