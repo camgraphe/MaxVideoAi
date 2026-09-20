@@ -2,10 +2,10 @@
   "marketingName": "MiniMax H3 Max",
   "versionLabel": "H3 Max",
   "seo": {
-    "title": "MiniMax H3 Max : vidéo IA rapide 768P, références et audio",
-    "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P depuis du texte, des images ou des références image, vidéo et audio."
+    "title": "MiniMax H3 Max : vidéo 768P rapide et audio natif",
+    "description": "Générez depuis un texte des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P avec audio natif. Paiement à la génération sur MaxVideoAI."
   },
-  "overview": "MiniMax H3 Max est la route Hailuo de production rapide pour le respect du prompt, une finition 768P soignée, l’audio natif et les références multimodales.",
+  "overview": "MiniMax H3 Max crée des vidéos courtes depuis un texte avec expansion du prompt, sortie 480P ou 768P et audio natif.",
   "decision": {
     "modelSlug": "minimax-h3-max",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Donnez vie à plus d’idées"
       ],
-      "paragraph": "MiniMax H3 Max génère des vidéos IA de 5 à 15 secondes en 480P ou 768P, avec audio natif. Partez d’un texte, d’images de début et de fin ou de références combinées. Pour une sortie 2K ou 4K, choisissez MiniMax H3.",
+      "paragraph": "MiniMax H3 Max génère depuis un texte des vidéos IA de 5 à 15 secondes en 480P ou 768P, avec audio natif. Le texte-vers-vidéo est actuellement disponible sur le site et via MCP. Choisissez MiniMax H3 pour les images, les références combinées ou une sortie 2K ou 4K.",
       "primaryCta": {
         "label": "Générer avec MiniMax H3 Max",
         "href": "/app?engine=minimax-h3-max"
@@ -50,8 +50,8 @@
       "badges": [
         "480P / 768P",
         "5–15s",
-        "Mixed references",
-        "Native audio"
+        "Texte-vers-vidéo",
+        "Audio natif"
       ],
       "altContext": "MiniMax H3 Max: Danse contemporaine sur une scène réfléchissante"
     },
@@ -62,9 +62,9 @@
         "tone": "quality"
       },
       {
-        "title": "Texte, images et références",
-        "body": "Partez d’un prompt, animez une image avec une fin facultative ou combinez des références.",
-        "tone": "reference"
+        "title": "Dirigez votre scène par le texte",
+        "body": "Décrivez le sujet, l’action, la caméra et le son. Choisissez une expansion du prompt équilibrée ou de qualité pour développer la scène.",
+        "tone": "quality"
       },
       {
         "title": "Clips de 5 à 15 secondes",
@@ -97,12 +97,8 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Text-to-video",
+        "title": "Texte-vers-vidéo",
         "body": "Définissez le sujet, le changement visible, la caméra et la réponse sonore."
-      },
-      {
-        "title": "Image-to-video",
-        "body": "Animez une image de départ en décrivant le mouvement et la caméra."
       }
     ],
     "pricingCopy": {
@@ -113,8 +109,8 @@
       "ctaHref": "/app?engine=minimax-h3-max"
     },
     "meta": {
-      "title": "MiniMax H3 Max : vidéo IA rapide 768P, références et audio",
-      "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P depuis du texte, des images ou des références image, vidéo et audio."
+      "title": "MiniMax H3 Max : vidéo 768P rapide et audio natif",
+      "description": "Générez depuis un texte des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P avec audio natif. Paiement à la génération sur MaxVideoAI."
     }
   },
   "prompting": {
@@ -146,7 +142,7 @@
       "Répétez uniquement les repères de continuité indispensables."
     ],
     "engineWhy": [
-      "MiniMax H3 Max est la route Hailuo de production rapide pour le respect du prompt, une finition 768P soignée, l’audio natif et les références multimodales."
+      "MiniMax H3 Max crée des vidéos courtes depuis un texte avec expansion du prompt, sortie 480P ou 768P et audio natif."
     ],
     "demo": {
       "title": "Lampe en céramique transformable",
@@ -195,10 +191,6 @@
       {
         "id": "product",
         "label": "Produit"
-      },
-      {
-        "id": "reference",
-        "label": "Références"
       }
     ],
     "proofItems": [

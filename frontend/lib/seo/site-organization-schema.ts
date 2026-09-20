@@ -23,7 +23,7 @@ export function buildSiteOrganizationSchema() {
     url: `${SITE_ORIGIN}/`,
     logo: `${SITE_ORIGIN}/favicon-512.png`,
     description:
-      'Independent hub for AI video generation. Price before you generate. Works with Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.',
+      'MaxVideoAI is a pay-as-you-go platform for AI video, image and audio generation, with a web workspace and MCP integrations for compatible AI assistants. Compare models and review the price before generating, without a subscription.',
     sameAs: [
       'https://x.com/MaxVideoAI',
       'https://www.linkedin.com/company/maxvideoai/',

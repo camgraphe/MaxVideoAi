@@ -11,6 +11,7 @@ import { serializeJsonLd } from '../../model-jsonld';
 import { ModelHeroSection } from './ModelHeroSection';
 import { ModelDecisionHeroSection } from './ModelDecisionHeroSection';
 import { ModelDecisionPricingCard } from './ModelDecisionPricingCard';
+import { ModelPublicOfferLine } from './ModelPublicOfferLine';
 import { ModelPageContentSections } from './ModelPageContentSections';
 import {
   DEFAULT_DETAIL_COPY,
@@ -20,7 +21,7 @@ import {
   type DetailCopy,
 } from '../_lib/model-page-copy';
 import { type FeaturedMedia } from '../_lib/model-page-media';
-import { resolveProviderInfo } from '../_lib/model-page-schema';
+import { resolveProviderInfo, resolveModelPublicOffer } from '../_lib/model-page-schema';
 import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
   buildCanonicalComparePath,
@@ -398,6 +399,7 @@ export function MarketingModelPageLayout({
   ].filter((item) => item.visible);
   const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasSafetySection, hasFaqSection });
   const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
+  const publicOffer = resolveModelPublicOffer(engine, pricingEngine);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
     description: templateData?.meta.description ?? pageDescription,
@@ -409,7 +411,7 @@ export function MarketingModelPageLayout({
     localizedHomeUrl,
     localizedModelsUrl,
     pageTitle: templateData?.meta.title,
-    pricingEngine,
+    pricingEngine, publicOffer,
     resolvedBreadcrumb,
   });
   const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;
@@ -431,7 +433,7 @@ export function MarketingModelPageLayout({
           {templateData ? (
             <>
               <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
-              <ModelDecisionPricingCard pricing={templateData.pricing} />
+              <ModelDecisionPricingCard pricing={templateData.pricing} offer={publicOffer} locale={locale} />
             </>
           ) : (
             <ModelHeroSection
@@ -473,6 +475,7 @@ export function MarketingModelPageLayout({
               heroHighlights={heroHighlights}
             />
           )}
+          {!templateData ? <ModelPublicOfferLine offer={publicOffer} locale={locale} /> : null}
           <ModelPageContentSections
             isDecision={Boolean(templateData)}
             tocProps={{ items: templateData ? decisionTocItems : tocItems, variant: templateData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}

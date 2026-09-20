@@ -234,7 +234,7 @@ export const MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   versionLabel: 'H3 Max',
   availability: 'limited',
   logoPolicy: 'textOnly',
-  billingNote: 'Your exact price is calculated before generation from output duration, resolution, mode, and verified reference-token usage.',
+  billingNote: 'Your exact text-to-video price is calculated before generation from output duration and resolution.',
   engine: MINIMAX_H3_MAX_ENGINE,
   modes: MINIMAX_H3_MAX_MODES.map((mode) => ({
     mode,
@@ -244,10 +244,10 @@ export const MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   defaultFalModelId: MINIMAX_H3_MAX_ENDPOINTS.t2v,
   seo: {
     title: 'MiniMax H3 Max – Premium Hailuo AI Video',
-    description: 'Create polished native-audio video with MiniMax H3 Max from text, start and end frames, or mixed visual and audio references.',
+    description: 'Create 5–15-second videos from text with MiniMax H3 Max at 480P or 768P, with prompt expansion and native audio.',
     canonicalPath: '/models/minimax-h3-max',
   },
-  type: 'Hailuo text, image, and reference video · Native audio',
+  type: 'Hailuo text-to-video · Native audio',
   seoText: 'Create premium Hailuo video with strong prompt adherence, polished visual finish, and automatic native audio.',
   prompts: [],
 }];

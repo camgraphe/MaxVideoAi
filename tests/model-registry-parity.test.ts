@@ -67,7 +67,8 @@ test('runtime model projection matches every baseline identity and surface', () 
     assert.equal(actual.slug, expected.slug);
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
-    assert.equal(actual.lifecycle, expected.id === 'gpt-image-2' ? 'legacy' : expected.lifecycle);
+    const approvedLegacyTransition = ['gpt-image-2', 'sora-2', 'sora-2-pro'].includes(expected.id);
+    assert.equal(actual.lifecycle, approvedLegacyTransition ? 'legacy' : expected.lifecycle);
     assert.equal(
       actual.successorId,
       APPROVED_SUCCESSORS[expected.id as keyof typeof APPROVED_SUCCESSORS] ?? expected.successorId,
@@ -227,6 +228,8 @@ test('canonical lifecycle classifies every approved non-current model and author
     lumaRay2: 'legacy',
     lumaRay2_flash: 'legacy',
     'nano-banana': 'legacy',
+    'sora-2': 'legacy',
+    'sora-2-pro': 'legacy',
     'wan-2-5': 'deep_legacy',
     'wan-2-6': 'legacy',
   });

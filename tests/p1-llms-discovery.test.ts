@@ -102,3 +102,50 @@ test('published P1 identities remain present in default LLM discovery', () => {
     assert.equal(projection.currentModels.some((model) => model.id === id), true, id);
   }
 });
+
+test('default llms output includes priority models once and drops the stale Sora selection', () => {
+  const text = buildLlmsText(mcpPublication);
+  const projection = buildLlmsModelDiscoveryProjection();
+  assert.deepEqual(projection.currentModels.slice(0, 3).map(({ id }) => id), [
+    'minimax-h3', 'minimax-h3-max', 'seedance-2-5',
+  ]);
+  for (const id of ['minimax-h3', 'minimax-h3-max', 'seedance-2-5']) {
+    assert.equal(text.split(`](https://maxvideoai.com/models/${id})`).length - 1, 1, id);
+  }
+  assert.doesNotMatch(text, /sora-2|Sora 2|## Engines \(key pages\)|## Current launch models/);
+  assert.match(text, /available through its web application/);
+  assert.match(text, /In addition to the web application.*remote MCP integration/);
+  for (const slug of [
+    'gemini-omni-flash-vs-veo-3-1',
+    'seedance-2-0-vs-seedance-2-0-fast',
+    'veo-3-1-fast-vs-veo-3-1-lite',
+  ]) {
+    assert.ok(text.includes(`](https://maxvideoai.com/ai-video-engines/${slug})`), slug);
+  }
+  const urls = [...text.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
+  assert.equal(new Set(urls).size, urls.length, 'source links must not be duplicated');
+});
+
+test('curated llms model links follow lifecycle, publication, canonical slug and label changes', () => {
+  for (const state of ['legacy', 'retired', 'unpublished', 'noindex'] as const) {
+    const models = structuredClone(listRuntimeModels()) as RuntimeModelEntry[];
+    const model = models.find(({ id }) => id === 'seedance-2-5')!;
+    if (state === 'unpublished') model.publication.model.published = false;
+    else if (state === 'noindex') model.publication.model.indexable = false;
+    else model.lifecycle = state;
+    const projection = buildLlmsModelDiscoveryProjection({ models });
+    assert.equal(projection.currentModels.some(({ id }) => id === model.id), false, state);
+    const text = buildLlmsText(mcpPublication, projection);
+    assert.equal(text.includes(`](https://maxvideoai.com/models/${model.slug})`), false, state);
+    if (state !== 'legacy') {
+      assert.equal(projection.primaryComparisons.some(({ slug }) => slug.includes(model.slug)), false, state);
+    }
+  }
+  const models = structuredClone(listRuntimeModels()) as RuntimeModelEntry[];
+  const model = models.find(({ id }) => id === 'minimax-h3')!;
+  model.slug = 'renamed-h3';
+  model.label = 'Updated H3 label';
+  const text = buildLlmsText(mcpPublication, buildLlmsModelDiscoveryProjection({ models }));
+  assert.match(text, /\[Updated H3 label\]\(https:\/\/maxvideoai.com\/models\/renamed-h3\)/);
+  assert.equal(text.includes('](https://maxvideoai.com/models/minimax-h3)'), false);
+});

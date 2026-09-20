@@ -38,3 +38,19 @@ test('Next image optimization uses a conservative seven-day floor until mutable 
   assert.ok(ttlMatch, 'images.minimumCacheTTL should be configured');
   assert.equal(Number(ttlMatch[1]), 60 * 60 * 24 * 7);
 });
+
+test('GSC legacy model names redirect to their canonical identities in each locale', async () => {
+  const redirects = await nextConfig.redirects();
+  const aliases = {
+    'google-veo-3-1': 'veo-3-1',
+    'google-veo-3-1-lite': 'veo-3-1-lite',
+    'pika-2-2-text-to-video': 'pika-text-to-video',
+    'pika-2-2-text-and-image-to-video': 'pika-text-to-video',
+  };
+  for (const [alias, canonical] of Object.entries(aliases)) {
+    for (const prefix of ['/models/', '/fr/modeles/', '/es/modelos/']) {
+      const rule = redirects.find((entry: { source: string }) => entry.source === `${prefix}${alias}`);
+      assert.deepEqual(rule, { source: `${prefix}${alias}`, destination: `${prefix}${canonical}`, statusCode: 301 });
+    }
+  }
+});

@@ -1,9 +1,9 @@
 import type { buildMetadataUrls } from '@/lib/metadataUrls';
+import { serializeJsonLd } from '@/lib/seo/jsonld';
 import type { DocsContent } from '../_lib/docs-index-data';
 import {
   buildDocsBreadcrumbJsonLd,
   buildDocsCollectionJsonLd,
-  buildDocsFaqJsonLd,
 } from '../_lib/docs-index-jsonld';
 
 type DocsMetadataUrls = ReturnType<typeof buildMetadataUrls>;
@@ -19,7 +19,6 @@ export function DocsJsonLdScripts({ content, metadataUrls, site, toc }: DocsJson
   const schemas = [
     buildDocsCollectionJsonLd({ content, metadataUrls, site, toc }),
     buildDocsBreadcrumbJsonLd({ content, metadataUrls, site, toc }),
-    buildDocsFaqJsonLd({ content, metadataUrls, site, toc }),
   ];
 
   return (
@@ -29,7 +28,7 @@ export function DocsJsonLdScripts({ content, metadataUrls, site, toc }: DocsJson
           key={index}
           type="application/ld+json"
           suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
     </>

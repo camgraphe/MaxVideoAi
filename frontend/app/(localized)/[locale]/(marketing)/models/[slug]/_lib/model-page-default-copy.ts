@@ -3,7 +3,7 @@ import type { AppLocale } from '@/i18n/locales';
 export const DEFAULT_VIDEO_TROUBLESHOOTING = [
   'Feels random / inconsistent → simplify to: subject + action + camera + lighting. Re-run 2–3 takes.',
   'Motion looks weird → reduce movement: one camera move, slower action, fewer props.',
-  'Subject drifts off-brand → start from a reference image and lock palette + lighting.',
+  'Subject drifts off-brand → specify the palette and lighting; use a reference image when the selected mode supports it.',
   'Text looks wrong → avoid readable signage, tiny UI, micro labels. Keep text off-screen.',
   'Dialogue drifts → keep lines short and punchy; avoid long monologues.',
 ];
@@ -13,14 +13,14 @@ export const DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE: Record<AppLocale, string[]
   fr: [
     'Résultat aléatoire / incohérent → simplifiez : sujet + action + caméra + lumière. Relancez 2–3 variantes.',
     'Mouvement étrange → réduisez le mouvement : un seul move caméra, action plus lente, moins d’accessoires.',
-    'Le sujet dérive de la marque → partez d’une image de référence et verrouillez palette + lumière.',
+    'Le sujet dérive de la marque → précisez la palette et la lumière ; utilisez une image de référence si le mode choisi le permet.',
     'Texte incorrect → évitez la signalétique lisible, les micro‑labels, les petits UI. Gardez le texte hors champ.',
     'Dialogue instable → gardez les répliques courtes et percutantes; évitez les longs monologues.',
   ],
   es: [
     'Se siente aleatorio / inconsistente → simplifica: sujeto + acción + cámara + iluminación. Repite 2–3 tomas.',
     'El movimiento se ve raro → reduce el movimiento: un solo movimiento de cámara, acción más lenta, menos props.',
-    'El sujeto se sale de la marca → empieza con una imagen de referencia y fija paleta + iluminación.',
+    'El sujeto se sale de la marca → especifica la paleta y la iluminación; usa una imagen de referencia si el modo elegido lo permite.',
     'El texto sale mal → evita señalética legible, UI pequeño, micro‑labels. Mantén el texto fuera de plano.',
     'El diálogo deriva → mantén líneas cortas y directas; evita monólogos largos.',
   ],

@@ -90,15 +90,16 @@ test('Seedance Mini vs Happy Horse stays scoreboard-only without comparison vide
   assert.deepEqual(slots, []);
 });
 
-test('llms.txt lists the new Happy Horse and Seedance Mini SEO surfaces', () => {
+test('llms.txt features current Happy Horse and Seedance Mini models with comparison discovery hubs', () => {
   const llmsSource = buildLlmsText(mcpPublication);
 
   [
     'https://maxvideoai.com/models/happy-horse-1-1',
     'https://maxvideoai.com/models/dreamina-seedance-2-0-mini',
     'https://maxvideoai.com/models/luma-ray-3-2',
-    ...HAPPY_HORSE_SEO_EXPANSION_SLUGS.map((slug) => `https://maxvideoai.com/ai-video-engines/${slug}`),
+    'https://maxvideoai.com/ai-video-engines)',
+    'https://maxvideoai.com/ai-video-engines/best-for)',
     'https://maxvideoai.com/ai-video-engines/best-for/lipsync-dialogue',
     'https://maxvideoai.com/ai-video-engines/best-for/fast-drafts',
-  ].forEach((url) => assert.match(llmsSource, new RegExp(url.replaceAll('.', '\\.')), `Missing llms.txt URL ${url}`));
+  ].forEach((url) => assert.ok(llmsSource.includes(url), `Missing llms.txt URL ${url}`));
 });

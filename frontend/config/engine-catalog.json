@@ -4639,7 +4639,7 @@
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "lifecycle": "current",
+    "lifecycle": "legacy",
     "successorId": null,
     "successorSlug": null,
     "surfaces": {
@@ -4920,7 +4920,7 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "lifecycle": "current",
+    "lifecycle": "legacy",
     "successorId": null,
     "successorSlug": null,
     "surfaces": {

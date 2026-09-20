@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Script from 'next/script';
 import { Link } from '@/i18n/navigation';
 import { TextLink } from '@/components/ui/TextLink';
 import type { ContentEntry } from '@/lib/content/markdown';
@@ -14,6 +13,7 @@ import {
 } from '../_lib/blog-post-data';
 import type { BlogEditorialCopy } from '../_lib/blog-editorial-copy';
 import { BlogAuthorByline, BlogAuthorCard } from './blog-author-byline';
+import { BlogPostJsonLdScripts } from './blog-post-jsonld-scripts';
 
 type BlogPostViewProps = {
   articleCopy: BlogArticleCopy;
@@ -106,26 +106,13 @@ export function BlogPostView({
         ) : null}
       </div>
 
-      <Script
-        id={`breadcrumb-${locale}-${post.slug}-jsonld`}
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      <BlogPostJsonLdScripts
+        locale={locale}
+        slug={post.slug}
+        breadcrumb={breadcrumbJsonLd}
+        article={articleSchema}
+        structuredData={post.structuredData}
       />
-
-      <Script
-        id={`article-${locale}-${post.slug}-jsonld`}
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
-
-      {post.structuredData?.map((json, index) => (
-        <Script
-          key={`faq-jsonld-${post.slug}-${index}`}
-          id={`faq-jsonld-${post.slug}-${index}`}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: json }}
-        />
-      ))}
     </div>
   );
 }

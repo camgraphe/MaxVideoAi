@@ -76,6 +76,23 @@ Move code to shared locations only when reuse is real:
 
 Avoid promoting a one-off helper into `frontend/lib` just because it is long.
 
+Local Markdown loading for docs, blog and guides belongs in `frontend/lib/content/markdown.ts`.
+Its production Data Cache key includes a SHA-256 of the selected file paths and exact
+source contents, including uncommitted edits. The reader loads each source once and
+parses that same snapshot only on a cache miss. Do not replace this identity with a
+root-only key, Git SHA, timestamp or time-based revalidation: Next's Data Cache can
+survive builds, and a static page can otherwise bake old copy into a new deployment.
+The loader retains no permanent map of source snapshots; gray-matter's separate raw
+source cache is disabled. Existing static HTML still requires a rebuild/deployment
+after content changes. `tests/markdown-content-cache.test.ts` verifies freshness
+against a warm persistent Next cache without deleting it.
+
+Public JSON-LD must be emitted as native server-rendered `script` elements through
+`serializeJsonLd`, not deferred with `next/script`. Docs and blog article renderers
+own their IDs and publication gates; `tests/editorial-jsonld-ssr.test.ts` verifies
+the emitted HTML without hydration. A valid object inside a React payload is not
+equivalent to an actual JSON-LD script in the initial response.
+
 Media presentation and server processing follow `docs/engineering/media-delivery.md`. Shared public-video selection and observation policy lives in `frontend/lib/public-video-playback.ts`; the shared React attempt lifecycle lives in `frontend/components/media/usePublicVideoPlayback.ts`. Surface hooks keep their visibility and control behavior. Browser-safe code imports only `public-video-renditions.generated.json`, while source catalogue, measured manifest validation, encoding, uploads and repair I/O stay in config or script/server owners outside client modules.
 
 `frontend/config/public-video-sources.json` is the authored public-demo source catalogue. `frontend/scripts/check-public-video-coverage.ts` is the offline build entry for full public-rendition coherence and selected homepage coverage, exposed as `pnpm --prefix frontend run media:public-renditions:check`. Its injected pure coverage logic belongs under `frontend/scripts/_lib`. It reads the exported homepage selection and media constants instead of owning a second hero/model list.

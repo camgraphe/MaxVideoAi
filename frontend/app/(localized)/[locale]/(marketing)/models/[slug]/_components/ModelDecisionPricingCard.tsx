@@ -3,12 +3,17 @@ import { ArrowRight, Clock3, Gauge, Speaker, UploadCloud, Zap } from 'lucide-rea
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
+import type { AppLocale } from '@/i18n/locales';
+import type { ModelPublicOffer } from '../_lib/model-page-schema';
+import { ModelPublicOfferLine } from './ModelPublicOfferLine';
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
 import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
 import type { ModelDecisionPricingScenario } from '../_lib/model-page-decision-pricing';
 
 type ModelDecisionPricingCardProps = {
   pricing: ModelDecisionData['pricing'];
+  offer?: ModelPublicOffer | null;
+  locale?: AppLocale;
 };
 
 const SCENARIO_ICONS: Partial<Record<ModelDecisionPricingScenario['id'], typeof Zap>> = {
@@ -19,7 +24,7 @@ const SCENARIO_ICONS: Partial<Record<ModelDecisionPricingScenario['id'], typeof 
   'max-duration': Clock3,
 };
 
-export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardProps) {
+export function ModelDecisionPricingCard({ pricing, offer = null, locale = 'en' }: ModelDecisionPricingCardProps) {
   return (
     <section
       id="decision-pricing"
@@ -87,6 +92,7 @@ export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardPr
           })}
         </div>
 
+        <ModelPublicOfferLine offer={offer} locale={locale} />
         <p className="text-center text-xs leading-5 text-[#52627a] dark:text-white/50">{pricing.footnote}</p>
       </div>
     </section>

@@ -68,10 +68,9 @@ test('localized docs index data and schema helpers own route logic', () => {
   assert.match(dataSource, /FEATURES\.docs/);
   assert.match(jsonLdSource, /export function buildDocsCollectionJsonLd/);
   assert.match(jsonLdSource, /export function buildDocsBreadcrumbJsonLd/);
-  assert.match(jsonLdSource, /export function buildDocsFaqJsonLd/);
   assert.match(jsonLdSource, /'@type': 'CollectionPage'/);
   assert.match(jsonLdSource, /'@type': 'BreadcrumbList'/);
-  assert.match(jsonLdSource, /'@type': 'FAQPage'/);
+  assert.doesNotMatch(jsonLdSource, /FAQPage|buildDocsFaqJsonLd/, 'docs index has no visible FAQ and must not emit hidden questions');
 });
 
 test('localized docs index components own rendering surfaces', () => {

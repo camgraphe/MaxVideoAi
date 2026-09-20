@@ -1,7 +1,8 @@
 ---
-title: "Filtres de sécurité de marque"
-description: "Comment MaxVideo AI maintient les prompts et rendus conformes."
+title: "Contrôles de sécurité des contenus"
+description: "Comprendre les contrôles des fournisseurs, les générations bloquées et la vérification des entrées et résultats."
 date: "2024-06-03"
+updatedAt: "2026-09-21"
 image: "/og/price-before.png"
 keywords:
   - "sécurité de marque"
@@ -10,12 +11,16 @@ keywords:
 slug: "brand-safety"
 ---
 
-MaxVideo AI applique des filtres automatiques aux prompts, aux médias de référence et aux rendus finaux. Les mots-clés sensibles déclenchent une revue humaine avec piste d’audit.
+Les fournisseurs de modèles appliquent leurs propres contrôles de contenu. Un fournisseur peut refuser un prompt, une référence image, vidéo ou audio, ou un résultat généré. Les contrôles et les entrées acceptées varient selon le modèle et le mode de génération.
 
-L’objectif est de garder les équipes de production rapides sans masquer le risque. Avant le lancement d’un rendu, le studio vérifie le prompt, les références importées et la famille de modèles choisie avec les signaux de politique qui peuvent compter pour une publicité, une publication client ou une validation interne.
+### Lorsqu’une demande est bloquée
 
-Quand un prompt est bloqué ou escaladé, les producteurs peuvent ajuster la formulation, retirer une référence sensible ou demander une revue admin. Les garde-fous restent ainsi visibles dans le même flux où l’équipe compare les modèles, estime le coût et prépare les assets vidéo finaux.
+1. Ouvrez les détails du job et consultez son statut et son message d’erreur.
+2. Vérifiez le prompt et les références selon les restrictions du modèle sélectionné. Utilisez des médias que vous êtes autorisé à utiliser.
+3. Corrigez les entrées non prises en charge ou inappropriées avant de préparer une nouvelle demande, puis vérifiez le nouveau prix avant de générer.
 
-- Configurez les règles d’escalade depuis **Settings → Trust**.
-- Demandez des allowlists personnalisées pour le langage de vos campagnes.
-- Suivez chaque blocage et dérogation via la page Status.
+### Avant d’utiliser le résultat
+
+Vérifiez les médias générés avant publication ou livraison, notamment s’ils contiennent des personnes, des marques ou des informations personnelles. Une génération terminée ne garantit pas que le résultat convient à l’usage prévu.
+
+Pour une génération payante échouée, consultez les détails du job et votre wallet afin de vérifier le statut du remboursement. Si vous avez besoin d’aide pour comprendre une erreur, indiquez l’ID du job au support.

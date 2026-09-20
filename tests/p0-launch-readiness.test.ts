@@ -138,6 +138,6 @@ test('the complete P0 graph publishes atomically across public discovery surface
   );
   assert.deepEqual(
     discovery.primaryComparisons.filter(({ slug }) => PAIRS.includes(slug as (typeof PAIRS)[number])).map(({ slug }) => slug).sort(),
-    [...PAIRS].sort(),
+    PAIRS.filter((slug) => slug !== 'grok-imagine-video-1-5-vs-sora-2').sort(),
   );
 });

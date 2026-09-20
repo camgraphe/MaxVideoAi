@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { createHash } from 'node:crypto';
 import matter from 'gray-matter';
 import { unstable_cache } from 'next/cache';
 import { remark } from 'remark';
@@ -44,9 +45,12 @@ async function readDirectorySafe(directory: string): Promise<string[]> {
   }
 }
 
-async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
-  const file = await fs.readFile(filePath, 'utf8');
-  const { data, content } = matter(file);
+type MarkdownSource = { filePath: string; file: string };
+
+async function parseMarkdownFile({ filePath, file }: MarkdownSource): Promise<ContentEntry> {
+  // Next owns parsed-result caching. Options disable gray-matter's unbounded
+  // raw-string cache, whose shared front matter also retained inferred slugs on rename.
+  const { data, content } = matter(file, {});
   const frontMatter = data as ContentFrontMatter;
   if (!frontMatter.slug) {
     frontMatter.slug = path.basename(filePath).replace(/\.(md|mdx)$/i, '');
@@ -78,9 +82,8 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
 }
 
 const MARKDOWN_CACHE_REVALIDATE_SECONDS = 60 * 60; // 1 hour
-const cachedEntriesByRoot = new Map<string, () => Promise<ContentEntry[]>>();
 
-async function getContentEntriesUncached(root: string): Promise<ContentEntry[]> {
+async function readMarkdownSources(root: string): Promise<MarkdownSource[]> {
   const candidateDirs = Array.from(
     new Set([
       path.join(process.cwd(), root),
@@ -106,24 +109,33 @@ async function getContentEntriesUncached(root: string): Promise<ContentEntry[]> 
     return [];
   }
 
-  const entries = await Promise.all(files.map((file) => parseMarkdownFile(path.join(baseDir as string, file))));
+  const sourceDirectory = baseDir;
+  return Promise.all(files.sort().map(async (name) => {
+    const filePath = path.join(sourceDirectory, name);
+    return { filePath, file: await fs.readFile(filePath, 'utf8') };
+  }));
+}
+
+async function parseMarkdownSources(sources: MarkdownSource[]): Promise<ContentEntry[]> {
+  const entries = await Promise.all(sources.map(parseMarkdownFile));
   return entries.sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0));
 }
 
 export async function getContentEntries(root: string): Promise<ContentEntry[]> {
+  const sources = await readMarkdownSources(root);
+  if (sources.length === 0) return [];
   if (process.env.NODE_ENV !== 'production') {
-    return getContentEntriesUncached(root);
+    return parseMarkdownSources(sources);
   }
 
-  const existing = cachedEntriesByRoot.get(root);
-  if (existing) {
-    return existing();
-  }
-
-  const cached = unstable_cache(async () => getContentEntriesUncached(root), ['contentEntries', root], {
+  // Data Cache survives builds. Hash the exact source snapshot, including filenames
+  // for inferred slugs, so edits cannot be baked into static pages from an older cache.
+  // Parse this same snapshot only on a miss; do not reread files inside the callback.
+  const hash = createHash('sha256');
+  for (const { filePath, file } of sources) hash.update(JSON.stringify([filePath, file]));
+  const cached = unstable_cache(async () => parseMarkdownSources(sources), ['contentEntries', root, hash.digest('hex')], {
     revalidate: MARKDOWN_CACHE_REVALIDATE_SECONDS,
   });
-  cachedEntriesByRoot.set(root, cached);
   return cached();
 }
 

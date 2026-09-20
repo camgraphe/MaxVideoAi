@@ -37,30 +37,48 @@
     ],
     "evidenceUrls": [
       "https://maxvideoai.com/models/minimax-h3",
-      "https://maxvideoai.com/examples/minimax-h3"
+      "https://maxvideoai.com/examples/hailuo"
     ],
-    "reviewedAt": "2026-08-24"
+    "reviewedAt": "2026-09-21"
+  },
+  {
+    "engineId": "minimax-h3-max",
+    "strengths": [
+      "Short text-directed product and social-video shots with native audio.",
+      "Balanced or quality prompt expansion for 480P and 768P production."
+    ],
+    "bestFor": ["product_video", "social_video", "native_audio"],
+    "considerations": [
+      "Text-to-video is currently available on the website and through MCP; image and mixed-reference modes are not enabled.",
+      "Choose MiniMax H3 when 2K or 4K delivery is required."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/minimax-h3-max",
+      "https://maxvideoai.com/ai-video-engines/minimax-h3-vs-minimax-h3-max",
+      "https://maxvideoai.com/examples/hailuo"
+    ],
+    "reviewedAt": "2026-09-21"
   },
   {
     "engineId": "gemini-omni-flash",
     "strengths": [
-      "Stateful follow-up refinement.",
+      "Video editing and extension from supplied source videos.",
       "Reference-guided shots and short source-video edits."
     ],
     "bestFor": [
-      "conversational_refine",
       "source_edit",
       "reference_guided",
       "product_video"
     ],
     "considerations": [
-      "Use the current model details to confirm the delivery controls required for the brief."
+      "Use the current model details to confirm the delivery controls required for the brief.",
+      "MCP edits use supplied source assets; private conversation-state retakes remain available only in the website workspace."
     ],
     "evidenceUrls": [
       "https://maxvideoai.com/models/gemini-omni-flash",
       "https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-veo-3-1"
     ],
-    "reviewedAt": "2026-08-24"
+    "reviewedAt": "2026-09-21"
   },
   {
     "engineId": "happy-horse-1-1",

@@ -46,7 +46,8 @@ test('next config projects every model alias and tombstone in all locales as one
     }
   }
 
-  assert.equal(expectedSources.size, 147);
+  // Four observed GSC model aliases add one direct redirect in each of three locales.
+  assert.equal(expectedSources.size, 159);
   for (const previous of baseline.modelRedirects) {
     const actual = bySource.get(previous.source);
     assert.ok(actual, `missing historical redirect ${previous.source}`);

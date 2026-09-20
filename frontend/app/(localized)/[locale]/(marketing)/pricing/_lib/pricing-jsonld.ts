@@ -49,11 +49,5 @@ export function buildPricingServiceJsonLd({ canonical, locale }: { canonical: st
           : 'AI pricing comparison',
     category: locale === 'fr' ? 'Tarification' : locale === 'es' ? 'Precios' : 'Pricing',
     url: canonical,
-    offers: {
-      priceCurrency: 'USD',
-      price: '10.00',
-      availability: 'https://schema.org/InStock',
-      url: canonical,
-    },
   });
 }

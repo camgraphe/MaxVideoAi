@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     default: 'MaxVideoAI — AI Video Generator Hub',
     template: '%s — MaxVideoAI',
   },
-  description: 'Generate cinematic AI videos via Sora 2, Veo 3, Pika & more. Pay-as-you-go, no watermarks.',
+  description: 'Create AI videos, images and audio in MaxVideoAI’s web workspace or through MCP integrations. Compare models, see the price before generating and pay as you go.',
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -60,21 +60,11 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
   const homeUrl = `${NORMALIZED_SITE_URL}/`;
   const orgSchema = buildSiteOrganizationSchema();
 
-  const enableSearchSchema = process.env.NEXT_PUBLIC_ENABLE_SEARCH_SCHEMA === 'true';
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     url: homeUrl,
     name: 'MaxVideoAI',
-    ...(enableSearchSchema
-      ? {
-          potentialAction: {
-            '@type': 'SearchAction',
-            target: `${homeUrl}search?q={query}`,
-            'query-input': 'required name=query',
-          },
-        }
-      : {}),
   };
 
   return (

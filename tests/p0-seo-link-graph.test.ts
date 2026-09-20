@@ -341,8 +341,12 @@ test('LLMS accepts a registry-derived projection and publishes the complete P0 s
   const realProjection = llms.buildLlmsModelDiscoveryProjection();
   const realText = llms.buildLlmsText(mcpPublication, realProjection);
   for (const id of P0_IDS) assert.match(realText, new RegExp(`/models/${id}(?:\\)|$)`));
-  assert.match(realText, /LTX 2\.3 Pro \(previous generation\)/);
-  assert.match(realText, /Wan 2\.6 \(previous generation\)/);
+  for (const id of ['ltx-2-3-pro', 'wan-2-6']) {
+    assert.ok(!realProjection.currentModels.some((model) => model.id === id), `${id} must not be featured as current`);
+    assert.ok(!realText.includes(`](https://maxvideoai.com/models/${id})`));
+  }
+  assert.match(realText, /\/ai-video-engines\/ltx-2-3-pro-vs-ltx-2-5-pro\)/);
+  assert.match(realText, /\/ai-video-engines\/wan-2-6-vs-wan-3\)/);
 
   const wanOnlyModels = runtime.listRuntimeModels().map((model) => model.id === 'wan-3'
     ? {

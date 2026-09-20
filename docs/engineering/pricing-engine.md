@@ -216,3 +216,48 @@ The billing adapter supplies the output-only pricing basis, minimum, and fixed a
 ## Product schema offer repair — 2026-09-10
 
 Indexed legacy model pages resolve Product offers independently from pricing-estimator publication. This lets Luma Ray 2, Luma Ray 2 Flash, Wan 2.5, LTX 2 Fast, and LTX 2 reuse their existing canonical or authored prices in JSON-LD without republishing those models in the estimator or changing billing. The two Luma rows that previously had no structured-data amount are recorded in `tests/fixtures/product-schema-offer-fix-2026-09-10.json`; the frozen historical fixture remains unchanged.
+
+The September 2026 machine-readable audit adds an execution-publication guard:
+the Product schema builder requires the registry-derived `surfaces.app.enabled`.
+Deep-legacy LTX 2, LTX 2 Fast and Wan 2.5 retain their historical WebPage,
+FAQ and breadcrumb identity, but emit no purchasable Product/Offer while app
+publication is disabled. The canonical pricing functions and historical
+fixtures are unchanged; executable legacy models such as Luma Ray 2 still
+qualify independently of estimator publication.
+
+
+## Customer-facing Product offer correction — 2026-09-21
+
+The machine-readable audit found 41 incorrect customer Offer amounts across
+32 video and 9 image entries. Some were provider costs (for example H3
+10s / 2K: 130 → 169 cents); others were stale hints in either direction.
+The default executable video/image schema now obtains its amount from the
+existing public scenario owner (`getPresetQuote` / `getImagePresetQuote`).
+Hints may select duration and resolution, but do not supply customer amounts.
+Video scenarios explicitly use text-to-video, native/default audio and no
+references. Image scenarios use one high-quality output and no references.
+Unavailable exact quotes omit the offer rather than falling back to a stale hint.
+
+The 41 reviewed schema-only differences are recorded in
+`tests/fixtures/product-schema-customer-price-fix-2026-09-21.json`. The public
+baseline guard checks every exact previous amount against the immutable
+historical or launch fixture and changes only the two listed schema price
+fields. All 610 projection rows are still checked. Neither historical fixture
+is rewritten. Billing, commercial policy, customer quote calculations, DB
+overrides and stored receipts are unchanged.
+
+`tests/product-schema-customer-price.test.ts` verifies video and per-image
+scenarios in all locales. Explicit Luma offer scenarios and Seedance token
+compatibility profiles remain in their existing owners. In particular, Luma
+Ray 3.2's 5s / 540p offer must not be compared with a 720p preview, and Seedance
+2.0's one-cent provider-reference versus public-rounded-vendor difference is
+not treated as a missing margin. Disabled app entries still cannot emit a
+purchasable Product. Correcting historical Sora page prices does not repromote
+those models in discovery or change their lifecycle.
+
+The model layout computes a single typed `ModelPublicOffer` result and passes it
+to both the localized visible generation example and Product/Offer. The amount-only
+resolver remains the offline baseline interface. The offer name states the same
+scenario as the visible line; it is not labeled a minimum price. Physical return
+destinations are omitted for digital generations; sales-country applicability and
+the existing consumed-generation policy are unchanged.
