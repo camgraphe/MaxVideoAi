@@ -35,6 +35,7 @@ import {
 } from '../frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_lib/blog-post-seo.ts';
 import { getFalEngineBySlug } from '../frontend/src/config/falEngines.ts';
 import { getEditorialProfile } from '../frontend/lib/editorial/profile.ts';
+import { SITE_ORIGIN } from '../frontend/lib/siteOrigin.ts';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -437,7 +438,8 @@ test('marketing JSON-LD builders emit baseline-valid schema payloads', () => {
 test('site Organization schema keeps one canonical complete entity', () => {
   const organization = buildSiteOrganizationSchema();
 
-  assert.equal(organization['@id'], 'https://maxvideoai.com/#organization');
+  // Prebuild also runs on preview deployments; origin policy is covered separately.
+  assert.equal(organization['@id'], `${SITE_ORIGIN}/#organization`);
   assert.equal(organization.name, 'MaxVideoAI');
   assert.equal(organization.alternateName, 'MaxVideo AI');
   assert.match(organization.description, /pay-as-you-go/);
@@ -465,7 +467,7 @@ test('homepage application features use the declared language and canonical prov
     const schema = buildSoftwareSchema({ hero: { subtitle: 'Visible localized subtitle' } } as never, locale);
     assert.equal(schema.inLanguage, locale);
     assert.equal(schema.url, `https://maxvideoai.com${locale === 'en' ? '' : `/${locale}`}`);
-    assert.equal(schema.provider['@id'], 'https://maxvideoai.com/#organization');
+    assert.equal(schema.provider['@id'], `${SITE_ORIGIN}/#organization`);
     assert.match(schema.featureList[0], expected[locale]);
     if (locale !== 'en') assert.doesNotMatch(schema.featureList.join(' '), /Pay-as-you-go|Auto-refunds/);
   }
@@ -546,7 +548,7 @@ test('blog Article schema identifies the visible person while retaining MaxVideo
     '@type': 'Person',
     name: 'Adrien Millot',
     jobTitle: 'Founder & Product Lead',
-    url: 'https://maxvideoai.com/about#adrien-millot',
+    url: `${SITE_ORIGIN}/about#adrien-millot`,
   });
   assert.equal(articleSchema.publisher['@type'], 'Organization');
   assert.equal(articleSchema.publisher.name, 'MaxVideo AI');
