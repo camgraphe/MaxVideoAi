@@ -1,6 +1,7 @@
+import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineCaps } from '@/types/engines';
-import { buildProductSchema } from '../_lib/model-page-schema';
+import { buildProductSchema, type ModelPublicOffer } from '../_lib/model-page-schema';
 
 type BuildModelSchemaPayloadsOptions = {
   canonical: string;
@@ -14,6 +15,7 @@ type BuildModelSchemaPayloadsOptions = {
   localizedModelsUrl: string;
   pageTitle?: string;
   pricingEngine?: EngineCaps;
+  publicOffer?: ModelPublicOffer | null;
   resolvedBreadcrumb: {
     home: string;
     models: string;
@@ -32,6 +34,7 @@ export function buildModelSchemaPayloads({
   localizedModelsUrl,
   pageTitle,
   pricingEngine,
+  publicOffer,
   resolvedBreadcrumb,
 }: BuildModelSchemaPayloadsOptions): object[] {
   const schemaPageTitle = pageTitle ?? heroTitle;
@@ -42,6 +45,8 @@ export function buildModelSchemaPayloads({
     heroTitle,
     heroPosterAbsolute,
     pricingEngine,
+    publicOffer,
+    locale: inLanguage.split(/[-_]/)[0] as AppLocale,
   });
 
   return [

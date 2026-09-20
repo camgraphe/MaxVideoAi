@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "pnpm --dir .. model:registry:check && pnpm media:public-renditions:check && pnpm media:home-posters:check",
+    "prebuild": "pnpm --dir .. model:registry:check && pnpm --dir .. seo:machine:check && pnpm media:public-renditions:check && pnpm media:home-posters:check",
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",

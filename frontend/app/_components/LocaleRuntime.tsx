@@ -32,22 +32,12 @@ export async function LocaleRuntime({ children, locale, clientMessageNamespaces 
   const homeUrl = `${SITE_ORIGIN}/`;
   const orgSchema = buildSiteOrganizationSchema();
 
-  const enableSearchSchema = process.env.NEXT_PUBLIC_ENABLE_SEARCH_SCHEMA === 'true';
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     url: homeUrl,
     name: 'MaxVideoAI',
     inLanguage: localeRegions[locale],
-    ...(enableSearchSchema
-      ? {
-          potentialAction: {
-            '@type': 'SearchAction',
-            target: `${homeUrl}search?q={query}`,
-            'query-input': 'required name=query',
-          },
-        }
-      : {}),
   };
 
   return (

@@ -1850,6 +1850,8 @@
         ],
         "publicSlugs": [
           "pika-2-2",
+          "pika-2-2-text-to-video",
+          "pika-2-2-text-and-image-to-video",
           "pika-image-to-video",
           "pika-image-video"
         ]
@@ -2403,7 +2405,7 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
+          "current": false,
           "familyRank": 1
         },
         "compare": {
@@ -2454,7 +2456,7 @@
         }
       },
       "replacement": null,
-      "lifecycle": "current",
+      "lifecycle": "legacy",
       "successorId": null
     },
     {
@@ -2480,7 +2482,7 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
+          "current": false,
           "familyRank": 0
         },
         "compare": {
@@ -2525,7 +2527,7 @@
         }
       },
       "replacement": null,
-      "lifecycle": "current",
+      "lifecycle": "legacy",
       "successorId": null
     },
     {
@@ -2540,6 +2542,7 @@
         ],
         "publicSlugs": [
           "google-veo-3",
+          "google-veo-3-1",
           "veo-3",
           "veo-3-1-first-last",
           "veo3",
@@ -2699,6 +2702,7 @@
         ],
         "publicSlugs": [
           "veo-3-lite",
+          "google-veo-3-1-lite",
           "veo3-lite",
           "veo3.1-lite",
           "veo3lite"

@@ -213,14 +213,14 @@ function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
     ],
   });
   const hrefs: LocalizedLinkHref[] = [
-    '/ai-video-engines/best-for/cinematic-realism',
-    '/ai-video-engines/best-for/lipsync-dialogue',
-    '/ai-video-engines/best-for/fast-drafts',
-    '/ai-video-engines/best-for/image-to-video',
-    '/ai-video-engines/best-for/ads',
-    '/ai-video-engines/best-for/multi-shot-video',
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'cinematic-realism' } },
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'lipsync-dialogue' } },
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'fast-drafts' } },
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'image-to-video' } },
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'ads' } },
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'multi-shot-video' } },
     '#models-grid',
-    '/ai-video-engines/best-for/fast-drafts',
+    { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: 'fast-drafts' } },
   ];
   const icons = [Film, Mic2, Bolt, ImageIcon, Camera, SlidersHorizontal, Clock3, Gauge];
   return copy.map(([id, title, subtitle, best], index) => ({

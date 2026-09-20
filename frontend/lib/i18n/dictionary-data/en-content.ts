@@ -65,27 +65,27 @@ export const docs: Dictionary['docs'] = {
     hero: {
       title: 'Documentation',
       subtitle:
-        'Start here for onboarding, brand safety, works-with notices, and refund policies. Deeper integration guides live in the authenticated workspace.',
+        'Start here for individual-account onboarding, price-before-generation, jobs, saved media, content checks, and refunds.',
     },
     sections: [
       {
-        title: 'Brief',
+        title: 'Individual account',
         items: [
-          'Fill the brand brief once so saved defaults and routing hints work for everyone.',
-          'Share tone, context, and deliverables so each teammate can render without extra back-and-forth.',
+          'Create your account and sign in to use the video and image workspaces.',
+          'Your wallet, jobs, and saved media stay attached to your account.',
         ],
       },
       {
         title: 'Price system',
         items: [
-          'Preview the exact price before you render. The price chip updates with duration, resolution, and automatic discounts.',
-          'Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily.',
+          'Preview the exact price before you generate. The price chip updates with duration and resolution.',
+          'Wallet funding options and payment history are shown in Billing.',
         ],
       },
       {
         title: 'Refunds',
         items: [
-          'If a render fails, your wallet is automatically refunded within minutes and the job includes a short incident note.',
+          'Failed paid generations are automatically refunded in credits, and the job includes a short incident note.',
           'Itemised receipts list engine, duration, resolution, and a job ID—easy hand-off to finance.',
           {
             type: 'link',
@@ -98,19 +98,19 @@ export const docs: Dictionary['docs'] = {
         ],
       },
       {
-        title: 'Brand-safe filters',
+        title: 'Content checks',
         items: [
-          'We block risky prompts, uploads, and outputs by default—so teams stay within policy without extra babysitting.',
-          'Sensitive cases route to human review with an audit trail and simple escalation options when needed.',
-          'Admins can request custom allowlists or restricted keywords per workspace.',
+          'Model providers apply their own safety checks and may reject a prompt, reference, or generated output.',
+          'Check the selected model’s input restrictions and use reference media you have permission to use.',
+          'If a request is blocked, read the message in the job details and review the prompt and references before trying again.',
         ],
       },
       {
-        title: 'API references',
+        title: 'Product access',
         items: [
-          'Webhook callbacks for renders, refunds, and queue updates.',
-          'REST and GraphQL references live inside the authenticated docs.',
-          'SDK examples cover Node.js, Python, and direct webhook verification.',
+          'Use the web workspace for the product capabilities described in these docs.',
+          'The public MCP guide explains how to connect a supported client and authorize access to your MaxVideoAI account.',
+          'Available actions depend on the connected client. Review the supported tools and generation approval steps in the guide.',
         ],
       },
     ],

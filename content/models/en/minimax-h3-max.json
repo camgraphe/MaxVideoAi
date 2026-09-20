@@ -2,10 +2,10 @@
   "marketingName": "MiniMax H3 Max",
   "versionLabel": "H3 Max",
   "seo": {
-    "title": "MiniMax H3 Max AI Video: Fast 768P, References & Audio",
-    "description": "Generate 5–15-second MiniMax H3 Max videos at 480P or 768P from text, frames, or mixed image, video and audio references."
+    "title": "MiniMax H3 Max: Fast 768P Video & Native Audio",
+    "description": "Generate 5–15-second MiniMax H3 Max videos from text at 480P or 768P with native audio and prompt expansion. Pay per generation on MaxVideoAI."
   },
-  "overview": "MiniMax H3 Max is the focused fast-production Hailuo route for strong prompt adherence, polished 768P visuals, native audio, and multimodal reference direction.",
+  "overview": "MiniMax H3 Max creates short videos from text with prompt expansion, 480P or 768P output, and native audio.",
   "decision": {
     "modelSlug": "minimax-h3-max",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Turn more ideas into moving scenes"
       ],
-      "paragraph": "MiniMax H3 Max generates 5–15-second AI videos in 480P or 768P, with native audio. Start from text, opening and ending images, or mixed references. Choose MiniMax H3 when you need 2K or 4K output.",
+      "paragraph": "MiniMax H3 Max generates 5–15-second AI videos from text in 480P or 768P, with native audio. Text-to-video is currently available on the website and through MCP. Choose MiniMax H3 for image or mixed-reference inputs and 2K or 4K output.",
       "primaryCta": {
         "label": "Generate with MiniMax H3 Max",
         "href": "/app?engine=minimax-h3-max"
@@ -50,7 +50,7 @@
       "badges": [
         "480P / 768P",
         "5–15s",
-        "Mixed references",
+        "Text-to-video",
         "Native audio"
       ],
       "altContext": "MiniMax H3 Max: Contemporary dance on a mirrored stage"
@@ -62,9 +62,9 @@
         "tone": "quality"
       },
       {
-        "title": "Text, frames, and references",
-        "body": "Start from a prompt, animate an opening image with an optional ending image, or combine mixed references.",
-        "tone": "reference"
+        "title": "Direct your scene with text",
+        "body": "Describe the subject, action, camera and sound. Choose balanced or quality prompt expansion to develop the scene.",
+        "tone": "quality"
       },
       {
         "title": "5–15-second clips",
@@ -99,10 +99,6 @@
       {
         "title": "Text-to-video",
         "body": "Define the subject, visible change, camera path, and sound response."
-      },
-      {
-        "title": "Image-to-video",
-        "body": "Animate one opening image by describing motion and camera."
       }
     ],
     "pricingCopy": {
@@ -113,8 +109,8 @@
       "ctaHref": "/app?engine=minimax-h3-max"
     },
     "meta": {
-      "title": "MiniMax H3 Max AI Video: Fast 768P, References & Audio",
-      "description": "Generate 5–15-second MiniMax H3 Max videos at 480P or 768P from text, frames, or mixed image, video and audio references."
+      "title": "MiniMax H3 Max: Fast 768P Video & Native Audio",
+      "description": "Generate 5–15-second MiniMax H3 Max videos from text at 480P or 768P with native audio and prompt expansion. Pay per generation on MaxVideoAI."
     }
   },
   "prompting": {
@@ -146,7 +142,7 @@
       "Repeat only essential continuity anchors."
     ],
     "engineWhy": [
-      "MiniMax H3 Max is the focused fast-production Hailuo route for strong prompt adherence, polished 768P visuals, native audio, and multimodal reference direction."
+      "MiniMax H3 Max creates short videos from text with prompt expansion, 480P or 768P output, and native audio."
     ],
     "demo": {
       "title": "Transforming ceramic lamp",
@@ -195,10 +191,6 @@
       {
         "id": "product",
         "label": "Product"
-      },
-      {
-        "id": "reference",
-        "label": "References"
       }
     ],
     "proofItems": [

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { getModelRegistryEntryById } from '../frontend/config/model-registry';
+import { getModelFamilyExamplesPageConfig } from '../frontend/config/model-families';
 
 import {
   getAgentModelGuidance,
@@ -39,12 +41,13 @@ test('guidance exposes exactly the reviewed engine records without pricing data'
     'ltx-2-5-fast',
     'ltx-2-5-pro',
     'minimax-h3',
+    'minimax-h3-max',
     'seedance-2-5',
     'wan-3',
     'wan-3-prime',
   ]);
   for (const entry of reviewed) {
-    assert.match(entry.reviewedAt, /^2026-(08-24|09-01)$/);
+    assert.match(entry.reviewedAt, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(entry.strengths.length >= 1 && entry.strengths.length <= 4);
     assert.ok(entry.bestFor.length >= 1 && entry.bestFor.length <= 5);
     assert.ok(entry.considerations.length >= 1 && entry.considerations.length <= 4);
@@ -56,6 +59,27 @@ test('guidance exposes exactly the reviewed engine records without pricing data'
   assert.equal(getAgentModelGuidance('seedance-2-5')?.bestFor.includes('product_video'), false);
   assert.equal(getAgentModelGuidance('ltx-2-5-fast')?.bestFor.includes('native_audio'), true);
   assert.equal(getAgentModelGuidance('unknown-model'), null);
+});
+
+test('authored model and example evidence uses published canonical registry routes', () => {
+  for (const guidance of listAgentModelGuidance()) {
+    const model = getModelRegistryEntryById(guidance.engineId);
+    assert.ok(model, guidance.engineId);
+    for (const evidence of guidance.evidenceUrls) {
+      const url = new URL(evidence);
+      if (url.pathname.startsWith('/models/')) {
+        assert.equal(model.publication.model.published, true, evidence);
+        assert.equal(url.pathname, `/models/${model.slug}`, evidence);
+      }
+      if (url.pathname.startsWith('/examples/')) {
+        assert.ok(model.family, evidence);
+        const examples = getModelFamilyExamplesPageConfig(model.family);
+        assert.ok(examples && examples.stage !== 'hidden', evidence);
+        assert.equal(url.pathname, `/examples/${model.family}`, evidence);
+        assert.ok(examples.publishedModelSlugs.includes(model.slug), evidence);
+      }
+    }
+  }
 });
 
 test('guidance parser rejects invalid authored entries', () => {

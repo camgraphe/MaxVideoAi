@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type {
@@ -83,7 +84,7 @@ export type PayAsYouGoPriceLookup = {
   body: string;
   engineIcon: PayAsYouGoEngineIcon;
   price: string;
-  href: string;
+  href: LocalizedLinkHref;
   modelHref?: string;
 };
 
@@ -102,7 +103,7 @@ export type PayAsYouGoExampleCost = {
   engine: string;
   price: string;
   context: string;
-  href: string;
+  href: LocalizedLinkHref;
 };
 
 export type PayAsYouGoPageData = {
@@ -125,7 +126,7 @@ export type PayAsYouGoPageData = {
   quoteFactors: PayAsYouGoContent['quoteFactors'];
   pricing: Omit<PayAsYouGoContent['pricing'], 'bestFor'> & {
     rows: PayAsYouGoModelRow[];
-    fullMatrixHref: string;
+    fullMatrixHref: LocalizedLinkHref;
   };
   priceLookups: Omit<PayAsYouGoContent['priceLookups'], 'items'> & { items: PayAsYouGoPriceLookup[] };
   exampleCosts: Pick<PayAsYouGoContent['exampleCosts'], 'header'> & { items: PayAsYouGoExampleCost[] };
@@ -248,7 +249,7 @@ function buildPriceLookups(
       ...copy,
       engineIcon: row?.engineIcon ?? { id: config.id, label: copy.title },
       price: row?.quotes[config.presetId]?.display ?? liveQuote,
-      href: `/pricing#${row.anchorId}`,
+      href: { pathname: '/pricing', hash: row.anchorId } satisfies LocalizedLinkHref,
       modelHref: row?.modelHref,
     }];
   });
@@ -271,7 +272,7 @@ function buildExampleCosts(
       engine: row.engineName,
       price: row.quotes[example.presetId]?.display ?? liveQuote,
       context: pricingHub.video.presets.find((preset) => preset.id === example.presetId)?.label ?? settingsLabel,
-      href: `/pricing#${row.anchorId}`,
+      href: { pathname: '/pricing', hash: row.anchorId } satisfies LocalizedLinkHref,
     }];
   });
   return examples.slice(0, 6);
@@ -353,7 +354,7 @@ export function buildPayAsYouGoPageData({
     workflow: content.workflow,
     mcpPlanning: mcpLink ? { ...content.mcpPlanning, ...mcpLink } : null,
     quoteFactors: content.quoteFactors,
-    pricing: { ...pricingCopy, rows, fullMatrixHref: '/pricing#video-pricing' },
+    pricing: { ...pricingCopy, rows, fullMatrixHref: { pathname: '/pricing', hash: 'video-pricing' } },
     priceLookups: {
       ...content.priceLookups,
       items: buildPriceLookups(

@@ -2667,7 +2667,7 @@
     "mcpGuide": {
       "href": "/fr/docs/mcp",
       "title": "Guide technique du MCP MaxVideoAI",
-      "description": "Clients vérifiés, OAuth, registre d’outils en lecture seule, confidentialité, limites et récupération."
+      "description": "Clients compatibles, OAuth, outils disponibles, confirmation des générations, confidentialité, limites et récupération."
     },
     "toc": {
       "title": "Sur cette page",
@@ -2709,19 +2709,19 @@
         ]
       },
       {
-        "title": "Filtres de sécurité de marque",
+        "title": "Contrôles des contenus",
         "items": [
-          "Nous bloquons par défaut prompts, imports et sorties risqués afin de rester conformes sans surveillance constante.",
-          "Les cas sensibles passent en revue humaine avec piste d’audit et options d’escalade simples.",
-          "Les administrateurs peuvent demander des listes d’autorisation ou de blocage personnalisées par espace de travail."
+          "Les fournisseurs de modèles appliquent leurs propres contrôles de sécurité et peuvent refuser un prompt, une référence ou un résultat généré.",
+          "Vérifiez les restrictions du modèle sélectionné et utilisez des médias de référence que vous êtes autorisé à utiliser.",
+          "Si une demande est bloquée, consultez le message dans les détails du job et vérifiez le prompt et les références avant de réessayer."
         ]
       },
       {
         "title": "Accès au produit",
         "items": [
           "Utilisez l’espace web pour les fonctionnalités décrites dans cette documentation.",
-          "Les instructions de connexion MCP apparaissent uniquement pour les comptes inclus dans un déploiement activé.",
-          "Les interfaces programmatiques ne sont publiées qu’après validation de leurs propres preuves et critères de déploiement."
+          "Le guide MCP public explique comment connecter un client compatible et autoriser l’accès à votre compte MaxVideoAI.",
+          "Les actions disponibles dépendent du client connecté. Consultez les outils compatibles et les étapes de confirmation des générations dans le guide."
         ]
       }
     ],
@@ -2732,9 +2732,9 @@
     "onboardingChecklist": {
       "title": "Checklist d’onboarding",
       "items": [
-        "✅ Remplir le brief de marque (ton, objectifs, livrables).",
-        "✅ Ajouter 1–3 prompts d’exemple et des assets de référence.",
-        "✅ Définir les ratios par défaut et la préférence audio."
+        "✅ Choisissez un modèle et un mode de génération.",
+        "✅ Rédigez un prompt et ajoutez les références requises par ce mode.",
+        "✅ Vérifiez les réglages disponibles et le prix avant de générer."
       ],
       "note": "Vous pouvez modifier vos entrées et préférences avant chaque génération."
     },
@@ -2752,13 +2752,13 @@
     "safetyQuick": {
       "title": "Aperçu rapide",
       "items": [
-        "• Blocs par défaut : contenu illégal, sexuel explicite, haine/harcèlement, doxxing.",
-        "• Vérifications média : uploads/rendus risqués mis en quarantaine pour revue.",
-        "• Contrôles admin : demander des listes d’autorisation ou des mots-clés restreints par espace de travail."
+        "• Entrées : les types de références acceptés et leurs limites varient selon le modèle et le mode de génération.",
+        "• Contrôles du fournisseur : une demande peut être refusée selon les règles de contenu du modèle sélectionné.",
+        "• Détails du job : consultez le statut et le message d’erreur si une génération échoue."
       ],
-      "note": "Les cas sensibles passent en revue humaine avec piste d’audit et options d’escalade."
+      "note": "Vérifiez les médias générés avant de les utiliser ou de les publier."
     },
-    "safetyCallout": "⚠️ Certains usages sensibles peuvent exiger une liste d’autorisation admin ou une revue humaine.",
+    "safetyCallout": "Vérifiez le résultat avant publication, notamment s’il contient des personnes, des marques ou des informations personnelles.",
     "seeAlsoLabel": "Voir aussi :",
     "seeAlso": {
       "onboarding": [
@@ -2826,7 +2826,7 @@
       "heading": "Bibliothèque",
       "liveLabel": "En ligne",
       "comingSoonLabel": "À venir",
-      "summaryLive": "Parcourez les assets, presets et prompts de référence enregistrés dans votre compte.",
+      "summaryLive": "Parcourez les médias enregistrés dans votre compte et réutilisez-les comme références dans les modes de génération compatibles.",
       "summarySoon": "Documentation à venir."
     },
     "feedback": {
@@ -2866,8 +2866,8 @@
           "answer": "Les générations payantes échouées sont automatiquement remboursées; chaque job inclut une courte note d’incident."
         },
         {
-          "question": "Peut-on contourner le brand-safety pour des projets spécifiques ?",
-          "answer": "Oui. Les admins peuvent demander des allowlists ou des mots-clés restreints par studio; les cas sensibles passent en revue humaine avec une piste d’audit."
+          "question": "Pourquoi une génération peut-elle être bloquée ?",
+          "answer": "Les fournisseurs de modèles appliquent leurs propres contrôles de contenu. Si une demande est bloquée, consultez le message du job et vérifiez le prompt et les médias de référence avant de réessayer."
         }
       ]
     },

@@ -1,16 +1,8 @@
-import type { EngineAvailability } from '@/types/engines';
 import { getFalEngineBySlug } from '@/config/falEngines';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 
 const SITE = SITE_ORIGIN.replace(/\/$/, '');
-
-const AVAILABILITY_MAP: Record<EngineAvailability, string> = {
-  available: 'https://schema.org/InStock',
-  limited: 'https://schema.org/LimitedAvailability',
-  waitlist: 'https://schema.org/PreOrder',
-  paused: 'https://schema.org/Discontinued',
-};
 
 export function buildModelServiceJsonLd(slug: string) {
   const engine = getFalEngineBySlug(slug);
@@ -32,7 +24,6 @@ export function buildModelServiceJsonLd(slug: string) {
       ? 'Generate AI still images with this model on MaxVideoAI.'
       : 'Generate AI videos with this model on MaxVideoAI.');
   const name = engine.cardTitle ?? engine.marketingName;
-  const availability = AVAILABILITY_MAP[engine.availability] ?? AVAILABILITY_MAP.limited;
 
   return {
     '@context': 'https://schema.org',
@@ -48,13 +39,6 @@ export function buildModelServiceJsonLd(slug: string) {
     },
     areaServed: 'Worldwide',
     url,
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'EUR',
-      price: '10.00',
-      availability,
-      url,
-    },
   };
 }
 

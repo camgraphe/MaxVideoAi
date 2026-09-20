@@ -294,11 +294,11 @@
       ],
       "keySpecs": {
         "textToVideo": "Supported",
-        "imageToVideo": "Supported",
-        "videoToVideo": "Supported through mixed reference video workflows",
-        "firstLastFrame": "Supported (optional end image in image-to-video mode)",
-        "referenceImageStyle": "Supported (up to 9 reference images; 12 mixed references total)",
-        "referenceVideo": "Supported (up to 3 clips, 2–15 seconds each, 15 seconds combined)",
+        "imageToVideo": "Not supported (not exposed in current MaxVideoAI route)",
+        "videoToVideo": "Not supported (not exposed in current MaxVideoAI route)",
+        "firstLastFrame": "Not supported (not exposed in current MaxVideoAI route)",
+        "referenceImageStyle": "Not supported (not exposed in current MaxVideoAI route)",
+        "referenceVideo": "Not supported (not exposed in current MaxVideoAI route)",
         "maxResolution": "768P",
         "maxDuration": "5–15s",
         "aspectRatios": [

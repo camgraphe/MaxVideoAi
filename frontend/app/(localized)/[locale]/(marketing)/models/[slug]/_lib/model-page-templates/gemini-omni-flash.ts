@@ -32,7 +32,7 @@ export const geminiOmniFlashTemplateConfig: ModelPageTemplateConfig = {
         highlightKey: 'mostPopular',
       },
       { id: '10s-4k-audio', seconds: 10, resolution: '4k', audio: true, labelKey: 'deliveryRender' },
-      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo4K' },
     ],
   },
   sections: {

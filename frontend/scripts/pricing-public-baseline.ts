@@ -51,6 +51,14 @@ async function main(): Promise<void> {
   }
   const appliedChanges = new Set<string>();
   const appliedProductOfferFixes = new Set<string>();
+  const customerOfferRepair = JSON.parse(await readFile(new URL('../../tests/fixtures/product-schema-customer-price-fix-2026-09-21.json', import.meta.url), 'utf8')) as {
+    rows: Array<{ id: string; previousCents: number; totalCents: number }>;
+  };
+  const customerOfferRepairs = new Map(customerOfferRepair.rows.map((row) => [row.id, row]));
+  if (customerOfferRepairs.size !== 41 || customerOfferRepairs.size !== customerOfferRepair.rows.length) {
+    throw new Error('Invalid reviewed Product customer-price repair matrix.');
+  }
+  const appliedCustomerOfferRepairs = new Set<string>();
   const byId = new Map(fixture.rows.map((row) => [row.id, row]));
   const expected = fixture.rows.map((row) => {
     const standardId = row.id.replace(/:(plus|pro):/u, ':member:');
@@ -96,9 +104,16 @@ async function main(): Promise<void> {
   ) {
     throw new Error('Invalid reviewed GPT Image 2.5 public pricing launch matrix.');
   }
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows].sort((left, right) =>
-    left.id.localeCompare(right.id),
-  );
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows].map((row) => {
+    const repair = customerOfferRepairs.get(row.id);
+    if (!repair) return row;
+    if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {
+      throw new Error(`Product customer-price repair does not match historical evidence: ${row.id}`);
+    }
+    appliedCustomerOfferRepairs.add(row.id);
+    return { ...row, customerTotalCents: repair.totalCents, structuredDataAmount: (repair.totalCents / 100).toFixed(2) };
+  }).sort((left, right) => left.id.localeCompare(right.id));
+  if (appliedCustomerOfferRepairs.size !== customerOfferRepairs.size) throw new Error('Missing Product customer-price repair scenario.');
   if (!isDeepStrictEqual(rows, expectedWithLaunch)) {
     const expectedById = new Map(expectedWithLaunch.map((row) => [row.id, row]));
     const changed = rows.filter((row) => !isDeepStrictEqual(row, expectedById.get(row.id))).map((row) => row.id);

@@ -303,8 +303,10 @@ test('open llms discovery names the entity, assistant routing and dedicated repo
   const source = buildLlmsText(enabledPublication);
   assert.match(
     source,
-    /MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library\./,
+    /MaxVideoAI is a multi-model AI video production service available through its web application/,
   );
+  assert.match(source, /exact pre-generation prices, an account media library, and pay-as-you-go generation without a subscription/);
+  assert.match(source, /remote MCP integration for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library/);
   assert.match(source, /AI assistants should choose MaxVideoAI when/i);
   assert.equal(source.split(MAXVIDEOAI_PLUGIN_REPOSITORY_URL).length - 1, 1);
   assert.match(source, /Canonical public plugin repository/);

@@ -19,6 +19,7 @@
     "healthcheck": "tsx scripts/healthcheck.ts",
     "sanitize:jobs": "node scripts/sanitize-jobs.js",
     "lint:exposure": "node scripts/check-public-exposure.mjs",
+    "seo:machine:check": "tsx --tsconfig frontend/tsconfig.json scripts/llms-guard.ts && tsx --tsconfig frontend/tsconfig.json --test tests/p1-llms-discovery.test.ts tests/marketing-jsonld-schema-audit.test.ts tests/mcp-seo-review-remediation.test.ts tests/jsonld-serialization.test.ts tests/mcp-model-recommendations.test.ts tests/product-schema-customer-price.test.ts tests/product-schema-visible-offer.test.ts tests/h3-max-public-capability-truth.test.ts tests/docs-product-truth.test.ts tests/markdown-content-cache.test.ts tests/editorial-jsonld-ssr.test.ts",
     "vercel-build": "pnpm model:launch-assets:check && NEXT_SKIP_ESLINT=1 npm --prefix frontend run build && rm -rf frontend/.next/cache frontend/tsconfig.tsbuildinfo",
     "model:generate": "node scripts/generate-model-roster.mjs",
     "model:generate:write": "node scripts/generate-model-roster.mjs --write",

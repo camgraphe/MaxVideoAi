@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { FEATURES } from '@/content/feature-flags';
 import { Link } from '@/i18n/navigation';
@@ -19,6 +18,7 @@ import {
   resolveDocsEntryPublication,
 } from '../_lib/docs-index-data';
 import { DocsArticleAttribution } from '../_components/DocsArticleAttribution';
+import { DocsArticleJsonLdScripts } from '../_components/DocsArticleJsonLdScripts';
 
 interface Params {
   locale?: AppLocale;
@@ -282,22 +282,14 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           </p>
         ) : null}
       </article>
-      <Script id={`docs-breadcrumb-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
-        {JSON.stringify(breadcrumbJsonLd)}
-      </Script>
-      {docJsonLd ? (
-        <Script id={`docs-article-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
-          {JSON.stringify(docJsonLd)}
-        </Script>
-      ) : null}
-      {(doc.slug !== 'mcp' || publication.indexable) ? doc.structuredData?.map((json, index) => (
-        <Script
-          key={`docs-jsonld-${doc.slug}-${index}`}
-          id={`docs-jsonld-${doc.slug}-${index}`}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: json }}
-        />
-      )) : null}
+      <DocsArticleJsonLdScripts
+        locale={locale}
+        slug={doc.slug}
+        breadcrumb={breadcrumbJsonLd}
+        article={docJsonLd}
+        structuredData={doc.structuredData}
+        includeAuthoredData={doc.slug !== 'mcp' || publication.indexable}
+      />
     </div>
   );
 }

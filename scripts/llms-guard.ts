@@ -18,6 +18,9 @@ const REQUIRED_URLS = [
   'https://maxvideoai.com/docs',
   'https://maxvideoai.com/models/veo-3-1',
   'https://maxvideoai.com/models/kling-3-pro',
+  'https://maxvideoai.com/models/minimax-h3',
+  'https://maxvideoai.com/models/minimax-h3-max',
+  'https://maxvideoai.com/models/seedance-2-5',
   'https://maxvideoai.com/legal/privacy',
   'https://maxvideoai.com/legal/terms',
 ];
@@ -47,6 +50,9 @@ const FORBIDDEN_EXACT_URLS = [
   'https://maxvideoai.com/models/kling',
   'https://maxvideoai.com/privacy',
   'https://maxvideoai.com/terms',
+  'https://maxvideoai.com/models/sora-2',
+  'https://maxvideoai.com/models/sora-2-pro',
+  'https://maxvideoai.com/ai-video-engines/grok-imagine-video-1-5-vs-sora-2',
 ];
 
 const FORBIDDEN_URL_PATTERNS = [

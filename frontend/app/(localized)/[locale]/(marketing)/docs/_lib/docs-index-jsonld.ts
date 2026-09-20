@@ -77,20 +77,3 @@ export function buildDocsBreadcrumbJsonLd({ content, metadataUrls, site }: DocsJ
     ],
   };
 }
-
-export function buildDocsFaqJsonLd({ content }: DocsJsonLdOptions) {
-  const jsonLdCopy = content.jsonLd ?? {};
-
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: (jsonLdCopy.faq ?? []).map((entry: { question: string; answer: string }) => ({
-      '@type': 'Question',
-      name: entry.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: entry.answer,
-      },
-    })),
-  };
-}
