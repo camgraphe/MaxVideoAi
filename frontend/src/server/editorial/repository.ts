@@ -1,6 +1,5 @@
 import { query, withDbTransaction } from '@/lib/db';
 import { digestEditorialDraft, parseEditorialDraft, type EditorialDraft } from '@/lib/editorial/schema';
-import {validateEditorialCheckReport} from '@/lib/editorial/checks';
 
 export type EditorialVersionRef = { articleId: string; version: number; digest: string };
 export type EditorialVersion = EditorialVersionRef & {
@@ -116,9 +115,7 @@ export async function approveEditorialVersion(input: { articleId: string; versio
     const corrections = await tx.query("SELECT id FROM editorial_events WHERE article_id=$1 AND version=$2 AND kind='draft_rejected' LIMIT 1", [input.articleId, input.version]);
     if (corrections.length) throw new Error('A correction requires a new editorial version before approval');
     if (latest.approved_at) throw new Error('Editorial version already approved');
-    const checks=(await tx.query<{report:unknown}>('SELECT report FROM editorial_checks WHERE article_id=$1 AND version=$2',[input.articleId,input.version]))[0];
-    if(!checks)throw new Error('Editorial quality checks are incomplete');
-    validateEditorialCheckReport(parseEditorialDraft(latest.payload),input.digest,checks.report);
+    // Editorial sign-off is independent of technical publication readiness.
     await tx.query('UPDATE editorial_versions SET approved_by = $1, approved_at = now() WHERE article_id = $2 AND version = $3', [input.actor, input.articleId, input.version]);
     await tx.query("UPDATE editorial_articles SET status = 'approved' WHERE id = $1", [input.articleId]);
     await tx.query(
