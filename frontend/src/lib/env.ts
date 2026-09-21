@@ -42,7 +42,6 @@ export const ENV = {
   CHECKOUT_GUARD_HASH_SECRET: getOptionalEnv('CHECKOUT_GUARD_HASH_SECRET'),
   CRON_SECRET: getOptionalEnv('CRON_SECRET'),
   EMAIL_FROM: getOptionalEnv('EMAIL_FROM'),
-  EMAIL_FROM_NAME: getOptionalEnv('EMAIL_FROM_NAME'),
   BREVO_SMTP_HOST: getOptionalEnv('BREVO_SMTP_HOST') ?? 'smtp-relay.sendinblue.com',
   BREVO_SMTP_PORT: getOptionalEnv('BREVO_SMTP_PORT') ?? '587',
   BREVO_SMTP_USERNAME: getOptionalEnv('BREVO_SMTP_USERNAME'),

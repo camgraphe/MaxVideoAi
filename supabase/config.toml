@@ -128,7 +128,8 @@ additional_redirect_urls = [
   "https://maxvideoai.com/app/*",
   "https://maxvideoai.com/login",
   "https://maxvideoai.com/app/login",
-  "https://maxvideoai.com/app/reset-password",
+  "https://maxvideoai.com/auth/reset-password",
+  "https://maxvideoai.com/auth/callback",
   "http://localhost:3000/*"
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
@@ -191,20 +192,19 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
-# [auth.email.smtp]
-# enabled = true
-# host = "smtp.sendgrid.net"
-# port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
-
-# Uncomment to customize email template
-[auth.email.template.confirm_signup]
-subject = "Confirme ton compte MaxVideo AI"
+# Hosted SMTP is configured in the dashboard (Brevo); credentials are never stored here.
+# Regenerate with: node scripts/email/auth-templates.mjs
+[auth.email.template.confirmation]
+subject = "MaxVideoAI — Confirm your email"
 content_path = "./supabase/templates/confirm-signup.html"
+
+[auth.email.template.recovery]
+subject = "MaxVideoAI — Reset your password"
+content_path = "./supabase/templates/reset-password.html"
+
+[auth.email.template.magic_link]
+subject = "MaxVideoAI — Your sign-in link"
+content_path = "./supabase/templates/magic-link.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

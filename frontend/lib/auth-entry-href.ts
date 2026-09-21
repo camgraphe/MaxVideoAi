@@ -1,4 +1,5 @@
 import { safeInternalReturnTarget as normalizeInternalTarget } from './auth-return-target';
+import type { AppLocale } from '@/i18n/locales';
 
 export type AuthEntryMode = 'signup' | 'signin';
 
@@ -15,7 +16,7 @@ export function buildAuthReturnTarget(
   return normalizedSearch ? `${safePathname}?${normalizedSearch}` : safePathname;
 }
 
-export function buildLoginHref({ mode, nextPath }: { mode: AuthEntryMode; nextPath: string }): string {
+export function buildLoginHref({ mode, nextPath, locale }: { mode: AuthEntryMode; nextPath: string; locale?: AppLocale }): string {
   const safeNextPath = normalizeInternalTarget(nextPath);
-  return `/login?mode=${mode}&next=${encodeURIComponent(safeNextPath)}`;
+  return `/login?mode=${mode}&next=${encodeURIComponent(safeNextPath)}${locale ? `&lang=${locale}` : ''}`;
 }

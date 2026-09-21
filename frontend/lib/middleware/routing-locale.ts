@@ -168,7 +168,7 @@ function serializeHostLocaleCookie(name: string, locale: string, maxAge: number)
   return `${name}=${encodeURIComponent(locale)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
 }
 
-function resolveSharedLocaleCookieDomain(hostname: string): string | undefined {
+export function resolveSharedLocaleCookieDomain(hostname: string): string | undefined {
   const normalized = hostname.trim().toLowerCase();
   return normalized === 'maxvideoai.com' || normalized.endsWith('.maxvideoai.com')
     ? '.maxvideoai.com'
@@ -280,12 +280,49 @@ export function resolveLangParamRedirect(req: NextRequest, pathname: string): Ne
   }
   const targetLocale = lang as AppLocale;
   const { pathWithoutLocale } = splitLocaleFromPath(pathname);
-  const localizedPath = localizePathForLocale(targetLocale, pathWithoutLocale);
+  const localizedPath = shouldHandleLocale(pathWithoutLocale)
+    ? localizePathForLocale(targetLocale, pathWithoutLocale)
+    : pathWithoutLocale;
   const redirectUrl = req.nextUrl.clone();
   redirectUrl.pathname = localizedPath;
   redirectUrl.searchParams.delete('lang');
   const response = NextResponse.redirect(redirectUrl, 307);
+  response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+  // The explicit choice must not be replaced by the previous page's language
+  // when the clean URL is requested after this redirect.
+  response.headers.set('Referrer-Policy', 'no-referrer');
   const sharedCookieDomain = resolveSharedLocaleCookieDomain(req.nextUrl.hostname);
   setLocaleCookies(response, targetLocale, sharedCookieDomain);
+  return response;
+}
+
+// Public pages are cached by URL; their language must not depend on a cookie.
+// Persist that URL language only when a visitor enters the cookie-based app.
+export function createCoreLocaleResponse(req: NextRequest, pathname: string): NextResponse | null {
+  if (req.method !== 'GET' || req.headers.has('next-router-prefetch') || req.headers.has('next-router-segment-prefetch')) return null;
+  if (req.headers.get('purpose') === 'prefetch' || req.headers.get('sec-purpose')?.includes('prefetch')) return null;
+  const destination = req.headers.get('sec-fetch-dest');
+  // Next.js strips the RSC header before middleware; actual client navigations
+  // still use fetch's "empty" destination. Exclude prefetch separately above.
+  if (destination && destination !== 'document' && destination !== 'empty') return null;
+  if (!/^\/(?:login|app|generate|billing|dashboard|jobs|settings|account|connect)(?:\/|$)/.test(pathname)) return null;
+  const referer = req.headers.get('referer');
+  if (!referer) return null;
+  let source: URL;
+  try {
+    source = new URL(referer);
+  } catch {
+    return null;
+  }
+  if (source.origin !== req.nextUrl.origin) return null;
+  const { pathWithoutLocale } = splitLocaleFromPath(source.pathname);
+  if (!shouldHandleLocale(pathWithoutLocale)) return null;
+  const locale = extractLocaleFromPathname(source.pathname) ?? 'en';
+  if (req.cookies.get(LOCALE_COOKIE)?.value === locale && req.cookies.get(NEXT_LOCALE_COOKIE)?.value === locale) return null;
+  req.cookies.set(LOCALE_COOKIE, locale);
+  req.cookies.set(NEXT_LOCALE_COOKIE, locale);
+  const response = NextResponse.next({ request: { headers: req.headers } });
+  response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+  setLocaleCookies(response, locale, resolveSharedLocaleCookieDomain(req.nextUrl.hostname));
   return response;
 }

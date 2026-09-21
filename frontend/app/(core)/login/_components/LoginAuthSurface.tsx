@@ -28,6 +28,7 @@ type LoginAuthSurfaceProps = {
   formAttention: boolean;
   signupSuggestion: SignupSuggestion | null;
   isGoogleOAuthStarting: boolean;
+  isResetSending: boolean;
   acceptTerms: boolean;
   ageConfirmed: boolean;
   marketingOptIn: boolean;
@@ -86,6 +87,7 @@ export function LoginAuthSurface({
   formAttention,
   signupSuggestion,
   isGoogleOAuthStarting,
+  isResetSending,
   acceptTerms,
   ageConfirmed,
   marketingOptIn,
@@ -404,8 +406,8 @@ export function LoginAuthSurface({
                 {authCopy.links.backToSignIn}
               </Button>
             </div>
-            <Button type="submit" variant="outline" className="w-full">
-              {authCopy.actions.reset}
+            <Button type="submit" variant="outline" className="w-full" disabled={isResetSending} aria-busy={isResetSending}>
+              {isResetSending ? authCopy.feedback.sendingReset : authCopy.actions.reset}
             </Button>
           </form>
         )}

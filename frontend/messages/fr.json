@@ -6851,7 +6851,9 @@
       "accountRedirecting": "Compte créé. Redirection…",
       "confirmEmail": "Si votre compte nécessite une confirmation, consultez vos e-mails. Vous avez déjà un compte ? Connectez-vous ou choisissez « Mot de passe oublié ? » sur le formulaire de connexion pour récupérer votre accès.",
       "sendingReset": "Envoi du lien…",
-      "resetSent": "E-mail de réinitialisation envoyé.",
+      "resetSent": "Si un compte existe pour cette adresse e-mail, vous recevrez un lien de réinitialisation. Vérifiez votre boîte de réception et vos courriers indésirables.",
+      "resetUnavailable": "Impossible d’envoyer le lien de réinitialisation. Réessayez plus tard. Si le problème persiste, contactez l’assistance.",
+      "resetRateLimited": "Trop de demandes. Patientez quelques minutes avant de demander un nouveau lien.",
       "googleUnavailable": "La connexion Google est indisponible car l’URL de redirection n’a pas pu être déterminée.",
       "googleRedirecting": "Redirection vers Google…",
       "completingSignIn": "Finalisation de la connexion…",
@@ -8468,5 +8470,25 @@
     "body": "Nous ne trouvons pas cette URL. Elle est peut-etre obsolete ou n'a jamais existe. Utilisez les liens ci-dessous pour continuer a explorer MaxVideoAI.",
     "homeLabel": "Retour a l'accueil",
     "modelsLabel": "Voir les modeles video"
+  },
+  "passwordRecovery": {
+    "title": "Choisissez un nouveau mot de passe",
+    "intro": "Continuez pour vérifier votre lien de réinitialisation.",
+    "verify": "Continuer",
+    "verifying": "Vérification du lien…",
+    "password": "Nouveau mot de passe",
+    "confirm": "Confirmez le nouveau mot de passe",
+    "save": "Enregistrer le nouveau mot de passe",
+    "saving": "Enregistrement…",
+    "saved": "Votre mot de passe a été modifié.",
+    "continueToApp": "Accéder à l’application",
+    "requestNew": "Demander un nouveau lien",
+    "invalid": "Ce lien est invalide ou a expiré. Demandez-en un nouveau. Si vous avez changé de navigateur, essayez d’ouvrir le lien initial dans le navigateur utilisé pour le demander.",
+    "tooShort": "Utilisez au moins 6 caractères.",
+    "mismatch": "Les mots de passe ne correspondent pas.",
+    "weak": "Choisissez un mot de passe plus robuste.",
+    "same": "Choisissez un mot de passe différent du précédent.",
+    "unavailable": "Impossible de modifier votre mot de passe. Réessayez.",
+    "ready": "Saisissez et confirmez votre nouveau mot de passe."
   }
 }

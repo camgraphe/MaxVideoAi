@@ -54,11 +54,11 @@ export function getBrowserAuthRedirectOrigin(): string {
   return window.location.origin;
 }
 
-export function buildAuthCallbackRedirect(origin: string, nextPath: string): string | undefined {
+export function buildAuthCallbackRedirect(origin: string, nextPath: string, locale?: Locale): string | undefined {
   const trimmed = origin.trim();
   if (!trimmed) return undefined;
   const base = trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
-  return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
+  return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}${locale ? `&lang=${locale}` : ''}`;
 }
 
 export function markPendingGoogleLogin(
