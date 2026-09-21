@@ -219,7 +219,7 @@ test('human manifests and MCP discovery metadata expose one canonical public ide
   }
   assert.match(
     discovery,
-    /0\.3\.5 is the active latest public Registry record[\s\S]{0,220}0\.3\.4[\s\S]{0,120}unpublished/i,
+    /Registry publication is separate from the package release[\s\S]{0,350}0\.3\.4[\s\S]{0,120}unpublished/i,
   );
 });
 
@@ -418,7 +418,7 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   const expectedReviewDates: Record<(typeof guideNames)[number], string> = {
     'chatgpt.md': '2026-09-16',
     'claude.md': '2026-08-28',
-    'codex.md': '2026-09-16',
+    'codex.md': '2026-09-22',
     'generic-mcp.md': '2026-08-28',
     'privacy-and-permissions.md': '2026-09-16',
     'troubleshooting.md': '2026-09-16',
@@ -573,7 +573,7 @@ test('the packaged Skill and plugin pass the repository authoring validators', (
   ], { cwd: root, env: environment, stdio: 'pipe' });
 });
 
-test('the package ships user-centered evaluation scenarios for routing and safety', () => {
+test('the plugin source includes maintainer evaluation scenarios for routing and safety', () => {
   const evalReadme = read('evals/README.md');
   const scenarios = read('evals/scenarios.md');
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.6 — 2026-09-22
+
+- Clarify installed-package discovery, deferred tool lookup and OAuth reconnection
+  while preserving the user's brief and selected model.
+- Keep planning and generation skills focused; clarify creative-quality priorities,
+  project estimates, status recovery and server-directed polling delays.
+- Document the Node.js helper for private local references and retain successful
+  imports when retrying a partial batch.
+- Verify compact, complete MCP results and exact-quote approval boundaries in the
+  publication checks. Host selection remains controlled by each client.
+
+
 ## 0.3.5 — 2026-09-16
 
 - Supersede the cancelled 0.3.4 publication candidate with corrected proof

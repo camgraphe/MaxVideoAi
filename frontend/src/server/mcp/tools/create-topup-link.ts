@@ -19,8 +19,15 @@ export function registerCreateTopupLinkTool(
     'create_topup_link',
     {
       title: 'Create a MaxVideoAI top-up handoff',
-      description:
-        'Creates a short-lived MaxVideoAI web handoff when the prepared quote needs more credits. MaxVideoAI collects payment on its website; this tool does not take payment. It invalidates the old short-lived quote, so after funding call get_account_status and then a fresh prepare_generation for an exact quote.',
+      description: [
+        'Use this when an exact prepared quote needs more credits.',
+        'It creates a short-lived MaxVideoAI web handoff and invalidates the old short-lived quote.',
+        'This tool does not take payment.',
+        'Payment happens only on the MaxVideoAI website at the exact returned destination; never collect payment data or claim the browser step completed.',
+        'After the user reports funding, call get_account_status, then a fresh prepare_generation (prepare_audio_generation for Audio).',
+        'Display the fresh exact quote and wait for new explicit approval before confirmation.',
+        'Funding is not generation approval; never automatically retry or generate.',
+      ].join(' '),
       inputSchema: createTopupLinkInputSchema,
       annotations: {
         readOnlyHint: false,

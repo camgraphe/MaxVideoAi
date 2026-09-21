@@ -22,8 +22,18 @@ export function registerCreateReferenceUploadLinkTool(
     'create_reference_upload_link',
     {
       title: 'Upload private reference media',
-      description:
-        'Use this when the user needs to add one private reference by requested media kind: image, video, or audio. It creates a short-lived browser handoff; after upload the file is saved to the connected MaxVideoAI library and list_media can select it. Do not use the handoff alone as proof that upload completed, to start generation, or to modify an existing asset.',
+      description: [
+        'Use this when the host cannot expose a file handle and the user needs a private image, video or audio reference.',
+        'It creates a short-lived handoff for the requested media kind.',
+        'A compatible UI host can show the in-chat multi-file importer; the exact returned browser destination is the manual fallback.',
+        'For local files in Codex or Claude Code, create one link per file and use the packaged local helper.',
+        'The helper reads local bytes: never send a raw local path to the MCP server, publish a public URL, or depend on Computer Use.',
+        'After the importer or helper returns asset IDs, use them directly without relisting.',
+        'After a browser upload is saved to the same connected MaxVideoAI library, call list_media by media kind.',
+        'A handoff is not proof of upload completion.',
+        'If the handoff fails, is denied or unavailable, explain the blocker and ask to authorize or retry it; do not invent a replacement URL.',
+        'This does not start generation or modify an existing asset.',
+      ].join(' '),
       inputSchema: createReferenceUploadLinkInputSchema,
       annotations: {
         readOnlyHint: false,

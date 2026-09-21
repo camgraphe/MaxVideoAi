@@ -374,32 +374,34 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
     );
 
     const instructions = client.getInstructions() ?? '';
-    if (!/host owns creative discussion, scripts, prompts, shot plans, and reference ideas/i.test(instructions)) {
+    if (!/host owns creative discussion and prompts/i.test(instructions)) {
       throw new Error('server instructions must keep creative work with the host agent');
     }
-    if (!/live MaxVideoAI tools for current model facts and prices instead of model memory/i.test(instructions)) {
+    if (!/use live facts, not model memory/i.test(instructions)) {
       throw new Error('server instructions must require live facts and prices');
     }
-    if (!/project estimates do not reserve price/i.test(instructions)) {
-      throw new Error('server instructions must distinguish project estimates from quotes');
+    const budgetDescription = toolByName.get('calculate_project_budget')?.description ?? '';
+    const detailDescription = toolByName.get('get_model_details')?.description ?? '';
+    if (!/estimates do not reserve a price/i.test(budgetDescription)) {
+      throw new Error('project-budget description must distinguish estimates from reserved prices');
     }
     if (!/generation is not available/i.test(instructions)) {
       throw new Error('server instructions must say generation is unavailable');
     }
-    if (!/recommendations are capability matches, not quotes or guarantees/i.test(instructions)) {
-      throw new Error('server instructions must reject quote and provider guarantees');
+    if (!/recommendations are capability matches.*do not use.*exact quote.*guarantee/i.test(recommendationDescription)) {
+      throw new Error('recommendations description must reject quote and provider guarantees');
     }
-    if (!/explicit model choice.*do not call recommend_models/i.test(instructions)) {
+    if (!/recommend_models only for an open choice/i.test(instructions)) {
       throw new Error('server instructions must preserve an explicit model choice');
     }
-    if (!/never substitute a named model without the user’s approval/i.test(instructions)) {
+    if (!/never substitute a named model without user approval/i.test(instructions)) {
       throw new Error('server instructions must prohibit silent model substitution');
     }
-    if (!/quality is ambiguous.*clarify.*story coherence.*delivery resolution/i.test(instructions)) {
-      throw new Error('server instructions must clarify quality instead of inferring it from resolution');
+    if (!/clarify whether quality means story coherence.*delivery resolution.*never rank creative quality by resolution/i.test(recommendationDescription)) {
+      throw new Error('recommendations description must clarify quality instead of inferring it from resolution');
     }
-    if (!/aspectRatios list is empty, omit aspectRatio.*non-empty, include a supported aspectRatio/i.test(instructions)) {
-      throw new Error('server instructions must follow selected-mode aspect-ratio details literally');
+    if (!/aspectRatios is empty, omit aspectRatio.*non-empty, include a supported aspectRatio/i.test(detailDescription)) {
+      throw new Error('model-details description must follow selected-mode aspect-ratio details literally');
     }
 
     const resourcesAdvertised = Boolean(client.getServerCapabilities()?.resources);

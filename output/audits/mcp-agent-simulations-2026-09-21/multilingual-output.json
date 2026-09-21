@@ -1,0 +1,102 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "L01",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video",
+            "mode": "i2v",
+            "durationSec": 8,
+            "aspectRatio": "9:16"
+          }
+        }
+      ],
+      "reply": "Voy a consultar los modelos de imagen a vídeo compatibles con 8 segundos y formato vertical. Después necesitaré que elijas uno antes de preparar el presupuesto exacto."
+    },
+    {
+      "id": "L02",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "recommend_models",
+          "arguments": {
+            "surface": "video",
+            "goal": "ad with precise camera movements",
+            "qualityPriority": "visual quality"
+          }
+        }
+      ],
+      "reply": "I’ll check current executable models for precise camera control and prioritize visual quality, then validate the best fit before estimating cost."
+    },
+    {
+      "id": "L03",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video",
+            "format": "shorts"
+          }
+        }
+      ],
+      "reply": "Primero consultaré los modelos actuales para Shorts. Para estimar seis piezas con dos intentos por plano aún habrá que fijar el modelo y la duración de cada plano."
+    },
+    {
+      "id": "L04",
+      "skill": "none",
+      "actions": [],
+      "reply": "Three Ways to Sleep Better"
+    },
+    {
+      "id": "L05",
+      "skill": "none",
+      "actions": [],
+      "reply": "I can analyze the attached CSV, but the supplied MaxVideoAI catalog has no CSV-analysis tool. Please use a data-analysis workflow for this request."
+    },
+    {
+      "id": "L06",
+      "skill": "none",
+      "actions": [],
+      "reply": "VideoOther is not an available tool in the supplied MaxVideoAI catalog, so I can’t invoke that plugin here."
+    },
+    {
+      "id": "L07",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_model_details",
+          "arguments": {
+            "modelId": "seedance-2-0",
+            "mode": "i2v"
+          }
+        }
+      ],
+      "reply": "Voy a comprobar los detalles actuales del modo imagen a vídeo de Seedance 2.0, incluidos sus referencias y ajustes admitidos."
+    },
+    {
+      "id": "L08",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_model_details",
+          "arguments": {
+            "modelId": "seedance-2-0",
+            "mode": "t2v"
+          }
+        }
+      ],
+      "reply": "I’ll first verify the live Seedance 2.0 text-to-video mode and its required settings. Then I can prepare the exact eight-second quote for your prompt."
+    }
+  ]
+}

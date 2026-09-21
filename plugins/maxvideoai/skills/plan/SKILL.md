@@ -1,7 +1,7 @@
 ---
 name: plan
 description: |
-  Plan AI video or image projects with live MaxVideoAI model facts. Use when: AI video or image project planning, model comparison, a video or image budget or pricing estimate, shot list or key-visual list design, or reference strategy. Turn an open brief into an executable model shortlist and production plan. NOT for: an exact price or exact quote, generation or paid approval, job status or result presentation, or result recovery (use generate).
+  Plan AI video or image projects with live MaxVideoAI model facts. Use when: AI video or image project planning, model comparison, a video or image budget or pricing estimate, shot list or key-visual list design, or reference strategy, including YouTube Shorts, Reels, TikTok videos, and ads. Turn an open brief into an executable model shortlist and production plan. NOT for: an exact price or exact quote, generation or paid approval, job status or result presentation, or result recovery (use generate), or a text-only rewrite without model or production advice.
 ---
 
 # Plan with MaxVideoAI
@@ -10,6 +10,28 @@ Turn a creative brief into an evidence-backed model choice or multi-shot budget.
 MaxVideoAI is the factual layer; the host remains the creative partner. Use live
 tools for availability, settings, guidance, and pricing. Do not rely on model memory.
 If this skill conflicts with a live result, the live result wins.
+
+## If tools are not visible
+
+An installed skill and an authenticated MCP connection are separate states.
+Before declaring MaxVideoAI unavailable, search the host's available or deferred
+tools for MaxVideoAI and `list_models`; use the host's tool discovery when
+provided. An empty MCP resource list does not establish that tools are absent.
+If tools remain missing, inspect the host's connection status. Report an OAuth
+reconnection requirement only when the host reports it; otherwise describe the
+unknown connection state without claiming that the plugin is not installed.
+
+A server's catalogue is not the host's complete tool inventory. Retrieve a
+discovered tool's input schema before constructing arguments; if it is missing,
+continue discovery instead of guessing parameter names.
+
+For a confirmed Codex OAuth failure, use the host's reconnect flow or its
+reported `codex mcp login maxvideoai` command. If the shell CLI is older than
+the running app, use that app's verified bundled CLI or plugin manager; do not
+change unrelated configuration to satisfy an obsolete CLI. Complete any required
+user sign-in, then rediscover tools and resume the brief. If discovery still
+fails, continue creative work while identifying unverified model facts and
+prices. Never present remembered facts as live results.
 
 ## UX rules
 
@@ -48,11 +70,14 @@ choice: story coherence, motion, identity or reference fidelity, audio,
 delivery resolution, speed, or budget. Never treat the highest resolution as
 an overall quality ranking.
 
+For example, cinematic lighting or smooth camera motion alone maps to
+`priorities: null`, not `highest_resolution`. A budget estimate does not imply a
+preference for cheaper models; use `lower_cost` only when that preference is stated.
+
 ## Live discovery guardrails
 
-Use `list_models` rather than remembered catalogs. A public model may still
-return `generationEnabled: false` in the connected environment; describe that
-environmental distinction instead of calling the model retired everywhere.
+A public model may return `generationEnabled: false` in the connected environment;
+describe that environmental distinction instead of calling the model retired everywhere.
 
 Use `get_model_details` before relying on modes, required fields, settings,
 reference roles or counts, audio policy, aspect ratios, duration, or limits.
@@ -76,10 +101,9 @@ Offer one to four named approaches tied to the user's goal. A proposal may use
 one model for continuity or mix models when individual shots benefit. Give each
 model a shot-specific factual reason; do not mix models merely for variety.
 
-Use `calculate_project_budget` for every concrete video proposal. Include real
-shot purposes, public model IDs, modes, settings, clip counts, references, and
-a deliberate attempts-per-clip allowance. Call `calculate_project_budget`
-before describing one proposal as cheaper or lower-cost.
+Use `calculate_project_budget` to validate every concrete video proposal before
+describing one as cheaper or lower-cost. Include real shot purposes, public model
+IDs, modes, settings, clip counts, references, and a deliberate attempts-per-clip allowance.
 
 Present base production and creative-attempt allowance separately. Explain the
 assumptions and what changes between proposals. A project estimate does not

@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-21",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "medium",
+  "initialHistory": "none",
+  "maxConcurrentChildren": 3,
+  "actualMcpCalls": 0,
+  "paidVideoGenerations": 0,
+  "firstPassCases": 48,
+  "replayCases": 9,
+  "agents": [
+    {
+      "task": "sim_discovery",
+      "input": "discovery-input.json",
+      "output": "discovery-output.json",
+      "cases": 8
+    },
+    {
+      "task": "sim_generation",
+      "input": "generation-input.json",
+      "output": "generation-output.json",
+      "cases": 8
+    },
+    {
+      "task": "sim_recovery",
+      "input": "recovery-input.json",
+      "output": "recovery-output.json",
+      "cases": 8
+    },
+    {
+      "task": "sim_multilingual",
+      "input": "multilingual-input.json",
+      "output": "multilingual-output.json",
+      "cases": 8
+    },
+    {
+      "task": "sim_edge_cases",
+      "input": "edge_cases-input.json",
+      "output": "edge_cases-output.json",
+      "cases": 8
+    },
+    {
+      "task": "sim_partial_context",
+      "input": "partial_context-input.json",
+      "output": "partial_context-output.json",
+      "cases": 8
+    }
+  ]
+}

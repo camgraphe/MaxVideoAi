@@ -1,0 +1,516 @@
+{
+  "evidenceKind": "root-checked-agent-generated-simulations",
+  "date": "2026-09-21",
+  "realHostEvidence": false,
+  "actualToolExecution": false,
+  "policyFingerprint": "788024dfeed7eafa1c405a8e119c9e9592929ba86811bd342c94c263dbc68adb",
+  "caseCount": 48,
+  "schemaValidatedCalls": 21,
+  "selectionOnlyCalls": 5,
+  "confirmationCalls": 2,
+  "note": "Preference diagnostics require manual review; they are not automatically product failures. Text claims are reviewed separately.",
+  "records": [
+    {
+      "group": "discovery",
+      "id": "D01",
+      "skill": "plan",
+      "proposedTools": [
+        "recommend_models"
+      ],
+      "diagnostics": [
+        "skill_differs_from_predeclared_preference"
+      ]
+    },
+    {
+      "group": "discovery",
+      "id": "D02",
+      "skill": "plan",
+      "proposedTools": [
+        "recommend_models"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "discovery",
+      "id": "D03",
+      "skill": "plan",
+      "proposedTools": [
+        "recommend_models"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "discovery",
+      "id": "D04",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "discovery",
+      "id": "D05",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "discovery",
+      "id": "D06",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "discovery",
+      "id": "D07",
+      "skill": "plan",
+      "proposedTools": [
+        "get_model_details"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "discovery",
+      "id": "D08",
+      "skill": "generate",
+      "proposedTools": [
+        "get_model_details"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G01",
+      "skill": "generate",
+      "proposedTools": [
+        "prepare_generation"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G02",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G03",
+      "skill": "generate",
+      "proposedTools": [
+        "confirm_generation"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G04",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G05",
+      "skill": "generate",
+      "proposedTools": [
+        "import_reference_files"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G06",
+      "skill": "generate",
+      "proposedTools": [
+        "import_reference_files"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G07",
+      "skill": "generate",
+      "proposedTools": [
+        "create_topup_link"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "generation",
+      "id": "G08",
+      "skill": "generate",
+      "proposedTools": [
+        "get_account_status"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R01",
+      "skill": "generate",
+      "proposedTools": [
+        "get_generation_status"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R02",
+      "skill": "generate",
+      "proposedTools": [
+        "list_recent_generations"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R03",
+      "skill": "generate",
+      "proposedTools": [
+        "get_generation_status"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R04",
+      "skill": "generate",
+      "proposedTools": [
+        "present_generation"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R05",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R06",
+      "skill": "generate",
+      "proposedTools": [
+        "prepare_generation"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R07",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "recovery",
+      "id": "R08",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "multilingual",
+      "id": "L01",
+      "skill": "generate",
+      "proposedTools": [
+        "list_models"
+      ],
+      "diagnostics": [
+        "invalid_arguments:list_models:[{\"code\":\"unrecognized_keys\",\"keys\":[\"durationSec\"],\"path\":[],\"message\":\"Unrecognized key: \\\"durationSec\\\"\"}]"
+      ]
+    },
+    {
+      "group": "multilingual",
+      "id": "L02",
+      "skill": "plan",
+      "proposedTools": [
+        "recommend_models"
+      ],
+      "diagnostics": [
+        "invalid_arguments:recommend_models:[{\"code\":\"unrecognized_keys\",\"keys\":[\"goal\",\"qualityPriority\"],\"path\":[],\"message\":\"Unrecognized keys: \\\"goal\\\", \\\"qualityPriority\\\"\"}]"
+      ]
+    },
+    {
+      "group": "multilingual",
+      "id": "L03",
+      "skill": "plan",
+      "proposedTools": [
+        "list_models"
+      ],
+      "diagnostics": [
+        "invalid_arguments:list_models:[{\"code\":\"unrecognized_keys\",\"keys\":[\"format\"],\"path\":[],\"message\":\"Unrecognized key: \\\"format\\\"\"}]"
+      ]
+    },
+    {
+      "group": "multilingual",
+      "id": "L04",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "multilingual",
+      "id": "L05",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "multilingual",
+      "id": "L06",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "multilingual",
+      "id": "L07",
+      "skill": "generate",
+      "proposedTools": [
+        "get_model_details"
+      ],
+      "diagnostics": [
+        "invalid_arguments:get_model_details:[{\"expected\":\"string\",\"code\":\"invalid_type\",\"path\":[\"id\"],\"message\":\"Invalid input: expected string, received undefined\"},{\"code\":\"unrecognized_keys\",\"keys\":[\"modelId\",\"mode\"],\"path\":[],\"message\":\"Unrecognized keys: \\\"modelId\\\", \\\"mode\\\"\"}]"
+      ]
+    },
+    {
+      "group": "multilingual",
+      "id": "L08",
+      "skill": "generate",
+      "proposedTools": [
+        "get_model_details"
+      ],
+      "diagnostics": [
+        "invalid_arguments:get_model_details:[{\"expected\":\"string\",\"code\":\"invalid_type\",\"path\":[\"id\"],\"message\":\"Invalid input: expected string, received undefined\"},{\"code\":\"unrecognized_keys\",\"keys\":[\"modelId\",\"mode\"],\"path\":[],\"message\":\"Unrecognized keys: \\\"modelId\\\", \\\"mode\\\"\"}]"
+      ]
+    },
+    {
+      "group": "edge_cases",
+      "id": "E01",
+      "skill": "generate",
+      "proposedTools": [
+        "prepare_generation"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "edge_cases",
+      "id": "E02",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "edge_cases",
+      "id": "E03",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "edge_cases",
+      "id": "E04",
+      "skill": "generate",
+      "proposedTools": [
+        "get_generation_status"
+      ],
+      "diagnostics": [
+        "tool_not_in_packet:get_generation_status"
+      ]
+    },
+    {
+      "group": "edge_cases",
+      "id": "E05",
+      "skill": "generate",
+      "proposedTools": [
+        "create_reference_upload_link"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "edge_cases",
+      "id": "E06",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "edge_cases",
+      "id": "E07",
+      "skill": "generate",
+      "proposedTools": [],
+      "diagnostics": [
+        "first_tool_differs_from_predeclared_preference"
+      ]
+    },
+    {
+      "group": "edge_cases",
+      "id": "E08",
+      "skill": "generate",
+      "proposedTools": [
+        "create_topup_link"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P01",
+      "skill": "plan",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P02",
+      "skill": "none",
+      "proposedTools": [],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P03",
+      "skill": "generate",
+      "proposedTools": [
+        "get_generation_status"
+      ],
+      "diagnostics": [
+        "first_tool_differs_from_predeclared_preference"
+      ]
+    },
+    {
+      "group": "partial_context",
+      "id": "P04",
+      "skill": "generate",
+      "proposedTools": [
+        "get_generation_status"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P05",
+      "skill": "generate",
+      "proposedTools": [
+        "confirm_generation"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P06",
+      "skill": "none",
+      "proposedTools": [
+        "get_account_status"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P07",
+      "skill": "generate",
+      "proposedTools": [
+        "get_account_status"
+      ],
+      "diagnostics": []
+    },
+    {
+      "group": "partial_context",
+      "id": "P08",
+      "skill": "generate",
+      "proposedTools": [
+        "get_generation_status"
+      ],
+      "diagnostics": []
+    }
+  ],
+  "replays": [
+    {
+      "name": "multilingual-replay",
+      "independent": false,
+      "records": [
+        {
+          "id": "L01",
+          "calls": [
+            {
+              "name": "list_models",
+              "schemaValid": true,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "id": "L02",
+          "calls": [
+            {
+              "name": "recommend_models",
+              "schemaValid": true,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "id": "L03",
+          "calls": [
+            {
+              "name": "recommend_models",
+              "schemaValid": true,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "id": "L07",
+          "calls": [
+            {
+              "name": "get_model_details",
+              "schemaValid": true,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "id": "L08",
+          "calls": [
+            {
+              "name": "get_model_details",
+              "schemaValid": true,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "clarity-replay",
+      "independent": false,
+      "records": [
+        {
+          "id": "C01",
+          "calls": []
+        },
+        {
+          "id": "C02",
+          "calls": []
+        },
+        {
+          "id": "C03",
+          "calls": [
+            {
+              "name": "present_generation",
+              "schemaValid": true,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "id": "C04",
+          "calls": []
+        }
+      ]
+    }
+  ]
+}

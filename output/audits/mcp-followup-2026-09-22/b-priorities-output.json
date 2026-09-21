@@ -1,0 +1,160 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "F01",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "limit": null
+          }
+        }
+      ],
+      "reply": "Je vais comparer les modèles vidéo actuellement disponibles selon leur contrôle des mouvements de caméra et leur qualité visuelle. Je vérifie d’abord leurs capacités en direct, puis je vous proposerai le meilleur choix et des alternatives pertinentes."
+    },
+    {
+      "id": "F02",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "limit": null
+          }
+        }
+      ],
+      "reply": "Je vais comparer les modèles vidéo disponibles pour une scène cinématographique, une lumière naturelle et un mouvement fluide. Je consulte leurs capacités actuelles avant de vous recommander le modèle le plus adapté."
+    },
+    {
+      "id": "F03",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "limit": null
+          }
+        }
+      ],
+      "reply": "Voy a comparar los modelos de vídeo disponibles para una escena artística, bonita y expresiva. Consulto primero sus capacidades actuales para recomendar una opción basada en datos live, no en memoria."
+    },
+    {
+      "id": "F04",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": "4K",
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "limit": null
+          }
+        }
+      ],
+      "reply": "Je vais rechercher les modèles vidéo qui prennent actuellement en charge une livraison d’au moins 4K, puis vérifier leurs limites exactes avant de vous conseiller celui à privilégier."
+    },
+    {
+      "id": "F05",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "limit": null
+          }
+        }
+      ],
+      "reply": "Voy a consultar los modelos de vídeo disponibles para Shorts. Después necesitaré elegir una propuesta concreta y validar su presupuesto con seis clips y dos intentos creativos por plano."
+    },
+    {
+      "id": "F06",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "limit": null
+          }
+        }
+      ],
+      "reply": "Je vais d’abord vérifier les modèles vidéo disponibles, puis comparer une option rapide et une option moins coûteuse dans cet ordre de priorité. Je confirmerai les capacités et les estimations avec les données actuelles."
+    },
+    {
+      "id": "F07",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "MaxVideoAI list_models recommend_models get_model_details"
+        }
+      ],
+      "reply": "Je vais rechercher les outils MaxVideoAI différés disponibles sur cet hôte. L’absence de résultats initiaux et de ressources ne suffit pas à conclure qu’ils sont indisponibles ; je vérifierai d’abord la découverte d’outils avant de comparer les modèles."
+    },
+    {
+      "id": "F08",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "VideoOther tools for video generation and model details"
+        }
+      ],
+      "reply": "Je vais découvrir les outils VideoOther disponibles sur l’hôte, puisque vous avez sélectionné ce plugin. Je vérifierai ensuite son modèle et son contrat en direct avant de poursuivre la demande vidéo."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "qualityNoProxy": [
+    "F01",
+    "F02",
+    "F03"
+  ],
+  "resolutionPriority": [
+    "F04"
+  ],
+  "estimateNotCheapest": [
+    "F05"
+  ],
+  "explicitCostAndSpeed": [
+    "F06"
+  ],
+  "unknownConnectionDiscover": [
+    "F07"
+  ],
+  "respectOtherTool": [
+    "F08"
+  ],
+  "validArguments": true,
+  "replyLanguage": "each case user language",
+  "actualToolsCalled": false,
+  "noDesiredAnswersShownToAgents": true
+}

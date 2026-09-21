@@ -1144,6 +1144,29 @@ test('paid continuation rejects a success-shaped failed video response after its
   assert.deepEqual(outcome, { kind: 'rejected', refunded: true });
 });
 
+test('paid image continuation rejects success-shaped refunded responses and stays ambiguous when refund settlement is unconfirmed', async () => {
+  const quote = quoteFor(imageRequest);
+  const execution: PaidGenerationExecution = {
+    surface: 'image', quoteId: quote.quoteId, userId: quote.userId, request: imageRequest,
+    engine: capability(imageRequest).engine,
+    canonicalPricing: quote.pricingSnapshot.canonicalPricing as Record<string, unknown>,
+    trustedInitialState: { kind: 'created', jobId: quote.quoteId, recoveredCharge: true },
+  };
+
+  const rejected = await submitReservedPaidGeneration(execution, {
+    executeVideo: async () => assert.fail('unexpected video'),
+    executeImage: async () => ({ ok: true, paymentStatus: 'refunded_wallet' }),
+  });
+  assert.deepEqual(rejected, { kind: 'rejected', refunded: true });
+
+  const ambiguous = await submitReservedPaidGeneration(execution, {
+    executeVideo: async () => assert.fail('unexpected video'),
+    executeImage: async () => ({ ok: true, paymentStatus: 'refunded_wallet' }),
+    ensureKnownRejectionRefund: async () => false,
+  });
+  assert.deepEqual(ambiguous, { kind: 'ambiguous', retryable: true });
+});
+
 test('invalid image already-reserved runtime state fails before database or provider work', async () => {
   const { executeImageGeneration } = await import('../frontend/src/server/images/execute-image-generation');
   const previousDatabaseUrl = process.env.DATABASE_URL;

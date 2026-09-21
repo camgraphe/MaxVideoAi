@@ -2,6 +2,11 @@
 
 Checked: **2026-09-14**.
 
+Packaging boundary reviewed **2026-09-22**: this is a source-maintainer document,
+excluded from the customer archive along with `evals/` and `AGENTS.md`. The public
+archive includes the individual host installation guides. Its exact inventory
+is owned by the release builder and checked independently by the bundle test.
+
 MaxVideoAI's distributable MCP metadata names the protocol-generic endpoint
 `https://api.maxvideoai.com/mcp`. This document distinguishes direct setup from
 directory distribution so that an installation path is never mistaken for a
@@ -46,10 +51,13 @@ verified-client evidence above.
 
 ## Directory status
 
-- **Official MCP Registry — active at `0.3.3`.** The official API record for
+- **Official MCP Registry — active at `0.3.5`.** The official API record for
   [`com.maxvideoai/maxvideoai`](https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai)
   is active. This protocol registry publication is not an OpenAI, Anthropic, or
   other host-directory listing and does not prove host compatibility.
+  The version and production endpoint were rechecked on **2026-09-21**; the
+  registry reports publication on **2026-09-16**. Policy review dates below are
+  separate from this registry check.
 - **ChatGPT/OpenAI directory — do not submit.** OpenAI's current plugin
   guidelines prohibit commerce for digital products or services, including
   digital content, tokens, and credits. Treat the resulting MaxVideoAI

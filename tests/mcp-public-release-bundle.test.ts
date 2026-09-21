@@ -244,6 +244,15 @@ test('release builder exports the exact deterministic public surface with checks
   const relativeFiles = filesAt(bundleRoot).map((path) => relative(bundleRoot, path)).sort();
   assert.deepEqual(relativeFiles, [...expectedPublicFiles, 'checksums.json'].sort());
 
+  // Archives need not preserve executable permissions: the supported helper
+  // invocation is Node.js. Missing arguments must fail locally before uploading.
+  const helper = spawnSync(process.execPath, [join(bundleRoot, 'scripts/import-reference-files.mjs')], {
+    cwd: bundleRoot,
+    encoding: 'utf8',
+  });
+  assert.equal(helper.status, 1);
+  assert.match(helper.stderr, /use --upload <handoff-url> <local-file>/);
+
   for (const markdownPath of relativeFiles.filter((path) => path.endsWith('.md'))) {
     const absoluteMarkdownPath = join(bundleRoot, markdownPath);
     for (const target of relativeMarkdownLinks(readFileSync(absoluteMarkdownPath, 'utf8'))) {

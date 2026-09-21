@@ -24,6 +24,11 @@ links returned by the service. Do not claim success early and do not start a
 replacement automatically. A completed result is saved in the same connected
 MaxVideoAI library; use only the returned library or workspace destination.
 
+Honor the returned status schedule: wait at least `retry.afterSeconds` before
+calling `retry.tool` with `retry.arguments`. A null `retry` ends automatic
+polling. This schedule recovers the existing job and never permits another
+generation attempt.
+
 For a technical failure, inspect the returned failure and refund or recredit
 state and do not resubmit automatically. A creative retry is a new paid attempt:
 use `prepare_generation`, show the new exact quote, and wait for explicit user
