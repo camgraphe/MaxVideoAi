@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "30-second-music-promo-two-minimax-h3-clips",
+  "publication": {
+    "articleId": "b489a156-2c41-44ea-8108-75ab768d940f",
+    "version": 1,
+    "digest": "dab27d6b24f2b3c432e2b5b2b4a6fa9a572c9db7e33d95b3f6ac7ad04b05e02f",
+    "publishedAt": "2026-09-21T19:44:46.016Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "30-second-music-promo-two-minimax-h3-clips",
+    "title": "Build a 30-Second Music Promo with Two MiniMax H3 Clips",
+    "description": "Plan two distinct 15-second scenes, divide your visual and audio references, design an intentional transition, then assemble the selected clips over the original track.",
+    "keywords": [
+      "MiniMax H3",
+      "music promo",
+      "AI music video",
+      "reference-to-video",
+      "30-second video",
+      "video editing",
+      "MaxVideoAI"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "A fictional performer between a blue rehearsal room and an amber stage, connected by an abstract waveform.",
+        "caption": "Illustration. One track, two scenes, one planned cut."
+      },
+      {
+        "id": "one-track-two-scenes",
+        "type": "text",
+        "heading": "Turn one song section into two scenes",
+        "paragraphs": [
+          {
+            "text": "Imagine the chorus arriving just as a blue rehearsal room gives way to an amber-lit stage. Same performer, same song, suddenly a much bigger moment. That is the little story we will build: anticipation in the first half, release in the second.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "The starting point is a song you can use and a few visual references. "
+              },
+              {
+                "text": "MiniMax H3 on MaxVideoAI",
+                "href": "https://maxvideoai.com/models/minimax-h3"
+              },
+              {
+                "text": " generates clips up to 15 seconds long, so this 30-second promo uses two separate requests. You bring the takes together in your video editor, over one continuous copy of the original music."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "text": "Our imagined performer wears a charcoal jacket and ivory shirt. Those details stay steady while the lighting, setting and energy change. The illustrations below show the plan; your selected takes will determine the final cut.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "reference-role-board",
+        "type": "media",
+        "assetId": "reference-role-board",
+        "heading": "Keep the performer; change the scene",
+        "presentation": "single",
+        "alt": "Two reference groups share the same performer portrait but use different settings, colors, gestures and audio excerpts.",
+        "caption": "Illustration. Prepare shared identity references and scene-specific guidance for the two MaxVideoAI requests."
+      },
+      {
+        "id": "give-each-half-a-job",
+        "type": "text",
+        "heading": "Give each half a different job",
+        "paragraphs": [
+          {
+            "text": "Listen before you generate. Choose a 30-second stretch with a musical turn near its midpoint: a chorus entrance, a beat change or a moment where the energy opens up. Keep that complete section for your final soundtrack, then make two consecutive 15-second audio excerpts in your audio editor. Mark the accents you actually hear.",
+            "sourceIds": [
+              "source-6"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "First 15 seconds: anticipation. ",
+                "bold": true
+              },
+              {
+                "text": "In the blue rehearsal room, the performer starts quietly by the microphone. A slow push-in brings us closer as their right hand rises beside their head. Give this scene one destination, rather than a shopping list of actions."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Second 15 seconds: release. ",
+                "bold": true
+              },
+              {
+                "text": "The amber-stage scene starts near that raised-hand pose, then opens into a broader performance gesture. Its prompt starts counting from zero again: local second 3 means second 18 in the finished promo."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "text": "For each request, prepare one clear identity-and-wardrobe image, one image for the setting and palette, and one for the gesture or composition. Reuse the identity image; swap the rehearsal room for the stage. Attach the matching audio excerpt as rhythm-and-mood guidance. H3 requires a visual reference alongside an audio reference; this small set keeps each input’s job easy to understand.",
+            "sourceIds": [
+              "source-1",
+              "source-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "make-the-cut-intentional",
+        "type": "comparison",
+        "heading": "Give the cut something to connect",
+        "columns": [
+          "Cut idea",
+          "Use it when…"
+        ],
+        "rows": [
+          [
+            "Match the gesture",
+            "The raised hand lands at a similar position and scale in both takes. This is our first choice."
+          ],
+          [
+            "Follow the gaze",
+            "The hands differ, but the performer looks toward the same part of the frame."
+          ],
+          [
+            "Keep screen direction",
+            "A clear movement travels the same way across the cut."
+          ],
+          [
+            "Use deliberate contrast",
+            "The footage offers a strong change of scale, angle or pose that suits the music. Choose the contrast your actual takes provide."
+          ]
+        ]
+      },
+      {
+        "id": "boundary-compositions",
+        "type": "media",
+        "assetId": "boundary-compositions",
+        "heading": "Match the gesture—or make the contrast clear",
+        "presentation": "single",
+        "alt": "Two planned cuts: a raised-hand match across blue and amber scenes, and a contrasting cut that reverses direction and widens the view.",
+        "caption": "Illustration. Planned boundary compositions: a gesture match above, a deliberate contrast below."
+      },
+      {
+        "id": "set-up-two-generations",
+        "type": "text",
+        "heading": "Make two requests in MaxVideoAI",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Choose "
+              },
+              {
+                "text": "MiniMax H3 in reference-to-video mode",
+                "href": "https://maxvideoai.com/models/minimax-h3"
+              },
+              {
+                "text": ". Set each request to 15 seconds, 9:16 and 2K. Use the same output settings for both clips, then attach that scene’s images and its own audio excerpt. Our example uses three images and one audio clip per request."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "text": "Replace the timing placeholders below with the musical accents you marked. Copy only one prompt into each request. The audio reference guides the generation; keep the original recording for the final soundtrack. A matching gesture is a direction to try, not a guarantee that two independent clips will join perfectly.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "generate-two-separate-clips",
+        "type": "prompt",
+        "heading": "Prompt A · Build the anticipation",
+        "template": "SEQUENCE A — BLUE REHEARSAL ROOM\n\nCreate a 15-second vertical video using the supplied fictional adult performer as the identity reference: short dark curls, charcoal jacket, ivory shirt. Preserve this identity and wardrobe. The setting is a sparse rehearsal room with cool cobalt-blue lighting, acoustic treatment and a simple microphone stand. Keep the movement restrained and avoid readable background text.\n\nLocal 0–[A] seconds: the performer stands quietly near the microphone; the camera makes one slow push-in.\nLocal [A]–[B] seconds: around my marked musical accent, the performer begins raising their right hand; hold a steady medium composition.\nLocal [B]–15 seconds: the right hand settles beside the head near the planned screen position; ease into a medium-close final composition suitable for a cut.\n\nUse the attached first audio excerpt only as guidance for rhythm, energy and mood.",
+        "note": "Use the rehearsal references and the first audio excerpt. Replace [A] and [B] with local times between 0 and 15 seconds."
+      },
+      {
+        "id": "generate-stage-clip",
+        "type": "prompt",
+        "heading": "Prompt B · Open onto the stage",
+        "template": "SEQUENCE B — AMBER STAGE\n\nCreate a separate 15-second vertical video using the same fictional adult performer identity and the same charcoal jacket and ivory shirt. The setting is a warm amber stage with a few broad beams of light. Begin with the performer’s right hand beside the head, near the same screen position planned for the end of Sequence A. Avoid readable signage or background text.\n\nLocal 0–[C] seconds: the hand opens outward into the performance; hold framing similar to Sequence A’s closing composition.\nLocal [C]–[D] seconds: around my marked musical accent, the performer expands into a broader gesture; make one controlled pullback.\nLocal [D]–15 seconds: the performer settles into an open stage pose; hold the wider composition through the end.\n\nUse the attached second audio excerpt only as guidance for rhythm, energy and mood.",
+        "note": "Start a separate request with the stage references and the second excerpt. Replace [C] and [D]; this clip’s clock starts at zero."
+      },
+      {
+        "id": "finish-over-the-original-track",
+        "type": "steps",
+        "heading": "Make the two takes feel like one promo",
+        "steps": [
+          {
+            "title": "Choose a pair that cuts well",
+            "body": "Check the performer, wardrobe, hands and movement. Try the raised-hand cut first. If it does not work, use a clear contrast that the returned footage actually offers. A beautiful isolated take is less useful than two shots that belong together."
+          },
+          {
+            "title": "Lay the picture over the original music",
+            "body": "In your video editor, place Clip A at 0–15 seconds and Clip B at 15–30. Put the intact song section beneath them and mute both clips’ generated audio. Listen through the cut: the music should remain uninterrupted."
+          },
+          {
+            "title": "Keep enough picture to cover the song",
+            "body": "Two 15-second takes leave no spare footage. Trimming or overlapping them reduces the total picture length. Fill any gap with a usable alternate take or an insert you can use, or generate replacement coverage."
+          },
+          {
+            "title": "Finish with a light touch",
+            "body": "Add the performer’s name or release information as editable titles, balance the two scenes and watch at phone size. Keep the two prompts, references and chosen takes together so the next promo starts from a useful example."
+          }
+        ]
+      },
+      {
+        "id": "external-edit-timeline",
+        "type": "media",
+        "assetId": "external-edit-timeline",
+        "heading": "Let the original track carry the edit",
+        "presentation": "single",
+        "alt": "An external editing timeline with adjacent blue and amber clips, muted clip audio, a continuous original music track and separate titles.",
+        "caption": "Illustration. Assemble the MaxVideoAI clips in an external editor, with their audio muted and the original music underneath."
+      },
+      {
+        "id": "workflow-responsibilities",
+        "type": "diagram",
+        "heading": "From prepared references to the finished promo",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Authorized music and selected images"
+          },
+          {
+            "kind": "file",
+            "label": "A/B reference sets + intact 30-second music"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI H3: two separate 15-second requests"
+          },
+          {
+            "kind": "video",
+            "label": "Selected A and B clips"
+          },
+          {
+            "kind": "model",
+            "label": "External editor: original music + titles"
+          },
+          {
+            "kind": "video",
+            "label": "Finished 30-second promo"
+          }
+        ],
+        "connections": [
+          "Prepare images and two audio excerpts externally",
+          "Submit each set; retain intact music for editing",
+          "Generate separately, inspect and choose takes",
+          "Import clips and retained music; mute clip audio",
+          "Check full coverage and export"
+        ],
+        "alt": "Workflow from externally prepared references through two separate MaxVideoAI generations to external editing and a finished promo.",
+        "caption": "MaxVideoAI generates the source clips; preparation and final assembly happen in external tools."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "MiniMax H3",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/minimax-h3",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-2",
+      "title": "ComfyUI MiniMax H3 Timeline Director",
+      "publisher": "Songssx on GitHub",
+      "url": "https://github.com/Songssx/ComfyUI-MiniMaxH3-TimelineDirector",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-3",
+      "title": "MiniMax H3 Model Card",
+      "publisher": "MiniMax",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-4",
+      "title": "MiniMax H3 Full-Reference Video Prompt Writing Guide",
+      "publisher": "MiniMax",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-5",
+      "title": "MiniMax H3 Core Nodes",
+      "publisher": "Comfy-Org",
+      "url": "https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_minimax_h3.py",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-6",
+      "title": "How to Make an AI Music Video: A Production Workflow for Artists",
+      "publisher": "Leopati",
+      "url": "https://www.leopati.com/how-to-make-an-ai-music-video/",
+      "retrievedAt": "2026-09-21",
+      "publishedAt": "2026-09-05"
+    },
+    {
+      "id": "source-7",
+      "title": "SLICE: How We Made a 2-Minute AI Short Film with Seedance 2.5",
+      "publisher": "Magnific",
+      "url": "https://www.magnific.com/blog/slice-ai-short-film-seedance-2-5/",
+      "retrievedAt": "2026-09-21",
+      "publishedAt": "2026-09-06"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "c2c9a85d9ac915a9f81d518a0837da1ac09d14465ce79e4e5f13f15df5a716cf",
+      "url": "https://media.maxvideoai.com/editorial/published/c2c9a85d9ac915a9f81d518a0837da1ac09d14465ce79e4e5f13f15df5a716cf.webp"
+    },
+    {
+      "id": "reference-role-board",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "b9b22430ab583c85ae05b6fdde4771ce048031ced9ebfcfff11ae7c2a722b813",
+      "url": "https://media.maxvideoai.com/editorial/published/b9b22430ab583c85ae05b6fdde4771ce048031ced9ebfcfff11ae7c2a722b813.webp"
+    },
+    {
+      "id": "boundary-compositions",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "597aa28bedd9db1c0e337c9ecb1f327b083372478436300e5ac93175daa46747",
+      "url": "https://media.maxvideoai.com/editorial/published/597aa28bedd9db1c0e337c9ecb1f327b083372478436300e5ac93175daa46747.webp"
+    },
+    {
+      "id": "external-edit-timeline",
+      "kind": "generated-illustration",
+      "width": 1774,
+      "height": 887,
+      "sha256": "e0fe984f28105f158b309849d32c7a887cc552c6a3d2655d0123bc48887c208f",
+      "url": "https://media.maxvideoai.com/editorial/published/e0fe984f28105f158b309849d32c7a887cc552c6a3d2655d0123bc48887c208f.webp"
+    }
+  ]
+}
