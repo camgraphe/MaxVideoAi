@@ -45,6 +45,13 @@ function formatVersion(version: Version): string {
 }
 
 const patchedPolicies: Record<string, (version: Version) => boolean> = {
+  // GHSA-2xp9-vwfh-vxw4 / GHSA-p293-qw3h-jr36, including earlier 15.5.21 fixes.
+  next: (version) =>
+    version.release[0] > 16 ||
+    (version.release[0] === 16 && atLeast(version, [16, 3, 3])) ||
+    (version.release[0] === 15 && atLeast(version, [15, 5, 24])),
+  // GHSA-rgj7-g3m4-5g8c: patched bundled libheif, also needed outside Next's optimizer.
+  sharp: (version) => atLeast(version, [0, 35, 4]),
   'js-yaml': (version) =>
     version.release[0] > 4 ||
     (version.release[0] === 4 && atLeast(version, [4, 2, 0])) ||
@@ -60,12 +67,29 @@ const patchedPolicies: Record<string, (version: Version) => boolean> = {
 };
 
 test('direct security-sensitive dependencies require patched release lines', () => {
+  for (const packageName of ['next', 'sharp']) {
+    const version = frontendPackage.dependencies?.[packageName];
+    assert.ok(version, `frontend should declare ${packageName}`);
+    assert.ok(patchedPolicies[packageName](parseVersion(version)), `${packageName} ${version} is vulnerable`);
+  }
   const nodemailer = frontendPackage.dependencies?.nodemailer;
   assert.ok(nodemailer, 'frontend should declare nodemailer');
   assert.ok(
     atLeast(parseVersion(nodemailer), [9, 0, 1]),
     `nodemailer ${nodemailer} must include the raw-message access-control fix from 9.0.1`
   );
+});
+
+test('Next security floors distinguish the patched 15 and 16 release branches', () => {
+  for (const version of ['15.5.18', '15.5.23', '16.0.0', '16.3.2']) {
+    assert.equal(patchedPolicies.next(parseVersion(version)), false, version);
+  }
+  for (const version of ['15.5.24', '15.5.25', '16.3.3']) {
+    assert.equal(patchedPolicies.next(parseVersion(version)), true, version);
+  }
+  assert.equal(patchedPolicies.sharp(parseVersion('0.34.5')), false);
+  assert.equal(patchedPolicies.sharp(parseVersion('0.35.3')), false);
+  assert.equal(patchedPolicies.sharp(parseVersion('0.35.4')), true);
 });
 
 test('lockfile keeps every audited dependency outside known vulnerable ranges', () => {
@@ -90,6 +114,9 @@ test('ws policy accepts every patched release branch from the advisory', () => {
 });
 
 test('release floors reject prereleases of the first patched version', () => {
+  assert.equal(patchedPolicies.next(parseVersion('15.5.24-rc.1')), false);
+  assert.equal(patchedPolicies.next(parseVersion('16.3.3-canary.1')), false);
+  assert.equal(patchedPolicies.sharp(parseVersion('0.35.4-rc.1')), false);
   assert.equal(patchedPolicies.ws(parseVersion('8.21.0-beta.1')), false);
   assert.equal(patchedPolicies['js-yaml'](parseVersion('4.2.0-rc.1')), false);
   assert.equal(patchedPolicies.tmp(parseVersion('0.2.7-beta.1')), false);

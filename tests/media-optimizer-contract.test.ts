@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 
-import { ImageOptimizerCache } from '../frontend/node_modules/next/dist/server/image-optimizer.js';
+import { getSharp, ImageOptimizerCache, optimizeImage } from '../frontend/node_modules/next/dist/server/image-optimizer.js';
 import { imageConfigDefault } from '../frontend/node_modules/next/dist/shared/lib/image-config.js';
 import {
   buildExamplePosterProjection,
@@ -16,6 +16,30 @@ const completeNextConfig = {
   images: { ...imageConfigDefault, ...nextConfig.images },
 };
 const request = { headers: { accept: 'image/webp' } };
+
+test('the installed image decoder includes the libheif security fixes', () => {
+  const sharp = getSharp(null);
+  const [major, minor, patch] = sharp.versions.heif.split('.').map(Number);
+  assert.ok(
+    major > 1 || (major === 1 && (minor > 23 || (minor === 23 && patch >= 2))),
+    `the installed libheif ${sharp.versions.heif} must include the 1.23.2 security fixes`
+  );
+});
+
+for (const format of ['jpeg', 'png', 'webp', 'avif'] as const) {
+  test(`Next still resizes ${format} input to a responsive WebP after decoder hardening`, async () => {
+    const sharp = getSharp(null);
+    const source = await sharp({
+      create: { width: 256, height: 128, channels: 4, background: { r: 60, g: 120, b: 180, alpha: 0.5 } },
+    }).toFormat(format).toBuffer();
+    const output = await optimizeImage({ buffer: source, contentType: 'image/webp', quality: 75, width: 128 });
+    const metadata = await sharp(output).metadata();
+    assert.equal(metadata.format, 'webp');
+    assert.equal(metadata.width, 128);
+    assert.equal(metadata.height, 64);
+    assert.equal(metadata.hasAlpha, format !== 'jpeg');
+  });
+}
 
 function parseOptimizerUrl(value: string | null): URL {
   assert.ok(value);
