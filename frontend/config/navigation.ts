@@ -129,7 +129,7 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
   return MODEL_MENU_CANDIDATES
     .filter(({ slug }) => {
       const model = bySlug.get(slug);
-      if (!model?.publication.model.published || model.lifecycle === 'retired') return false;
+      if (!model?.publication.model.published || model.lifecycle === 'retired' || model.lifecycle === 'deep_legacy') return false;
       if (model.lifecycle !== 'legacy' || !model.successorId) return true;
       return byId.get(model.successorId)?.publication.model.published !== true;
     })
@@ -308,7 +308,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     sections: [MARKETING_MODELS_USE_CASE_SECTION, {
       key: 'moreModels', titleKey: 'nav.dropdown.moreModels', titleFallback: 'More creative possibilities',
       items: ['gpt-image-2-5-flare', 'flux-3', 'gemini-omni-flash'].flatMap(slug => {
-        const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.lifecycle !== 'retired');
+        const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.lifecycle !== 'retired' && item.lifecycle !== 'deep_legacy');
         if (!model) return [];
         return [{key: slug, label: slug === 'gpt-image-2-5-flare' ? 'GPT Image 2.5 Flare' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.1', href: modelLink(slug), icon: slug === 'gpt-image-2-5-flare' ? 'image' as const : 'cinema' as const}];
       }),

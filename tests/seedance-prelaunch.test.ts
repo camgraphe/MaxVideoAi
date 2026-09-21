@@ -414,7 +414,6 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
     'kling',
     'wan',
     'happy-horse',
-    'sora',
     'luma',
     'grok',
     'flux',

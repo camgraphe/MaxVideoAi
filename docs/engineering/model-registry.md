@@ -129,3 +129,11 @@ The main workspace keeps saved historical capabilities and asks for an explicit 
 A `deep_legacy` model may supply an explicit localized `archive` object in every model-content locale. The model route then renders `ModelArchivePage` with WebPage metadata, current published alternatives, library and canonical family-example links, without a Product offer or generation CTA. Archive content has no English fallback. Historical comparison URLs remain published; executable discovery and generation controls exclude archives.
 
 See [the Sora sunset audit](sora-sunset-audit-2026-09-21.md) for the September 2026 retirement and verification scope.
+
+### Archive discovery boundaries
+
+A published historical route is not a recommendation. Family `currentModelSlugs` must preserve an empty registry projection; never fall back to all published members. Families with no current examples remain routable/indexable but leave navigation. Example filters use discoverable families, adding an explicitly selected historical family only on its own archive route.
+
+`frontend/lib/examples/discovery.ts` derives eligible example identities and their input/provider aliases from the registry. The public hub applies that allowlist in the playlist SQL query before its limit; local review snapshots apply the same policy before sorting/pagination. Dedicated family/model playlists and watch pages retain historical media. Homepage fallback cards use the same discovery policy. Do not delete playlist membership, media or historical URLs to change promotion.
+
+`tests/sora-discovery.test.ts` and `tests/sora-discovery-postgres.test.ts` cover navigation, empty-current families, archive selection, fallback cards, localized alternatives, SQL limits and preserved historical readers.
