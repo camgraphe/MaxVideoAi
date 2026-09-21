@@ -38,7 +38,7 @@ test('examples model landing hero links do not prefetch RSC routes during initia
 
 test('marketing nav login links avoid prefetching app redirects on public pages', () => {
   for (const source of [marketingNavSource, marketingMobileMenuSource]) {
-    assert.match(source, /buildLoginHref\(\{ mode: 'signin', nextPath: '\/app' \}\)/);
+    assert.match(source, /buildLoginHref\(\{ mode: 'signin', nextPath: '\/app', locale \}\)/);
     assert.match(source, /<Link\s+href=\{loginHref\}[\s\S]{0,220}?prefetch=\{false\}/);
   }
 });
