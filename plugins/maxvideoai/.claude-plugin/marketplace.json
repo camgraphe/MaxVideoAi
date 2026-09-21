@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "maxvideoai",
-      "version": "0.3.5",
+      "version": "0.3.6",
       "source": "./",
       "description": "MaxVideoAI is a multi-model AI production service for planning video and image work, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library.",
       "author": {

@@ -93,8 +93,18 @@ export function registerCalculateProjectBudgetTool(
     'calculate_project_budget',
     {
       title: 'Calculate a MaxVideoAI project budget',
-      description:
-        'Use this when the user wants current pricing for one or more concrete video production proposals, including mixed models, clip counts, and explicit creative attempts. Do not use it to invent the creative plan, reserve a price, create a generation quote, inspect the wallet, or spend funds.',
+      description: [
+        'Use this when the user needs current pricing estimates of concrete video production proposals, including single- or mixed-model shots, clip counts and explicit creative attempts.',
+        'The host owns the creative plan and names each proposal; give mixed-model shots a factual rationale.',
+        'Validate each selected mode with get_model_details.',
+        'Compare proposals using the same output and attempts assumptions before calling an alternative cheaper or lower-cost.',
+        'Separate base production from creative-attempt allowance: creative attempts are billable scenarios; technical failures follow the returned job and refund state.',
+        'Estimates do not reserve a price or authorize generation.',
+        'Prices use the connected environment and may differ between staging and production.',
+        'If audio is always_generated or unavailable, omit settings.audio; only send it when optional.',
+        'If aspectRatios is empty, omit aspectRatio; otherwise use a supported value.',
+        'Do not use it to invent the creative plan, reserve a price, create a generation quote, inspect the wallet, or spend funds.',
+      ].join(' '),
       inputSchema: calculateProjectBudgetInputSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },

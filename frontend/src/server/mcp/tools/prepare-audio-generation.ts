@@ -88,8 +88,15 @@ export function registerPrepareAudioGenerationTool(
     'prepare_audio_generation',
     {
       title: 'Prepare a MaxVideoAI Audio generation',
-      description:
-        'Validates one exact Audio request and saves a short-lived quote with exact cents, currency, expiry, wallet balance, and confirmation requirement. It does not debit the wallet or contact a provider.',
+      description: [
+        'Use this to validate one complete Audio request and save an exact short-lived quote without debiting the wallet or contacting a provider.',
+        'Read list_audio_capabilities first for a currently available mode, exact settings and owned reference roles.',
+        'Display exact cents, currency, expiry, balance and top-up state; wait for explicit approval of that exact quote before confirm_audio_generation.',
+        'Treat expiresAt as UTC; definitive expiry comes from QUOTE_EXPIRED.',
+        'Missing required assets block an exact quote.',
+        'A failed or refunded attempt requires a fresh quote and new approval.',
+        'Never infer approval from discussion or funding.',
+      ].join(' '),
       inputSchema: prepareAudioGenerationInputSchema,
       annotations: {
         readOnlyHint: false,

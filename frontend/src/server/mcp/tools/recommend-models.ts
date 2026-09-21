@@ -45,7 +45,7 @@ export const recommendModelsInputSchema = z.object({
     'reference_control',
     'longer_clips',
     'lower_cost',
-  ])).max(6).nullable().default(null).describe('Ordered user-stated factual priorities, most important first, or null when unstated. highest_resolution applies only when delivery resolution matters and is not a proxy for overall creative quality. Use lower_cost to request a project budget, not a price guess.'),
+  ])).max(6).nullable().default(null).describe('Ordered user-stated factual priorities, most important first, or null when none of these values matches. For beautiful cinematography, expressive acting or smooth camera movement without an explicit listed priority, use null. highest_resolution requires a delivery-resolution preference such as 4K; it is not a proxy for overall creative quality. lower_cost requests a budget comparison when cheaper options are explicitly wanted. Asking what a project costs does not mean prefer the cheapest: keep priorities null and use calculate_project_budget for the estimate.'),
   preferredModelIds: z.array(z.string().trim().min(1).max(128)).max(10).nullable().default(null)
     .describe('Up to ten public model IDs the user would like considered when compatible, or null.'),
   excludedModelIds: z.array(z.string().trim().min(1).max(128)).max(10).nullable().default(null)
@@ -63,8 +63,19 @@ export function registerRecommendModelsTool(
     'recommend_models',
     {
       title: 'Recommend MaxVideoAI models',
-      description:
-        'Use this when the user is undecided, asks for advice, or wants a best-fit generation-enabled model plus strong alternatives from distinct model families, matched to a creative goal and factual capabilities. Every optional constraint is represented by a nullable field: send null when the user did not state it, never a placeholder. Ask only about missing goals, preferences, or budget; use calculate_project_budget before calling an alternative cheaper or lower-cost. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
+      description: [
+        'Use this when the user is undecided or asks for advice on which AI video/image model fits a creative goal.',
+        'Present the best-fit available executable model first, then strong alternatives from distinct model families when useful.',
+        'Validate the selected mode with get_model_details.',
+        'Nullable constraints must be null or omitted when unstated, never placeholders.',
+        'Ask only for missing choices that change the result or budget.',
+        'Clarify whether quality means story coherence, multi-shot continuity, reference/character fidelity, motion, audio or delivery resolution; never rank creative quality by resolution alone.',
+        'Use calculate_project_budget on comparable proposals before calling an option cheaper or lower-cost.',
+        'Mix models only when each shot has a factual rationale; do not force diversity or dilute a quality-first plan.',
+        'Do not use when the user already chose a compatible model for validation, pricing or execution.',
+        'Never substitute a named model without user approval.',
+        'Recommendations are capability matches. Do not use them as an exact quote, generation command, or guarantee that a provider will accept a request.',
+      ].join(' '),
       inputSchema: recommendModelsInputSchema,
       annotations: {
         readOnlyHint: true,

@@ -1,0 +1,91 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "B01",
+      "skill": "none",
+      "actions": [],
+      "reply": "Mi primera cámara: lo que aprendí al empezar a grabar"
+    },
+    {
+      "id": "B02",
+      "skill": "none",
+      "actions": [],
+      "reply": "Sí, puedo analizar la retención de audiencia del CSV adjunto. Te devolveré los puntos de caída, los momentos de mayor interés y acciones concretas para mejorar la retención."
+    },
+    {
+      "id": "B03",
+      "skill": "none",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "VideoOther video generation tools and their input schemas"
+        }
+      ],
+      "reply": "Je vais d’abord vérifier les outils VideoOther disponibles et leur schéma exact, puis je poursuivrai avec celui que vous avez choisi."
+    },
+    {
+      "id": "B04",
+      "skill": "plan",
+      "actions": [],
+      "reply": "Le modèle seedance-2-0 n’est pas activé dans cet environnement connecté. Je respecte votre choix et ne propose pas d’alternative sans votre accord."
+    },
+    {
+      "id": "B05",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "create_reference_upload_link",
+          "arguments": {
+            "kind": "image"
+          }
+        }
+      ],
+      "reply": "Je prépare le transfert privé de votre image locale pour l’utiliser comme référence. Je vous indiquerai ensuite si elle est prête pour le devis."
+    },
+    {
+      "id": "B06",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "prepare_generation",
+          "arguments": {
+            "surface": "video",
+            "engineId": "seedance-2-0",
+            "mode": "i2v",
+            "prompt": "Un bateau rouge traverse un lac calme au lever du soleil.",
+            "settings": {
+              "durationSec": 8,
+              "aspectRatio": "9:16",
+              "resolution": "720p"
+            },
+            "outputCount": 1,
+            "references": [
+              {
+                "kind": "asset",
+                "assetId": "fixture-owned-image",
+                "role": "source"
+              }
+            ]
+          }
+        }
+      ],
+      "reply": "Je demande maintenant le devis exact pour ces réglages. Dès qu’il revient, je vous présenterai le prix et j’attendrai votre approbation explicite avant toute génération payante."
+    },
+    {
+      "id": "B07",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Après deux timeouts techniques identiques lors de l’import, j’arrête la tentative pour éviter de répéter l’échec. La référence requise n’est pas encore disponible. Autorisez-vous une nouvelle tentative de transfert ?"
+    },
+    {
+      "id": "B08",
+      "skill": "plan",
+      "actions": [],
+      "reply": "Je n’ai reçu aucune source officielle révisée pour ce modèle. Proposition : « Un bateau traverse un lac calme au lever du soleil, lumière dorée, brume légère, mouvement de caméra lent et fluide, reflets naturels sur l’eau, composition cinématographique, profondeur de champ subtile, ambiance contemplative, rendu réaliste. »"
+    }
+  ]
+}

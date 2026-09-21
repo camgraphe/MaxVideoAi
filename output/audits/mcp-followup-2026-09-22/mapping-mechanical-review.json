@@ -1,0 +1,91 @@
+{
+  "date": "2026-09-22",
+  "evidenceKind": "controlled-field-mapping-only",
+  "realHostEvidence": false,
+  "rows": [
+    {
+      "variant": "a",
+      "id": "F01",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "a",
+      "id": "F02",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "a",
+      "id": "F03",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "a",
+      "id": "F04",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "a",
+      "id": "F05",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "a",
+      "id": "F06",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "b",
+      "id": "F01",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "b",
+      "id": "F02",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "b",
+      "id": "F03",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "b",
+      "id": "F04",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "b",
+      "id": "F05",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    },
+    {
+      "variant": "b",
+      "id": "F06",
+      "schemaValid": true,
+      "prioritiesMatch": true,
+      "resolutionMatches": true
+    }
+  ]
+}

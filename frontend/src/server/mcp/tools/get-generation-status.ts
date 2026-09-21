@@ -22,8 +22,16 @@ export function registerGetGenerationStatusTool(
     'get_generation_status',
     {
       title: 'Get a MaxVideoAI generation status',
-      description:
-        'Use this to recover the safe current state, MaxVideoAI library destination, workspace link, and public result links for one owned generation. It never returns prompts, provider details, or private media.',
+      description: [
+        'Use this to follow or recover one known owned generation, including after interruption or an ambiguous submission response.',
+        'It returns safe current status, failure/refund state and MaxVideoAI library/workspace destinations without exposing prompts, provider details or private media.',
+        'An accepted or running job is not completed: do not claim completion until terminal success.',
+        'When retry is returned, wait at least retry.afterSeconds before calling retry.tool with retry.arguments; do not repeatedly check sooner. When retry is null, stop automatic polling.',
+        'For a technical failure inspect the refund state; do not resubmit automatically.',
+        'Every replacement is a new paid attempt requiring a fresh quote and approval.',
+        'For a completed job use present_generation once to deliver the saved result.',
+        'For Audio, preserve the original output and use the same recovery flow.',
+      ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
       annotations: {
         readOnlyHint: true,

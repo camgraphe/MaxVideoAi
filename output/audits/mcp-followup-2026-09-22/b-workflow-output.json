@@ -1,0 +1,147 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "W01",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "prepare_generation",
+          "arguments": {
+            "surface": "video",
+            "engineId": "seedance-2-0",
+            "mode": "t2v",
+            "prompt": "Un bateau rouge traverse un lac calme au lever du soleil.",
+            "settings": {
+              "durationSec": 8,
+              "aspectRatio": "9:16",
+              "resolution": "720p"
+            },
+            "outputCount": 1
+          }
+        }
+      ],
+      "reply": "Je prépare maintenant le devis exact avec les réglages validés. Je vous afficherai le prix retourné, puis j’attendrai votre approbation explicite avant tout lancement."
+    },
+    {
+      "id": "W02",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "confirm_generation",
+          "arguments": {
+            "quoteId": "11111111-1111-4111-8111-111111111111",
+            "confirmed": true
+          }
+        }
+      ],
+      "reply": "Merci pour votre approbation explicite du devis de 1,25 USD. Je lance exactement une tentative avec cette demande."
+    },
+    {
+      "id": "W03",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "import_reference_files",
+          "arguments": {
+            "files": [
+              {
+                "download_url": "https://attachments.example.invalid/two",
+                "file_id": "file-two",
+                "mime_type": "image/png",
+                "file_name": "fin.png"
+              }
+            ]
+          }
+        }
+      ],
+      "reply": "Je réimporte uniquement le fichier manquant fin.png. Le premier fichier déjà importé reste conservé et ne sera pas réimporté."
+    },
+    {
+      "id": "W04",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_account_status",
+          "arguments": {}
+        },
+        {
+          "type": "tool",
+          "name": "prepare_generation",
+          "arguments": {
+            "surface": "video",
+            "engineId": "seedance-2-0",
+            "mode": "t2v",
+            "prompt": "Un bateau rouge traverse un lac calme au lever du soleil.",
+            "settings": {
+              "durationSec": 8,
+              "aspectRatio": "9:16",
+              "resolution": "720p"
+            },
+            "outputCount": 1
+          }
+        }
+      ],
+      "reply": "Je vérifie d’abord l’état actuel du compte, puis je créerai un nouveau devis exact pour la même demande. L’ancien devis n’est plus valable après la recharge."
+    },
+    {
+      "id": "W05",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "wait",
+          "seconds": 28
+        },
+        {
+          "type": "tool",
+          "name": "get_generation_status",
+          "arguments": {
+            "jobId": "job-running"
+          }
+        }
+      ],
+      "reply": "Je poursuis le suivi après le délai indiqué par le service, puis je vérifie l’état de ce même travail."
+    },
+    {
+      "id": "W06",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "present_generation",
+          "arguments": {
+            "jobId": "job-done"
+          }
+        }
+      ],
+      "reply": "Le travail est terminé. J’affiche maintenant le résultat enregistré dans votre bibliothèque MaxVideoAI."
+    },
+    {
+      "id": "W07",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "reconnect",
+          "detail": "Host reports reauthenticationRequired for the installed MaxVideoAI plugin; reconnect using the host's reported MaxVideoAI flow, then rediscover tools and resume the saved Reel request."
+        }
+      ],
+      "reply": "La connexion MaxVideoAI nécessite une nouvelle authentification. Je lance le flux de reconnexion signalé par l’hôte ; après réussite, je redécouvrirai les outils et reprendrai votre Reel de 8 secondes."
+    },
+    {
+      "id": "W08",
+      "skill": "none",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "MaxVideoAI and get_model_details"
+        }
+      ],
+      "reply": "Je recherche les outils MaxVideoAI différés, notamment get_model_details. Je m’arrêterai dès que le premier résultat nécessaire sera disponible avant de préparer la suite."
+    }
+  ]
+}

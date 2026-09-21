@@ -100,6 +100,9 @@ jobs:
             tests/github-content-contract.test.ts \
             tests/github-assets.test.ts
 
+      - name: Verify MCP client discovery and recovery contracts
+        run: pnpm mcp:client:check
+
       - name: Build deterministic release bundle
         shell: bash
         run: |

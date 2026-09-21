@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-22",
+  "realHostEvidence": false,
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "medium",
+  "freshContextPerAgent": true,
+  "maximumConcurrentChildren": 3,
+  "conversationWaves": {
+    "baseline": [
+      "wave_a_priorities",
+      "wave_a_workflow",
+      "wave_a_boundaries"
+    ],
+    "candidate": [
+      "wave_b_priorities",
+      "wave_b_workflow",
+      "wave_b_boundaries"
+    ],
+    "casesPerAgent": 8,
+    "responses": 48,
+    "pairedCases": 24
+  },
+  "argumentMappingProbes": {
+    "agents": [
+      "mapping_probe_a",
+      "mapping_probe_b"
+    ],
+    "casesPerAgent": 6,
+    "responses": 12,
+    "routingDeliberatelyFixed": true
+  },
+  "codeAuditors": [
+    "audit_mcp_protocol",
+    "audit_mcp_recovery",
+    "audit_mcp_distribution"
+  ],
+  "previousCampaign": {
+    "directory": "../mcp-agent-simulations-2026-09-21",
+    "conversationResponses": 57
+  },
+  "totalConversationResponsesAcrossCampaigns": 105,
+  "noMediaGenerated": true,
+  "noPaidAccountActions": true,
+  "measuredTokenUsage": null,
+  "note": "Eight conversation cases share each agent context; mapping probes isolate field semantics and are not additional complete conversations. Code auditors were followed up for implementation and test repairs.",
+  "publicationNormalization": "Removed Markdown trailing whitespace from audit-distribution.md only; agent JSON responses unchanged."
+}

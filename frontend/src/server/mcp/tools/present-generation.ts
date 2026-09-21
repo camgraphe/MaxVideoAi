@@ -111,8 +111,13 @@ export function registerPresentGenerationTool(
     'present_generation',
     {
       title: 'Present a MaxVideoAI generation',
-      description:
-        'Use this when a completed owned MaxVideoAI generation should be shown inline as a playable video, image, or audio result. Call get_generation_status or list_recent_generations first; do not use this to poll, generate, retry, or charge credits.',
+      description: [
+        'Use this once to deliver a completed owned MaxVideoAI generation as inline video, image or original Audio in a compatible UI host.',
+        'First verify completion with get_generation_status or list_recent_generations.',
+        'Explain that the result is saved in the same connected MaxVideoAI library.',
+        'If the host does not render the UI, use the returned resource link and library destination as fallback; never invent URLs.',
+        'Do not poll, generate, retry, confirm, or charge with this tool.',
+      ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
       annotations: {
         readOnlyHint: true,

@@ -127,8 +127,21 @@ export function registerPrepareGenerationTool(
     'prepare_generation',
     {
       title: 'Prepare a MaxVideoAI generation',
-      description:
-        'Use this when the user has selected an image model or a supported video workflow (t2v, i2v, i2v_standard, ref2v, fl2v, v2v, r2v, extend, a2v, retake, or reframe) and needs validation plus an exact short-lived quote. Every optional field is nullable: send null when it was not explicitly required by the selected mode’s live details or the user. For video duration, send settings.durationSec in seconds, never settings.duration. It saves the quote but does not spend or generate. Do not use it as confirmation or skip the selected mode’s live model details.',
+      description: [
+        'Use this to validate a complete selected AI video or image request and save an exact short-lived quote.',
+        'Read get_model_details for the selected mode first, including t2v, i2v, i2v_standard, ref2v, fl2v, v2v, r2v, extend, a2v, retake and reframe.',
+        'It saves the quote but does not spend or generate.',
+        'Display the exact price, currency and validated request, then stop and wait for explicit user approval before confirm_generation.',
+        'Required private references must be present; if missing, no exact quote can be created.',
+        'A project budget is only an estimate.',
+        'For nullable inputs, omit or send null when not explicitly required by the selected mode’s live details or the user.',
+        'For video duration use settings.durationSec, never settings.duration.',
+        'Use only supported settings and ordered reference roles; never infer constraints from a sibling mode.',
+        'Treat expiresAt as UTC; declare definitive expiry only on QUOTE_EXPIRED, not a local-date comparison.',
+        'If credits are insufficient, use create_topup_link for this quote.',
+        'Funding, discussion and ambiguous assent do not approve generation.',
+        'Never substitute a named model or use a quote as a generation result.',
+      ].join(' '),
       inputSchema: prepareGenerationInputSchema,
       annotations: {
         readOnlyHint: false,

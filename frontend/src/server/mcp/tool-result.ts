@@ -16,7 +16,9 @@ function resultContent(
   resourceLinks: ReadonlyArray<AgentGenerationResourceLink> = [],
 ): CallToolResult['content'] {
   return [
-    { type: 'text', text: JSON.stringify(value, null, 2) },
+    // Preserve the complete JSON fallback alongside structuredContent for hosts
+    // that consume either representation. Only formatting whitespace is removed.
+    { type: 'text', text: JSON.stringify(value) },
     ...resourceLinks.slice(0, MAX_RESOURCE_LINKS_PER_RESPONSE).map((link) => ({
       type: 'resource_link' as const,
       ...link,

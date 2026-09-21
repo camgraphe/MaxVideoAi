@@ -306,7 +306,7 @@ test('server advertises only the five read-only discovery tools with narrow guid
   const budgetTool = result.tools.find((tool) => tool.name === 'calculate_project_budget');
   assert.ok(budgetTool);
   assert.equal(budgetTool.inputSchema.additionalProperties, false);
-  assert.match(budgetTool.description ?? '', /mixed models/i);
+  assert.match(budgetTool.description ?? '', /mixed[- ]model/i);
   assert.match(budgetTool.description ?? '', /explicit creative attempts/i);
   const proposalSchema = record(record(budgetTool.inputSchema).properties).proposals;
   const proposalItem = record(record(proposalSchema).items);
@@ -321,7 +321,7 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.match(String(aspectRatioSchema.description), /aspectRatios.*non-empty.*include/i);
   assert.match(String(aspectRatioSchema.description), /empty.*omit/i);
   assert.match(String(audioSchema.description), /omit.*always_generated/i);
-  assert.match(connected.client.getInstructions() ?? '', /prompt drafting.*host agent/i);
+  assert.match(connected.client.getInstructions() ?? '', /host owns creative discussion and prompts/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
 
   const recommendationTool = result.tools.find((tool) => tool.name === 'recommend_models');

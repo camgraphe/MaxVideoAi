@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "id": "F01",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "product_video",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je vais privilégier les modèles adaptés aux publicités et aux mouvements de caméra précis.",
+      "reasoningSummary": "L'annonce contraint la surface à la vidéo et le cas d'usage au produit, tandis que la qualité visuelle générale et la précision des mouvements n'ont pas de champ dédié dans ce schéma."
+    },
+    {
+      "id": "F02",
+      "arguments": {
+        "id": null,
+        "surface": null,
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "cinematic_story",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je privilégierai un modèle orienté scène cinématographique et mouvement fluide.",
+      "reasoningSummary": "La demande exprime clairement un objectif cinématographique, mais la lumière naturelle et la fluidité ne correspondent pas à des contraintes dédiées du schéma."
+    },
+    {
+      "id": "F03",
+      "arguments": {
+        "id": null,
+        "surface": null,
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "cinematic_story",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je chercherai un modèle adapté à une scène expressive avec une forte qualité artistique.",
+      "reasoningSummary": "Une scène artistique et expressive se mappe au cas cinématographique, tandis que la qualité artistique n'a pas de priorité structurée correspondante."
+    },
+    {
+      "id": "F04",
+      "arguments": {
+        "id": null,
+        "surface": null,
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": "4K",
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "high_resolution",
+        "priorities": ["highest_resolution"],
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je privilégierai les modèles qui prennent en charge une livraison d'au moins 4K.",
+      "reasoningSummary": "La résolution minimale explicite se mappe directement à `resolution`, au cas haute résolution et à la priorité de résolution maximale."
+    },
+    {
+      "id": "F05",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "social_video",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je peux orienter la recommandation vers la production de Shorts, puis estimer séparément les six plans et leurs deux tentatives.",
+      "reasoningSummary": "Les Shorts contraignent la surface vidéo et l'usage social, mais le nombre de Shorts et les tentatives par plan ne disposent d'aucun champ dans `recommend_models`."
+    },
+    {
+      "id": "F06",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": null,
+        "priorities": ["speed", "lower_cost"],
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je classerai d'abord les options par rapidité, puis par coût inférieur.",
+      "reasoningSummary": "L'ordre explicite des priorités se mappe à `speed` puis `lower_cost`; aucun cas créatif plus précis ni plafond budgétaire n'est fourni."
+    }
+  ]
+}

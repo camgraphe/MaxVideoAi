@@ -17,7 +17,7 @@ Use this route in a Codex build that exposes plugin marketplace installation and
 Run the reviewed release-tag commands from your terminal:
 
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.5
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.6
 codex plugin add maxvideoai@maxvideoai
 ```
 
@@ -44,6 +44,57 @@ Start a new task and ask for a no-spend plan. A valid response should compare cu
 
 If `$maxvideoai:plan` is not discovered, verify the tagged marketplace and package are enabled, then start another new task. Package discovery alone is not proof that OAuth or the full production path completed.
 
+## Why can an installed plugin have no tools?
+
+Package discovery, tool discovery, and OAuth authentication are separate states.
+The two skills allow implicit invocation, but the host decides whether a request
+matches them. You can also explicitly select `$maxvideoai:plan` or
+`$maxvideoai:generate`. Neither route bypasses account authentication.
+
+```text
+Package installed → tools discovered → account connected → workflow ready
+                                           ↑
+                              Reconnect here if OAuth is rejected
+```
+
+If the skill is present but its tools are missing:
+
+1. Search the host's available or deferred tools for MaxVideoAI. An empty MCP
+   resource list does not mean its tools are missing.
+2. Inspect the MaxVideoAI connection status. If it reports OAuth reauthentication,
+   use the host's reconnect action or `codex mcp login maxvideoai`, then complete
+   the browser sign-in for the intended account.
+3. Check `codex --version` if the command fails unexpectedly. A terminal may use
+   an older CLI than the desktop app. Use the app's plugin manager or its verified
+   bundled CLI rather than changing configuration for an obsolete binary.
+4. Rediscover the tools and resume the existing brief. If the host still does
+   not expose them, start a new task with the saved brief and report the actual
+   connection error. Do not reinstall merely because authentication was lost.
+
+If the marketplace itself points to a missing local or temporary directory,
+repair its source using the tagged Git repository in the installation command
+above. A cached plugin can remain installed after its original local source has
+disappeared; that source cannot reliably supply later updates.
+
+No sign-in or reconnection authorizes generation. An exact quote and explicit
+approval are still required before a paid attempt.
+
+## How do local reference files reach my Library?
+
+When the host cannot expose an attachment handle, create one upload destination
+per file with `create_reference_upload_link`. Run the included helper with Node.js
+from the installed package root:
+
+```sh
+node scripts/import-reference-files.mjs --upload '<returned upload URL>' '/absolute/path/reference.png'
+```
+
+Replace the placeholders with the returned destination and the authorized local
+file. Repeat `--upload` for up to eight files, each with its own destination.
+Keep successful asset IDs and retry only failed files with fresh destinations.
+The local path stays on the machine; the helper uploads into the account's private
+Library. If Node.js is unavailable, use the returned browser destination.
+
 ## How do I remove or disconnect it?
 
 Use the plugin manager in the Codex build that installed MaxVideoAI and remove `maxvideoai@maxvideoai`. If your build offers CLI removal, check its own `codex plugin --help` output rather than guessing a command. Revoke the Codex OAuth connection in your MaxVideoAI account connection settings to end account access.
@@ -62,6 +113,6 @@ Remove the package in Codex → revoke the Codex OAuth connection in MaxVideoAI 
 
 - [MaxVideoAI package repository](https://github.com/camgraphe/maxvideoai-plugin)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
-- Public `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json` at release tag `v0.3.5`
+- Public `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json` at release tag `v0.3.6`
 
-Last reviewed: 2026-09-16.
+Last reviewed: 2026-09-22.

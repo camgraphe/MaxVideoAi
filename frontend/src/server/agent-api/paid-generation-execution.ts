@@ -476,7 +476,12 @@ export async function submitReservedPaidGeneration(
       jobSurface: 'image',
       billingProductKey: null,
     });
-    if (result.ok) return { kind: 'completed' };
+    if (result.ok) {
+      if (refunded(result)) {
+        return rejectedOutcome(execution, dependencies, true, { code: null, message: null, status: null });
+      }
+      return { kind: 'completed' };
+    }
     return refunded(result)
       ? rejectedOutcome(execution, dependencies, true, { code: null, message: null, status: null })
       : { kind: 'ambiguous', retryable: true };

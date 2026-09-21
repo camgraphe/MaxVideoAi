@@ -1,0 +1,64 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "D01",
+      "skill": "plan",
+      "actions": [
+        {"type": "tool", "name": "recommend_models", "arguments": null}
+      ],
+      "reply": "Je vais d’abord identifier les modèles image-vers-vidéo compatibles avec votre photo et un Reel vertical de huit secondes. Je vous proposerai ensuite une option avant toute estimation ou génération."
+    },
+    {
+      "id": "D02",
+      "skill": "plan",
+      "actions": [
+        {"type": "tool", "name": "recommend_models", "arguments": null}
+      ],
+      "reply": "Je vais comparer les modèles adaptés aux mouvements de caméra précis, en donnant la priorité à la qualité. J’utiliserai leurs capacités actuelles avant de recommander un choix."
+    },
+    {
+      "id": "D03",
+      "skill": "plan",
+      "actions": [
+        {"type": "tool", "name": "recommend_models", "arguments": null}
+      ],
+      "reply": "Pour estimer six Shorts avec deux essais par plan, je dois d’abord établir des propositions de modèles et de plans comparables. Je vous donnerai ensuite une estimation, pas un devis exact."
+    },
+    {
+      "id": "D04",
+      "skill": "none",
+      "actions": [],
+      "reply": "Trois astuces pour mieux dormir : ce qui fonctionne vraiment"
+    },
+    {
+      "id": "D05",
+      "skill": "none",
+      "actions": [],
+      "reply": "Je peux analyser votre CSV, mais cette demande relève de l’analyse de données et non de la planification ou de la génération MaxVideoAI."
+    },
+    {
+      "id": "D06",
+      "skill": "none",
+      "actions": [],
+      "reply": "Le plugin VideoOther n’est pas disponible dans cette session. Je peux toutefois vous aider avec les fonctions MaxVideoAI si vous le souhaitez."
+    },
+    {
+      "id": "D07",
+      "skill": "plan",
+      "actions": [
+        {"type": "tool", "name": "get_model_details", "arguments": null}
+      ],
+      "reply": "Je vérifie les capacités et les contraintes actuelles du mode image-vers-vidéo de Seedance 2.0 avant de vous confirmer son fonctionnement."
+    },
+    {
+      "id": "D08",
+      "skill": "generate",
+      "actions": [
+        {"type": "tool", "name": "get_model_details", "arguments": null}
+      ],
+      "reply": "Pour obtenir un prix exact, je dois d’abord valider en direct le mode et les paramètres compatibles de Seedance 2.0. Je préparerai ensuite le devis exact pour votre vidéo de huit secondes."
+    }
+  ]
+}

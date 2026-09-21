@@ -1,7 +1,7 @@
 ---
 name: generate
 description: |
-  Execute a concrete AI video or image request through the connected MaxVideoAI account. Use when: a selected AI video or image request needs an exact price or exact quote, explicit approval of a fresh quote, a generation action, job status, result presentation, or result recovery. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended project planning, model comparison, or a budget or pricing estimate before a request is selected (use plan).
+  Generate AI video or image media with MaxVideoAI. Use when: a selected AI video or image request needs an exact price or exact quote, explicit approval of a fresh quote, a generation action, job status, result presentation, or result recovery. Includes animating an image and creating a YouTube Short, Reel, TikTok, or ad from a concrete request. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended project planning, model comparison, or a budget or pricing estimate before a request is selected (use plan).
 ---
 
 # Generate with MaxVideoAI
@@ -9,6 +9,28 @@ description: |
 Take one concrete request from references through delivery while preserving a
 strict paid-action boundary. Live tool results are authoritative for the model
 contract, account, quote, job, and destination.
+
+## If tools are not visible
+
+An installed skill and an authenticated MCP connection are separate states.
+Before declaring MaxVideoAI unavailable, search the host's available or deferred
+tools for MaxVideoAI and `get_model_details`; use the host's tool discovery when
+provided. An empty MCP resource list does not establish that tools are absent.
+If tools remain missing, inspect the host's connection status. Report an OAuth
+reconnection requirement only when the host reports it; otherwise describe the
+unknown connection state without claiming that the plugin is not installed.
+
+A server's catalogue is not the host's complete tool inventory. Retrieve a
+discovered tool's input schema before constructing arguments; if it is missing,
+continue discovery instead of guessing parameter names.
+
+For a confirmed Codex OAuth failure, use the host's reconnect flow or its
+reported `codex mcp login maxvideoai` command. If the shell CLI is older than
+the running app, use that app's verified bundled CLI or plugin manager; do not
+change unrelated configuration to satisfy an obsolete CLI. Complete any required
+user sign-in, then rediscover tools and resume the saved request. Reconnection
+does not approve a paid attempt. If discovery still fails, preserve the prompt
+and settings and explain the remaining blocker without inventing prices.
 
 ## UX rules
 
@@ -82,14 +104,17 @@ a fresh exact quote, and new explicit approval.
 
 ## Follow and recover without duplication
 
-After confirmation, use `get_generation_status` for a known job. If the client
-response was lost, stale, or interrupted, use `list_recent_generations` before
-considering any new paid call. Recover the existing job rather than creating a
-duplicate or second paid attempt.
+After confirmation, use `get_generation_status` for a known job, including after
+a lost, stale, or interrupted response. Use `list_recent_generations` when the
+job ID is unknown. Recover the existing job before considering any new paid call;
+never create a duplicate or second paid attempt to recover a response.
+
+When a generation result returns `retry`, wait at least `retry.afterSeconds`
+before calling `retry.tool` with `retry.arguments`. When `retry` is null, stop
+automatic polling. Status recovery never authorizes a new generation.
 
 For a technical failure, inspect the returned refund or recredit state and do
-not resubmit automatically. A creative retry is a new paid attempt with its own
-fresh quote and approval.
+not resubmit automatically. Follow the new-attempt approval rule above.
 
 When a job is completed, call `present_generation` once when the result should
 be delivered. Compatible hosts may show inline video or images. Otherwise use
@@ -112,11 +137,7 @@ show the fresh exact quote, and wait for explicit approval before confirmation.
 
 ## Failure policy
 
-- Missing or expired authentication: explain that a MaxVideoAI account is
-  required and let the host restart the connection flow.
 - Invalid live field: refresh `get_model_details`; never guess a replacement.
-- Lost response or timeout: recover status; never duplicate a paid request.
 - Equivalent technical failure twice: stop and report the concrete live error.
-- Browser handoff: use the exact returned URL and never claim the user completed it.
 - Direct or local import: never expose capability links, local paths, or raw IDs
   in normal chat; report the human file names and whether each reference is ready.

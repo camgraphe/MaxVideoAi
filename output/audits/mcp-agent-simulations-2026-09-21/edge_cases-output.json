@@ -1,0 +1,95 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "E01",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "prepare_generation",
+          "arguments": {
+            "surface": "video",
+            "engineId": "seedance-2-0",
+            "mode": "t2v",
+            "prompt": "Un bateau rouge traverse un lac calme au lever du soleil.",
+            "settings": {
+              "durationSec": 8,
+              "aspectRatio": "9:16",
+              "resolution": "720p"
+            },
+            "outputCount": 1
+          }
+        }
+      ],
+      "reply": "Le devis précédent a expiré. Je prépare un nouveau devis identique et vous le montrerai avant de demander une nouvelle approbation."
+    },
+    {
+      "id": "E02",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Ce modèle est indisponible dans votre environnement connecté. Je ne peux pas le remplacer sans votre accord. Voulez-vous que je propose des alternatives ?"
+    },
+    {
+      "id": "E03",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Le devis affiché est de 1,25 USD pour cette vidéo. Votre message ne constitue pas une approbation explicite de ce devis : dites « j’approuve ce devis » pour autoriser une seule tentative."
+    },
+    {
+      "id": "E04",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_generation_status",
+          "arguments": {
+            "jobId": "job-one"
+          }
+        }
+      ],
+      "reply": "Une tentative est déjà acceptée. Je vérifie d’abord son état avant d’envisager les trois variantes demandées."
+    },
+    {
+      "id": "E05",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "create_reference_upload_link",
+          "arguments": {
+            "kind": "image"
+          }
+        }
+      ],
+      "reply": "Je prépare un import privé pour votre image afin de l’utiliser comme référence."
+    },
+    {
+      "id": "E06",
+      "skill": "generate",
+      "actions": [],
+      "reply": "L’import privé a été refusé et l’image requise n’est pas disponible. Je ne peux pas lancer cette génération sans elle. Autorisez-vous une nouvelle tentative d’import ?"
+    },
+    {
+      "id": "E07",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Ce modèle ne prend pas en charge l’audio pour cette demande. Voulez-vous continuer avec la vidéo sans son ?"
+    },
+    {
+      "id": "E08",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "create_topup_link",
+          "arguments": {
+            "quoteId": "11111111-1111-4111-8111-111111111111"
+          }
+        }
+      ],
+      "reply": "Le devis signale des crédits insuffisants. Je crée le lien de financement MaxVideoAI ; votre carte ne sera pas traitée ici."
+    }
+  ]
+}

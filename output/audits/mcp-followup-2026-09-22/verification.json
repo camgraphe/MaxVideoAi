@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-22",
+  "head": "f5a074a1b70b3950c8b28a285d0f104ddcd7d42f",
+  "branch": "codex/sora-sunset-20260921",
+  "dirtyCheckout": true,
+  "scope": "focused local checks, no full-repository certification or real-host selection evidence",
+  "checks": {
+    "client": {
+      "command": "pnpm mcp:client:check",
+      "testsPassed": 142,
+      "offlineScenarios": 70,
+      "log": "/private/tmp/maxvideoai-client-final-20260922.log",
+      "exitCode": 0,
+      "logSha256": "36198c9d7b2b3b45e5738b56a76c8650003d36fd9f0e3544979146c26f9da1ba"
+    },
+    "broadMcp": {
+      "command": "pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/mcp-*.test.ts tests/maxvideoai-plugin-mirror.test.ts",
+      "testsPassed": 1053,
+      "log": "/private/tmp/maxvideoai-broad-final-20260922.log",
+      "exitCode": 0,
+      "logSha256": "1d4eb6bd0207deaaee1e5ffa1c6d2bfa29f2fd5238f076ddd305ce1e75b08307"
+    },
+    "frontendLint": {
+      "command": "npm --prefix frontend run lint",
+      "log": "/private/tmp/maxvideoai-lint-final-20260922.log",
+      "exitCode": 0,
+      "logSha256": "f727f20955753e3792788293b7a0124799463bc290c66279c68b981ef7d820cc"
+    },
+    "lastTouchedLint": {
+      "command": "pnpm --prefix frontend exec eslint src/server/mcp/reference-upload-app.ts src/server/mcp/http-handler.ts",
+      "log": "/private/tmp/maxvideoai-final-touched-lint-20260922.log",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "frontendTypeScript": {
+      "command": "pnpm --prefix frontend exec tsc --noEmit",
+      "log": "/private/tmp/maxvideoai-tsc-final-20260922.log",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "exposure": {
+      "command": "npm run lint:exposure",
+      "log": "/private/tmp/maxvideoai-exposure-final-20260922.log",
+      "exitCode": 0,
+      "logSha256": "5fa2e24ad291922c3f760922c61148239a3412eb123e793644fa985713d8cb99"
+    }
+  },
+  "sourceSha256": {
+    "frontend/src/server/mcp/http-handler.ts": "729a76036d5433ed3aa424af29788875354e3717659b99639373c9212ec06dac",
+    "frontend/src/server/mcp/reference-upload-app.ts": "5989d126059996d85754a107fcea98abc9fee21c97a0dbf88c791498540dfefb",
+    "frontend/src/server/agent-api/paid-generation-execution.ts": "42690fe3ac82a50661f09f968b4d841f6b00bc0b362f51cd318cabd180d5c6d7",
+    "tests/mcp-transport-contract.test.ts": "6f726feaec9804af2e96c82a27cea47e519657486d70f7e912e6ea09d6ecf9a2",
+    "tests/mcp-reference-upload-app.test.ts": "d01f3105b951bb876b2f7f11ed1df831739c2872d54dab8b7ddb351bb3a8c2d9",
+    "tests/mcp-confirm-generation.test.ts": "dac7861b314294fddc448dbf6969ceeb751065cff77ac592ac8db4c5b9dae76f",
+    "plugins/maxvideoai/skills/plan/SKILL.md": "81aeb82699f712940510446c92243e2e5d96ddce662ec3ddb1d7006c4a2140d1",
+    "plugins/maxvideoai/skills/generate/SKILL.md": "5bf8295bbe1842dc22777c7a1267a3029ff7a84bbe78afe944e4e14c7db33eca"
+  },
+  "package": {
+    "path": "/private/tmp/maxvideoai-audit-release-20260922/maxvideoai-plugin-0.3.5.zip",
+    "sha256": "75615753d67dcdc4f11ebadfaa4fbf2b2b5bea37cbe7ef12b5ffd079126780c8",
+    "productFiles": 59,
+    "checksumFiles": 1,
+    "published": false,
+    "warning": "Technical build only. Do not overwrite existing v0.3.5."
+  },
+  "metadata": {
+    "fingerprint": "02490dfe98c1c4b2eb3a6f381501bee93aff04ed89f76250c6cccb367dd08a26",
+    "defaultInstructionsBytes": 1528,
+    "maxInstructionsBytesAcross32Gates": 1869,
+    "videoImageToolDescriptionsBytes": 10969,
+    "skillBodiesBeforeBytes": 14634,
+    "skillBodiesAfterBytes": 14920
+  }
+}

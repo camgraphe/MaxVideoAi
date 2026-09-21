@@ -25,8 +25,13 @@ export function registerListRecentGenerationsTool(
     'list_recent_generations',
     {
       title: 'List recent MaxVideoAI generations',
-      description:
-        'Use this to recover a bounded page from the same connected user’s MaxVideoAI library, with recent image, video, or Audio generations, workspace links, and safe public result links.',
+      description: [
+        'Use this when a job identifier or submission response was lost, or the user returns to recent work.',
+        'Recover a bounded page from the same connected user\'s MaxVideoAI library before considering any second paid submission.',
+        'Filter by surface video, image or audio when known, preserve the existing job IDs and use get_generation_status for follow-up.',
+        'Do not claim completion for accepted/running jobs or use this to generate, retry, or charge.',
+        'Completed results can be delivered through present_generation.',
+      ].join(' '),
       inputSchema: listRecentGenerationsInputSchema,
       annotations: {
         readOnlyHint: true,

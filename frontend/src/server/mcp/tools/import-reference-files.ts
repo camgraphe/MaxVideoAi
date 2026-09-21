@@ -29,8 +29,14 @@ export function registerImportReferenceFilesTool(
     'import_reference_files',
     {
       title: 'Import private reference files',
-      description:
-        'Import one or more user-authorized image, video, or audio files from temporary host file handles into the connected private MaxVideoAI library. Use this when the host provides attachments or authorized generation results as file handles. Returns reusable asset IDs in input order. Do not use this with invented URLs, existing library assets, local filesystem paths, generation, or spending.',
+      description: [
+        'Use this to import up to eight user-authorized image, video or audio files from temporary host file handles, including attachments or authorized generation results, into the connected private MaxVideoAI library.',
+        'MaxVideoAI manages these references; the host owns creating or selecting reference media.',
+        'Use returned asset IDs directly and preserve input order; do not call list_media after a successful direct import.',
+        'On partial failure, keep successful IDs and retry only failed files.',
+        'Do not invent or substitute download URLs, send local filesystem paths, re-import existing library assets, generate, or spend.',
+        'When the host cannot expose a file handle, use create_reference_upload_link instead.',
+      ].join(' '),
       inputSchema: importReferenceFilesInputSchema,
       annotations: {
         readOnlyHint: false,
