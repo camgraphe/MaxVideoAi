@@ -20,6 +20,7 @@ test('run retries are idempotent; changed content needs a new key and version', 
   try {
     await pool.query(readFileSync('neon/migrations/49_editorial_drafts.sql', 'utf8'));
     await pool.query(readFileSync('neon/migrations/50_editorial_checks.sql', 'utf8'));
+    await pool.query(readFileSync('neon/migrations/51_editorial_publications.sql', 'utf8'));
     await pool.query('TRUNCATE editorial_events, editorial_versions, editorial_articles, editorial_topics RESTART IDENTITY CASCADE');
     const { draft: first, report } = checkedFixture();
     const created = await saveEditorialDraft({ draft: first, actor: 'test' });

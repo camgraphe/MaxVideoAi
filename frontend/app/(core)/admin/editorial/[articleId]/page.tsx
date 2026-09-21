@@ -1,3 +1,5 @@
+import { PublicationStatusPanel } from '../_components/PublicationStatusPanel.client';
+import { getEditorialPublication } from '@/server/editorial/publication-queue';
 import '../_components/editorial-article.css';
 import { CorrectionForm } from '../_components/CorrectionForm.client';
 import Link from 'next/link';
@@ -9,7 +11,7 @@ import { EditorialArticle } from '../_components/EditorialArticle';
 import { EditorialTrendResearch } from '../_components/EditorialTrendResearch';
 import { ApproveDraftButton } from '../_components/ApproveDraftButton';
 import { listEditorialCorrections } from '@/server/editorial/corrections';
-import { getEditorialChecks } from '@/server/editorial/checks';
+import { getEditorialChecks, getEditorialQaIssue } from '@/server/editorial/checks';
 import { validateEditorialCheckReport } from '@/lib/editorial/checks';
 
 export const dynamic = 'force-dynamic';
@@ -36,10 +38,11 @@ export default async function EditorialDraftPreviewPage({ params, searchParams }
   const version = requestedVersion ? await getEditorialVersion(articleId, requestedVersion) : await getLatestEditorialVersion(articleId);
   if (!version) notFound();
   const locale = query.locale === 'fr' || query.locale === 'es' ? query.locale : 'en';
-  const [checks, latest, corrections] = await Promise.all([getEditorialChecks(articleId, version.version), getLatestEditorialVersion(articleId), listEditorialCorrections(articleId, version.version)]);
+  const [checks, latest, corrections, publication, qaIssue] = await Promise.all([getEditorialChecks(articleId, version.version), getLatestEditorialVersion(articleId), listEditorialCorrections(articleId, version.version), getEditorialPublication(articleId, version.version), getEditorialQaIssue(articleId, version.version)]);
   const disabledReason = latest?.version !== version.version ? "Une version plus récente est disponible. Ouvre-la pour la valider." : corrections.length ? "Des corrections sont demandées. La nouvelle version pourra être validée après leur traitement." : undefined;
   let checked = false;
-  try { if (checks) { validateEditorialCheckReport(version.draft, version.digest, checks.report); checked = true; } } catch { /* A different renderer or stale report needs a fresh check. */ }
+  let sourceWarnings: Array<{url:string;status:number}> = [];
+  try { if (checks) { const report = validateEditorialCheckReport(version.draft, version.digest, checks.report); sourceWarnings = report.links.filter(link => [401,403,429].includes(link.status)); checked = true; } } catch { /* A different renderer or stale report needs a fresh check. */ }
   return <div className="space-y-6">
     <div className="rounded-2xl border border-hairline bg-surface p-5 sm:p-7">
       <Link href="/admin/editorial" className="text-sm font-medium text-text-muted hover:text-text-primary">← All drafts</Link>
@@ -47,9 +50,18 @@ export default async function EditorialDraftPreviewPage({ params, searchParams }
       <p className="mt-3 break-all font-mono text-xs text-text-muted">SHA-256 {version.digest}</p>
       <nav aria-label="Article language" className="mt-5 flex flex-wrap gap-2">{(['en', 'fr', 'es'] as const).map((language) => <Link key={language} href={`/admin/editorial/${articleId}?version=${version.version}&locale=${language}`} aria-current={language === locale ? 'page' : undefined} className={`rounded-full border px-4 py-2 text-sm font-semibold ${language === locale ? 'border-text-primary bg-text-primary text-bg' : 'border-hairline text-text-secondary hover:border-border-hover'}`}>{language.toUpperCase()}</Link>)}</nav>
       <div className="mt-5 grid gap-2 text-sm text-text-secondary sm:grid-cols-2"><p>Sources: {version.draft.sources.length} · Trend signals: {version.draft.research.signals.length}</p><p>Media: {version.draft.assets.length} · Topic: {version.draft.research.recommendation}</p><p>Contrôles de publication : {checked ? 'terminés pour cette version' : 'à terminer — mise en ligne bloquée'}</p></div>
-      <h2 className="mt-5 text-lg font-semibold">Validation éditoriale</h2>
-      <p className="mt-2 text-sm text-text-secondary">Après relecture des versions EN, FR et ES, tu peux valider ce contenu. Cette validation ne publie pas l’article. Les contrôles techniques restent requis avant toute mise en ligne.</p>
-      {version.approvedAt ? <p className="mt-4 text-sm font-semibold text-green-700">Contenu validé le {new Date(version.approvedAt).toLocaleString()} · Non publié</p> : <ApproveDraftButton articleId={articleId} version={version.version} digest={version.digest} disabledReason={disabledReason} />}
+      {sourceWarnings.length > 0 && <div className="mt-3 text-sm text-text-secondary"><p>Ces sources refusent la vérification automatique. Vérifie-les pendant ta relecture :</p>{sourceWarnings.map(link => <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="mr-3 underline">{new URL(link.url).hostname} ({link.status})</a>)}</div>}
+      {!checked && qaIssue.attempts >= 3 && <div className="mt-3 text-sm"><p>Les contrôles se sont arrêtés après trois essais. Ton contenu est conservé. Motif : {qaIssue.message}</p><ApproveDraftButton articleId={articleId} version={version.version} digest={version.digest} retryChecks disabledReason={disabledReason} /></div>}
+      <h2 className="mt-5 text-lg font-semibold">Validation et publication</h2>
+      <p className="mt-2 text-sm text-text-secondary">Relis les versions EN, FR et ES. « Valider et publier » autorise la mise en ligne automatique de cette version après les contrôles techniques.</p>
+      {publication ? <PublicationStatusPanel publication={publication} /> : <>
+        {version.approvedAt && <p className="mt-4 text-sm font-semibold text-green-700">Contenu validé · Publication non autorisée</p>}
+        {process.env.EDITORIAL_PUBLICATION_ENABLED === '1' ? <ApproveDraftButton articleId={articleId} version={version.version} digest={version.digest} publish disabledReason={disabledReason ?? (!checked ? 'Les contrôles automatiques sont en cours. Le bouton sera disponible une fois terminés.' : undefined)} /> : <>
+          {!version.approvedAt && <ApproveDraftButton articleId={articleId} version={version.version} digest={version.digest} disabledReason={disabledReason} />}
+          <p className="mt-2 text-sm text-text-secondary">La mise en ligne automatique est en cours de raccordement.</p>
+        </>}
+      </>}
+
     </div>
     <CorrectionForm articleId={articleId} version={version.version} digest={version.digest} locale={locale} blocks={version.draft.locales[locale].blocks} />
     <EditorialTrendResearch research={version.draft.research} />
