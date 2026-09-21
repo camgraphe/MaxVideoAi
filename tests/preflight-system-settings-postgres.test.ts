@@ -28,9 +28,9 @@ test('read-only preflight matches generation seed prices and capabilities while 
   await ensureBillingSchema();
   const stalePricing = { currency: 'USD', perSecondCents: { default: 1 } };
   for (const [id, options, updatedBy] of [
-    ['sora-2', {}, null],
+    ['pika-text-to-video', {}, null],
     ['minimax-h3', { maxDurationSec: 1, resolutions: ['768P'] }, null],
-    ['sora-2-pro', { maxDurationSec: 4, resolutions: ['720p'] }, '00000000-0000-4000-8000-000000000001'],
+    ['wan-2-6', { maxDurationSec: 4, resolutions: ['720p'] }, '00000000-0000-4000-8000-000000000001'],
   ] as const) {
     await postgres.pool.query(
       `INSERT INTO engine_settings (engine_id, options, pricing, updated_by)
@@ -46,9 +46,9 @@ test('read-only preflight matches generation seed prices and capabilities while 
   assert.equal((await getDb().query('SHOW default_transaction_read_only')).rows[0].default_transaction_read_only, 'on');
 
   const requests: PreflightRequest[] = [
-    { engine: 'sora-2', mode: 't2v', durationSec: 5, resolution: '720p', fps: 24 },
+    { engine: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p', fps: 24 },
     { engine: 'minimax-h3', mode: 't2v', durationSec: 5, resolution: '2K', fps: 24 },
-    { engine: 'sora-2-pro', mode: 't2v', durationSec: 4, resolution: '720p', fps: 24 },
+    { engine: 'wan-2-6', mode: 't2v', durationSec: 4, resolution: '720p', fps: 24 },
   ];
   const readOnlyEngines = new Map<string, EngineCaps>();
   for (const base of getBaseEngines()) {
@@ -88,6 +88,6 @@ test('read-only preflight matches generation seed prices and capabilities while 
   const h3 = getBaseEngines().find((engine) => engine.id === 'minimax-h3')!;
   assert.equal(readOnlyEngines.get(h3.id)?.maxDurationSec, h3.maxDurationSec);
   assert.deepEqual(readOnlyEngines.get(h3.id)?.resolutions, h3.resolutions);
-  const adminAfter = (await postgres.pool.query("SELECT * FROM engine_settings WHERE engine_id = 'sora-2-pro'")).rows[0];
-  assert.deepEqual(adminAfter, beforeRows.find((row) => row.engine_id === 'sora-2-pro'));
+  const adminAfter = (await postgres.pool.query("SELECT * FROM engine_settings WHERE engine_id = 'wan-2-6'")).rows[0];
+  assert.deepEqual(adminAfter, beforeRows.find((row) => row.engine_id === 'wan-2-6'));
 });

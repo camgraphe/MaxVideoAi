@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { useCallback, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
@@ -187,9 +188,9 @@ export function useWorkspaceGenerationRunner({
     setTopUpModal,
     showComposerError,
   });
-
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
+    if (isArchivedGenerationModel(selectedEngine.id)) return showComposerError(archivedGenerationMessage(uiLocale));
     if (klingO3UnsupportedVideoReason) {
       showComposerError(klingO3UnsupportedVideoReason);
       return;

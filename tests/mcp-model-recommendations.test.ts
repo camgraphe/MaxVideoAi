@@ -83,7 +83,7 @@ function realRegistryDeps(): AgentModelCatalogDeps {
   };
 }
 
-test('Sora stays available by exact choice while default discovery and recommendations exclude it', async () => {
+test('Sora remains historical by exact choice and cannot generate or be recommended', async () => {
   const catalogDeps = realRegistryDeps();
   const discovery = await listAgentModels({}, catalogDeps);
   const executable = await listPublicAgentGenerationEngines(catalogDeps);
@@ -91,10 +91,10 @@ test('Sora stays available by exact choice while default discovery and recommend
     assert.equal(discovery.some((model) => model.id === id), false, id);
     const exact = await listAgentModels({ id }, catalogDeps);
     assert.equal(exact.length, 1, id);
-    assert.equal(exact[0].lifecycle, 'legacy', id);
+    assert.equal(exact[0].lifecycle, 'deep_legacy', id);
     assert.equal(exact[0].recommendedByDefault, false, id);
-    assert.equal(exact[0].generationEnabled, true, id);
-    assert.equal(executable.some((entry) => entry.engine.id === id), true, id);
+    assert.equal(exact[0].generationEnabled, false, id);
+    assert.equal(executable.some((entry) => entry.engine.id === id), false, id);
     const recommendations = await recommendAgentModels({ id, preferredModelIds: [id] }, catalogDeps);
     assert.deepEqual(recommendations.recommendations, [], id);
     const details = await getAgentModelDetails(id, catalogDeps);

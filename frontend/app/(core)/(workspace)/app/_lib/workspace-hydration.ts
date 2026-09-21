@@ -1,3 +1,4 @@
+import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -205,6 +206,7 @@ function buildRequestedEngineFallbackForm(engineId: string, mode: Mode): FormSta
 function findEngineByIdOrToken(engines: EngineCaps[], engineId: string | null, token?: string | null): EngineCaps | null {
   if (!engineId && !token) return null;
   return (
+    getArchivedWorkspaceEngine(engineId) ??
     (engineId ? engines.find((entry) => entry.id === engineId) : null) ??
     (token ? engines.find((entry) => matchesEngineToken(entry, token)) : null) ??
     null

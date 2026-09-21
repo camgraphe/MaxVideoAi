@@ -340,3 +340,14 @@ test('every catalog resolution is representable at the preflight request boundar
     }
   }
 });
+
+test('archived Sora preflight rejects before reading configuration or quoting', async () => {
+  for (const id of ['sora-2', 'sora-2-pro']) {
+    const response = await resolveMediaAwarePreflight({ request: requestFor(engineFor(id), 't2v') }, {
+      getConfiguredEngineFn: async () => { throw new Error('Unexpected configuration read'); },
+      computeConfiguredPreflightFn: async () => { throw new Error('Unexpected pricing'); },
+    });
+    assert.equal(response.ok, false);
+    assert.equal(response.error?.code, 'ENGINE_RETIRED');
+  }
+});

@@ -1,3 +1,4 @@
+import { listPublicAgentGenerationEngines } from '../frontend/src/server/agent-api/model-catalog';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -1261,3 +1262,19 @@ test('known MCP rejection forwards its diagnostic to refund persistence', async 
     message: 'This engine does not support the selected aspect ratio.',
   });
 });
+
+for (const engineId of ['sora-2', 'sora-2-pro']) {
+  test(`prepared ${engineId} quote cannot charge or submit after sunset`, async () => {
+    const request = { ...videoRequest, engineId };
+    const { dependencies, captures } = baseDependencies(request, {
+      listPublicEngines: async () => listPublicAgentGenerationEngines({
+        listEngines: async () => listFalEngines().map(entry => entry.engine),
+        surfaceByEngineId: () => 'video',
+      }),
+    });
+    await expectAgentError(confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies), 'QUOTE_EXPIRED');
+    assert.equal(captures.events.includes('pricing'), false);
+    assert.equal(captures.events.some(event => event.startsWith('reserve_')), false);
+    assert.equal(captures.providerCalls, 0);
+  });
+}

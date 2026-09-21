@@ -2,30 +2,25 @@ import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/
 
 export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
   sora: {
-    subtitle: 'Exemples Sora pensés pour un rendu cinématique, des prompts réutilisables et des réglages directement exploitables.',
-    intro:
-      'Cette page rassemble des exemples Sora réellement exploitables en production, avec prompts, durées et formats observés sur des rendus concrets. L’objectif est de vous aider à reproduire des résultats cohérents sans mélanger les logiques propres aux autres modèles.',
-    promptPatterns:
-      'Commencez par l’intention du plan, puis précisez la caméra, le mouvement et la lumière. Les prompts courts, structurés et bien hiérarchisés restent les plus fiables.',
-    strengthsLimits:
-      'Sora est souvent très solide sur les plans cinématiques et la cohérence visuelle. Les limites dépendent ensuite du mode utilisé et du contexte de rendu.',
-    pricingNotes:
-      'Le coût varie selon la durée, la résolution et les options activées. Ouvrez un exemple pour vérifier son coût enregistré avant de lancer plusieurs variantes.',
-    faq: [
-      {
-        question: 'Quels prompts fonctionnent le mieux avec Sora ?',
-        answer: 'Des prompts structurés, avec sujet, caméra et mouvement clairement séparés.',
-      },
-      {
-        question: 'Peut-on cloner ces exemples Sora dans le studio ?',
-        answer: 'Oui. Les exemples sont conçus pour être réutilisés puis ajustés rapidement.',
-      },
-      {
-        question: 'Comment contrôler le budget Sora ?',
-        answer: 'Testez d’abord des clips courts, puis augmentez sur les variantes gagnantes.',
-      },
-    ],
-  },
+    "metaTitle": "Exemples historiques Sora | MaxVideoAI",
+    "metaDescription": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
+    "heroTitle": "Exemples historiques Sora",
+    "subtitle": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
+    "intro": "La génération Sora est fermée. OpenAI et fal.ai arrêtent l’API le 24 septembre 2026. Choisissez Seedance 2.5, MiniMax H3 ou Wan 3 pour une nouvelle vidéo. Vos vidéos existantes restent dans votre bibliothèque.",
+    "promptPatterns": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
+    "strengthsLimits": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
+    "pricingNotes": "Les coûts enregistrés sont historiques. Choisissez un modèle disponible et consultez un nouveau devis avant de générer.",
+    "faq": [
+        {
+            "question": "Peut-on encore générer avec Sora ?",
+            "answer": "La génération Sora est fermée. OpenAI et fal.ai arrêtent l’API le 24 septembre 2026. Choisissez Seedance 2.5, MiniMax H3 ou Wan 3 pour une nouvelle vidéo. Vos vidéos existantes restent dans votre bibliothèque."
+        },
+        {
+            "question": "Archives Sora et alternatives",
+            "answer": "Les coûts enregistrés sont historiques. Choisissez un modèle disponible et consultez un nouveau devis avant de générer."
+        }
+    ]
+},
   veo: {
     metaTitle: "Exemples Veo 3.1, prompts et réglages vidéo | MaxVideoAI",
     metaDescription: "Regardez les exemples Veo 3.1 et leurs prompts. Retrouvez les réglages et le coût enregistré, puis partez d’un texte ou d’une image pour votre vidéo.",

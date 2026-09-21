@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
@@ -334,13 +335,13 @@ export function useWorkspaceEngineModeState({
 
   const composerWorkflowNotice = useMemo(
     () =>
-      getComposerWorkflowNotice({
+      isArchivedGenerationModel(selectedEngine?.id) ? archivedGenerationMessage(uiLocale) : getComposerWorkflowNotice({
         selectedEngine,
         hasAudioInput: referenceInputStatus.hasAudio,
         audioWorkflowUnsupported,
         workflowCopy,
       }),
-    [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine, workflowCopy]
+    [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine, workflowCopy, uiLocale]
   );
 
   const handleComposerModeToggle = useCallback(

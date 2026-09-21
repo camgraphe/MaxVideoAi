@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel } from '../lib/model-generation-policy';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import {
   buildAudioAddonPayload,
@@ -303,7 +304,10 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
 
   for (const entry of entries.filter((candidate) => candidate.surfaces.modelPage.indexable)) {
     await collectSnapshot({ id: `model-page:${entry.id}:default`, surface: 'model-page', entry });
-    const offerCents = resolveModelOfferAmountCents(entry, entry.engine);
+    // Preserve pre-existing offline legacy evidence. Newly archived models have no live Product offer.
+    const frozenHistoricalSchema = ['ltx-2', 'ltx-2-fast', 'wan-2-5'].includes(entry.id);
+    const offerCents = isArchivedGenerationModel(entry.id) && !frozenHistoricalSchema
+      ? null : resolveModelOfferAmountCents(entry, entry.engine);
     rows.push(
       offerCents == null
         ? unavailableRow(`json-ld:${entry.id}:offer`, 'json-ld', entry.id)
@@ -456,7 +460,8 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
 
   const workspaceEntries = entries
     .filter((entry) => entry.category !== 'image' && entry.surfaces.pricing.includeInEstimator)
-    .slice(0, 8);
+    // Keep the original sampled identities stable when a model leaves the catalog.
+    .filter((entry) => ['gemini-omni-flash', 'luma-ray-3-2', 'pika-text-to-video', 'sora-2', 'sora-2-pro', 'veo-3-1-fast', 'veo-3-1-lite', 'veo-3-1'].includes(entry.id));
   for (const entry of workspaceEntries) {
     await collectSnapshot({
       id: `workspace-preflight:${entry.id}:default`,

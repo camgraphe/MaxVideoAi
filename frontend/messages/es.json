@@ -285,8 +285,8 @@
     },
     "sections": [
       {
-        "title": "Disponibilidad de Sora 2 y alternativas",
-        "body": "Sora 2 sigue desplegándose por fases, así que MaxVideoAI gestiona todo el rastro de verificación, la conformidad regional y el enrutado predictivo cuando la capacidad fluctúa. Los productores pueden comparar storyboards con las {{sora:referencias de Sora 2}} y pasar a presets Sora 2 Pro o secuencias Veo 3 cuando la rapidez pesa más que la fidelidad de frontera. Documentamos estructuras de prompts, aprobaciones de material y mejores prácticas de postproducción para que cada brief cumpla con la revisión de OpenAI sin retrasar entregas. Los equipos regionales reciben además notas semanales sobre audio, duración y trazabilidad para sectores regulados."
+        "title": "Archivo de Sora y alternativas",
+        "body": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
       },
       {
         "title": "Veo 3: texto a video cinemático",
@@ -341,8 +341,8 @@
         "answer": "Recarga tu billetera individual mediante el pago seguro de Stripe Checkout. La tarjeta y las opciones de pago exprés disponibles se muestran antes de pagar."
       },
       {
-        "question": "¿Cuánto se tarda en arrancar un proyecto con Sora 2?",
-        "answer": "La mayoría de equipos empieza a escribir prompts en dos días laborables. Compartimos plantillas de primeros pasos y presets de apoyo para Veo o Pika mientras se activa Sora."
+        "question": "¿Se puede seguir generando con Sora?",
+        "answer": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
       },
       {
         "question": "¿Puedo seguir los cambios de los modelos sin revisar toda la documentación?",
@@ -364,7 +364,7 @@
         "href": "/return-policy"
       }
     ],
-    "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Seedance, Kling, Veo, LTX, Wan, Pika, Sora y más. Las marcas pertenecen a sus respectivos propietarios.",
+    "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Seedance, Kling, Veo, LTX, Wan, Pika y más. Las marcas pertenecen a sus respectivos propietarios.",
     "languageLabel": "Idioma",
     "languages": [
       {
@@ -1141,7 +1141,7 @@
         "title": "Conoce el precio antes de generar.",
         "subtitle": "MaxVideoAI muestra el precio antes de cada generación de video para que mantengas el control de tus créditos.",
         "cta": "Ver precios",
-        "supportingText": "MaxVideoAI es un generador de video IA multi-modelo de pago por uso para Seedance, Kling, Veo, LTX, Wan, Pika, Sora y más.",
+        "supportingText": "MaxVideoAI es un generador de video IA multi-modelo de pago por uso para Seedance, Kling, Veo, LTX, Wan, Pika y más.",
         "modelsLink": "Modelos",
         "examplesLink": "Ejemplos",
         "compareLink": "Comparar modelos",
@@ -1166,7 +1166,7 @@
       },
       "providers": {
         "title": "Modelos y proveedores compatibles",
-        "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, Happy Horse, MiniMax, Luma y Sora están disponibles desde un solo catálogo de modelos.",
+        "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, Happy Horse, MiniMax, Luma están disponibles desde un solo catálogo de modelos.",
         "cta": "Ver todos los modelos",
         "items": [
           {
@@ -1346,7 +1346,7 @@
     "worksWith": {
       "label": "Funciona con",
       "brands": [
-        "Sora 2",
+        "Seedance 2.5",
         "Veo 3.1",
         "LTX 2 Fast",
         "LTX 2",
@@ -1397,7 +1397,7 @@
       },
       {
         "title": "Todos tus modelos en un solo lugar.",
-        "body": "Cambia entre Sora, Veo, Pika, MiniMax y Hunyuan sin saltar entre tableros ni claves API."
+        "body": "Cambia entre Seedance 2.5, Veo, Pika, MiniMax y Hunyuan sin saltar entre tableros ni claves API."
       }
     ],
     "ways": [
@@ -1580,8 +1580,8 @@
       "description": "Respuestas rápidas a las dudas más habituales.",
       "items": [
         {
-          "q": "¿Sora 2 está disponible en la UE?",
-          "a": "La disponibilidad de Sora 2 es limitada. MaxVideoAI enruta tu brief hacia los motores con capacidad hoy y guarda presets listos para Sora en cuanto se abra la capacidad."
+          "q": "¿Se puede seguir generando con Sora?",
+          "a": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
         },
         {
           "q": "¿Puedo activar audio?",
@@ -1668,7 +1668,7 @@
       "compare": {
         "title": "Compara modelos de video con IA antes de generar",
         "body": "MaxVideoAI te permite probar varios modelos en un solo lugar. Cada modelo tiene fortalezas distintas (velocidad, fidelidad al prompt, movimiento, realismo y estilo). Compara resultados lado a lado, elige el mejor modelo para cada toma y mantén el precio visible antes de generar.",
-        "worksWith": "Compatible con MiniMax H3, Seedance 2.5, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2... y más.",
+        "worksWith": "Compatible con MiniMax H3, Seedance 2.5, Veo 3.1, Kling 3, LTX 2.3, Wan 2.6, Pika 2.2... y más.",
         "popularLinks": [
           {
             "label": "Comparativa MiniMax H3 vs Seedance 2.5",
@@ -2116,8 +2116,8 @@
       "cards": [
         {
           "emoji": "🎬",
-          "title": "Cuándo elegir Sora",
-          "body": "Usa Sora 2 o Sora 2 Pro para física cinematográfica, continuidad de personajes o audio integrado."
+          "title": "Archivo de Sora y alternativas",
+          "body": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
         },
         {
           "emoji": "🎯",
@@ -2132,7 +2132,7 @@
         {
           "emoji": "🖼️",
           "title": "Cuándo elegir Nano Banana",
-          "body": "Boceta o edita fotogramas fotorrealistas antes de pasar a movimiento. Nano Banana comparte wallet y prompt lab, así preparas tomas para Veo/Sora con texto→imagen o ediciones de referencia."
+          "body": "Boceta o edita fotogramas fotorrealistas antes de pasar a movimiento. Nano Banana comparte wallet y prompt lab, así preparas tomas para Veo/Seedance 2.5 con texto→imagen o ediciones de referencia."
         }
       ],
       "cta": {
@@ -3006,7 +3006,7 @@
     },
     "paragraphs": [
       "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
-      "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
+      "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Seedance 2.5, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
       "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle.",
       "Mantenemos el flujo de trabajo práctico: comparar modelos, preparar recursos, generar sólo cuando el coste y los ajustes están claros, y revisar los resultados desde un único workspace sin repartir el contexto entre paneles de proveedores."
     ],
@@ -6841,7 +6841,7 @@
       "signupSuggestionReady": "Perfecto, vamos a crear tu cuenta.",
       "creatingAccount": "Creando cuenta…",
       "accountRedirecting": "Cuenta creada. Redirigiendo…",
-      "confirmEmail": "Revisa tu bandeja de entrada para confirmar el correo.",
+      "confirmEmail": "Si tu cuenta necesita confirmación, revisa tu correo. ¿Ya tienes una cuenta? Inicia sesión o elige «¿Olvidaste tu contraseña?» en el formulario de acceso para recuperarla.",
       "sendingReset": "Enviando enlace…",
       "resetSent": "Correo de restablecimiento enviado.",
       "googleUnavailable": "El acceso con Google no está disponible porque no se pudo resolver la URL de redirección.",
@@ -7048,7 +7048,7 @@
       "capabilityLabel": "Capacidad",
       "outputLabel": "Resolución máx.",
       "q1": "¿Qué son {left} y {right}?",
-      "a1": "{left} y {right} son modelos de generación de video IA disponibles en MaxVideoAI. Esta página los compara lado a lado usando los mismos prompts, especificaciones clave y los datos anteriores.",
+      "a1": "{left} y {right} son modelos de generación de video IA documentados en MaxVideoAI. Esta página los compara lado a lado usando los mismos prompts, especificaciones clave y los datos anteriores.",
       "q2": "¿Cuál es mejor: {left} o {right}?",
       "a2": "Depende de tu flujo de trabajo. Usa el scorecard y los showdowns con el mismo prompt para comparar adherencia al prompt, realismo del movimiento, fidelidad humana y legibilidad del texto — luego abre cada perfil para los detalles completos.",
       "q3": "¿Cuál es más barato en MaxVideoAI?",

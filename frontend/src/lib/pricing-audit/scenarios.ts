@@ -24,7 +24,7 @@ const PROVIDER_REFERENCE_COMPATIBILITY_ENGINE_IDS = new Set([
   'seedance-2-0-fast',
   'seedance-2-0-mini',
 ]);
-const FROZEN_LEGACY_AUDIT_ENGINE_IDS = new Set(['ltx-2-fast', 'ltx-2', 'wan-2-5']);
+const FROZEN_LEGACY_AUDIT_ENGINE_IDS = new Set(['ltx-2-fast', 'ltx-2', 'wan-2-5', 'sora-2', 'sora-2-pro']);
 
 function compatibilityProfileForEngine(engineId: string): string | undefined {
   return PROVIDER_REFERENCE_COMPATIBILITY_ENGINE_IDS.has(engineId) ? 'provider-reference-current' : undefined;

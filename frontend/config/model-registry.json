@@ -2443,20 +2443,17 @@
           ]
         },
         "app": {
-          "published": true,
-          "discoveryRank": 0,
-          "variantGroup": "sora",
-          "variantLabel": "Standard"
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
       "replacement": null,
-      "lifecycle": "legacy",
+      "lifecycle": "deep_legacy",
       "successorId": null
     },
     {
@@ -2514,20 +2511,17 @@
           ]
         },
         "app": {
-          "published": true,
-          "discoveryRank": 1,
-          "variantGroup": "sora",
-          "variantLabel": "Pro"
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
       "replacement": null,
-      "lifecycle": "legacy",
+      "lifecycle": "deep_legacy",
       "successorId": null
     },
     {

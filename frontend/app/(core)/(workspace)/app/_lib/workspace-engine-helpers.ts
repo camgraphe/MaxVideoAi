@@ -1,3 +1,4 @@
+import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isLumaRay32EngineId } from '@/lib/luma-agents';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
@@ -32,6 +33,8 @@ export function resolveSelectedWorkspaceEngine({
 }): EngineCaps | null {
   if (!engines.length) return null;
   if (form) {
+    const archived = getArchivedWorkspaceEngine(form.engineId);
+    if (archived) return archived;
     const formEngine = engines.find((engine) => engine.id === form.engineId);
     if (formEngine) return formEngine;
   }

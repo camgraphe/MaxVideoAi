@@ -45,8 +45,8 @@ minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text
 gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,legacy,gpt-image-2-5-flare,gpt-image-2-5-flare,2,available,logoAllowed,true,true
 gpt-image-2-5-flare,GPT Image 2.5 Flare,openai,gpt-image-2-5-flare,gpt-image,current,,,2.5 Flare,available,logoAllowed,true,true
 gpt-image-2-5-sunburst,GPT Image 2.5 Sunburst,openai,gpt-image-2-5-sunburst,gpt-image,current,,,2.5 Sunburst,available,logoAllowed,true,true
-sora-2,OpenAI Sora 2,openai,sora-2,sora,legacy,,,2,available,logoAllowed,true,true
-sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,legacy,,,Pro,available,logoAllowed,true,true
+sora-2,OpenAI Sora 2,openai,sora-2,sora,deep_legacy,,,2,available,logoAllowed,true,true
+sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,deep_legacy,,,Pro,available,logoAllowed,true,true
 pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,current,,,2.2,available,logoAllowed,true,true
 wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,wan-3,wan-3,Preview,available,logoAllowed,true,true
 wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,wan-3,wan-3,2.6,available,logoAllowed,true,true
