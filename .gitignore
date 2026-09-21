@@ -66,3 +66,6 @@ frontend/.local-review/
 
 # Local redesign review evidence (screenshots, logs and analytics exports)
 docs/redesign/qa/
+
+# Private editorial worker evidence and operational state
+.local/

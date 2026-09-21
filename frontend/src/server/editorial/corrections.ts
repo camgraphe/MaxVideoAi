@@ -1,3 +1,4 @@
+import {guardEditorialPublicationEdit} from './publication-queue';
 import { z } from 'zod';
 import { withDbTransaction, query } from '@/lib/db';
 import { parseEditorialDraft } from '@/lib/editorial/schema';
@@ -27,6 +28,7 @@ export async function requestEditorialCorrection(input: EditorialCorrection, act
     if (!latest || latest.version !== data.version || latest.digest.trim() !== data.digest) throw Error('Correction target is not the latest exact version');
     const draft = parseEditorialDraft(latest.payload);
     if (data.blockId && !draft.locales[data.locale].blocks.some(b=>b.id===data.blockId)) throw Error('Unknown correction block');
+    await guardEditorialPublicationEdit(tx, data.articleId);
     const event = (await tx.query<{id:string}>(
       "INSERT INTO editorial_events(article_id,version,kind,actor,detail) VALUES($1,$2,'draft_rejected',$3,$4::jsonb) RETURNING id",
       [data.articleId,data.version,actor,JSON.stringify(data)]))[0];
