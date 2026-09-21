@@ -1,5 +1,6 @@
 import { getLocalPublicExample, listLocalModelExamples, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
 import { query } from '@/lib/db';
+import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
 import { getExampleFamilyEngineAliases } from '@/lib/model-families';
 import { removeVideosFromIndexablePlaylists } from '@/server/indexing';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs, getStarterPlaylistSlug } from '@/server/playlists';
@@ -190,7 +191,7 @@ async function listPlaylistVideosWithOptions({
   }
   const params: unknown[] = [slug];
   const aliasFilter =
-    Array.isArray(engineAliases) && engineAliases.length
+    Array.isArray(engineAliases)
       ? (() => {
           params.push(engineAliases.map((value) => value.trim().toLowerCase()).filter(Boolean));
           return `AND LOWER(aj.engine_id) = ANY($${params.length}::text[])`;
@@ -362,7 +363,9 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
     ? Math.min(baseFetchLimit * ENGINE_GROUP_FETCH_MULTIPLIER, ENGINE_GROUP_FETCH_CAP)
     : baseFetchLimit;
 
-  const aggregated = await listPlaylistVideos(hubSlug, playlistFetchLimit).catch((error) => {
+  const aggregated = await listPlaylistVideosWithOptions({
+    slug: hubSlug, limit: playlistFetchLimit, engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases(),
+  }).catch((error) => {
     console.warn(`[examples] failed to load playlist "${hubSlug}"`, error);
     return [] as GalleryVideo[];
   });

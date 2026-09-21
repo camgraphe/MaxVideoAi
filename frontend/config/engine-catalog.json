@@ -4626,15 +4626,12 @@
     "family": "sora",
     "familyExamplesPage": {
       "stage": "indexed",
-      "showInNav": true,
+      "showInNav": false,
       "publishedModelSlugs": [
         "sora-2-pro",
         "sora-2"
       ],
-      "currentModelSlugs": [
-        "sora-2-pro",
-        "sora-2"
-      ]
+      "currentModelSlugs": []
     },
     "versionLabel": "2",
     "availability": "available",
@@ -4904,15 +4901,12 @@
     "family": "sora",
     "familyExamplesPage": {
       "stage": "indexed",
-      "showInNav": true,
+      "showInNav": false,
       "publishedModelSlugs": [
         "sora-2-pro",
         "sora-2"
       ],
-      "currentModelSlugs": [
-        "sora-2-pro",
-        "sora-2"
-      ]
+      "currentModelSlugs": []
     },
     "versionLabel": "Pro",
     "availability": "available",

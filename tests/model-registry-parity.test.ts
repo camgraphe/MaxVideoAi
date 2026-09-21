@@ -316,7 +316,7 @@ test('legacy facades resolve the frozen registry compatibility matrix', () => {
   }
 });
 
-test('family model membership and current variants remain identical to baseline', () => {
+test('family membership and current variants preserve baseline with explicit lifecycle updates', () => {
   for (const expected of baseline.familyDefinitions) {
     const actual = MODEL_FAMILIES.find((family) => family.id === expected.id);
     assert.ok(actual, expected.id);
@@ -368,6 +368,8 @@ test('family model membership and current variants remain identical to baseline'
           ? ['ltx-2-5-pro', 'ltx-2-5-fast']
           : expected.id === 'wan'
             ? ['wan-3-prime', 'wan-3']
+          : expected.id === 'sora'
+            ? []
         : baselineCurrentModelSlugs;
     assert.deepEqual(
       getModelFamilyExamplesPageConfig(expected.id)?.publishedModelSlugs,

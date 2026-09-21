@@ -209,6 +209,7 @@ export function buildExamplesNextStepLinks({
   return [
     { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5' },
     { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3' },
+    { href: buildModelHref(appLocale, 'wan-3'), label: 'Wan 3' },
     { href: buildCompareHref(appLocale, 'kling-3-pro-vs-seedance-2-5'), label: `${compareLabel} Kling 3 Pro vs Seedance 2.5` },
     { href: pricingPath, label: locale === 'fr' ? 'Voir les tarifs' : locale === 'es' ? 'Ver precios' : 'View pricing' },
   ];

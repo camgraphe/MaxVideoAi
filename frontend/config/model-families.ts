@@ -301,9 +301,9 @@ function materializeFamily(
     defaultModelSlug: defaultModel?.slug,
     examplesPage: {
       stage: isVisible ? source.examplesPage?.stage ?? 'hidden' : 'hidden',
-      showInNav: isVisible && (source.examplesPage?.showInNav ?? false),
+      showInNav: isVisible && current.length > 0 && (source.examplesPage?.showInNav ?? false),
       publishedModelSlugs: published,
-      currentModelSlugs: current.length ? current : published,
+      currentModelSlugs: current,
     },
   };
 }
