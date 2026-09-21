@@ -395,6 +395,7 @@ export async function executeImageGeneration({
   const reserveInitialState = async () => {
     try {
       const initialJobState = await createAtomicInitialImageJob({
+        auditPricingSnapshot: pricing,
         userId,
         mode,
         jobId,

@@ -501,14 +501,13 @@ export async function POST(req: NextRequest) {
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;
     }
-    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
+    const fxQuote = await convertCents(
       amountCents,
       WALLET_DISPLAY_CURRENCY_LOWER,
       resolvedCurrencyLower
     );
+    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = fxQuote;
     sessionMetadata.settlement_amount_cents = String(settlementAmountCents);
-    sessionMetadata.fx_rate = fxRate.toString();
-    sessionMetadata.fx_source = fxSource;
 
     const topupRedirectParams = new URLSearchParams({
       amount: (amountCents / 100).toFixed(2),
@@ -525,6 +524,7 @@ export async function POST(req: NextRequest) {
       ...sessionMetadata,
     };
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
+      fxQuote,
       currency: resolvedCurrencyLower,
       settlementAmountCents,
       checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',

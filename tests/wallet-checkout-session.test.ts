@@ -38,7 +38,8 @@ test('wallet top-up Checkout uses Stripe dynamic payment methods for wallets', (
   assert.equal(params.billing_address_collection, 'auto');
   assert.equal(params.shipping_address_collection, undefined);
   assert.deepEqual(params.automatic_tax, { enabled: true });
-  assert.deepEqual(params.invoice_creation, { enabled: true });
+  assert.equal(params.invoice_creation?.enabled, true);
+  assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
 
 test('wallet top-up Checkout keeps PaymentIntent metadata', () => {
@@ -75,7 +76,8 @@ test('wallet top-up Checkout can attach a Stripe Customer and update supported b
     address: 'auto',
     name: 'auto',
   });
-  assert.deepEqual(params.invoice_creation, { enabled: true });
+  assert.equal(params.invoice_creation?.enabled, true);
+  assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
 
 test('wallet top-up Checkout omits customer update without a Stripe Customer', () => {
@@ -88,7 +90,8 @@ test('wallet top-up Checkout omits customer update without a Stripe Customer', (
 
   assert.equal(params.customer, undefined);
   assert.equal(params.customer_update, undefined);
-  assert.deepEqual(params.invoice_creation, { enabled: true });
+  assert.equal(params.invoice_creation?.enabled, true);
+  assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
 
 test('wallet top-up Checkout can create Elements sessions for Express Checkout', () => {
@@ -105,7 +108,8 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.equal(params.cancel_url, undefined);
   assert.equal(params.payment_method_types, undefined);
   assert.deepEqual(params.automatic_tax, { enabled: true });
-  assert.deepEqual(params.invoice_creation, { enabled: true });
+  assert.equal(params.invoice_creation?.enabled, true);
+  assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
 
 test('first and returning top-ups share unrestricted card acceptance and dynamic methods in both UIs', () => {
@@ -169,4 +173,19 @@ test('wallet GET delegates aggregated receipt reads instead of returning the led
   assert.match(summarySource, /SUM\(CASE WHEN type = 'refund'/);
   assert.match(summarySource, /STRING_AGG\(DISTINCT LOWER\(currency\)/);
   assert.doesNotMatch(summarySource, /SELECT type, amount_cents, currency FROM app_receipts WHERE user_id = \$1/);
+});
+
+test('wallet checkout preserves the FX margin and timestamp in payment metadata', () => {
+  const params = buildWalletTopUpCheckoutSessionParams({
+    currency: 'eur', settlementAmountCents: 894,
+    successUrl: 'https://maxvideoai.com/billing', cancelUrl: 'https://maxvideoai.com/billing',
+    productTaxCode: 'txcd_test', sessionMetadata: { kind: 'topup', user_id: 'user_1' },
+    paymentIntentMetadata: { kind: 'topup', user_id: 'user_1' },
+    fxQuote: { rate: 0.8726, source: 'frankfurter', marginBps: 250, rateTimestamp: '2026-09-19T00:00:00Z' },
+  });
+  assert.equal(params.metadata?.fx_margin_bps, '250');
+  assert.equal(params.metadata?.rate_timestamp, '2026-09-19T00:00:00Z');
+  assert.equal(params.payment_intent_data?.metadata?.fx_margin_bps, '250');
+  assert.equal(params.payment_intent_data?.metadata?.fx_rate, '0.8726');
+  assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });

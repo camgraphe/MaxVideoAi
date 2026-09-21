@@ -271,6 +271,7 @@ export async function resolveGenerateBillingPreflight(params: {
       description: `Run ${params.engine.label} - ${params.durationSec}s`,
       jobId: params.jobId,
       snapshot: receiptSnapshot,
+      auditPricingSnapshot: pricing,
       applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
       vendorAccountId,
     };
@@ -369,6 +370,7 @@ export async function resolveGenerateBillingPreflight(params: {
       description: `Run ${params.engine.label} - ${params.durationSec}s`,
       jobId: params.jobId,
       snapshot: receiptSnapshot,
+      auditPricingSnapshot: pricing,
       applicationFeeCents: null,
       vendorAccountId,
       stripePaymentIntentId,

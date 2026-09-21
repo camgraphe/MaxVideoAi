@@ -31,7 +31,7 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
     };
   }
 
-  const [failedRows, refundedRows, pendingRows, engineRows] = await Promise.all([
+  const [failedRows, refundedRows, pendingRows, engineRows, creditRows] = await Promise.all([
     safeQuery<CountValueRow>(
       `
         SELECT COUNT(*)::bigint AS count
@@ -69,6 +69,14 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
         HAVING COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')})) > 0
       `
     ),
+    safeQuery<{ provider: string; count: string | number; last_failure_at: string | null }>(
+      `SELECT provider, COUNT(*)::bigint AS count, MAX(finished_at) AS last_failure_at
+         FROM provider_attempts
+        WHERE error_class = 'insufficient_provider_credits'
+          AND status = 'failed'
+          AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
+        GROUP BY provider ORDER BY count DESC`
+    ),
   ]);
 
   const failedRenders24h = coerceNumber(failedRows[0]?.count ?? 0);
@@ -97,5 +105,8 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
     stalePendingJobs,
     serviceNotice,
     engineStats,
+    providerCreditFailures24h: creditRows.map(row => ({
+      provider: row.provider, count: coerceNumber(row.count), lastFailureAt: row.last_failure_at,
+    })),
   };
 }

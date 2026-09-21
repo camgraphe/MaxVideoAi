@@ -54,7 +54,11 @@ document Stripe produced for that original Checkout.
 `checkout.session.completed` credits the wallet only when `payment_status` is `paid`. Delayed
 payment methods are credited by `checkout.session.async_payment_succeeded`. `invoice.paid` enriches
 the existing canonical top-up receipt with the final hosted invoice and PDF without crediting the
-wallet again. The live webhook endpoint must subscribe to every handled event in the table above.
+wallet again. New top-up invoices carry `metadata.kind=topup`. If `invoice.paid`
+arrives before its canonical receipt exists, the handler throws and the event processor
+releases its idempotency marker so Stripe can retry document synchronization. Unrelated
+invoices remain acknowledged. This adds no credit and does not repair old cached links.
+The live webhook endpoint must subscribe to every handled event in the table above.
 
 Failed top-up cards are owned by `stripe-webhook-failed-payments.ts`. It records deduplicated failed
 card attempts for first-wallet-top-up checkout attempts. At five failed attempts, it expires an open,

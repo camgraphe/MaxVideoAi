@@ -128,6 +128,7 @@ export type EngineHealthStat = {
 };
 
 export type AdminHealthSnapshot = {
+  providerCreditFailures24h?: Array<{ provider: string; count: number; lastFailureAt: string | null }>;
   failedRenders24h: number;
   refundedFailures24h: number;
   stalePendingJobs: number;

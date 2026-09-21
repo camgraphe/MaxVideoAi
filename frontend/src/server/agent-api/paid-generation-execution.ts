@@ -99,10 +99,16 @@ export type PaidImageExecutionResponse = {
   paymentStatus?: string;
 };
 
+export type PaidGenerationRejection = {
+  code: string | null;
+  message: string | null;
+  status: number | null;
+};
+
 export type PaidGenerationSubmissionDependencies = {
   executeVideo(options: PaidVideoContinuationOptions | IncludedTrialVideoContinuationOptions): Promise<PaidVideoExecutionResponse>;
   executeImage(options: PaidImageContinuationOptions): Promise<PaidImageExecutionResponse>;
-  ensureKnownRejectionRefund?(execution: PaidGenerationExecution): Promise<boolean>;
+  ensureKnownRejectionRefund?(execution: PaidGenerationExecution, failure?: PaidGenerationRejection): Promise<boolean>;
 };
 
 export type ReservePaidGenerationInput = {
@@ -394,9 +400,10 @@ async function rejectedOutcome(
   execution: PaidGenerationExecution,
   dependencies: PaidGenerationSubmissionDependencies,
   hasRefundMarker: boolean,
+  failure: PaidGenerationRejection,
 ): Promise<PaidGenerationProviderOutcome> {
   if (dependencies.ensureKnownRejectionRefund) {
-    return await dependencies.ensureKnownRejectionRefund(execution)
+    return await dependencies.ensureKnownRejectionRefund(execution, failure)
       ? { kind: 'rejected', refunded: true }
       : { kind: 'ambiguous', retryable: true };
   }
@@ -434,7 +441,11 @@ export async function submitReservedPaidGeneration(
       if (result.body.ok === true) {
         const hasRefundMarker = refunded(result.body);
         if (result.body.status === 'failed' || hasRefundMarker) {
-          return rejectedOutcome(execution, dependencies, hasRefundMarker);
+          return rejectedOutcome(execution, dependencies, hasRefundMarker, {
+            code: typeof result.body.error === 'string' ? result.body.error : null,
+            message: typeof result.body.message === 'string' ? result.body.message : null,
+            status: result.status ?? null,
+          });
         }
         return typeof result.body.videoUrl === 'string'
           ? { kind: 'completed' }
@@ -442,7 +453,11 @@ export async function submitReservedPaidGeneration(
       }
       const hasRefundMarker = refunded(result.body);
       if (hasRefundMarker || (typeof result.status === 'number' && result.status >= 400 && result.status < 500)) {
-        return rejectedOutcome(execution, dependencies, hasRefundMarker);
+        return rejectedOutcome(execution, dependencies, hasRefundMarker, {
+          code: typeof result.body.error === 'string' ? result.body.error : null,
+          message: typeof result.body.message === 'string' ? result.body.message : null,
+          status: result.status ?? null,
+        });
       }
       return { kind: 'ambiguous', retryable: true };
     }
@@ -463,7 +478,7 @@ export async function submitReservedPaidGeneration(
     });
     if (result.ok) return { kind: 'completed' };
     return refunded(result)
-      ? rejectedOutcome(execution, dependencies, true)
+      ? rejectedOutcome(execution, dependencies, true, { code: null, message: null, status: null })
       : { kind: 'ambiguous', retryable: true };
   } catch (error) {
     const extras = error && typeof error === 'object' && 'extras' in error
@@ -477,7 +492,11 @@ export async function submitReservedPaidGeneration(
       : '';
     const hasRefundMarker = refunded(extras);
     if (hasRefundMarker || (Number.isFinite(status) && status >= 400 && status < 500 && code !== 'provider_outcome_ambiguous')) {
-      return rejectedOutcome(execution, dependencies, hasRefundMarker);
+      return rejectedOutcome(execution, dependencies, hasRefundMarker, {
+        code: code || null,
+        message: error instanceof Error ? error.message : null,
+        status: Number.isFinite(status) ? status : null,
+      });
     }
     return { kind: 'ambiguous', retryable: true };
   }

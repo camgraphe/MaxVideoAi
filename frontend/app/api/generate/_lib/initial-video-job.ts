@@ -46,6 +46,7 @@ export type PendingReceipt = {
   description: string;
   jobId: string;
   snapshot: unknown;
+  auditPricingSnapshot?: unknown;
   applicationFeeCents: number | null;
   vendorAccountId: string | null;
   stripePaymentIntentId?: string | null;
@@ -408,6 +409,7 @@ export async function createInitialVideoJobInExecutor(
           surface: 'video',
           billingProductKey: null,
           pricingSnapshotJson: params.jobInsert.pricingSnapshotJson,
+          auditPricingSnapshot: params.pendingReceipt.auditPricingSnapshot,
           applicationFeeCents: params.pendingReceipt.applicationFeeCents,
           vendorAccountId: params.pendingReceipt.vendorAccountId,
           stripePaymentIntentId: null,

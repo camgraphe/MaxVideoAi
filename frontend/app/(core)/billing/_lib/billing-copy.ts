@@ -100,6 +100,7 @@ export const DEFAULT_BILLING_COPY = {
     fields: {
       total: 'Total',
       walletMovement: 'Wallet movement',
+      paymentAmount: 'Amount paid (including tax)',
       tax: 'Tax',
       discount: 'Discount',
       document: 'Document',

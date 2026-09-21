@@ -48,3 +48,17 @@ test('paid invoice handler only synchronizes document fields', async () => {
     invoice_pdf: 'https://invoice.example/topup.pdf',
   } as unknown as Stripe.Invoice));
 });
+
+test('a wallet invoice delivered before its top-up remains retryable until the receipt exists', async () => {
+  let receiptExists = false;
+  const handler = createInvoicePaidHandler(async () => receiptExists);
+  const invoice = { id: 'in_early', payment_intent: 'pi_early', metadata: { kind: 'topup' } } as unknown as Stripe.Invoice;
+  await assert.rejects(handler(invoice), /receipt.*not.*available/i);
+  receiptExists = true;
+  await handler(invoice);
+});
+
+test('an unrelated invoice without a wallet receipt is acknowledged', async () => {
+  const handler = createInvoicePaidHandler(async () => false);
+  await handler({ id: 'in_other', metadata: {} } as Stripe.Invoice);
+});

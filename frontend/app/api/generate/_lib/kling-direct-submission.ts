@@ -21,6 +21,7 @@ import {
   markProviderAttemptAccepted,
   markProviderAttemptFailed,
   markProviderAttemptFinished,
+  syncProviderAttemptTerminalStatus,
 } from '@/server/video-providers/provider-attempts';
 import { rollbackPendingPayment } from './payment-rollback';
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
@@ -505,7 +506,15 @@ export async function submitKlingDirectGenerateTask(params: {
       walletChargeReserved: params.walletChargeReserved,
       getLastProviderJobId: falTracker.getLastProviderJobId,
       setLastProviderJobId: falTracker.setLastProviderJobId,
-      persistProviderJobId: falTracker.persistProviderJobId,
+      persistProviderJobId: async (providerJobId) => {
+        await falTracker.persistProviderJobId(providerJobId);
+        try {
+          await markProviderAttemptAccepted({ attemptId: falAttempt.id, providerJobId, queryFn });
+          await syncProviderAttemptTerminalStatus({ publicJobId: params.jobId, provider: 'fal', providerJobId, queryFn });
+        } catch (error) {
+          console.warn('[kling-direct] failed to record Fal fallback acceptance', { jobId: params.jobId }, error);
+        }
+      },
       logMetricFn: params.logMetricFn,
       clientErrorPolicy: params.clientErrorPolicy,
     });

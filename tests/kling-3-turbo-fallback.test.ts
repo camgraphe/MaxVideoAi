@@ -148,7 +148,9 @@ test('Kling 3 Turbo records one rejected direct attempt then one accepted Fal at
           });
         },
       }) as never,
-      submitFalGenerateTaskFn: async () => {
+      submitFalGenerateTaskFn: async (params) => {
+        await params.persistProviderJobId('fal_turbo_123');
+        assert.ok(queries.some(entry => /UPDATE provider_attempts/.test(entry.sql) && entry.params[0] === 2 && entry.params[1] === 'fal_turbo_123'), 'fallback attempt must be bound at enqueue, before polling returns');
         falCalls += 1;
         return { ok: true, generationResult: falResult };
       },

@@ -172,3 +172,37 @@ historical reference.
 Regression coverage: `billing-express-lifecycle.test.ts`,
 `wallet-express-checkout-behavior.test.ts`, `checkout-guard-reuse-postgres.test.ts`,
 `checkout-guard.test.ts`, `checkout-report.test.ts`, and `stripe-receipt-documents.test.ts`.
+
+
+## Transaction audit evidence
+
+For top-ups, Billing separates the USD wallet movement from the actual payment total
+(including tax) in the original settlement currency. `/api/receipts` projects
+`original_amount_cents` and `original_currency` only for top-ups; absent historical
+values stay absent. The Stripe invoice remains the source for the tax breakdown.
+Checkout metadata retains `fx_rate`, `fx_source`, `fx_margin_bps` and `rate_timestamp`
+on both the Session and PaymentIntent so the existing webhook can persist the quote.
+These additions do not reconstruct missing historical FX evidence.
+
+New site video and image wallet charges store the full pricing calculation in private
+`app_receipts.metadata.pricing_audit_snapshot`. The existing price-only
+`pricing_snapshot` projection remains unchanged. Never expose receipt metadata or
+provider cost and margin details through the customer receipts API.
+
+Known MCP submission rejections persist a safe message and `submissionFailure`
+(code, HTTP status, origin and safe message) in the job settings. The refund still
+uses the existing idempotent wallet mechanism. BytePlus Seedream safety codes map
+to explicit prompt, reference-image or generated-image explanations and refund
+labels; the raw provider body remains in the internal queue log.
+
+Provider-credit failures appear in the admin incidents list even when Fal fallback
+succeeds. This is a report of observed refusals over 24 hours, not a real-time balance
+probe. Fal fallback attempts bind the request ID at enqueue; webhook and poll recovery
+reconcile the exact attempt with the persisted terminal job state. A late acceptance
+cannot change a completed attempt back to accepted. No automatic provider recharge
+or historical data repair is included.
+
+Regression coverage: `transaction-audit-persistence-postgres.test.ts`,
+`admin-provider-credit-incidents.test.ts`, `billing-read-routes-postgres.test.ts`,
+`billing-wallet-presentation.test.ts`, `mcp-confirm-generation.test.ts`,
+`image-generation-provider-persistence.test.ts` and `kling-3-turbo-fallback.test.ts`.

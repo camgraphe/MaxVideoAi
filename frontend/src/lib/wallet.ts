@@ -130,6 +130,7 @@ export type ReserveWalletChargeParams = {
   surface?: JobSurface | null;
   billingProductKey?: BillingProductKey | null;
   pricingSnapshotJson: string;
+  auditPricingSnapshot?: unknown;
   applicationFeeCents: number | null;
   vendorAccountId: string | null;
   stripePaymentIntentId?: string | null;
@@ -284,7 +285,8 @@ async function reserveWalletChargeWithQueryExecutor(
             stripe_payment_intent_id,
             stripe_charge_id,
             platform_revenue_cents,
-            destination_acct
+            destination_acct,
+            metadata
           )
           SELECT
             $1,
@@ -301,7 +303,8 @@ async function reserveWalletChargeWithQueryExecutor(
             $11,
             $12,
             $9::integer,
-            $10
+            $10,
+            $13::jsonb
           FROM balance
           WHERE balance.balance_cents >= $2::bigint
             AND COALESCE(balance.has_mismatch, 0) = 0
@@ -327,6 +330,7 @@ async function reserveWalletChargeWithQueryExecutor(
         vendorAccountParam,
         params.stripePaymentIntentId ?? null,
         params.stripeChargeId ?? null,
+        params.auditPricingSnapshot == null ? null : JSON.stringify({ pricing_audit_snapshot: params.auditPricingSnapshot }),
       ]
     );
 

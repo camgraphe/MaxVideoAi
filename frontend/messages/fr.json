@@ -3983,6 +3983,7 @@
         "fields": {
           "total": "Total",
           "walletMovement": "Mouvement du portefeuille",
+          "paymentAmount": "Montant payé (taxes comprises)",
           "tax": "Taxe",
           "discount": "Remise",
           "document": "Document"

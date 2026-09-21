@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { syncProviderAttemptTerminalStatus } from '@/server/video-providers/provider-attempts';
 import { maybeAutoRefundWalletCharge } from './fal-webhook-refunds';
 import { createProvisionalJobFromWebhook } from './fal-webhook-provisional';
 import type { AppJobRow } from './fal-webhook-types';
@@ -551,6 +552,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       providerVideoCopyStateJson,
     ]
   );
+  await syncProviderAttemptTerminalStatus({ publicJobId: job.job_id, provider: 'fal', providerJobId: requestId });
   if (!applied.length) return;
 
   await upsertLegacyJobOutputs({

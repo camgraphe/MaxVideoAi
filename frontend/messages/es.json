@@ -3975,6 +3975,7 @@
         "fields": {
           "total": "Total",
           "walletMovement": "Movimiento de la billetera",
+          "paymentAmount": "Importe pagado (impuestos incluidos)",
           "tax": "Impuestos",
           "discount": "Descuento",
           "document": "Documento"

@@ -114,6 +114,7 @@ test('billing preflight builds wallet receipts and pricing metadata', async () =
     description: 'Run Seedance 2.0 - 8s',
     jobId: 'job_123',
     snapshot: { totalCents: 1200, currency: 'USD' },
+    auditPricingSnapshot: result.preflight.pricing,
     applicationFeeCents: null,
     vendorAccountId: null,
   });

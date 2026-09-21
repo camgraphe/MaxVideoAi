@@ -225,6 +225,14 @@ export function buildSystemRows(health: AdminHealthSnapshot, metrics: AdminMetri
 export function buildIncidentRows(health: AdminHealthSnapshot, metrics: AdminMetrics, range: AdminHubRange) {
   const atRisk = health.engineStats.filter((stat) => stat.failedCount > 0).slice(0, 2);
   const rows = [
+    ...(health.providerCreditFailures24h ?? []).filter(item => item.count > 0).map(item => ({
+      id: `INC-${dateStamp()}-CREDITS-${item.provider}`,
+      label: `${item.provider}: ${formatNumber(item.count)} requests rejected for insufficient provider credits (24h). Check the provider account balance.`,
+      status: 'Warning',
+      href: '/admin/jobs',
+      dotClass: 'bg-warning',
+      badgeClass: 'bg-warning-bg text-warning',
+    })),
     ...atRisk.map((stat, index) => ({
       id: `INC-${dateStamp()}-${String(index + 1).padStart(3, '0')}`,
       label: `${stat.engineLabel} failure rate at ${formatPercent(stat.failureRate)}`,
