@@ -1,3 +1,4 @@
+import {guardEditorialPublicationEdit} from './publication-queue';
 import { query, withDbTransaction } from '@/lib/db';
 import { digestEditorialDraft, parseEditorialDraft, type EditorialDraft } from '@/lib/editorial/schema';
 
@@ -62,6 +63,7 @@ export async function saveEditorialDraft({ draft, actor }: { draft: EditorialDra
     );
     const article = articleRows[0];
     if (!article || article.topic_key !== draft.topicKey) throw new Error('Canonical slug already belongs to another topic');
+    await guardEditorialPublicationEdit(tx, article.id);
     await tx.query("UPDATE editorial_articles SET status = 'draft' WHERE id = $1", [article.id]);
     const latestRows = await tx.query<{ version: number }>(
       'SELECT COALESCE(MAX(version), 0) AS version FROM editorial_versions WHERE article_id = $1', [article.id],

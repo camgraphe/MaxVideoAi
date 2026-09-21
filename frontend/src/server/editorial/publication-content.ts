@@ -19,6 +19,11 @@ export function buildEditorialPublicationFiles(record:EditorialVersion,media:Rec
  if(record.draft.assets.some(a=>!media[a.id]))throw Error('Public media missing');
  if(!checks)throw Error('Publication checks required');
  validateEditorialCheckReport(record.draft,record.digest,checks);
+ return buildEditorialPreviewFiles(record,media);
+}
+/** Files for an isolated private QA checkout only; this never authorizes publication. */
+export function buildEditorialPreviewFiles(record:EditorialVersion,media:Record<string,string>){
+ if(digestEditorialDraft(record.draft)!==record.digest)throw Error('Candidate digest mismatch');
  const files:PublicationFile[]=[],slugs={} as Record<'en'|'fr'|'es',string>;
  for(const locale of ['en','fr','es'] as const){
   const artifact=projectPublicEditorialArticle(record,locale,media),a=artifact.article;slugs[locale]=a.slug;

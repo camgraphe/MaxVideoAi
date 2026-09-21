@@ -54,3 +54,12 @@ test('editorial approval alone cannot prepare publication files without matching
  const report=checkedFixture().report;report.views[0].failures=['horizontal overflow'];
  assert.throws(()=>buildEditorialPublicationFiles(r,media,report),/rendered/i);
 });
+
+test('private QA can project a candidate without creating approval or bypassing the publication compiler',async()=>{
+ const module=await import('../frontend/src/server/editorial/publication-content.ts');
+ assert.equal(typeof module.buildEditorialPreviewFiles,'function');
+ const r={...record(),approvedAt:null,approvedBy:null};
+ assert.equal(module.buildEditorialPreviewFiles(r,media).files.length,6);
+ assert.equal(r.approvedAt,null);
+ assert.throws(()=>module.buildEditorialPublicationFiles(r,media,checkedFixture().report),/approval/i);
+});

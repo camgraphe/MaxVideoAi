@@ -19,7 +19,13 @@ export function editorialLinks(draft:EditorialDraft){
 }
 export function validateEditorialCheckReport(draft:EditorialDraft,digest:string,input:unknown):EditorialCheckReport{
  const r=editorialCheckReportSchema.parse(input);if(r.digest!==digest)throw Error('Checks digest mismatch');
- if(editorialLinks(draft).some(url=>!r.links.some(l=>l.url===url&&l.status>=200&&l.status<300)))throw Error('Link checks incomplete');
+ if(editorialLinks(draft).some(url=>!r.links.some(l=>{
+  if(l.url!==url)return false;
+  if(l.status>=200&&l.status<300)return true;
+  // Robot denial is an explicit uncertainty, not evidence of a broken source.
+  // Only cited external sources qualify; internal links and product CTAs must work.
+  return [401,403,429].includes(l.status)&&draft.sources.some(s=>s.url===url)&&new URL(url,'https://maxvideoai.com').origin!=='https://maxvideoai.com';
+ })))throw Error('Link checks incomplete');
  for(const asset of draft.assets){const m=r.media.find(a=>a.id===asset.id);if(!asset.sha256||!m||m.sha256!==asset.sha256||m.bytes!==asset.bytes||m.width!==asset.width||m.height!==asset.height)throw Error('Media checks incomplete');}
  for(const locale of ['en','fr','es'] as const)for(const width of [360,768,1440]){
   const v=r.views.find(v=>v.locale===locale&&v.width===width),a=draft.locales[locale];
