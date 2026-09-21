@@ -8,6 +8,7 @@ import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 import { getMcpApiRewritePath } from '@/lib/mcp-host-routing';
 import { isMcpPublicSourcePath } from '@/lib/mcp-publication';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
+import { editorialSignInRedirect } from '@/lib/editorial/login';
 import {
   LOGIN_PATH,
   LOCALE_STRIPPABLE_PREFIXES,
@@ -238,6 +239,11 @@ export async function middleware(req: NextRequest) {
 
   if (isAdminRoute) {
     const unauthorized = new NextResponse(null, { status: 401 });
+    const signIn = editorialSignInRedirect(req);
+    if (signIn) {
+      mergeResponseCookies(signIn, response);
+      return finalizeResponse(signIn, hasLogoutIntentCookie, trackingNoindex, appNoindex);
+    }
     unauthorized.headers.set('X-Robots-Tag', 'noindex, nofollow');
     unauthorized.headers.set('Cache-Control', 'private, no-store, max-age=0');
     unauthorized.headers.set('Pragma', 'no-cache');
