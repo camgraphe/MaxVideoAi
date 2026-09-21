@@ -74,3 +74,9 @@ export function recoveryEmailDestination(value: string | undefined): { locale?: 
     return { next: '/app' };
   }
 }
+
+export function recoveryContinuationHref(next: string, locale: string): string {
+  const target = new URL(safeRecoveryNext(next), 'https://maxvideoai.com');
+  target.searchParams.set('lang', ['en', 'fr', 'es'].includes(locale) ? locale : 'en');
+  return target.pathname + target.search + target.hash;
+}

@@ -91,3 +91,9 @@ test('branded email links preserve locale and safe continuations across browsers
   assert.deepEqual(recoveryEmailDestination('https://maxvideoai.com/auth/callback?lang=es&next=https://evil.test'), { locale: 'es', next: '/app' });
   assert.deepEqual(recoveryEmailDestination(undefined), { next: '/app' });
 });
+
+test('recovery continuation persists the email locale in a fresh browser', async () => {
+  const { recoveryContinuationHref } = await import('../frontend/lib/password-recovery');
+  assert.equal(recoveryContinuationHref('/app?tab=library#recent', 'fr'), '/app?tab=library&lang=fr#recent');
+  assert.equal(recoveryContinuationHref('//evil.test', 'es'), '/app?lang=es');
+});

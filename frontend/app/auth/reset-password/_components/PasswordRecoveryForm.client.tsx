@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import { writeLastKnownUserId } from '@/lib/last-known';
-import { parseRecoveryProof, verifyRecoveryProof, updateRecoveredPassword, type RecoveryProof, type PasswordUpdateResult } from '@/lib/password-recovery';
+import { parseRecoveryProof, recoveryContinuationHref, verifyRecoveryProof, updateRecoveredPassword, type RecoveryProof, type PasswordUpdateResult } from '@/lib/password-recovery';
 import type { AppLocale } from '@/i18n/locales';
 import en from '@/messages/en.json';
 import fr from '@/messages/fr.json';
@@ -108,7 +108,7 @@ export function PasswordRecoveryForm({ locale, next }: { locale: AppLocale; next
         </>}
         {phase === 'saved' && <>
           <p role="status">{copy.saved}</p>
-          <a className="block text-brand underline" href={next}>{copy.continueToApp}</a>
+          <a className="block text-brand underline" href={recoveryContinuationHref(next, locale)}>{copy.continueToApp}</a>
         </>}
       </section>
     </main>
