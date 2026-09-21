@@ -59,17 +59,19 @@ Package installed → tools discovered → account connected → workflow ready
 
 If the skill is present but its tools are missing:
 
-1. Search the host's available or deferred tools for MaxVideoAI. An empty MCP
-   resource list does not mean its tools are missing.
-2. Inspect the MaxVideoAI connection status. If it reports OAuth reauthentication,
-   use the host's reconnect action or `codex mcp login maxvideoai`, then complete
-   the browser sign-in for the intended account.
-3. Check `codex --version` if the command fails unexpectedly. A terminal may use
-   an older CLI than the desktop app. Use the app's plugin manager or its verified
-   bundled CLI rather than changing configuration for an obsolete binary.
-4. Rediscover the tools and resume the existing brief. If the host still does
-   not expose them, start a new task with the saved brief and report the actual
-   connection error. Do not reinstall merely because authentication was lost.
+1. Search available or deferred tools for MaxVideoAI. An empty MCP resource list
+   does not prove tools are missing.
+2. Inspect the connection status. For OAuth reauthentication, use the host's
+   reconnect action or `codex mcp login maxvideoai`, then sign in to the intended
+   account in the browser.
+3. Check `codex --version` if that fails. The terminal CLI may be older than the
+   desktop app. Use the app's plugin manager or verified bundled CLI; do not
+   change configuration to accommodate an obsolete binary.
+4. Rediscover tools and resume the saved brief. If unavailable, start a new task
+   with that brief and report the connection error. Lost authentication alone
+   does not require reinstallation.
+
+## What if the installation source disappeared?
 
 If the marketplace itself points to a missing local or temporary directory,
 repair its source using the tagged Git repository in the installation command
