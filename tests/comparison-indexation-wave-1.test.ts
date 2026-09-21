@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel } from '../frontend/lib/model-generation-policy';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -388,10 +389,11 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
 
   for (const locale of ['fr', 'es'] as const) {
     const excluded = comparisonIndexation.noindexByLocale[locale];
-    const historicalLowSignalExclusions = excluded.slice(0, 30);
+    const historicalLowSignalExclusions = excluded.slice(0, 30)
+      .filter((slug) => !slug.split('-vs-').some(isArchivedGenerationModel));
     assert.ok(
       historicalLowSignalExclusions.every((slug) => unfilteredSets.directory.includes(slug)),
-      `${locale} exclusions should remain discoverable on the unchanged English directory`,
+      `${locale} executable exclusions should remain discoverable on the English directory`,
     );
 
     for (const [surface, slugs] of Object.entries(unfilteredSets)) {

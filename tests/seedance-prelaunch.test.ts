@@ -395,7 +395,8 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
   assert.equal(appEngineIds[1], 'seedance-2-0');
   assert.equal(appEngineIds[2], 'minimax-h3');
   assert.equal(appEngineIds[3], 'seedance-2-0-fast');
-  assert.ok(appEngineIds.indexOf('sora-2') > appEngineIds.indexOf('seedance-2-5'));
+  assert.ok(!appEngineIds.includes('sora-2'));
+  assert.ok(!appEngineIds.includes('sora-2-pro'));
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),

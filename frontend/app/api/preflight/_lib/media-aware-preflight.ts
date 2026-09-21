@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/normalized-generation-attachment-validation';
 import {
   computeConfiguredPreflight,
@@ -95,6 +96,9 @@ export async function resolveMediaAwarePreflight(
   const parsedRequest = parsePreflightRequestPayload(input.request);
   if (!parsedRequest.ok) return parsedRequest.response;
   const request = parsedRequest.request;
+  if (isArchivedGenerationModel(request.engine)) {
+    return { ok: false, messages: ['This model is no longer available. Choose another model.'], error: { code: 'ENGINE_RETIRED', message: 'This model is no longer available.' } };
+  }
   const getConfiguredEngineFn = dependencies.getConfiguredEngineFn ?? getReadOnlyConfiguredEngine;
   const getConfiguredEngineIncludingHiddenFn =
     dependencies.getConfiguredEngineIncludingHiddenFn ?? getReadOnlyConfiguredEngineIncludingRuntimePrivate;

@@ -2,30 +2,25 @@ import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/
 
 export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
   sora: {
-    subtitle: 'Cinematic examples, reusable prompts, and shot-level settings for Sora workflows.',
-    intro:
-      'Use this page to review real Sora examples before you run new renders. You can inspect prompt style, duration, and framing patterns that usually perform well on cinematic scenes, product storytelling, and social cuts. The goal is to help you recreate outputs consistently without mixing unrelated model behavior.',
-    promptPatterns:
-      'Start with scene intent, camera movement, and a clear subject anchor. Sora examples perform best when prompts separate composition, motion, and lighting constraints in short blocks.',
-    strengthsLimits:
-      'Sora generally excels in cinematic coherence and polished motion. Limits vary by mode and queue conditions, so keep test runs short before scaling to longer variants.',
-    pricingNotes:
-      'Pricing depends on duration, resolution, and add-ons. Open an example to inspect its recorded render cost before comparing Sora runs with other engines or starting batch generation.',
-    faq: [
-      {
-        question: 'What prompts work best for Sora examples?',
-        answer: 'Structured prompts with clear subject, camera, and motion constraints are the most reliable baseline.',
-      },
-      {
-        question: 'Are these Sora examples reusable in the workspace?',
-        answer: 'Yes. You can clone examples and adapt duration, resolution, and style details to your own brief.',
-      },
-      {
-        question: 'How should I budget Sora test runs?',
-        answer: 'Start with short test clips, validate motion and composition, then upscale winning variants.',
-      },
-    ],
-  },
+    "metaTitle": "Historical Sora examples | MaxVideoAI",
+    "metaDescription": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
+    "heroTitle": "Historical Sora examples",
+    "subtitle": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
+    "intro": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library.",
+    "promptPatterns": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
+    "strengthsLimits": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
+    "pricingNotes": "Recorded costs are historical. Choose an available model and review a new quote before generating.",
+    "faq": [
+        {
+            "question": "Can I still generate with Sora?",
+            "answer": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
+        },
+        {
+            "question": "Sora archives and alternatives",
+            "answer": "Recorded costs are historical. Choose an available model and review a new quote before generating."
+        }
+    ]
+},
   veo: {
     metaTitle: 'Veo 3.1 Examples, Prompts, Settings & Image-to-Video | MaxVideoAI',
     metaDescription:

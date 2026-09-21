@@ -1,4 +1,6 @@
 import '@/styles/marketing-models.css';
+import { ModelArchivePage } from './_components/ModelArchivePage';
+import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -103,6 +105,9 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
 
   const canonicalSlug = model.slug;
   const localized = await getEngineLocalized(canonicalSlug, locale);
+  if (model.lifecycle === 'deep_legacy' && localized.archive) {
+    return buildModelArchiveMetadata(model, localized.archive, locale);
+  }
   const detailSlugMap = buildDetailSlugMap(canonicalSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
 
@@ -477,6 +482,9 @@ export default async function ModelDetailPage(props: PageParams) {
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
     const localizedContent = await getEngineLocalized(model.slug, activeLocale);
+    if (model.lifecycle === 'deep_legacy' && localizedContent.archive) {
+      return <ModelArchivePage model={model} value={localizedContent.archive} locale={activeLocale} />;
+    }
     if (
       isRuntimePresentationOnlyModel(model) ||
       isPrelaunchModelPageTemplateSlug(model.slug)

@@ -665,8 +665,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(ltx2Fast.meta.title, /Pricing|20s Drafts/i);
   assert.match(seedream.meta.title, /Image Pricing|Reference Prep/i);
   assert.match(seedance15.meta.title, /Pricing|Camera Fixed/i);
-  assert.match(sora.meta.title, /Pricing|Native Audio|Examples/i);
-  assert.match(soraPro.meta.title, /Pricing|1080p|Examples/i);
+  assert.match(sora.meta.title, /generation closed/i);
+  assert.match(soraPro.meta.title, /generation closed/i);
   assert.match(wan25.meta.title, /Pricing|Audio Drafts|Examples/i);
   assert.match(wan26.meta.title, /Pricing|References|Examples/i);
   assert.match(luma.meta.title, /Legacy|Modify|Reframe/i);

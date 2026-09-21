@@ -4639,7 +4639,7 @@
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "lifecycle": "legacy",
+    "lifecycle": "deep_legacy",
     "successorId": null,
     "successorSlug": null,
     "surfaces": {
@@ -4685,13 +4685,10 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true,
-        "discoveryRank": 0,
-        "variantGroup": "sora",
-        "variantLabel": "Standard"
+        "enabled": false
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false
       }
     },
     "surfacesSource": "registry",
@@ -4920,7 +4917,7 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "lifecycle": "legacy",
+    "lifecycle": "deep_legacy",
     "successorId": null,
     "successorSlug": null,
     "surfaces": {
@@ -4960,13 +4957,10 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true,
-        "discoveryRank": 1,
-        "variantGroup": "sora",
-        "variantLabel": "Pro"
+        "enabled": false
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false
       }
     },
     "surfacesSource": "registry",

@@ -130,7 +130,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(610 rows\)/);
+  assert.match(result.stdout, /current \(588 rows\)/);
 });
 
 test('canonical public pricing adapters exist and stay browser safe', () => {

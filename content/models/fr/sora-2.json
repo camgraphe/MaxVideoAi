@@ -2,8 +2,8 @@
   "marketingName": "OpenAI Sora 2",
   "versionLabel": "2",
   "seo": {
-    "title": "Sora 2 Texte/Image vers vidéo — audio natif + exemples",
-    "description": "Générez des vidéos Sora 2 depuis du texte ou des images avec voix-off native et ambiance sonore. Exemples reproductibles, structure de prompt et paiement à l’usage sur MaxVideoAI.",
+    "title": "Sora 2 : génération fermée",
+    "description": "Sora 2 est archivé sur MaxVideoAI. Les nouvelles générations sont fermées avant l’arrêt de l’API le 24 septembre 2026. Comparez Seedance 2.5, MiniMax H3 et Wan 3.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
@@ -12,7 +12,7 @@
     "badge": "720p · 4/8/12s · Texte→Vidéo · Image→Vidéo · 16:9/9:16 · Audio inclus",
     "ctaPrimary": {
       "label": "Générer avec Sora 2",
-      "href": "/app?engine=sora-2"
+      "href": "/fr/modeles/sora-2"
     },
     "secondaryLinks": [
       {
@@ -258,7 +258,7 @@
       "paragraph": "Utilisez Sora 2 pour une route OpenAI rapide en 720p : plans cinématographiques courts, tests depuis image, audio natif et passes storyboard avant de finaliser les meilleurs rendus en Pro.",
       "primaryCta": {
         "label": "Générer avec Sora 2",
-        "href": "/app?engine=sora-2"
+        "href": "/fr/modeles/sora-2"
       },
       "secondaryCta": {
         "label": "Voir les exemples",
@@ -379,8 +379,8 @@
       "ctaHref": "/fr/tarifs#sora-2-pricing"
     },
     "meta": {
-      "title": "Sora 2 : tarifs, audio natif et exemples | MaxVideoAI",
-      "description": "Explorez prix Sora 2, exemples, audio natif synchronisé, text-to-video et image-to-video. Comparez Sora 2 vs Pro et les autres modèles vidéo IA."
+      "title": "Sora 2 : génération fermée",
+      "description": "Sora 2 est archivé sur MaxVideoAI. Les nouvelles générations sont fermées avant l’arrêt de l’API le 24 septembre 2026. Comparez Seedance 2.5, MiniMax H3 et Wan 3."
     }
   },
   "prompting": {
@@ -547,5 +547,33 @@
     ],
     "fallbackItems": null,
     "showWhenEmpty": true
+  },
+  "archive": {
+    "title": "Sora 2 : génération fermée",
+    "intro": "Sora 2 est archivé sur MaxVideoAI. Les nouvelles générations sont fermées avant l’arrêt de l’API le 24 septembre 2026. Comparez Seedance 2.5, MiniMax H3 et Wan 3.",
+    "alternativesTitle": "Choisissez un modèle pour votre prochaine vidéo",
+    "chooseLabel": "Découvrir ce modèle",
+    "historyTitle": "Vos vidéos existantes",
+    "historyBody": "Vos vidéos MaxVideoAI existantes restent dans votre bibliothèque. Vous pouvez consulter et télécharger les résultats disponibles. Choisissez un autre modèle pour créer une nouvelle vidéo ; ses réglages et son prix seront présentés avant la génération.",
+    "historyLabel": "Ouvrir ma bibliothèque",
+    "examplesLabel": "Voir les exemples historiques Sora",
+    "sourcesLabel": "Lire l’annonce officielle de fermeture",
+    "alternatives": [
+      {
+        "modelId": "seedance-2-5",
+        "title": "Seedance 2.5",
+        "description": "Explorez les plans longs et les références multimodales. Vérifiez le mode choisi et le devis avant de générer."
+      },
+      {
+        "modelId": "minimax-h3",
+        "title": "MiniMax H3",
+        "description": "Créez depuis un texte, une image ou des références, avec audio natif. Vérifiez les réglages adaptés à votre plan."
+      },
+      {
+        "modelId": "wan-3",
+        "title": "Wan 3",
+        "description": "Explorez les parcours texte, image et références, ainsi que l’édition et l’extension lorsqu’elles sont disponibles."
+      }
+    ]
   }
 }

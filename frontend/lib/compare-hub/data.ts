@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import compareHubConfig from '@/config/compare-hub.json';
 import engineCatalog from '@/config/engine-catalog.json';
 
@@ -196,7 +197,7 @@ function resolveMaxResolution(resolutions: string[] | undefined): { label: strin
 }
 
 function isHubEligibleEngine(entry: CatalogEngine, options: HubEngineFilterOptions = {}): boolean {
-  if (!entry?.modelSlug || EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug)) return false;
+  if (!entry?.modelSlug || EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug) || isArchivedGenerationModel(entry.modelSlug)) return false;
   if (getCompareSurface(entry)?.includeInHub !== true) return false;
   const status = String(entry.engine?.status ?? '').toLowerCase();
   if (!ELIGIBLE_STATUSES.has(status)) return false;
@@ -383,7 +384,7 @@ export function getSuggestedOpponentSlugs(engineSlug: string, maxCount = 3): str
   const selected: string[] = [];
   const used = new Set<string>();
   const add = (slug: string | null | undefined) => {
-    if (!slug || slug === engineSlug || used.has(slug) || !catalogBySlug.has(slug)) return;
+    if (!slug || slug === engineSlug || used.has(slug) || !catalogBySlug.has(slug) || isArchivedGenerationModel(slug)) return;
     used.add(slug);
     selected.push(slug);
   };

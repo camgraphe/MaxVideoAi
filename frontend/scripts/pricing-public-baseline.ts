@@ -104,6 +104,8 @@ async function main(): Promise<void> {
   ) {
     throw new Error('Invalid reviewed GPT Image 2.5 public pricing launch matrix.');
   }
+  // Approved Sora sunset: remove purchasable surfaces and invalidate its two Product offers.
+  // Keep the pre-sunset fixtures intact as historical pricing evidence.
   const expectedWithLaunch = [...expected, ...launchAdditions.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
@@ -112,7 +114,12 @@ async function main(): Promise<void> {
     }
     appliedCustomerOfferRepairs.add(row.id);
     return { ...row, customerTotalCents: repair.totalCents, structuredDataAmount: (repair.totalCents / 100).toFixed(2) };
-  }).sort((left, right) => left.id.localeCompare(right.id));
+  }).filter((row) => !(['sora-2', 'sora-2-pro'].includes(row.engineId)
+    && ['estimator', 'pricing-hub-video', 'workspace-preflight'].includes(row.surface)))
+    .map((row) => ['sora-2', 'sora-2-pro'].includes(row.engineId) && row.surface === 'json-ld'
+      ? { id: row.id, surface: row.surface, engineId: row.engineId, status: 'unavailable' as const }
+      : row)
+    .sort((left, right) => left.id.localeCompare(right.id));
   if (appliedCustomerOfferRepairs.size !== customerOfferRepairs.size) throw new Error('Missing Product customer-price repair scenario.');
   if (!isDeepStrictEqual(rows, expectedWithLaunch)) {
     const expectedById = new Map(expectedWithLaunch.map((row) => [row.id, row]));

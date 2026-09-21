@@ -9,7 +9,7 @@ import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/m
 import type { LaunchCanaryRequestContext } from '../frontend/src/server/model-launch-canary-request';
 import type { EngineCaps } from '../frontend/types/engines';
 
-const base = getBaseEngines().find((engine) => engine.id === 'sora-2')!;
+const base = getBaseEngines().find((engine) => engine.id === 'pika-text-to-video')!;
 const stale: EngineSettingsRecord = {
   engine_id: base.id,
   options: { maxDurationSec: 1 },

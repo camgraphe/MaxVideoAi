@@ -12,6 +12,14 @@ test('repaired model Product offers match exact public customer quotes in all lo
   for (const row of matrix.rows) {
     const engine = engines.find((entry) => entry.id === row.engineId)!;
     assert.ok(engine, row.engineId);
+    // The frozen repair matrix predates the Sora retirement; archived models cannot sell an offer.
+    if (['sora-2', 'sora-2-pro'].includes(engine.id)) {
+      assert.equal(engine.surfaces.app.enabled, false);
+      assert.equal(buildProductSchema({ engine, pricingEngine: engine.engine,
+        canonical: `https://maxvideoai.com/models/${engine.modelSlug}`,
+        description: 'Archived model', heroTitle: engine.marketingName, heroPosterAbsolute: null }), null);
+      continue;
+    }
     assert.equal(resolveModelOfferAmountCents(engine, engine.engine), row.totalCents, row.engineId);
     for (const locale of ['en', 'fr', 'es'] as const) {
       const quote = row.mode === 't2i'

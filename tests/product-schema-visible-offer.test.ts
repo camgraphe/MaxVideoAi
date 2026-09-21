@@ -14,6 +14,14 @@ const matrix = JSON.parse(readFileSync('tests/fixtures/product-schema-customer-p
 test('visible offer and Product consume the same price and selected scenario for every repaired model', () => {
   for (const row of matrix.rows) {
     const engine = engines.find((entry) => entry.id === row.engineId)!;
+    // The frozen repair matrix predates the Sora retirement; archived models cannot sell an offer.
+    if (['sora-2', 'sora-2-pro'].includes(engine.id)) {
+      assert.equal(engine.surfaces.app.enabled, false);
+      assert.equal(buildProductSchema({ engine, pricingEngine: engine.engine,
+        canonical: `https://maxvideoai.com/models/${engine.modelSlug}`,
+        description: 'Archived model', heroTitle: engine.marketingName, heroPosterAbsolute: null }), null);
+      continue;
+    }
     const offer = resolveModelPublicOffer(engine, engine.engine)!;
     assert.ok(offer, row.id);
     assert.equal(offer.amountCents, row.totalCents, row.id);

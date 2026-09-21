@@ -10,7 +10,7 @@ export const home: Dictionary['home'] = {
     },
     worksWith: {
       label: 'Works with',
-      brands: ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'],
+      brands: ['Seedance 2.5', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'],
       caption: 'Independent hub. Trademarks belong to their owners.',
       availabilityNotice: 'Availability may vary by provider; pricing chips refresh automatically.',
     },
@@ -50,7 +50,7 @@ export const home: Dictionary['home'] = {
       },
       {
         title: 'All your engines in one place.',
-        body: 'Switch between Sora, Veo, Pika, MiniMax, and Hunyuan without juggling dashboards or API keys.',
+        body: 'Switch between Seedance 2.5, MiniMax H3, Wan 3, Veo, and Kling without juggling dashboards or API keys.',
       },
     ],
     ways: [

@@ -119,3 +119,13 @@ Commit the authored registry change and every refreshed generated projection tog
 ### Workspace quote input coverage
 
 When publishing new output resolutions, check both the engine runtime schema and the bounded request vocabulary in `frontend/app/api/preflight/_lib/preflight-request.ts`. A workspace option can otherwise be rejected before model validation and pricing (as happened with Omni 360p and H3 Max 480P). Keep model-specific resolution validation downstream; do not accept arbitrary resolution strings. Keep the Resolution type aligned instead of casting unsupported literals into it. The catalog-wide preflight test guards every declared output resolution. Exercise the configured quote path and rejection of an unknown resolution value in `tests/preflight-media-pricing.test.ts`, then smoke-test example recreation through the displayed current quote. This does not change pricing rules or authorize a paid generation.
+
+## Generation closure and archive pages
+
+`frontend/lib/model-generation-policy.ts` resolves historical input identity without following public-route replacement redirects. Generate (including trusted submissions) and preflight reject archived models before settings, billing, or provider calls. MCP uses its existing registry publication and lifecycle gates, including revalidation of pending quotes at confirmation. Preserve provider mappings for polling and accepted-job retries.
+
+The main workspace keeps saved historical capabilities and asks for an explicit model choice; Studio returns no executable capability for an archived model instead of borrowing its first available model. Never rewrite saved jobs or media identities to the alternative.
+
+A `deep_legacy` model may supply an explicit localized `archive` object in every model-content locale. The model route then renders `ModelArchivePage` with WebPage metadata, current published alternatives, library and canonical family-example links, without a Product offer or generation CTA. Archive content has no English fallback. Historical comparison URLs remain published; executable discovery and generation controls exclude archives.
+
+See [the Sora sunset audit](sora-sunset-audit-2026-09-21.md) for the September 2026 retirement and verification scope.

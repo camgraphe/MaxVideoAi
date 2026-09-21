@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import clsx from 'clsx';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
@@ -191,7 +192,7 @@ export function ExamplesPageView({
               durationSec={mainVideo.video.durationSec}
               engineLabel={mainVideo.card.engineLabel}
               exampleHref={mainVideo.card.href}
-              recreateHref={`/app?from=${encodeURIComponent(mainVideo.video.id)}`}
+              recreateHref={isArchivedGenerationModel(mainVideo.video.engineId) ? undefined : `/app?from=${encodeURIComponent(mainVideo.video.id)}`}
               hasAudio={mainVideo.video.hasAudio}
               heroLine={mainVideoFeature.heroLine}
               isPortrait={mainVideoFeature.isPortrait}
