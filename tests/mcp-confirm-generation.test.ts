@@ -1236,3 +1236,28 @@ test('default registry remains five discovery tools and the explicit paid gate e
   assert.match(confirm?.description ?? '', /new paid attempt.*fresh exact quote.*new explicit user approval/i);
   assert.deepEqual(Object.keys(confirm?.inputSchema.properties ?? {}).sort(), ['confirmed', 'quoteId']);
 });
+
+test('known MCP rejection forwards its diagnostic to refund persistence', async () => {
+  const quote = quoteFor(videoRequest);
+  const execution: PaidGenerationExecution = {
+    surface: 'video', quoteId: quote.quoteId, userId: quote.userId, request: videoRequest,
+    engine: capability(videoRequest).engine,
+    canonicalPricing: quote.pricingSnapshot.canonicalPricing as Record<string, unknown>,
+    trustedInitialState: { kind: 'created', jobId: quote.quoteId, walletChargeReserved: true },
+  };
+  let diagnostic: unknown;
+  await submitReservedPaidGeneration(execution, {
+    executeVideo: async () => ({ status: 422, body: {
+      ok: false, error: 'ENGINE_CONSTRAINT', message: 'This engine does not support the selected aspect ratio.',
+    } }),
+    executeImage: async () => assert.fail('unexpected image execution'),
+    ensureKnownRejectionRefund: async (_execution, failure) => {
+      diagnostic = failure;
+      return true;
+    },
+  });
+  assert.deepEqual(diagnostic, {
+    code: 'ENGINE_CONSTRAINT', status: 422,
+    message: 'This engine does not support the selected aspect ratio.',
+  });
+});

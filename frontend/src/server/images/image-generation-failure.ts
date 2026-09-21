@@ -36,7 +36,7 @@ export async function persistFailedImageGeneration(params: {
   resolution: string;
   style?: string | null;
   thinkingLevel: string | null;
-}, deps: { queryFn?: ImageGenerationQuery } = {}) {
+}, deps: { queryFn?: ImageGenerationQuery; recordRefundReceiptFn?: typeof recordRefundReceipt } = {}) {
   const {
     characterReferenceCount,
     enableWebSearch,
@@ -96,12 +96,28 @@ export async function persistFailedImageGeneration(params: {
           .filter((entry): entry is string => Boolean(entry))
       : [];
   const messageBase = error instanceof Error && error.message ? error.message : 'Fal request failed';
-  const message =
+  const bodyError = providerBody && typeof providerBody === 'object'
+    ? (providerBody as { error?: { code?: unknown } }).error : null;
+  const seedreamSafetyCode = providerMode === 'byteplus_modelark' && typeof bodyError?.code === 'string'
+    ? bodyError.code : null;
+  const safetySubjects: Record<string, string> = {
+    OutputImageSensitiveContentDetected: 'generated image',
+    InputImageSensitiveContentDetected: 'reference image',
+    InputTextSensitiveContentDetected: 'prompt',
+  };
+  const safetySubject = seedreamSafetyCode ? safetySubjects[seedreamSafetyCode] : null;
+  const safetyReason = safetySubject
+    ? `${safetySubject[0].toUpperCase()}${safetySubject.slice(1)} was blocked by safety checks.`
+    : null;
+  const safetyMessage = safetySubject
+    ? `Seedream blocked the ${safetySubject} during safety checks. Review the prompt and any reference images before trying again.`
+    : null;
+  const message = safetyMessage ?? (
     providerErrors.length > 0
       ? providerErrors.slice(0, 3).join(' · ')
       : providerStatus === 422 && messageBase === 'Unprocessable Entity'
         ? 'Fal rejected the input (422). Check that your reference image URLs are reachable and valid image files.'
-        : messageBase;
+        : messageBase);
 
   try {
     await queryFn(
@@ -175,7 +191,11 @@ export async function persistFailedImageGeneration(params: {
   }
 
   if (refundOnFailure) {
-    await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
+    await (deps.recordRefundReceiptFn ?? recordRefundReceipt)(
+      pendingReceipt,
+      safetyReason ? `${refundDescription.replace(/\b1 images\b/g, '1 image')} - ${safetyReason}` : refundDescription,
+      priceOnlyReceipts
+    );
   }
 
   return { message, providerBody, providerStatus };

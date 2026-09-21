@@ -15,7 +15,12 @@ export function createInvoicePaidHandler(
   syncDocument: typeof syncStripeTopupInvoiceDocument = syncStripeTopupInvoiceDocument,
 ) {
   return async function invoicePaid(invoice: Stripe.Invoice): Promise<void> {
-    await syncDocument(buildInvoiceDocumentSyncFields(invoice));
+    const synced = await syncDocument(buildInvoiceDocumentSyncFields(invoice));
+    // Stripe does not guarantee ordering between invoice and top-up events.
+    // Retry this document-only event instead of acknowledging a lost update.
+    if (!synced && invoice.metadata?.kind === 'topup') {
+      throw new Error('Wallet top-up receipt is not yet available for invoice synchronization.');
+    }
   };
 }
 

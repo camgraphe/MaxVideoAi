@@ -143,6 +143,7 @@ async function insertProvisionalImageJob(executor: QueryExecutor, params: Provis
 }
 
 export type CreateImageInitialJobParams = {
+  auditPricingSnapshot?: unknown;
   userId: string;
   mode: ImageGenerationMode;
   jobId: string;
@@ -305,6 +306,7 @@ export async function createInitialImageJobInExecutor(
         surface: params.surface,
         billingProductKey: params.billingProductKey,
         pricingSnapshotJson: params.pricingSnapshotJson,
+        auditPricingSnapshot: params.auditPricingSnapshot,
         applicationFeeCents: params.applicationFeeCents,
         vendorAccountId: params.vendorAccountId,
         stripePaymentIntentId: null,

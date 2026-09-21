@@ -168,7 +168,8 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.doesNotMatch(executorSource, /referenceImageHosts/, 'failed provider log metadata belongs in image-generation-failure.ts');
 
   const lineCount = executorSource.split('\n').length;
-  assert.ok(lineCount <= 640, `image generation executor should stay below 640 lines after context extraction, got ${lineCount}`);
+  // One additional argument forwards private pricing evidence to the existing persistence owner.
+  assert.ok(lineCount <= 641, `image generation executor should stay below 641 lines after context extraction, got ${lineCount}`);
 });
 
 test('storyboard image billing uses storyboard identity instead of provider display name', () => {

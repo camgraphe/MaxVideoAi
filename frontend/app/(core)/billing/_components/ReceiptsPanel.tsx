@@ -170,6 +170,12 @@ function ReceiptRow({
             <dt>{copy.receipts.fields.walletMovement}</dt>
             <dd>{amountDisplay}</dd>
           </div>
+          {receipt.type === 'topup' && typeof receipt.payment_amount_cents === 'number' && receipt.payment_currency ? (
+            <div>
+              <dt>{copy.receipts.fields.paymentAmount}</dt>
+              <dd>{formatMoney(receipt.payment_amount_cents, receipt.payment_currency)}</dd>
+            </div>
+          ) : null}
           {taxCents > 0 ? (
             <div><dt>{copy.receipts.fields.tax}</dt><dd>{formatMoney(taxCents, receipt.currency)}</dd></div>
           ) : null}

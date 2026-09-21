@@ -52,3 +52,28 @@ test('failed direct image jobs persist their actual provider mode', async () => 
   assert.match(queries[0]?.sql ?? '', /provider\s*=\s*\$5/);
   assert.equal(queries[0]?.params?.[4], 'google_vertex_image_direct');
 });
+
+test('Seedream output moderation is explained to the customer and on the refund receipt', async () => {
+  const queries: Array<{ sql: string; params?: readonly unknown[] }> = [];
+  let refundLabel = '';
+  const providerBody = { error: { code: 'OutputImageSensitiveContentDetected', message: 'Sensitive output. Request id: private-id' } };
+  const result = await persistFailedImageGeneration({
+    characterReferenceCount: 0, enableWebSearch: false, engineId: 'seedream',
+    error: Object.assign(new Error('BytePlus Seedream generation failed.'), { status: 400, detail: providerBody }),
+    falModelId: 'seedream-5-0', jobId: 'image-moderated', limitGenerations: false,
+    maskUrl: null, mode: 't2i', normalizedSeed: null, numImages: 1, outputFormat: 'jpeg',
+    pendingReceipt: { jobId: 'image-moderated' } as never, priceOnlyReceipts: true,
+    pricing: { totalCents: 6, currency: 'USD' } as never, providerJobId: null,
+    providerMode: 'byteplus_modelark', quality: null, referenceImageUrls: [],
+    refundDescription: 'Refund Seedream - 1 images', resolvedAspectRatio: 'auto', resolution: '2K', thinkingLevel: null,
+  }, {
+    queryFn: async (sql, params) => { queries.push({ sql, params }); return []; },
+    recordRefundReceiptFn: async (_receipt, label) => { refundLabel = label; },
+  });
+  assert.match(result.message, /Seedream.*generated image.*safety/i);
+  assert.doesNotMatch(result.message, /BytePlus|private-id|Request id/i);
+  assert.equal(queries[0].params?.[1], result.message);
+  assert.equal(refundLabel, 'Refund Seedream - 1 image - Generated image was blocked by safety checks.');
+  const log = JSON.parse(String(queries[1].params?.[5]));
+  assert.equal(log.error.body.error.code, 'OutputImageSensitiveContentDetected');
+});
