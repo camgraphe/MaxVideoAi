@@ -66,6 +66,11 @@ test('admin outcomes expose every registered application family while preserving
     videos: 0,
     failed: 0,
     pending: 0,
+    image_generators: 0,
+    images_submitted: 0,
+    images: 0,
+    image_failed: 0,
+    image_pending: 0,
   };
   const executor = {
     async query<T>(sql: string): Promise<T[]> {
@@ -110,6 +115,47 @@ test('outcome outages stay unavailable and invalid dates never query', async () 
   const failed = await loadAdminMcpOutcomes(range, deps);
   assert.equal(failed.totals, null);
   assert.match(failed.notices[0], /could not be loaded/);
+});
+
+test('missing aggregate columns fail closed instead of becoming zero', async () => {
+  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true };
+  const base = {
+    client: 'all', accounts: 1, new_signups: 0, missing_profiles: 0,
+    generators: 0, submitted: 0, videos: 0, failed: 0, pending: 0,
+    image_generators: 0, images_submitted: 0, images: 0, image_failed: 0, image_pending: 0,
+  };
+  for (const missing of ['image_generators', 'generators']) {
+    const row = { ...base } as Record<string, unknown>;
+    delete row[missing];
+    const result = await loadAdminMcpOutcomes(range, {
+      configured: () => true,
+      executor: { async query<T>(sql: string): Promise<T[]> {
+        if (sql.includes('admin-mcp:outcome-relations')) return [relations] as T[];
+        return [row] as T[];
+      } },
+    });
+    assert.equal(result.totals, null, `missing ${missing} must make aggregate data unavailable`);
+    assert.match(result.notices[0] ?? '', /could not be loaded/);
+  }
+});
+
+test('feed outages stay unavailable instead of rendering an empty feed', async () => {
+  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true };
+  const row = {
+    client: 'all', accounts: 0, new_signups: 0, missing_profiles: 0,
+    generators: 0, submitted: 0, videos: 0, failed: 0, pending: 0,
+    image_generators: 0, images_submitted: 0, images: 0, image_failed: 0, image_pending: 0,
+  };
+  const result = await loadAdminMcpOutcomes(range, {
+    configured: () => true,
+    executor: { async query<T>(sql: string): Promise<T[]> {
+      if (sql.includes('admin-mcp:outcome-relations')) return [relations] as T[];
+      if (sql.includes('admin-mcp:generation-items')) throw new Error('feed read failed');
+      return [row] as T[];
+    } },
+  });
+  assert.equal(result.generations, null);
+  assert.match(result.notices.join(' '), /recent MCP generations are unavailable/i);
 });
 
 

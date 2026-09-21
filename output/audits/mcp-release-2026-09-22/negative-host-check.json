@@ -1,0 +1,12 @@
+{
+  "case": "negative",
+  "host": "Codex CLI 0.155.0-alpha.9.2",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "low",
+  "pluginVersion": "0.3.6",
+  "prompt": "Réécris ce titre YouTube pour le rendre plus accrocheur : « Je fabrique une tasse en céramique dans mon atelier ». Donne trois titres courts en français, sans explication.",
+  "completed": true,
+  "calls": [],
+  "answer": "- Je façonne une tasse en céramique à la main\n- De l’argile à la tasse : création artisanale\n- Je crée une tasse unique dans mon atelier",
+  "limits": "One real-host observation; no statistical routing claim, no paid generation or full OAuth lifecycle test."
+}

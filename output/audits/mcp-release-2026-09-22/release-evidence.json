@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-22",
+  "version": "0.3.6",
+  "sourceCommit": "3f757a540d8cb2ba6835c4e38c9da6923ef545e1",
+  "publicCommit": "b6c39068243fa1327bfaca864a455bbd32a47bb3",
+  "publicTree": "fa4a5970d2c018bc7110ac76e480ee184e400fb6",
+  "zipSha256": "efbe2bb3b43a6e3d5fc0b10ed72abf382d55e875da3f3ae95117c4a4743531e9",
+  "qualityRun": 35664226228,
+  "publicationRun": 35665466502,
+  "productionDeployment": "dpl_ECZrzewKpFXcknVHnBkCmG17u71W",
+  "rollbackDeployment": "dpl_BQshKYbQniAnmtyob1fEG4HS8D2H",
+  "catalogue": {
+    "beforeTextBytes": 24307,
+    "afterTextBytes": 14510,
+    "models": 39,
+    "structuredDataUnchanged": true,
+    "compactTextLossless": true
+  },
+  "registry": {
+    "version": "0.3.6",
+    "status": "active",
+    "isLatest": true
+  },
+  "installedCodex": {
+    "version": "0.155.0-alpha.9.2",
+    "plugin": "0.3.6",
+    "enabled": true,
+    "verifiedPackageFiles": 59,
+    "source": "https://github.com/camgraphe/maxvideoai-plugin.git",
+    "ref": "v0.3.6"
+  },
+  "generationAttemptsDuringReleaseChecks": 0
+}
