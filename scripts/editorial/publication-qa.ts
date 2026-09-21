@@ -1,10 +1,11 @@
-import {mkdtemp,mkdir,writeFile,symlink,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,symlink,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
 import {createServer} from 'node:net';
 import {chromium} from 'playwright';
 import {buildEditorialPreviewFiles} from '../../frontend/src/server/editorial/publication-content';
+import {BLOG_LOCALE_MAP_PATH,buildPublicationLocaleMap} from '../../frontend/src/server/editorial/publication-locale-map';
 import type {EditorialVersion} from '../../frontend/src/server/editorial/repository';
 import {editorialLinks,validateEditorialCheckReport,type EditorialCheckReport} from '../../frontend/lib/editorial/checks';
 import {EDITORIAL_RENDER_VERSION} from '../../frontend/lib/editorial/public-article';
@@ -60,6 +61,9 @@ export async function checkEditorialCandidate(record:EditorialVersion,repoRoot:s
   await command('git',['worktree','add','--detach',dir,'HEAD'],{cwd:repoRoot});
   for(const modules of ['node_modules','frontend/node_modules'])await symlink(path.join(repoRoot,modules),path.join(dir,modules));
   for(const file of candidate.files){const target=path.join(dir,file.path);await mkdir(path.dirname(target),{recursive:true});await writeFile(target,file.content,{flag:'wx'});}
+  const localeMap=buildPublicationLocaleMap(await readFile(path.join(dir,BLOG_LOCALE_MAP_PATH),'utf8'),candidate.files);
+  await writeFile(path.join(dir,localeMap.path),localeMap.content);
+  await command(process.execPath,[path.join(repoRoot,'node_modules/tsx/dist/cli.mjs'),'--tsconfig','frontend/tsconfig.json','--test','tests/blog-language-switch.test.ts'],{cwd:dir,env:{PATH:process.env.PATH,HOME:process.env.HOME},timeout:30000});
   const port=await freePort(),origin=`http://127.0.0.1:${port}`;
   // The QA app receives no production database, storage, Git or ingestion credentials.
   server=spawn(process.execPath,[path.join(repoRoot,'frontend/node_modules/next/dist/bin/next'),'dev','--hostname','127.0.0.1','--port',String(port)],{cwd:path.join(dir,'frontend'),env:{PATH:process.env.PATH,HOME:process.env.HOME,NODE_ENV:'development',NEXT_TELEMETRY_DISABLED:'1',NEXT_PUBLIC_SUPABASE_URL:process.env.NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY:process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY},stdio:['ignore','pipe','pipe']});
