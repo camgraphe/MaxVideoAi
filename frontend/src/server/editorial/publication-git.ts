@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import type {PublicationFile} from './publication-content';
 import type {PublicationReceipt} from './publication-queue';
+import {BLOG_LOCALE_MAP_PATH,buildPublicationLocaleMap} from './publication-locale-map';
 export type GitApi=(method:string,path:string,body?:unknown)=>Promise<unknown>;
 const sha=z.string().regex(/^[a-f0-9]{40}$/);
 const reference=z.object({object:z.object({sha})}),commitResult=z.object({sha});
@@ -25,7 +26,9 @@ export async function preparePublicationBranch({api,branch,files,message,receipt
   const tree=z.object({tree:z.array(z.object({path:z.string()})),truncated:z.boolean()}).parse(await api('GET',`git/trees/${base}?recursive=1`));
   if(tree.truncated)throw Error('Cannot establish complete content inventory');
   if(files.some(f=>tree.tree.some((entry:{path:string})=>entry.path===f.path)))throw Error('Publication path collision; existing articles require an explicit update workflow');
-  const createdTree=commitResult.parse(await api('POST','git/trees',{base_tree:base,tree:files.map(f=>({path:f.path,mode:'100644',type:'blob',content:f.content}))}));
+  const map=z.object({encoding:z.literal('base64'),content:z.string()}).parse(await api('GET',`contents/${BLOG_LOCALE_MAP_PATH}?ref=${head}`));
+  const localeMap=buildPublicationLocaleMap(Buffer.from(map.content,'base64').toString('utf8'),files);
+  const createdTree=commitResult.parse(await api('POST','git/trees',{base_tree:base,tree:[...files,localeMap].map(f=>({path:f.path,mode:'100644',type:'blob',content:f.content}))}));
   commit=commitResult.parse(await api('POST','git/commits',{message,tree:createdTree.sha,parents:[head]})).sha;
   if(!commit||!/^[a-f0-9]{40}$/.test(commit))throw Error('Invalid Git commit receipt');
   // Persist intent before the remote ref write. Lost responses resume at GET ref.

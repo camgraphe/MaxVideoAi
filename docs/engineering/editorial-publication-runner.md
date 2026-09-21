@@ -33,10 +33,15 @@ are not publication authorizations.
 
 ## Architectural ruling
 
-Blog locale mapping is derived from the MDX canonicalSlug fields by existing
-readers. No separate locale-map write is needed; all three locale pairs must be
-committed atomically. Never edit generated sitemap XML; build/runtime owners
-already discover the new content. Publication confirmation verifies their output.
+Server metadata and sitemaps derive locale mapping from MDX canonicalSlug fields.
+The browser language switch separately consumes `frontend/config/blog-slugs.ts`.
+Publication must therefore commit all six locale content files AND the updated
+browser map atomically. The worker reads that map at the exact base commit,
+parses its literal entries without executing code, rejects collisions and adds
+the approved slug triple. Private QA applies the same projection and runs the
+existing full blog language-switch contract before browser checks. Never edit
+generated sitemap XML; build/runtime owners already discover the new content.
+Publication confirmation verifies their output.
 
 ## Operations
 

@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {preparePublicationBranch} from '../frontend/src/server/editorial/publication-git';
-const files=['en','fr','es'].flatMap(l=>[{path:`content/${l}/blog/shot-list-${l}.mdx`,content:'metadata '+l},{path:`content/${l}/blog/shot-list-${l}.article.json`,content:'{}'}]);
+const mapSource="export const BLOG_SLUGS_BY_CANONICAL = {} as const;";
+const files=['en','fr','es'].flatMap(l=>[{path:`content/${l}/blog/shot-list-${l}.mdx`,content:`---\nslug: "shot-list-${l}"\ncanonicalSlug: "shot-list"\n---\n`},{path:`content/${l}/blog/shot-list-${l}.article.json`,content:'{}'}]);
 test('publication creates all locales in one tree, preserves base tree and recovers a lost ref response',async()=>{
  let ref:string|null=null;let commits=0;let trees=0;let saved:any={};let first=true;
  const api=async(method:string,path:string,body?:any):Promise<any>=>{
@@ -8,7 +9,8 @@ test('publication creates all locales in one tree, preserves base tree and recov
   if(path==='git/ref/heads/main')return {object:{sha:'a'.repeat(40)}};
   if(path==='git/commits/'+ 'a'.repeat(40))return {tree:{sha:'b'.repeat(40)}};
   if(path.startsWith('git/trees/')&&method==='GET')return {tree:[],truncated:false};
-  if(path==='git/trees'){trees++;assert.equal(body.base_tree,'b'.repeat(40));assert.equal(body.tree.length,6);return {sha:'c'.repeat(40)};}
+  if(path.startsWith('contents/frontend/config/blog-slugs.ts?ref='))return {encoding:'base64',content:Buffer.from(mapSource).toString('base64')};
+  if(path==='git/trees'){trees++;assert.equal(body.base_tree,'b'.repeat(40));assert.equal(body.tree.length,7);assert.match(body.tree.find((f:any)=>f.path==='frontend/config/blog-slugs.ts').content,/shot-list-fr/);return {sha:'c'.repeat(40)};}
   if(path==='git/commits'){commits++;assert.deepEqual(body.parents,['a'.repeat(40)]);return {sha:'d'.repeat(40)};}
   if(path==='git/refs'){ref=body.sha;if(first){first=false;throw Error('response lost');}return {};}
   throw Error('unexpected '+method+' '+path);
