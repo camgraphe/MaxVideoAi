@@ -26,6 +26,9 @@ import {
   normalizeLeadingLocaleSegments,
   normalizePublicQueryParams,
   resolveLangParamRedirect,
+  createCoreLocaleResponse,
+  resolveSharedLocaleCookieDomain,
+  setLocaleCookies,
   resolveNonPrefixedLocalizedMarketingRedirect,
   rewriteToNotFound,
   shouldHandleLocale,
@@ -80,7 +83,7 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
   }
   const authCode = req.nextUrl.searchParams.get('code');
-  if (authCode && req.nextUrl.pathname !== '/auth/callback' && req.nextUrl.pathname !== LOGIN_PATH) {
+  if (authCode && req.nextUrl.pathname !== '/auth/callback' && req.nextUrl.pathname !== LOGIN_PATH && req.nextUrl.pathname !== '/auth/reset-password') {
     const callbackUrl = req.nextUrl.clone();
     callbackUrl.pathname = '/auth/callback';
     callbackUrl.search = '';
@@ -139,7 +142,13 @@ export async function middleware(req: NextRequest) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = normalizedPathname;
     redirectUrl.search = req.nextUrl.search;
-    return finalizeResponse(NextResponse.redirect(redirectUrl, 301), hasLogoutIntentCookie);
+    const redirectResponse = NextResponse.redirect(redirectUrl, hasNonLocalizedPrefix ? 307 : 301);
+    if (hasNonLocalizedPrefix) {
+      setLocaleCookies(redirectResponse, localePrefix.slice(1), resolveSharedLocaleCookieDomain(req.nextUrl.hostname));
+      redirectResponse.headers.set('Cache-Control', 'private, no-store, max-age=0');
+      redirectResponse.headers.set('Referrer-Policy', 'no-referrer');
+    }
+    return finalizeResponse(redirectResponse, hasLogoutIntentCookie);
   }
 
   pathname = normalizedPathname;
@@ -188,7 +197,7 @@ export async function middleware(req: NextRequest) {
       response = handleI18nRouting(req);
     }
   } else {
-    response = NextResponse.next();
+    response = createCoreLocaleResponse(req, pathname) ?? NextResponse.next();
   }
 
   if (isOAuthConsentRoute) {

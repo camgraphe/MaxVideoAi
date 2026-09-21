@@ -6823,7 +6823,9 @@
       "accountRedirecting": "Account created. Redirecting…",
       "confirmEmail": "If your account needs confirmation, check your inbox. Already have an account? Log in, or choose “Forgot password?” on the login form to recover access.",
       "sendingReset": "Sending reset link…",
-      "resetSent": "Password reset email sent.",
+      "resetSent": "If an account exists for this email address, you will receive a reset link. Check your inbox and spam folder.",
+      "resetUnavailable": "We couldn't send the reset link. Please try again later. If the problem persists, contact support.",
+      "resetRateLimited": "Too many requests. Please wait a few minutes before requesting another link.",
       "googleUnavailable": "Google sign-in is unavailable because the auth redirect URL could not be resolved.",
       "googleRedirecting": "Redirecting to Google…",
       "completingSignIn": "Completing sign-in…",
@@ -8440,5 +8442,25 @@
     "body": "We can't find that URL. It might be outdated, or it never existed. Use the links below to keep exploring MaxVideoAI.",
     "homeLabel": "Back to homepage",
     "modelsLabel": "Browse video models"
+  },
+  "passwordRecovery": {
+    "title": "Choose a new password",
+    "intro": "Continue to verify your reset link securely.",
+    "verify": "Continue",
+    "verifying": "Verifying your link…",
+    "password": "New password",
+    "confirm": "Confirm new password",
+    "save": "Save new password",
+    "saving": "Saving…",
+    "saved": "Your password has been updated.",
+    "continueToApp": "Continue to the app",
+    "requestNew": "Request a new link",
+    "invalid": "This link is invalid or has expired. Request a new one. If you used another browser, try opening the original link in the browser where you requested it.",
+    "tooShort": "Use at least 6 characters.",
+    "mismatch": "The passwords do not match.",
+    "weak": "Choose a stronger password.",
+    "same": "Choose a password different from your current one.",
+    "unavailable": "We could not update your password. Please try again.",
+    "ready": "Enter and confirm your new password."
   }
 }

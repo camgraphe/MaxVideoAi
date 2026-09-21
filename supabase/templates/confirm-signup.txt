@@ -1,9 +1,40 @@
-Bonjour {{ .Email }},
+{{ if eq .Data.locale "fr" }}MaxVideoAI
 
-Merci de rejoindre MaxVideo AI. Confirme ton adresse pour activer ton workspace et lancer tes premiers rendus :
+Confirmez votre adresse e-mail
+
+Bienvenue sur MaxVideoAI. Confirmez votre adresse e-mail pour terminer la création de votre compte.
+
 {{ .ConfirmationURL }}
 
-Ce lien est valide 24 heures. Si tu n’es pas à l’origine de cette demande, ignore simplement ce message.
+Ce lien personnel est à usage unique.
 
-À très vite,
-L’équipe MaxVideo AI
+Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer cet e-mail.
+
+Besoin d’aide ? Contactez support@maxvideoai.com
+{{ else if eq .Data.locale "es" }}MaxVideoAI
+
+Confirma tu correo electrónico
+
+Te damos la bienvenida a MaxVideoAI. Confirma tu correo electrónico para terminar de crear tu cuenta.
+
+{{ .ConfirmationURL }}
+
+Este enlace personal solo se puede usar una vez.
+
+Si no has solicitado este correo, puedes ignorarlo.
+
+¿Necesitas ayuda? Contacta con support@maxvideoai.com
+{{ else }}MaxVideoAI
+
+Confirm your email address
+
+Welcome to MaxVideoAI. Confirm your email address to finish creating your account.
+
+{{ .ConfirmationURL }}
+
+This personal link can only be used once.
+
+If you did not request this email, you can safely ignore it.
+
+Need help? Contact support@maxvideoai.com
+{{ end }}

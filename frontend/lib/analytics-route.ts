@@ -122,7 +122,7 @@ export function getAnalyticsRouteContext(pathname: string | null | undefined): A
       toolName: null,
       toolSurface: null,
       workspaceSection: null,
-      excludedFromGa4: false,
+      excludedFromGa4: matchesPrefix(normalizedPath, '/auth/reset-password'),
     };
   }
 

@@ -22,10 +22,11 @@ import {
   type AuthFieldErrors,
   type AuthFieldName,
 } from '../_lib/login-validation';
+import { submitPasswordSignupConsents } from '../_lib/login-signup-consents';
+import { requestPasswordReset } from '../_lib/login-password-reset';
 import { useLoginAutofillSync } from './useLoginAutofillSync';
 import { useLoginAuthenticatedRedirect } from './useLoginAuthenticatedRedirect';
 import { useLoginAuthHashSession } from './useLoginAuthHashSession';
-import { useLoginBrowserLocale } from './useLoginBrowserLocale';
 import { useLoginNextTarget } from './useLoginNextTarget';
 import { useLoginOAuthCodeExchange } from './useLoginOAuthCodeExchange';
 
@@ -61,10 +62,11 @@ export function useLoginPageController({
   const authNavigationStartedRef = useRef(false);
   const googleOAuthStartedRef = useRef(false);
   const [isGoogleOAuthStarting, setIsGoogleOAuthStarting] = useState(false);
+  const passwordResetPendingRef = useRef(false);
+  const [isResetSending, setIsResetSending] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const browserLocale = useLoginBrowserLocale();
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
   const fieldRefs = useMemo(
@@ -242,7 +244,7 @@ export function useLoginPageController({
           userId,
           marketingOptIn,
           ageConfirmed: true,
-          locale: browserLocale ?? locale,
+          locale,
           source: 'signup',
         }),
       });
@@ -271,12 +273,13 @@ export function useLoginPageController({
     const supabase = await loadSupabaseClient();
     const emailRedirectTo = buildAuthCallbackRedirect(
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
-      safeNextPath
+      safeNextPath,
+      locale
     );
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo },
+      options: { emailRedirectTo, data: { locale } },
     });
     if (error) {
       setError(error.message);
@@ -284,21 +287,24 @@ export function useLoginPageController({
       return;
     }
 
-    if (data.user?.id) {
-      try {
-        await submitSignupConsents(data.user.id);
-      } catch (consentError) {
-        setError(
-          consentError instanceof Error
-            ? consentError.message
-            : authCopy.feedback.consentSaveError
-        );
-        setStatus(null);
-        if (data.session) {
-          await supabase.auth.signOut().catch(() => undefined);
-        }
+    try {
+      const consentsSaved = await submitPasswordSignupConsents(data, submitSignupConsents);
+      if (!consentsSaved) {
+        setStatusTone('info');
+        setStatus(authCopy.feedback.confirmEmail);
         return;
       }
+    } catch (consentError) {
+      setError(
+        consentError instanceof Error
+          ? consentError.message
+          : authCopy.feedback.consentSaveError
+      );
+      setStatus(null);
+      if (data.session) {
+        await supabase.auth.signOut().catch(() => undefined);
+      }
+      return;
     }
 
     if (data.session) {
@@ -325,20 +331,26 @@ export function useLoginPageController({
 
   async function sendReset(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!validateCurrentForm('reset')) return;
+    if (passwordResetPendingRef.current || !validateCurrentForm('reset')) return;
+    passwordResetPendingRef.current = true;
+    setIsResetSending(true);
     setStatusTone('info');
     setStatus(authCopy.feedback.sendingReset);
     setError(null);
     const passwordResetRedirectTo = buildAuthCallbackRedirect(
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
-      safeNextPath
+      safeNextPath,
+      locale
     );
-    const supabase = await loadSupabaseClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: passwordResetRedirectTo,
+    const result = await requestPasswordReset(async () => {
+      if (!passwordResetRedirectTo) throw new Error('Missing recovery redirect origin');
+      const supabase = await loadSupabaseClient();
+      return supabase.auth.resetPasswordForEmail(email, { redirectTo: `${passwordResetRedirectTo}&flow=recovery` });
     });
-    if (error) {
-      setError(error.message);
+    passwordResetPendingRef.current = false;
+    setIsResetSending(false);
+    if (result !== 'sent') {
+      setError(result === 'rateLimited' ? authCopy.feedback.resetRateLimited : authCopy.feedback.resetUnavailable);
       setStatus(null);
       return;
     }
@@ -355,7 +367,8 @@ export function useLoginPageController({
     const safeNext = sanitizeNextPath(nextPath);
     const oauthRedirectTo = buildAuthCallbackRedirect(
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
-      safeNext
+      safeNext,
+      locale
     );
     if (!oauthRedirectTo) {
       googleOAuthStartedRef.current = false;
@@ -454,6 +467,7 @@ export function useLoginPageController({
     formAttention,
     signupSuggestion,
     isGoogleOAuthStarting,
+    isResetSending,
     acceptTerms,
     ageConfirmed,
     marketingOptIn,

@@ -63,7 +63,8 @@ test('login page delegates localized copy and browser helpers to route-local mod
   assert.match(controllerSource, /from '\.\.\/_lib\/login-copy'/);
   assert.match(controllerSource, /from '\.\.\/_lib\/login-helpers'/);
   assert.match(controllerSource, /from '\.\/useLoginAutofillSync'/);
-  assert.match(controllerSource, /from '\.\/useLoginBrowserLocale'/);
+  assert.match(controllerSource, /from '\.\.\/_lib\/login-signup-consents'/);
+  assert.doesNotMatch(controllerSource, /locale: browserLocale/, 'consents use the displayed language');
   assert.doesNotMatch(controllerSource, /useLoginModeFromQuery/);
   assert.match(controllerSource, /from '\.\/useLoginNextTarget'/);
   assert.match(controllerSource, /from '\.\/useLoginAuthenticatedRedirect'/);

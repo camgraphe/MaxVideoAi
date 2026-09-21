@@ -6843,7 +6843,9 @@
       "accountRedirecting": "Cuenta creada. Redirigiendo…",
       "confirmEmail": "Si tu cuenta necesita confirmación, revisa tu correo. ¿Ya tienes una cuenta? Inicia sesión o elige «¿Olvidaste tu contraseña?» en el formulario de acceso para recuperarla.",
       "sendingReset": "Enviando enlace…",
-      "resetSent": "Correo de restablecimiento enviado.",
+      "resetSent": "Si existe una cuenta con este correo electrónico, recibirás un enlace de restablecimiento. Revisa tu bandeja de entrada y la carpeta de spam.",
+      "resetUnavailable": "No pudimos enviar el enlace de restablecimiento. Inténtalo más tarde. Si el problema persiste, contacta con soporte.",
+      "resetRateLimited": "Demasiadas solicitudes. Espera unos minutos antes de solicitar otro enlace.",
       "googleUnavailable": "El acceso con Google no está disponible porque no se pudo resolver la URL de redirección.",
       "googleRedirecting": "Redirigiendo a Google…",
       "completingSignIn": "Completando el inicio de sesión…",
@@ -8460,5 +8462,25 @@
     "body": "No encontramos esa URL. Es posible que ya no exista o que nunca haya existido. Usa los enlaces de abajo para seguir explorando MaxVideoAI.",
     "homeLabel": "Volver al inicio",
     "modelsLabel": "Ver modelos de video"
+  },
+  "passwordRecovery": {
+    "title": "Elige una nueva contraseña",
+    "intro": "Continúa para verificar tu enlace de restablecimiento.",
+    "verify": "Continuar",
+    "verifying": "Verificando el enlace…",
+    "password": "Nueva contraseña",
+    "confirm": "Confirma la nueva contraseña",
+    "save": "Guardar nueva contraseña",
+    "saving": "Guardando…",
+    "saved": "Tu contraseña se ha actualizado.",
+    "continueToApp": "Ir a la aplicación",
+    "requestNew": "Solicitar otro enlace",
+    "invalid": "Este enlace no es válido o ha caducado. Solicita uno nuevo. Si cambiaste de navegador, prueba a abrir el enlace original en el navegador donde lo solicitaste.",
+    "tooShort": "Usa al menos 6 caracteres.",
+    "mismatch": "Las contraseñas no coinciden.",
+    "weak": "Elige una contraseña más segura.",
+    "same": "Elige una contraseña diferente de la actual.",
+    "unavailable": "No pudimos actualizar tu contraseña. Inténtalo de nuevo.",
+    "ready": "Introduce y confirma tu nueva contraseña."
   }
 }

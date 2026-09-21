@@ -44,7 +44,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const generateLabel = cta;
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
   const generateLabelMobile = locale === 'fr' ? 'Générer' : locale === 'es' ? 'Generar' : 'Generate';
-  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
+  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app', locale });
   const isAuthenticated = Boolean(email);
 
   const handleAdminNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
