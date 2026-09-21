@@ -1,3 +1,4 @@
+import {validateEditorialCheckReport} from '@/lib/editorial/checks';
 import {digestEditorialDraft} from '@/lib/editorial/schema';
 import {publicEditorialArticleSchema,type PublicEditorialArticle} from '@/lib/editorial/public-article';
 import type {EditorialVersion} from './repository';
@@ -12,10 +13,12 @@ export function projectPublicEditorialArticle(record:EditorialVersion,locale:'en
   assets:draft.assets.map(({id,kind,width,height,sha256})=>({id,kind,width,height,sha256,url:media[id]})),
  });
 }
-export function buildEditorialPublicationFiles(record:EditorialVersion,media:Record<string,string>){
+export function buildEditorialPublicationFiles(record:EditorialVersion,media:Record<string,string>,checks:unknown){
  if(!record.approvedAt||!record.approvedBy)throw Error('Human approval required');
  if(digestEditorialDraft(record.draft)!==record.digest)throw Error('Approved digest mismatch');
  if(record.draft.assets.some(a=>!media[a.id]))throw Error('Public media missing');
+ if(!checks)throw Error('Publication checks required');
+ validateEditorialCheckReport(record.draft,record.digest,checks);
  const files:PublicationFile[]=[],slugs={} as Record<'en'|'fr'|'es',string>;
  for(const locale of ['en','fr','es'] as const){
   const artifact=projectPublicEditorialArticle(record,locale,media),a=artifact.article;slugs[locale]=a.slug;

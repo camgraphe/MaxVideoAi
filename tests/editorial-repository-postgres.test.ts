@@ -27,10 +27,10 @@ test('run retries are idempotent; changed content needs a new key and version', 
     assert.deepEqual(replay, created);
     assert.equal(created.version, 1);
     await assert.rejects(approveEditorialVersion({ ...created, digest: '0'.repeat(64), actor: 'human-admin' }), /exact version/);
-    await assert.rejects(approveEditorialVersion({ ...created, actor: 'human-admin' }), /checks are incomplete/);
-    await saveEditorialChecks(created.articleId, created.version, created.digest, report, 'test-checker');
     await approveEditorialVersion({ ...created, actor: 'human-admin' });
     assert.equal((await getEditorialVersion(created.articleId, 1))?.approvedBy, 'human-admin');
+    assert.equal((await pool.query('SELECT count(*)::int AS count FROM editorial_checks')).rows[0].count, 0);
+    await saveEditorialChecks(created.articleId, created.version, created.digest, report, 'test-checker');
 
     const changed = structuredClone(first);
     changed.locales.en.title = 'A different title';
@@ -52,7 +52,8 @@ test('run retries are idempotent; changed content needs a new key and version', 
     assert.notEqual(second.digest, created.digest);
     assert.equal((await pool.query('SELECT status FROM editorial_articles WHERE id = $1', [created.articleId])).rows[0].status, 'draft');
     await assert.rejects(approveEditorialVersion({ ...created, actor: 'human-admin' }), /latest exact version/);
-    await assert.rejects(approveEditorialVersion({ ...second, actor: 'human-admin' }), /checks are incomplete/);
+    await approveEditorialVersion({ ...second, actor: 'human-admin' });
+    assert.equal((await getEditorialVersion(created.articleId, 2))?.approvedBy, 'human-admin');
     assert.equal((await getEditorialVersion(created.articleId, 1))?.draft.locales.en.title, first.locales.en.title);
     assert.equal((await getEditorialVersion(created.articleId, 2))?.draft.locales.en.title, changed.locales.en.title);
   } finally {

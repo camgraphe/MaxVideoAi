@@ -20,8 +20,9 @@ n8n remains the only cadence owner; no site scheduler or automatic publication i
   bucket, CMS or application database.
 - [x] Store check reports against the exact imported version in the existing
   application database (migration 50). `/api/editorial/drafts` accepts the
-  `record-checks` action using the existing ingestion credential. Approval reads
-  this report instead of trusting booleans in a generated draft.
+  `record-checks` action using the existing ingestion credential. Publication file
+  preparation requires this report instead of trusting booleans in a generated draft.
+  Editorial approval is a separate human decision and can precede these checks.
 - [ ] Connect the deployed-site browser check job. The local Next.js visual test
   is implementation evidence, not a live S3 or production approval report.
 - [ ] Add the admin-only publication action and a durable publication receipt.
@@ -113,3 +114,19 @@ Deployment order:
 Never enable `EDITORIAL_DRAFT_MEDIA_PRIVATE_CONFIRMED=1` based only on the
 application flag or a CDN denial. Existing public media must keep working.
 Receiver deployment contains no public article files and does not publish content.
+
+## Editorial approval versus publication readiness
+
+The admin review always shows the editorial validation action for an unapproved
+version. Human sign-off checks the latest exact version/digest and outstanding
+corrections, but does not wait for publication-specific SEO/render checks. A stale
+version or requested correction disables the action with an explanation.
+
+Technical publication readiness is displayed separately. The publication compiler
+requires both human approval and a complete matching check report, and refuses
+missing, stale or failed reports. Approving a draft neither creates a report nor
+publishes it. The public renderer and editorial content are unchanged.
+
+Regression coverage proves approval with no report, stale/corrected-version
+rejection, and rejection of publication output without matching technical checks.
+The real pilot remains unapproved until Adrien clicks and confirms the action.
