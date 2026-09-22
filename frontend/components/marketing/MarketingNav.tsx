@@ -107,7 +107,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
         .then(({ supabase }) => supabase.auth.getSession().then(({ data }) => ({ supabase, data })))
         .then(async ({ supabase, data }) => {
           if (logoutIntentActive) {
-            await supabase.auth.signOut().catch(() => undefined);
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
             return;
           }
           const session = data.session ?? null;
@@ -163,7 +163,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     clearLastKnownAccount();
     writeLastKnownUserId(null);
     void import('@/lib/supabaseClient')
-      .then(({ supabase }) => supabase.auth.signOut())
+      .then(({ supabase }) => supabase.auth.signOut({ scope: 'local' }))
       .catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {

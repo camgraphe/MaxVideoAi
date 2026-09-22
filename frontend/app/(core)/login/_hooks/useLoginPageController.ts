@@ -302,7 +302,7 @@ export function useLoginPageController({
       );
       setStatus(null);
       if (data.session) {
-        await supabase.auth.signOut().catch(() => undefined);
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
       }
       return;
     }
