@@ -85,7 +85,10 @@ export function TopbarSearch({ compact = false }: TopbarSearchProps) {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={placeholder}
-        className={['w-full min-w-0 bg-transparent text-text-primary placeholder:text-text-muted focus:outline-none', compact ? 'text-[15px]' : 'text-sm'].join(' ')}
+        className={[
+          'w-full min-w-0 bg-transparent text-text-primary placeholder:text-text-muted focus:outline-none',
+          compact ? 'text-[15px]' : 'text-sm',
+        ].join(' ')}
         type="search"
       />
       <button

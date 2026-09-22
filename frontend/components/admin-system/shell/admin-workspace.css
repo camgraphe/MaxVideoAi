@@ -28,7 +28,16 @@
   --info-border: #cddafb;
   color: var(--text-primary);
 }
-.admin-workspace :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-.admin-workspace table { font-variant-numeric: tabular-nums; }
-.admin-workspace thead { background: #f8f9fc; }
-.admin-workspace tbody tr:hover { background-color: #f8f9fc; }
+.admin-workspace :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.admin-workspace table {
+  font-variant-numeric: tabular-nums;
+}
+.admin-workspace thead {
+  background: #f8f9fc;
+}
+.admin-workspace tbody tr:hover {
+  background-color: #f8f9fc;
+}

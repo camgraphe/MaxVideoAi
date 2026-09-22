@@ -43,10 +43,7 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
         }
       />
 
-      <AdminSection
-        title="User Volume"
-        description="Registrations · Today uses Europe/Madrid."
-      >
+      <AdminSection title="User Volume" description="Registrations · Today uses Europe/Madrid.">
         {controller.statsUnavailable ? (
           <AdminNotice tone="warning">
             Supabase service role key is missing. Add{' '}
@@ -122,8 +119,8 @@ function DirectoryNotice({ controller }: { controller: AdminUsersController }) {
   if (controller.serviceRoleMissing) {
     return (
       <AdminNotice tone="warning">
-        Supabase service role key is missing. Add{' '}
-        <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to enable admin user listing.
+        Supabase service role key is missing. Add <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code>{' '}
+        to enable admin user listing.
       </AdminNotice>
     );
   }
@@ -353,7 +350,9 @@ function InlineBadge({
         : 'border-border bg-surface text-text-secondary';
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${toneClass}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${toneClass}`}
+    >
       <UIIcon icon={icon} size={12} />
       {children}
     </span>

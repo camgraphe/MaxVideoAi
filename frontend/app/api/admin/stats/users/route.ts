@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
 
   const now = new Date();
   const startOfToday = new Date(adminReportingWindow('today', now).from);
-  const inLastDays = (createdAt: Date, days: number) => createdAt >= new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const inLastDays = (createdAt: Date, days: number) =>
+    createdAt >= new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
   const accumulator: CountAccumulator = {
     total: 0,

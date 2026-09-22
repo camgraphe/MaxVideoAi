@@ -12,8 +12,9 @@ Pricing owners, policy, overrides, routing, cache and commercial mutation servic
 4. Focused behavior/architecture tests, pricing reference comparison, lint/type checks, local browser and design QA.
 
 ## Progress
-- Baseline: 49 focused pricing/admin tests passed. Dependencies installed from frozen lockfile offline.
-- Pricing implementation reference: .local/admin-redesign/pricing-reference.json (SHA-256 of 48 pricing owner files; actual count recorded by verifier). No live database export or mutation.
+- Resumed at Adrien’s request; reconciled main 6e3f7fd57 merged into the isolated branch.
+- The first implementation lot and regression fixes are implemented. Pricing owner parity expanded to 130 files against reconciled main.
+- See `2026-09-22-admin-redesign-validation.md` for validation evidence, limits and remaining stages.
 
-## Integration hold
-Production is CLI revision 436a10063, ahead of main. Coordination task is reconciling it; no merge, push or deployment before synchronization. The local pricing reference is against main only.
+## Integration
+The earlier production reconciliation hold is lifted. Follow AGENTS Production delivery and docs/deployment/github-vercel.md. This task has not merged or deployed the admin redesign.

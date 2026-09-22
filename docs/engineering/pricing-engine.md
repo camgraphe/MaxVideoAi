@@ -156,7 +156,7 @@ Two non-quote projections remain intentionally narrow: storyboard bundle code ad
 
 ## Admin commercial mutation workflow
 
-The admin navigation exposes `Pricing policy`, `Membership`, and `Billing products`. Each domain loads its own inventory and immutable history. Pricing-policy and billing-product mutations follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint. Membership is historical and read-only, and its mutation endpoints return `membership_retired`.
+The admin redesign exposes `Billing products` under Settings. `/admin/pricing` redirects to Settings and engine settings are read-only; historical membership remains accessible by its direct URL. The existing pricing service, inventory/history APIs, DB overrides and cache retain their original behavior. Retiring the UI does not migrate or delete pricing data. Pricing-policy and billing-product mutations follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint. Membership is historical and read-only, and its mutation endpoints return `membership_retired`.
 
 Routing fields are excluded from commercial proposals: `vendorAccountId` is read-only context, an update preserves the stored routing value, and a new policy rule cannot create a routing override. Rollback creates a new immutable event and is a new mutation, never a history rewrite. Clients send only the target and immutable event identifiers. The server reads the event, derives the historical state, computes a fresh canonical preview, and requires the normal explicit confirmation. Event history renders actor, timestamp, operation, target, and the server-recorded scenario delta range. The former direct membership-tier and raw pricing-rule mutation routes have been removed.
 
@@ -172,11 +172,11 @@ Each domain then completed a controlled `preview → confirmation → history �
 
 Use only the owner for the value being changed:
 
-1. `/admin/pricing` for engine policy selectors, margins, surcharges, currency, and compatibility profiles.
+1. Engine policy changes use the engineering workflow and the retained pricing service contract; `/admin/pricing` no longer offers an editor. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. Any intended DB rule change must preserve the authorized preview/confirmation/history protocol.
 2. `/admin/membership` to inspect historical `member`, `plus`, and `pro` thresholds, discounts, and immutable events. It cannot apply or roll back changes.
 3. `/admin/billing-products` for active fixed products referenced by production billing consumers.
 
-For pricing policy or billing products, inspect the current source and provenance, edit the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change in either active domain, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history. Membership history has no active rollback control.
+For the retained pricing policy service or the billing-products UI, inspect the current source and provenance, prepare the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change in either active domain, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history. Membership history has no active rollback control.
 
 Before confirming a real change, work in a configured environment with an authenticated admin and a database containing the current migrations. Record the intended policy diff, then run the read-only guards:
 

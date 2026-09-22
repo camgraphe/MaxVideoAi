@@ -20,8 +20,8 @@ export default async function AdminTransactionsPage() {
         />
         <AdminSection title="Transaction Workspace" description="Transaction data is unavailable.">
           <AdminNotice tone="warning">
-            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable transaction
-            reporting.
+            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable
+            transaction reporting.
           </AdminNotice>
         </AdminSection>
       </div>
@@ -30,24 +30,36 @@ export default async function AdminTransactionsPage() {
 
   const [transactions, anomalies] = await Promise.all([fetchAdminTransactions(100), fetchTransactionAnomalies()]);
   const anomalySummary = buildAnomalySummary(anomalies);
-  return <div className="space-y-5">
-    <AdminPageHeader title="Transactions" description="Wallet credits, generation charges and refunds." actions={<AdminActionLink href="/admin/checkout-report">Checkout review</AdminActionLink>} />
-    {anomalySummary ? <AdminNotice tone="warning">{anomalySummary}</AdminNotice> : null}
-    <AdminTransactionTable initialTransactions={transactions} />
-  </div>;
+  return (
+    <div className="space-y-5">
+      <AdminPageHeader
+        title="Transactions"
+        description="Wallet credits, generation charges and refunds."
+        actions={<AdminActionLink href="/admin/checkout-report">Checkout review</AdminActionLink>}
+      />
+      {anomalySummary ? <AdminNotice tone="warning">{anomalySummary}</AdminNotice> : null}
+      <AdminTransactionTable initialTransactions={transactions} />
+    </div>
+  );
 }
 
 function buildAnomalySummary(anomalies: TransactionAnomalies) {
   const parts: string[] = [];
 
   if (anomalies.frequentRefundUsers.length) {
-    parts.push(`${numberFormatter.format(anomalies.frequentRefundUsers.length)} refund-heavy user${anomalies.frequentRefundUsers.length > 1 ? 's' : ''} over 30d`);
+    parts.push(
+      `${numberFormatter.format(anomalies.frequentRefundUsers.length)} refund-heavy user${anomalies.frequentRefundUsers.length > 1 ? 's' : ''} over 30d`
+    );
   }
   if (anomalies.largeRefunds.length) {
-    parts.push(`${numberFormatter.format(anomalies.largeRefunds.length)} refund${anomalies.largeRefunds.length > 1 ? 's' : ''} above $500`);
+    parts.push(
+      `${numberFormatter.format(anomalies.largeRefunds.length)} refund${anomalies.largeRefunds.length > 1 ? 's' : ''} above $500`
+    );
   }
   if (anomalies.invalidCharges.length) {
-    parts.push(`${numberFormatter.format(anomalies.invalidCharges.length)} invalid charge${anomalies.invalidCharges.length > 1 ? 's' : ''}`);
+    parts.push(
+      `${numberFormatter.format(anomalies.invalidCharges.length)} invalid charge${anomalies.invalidCharges.length > 1 ? 's' : ''}`
+    );
   }
 
   if (!parts.length) return null;

@@ -16,13 +16,11 @@ test.describe('admin critical flows', () => {
     const lookupValue = 'member@example.com';
 
     await openAdminRoute(page, '/admin');
-    await page.getByLabel('Find user').fill(lookupValue);
-    await page.getByRole('button', { name: 'Open user' }).click();
+    await page.getByLabel('Quick search').fill(lookupValue);
+    await page.getByRole('button', { name: 'Go' }).click();
 
     await expect(page).toHaveURL(/\/admin\/users\?search=/);
-    await expect
-      .poll(() => new URL(page.url()).searchParams.get('search'))
-      .toBe(lookupValue);
+    await expect.poll(() => new URL(page.url()).searchParams.get('search')).toBe(lookupValue);
     await expect(page.getByPlaceholder('Search by email or Supabase user ID')).toHaveValue(lookupValue);
 
     assertNoClientErrors(errors);
@@ -41,9 +39,7 @@ test.describe('admin critical flows', () => {
     expect(userId).not.toBe('');
 
     await page.getByPlaceholder('Search by email or Supabase user ID').fill(userId);
-    await expect
-      .poll(() => new URL(page.url()).searchParams.get('search'))
-      .toBe(userId);
+    await expect.poll(() => new URL(page.url()).searchParams.get('search')).toBe(userId);
 
     const row = page.locator('tbody tr').filter({ hasText: userId }).first();
     await expect(row).toBeVisible();
@@ -65,9 +61,7 @@ test.describe('admin critical flows', () => {
     await page.getByLabel('Job ID').fill(jobId);
     await page.getByRole('button', { name: 'Apply filters' }).click();
 
-    await expect
-      .poll(() => new URL(page.url()).searchParams.get('jobId'))
-      .toBe(jobId);
+    await expect.poll(() => new URL(page.url()).searchParams.get('jobId')).toBe(jobId);
     await expect(page.locator('tbody tr').filter({ hasText: jobId }).first()).toBeVisible();
 
     await page.getByRole('link', { name: 'Reset' }).click();
@@ -85,67 +79,37 @@ test.describe('admin critical flows', () => {
     expect(receiptId).not.toBe('');
 
     await page.getByLabel('Search loaded rows').fill(receiptId);
-    await expect(page.locator('body')).toContainText(new RegExp(`Currently showing \\d+ of \\d+ loaded transactions\\.`));
+    await expect(page.locator('body')).toContainText(new RegExp(`\\d+ of \\d+ latest ledger entries`));
     await expect(page.locator('tbody tr').first()).toContainText(`#${receiptId}`);
+    await page.goto(`/admin/transactions?receipt=${receiptId}`);
+    await expect(page.getByRole('heading', { name: `Receipt #${receiptId}`, exact: true })).toBeVisible();
 
     assertNoClientErrors(errors);
   });
 
-  test('pricing policy filters, selects, previews, and cancels without applying', async ({ page }) => {
-    const errors = trackClientErrors(page);
-
-    await openAdminRoute(page, '/admin/pricing');
-    const pricingState = await waitForPricingPolicyState(page);
-    if (pricingState === 'timeout') {
-      throw new Error('Timed out waiting for the pricing policy inventory to render.');
-    }
-    if (pricingState === 'unavailable') {
-      test.skip(true, 'requires configured pricing policy database access');
-    }
-    if (pricingState === 'empty') {
-      test.skip(true, 'requires canonical pricing inventory data');
-    }
-    const inventoryTable = page.getByTestId('pricing-policy-inventory');
-    const firstRow = inventoryTable.locator('tbody tr').first();
-    await firstRow.click();
-
-    const engineInput = page.getByLabel('Engine');
-    const engine = await engineInput.inputValue();
-    if (engine) {
-      await page.getByLabel('Search policy selectors').fill(engine);
-      await expect(inventoryTable.locator('tbody tr').first()).toContainText(engine);
-      await page.getByLabel('Search policy selectors').fill('');
-    }
-
-    const flatMarginInput = page.getByLabel('Flat margin (cents)');
-    const currentFlatMargin = Number(await flatMarginInput.inputValue());
-    await flatMarginInput.fill(String(currentFlatMargin + 1));
-    let releasePreview!: () => void;
-    const previewGate = new Promise<void>((resolve) => {
-      releasePreview = resolve;
+  test('retired pricing editor redirects without commercial API activity', async ({ page }) => {
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/api/admin/pricing/')) requests.push(request.url());
     });
-    await page.route('**/api/admin/pricing/preview', async (route) => {
-      await previewGate;
-      await route.continue();
-    });
-    await page.getByRole('button', { name: 'Preview policy change' }).click();
-    try {
-      await expect(flatMarginInput).toBeDisabled();
-      await expect(page.getByLabel('Search policy selectors')).toBeDisabled();
-      await expect(page.getByLabel('Policy source')).toBeDisabled();
-      await expect(firstRow.getByRole('button')).toBeDisabled();
-    } finally {
-      releasePreview();
-    }
+    await openAdminRoute(page, '/admin/settings');
+    await page.goto('/admin/pricing');
+    await expect(page).toHaveURL(/\/admin\/settings$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
+    expect(requests).toEqual([]);
+  });
 
-    const dialog = page.getByRole('dialog', { name: /update|create/i });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
-    await expect(dialog.getByRole('button', { name: 'Confirm and apply now' })).toBeVisible();
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await expect(dialog).toBeHidden();
-
-    assertNoClientErrors(errors);
+  test('site placements support drag order and cancel without publishing changes', async ({ page }) => {
+    await openAdminRoute(page, '/admin/playlists');
+    const rows = page.locator('article[draggable]');
+    const count = await rows.count();
+    test.skip(count < 2, 'requires a collection with at least two media');
+    const before = await rows.allTextContents();
+    await rows.first().dragTo(rows.nth(1), { targetPosition: { x: 150, y: 65 } });
+    await expect(page.getByText('Unsaved order changes', { exact: true })).toBeVisible();
+    expect(await rows.allTextContents()).not.toEqual(before);
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(rows).toHaveText(before);
   });
 
   test('retired membership tiers remain readable without editing or applying changes', async ({ page }) => {
@@ -168,7 +132,9 @@ test.describe('admin critical flows', () => {
       await expect(inventory).toContainText('Historical discount:');
     }
     await expect(inventory.locator('input, select, textarea')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /preview all tier changes|confirm and apply|rollback/i })).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: /preview all tier changes|confirm and apply|rollback/i })
+    ).toHaveCount(0);
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeEnabled();
     expect(mutations).toEqual([]);
@@ -214,11 +180,22 @@ async function waitForUserDirectoryState(page: Page) {
   const deadline = Date.now() + 10_000;
 
   while (Date.now() < deadline) {
-    if (await page.getByText('Supabase service role key is missing.').isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByText('Supabase service role key is missing.')
+        .isVisible()
+        .catch(() => false)
+    ) {
       return 'warning' as const;
     }
 
-    if (await page.getByText('No users found').first().isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByText('No users found')
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return 'empty' as const;
     }
 
@@ -232,36 +209,27 @@ async function waitForUserDirectoryState(page: Page) {
   return 'empty' as const;
 }
 
-async function waitForPricingPolicyState(page: Page) {
-  const deadline = Date.now() + 10_000;
-  const inventoryTable = page.getByTestId('pricing-policy-inventory');
-
-  while (Date.now() < deadline) {
-    if (await page.getByText(/Unable to load pricing policy|database is unavailable/i).first().isVisible().catch(() => false)) {
-      return 'unavailable' as const;
-    }
-    if ((await inventoryTable.locator('tbody tr').count()) > 0) {
-      return 'rows' as const;
-    }
-    if (await page.getByText('No canonical pricing policy rows are available.').isVisible().catch(() => false)) {
-      return 'empty' as const;
-    }
-    await page.waitForTimeout(250);
-  }
-
-  return 'timeout' as const;
-}
-
 async function waitForMembershipState(page: Page) {
   const deadline = Date.now() + 10_000;
   const inventory = page.getByTestId('membership-tier-inventory');
 
   while (Date.now() < deadline) {
-    if (await page.getByText(/membership database is unavailable/i).first().isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByText(/membership database is unavailable/i)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return 'unavailable' as const;
     }
     if ((await inventory.locator('dl').count()) === 3) return 'rows' as const;
-    if (await page.getByText('No membership inventory is available.').isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByText('No membership inventory is available.')
+        .isVisible()
+        .catch(() => false)
+    ) {
       return 'empty' as const;
     }
     await page.waitForTimeout(250);
@@ -274,11 +242,22 @@ async function waitForBillingProductState(page: Page) {
   const deadline = Date.now() + 10_000;
   const inventoryTable = page.getByTestId('billing-products-inventory');
   while (Date.now() < deadline) {
-    if (await page.getByText(/billing product database is unavailable/i).first().isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByText(/billing product database is unavailable/i)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return 'unavailable' as const;
     }
     if ((await inventoryTable.locator('tbody tr').count()) > 0) return 'rows' as const;
-    if (await page.getByText('No billing product inventory is available.').isVisible().catch(() => false)) {
+    if (
+      await page
+        .getByText('No billing product inventory is available.')
+        .isVisible()
+        .catch(() => false)
+    ) {
       return 'empty' as const;
     }
     await page.waitForTimeout(250);

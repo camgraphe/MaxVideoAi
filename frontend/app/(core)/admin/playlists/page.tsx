@@ -27,12 +27,8 @@ export default async function AdminPlaylistsPage() {
         description="Choose a site destination, then arrange its curated media."
         actions={
           <>
-            <AdminActionLink href="/admin/moderation">
-              Moderation
-            </AdminActionLink>
-            <AdminActionLink href="/admin/home">
-              Homepage
-            </AdminActionLink>
+            <AdminActionLink href="/admin/moderation">Moderation</AdminActionLink>
+            <AdminActionLink href="/admin/home">Homepage</AdminActionLink>
             <AdminActionLink href="/examples" prefetch={false}>
               Examples hub
             </AdminActionLink>
@@ -40,7 +36,12 @@ export default async function AdminPlaylistsPage() {
         }
       />
 
-      <PlaylistsManager initialPlaylists={playlists} initialPlaylistId={initialId} initialItems={initialItems} embedded />
+      <PlaylistsManager
+        initialPlaylists={playlists}
+        initialPlaylistId={initialId}
+        initialItems={initialItems}
+        embedded
+      />
     </div>
   );
 }

@@ -1,11 +1,8 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import type { AdminNavBadgeMap } from '@/lib/admin/navigation';
-import { buildAdminBadges } from '@/lib/admin/badges';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { AdminAuthError, requireAdmin } from '@/server/admin';
-import { fetchAdminHealth } from '@/server/admin-metrics';
 import { AdminLayout as AdminShellLayout } from '@/components/admin/AdminLayout';
 
 export const dynamic = 'force-dynamic';
@@ -32,17 +29,5 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     notFound();
   }
 
-  const navBadges = await loadAdminBadges();
-
-  return <AdminShellLayout navBadges={navBadges}>{children}</AdminShellLayout>;
-}
-
-async function loadAdminBadges(): Promise<AdminNavBadgeMap | undefined> {
-  try {
-    const health = await fetchAdminHealth();
-    return buildAdminBadges(health);
-  } catch (error) {
-    console.warn('[admin/layout] failed to load badge snapshot', error);
-    return undefined;
-  }
+  return <AdminShellLayout>{children}</AdminShellLayout>;
 }

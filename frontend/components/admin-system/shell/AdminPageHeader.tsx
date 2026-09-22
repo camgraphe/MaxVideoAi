@@ -7,12 +7,7 @@ type AdminPageHeaderProps = {
   actions?: ReactNode;
 };
 
-export function AdminPageHeader({
-  eyebrow = 'Admin',
-  title,
-  description,
-  actions,
-}: AdminPageHeaderProps) {
+export function AdminPageHeader({ eyebrow = 'Admin', title, description, actions }: AdminPageHeaderProps) {
   return (
     <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
       <div className="min-w-0 max-w-3xl">

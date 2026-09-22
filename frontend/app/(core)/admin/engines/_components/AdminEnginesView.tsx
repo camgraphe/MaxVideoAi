@@ -99,7 +99,10 @@ export function AdminEnginesView({ model }: AdminEnginesViewProps) {
         action={
           <AdminSectionMeta
             title="Demand"
-            lines={[`${formatNumber(commercialRows.length)} engines with usage or config`, buildRevenueLabel(commercialRows)]}
+            lines={[
+              `${formatNumber(commercialRows.length)} engines with usage or config`,
+              buildRevenueLabel(commercialRows),
+            ]}
           />
         }
         contentClassName="p-0"
@@ -149,13 +152,16 @@ export function AdminEnginesView({ model }: AdminEnginesViewProps) {
             />
           ) : (
             <div className="px-5 py-5">
-              <AdminEmptyState>No engines registered yet. Seed engine settings to enable configuration.</AdminEmptyState>
+              <AdminEmptyState>
+                No engines registered yet. Seed engine settings to enable configuration.
+              </AdminEmptyState>
             </div>
           )
         ) : (
           <div className="px-5 py-5">
             <AdminNotice tone="warning">
-              Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to view engine overrides.
+              Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to view engine
+              overrides.
             </AdminNotice>
           </div>
         )}
@@ -318,10 +324,26 @@ type AdminEngineConfigurationPanelProps = {
   degradedConfigs: number;
 };
 
-function AdminEngineConfigurationPanel({ attentionConfigEntries, stableConfigEntries, configSnapshotByEngineId }: AdminEngineConfigurationPanelProps) {
-  return <div className="p-4"><p className="mb-4 text-sm text-text-secondary">Read-only configuration. Existing overrides remain active. Changes use the engineering workflow.</p>
-    <div className="divide-y divide-border">{[...attentionConfigEntries, ...stableConfigEntries].map(entry => <div key={entry.engine.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><span className="text-sm font-medium">{entry.engine.id}</span><ConfigInlineSummary config={configSnapshotByEngineId.get(entry.engine.id) ?? null} /></div>)}</div>
-  </div>;
+function AdminEngineConfigurationPanel({
+  attentionConfigEntries,
+  stableConfigEntries,
+  configSnapshotByEngineId,
+}: AdminEngineConfigurationPanelProps) {
+  return (
+    <div className="p-4">
+      <p className="mb-4 text-sm text-text-secondary">
+        Read-only configuration. Existing overrides remain active. Changes use the engineering workflow.
+      </p>
+      <div className="divide-y divide-border">
+        {[...attentionConfigEntries, ...stableConfigEntries].map((entry) => (
+          <div key={entry.engine.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+            <span className="text-sm font-medium">{entry.engine.id}</span>
+            <ConfigInlineSummary config={configSnapshotByEngineId.get(entry.engine.id) ?? null} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }) {
@@ -329,7 +351,8 @@ function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }
     return <span className="text-sm text-text-muted">No override record</span>;
   }
 
-  const stateTone = !config.active || config.availability !== 'available' || config.status !== 'live' ? 'warning' : 'default';
+  const stateTone =
+    !config.active || config.availability !== 'available' || config.status !== 'live' ? 'warning' : 'default';
 
   return (
     <div className="flex flex-col gap-2">
@@ -337,7 +360,9 @@ function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }
         <span
           className={[
             'rounded-full border px-2.5 py-1 text-xs font-medium',
-            config.active ? 'border-success-border bg-success-bg text-success' : 'border-warning-border bg-warning-bg text-warning',
+            config.active
+              ? 'border-success-border bg-success-bg text-success'
+              : 'border-warning-border bg-warning-bg text-warning',
           ].join(' ')}
         >
           {config.active ? 'active' : 'disabled'}
@@ -345,7 +370,9 @@ function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }
         <span
           className={[
             'rounded-full border px-2.5 py-1 text-xs font-medium capitalize',
-            stateTone === 'warning' ? 'border-warning-border bg-warning-bg text-warning' : 'border-border bg-bg text-text-secondary',
+            stateTone === 'warning'
+              ? 'border-warning-border bg-warning-bg text-warning'
+              : 'border-border bg-bg text-text-secondary',
           ].join(' ')}
         >
           {config.availability}

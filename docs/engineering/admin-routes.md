@@ -67,9 +67,9 @@ Use shared admin-system components for shell and surfaces:
 
 ## Commercial Pricing Domains
 
-Commercial administration has exactly three active route owners:
+Commercial services retain three domain owners; their UI exposure differs:
 
-- `/admin/pricing` owns canonical engine pricing policy;
+- `/admin/pricing` authorizes then redirects to `/admin/settings`; canonical pricing services and authenticated APIs remain intact. `/admin/engines` shows read-only model activity. Removing either editor must not change persisted overrides, resolution precedence, caches or quotes;
 - `/admin/membership` owns read-only historical membership thresholds, discounts, and audit events;
 - `/admin/billing-products` owns fixed products referenced by live billing consumers.
 
@@ -79,7 +79,7 @@ The server rejects a stale preview fingerprint without persistence or cache inva
 
 Pricing proposals exclude settlement routing. `vendorAccountId` may appear only as read-only operational context; policy updates preserve its stored value and creates cannot set it. When the database is unavailable, public quote resolution may use versioned fallback policy, but commercial admin inventory must show the outage and every mutation must fail explicitly.
 
-All three views share `AdminPricingHistory`; the membership view locks rollback controls. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims. The detailed operating procedure and verification commands live in `docs/engineering/pricing-engine.md` under **Safe price-change runbook**.
+The retained commercial views share `AdminPricingHistory`; the membership view locks rollback controls. The pricing cockpit modules remain dormant for service/history compatibility, not exposed from navigation. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims. The detailed operating procedure and verification commands live in `docs/engineering/pricing-engine.md` under **Safe price-change runbook**.
 
 ## What Belongs Where
 
@@ -207,3 +207,36 @@ writes occur; raw names, account records and credentials never enter the page DT
 The outcome query returns bounded internal ID arrays solely for this server-side lookup.
 See the [Auth account lookup](https://supabase.com/docs/reference/javascript/auth-admin-getuserbyid)
 and [OAuth client lookup](https://supabase.com/docs/reference/javascript/oauth-admin-getclient) contracts.
+
+## Admin navigation and overview (2026-09-22)
+
+`frontend/lib/admin/navigation.ts` owns five work areas: Overview, Users, Transactions,
+Generations and Content, plus Settings and two external links. The command palette
+uses this same inventory. Legacy direct URLs remain; theme and membership are absent
+from daily navigation. Search Console reporting is an external link. Existing backend
+jobs and public SEO consumers are not removed by this interface change.
+
+The light palette is scoped to `.admin-workspace`. Shared sections use separators and
+compact tables. The mobile sidebar traps keyboard focus while open and restores it on
+Escape. Removed navigation badges no longer trigger server health reads or polling;
+health reporting remains available from its existing API and operational views.
+
+Overview authorizes before `fetchAdminOverview`. Reporting windows use Europe/Madrid,
+with calendar Today (including DST) separate from rolling 24 hours. Auth and wallet
+sources have independent five-second deadlines. Auth scanning is bounded to 100 pages
+of 1000 accounts and stops after a late response; partial scans are unavailable, never
+presented as full counts. This is a read path, without schema creation. Wallet top-ups
+include manual credits and must not be labelled cash revenue. Transactions search and
+filters explicitly apply to the latest 100 loaded ledger entries; deep receipt links
+open the inspector and handle PostgreSQL bigint IDs serialized as strings.
+
+Playlist order is an explicit draft. Movement is available by drag or keyboard buttons;
+Cancel restores the last confirmed snapshot. Loading another destination commits its ID
+and items together after a successful fetch. Async actions remain locked until completion.
+Maintenance is disabled with a dirty order. After a successful PUT, the local snapshot is
+confirmed before a refresh, so a failed refresh cannot resurrect the old order. Backend
+replacement is transactional. Multi-admin optimistic conflict detection and automatic
+placement/exclusion modes remain separate future work; current public readers are intact.
+
+Contracts: admin-dashboard-architecture, admin-navigation, admin-reporting-window,
+admin-overview-read, admin-playlist-selection and admin-playlist-order-postgres tests.

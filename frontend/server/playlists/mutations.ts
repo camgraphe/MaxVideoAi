@@ -1,8 +1,5 @@
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
-import {
-  mapCreatedPlaylistRow,
-  type CreatedPlaylistRow,
-} from './mappers';
+import { mapCreatedPlaylistRow, type CreatedPlaylistRow } from './mappers';
 import { getPlaylistRecordById } from './queries';
 import type { MutablePlaylistFields, PlaylistRecord } from './types';
 
@@ -107,7 +104,7 @@ export async function reorderPlaylistItems(
   await withDbTransaction(async (executor) => {
     await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
     if (!order.length) return;
-  
+
     const values: unknown[] = [];
     const inserts: string[] = [];
     order.forEach((item, index) => {
@@ -115,7 +112,7 @@ export async function reorderPlaylistItems(
       const base = values.length;
       inserts.push(`($${base - 3}, $${base - 2}, $${base - 1}, $${base})`);
     });
-  
+
     await executor.query(
       `INSERT INTO playlist_items (playlist_id, video_id, order_index, pinned)
        VALUES ${inserts.join(', ')}`,
@@ -124,7 +121,11 @@ export async function reorderPlaylistItems(
   });
 }
 
-async function appendPlaylistItemWithExecutor(executor: QueryExecutor, playlistId: string, videoId: string): Promise<void> {
+async function appendPlaylistItemWithExecutor(
+  executor: QueryExecutor,
+  playlistId: string,
+  videoId: string
+): Promise<void> {
   const rows = await executor.query<{ max: number }>(
     `SELECT COALESCE(MAX(order_index), 0) AS max FROM playlist_items WHERE playlist_id = $1`,
     [playlistId]

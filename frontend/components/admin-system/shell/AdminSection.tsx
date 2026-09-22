@@ -10,14 +10,7 @@ type AdminSectionProps = {
   contentClassName?: string;
 };
 
-export function AdminSection({
-  title,
-  description,
-  action,
-  children,
-  className,
-  contentClassName,
-}: AdminSectionProps) {
+export function AdminSection({ title, description, action, children, className, contentClassName }: AdminSectionProps) {
   return (
     <section className={clsx('min-w-0 bg-surface', className)}>
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-hairline py-3">

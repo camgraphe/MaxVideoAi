@@ -10,8 +10,8 @@ type SmokeRoute = {
 const smokeRoutes: SmokeRoute[] = [
   {
     path: '/admin',
-    heading: 'Welcome back, Admin',
-    section: 'Monthly stats',
+    heading: 'Overview',
+    section: 'Recent wallet activity',
   },
   {
     path: '/admin/insights',
@@ -26,7 +26,7 @@ const smokeRoutes: SmokeRoute[] = [
   {
     path: '/admin/transactions',
     heading: 'Transactions',
-    section: 'Transaction Workspace',
+    section: 'Wallet credits, generation charges and refunds.',
   },
   {
     path: '/admin/video-seo',
@@ -34,9 +34,9 @@ const smokeRoutes: SmokeRoute[] = [
     section: 'Indexed Watch Pages',
   },
   {
-    path: '/admin/pricing',
-    heading: 'Canonical pricing policy',
-    section: 'Policy inventory',
+    path: '/admin/settings',
+    heading: 'Settings',
+    section: 'Existing database overrides remain active',
   },
   {
     path: '/admin/membership',
@@ -84,45 +84,25 @@ test.describe('admin smoke', () => {
     const errors = trackClientErrors(page);
     await openAdminRoute(page, '/admin');
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Welcome back, Admin' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Overview' })).toBeVisible();
     await expect(page.locator('body')).toContainText('New users');
-    await expect(page.locator('body')).toContainText('Active users');
-    await expect(page.locator('body')).toContainText('Top ups');
-    await expect(page.locator('body')).toContainText('Monthly stats');
+    await expect(page.locator('body')).toContainText('Unresolved failures');
+    await expect(page.locator('body')).toContainText('Wallet top-ups');
+    await expect(page.locator('body')).toContainText('Recent wallet activity');
     await expect(page.getByRole('button', { name: 'Go' })).toBeVisible();
 
     assertNoClientErrors(errors);
   });
 
-  test('admin hub supports 24h and 90d stat ranges', async ({ page }) => {
+  test('overview switches between Today and a rolling 24 hours', async ({ page }) => {
     const errors = trackClientErrors(page);
-    await openAdminRoute(page, '/admin?range=90d');
-
-    await expect(page.getByRole('link', { name: 'Last 90 days' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Last 24 hours' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Last 30 days' })).toBeVisible();
-    await expect(page.locator('body')).toContainText('payments in 90d');
-
-    await page.getByRole('link', { name: 'Last 24 hours' }).click();
+    await openAdminRoute(page, '/admin');
+    await expect(page.getByLabel('Reporting period')).toHaveValue('today');
+    await page.getByLabel('Reporting period').selectOption('24h');
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\?range=24h$/);
-    await expect(page.locator('body')).toContainText('payments in 24h');
-
-    assertNoClientErrors(errors);
-  });
-
-  test('admin hub can exclude admin metrics while preserving range', async ({ page }) => {
-    const errors = trackClientErrors(page);
-    await openAdminRoute(page, '/admin?range=90d');
-
-    await expect(page.getByRole('link', { name: 'Admin excluded' })).toBeVisible();
-    await page.getByRole('link', { name: 'Admin excluded' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=90d&excludeAdmin=0$/);
-    await expect(page.getByRole('link', { name: 'Include admin' })).toBeVisible();
-
-    await page.getByRole('link', { name: 'Last 24 hours' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=24h&excludeAdmin=0$/);
-    await expect(page.locator('body')).toContainText('payments in 24h');
-
+    await expect(page.getByLabel('Reporting period')).toHaveValue('24h');
+    await expect(page.locator('body')).toContainText('Europe/Madrid');
     assertNoClientErrors(errors);
   });
 });

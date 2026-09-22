@@ -1,4 +1,4 @@
-import { useCallback, type Dispatch, type SetStateAction, type TransitionStartFunction } from 'react';
+import { useCallback, type Dispatch, type SetStateAction } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import type { PlaylistSummary } from './playlist-types';
 
@@ -14,17 +14,17 @@ export function usePlaylistHelperActions({
   selectedId,
   setError,
   setFeedback,
-  startTransition,
+  runAction,
 }: {
   refreshPlaylistsState: (preferredPlaylistId?: string | null) => Promise<unknown>;
   selectedId: string | null;
   setError: Dispatch<SetStateAction<string | null>>;
   setFeedback: Dispatch<SetStateAction<string | null>>;
-  startTransition: TransitionStartFunction;
+  runAction: (action: () => void | Promise<void>) => void;
 }) {
   const runHelperAction = useCallback(
     ({ feedback, logLabel, payload, preferredId }: HelperActionOptions) => {
-      startTransition(async () => {
+      runAction(async () => {
         try {
           setFeedback(null);
           setError(null);
@@ -45,18 +45,21 @@ export function usePlaylistHelperActions({
         }
       });
     },
-    [refreshPlaylistsState, selectedId, setError, setFeedback, startTransition]
+    [refreshPlaylistsState, selectedId, setError, setFeedback, runAction]
   );
 
-  const getCreatedPlaylistId = useCallback((json: Record<string, unknown>, key: 'familyId' | 'modelSlug', value?: string | null) => {
-    if (!value || !Array.isArray(json.playlists)) return null;
-    return (
-      (json.playlists as PlaylistSummary[]).find((playlist) => {
-        if (key === 'familyId') return playlist.familyId === value;
-        return playlist.modelSlug === value;
-      })?.id ?? null
-    );
-  }, []);
+  const getCreatedPlaylistId = useCallback(
+    (json: Record<string, unknown>, key: 'familyId' | 'modelSlug', value?: string | null) => {
+      if (!value || !Array.isArray(json.playlists)) return null;
+      return (
+        (json.playlists as PlaylistSummary[]).find((playlist) => {
+          if (key === 'familyId') return playlist.familyId === value;
+          return playlist.modelSlug === value;
+        })?.id ?? null
+      );
+    },
+    []
+  );
 
   return {
     handleCreateMissingFamilyPlaylists: (preferredFamilyId?: string | null) =>
@@ -90,14 +93,14 @@ export function usePlaylistHelperActions({
         feedback: `Family playlist seeded for ${familyId}`,
         logLabel: 'seed family playlist',
         payload: { action: 'seed-family-playlist', familyId },
-        preferredId: (json) => ((json.result as { playlist?: { id?: string } } | undefined)?.playlist?.id ?? null),
+        preferredId: (json) => (json.result as { playlist?: { id?: string } } | undefined)?.playlist?.id ?? null,
       }),
     handleSeedModelPlaylist: (modelSlug: string) =>
       runHelperAction({
         feedback: `Model playlist seeded for ${modelSlug}`,
         logLabel: 'seed model playlist',
         payload: { action: 'seed-model-playlist', modelSlug },
-        preferredId: (json) => ((json.result as { playlist?: { id?: string } } | undefined)?.playlist?.id ?? null),
+        preferredId: (json) => (json.result as { playlist?: { id?: string } } | undefined)?.playlist?.id ?? null,
       }),
   };
 }

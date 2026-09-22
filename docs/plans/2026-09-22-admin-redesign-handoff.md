@@ -1,5 +1,7 @@
 # Reprise — refonte admin MaxVideoAI
 
+> Historical pause record. Work resumed at Adrien’s request. See [current validation and scope](2026-09-22-admin-redesign-validation.md) for the latest status; the open issues below describe the saved checkpoint, not the current implementation.
+
 **Pause demandée par Adrien le 22 septembre 2026 pour changement possible de compte. Travail en cours, NON prêt à déployer.** Aucun nouveau développement après la demande de pause. Aucun push, déploiement ou changement de données de production effectué.
 
 ## Retrouver le travail

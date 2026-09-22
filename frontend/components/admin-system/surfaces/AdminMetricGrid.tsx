@@ -24,7 +24,9 @@ export function AdminMetricGrid({
   className,
 }: AdminMetricGridProps) {
   return (
-    <div className={clsx('grid gap-px overflow-hidden border-y border-hairline bg-hairline', columnsClassName, className)}>
+    <div
+      className={clsx('grid gap-px overflow-hidden border-y border-hairline bg-hairline', columnsClassName, className)}
+    >
       {items.map((item) => (
         <AdminMetricCell key={item.label} item={item} density={density} />
       ))}
@@ -49,7 +51,15 @@ function AdminMetricCell({ item, density }: { item: AdminMetricItem; density: 'd
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-text-muted">{item.label}</p>
-          <p className={clsx('mt-1 font-semibold tabular-nums', toneClass, density === 'compact' ? 'text-2xl' : 'text-2xl')}>{item.value}</p>
+          <p
+            className={clsx(
+              'mt-1 font-semibold tabular-nums',
+              toneClass,
+              density === 'compact' ? 'text-2xl' : 'text-2xl'
+            )}
+          >
+            {item.value}
+          </p>
           {item.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{item.helper}</p> : null}
         </div>
         {Icon ? <Icon className="h-4 w-4 shrink-0 text-text-muted" /> : null}
