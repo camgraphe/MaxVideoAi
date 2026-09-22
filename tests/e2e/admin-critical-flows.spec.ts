@@ -100,16 +100,53 @@ test.describe('admin critical flows', () => {
   });
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {
+    const mutations: string[] = [];
+    // Supply browser-only media for the selected destination. This interaction
+    // must run even when the database's first collection is empty, without writes.
+    await page.route(/\/api\/admin\/playlists\/[^/]+$/, async (route) => {
+      if (route.request().method() !== 'GET') {
+        mutations.push(route.request().method());
+        await route.abort();
+        return;
+      }
+      const playlistId = new URL(route.request().url()).pathname.split('/').at(-1);
+      await route.fulfill({
+        json: {
+          ok: true,
+          items: ['First drag fixture', 'Second drag fixture'].map((prompt, orderIndex) => ({
+            playlistId,
+            videoId: `drag-fixture-${orderIndex}`,
+            orderIndex,
+            pinned: false,
+            createdAt: '2026-09-22T00:00:00Z',
+            engineLabel: 'Test media',
+            prompt,
+            visibility: 'public',
+            indexable: true,
+            isPublishedOnSite: true,
+          })),
+        },
+      });
+    });
+    await page.route(/\/api\/admin\/playlists\/[^/]+\/items(?:\/.*)?$/, async (route) => {
+      mutations.push(route.request().method());
+      await route.abort();
+    });
     await openAdminRoute(page, '/admin/playlists');
+    await page.getByLabel('Site destinations', { exact: true }).getByRole('button').first().click();
     const rows = page.locator('article[draggable]');
-    const count = await rows.count();
-    test.skip(count < 2, 'requires a collection with at least two media');
+    await expect(rows).toHaveCount(2);
+    await expect(page.getByText('First drag fixture', { exact: false })).toBeVisible();
     const before = await rows.allTextContents();
-    await rows.first().dragTo(rows.nth(1), { targetPosition: { x: 150, y: 65 } });
+    await rows.first().dragTo(rows.nth(1), {
+      sourcePosition: { x: 8, y: 35 },
+      targetPosition: { x: 150, y: 65 },
+    });
     await expect(page.getByText('Unsaved order changes', { exact: true })).toBeVisible();
     expect(await rows.allTextContents()).not.toEqual(before);
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(rows).toHaveText(before);
+    expect(mutations).toEqual([]);
   });
 
   test('retired membership tiers remain readable without editing or applying changes', async ({ page }) => {
