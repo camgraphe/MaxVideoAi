@@ -38,6 +38,29 @@ export function PlaylistsManagerSelectionPanel({
   }
 
   const usesCuration = enableCuration && ['examplesHub', 'family', 'model'].includes(playlist.surfaceRole);
+  const legacyEditor = (
+    <>
+      {playlist.surfaceRole === 'family' ? (
+        <p className="text-xs text-text-secondary">
+          This list controls the editorial first positions. The existing family feed may add eligible media afterwards.
+        </p>
+      ) : null}
+      <PlaylistItemsSection isPending={isPending} {...itemsSectionProps} />
+      <details className="border-t border-border pt-4">
+        <summary className="cursor-pointer text-xs font-medium text-text-secondary">
+          Collection details and maintenance
+        </summary>
+        <PlaylistDetailsPanel
+          isPending={isPending || itemsSectionProps.isItemsDirty}
+          onDeletePlaylist={onDeletePlaylist}
+          onFieldChange={onFieldChange}
+          onSavePlaylist={onSavePlaylist}
+          onSeedFamilyPlaylist={onSeedFamilyPlaylist}
+          playlist={playlist}
+        />
+      </details>
+    </>
+  );
   return (
     <>
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
@@ -60,30 +83,14 @@ export function PlaylistsManagerSelectionPanel({
         ) : null}
       </header>
       {usesCuration ? (
-        <PlacementEditor key={playlist.id} playlistId={playlist.id} onStateChange={onCurationStateChange} />
+        <PlacementEditor
+          key={playlist.id}
+          playlistId={playlist.id}
+          onStateChange={onCurationStateChange}
+          fallback={legacyEditor}
+        />
       ) : (
-        <>
-          {playlist.surfaceRole === 'family' ? (
-            <p className="text-xs text-text-secondary">
-              This list controls the editorial first positions. The existing family feed may add eligible media
-              afterwards.
-            </p>
-          ) : null}
-          <PlaylistItemsSection isPending={isPending} {...itemsSectionProps} />
-          <details className="border-t border-border pt-4">
-            <summary className="cursor-pointer text-xs font-medium text-text-secondary">
-              Collection details and maintenance
-            </summary>
-            <PlaylistDetailsPanel
-              isPending={isPending || itemsSectionProps.isItemsDirty}
-              onDeletePlaylist={onDeletePlaylist}
-              onFieldChange={onFieldChange}
-              onSavePlaylist={onSavePlaylist}
-              onSeedFamilyPlaylist={onSeedFamilyPlaylist}
-              playlist={playlist}
-            />
-          </details>
-        </>
+        legacyEditor
       )}
     </>
   );

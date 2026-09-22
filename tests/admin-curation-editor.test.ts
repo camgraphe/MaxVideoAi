@@ -144,6 +144,45 @@ test('curation stages drag order, previews before save, locks requests and prese
     );
     assert.equal(button('Cancel').disabled, true);
     assert.deepEqual(order(), ['b', 'a']);
+    await act(async () =>
+      root.render(
+        React.createElement(PlacementEditor, {
+          key: 'legacy',
+          playlistId: 'legacy',
+          fallback: React.createElement('button', null, 'Legacy ordering'),
+        }),
+      ),
+    );
+    await act(async () =>
+      requests[5].resolve(
+        Response.json({ ok: true, snapshot: { ...snapshot, supported: false }, candidates: [], initialIds: [] }),
+      ),
+    );
+    assert.ok(button('Legacy ordering'), 'unsupported unconfigured destinations preserve their manual editor');
+    await act(async () =>
+      root.render(
+        React.createElement(PlacementEditor, {
+          key: 'retired',
+          playlistId: 'retired',
+          fallback: React.createElement('button', null, 'Legacy ordering'),
+        }),
+      ),
+    );
+    await act(async () =>
+      requests[6].resolve(
+        Response.json({
+          ok: true,
+          snapshot: { ...snapshot, supported: false, config: { mode: 'manual', orderedIds: [], excludedIds: [] } },
+          candidates: [],
+          initialIds: [],
+        }),
+      ),
+    );
+    assert.equal(
+      button('Legacy ordering'),
+      undefined,
+      'managed retired destinations cannot use ineffective legacy mutations',
+    );
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

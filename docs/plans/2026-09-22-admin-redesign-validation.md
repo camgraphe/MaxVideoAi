@@ -32,7 +32,7 @@ Full production build passed, including offline prebuild gates, TypeScript and g
 
 Independent review identified and then rechecked source timeouts and cross-destination state. Its two further findings (maintenance discarding a draft, stale Cancel after successful PUT/failed refresh) were reproduced and corrected. An unused server health lookup and 30-second shell poll were removed with the retired navigation badges. Health API and operational consumers remain intact.
 
-## Remaining larger redesign stages
+## Historical deferred scope (superseded by the follow-up below)
 
 This lot does not introduce automatic galleries, per-destination exclusions, public-feed migration or optimistic multi-admin version checks. Existing public readers remain unchanged. Broader editorial workflow, complete English copy cleanup across legacy pages and server-wide transaction search/pagination remain later stages. Preserve manual ordering and private-media boundaries when implementing automatic placements.
 
@@ -58,3 +58,43 @@ Follow-up evidence:
 - Fresh independent whole-branch review found no important or minor defects and independently passed 27 focused tests. Full build and current Quality CI remain release gates; consult the current PR checks for the exact head, rather than treating earlier-run results as qualification of later commits.
 
 Scope decisions carried forward: automatic gallery rules/exclusions remain unimplemented because they require separate public/private eligibility qualification; current manually ordered public feeds remain intact. Server-wide transaction search/pagination is also deferred; the UI labels its latest-100 loaded sample. The cost is continued manual curation and limited historical search, with neither behavior silently expanded in this refactor.
+
+## Automatic placement and full-history follow-up
+
+This follow-up supersedes the earlier automatic-gallery and latest-100 deferrals.
+Migration52 creates opt-in curation without converting data or changing prices.
+Manual/featured order, local exclusions, public eligibility and optimistic revision
+checks now reach the public gallery readers. Native drag, keyboard order,
+Preview/Save/Cancel, failed requests and destination guards are implemented.
+Unsupported unconfigured destinations retain the legacy editor. First family
+adoption guards concurrent inherited source changes; managed model galleries do
+not reinsert static preferred IDs or override the saved order.
+
+Transactions now filter the entire ledger before stable keyset pagination, with
+Madrid Today/24h/all-time periods, shared URL state and independent receipt links.
+Email lookup remains in Users with an all-time account-history link; it does not
+perform a global external Auth scan for each ledger search.
+
+Evidence at qualification:431 focused tests pass after three independent-review
+findings were reproduced and fixed. PostgreSQL regression tests cover missing
+schema, visibility/deletion, stale initial/inherited adoption, preview races,
+empty selections, timestamps tied to microseconds, large receipt IDs, literal
+search wildcards and Madrid boundaries. Browser checks used disposable local
+PostgreSQL and fake Auth; native drag reordered and saved the family gallery,
+exclusion persisted across reload, historic receipts were found beyond the daily
+window, and direct links opened those receipts. Mobile width390/content378 was
+verified after correcting table-label overflow. No production records were read
+or changed for this qualification.
+
+The178 billing and588 public pricing references pass; runtime pricing owners
+match reconciled main6e3f7fd57. The pre-review full build passed; the final-head
+build and Quality CI are tracked in PR332, and earlier CI results do not qualify
+later commits. No merge or production deployment is authorized.
+
+Operational choices: automatic results use creation date because publication
+timestamps are unreliable; initial feeds above2,000 items require a bounded
+migration; email lookup goes through Users; history searches submit explicitly
+and navigate through the server-owned URL state. These choices respectively mean
+republished old media do not move up automatically, oversized initial galleries
+need a separate migration, email lookup takes an extra account step, and search
+is not live on each keystroke.

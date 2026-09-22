@@ -1,14 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { usePlacementEditor } from './usePlacementEditor';
 import { PlacementMediaList } from './PlacementMediaList';
 
 type Props = {
   playlistId: string;
+  fallback?: ReactNode;
   onStateChange?: (state: { dirty: boolean; busy: boolean }) => void;
 };
-export function PlacementEditor({ playlistId, onStateChange }: Props) {
+export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) {
   const state = usePlacementEditor(playlistId, onStateChange);
   const [search, setSearch] = useState('');
   const { loaded, draft, busy, dirty, change, preview } = state;
@@ -36,6 +37,8 @@ export function PlacementEditor({ playlistId, onStateChange }: Props) {
         ) : null}
       </div>
     );
+  if (loaded.snapshot.available && !loaded.snapshot.supported && !loaded.snapshot.config && fallback)
+    return <>{fallback}</>;
   if (!loaded.snapshot.available || !loaded.snapshot.supported)
     return (
       <p className="text-sm text-text-secondary">The page selection editor is not available for this destination.</p>

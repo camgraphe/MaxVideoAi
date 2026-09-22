@@ -226,17 +226,16 @@ with calendar Today (including DST) separate from rolling 24 hours. Auth and wal
 sources have independent five-second deadlines. Auth scanning is bounded to 100 pages
 of 1000 accounts and stops after a late response; partial scans are unavailable, never
 presented as full counts. This is a read path, without schema creation. Wallet top-ups
-include manual credits and must not be labelled cash revenue. Transactions search and
-filters explicitly apply to the latest 100 loaded ledger entries; deep receipt links
-open the inspector and handle PostgreSQL bigint IDs serialized as strings.
+include manual credits and must not be labelled cash revenue. Transactions search and filters apply to the full ledger before pagination; deep
+receipt links resolve independently and preserve PostgreSQL bigint IDs as strings.
 
 Playlist order is an explicit draft. Movement is available by drag or keyboard buttons;
 Cancel restores the last confirmed snapshot. Loading another destination commits its ID
 and items together after a successful fetch. Async actions remain locked until completion.
 Maintenance is disabled with a dirty order. After a successful PUT, the local snapshot is
 confirmed before a refresh, so a failed refresh cannot resurrect the old order. Backend
-replacement is transactional. Multi-admin optimistic conflict detection and automatic
-placement/exclusion modes remain separate future work; current public readers are intact.
+replacement is transactional. Migrated destinations use the opt-in curation workflow
+below; unsupported unconfigured collections retain this manual editor.
 
 Contracts: admin-dashboard-architecture, admin-navigation, admin-reporting-window,
 admin-overview-read, admin-playlist-selection and admin-playlist-order-postgres tests.
@@ -246,7 +245,7 @@ The operational workspaces follow-up keeps Users directory and Generations audit
 
 ## Opt-in public curation
 
-Migration `52_playlist_curations.sql` adds separate per-destination state and performs no data migration. Apply it through the normal Neon migration process before enabling the new editor. Missing schema preserves legacy public readers; the editor reports setup unavailable. Homepage and starter destinations keep their existing workflows.
+Migration `52_playlist_curations.sql` adds separate per-destination state and performs no data migration. Apply it through the normal Neon migration process before enabling the new editor. Missing schema preserves legacy public readers and the existing manual editor. Homepage and starter destinations keep their existing workflows.
 
 `server/playlists/curation-service.ts` owns eligibility, preview fingerprints and transactional saves. `curation-store.ts` owns revision snapshots and the advisory lock shared with legacy playlist mutations. Existing feeds are unchanged until an operator previews and saves Manual or Featured + Automatic. Automatic order uses creation date descending and job ID because publication timestamps are not reliable. Public candidates must be completed video jobs, explicitly public/indexable, have a playable source, match canonical destination aliases and have no matching deleted output/asset. Exclusions precede ordering and limits. Every public read rechecks eligibility. Configured empty results are authoritative, including model fallback routes.
 
@@ -266,3 +265,5 @@ Email lookup remains in Users (Supabase Auth owns that data); each user detail
 links to their all-time transaction history. The ledger searches receipt/account
 IDs, generation IDs, description, model and status. These reads perform no schema
 bootstrap. The existing anomaly scan and refund command retain their owners.
+
+First family adoption fingerprints inherited playlists, selections and curation states. Selection writers share an advisory transaction lock; first adoption additionally holds source tables against uncoordinated creation/deletion while revalidating. Configured model galleries bypass static reinsertion and aspect-ratio sorting. Unsupported unconfigured collections retain manual controls; retired configured collections stay closed.
