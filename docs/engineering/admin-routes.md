@@ -132,7 +132,7 @@ Use existing tests as templates:
 tests/admin-users-architecture.test.ts
 tests/admin-user-detail-architecture.test.ts
 tests/admin-video-seo-architecture.test.ts
-tests/admin-seo-gsc-architecture.test.ts
+tests/admin-retired-gsc-contract.test.ts
 ```
 
 ## MCP Acquisition Measurements
@@ -213,8 +213,21 @@ and [OAuth client lookup](https://supabase.com/docs/reference/javascript/oauth-a
 `frontend/lib/admin/navigation.ts` owns five work areas: Overview, Users, Transactions,
 Generations and Content, plus Settings and two external links. The command palette
 uses this same inventory. Legacy direct URLs remain; theme and membership are absent
-from daily navigation. Search Console reporting is an external link. Existing backend
-jobs and public SEO consumers are not removed by this interface change.
+from daily navigation. Search Console reporting is an external link.
+
+The former in-app GSC cockpit, reports and URL inspection routes redirect to
+`/admin/seo`, which links to Google Search Console and the separate video publishing
+workspace. Their three authenticated action endpoints return `410` and do not call
+Google. The GSC runtime client, OAuth configuration and cache writers have been
+removed; existing historical cache rows are left intact. No scheduled GSC job was
+found in the repository. Public SEO, publication and video SEO services are separate
+and remain active. The pure SEO analysis helpers and historical snapshots remain for
+offline research; they have no live admin reader.
+
+`/admin/theme` redirects to Settings and the authenticated theme-token API returns
+`410` for reads and writes. This removes the obsolete editing surface without
+deleting stored overrides. `app/layout.tsx` still applies the existing theme
+setting, and the pricing runtime and database override precedence are unchanged.
 
 The light palette is scoped to `.admin-workspace`. Shared sections use separators and
 compact tables. The mobile sidebar traps keyboard focus while open and restores it on

@@ -98,3 +98,34 @@ and navigate through the server-owned URL state. These choices respectively mean
 republished old media do not move up automatically, oversized initial galleries
 need a separate migration, email lookup takes an extra account step, and search
 is not live on each keystroke.
+
+## Search Console retirement and secondary admin polish
+
+The old in-app Search Console cockpit had nine interconnected report pages and
+three authenticated manual action endpoints. Repository inspection found no
+scheduled GSC task or public route using those calls. The report pages now lead
+to one `/admin/seo` landing page with an external Google Search Console link
+and the separate Video publishing workspace. The action endpoints return `410`
+after admin authorization. The live GSC OAuth/client/cache/server owners and
+obsolete rendered views were removed. Historical cache rows and pure analysis
+helpers remain; the public SEO and video publishing routes are unchanged.
+
+The Theme tokens page and its write API were retired as well. Existing stored
+theme values continue to be applied by the root layout. No reset, pricing or
+database migration accompanies this removal. The Homepage and Service notice
+pages no longer link to the retired editor. Remaining secondary admin copy was
+made English across the touched Settings, Homepage, Service notice, Audit,
+Legal, Marketing consent and Video publishing views. Settings groups its links
+by operational task. The service notice form now reports a failed disable
+instead of showing a false success, and refreshes the server preview after a
+successful change.
+
+The operator handoff is `docs/operations/admin-operator-guide.md`. Focused
+architecture, privacy, theme and navigation tests passed; the production build
+generated 898 pages. A measured palette check gives at least 4.5:1 contrast for
+the admin's primary, secondary, muted, brand and status text against their
+listed surfaces. Four browser checks on a disposable local database passed: the
+SEO landing page, old SEO/theme bookmarks, failed service-notice disable and
+Settings navigation at 200% zoom. The 178 billing and 588 public pricing
+references still pass. The palette and zoom checks do not constitute a full
+screen-reader audit. Quality CI on the new commit remains the release gate.

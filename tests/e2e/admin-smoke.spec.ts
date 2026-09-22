@@ -39,6 +39,11 @@ const smokeRoutes: SmokeRoute[] = [
     section: 'Existing database overrides remain active',
   },
   {
+    path: '/admin/seo',
+    heading: 'Search performance',
+    section: 'Google Search Console',
+  },
+  {
     path: '/admin/membership',
     heading: 'Membership history',
     section: 'Membership discounts are retired.',
@@ -79,6 +84,45 @@ test.describe('admin smoke', () => {
     assertNoClientErrors(errors);
   });
 
+  test('old SEO and theme bookmarks reach their replacement pages', async ({ page }) => {
+    await openAdminRoute(page, '/admin/settings');
+    await page.goto('/admin/seo/gsc?range=28d');
+    await expect(page).toHaveURL(/\/admin\/seo$/);
+    await expect(page.getByRole('link', { name: /Google Search Console/ })).toHaveAttribute(
+      'href',
+      'https://search.google.com/search-console'
+    );
+
+    await page.goto('/admin/theme');
+    await expect(page).toHaveURL(/\/admin\/settings$/);
+    await expect(page.locator('body')).toContainText('Existing database overrides remain active');
+
+    for (const path of [
+      '/api/admin/seo/gsc/refresh',
+      '/api/admin/seo/url-inspection/inspect',
+      '/api/admin/seo/actions/export',
+    ]) {
+      const response = await page.context().request.post(path, { data: {} });
+      expect(response.status()).toBe(410);
+    }
+    const themeResponse = await page.context().request.put('/api/admin/theme-tokens', { data: {} });
+    expect(themeResponse.status()).toBe(410);
+  });
+
+  test('failed service notice disable keeps the edited notice visible', async ({ page }) => {
+    test.skip(!process.env.DATABASE_URL, 'Service notice editing requires the database fixture');
+    await openAdminRoute(page, '/admin/system');
+    const enabled = page.getByRole('checkbox', { name: 'Show the notice in the workspace' });
+    await enabled.check();
+    await page.route('**/api/admin/service-notice', async (route) => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Save failed' }) });
+    });
+    await page.getByRole('button', { name: 'Disable', exact: true }).click();
+    await expect(enabled).toBeChecked();
+    await expect(page.getByText('Save failed')).toBeVisible();
+  });
+
   test('admin home remains usable on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const errors = trackClientErrors(page);
@@ -92,6 +136,22 @@ test.describe('admin smoke', () => {
     await expect(page.getByRole('button', { name: 'Go' })).toBeVisible();
 
     assertNoClientErrors(errors);
+  });
+
+  test('settings stays navigable at 200 percent zoom', async ({ page }) => {
+    await page.setViewportSize({ width: 720, height: 900 });
+    await openAdminRoute(page, '/admin/settings');
+    await page.evaluate(() => {
+      document.documentElement.style.zoom = '200%';
+    });
+    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
+    const width = await page.evaluate(() => ({
+      content: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+    }));
+    expect(width.content).toBeLessThanOrEqual(width.viewport);
+    await page.getByRole('main').getByRole('link', { name: /Service notice/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Service notice' })).toBeVisible();
   });
 
   test('overview switches between Today and a rolling 24 hours', async ({ page }) => {

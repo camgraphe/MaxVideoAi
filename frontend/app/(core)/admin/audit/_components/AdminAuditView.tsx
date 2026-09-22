@@ -21,7 +21,7 @@ export function AdminAuditDatabaseNotice() {
       <AdminPageHeader
         eyebrow="Operations"
         title="Audit trail"
-        description="Trace des actions sensibles admin. Cette surface dépend de Postgres pour afficher l’historique complet."
+        description="Review sensitive admin actions. PostgreSQL access is required for the full history."
       />
       <AdminSection title="Audit Trail" description="Database access is required to load audit events.">
         <AdminNotice tone="warning">
@@ -50,7 +50,7 @@ export function AdminAuditView({
       <AdminPageHeader
         eyebrow="Operations"
         title="Audit trail"
-        description="Journal d’enquête pour l’impersonation, les resyncs et les interventions sensibles. Les filtres restent linkables pour partager un scope précis."
+        description="Investigate impersonation, resyncs and other sensitive actions. Share the filtered URL to preserve the scope."
         actions={
           <>
             <AdminActionLink href="/admin/users">
@@ -63,13 +63,13 @@ export function AdminAuditView({
         }
       />
 
-      <AdminSection title="Audit Overview" description="Lecture rapide du lot chargé, pour savoir si on inspecte un incident ciblé ou l’historique global.">
+      <AdminSection title="Audit Overview" description="Review the loaded events before investigating a specific incident.">
         <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-5" density="compact" />
       </AdminSection>
 
       <AdminSection
         title="Audit Trail"
-        description="Filtre par action ou par identifiant utilisateur, puis ouvre directement la fiche membre ou la job liée."
+        description="Filter by action or user ID, then open the related account or generation."
         action={
           <AdminSectionMeta
             title={filterCount ? `${filterCount} active filter${filterCount > 1 ? 's' : ''}` : `${logs.length} events loaded`}
