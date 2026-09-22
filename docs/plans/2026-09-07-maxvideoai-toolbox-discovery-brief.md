@@ -1,8 +1,8 @@
 # MaxVideoAI Toolbox — preliminary discovery brief
 
-**Status:** discovery brief, not an implementation plan  
-**Date:** 2026-09-07  
-**Last research update:** 2026-09-08  
+**Status:** discovery brief, not an implementation plan
+**Date:** 2026-09-07
+**Last research update:** 2026-09-08
 **Purpose:** give the ongoing application redesign a concrete product and technical direction for the Tools page without starting that redesign in parallel.
 
 ## Executive decision
