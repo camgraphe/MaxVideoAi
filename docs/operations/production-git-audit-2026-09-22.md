@@ -2,11 +2,13 @@
 
 ## Finding and scope
 
-Read-only Vercel audit of the latest **300 production-target deployment records**,
-from **2026-05-18 22:12 UTC** through **2026-09-22 15:19 UTC**: 273 Git deployments,
-27 CLI records. This is a bounded historical audit, not the complete project history.
-Sanitized CLI evidence is in `production-git-audit-2026-09-22.json`.
-All 273 recorded Git revisions are ancestors of GitHub main at the audit checkpoint,
+Per the owner's request, this audit covers **only the last 15 days**, from
+**2026-09-07 17:01 UTC** through **2026-09-22 17:01 UTC**.
+The inspected production-target records in that window comprise **58 deployments**:
+**53 Git records and 5 CLI records**. Older history is excluded from
+this report and from any recovery work. Sanitized CLI evidence is in
+`production-git-audit-2026-09-22.json`. All recorded Git revisions in this window
+are ancestors of GitHub main at the audit checkpoint,
 `772eb4d8a4744e2bd829324ce929c0fab2cf7875`.
 
 Production website and API currently point to CLI deployment
@@ -24,26 +26,17 @@ mismatches. The earlier copy-time manifest predates six final source updates and
 must not be used as the final release manifest. Existing MCP 0.3.6 and MCP admin
 metrics files in this snapshot match main. Shared Desktop changes were not imported.
 
-## Historical precedents
+## Other records within the 15-day window
 
-- **2026-09-17 / 2026-09-09:** CLI redeploys of existing GitHub-main deployments,
-  linked to their original deployment IDs. These are not unpublished source uploads.
-- **2026-08-27 13:34 UTC:** `dpl_7it4qhV6FfVcf7yjsPsNVnJZQjKa` reports `gitDirty=1`
-  at revision `74b87c25…`, branch `HEAD`, READY with aliases assigned. This is direct
-  evidence of the same unsafe working-copy delivery pattern before this incident.
-  The recorded base commit is in main; its uncommitted source cannot be reconstructed
-  or proven integrated from deployment metadata alone.
-- **2026-08-26:** CLI builds used `codex/mcp-foundation-clean` or explicit source
-  revision metadata instead of the normal Git-main integration.
-- **2026-07-12:** ten READY CLI records used `codex/fix-marketing-english-locale`,
-  including a redeploy of one branch deployment.
-- All **24 earlier READY CLI records** name revisions now present in main, but that
-  does not prove historical uploaded bytes matched those commits or that every
-  uncommitted correction was retained. `aliasAssigned` also does not reconstruct
-  which custom domains served an old deployment at a particular time.
+- **2026-09-17 / 2026-09-09:** the two earlier READY CLI records are redeploys of
+  existing GitHub-main deployments, linked to their original deployment IDs.
+  Their revisions are present in main. They are not unpublished source uploads.
 - **2026-09-21:** the unmerged auth recovery branch upload was BLOCKED and had no
   alias assignment. **2026-09-22 15:18 UTC:** the first multimodal upload failed its
   build and had no alias assignment. Neither is the current public deployment.
+- No other successful unpublished-source upload was identified in this window.
+  Deployment metadata does not by itself establish byte-level parity or reconstruct
+  every historical domain assignment. No older deployment is restored or repaired.
 
 ## Recovery and prevention
 
