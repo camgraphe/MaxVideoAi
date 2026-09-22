@@ -36,6 +36,12 @@ Aucune écriture de production, aucun reset d’override, aucune migration de pr
 
 Autre tâche : « Corriger la détection du plugin Max », thread `01a0c5a5-80a0-7a60-8200-056314ffceb8`. Elle réconciliait production et main via https://github.com/camgraphe/MaxVideoAi/pull/331 . Au dernier échange, production était `436a10063baac14bb80f3fd22423113360715df9`, déploiement `dpl_5ucWc1py4Lt3bTnVhqJwNjKwbAiF`, environ 120 fichiers devant main, y compris corrections pricing/Wan/MiniMax. Statut à revérifier à la reprise ; ne pas supposer PR331 fusionnée. Ne pas pousser/fusionner/déployer cette refonte avant réconciliation confirmée puis rebase et validation. Aucun PR admin créé.
 
+## Mise à jour reçue après la pause
+
+La tâche de réconciliation signale que PR331 est fusionnée et que main vaut désormais `6e3f7fd57d2d515ed8acae809f781f303a6d5d53`. Elle rapporte Quality CI verte (5906 tests réussis, 4 ignorés, 7 tests navigateur Studio et 18 admin) et preview Vercel READY. Ce sont les résultats de la réconciliation, **pas de cette refonte admin** ; non revérifiés dans cette tâche en pause.
+
+À la reprise seulement : lire le nouveau paragraphe Production delivery d’AGENTS.md et docs/deployment/github-vercel.md, intégrer ce main dans le worktree isolé en préservant le checkpoint, puis recalculer la référence tarifaire. La confirmation du déploiement automatique sur les deux domaines était encore attendue au dernier message ; conserver l’attente avant toute fusion admin ou déploiement. Aucun rebase/merge ni nouveau développement effectué à réception de cette information.
+
 ## Corrections prioritaires NON faites — revue indépendante
 
 1. **TypeScript bloquant** : `frontend/components/admin/PlaylistsManager.tsx:194`, TS2328. Le callback explicite busy/startTransition accepte `() => void | Promise<void>` mais un hook attend React.TransitionStartFunction/VoidOrUndefinedOnly. Harmoniser le contrat avec le suivi asynchrone réel, sans perdre le verrou pendant la requête. Dernier tsc en échec ; ne pas annoncer build vert.
