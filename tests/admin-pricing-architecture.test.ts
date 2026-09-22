@@ -70,7 +70,7 @@ const pricingPolicyRoutePaths = [
 test('admin pricing route is an authenticated server orchestrator under 60 lines', () => {
   assert.doesNotMatch(pageSource, /^'use client';/m, 'pricing route must stay server-rendered');
   assert.match(pageSource, /await requireAdmin\(\)/, 'pricing route should explicitly require admin');
-  assert.match(pageSource, /<AdminPricingCockpit\s*\/>/, 'pricing route should delegate to the canonical cockpit');
+  assert.match(pageSource, /redirect\('\/admin\/settings'\)/, 'retired pricing editor redirects without loading commercial data');
   assert.ok(pageSource.split('\n').length < 60, 'pricing route should stay below 60 lines');
 });
 
@@ -88,16 +88,10 @@ test('canonical pricing cockpit modules exist and compose shared admin-system su
   assert.match(inspectorSource, /AdminInspectorPanel/, 'policy editor should use AdminInspectorPanel');
 });
 
-test('admin navigation exposes exactly the three canonical commercial surfaces', () => {
-  const commercialItems = ADMIN_NAV_GROUPS
-    .flatMap((group) => group.items)
-    .filter((item) => ['/admin/pricing', '/admin/membership', '/admin/billing-products'].includes(item.href));
-
-  assert.deepEqual(commercialItems, [
-    { id: 'pricing', label: 'Pricing policy', href: '/admin/pricing', icon: 'pricing' },
-    { id: 'membership', label: 'Membership', href: '/admin/membership', icon: 'membership' },
-    { id: 'billing-products', label: 'Billing products', href: '/admin/billing-products', icon: 'billing-products' },
-  ]);
+test('navigation retires pricing and membership editors while retaining billing products', () => {
+  const items = ADMIN_NAV_GROUPS.flatMap(group => group.items);
+  assert.equal(items.some(item => item.href === '/admin/pricing' || item.href === '/admin/membership'), false);
+  assert.equal(items.some(item => item.href === '/admin/billing-products'), true);
 });
 
 test('obsolete mixed pricing components and direct mutation routes are deleted', () => {

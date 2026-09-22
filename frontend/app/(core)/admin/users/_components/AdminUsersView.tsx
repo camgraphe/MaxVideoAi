@@ -28,7 +28,7 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
       <AdminPageHeader
         eyebrow="Operations"
         title="Users"
-        description="Recherche, triage support et navigation rapide vers les profils membre. La recherche URL fonctionne maintenant réellement sur l’ensemble du répertoire."
+        description="Find accounts, review activity and manage support."
         actions={
           <Button
             type="button"
@@ -45,7 +45,7 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
 
       <AdminSection
         title="User Volume"
-        description="Repères de croissance membres, gardés compacts pour laisser la table prendre le rôle principal."
+        description="Registrations · Today uses Europe/Madrid."
       >
         {controller.statsUnavailable ? (
           <AdminNotice tone="warning">
@@ -65,14 +65,14 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
 
       <AdminSection
         title="Member Directory"
-        description="Search by email or Supabase user ID. The table stays dense and operational instead of card-heavy."
+        description="Search the full directory by email or user ID."
         action={
           <AdminSectionMeta
             title={controller.directorySummary}
             lines={[
               controller.isRouting || controller.isLoading
                 ? 'Refreshing route state…'
-                : 'Search is URL-driven and linkable.',
+                : 'Filters are saved in the page URL.',
             ]}
           />
         }

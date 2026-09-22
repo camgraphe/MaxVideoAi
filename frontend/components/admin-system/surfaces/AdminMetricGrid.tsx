@@ -24,7 +24,7 @@ export function AdminMetricGrid({
   className,
 }: AdminMetricGridProps) {
   return (
-    <div className={clsx('grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline', columnsClassName, className)}>
+    <div className={clsx('grid gap-px overflow-hidden border-y border-hairline bg-hairline', columnsClassName, className)}>
       {items.map((item) => (
         <AdminMetricCell key={item.label} item={item} density={density} />
       ))}
@@ -45,11 +45,11 @@ function AdminMetricCell({ item, density }: { item: AdminMetricItem; density: 'd
   const Icon = item.icon;
 
   return (
-    <div className={clsx('bg-surface', density === 'compact' ? 'px-4 py-3' : 'px-4 py-4')}>
+    <div className={clsx('bg-surface', density === 'compact' ? 'px-4 py-3' : 'px-4 py-3')}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{item.label}</p>
-          <p className={clsx('mt-2 font-semibold', toneClass, density === 'compact' ? 'text-2xl' : 'text-3xl')}>{item.value}</p>
+          <p className="text-xs font-medium text-text-muted">{item.label}</p>
+          <p className={clsx('mt-1 font-semibold tabular-nums', toneClass, density === 'compact' ? 'text-2xl' : 'text-2xl')}>{item.value}</p>
           {item.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{item.helper}</p> : null}
         </div>
         {Icon ? <Icon className="h-4 w-4 shrink-0 text-text-muted" /> : null}

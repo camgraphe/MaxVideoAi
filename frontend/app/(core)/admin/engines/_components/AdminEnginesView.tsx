@@ -6,14 +6,11 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
-import { EngineSettingsPanel } from '@/components/admin/EngineSettingsPanel';
 import {
   type AdminEnginesViewModel,
   type EngineCommercialRow,
   type EngineConfigSnapshot,
   type EngineOpsRow,
-  buildBaseline,
-  buildInitialForm,
   buildOpsAttentionLabel,
   buildRevenueLabel,
   formatCurrency,
@@ -21,7 +18,6 @@ import {
   formatMoneyCents,
   formatNumber,
   formatPercent,
-  summarizeConfigIssue,
 } from '../_lib/admin-engines-view-model';
 
 type AdminEnginesViewProps = {
@@ -50,8 +46,8 @@ export function AdminEnginesView({ model }: AdminEnginesViewProps) {
     <div className="flex flex-col gap-5">
       <AdminPageHeader
         eyebrow="Operations"
-        title="Engines"
-        description="Surface de pilotage des moteurs Fal : sante, demande, revenus et configuration active."
+        title="Model activity"
+        description="Generation activity and read-only model configuration."
         actions={
           <>
             <AdminActionLink href="/admin/insights">Insights</AdminActionLink>
@@ -128,7 +124,7 @@ export function AdminEnginesView({ model }: AdminEnginesViewProps) {
 
       <AdminSection
         title="Configuration"
-        description="Overrides, disponibilite et pricing par moteur. Les changements s’appliquent sur les prochains quotes."
+        description="Read-only state. Existing pricing overrides stay in effect."
         action={
           <AdminSectionMeta
             title="Config"
@@ -159,7 +155,7 @@ export function AdminEnginesView({ model }: AdminEnginesViewProps) {
         ) : (
           <div className="px-5 py-5">
             <AdminNotice tone="warning">
-              Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to edit engine overrides.
+              Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to view engine overrides.
             </AdminNotice>
           </div>
         )}
@@ -322,104 +318,10 @@ type AdminEngineConfigurationPanelProps = {
   degradedConfigs: number;
 };
 
-function AdminEngineConfigurationPanel({
-  attentionConfigEntries,
-  stableConfigEntries,
-  configSnapshotByEngineId,
-  configMeta,
-  disabledConfigs,
-  limitedConfigs,
-  degradedConfigs,
-}: AdminEngineConfigurationPanelProps) {
-  return (
-    <div className="grid xl:grid-cols-[320px_minmax(0,1fr)]">
-      <div className="border-b border-hairline px-5 py-5 xl:border-b-0 xl:border-r">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Config pulse</p>
-        <p className="mt-1 text-sm leading-6 text-text-secondary">
-          Les moteurs en anomalie restent visibles immédiatement. Le reste du catalogue est replié pour garder la page pilotable.
-        </p>
-
-        <div className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2">
-          <CompactConfigCell label="Needs attention" value={formatNumber(configMeta.attention)} tone={configMeta.attention ? 'warning' : 'success'} />
-          <CompactConfigCell label="Disabled" value={formatNumber(disabledConfigs)} tone={disabledConfigs ? 'warning' : 'success'} />
-          <CompactConfigCell label="Limited" value={formatNumber(limitedConfigs)} tone={limitedConfigs ? 'warning' : 'success'} />
-          <CompactConfigCell label="Degraded" value={formatNumber(degradedConfigs)} tone={degradedConfigs ? 'warning' : 'success'} />
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Priority engines</p>
-          {attentionConfigEntries.length ? (
-            attentionConfigEntries.slice(0, 6).map((entry) => {
-              const snapshot = configSnapshotByEngineId.get(entry.engine.id) ?? null;
-              return (
-                <div key={`priority-${entry.engine.id}`} className="rounded-xl border border-hairline bg-bg/40 px-3 py-2">
-                  <p className="text-sm font-medium text-text-primary">{entry.engine.label}</p>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    {snapshot ? summarizeConfigIssue(snapshot) : 'Override requires review.'}
-                  </p>
-                </div>
-              );
-            })
-          ) : (
-            <div className="rounded-xl border border-hairline bg-bg/40 px-3 py-3 text-sm text-text-secondary">
-              All registered engine overrides are currently healthy.
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="divide-y divide-border">
-        {attentionConfigEntries.length ? (
-          <div>
-            <div className="border-b border-hairline px-5 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Priority overrides</p>
-              <p className="mt-1 text-sm text-text-secondary">Review these engines first before opening the broader catalog.</p>
-            </div>
-            <div className="divide-y divide-border">
-              {attentionConfigEntries.map((entry) => (
-                <EngineSettingsPanel
-                  key={entry.engine.id}
-                  engineId={entry.engine.id}
-                  engineLabel={entry.engine.label}
-                  baseline={buildBaseline(entry)}
-                  initialForm={buildInitialForm(entry)}
-                />
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {stableConfigEntries.length ? (
-          <details className="group" open={!attentionConfigEntries.length && stableConfigEntries.length <= 6}>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 marker:hidden">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine catalog</p>
-                <p className="mt-1 text-sm text-text-secondary">
-                  {attentionConfigEntries.length
-                    ? `${formatNumber(stableConfigEntries.length)} stable engines remain available in the folded catalog.`
-                    : 'Open the full catalog to inspect or edit a healthy engine override.'}
-                </p>
-              </div>
-              <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-semibold text-text-primary">
-                {formatNumber(stableConfigEntries.length)}
-              </span>
-            </summary>
-            <div className="border-t border-hairline divide-y divide-border">
-              {stableConfigEntries.map((entry) => (
-                <EngineSettingsPanel
-                  key={entry.engine.id}
-                  engineId={entry.engine.id}
-                  engineLabel={entry.engine.label}
-                  baseline={buildBaseline(entry)}
-                  initialForm={buildInitialForm(entry)}
-                />
-              ))}
-            </div>
-          </details>
-        ) : null}
-      </div>
-    </div>
-  );
+function AdminEngineConfigurationPanel({ attentionConfigEntries, stableConfigEntries, configSnapshotByEngineId }: AdminEngineConfigurationPanelProps) {
+  return <div className="p-4"><p className="mb-4 text-sm text-text-secondary">Read-only configuration. Existing overrides remain active. Changes use the engineering workflow.</p>
+    <div className="divide-y divide-border">{[...attentionConfigEntries, ...stableConfigEntries].map(entry => <div key={entry.engine.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><span className="text-sm font-medium">{entry.engine.id}</span><ConfigInlineSummary config={configSnapshotByEngineId.get(entry.engine.id) ?? null} /></div>)}</div>
+  </div>;
 }
 
 function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }) {
@@ -456,30 +358,6 @@ function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }
         {config.latencyTier} latency
         {config.perSecondCents != null ? ` · ${formatMoneyCents(config.perSecondCents)} / sec` : ''}
         {config.flatCents != null ? ` · ${formatMoneyCents(config.flatCents)} flat` : ''}
-      </p>
-    </div>
-  );
-}
-
-function CompactConfigCell({
-  label,
-  value,
-  tone = 'default',
-}: {
-  label: string;
-  value: string;
-  tone?: 'default' | 'success' | 'warning';
-}) {
-  return (
-    <div className="bg-surface px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{label}</p>
-      <p
-        className={[
-          'mt-2 text-lg font-semibold',
-          tone === 'warning' ? 'text-warning' : tone === 'success' ? 'text-success' : 'text-text-primary',
-        ].join(' ')}
-      >
-        {value}
       </p>
     </div>
   );

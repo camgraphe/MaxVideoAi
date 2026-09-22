@@ -1,4 +1,4 @@
-import { query, type QueryExecutor } from '@/lib/db';
+import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   mapCreatedPlaylistRow,
   type CreatedPlaylistRow,
@@ -104,22 +104,24 @@ export async function reorderPlaylistItems(
   playlistId: string,
   order: Array<{ videoId: string; pinned?: boolean }>
 ): Promise<void> {
-  await query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
-  if (!order.length) return;
-
-  const values: unknown[] = [];
-  const inserts: string[] = [];
-  order.forEach((item, index) => {
-    values.push(playlistId, item.videoId, index, Boolean(item.pinned));
-    const base = values.length;
-    inserts.push(`($${base - 3}, $${base - 2}, $${base - 1}, $${base})`);
+  await withDbTransaction(async (executor) => {
+    await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
+    if (!order.length) return;
+  
+    const values: unknown[] = [];
+    const inserts: string[] = [];
+    order.forEach((item, index) => {
+      values.push(playlistId, item.videoId, index, Boolean(item.pinned));
+      const base = values.length;
+      inserts.push(`($${base - 3}, $${base - 2}, $${base - 1}, $${base})`);
+    });
+  
+    await executor.query(
+      `INSERT INTO playlist_items (playlist_id, video_id, order_index, pinned)
+       VALUES ${inserts.join(', ')}`,
+      values
+    );
   });
-
-  await query(
-    `INSERT INTO playlist_items (playlist_id, video_id, order_index, pinned)
-     VALUES ${inserts.join(', ')}`,
-    values
-  );
 }
 
 async function appendPlaylistItemWithExecutor(executor: QueryExecutor, playlistId: string, videoId: string): Promise<void> {

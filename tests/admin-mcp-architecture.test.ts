@@ -93,11 +93,11 @@ test('server metrics stay privacy-safe, read-only, and externally inert', () => 
   assert.ok(providerOperations.split('\n').length <= 200, 'provider operations owner should stay below 200 lines');
 });
 
-test('MCP acquisition is in Analytics navigation and publication matches the production release', () => {
-  const analytics = ADMIN_NAV_GROUPS.find((group) => group.id === 'analytics');
+test('MCP activity is under Overview and publication matches the production release', () => {
+  const analytics = ADMIN_NAV_GROUPS.find((group) => group.id === 'overview');
   assert.deepEqual(analytics?.items.find((item) => item.id === 'mcp'), {
     id: 'mcp',
-    label: 'MCP acquisition',
+    label: 'MCP activity',
     href: '/admin/mcp',
     icon: 'insights',
   });

@@ -4,11 +4,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
-  useTransition,
   type FormEvent,
 } from 'react';
 import clsx from 'clsx';
+import { movePlaylistItem } from '@/lib/admin/playlist-order';
 import { authFetch } from '@/lib/authFetch';
 import { PlaylistFeedbackBanners } from '@/components/admin/playlists/PlaylistFeedbackBanners';
 import { PlaylistOrderDirtyBar } from '@/components/admin/playlists/PlaylistItemsSection';
@@ -37,8 +38,19 @@ export function PlaylistsManager({
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
   const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
   const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
+  const savedItems = useRef(sortItemsForDisplay(initialItems));
   const [isItemsDirty, setItemsDirty] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
+  const busy = useRef(false);
+  const startTransition = useCallback((action: () => void | Promise<void>) => {
+    if (busy.current) return;
+    busy.current = true;
+    setIsPending(true);
+    void Promise.resolve().then(action).catch(() => setError('Unable to complete the collection action.')).finally(() => {
+      busy.current = false;
+      setIsPending(false);
+    });
+  }, []);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDraftCollections, setShowDraftCollections] = useState(false);
@@ -66,7 +78,8 @@ export function PlaylistsManager({
   useEffect(() => {
     setPlaylists(sortPlaylists(initialPlaylists));
     setSelectedId(initialPlaylistId);
-    setItems(sortItemsForDisplay(initialItems));
+    savedItems.current = sortItemsForDisplay(initialItems);
+    setItems(savedItems.current);
     setItemsDirty(false);
     clearDragState();
   }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists]);
@@ -97,7 +110,8 @@ export function PlaylistsManager({
 
   const syncPlaylistDetail = useCallback(
     (playlistId: string, nextPlaylist: PlaylistSummary | undefined, nextItems: PlaylistItemRecord[], basePlaylists?: EditablePlaylist[]) => {
-      setItems(sortItemsForDisplay(nextItems));
+      savedItems.current = sortItemsForDisplay(nextItems);
+      setItems(savedItems.current);
       setPlaylists((current) => {
         const source = basePlaylists ?? current;
         let found = false;
@@ -182,6 +196,8 @@ export function PlaylistsManager({
 
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
+      if (busy.current) return;
+      if (isItemsDirty && !window.confirm('Discard the unsaved order and change destination?')) return;
       setSelectedId(playlistId);
       setFeedback(null);
       setError(null);
@@ -194,7 +210,7 @@ export function PlaylistsManager({
         }
       });
     },
-    [refreshPlaylistItems]
+    [isItemsDirty, refreshPlaylistItems]
   );
 
   const handleFieldChange = useCallback(
@@ -332,6 +348,8 @@ export function PlaylistsManager({
   const handleRemoveVideo = useCallback(
     (videoId: string) => {
       if (!selectedId) return;
+      if (isItemsDirty) { setError('Save or cancel the order before removing media.'); return; }
+      if (!window.confirm('Remove this media from this collection now? It may still appear through an automatic family feed.')) return;
       startTransition(async () => {
         try {
           setFeedback(null);
@@ -351,7 +369,7 @@ export function PlaylistsManager({
         }
       });
     },
-    [refreshPlaylistItems, selectedId]
+    [isItemsDirty, refreshPlaylistItems, selectedId]
   );
 
   const handleSaveItems = useCallback(() => {
@@ -385,10 +403,10 @@ export function PlaylistsManager({
   const emptyFamilyCount = familyHelpers.filter((helper) => helper.status === 'empty').length;
 
   return (
-    <div className={clsx('space-y-8', isItemsDirty && 'pb-28', className)}>
+    <div className={clsx('space-y-4', isItemsDirty && 'pb-28', className)}>
       <PlaylistsManagerToolbar
         createDescription={createDescription} createName={createName} createSlug={createSlug}
-        draftCount={groupedPlaylists.draft.length} embedded={embedded} isPending={isPending}
+        draftCount={groupedPlaylists.draft.length} embedded={embedded} isPending={isPending || isItemsDirty}
         missingFamilyCount={missingFamilyCount} missingModelCount={missingModelCount}
         onCreateDescriptionChange={setCreateDescription}
         onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
@@ -403,7 +421,7 @@ export function PlaylistsManager({
 
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
-      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid gap-6 xl:grid-cols-[250px_minmax(0,1fr)]">
         <PlaylistsSidebar
           emptyFamilyCount={emptyFamilyCount} familyHelpers={familyHelpers} modelHelpers={modelHelpers}
           groupedPlaylists={groupedPlaylists}
@@ -426,6 +444,8 @@ export function PlaylistsManager({
             onDropOnCard={handleDropOnCard} onDropOnPlaceholder={handleDropOnPlaceholder}
             onFieldChange={handleFieldChange} onRemoveVideo={handleRemoveVideo} onSaveItems={handleSaveItems}
             onSavePlaylist={handleSavePlaylist} onSeedFamilyPlaylist={handleSeedFamilyPlaylist}
+            onMoveItem={(videoId, offset) => { setItems(current => movePlaylistItem(current, videoId, offset)); setItemsDirty(true); }}
+            onCancelOrder={() => { setItems(savedItems.current); setItemsDirty(false); clearDragState(); }}
             playlist={selectedPlaylist}
           />
         </section>

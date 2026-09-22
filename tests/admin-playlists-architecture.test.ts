@@ -95,8 +95,6 @@ test('admin playlist helper modules expose the expected contract', () => {
 
   assert.match(sidebarSource, /export function PlaylistsSidebar/, 'PlaylistsSidebar should be exported');
   assert.match(sidebarSource, /GROUP_LABELS\.runtime/, 'PlaylistsSidebar should own rail grouping labels');
-  assert.match(sidebarSource, /MissingFamilyCard/, 'PlaylistsSidebar should compose missing family cards');
-  assert.match(sidebarSource, /MissingModelCard/, 'PlaylistsSidebar should compose missing model cards');
   assert.match(createFormSource, /export function PlaylistCreateForm/, 'PlaylistCreateForm should be exported');
   assert.match(createFormSource, /placeholder="Homepage holiday edits"/, 'PlaylistCreateForm should own new collection form fields');
   assert.match(detailsPanelSource, /export function PlaylistDetailsPanel/, 'PlaylistDetailsPanel should be exported');

@@ -52,7 +52,7 @@ export function PlaylistsManagerToolbar({
 }: PlaylistsManagerToolbarProps) {
   return (
     <>
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <details className="border-b border-border pb-3"><summary className="cursor-pointer text-xs font-medium text-text-secondary">Collection maintenance</summary><header className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         {!embedded ? (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
@@ -65,26 +65,26 @@ export function PlaylistsManagerToolbar({
           </div>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onToggleDraftCollections}>
+          <Button disabled={isPending} type="button" variant="outline" size="sm" onClick={onToggleDraftCollections}>
             {showDraftCollections ? 'Hide draft / empty' : `Show draft / empty (${draftCount})`}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onCreateMissingFamilyPlaylists}>
+          <Button disabled={isPending} type="button" variant="outline" size="sm" onClick={onCreateMissingFamilyPlaylists}>
             {missingFamilyCount > 0 ? `Create missing family playlists (${missingFamilyCount})` : 'Sync family playlists'}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onCreateMissingModelPlaylists}>
+          <Button disabled={isPending} type="button" variant="outline" size="sm" onClick={onCreateMissingModelPlaylists}>
             {missingModelCount > 0 ? `Create missing model playlists (${missingModelCount})` : 'Sync model playlists'}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onSeedAllFamilyPlaylists}>
+          <Button disabled={isPending} type="button" variant="outline" size="sm" onClick={onSeedAllFamilyPlaylists}>
             Seed all family playlists
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onSeedAllModelPlaylists}>
+          <Button disabled={isPending} type="button" variant="outline" size="sm" onClick={onSeedAllModelPlaylists}>
             Seed all model playlists
           </Button>
-          <Button type="button" size="sm" onClick={onToggleCreateForm}>
+          <Button disabled={isPending} type="button" size="sm" onClick={onToggleCreateForm}>
             {showCreateForm ? 'Close new collection' : '+ New collection'}
           </Button>
         </div>
-      </header>
+      </header></details>
 
       {showCreateForm ? (
         <PlaylistCreateForm

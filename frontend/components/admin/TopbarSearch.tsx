@@ -9,7 +9,7 @@ type SearchScope = 'users' | 'jobs';
 
 const scopeOptions: Array<{ value: SearchScope; label: string }> = [
   { value: 'users', label: 'Users' },
-  { value: 'jobs', label: 'Jobs' },
+  { value: 'jobs', label: 'Generations' },
 ];
 
 type TopbarSearchProps = {
@@ -56,8 +56,8 @@ export function TopbarSearch({ compact = false }: TopbarSearchProps) {
     <form
       onSubmit={handleSubmit}
       className={[
-        'flex w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface shadow-card',
-        compact ? 'h-11 px-2.5' : 'h-10 px-2',
+        'flex w-full min-w-0 items-center gap-2 rounded-md border border-border bg-surface',
+        compact ? 'h-11 px-2.5' : 'h-9 px-2',
       ].join(' ')}
     >
       <label className="sr-only" htmlFor={inputId}>

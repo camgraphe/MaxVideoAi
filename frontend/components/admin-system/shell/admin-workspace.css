@@ -1,0 +1,34 @@
+.admin-workspace {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f3f4f7;
+  --surface-hover: #f5f6fa;
+  --text-primary: #202530;
+  --text-secondary: #525c6d;
+  --text-muted: #667085;
+  --border: #dde1e8;
+  --hairline: #e9ebf0;
+  --border-hover: #a0a8b8;
+  --brand: #5454cc;
+  --brand-hover: #4444b5;
+  --on-brand: #ffffff;
+  --ring: #7777dd;
+  --success: #187048;
+  --success-bg: #edf8f1;
+  --success-border: #c5e6d3;
+  --warning: #8a590b;
+  --warning-bg: #fff8e8;
+  --warning-border: #edd8ad;
+  --error: #b42318;
+  --error-bg: #fff1f0;
+  --error-border: #f5c9c5;
+  --info: #375bb0;
+  --info-bg: #eef3ff;
+  --info-border: #cddafb;
+  color: var(--text-primary);
+}
+.admin-workspace :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.admin-workspace table { font-variant-numeric: tabular-nums; }
+.admin-workspace thead { background: #f8f9fc; }
+.admin-workspace tbody tr:hover { background-color: #f8f9fc; }

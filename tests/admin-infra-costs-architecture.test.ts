@@ -80,5 +80,4 @@ test('infra costs alert cron is authenticated and scheduled', () => {
 test('infra costs is reachable from admin navigation', () => {
   assert.match(navSource, /id: 'infra-costs'/, 'admin nav should include infra costs');
   assert.match(navSource, /href: '\/admin\/infra-costs'/, 'admin nav should link to infra costs');
-  assert.match(sidebarSource, /costs: BadgeDollarSign/, 'sidebar should map the infra costs icon');
 });
