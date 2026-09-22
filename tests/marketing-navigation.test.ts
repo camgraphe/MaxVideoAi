@@ -327,7 +327,7 @@ test('marketing footer links to the pay-as-you-go support page without promoting
 test('marketing nav keeps logged-out state after an explicit workspace logout intent', () => {
   assert.match(marketingNavSource, /import \{ consumeLogoutIntent, setLogoutIntent \} from '@\/lib\/logout-intent';/);
   assert.match(marketingNavSource, /const logoutIntentActive = consumeLogoutIntent\(\);/);
-  assert.match(marketingNavSource, /if \(logoutIntentActive\) \{\s*await supabase\.auth\.signOut\(\)\.catch\(\(\) => undefined\);\s*return;/s);
+  assert.match(marketingNavSource, /if \(logoutIntentActive\) \{\s*await supabase\.auth\.signOut\(\{ scope: 'local' \}\)\.catch\(\(\) => undefined\);\s*return;/s);
   assert.match(marketingNavSource, /if \(logoutIntentActive\) return;/);
 });
 

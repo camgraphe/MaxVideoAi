@@ -19,7 +19,7 @@ async function getSupabaseClient() {
 
 function sendSignOutRequest() {
   void getSupabaseClient()
-    .then((supabase) => supabase.auth.signOut())
+    .then((supabase) => supabase.auth.signOut({ scope: 'local' }))
     .catch(() => undefined);
   const payload = JSON.stringify({});
   if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
