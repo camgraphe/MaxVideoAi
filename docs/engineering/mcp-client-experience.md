@@ -82,6 +82,10 @@ actionnables suit les [recommandations Anthropic sur les outils](https://www.ant
 
 ## Plugin installé mais outils indisponibles
 
+La déconnexion ordinaire du site doit préserver les sessions OAuth indépendantes
+des connecteurs. Suivre [la politique de portée des déconnexions](auth-signout-scope.md)
+pour les appels Supabase et la vérification du renouvellement après expiration.
+
 Diagnostiquer les états dans cet ordre, sans effacer le travail en cours :
 
 | État observé | Action |
