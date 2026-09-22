@@ -31,18 +31,20 @@ configuration as part of a customer request.
   `engine_overrides` without global schema DDL or default-engine seed writes,
   including unknown/disabled-engine error resolution.
 
-Preflight must match generation's effective system configuration even when the
+Catalog reads and preflight must match generation's effective system configuration even when the
 stored system row predates the deployed catalog. `engine-settings-defaults.ts`
 owns the pure payload transformation shared by the generation seed writer and
-preflight: for the `getBaseEngines()` seed population only, missing/system-owned
+the app catalog, MCP catalog, transactional readers, and preflight: for the `getBaseEngines()` seed population only, missing/system-owned
 rows (`updated_by IS NULL`) receive current catalog options and pricing in
 memory, with the same JSON normalization and legacy pricing fallback as the
 persisted seed. Explicit administrator rows remain authoritative, and active /
 disabled overrides are applied afterward as before. The private-capable lookup
 uses this policy for public models too; hidden/image/private models outside the
 seed population keep their stored settings. Canary authorization and mode
-executability remain prerequisites for private resolution. Existing MCP catalog
-and transactional readers do not opt into this preflight policy.
+executability remain prerequisites for private resolution. Every app/MCP list,
+exact-model lookup, and transactional lookup applies the same in-memory system
+projection. This prevents old seeded resolutions and input limits from reappearing
+after a capability deployment without requiring a read request to seed the database.
 
 These responses remain account/private scoped where applicable. Do not add a
 cross-account server cache or return stale wallet, export, engine, or job data to
@@ -78,6 +80,9 @@ build, or deploy hook.
   system prices/capabilities, administrator rows, missing rows and disabled /
   unknown engines. `tests/engine-settings-defaults.test.ts` covers the pure
   transformation, seed population, and private-canary boundaries.
+- `tests/current-seeded-engine-capabilities.test.ts` covers stale H3/H3 Max
+  system rows across app/MCP list, exact, and transactional reads, preservation of
+  administrator settings and disabled overrides, and SELECT/LOCK-only access.
 - `tests/mcp-read-only-engine-resolution.test.ts` protects the shared read-only
   catalog from schema and seed dependencies.
 - `tests/application-schema-bootstrap-postgres.test.ts` qualifies new-database

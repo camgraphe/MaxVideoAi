@@ -86,7 +86,10 @@ Before merge or PR, run a full build when feasible:
 npm --prefix frontend run build
 ```
 
-Frontend `prebuild` first validates the model registry and then runs the offline public-rendition coherence and critical-home coverage gate. This gate does not make network, storage or database calls; use the explicit rendition command and its documented review/HTTP activation sequence for operational changes.
+Before production delivery, follow `docs/deployment/github-vercel.md` and the root
+AGENTS production policy, including `pnpm deployment:check`.
+
+Frontend `prebuild` first validates the model registry, checks production Git provenance, and then runs the offline public-rendition coherence and critical-home coverage gate. This gate does not make network, storage or database calls; use the explicit rendition command and its documented review/HTTP activation sequence for operational changes.
 
 ## Current Architecture Notes
 

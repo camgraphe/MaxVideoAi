@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "reason": "Reviewed H3 provider rates and 480P entry option; H3 Max now exposes the official 1080P option. Existing canonical 30% markup is preserved. User authorized provider cost and margin-aware adjustments on 2026-09-22.",
+  "rows": [
+    {
+      "previous": {
+        "id": "estimator:minimax-h3:member:default",
+        "surface": "estimator",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 80,
+        "marginCents": 24,
+        "discountCents": 0,
+        "customerTotalCents": 104,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "estimator:minimax-h3:member:default",
+        "surface": "estimator",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 50,
+        "marginCents": 15,
+        "discountCents": 0,
+        "customerTotalCents": 65,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "estimator:minimax-h3:plus:default",
+        "surface": "estimator",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 80,
+        "marginCents": 24,
+        "discountCents": 0,
+        "customerTotalCents": 104,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "estimator:minimax-h3:plus:default",
+        "surface": "estimator",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 50,
+        "marginCents": 15,
+        "discountCents": 0,
+        "customerTotalCents": 65,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "estimator:minimax-h3:pro:default",
+        "surface": "estimator",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 80,
+        "marginCents": 24,
+        "discountCents": 0,
+        "customerTotalCents": 104,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "estimator:minimax-h3:pro:default",
+        "surface": "estimator",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 50,
+        "marginCents": 15,
+        "discountCents": 0,
+        "customerTotalCents": 65,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:minimax-h3-max:10s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3-max",
+        "status": "unavailable"
+      },
+      "current": {
+        "id": "pricing-hub-video:minimax-h3-max:10s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3-max",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 208,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$2.08",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:minimax-h3-max:10s-1080p-audio",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3-max",
+        "status": "unavailable"
+      },
+      "current": {
+        "id": "pricing-hub-video:minimax-h3-max:10s-1080p-audio",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3-max",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 208,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$2.08",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:minimax-h3-max:8s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3-max",
+        "status": "unavailable"
+      },
+      "current": {
+        "id": "pricing-hub-video:minimax-h3-max:8s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3-max",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 167,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.67",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:minimax-h3:entry-route",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 104,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.04",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:minimax-h3:entry-route",
+        "surface": "pricing-hub-video",
+        "engineId": "minimax-h3",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 78,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$0.78",
+        "compatibilityProfile": "standard"
+      }
+    }
+  ]
+}

@@ -1,4 +1,24 @@
 {
+  "passwordRecovery": {
+    "title": "Choose a new password",
+    "intro": "Continue to verify your reset link securely.",
+    "verify": "Continue",
+    "verifying": "Verifying your link…",
+    "password": "New password",
+    "confirm": "Confirm new password",
+    "save": "Save new password",
+    "saving": "Saving…",
+    "saved": "Your password has been updated.",
+    "continueToApp": "Continue to the app",
+    "requestNew": "Request a new link",
+    "invalid": "This link is invalid or has expired. Request a new one. If you used another browser, try opening the original link in the browser where you requested it.",
+    "tooShort": "Use at least 6 characters.",
+    "mismatch": "The passwords do not match.",
+    "weak": "Choose a stronger password.",
+    "same": "Choose a password different from your current one.",
+    "unavailable": "We could not update your password. Please try again.",
+    "ready": "Enter and confirm your new password."
+  },
   "nav": {
     "account": {
       "signedIn": "Signed in",

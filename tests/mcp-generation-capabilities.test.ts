@@ -285,6 +285,8 @@ test('MiniMax H3 provider constraints receive references in their canonical medi
     height: null,
     durationSec: 5,
     mimeType: 'audio/mpeg',
+    sizeBytes: 1024,
+    originalName: 'voice.mp3',
   }];
   const ref2v = request({
     engineId: 'minimax-h3',
@@ -293,7 +295,7 @@ test('MiniMax H3 provider constraints receive references in their canonical medi
     references: [audio],
   });
 
-  assert.throws(() => validateCanonicalGenerationCapabilities(
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
     ref2v,
     minimax,
     { resolvedReferences: resolvedAudio },
@@ -310,6 +312,8 @@ test('MiniMax H3 provider constraints receive references in their canonical medi
       height: 1024,
       durationSec: null,
       mimeType: 'image/png',
+      sizeBytes: 1024,
+      originalName: 'subject.png',
     }] },
   ));
 });
@@ -326,10 +330,16 @@ test('H3, image, and Seedance capabilities allow the same media in distinct auth
       mode: 'i2v',
       settings: { durationSec, resolution },
       references: [
-        { kind: 'https', url, role: 'first_frame', mediaKind: 'image' },
-        { kind: 'https', url, role: 'last_frame', mediaKind: 'image' },
+        { kind: 'asset', assetId: 'shared-frame', role: 'first_frame' },
+        { kind: 'asset', assetId: 'shared-frame', role: 'last_frame' },
       ],
-    }), candidate));
+    }), candidate, {
+      resolvedReferences: (['first_frame', 'last_frame'] as const).map((role) => ({
+        assetId: 'shared-frame', role, mediaKind: 'image', storageUrl: url,
+        width: 1280, height: 720, durationSec: null,
+        mimeType: 'image/png', sizeBytes: 1024, originalName: 'shared-frame.png',
+      })),
+    }));
   }
 
   const imageFields: EngineInputField[] = [

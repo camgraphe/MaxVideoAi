@@ -1,4 +1,24 @@
 {
+  "passwordRecovery": {
+    "title": "Choisissez un nouveau mot de passe",
+    "intro": "Continuez pour vérifier votre lien de réinitialisation.",
+    "verify": "Continuer",
+    "verifying": "Vérification du lien…",
+    "password": "Nouveau mot de passe",
+    "confirm": "Confirmez le nouveau mot de passe",
+    "save": "Enregistrer le nouveau mot de passe",
+    "saving": "Enregistrement…",
+    "saved": "Votre mot de passe a été modifié.",
+    "continueToApp": "Accéder à l’application",
+    "requestNew": "Demander un nouveau lien",
+    "invalid": "Ce lien est invalide ou a expiré. Demandez-en un nouveau. Si vous avez changé de navigateur, essayez d’ouvrir le lien initial dans le navigateur utilisé pour le demander.",
+    "tooShort": "Utilisez au moins 6 caractères.",
+    "mismatch": "Les mots de passe ne correspondent pas.",
+    "weak": "Choisissez un mot de passe plus robuste.",
+    "same": "Choisissez un mot de passe différent du précédent.",
+    "unavailable": "Impossible de modifier votre mot de passe. Réessayez.",
+    "ready": "Saisissez et confirmez votre nouveau mot de passe."
+  },
   "nav": {
     "account": {
       "signedIn": "Connecté",

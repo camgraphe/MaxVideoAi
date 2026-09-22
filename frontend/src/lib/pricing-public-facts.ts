@@ -11,6 +11,7 @@ import {
 import { isLumaRay2EngineId, isLumaRay2GenerateMode } from '@/lib/luma-ray2';
 import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
+import { isWan3EngineId, withWan3InputVideoPricing } from '@/lib/wan3-pricing';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import {
   isGptImage25EngineId,
@@ -51,6 +52,7 @@ export type PublicPricingFactsContext = {
   aspectRatio?: string | null;
   quality?: string | null;
   referenceImageCount?: number;
+  referenceTokenBudget?: number;
   verifiedReferenceTokenCount?: number;
   inputImageCount?: number;
   inputVideoDurationSec?: number;
@@ -117,7 +119,7 @@ function buildStandardDefinitionFacts(
     ...definition,
     currency,
   };
-  const definitionFacts = computePricingDefinitionFacts(factualDefinition, {
+  let definitionFacts = computePricingDefinitionFacts(factualDefinition, {
     durationSec,
     resolution,
     ...(context.mode ? { mode: context.mode } : {}),
@@ -129,6 +131,9 @@ function buildStandardDefinitionFacts(
       : {}),
     ...(context.addons ? { addons: context.addons } : {}),
   });
+  if (isWan3EngineId(engine.id)) {
+    definitionFacts = withWan3InputVideoPricing(definitionFacts, context);
+  }
   return {
     facts: {
       engineId: engine.id,
@@ -188,7 +193,8 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     const reference = calculateMinimaxH3MaxProviderCost({
       mode: mode as 't2v' | 'i2v' | 'ref2v',
       durationSec,
-      resolution: resolution as '480P' | '768P',
+      resolution: resolution as '480P' | '768P' | '1080P',
+      referenceTokenBudget: context.referenceTokenBudget,
       verifiedReferenceTokenCount: context.verifiedReferenceTokenCount,
     });
     const referenceTokenCents = Math.round(reference.referenceTokenSubtotalUsd * 100);
@@ -210,6 +216,8 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
         public_provider: 'MiniMax',
         public_family: 'Hailuo',
         mode,
+        reference_pricing_basis: reference.referencePricingBasis,
+        provider_cost_is_estimate: context.referenceTokenBudget !== undefined,
         cost_breakdown_usd: reference,
       },
     });
@@ -218,7 +226,7 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
   if (isMinimaxH3EngineId(engine.id)) {
     const reference = calculateMinimaxH3ProviderPrice({
       durationSec,
-      resolution: resolution as '768P' | '2K' | '4K',
+      resolution: resolution as '480P' | '768P' | '2K' | '4K',
       referenceImageCount: context.referenceImageCount,
     });
     const surchargeCents = Math.round(reference.breakdown.referenceImageSurchargeUsd * 100);

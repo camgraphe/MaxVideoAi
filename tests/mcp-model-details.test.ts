@@ -211,6 +211,7 @@ test('model details project one executable public model into the exact safe shap
         settings: [],
         references: [{
           type: 'image', roles: ['source', 'first_frame'], assetRequired: false,
+          maxSizeMB: 30,
           required: true, min: 1, max: 1,
         }],
       },
@@ -225,7 +226,7 @@ test('model details project one executable public model into the exact safe shap
         outputCount: { min: 1, max: 1, default: 1 },
         settings: [],
         references: [
-          { type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 9 },
+          { type: 'image', roles: ['reference'], assetRequired: false, maxSizeMB: 30, required: false, min: 0, max: 9 },
           { type: 'audio', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 3 },
         ],
       },
@@ -309,12 +310,16 @@ test('real i2i model details honor requiredInModes even when the field is stored
   assert.deepEqual(textMode.resolutions, ['square_hd', 'landscape_hd', 'portrait_hd']);
   assert.deepEqual(textMode.references, []);
   assert.deepEqual(editMode.references, [
-    { type: 'image', roles: ['reference'], assetRequired: false, required: true, min: 1, max: 4 },
+    {
+      type: 'image', roles: ['reference'], assetRequired: false, required: true, min: 1, max: 4,
+      maxSizeMB: 25, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+    },
   ]);
   assert.equal(Object.isFrozen(editMode.references), true);
   assert.doesNotMatch(
     JSON.stringify(details),
-    /google_vertex_image|providerMeta|pricingDetails|acceptedMimeTypes/i,
+    /google_vertex_image|providerMeta|pricingDetails/i,
   );
 });
 
@@ -374,8 +379,18 @@ test('Luma Ray 2 V2V details explain source-derived duration and fixed pricing r
   assert.deepEqual(mode.resolutions, ['540p']);
   assert.deepEqual(mode.aspectRatios, []);
   assert.deepEqual(mode.references, [
-    { type: 'video', roles: ['source'], assetRequired: true, required: true, min: 1, max: 1 },
-    { type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 1, max: 1 },
+    {
+      type: 'video', roles: ['source'], assetRequired: true, required: true, min: 1, max: 1,
+      maxSizeMB: 500,
+      acceptedMimeTypes: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'],
+      acceptedFileExtensions: ['mp4', 'mov', 'webm', 'm4v'],
+    },
+    {
+      type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 1, max: 1,
+      maxSizeMB: 10,
+      acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+      acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    },
   ]);
 });
 
@@ -387,10 +402,21 @@ test('Luma Ray 3.2 V2V details distinguish one guide frame from ordered edit key
     {
       type: 'video', roles: ['source'], assetRequired: true,
       durationSec: { min: null, max: 30, combinedMax: null },
+      maxSizeMB: 200,
+      acceptedMimeTypes: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'],
+      acceptedFileExtensions: ['mp4', 'mov', 'webm', 'm4v'],
       required: true, min: 1, max: 1,
     },
-    { type: 'image', roles: ['first_frame'], assetRequired: false, required: false, min: 0, max: 1 },
-    { type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 64 },
+    {
+      type: 'image', roles: ['first_frame'], assetRequired: false, required: false, min: 0, max: 1,
+      maxSizeMB: 50, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+    },
+    {
+      type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 64,
+      maxSizeMB: 50, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+    },
   ]);
 });
 

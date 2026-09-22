@@ -1,6 +1,7 @@
 import {
   MINIMAX_H3_ENDPOINTS,
   MINIMAX_H3_ID,
+  MINIMAX_H3_PROMPT_EXPANSION_MODES,
 } from '@/src/config/fal-engines/minimax-h3';
 import type { GeneratePayload } from '@/lib/fal-types';
 
@@ -56,6 +57,17 @@ export function buildMinimaxH3FalRequest(payload: GeneratePayload): {
   if (prompt) requestBody.prompt = prompt;
   if (duration !== undefined) requestBody.duration = duration;
   if (resolution) requestBody.resolution = resolution;
+  const expansion = payload.extraInputValues?.prompt_expansion_mode;
+  if (typeof expansion === 'string' && (MINIMAX_H3_PROMPT_EXPANSION_MODES as readonly string[]).includes(expansion)) {
+    requestBody.prompt_expansion_mode = expansion;
+  }
+  const seed = payload.seed ?? payload.extraInputValues?.seed;
+  if (typeof seed === 'number' && Number.isInteger(seed)) requestBody.seed = seed;
+
+  if (mode === 't2v' || mode === 'i2v') {
+    const targetAudioUrl = firstAttachmentUrl(payload, 'target_audio_url');
+    if (targetAudioUrl) requestBody.target_audio_url = targetAudioUrl;
+  }
 
   if (mode === 't2v' || mode === 'ref2v') {
     const aspectRatio = payload.aspectRatio?.trim();
@@ -70,7 +82,10 @@ export function buildMinimaxH3FalRequest(payload: GeneratePayload): {
   }
 
   if (mode === 'ref2v') {
-    const referenceImageUrls = attachmentUrls(payload, 'reference_image_urls');
+    const referenceImageUrls = Array.from(new Set([
+      ...(payload.referenceImages ?? []).map((url) => url.trim()).filter(Boolean),
+      ...attachmentUrls(payload, 'reference_image_urls'),
+    ]));
     const referenceVideoUrls = attachmentUrls(payload, 'reference_video_urls');
     const referenceAudioUrls = attachmentUrls(payload, 'reference_audio_urls');
     if (referenceImageUrls.length) requestBody.reference_image_urls = referenceImageUrls;

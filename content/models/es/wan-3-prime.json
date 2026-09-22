@@ -2,10 +2,10 @@
   "marketingName": "Wan 3 Prime",
   "versionLabel": "3 Prime",
   "seo": {
-    "title": "Generador de video con IA Wan 3 Prime: flujo premium",
-    "description": "Evalúa Wan 3 Prime para una producción premium desde texto, imagen o referencias, con consejos, elección del modelo hermano y cotizaciones canónicas."
+    "title": "Wan 3 Prime: video IA, referencias, edición y extensión",
+    "description": "Crea con Wan 3 Prime desde texto, fotogramas o referencias en 480p–1080p. Edita o extiende un video con referencias opcionales de imagen y audio."
   },
-  "overview": "Wan 3 Prime es el modelo premium actual de la familia Wan 3. Conserva los flujos de texto, imagen y referencias para briefs que eligen de forma deliberada la ruta Prime. Alibaba/Tongyi es propietario de Wan; MaxVideoAI distribuye estos endpoints mediante Fal sin sugerir un acuerdo directo con el propietario.",
+  "overview": "Wan 3 Prime es un modelo de Alibaba/Tongyi para texto a video, animación de imágenes, referencias combinadas, edición y extensión de video. Elige de 2 a 30 segundos y 480p, 720p o 1080p, y revisa el precio antes de generar.",
   "decision": {
     "modelSlug": "wan-3-prime",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Dale espacio a tu escena"
       ],
-      "paragraph": "Wan 3 Prime genera videos con IA a partir de texto, una imagen inicial o referencias combinadas. Elige entre 2 y 30 segundos y una resolución de 480p a 1080p. Compáralo con Wan 3 según tu proyecto y presupuesto.",
+      "paragraph": "Wan 3 Prime es un modelo de Alibaba/Tongyi para texto a video, animación de imágenes, referencias combinadas, edición y extensión de video. Elige de 2 a 30 segundos y 480p, 720p o 1080p, y revisa el precio antes de generar.",
       "primaryCta": {
         "label": "Generar con Wan 3 Prime",
         "href": "/app?engine=wan-3-prime"
@@ -48,9 +48,9 @@
       "description": "Los resultados Prime revisados aparecerán después de su aceptación",
       "renderLabel": "Revisar el render aceptado",
       "badges": [
-        "Prime",
-        "Tres modos",
-        "Hasta 1080p"
+        "Cinco modos",
+        "Hasta 1080p",
+        "Audio nativo"
       ],
       "altContext": "ejemplo de producción Wan 3 Prime aceptado"
     },
@@ -62,12 +62,12 @@
       },
       {
         "title": "Inicio mediante prompt o imagen",
-        "body": "Genera desde texto o anima una imagen inicial con una imagen final opcional. Describe la transición y la respuesta física sin repetir cada píxel.",
+        "body": "Usa una imagen inicial obligatoria y una imagen final opcional. Mantén estos fotogramas separados de las referencias combinadas y describe el movimiento entre ambos puntos.",
         "tone": "reference"
       },
       {
         "title": "Referencias mixtas estructuradas",
-        "body": "El modo de referencias admite varias categorías bajo límites distintos. Asigna explícitamente funciones de identidad, movimiento, sonido y contexto.",
+        "body": "Guía la escena con hasta 10 imágenes, 5 videos y 5 audios. Los videos y el audio tienen cada uno un límite total de 15 segundos. Todos los videos proporcionados más el video generado no deben superar 30 segundos en total. Un documento compatible o una página pública pueden aportar contexto; elige uno de esos dos tipos de URL.",
         "tone": "continuity"
       },
       {
@@ -109,11 +109,15 @@
       },
       {
         "title": "Animación premium de imagen",
-        "body": "Parte de una imagen sólida y dirige el movimiento sin pedir al modelo que rediseñe la fuente."
+        "body": "Usa una imagen inicial obligatoria y una imagen final opcional. Mantén estos fotogramas separados de las referencias combinadas y describe el movimiento entre ambos puntos."
       },
       {
-        "title": "Jerarquía de referencias",
-        "body": "Indica qué fuente gobierna identidad, movimiento, ritmo o contexto."
+        "title": "Referencias a video",
+        "body": "Guía la escena con hasta 10 imágenes, 5 videos y 5 audios. Los videos y el audio tienen cada uno un límite total de 15 segundos. Todos los videos proporcionados más el video generado no deben superar 30 segundos en total. Un documento compatible o una página pública pueden aportar contexto; elige uno de esos dos tipos de URL."
+      },
+      {
+        "title": "Editar o extender un video",
+        "body": "Parte de un video fuente de hasta 15 segundos y añade referencias opcionales de imagen o audio. La duración del video fuente y la generada no deben superar 30 segundos en total."
       },
       {
         "title": "Entrega responsable",
@@ -123,13 +127,13 @@
     "pricingCopy": {
       "title": "Precios por escenario de Wan 3 Prime",
       "subtitle": "Compara la misma escena de seis segundos en 720p y 1080p.",
-      "footnote": "El precio depende de tus ajustes. MaxVideoAI confirma la cotización antes de generar.",
+      "footnote": "Añadir video aumenta tu cotización de Wan 3 Prime: su duración se incluye en el precio junto con la del video generado, tanto para referencias como para edición o extensión. MaxVideoAI confirma la cotización antes de generar.",
       "ctaLabel": "Generar con Wan 3 Prime",
       "ctaHref": "/app?engine=wan-3-prime"
     },
     "meta": {
-      "title": "Modelo de video con IA Wan 3 Prime y flujo premium",
-      "description": "Comprende los modos, duraciones, referencias, prompts, seguridad, alternativa Wan estándar y escenarios canónicos de Wan 3 Prime."
+      "title": "Wan 3 Prime: video IA, referencias, edición y extensión",
+      "description": "Crea con Wan 3 Prime desde texto, fotogramas o referencias en 480p–1080p. Edita o extiende un video con referencias opcionales de imagen y audio."
     }
   },
   "prompting": {
@@ -178,7 +182,7 @@
       },
       {
         "tabId": "control",
-        "body": "Menos referencias con funciones nombradas reducen la ambigüedad durante la evaluación."
+        "body": "Guía la escena con hasta 10 imágenes, 5 videos y 5 audios. Los videos y el audio tienen cada uno un límite total de 15 segundos. Todos los videos proporcionados más el video generado no deben superar 30 segundos en total. Un documento compatible o una página pública pueden aportar contexto; elige uno de esos dos tipos de URL."
       }
     ],
     "globalPrinciples": [

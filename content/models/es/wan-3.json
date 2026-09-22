@@ -2,10 +2,10 @@
   "marketingName": "Wan 3",
   "versionLabel": "3",
   "seo": {
-    "title": "Generador de video con IA Wan 3: texto, imagen y referencias",
-    "description": "Descubre cuándo usar Wan 3 para generar desde texto, animar una imagen o dirigir una escena con referencias, con consejos y precios calculados."
+    "title": "Wan 3: video IA, referencias, edición y extensión",
+    "description": "Crea con Wan 3 desde texto, fotogramas o referencias en 480p–1080p. Edita o extiende un video con referencias opcionales de imagen y audio."
   },
-  "overview": "Wan 3 es la ruta estándar actual de la familia Wan para equipos que quieren reunir texto, imagen y referencias en un solo modelo. Alibaba/Tongyi es propietario del modelo; MaxVideoAI distribuye estos endpoints de lanzamiento mediante Fal, sin afirmar una integración directa con Alibaba.",
+  "overview": "Wan 3 es un modelo de Alibaba/Tongyi para texto a video, animación de imágenes, referencias combinadas, edición y extensión de video. Elige de 2 a 30 segundos y 480p, 720p o 1080p, y revisa el precio antes de generar.",
   "decision": {
     "modelSlug": "wan-3",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Tus ideas, tus referencias, tus ajustes"
       ],
-      "paragraph": "Wan 3 es un modelo de video con IA de Alibaba/Tongyi. Parte de texto, anima una imagen o combina referencias para guiar tu escena. Elige 480p, 720p o 1080p y consulta el precio según tus ajustes antes de generar.",
+      "paragraph": "Wan 3 es un modelo de Alibaba/Tongyi para texto a video, animación de imágenes, referencias combinadas, edición y extensión de video. Elige de 2 a 30 segundos y 480p, 720p o 1080p, y revisa el precio antes de generar.",
       "primaryCta": {
         "label": "Generar con Wan 3",
         "href": "/app?engine=wan-3"
@@ -48,9 +48,9 @@
       "description": "Los ejemplos Wan 3 aprobados aparecerán después de la revisión de lanzamiento",
       "renderLabel": "Revisar el render aceptado",
       "badges": [
-        "Texto",
-        "Imagen",
-        "Referencias"
+        "Cinco modos",
+        "Hasta 1080p",
+        "Audio nativo"
       ],
       "altContext": "ejemplo de video Wan 3 revisado con el modo de generación elegido"
     },
@@ -62,12 +62,12 @@
       },
       {
         "title": "Control de imágenes inicial y final",
-        "body": "Anima una imagen de inicio y añade una imagen final cuando importe la composición de llegada. Enfoca la instrucción en el movimiento que conecta ambos puntos.",
+        "body": "Usa una imagen inicial obligatoria y una imagen final opcional. Mantén estos fotogramas separados de las referencias combinadas y describe el movimiento entre ambos puntos.",
         "tone": "reference"
       },
       {
         "title": "Flujo de referencias mixtas",
-        "body": "El modo de referencias combina medios compatibles bajo límites separados. Asigna a cada fuente una función clara de identidad, movimiento, ritmo o contexto.",
+        "body": "Guía la escena con hasta 10 imágenes, 5 videos y 5 audios. Los videos y el audio tienen cada uno un límite total de 15 segundos. Todos los videos proporcionados más el video generado no deben superar 30 segundos en total. Un documento compatible o una página pública pueden aportar contexto; elige uno de esos dos tipos de URL.",
         "tone": "continuity"
       },
       {
@@ -109,11 +109,15 @@
       },
       {
         "title": "Imagen a video",
-        "body": "Protege la composición cargada y describe solo el movimiento, la cámara y la reacción del entorno."
+        "body": "Usa una imagen inicial obligatoria y una imagen final opcional. Mantén estos fotogramas separados de las referencias combinadas y describe el movimiento entre ambos puntos."
       },
       {
         "title": "Referencias a video",
-        "body": "Usa al menos una referencia válida y respeta los límites de imágenes, clips, audio, archivos y páginas públicas."
+        "body": "Guía la escena con hasta 10 imágenes, 5 videos y 5 audios. Los videos y el audio tienen cada uno un límite total de 15 segundos. Todos los videos proporcionados más el video generado no deben superar 30 segundos en total. Un documento compatible o una página pública pueden aportar contexto; elige uno de esos dos tipos de URL."
+      },
+      {
+        "title": "Editar o extender un video",
+        "body": "Parte de un video fuente de hasta 15 segundos y añade referencias opcionales de imagen o audio. La duración del video fuente y la generada no deben superar 30 segundos en total."
       },
       {
         "title": "Seguridad y derechos",
@@ -123,13 +127,13 @@
     "pricingCopy": {
       "title": "Precios por escenario de Wan 3",
       "subtitle": "Compara una escena en 720p con la misma escena en 1080p.",
-      "footnote": "El precio depende de tus ajustes. MaxVideoAI confirma la cotización antes de generar.",
+      "footnote": "Añadir video aumenta tu cotización de Wan 3: su duración se incluye en el precio junto con la del video generado, tanto para referencias como para edición o extensión. MaxVideoAI confirma la cotización antes de generar.",
       "ctaLabel": "Generar con Wan 3",
       "ctaHref": "/app?engine=wan-3"
     },
     "meta": {
-      "title": "Modelo de video con IA Wan 3, flujos y precios",
-      "description": "Evalúa Wan 3 para texto, imagen y referencias mixtas con límites, estructura de prompt, seguridad, elección del modelo hermano y cotizaciones canónicas."
+      "title": "Wan 3: video IA, referencias, edición y extensión",
+      "description": "Crea con Wan 3 desde texto, fotogramas o referencias en 480p–1080p. Edita o extiende un video con referencias opcionales de imagen y audio."
     }
   },
   "prompting": {
@@ -178,7 +182,7 @@
       },
       {
         "tabId": "references",
-        "body": "El modo de referencias necesita jerarquía: señala la fuente que gobierna identidad, movimiento o ritmo."
+        "body": "Guía la escena con hasta 10 imágenes, 5 videos y 5 audios. Los videos y el audio tienen cada uno un límite total de 15 segundos. Todos los videos proporcionados más el video generado no deben superar 30 segundos en total. Un documento compatible o una página pública pueden aportar contexto; elige uno de esos dos tipos de URL."
       }
     ],
     "globalPrinciples": [

@@ -522,7 +522,11 @@ export function validateModeMediaInputs(params: {
       typeof payload[imageFieldId] === 'string' && payload[imageFieldId].trim().length
         ? payload[imageFieldId].trim()
         : null;
-    if (!imageUrl) {
+    const alternatives = params.inputSchema?.constraints?.atLeastOneReferenceField;
+    const hasAlternativeImage = Array.isArray(alternatives) && fields.some((field) =>
+      field.type === 'image' && field.modes?.includes(normalizedMode) && alternatives.includes(field.id)
+      && typeof payload[field.id] === 'string' && (payload[field.id] as string).trim().length > 0);
+    if (!imageUrl && !hasAlternativeImage) {
       return {
         ok: false,
         error: {

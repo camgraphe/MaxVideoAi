@@ -179,13 +179,13 @@ export function buildGenerateValidationPayload(params: {
         = refAudioUrls;
     }
   }
-  if (params.mode === 'v2v' && params.normalizedReferenceImages.length) {
+  if ((params.mode === 'v2v' || params.mode === 'extend') && params.normalizedReferenceImages.length) {
     payload[activeMediaFieldId(
       'image', ['image_urls', 'reference_image_urls'],
       params.engineId.startsWith('kling-o3') ? 'image_urls' : 'reference_image_urls')]
       = params.normalizedReferenceImages;
   }
-  if (params.mode === 'v2v') {
+  if (params.mode === 'v2v' || params.mode === 'extend') {
     const audioUrls = Array.from(
       new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls])
     );
@@ -207,7 +207,13 @@ export function buildGenerateValidationPayload(params: {
     payload.video_url = params.sourceInputVideoUrl;
   }
   if (params.resolvedAudioUrl && params.mode !== 'ref2v') {
-    payload.audio_url = params.resolvedAudioUrl;
+    const fieldId = activeMediaFieldId(
+      'audio', ['target_audio_url', 'audio_url', 'audio_urls', 'reference_audio_urls'], 'audio_url');
+    if (fieldId === 'audio_url' || fieldId === 'target_audio_url') {
+      payload[fieldId] = params.resolvedAudioUrl;
+    } else if (!(fieldId in payload)) {
+      payload[fieldId] = [params.resolvedAudioUrl];
+    }
   }
   if (params.elements?.length) {
     payload.elements = params.elements;
@@ -257,7 +263,7 @@ export function buildGenerateValidationPayload(params: {
 
   if (params.isLumaRay2 && params.mode === 'i2v') {
     payload.image_url = params.initialImageUrl;
-  } else if (needsImage) {
+  } else if (needsImage && params.initialImageUrl) {
     payload[activeMediaFieldId(
       'image', ['start_image_url', 'image_url', 'first_frame_url'], 'image_url')]
       = params.initialImageUrl;
@@ -345,7 +351,14 @@ function validateRequiredInputs(params: {
     return null;
   }
   if (params.needsImage) {
-    if (!params.initialImageUrl) {
+    const alternativeFields = params.inputSchema?.constraints?.atLeastOneReferenceField;
+    const allowsEndOnly = params.mode === 'i2v'
+      && Array.isArray(alternativeFields) && alternativeFields.includes('end_image_url')
+      && [...(params.inputSchema?.required ?? []), ...(params.inputSchema?.optional ?? [])].some((field) =>
+        field.id === 'end_image_url' && field.type === 'image'
+        && (!field.modes?.length || field.modes.includes(params.mode)));
+    const hasAllowedEndFrame = allowsEndOnly && Boolean(params.endImageUrl || params.lastFrameUrl);
+    if (!params.initialImageUrl && !hasAllowedEndFrame) {
       return missingInput('IMAGE_URL_REQUIRED', params, 'Image URL is required for this engine mode');
     }
     return null;
