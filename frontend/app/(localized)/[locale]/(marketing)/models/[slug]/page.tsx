@@ -1,3 +1,4 @@
+import { hasPlaylistCuration } from '@/server/playlists/curation-service';
 import '@/styles/marketing-models.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
 import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
@@ -214,7 +215,7 @@ async function renderMarketingModelPage({
   try {
     for (const playlistKey of examplePlaylistKeys) {
       examples = await listPlaylistVideos(playlistKey, 200);
-      if (examples.length) break;
+      if (examples.length || await hasPlaylistCuration(playlistKey)) break;
     }
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);

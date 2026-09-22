@@ -1,3 +1,4 @@
+import { assertLegacyPlaylistEditable } from './curation-store';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { mapCreatedPlaylistRow, type CreatedPlaylistRow } from './mappers';
 import { getPlaylistRecordById } from './queries';
@@ -90,11 +91,17 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 }
 
 export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<void> {
-  await appendPlaylistItemWithExecutor({ query }, playlistId, videoId);
+  await withDbTransaction(async executor => {
+    await assertLegacyPlaylistEditable(executor, playlistId);
+    await appendPlaylistItemWithExecutor(executor, playlistId, videoId);
+  });
 }
 
 export async function removePlaylistItem(playlistId: string, videoId: string): Promise<void> {
-  await query(`DELETE FROM playlist_items WHERE playlist_id = $1 AND video_id = $2`, [playlistId, videoId]);
+  await withDbTransaction(async executor => {
+    await assertLegacyPlaylistEditable(executor, playlistId);
+    await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1 AND video_id = $2`, [playlistId, videoId]);
+  });
 }
 
 export async function reorderPlaylistItems(
@@ -102,6 +109,7 @@ export async function reorderPlaylistItems(
   order: Array<{ videoId: string; pinned?: boolean }>
 ): Promise<void> {
   await withDbTransaction(async (executor) => {
+    await assertLegacyPlaylistEditable(executor, playlistId);
     await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
     if (!order.length) return;
 

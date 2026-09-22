@@ -243,3 +243,11 @@ admin-overview-read, admin-playlist-selection and admin-playlist-order-postgres 
 
 
 The operational workspaces follow-up keeps Users directory and Generations audit controllers intact while simplifying their views. Collapsed job filters stay mounted and open for active advanced parameters. Moderation accepts an initial read error separately from an empty successful collection. The editorial inventory joins the exact version/digest publication record and separately reports the latest verified published version; neither approval nor an older publication establishes publication of a new draft. Trends renders one focus series and retains the existing comparison query semantics. Regression coverage includes `admin-job-filters-render`, `admin-moderation-read-state`, `admin-editorial-status` and `editorial-admin-inventory-postgres`.
+
+## Opt-in public curation
+
+Migration `52_playlist_curations.sql` adds separate per-destination state and performs no data migration. Apply it through the normal Neon migration process before enabling the new editor. Missing schema preserves legacy public readers; the editor reports setup unavailable. Homepage and starter destinations keep their existing workflows.
+
+`server/playlists/curation-service.ts` owns eligibility, preview fingerprints and transactional saves. `curation-store.ts` owns revision snapshots and the advisory lock shared with legacy playlist mutations. Existing feeds are unchanged until an operator previews and saves Manual or Featured + Automatic. Automatic order uses creation date descending and job ID because publication timestamps are not reliable. Public candidates must be completed video jobs, explicitly public/indexable, have a playable source, match canonical destination aliases and have no matching deleted output/asset. Exclusions precede ordering and limits. Every public read rechecks eligibility. Configured empty results are authoritative, including model fallback routes.
+
+`server/videos-playlists.ts` preserves the legacy SQL and delegates configured destinations to the same resolver as preview. Media normalization, originals, preview URLs, output dimensions and public playback hooks retain their owners. A concurrent revision or changed preview is rejected without persistence. No pricing or production data is migrated by this feature.
