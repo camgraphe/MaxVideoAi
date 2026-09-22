@@ -240,3 +240,6 @@ placement/exclusion modes remain separate future work; current public readers ar
 
 Contracts: admin-dashboard-architecture, admin-navigation, admin-reporting-window,
 admin-overview-read, admin-playlist-selection and admin-playlist-order-postgres tests.
+
+
+The operational workspaces follow-up keeps Users directory and Generations audit controllers intact while simplifying their views. Collapsed job filters stay mounted and open for active advanced parameters. Moderation accepts an initial read error separately from an empty successful collection. The editorial inventory joins the exact version/digest publication record and separately reports the latest verified published version; neither approval nor an older publication establishes publication of a new draft. Trends renders one focus series and retains the existing comparison query semantics. Regression coverage includes `admin-job-filters-render`, `admin-moderation-read-state`, `admin-editorial-status` and `editorial-admin-inventory-postgres`.
