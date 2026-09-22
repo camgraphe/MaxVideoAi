@@ -27,8 +27,8 @@ test('MiniMax H3 Max keeps its documented runtime identity and capabilities sepa
   assert.equal(entry.marketingName, 'MiniMax H3 Max');
   assert.equal(entry.provider, 'MiniMax');
   assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v']);
-  assert.deepEqual(entry.engine.resolutions, ['480P', '768P']);
-  assert.deepEqual(entry.engine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.deepEqual(entry.engine.resolutions, ['480P', '768P', '1080P']);
+  assert.deepEqual(entry.engine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16', 'auto']);
   assert.equal(entry.engine.maxDurationSec, 15);
   assert.equal(entry.engine.audio, true);
   assert.deepEqual(
@@ -48,11 +48,11 @@ test('MiniMax H3 Max exposes exact defaults, text ratios, and reference bounds',
   ]);
   assert.equal(field('duration').min, 5);
   assert.equal(field('duration').max, 15);
-  assert.deepEqual(field('resolution').values, ['480P', '768P']);
+  assert.deepEqual(field('resolution').values, ['480P', '768P', '1080P']);
   assert.equal(field('resolution').default, '768P');
   assert.deepEqual(field('aspect_ratio').values, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
   assert.deepEqual(field('aspect_ratio').modes, ['t2v']);
-  assert.deepEqual(field('prompt_expansion_mode').values, ['balanced', 'quality']);
+  assert.deepEqual(field('prompt_expansion_mode').values, ['disabled', 'balanced', 'quality']);
   assert.equal(field('prompt_expansion_mode').default, 'balanced');
   assert.equal(field('reference_image_urls').maxCount, 9);
   assert.equal(field('reference_video_urls').maxCount, 3);

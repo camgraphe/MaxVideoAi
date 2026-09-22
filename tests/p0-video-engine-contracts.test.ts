@@ -130,8 +130,8 @@ test('Wan 3 and Prime preserve the complete provider schema and reference contra
     assert.deepEqual(fieldsFor(id, 't2v').map(({ id: fieldId }) => fieldId).sort(), ['prompt', ...commonControls].sort());
     assert.deepEqual(fieldsFor(id, 'i2v').map(({ id: fieldId }) => fieldId).sort(), ['start_image_url', 'prompt', 'end_image_url', ...commonControls].sort());
     assert.deepEqual(fieldsFor(id, 'ref2v').map(({ id: fieldId }) => fieldId).sort(), referenceFields);
-    assert.deepEqual(fieldsFor(id, 'v2v').map(({ id: fieldId }) => fieldId).sort(), ['video_url', 'prompt', ...commonControls].sort());
-    assert.deepEqual(fieldsFor(id, 'extend').map(({ id: fieldId }) => fieldId).sort(), ['video_url', 'prompt', ...commonControls].sort());
+    assert.deepEqual(fieldsFor(id, 'v2v').map(({ id: fieldId }) => fieldId).sort(), ['video_url', 'prompt', 'reference_image_urls', 'reference_audio_urls', ...commonControls].sort());
+    assert.deepEqual(fieldsFor(id, 'extend').map(({ id: fieldId }) => fieldId).sort(), ['video_url', 'prompt', 'reference_image_urls', 'reference_audio_urls', ...commonControls].sort());
     assert.deepEqual(field(id, 't2v', 'resolution').values, ['480p', '720p', '1080p']);
     assert.deepEqual(field(id, 't2v', 'aspect_ratio').values, ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16']);
     assert.doesNotMatch(field(id, 't2v', 'duration').description ?? '', /smart/i);

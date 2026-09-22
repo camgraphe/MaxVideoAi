@@ -19,7 +19,7 @@ at execution, using the shared media-field constraint helper. Never trust
 client dimension claims or silently crop references. See the
 [7 September incident audit](../operations/minimax-h3-mcp-incident-20260907.md).
 
-Checked 2026-09-03 against the canonical runtime registry and engine schemas.
+Checked 2026-09-22 against the canonical runtime registry and engine schemas.
 
 MCP catalog and exact hidden-model resolution are read-only database paths. They
 use `frontend/src/server/agent-api/read-only-engine-catalog.ts`, whose transitive
@@ -79,14 +79,11 @@ the workspace. Raw media URLs cannot satisfy that contract.
 
 ## Specialized workflows still closed
 
-One app-published model-mode pair and two unpublished prelaunch pairs remain
-intentionally absent from MCP execution:
+One app-published model-mode pair remains intentionally absent from MCP execution:
 
 | Model | Mode | Scope | Why it remains closed |
 | --- | --- | --- | --- |
 | Gemini Omni Flash 1.1 | `retake` | Public MCP | Requires a private previous-interaction identifier; exposing it would break the transport-neutral contract. The authenticated workspace can retain that private interaction state. |
-| MiniMax H3 Max | `i2v` | Public model, execution-gated mode | Trusted MIME type, extension, byte-size, and image-dimension enforcement has not been proven through the complete route. |
-| MiniMax H3 Max | `ref2v` | Public model, execution-gated mode | Mixed image/video/audio references require trusted token metadata and complete per-type limits before the mode can execute. |
 
 LTX 2.3 audio-to-video and retake, the Luma Ray reframe modes, and Kling 2.5
 Standard now use verified MaxVideoAI assets, exact canonical pricing, and the
@@ -95,7 +92,7 @@ provider configuration and runtime availability as the website.
 
 `tests/mcp-special-video-modes.test.ts` is the drift guard. It fails when a new
 app-published mode is not represented by the canonical MCP contract or when the
-explicit H3 Max execution-gated mode list changes without review.
+H3 Max owned-media modes stop being executable without a corresponding review.
 
 ## P1 public access
 
@@ -112,10 +109,41 @@ routes nor fallback implementation details. The direct route remains primary;
 the narrowly tested depleted-balance response may fall back once before any
 direct task is accepted.
 
-MiniMax H3 Max exposes only executable `t2v` in public MCP. Its details contain neither a
-Fal provider label nor a Fal endpoint. `i2v` and `ref2v` fail closed at the
-executability boundary for the reasons recorded above; their theoretical
-engine-schema presence is not projected as an executable capability.
+MiniMax H3 Max exposes executable `t2v`, `i2v`, and `ref2v` in public MCP. Its
+details contain neither a Fal provider label nor a Fal endpoint. Image-to-video
+accepts a start frame, end frame, or both. Text and image generation accept an
+owned audio reference as the target soundtrack. Reference generation accepts
+owned images, videos, and audio, including audio alone. The mode details project
+MIME types, extensions, byte-size limits, durations, and alternative required
+references from the shared schema. Target soundtracks do not inherit the combined
+reference-audio duration limit.
+
+H3 Max reference quotes use the shared `calculateMinimaxH3MaxReferenceTokenBudget`
+supplier-cost budget and the canonical commercial policy. This fixes the customer
+price before approval; it does not claim to reproduce the provider's exact token
+invoice. The adapter feeds only account-owned persisted dimensions and durations,
+never raw URL claims or caller token counts. Confirmation resolves and validates
+the same assets again before repricing and reserving funds. The budget tool has
+only reference roles, so its H3 Max `ref2v` lines return an actionable request to
+prepare a quote with actual owned assets instead of inventing metadata.
+
+Wan 3 and Wan 3 Prime document and webpage references use the canonical
+`documentUrl` and `webpageUrl` settings. They map to the existing provider fields,
+require controlled HTTPS URLs, remain mutually exclusive, and require prompt
+expansion. `enablePromptExpansion` is schema-derived. A document or webpage can
+satisfy reference mode without a media attachment. Image-to-video's `source`
+role resolves the authored start-image field alongside `first_frame`.
+
+Wan 3 and Wan 3 Prime video-reference, edit, and extension quotes include input
+video seconds as well as generated seconds. MCP derives `inputVideoDurationSec`
+from account-owned persisted durations, counting each storage URL once, and
+repeats this derivation at confirmation. Raw video URLs and missing duration
+metadata cannot create an exact quote. Image/audio-only requests have zero input
+video seconds. The project-budget tool cannot classify or measure its role-only
+reference placeholders, so those Wan modes return `REFERENCE_REQUIRED` with a
+route to `prepare_generation` and actual assets. Text/image-only mode estimates
+remain available. This follows the input-plus-output billing documented in
+[Alibaba Model Studio pricing](https://www.alibabacloud.com/help/en/model-studio/model-pricing).
 
 Launch videos are a separate publication concern: the eight P1 media rows are
 published as ordinary production gallery media and attached to their exact

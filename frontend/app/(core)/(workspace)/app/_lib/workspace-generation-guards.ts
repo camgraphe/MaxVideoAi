@@ -7,12 +7,13 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
-import type { Mode } from '@/types/engines';
+import type { EngineInputSchema, Mode } from '@/types/engines';
 import type { GenerationAttachmentPayload } from './workspace-generation-inputs';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
 import type { ReferenceAsset } from './workspace-assets';
 import { VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
+import { fieldAcceptsMode, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
 
 export type LumaRay2GenerationContext = {
   isLumaRay2: boolean;
@@ -56,6 +57,8 @@ export type StartRenderValidationOptions = {
 
 export type GenerationIterationGuardOptions = {
   selectedEngineId: string;
+  inputSchema?: EngineInputSchema;
+  extraInputValues?: Record<string, unknown>;
   submissionMode: Mode | string;
   allowsUnifiedVeoFirstLast: boolean;
   hasLastFrameInput: boolean;
@@ -164,6 +167,16 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
   const isImageDrivenMode = options.submissionMode === 'i2v' || options.submissionMode === 'i2i';
   const isReferenceImageMode = options.submissionMode === 'ref2v';
   const isFirstLastMode = options.submissionMode === 'fl2v';
+  const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
+  const usesSchemaReferences = !options.isUnifiedSeedance && hasMultimodalReferenceFields(schemaFields);
+  const activeSchemaInputs = (options.inputsPayload ?? []).filter((input) => schemaFields.some((field) =>
+    field.id === input.slotId && field.type === input.kind && fieldAcceptsMode(field, options.submissionMode as Mode)));
+  const missingRequiredImage = schemaFields.some((field) => field.type === 'image'
+    && fieldAcceptsMode(field, options.submissionMode as Mode)
+    && (field.requiredInModes ? field.requiredInModes.includes(options.submissionMode as Mode) : options.inputSchema?.required?.includes(field))
+    && !activeSchemaInputs.some((input) => input.slotId === field.id));
+  const hasSchemaImage = usesSchemaReferences && !missingRequiredImage
+    && activeSchemaInputs.some((input) => input.kind === 'image');
   const firstFrameAttachment = isFirstLastMode
     ? options.inputsPayload?.find(
         (attachment) =>
@@ -188,7 +201,7 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
     return 'Add a start image before using Last frame with Veo.';
   }
 
-  if (isImageDrivenMode && !options.primaryImageUrl) {
+  if (isImageDrivenMode && !options.primaryImageUrl && !hasSchemaImage) {
     return options.selectedEngineId.startsWith('sora-2')
       ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
       : `Add at least one ${options.primaryAssetFieldLabel.toLowerCase()} (URL or upload) before running this mode.`;
@@ -200,6 +213,20 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
         return options.referenceAudioUrls.length > 0
           ? options.addReferenceMediaBeforeAudioMessage ?? 'Add reference media before adding audio.'
           : 'Add at least one reference image or reference video before running Seedance Reference → Video.';
+      }
+    } else if (usesSchemaReferences) {
+      const constraints = options.inputSchema?.constraints;
+      const referenceFieldIds = Array.isArray(constraints?.atLeastOneReferenceField)
+        ? constraints.atLeastOneReferenceField.filter((value): value is string => typeof value === 'string')
+        : schemaFields.filter((field) => fieldAcceptsMode(field, 'ref2v')).map((field) => field.id);
+      const hasReference = referenceFieldIds.some((fieldId) => activeSchemaInputs.some((input) => input.slotId === fieldId)
+        || (schemaFields.some((field) => field.id === fieldId && field.type === 'text' && fieldAcceptsMode(field, 'ref2v'))
+          && typeof options.extraInputValues?.[fieldId] === 'string' && (options.extraInputValues[fieldId] as string).trim().length > 0));
+      if (!hasReference) return 'Add at least one reference before running this mode.';
+      if (constraints?.referenceAudioRequiresVisual
+        && activeSchemaInputs.some((input) => input.kind === 'audio')
+        && !activeSchemaInputs.some((input) => input.kind === 'image' || input.kind === 'video')) {
+        return 'Reference audio requires at least one image or video reference.';
       }
     } else if (options.referenceImageUrls.length === 0) {
       if (options.selectedEngineId.startsWith('kling-o3-') && options.hasKlingElements) {

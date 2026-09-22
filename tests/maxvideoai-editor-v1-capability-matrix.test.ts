@@ -262,7 +262,7 @@ test('MiniMax H3 exposes exact render choices and derives framing from image inp
   assert.ok(preset?.defaultShot);
   assert.ok(capability);
 
-  assert.deepEqual(capability.supported_resolutions, ['768P', '2K', '4K']);
+  assert.deepEqual(capability.supported_resolutions, ['480P', '768P', '2K', '4K']);
   assert.deepEqual(capability.supported_durations, [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
   assert.deepEqual(
     capability.render_options.map((option) => [option.id, option.control, option.defaultEnabled]),

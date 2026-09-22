@@ -1,3 +1,4 @@
+import type { MinimaxH3MaxPricingReference } from '@/lib/minimax-h3-max-pricing';
 import { query } from '@/lib/db';
 import {
   hasFieldSpecificMediaConstraint,
@@ -41,7 +42,7 @@ type MediaConstraintError =
   | 'MEDIA_COMBINED_DURATION_EXCEEDED';
 
 export type GenerationMediaConstraintValidationResult =
-  | { ok: true; trustedDurationSecByField?: Record<string, number[]> }
+  | { ok: true; trustedDurationSecByField?: Record<string, number[]>; trustedMediaReferences?: MinimaxH3MaxPricingReference[] }
   | {
       ok: false;
       status: 422;
@@ -166,6 +167,8 @@ export async function validateGenerationMediaConstraints(params: {
     getPrivateRuntimeEngineById(params.engineId) ??
     (isMinimaxH3EngineId(params.engineId) ? MINIMAX_H3_ENGINE : undefined);
   if (!engine) return { ok: true };
+  const combinedModes = params.inputSchema?.constraints?.combinedDurationModes;
+  const applyCombinedLimits = !Array.isArray(combinedModes) || combinedModes.includes(params.mode);
   const requiresOwnedMedia = params.inputSchema?.constraints?.ownedAssetModes?.includes(params.mode) === true;
 
   const constrainedFields = [
@@ -182,7 +185,7 @@ export async function validateGenerationMediaConstraints(params: {
             || constraint.acceptedMimeTypes.length > 0
             || constraint.acceptedFileExtensions.length > 0;
         })() ||
-        (requiresOwnedMedia && (field.type === 'image' || field.type === 'video')) ||
+        requiresOwnedMedia ||
         (field.type === 'image' && typeof params.inputSchema?.constraints?.minImageSidePx === 'number') ||
         (field.type === 'video' &&
           typeof params.inputSchema?.constraints?.minVideoPixelCount === 'number') ||
@@ -279,6 +282,7 @@ export async function validateGenerationMediaConstraints(params: {
     rows = [];
   }
 
+  const trustedMediaReferences: MinimaxH3MaxPricingReference[] = [];
   const durationByKindAndUrl = new Map<string, { kind: 'video' | 'audio'; durationSec: number; fieldId: string }>();
   for (const candidate of candidates) {
     const matchingRows = rows.filter((row) => {
@@ -304,6 +308,9 @@ export async function validateGenerationMediaConstraints(params: {
     const constraint = resolveEngineMediaFieldConstraint({ engine, field });
     const trustedName = normalizeUrl(stored.original_name) ?? normalizeUrl(stored.origin_url) ?? stored.url;
     const trustedMime = normalizeUrl(stored.mime_type) ?? inferredAudioMime(trustedName);
+    if (requiresOwnedMedia && !trustedMime.startsWith(`${candidate.kind}/`)) {
+      return failure({ error: 'MEDIA_FORMAT_UNSUPPORTED', fieldId: candidate.fieldId, message: 'The stored media type does not match this reference field.' });
+    }
     const validation = validateMediaFileAgainstConstraint({
       name: trustedName,
       mimeType: trustedMime,
@@ -329,6 +336,7 @@ export async function validateGenerationMediaConstraints(params: {
 
     const trustedWidth = normalizeDimension(stored.width);
     const trustedHeight = normalizeDimension(stored.height);
+    trustedMediaReferences.push({ kind: candidate.kind, url: candidate.url, width: trustedWidth, height: trustedHeight, durationSec: normalizeDurationSec(stored.duration_sec) });
     const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
     if (imageRatio !== 'valid') {
       return failure({
@@ -415,7 +423,7 @@ export async function validateGenerationMediaConstraints(params: {
     }
 
     const combinedDurationLimit =
-      field.type === 'video'
+      !applyCombinedLimits ? undefined : field.type === 'video'
         ? params.inputSchema?.constraints?.maxCombinedVideoDurationSec
         : field.type === 'audio'
           ? params.inputSchema?.constraints?.maxCombinedAudioDurationSec
@@ -457,8 +465,8 @@ export async function validateGenerationMediaConstraints(params: {
   }
 
   const combinedLimits = {
-    video: params.inputSchema?.constraints?.maxCombinedVideoDurationSec,
-    audio: params.inputSchema?.constraints?.maxCombinedAudioDurationSec,
+    video: applyCombinedLimits ? params.inputSchema?.constraints?.maxCombinedVideoDurationSec : undefined,
+    audio: applyCombinedLimits ? params.inputSchema?.constraints?.maxCombinedAudioDurationSec : undefined,
   } as const;
   for (const kind of ['video', 'audio'] as const) {
     const maxDurationSec = combinedLimits[kind];
@@ -482,7 +490,11 @@ export async function validateGenerationMediaConstraints(params: {
     },
     {},
   );
-  return Object.keys(trustedDurationSecByField).length
-    ? { ok: true, trustedDurationSecByField }
-    : { ok: true };
+  return {
+    ok: true,
+    ...(Object.keys(trustedDurationSecByField).length ? { trustedDurationSecByField } : {}),
+    ...(params.engineId === 'minimax-h3-max'
+      || typeof params.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
+      ? { trustedMediaReferences } : {}),
+  };
 }

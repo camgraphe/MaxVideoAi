@@ -153,11 +153,11 @@ test('P1 details expose only the actually executable canary modes and shared cap
   }
 
   const h3 = await getAgentModelDetails('minimax-h3-max', catalogDeps);
-  assert.deepEqual(h3.modes.map(({ mode }) => mode), ['t2v']);
+  assert.deepEqual(h3.modes.map(({ mode }) => mode), ['t2v', 'i2v', 'ref2v']);
   assert.ok(h3.modes[0]?.settings.some((setting) =>
     setting.key === 'promptExpansionMode'
     && setting.default === 'balanced'
-    && setting.values?.join(',') === 'balanced,quality'));
+    && setting.values?.join(',') === 'disabled,balanced,quality'));
   const h3Serialized = JSON.stringify(h3).toLowerCase();
   assert.equal(h3Serialized.includes('fal-ai/'), false);
   assert.equal(h3Serialized.includes('"provider":"fal"'), false);
@@ -316,7 +316,7 @@ test('Kling Turbo multi-shot is canonical, validated, and projected into the pai
   }), kling), GenerationCapabilityError);
 });
 
-test('H3 Max advertises and executes t2v only while media modes remain fail closed', () => {
+test('H3 Max advertises all owned-media modes with provider-ready canonical requests', () => {
   const engine = publicById.get('minimax-h3-max');
   assert.ok(engine);
   assert.equal(resolveAgentGenerationModeExecutability(engine, 't2v', executionEnvironment).executable, true);
@@ -346,7 +346,7 @@ test('H3 Max advertises and executes t2v only while media modes remain fail clos
       : 'ma_55555555555555555555555555555555';
     assert.deepEqual(
       resolveAgentGenerationModeExecutability(engine, mode, executionEnvironment),
-      { executable: false, reason: 'profile_invalid' },
+      { executable: true, reason: 'available' },
     );
     const mediaRequest = request({
       engineId: engine.id, mode,
@@ -365,7 +365,7 @@ test('H3 Max advertises and executes t2v only while media modes remain fail clos
     })];
     assert.deepEqual(
       resolveAgentGenerationRequestExecutability(mediaRequest, engine, resolvedReferences, executionEnvironment),
-      { executable: false, reason: 'profile_invalid' },
+      { executable: true, reason: 'available' },
     );
   }
 });

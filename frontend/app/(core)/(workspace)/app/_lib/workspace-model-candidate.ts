@@ -146,7 +146,7 @@ function validateCandidate(engine: EngineCaps, setup: WorkspaceModelSetup, workf
   if (!prepared.ok) reasons.push({ code: 'invalid-input', scope: 'generation', message: prepared.message });
   else {
     const guard = getGenerationIterationGuardMessage({
-      selectedEngineId: engine.id, ...workflow, ...prepared,
+      selectedEngineId: engine.id, inputSchema: engine.inputSchema, ...workflow, ...prepared,
       primaryAssetFieldLabel: summary.assetFields.find(({ role }) => role === 'primary')?.field.label ?? 'source image',
       hasKlingElements: Boolean(prepared.klingElementsPayload?.length), extendOrRetakeSourceVideoMessage: 'Add the required source video before generating.',
     });

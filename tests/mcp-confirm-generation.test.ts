@@ -259,6 +259,47 @@ test('confirmation passes DB-verified ref2v video media into transactional prici
   assert.equal(billingInputType, 'video_input');
 });
 
+for (const referenceEngineId of ['minimax-h3-max', 'wan-3', 'wan-3-prime']) {
+test(`${referenceEngineId} confirmation expires a quote when verified reference cost facts change`, async () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === referenceEngineId);
+  assert.ok(entry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: entry.engine, surface: 'video', publicModes: ['t2v', 'i2v', 'ref2v'],
+    modeCaps: Object.fromEntries(entry.modes.map(({ mode, ui }) => [mode, ui])),
+  };
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1, surface: 'video', engineId: entry.id, mode: 'ref2v',
+    prompt: 'Follow the supplied action.', settings: { durationSec: 5, resolution: referenceEngineId === 'minimax-h3-max' ? '768P' : '720p', aspectRatio: '16:9' },
+    references: [{ kind: 'asset', assetId: 'reference-video', role: 'reference' }], outputCount: 1,
+  };
+  const original = {
+    assetId: 'reference-video', role: 'reference' as const, mediaKind: 'video' as const,
+    storageUrl: 'https://assets.example.com/reference.mp4', width: 1280, height: 720,
+    durationSec: 4, mimeType: 'video/mp4', sizeBytes: 1024, originalName: 'reference.mp4',
+  };
+  const pricingExecutor = { query: async () => [] } as TransactionQueryExecutor;
+  const prepared = await priceCanonicalGenerationInExecutor(request, 'member', {
+    executor: pricingExecutor, candidate, resolvedReferences: [original],
+  });
+  const catalogRevision = computeGenerationCatalogRevision([candidate]);
+  const stored = quoteFor(request, { catalogRevision, priceCents: prepared.priceCents });
+  stored.pricingSnapshot = { ...stored.pricingSnapshot, catalogRevision, canonicalPricing: prepared.pricingSnapshot };
+  for (const fresh of [{ ...original, durationSec: 2 }, { ...original, durationSec: null }]) {
+    const { dependencies, captures } = baseDependencies(request, {
+      listPublicEngines: async () => [candidate],
+      lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+      resolveGenerationReferences: async () => [fresh],
+      priceGeneration: (canonical, tier, input) => priceCanonicalGenerationInExecutor(canonical, tier, {
+        ...input, executor: pricingExecutor,
+      }),
+    });
+    await expectAgentError(confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies), 'QUOTE_EXPIRED');
+    assert.equal(captures.events.includes('reserve_video'), false);
+    assert.equal(captures.providerCalls, 0);
+  }
+});
+}
+
 function capability(request: CanonicalGenerationRequest): AgentPublicGenerationEngine {
   const video = request.surface === 'video';
   const modeCaps: EngineModeUiCaps = {

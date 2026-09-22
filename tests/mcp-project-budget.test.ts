@@ -95,6 +95,42 @@ function line(overrides: Record<string, unknown> = {}) {
 
 function input(proposals: AgentProjectBudgetInput['proposals']): AgentProjectBudgetInput { return { proposals }; }
 
+test('H3 Max reference project estimates request owned assets before pricing an exact customer quote', async () => {
+  const deps = makeDeps({ listPublicEngines: async () => [registryCapability('minimax-h3-max')] });
+  await assert.rejects(calculateAgentProjectBudget(input([{
+    name: 'Reference scene', lines: [line({
+      engineId: 'minimax-h3-max', mode: 'ref2v', referenceRoles: ['reference'],
+      settings: { durationSec: 5, resolution: '768P', aspectRatio: '16:9' },
+    })],
+  }]), principal, deps), (error) => {
+    assert.ok(error instanceof AgentApiError);
+    assert.equal(error.code, 'REFERENCE_REQUIRED');
+    assert.match(error.message, /actual owned media.*prepare_generation/);
+    return true;
+  });
+  assert.equal(deps.calls.length, 0);
+});
+
+test('Wan media-dependent project budgets require actual assets instead of omitting input duration', async () => {
+  for (const engineId of ['wan-3', 'wan-3-prime']) {
+    for (const mode of ['ref2v', 'v2v', 'extend']) {
+      const deps = makeDeps({ listPublicEngines: async () => [registryCapability(engineId)] });
+      await assert.rejects(calculateAgentProjectBudget(input([{
+        name: 'Media-based scene', lines: [line({
+          engineId, mode, referenceRoles: [mode === 'ref2v' ? 'reference' : 'source'],
+          settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' },
+        })],
+      }]), principal, deps), (error) => {
+        assert.ok(error instanceof AgentApiError);
+        assert.equal(error.code, 'REFERENCE_REQUIRED');
+        assert.match(error.message, /input video duration.*prepare_generation/);
+        return true;
+      });
+      assert.equal(deps.calls.length, 0);
+    }
+  }
+});
+
 async function assertError(work: Promise<unknown>, code: AgentApiError['code']): Promise<void> {
   await assert.rejects(work, (error: unknown) => {
     assert.ok(error instanceof AgentApiError);

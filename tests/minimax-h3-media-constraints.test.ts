@@ -63,8 +63,8 @@ function mediaFixture(params: {
     mime_type: attachment.type,
     size_bytes: params.sizeMB * MB,
     duration_sec: params.durationSec ?? null,
-    width: params.kind === 'image' ? 1024 : null,
-    height: params.kind === 'image' ? 1024 : null,
+    width: params.kind === 'audio' ? null : 1024,
+    height: params.kind === 'audio' ? null : 1024,
   };
   return { attachment, reference, row };
 }
@@ -153,6 +153,22 @@ test('MiniMax H3 enforces 15-second combined video and audio reference budgets',
     if (!over.ok) {
       assert.equal(over.body.error, 'MEDIA_COMBINED_DURATION_EXCEEDED');
       assert.equal(over.body.field, fieldFor(kind));
+    }
+  }
+});
+
+test('MiniMax H3 soundtrack validation allows long owned audio and enforces its minimum and size', async () => {
+  for (const [durationSec, sizeMB, expected] of [[60, 15, true], [1.99, 1, false], [60, 15.01, false]] as const) {
+    const fixture = mediaFixture({ kind: 'audio', durationSec, sizeMB });
+    fixture.attachment.slotId = 'target_audio_url';
+    fixture.reference.fieldId = 'target_audio_url';
+    for (const mode of ['t2v', 'i2v'] as const) {
+      const result = await validateGenerationMediaConstraints({
+        engineId: 'minimax-h3', mode, userId: 'user-h3', inputSchema,
+        attachments: [fixture.attachment], referenceMediaItems: [fixture.reference],
+        deps: { queryFn: async <T>() => [fixture.row] as T[] },
+      });
+      assert.equal(result.ok, expected, `${mode}: ${durationSec}s / ${sizeMB} MB`);
     }
   }
 });
