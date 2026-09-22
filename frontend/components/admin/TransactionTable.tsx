@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { TransactionHistoryControls } from './transactions/TransactionHistoryControls';
+import type { TransactionHistoryQuery } from '@/lib/admin/transaction-history';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { needsTransactionReview as needsReview, isMissingJobRecord } from '@/lib/admin/transaction-review';
 import clsx from 'clsx';
@@ -11,16 +13,12 @@ import type { AdminTransactionRecord } from '@/server/admin-transactions';
 import { Button } from '@/components/ui/Button';
 
 type StatusVariant = 'info' | 'success' | 'error';
-type FilterKey = 'all' | 'attention' | AdminTransactionRecord['type'];
 
 type AdminTransactionTableProps = {
   initialTransactions: AdminTransactionRecord[];
-};
-
-type FilterOption = {
-  key: FilterKey;
-  label: string;
-  count: number;
+  filters: TransactionHistoryQuery;
+  nextCursor: string | null;
+  initialReceipt: AdminTransactionRecord | null;
 };
 
 const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -41,92 +39,29 @@ const TYPE_LABEL: Record<AdminTransactionRecord['type'], string> = {
   tax: 'Tax',
 };
 
-export function AdminTransactionTable({ initialTransactions }: AdminTransactionTableProps) {
-  const [rows, setRows] = useState<AdminTransactionRecord[]>(initialTransactions);
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+export function AdminTransactionTable({
+  initialTransactions,
+  filters,
+  nextCursor,
+  initialReceipt,
+}: AdminTransactionTableProps) {
+  const rows = initialTransactions;
+  const router = useRouter();
+  const [isRefreshing, startNavigation] = useTransition();
   const params = useSearchParams();
   const receiptParam = params?.get('receipt') ?? '';
   const requestedReceipt = /^[1-9]\d*$/.test(receiptParam) ? receiptParam : null;
-  const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(requestedReceipt);
   useEffect(() => setSelectedId(requestedReceipt), [requestedReceipt]);
-  const selected = rows.find((row) => String(row.receiptId) === selectedId);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const selected =
+    rows.find((row) => String(row.receiptId) === selectedId) ??
+    (String(initialReceipt?.receiptId) === selectedId ? initialReceipt : null);
   const [pendingReceiptId, setPendingReceiptId] = useState<number | null>(null);
   const [status, setStatus] = useState<{ message: string; variant: StatusVariant } | null>(null);
-  const deferredQuery = useDeferredValue(query);
-
-  useEffect(() => {
-    setRows(initialTransactions);
-  }, [initialTransactions]);
-
-  const sortedRows = useMemo(
-    () =>
-      [...rows].sort((a, b) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }),
-    [rows]
-  );
-
-  const filterOptions = useMemo<FilterOption[]>(
-    () => [
-      { key: 'all', label: 'All', count: sortedRows.length },
-      { key: 'attention', label: 'Needs review', count: sortedRows.filter(needsReview).length },
-      { key: 'charge', label: 'Charges', count: sortedRows.filter((row) => row.type === 'charge').length },
-      { key: 'topup', label: 'Top-ups', count: sortedRows.filter((row) => row.type === 'topup').length },
-      { key: 'refund', label: 'Refunds', count: sortedRows.filter((row) => row.type === 'refund').length },
-      { key: 'discount', label: 'Discounts', count: sortedRows.filter((row) => row.type === 'discount').length },
-      { key: 'tax', label: 'Tax', count: sortedRows.filter((row) => row.type === 'tax').length },
-    ],
-    [sortedRows]
-  );
-
-  const normalizedQuery = deferredQuery.trim().toLowerCase();
-
-  const visibleRows = useMemo(() => {
-    return sortedRows.filter((row) => {
-      if (activeFilter === 'attention' && !needsReview(row)) return false;
-      if (activeFilter !== 'all' && activeFilter !== 'attention' && row.type !== activeFilter) return false;
-
-      if (!normalizedQuery) return true;
-
-      const haystack = [
-        row.receiptId,
-        row.userEmail,
-        row.userId,
-        row.jobId,
-        row.jobStatus,
-        row.jobPaymentStatus,
-        row.jobEngineLabel,
-        row.description,
-        row.type,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-
-      return haystack.includes(normalizedQuery);
-    });
-  }, [activeFilter, normalizedQuery, sortedRows]);
-
+  const visibleRows = rows;
   const refresh = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const response = await fetch('/api/admin/transactions?limit=100', { cache: 'no-store' });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error ?? 'Unable to refresh transactions.');
-      }
-      const nextRows = Array.isArray(payload.transactions) ? payload.transactions : [];
-      setRows(nextRows);
-      setStatus({ message: 'Transactions refreshed.', variant: 'success' });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to refresh transactions.';
-      setStatus({ message, variant: 'error' });
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, []);
+    startNavigation(() => router.refresh());
+  }, [router]);
 
   const handleRefund = useCallback(
     async (record: AdminTransactionRecord) => {
@@ -153,51 +88,26 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
         setPendingReceiptId(null);
       }
     },
-    [refresh]
+    [refresh],
   );
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
-        {filterOptions.map((option) => (
-          <button
-            type="button"
-            key={option.key}
-            onClick={() => {
-              setActiveFilter(option.key);
-              setSelectedId(null);
-            }}
-            aria-pressed={activeFilter === option.key}
-            className={clsx(
-              'rounded-md px-3 py-2 text-sm',
-              activeFilter === option.key
-                ? 'bg-brand/10 font-semibold text-brand'
-                : 'text-text-secondary hover:bg-surface-2'
-            )}
-          >
-            {option.label} <span className="ml-1 text-xs tabular-nums">{option.count}</span>
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <label className="max-w-sm flex-1">
-          <span className="sr-only">Search loaded rows</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search receipt, user or generation…"
-            className="h-9 w-full rounded-md border border-border px-3 text-sm"
-          />
-        </label>
-        <Button type="button" size="sm" variant="outline" onClick={refresh} disabled={isRefreshing}>
-          {isRefreshing ? 'Refreshing…' : 'Refresh'}
-        </Button>
-      </div>
-      <p className="text-xs text-text-secondary">
-        {visibleRows.length} of {rows.length} latest ledger entries · Search and filters apply to this loaded sample ·
-        Europe/Madrid
+      <TransactionHistoryControls
+        filters={filters}
+        nextCursor={nextCursor}
+        pending={isRefreshing}
+        onNavigate={(url) => startNavigation(() => router.push(url))}
+        onRefresh={refresh}
+      />
+      <p role="status" className="text-xs text-text-secondary">
+        {isRefreshing ? 'Loading transactions…' : `${rows.length} entries on this page`}
       </p>
+      {requestedReceipt && !initialReceipt && !selected ? (
+        <p role="alert" className="text-sm text-warning">
+          Receipt not found.
+        </p>
+      ) : null}
       {status ? (
         <p
           role="status"
@@ -205,18 +115,18 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
             'rounded-md border px-3 py-2 text-sm',
             status.variant === 'error'
               ? 'border-error-border bg-error-bg text-error'
-              : 'border-info-border bg-info-bg text-info'
+              : 'border-info-border bg-info-bg text-info',
           )}
         >
           {status.message}
         </p>
       ) : null}
-      <div className={clsx('grid gap-6', selected && 'xl:grid-cols-[minmax(0,1fr)_300px]')}>
+      <div className={clsx('grid min-w-0 grid-cols-1 gap-6', selected && 'xl:grid-cols-[minmax(0,1fr)_300px]')}>
         <AdminDataTable tableClassName="min-w-full">
           <thead>
             <tr>
               {['Receipt', 'Account', 'Type', 'Amount', 'Status', ''].map((title, index) => (
-                <th key={index} className="px-3 py-3 text-xs font-medium text-text-secondary">
+                <th key={index} className="relative px-3 py-3 text-xs font-medium text-text-secondary">
                   {title || <span className="sr-only">Details</span>}
                 </th>
               ))}
@@ -226,7 +136,11 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
             {visibleRows.map((row) => (
               <tr key={row.receiptId} className={clsx(selectedId === String(row.receiptId) && 'bg-brand/5')}>
                 <td className="whitespace-nowrap px-3 py-2.5">
-                  <button type="button" onClick={() => setSelectedId(String(row.receiptId))} className="font-medium text-brand">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(String(row.receiptId))}
+                    className="font-medium text-brand"
+                  >
                     #{row.receiptId}
                   </button>
                   <p className="mt-0.5 text-xs text-text-secondary">{formatDate(row.createdAt)}</p>
@@ -272,7 +186,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
             {!visibleRows.length ? (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-text-secondary">
-                  No transactions match this sample.
+                  No transactions match these filters. Try All time or another search.
                 </td>
               </tr>
             ) : null}
@@ -358,7 +272,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                     variant="outline"
                     size="sm"
                     onClick={() => handleRefund(selected)}
-                    disabled={pendingReceiptId !== null}
+                    disabled={pendingReceiptId !== null || isRefreshing}
                   >
                     {pendingReceiptId === selected.receiptId ? 'Refunding…' : 'Refund tokens'}
                   </Button>

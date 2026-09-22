@@ -251,3 +251,18 @@ Migration `52_playlist_curations.sql` adds separate per-destination state and pe
 `server/playlists/curation-service.ts` owns eligibility, preview fingerprints and transactional saves. `curation-store.ts` owns revision snapshots and the advisory lock shared with legacy playlist mutations. Existing feeds are unchanged until an operator previews and saves Manual or Featured + Automatic. Automatic order uses creation date descending and job ID because publication timestamps are not reliable. Public candidates must be completed video jobs, explicitly public/indexable, have a playable source, match canonical destination aliases and have no matching deleted output/asset. Exclusions precede ordering and limits. Every public read rechecks eligibility. Configured empty results are authoritative, including model fallback routes.
 
 `server/videos-playlists.ts` preserves the legacy SQL and delegates configured destinations to the same resolver as preview. Media normalization, originals, preview URLs, output dimensions and public playback hooks retain their owners. A concurrent revision or changed preview is rejected without persistence. No pricing or production data is migrated by this feature.
+
+### Full transaction history
+
+The transaction workspace reads through `server/admin-transactions/history.ts`.
+Search, type/review and Madrid Today/24h/all-time filters apply before the page
+limit. A cursor preserves the initial time window and the exact PostgreSQL
+microsecond timestamp plus receipt ID; it is bound to the selected filters.
+Receipt deep links resolve independently of the visible page. Filter state is
+in the URL and navigation uses a pending Next router transition, without a
+second client-side copy of the query results. The table never sorts a page again.
+
+Email lookup remains in Users (Supabase Auth owns that data); each user detail
+links to their all-time transaction history. The ledger searches receipt/account
+IDs, generation IDs, description, model and status. These reads perform no schema
+bootstrap. The existing anomaly scan and refund command retain their owners.

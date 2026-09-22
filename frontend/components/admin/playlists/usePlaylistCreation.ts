@@ -52,7 +52,7 @@ export function usePlaylistCreation({ runAction, refreshPlaylistsState, setFeedb
         }
       });
     },
-    [createDescription, createName, createSlug, refreshPlaylistsState, runAction],
+    [createDescription, createName, createSlug, refreshPlaylistsState, runAction, setError, setFeedback],
   );
 
   return {

@@ -49,6 +49,7 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
             <AdminActionLink href={`/admin/jobs?userId=${encodeURIComponent(userId)}`}>
               Generations
             </AdminActionLink>
+            <AdminActionLink href={`/admin/transactions?period=all&q=${encodeURIComponent(userId)}`}>Transactions</AdminActionLink>
             <AdminActionLink href={`/admin/audit?targetUserId=${encodeURIComponent(userId)}`}>
               Audit
             </AdminActionLink>

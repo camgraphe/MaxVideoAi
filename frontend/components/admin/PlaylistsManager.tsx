@@ -227,7 +227,7 @@ export function PlaylistsManager({
 
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
-      if (busy.current || curationState.busy || playlistId === selectedId) return;
+      if (busy.current || curationState.busy) return;
       if ((isItemsDirty || curationState.dirty) && !window.confirm('Discard unsaved changes and change destination?'))
         return;
       setFeedback(null);
@@ -241,7 +241,7 @@ export function PlaylistsManager({
         }
       });
     },
-    [busy, curationState, selectedId, isItemsDirty, refreshPlaylistItems, runAction],
+    [busy, curationState, isItemsDirty, refreshPlaylistItems, runAction],
   );
 
   const handleFieldChange = useCallback((playlistId: string, field: 'name' | 'slug' | 'description', value: string) => {

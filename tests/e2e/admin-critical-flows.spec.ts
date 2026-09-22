@@ -71,15 +71,16 @@ test.describe('admin critical flows', () => {
     assertNoClientErrors(errors);
   });
 
-  test('transactions ledger search narrows the current slice', async ({ page }) => {
+  test('transactions history search is shareable and resolves receipt links', async ({ page }) => {
     const errors = trackClientErrors(page);
 
-    await openAdminRoute(page, '/admin/transactions');
+    await openAdminRoute(page, '/admin/transactions?period=all');
     const receiptId = await firstRowReceiptId(page);
     expect(receiptId).not.toBe('');
 
-    await page.getByLabel('Search loaded rows').fill(receiptId);
-    await expect(page.locator('body')).toContainText(new RegExp(`\\d+ of \\d+ latest ledger entries`));
+    await page.getByLabel('Search transaction history').fill(receiptId);
+    await page.getByRole('button', {name:'Search',exact:true}).click();
+    await expect.poll(()=>new URL(page.url()).searchParams.get('q')).toBe(receiptId);
     await expect(page.locator('tbody tr').first()).toContainText(`#${receiptId}`);
     await page.goto(`/admin/transactions?receipt=${receiptId}`);
     await expect(page.getByRole('heading', { name: `Receipt #${receiptId}`, exact: true })).toBeVisible();
