@@ -42,6 +42,12 @@ La tâche de réconciliation signale que PR331 est fusionnée et que main vaut d
 
 À la reprise seulement : lire le nouveau paragraphe Production delivery d’AGENTS.md et docs/deployment/github-vercel.md, intégrer ce main dans le worktree isolé en préservant le checkpoint, puis recalculer la référence tarifaire. La confirmation du déploiement automatique sur les deux domaines était encore attendue au dernier message ; conserver l’attente avant toute fusion admin ou déploiement. Aucun rebase/merge ni nouveau développement effectué à réception de cette information.
 
+## Confirmation finale de réconciliation reçue pendant la pause
+
+La tâche propriétaire confirme que l’attente liée à PR331 est levée : `pnpm deployment:check` passe et GitHub main, maxvideoai.com et api.maxvideoai.com servent `6e3f7fd57d2d515ed8acae809f781f303a6d5d53`, déploiement READY `dpl_7JBytTrbYC2KeTd8KLQCrLwyGgUh`, source Git. Elle rapporte accueil/catalogue/4 pages Wan-MiniMax HTTP 200, MCP 401 attendu sans authentification, aucun événement error dans la fenêtre de logs vérifiée. La CI automatique après merge tournait encore sur le même arbre déjà vérifié. Informations rapportées par la tâche propriétaire, non revérifiées ici.
+
+Cette confirmation remplace l’attente de réconciliation mentionnée plus haut, **pas la pause demandée par Adrien**. À la reprise : intégrer/rebaser sur ce main en préservant les changements, recalculer la référence tarifaire et passer par PR + Quality CI. Depuis un candidat committé/propre, exécuter `git fetch origin main` puis `pnpm deployment:check` immédiatement avant fusion ; contrôler les deux domaines après déploiement. Aucun upload CLI du checkout Desktop, promotion ou réaffectation manuelle des domaines hors exception explicitement autorisée. Aucun développement, rebase ou déploiement effectué pendant cette pause.
+
 ## Corrections prioritaires NON faites — revue indépendante
 
 1. **TypeScript bloquant** : `frontend/components/admin/PlaylistsManager.tsx:194`, TS2328. Le callback explicite busy/startTransition accepte `() => void | Promise<void>` mais un hook attend React.TransitionStartFunction/VoidOrUndefinedOnly. Harmoniser le contrat avec le suivi asynchrone réel, sans perdre le verrou pendant la requête. Dernier tsc en échec ; ne pas annoncer build vert.
