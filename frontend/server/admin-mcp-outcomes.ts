@@ -121,11 +121,11 @@ export async function loadAdminMcpOutcomes(
     throw new Error('Invalid MCP outcomes UTC window.');
   }
   const unavailable = (reason: string): AdminMcpOutcomes => ({ totals: null, clients: [], generations: [], notices: [reason] });
-  if (!deps.configured()) return unavailable('MCP account and video statistics are unavailable: database is not configured.');
+  if (!deps.configured()) return unavailable('MCP account and generation statistics are unavailable: database is not configured.');
   try {
     const relations = (await deps.executor.query<McpOutcomeRelations>(MCP_OUTCOME_RELATIONS_SQL))[0];
     if (!relations?.audit || !relations.quotes || !relations.jobs) {
-      return unavailable('MCP account and video statistics require the audit, generation quote and job tables.');
+      return unavailable('MCP account and generation statistics require the audit, generation quote and job tables.');
     }
     const sql = buildMcpOutcomesSql(relations);
     const emptyMetadata: McpAuthMetadata = { profiles: [], clients: [] };
@@ -182,6 +182,6 @@ export async function loadAdminMcpOutcomes(
       ],
     };
   } catch {
-    return unavailable('MCP account and video statistics could not be loaded. Unavailable data is not counted as zero.');
+    return unavailable('MCP account and generation statistics could not be loaded. Unavailable data is not counted as zero.');
   }
 }

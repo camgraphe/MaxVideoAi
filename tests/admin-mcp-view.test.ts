@@ -12,7 +12,7 @@ const unavailable = (reason: string) => ({ status: 'unavailable' as const, reaso
 test('a failed recent-generation read never claims that no jobs exist', () => {
   const totals = { accounts: 1, newSignups: 0, generators: 0, submitted: 0, videos: 0, failed: 0, pending: 0, imageGenerators: 1, imagesSubmitted: 1, images: 1, imageFailed: 0, imagePending: 0 };
   const render = (generations: null | []) => renderToStaticMarkup(createElement(McpGenerationOverview, {
-    outcomes: { totals, clients: [], generations, notices: [] },
+    outcomes: { totals, clients: [], generations, notices: [] }, activity: null, pollingCalls: null,
   }));
   const failed = render(null);
   assert.match(failed, /Recent MCP generations are unavailable/);
@@ -131,7 +131,7 @@ test('the acquisition split remains distinct from self-reported application attr
 });
 
 
-test('account and completed-video metrics precede tool activity and explain attribution limits', () => {
+test('video, image and tool-call metrics lead the page and explain attribution limits', () => {
   const counts = { accounts: 12, newSignups: 3, generators: 4, submitted: 9, videos: 6, failed: 2, pending: 1, imageGenerators: 0, imagesSubmitted: 0, images: 0, imageFailed: 0, imagePending: 0 };
   const html = renderToStaticMarkup(createElement(AdminMcpView, {
     metrics: activityMetrics(), selectedRange: '7d',
@@ -157,10 +157,19 @@ test('account and completed-video metrics precede tool activity and explain attr
   assert.match(html, /this does not establish the signup source/);
   assert.match(html, /self-reported/);
   assert.match(html, /Glama.*not a verified directory referral/i);
-  assert.ok(html.indexOf('MCP accounts and generations') < html.indexOf('Decision overview'));
+  assert.ok(html.indexOf('MCP activity and generations') < html.indexOf('Decision overview'));
   assert.match(html, /Users who generated images/);
   assert.match(html, /Images generated/);
   assert.match(html, /Recent MCP generations/);
+  let previousPosition = -1;
+  const breakdownPosition = html.indexOf('Application breakdown');
+  for (const label of ['Videos generated', 'Images generated', 'Tool calls', 'Active tool users']) {
+    const position = html.indexOf(label);
+    assert.ok(position > previousPosition && position < breakdownPosition, `${label} must lead the page before application details`);
+    previousPosition = position;
+  }
+  assert.match(html, /including 6 status polling calls/);
+  assert.match(html, /tool calls are not generations/);
   for (const value of ['image', 'GPT Image 2', 'gpt-image-2', 'completed', 'video', 'Veo 3', 'veo-3', 'running', '/admin/jobs?jobId=image-job', '/admin/jobs?jobId=video-job']) {
     assert.ok(html.includes(value), value);
   }

@@ -137,9 +137,12 @@ tests/admin-seo-gsc-architecture.test.ts
 
 ## MCP Acquisition Measurements
 
-`/admin/mcp` loads operational audit metrics and account/video outcomes independently.
+`/admin/mcp` loads operational audit metrics and account/generation outcomes independently.
 `frontend/server/admin-mcp-outcomes.ts` and `admin-mcp-outcomes-queries.ts` own the latter;
-the route-local `McpGenerationOverview` renders them ahead of tool-call activity.
+the route-local `McpGenerationOverview` leads with eight cards: completed videos, completed
+images, tool calls, active tool users, MCP accounts, MCP signups and the two creator counts.
+Tool-call totals include status polling calls and are separate from generation counts; the
+lower activity sections retain the detailed tool, success and failure breakdowns.
 
 - MCP accounts are distinct authenticated accounts observed in the audit or quote ledger
   before the reporting end. This is cumulative usage, not installation or signup attribution.

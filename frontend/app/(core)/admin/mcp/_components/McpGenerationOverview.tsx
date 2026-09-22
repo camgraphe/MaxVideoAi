@@ -4,20 +4,34 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import Link from 'next/link';
 import { MCP_CLIENT_LABELS, type AdminMcpOutcomes, type McpGenerationItem } from '@/server/admin-mcp-outcomes';
+import type { AdminMcpMetrics } from '@/server/admin-mcp-metrics';
 import { formatMcpNumber } from '../_lib/admin-mcp-helpers';
 
-export function McpGenerationOverview({ outcomes }: { outcomes: AdminMcpOutcomes }) {
+type McpGenerationOverviewProps = {
+  outcomes: AdminMcpOutcomes;
+  activity: AdminMcpMetrics['activity'];
+  pollingCalls: AdminMcpMetrics['pollingCalls'];
+};
+
+export function McpGenerationOverview({ outcomes, activity, pollingCalls }: McpGenerationOverviewProps) {
   const totals = outcomes.totals;
+  const toolCallsHelper = activity === null
+    ? 'Authenticated MCP tool calls are unavailable; calls include status polling and are not generations.'
+    : pollingCalls === null
+      ? 'All authenticated MCP tool calls, including status polling (count unavailable); tool calls are not generations.'
+      : `All authenticated MCP tool calls, including ${formatMcpNumber(pollingCalls)} status polling calls; tool calls are not generations.`;
   return (
-    <AdminSection title="MCP accounts and generations" description="Video and image totals cover jobs submitted in the selected UTC window, using their current status. Quotes without jobs and status polling are excluded.">
+    <AdminSection title="MCP activity and generations" description="Video and image totals cover jobs submitted in the selected UTC window, using their current status. Quotes without jobs and status polling are excluded from generation totals.">
       <div className="space-y-4">
         <AdminMetricGrid items={[
+          { label: 'Videos generated', value: formatMcpNumber(totals?.videos ?? null), helper: 'Completed MCP video jobs, counted once per job', tone: 'success' },
+          { label: 'Images generated', value: formatMcpNumber(totals?.images ?? null), helper: 'Completed MCP image jobs, counted once per job', tone: 'success' },
+          { label: 'Tool calls', value: formatMcpNumber(activity?.toolCalls ?? null), helper: toolCallsHelper, tone: activity === null ? 'warning' : 'default' },
+          { label: 'Active tool users', value: formatMcpNumber(activity?.activeToolUsers ?? null), helper: 'Distinct connected accounts that called at least one MCP tool', tone: activity === null ? 'warning' : 'info' },
           { label: 'MCP accounts (total)', value: formatMcpNumber(totals?.accounts ?? null), helper: 'Distinct accounts observed using MCP before the end of this window' },
           { label: 'New signups using MCP', value: formatMcpNumber(totals?.newSignups ?? null), helper: 'Accounts registered in this window and observed using MCP; this does not establish the signup source' },
           { label: 'Users who generated videos', value: formatMcpNumber(totals?.generators ?? null), helper: 'Distinct users with at least one completed MCP video job', tone: 'info' },
-          { label: 'Videos generated', value: formatMcpNumber(totals?.videos ?? null), helper: 'Completed MCP video jobs, counted once per job', tone: 'success' },
           { label: 'Users who generated images', value: formatMcpNumber(totals?.imageGenerators ?? null), helper: 'Distinct users with at least one completed MCP image job', tone: 'info' },
-          { label: 'Images generated', value: formatMcpNumber(totals?.images ?? null), helper: 'Completed MCP image jobs, counted once per job', tone: 'success' },
         ]} />
         {outcomes.notices.map((notice) => <AdminNotice key={notice} tone="warning">{notice}</AdminNotice>)}
         {totals ? (
