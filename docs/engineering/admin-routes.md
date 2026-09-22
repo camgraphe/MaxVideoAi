@@ -137,9 +137,12 @@ tests/admin-seo-gsc-architecture.test.ts
 
 ## MCP Acquisition Measurements
 
-`/admin/mcp` loads operational audit metrics and account/video outcomes independently.
+`/admin/mcp` loads operational audit metrics and account/generation outcomes independently.
 `frontend/server/admin-mcp-outcomes.ts` and `admin-mcp-outcomes-queries.ts` own the latter;
-the route-local `McpGenerationOverview` renders them ahead of tool-call activity.
+the route-local `McpGenerationOverview` leads with eight cards: completed videos, completed
+images, tool calls, active tool users, MCP accounts, MCP signups and the two creator counts.
+Tool-call totals include status polling calls and are separate from generation counts; the
+lower activity sections retain the detailed tool, success and failure breakdowns.
 
 - MCP accounts are distinct authenticated accounts observed in the audit or quote ledger
   before the reporting end. This is cumulative usage, not installation or signup attribution.
@@ -147,13 +150,22 @@ the route-local `McpGenerationOverview` renders them ahead of tool-call activity
   the UTC window. A bounded server-only Auth lookup fills missing/unsynchronized profiles
   in memory; unresolved dates make this measure unavailable. It does
   not prove MCP caused the signup, and signups that never use MCP are outside this cohort.
-- Video jobs are scoped by `app_jobs.created_at` in UTC `[from, to)`, joined to a canonical
-  MCP quote on both job and user ownership, and restricted to `surface = 'video'`. Current
-  completed status counts as a generated video job; failed/cancelled and pending jobs are
-  shown separately. Quote retries, polling, images and unrelated website jobs do not count.
+- Video outcome totals are scoped by `app_jobs.created_at` in UTC `[from, to)`, joined to a
+  canonical MCP quote on both job and user ownership, and restricted to `surface = 'video'`.
+  Current completed status counts as a generated video job; failed/cancelled and pending jobs
+  are shown separately. Image outcome totals use the same contract with `surface = 'image'`.
+  Quote retries are deduplicated by job, while polling, quote-only rows and unrelated website
+  jobs do not count.
+- `McpGenerationOverview` also renders a bounded recent generation feed (maximum 30 jobs) from
+  both surfaces. Each row exposes only job ID, image/video surface, public engine ID/label,
+  current status, UTC creation time and coarse application attribution; its job link targets
+  `/admin/jobs?jobId=...`. Prompts, signed/private media URLs and payment details stay out of
+  this DTO. The feed uses the same UTC half-open window and quote/job ownership join, and
+  deduplicates quote retries by job before attribution.
 - Global users are deduplicated across applications. Application rows may overlap for users,
-  while each video job has one application. Account application uses the latest observed
-  activity for its user/OAuth-client pair; video attribution uses evidence at submission time.
+  while each deduplicated video or image job has one application. Account application uses the
+  latest observed activity for its user/OAuth-client pair; generation attribution uses evidence
+  at submission time.
 - Migration 41 and the audit bootstrap add nullable `client_family`; migration 42 widens its
   database constraint for the complete ecosystem. Successful MCP initialization stores only
   a normalized family from self-reported
@@ -166,7 +178,7 @@ the route-local `McpGenerationOverview` renders them ahead of tool-call activity
   A bounded server-only lookup of current registered OAuth client names supplies an
   indicative historical fallback when event-time evidence is missing.
   Null client IDs and missing evidence remain unidentified; later observations never relabel
-  an earlier video through event-time evidence; the current OAuth registry fallback is
+  an earlier generation through event-time evidence; the current OAuth registry fallback is
   explicitly labeled as indicative. Old schemas continue to serve outcomes using the
   available attribution.
 - Migration 48 admits `glama` in the Neon audit constraint without rewriting historical

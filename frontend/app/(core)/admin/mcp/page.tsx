@@ -4,6 +4,7 @@ import { loadAdminMcpOutcomes } from '@/server/admin-mcp-outcomes';
 import { loadAdminMcpMetrics } from '@/server/admin-mcp-metrics';
 import { AdminMcpView } from './_components/AdminMcpView';
 import { McpTrialControls } from './_components/McpTrialControls';
+import { McpLiveRefresh } from './_components/McpLiveRefresh.client';
 import { resolveAdminMcpRange } from './_lib/admin-mcp-helpers';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +37,7 @@ export default async function AdminMcpPage({ searchParams }: AdminMcpPageProps) 
 
   return (
     <>
+      <McpLiveRefresh />
       <AdminMcpView outcomes={outcomes} metrics={metrics} selectedRange={range.label} />
       <McpTrialControls inspectionUserId={trialUserId} />
     </>

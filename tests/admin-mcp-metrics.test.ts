@@ -215,7 +215,7 @@ test('live audit events expose authenticated MCP activity even while the commerc
   ]);
 });
 
-test('the decision overview leads with live connection and tool activity instead of unavailable funnel cards', async () => {
+test('the decision overview keeps commercial cards while generation overview owns prominent live activity', async () => {
   const metrics = await loadHarnessMetrics(createMetricsHarness(), {
     funnel: false,
     audit: true,
@@ -232,11 +232,14 @@ test('the decision overview leads with live connection and tool activity instead
     [
       { label: 'Connected users', value: '9' },
       { label: 'New connections', value: '4' },
-      { label: 'Active tool users', value: '7' },
-      { label: 'Tool calls', value: '20' },
       { label: 'Tool success', value: '85.0%' },
+      { label: 'Completed trials', value: 'Unavailable' },
+      { label: 'First paid users', value: 'Unavailable' },
     ],
   );
+  assert.deepEqual(buildMcpOverviewCards(metrics).map(({ label }) => label), [
+    'Connected users', 'New connections', 'Tool success', 'Completed trials', 'First paid users', 'MCP revenue',
+  ]);
 });
 
 test('status polling is available from the live audit producer without requiring the commercial funnel', async () => {

@@ -13,6 +13,7 @@ const serverPath = join(root, 'frontend/server/admin-mcp-metrics.ts');
 const queriesPath = join(root, 'frontend/server/admin-mcp-metrics-queries.ts');
 const providerOperationsPath = join(root, 'frontend/server/admin-mcp-provider-operations.ts');
 const publicationPath = join(root, 'frontend/config/mcp-publication.json');
+const liveRefreshPath = join(root, 'frontend/app/(core)/admin/mcp/_components/McpLiveRefresh.client.tsx');
 
 test('admin MCP route remains a thin authenticated server orchestrator', () => {
   for (const path of [pagePath, viewPath, helpersPath, serverPath, queriesPath, providerOperationsPath]) {
@@ -40,6 +41,14 @@ test('admin MCP view owns decision surfaces and explicit unavailable, empty, and
   }
   assert.match(view, /Unavailable/i);
   assert.match(view, /No MCP/i);
+});
+
+test('MCP generation feed follows the existing visible 30-second admin sync lifecycle', () => {
+  const source = readFileSync(liveRefreshPath, 'utf8');
+  assert.match(source, /router\.refresh\(\)/);
+  assert.match(source, /setInterval\(refresh, ADMIN_LIVE_SYNC_INTERVAL_MS\)/);
+  assert.match(source, /visibilityState !== 'visible'/);
+  assert.match(source, /isPending/);
 });
 
 test('route helpers own UTC range parsing, display formatting, and view-model builders', () => {
@@ -110,7 +119,7 @@ test('MCP acquisition is in Analytics navigation and publication matches the pro
 });
 
 
-test('MCP video outcomes have independent read-only owners and do not enable incomplete funnel producers', () => {
+test('MCP generation outcomes keep video metrics and add bounded image-safe job detail', () => {
   const outcomePath = join(root, 'frontend/server/admin-mcp-outcomes.ts');
   const outcomeQueryPath = join(root, 'frontend/server/admin-mcp-outcomes-queries.ts');
   const outcomes = readFileSync(outcomePath, 'utf8');
@@ -122,7 +131,10 @@ test('MCP video outcomes have independent read-only owners and do not enable inc
   assert.doesNotMatch(outcomes + queries, /INSERT INTO|UPDATE \w+|DELETE FROM/i);
   assert.doesNotMatch(queries, /\b(prompt|email|request_json|video_url|access_token)\b/);
   assert.match(queries, /job.user_id = quote.user_id/);
-  assert.match(queries, /job.surface = 'video'/);
+  assert.match(queries, /surface IN \('video', 'image'\)/);
+  assert.match(queries, /MCP_GENERATION_ITEMS|admin-mcp:generation-items/);
+  assert.match(outcomes, /imageGenerators/);
+  assert.match(outcomes, /generations/);
   assert.match(queries, /status = 'completed'/);
   assert.ok(outcomes.split('\n').length < 200);
 });
