@@ -26,7 +26,7 @@ Read-only pricing checks pass: immutable billing baseline (178 rows), current pu
 - Native pointer drag through the local browser automation did not produce a reorder; no native-browser pass is claimed from those attempts. A real Playwright drag/cancel E2E is added for CI, and component DOM event coverage passes. Keyboard reorder and actual DB persistence were verified in the browser.
 - Screenshots under `output/admin-redesign-2026-09-22` contain local fictitious records; V2 concept images remain separate reference files.
 
-Full production build passed, including offline prebuild gates, TypeScript and generation of 897 pages. It emitted the existing Supabase Edge Runtime warning about process.version. Broader validation and CI results are recorded below when available. The preview fixture has no real Supabase Auth accounts; its registration panel correctly shows unavailable. No claim of real registration totals from the fixture is made.
+Full production build passed, including offline prebuild gates, TypeScript and generation of 897 pages. It emitted the existing Supabase Edge Runtime warning about process.version. The broader local run covered 5,919 tests: 5,904 passed, 13 PostgreSQL-version assertions failed and 2 were skipped. All 13 failures passed when rerun with the required PostgreSQL 17 (5,917 successful tests across the runs). Four connected-Studio integration files were excluded from this local run; CI owns their browser qualification. Draft PR: https://github.com/camgraphe/MaxVideoAi/pull/332 ; CI and Vercel preview were pending at this record. The preview fixture has no real Supabase Auth accounts; its registration panel correctly shows unavailable. No claim of real registration totals from the fixture is made.
 
 ## Review fixes
 
