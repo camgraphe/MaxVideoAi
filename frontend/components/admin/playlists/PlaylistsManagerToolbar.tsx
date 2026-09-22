@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +11,7 @@ type PlaylistsManagerToolbarProps = {
   createSlug: string;
   draftCount: number;
   embedded: boolean;
+  enableCuration?: boolean;
   isPending: boolean;
   missingFamilyCount: number;
   missingModelCount: number;
@@ -34,6 +35,7 @@ export function PlaylistsManagerToolbar({
   createSlug,
   draftCount,
   embedded,
+  enableCuration = false,
   isPending,
   missingFamilyCount,
   missingModelCount,
@@ -52,39 +54,72 @@ export function PlaylistsManagerToolbar({
 }: PlaylistsManagerToolbarProps) {
   return (
     <>
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        {!embedded ? (
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
-            <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
-            <p className="max-w-3xl text-sm text-text-secondary">
-              Keep the runtime surfaces stable while preparing family playlists. The main examples hub stays on <code>examples</code>,
-              guest starter stays on <code>welcome</code>, and family pages can be seeded from the current live order before you
-              start reordering them.
-            </p>
+      <details className="border-b border-border pb-3">
+        <summary className="cursor-pointer text-xs font-medium text-text-secondary">Collection maintenance</summary>
+        <header className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          {!embedded ? (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
+              <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
+              <p className="max-w-3xl text-sm text-text-secondary">
+                Keep the runtime surfaces stable while preparing family playlists. The main examples hub stays on{' '}
+                <code>examples</code>, guest starter stays on <code>welcome</code>, and family pages can be seeded from
+                the current live order before you start reordering them.
+              </p>
+            </div>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <Button disabled={isPending} type="button" variant="outline" size="sm" onClick={onToggleDraftCollections}>
+              {showDraftCollections ? 'Hide draft / empty' : `Show draft / empty (${draftCount})`}
+            </Button>
+            <Button
+              disabled={isPending}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onCreateMissingFamilyPlaylists}
+            >
+              {missingFamilyCount > 0
+                ? `Create missing family playlists (${missingFamilyCount})`
+                : 'Sync family playlists'}
+            </Button>
+            <Button
+              disabled={isPending}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onCreateMissingModelPlaylists}
+            >
+              {missingModelCount > 0 ? `Create missing model playlists (${missingModelCount})` : 'Sync model playlists'}
+            </Button>
+            {!enableCuration ? (
+              <>
+                <Button
+                  disabled={isPending}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onSeedAllFamilyPlaylists}
+                >
+                  Seed all family playlists
+                </Button>
+                <Button
+                  disabled={isPending}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onSeedAllModelPlaylists}
+                >
+                  Seed all model playlists
+                </Button>
+              </>
+            ) : null}
+            <Button disabled={isPending} type="button" size="sm" onClick={onToggleCreateForm}>
+              {showCreateForm ? 'Close new collection' : '+ New collection'}
+            </Button>
           </div>
-        ) : null}
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onToggleDraftCollections}>
-            {showDraftCollections ? 'Hide draft / empty' : `Show draft / empty (${draftCount})`}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onCreateMissingFamilyPlaylists}>
-            {missingFamilyCount > 0 ? `Create missing family playlists (${missingFamilyCount})` : 'Sync family playlists'}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onCreateMissingModelPlaylists}>
-            {missingModelCount > 0 ? `Create missing model playlists (${missingModelCount})` : 'Sync model playlists'}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onSeedAllFamilyPlaylists}>
-            Seed all family playlists
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onSeedAllModelPlaylists}>
-            Seed all model playlists
-          </Button>
-          <Button type="button" size="sm" onClick={onToggleCreateForm}>
-            {showCreateForm ? 'Close new collection' : '+ New collection'}
-          </Button>
-        </div>
-      </header>
+        </header>
+      </details>
 
       {showCreateForm ? (
         <PlaylistCreateForm

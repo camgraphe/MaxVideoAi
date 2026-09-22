@@ -40,15 +40,16 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
       <AdminPageHeader
         eyebrow="Operations"
         title={profile?.email ?? 'User detail'}
-        description="Fiche support pour l’identité, le wallet, l’historique de rendus et l’impersonation. Le détail reste dense, mais sans empilement inutile de cartes."
+        description="Account activity, wallet history and support actions."
         actions={
           <>
             <AdminActionLink href="/admin/users">
               Users
             </AdminActionLink>
             <AdminActionLink href={`/admin/jobs?userId=${encodeURIComponent(userId)}`}>
-              Jobs
+              Generations
             </AdminActionLink>
+            <AdminActionLink href={`/admin/transactions?period=all&q=${encodeURIComponent(userId)}`}>Transactions</AdminActionLink>
             <AdminActionLink href={`/admin/audit?targetUserId=${encodeURIComponent(userId)}`}>
               Audit
             </AdminActionLink>
@@ -77,11 +78,11 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
       ) : null}
 
       <AdminSection
-        title="Member Pulse"
-        description="Repères principaux pour savoir immédiatement si le sujet est un problème de compte, de wallet ou de consommation."
+        title="Account summary"
+        description="Available credits and lifetime generation activity."
         action={<AdminSectionMeta title={truncateId(userId)} lines={profileMetaLines} />}
       >
-        <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-3" density="compact" />
+        <AdminMetricGrid items={metrics.filter((item) => ['Wallet balance', 'Net render spend', 'Completed renders'].includes(item.label))} columnsClassName="sm:grid-cols-2 xl:grid-cols-3" density="compact" />
       </AdminSection>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_340px] xl:items-start">

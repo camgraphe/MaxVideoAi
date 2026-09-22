@@ -36,7 +36,15 @@ test('admin MCP view owns decision surfaces and explicit unavailable, empty, and
   for (const owner of ['AdminPageHeader', 'AdminMetricGrid', 'AdminSection', 'AdminNotice', 'AdminEmptyState']) {
     assert.match(view, new RegExp(owner));
   }
-  for (const label of ['Funnel', 'Cohort conversion', 'Acquisition source split', 'Errors', 'Cost guardrails', 'Publication flags', 'Operations alerts']) {
+  for (const label of [
+    'Funnel',
+    'Cohort conversion',
+    'Acquisition source split',
+    'Errors',
+    'Cost guardrails',
+    'Publication flags',
+    'Operations alerts',
+  ]) {
     assert.match(view, new RegExp(label, 'i'));
   }
   assert.match(view, /Unavailable/i);
@@ -85,22 +93,34 @@ test('server metrics stay privacy-safe, read-only, and externally inert', () => 
   assert.match(queries, /mcp_audit_events/);
   assert.doesNotMatch(server, /postSlackMessage|getMailer|sendMail|SLACK_WEBHOOK_URL/);
   assert.doesNotMatch(server, /INSERT\s+INTO|UPDATE\s+\w+|DELETE\s+FROM/i);
-  assert.doesNotMatch(server, /\b(prompt|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i);
-  assert.doesNotMatch(queries, /\b(prompt|email|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i);
-  assert.doesNotMatch(providerOperations, /\b(prompt|email|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i);
+  assert.doesNotMatch(
+    server,
+    /\b(prompt|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i
+  );
+  assert.doesNotMatch(
+    queries,
+    /\b(prompt|email|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i
+  );
+  assert.doesNotMatch(
+    providerOperations,
+    /\b(prompt|email|access_token|reference_url|private_media|payment_method|request_snapshot|response_snapshot)\b/i
+  );
   assert.ok(server.split('\n').length <= 500, 'focused server owner should stay below 500 lines');
   assert.ok(queries.split('\n').length <= 500, 'focused query owner should stay below 500 lines');
   assert.ok(providerOperations.split('\n').length <= 200, 'provider operations owner should stay below 200 lines');
 });
 
-test('MCP acquisition is in Analytics navigation and publication matches the production release', () => {
-  const analytics = ADMIN_NAV_GROUPS.find((group) => group.id === 'analytics');
-  assert.deepEqual(analytics?.items.find((item) => item.id === 'mcp'), {
-    id: 'mcp',
-    label: 'MCP acquisition',
-    href: '/admin/mcp',
-    icon: 'insights',
-  });
+test('MCP activity is under Overview and publication matches the production release', () => {
+  const analytics = ADMIN_NAV_GROUPS.find((group) => group.id === 'overview');
+  assert.deepEqual(
+    analytics?.items.find((item) => item.id === 'mcp'),
+    {
+      id: 'mcp',
+      label: 'MCP activity',
+      href: '/admin/mcp',
+      icon: 'insights',
+    }
+  );
 
   const publication = JSON.parse(readFileSync(publicationPath, 'utf8')) as Record<string, boolean>;
   assert.deepEqual(publication, {
@@ -117,7 +137,6 @@ test('MCP acquisition is in Analytics navigation and publication matches the pro
     studioMontageCreation: false,
   });
 });
-
 
 test('MCP generation outcomes keep video metrics and add bounded image-safe job detail', () => {
   const outcomePath = join(root, 'frontend/server/admin-mcp-outcomes.ts');

@@ -1,10 +1,8 @@
-import { Boxes, Eye, ListChecks, TriangleAlert } from 'lucide-react';
 import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { ModerationTable, type ModerationVideo } from '@/components/admin/ModerationTable';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
-import { AdminSection } from '@/components/admin-system/shell/AdminSection';
-import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { requireAdmin } from '@/server/admin';
 import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 
 type ModerationBucket = 'not-published' | 'published' | 'all';
@@ -72,88 +70,43 @@ async function fetchPendingVideos(
 export const dynamic = 'force-dynamic';
 
 export default async function AdminModerationPage() {
+  await requireAdmin();
   const cookieHeader = (await cookies()).toString();
   const initialBucket: ModerationBucket = 'not-published';
   const initialSurface: ModerationSurface = 'video';
-  const { videos, nextCursor } = await fetchPendingVideos(cookieHeader, initialBucket, initialSurface).catch((error) => {
+  const { videos, nextCursor, initialError } = await fetchPendingVideos(cookieHeader, initialBucket, initialSurface)
+    .then((result) => ({ ...result, initialError: null as string | null })).catch((error) => {
     console.error('[admin/moderation] failed to fetch pending videos', error);
-    return { videos: [] as ModerationVideo[], nextCursor: null };
+    return { videos: [] as ModerationVideo[], nextCursor: null, initialError: 'Unable to load the moderation queue. Select a media type to retry.' };
   });
 
-  const metrics = buildModerationMetrics(videos);
 
   return (
     <div className="flex flex-col gap-5">
       <AdminPageHeader
         eyebrow="Curation"
-        title="Publication queue"
-        description="Surface de tri éditorial pour publier, retirer ou réaffecter les médias par surface. Les incidents restent côté Jobs, et le rollout Google Video reste isolé."
+        title="Moderation"
+        description="Review media, manage site publication and curate collections."
         actions={
           <>
-            <AdminActionLink href="/admin/jobs">
-              Jobs
-            </AdminActionLink>
             <AdminActionLink href="/admin/video-seo">
               Video SEO
             </AdminActionLink>
             <AdminActionLink href="/admin/playlists">
-              Playlists
+              Site placements
             </AdminActionLink>
           </>
         }
       />
 
-      <AdminSection
-        title="Queue Pulse"
-        description="Lecture rapide du lot actuellement chargé. Cette surface reste volontairement dense pour le triage et la publication."
-      >
-        <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
-      </AdminSection>
-
       <ModerationTable
         videos={videos}
         initialCursor={nextCursor}
+        initialError={initialError}
         initialBucket={initialBucket}
         initialSurface={initialSurface}
         embedded
       />
     </div>
   );
-}
-
-function buildModerationMetrics(videos: ModerationVideo[]): AdminMetricItem[] {
-  const publishedCount = videos.filter((video) => video.isPublishedOnSite).length;
-  const unpublishedCount = videos.length - publishedCount;
-  const seoWatchCount = videos.filter((video) => video.seoWatch).length;
-  const mismatchCount = videos.filter((video) => video.hasLegacyMismatch).length;
-
-  return [
-    {
-      label: 'Loaded rows',
-      value: String(videos.length),
-      helper: 'Current moderation slice from the queue',
-      icon: ListChecks,
-    },
-    {
-      label: 'Published',
-      value: String(publishedCount),
-      helper: 'Already live on at least one public surface',
-      tone: publishedCount ? 'success' : 'default',
-      icon: Eye,
-    },
-    {
-      label: 'Not published',
-      value: String(unpublishedCount),
-      helper: 'Still waiting for editorial release',
-      tone: unpublishedCount ? 'warning' : 'default',
-      icon: Boxes,
-    },
-    {
-      label: 'Legacy mismatch',
-      value: String(mismatchCount),
-      helper: `${seoWatchCount} rows currently part of the Google Video shortlist`,
-      tone: mismatchCount ? 'warning' : 'info',
-      icon: TriangleAlert,
-    },
-  ];
 }

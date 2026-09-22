@@ -23,7 +23,7 @@ export function AdminUserWalletLedgerSection({
   return (
     <AdminSection
       title="Wallet Ledger"
-      description="Historique des top-ups avec synthèse explicite des débits bruts, remboursements et dépenses nettes."
+      description="Wallet top-ups, charges and refunds."
       action={
         wallet ? (
           <AdminSectionMeta
@@ -41,7 +41,7 @@ export function AdminUserWalletLedgerSection({
       {topups.length ? (
         <AdminDataTable>
           <thead className="bg-surface">
-            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+            <tr className="text-xs text-text-secondary">
               <th className="px-4 py-3 font-semibold">Date</th>
               <th className="px-4 py-3 font-semibold">Amount</th>
               <th className="px-4 py-3 font-semibold">Description</th>

@@ -1,3 +1,4 @@
+import { TRANSACTION_SELECT } from './projection';
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -13,26 +14,14 @@ export function normalizeTransactionLimit(limit: number): number {
   return Math.min(500, Math.max(1, limit));
 }
 
-export function mapAdminTransactionRow(
-  row: RawTransactionRow,
-  userEmail: string | null
-): AdminTransactionRecord {
+export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string | null): AdminTransactionRecord {
   const type = row.type as AdminTransactionRecord['type'];
   const jobExists = Boolean(
-    row.job_status ||
-      row.job_payment_status ||
-      row.job_engine_label ||
-      row.job_video_url ||
-      row.job_thumb_url
+    row.job_status || row.job_payment_status || row.job_engine_label || row.job_video_url || row.job_thumb_url,
   );
   const isLatestCharge =
-    type === 'charge' &&
-    (row.job_id ? (jobExists ? row.latest_charge_id === row.receipt_id : true) : true);
-  const refundableStatus = row.job_id
-    ? jobExists
-      ? isRefundablePaymentStatus(row.job_payment_status)
-      : true
-    : true;
+    type === 'charge' && (row.job_id ? (jobExists ? row.latest_charge_id === row.receipt_id : true) : true);
+  const refundableStatus = row.job_id ? (jobExists ? isRefundablePaymentStatus(row.job_payment_status) : true) : true;
 
   return {
     receiptId: row.receipt_id,
@@ -46,7 +35,7 @@ export function mapAdminTransactionRow(
     jobStatus: row.job_status,
     jobPaymentStatus: row.job_payment_status,
     jobEngineLabel: row.job_engine_label,
-    jobVideoUrl: row.job_video_url ? normalizeMediaUrl(row.job_video_url) ?? row.job_video_url : null,
+    jobVideoUrl: row.job_video_url ? (normalizeMediaUrl(row.job_video_url) ?? row.job_video_url) : null,
     jobDurationSec: row.job_duration_sec ?? null,
     jobCreatedAt: row.job_created_at,
     jobProgress: row.job_progress ?? null,
@@ -55,12 +44,7 @@ export function mapAdminTransactionRow(
     hasRefund: row.has_refund,
     latestChargeId: row.latest_charge_id,
     isLatestCharge,
-    canRefund:
-      type === 'charge' &&
-      !row.has_refund &&
-      Boolean(row.user_id) &&
-      isLatestCharge &&
-      refundableStatus,
+    canRefund: type === 'charge' && !row.has_refund && Boolean(row.user_id) && isLatestCharge && refundableStatus,
   };
 }
 
@@ -68,51 +52,15 @@ export async function fetchAdminTransactions(limit = 100): Promise<AdminTransact
   if (!process.env.DATABASE_URL) return [];
 
   await ensureBillingSchema();
-  const rows = await query<RawTransactionRow>(
-    `SELECT
-       r.id AS receipt_id,
-       r.user_id,
-       r.type,
-       r.amount_cents,
-       r.currency,
-       r.description,
-       r.job_id,
-       r.created_at,
-       j.status AS job_status,
-       j.payment_status AS job_payment_status,
-       j.engine_label AS job_engine_label,
-       j.video_url AS job_video_url,
-       j.thumb_url AS job_thumb_url,
-       j.message AS job_message,
-       j.progress AS job_progress,
-       j.created_at AS job_created_at,
-       j.duration_sec AS job_duration_sec,
-       EXISTS (
-         SELECT 1
-         FROM app_receipts r2
-         WHERE r2.type = 'refund'
-           AND (
-             (r.job_id IS NOT NULL AND r2.job_id = r.job_id)
-             OR ((r2.metadata ->> 'original_receipt_id')::bigint = r.id)
-           )
-       ) AS has_refund,
-       (
-         SELECT id
-         FROM app_receipts r3
-         WHERE r3.job_id = r.job_id
-           AND r3.type = 'charge'
-         ORDER BY r3.created_at DESC
-         LIMIT 1
-       ) AS latest_charge_id
-     FROM app_receipts r
-     LEFT JOIN app_jobs j ON j.job_id = r.job_id
-     ORDER BY r.created_at DESC
-     LIMIT $1`,
-    [normalizeTransactionLimit(limit)]
-  );
+  const rows = await query<RawTransactionRow>(`${TRANSACTION_SELECT} ORDER BY r.created_at DESC, r.id DESC LIMIT $1`, [
+    normalizeTransactionLimit(limit),
+  ]);
+  return hydrateTransactionRows(rows);
+}
 
+export async function hydrateTransactionRows(rows: RawTransactionRow[]): Promise<AdminTransactionRecord[]> {
   const uniqueUserIds = Array.from(
-    new Set(rows.map((row) => row.user_id).filter((value): value is string => Boolean(value)))
+    new Set(rows.map((row) => row.user_id).filter((value): value is string => Boolean(value))),
   );
   const userEmailMap = new Map<string, string | null>();
   if (uniqueUserIds.length && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -120,13 +68,11 @@ export async function fetchAdminTransactions(limit = 100): Promise<AdminTransact
       uniqueUserIds.map(async (userId) => {
         const identity = await getUserIdentity(userId);
         userEmailMap.set(userId, identity?.email ?? null);
-      })
+      }),
     );
   }
 
-  return rows.map((row) =>
-    mapAdminTransactionRow(row, row.user_id ? userEmailMap.get(row.user_id) ?? null : null)
-  );
+  return rows.map((row) => mapAdminTransactionRow(row, row.user_id ? (userEmailMap.get(row.user_id) ?? null) : null));
 }
 
 export async function fetchTransactionAnomalies(): Promise<TransactionAnomalies> {
@@ -151,7 +97,7 @@ export async function fetchTransactionAnomalies(): Promise<TransactionAnomalies>
          AND amount_cents >= $1
        ORDER BY amount_cents DESC
        LIMIT 10`,
-      [LARGE_REFUND_THRESHOLD_CENTS]
+      [LARGE_REFUND_THRESHOLD_CENTS],
     ),
     query<{
       user_id: string | null;
@@ -171,7 +117,7 @@ export async function fetchTransactionAnomalies(): Promise<TransactionAnomalies>
        HAVING COUNT(*) >= $1
        ORDER BY refund_count DESC, total_cents DESC
        LIMIT 10`,
-      [FREQUENT_REFUND_MIN_COUNT]
+      [FREQUENT_REFUND_MIN_COUNT],
     ),
     query<{
       id: number;
@@ -186,7 +132,7 @@ export async function fetchTransactionAnomalies(): Promise<TransactionAnomalies>
        WHERE type = 'charge'
          AND amount_cents <= 0
        ORDER BY created_at DESC
-       LIMIT 10`
+       LIMIT 10`,
     ),
   ]);
 

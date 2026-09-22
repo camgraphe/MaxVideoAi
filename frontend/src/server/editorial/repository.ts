@@ -1,4 +1,4 @@
-import {guardEditorialPublicationEdit} from './publication-queue';
+import {guardEditorialPublicationEdit, type PublicationStatus} from './publication-queue';
 import { query, withDbTransaction } from '@/lib/db';
 import { digestEditorialDraft, parseEditorialDraft, type EditorialDraft } from '@/lib/editorial/schema';
 
@@ -127,16 +127,32 @@ export async function approveEditorialVersion(input: { articleId: string; versio
   });
 }
 
-export async function listEditorialDrafts(): Promise<Array<EditorialVersionRef & { title: string; createdAt: string }>> {
-  const rows = await query<VersionRow>(
-    `SELECT DISTINCT ON (article_id) article_id, version, digest, payload, created_at, approved_at, approved_by
-     FROM editorial_versions ORDER BY article_id, version DESC`,
+export type EditorialDraftSummary = EditorialVersionRef & {
+  title: string;
+  createdAt: string;
+  approvedAt: string | null;
+  publicationStatus: PublicationStatus | null;
+  publishedVersion: number | null;
+};
+
+export async function listEditorialDrafts(): Promise<EditorialDraftSummary[]> {
+  const rows = await query<VersionRow & { publication_status: PublicationStatus | null; published_version: number | null }>(
+    `SELECT DISTINCT ON (v.article_id) v.article_id, v.version, v.digest, v.payload,
+       v.created_at, v.approved_at, v.approved_by, p.status AS publication_status,
+       (SELECT max(live.version) FROM editorial_publications live
+        WHERE live.article_id=v.article_id AND live.status='published') AS published_version
+     FROM editorial_versions v
+     LEFT JOIN editorial_publications p ON p.article_id=v.article_id AND p.version=v.version AND p.digest=v.digest
+     ORDER BY v.article_id, v.version DESC`,
   );
   return rows.map((row) => ({
     articleId: row.article_id,
     version: row.version,
     digest: row.digest.trim(),
     title: parseEditorialDraft(row.payload).locales.en.title,
+    approvedAt: row.approved_at ? new Date(row.approved_at).toISOString() : null,
+    publicationStatus: row.publication_status,
+    publishedVersion: row.published_version,
     createdAt: new Date(row.created_at).toISOString(),
   })).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }

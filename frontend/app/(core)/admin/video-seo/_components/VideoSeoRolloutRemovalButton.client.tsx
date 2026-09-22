@@ -29,7 +29,7 @@ export function VideoSeoRolloutRemovalButton({
   async function handleRemove() {
     if (pending) return;
     const confirmed = window.confirm(
-      `Retirer « ${title} » du rollout Video SEO ? La vidéo, sa visibilité et ses fichiers ne seront pas modifiés.`
+      `Remove “${title}” from video publishing? The video, its visibility and its files will stay unchanged.`
     );
     if (!confirmed) return;
 
@@ -41,11 +41,11 @@ export function VideoSeoRolloutRemovalButton({
       });
       const json = await response.json().catch(() => null);
       if (!response.ok || !json?.ok) {
-        throw new Error(json?.error ?? 'Impossible de retirer cette candidature du rollout');
+        throw new Error(json?.error ?? 'Could not remove this video publishing candidate.');
       }
       router.refresh();
     } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : 'Impossible de retirer cette candidature du rollout');
+      setError(removeError instanceof Error ? removeError.message : 'Could not remove this video publishing candidate.');
     } finally {
       setPending(false);
     }
@@ -78,7 +78,7 @@ export function VideoSeoRolloutRemovalButton({
         {pending ? 'Retrait en cours…' : 'Retirer la candidature'}
       </Button>
       <p className="text-xs text-text-muted">
-        Retire uniquement cette page des candidats Video SEO. La vidéo reste inchangée.
+        Remove only this page from video publishing candidates. The video stays unchanged.
       </p>
       {error ? <p className="text-xs font-medium text-error">{error}</p> : null}
     </div>

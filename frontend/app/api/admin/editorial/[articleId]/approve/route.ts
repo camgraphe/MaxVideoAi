@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ ok: true, published: false });
     }
     if (input.intent === 'publish' || input.intent === 'retry-publication') {
-      if (process.env.EDITORIAL_PUBLICATION_ENABLED !== '1') return NextResponse.json({ error: 'Publication automatique non activée' }, { status: 503 });
+      if (process.env.EDITORIAL_PUBLICATION_ENABLED !== '1') return NextResponse.json({ error: 'Automatic publication is not enabled.' }, { status: 503 });
       const publication = await (input.intent === 'retry-publication' ? retryEditorialPublication : requestEditorialPublication)({ articleId, version: Number(input.version), digest: input.digest, actor });
       return NextResponse.json({ ok: true, publication, published: publication.status === 'published' });
     }

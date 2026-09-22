@@ -1,3 +1,5 @@
+import {finalizeModelGallery} from './_lib/model-gallery-curation';
+import { hasPlaylistCuration } from '@/server/playlists/curation-service';
 import '@/styles/marketing-models.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
 import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
@@ -209,12 +211,14 @@ async function renderMarketingModelPage({
     }
   })();
   let examples: GalleryVideo[] = [];
+  let managedCuration=false;
   const examplePlaylistKeys =
     engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
   try {
     for (const playlistKey of examplePlaylistKeys) {
       examples = await listPlaylistVideos(playlistKey, 200);
-      if (examples.length) break;
+      managedCuration=await hasPlaylistCuration(playlistKey);
+      if (examples.length || managedCuration) break;
     }
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);
@@ -254,79 +258,15 @@ async function renderMarketingModelPage({
     )
     .map((card) => resolveGalleryCardHref(card));
 
-  const featuredExampleIds = FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [];
-  const missingFeaturedExamples = featuredExampleIds.filter((id) => !galleryVideos.some((video) => video.id === id));
-  if (featuredExampleIds.length) {
-    const existingFeaturedCards = new Map(galleryVideos.map((video) => [video.id, video]));
-    const fetchedFeaturedCards = new Map<string, (typeof galleryVideos)[number]>();
-    if (missingFeaturedExamples.length) {
-      const featuredMap = await getPublicVideosByIds(missingFeaturedExamples);
-      for (const video of featuredMap.values()) {
-        fetchedFeaturedCards.set(
-          video.id,
-          resolveGalleryCardHref(
-            toGalleryCard(
-              video,
-              engine.brandId,
-              localizedContent.marketingName ?? engine.marketingName,
-              engine.modelSlug,
-              engine.id,
-              backPath,
-              appPath
-            )
-          )
-        );
-      }
-    }
-    const featuredCards: typeof galleryVideos = [];
-    for (const id of featuredExampleIds) {
-      const card = existingFeaturedCards.get(id) ?? fetchedFeaturedCards.get(id);
-      if (card) featuredCards.push(card);
-    }
-    if (featuredCards.length) {
-      galleryVideos = [
-        ...featuredCards,
-        ...galleryVideos.filter((video) => !featuredExampleIds.includes(video.id)),
-      ];
-    }
-  }
-
-  const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
-  const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
-  const missingPreferred = preferredList.filter((id) => !galleryVideos.some((video) => video.id === id));
-  if (missingPreferred.length) {
-    const preferredMap = await getPublicVideosByIds(missingPreferred);
-    for (const id of preferredList) {
-      if (!preferredMap.has(id) || galleryVideos.some((video) => video.id === id)) continue;
-      const video = preferredMap.get(id)!;
-      galleryVideos = [
-        ...galleryVideos,
-        toGalleryCard(
-          video,
-          engine.brandId,
-          localizedContent.marketingName ?? engine.marketingName,
-          engine.modelSlug,
-          engine.id,
-          backPath,
-          appPath
-        )
-      ];
-    }
-  }
-  if (!appGenerationEnabled) {
-    galleryVideos = galleryVideos.map((card) => resolveGalleryCardHref(card));
-  }
-  if (engine.modelSlug === 'kling-2-5-turbo') {
-    const isSixteenNine = (aspect?: string | null) => {
-      const normalized = (aspect ?? '').trim();
-      return normalized === '16:9' || normalized.startsWith('16:9');
-    };
-    galleryVideos = [...galleryVideos].sort((a, b) => {
-      const aScore = (isSixteenNine(a.aspectRatio) ? 0 : 2) + (a.videoUrl ? 0 : 1);
-      const bScore = (isSixteenNine(b.aspectRatio) ? 0 : 2) + (b.videoUrl ? 0 : 1);
-      return aScore - bScore;
-    });
-  }
+  const preferredIds = managedCuration ? {hero:null,demo:null} : PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
+  galleryVideos=await finalizeModelGallery({
+    managed: managedCuration,
+    cards:galleryVideos,
+    featuredIds:FEATURED_EXAMPLE_MEDIA[engine.modelSlug]??[],
+    preferredIds:[preferredIds.hero,preferredIds.demo].filter((id):id is string=>Boolean(id)),
+    preferLandscape:engine.modelSlug==='kling-2-5-turbo',
+    fetchCards:async(ids)=>Array.from((await getPublicVideosByIds(ids)).values()).map(video=>resolveGalleryCardHref(toGalleryCard(video,engine.brandId,localizedContent.marketingName??engine.marketingName,engine.modelSlug,engine.id,backPath,appPath))),
+  });
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,

@@ -21,6 +21,8 @@ test('server videos module keeps row normalization and examples helpers focused'
   assert.ok(serverSource.split('\n').length < 420, 'videos.ts should stay under 420 lines after helper extraction');
   assert.match(serverSource, /from '\.\/videos-normalization'/);
   assert.match(serverSource, /from '\.\/videos-examples'/);
+  assert.match(serverSource, /from '\.\/videos-playlists'/);
+  assert.match(readFileSync('frontend/server/videos-playlists.ts', 'utf8'), /resolveCuratedPlaylist/);
   assert.doesNotMatch(serverSource, /function formatPromptExcerpt/);
   assert.doesNotMatch(serverSource, /function sortVideosByPreference/);
   assert.doesNotMatch(serverSource, /function paginateGalleryVideos/);

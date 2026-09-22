@@ -1,236 +1,143 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import type { LucideIcon } from 'lucide-react';
-import {
-  BadgeDollarSign,
-  BadgePercent,
-  Bell,
-  ClipboardList,
-  Cpu,
-  FileDown,
-  FileText,
-  Globe,
-  Home,
-  LayoutDashboard,
-  LineChart,
-  ListChecks,
-  ListVideo,
-  MailCheck,
-  Palette,
-  Package,
-  Receipt,
-  Scale,
-  Search,
-  ShieldAlert,
-  Users,
-  X,
-} from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { UIIcon } from '@/components/ui/UIIcon';
-import type { AdminNavBadge, AdminNavBadgeMap, AdminNavBadgeTone, AdminNavGroup, AdminNavItem } from '@/lib/admin/navigation';
-import { isAdminNavMatch } from '@/lib/admin/navigation';
+import { LayoutDashboard, Users, Receipt, ListVideo, FolderOpen, Settings, ExternalLink, X } from 'lucide-react';
+import type { AdminNavGroup } from '@/lib/admin/navigation';
+import { ADMIN_EXTERNAL_LINKS, findAdminNavMatch, isAdminNavMatch } from '@/lib/admin/navigation';
 
-const ADMIN_ICON_MAP: Record<string, LucideIcon> = {
-  dashboard: LayoutDashboard,
-  bell: Bell,
+const icons = {
+  overview: LayoutDashboard,
   users: Users,
-  jobs: ListChecks,
   transactions: Receipt,
-  shield: ShieldAlert,
-  costs: BadgeDollarSign,
-  audit: ClipboardList,
-  engines: Cpu,
-  pricing: BadgeDollarSign,
-  membership: BadgePercent,
-  'billing-products': Package,
-  moderation: FileText,
-  playlists: ListVideo,
-  homepage: Home,
-  insights: LineChart,
-  search: Search,
-  legal: Scale,
-  marketing: MailCheck,
-  consents: FileDown,
-  palette: Palette,
-  globe: Globe,
-  examples: ListVideo,
-  workflows: ListChecks,
-  models: Cpu,
-  docs: FileText,
-  blog: FileText,
-  changelog: FileText,
-  about: FileText,
-  contact: MailCheck,
-  status: Bell,
+  generations: ListVideo,
+  content: FolderOpen,
+  settings: Settings,
 };
 
 type SidebarNavProps = {
   groups: AdminNavGroup[];
-  badges?: AdminNavBadgeMap;
   mobileOpen: boolean;
   onMobileClose: () => void;
 };
 
-const BADGE_TONE_CLASS: Record<AdminNavBadgeTone, string> = {
-  info: 'border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-surface)] text-[var(--admin-sidebar-text-muted)]',
-  warn: 'border-warning-border bg-warning-bg text-warning',
-};
-
-export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: SidebarNavProps) {
+export function SidebarNav({ groups, mobileOpen, onMobileClose }: SidebarNavProps) {
+  const navigation = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const panel = navigation.current;
+    const focusable = () =>
+      Array.from(panel?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? []).filter(
+        (element) => element.getClientRects().length > 0
+      );
+    focusable()[0]?.focus();
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onMobileClose();
+      }
+      if (event.key !== 'Tab') return;
+      const nodes = focusable();
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus();
+    };
+  }, [mobileOpen, onMobileClose]);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const primaryGroups = groups.filter((group) => !group.secondary);
-  const secondaryGroups = groups.filter((group) => group.secondary);
-  const activeSearch = searchParams?.toString();
-
-  const renderNavItem = (item: AdminNavItem) => {
-    const isActive = isAdminNavMatch(pathname, item.href);
-    const href = isActive && activeSearch ? `${item.href}?${activeSearch}` : item.href;
-    const IconComponent = ADMIN_ICON_MAP[item.icon] ?? LayoutDashboard;
-    const itemBadges = badges?.[item.id] ?? [];
-
+  const match = findAdminNavMatch(pathname, groups);
+  function renderGroup(group: AdminNavGroup) {
+    const active = match?.group.id === group.id;
+    const Icon = icons[group.id as keyof typeof icons] ?? FolderOpen;
     return (
-      <li key={item.id} className="relative">
+      <div key={group.id}>
         <Link
-          href={href}
+          href={group.items[0].href}
           prefetch={false}
-          onClick={mobileOpen ? onMobileClose : undefined}
+          onClick={onMobileClose}
+          aria-current={active && group.items.length === 1 ? 'page' : undefined}
           className={clsx(
-            'group relative flex w-full items-center rounded-xl px-3 py-2.5 text-[13px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            'gap-2',
-            isActive
-              ? 'bg-[var(--admin-sidebar-surface-hover)] text-[var(--admin-sidebar-text)]'
-              : 'text-[var(--admin-sidebar-text-muted)] hover:bg-[var(--admin-sidebar-surface)] hover:text-[var(--admin-sidebar-text)]'
+            'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+            active ? 'bg-brand/10 text-brand' : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary'
           )}
-          aria-current={isActive ? 'page' : undefined}
         >
-          <span
-            className={clsx(
-              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-brand transition-opacity',
-              isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
-            )}
-            aria-hidden
-          />
-          <span
-            className={clsx(
-              'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
-              isActive
-                ? 'bg-[var(--admin-sidebar-surface-hover)] text-[var(--admin-sidebar-text)]'
-                : 'bg-transparent text-[var(--admin-sidebar-text-faint)] group-hover:bg-[var(--admin-sidebar-surface)] group-hover:text-[var(--admin-sidebar-text)]'
-            )}
-            aria-hidden
-          >
-            <UIIcon icon={IconComponent} size={16} />
-          </span>
-          <span className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="truncate">{item.label}</span>
-            {itemBadges.length ? (
-              <span className="ml-auto flex items-center gap-1">
-                {itemBadges.map((badge: AdminNavBadge, index) => {
-                  const tone = badge.tone ?? 'info';
-                  return (
-                    <span
-                      key={`${item.id}-badge-${index}`}
-                      className={clsx(
-                        'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold',
-                        BADGE_TONE_CLASS[tone]
-                      )}
-                    >
-                      {badge.label}
-                    </span>
-                  );
-                })}
-              </span>
-            ) : null}
-          </span>
-        </Link>
-      </li>
-    );
-  };
-
-  const renderGroup = (group: AdminNavGroup, index: number) => {
-    const headerClass = clsx(
-      'flex w-full items-center justify-between px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]',
-      group.secondary ? 'text-[var(--admin-sidebar-text-faint)]' : 'text-[var(--admin-sidebar-text-faint)]'
-    );
-    const wrapperClass = 'space-y-1';
-
-    return (
-      <section key={group.id} className={wrapperClass}>
-        <h2 className="sr-only">{group.label}</h2>
-        {index > 0 ? <div className="my-1 h-px w-full bg-surface-on-media-25" /> : null}
-        <div className={headerClass}>
+          <Icon size={18} aria-hidden="true" />
           <span>{group.label}</span>
-        </div>
-        <ul id={`admin-group-${group.id}`} className="space-y-1">
-          {group.items.map((item) => renderNavItem(item))}
-        </ul>
-      </section>
+        </Link>
+        {active && group.items.length > 1 && !group.secondary ? (
+          <ul className="mb-3 ml-5 mt-1 border-l border-border pl-3">
+            {group.items.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={item.href}
+                  prefetch={false}
+                  onClick={onMobileClose}
+                  aria-current={isAdminNavMatch(pathname, item.href) ? 'page' : undefined}
+                  className={clsx(
+                    'block rounded-md px-3 py-2 text-[13px] hover:bg-surface-2',
+                    isAdminNavMatch(pathname, item.href) ? 'font-semibold text-brand' : 'text-text-secondary'
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
     );
-  };
-
+  }
   return (
     <aside
-      className={clsx(
-        'fixed inset-y-0 left-0 z-40 flex w-[min(18rem,88vw)] flex-col border-r border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-bg)] text-[var(--admin-sidebar-text)] transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[17rem] md:translate-x-0 md:shadow-none',
-        mobileOpen ? 'translate-x-0 shadow-float' : '-translate-x-full',
-        'md:translate-x-0'
-      )}
+      ref={navigation}
       aria-label="Admin navigation"
+      className={clsx(
+        'fixed inset-y-0 left-0 z-40 flex w-56 shrink-0 flex-col border-r border-border bg-[#f8f9fc] transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0',
+        mobileOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full max-md:invisible'
+      )}
     >
-      <div className="border-b border-[var(--admin-sidebar-border)] px-4 pb-4 pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/admin" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-xs font-semibold text-on-brand">
-              MV
-            </span>
-            <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate text-sm font-semibold text-[var(--admin-sidebar-text)]">MaxVideo Admin</span>
-              <span className="text-xs text-[var(--admin-sidebar-text-faint)]">Operations control</span>
-            </span>
-          </Link>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onMobileClose}
-            className="h-9 w-9 min-h-0 rounded-lg border border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-surface)] p-0 text-[var(--admin-sidebar-text-muted)] hover:bg-[var(--admin-sidebar-surface-hover)] hover:text-[var(--admin-sidebar-text)] md:hidden"
-          >
-            <UIIcon icon={X} size={18} />
-            <span className="sr-only">Close navigation</span>
-          </Button>
-        </div>
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-surface)] px-3 py-2">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-sidebar-text-faint)]">Workspace</p>
-            <p className="mt-1 text-sm font-medium text-[var(--admin-sidebar-text)]">Admin</p>
-          </div>
-          <span className="inline-flex items-center gap-2 text-xs text-[var(--admin-sidebar-text-faint)]">
-            <span className="h-2 w-2 rounded-full bg-success" aria-hidden />
-            Live
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-5">
+        <Link href="/admin" className="text-base font-semibold tracking-tight text-text-primary">
+          MaxVideoAI
+          <span className="ml-2 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
+            ADMIN
           </span>
-        </div>
+        </Link>
+        <button type="button" onClick={onMobileClose} aria-label="Close navigation" className="rounded p-2 md:hidden">
+          <X size={18} />
+        </button>
       </div>
-
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="space-y-1">
-          {primaryGroups.map((group, index) => renderGroup(group, index))}
-        </div>
-        {secondaryGroups.length ? (
-          <div className="mt-4 border-t border-[var(--admin-sidebar-border)] pt-4">
-            <div className="space-y-1">
-              {secondaryGroups.map((group, index) => renderGroup(group, index))}
-            </div>
-          </div>
-        ) : null}
+      <nav aria-label="Workspace" className="flex-1 space-y-1 overflow-y-auto p-3 pt-6">
+        {groups.filter((g) => !g.secondary).map(renderGroup)}
       </nav>
-
-      <div className="border-t border-[var(--admin-sidebar-border)] px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-sidebar-text-faint)]">Shell</p>
-        <p className="mt-1 text-xs text-[var(--admin-sidebar-text-muted)]">Cmd+K for navigation and quick jumps.</p>
+      <div className="space-y-1 border-t border-border p-3">
+        {groups.filter((g) => g.secondary).map(renderGroup)}
+        {ADMIN_EXTERNAL_LINKS.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-10 items-center justify-between rounded-md px-3 text-sm text-text-secondary hover:bg-surface-2"
+          >
+            {link.label}
+            <ExternalLink size={14} aria-hidden="true" />
+          </a>
+        ))}
       </div>
     </aside>
   );

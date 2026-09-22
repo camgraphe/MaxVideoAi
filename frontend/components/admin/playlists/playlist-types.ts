@@ -49,6 +49,7 @@ export type PlaylistsManagerProps = {
   initialPlaylistId: string | null;
   initialItems: PlaylistItemRecord[];
   embedded?: boolean;
+  enableCuration?: boolean;
   className?: string;
 };
 

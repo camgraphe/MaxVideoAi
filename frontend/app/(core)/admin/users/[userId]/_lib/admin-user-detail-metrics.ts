@@ -68,13 +68,13 @@ export function buildMemberPulseItems({
     },
     {
       label: 'Completed renders',
-      value: formatNumber(usage?.totalRenders ?? 0),
-      helper: `30d ${formatNumber(usage?.renders30d ?? 0)}`,
+      value: usage ? formatNumber(usage.totalRenders) : '—',
+      helper: usage ? `30d ${formatNumber(usage.renders30d)}` : 'Usage unavailable',
       icon: History,
     },
     {
       label: 'Engine coverage',
-      value: formatNumber(usage?.engineBreakdown.length ?? 0),
+      value: usage ? formatNumber(usage.engineBreakdown.length) : '—',
       helper: usage?.engineBreakdown.length ? 'Distinct engines completed' : 'No engine usage yet',
       icon: Layers3,
     },

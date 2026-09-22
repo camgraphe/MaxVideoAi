@@ -9,7 +9,7 @@ export function AdminUserIdentitySection({ profile }: { profile: AdminUserProfil
   return (
     <AdminSection
       title="Identity & Access"
-      description="Email, timestamps, rôle et métadonnées associées au compte Supabase."
+      description="Account identity and access details."
       action={
         profile ? (
           <AdminSectionMeta
@@ -20,7 +20,7 @@ export function AdminUserIdentitySection({ profile }: { profile: AdminUserProfil
       }
     >
       {profile ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <div className="space-y-4">
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
             <ProfileField label="Email">{profile.email ?? '—'}</ProfileField>
             <ProfileField label="User ID">
@@ -31,7 +31,7 @@ export function AdminUserIdentitySection({ profile }: { profile: AdminUserProfil
             <ProfileField label="Role">{profile.isAdmin ? 'Admin' : 'Member'}</ProfileField>
             <ProfileField label="App metadata">{profile.appMetadata ? `${Object.keys(profile.appMetadata).length} keys` : 'None'}</ProfileField>
           </dl>
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <MetadataPanel label="User metadata" value={profile.userMetadata} />
             <MetadataPanel label="App metadata" value={profile.appMetadata} />
           </div>
@@ -46,8 +46,8 @@ export function AdminUserIdentitySection({ profile }: { profile: AdminUserProfil
 function ProfileField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{label}</dt>
-      <dd className="mt-1 text-sm text-text-primary">{children}</dd>
+      <dt className="text-xs font-medium text-text-secondary">{label}</dt>
+      <dd className="mt-1 break-all text-sm text-text-primary">{children}</dd>
     </div>
   );
 }
@@ -62,7 +62,7 @@ function MetadataPanel({
   const hasValue = Boolean(value && Object.keys(value).length);
 
   return (
-    <details className="rounded-2xl border border-hairline bg-bg/40 px-4 py-3" open={!hasValue}>
+    <details className="border-t border-hairline py-3">
       <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
         {label}
       </summary>

@@ -19,7 +19,7 @@ export function AdminDataTable({
   return (
     <div
       className={clsx(
-        'overflow-hidden rounded-2xl border border-hairline',
+        'overflow-hidden border-y border-hairline',
         tone === 'muted' ? 'bg-bg/40' : 'bg-transparent',
         className
       )}

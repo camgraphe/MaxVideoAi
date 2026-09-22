@@ -10,23 +10,23 @@ type SmokeRoute = {
 const smokeRoutes: SmokeRoute[] = [
   {
     path: '/admin',
-    heading: 'Welcome back, Admin',
-    section: 'Monthly stats',
+    heading: 'Overview',
+    section: 'Recent wallet activity',
   },
   {
     path: '/admin/insights',
-    heading: 'Workspace insights',
-    section: 'Trend Workspace',
+    heading: 'Trends',
+    section: 'Activity over time',
   },
   {
     path: '/admin/jobs',
-    heading: 'Jobs',
-    section: 'Job Workspace',
+    heading: 'Generations',
+    section: 'Review generation outcomes and resolve incidents.',
   },
   {
     path: '/admin/transactions',
     heading: 'Transactions',
-    section: 'Transaction Workspace',
+    section: 'Wallet credits, generation charges and refunds.',
   },
   {
     path: '/admin/video-seo',
@@ -34,9 +34,14 @@ const smokeRoutes: SmokeRoute[] = [
     section: 'Indexed Watch Pages',
   },
   {
-    path: '/admin/pricing',
-    heading: 'Canonical pricing policy',
-    section: 'Policy inventory',
+    path: '/admin/settings',
+    heading: 'Settings',
+    section: 'Existing database overrides remain active',
+  },
+  {
+    path: '/admin/seo',
+    heading: 'Search performance',
+    section: 'Google Search Console',
   },
   {
     path: '/admin/membership',
@@ -79,50 +84,85 @@ test.describe('admin smoke', () => {
     assertNoClientErrors(errors);
   });
 
+  test('old SEO and theme bookmarks reach their replacement pages', async ({ page }) => {
+    await openAdminRoute(page, '/admin/settings');
+    await page.goto('/admin/seo/gsc?range=28d');
+    await expect(page).toHaveURL(/\/admin\/seo$/);
+    await expect(page.getByRole('link', { name: /Google Search Console/ })).toHaveAttribute(
+      'href',
+      'https://search.google.com/search-console'
+    );
+
+    await page.goto('/admin/theme');
+    await expect(page).toHaveURL(/\/admin\/settings$/);
+    await expect(page.locator('body')).toContainText('Existing database overrides remain active');
+
+    for (const path of [
+      '/api/admin/seo/gsc/refresh',
+      '/api/admin/seo/url-inspection/inspect',
+      '/api/admin/seo/actions/export',
+    ]) {
+      const response = await page.context().request.post(path, { data: {} });
+      expect(response.status()).toBe(410);
+    }
+    const themeResponse = await page.context().request.put('/api/admin/theme-tokens', { data: {} });
+    expect(themeResponse.status()).toBe(410);
+  });
+
+  test('failed service notice disable keeps the edited notice visible', async ({ page }) => {
+    test.skip(!process.env.DATABASE_URL, 'Service notice editing requires the database fixture');
+    await openAdminRoute(page, '/admin/system');
+    const enabled = page.getByRole('checkbox', { name: 'Show the notice in the workspace' });
+    await enabled.check();
+    await page.route('**/api/admin/service-notice', async (route) => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Save failed' }) });
+    });
+    await page.getByRole('button', { name: 'Disable', exact: true }).click();
+    await expect(enabled).toBeChecked();
+    await expect(page.getByText('Save failed')).toBeVisible();
+  });
+
   test('admin home remains usable on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const errors = trackClientErrors(page);
     await openAdminRoute(page, '/admin');
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Welcome back, Admin' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Overview' })).toBeVisible();
     await expect(page.locator('body')).toContainText('New users');
-    await expect(page.locator('body')).toContainText('Active users');
-    await expect(page.locator('body')).toContainText('Top ups');
-    await expect(page.locator('body')).toContainText('Monthly stats');
+    await expect(page.locator('body')).toContainText('Unresolved failures');
+    await expect(page.locator('body')).toContainText('Wallet top-ups');
+    await expect(page.locator('body')).toContainText('Recent wallet activity');
     await expect(page.getByRole('button', { name: 'Go' })).toBeVisible();
 
     assertNoClientErrors(errors);
   });
 
-  test('admin hub supports 24h and 90d stat ranges', async ({ page }) => {
-    const errors = trackClientErrors(page);
-    await openAdminRoute(page, '/admin?range=90d');
-
-    await expect(page.getByRole('link', { name: 'Last 90 days' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Last 24 hours' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Last 30 days' })).toBeVisible();
-    await expect(page.locator('body')).toContainText('payments in 90d');
-
-    await page.getByRole('link', { name: 'Last 24 hours' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=24h$/);
-    await expect(page.locator('body')).toContainText('payments in 24h');
-
-    assertNoClientErrors(errors);
+  test('settings stays navigable at 200 percent zoom', async ({ page }) => {
+    await page.setViewportSize({ width: 720, height: 900 });
+    await openAdminRoute(page, '/admin/settings');
+    await page.evaluate(() => {
+      document.documentElement.style.zoom = '200%';
+    });
+    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
+    const width = await page.evaluate(() => ({
+      content: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+    }));
+    expect(width.content).toBeLessThanOrEqual(width.viewport);
+    await page.getByRole('main').getByRole('link', { name: /Service notice/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Service notice' })).toBeVisible();
   });
 
-  test('admin hub can exclude admin metrics while preserving range', async ({ page }) => {
+  test('overview switches between Today and a rolling 24 hours', async ({ page }) => {
     const errors = trackClientErrors(page);
-    await openAdminRoute(page, '/admin?range=90d');
-
-    await expect(page.getByRole('link', { name: 'Admin excluded' })).toBeVisible();
-    await page.getByRole('link', { name: 'Admin excluded' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=90d&excludeAdmin=0$/);
-    await expect(page.getByRole('link', { name: 'Include admin' })).toBeVisible();
-
-    await page.getByRole('link', { name: 'Last 24 hours' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=24h&excludeAdmin=0$/);
-    await expect(page.locator('body')).toContainText('payments in 24h');
-
+    await openAdminRoute(page, '/admin');
+    await expect(page.getByLabel('Reporting period')).toHaveValue('today');
+    await page.getByLabel('Reporting period').selectOption('24h');
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\?range=24h$/);
+    await expect(page.getByLabel('Reporting period')).toHaveValue('24h');
+    await expect(page.locator('body')).toContainText('Europe/Madrid');
     assertNoClientErrors(errors);
   });
 });

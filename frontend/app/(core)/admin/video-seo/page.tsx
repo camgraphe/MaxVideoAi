@@ -28,7 +28,7 @@ export default async function AdminVideoSeoPage() {
       <AdminPageHeader
         eyebrow="Curation"
         title="Video SEO watch pages"
-        description="Vue opérationnelle du shortlist `/video/[id]` pour le rollout Google Video. On contrôle ici l’éligibilité, les assets publics et les watch pages, sans mélanger cette surface avec la publication générale."
+        description="Review candidate `/video/[id]` pages for Google Video. Check eligibility, public media and watch pages."
         actions={
           <>
             <AdminActionLink href="/admin/moderation">
@@ -46,21 +46,21 @@ export default async function AdminVideoSeoPage() {
 
       <AdminSection
         title="Rollout Pulse"
-        description="Lecture rapide du shortlist actuellement sous surveillance avant d’inspecter chaque watch page."
+        description="Review the candidate list before inspecting individual watch pages."
       >
         <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
       </AdminSection>
 
       <AdminSection
         title="Add Candidate"
-        description="Ajoute une vidéo publique comme brouillon éditorial. Elle reste hors sitemap tant que le statut et la QA ne passent pas."
+        description="Add a public video as an editorial draft. It stays outside the sitemap until approval and quality checks pass."
       >
         <VideoSeoCandidateForm />
       </AdminSection>
 
       <AdminSection
         title="Indexed Watch Pages"
-        description="Pages calculées comme éligibles au sitemap vidéo : statut approved, fiche complète, QA OK et assets publics."
+        description="Pages eligible for the video sitemap: approved, complete, quality checked and backed by public media."
         action={
           <AdminSectionMeta
             title={`${sitemapCount} page${sitemapCount === 1 ? '' : 's'} in sitemap`}
@@ -77,7 +77,7 @@ export default async function AdminVideoSeoPage() {
 
       <AdminSection
         title="Candidates And Drafts"
-        description="Pages candidates, brouillons ou bloquées par la QA éditoriale/technique avant indexation. Les pages désactivées sont conservées à part pour éviter de polluer le pilotage quotidien."
+        description="Candidates, drafts and pages awaiting editorial or technical checks. Disabled pages are listed separately."
         action={
           <AdminSectionMeta
             title={`${candidateCount} page${candidateCount === 1 ? '' : 's'} outside sitemap`}
@@ -104,7 +104,7 @@ export default async function AdminVideoSeoPage() {
       </AdminSection>
 
       {disabledRows.length ? (
-        <AdminSection title="Disabled Archive" description="Overrides conservés en base pour empêcher le fallback config de remettre ces vidéos dans le sitemap. Replié par défaut et limité aux 20 premières lignes pour garder le cockpit lisible." action={<AdminSectionMeta title={`${disabledRows.length} disabled`} lines={['No sitemap, noindex follow']} />}>
+        <AdminSection title="Disabled Archive" description="Database exclusions prevent config fallbacks from restoring these videos to the sitemap. The archive shows up to 20 rows by default." action={<AdminSectionMeta title={`${disabledRows.length} disabled`} lines={['No sitemap, noindex follow']} />}>
           <details className="rounded-2xl border border-hairline bg-bg/40">
             <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-text-primary">Show disabled video SEO pages</summary>
             <div className="border-t border-hairline">

@@ -41,7 +41,7 @@ export default async function AdminSystemPage() {
       <AdminPageHeader
         eyebrow="Operations"
         title="Service notice"
-        description="Pilotage de la bannière incident visible dans le workspace. On garde ici la rédaction, l’activation et l’historique opérationnel de ce canal."
+        description="Publish a workspace-wide incident message and review recent changes."
         actions={
           <>
             <AdminActionLink href="/admin/audit?action=SERVICE_NOTICE_UPDATE">
@@ -50,24 +50,21 @@ export default async function AdminSystemPage() {
             <AdminActionLink href="/admin/insights">
               Insights
             </AdminActionLink>
-            <AdminActionLink href="/admin/theme">
-              Theme
-            </AdminActionLink>
           </>
         }
       />
 
       <AdminSection
-        title="Notice Pulse"
-        description="Statut, portée et fraîcheur de la bannière pour savoir si une communication incident est réellement en production."
+        title="Current status"
+        description="Check whether members can see a notice and when it last changed."
       >
         <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
       </AdminSection>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_340px] xl:items-start">
         <AdminSection
-          title="Notice Workspace"
-          description="Rédige le message, active la bannière et visualise immédiatement le rendu qui sera vu par les membres."
+          title="Edit notice"
+          description="Write the message and check its appearance before publishing."
           action={
             <AdminSectionMeta
               title={notice.enabled ? 'Banner currently live' : 'Banner currently off'}
@@ -100,7 +97,7 @@ export default async function AdminSystemPage() {
           </div>
         </AdminSection>
 
-        <AdminInspectorPanel title="Guidance" description="Rappels de diffusion pour garder la bannière utile et courte.">
+        <AdminInspectorPanel title="Guidance" description="Keep incident messages short and useful.">
           <div className="space-y-4">
             <AdminNotice tone={notice.enabled ? 'warning' : 'default'}>
               {notice.enabled
@@ -127,8 +124,8 @@ export default async function AdminSystemPage() {
       </div>
 
       <AdminSection
-        title="Recent Updates"
-        description="Dernières modifications de bannière pour comprendre qui a publié quoi et à quel moment."
+        title="Recent changes"
+        description="Review who changed the notice and when."
       >
         {auditLogs.length ? (
           <AdminDataTable>

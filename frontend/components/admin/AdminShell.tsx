@@ -1,50 +1,22 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import useSWR from 'swr';
-import type { AdminNavBadgeMap, AdminNavGroup } from '@/lib/admin/navigation';
-import { buildAdminBadges } from '@/lib/admin/badges';
-import type { AdminHealthSnapshot } from '@/lib/admin/types';
+import type { AdminNavGroup } from '@/lib/admin/navigation';
 import { SidebarNav } from '@/components/admin/SidebarNav';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { AdminFrame } from '@/components/admin-system/shell/AdminFrame';
 
-type AdminHealthResponse =
-  | {
-      ok: true;
-      health: AdminHealthSnapshot;
-    }
-  | {
-      ok: false;
-      error?: string;
-    };
-
-const fetchJson = async (url: string): Promise<AdminHealthResponse> => {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) {
-    return { ok: false, error: res.statusText };
-  }
-  return (await res.json()) as AdminHealthResponse;
-};
-
 type AdminShellProps = {
   navGroups: AdminNavGroup[];
-  navBadges?: AdminNavBadgeMap;
   children: ReactNode;
 };
 
-export function AdminShell({ navGroups, navBadges, children }: AdminShellProps) {
+export function AdminShell({ navGroups, children }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const { data } = useSWR<AdminHealthResponse>('/api/admin/health', fetchJson, {
-    refreshInterval: 30000,
-    revalidateOnFocus: false,
-  });
-  const liveBadges = data?.ok ? buildAdminBadges(data.health) : undefined;
-  const mergedBadges = useMemo(() => liveBadges ?? navBadges, [liveBadges, navBadges]);
-
+  const closeNavigation = useCallback(() => setMobileOpen(false), []);
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -60,12 +32,7 @@ export function AdminShell({ navGroups, navBadges, children }: AdminShellProps) 
   }, [mobileOpen]);
 
   const sidebar = (
-    <SidebarNav
-      groups={navGroups}
-      badges={mergedBadges}
-      mobileOpen={mobileOpen}
-      onMobileClose={() => setMobileOpen(false)}
-    />
+    <SidebarNav groups={navGroups} mobileOpen={mobileOpen} onMobileClose={closeNavigation} />
   );
 
   const topbar = <AdminTopbar navGroups={navGroups} onMenuOpen={() => setMobileOpen(true)} />;

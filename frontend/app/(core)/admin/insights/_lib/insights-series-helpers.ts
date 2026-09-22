@@ -40,7 +40,7 @@ export function buildFocusMetricData(
     return {
       key: 'active',
       label: 'Active account-days',
-      description: 'Mesure d’usage journalier cumulé. Ce n’est pas un distinct user count, mais un vrai rythme d’activité.',
+      description: 'Sum of daily active accounts. An account active on several days is counted on each day.',
       theme: CHART_THEMES.active,
       currentPoints: comparison.current.activeAccountsDaily.map((point) => ({
         label: formatDay(point.date),
@@ -62,7 +62,7 @@ export function buildFocusMetricData(
     return {
       key: 'topups',
       label: 'Wallet top-ups',
-      description: 'Cash-in par jour. Le tracé précédent garde la cadence historique visible sans surcharger le graph.',
+      description: 'Daily wallet loads, including manual credits.',
       theme: CHART_THEMES.topups,
       currentPoints: comparison.current.topupsDaily.map((point) => ({
         label: formatDay(point.date),
@@ -82,7 +82,7 @@ export function buildFocusMetricData(
     return {
       key: 'charges',
       label: 'Gross render charges',
-      description: 'Débits bruts par jour avant remboursements. Les tableaux de wallet affichent séparément refunds et net spend.',
+      description: 'Daily generation charges before refunds. Refunds and net spend appear in the wallet table.',
       theme: CHART_THEMES.charges,
       currentPoints: comparison.current.chargesDaily.map((point) => ({
         label: formatDay(point.date),
@@ -101,7 +101,7 @@ export function buildFocusMetricData(
   return {
     key: 'signups',
     label: 'Signups per day',
-    description: 'Nouvelle acquisition dans la fenêtre. C’est la meilleure lecture de tendance en haut de funnel.',
+    description: 'Daily signups recorded in synchronized account profiles.',
     theme: CHART_THEMES.signups,
     currentPoints: comparison.current.signupsDaily.map((point) => ({
       label: formatDay(point.date),

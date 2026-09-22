@@ -1,8 +1,6 @@
-import { query, type QueryExecutor } from '@/lib/db';
-import {
-  mapCreatedPlaylistRow,
-  type CreatedPlaylistRow,
-} from './mappers';
+import { assertLegacyPlaylistEditable } from './curation-store';
+import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
+import { mapCreatedPlaylistRow, type CreatedPlaylistRow } from './mappers';
 import { getPlaylistRecordById } from './queries';
 import type { MutablePlaylistFields, PlaylistRecord } from './types';
 
@@ -93,36 +91,49 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 }
 
 export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<void> {
-  await appendPlaylistItemWithExecutor({ query }, playlistId, videoId);
+  await withDbTransaction(async executor => {
+    await assertLegacyPlaylistEditable(executor, playlistId);
+    await appendPlaylistItemWithExecutor(executor, playlistId, videoId);
+  });
 }
 
 export async function removePlaylistItem(playlistId: string, videoId: string): Promise<void> {
-  await query(`DELETE FROM playlist_items WHERE playlist_id = $1 AND video_id = $2`, [playlistId, videoId]);
+  await withDbTransaction(async executor => {
+    await assertLegacyPlaylistEditable(executor, playlistId);
+    await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1 AND video_id = $2`, [playlistId, videoId]);
+  });
 }
 
 export async function reorderPlaylistItems(
   playlistId: string,
   order: Array<{ videoId: string; pinned?: boolean }>
 ): Promise<void> {
-  await query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
-  if (!order.length) return;
+  await withDbTransaction(async (executor) => {
+    await assertLegacyPlaylistEditable(executor, playlistId);
+    await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
+    if (!order.length) return;
 
-  const values: unknown[] = [];
-  const inserts: string[] = [];
-  order.forEach((item, index) => {
-    values.push(playlistId, item.videoId, index, Boolean(item.pinned));
-    const base = values.length;
-    inserts.push(`($${base - 3}, $${base - 2}, $${base - 1}, $${base})`);
+    const values: unknown[] = [];
+    const inserts: string[] = [];
+    order.forEach((item, index) => {
+      values.push(playlistId, item.videoId, index, Boolean(item.pinned));
+      const base = values.length;
+      inserts.push(`($${base - 3}, $${base - 2}, $${base - 1}, $${base})`);
+    });
+
+    await executor.query(
+      `INSERT INTO playlist_items (playlist_id, video_id, order_index, pinned)
+       VALUES ${inserts.join(', ')}`,
+      values
+    );
   });
-
-  await query(
-    `INSERT INTO playlist_items (playlist_id, video_id, order_index, pinned)
-     VALUES ${inserts.join(', ')}`,
-    values
-  );
 }
 
-async function appendPlaylistItemWithExecutor(executor: QueryExecutor, playlistId: string, videoId: string): Promise<void> {
+async function appendPlaylistItemWithExecutor(
+  executor: QueryExecutor,
+  playlistId: string,
+  videoId: string
+): Promise<void> {
   const rows = await executor.query<{ max: number }>(
     `SELECT COALESCE(MAX(order_index), 0) AS max FROM playlist_items WHERE playlist_id = $1`,
     [playlistId]
