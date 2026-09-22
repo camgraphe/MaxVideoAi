@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "pack-broll-codex-cli-maxvideoai": {
+    en: "pack-broll-codex-cli-maxvideoai",
+    fr: "pack-broll-codex-cli-maxvideoai",
+    es: "pack-broll-codex-cli-maxvideoai",
+  },
   "30-second-music-promo-two-minimax-h3-clips": {
     en: "30-second-music-promo-two-minimax-h3-clips",
     fr: "30-second-music-promo-two-minimax-h3-clips",

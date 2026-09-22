@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "pack-broll-codex-cli-maxvideoai",
+  "publication": {
+    "articleId": "add981d6-0d17-4338-8b02-880605bd1c88",
+    "version": 1,
+    "digest": "f6e6422451aa03876fa7c75d5ead03f1cafaea33df1dd0fa457aa8fdd2954c07",
+    "publishedAt": "2026-09-22T13:42:31.600Z"
+  },
+  "article": {
+    "locale": "es",
+    "audience": "es-419",
+    "slug": "pack-broll-codex-cli-maxvideoai",
+    "title": "Crea un paquete de B-roll vinculado a la transcripción con Codex CLI y MaxVideoAI",
+    "description": "Convierte una narración aprobada en solicitudes de B-roll con un propósito claro, genera insertos guiados por referencias con Kling 3.0 Omni Pro tras aprobar la cotización y entrega a edición clips con nombres coherentes vinculados a pasajes exactos.",
+    "keywords": [
+      "flujo de trabajo de B-roll",
+      "Codex CLI",
+      "MaxVideoAI",
+      "Kling 3.0 Omni Pro",
+      "video a partir de referencias",
+      "edición basada en transcripciones",
+      "producción de video",
+      "entrega a edición"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Una cinta ilustrada conecta fragmentos abstractos de una transcripción, tomas de una cámara guardándose y fundas multimedia apiladas con orden.",
+        "caption": "De una idea narrada a un inserto con un propósito. Ilustración."
+      },
+      {
+        "id": "an-insert-with-a-job",
+        "type": "text",
+        "heading": "Dale al inserto una sola función clara",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "La narración ya está aprobada, pero el B-roll disponible apenas la decora. Antes de solicitar otro clip, define qué debe comprender el público y en qué parte debe aparecer la acción. El resultado tiene que ser más que metraje: debe ser un clip identificable, vinculado a un pasaje exacto, una función narrativa y una nota de ubicación."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Imagina esta línea ilustrativa, L012: “Protege el equipo frágil guardándolo en un estuche acolchado”. Un inserto útil muestra unas manos bajando una cámara hasta acomodarla en un interior acolchado a la medida. Su función es "
+              },
+              {
+                "text": "hacer tangible la protección",
+                "bold": true
+              },
+              {
+                "text": " y su nota de ubicación es precisa: muestra el movimiento descendente durante “guardándolo en un estuche acolchado”. L012 es solo un ejemplo; utiliza los identificadores estables de tu propia transcripción aprobada."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "En este ejemplo, la generación posterior se hará con "
+              },
+              {
+                "text": "Kling 3.0 Omni Pro de referencia a video",
+                "href": "https://maxvideoai.com/models/kling-o3-pro"
+              },
+              {
+                "text": ", que usa un prompt e imágenes de referencia para orientar la toma. Si primero defines la función del inserto, podrás elegir referencias que refuercen el pasaje en lugar de limitarse a adornarlo."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Proporciona el texto aprobado, los identificadores estables de las líneas y, cuando esté disponible, el tiempo verificado. Si la transcripción está en Premiere, sus "
+              },
+              {
+                "text": "herramientas de edición basada en texto",
+                "href": "https://helpx.adobe.com/sg/premiere/desktop/edit-projects/edit-video-using-text-based-editing/add-clips-to-the-timeline-using-text-based-editing.html"
+              },
+              {
+                "text": " pueden ayudarte a buscar y seleccionar los pasajes narrados. Así será más fácil volver a encontrar el momento previsto, aunque estas herramientas no colocan automáticamente el B-roll recién generado."
+              }
+            ],
+            "sourceIds": [
+              "source-6"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Define los límites antes de hacer el mapeo: qué pasajes están incluidos, el número máximo de insertos, el formato de entrega y el tope de gasto. Este recorrido sigue un solo inserto seleccionado. Los tres tratamientos que se comparan más adelante son composiciones alternativas para esa toma, no tres solicitudes de generación."
+              }
+            ],
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "camera-packing-example",
+        "type": "media",
+        "assetId": "camera-packing-example",
+        "heading": "Haz visible la protección",
+        "presentation": "single",
+        "alt": "Unas manos bajan una cámara hasta acomodarla en el acolchado a la medida de un estuche abierto.",
+        "caption": "Un inserto propuesto para el pasaje sobre cómo proteger equipo frágil. Ilustración."
+      },
+      {
+        "id": "transcript-mapping-prompt",
+        "type": "prompt",
+        "heading": "Convierte pasajes exactos en un plan de tomas acotado",
+        "template": "Create a planning-only shot-to-line matrix from the approved transcript and production limits below.\n\nINPUTS\nApproved transcript:\n[PASTE THE APPROVED TRANSCRIPT WITH STABLE LINE IDENTIFIERS]\n\nVerified timing, if available:\n[PASTE VERIFIED TIME RANGES OR WRITE “NOT SUPPLIED”]\n\nPassage scope:\n[DEFINE THE INCLUDED LINES OR SECTIONS]\n\nMaximum insert count:\n[ENTER LIMIT]\n\nDelivery format:\n[ENTER FORMAT]\n\nSpending ceiling:\n[ENTER CEILING]\n\nINSTRUCTIONS\n1. Preserve every selected passage exactly as supplied. Do not rewrite, shorten or correct it.\n2. Do not infer timestamps. If a verified time range is unavailable, write “Pending—timing not supplied.”\n3. Propose no more than the stated maximum number of inserts and include only passages within scope.\n4. Create these columns: Shot ID; Exact passage; Line ID or verified time range; Narrative purpose; Visual action; Reference roles; Shot constraints; Creative prompt; Proposed duration; Aspect ratio; Generation approval state; Proposed filename; Editor note.\n5. Give each insert one specific narrative purpose and one readable visual action.\n6. Leave reference roles, unresolved settings and creative prompts marked “Pending” until a human selects the treatment and supplies authorized references.\n7. Set every generation approval state to “Not requested.” Do not request generation, approve spending, run tools or change local files.\n8. Treat the proposed filename as a planning label only. Do not claim that an output file exists.\n9. Flag unclear passages for human review rather than inventing meaning.\n10. Return only the bounded matrix followed by a short list of unresolved inputs.",
+        "note": "Fila ilustrativa: toma BR_01; pasaje exacto “Protege el equipo frágil guardándolo en un estuche acolchado”; línea L012; tiempo pendiente; propósito: hacer tangible la protección; acción: unas manos bajan una cámara hasta acomodarla en el acolchado a la medida; referencias, restricciones y prompt creativo pendientes; aprobación no solicitada; nombre de archivo propuesto BR_01_camera-pack_v01; nota para edición: muestra el descenso durante “guardándolo en un estuche acolchado”."
+      },
+      {
+        "id": "choose-and-constrain",
+        "type": "comparison",
+        "heading": "Elige el tratamiento y luego define los límites de la toma",
+        "columns": [
+          "Tratamiento propuesto",
+          "Qué comunica",
+          "Consideración editorial",
+          "Referencias y restricciones propuestas"
+        ],
+        "rows": [
+          [
+            "Acción literal de guardar la cámara",
+            "Unas manos bajan la cámara hasta acomodarla en el acolchado a la medida y muestran directamente cómo se protege el equipo.",
+            "Es la opción más clara para este pasaje instructivo. Mantén BR_01 y su propósito narrativo sin cambios; este es el tratamiento seleccionado.",
+            "Prepara externamente dos imágenes autorizadas: una para definir la apariencia de la cámara y otra para mostrar el estuche abierto y el acolchado a la medida. Asígnales únicamente esas funciones y vincúlalas más adelante en ese orden. Úsalas como guía de referencia, no como fotogramas iniciales obligatorios. Propón 5 segundos, formato 16:9 y resolución 1080p, con el audio desactivado si ese control está disponible en ese momento. Cinco segundos dejan margen de edición alrededor de una acción fácil de leer; el diseño sonoro se mantiene en la edición externa. Antes de generar, confirma los detalles vigentes de Kling 3.0 Omni Pro y revisa la cotización activa: https://maxvideoai.com/models/kling-o3-pro"
+          ],
+          [
+            "Escena contextual de preparación del equipo",
+            "Un plano más amplio establece que la cámara se está preparando y guardando junto con otros equipos.",
+            "Resulta útil cuando importa el flujo de trabajo alrededor de la acción, pero el contacto protector entre la cámara y el acolchado se ve más pequeño y menos inmediato.",
+            "Requeriría referencias autorizadas que definan tanto el equipo como el entorno más amplio. No la solicites como una generación adicional, salvo que sustituya el tratamiento seleccionado."
+          ],
+          [
+            "Detalle metafórico del acolchado",
+            "Un plano macro del acolchado comprimido destaca su suavidad y capacidad para absorber impactos.",
+            "Tiene fuerza visual, pero quizá no explique con claridad cómo guardar la cámara ni muestre la acción completa.",
+            "Podría usar una referencia autorizada del detalle del material, pero no es el tratamiento elegido: el pasaje requiere una acción explícita de guardar la cámara, no una metáfora visual."
+          ]
+        ]
+      },
+      {
+        "id": "three-visual-treatments",
+        "type": "media",
+        "assetId": "three-visual-treatments",
+        "heading": "Tres formas de mostrar la protección",
+        "presentation": "single",
+        "alt": "Tres composiciones propuestas muestran la acción de guardar una cámara, una escena más amplia de preparación y un detalle cercano del acolchado.",
+        "caption": "La acción literal, el contexto de preparación y el detalle del acolchado ofrecen énfasis distintos para el mismo pasaje. Ilustración."
+      },
+      {
+        "id": "camera-packing-prompt",
+        "type": "prompt",
+        "heading": "Describe una sola acción que se entienda de inmediato",
+        "template": "Create a reference-to-video insert showing an unbranded camera being packed safely.\n\n@Image1 guides only the camera’s appearance. @Image2 guides only the open case and fitted padding. Use these references after the selected images have been bound in this order; do not treat either image as a required opening frame.\n\nIn a stable three-quarter close-up, two anonymous adult hands lower the camera once into its fitted padded recess. Keep the camera, hands and contact area clearly visible throughout the action. The case remains open. Use soft side lighting, an uncluttered setting and plausible hand and camera geometry.\n\nShow only this single downward placement. Do not close the case, fasten latches, lift it again or carry it away. No logos, text or additional equipment actions.",
+        "note": "Usa este prompt solo después de seleccionar referencias autorizadas y vincularlas con @Image1 y @Image2. Para el inserto horizontal del ejemplo, solicita una duración de cinco segundos, formato 16:9, resolución de 1080p y audio desactivado, siempre que ese control esté disponible. Confirma cada ajuste en los detalles actuales del modelo antes de pedir una cotización. Una sola acción sin obstrucciones permite reconocer el contacto protector durante la frase «guardándolo en un estuche acolchado», aunque las referencias orientan el resultado y no garantizan una coincidencia exacta."
+      },
+      {
+        "id": "quote-before-generation",
+        "type": "steps",
+        "heading": "Conecta el generador y revisa toda la solicitud en conjunto",
+        "steps": [
+          {
+            "title": "Conecta MaxVideoAI desde una nueva conversación de Codex",
+            "body": "Sigue la guía actual de integración de MaxVideoAI con Codex en https://maxvideoai.com/integrations/codex y completa la autorización OAuth en el navegador cuando se te solicite. No dependas de una etiqueta de versión fija: el punto de compatibilidad documentado corresponde a versiones específicas, así que utiliza el proceso de instalación vigente en la guía."
+          },
+          {
+            "title": "Selecciona y vincula las referencias autorizadas",
+            "body": "Elige las imágenes privadas existentes en Library o utiliza el proceso documentado de carga segura. Vincula como @Image1 la imagen que define la apariencia de la cámara y como @Image2 la imagen del estuche abierto con su acolchado. Después, verifica que el prompt les asigne únicamente esas funciones. Usar imágenes como referencia no exige que ninguna de ellas se convierta en el fotograma inicial."
+          },
+          {
+            "title": "Confirma la ruta y los ajustes actuales del modelo",
+            "body": "Consulta los detalles vigentes de la ruta de referencia a video de Kling 3.0 Omni Pro. Comprueba que admita la duración, la relación de aspecto, la resolución y la opción de audio solicitadas. El ejemplo propone cinco segundos y 1080p; conserva el formato 16:9 y el audio desactivado solo si esos controles están disponibles en la ruta elegida."
+          },
+          {
+            "title": "Revisa la cotización exacta antes de aprobar cualquier acción",
+            "body": "Reúne para la revisión el prompt final, las referencias vinculadas, los ajustes confirmados, el precio exacto y el efecto sobre la cuenta. Codex CLI prepara y coordina la solicitud autorizada; MaxVideoAI genera el metraje. La organización de archivos y la edición se realizan por separado, sin necesidad de conectar Premiere mediante MCP ni editar automáticamente la línea de tiempo."
+          }
+        ]
+      },
+      {
+        "id": "bounded-generation-prompt",
+        "type": "prompt",
+        "heading": "Solicita una sola opción sin ampliar el límite de gasto",
+        "template": "Prepare one Kling 3.0 Omni Pro reference-to-video generation request for the human-selected matrix row BR_01 only.\n\nUse the approved camera-packing prompt, the bound @Image1 camera-appearance reference, the bound @Image2 case-and-padding reference, and only the settings confirmed in the current model details. Preserve the exact passage and narrative purpose already recorded for BR_01. Do not expand the passage scope, increase the insert count or exceed the stated total spending ceiling: [SPENDING CEILING].\n\nBefore any paid generation, show the complete prompt, references, settings, exact quote and account effect. Then pause and ask for explicit approval of that exact quote. Approval of the shot plan or spending ceiling is not approval to charge the account.\n\nAfter explicit approval, submit this candidate once and follow the existing job. Do not generate alternatives or retries automatically. Any changed prompt, reference, setting, alternative or retry requires a fresh quote, review and explicit approval.\n\nIf completion is uncertain, recover the existing job status or look for the result in recent generations or the MaxVideoAI Library. Do not resubmit an uncertain job. When a completed result is available, record it against BR_01 without changing the shot ID.",
+        "note": "Antes de usar el prompt, sustituye el marcador del límite de gasto por el monto que hayas elegido. Esta solicitud autoriza como máximo un envío después de aprobar su cotización exacta; no autoriza reintentos, variantes ni insertos adicionales."
+      },
+      {
+        "id": "from-library-to-edit",
+        "type": "steps",
+        "heading": "Convierte la opción elegida en una entrega lista para edición",
+        "steps": [
+          {
+            "title": "Recupera el resultado terminado",
+            "body": "Cuando finalice el trabajo aprobado, abre el resultado documentado o búscalo entre las generaciones recientes o en la Library de MaxVideoAI. Si no tienes certeza sobre su estado, consulta el trabajo existente en lugar de enviarlo otra vez. Recuperar el archivo permite identificar la opción generada, pero no basta para convertirla en un clip utilizable."
+          },
+          {
+            "title": "Evalúa la acción en relación con el pasaje",
+            "body": "Mira el clip completo y comprueba que las manos bajen visiblemente la cámara hasta el acolchado ajustado, que el punto de contacto permanezca claro, que la geometría de las manos y la cámara resulte plausible y que haya suficiente duración aprovechable alrededor de la acción. Revisa también la continuidad y el encuadre en los posibles puntos de edición. Si la acción es ambigua o presenta defectos visibles, marca BR_01 como no apto. Cualquier modificación o reintento requiere una nueva cotización y una aprobación explícita."
+          },
+          {
+            "title": "Recupera, nombra y verifica el archivo aceptado",
+            "body": "Recupera la opción aceptada mediante una operación local autorizada por separado, ya sea de forma manual o con Codex CLI. Usa un número de toma estable, una descripción breve de la acción y un número de versión sincronizado; por ejemplo, BR_01_camera-pack_v01.mp4 si el archivo recuperado es MP4. Si tiene otro formato, conserva su extensión real. Los ceros iniciales mantienen el orden, mientras que los términos descriptivos facilitan encontrar el recurso por su nombre después de importarlo. Evita llamar “final” a una versión. Abre el archivo local para confirmar que se recuperó correctamente."
+          },
+          {
+            "title": "Actualiza la matriz que vincula tomas y líneas",
+            "body": "Vincula la fila existente de BR_01 con el nombre del archivo verificado, sin cambiar su identificador de toma. Conserva el pasaje aprobado exacto, su identificador de línea estable o rango de tiempo verificado y su propósito narrativo. En el ejemplo ilustrativo de L012, la nota de ubicación puede indicar: inicia el movimiento descendente durante “guardándolo en un estuche acolchado”. Si ninguna opción es adecuada, registra explícitamente ese faltante; no presentes como terminado un paquete incompleto."
+          },
+          {
+            "title": "Entrega los medios junto con el contexto de ubicación",
+            "body": "Entrega los clips utilizables con la transcripción aprobada y la matriz compacta que vincula cada nombre de archivo con su pasaje exacto, propósito narrativo y nota de ubicación. En un editor externo como Premiere, quien edita puede buscar o localizar la frase hablada, importar el clip correspondiente y probarlo sobre esa parte de la narración. El montaje, los recortes, el diseño sonoro y la exportación siguen siendo tareas de edición: seleccionar un pasaje de la transcripción no coloca automáticamente el B-roll recién generado en la línea de tiempo."
+          }
+        ]
+      },
+      {
+        "id": "editor-handoff-layout",
+        "type": "media",
+        "assetId": "editor-handoff-layout",
+        "heading": "Coloca el inserto junto a su frase de narración",
+        "presentation": "single",
+        "alt": "Un inserto en el que se guarda una cámara aparece sobre un pasaje resaltado de la narración, junto a la miniatura correspondiente y notas de ubicación.",
+        "caption": "Coloca el inserto seleccionado sobre su frase de narración en un editor externo como Premiere. Ilustración."
+      },
+      {
+        "id": "workflow-handoffs",
+        "type": "diagram",
+        "heading": "Dónde ocurre cada parte del trabajo",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Transcripción aprobada"
+          },
+          {
+            "kind": "model",
+            "label": "Codex CLI: plan de tomas"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI: Kling 3.0 Omni Pro"
+          },
+          {
+            "kind": "video",
+            "label": "Clip candidato"
+          },
+          {
+            "kind": "file",
+            "label": "Clip local + matriz de ubicación"
+          },
+          {
+            "kind": "video",
+            "label": "Editor externo: montaje ensamblado"
+          }
+        ],
+        "connections": [
+          "Vincular pasajes exactos",
+          "Enviar prompt + referencias tras aprobar la cotización",
+          "Generar y recuperar",
+          "Revisar, aceptar y nombrar localmente",
+          "Importar, colocar, añadir sonido y exportar"
+        ],
+        "alt": "La transcripción pasa por la planificación en Codex y la generación aprobada en MaxVideoAI hasta convertirse en un paquete local de clips revisados y un montaje realizado en un editor externo.",
+        "caption": "Codex coordina las solicitudes; MaxVideoAI genera el clip. La organización de archivos y la edición son pasos separados."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "Kling 3.0 Omni Pro: Reference, Storyboard & V2V",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/kling-o3-pro",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-10",
+      "title": "How Do Professional Editors Evaluate the Editing Quality of AI-Generated Cinematic Video Ads?",
+      "publisher": "arXiv",
+      "url": "https://arxiv.org/abs/2608.24329",
+      "retrievedAt": "2026-09-22",
+      "publishedAt": "2026-08-25"
+    },
+    {
+      "id": "source-2",
+      "title": "MaxVideoAI Plugin for Codex",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/codex",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-3",
+      "title": "GPT-6 Astra workflows — Premiere Pro MCP",
+      "publisher": "leancoderkavy/premiere-pro-mcp on GitHub",
+      "url": "https://raw.githubusercontent.com/leancoderkavy/premiere-pro-mcp/main/docs/gpt-6-astra.md",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-4",
+      "title": "Codex CLI",
+      "publisher": "OpenAI",
+      "url": "https://learn.chatgpt.com/docs/codex/cli",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-5",
+      "title": "Plugin architecture",
+      "publisher": "OpenAI",
+      "url": "https://developers.openai.com/plugins/concepts/plugins?site_locale=en",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-6",
+      "title": "Add clips using Text-Based Editing in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/sg/premiere/desktop/edit-projects/edit-video-using-text-based-editing/add-clips-to-the-timeline-using-text-based-editing.html",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-7",
+      "title": "Start projects in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/organize-media/create-projects/start-projects.html",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-8",
+      "title": "Kling O3 Reference to Video [Pro] API",
+      "publisher": "fal",
+      "url": "https://fal.ai/models/fal-ai/kling-video/o3/pro/reference-to-video/api",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-9",
+      "title": "Search options in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/organize-media/file-organization/search-options-in-premiere.html",
+      "retrievedAt": "2026-09-22"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "e6df01402e8c9d138c0a4b7c1454ec62d0ea34b671993d25e6208aec2a0d3685",
+      "url": "https://media.maxvideoai.com/editorial/published/e6df01402e8c9d138c0a4b7c1454ec62d0ea34b671993d25e6208aec2a0d3685.webp"
+    },
+    {
+      "id": "camera-packing-example",
+      "kind": "generated-illustration",
+      "width": 1312,
+      "height": 1199,
+      "sha256": "48a4d9c791eb94275f10ac25317ef77dc321808c078b9432c61172c660c8ffa2",
+      "url": "https://media.maxvideoai.com/editorial/published/48a4d9c791eb94275f10ac25317ef77dc321808c078b9432c61172c660c8ffa2.webp"
+    },
+    {
+      "id": "three-visual-treatments",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "f92954efdf440561b988e6524c6952eed704bd4636c80eb7a2bc168e0169b851",
+      "url": "https://media.maxvideoai.com/editorial/published/f92954efdf440561b988e6524c6952eed704bd4636c80eb7a2bc168e0169b851.webp"
+    },
+    {
+      "id": "editor-handoff-layout",
+      "kind": "generated-illustration",
+      "width": 1774,
+      "height": 887,
+      "sha256": "5e28a039badfc81df80cd0c32f0a207bb275ae519613980804c025ecfacfbb3b",
+      "url": "https://media.maxvideoai.com/editorial/published/5e28a039badfc81df80cd0c32f0a207bb275ae519613980804c025ecfacfbb3b.webp"
+    }
+  ]
+}

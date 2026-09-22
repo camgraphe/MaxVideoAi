@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "pack-broll-codex-cli-maxvideoai",
+  "publication": {
+    "articleId": "add981d6-0d17-4338-8b02-880605bd1c88",
+    "version": 1,
+    "digest": "f6e6422451aa03876fa7c75d5ead03f1cafaea33df1dd0fa457aa8fdd2954c07",
+    "publishedAt": "2026-09-22T13:42:31.600Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "pack-broll-codex-cli-maxvideoai",
+    "title": "Build a Transcript-Mapped B-Roll Pack with Codex CLI and MaxVideoAI",
+    "description": "Turn approved narration into purposeful B-roll requests, generate reference-guided inserts with Kling 3.0 Omni Pro after quote approval, and hand editors consistently named clips tied to exact passages.",
+    "keywords": [
+      "B-roll workflow",
+      "Codex CLI",
+      "MaxVideoAI",
+      "Kling 3.0 Omni Pro",
+      "reference-to-video",
+      "transcript editing",
+      "video production",
+      "editor handoff"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "An illustrated ribbon connects abstract transcript strips, camera-packing frames and neatly stacked media sleeves.",
+        "caption": "From a spoken idea to an insert with a purpose. Illustration."
+      },
+      {
+        "id": "an-insert-with-a-job",
+        "type": "text",
+        "heading": "Give the insert one clear job",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "The narration is approved, but the available B-roll merely decorates it. Before requesting another clip, define what the viewer should understand and where the action belongs. The result should be more than footage: it should be an identifiable clip connected to an exact passage, a narrative purpose and a placement note."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Imagine the illustrative line L012: “Protect fragile equipment by packing it in a padded case.” A useful insert shows hands lowering a camera into fitted padding. Its job is to "
+              },
+              {
+                "text": "make protection tangible",
+                "bold": true
+              },
+              {
+                "text": ", and its placement note is precise: show the lowering action during “packing it in a padded case.” L012 is only an example; use the stable identifiers from your own approved transcript."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "For this worked example, the later generation route is "
+              },
+              {
+                "text": "Kling 3.0 Omni Pro reference-to-video",
+                "href": "https://maxvideoai.com/models/kling-o3-pro"
+              },
+              {
+                "text": ", which uses a prompt and reference images to guide the shot. Defining the insert’s job first helps you choose references that serve the passage rather than merely decorate it."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Supply the approved wording, stable line identifiers and verified timing when available. If the transcript is in Premiere, its "
+              },
+              {
+                "text": "text-based editing tools",
+                "href": "https://helpx.adobe.com/sg/premiere/desktop/edit-projects/edit-video-using-text-based-editing/add-clips-to-the-timeline-using-text-based-editing.html"
+              },
+              {
+                "text": " can help you search for and select spoken passages. That makes the intended moment easier to find again, but it does not automatically place newly generated B-roll."
+              }
+            ],
+            "sourceIds": [
+              "source-6"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Set the boundaries before mapping: which passages are in scope, the maximum number of inserts, the delivery format and your spending ceiling. This walkthrough follows one selected insert. The three treatments considered later are alternative compositions for that shot, not three generation requests."
+              }
+            ],
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "camera-packing-example",
+        "type": "media",
+        "assetId": "camera-packing-example",
+        "heading": "Make protection visible",
+        "presentation": "single",
+        "alt": "Hands lower a camera into fitted padding inside an open case.",
+        "caption": "A proposed insert for the passage about protecting fragile equipment. Illustration."
+      },
+      {
+        "id": "transcript-mapping-prompt",
+        "type": "prompt",
+        "heading": "Turn exact passages into a bounded shot plan",
+        "template": "Create a planning-only shot-to-line matrix from the approved transcript and production limits below.\n\nINPUTS\nApproved transcript:\n[PASTE THE APPROVED TRANSCRIPT WITH STABLE LINE IDENTIFIERS]\n\nVerified timing, if available:\n[PASTE VERIFIED TIME RANGES OR WRITE “NOT SUPPLIED”]\n\nPassage scope:\n[DEFINE THE INCLUDED LINES OR SECTIONS]\n\nMaximum insert count:\n[ENTER LIMIT]\n\nDelivery format:\n[ENTER FORMAT]\n\nSpending ceiling:\n[ENTER CEILING]\n\nINSTRUCTIONS\n1. Preserve every selected passage exactly as supplied. Do not rewrite, shorten or correct it.\n2. Do not infer timestamps. If a verified time range is unavailable, write “Pending—timing not supplied.”\n3. Propose no more than the stated maximum number of inserts and include only passages within scope.\n4. Create these columns: Shot ID; Exact passage; Line ID or verified time range; Narrative purpose; Visual action; Reference roles; Shot constraints; Creative prompt; Proposed duration; Aspect ratio; Generation approval state; Proposed filename; Editor note.\n5. Give each insert one specific narrative purpose and one readable visual action.\n6. Leave reference roles, unresolved settings and creative prompts marked “Pending” until a human selects the treatment and supplies authorized references.\n7. Set every generation approval state to “Not requested.” Do not request generation, approve spending, run tools or change local files.\n8. Treat the proposed filename as a planning label only. Do not claim that an output file exists.\n9. Flag unclear passages for human review rather than inventing meaning.\n10. Return only the bounded matrix followed by a short list of unresolved inputs.",
+        "note": "Illustrative row: Shot BR_01; exact passage “Protect fragile equipment by packing it in a padded case.”; line L012; timing pending; purpose: make protection tangible; action: hands lower a camera into fitted padding; references, constraints and creative prompt pending; approval not requested; proposed filename BR_01_camera-pack_v01; editor note: place the lowering action during “packing it in a padded case.”"
+      },
+      {
+        "id": "choose-and-constrain",
+        "type": "comparison",
+        "heading": "Choose the treatment, then constrain the shot",
+        "columns": [
+          "Proposed treatment",
+          "What it communicates",
+          "Editorial trade-off",
+          "References and proposed constraints"
+        ],
+        "rows": [
+          [
+            "Literal camera-packing action",
+            "Hands lower the camera into fitted padding, directly showing how the equipment is protected.",
+            "The clearest choice for this instructional passage. Keep BR_01 and its narrative purpose unchanged; this is the selected treatment.",
+            "Prepare two authorized images externally: one for the camera’s appearance and one for the open case and fitted padding. Assign only those roles and bind them in that order later. Use them as reference guidance, not as required opening frames. Propose 5 seconds, 16:9 and 1080p, with audio off if that control is currently available. Five seconds leaves editing room around one readable action; sound design remains in the external edit. Confirm current Kling 3.0 Omni Pro details and the live quote before generating: https://maxvideoai.com/models/kling-o3-pro"
+          ],
+          [
+            "Contextual equipment-preparation scene",
+            "A wider view establishes that the camera is being prepared and packed with other equipment.",
+            "Useful when the surrounding workflow matters, but the protective contact between camera and padding becomes smaller and less immediate.",
+            "Would require authorized references that establish both the equipment and the wider setting. Do not request it as an additional generation unless it replaces the selected treatment."
+          ],
+          [
+            "Metaphorical cushioning detail",
+            "A macro view of compressed padding emphasizes softness and shock absorption.",
+            "Visually expressive, but it may not clearly explain how to pack the camera or even show the complete action.",
+            "Could use an authorized material-detail reference, but it is not selected because the passage needs an explicit packing action rather than a visual metaphor."
+          ]
+        ]
+      },
+      {
+        "id": "three-visual-treatments",
+        "type": "media",
+        "assetId": "three-visual-treatments",
+        "heading": "Three ways to show protection",
+        "presentation": "single",
+        "alt": "Three proposed compositions show camera-packing action, a wider preparation scene and a close detail of cushioning.",
+        "caption": "Literal action, preparation context and cushioning detail offer different emphases for the same passage. Illustration."
+      },
+      {
+        "id": "camera-packing-prompt",
+        "type": "prompt",
+        "heading": "Describe one action the viewer can read immediately",
+        "template": "Create a reference-to-video insert showing an unbranded camera being packed safely.\n\n@Image1 guides only the camera’s appearance. @Image2 guides only the open case and fitted padding. Use these references after the selected images have been bound in this order; do not treat either image as a required opening frame.\n\nIn a stable three-quarter close-up, two anonymous adult hands lower the camera once into its fitted padded recess. Keep the camera, hands and contact area clearly visible throughout the action. The case remains open. Use soft side lighting, an uncluttered setting and plausible hand and camera geometry.\n\nShow only this single downward placement. Do not close the case, fasten latches, lift it again or carry it away. No logos, text or additional equipment actions.",
+        "note": "Use this prompt only after authorized references have been selected and bound to @Image1 and @Image2. For the illustrative landscape edit, propose a five-second, 16:9, 1080p insert with audio off if that control is currently available. Confirm every setting in the current model details before requesting a quote. One unobstructed action makes the protective contact readable during the phrase “packing it in a padded case,” but references guide the result rather than guaranteeing an exact match."
+      },
+      {
+        "id": "quote-before-generation",
+        "type": "steps",
+        "heading": "Connect the generator and review the request as one package",
+        "steps": [
+          {
+            "title": "Connect MaxVideoAI from a new Codex conversation",
+            "body": "Follow the current MaxVideoAI Codex integration guide at https://maxvideoai.com/integrations/codex and complete browser OAuth when prompted. Avoid relying on a hard-coded release tag: the documented compatibility checkpoint is version-specific, so use the guide’s current installation path."
+          },
+          {
+            "title": "Select and bind the authorized references",
+            "body": "Choose the existing private Library images or use the documented secure upload handoff. Bind the camera-appearance image as @Image1 and the open-case-and-padding image as @Image2, then verify that the prompt assigns only those roles. Reference guidance does not require either image to become the opening frame."
+          },
+          {
+            "title": "Confirm the current model route and settings",
+            "body": "Inspect the live details for Kling 3.0 Omni Pro reference-to-video. Check that the requested duration, aspect ratio, resolution and any audio choice are currently supported. The proposed example uses five seconds and 1080p; retain 16:9 and audio off only if those controls are available on the selected route."
+          },
+          {
+            "title": "Review the exact quote before approving anything",
+            "body": "Place the final prompt, bound references, confirmed settings, exact price and account effect together for review. Codex CLI prepares and orchestrates the authorized request; MaxVideoAI generates the footage. File organization and editing remain separate, and no Premiere MCP connection or automatic timeline editing is required."
+          }
+        ]
+      },
+      {
+        "id": "bounded-generation-prompt",
+        "type": "prompt",
+        "heading": "Request one candidate without opening the spending boundary",
+        "template": "Prepare one Kling 3.0 Omni Pro reference-to-video generation request for the human-selected matrix row BR_01 only.\n\nUse the approved camera-packing prompt, the bound @Image1 camera-appearance reference, the bound @Image2 case-and-padding reference, and only the settings confirmed in the current model details. Preserve the exact passage and narrative purpose already recorded for BR_01. Do not expand the passage scope, increase the insert count or exceed the stated total spending ceiling: [SPENDING CEILING].\n\nBefore any paid generation, show the complete prompt, references, settings, exact quote and account effect. Then pause and ask for explicit approval of that exact quote. Approval of the shot plan or spending ceiling is not approval to charge the account.\n\nAfter explicit approval, submit this candidate once and follow the existing job. Do not generate alternatives or retries automatically. Any changed prompt, reference, setting, alternative or retry requires a fresh quote, review and explicit approval.\n\nIf completion is uncertain, recover the existing job status or look for the result in recent generations or the MaxVideoAI Library. Do not resubmit an uncertain job. When a completed result is available, record it against BR_01 without changing the shot ID.",
+        "note": "Replace the spending-ceiling placeholder with the reader’s chosen limit before use. This request authorizes at most one submission after approval of its exact quote; it does not authorize retries, variants or additional inserts."
+      },
+      {
+        "id": "from-library-to-edit",
+        "type": "steps",
+        "heading": "Turn the candidate into an editor-ready handoff",
+        "steps": [
+          {
+            "title": "Recover the completed result",
+            "body": "Once the approved job finishes, open its documented result or find it in recent generations or the MaxVideoAI Library. If its status is uncertain, follow the existing job rather than submitting it again. Retrieval identifies the candidate; it does not make the clip usable by itself."
+          },
+          {
+            "title": "Judge the action against the passage",
+            "body": "Watch the actual clip and check that the hands visibly lower the camera into the fitted padding, the contact point remains clear, the hands and camera geometry look plausible, and the shot provides enough usable duration around the action. Also check continuity and framing at likely edit points. If the action is ambiguous or visibly flawed, mark BR_01 as unsuitable. Any revision or retry returns to a fresh quote and explicit approval."
+          },
+          {
+            "title": "Retrieve, name and verify the accepted file",
+            "body": "Retrieve an accepted candidate through a separately authorized local operation, either manually or with Codex CLI. Use a stable shot number, a short action description and a synchronized version number—for example, BR_01_camera-pack_v01.mp4 if the retrieved file is MP4; otherwise retain its actual extension. Leading zeros preserve sort order, while descriptive terms make the asset easier to find by filename after import. Avoid calling a version “final.” Open the local file to verify that retrieval succeeded."
+          },
+          {
+            "title": "Update the shot-to-line matrix",
+            "body": "Point the existing BR_01 row to the verified filename without changing its shot ID. Preserve the exact approved passage, its stable line identifier or verified time range, and the narrative purpose. For the illustrative L012 example, the placement note can say: begin the lowering action during “packing it in a padded case.” Record an explicit gap instead if no candidate is suitable; do not present an incomplete pack as finished."
+          },
+          {
+            "title": "Hand the editor media with placement context",
+            "body": "Deliver the usable clips with the approved transcript and the compact matrix linking every filename to its exact passage, narrative purpose and placement note. In an external editor such as Premiere, the editor can search or navigate to the spoken cue, import the matching clip and try it above that narration. Assembly, trimming, sound design and export remain editing tasks; transcript selection does not automatically place newly generated B-roll on the timeline."
+          }
+        ]
+      },
+      {
+        "id": "editor-handoff-layout",
+        "type": "media",
+        "assetId": "editor-handoff-layout",
+        "heading": "Put the insert beside its spoken cue",
+        "presentation": "single",
+        "alt": "A camera-packing insert sits above a highlighted narration passage, beside a matching media thumbnail and placement notes.",
+        "caption": "Place the selected insert against its narration cue in an external editor such as Premiere. Illustration."
+      },
+      {
+        "id": "workflow-handoffs",
+        "type": "diagram",
+        "heading": "Where the work happens",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Approved transcript"
+          },
+          {
+            "kind": "model",
+            "label": "Codex CLI: shot plan"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI: Kling 3.0 Omni Pro"
+          },
+          {
+            "kind": "video",
+            "label": "Candidate clip"
+          },
+          {
+            "kind": "file",
+            "label": "Local clip + placement matrix"
+          },
+          {
+            "kind": "video",
+            "label": "External editor: assembled edit"
+          }
+        ],
+        "connections": [
+          "Map exact passages",
+          "Send prompt + references after quote approval",
+          "Generate and retrieve",
+          "Review, accept and name locally",
+          "Import, place, add sound and export"
+        ],
+        "alt": "The transcript moves through Codex planning and approved MaxVideoAI generation to a reviewed local clip pack and an external edit.",
+        "caption": "Codex coordinates requests; MaxVideoAI generates the clip. File organization and editing are separate steps."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "Kling 3.0 Omni Pro: Reference, Storyboard & V2V",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/kling-o3-pro",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-10",
+      "title": "How Do Professional Editors Evaluate the Editing Quality of AI-Generated Cinematic Video Ads?",
+      "publisher": "arXiv",
+      "url": "https://arxiv.org/abs/2608.24329",
+      "retrievedAt": "2026-09-22",
+      "publishedAt": "2026-08-25"
+    },
+    {
+      "id": "source-2",
+      "title": "MaxVideoAI Plugin for Codex",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/codex",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-3",
+      "title": "GPT-6 Astra workflows — Premiere Pro MCP",
+      "publisher": "leancoderkavy/premiere-pro-mcp on GitHub",
+      "url": "https://raw.githubusercontent.com/leancoderkavy/premiere-pro-mcp/main/docs/gpt-6-astra.md",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-4",
+      "title": "Codex CLI",
+      "publisher": "OpenAI",
+      "url": "https://learn.chatgpt.com/docs/codex/cli",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-5",
+      "title": "Plugin architecture",
+      "publisher": "OpenAI",
+      "url": "https://developers.openai.com/plugins/concepts/plugins?site_locale=en",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-6",
+      "title": "Add clips using Text-Based Editing in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/sg/premiere/desktop/edit-projects/edit-video-using-text-based-editing/add-clips-to-the-timeline-using-text-based-editing.html",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-7",
+      "title": "Start projects in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/organize-media/create-projects/start-projects.html",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-8",
+      "title": "Kling O3 Reference to Video [Pro] API",
+      "publisher": "fal",
+      "url": "https://fal.ai/models/fal-ai/kling-video/o3/pro/reference-to-video/api",
+      "retrievedAt": "2026-09-22"
+    },
+    {
+      "id": "source-9",
+      "title": "Search options in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/organize-media/file-organization/search-options-in-premiere.html",
+      "retrievedAt": "2026-09-22"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "e6df01402e8c9d138c0a4b7c1454ec62d0ea34b671993d25e6208aec2a0d3685",
+      "url": "https://media.maxvideoai.com/editorial/published/e6df01402e8c9d138c0a4b7c1454ec62d0ea34b671993d25e6208aec2a0d3685.webp"
+    },
+    {
+      "id": "camera-packing-example",
+      "kind": "generated-illustration",
+      "width": 1312,
+      "height": 1199,
+      "sha256": "48a4d9c791eb94275f10ac25317ef77dc321808c078b9432c61172c660c8ffa2",
+      "url": "https://media.maxvideoai.com/editorial/published/48a4d9c791eb94275f10ac25317ef77dc321808c078b9432c61172c660c8ffa2.webp"
+    },
+    {
+      "id": "three-visual-treatments",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "f92954efdf440561b988e6524c6952eed704bd4636c80eb7a2bc168e0169b851",
+      "url": "https://media.maxvideoai.com/editorial/published/f92954efdf440561b988e6524c6952eed704bd4636c80eb7a2bc168e0169b851.webp"
+    },
+    {
+      "id": "editor-handoff-layout",
+      "kind": "generated-illustration",
+      "width": 1774,
+      "height": 887,
+      "sha256": "5e28a039badfc81df80cd0c32f0a207bb275ae519613980804c025ecfacfbb3b",
+      "url": "https://media.maxvideoai.com/editorial/published/5e28a039badfc81df80cd0c32f0a207bb275ae519613980804c025ecfacfbb3b.webp"
+    }
+  ]
+}
