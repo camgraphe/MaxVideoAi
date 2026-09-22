@@ -126,7 +126,7 @@ export function NarrativePanel({
 
 export function StatStrip({ items, className = '' }: { items: SmallStat[]; className?: string }) {
   return (
-    <div className={`grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4 ${className}`}>
+    <div className={`grid gap-px overflow-hidden border-y border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4 ${className}`}>
       {items.map((item) => (
         <div key={item.label} className="bg-surface px-4 py-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{item.label}</p>

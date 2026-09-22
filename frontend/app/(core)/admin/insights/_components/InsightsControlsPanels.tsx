@@ -15,15 +15,16 @@ export function InsightsControls({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="inline-flex rounded-xl border border-border bg-surface p-1 shadow-card">
+      <div className="inline-flex flex-wrap rounded-md border border-border bg-surface p-1">
         {METRIC_RANGE_OPTIONS.map((option) => {
           const isActive = option === current;
           return (
             <Link
               key={option}
+              aria-current={isActive ? 'page' : undefined}
               href={buildInsightsHref({ range: option, excludeAdmin, focus })}
               className={[
-                'rounded-lg px-3 py-1.5 text-sm font-medium transition',
+                'rounded px-3 py-1.5 text-sm font-medium transition',
                 isActive ? 'bg-brand text-on-brand' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
               ].join(' ')}
             >
@@ -35,7 +36,7 @@ export function InsightsControls({
       <Link
         href={buildInsightsHref({ range: current, excludeAdmin: !excludeAdmin, focus })}
         className={[
-          'inline-flex rounded-xl border px-3 py-2 text-sm font-medium transition',
+          'inline-flex rounded-md border px-3 py-2 text-sm font-medium transition',
           excludeAdmin
             ? 'border-success-border bg-success-bg text-success hover:bg-success-bg/80'
             : 'border-border bg-surface text-text-secondary hover:bg-bg hover:text-text-primary',
@@ -57,16 +58,17 @@ export function MetricFocusTabs({
   excludeAdmin: boolean;
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-border bg-surface p-1">
+    <div className="inline-flex flex-wrap rounded-md border border-border bg-surface p-1">
       {FOCUS_OPTIONS.map((option) => {
         const isActive = option.key === current;
         return (
           <Link
             key={option.key}
+            aria-current={isActive ? 'page' : undefined}
             href={buildInsightsHref({ range, excludeAdmin, focus: option.key })}
             className={[
-              'rounded-lg px-3 py-1.5 text-sm font-medium transition',
-              isActive ? 'bg-bg text-text-primary shadow-card' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
+              'rounded px-3 py-1.5 text-sm font-medium transition',
+              isActive ? 'bg-bg text-text-primary' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
             ].join(' ')}
           >
             {option.label}

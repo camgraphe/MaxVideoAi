@@ -46,10 +46,10 @@ export function RevenueBoardTable({ rows }: { rows: RevenueBoardRow[] }) {
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 overflow-hidden border-b border-hairline">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue board</p>
-        <p className="mt-1 text-sm text-text-secondary">Current window vs previous window, organized like a decision table rather than four isolated cards.</p>
+        <p className="mt-1 text-sm text-text-secondary">Current period compared with the previous period.</p>
       </div>
       <AdminStatTable
         columns={columns}
@@ -71,10 +71,10 @@ export function FunnelRows({ steps }: { steps: FunnelStep[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 overflow-hidden border-b border-hairline">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Funnel</p>
-        <p className="mt-1 text-sm text-text-secondary">Lecture en lignes compactes, plus proche d’un admin que d’un composant marketing.</p>
+        <p className="mt-1 text-sm text-text-secondary">Account activation across the workspace.</p>
       </div>
       <div className="divide-y divide-hairline">
         {steps.map((step, index) => (
@@ -102,7 +102,7 @@ export function FunnelRows({ steps }: { steps: FunnelStep[] }) {
 
 export function BehaviorGrid({ stats }: { stats: SmallStat[] }) {
   return (
-    <div className="grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-px overflow-hidden border-y border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-3">
       {stats.map((stat) => (
         <div key={stat.label} className="bg-surface px-4 py-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{stat.label}</p>
@@ -120,10 +120,10 @@ export function TopSpendersTable({ whales }: { whales: AdminMetrics['behavior'][
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 overflow-hidden border-b border-hairline">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Top spenders</p>
-        <p className="mt-1 text-sm text-text-secondary">Entrées directement actionnables vers les fiches user admin.</p>
+        <p className="mt-1 text-sm text-text-secondary">Open an account to inspect its wallet and generation history.</p>
       </div>
       <div className="divide-y divide-hairline">
         {whales.map((whale) => (
@@ -206,7 +206,7 @@ export function EngineMixTable({ engines }: { engines: AdminMetrics['engines'] }
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 overflow-hidden border-b border-hairline">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine mix</p>
         <p className="mt-1 text-sm text-text-secondary">Table-first reading of revenue, render share and distinct usage.</p>
@@ -267,10 +267,10 @@ export function DailyLedgerTable({ rows }: { rows: LedgerRow[] }) {
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 overflow-hidden border-b border-hairline">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Latest 7 days</p>
-        <p className="mt-1 text-sm text-text-secondary">Lecture condensée des dernières journées utiles, sans séparer croissance et revenu dans deux cartes différentes.</p>
+        <p className="mt-1 text-sm text-text-secondary">Recent daily registrations and wallet activity.</p>
       </div>
       <AdminStatTable columns={columns} rows={rows} getRowKey={(row) => row.date} empty={null} className="rounded-none border-0" tableClassName="min-w-[640px]" headerClassName="bg-surface" bodyClassName="divide-y divide-hairline" />
     </div>
@@ -333,10 +333,10 @@ export function MonthlyRollupTable({
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 overflow-hidden border-b border-hairline">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Monthly rollup</p>
-        <p className="mt-1 text-sm text-text-secondary">Six derniers mois, gardés séparés des lignes journalières.</p>
+        <p className="mt-1 text-sm text-text-secondary">Monthly totals for the last six months.</p>
       </div>
       <AdminStatTable columns={columns} rows={rows} getRowKey={(row) => row.month} empty={null} className="rounded-none border-0" headerClassName="bg-surface" bodyClassName="divide-y divide-hairline" />
     </div>

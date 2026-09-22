@@ -15,8 +15,8 @@ const smokeRoutes: SmokeRoute[] = [
   },
   {
     path: '/admin/insights',
-    heading: 'Workspace insights',
-    section: 'Trend Workspace',
+    heading: 'Trends',
+    section: 'Activity over time',
   },
   {
     path: '/admin/jobs',

@@ -22,6 +22,7 @@ export type { ModerationBucket, ModerationSurface, ModerationVideo, PlaylistOpti
 type ModerationTableProps = {
   videos: ModerationVideo[];
   initialCursor: string | null;
+  initialError?: string | null;
   initialBucket?: ModerationBucket;
   initialSurface?: ModerationSurface;
   embedded?: boolean;
@@ -30,6 +31,7 @@ type ModerationTableProps = {
 export function ModerationTable({
   videos,
   initialCursor,
+  initialError = null,
   initialBucket = 'not-published',
   initialSurface = 'video',
   embedded = false,
@@ -39,7 +41,7 @@ export function ModerationTable({
   const [surface, setSurface] = useState<ModerationSurface>(initialSurface);
   const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [isLoadingBucket, setLoadingBucket] = useState(false);
@@ -277,11 +279,11 @@ export function ModerationTable({
 
       {error ? <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">{error}</div> : null}
 
-      {!hasVideos ? (
+      {!hasVideos ? (error ? null : (
         <div className="rounded-card border border-hairline bg-surface p-8 text-center text-sm text-text-secondary">
           {isLoadingBucket ? 'Loading moderation queue…' : `No ${surface} items in this moderation bucket.`}
         </div>
-      ) : viewMode === 'wall' ? (
+      )) : viewMode === 'wall' ? (
         <ModerationWallView
           bucket={bucket}
           displayItems={displayItems}

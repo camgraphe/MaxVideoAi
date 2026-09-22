@@ -10,7 +10,7 @@ export function ApproveDraftButton({ articleId, version, digest, disabledReason,
 
   async function approve() {
     if (disabledReason || pending) return;
-    if (!window.confirm(retryPublication ? 'Reprendre la publication de cette version ? Le service vérifiera ce qui a déjà été effectué avant de continuer.' : retryChecks ? 'Relancer les contrôles techniques de cette version ? Aucun contenu ne sera régénéré.' : publish ? `Valider et publier la version ${version} en EN, FR et ES sur MaxVideoAI ? La mise en ligne démarrera automatiquement.` : `Valider le contenu de la version ${version} ? Cette validation éditoriale ne publie pas l’article.`)) return;
+    if (!window.confirm(retryPublication ? 'Resume publication of this version? Completed steps will be verified before continuing.' : retryChecks ? 'Rerun technical checks for this version? Content will not be regenerated.' : publish ? `Approve and publish version ${version} in EN, FR and ES on MaxVideoAI? Publication will start automatically.` : `Approve the content of version ${version}? Editorial approval does not publish the article.`)) return;
     setPending(true);
     setError(null);
     try {
@@ -25,5 +25,5 @@ export function ApproveDraftButton({ articleId, version, digest, disabledReason,
     }
   }
 
-  return <div className="mt-5"><button type="button" onClick={approve} disabled={pending || Boolean(disabledReason)} className="rounded-full bg-text-primary px-5 py-2.5 text-sm font-semibold text-bg disabled:opacity-50">{pending ? 'Enregistrement…' : retryPublication ? 'Reprendre la publication' : retryChecks ? 'Relancer les contrôles' : publish ? 'Valider et publier' : 'Valider cette version'}</button>{disabledReason && <p className="mt-2 text-sm text-text-secondary">{disabledReason}</p>}{error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}</div>;
+  return <div className="mt-5"><button type="button" onClick={approve} disabled={pending || Boolean(disabledReason)} className="rounded-md bg-text-primary px-5 py-2.5 text-sm font-semibold text-bg disabled:opacity-50">{pending ? 'Saving…' : retryPublication ? 'Resume publication' : retryChecks ? 'Rerun checks' : publish ? 'Approve and publish' : 'Approve this version'}</button>{disabledReason && <p className="mt-2 text-sm text-text-secondary">{disabledReason}</p>}{error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}</div>;
 }
