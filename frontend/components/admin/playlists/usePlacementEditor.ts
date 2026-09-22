@@ -1,13 +1,13 @@
-"use client";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { authFetch } from "@/lib/authFetch";
+'use client';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { authFetch } from '@/lib/authFetch';
 import {
   resolveCuration,
   type CurationDraft,
   type CurationItem,
   type CurationPreview,
   type CurationSnapshot,
-} from "@/lib/admin/playlist-curation";
+} from '@/lib/admin/playlist-curation';
 
 type Loaded = {
   snapshot: CurationSnapshot;
@@ -21,7 +21,7 @@ export function usePlacementEditor(
 ) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [draft, setDraft] = useState<CurationDraft>({
-    mode: "manual",
+    mode: 'manual',
     orderedIds: [],
     excludedIds: [],
   });
@@ -38,10 +38,7 @@ export function usePlacementEditor(
     async (init?: RequestInit) => {
       const response = await authFetch(url, init);
       const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok)
-        throw new Error(
-          payload?.error ?? "Unable to load or save this destination.",
-        );
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error ?? 'Unable to load or save this destination.');
       return payload;
     },
     [url],
@@ -55,7 +52,7 @@ export function usePlacementEditor(
       await action();
     } catch (error) {
       if (mounted.current) {
-        setError(error instanceof Error ? error.message : "Request failed");
+        setError(error instanceof Error ? error.message : 'Request failed');
         setPreview(null);
       }
     } finally {
@@ -69,7 +66,7 @@ export function usePlacementEditor(
         const data: Loaded = await request();
         if (!mounted.current) return;
         const next: CurationDraft = {
-          mode: data.snapshot.config?.mode ?? "manual",
+          mode: data.snapshot.config?.mode ?? 'manual',
           orderedIds: data.initialIds,
           excludedIds: data.snapshot.config?.excludedIds ?? [],
         };
@@ -91,18 +88,15 @@ export function usePlacementEditor(
   useEffect(() => {
     onStateChange?.({ dirty, busy });
   }, [dirty, busy, onStateChange]);
-  useEffect(
-    () => () => onStateChange?.({ dirty: false, busy: false }),
-    [onStateChange],
-  );
+  useEffect(() => () => onStateChange?.({ dirty: false, busy: false }), [onStateChange]);
   useEffect(() => {
     if (!dirty) return;
     const guard = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      event.returnValue = "";
+      event.returnValue = '';
     };
-    window.addEventListener("beforeunload", guard);
-    return () => window.removeEventListener("beforeunload", guard);
+    window.addEventListener('beforeunload', guard);
+    return () => window.removeEventListener('beforeunload', guard);
   }, [dirty]);
   const change = (next: CurationDraft) => {
     if (running.current) return;
@@ -114,8 +108,8 @@ export function usePlacementEditor(
   const makePreview = () =>
     run(async () => {
       const data = await request({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ draft, revision: loaded?.snapshot.revision }),
       });
       if (mounted.current) setPreview(data.preview);
@@ -124,8 +118,8 @@ export function usePlacementEditor(
     run(async () => {
       if (!preview || !loaded) return;
       const data = await request({
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           draft,
           revision: loaded.snapshot.revision,
@@ -141,7 +135,7 @@ export function usePlacementEditor(
         removedCount: 0,
       });
       setPreview(null);
-      setMessage("Page selection saved.");
+      setMessage('Page selection saved.');
     });
   return {
     loaded,

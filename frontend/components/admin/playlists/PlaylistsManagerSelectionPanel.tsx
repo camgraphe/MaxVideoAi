@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { PlacementEditor } from "./PlacementEditor";
-import type { ComponentProps } from "react";
-import { PlaylistDetailsPanel } from "@/components/admin/playlists/PlaylistDetailsPanel";
-import { PlaylistItemsSection } from "@/components/admin/playlists/PlaylistItemsSection";
-import type { EditablePlaylist } from "@/components/admin/playlists/playlist-types";
+import { PlacementEditor } from './PlacementEditor';
+import type { ComponentProps } from 'react';
+import { PlaylistDetailsPanel } from '@/components/admin/playlists/PlaylistDetailsPanel';
+import { PlaylistItemsSection } from '@/components/admin/playlists/PlaylistItemsSection';
+import type { EditablePlaylist } from '@/components/admin/playlists/playlist-types';
 
 type PlaylistItemsSectionProps = ComponentProps<typeof PlaylistItemsSection>;
 
@@ -12,11 +12,7 @@ type PlaylistsManagerSelectionPanelProps = PlaylistItemsSectionProps & {
   enableCuration?: boolean;
   onCurationStateChange?: (state: { dirty: boolean; busy: boolean }) => void;
   onDeletePlaylist: (playlistId: string) => void;
-  onFieldChange: (
-    playlistId: string,
-    field: "name" | "slug" | "description",
-    value: string,
-  ) => void;
+  onFieldChange: (playlistId: string, field: 'name' | 'slug' | 'description', value: string) => void;
   onSavePlaylist: (playlistId: string) => void;
   onSeedFamilyPlaylist: (familyId: string) => void;
   playlist: EditablePlaylist | null;
@@ -41,19 +37,15 @@ export function PlaylistsManagerSelectionPanel({
     );
   }
 
-  const usesCuration =
-    enableCuration &&
-    ["examplesHub", "family", "model"].includes(playlist.surfaceRole);
+  const usesCuration = enableCuration && ['examplesHub', 'family', 'model'].includes(playlist.surfaceRole);
   return (
     <>
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-lg font-semibold">{playlist.name}</h2>
           <p className="mt-1 text-xs text-text-secondary">
-            {playlist.drivesRoute ?? "Collection without a public page"}
-            {!usesCuration
-              ? ` · ${playlist.siteVisibleCount} public media`
-              : ""}
+            {playlist.drivesRoute ?? 'Collection without a public page'}
+            {!usesCuration ? ` · ${playlist.siteVisibleCount} public media` : ''}
           </p>
         </div>
         {playlist.drivesRoute ? (
@@ -68,17 +60,13 @@ export function PlaylistsManagerSelectionPanel({
         ) : null}
       </header>
       {usesCuration ? (
-        <PlacementEditor
-          key={playlist.id}
-          playlistId={playlist.id}
-          onStateChange={onCurationStateChange}
-        />
+        <PlacementEditor key={playlist.id} playlistId={playlist.id} onStateChange={onCurationStateChange} />
       ) : (
         <>
-          {playlist.surfaceRole === "family" ? (
+          {playlist.surfaceRole === 'family' ? (
             <p className="text-xs text-text-secondary">
-              This list controls the editorial first positions. The existing
-              family feed may add eligible media afterwards.
+              This list controls the editorial first positions. The existing family feed may add eligible media
+              afterwards.
             </p>
           ) : null}
           <PlaylistItemsSection isPending={isPending} {...itemsSectionProps} />

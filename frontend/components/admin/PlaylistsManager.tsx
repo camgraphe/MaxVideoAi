@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import clsx from "clsx";
-import { usePlaylistCreation } from "./playlists/usePlaylistCreation";
-import { usePlaylistAction } from "@/components/admin/playlists/usePlaylistAction";
-import { movePlaylistItem } from "@/lib/admin/playlist-order";
-import { authFetch } from "@/lib/authFetch";
-import { PlaylistFeedbackBanners } from "@/components/admin/playlists/PlaylistFeedbackBanners";
-import { PlaylistOrderDirtyBar } from "@/components/admin/playlists/PlaylistItemsSection";
-import { PlaylistsManagerToolbar } from "@/components/admin/playlists/PlaylistsManagerToolbar";
-import { PlaylistsManagerSelectionPanel } from "@/components/admin/playlists/PlaylistsManagerSelectionPanel";
-import { PlaylistsSidebar } from "@/components/admin/playlists/PlaylistsSidebar";
-import { usePlaylistHelperActions } from "@/components/admin/playlists/usePlaylistHelperActions";
-import { usePlaylistDragReorder } from "@/components/admin/playlists/usePlaylistDragReorder";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import clsx from 'clsx';
+import { usePlaylistCreation } from './playlists/usePlaylistCreation';
+import { usePlaylistAction } from '@/components/admin/playlists/usePlaylistAction';
+import { movePlaylistItem } from '@/lib/admin/playlist-order';
+import { authFetch } from '@/lib/authFetch';
+import { PlaylistFeedbackBanners } from '@/components/admin/playlists/PlaylistFeedbackBanners';
+import { PlaylistOrderDirtyBar } from '@/components/admin/playlists/PlaylistItemsSection';
+import { PlaylistsManagerToolbar } from '@/components/admin/playlists/PlaylistsManagerToolbar';
+import { PlaylistsManagerSelectionPanel } from '@/components/admin/playlists/PlaylistsManagerSelectionPanel';
+import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
+import { usePlaylistHelperActions } from '@/components/admin/playlists/usePlaylistHelperActions';
+import { usePlaylistDragReorder } from '@/components/admin/playlists/usePlaylistDragReorder';
 import {
   buildFamilyHelpers,
   buildModelHelpers,
@@ -20,13 +20,13 @@ import {
   getPlaylistGroup,
   sortItemsForDisplay,
   sortPlaylists,
-} from "@/components/admin/playlists/playlist-helpers";
+} from '@/components/admin/playlists/playlist-helpers';
 import type {
   EditablePlaylist,
   PlaylistItemRecord,
   PlaylistsManagerProps,
   PlaylistSummary,
-} from "@/components/admin/playlists/playlist-types";
+} from '@/components/admin/playlists/playlist-types';
 
 export function PlaylistsManager({
   initialPlaylists,
@@ -36,15 +36,9 @@ export function PlaylistsManager({
   enableCuration = false,
   className,
 }: PlaylistsManagerProps) {
-  const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() =>
-    sortPlaylists(initialPlaylists),
-  );
-  const [selectedId, setSelectedId] = useState<string | null>(
-    initialPlaylistId,
-  );
-  const [items, setItems] = useState<PlaylistItemRecord[]>(() =>
-    sortItemsForDisplay(initialItems),
-  );
+  const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
+  const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
+  const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
   const savedItems = useRef(sortItemsForDisplay(initialItems));
   const [isItemsDirty, setItemsDirty] = useState(false);
   const [curationState, setCurationState] = useState({
@@ -85,33 +79,22 @@ export function PlaylistsManager({
   );
 
   useEffect(() => {
-    if (selectedPlaylist && getPlaylistGroup(selectedPlaylist) === "draft") {
+    if (selectedPlaylist && getPlaylistGroup(selectedPlaylist) === 'draft') {
       setShowDraftCollections(true);
     }
   }, [selectedPlaylist]);
 
   const groupedPlaylists = useMemo(
     () => ({
-      runtime: playlists.filter(
-        (playlist) => getPlaylistGroup(playlist) === "runtime",
-      ),
-      family: playlists.filter(
-        (playlist) => getPlaylistGroup(playlist) === "family",
-      ),
-      model: playlists.filter(
-        (playlist) => getPlaylistGroup(playlist) === "model",
-      ),
-      draft: playlists.filter(
-        (playlist) => getPlaylistGroup(playlist) === "draft",
-      ),
+      runtime: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'runtime'),
+      family: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'family'),
+      model: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'model'),
+      draft: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'draft'),
     }),
     [playlists],
   );
 
-  const familyHelpers = useMemo(
-    () => buildFamilyHelpers(playlists),
-    [playlists],
-  );
+  const familyHelpers = useMemo(() => buildFamilyHelpers(playlists), [playlists]);
   const modelHelpers = useMemo(() => buildModelHelpers(playlists), [playlists]);
 
   const syncPlaylistDetail = useCallback(
@@ -130,9 +113,7 @@ export function PlaylistsManager({
         const mapped = source.map((playlist) => {
           if (playlist.id !== playlistId) return playlist;
           found = true;
-          const merged = nextPlaylist
-            ? { ...playlist, ...nextPlaylist }
-            : playlist;
+          const merged = nextPlaylist ? { ...playlist, ...nextPlaylist } : playlist;
           return {
             ...buildPlaylistUpdateFromItems(merged, nextItems),
             dirty: false,
@@ -162,7 +143,7 @@ export function PlaylistsManager({
       }
       const json = await res.json().catch(() => ({ ok: false }));
       if (!json?.ok || !Array.isArray(json.items)) {
-        throw new Error(json?.error ?? "Unable to load collection items");
+        throw new Error(json?.error ?? 'Unable to load collection items');
       }
 
       syncPlaylistDetail(
@@ -177,13 +158,13 @@ export function PlaylistsManager({
 
   const refreshPlaylistsState = useCallback(
     async (preferredPlaylistId?: string | null) => {
-      const res = await authFetch("/api/admin/playlists");
+      const res = await authFetch('/api/admin/playlists');
       if (!res.ok) {
         throw new Error(`Failed to load collections (${res.status})`);
       }
       const json = await res.json().catch(() => ({ ok: false }));
       if (!json?.ok || !Array.isArray(json.playlists)) {
-        throw new Error(json?.error ?? "Unable to load collections");
+        throw new Error(json?.error ?? 'Unable to load collections');
       }
 
       const nextPlaylists = sortPlaylists(
@@ -192,12 +173,9 @@ export function PlaylistsManager({
         })),
       );
       const preferredId =
-        preferredPlaylistId &&
-        nextPlaylists.some((playlist) => playlist.id === preferredPlaylistId)
+        preferredPlaylistId && nextPlaylists.some((playlist) => playlist.id === preferredPlaylistId)
           ? preferredPlaylistId
-          : (nextPlaylists.find(
-              (playlist) => getPlaylistGroup(playlist) !== "draft",
-            )?.id ??
+          : (nextPlaylists.find((playlist) => getPlaylistGroup(playlist) !== 'draft')?.id ??
             nextPlaylists[0]?.id ??
             null);
 
@@ -249,12 +227,8 @@ export function PlaylistsManager({
 
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
-      if (busy.current || curationState.busy || playlistId === selectedId)
-        return;
-      if (
-        (isItemsDirty || curationState.dirty) &&
-        !window.confirm("Discard unsaved changes and change destination?")
-      )
+      if (busy.current || curationState.busy || playlistId === selectedId) return;
+      if ((isItemsDirty || curationState.dirty) && !window.confirm('Discard unsaved changes and change destination?'))
         return;
       setFeedback(null);
       setError(null);
@@ -262,47 +236,29 @@ export function PlaylistsManager({
         try {
           await refreshPlaylistItems(playlistId);
         } catch (loadError) {
-          console.error("[PlaylistsManager] load items failed", loadError);
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : "Failed to load collection items",
-          );
+          console.error('[PlaylistsManager] load items failed', loadError);
+          setError(loadError instanceof Error ? loadError.message : 'Failed to load collection items');
         }
       });
     },
-    [
-      busy,
-      curationState,
-      selectedId,
-      isItemsDirty,
-      refreshPlaylistItems,
-      runAction,
-    ],
+    [busy, curationState, selectedId, isItemsDirty, refreshPlaylistItems, runAction],
   );
 
-  const handleFieldChange = useCallback(
-    (
-      playlistId: string,
-      field: "name" | "slug" | "description",
-      value: string,
-    ) => {
-      setPlaylists((current) =>
-        sortPlaylists(
-          current.map((playlist) =>
-            playlist.id === playlistId
-              ? {
-                  ...playlist,
-                  [field]: value,
-                  dirty: true,
-                }
-              : playlist,
-          ),
+  const handleFieldChange = useCallback((playlistId: string, field: 'name' | 'slug' | 'description', value: string) => {
+    setPlaylists((current) =>
+      sortPlaylists(
+        current.map((playlist) =>
+          playlist.id === playlistId
+            ? {
+                ...playlist,
+                [field]: value,
+                dirty: true,
+              }
+            : playlist,
         ),
-      );
-    },
-    [],
-  );
+      ),
+    );
+  }, []);
 
   const handleSavePlaylist = useCallback(
     (playlistId: string) => {
@@ -314,41 +270,29 @@ export function PlaylistsManager({
           setFeedback(null);
           setError(null);
           setPlaylists((current) =>
-            current.map((entry) =>
-              entry.id === playlistId ? { ...entry, loading: true } : entry,
-            ),
+            current.map((entry) => (entry.id === playlistId ? { ...entry, loading: true } : entry)),
           );
           const res = await authFetch(`/api/admin/playlists/${playlistId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               name: playlist.name.trim(),
               slug: playlist.slug.trim(),
-              description: playlist.description?.trim()
-                ? playlist.description.trim()
-                : null,
+              description: playlist.description?.trim() ? playlist.description.trim() : null,
             }),
           });
           const json = await res.json().catch(() => ({ ok: false }));
           if (!res.ok || !json?.ok) {
-            throw new Error(
-              json?.error ?? `Failed to save collection (${res.status})`,
-            );
+            throw new Error(json?.error ?? `Failed to save collection (${res.status})`);
           }
 
           await refreshPlaylistsState(playlistId);
-          setFeedback("Collection details saved");
+          setFeedback('Collection details saved');
         } catch (saveError) {
-          console.error("[PlaylistsManager] save playlist failed", saveError);
-          setError(
-            saveError instanceof Error
-              ? saveError.message
-              : "Failed to save collection",
-          );
+          console.error('[PlaylistsManager] save playlist failed', saveError);
+          setError(saveError instanceof Error ? saveError.message : 'Failed to save collection');
           setPlaylists((current) =>
-            current.map((entry) =>
-              entry.id === playlistId ? { ...entry, loading: false } : entry,
-            ),
+            current.map((entry) => (entry.id === playlistId ? { ...entry, loading: false } : entry)),
           );
         }
       });
@@ -367,38 +311,24 @@ export function PlaylistsManager({
           setFeedback(null);
           setError(null);
           const res = await authFetch(`/api/admin/playlists/${playlistId}`, {
-            method: "DELETE",
+            method: 'DELETE',
           });
           const json = await res.json().catch(() => ({ ok: false }));
           if (!res.ok || !json?.ok) {
-            throw new Error(
-              json?.error ?? `Failed to delete collection (${res.status})`,
-            );
+            throw new Error(json?.error ?? `Failed to delete collection (${res.status})`);
           }
 
-          const currentIndex = playlists.findIndex(
-            (entry) => entry.id === playlistId,
-          );
+          const currentIndex = playlists.findIndex((entry) => entry.id === playlistId);
           const nextFallback =
-            playlists
-              .filter((entry) => entry.id !== playlistId)
-              .find((entry) => getPlaylistGroup(entry) !== "draft")?.id ??
-            playlists.filter((entry) => entry.id !== playlistId)[
-              Math.max(0, currentIndex - 1)
-            ]?.id ??
+            playlists.filter((entry) => entry.id !== playlistId).find((entry) => getPlaylistGroup(entry) !== 'draft')
+              ?.id ??
+            playlists.filter((entry) => entry.id !== playlistId)[Math.max(0, currentIndex - 1)]?.id ??
             null;
           await refreshPlaylistsState(nextFallback);
-          setFeedback("Collection deleted");
+          setFeedback('Collection deleted');
         } catch (deleteError) {
-          console.error(
-            "[PlaylistsManager] delete playlist failed",
-            deleteError,
-          );
-          setError(
-            deleteError instanceof Error
-              ? deleteError.message
-              : "Failed to delete collection",
-          );
+          console.error('[PlaylistsManager] delete playlist failed', deleteError);
+          setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete collection');
         }
       });
     },
@@ -409,12 +339,12 @@ export function PlaylistsManager({
     (videoId: string) => {
       if (!selectedId) return;
       if (isItemsDirty) {
-        setError("Save or cancel the order before removing media.");
+        setError('Save or cancel the order before removing media.');
         return;
       }
       if (
         !window.confirm(
-          "Remove this media from this collection now? It may still appear through an automatic family feed.",
+          'Remove this media from this collection now? It may still appear through an automatic family feed.',
         )
       )
         return;
@@ -425,24 +355,18 @@ export function PlaylistsManager({
           const res = await authFetch(
             `/api/admin/playlists/${selectedId}/items?videoId=${encodeURIComponent(videoId)}`,
             {
-              method: "DELETE",
+              method: 'DELETE',
             },
           );
           const json = await res.json().catch(() => ({ ok: false }));
           if (!res.ok || !json?.ok) {
-            throw new Error(
-              json?.error ?? `Failed to remove clip (${res.status})`,
-            );
+            throw new Error(json?.error ?? `Failed to remove clip (${res.status})`);
           }
           await refreshPlaylistItems(selectedId);
-          setFeedback("Clip removed from collection");
+          setFeedback('Clip removed from collection');
         } catch (removeError) {
-          console.error("[PlaylistsManager] remove video failed", removeError);
-          setError(
-            removeError instanceof Error
-              ? removeError.message
-              : "Failed to remove clip",
-          );
+          console.error('[PlaylistsManager] remove video failed', removeError);
+          setError(removeError instanceof Error ? removeError.message : 'Failed to remove clip');
         }
       });
     },
@@ -455,66 +379,45 @@ export function PlaylistsManager({
       try {
         setError(null);
         setFeedback(null);
-        const payload = [...items]
-          .reverse()
-          .map((item) => ({ videoId: item.videoId, pinned: item.pinned }));
-        const res = await authFetch(
-          `/api/admin/playlists/${selectedId}/items`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          },
-        );
+        const payload = [...items].reverse().map((item) => ({ videoId: item.videoId, pinned: item.pinned }));
+        const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
         const json = await res.json().catch(() => ({ ok: false }));
         if (!res.ok || !json?.ok) {
-          throw new Error(
-            json?.error ?? `Failed to save order (${res.status})`,
-          );
+          throw new Error(json?.error ?? `Failed to save order (${res.status})`);
         }
         savedItems.current = items;
         setItemsDirty(false);
-        setFeedback("Collection order saved");
+        setFeedback('Collection order saved');
         await refreshPlaylistItems(selectedId);
       } catch (saveError) {
-        console.error("[PlaylistsManager] save items failed", saveError);
-        setError(
-          saveError instanceof Error
-            ? saveError.message
-            : "Failed to save collection order",
-        );
+        console.error('[PlaylistsManager] save items failed', saveError);
+        setError(saveError instanceof Error ? saveError.message : 'Failed to save collection order');
       }
     });
   }, [items, refreshPlaylistItems, runAction, selectedId]);
 
-  const missingFamilyCount = familyHelpers.filter(
-    (helper) => helper.status === "missing",
-  ).length;
-  const missingModelCount = modelHelpers.filter(
-    (helper) => helper.status === "missing",
-  ).length;
+  const missingFamilyCount = familyHelpers.filter((helper) => helper.status === 'missing').length;
+  const missingModelCount = modelHelpers.filter((helper) => helper.status === 'missing').length;
 
   return (
-    <div className={clsx("space-y-4", isItemsDirty && "pb-28", className)}>
+    <div className={clsx('space-y-4', isItemsDirty && 'pb-28', className)}>
       <PlaylistsManagerToolbar
         createDescription={createDescription}
         createName={createName}
         createSlug={createSlug}
         draftCount={groupedPlaylists.draft.length}
         embedded={embedded}
-        isPending={
-          isPending || isItemsDirty || curationState.busy || curationState.dirty
-        }
+        isPending={isPending || isItemsDirty || curationState.busy || curationState.dirty}
         enableCuration={enableCuration}
         missingFamilyCount={missingFamilyCount}
         missingModelCount={missingModelCount}
         onCreateDescriptionChange={setCreateDescription}
-        onCreateMissingFamilyPlaylists={() =>
-          handleCreateMissingFamilyPlaylists()
-        }
-        onCreateMissingModelPlaylists={() =>
-          handleCreateMissingModelPlaylists()
-        }
+        onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
+        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
         onCreateNameChange={setCreateName}
         onCreateSlugChange={setCreateSlug}
         onCreateSubmit={handleCreatePlaylist}
@@ -522,9 +425,7 @@ export function PlaylistsManager({
         onSeedAllModelPlaylists={handleSeedAllModelPlaylists}
         showCreateForm={showCreateForm}
         onToggleCreateForm={() => setShowCreateForm((current) => !current)}
-        onToggleDraftCollections={() =>
-          setShowDraftCollections((current) => !current)
-        }
+        onToggleDraftCollections={() => setShowDraftCollections((current) => !current)}
         showDraftCollections={showDraftCollections}
       />
 

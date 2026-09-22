@@ -1,7 +1,7 @@
-"use client";
-import Image from "next/image";
-import { useRef } from "react";
-import type { CurationItem } from "@/lib/admin/playlist-curation";
+'use client';
+import Image from 'next/image';
+import { useRef } from 'react';
+import type { CurationItem } from '@/lib/admin/playlist-curation';
 
 type Props = {
   items: CurationItem[];
@@ -19,7 +19,7 @@ export function PlacementMediaList({
   onRemove,
   onExclude,
   onAdd,
-  removeLabel = "Remove",
+  removeLabel = 'Remove',
 }: Props) {
   const dragged = useRef<string | null>(null);
   const move = (id: string, index: number) => {
@@ -40,8 +40,8 @@ export function PlacementMediaList({
               return;
             }
             dragged.current = item.id;
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", item.id);
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', item.id);
           }}
           onDragOver={(event) => {
             if (!busy && onOrder) event.preventDefault();
@@ -63,10 +63,7 @@ export function PlacementMediaList({
           className="flex flex-wrap items-center gap-3 py-3"
         >
           {onOrder ? (
-            <span
-              title="Drag to reorder"
-              className="cursor-grab text-xs tabular-nums text-text-muted"
-            >
+            <span title="Drag to reorder" className="cursor-grab text-xs tabular-nums text-text-muted">
               ⠿ {index + 1}
             </span>
           ) : null}
@@ -83,9 +80,7 @@ export function PlacementMediaList({
             <span className="h-10 w-16 rounded bg-surface-2" />
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">
-              {item.prompt || item.id}
-            </p>
+            <p className="truncate text-sm font-medium">{item.prompt || item.id}</p>
             <p className="truncate text-xs text-text-muted">
               {item.engineLabel ?? item.engineId} · {item.id}
             </p>
@@ -112,29 +107,17 @@ export function PlacementMediaList({
               </>
             ) : null}
             {onAdd ? (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => onAdd(item.id)}
-              >
+              <button type="button" disabled={busy} onClick={() => onAdd(item.id)}>
                 Add to selection
               </button>
             ) : null}
             {onRemove ? (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => onRemove(item.id)}
-              >
+              <button type="button" disabled={busy} onClick={() => onRemove(item.id)}>
                 {removeLabel}
               </button>
             ) : null}
             {onExclude ? (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => onExclude(item.id)}
-              >
+              <button type="button" disabled={busy} onClick={() => onExclude(item.id)}>
                 Exclude from this page
               </button>
             ) : null}
