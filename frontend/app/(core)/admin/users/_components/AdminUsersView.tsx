@@ -4,13 +4,9 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, KeyRound, RefreshCw, Search, ShieldCheck, UserRound } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
-import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
-import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
-import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
-import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import type { AdminUsersController } from '../_hooks/useAdminUsersController';
@@ -43,38 +39,22 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
         }
       />
 
-      <AdminSection title="User Volume" description="Registrations · Today uses Europe/Madrid.">
+      <section aria-label="Registration summary" className="border-b border-border pb-4">
         {controller.statsUnavailable ? (
-          <AdminNotice tone="warning">
-            Supabase service role key is missing. Add{' '}
-            <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to display user metrics.
-          </AdminNotice>
+          <p className="text-sm text-text-secondary">Registration totals are unavailable.</p>
         ) : controller.stats ? (
-          <AdminMetricGrid
-            items={controller.volumeItems}
-            density="compact"
-            columnsClassName="sm:grid-cols-2 xl:grid-cols-4"
-          />
-        ) : (
-          <UsersMetricSkeleton />
-        )}
-      </AdminSection>
-
-      <AdminSection
-        title="Member Directory"
-        description="Search the full directory by email or user ID."
-        action={
-          <AdminSectionMeta
-            title={controller.directorySummary}
-            lines={[
-              controller.isRouting || controller.isLoading
-                ? 'Refreshing route state…'
-                : 'Filters are saved in the page URL.',
-            ]}
-          />
-        }
-      >
-        <div className="space-y-4">
+          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {controller.volumeItems.map((item) => (
+              <div key={item.label}>
+                <dt className="text-xs text-text-secondary">{item.label}</dt>
+                <dd className="mt-1 text-2xl font-semibold tabular-nums">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : <UsersMetricSkeleton />}
+        <p className="mt-3 text-xs text-text-muted">Registrations · Today starts at midnight in Europe/Madrid.</p>
+      </section>
+      <section aria-label="Member directory" className="space-y-4">
           <DirectoryToolbar
             value={controller.query}
             onChange={controller.setQuery}
@@ -83,6 +63,7 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
             onClear={controller.clearSearch}
           />
 
+          <p role="status" className="text-xs text-text-secondary">{controller.isRouting || controller.isLoading ? 'Loading accounts…' : controller.directorySummary}</p>
           <DirectoryNotice controller={controller} />
 
           {controller.isLoading ? (
@@ -105,8 +86,7 @@ export function AdminUsersView({ controller }: { controller: AdminUsersControlle
               {controller.urlQuery ? `No users found for "${controller.urlQuery}".` : 'No users found.'}
             </AdminEmptyState>
           )}
-        </div>
-      </AdminSection>
+      </section>
     </div>
   );
 }
@@ -150,95 +130,42 @@ function DirectoryToolbar({
   onClear: () => void;
 }) {
   return (
-    <AdminFilterBar
-      onSubmit={(event) => event.preventDefault()}
-      className="p-3"
-      fieldsClassName="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
-      actions={
-        hasQuery ? (
-          <Button type="button" variant="outline" size="sm" className="border-border bg-surface" onClick={onClear}>
-            Clear search
-          </Button>
-        ) : null
-      }
-    >
-      <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
+    <form onSubmit={(event) => event.preventDefault()} className="flex flex-wrap items-center gap-3">
+      <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md border border-border px-3">
+        <span className="sr-only">Search users</span>
         <UIIcon icon={Search} size={16} className="text-text-muted" />
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder="Search by email or Supabase user ID"
-          className="w-full min-w-0 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
+          className="w-full min-w-0 bg-transparent text-sm focus:outline-none"
         />
         {pending ? <span className="text-xs text-text-secondary">Updating…</span> : null}
-      </div>
-    </AdminFilterBar>
+      </label>
+      {hasQuery ? <Button type="button" variant="outline" size="sm" onClick={onClear}>Clear search</Button> : null}
+    </form>
   );
 }
 
 function UsersMetricSkeleton() {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="rounded-2xl border border-hairline bg-bg/40 px-4 py-4">
-          <div className="h-3 w-20 animate-pulse rounded-full bg-surface-2" />
-          <div className="mt-4 h-9 w-20 animate-pulse rounded-full bg-surface-2" />
-          <div className="mt-3 h-3 w-28 animate-pulse rounded-full bg-surface-2" />
-        </div>
-      ))}
-    </div>
-  );
+  return <div aria-label="Loading registration totals" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-14 animate-pulse rounded bg-surface-2" />)}
+  </div>;
 }
 
 function UsersTableSkeleton() {
-  return (
-    <div className="space-y-3 rounded-2xl border border-hairline bg-bg/35 p-4">
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_180px_180px]">
-        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
-        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
-        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
-      </div>
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-surface">
-        <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(220px,1fr)_140px_140px_140px_140px_90px] gap-3 border-b border-hairline px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-text-muted">
-          <div>Member</div>
-          <div>User ID</div>
-          <div>Role</div>
-          <div>Security</div>
-          <div>Created</div>
-          <div>Last sign-in</div>
-          <div className="text-right">Open</div>
-        </div>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-[minmax(0,1.3fr)_minmax(220px,1fr)_140px_140px_140px_140px_90px] items-center gap-3 border-b border-hairline px-4 py-3 last:border-b-0"
-          >
-            <div className="space-y-2">
-              <div className="h-4 w-32 animate-pulse rounded-full bg-surface-2" />
-              <div className="h-3 w-24 animate-pulse rounded-full bg-surface-2" />
-            </div>
-            <div className="h-3 w-full animate-pulse rounded-full bg-surface-2" />
-            <div className="h-8 w-20 animate-pulse rounded-full bg-surface-2" />
-            <div className="h-8 w-20 animate-pulse rounded-full bg-surface-2" />
-            <div className="h-3 w-24 animate-pulse rounded-full bg-surface-2" />
-            <div className="h-3 w-24 animate-pulse rounded-full bg-surface-2" />
-            <div className="ml-auto h-8 w-16 animate-pulse rounded-lg bg-surface-2" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <div aria-label="Loading accounts" className="divide-y divide-hairline">
+    {Array.from({ length: 5 }).map((_, index) => <div key={index} className="h-16 animate-pulse bg-surface-2/50" />)}
+  </div>;
 }
 
 function UsersTable({ rows }: { rows: AdminUser[] }) {
   return (
-    <AdminDataTable tone="muted" tableClassName="w-full min-w-[980px]">
+    <AdminDataTable tone="muted" tableClassName="w-full min-w-[720px]">
       <thead className="bg-surface">
-        <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+        <tr className="text-xs text-text-secondary">
           <th className="px-4 py-3 font-semibold">Member</th>
-          <th className="px-4 py-3 font-semibold">User ID</th>
-          <th className="px-4 py-3 font-semibold">Role</th>
-          <th className="px-4 py-3 font-semibold">Security</th>
+          <th className="px-4 py-3 font-semibold">Access</th>
           <th className="px-4 py-3 font-semibold">Created</th>
           <th className="px-4 py-3 font-semibold">Last sign-in</th>
           <th className="px-4 py-3 text-right font-semibold">Open</th>
@@ -248,25 +175,23 @@ function UsersTable({ rows }: { rows: AdminUser[] }) {
         {rows.map((user) => {
           const provider = resolveProvider(user.appMetadata);
           return (
-            <tr key={user.id} className="border-t border-hairline transition hover:bg-bg">
+            <tr key={user.id} data-user-id={user.id} className="border-t border-hairline transition hover:bg-bg">
               <td className="px-4 py-3">
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-text-primary">{user.email ?? 'No email attached'}</p>
+                  <Link href={`/admin/users/${user.id}`} className="font-medium text-text-primary hover:text-brand">{user.email ?? 'No email attached'}</Link>
+                  <p className="mt-1 max-w-[260px] truncate font-mono text-xs text-text-muted" title={user.id}>{user.id}</p>
                   <p className="mt-1 text-xs text-text-secondary">
                     {provider ? `Provider: ${provider}` : 'Provider unavailable'}
                   </p>
                 </div>
               </td>
-              <td className="px-4 py-3 font-mono text-xs text-text-secondary">{user.id}</td>
               <td className="px-4 py-3">
                 <InlineBadge tone={user.isAdmin ? 'info' : 'default'} icon={ShieldCheck}>
                   {user.isAdmin ? 'Admin' : 'Member'}
                 </InlineBadge>
-              </td>
-              <td className="px-4 py-3">
-                <InlineBadge tone={user.factors > 0 ? 'success' : 'default'} icon={KeyRound}>
+                <div className="mt-1"><InlineBadge tone={user.factors > 0 ? 'success' : 'default'} icon={KeyRound}>
                   {user.factors > 0 ? `${user.factors} MFA` : 'No MFA'}
-                </InlineBadge>
+                </InlineBadge></div>
               </td>
               <td className="px-4 py-3 text-text-secondary">{formatDateTime(user.createdAt)}</td>
               <td className="px-4 py-3 text-text-secondary">{formatDateTime(user.lastSignInAt)}</td>
@@ -351,7 +276,7 @@ function InlineBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${toneClass}`}
+      className={`inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-xs font-medium ${toneClass}`}
     >
       <UIIcon icon={icon} size={12} />
       {children}

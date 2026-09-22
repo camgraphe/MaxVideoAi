@@ -20,8 +20,8 @@ const smokeRoutes: SmokeRoute[] = [
   },
   {
     path: '/admin/jobs',
-    heading: 'Jobs',
-    section: 'Job Workspace',
+    heading: 'Generations',
+    section: 'Review generation outcomes and resolve incidents.',
   },
   {
     path: '/admin/transactions',

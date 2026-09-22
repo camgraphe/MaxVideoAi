@@ -46,7 +46,7 @@ test.describe('admin critical flows', () => {
     await row.getByRole('link', { name: 'View' }).click();
 
     await expect(page).toHaveURL(new RegExp(`/admin/users/${userId}$`));
-    await expect(page.locator('body')).toContainText('Member Pulse');
+    await expect(page.locator('body')).toContainText('Account summary');
 
     assertNoClientErrors(errors);
   });

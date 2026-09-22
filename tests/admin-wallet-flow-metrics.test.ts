@@ -132,6 +132,8 @@ test('admin user detail exposes gross charges, refunds, and net spend as separat
   assert.equal(byLabel.get('Gross charges'), '$150.00');
   assert.equal(byLabel.get('Refunds'), '$100.00');
   assert.equal(byLabel.get('Net render spend'), '$50.00');
+  assert.equal(byLabel.get('Completed renders'), '—', 'unavailable usage is not zero renders');
+  assert.equal(byLabel.get('Engine coverage'), '—', 'unavailable usage is not zero models');
 });
 
 test('daily and monthly ledger rows expose refunds and net render spend', () => {
