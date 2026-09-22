@@ -39,6 +39,13 @@ test('history filter changes discard the cursor and pending navigation locks con
     assert.equal(new URL(urls[0], 'http://localhost').searchParams.get('type'), 'refund');
     await act(async () => button('Next page').click());
     assert.equal(new URL(urls[1], 'http://localhost').searchParams.get('cursor'), 'next');
+    const period = dom.window.document.querySelector<HTMLSelectElement>('select[aria-label="Transaction period"]')!;
+    await act(async () => {
+      period.value = 'today';
+      period.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    });
+    assert.equal(new URL(urls[2], 'http://localhost').searchParams.get('period'), 'today');
+    assert.equal(new URL(urls[2], 'http://localhost').searchParams.get('cursor'), null);
     await act(async () => root.render(React.createElement(TransactionHistoryControls, { ...props, pending: true })));
     assert.equal(button('Search').disabled, true);
     assert.equal(button('Next page').disabled, true);

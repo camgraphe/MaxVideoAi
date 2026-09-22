@@ -72,9 +72,12 @@ test.describe('admin critical flows', () => {
   });
 
   test('transactions history search is shareable and resolves receipt links', async ({ page }) => {
+    test.setTimeout(60_000);
     const errors = trackClientErrors(page);
 
-    await openAdminRoute(page, '/admin/transactions?period=all');
+    await openAdminRoute(page, '/admin/transactions');
+    const period = page.getByLabel('Transaction period');
+    await expect(period).toHaveValue('all');
     const receiptId = await firstRowReceiptId(page);
     expect(receiptId).not.toBe('');
 

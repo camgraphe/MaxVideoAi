@@ -12,7 +12,7 @@ export type TransactionHistoryQuery = {
 export type TransactionHistoryPage = { transactions: AdminTransactionRecord[]; nextCursor: string | null };
 export function parseTransactionHistoryParams(params: URLSearchParams): TransactionHistoryQuery {
   const type = params.get('type') ?? 'all';
-  const period = params.get('period') ?? 'today';
+  const period = params.get('period') ?? 'all';
   if (
     !['all', 'attention', 'charge', 'topup', 'refund', 'discount', 'tax'].includes(type) ||
     !['today', '24h', 'all'].includes(period)

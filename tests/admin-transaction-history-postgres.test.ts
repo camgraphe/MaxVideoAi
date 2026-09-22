@@ -16,7 +16,13 @@ test('history filters before pagination, retains precision and resolves receipts
     const { fetchTransactionHistory, fetchTransactionReceipt } = await import(
       '../frontend/server/admin-transactions/history'
     );
+    const { parseTransactionHistoryParams } = await import('../frontend/lib/admin/transaction-history');
     const now = new Date('2026-09-22T12:00:00Z');
+    const defaultArchive = await fetchTransactionHistory(
+      parseTransactionHistoryParams(new URLSearchParams('q=Archive')),
+      now,
+    );
+    assert.equal(defaultArchive.transactions.length, 1, 'the default view includes older receipts');
     const all = await fetchTransactionHistory({ period: 'all', query: '', type: 'all', limit: 50 }, now);
     assert.equal(all.transactions.length, 50);
     assert.equal(String(all.transactions[0].receiptId), '120');
