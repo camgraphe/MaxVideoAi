@@ -38,7 +38,7 @@ async function projectReadOnlyEngines(
   baseEngines: EngineCaps[],
   includeDisabled: boolean,
   dependencies: ReadOnlyEngineCatalogDependencies,
-  seededEngines: EngineCaps[] = [],
+  seededEngines: EngineCaps[] = getBaseEngines(),
 ): Promise<EngineCaps[]> {
   if (!dependencies.databaseConfigured()) return baseEngines.map(cloneEngine);
   const [settings, overrides] = await Promise.all([
@@ -112,8 +112,9 @@ export async function getReadOnlyConfiguredEnginesByCategoryInExecutor(
   executor: TransactionQueryExecutor,
 ): Promise<EngineCaps[]> {
   const { settings, overrides } = await readExecutorSnapshot(executor);
+  const effectiveSettings = projectSeededEngineSettings(getBaseEngines(), settings);
   return getBaseEnginesByCategory(category)
-    .map((engine) => projectConfiguredEngine(engine, settings, overrides))
+    .map((engine) => projectConfiguredEngine(engine, effectiveSettings, overrides))
     .filter((entry) => !entry.disabled)
     .map((entry) => applyConfiguredEngineRuntimeOptions(entry.engine));
 }
@@ -126,6 +127,7 @@ export async function getReadOnlyConfiguredEngineIncludingHiddenInExecutor(
   const base = getBaseEngineIncludingHidden(engineId);
   if (!base) return undefined;
   const { settings, overrides } = await readExecutorSnapshot(executor);
-  const projected = projectConfiguredEngine(base, settings, overrides);
+  const effectiveSettings = projectSeededEngineSettings(getBaseEngines(), settings);
+  const projected = projectConfiguredEngine(base, effectiveSettings, overrides);
   return projected.disabled ? undefined : applyConfiguredEngineRuntimeOptions(projected.engine);
 }

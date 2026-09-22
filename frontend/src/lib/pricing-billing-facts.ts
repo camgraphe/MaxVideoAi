@@ -29,6 +29,7 @@ import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWo
 import { getLumaRay2BasePriceUsd, getLumaRay2EditRateUsd } from '@/lib/luma-ray2-pricing-config';
 import type { PricingContext } from '@/lib/pricing-context';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
+import { isWan3EngineId, withWan3InputVideoPricing } from '@/lib/wan3-pricing';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import {
   computeSeedance2TokenQuote,
@@ -133,7 +134,8 @@ export function buildBillingPricingFacts(
     const reference = calculateMinimaxH3MaxProviderCost({
       mode: mode as 't2v' | 'i2v' | 'ref2v',
       durationSec,
-      resolution: resolution as '480P' | '768P',
+      resolution: resolution as '480P' | '768P' | '1080P',
+      referenceTokenBudget: context.referenceTokenBudget,
       verifiedReferenceTokenCount: context.verifiedReferenceTokenCount,
     });
     const referenceTokenCents = Math.round(reference.referenceTokenSubtotalUsd * 100);
@@ -157,6 +159,8 @@ export function buildBillingPricingFacts(
         public_provider: 'MiniMax',
         public_family: 'Hailuo',
         mode,
+        reference_pricing_basis: reference.referencePricingBasis,
+        provider_cost_is_estimate: context.referenceTokenBudget !== undefined,
         cost_breakdown_usd: reference,
       },
     });
@@ -165,7 +169,7 @@ export function buildBillingPricingFacts(
   if (isMinimaxH3EngineId(engine.id)) {
     const reference = calculateMinimaxH3ProviderPrice({
       durationSec,
-      resolution: resolution as '768P' | '2K' | '4K',
+      resolution: resolution as '480P' | '768P' | '2K' | '4K',
       referenceImageCount: context.referenceImageCount,
     });
     const baseAmountCents = Math.round(reference.breakdown.baseSubtotalUsd * 100);
@@ -479,7 +483,7 @@ export function buildBillingPricingFacts(
     ...definition,
     currency,
   };
-  const definitionFacts = computePricingDefinitionFacts(factualDefinition, {
+  let definitionFacts = computePricingDefinitionFacts(factualDefinition, {
     durationSec,
     resolution,
     mode,
@@ -491,6 +495,9 @@ export function buildBillingPricingFacts(
       : {}),
     ...(context.addons ? { addons: context.addons } : {}),
   });
+  if (isWan3EngineId(engine.id)) {
+    definitionFacts = withWan3InputVideoPricing(definitionFacts, context);
+  }
   return resultFromFacts({
     engineId: engine.id,
     currency,

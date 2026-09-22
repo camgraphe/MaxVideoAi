@@ -10,6 +10,8 @@ type SourceVideoContextParams = {
   fallbackDurationSec: number;
   fallbackDurationLabel?: string;
   maxDurationSec?: number | null;
+  maxSourcePlusOutputDurationSec?: number;
+  inputVideoDurationSec?: number;
   engineLabel: string;
 };
 
@@ -61,6 +63,31 @@ export function resolveGenerateSourceVideoContext(params: SourceVideoContextPara
         meta: {
           sourceDurationSec: sourceVideoDuration.sourceDurationSec,
           maxDurationSec,
+          mode: params.mode,
+        },
+      },
+    };
+  }
+
+  const totalMaximum = params.maxSourcePlusOutputDurationSec;
+  const inputVideoDurationSec = params.inputVideoDurationSec
+    ?? (params.mode === 'v2v' || params.mode === 'extend' ? sourceVideoDuration.sourceDurationSec : null);
+  if (typeof totalMaximum === 'number' && Number.isFinite(totalMaximum) && totalMaximum > 0
+    && inputVideoDurationSec != null
+    && inputVideoDurationSec + sourceVideoDuration.durationSec > totalMaximum) {
+    return {
+      ok: false,
+      status: 422,
+      body: {
+        ok: false,
+        error: 'SOURCE_VIDEO_DURATION_UNSUPPORTED',
+        message: `Source video plus generated duration must be ${totalMaximum}s or shorter for ${params.engineLabel}.`,
+      },
+      metric: {
+        errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED',
+        meta: {
+          sourceDurationSec: inputVideoDurationSec,
+          maxDurationSec: totalMaximum - sourceVideoDuration.durationSec,
           mode: params.mode,
         },
       },

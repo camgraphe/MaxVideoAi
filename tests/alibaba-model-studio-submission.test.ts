@@ -107,6 +107,35 @@ test('Alibaba submission records one accepted direct attempt on the existing app
   assert.equal(queries.filter((entry) => /INSERT INTO provider_attempts/.test(entry.sql)).length, 1);
 });
 
+test('Alibaba submission keeps projected image frames out of reference media', async () => {
+  const { queryFn } = createQueryRecorder();
+  let submittedPayload: unknown = null;
+  const start = 'https://media.example/start.png';
+  const end = 'https://media.example/end.png';
+  const { params } = baseParams({
+    mode: 'i2v', imageUrl: start,
+    falPayload: {
+      ...falPayload, mode: 'i2v', imageUrl: start, endImageUrl: end,
+      inputs: [
+        { name: 'start.png', type: 'image/png', size: 1000, kind: 'image', slotId: 'start_image_url', url: start },
+        { name: 'end.png', type: 'image/png', size: 1000, kind: 'image', slotId: 'end_image_url', url: end },
+      ],
+    },
+    deps: {
+      queryFn,
+      getAlibabaModelStudioClientFn: () => ({
+        createVideo: async (payload: unknown) => { submittedPayload = payload; return acceptedTask(); },
+        getTask: async () => acceptedTask(),
+      }),
+    },
+  });
+  const result = await submitAlibabaModelStudioGenerateTask(params);
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.deepEqual((submittedPayload as { input?: { media?: unknown[] } })?.input?.media, [
+    { type: 'first_frame', url: start }, { type: 'last_frame', url: end },
+  ]);
+});
+
 test('Alibaba submission forwards the Wan prompt expansion selection', async () => {
   const { queryFn } = createQueryRecorder();
   let submittedPayload: unknown = null;

@@ -8,6 +8,7 @@ import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import { isGeminiOmniUnifiedAssetField } from './gemini-omni-unified-workflow';
 import { isKlingO3EngineId } from './kling-o3-unified-workflow';
+import { hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
 import {
   normalizeFieldId,
   parseBooleanInput,
@@ -135,6 +136,9 @@ export function summarizeWorkspaceInputSchema({
       )
     );
   const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
+  const allowsMultimodalReferences = !isUnifiedSeedance && hasMultimodalReferenceFields([
+    ...(schema.required ?? []), ...(schema.optional ?? []),
+  ]);
   const unifiedFirstFrameField = allowsUnifiedVeoFirstLast
     ? resolveActiveVideoInputField({
         inputSchema: schema,
@@ -144,6 +148,9 @@ export function summarizeWorkspaceInputSchema({
       })
     : null;
   const appliesToMode = (field: EngineInputField) => {
+    if (allowsMultimodalReferences
+      && (field.type === 'image' || field.type === 'video' || field.type === 'audio')
+      && field.modes?.some((mode) => selectedEngine?.modes.includes(mode))) return true;
     if (
       allowsUnifiedVeoFirstLast
       && unifiedFirstFrameField

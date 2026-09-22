@@ -57,7 +57,7 @@ test('MiniMax H3 Max resolves through the public generation runtime and catalog'
   });
 });
 
-test('MiniMax H3 Max media modes fail closed while live size and format limits are unverified', async () => {
+test('MiniMax H3 Max media modes resolve through the owned-media validation route', async () => {
   for (const mode of ['i2v', 'ref2v'] as const) {
     const result = await resolveGenerateRouteContext({
       body: { engineId: 'minimax-h3-max', mode, jobId: `job_h3_max_${mode}` },
@@ -65,11 +65,8 @@ test('MiniMax H3 Max media modes fail closed while live size and format limits a
       boundaryOverrides: publicRuntimeBoundaries,
     });
 
-    assert.deepEqual(result, {
-      ok: false,
-      status: 503,
-      body: { ok: false, error: 'Engine unavailable' },
-    });
+    assert.equal(result.ok, true);
+    if (result.ok) assert.equal(result.context.engine.id, 'minimax-h3-max');
   }
 });
 

@@ -76,6 +76,8 @@ const VIDEO_SETTING_KEYS = new Set([
   'cropStartX',
   'cropStartY',
   'durationSec',
+  'documentUrl',
+  'enablePromptExpansion',
   'fps',
   'guidanceScale',
   'hdr',
@@ -90,6 +92,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'safetyChecker',
   'seed',
   'shotType',
+  'webpageUrl',
   'sourcePositionHeight',
   'sourcePositionWidth',
   'sourcePositionX',
@@ -257,6 +260,13 @@ function normalizeSettingKey(value: string, allowedKeys: ReadonlySet<string>): s
 }
 
 function normalizeSettingValue(value: unknown, key: string): CanonicalGenerationSettingValue {
+  if ((key === 'documentUrl' || key === 'webpageUrl') && value !== null) {
+    try {
+      return normalizeControlledHttpsReferenceUrl(value);
+    } catch {
+      fail(`settings.${key}`, 'A public controlled HTTPS URL is required.');
+    }
+  }
   if (key === 'multiPrompt') {
     assertDenseDataArray(value, 'settings.multiPrompt', 6);
     if (value.length === 0) fail('settings.multiPrompt', 'multiPrompt must contain at least one scene.');

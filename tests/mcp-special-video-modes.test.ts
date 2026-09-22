@@ -24,6 +24,7 @@ import { buildPaidVideoRequestBody } from '../frontend/src/server/agent-api/paid
 import { isPaidVideoContinuationMode } from '../frontend/src/server/generations/paid-provider-execution';
 import { prepareGenerationInputSchema } from '../frontend/src/server/mcp/tools/prepare-generation';
 import { toCanonicalGenerationMode } from '../frontend/src/server/agent-api/generation-mode-aliases';
+import { resolveAgentGenerationModeExecutability } from '../frontend/src/server/agent-runtime/model-executability';
 
 function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const entry = listFalEngines().find((candidate) => candidate.id === engineId);
@@ -183,19 +184,18 @@ test('MCP mode parity audit identifies every remaining specialized public workfl
   }
 });
 
-test('the specialized-mode audit records P1 media modes that remain intentionally execution-gated', () => {
+test('the specialized-mode audit verifies H3 Max owned-media modes are executable', () => {
   const h3Max = listFalEngines().find((entry) => entry.id === 'minimax-h3-max');
   assert.ok(h3Max);
 
   const closed = h3Max.engine.modes
-    .filter((mode) => mode !== 't2v')
+    .filter((mode) => !resolveAgentGenerationModeExecutability(h3Max.engine, mode, {
+      bytePlusEnabled: false, bytePlusApiKey: undefined, falApiKey: 'test-credential', providerEnv: {},
+    }).executable)
     .map((mode) => `${h3Max.id}:${mode}`)
     .sort();
 
-  assert.deepEqual(closed, [
-    'minimax-h3-max:i2v',
-    'minimax-h3-max:ref2v',
-  ]);
+  assert.deepEqual(closed, []);
 });
 
 test('MCP normalization and tool schema accept every transport-safe video workflow', () => {

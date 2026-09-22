@@ -39,19 +39,21 @@ test('MiniMax H3 validates integer duration, resolution, aspect ratio, and promp
   for (const duration of [5, 15]) assert.equal(validate('t2v', { duration }).ok, true);
   for (const duration of [4, 16, 5.5]) assertFails('t2v', { duration }, 'duration');
 
-  for (const resolution of ['768P', '2K', '4K']) assert.equal(validate('t2v', { resolution }).ok, true);
+  for (const resolution of ['480P', '768P', '2K', '4K']) assert.equal(validate('t2v', { resolution }).ok, true);
   assertFails('t2v', { resolution: '1080p' }, 'resolution');
 
-  for (const aspect_ratio of ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16', 'auto']) {
+  for (const aspect_ratio of ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']) {
     assert.equal(validate('t2v', { aspect_ratio }).ok, true);
     assert.equal(validate('ref2v', { aspect_ratio }).ok, true);
   }
+  assertFails('t2v', { aspect_ratio: 'auto' }, 'aspect_ratio');
+  for (const aspect_ratio of ['auto', 'adaptive']) assert.equal(validate('ref2v', { aspect_ratio }).ok, true);
   assertFails('t2v', { aspect_ratio: '2:1' }, 'aspect_ratio');
   assertFails('i2v', { aspect_ratio: '16:9' }, 'aspect_ratio');
 
   assert.equal(validate('t2v', { prompt: 'x' }).ok, true);
-  assert.equal(validate('t2v', { prompt: 'x'.repeat(7000) }).ok, true);
-  assertFails('t2v', { prompt: 'x'.repeat(7001) }, 'prompt');
+  assert.equal(validate('t2v', { prompt: 'x'.repeat(50_000) }).ok, true);
+  assertFails('t2v', { prompt: 'x'.repeat(50_001) }, 'prompt');
   assertFails('t2v', { prompt: '   ' }, 'prompt');
 });
 
@@ -65,7 +67,8 @@ test('MiniMax H3 validates image and multimodal reference shapes before billing'
   assert.equal(validate('ref2v', { reference_image_urls: ['look.jpg'] }).ok, true);
   assert.equal(validate('ref2v', { reference_image_urls: ['look.jpg'], reference_audio_urls: ['voice.wav'] }).ok, true);
   assert.equal(validate('ref2v', { reference_image_urls: [], reference_video_urls: ['motion.mp4'], reference_audio_urls: ['voice.wav'] }).ok, true);
-  assertFails('ref2v', { reference_image_urls: [], reference_video_urls: [], reference_audio_urls: ['voice.wav'] }, 'reference_audio_urls');
+  assert.equal(validate('ref2v', { reference_image_urls: [], reference_video_urls: [], reference_audio_urls: ['voice.wav'] }).ok, true);
+  assertFails('ref2v', { reference_image_urls: [], reference_video_urls: [], reference_audio_urls: [] }, 'reference_image_urls');
 
   assert.equal(validate('ref2v', { reference_image_urls: Array.from({ length: 9 }, (_, index) => `image-${index}.jpg`) }).ok, true);
   assertFails('ref2v', { reference_image_urls: Array.from({ length: 10 }, (_, index) => `image-${index}.jpg`) }, 'reference_image_urls');
@@ -96,6 +99,20 @@ test('MiniMax H3 rejects unsupported audio controls and generic reference field 
   assertFails('ref2v', { image_urls: ['wrong.jpg'] }, 'image_urls');
   assertFails('ref2v', { video_urls: ['wrong.mp4'] }, 'video_urls');
   assertFails('ref2v', { audio_urls: ['wrong.wav'] }, 'audio_urls');
+});
+
+test('MiniMax H3 accepts end-only frames and soundtracks only on text/image modes', () => {
+  assert.equal(validate('i2v', { image_url: undefined, end_image_url: 'https://media.maxvideoai.com/end.jpg' }).ok, true);
+  for (const mode of ['t2v', 'i2v'] as const) {
+    assert.equal(validate(mode, { target_audio_url: 'https://media.maxvideoai.com/track.wav' }).ok, true);
+    assertFails(mode, { target_audio_url: '' }, 'target_audio_url');
+  }
+  assertFails('ref2v', { target_audio_url: 'https://media.maxvideoai.com/track.wav' }, 'target_audio_url');
+  for (const prompt_expansion_mode of ['disabled', 'fast', 'balanced', 'quality']) {
+    assert.equal(validate('t2v', { prompt_expansion_mode, seed: 42 }).ok, true);
+  }
+  assertFails('t2v', { seed: 1.5 }, 'seed');
+  assertFails('t2v', { prompt_expansion_mode: 'unrecognized' }, 'prompt_expansion_mode');
 });
 
 function validationParams(overrides: Partial<Parameters<typeof buildGenerateValidationPayload>[0]> = {}) {

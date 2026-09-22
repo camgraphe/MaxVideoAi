@@ -44,6 +44,7 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cropEndY: 'y_end',
   cropStartX: 'x_start',
   cropStartY: 'y_start',
+  documentUrl: 'file_url',
   editDepthBlur: 'edit_depth_blur',
   editFace: 'edit_face',
   editKeyframeIndexes: 'edit_keyframe_indexes',
@@ -52,6 +53,7 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   editStrength: 'edit_strength',
   editTrajectorySparsity: 'edit_trajectory_sparsity',
   exrExport: 'exr_export',
+  enablePromptExpansion: 'enable_prompt_expansion',
   extendPosition: 'mode',
   guidanceScale: 'guidance_scale',
   hdr: 'hdr',
@@ -70,6 +72,7 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   sourcePositionX: 'source_position_x_norm',
   sourcePositionY: 'source_position_y_norm',
   startTimeSec: 'start_time',
+  webpageUrl: 'web_url',
 };
 const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
   background: 'background',
@@ -503,11 +506,14 @@ function fieldIdsForRole(
   request: CanonicalGenerationRequest,
   role: CanonicalGenerationReference['role'],
 ): readonly string[] {
+  if (request.mode === 't2v') {
+    return role === 'reference' ? ['target_audio_url'] : [];
+  }
   if (request.mode === 'i2v' || request.mode === 'i2v_standard') {
-    if (role === 'source') return ['image_url'];
+    if (role === 'source') return ['image_url', 'start_image_url', 'first_frame_url'];
     if (role === 'first_frame') return ['first_frame_url', 'start_image_url', 'image_url'];
     if (role === 'last_frame') return ['end_image_url', 'last_frame_url'];
-    return ['image_urls', 'reference_image_urls'];
+    return role === 'reference' ? ['image_urls', 'reference_image_urls', 'target_audio_url'] : [];
   }
   if (request.mode === 'ref2v') {
     if (role === 'first_frame') return ['start_image_url', 'image_url'];
@@ -547,7 +553,8 @@ function fieldIdsForRole(
     return role === 'reference' ? ['video_urls'] : [];
   }
   if (request.mode === 'extend') {
-    return role === 'source' ? ['extension_source_videos', 'video_urls', 'video_url'] : [];
+    if (role === 'source') return ['extension_source_videos', 'video_urls', 'video_url'];
+    return role === 'reference' ? ['reference_image_urls', 'image_urls', 'reference_audio_urls', 'audio_urls'] : [];
   }
   if (request.mode === 'a2v') {
     if (role === 'source') return ['audio_url'];
@@ -623,7 +630,10 @@ function validateTrustedReferenceDuration(
   if (fields.length !== 1) return;
   const field = fields[0]!;
   const constraints = candidate.engine.inputSchema?.constraints;
-  const combinedLimit = field.type === 'video'
+  const combinedModes = constraints?.combinedDurationModes;
+  const combinedLimitsApply = !Array.isArray(combinedModes)
+    || combinedModes.includes(toEngineGenerationMode(candidate.engine.id, request.mode));
+  const combinedLimit = !combinedLimitsApply ? undefined : field.type === 'video'
     ? constraints?.maxCombinedVideoDurationSec
     : field.type === 'audio'
       ? constraints?.maxCombinedAudioDurationSec
@@ -640,9 +650,15 @@ function validateTrustedReferenceDuration(
     && exclusiveMaximum === undefined
     && sourcePlusOutputMaximum === undefined
   ) return;
+  // Preparation validates role/schema shape before looking up owned media.
+  // An asset reference is revalidated with persisted metadata immediately after resolution.
+  if (reference.kind === 'asset' && !options.resolvedReferences) return;
   if (reference.kind !== 'asset' || !options.resolvedReferences) {
     if (options.allowUnverifiedReferenceDuration) return;
-    if (candidate.engine.id === 'minimax-h3') fail('references', 'reference_invalid');
+    if (candidate.engine.id === 'minimax-h3'
+      || ((candidate.engine.id === 'wan-3' || candidate.engine.id === 'wan-3-prime') && field.type === 'video')) {
+      fail('references', 'reference_invalid');
+    }
     return;
   }
   const resolved = resolvedReference(reference, options);
@@ -674,11 +690,15 @@ function requestModeForExclusiveDuration(
 }
 
 function validateCombinedReferenceDurations(
+  request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
   if (!options.resolvedReferences) return;
   const constraints = candidate.engine.inputSchema?.constraints;
+  const combinedModes = constraints?.combinedDurationModes;
+  if (Array.isArray(combinedModes)
+    && !combinedModes.includes(toEngineGenerationMode(candidate.engine.id, request.mode))) return;
   const limits = {
     video: constraints?.maxCombinedVideoDurationSec,
     audio: constraints?.maxCombinedAudioDurationSec,
@@ -731,10 +751,6 @@ function validateReferences(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
-  if (request.mode === 't2v') {
-    if (request.references.length) fail('references', 'reference_invalid');
-    return;
-  }
   if (candidate.surface === 'image') {
     const constraints = getReferenceConstraints(candidate.engine, request.mode as ImageGenerationMode);
     const generationReferences = request.references.filter((reference) => reference.role !== 'mask');
@@ -819,13 +835,19 @@ function validateReferences(
   }
   const atLeastOneReferenceField = candidate.engine.inputSchema?.constraints?.atLeastOneReferenceField;
   if (
-    request.mode === 'ref2v'
+    (request.mode === 'ref2v' || request.mode === 'i2v')
     && Array.isArray(atLeastOneReferenceField)
     && atLeastOneReferenceField.length
   ) {
-    const accepted = new Set(atLeastOneReferenceField);
-    const hasReference = selectedFields.some((fields) => fields.some((field) => accepted.has(field.id)));
-    if (!hasReference) fail('references', 'reference_required');
+    const accepted = new Set(atLeastOneReferenceField.filter((fieldId) =>
+      typeof fieldId === 'string' && applicableField(candidate, fieldId, request.mode)));
+    const hasReference = selectedFields.some((fields) => fields.some((field) => accepted.has(field.id)))
+      || Object.entries(VIDEO_FIELD_BY_SETTING).some(([setting, fieldId]) =>
+        accepted.has(fieldId)
+        && applicableField(candidate, fieldId, request.mode)
+        && typeof request.settings[setting] === 'string'
+        && String(request.settings[setting]).trim().length > 0);
+    if (accepted.size && !hasReference) fail('references', 'reference_required');
   }
   if (
     request.mode === 'a2v'
@@ -836,7 +858,7 @@ function validateReferences(
       && selectedFields[index]?.some((field) => field.type === 'image'))
   ) fail('prompt');
   validateReferenceBudget(request, candidate, selectedFields);
-  validateCombinedReferenceDurations(candidate, options);
+  validateCombinedReferenceDurations(request, candidate, options);
 }
 
 export function validateCanonicalGenerationCapabilities(

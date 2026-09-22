@@ -7,6 +7,8 @@ import {
 } from '@/lib/kling-provider-limits';
 import {
   MINIMAX_H3_ASPECT_RATIOS,
+  MINIMAX_H3_FIXED_ASPECT_RATIOS,
+  MINIMAX_H3_PROMPT_EXPANSION_MODES,
   MINIMAX_H3_RESOLUTIONS,
 } from '@/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
@@ -102,8 +104,8 @@ function validateMinimaxH3Constraints(params: {
 
   const prompt = typeof payload.prompt === 'string' ? payload.prompt : '';
   if (!prompt.trim()) return minimaxH3Error('prompt', 'Prompt is required for MiniMax H3.');
-  if (prompt.length > 7000) {
-    return minimaxH3Error('prompt', 'MiniMax H3 prompts must be at most 7000 characters.', [7000], prompt.length);
+  if (prompt.length > 50_000) {
+    return minimaxH3Error('prompt', 'MiniMax H3 prompts must be at most 50000 characters.', [50_000], prompt.length);
   }
 
   const duration = minimaxH3StrictInteger(payload.duration ?? payload.duration_seconds);
@@ -113,7 +115,23 @@ function validateMinimaxH3Constraints(params: {
 
   const resolution = typeof payload.resolution === 'string' ? payload.resolution.trim() : '';
   if (!MINIMAX_H3_RESOLUTIONS.includes(resolution as (typeof MINIMAX_H3_RESOLUTIONS)[number])) {
-    return minimaxH3Error('resolution', 'MiniMax H3 resolution must be 768P, 2K, or 4K.', [...MINIMAX_H3_RESOLUTIONS], resolution);
+    return minimaxH3Error('resolution', 'MiniMax H3 resolution must be 480P, 768P, 2K, or 4K.', [...MINIMAX_H3_RESOLUTIONS], resolution);
+  }
+
+  if (payload.seed !== undefined && !Number.isSafeInteger(payload.seed)) {
+    return minimaxH3Error('seed', 'MiniMax H3 seed must be an integer.');
+  }
+  if (payload.prompt_expansion_mode !== undefined && payload.prompt_expansion_mode !== null
+    && !(MINIMAX_H3_PROMPT_EXPANSION_MODES as readonly unknown[]).includes(payload.prompt_expansion_mode)) {
+    return minimaxH3Error('prompt_expansion_mode', 'MiniMax H3 prompt expansion mode is unsupported.', [...MINIMAX_H3_PROMPT_EXPANSION_MODES]);
+  }
+  if (payload.target_audio_url !== undefined && payload.target_audio_url !== null) {
+    if (normalizedMode === 'ref2v') {
+      return minimaxH3Error('target_audio_url', 'MiniMax H3 soundtrack input is available in text and image modes only.');
+    }
+    if (typeof payload.target_audio_url !== 'string' || !payload.target_audio_url.trim()) {
+      return minimaxH3Error('target_audio_url', 'MiniMax H3 soundtrack must be one non-empty URL.');
+    }
   }
 
   for (const field of ['generate_audio', 'audio'] as const) {
@@ -127,18 +145,24 @@ function validateMinimaxH3Constraints(params: {
     if ('aspect_ratio' in payload) {
       return minimaxH3Error('aspect_ratio', 'MiniMax H3 image-to-video follows the source image and does not accept aspect_ratio.');
     }
-    if (typeof payload.image_url !== 'string' || !payload.image_url.trim()) {
-      return minimaxH3Error('image_url', 'MiniMax H3 image-to-video requires exactly one start image.');
+    for (const field of ['image_url', 'end_image_url'] as const) {
+      if (payload[field] !== undefined && payload[field] !== null
+        && (typeof payload[field] !== 'string' || !payload[field].trim())) {
+        return minimaxH3Error(field, `MiniMax H3 ${field} must be one non-empty URL.`);
+      }
     }
-    if ('end_image_url' in payload && (typeof payload.end_image_url !== 'string' || !payload.end_image_url.trim())) {
-      return minimaxH3Error('end_image_url', 'MiniMax H3 end_image_url must be one non-empty URL.');
+    if (!payload.image_url && !payload.end_image_url) {
+      return minimaxH3Error('image_url', 'MiniMax H3 image-to-video requires a start image, an end image, or both.');
     }
     return { ok: true };
   }
 
   const aspectRatio = typeof payload.aspect_ratio === 'string' ? payload.aspect_ratio.trim() : '';
-  if (!MINIMAX_H3_ASPECT_RATIOS.includes(aspectRatio as (typeof MINIMAX_H3_ASPECT_RATIOS)[number])) {
-    return minimaxH3Error('aspect_ratio', 'MiniMax H3 aspect ratio is unsupported.', [...MINIMAX_H3_ASPECT_RATIOS], aspectRatio);
+  const aspectRatios: readonly string[] = normalizedMode === 't2v'
+    ? MINIMAX_H3_FIXED_ASPECT_RATIOS
+    : [...MINIMAX_H3_ASPECT_RATIOS, 'adaptive'];
+  if (!aspectRatios.includes(aspectRatio)) {
+    return minimaxH3Error('aspect_ratio', 'MiniMax H3 aspect ratio is unsupported.', [...aspectRatios], aspectRatio);
   }
   if (normalizedMode === 't2v') return { ok: true };
 
@@ -151,10 +175,10 @@ function validateMinimaxH3Constraints(params: {
   if (referenceImageUrls.length > 9) return minimaxH3Error('reference_image_urls', 'MiniMax H3 supports up to 9 reference images.', [0, 9], referenceImageUrls.length);
   if (referenceVideoUrls.length > 3) return minimaxH3Error('reference_video_urls', 'MiniMax H3 supports up to 3 reference videos.', [0, 3], referenceVideoUrls.length);
   if (referenceAudioUrls.length > 3) return minimaxH3Error('reference_audio_urls', 'MiniMax H3 supports up to 3 reference audio clips.', [0, 3], referenceAudioUrls.length);
-  if (!referenceImageUrls.length && !referenceVideoUrls.length) {
+  if (!referenceImageUrls.length && !referenceVideoUrls.length && !referenceAudioUrls.length) {
     return minimaxH3Error(
-      referenceAudioUrls.length ? 'reference_audio_urls' : 'reference_image_urls',
-      'MiniMax H3 reference mode requires at least one image or video; audio cannot be used alone.',
+      'reference_image_urls',
+      'MiniMax H3 reference mode requires at least one image, video, or audio reference.',
     );
   }
   const uniqueReferences = new Set([

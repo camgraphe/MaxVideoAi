@@ -288,18 +288,18 @@
     {
       "modelSlug": "minimax-h3-max",
       "sources": [
-        "https://maxvideoai.com/models/minimax-h3-max",
-        "https://layer.ai/docs/models/minimax-h3-max",
-        "https://csuite.so/models/minimax-h3-max"
+        "https://fal.ai/models/minimax/h3-max/text-to-video/api",
+        "https://fal.ai/models/minimax/h3-max/image-to-video/api",
+        "https://fal.ai/models/minimax/h3-max/reference-to-video/api"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
-        "imageToVideo": "Not supported (not exposed in current MaxVideoAI route)",
-        "videoToVideo": "Not supported (not exposed in current MaxVideoAI route)",
-        "firstLastFrame": "Not supported (not exposed in current MaxVideoAI route)",
-        "referenceImageStyle": "Not supported (not exposed in current MaxVideoAI route)",
-        "referenceVideo": "Not supported (not exposed in current MaxVideoAI route)",
-        "maxResolution": "768P",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported as a reference-to-video input",
+        "firstLastFrame": "Supported (start image, end image, or both)",
+        "referenceImageStyle": "Supported (up to 9 image references)",
+        "referenceVideo": "Supported (up to 3 video references; 2-15s each and 15s combined)",
+        "maxResolution": "480P / 768P / 1080P",
         "maxDuration": "5–15s",
         "aspectRatios": [
           "21:9",
@@ -320,7 +320,16 @@
         "lipSync": "Supported through native dialogue and audio generation",
         "cameraMotionControls": "Prompt-based camera direction",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
-        "releaseDate": "Aug 2026"
+        "releaseDate": "Aug 2026",
+        "referenceToVideo": "Supported",
+        "referenceAudio": "Up to 3 audio references; 2-15s each and 15s combined; audio-only supported",
+        "referenceLimit": "Up to 12 unique references",
+        "soundtrack": "Optional supplied soundtrack in text-to-video and image-to-video",
+        "workflows": [
+          "Text-to-video",
+          "Image-to-video",
+          "Reference-to-video"
+        ]
       }
     },
     {
@@ -1135,17 +1144,17 @@
         "imageToVideo": "Supported",
         "referenceToVideo": "Supported",
         "videoToVideo": "Supported as a reference-to-video input",
-        "firstLastFrame": "Supported (start image + optional end image)",
+        "firstLastFrame": "Supported (start image, end image, or both)",
         "workflows": [
           "Text-to-video",
           "Image-to-video",
           "Reference-to-video"
         ],
         "referenceLimit": "Up to 12 unique references",
-        "referenceImageStyle": "Up to 9 image references",
-        "referenceVideo": "Up to 3 video references; 2-15s each and 15s combined",
-        "referenceAudio": "Up to 3 audio references; 2-15s each and 15s combined; requires an image or video reference",
-        "maxResolution": "768p / 2K / 4K",
+        "referenceImageStyle": "Supported (up to 9 image references)",
+        "referenceVideo": "Supported (up to 3 video references; 2-15s each and 15s combined)",
+        "referenceAudio": "Up to 3 audio references; 2-15s each and 15s combined; audio-only supported",
+        "maxResolution": "480P / 768P / 2K / 4K",
         "maxDuration": "5-15s",
         "aspectRatios": [
           "Auto",
@@ -1167,7 +1176,8 @@
         "lipSync": "Supported",
         "cameraMotionControls": "Prompt-based camera and multi-shot control",
         "watermark": "No (MaxVideoAI)",
-        "releaseDate": "Jul 2026"
+        "releaseDate": "Jul 2026",
+        "soundtrack": "Optional supplied soundtrack in text-to-video and image-to-video"
       }
     },
     {
@@ -1571,21 +1581,41 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported by provider for editing and extension through reference video",
-        "firstLastFrame": "Supported",
+        "videoToVideo": "Supported (video editing and extension)",
+        "firstLastFrame": "Supported (start image + optional end image)",
         "referenceImageStyle": "Up to 10 reference images",
         "referenceVideo": "Up to 5 clips, 15s total",
         "maxResolution": "1080p",
         "maxDuration": "30s",
-        "aspectRatios": ["adaptive", "16:9", "4:3", "1:1", "3:4", "9:16"],
-        "fpsOptions": [30],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "adaptive",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          30
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Prompt-directed native dialogue",
         "cameraMotionControls": "Prompt-based; native multi-shot storyboard support",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
-        "releaseDate": "Sep 2026"
+        "releaseDate": "Sep 2026",
+        "referenceAudio": "Up to 5 audio references; 15s combined; audio-only supported",
+        "referenceContext": "Document or public webpage URL; mutually exclusive",
+        "workflows": [
+          "Text-to-video",
+          "Image-to-video",
+          "Reference-to-video",
+          "Video editing",
+          "Video extension"
+        ]
       }
     },
     {
@@ -1598,21 +1628,41 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported by provider for editing and extension through reference video",
-        "firstLastFrame": "Supported",
+        "videoToVideo": "Supported (video editing and extension)",
+        "firstLastFrame": "Supported (start image + optional end image)",
         "referenceImageStyle": "Up to 10 reference images",
         "referenceVideo": "Up to 5 clips, 15s total",
         "maxResolution": "1080p",
         "maxDuration": "30s",
-        "aspectRatios": ["adaptive", "16:9", "4:3", "1:1", "3:4", "9:16"],
-        "fpsOptions": [30],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "adaptive",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          30
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Prompt-directed native dialogue",
         "cameraMotionControls": "Prompt-based; native multi-shot storyboard support",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
-        "releaseDate": "Sep 2026"
+        "releaseDate": "Sep 2026",
+        "referenceAudio": "Up to 5 audio references; 15s combined; audio-only supported",
+        "referenceContext": "Document or public webpage URL; mutually exclusive",
+        "workflows": [
+          "Text-to-video",
+          "Image-to-video",
+          "Reference-to-video",
+          "Video editing",
+          "Video extension"
+        ]
       }
     },
     {

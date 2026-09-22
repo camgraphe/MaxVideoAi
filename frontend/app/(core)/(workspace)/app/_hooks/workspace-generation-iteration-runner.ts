@@ -176,6 +176,8 @@ export async function runWorkspaceGenerationIteration({
 
   const guardMessage = getGenerationIterationGuardMessage({
     selectedEngineId: selectedEngine.id,
+    inputSchema: selectedEngine.inputSchema,
+    extraInputValues,
     submissionMode,
     allowsUnifiedVeoFirstLast,
     hasLastFrameInput,

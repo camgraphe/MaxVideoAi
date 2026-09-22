@@ -3,10 +3,10 @@
   "versionLabel": "H3",
   "seo": {
     "title": "MiniMax H3 : générateur vidéo IA 4K, références et audio",
-    "description": "Générez des vidéos MiniMax H3 de 5 à 15 secondes en 768P, 2K ou 4K depuis du texte, des images de départ et de fin ou des références image, vidéo et audio.",
+    "description": "Générez des vidéos MiniMax H3 de 5 à 15 secondes en 480P, 768P, 2K ou 4K depuis un texte, des images ou des références, avec audio natif ou bande-son.",
     "image": "/models/minimax-h3-launch.jpg"
   },
-  "overview": "Créez des vidéos de 5 à 15 secondes en 768P, 2K ou 4K à 24 FPS. Partez d’un texte, animez une image de départ avec une image de fin optionnelle, ou dirigez la scène avec des références image, vidéo et audio. H3 génère le son stéréo natif avec la vidéo.",
+  "overview": "Créez des vidéos de 5 à 15 secondes en 480P, 768P, 2K ou 4K à 24 FPS. Partez d’un texte, d’une image de début ou de fin, ou de références image, vidéo et audio. Générez du son stéréo natif ou fournissez une bande-son en modes texte et image.",
   "hero": {
     "title": "MiniMax H3 — réalisez des vidéos IA 4K avec références multimodales",
     "intro": "Transformez du texte, des images ou des références multimodales en vidéo de 5 à 15 secondes jusqu’en 4K, avec audio stéréo natif et mise en scène multi-plan.",
@@ -110,7 +110,7 @@
       "subtitleHighlights": [
         "Dirigez la scène. Donnez-lui une voix"
       ],
-      "paragraph": "MiniMax H3 crée des vidéos IA à partir de texte, d’images ou de références combinées. Choisissez de 5 à 15 secondes, jusqu’en 4K, avec un son stéréo natif. Guidez les personnages, la caméra et le mouvement dans une même génération.",
+      "paragraph": "MiniMax H3 crée des vidéos de 5 à 15 secondes depuis un texte, des images de début ou de fin, ou des références combinées, du 480P à la 4K. Dirigez l’identité, le mouvement et le son stéréo natif, ou ajoutez votre bande-son en modes texte et image.",
       "primaryCta": {
         "label": "Générer avec MiniMax H3",
         "href": "/app?engine=minimax-h3"
@@ -121,7 +121,7 @@
       },
       "quickLinks": [
         {
-          "label": "Voir MiniMax H3 Max pour la production rapide en 768P",
+          "label": "Voir MiniMax H3 Max pour une sortie jusqu’en 1080P",
           "href": "/fr/modeles/minimax-h3-max"
         },
         {
@@ -158,7 +158,7 @@
       },
       {
         "title": "5–15 secondes jusqu’en 4K",
-        "body": "Choisissez chaque seconde entière et générez en 768P, 2K ou 4K à 24 FPS.",
+        "body": "Choisissez chaque seconde entière et produisez en 480P, 768P, 2K ou 4K à 24 FPS.",
         "tone": "quality"
       },
       {
@@ -168,7 +168,7 @@
       },
       {
         "title": "Audio stéréo natif",
-        "body": "Générez ambiance, effets, musique ou parole avec l’image dans le même rendu.",
+        "body": "Utilisez une bande-son en mode texte ou image, ou des références audio en mode références. Décrivez dialogues, ambiance et sons synchronisés dans le prompt.",
         "tone": "audio"
       }
     ],
@@ -183,7 +183,7 @@
       },
       {
         "title": "Vous contrôlez le début et la fin ?",
-        "body": "Animez une image de départ et ajoutez une image de fin optionnelle ; H3 suit automatiquement son cadrage.",
+        "body": "Utilisez une image de début, une image de fin ou les deux. Les images clés et les références combinées correspondent à des modes distincts.",
         "cta": {
           "label": "Générer depuis des images",
           "href": "/app?engine=minimax-h3"
@@ -200,20 +200,20 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Texte vers vidéo",
-        "body": "Décrivez personnage, action, décor, caméra et son, puis choisissez un ratio fixe ou Auto."
+        "title": "Texte-vers-vidéo",
+        "body": "Décrivez le sujet, l’action, la caméra et le son. Ajoutez une bande-son facultative pour guider l’audio."
       },
       {
-        "title": "Image vers vidéo",
-        "body": "Importez une image de départ et éventuellement une image de fin ; la sortie suit le ratio de la source."
+        "title": "Image-vers-vidéo",
+        "body": "Utilisez une image de début, de fin ou les deux, avec une bande-son facultative. Gardez les images clés séparées des références combinées."
       },
       {
-        "title": "Références vers vidéo",
-        "body": "Combinez jusqu’à 9 images, 3 vidéos et 3 audios, dans la limite de 12 références uniques."
+        "title": "Références-vers-vidéo",
+        "body": "Utilisez jusqu’à 9 images, 3 vidéos et 3 extraits audio, dans une limite de 12 références uniques. L’audio seul est accepté ; les vidéos et l’audio ont chacun une limite cumulée de 15 secondes."
       },
       {
-        "title": "Direction audio native",
-        "body": "Écrivez directement dans le prompt les dialogues, ambiances et sons synchronisés."
+        "title": "Audio natif ou bande-son fournie",
+        "body": "Utilisez une bande-son en mode texte ou image, ou des références audio en mode références. Décrivez dialogues, ambiance et sons synchronisés dans le prompt."
       }
     ],
     "pricingCopy": {
@@ -225,7 +225,7 @@
     },
     "meta": {
       "title": "MiniMax H3 : générateur vidéo IA 4K, références et audio",
-      "description": "Générez des vidéos MiniMax H3 de 5 à 15 secondes en 768P, 2K ou 4K depuis du texte, des images ou des références image, vidéo et audio."
+      "description": "Générez des vidéos MiniMax H3 de 5 à 15 secondes en 480P, 768P, 2K ou 4K depuis un texte, des images ou des références, avec audio natif ou bande-son."
     }
   },
   "prompting": {

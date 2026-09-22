@@ -18,6 +18,7 @@
     "start": "node mock-server.js",
     "healthcheck": "tsx scripts/healthcheck.ts",
     "sanitize:jobs": "node scripts/sanitize-jobs.js",
+    "deployment:check": "node scripts/check-production-alignment.mjs",
     "lint:exposure": "node scripts/check-public-exposure.mjs",
     "mcp:client:check": "tsx --tsconfig frontend/tsconfig.json --test tests/mcp-instructions.test.ts tests/mcp-result-serialization.test.ts tests/mcp-tools-contract.test.ts tests/mcp-transport-contract.test.ts tests/mcp-reference-upload-app.test.ts tests/mcp-oauth-principal.test.ts tests/mcp-plugin-contract.test.ts tests/mcp-conversation-evals.test.ts tests/mcp-tool-selection-eval.test.ts tests/mcp-topup-handoff.test.ts tests/mcp-confirm-generation.test.ts tests/mcp-generation-recovery-tools.test.ts tests/mcp-montage-tools-contract.test.ts tests/mcp-studio-montage-tools-contract.test.ts && npm --prefix frontend run qa:mcp-tool-selection",
     "seo:machine:check": "tsx --tsconfig frontend/tsconfig.json scripts/llms-guard.ts && tsx --tsconfig frontend/tsconfig.json --test tests/p1-llms-discovery.test.ts tests/marketing-jsonld-schema-audit.test.ts tests/mcp-seo-review-remediation.test.ts tests/jsonld-serialization.test.ts tests/mcp-model-recommendations.test.ts tests/product-schema-customer-price.test.ts tests/product-schema-visible-offer.test.ts tests/h3-max-public-capability-truth.test.ts tests/docs-product-truth.test.ts tests/markdown-content-cache.test.ts tests/editorial-jsonld-ssr.test.ts",

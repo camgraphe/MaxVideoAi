@@ -261,3 +261,11 @@ resolver remains the offline baseline interface. The offer name states the same
 scenario as the visible line; it is not labeled a minimum price. Physical return
 destinations are omitted for digital generations; sales-country applicability and
 the existing consumed-generation policy are unchanged.
+
+## Multimodal reference cost budgets
+
+Wan 3 and Prime use actual owned input-video duration plus requested output duration as the provider cost basis. The browser-safe `wan3-pricing.ts` owner augments both public and billing facts using the existing resolved provider rate; canonical commercial policy remains the only margin owner. It preserves output duration in `base.seconds`, itemizes input video separately, and records input/output/billable duration metadata. Site preflight, generation, MCP preparation and confirmation derive these facts from owned media, never client duration claims. Source videos are deduplicated by URL and missing durations reject the quote. At 720p, a 10-second source plus 5-second output gives provider facts of $1.50/$2.10 and current standard customer quotes of $1.95/$2.73 for Wan 3/Prime. No-video scenarios retain their existing prices. See [Alibaba pricing ownership](alibaba-model-studio-provider.md#pricing-and-observability).
+
+H3 Max reference generation uses a versioned conservative supplier-cost budget from verified owned media, then the existing canonical commercial policy. The fixed customer quote is authoritative; estimated supplier tokens are never presented as an invoice. See [multimodal reference parity](multimodal-reference-parity.md) for the dated authorization, formula, examples and limitations.
+
+The same provider review adds H3 480P and H3 Max 1080P. Seven exact public projection changes are recorded in `tests/fixtures/h3-capability-pricing-change-2026-09-22.json`, preserving the historical fixture. H3's 10-second estimator entry is now $0.65 at 480P, its 768P pricing-hub entry is $0.78, and H3 Max's newly available 1080P scenarios are $1.67 for eight seconds or $2.08 for ten seconds. These apply the existing 30% markup to reviewed regular supplier rates; reference surcharges are additional and quoted from the selected media. The baseline guard validates each previous row and every field of each replacement.

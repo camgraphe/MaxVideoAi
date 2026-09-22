@@ -10,7 +10,8 @@ export const MINIMAX_H3_ENDPOINTS = {
 } as const;
 
 export const MINIMAX_H3_DURATION_OPTIONS = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
-export const MINIMAX_H3_RESOLUTIONS = ['768P', '2K', '4K'] as const;
+export const MINIMAX_H3_RESOLUTIONS = ['480P', '768P', '2K', '4K'] as const;
+export const MINIMAX_H3_PROMPT_EXPANSION_MODES = ['disabled', 'fast', 'balanced', 'quality'] as const;
 export const MINIMAX_H3_FIXED_ASPECT_RATIOS = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'] as const;
 export const MINIMAX_H3_ASPECT_RATIOS = [
   ...MINIMAX_H3_FIXED_ASPECT_RATIOS,
@@ -47,8 +48,7 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
     videoMaxDurationSec: 15,
     videoCodecs: [...VIDEO_FORMATS],
     audioMaxMB: 15,
-    audioMaxDurationSec: 15,
-    promptMaxChars: 7000,
+    promptMaxChars: 50_000,
     promptMaxCharsSource: 'official',
   },
   inputSchema: {
@@ -61,27 +61,26 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         modes: ['t2v', 'i2v', 'ref2v'],
         requiredInModes: ['t2v', 'i2v', 'ref2v'],
       },
+    ],
+    optional: [
       {
         id: 'image_url',
         type: 'image',
         label: 'Start image',
-        description: 'Required first frame for image-to-video.',
+        description: 'First frame; supply a start image, an end image, or both.',
         modes: ['i2v'],
-        requiredInModes: ['i2v'],
-        minCount: 1,
+        minCount: 0,
         maxCount: 1,
         maxSizeMB: 30,
         acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
         acceptedFileExtensions: [...IMAGE_FORMATS],
         source: 'either',
       },
-    ],
-    optional: [
       {
         id: 'end_image_url',
         type: 'image',
         label: 'End image',
-        description: 'Optional final frame for an image-to-video transition.',
+        description: 'Final frame; may be supplied alone or with a start image.',
         modes: ['i2v'],
         minCount: 0,
         maxCount: 1,
@@ -123,7 +122,7 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         id: 'reference_audio_urls',
         type: 'audio',
         label: 'Reference audio (up to 3)',
-        description: 'Audio references paired with at least one image or video; 15 seconds combined maximum.',
+        description: 'Audio references, alone or with images and videos; 15 seconds combined maximum.',
         modes: ['ref2v'],
         minCount: 0,
         maxCount: 3,
@@ -140,6 +139,26 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         ],
         acceptedFileExtensions: [...AUDIO_FORMATS],
         source: 'either',
+      },
+      {
+        id: 'target_audio_url',
+        type: 'audio',
+        label: 'Soundtrack',
+        description: 'Use this audio as the soundtrack. It is trimmed or padded to the video duration, without changing playback speed.',
+        modes: ['t2v', 'i2v'],
+        minCount: 0,
+        maxCount: 1,
+        minDurationSec: 2,
+        maxSizeMB: 15,
+        source: 'either',
+      },
+      {
+        id: 'seed', type: 'number', label: 'Seed',
+        modes: ['t2v', 'i2v', 'ref2v'], min: 0, max: 2147483647, step: 1,
+      },
+      {
+        id: 'prompt_expansion_mode', type: 'enum', label: 'Prompt expansion',
+        modes: ['t2v', 'i2v', 'ref2v'], values: [...MINIMAX_H3_PROMPT_EXPANSION_MODES], default: 'balanced',
       },
       {
         id: 'duration',
@@ -163,8 +182,16 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         id: 'aspect_ratio',
         type: 'enum',
         label: 'Aspect ratio',
+        modes: ['t2v'],
+        values: [...MINIMAX_H3_FIXED_ASPECT_RATIOS],
+        default: '16:9',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
         description: 'Auto uses Fal adaptive framing.',
-        modes: ['t2v', 'ref2v'],
+        modes: ['ref2v'],
         values: [...MINIMAX_H3_ASPECT_RATIOS],
         default: '16:9',
       },
@@ -186,7 +213,10 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
       maxAudioSizeMB: 15,
       maxCombinedVideoDurationSec: 15,
       maxCombinedAudioDurationSec: 15,
-      referenceAudioRequiresVisual: true,
+      combinedDurationModes: ['ref2v'],
+      ownedAssetModes: ['t2v', 'i2v', 'ref2v'],
+      atLeastOneReferenceField: ['image_url', 'end_image_url', 'reference_image_urls', 'reference_video_urls', 'reference_audio_urls'],
+      referenceAudioRequiresVisual: false,
     },
   },
   pricingDetails: {
@@ -194,7 +224,8 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
     perSecondCents: {
       default: 13,
       byResolution: {
-        '768P': 8,
+        '480P': 5,
+        '768P': 6,
         '2K': 13,
         '4K': 16,
       },
@@ -204,14 +235,15 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.13,
     byResolution: {
-      '768P': 0.08,
+      '480P': 0.05,
+      '768P': 0.06,
       '2K': 0.13,
       '4K': 0.16,
     },
     currency: 'USD',
     notes: 'Provider cost varies by resolution; reference images above five add USD 0.08 each.',
   },
-  updatedAt: '2026-08-08T00:00:00Z',
+  updatedAt: '2026-09-22T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'minimax',
@@ -246,10 +278,10 @@ export const MINIMAX_H3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           modes: ['t2v'],
           duration: { options: [...MINIMAX_H3_DURATION_OPTIONS], default: 10 },
           resolution: [...MINIMAX_H3_RESOLUTIONS],
-          aspectRatio: [...MINIMAX_H3_ASPECT_RATIOS],
+          aspectRatio: [...MINIMAX_H3_FIXED_ASPECT_RATIOS],
           fps: 24,
           audioToggle: false,
-          notes: 'Text-to-video with native stereo audio and fixed or Auto framing.',
+          notes: 'Text-to-video with native stereo audio or an imposed soundtrack, and fixed framing.',
         },
       },
       {
@@ -263,7 +295,7 @@ export const MINIMAX_H3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: [...IMAGE_FORMATS],
           maxUploadMB: 30,
           audioToggle: false,
-          notes: 'Animate one start image with an optional end image; framing follows the source image and audio is generated natively.',
+          notes: 'Animate a start image, end image, or both; framing follows the supplied image, with native audio or an imposed soundtrack.',
         },
       },
       {
@@ -314,7 +346,7 @@ export const MINIMAX_H3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         question: 'Which H3 reference inputs can I combine?',
-        answer: 'Use up to 9 images, 3 videos, and 3 audio clips, with 12 unique references total. Audio references must be paired with an image or video.',
+        answer: 'Use up to 9 images, 3 videos, and 3 audio clips, with 12 unique references total. Audio references can be used alone or combined with visual references.',
       },
     ],
     promptExample: 'An original aviator walks through a cloud observatory at dawn, controlled handheld camera, linen coat moving in the wind, soft footsteps and distant machinery.',

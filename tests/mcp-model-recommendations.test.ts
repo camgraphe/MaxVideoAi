@@ -102,7 +102,7 @@ test('Sora remains historical by exact choice and cannot generate or be recommen
   }
 });
 
-test('H3 Max reviewed product guidance remains grounded in its executable text-to-video controls', async () => {
+test('H3 Max recommendations derive executable image and reference modes from the shared runtime', async () => {
   const catalogDeps: AgentModelCatalogDeps = {
     ...realRegistryDeps(),
     isModeExecutable: (engine, mode) => resolveAgentGenerationModeExecutability(engine, mode, {
@@ -114,16 +114,16 @@ test('H3 Max reviewed product guidance remains grounded in its executable text-t
   };
   const details = await getAgentModelDetails('minimax-h3-max', catalogDeps);
   assert.equal(details.lifecycle, 'current');
-  assert.deepEqual(details.modes.map((mode) => mode.mode), ['t2v']);
+  assert.deepEqual(details.modes.map((mode) => mode.mode), ['t2v', 'i2v', 'ref2v']);
   assert.equal(details.modes[0].audio, 'always_generated');
-  assert.deepEqual(details.modes[0].resolutions, ['480P', '768P']);
+  assert.deepEqual(details.modes[0].resolutions, ['480P', '768P', '1080P']);
   assert.ok(details.modes[0].settings.some((setting) => setting.key === 'promptExpansionMode'));
-  assert.equal(details.guidance?.bestFor.includes('reference_guided'), false);
+  assert.equal(details.guidance?.bestFor.includes('reference_guided'), true);
   assert.equal(details.links.examples, 'https://maxvideoai.com/examples/hailuo');
   const recommendation = await recommendAgentModels({ id: 'minimax-h3-max', useCase: 'product_video' }, catalogDeps);
   assert.equal(recommendation.recommendations[0]?.model.id, 'minimax-h3-max');
   assert.ok(recommendation.recommendations[0].reasons.some((reason) => reason.includes('Reviewed guidance')));
-  assert.deepEqual((await recommendAgentModels({ id: 'minimax-h3-max', mode: 'ref2v' }, catalogDeps)).recommendations, []);
+  assert.equal((await recommendAgentModels({ id: 'minimax-h3-max', mode: 'ref2v' }, catalogDeps)).recommendations[0]?.model.id, 'minimax-h3-max');
 });
 
 test('recommendations keep explicit capabilities as hard constraints and cap stable ties at three', async () => {

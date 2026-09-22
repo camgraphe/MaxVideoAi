@@ -1,3 +1,5 @@
+import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
+import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
 import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/normalized-generation-attachment-validation';
 import {
@@ -51,7 +53,9 @@ function hasClientDeclaredMediaPricingFacts(request: PreflightRequest): boolean 
     && (
       Object.prototype.hasOwnProperty.call(extra, 'referenceImageCount')
       || Object.prototype.hasOwnProperty.call(extra, 'inputAudioDurationSec')
+      || Object.prototype.hasOwnProperty.call(extra, 'inputVideoDurationSec')
       || Object.prototype.hasOwnProperty.call(extra, 'verifiedReferenceTokenCount')
+      || Object.prototype.hasOwnProperty.call(extra, 'referenceTokenBudget')
     )
   );
 }
@@ -152,10 +156,13 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
+  const needsReferenceTokenBudget = engine.id === 'minimax-h3-max' && request.mode === 'ref2v';
+  const needsWanVideoDuration = (engine.id === 'wan-3' || engine.id === 'wan-3-prime')
+    && (request.mode === 'v2v' || request.mode === 'extend' || request.inputs?.some((reference) => reference.kind === 'video') === true);
   const needsReferenceImageCount = requiresReferenceImageCount(engine, request);
   const needsInputAudioDuration = requiresInputAudioDuration(engine, request);
-  const needsTrustedOwnedMedia = requiresTrustedOwnedMedia(engine, request);
-  if (!needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia) {
+  const needsTrustedOwnedMedia = requiresTrustedOwnedMedia(engine, request) && Boolean(request.inputs?.length || request.mode !== 't2v');
+  if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration) {
     return computeConfiguredPreflightFn(request, { resolvedEngine: engine, bootstrap: false });
   }
   const userId = input.userId === undefined
@@ -192,7 +199,27 @@ export async function resolveMediaAwarePreflight(
     return mediaPricingFailure(code, message);
   }
 
+  let referenceTokenBudget: number | undefined;
+  let inputVideoDurationSec: number | undefined;
+  if (needsWanVideoDuration) {
+    try {
+      inputVideoDurationSec = getWan3InputVideoDurationSec(processed.trustedMediaReferences ?? []);
+      if (inputVideoDurationSec <= 0) throw new Error('Missing owned video metadata.');
+    } catch {
+      return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Verified video duration is required to calculate this price.');
+    }
+  }
+  if (needsReferenceTokenBudget) {
+    if (!processed.trustedMediaReferences?.length) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Add owned references to calculate this price.');
+    try {
+      referenceTokenBudget = calculateMinimaxH3MaxReferenceTokenBudget({ resolution: request.resolution ?? '768P', durationSec: request.durationSec, references: processed.trustedMediaReferences });
+    } catch {
+      return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Reference metadata is required to calculate this price.');
+    }
+  }
   const trustedMediaPricingFacts: TrustedPreflightMediaPricingFacts = {
+    ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
+    ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
     ...(needsReferenceImageCount
       ? { referenceImageCount: processed.references.normalizedReferenceImages.length }
       : {}),

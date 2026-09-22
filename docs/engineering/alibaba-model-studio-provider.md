@@ -78,7 +78,11 @@ A provider success is not an application completion. The output video is first c
 
 ## Pricing and observability
 
-Customer quotes continue to come from the canonical MaxVideoAI pricing pipeline. They are not derived from the Alibaba provider-cost calculation. The attempt ledger stores a catalog-rate provider-cost estimate separately for margin and operational reporting:
+Customer quotes come from the canonical MaxVideoAI pricing pipeline. For Wan 3 and Prime, `wan3-pricing.ts` adds verified input-video seconds to output cost at the same resolved per-second rate, before the existing commercial policy applies. This follows [Alibaba's input-plus-output billing rule](https://www.alibabacloud.com/help/en/model-studio/model-pricing), including video-bearing reference mode, editing and extension. Owned metadata supplies input duration; repeated URLs count once, using the largest persisted duration when aliases disagree. Missing video duration fails closed. The output base remains the requested output duration and an `input_video_duration` addon itemizes the source cost. Explicit provider-rate overrides remain authoritative.
+
+The [Wan API duration contract](https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-api-reference) caps input videos at 15 seconds combined and input plus output at 30 seconds whenever videos are supplied, including reference mode. Quotes and generation enforce that contract before billing. Images, audio, document and webpage references add no video-duration charge.
+
+The attempt ledger separately stores a catalog-rate provider-cost estimate for margin and operational reporting:
 
 - Wan 3 and Wan 3 Prime count source-video plus generated duration where applicable;
 - HappyHorse 1.1 counts generated output duration;

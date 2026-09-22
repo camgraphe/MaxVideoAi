@@ -215,6 +215,21 @@ If a test asserts that a file should import a helper or stay under a line thresh
 
 ## Verification
 
+### Production delivery (reviewed 2026-09-22)
+
+Read `docs/deployment/github-vercel.md` before a production merge, deployment,
+promotion, rollback, or domain reassignment. The normal path is an isolated clean
+branch → GitHub PR → passing Quality CI → merge to `main` → Vercel Git deployment.
+Run `git fetch origin main` and `pnpm deployment:check` from the committed candidate
+before merging. Stop the release if deployed source is missing from GitHub or the
+candidate omits current `main`; reconcile it first and coordinate concurrent tasks.
+Never upload the shared Desktop checkout or copy its uncommitted files to production.
+A generic request to deploy does not authorize bypassing this delivery policy with
+`vercel --prod`, `--prebuilt`, promotion, or manual aliases. An emergency exception
+must identify the published source commit, exact action, validation and rollback.
+After deployment, verify both `maxvideoai.com` and `api.maxvideoai.com` against the
+merged commit; a successful build alone does not establish domain alignment.
+
 Use focused checks first:
 
 ```bash

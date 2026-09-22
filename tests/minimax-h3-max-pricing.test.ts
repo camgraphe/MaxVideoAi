@@ -21,7 +21,7 @@ test('MiniMax H3 Max uses durable post-promotion output rates for normal modes',
 test('MiniMax H3 Max reference pricing includes 4096 pooled tokens before charging excess tokens', () => {
   assert.equal(calculateMinimaxH3MaxProviderCostCents({
     mode: 'ref2v', durationSec: 5, resolution: '480P', verifiedReferenceTokenCount: 4_096,
-  }), 40);
+  }), 25);
 
   const fractional = calculateMinimaxH3MaxProviderCost({
     mode: 'ref2v',
@@ -33,6 +33,7 @@ test('MiniMax H3 Max reference pricing includes 4096 pooled tokens before chargi
     mode: 'ref2v',
     durationSec: 5,
     resolution: '768P',
+    referencePricingBasis: 'verified-provider-tokens',
     ratePerSecondUsd: 0.08,
     outputSubtotalUsd: 0.4,
     verifiedReferenceTokenCount: 4_597,

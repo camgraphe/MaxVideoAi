@@ -5,7 +5,7 @@ export const minimaxH3MaxTemplateConfig: ModelPageTemplateConfig = {
   intent: 'production',
   hero: {
     eyebrow: 'H3 MAX FAST PRODUCTION ROUTE',
-    subtitleHighlightTerms: ['5–15 seconds', 'up to 768P', 'native audio'],
+    subtitleHighlightTerms: ['5–15 seconds', 'up to 1080P', 'native audio'],
     primaryCtaHref: '/app?engine=minimax-h3-max',
     secondaryCtaHref: '/examples/hailuo',
     quickLinks: [

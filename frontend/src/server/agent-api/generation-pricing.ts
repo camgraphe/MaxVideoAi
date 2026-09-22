@@ -10,6 +10,9 @@ import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { getLumaRay2DurationInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
+import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
+import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
+import { getWan3InputVideoDurationSec, isWan3EngineId } from '@/lib/wan3-pricing';
 import {
   estimateImageGeneration,
   type ImageEstimateInput,
@@ -165,6 +168,30 @@ function canonicalInputAudioDurationSec(
   return requiredPositiveInteger(request.settings, 'durationSec');
 }
 
+function canonicalInputVideoDurationSec(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): number | undefined {
+  if (!isWan3EngineId(request.engineId)) return undefined;
+  if (request.mode !== 'ref2v' && request.mode !== 'v2v' && request.mode !== 'extend') return 0;
+  const references = request.references.flatMap((reference) => {
+    if (reference.kind === 'https') {
+      if (reference.mediaKind === 'video') throw new Error('Owned video metadata is required for Wan reference pricing.');
+      return [];
+    }
+    const matches = context.resolvedReferences?.filter((resolved) =>
+      resolved.assetId === reference.assetId && resolved.role === reference.role && resolved.slot === reference.slot);
+    if (matches?.length !== 1) throw new Error('Each Wan reference must have one verified metadata record.');
+    const resolved = matches[0]!;
+    return [{ kind: resolved.mediaKind, url: resolved.storageUrl, durationSec: resolved.durationSec }];
+  });
+  const inputVideoDurationSec = getWan3InputVideoDurationSec(references);
+  if ((request.mode === 'v2v' || request.mode === 'extend') && inputVideoDurationSec <= 0) {
+    throw new Error('A trusted source video duration is required for Wan pricing.');
+  }
+  return inputVideoDurationSec;
+}
+
 function canonicalImageReferences(request: CanonicalGenerationRequest) {
   return request.references.filter((reference) => reference.role !== 'mask');
 }
@@ -221,10 +248,42 @@ function canonicalVideoTrustedMediaPricingFacts(
   context: GenerationPricingReferenceContext,
 ): TrustedPreflightMediaPricingFacts {
   const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
+  const inputVideoDurationSec = canonicalInputVideoDurationSec(request, context);
+  const referenceTokenBudget = canonicalReferenceTokenBudget(request, context);
   return {
     referenceImageCount: canonicalReferenceImageCount(request, context),
     ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
+    ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
+    ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
   };
+}
+
+function canonicalReferenceTokenBudget(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): number | undefined {
+  if (!isMinimaxH3MaxEngineId(request.engineId) || request.mode !== 'ref2v') return undefined;
+  if (!context.resolvedReferences || !request.references.length) {
+    throw new Error('Owned reference metadata is required for the reference cost budget.');
+  }
+  const references = request.references.map((reference) => {
+    if (reference.kind !== 'asset') {
+      throw new Error('Owned reference metadata is required for the reference cost budget.');
+    }
+    const matches = context.resolvedReferences!.filter((resolved) =>
+      resolved.assetId === reference.assetId && resolved.role === reference.role && resolved.slot === reference.slot);
+    if (matches.length !== 1) throw new Error('Each reference must have one verified metadata record.');
+    const resolved = matches[0]!;
+    return {
+      kind: resolved.mediaKind, url: resolved.storageUrl,
+      width: resolved.width, height: resolved.height, durationSec: resolved.durationSec,
+    };
+  });
+  return calculateMinimaxH3MaxReferenceTokenBudget({
+    resolution: requiredString(request.settings, 'resolution'),
+    durationSec: requiredPositiveInteger(request.settings, 'durationSec'),
+    references,
+  });
 }
 
 function validatePricingResult(
@@ -349,6 +408,8 @@ export async function priceCanonicalGenerationInExecutor(
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
       inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
+      inputVideoDurationSec: canonicalInputVideoDurationSec(request, dependencies),
+      referenceTokenBudget: canonicalReferenceTokenBudget(request, dependencies),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: isLumaRay2EngineId(engine.id)

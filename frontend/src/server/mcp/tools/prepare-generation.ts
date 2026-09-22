@@ -28,6 +28,13 @@ const canonicalSettingsSchema = z.object({
   durationSec: z.number().int().min(1).max(86_400).nullable().default(null).describe(
     'For video modes, use the exact key settings.durationSec for the requested duration in seconds; never send settings.duration. Send null when not applicable.',
   ),
+  documentUrl: z.string().url().max(4_096).nullable().default(null).describe(
+    'Public HTTPS document reference; use only when reported by get_model_details. Mutually exclusive with webpageUrl and requires prompt expansion.',
+  ),
+  webpageUrl: z.string().url().max(4_096).nullable().default(null).describe(
+    'Public HTTPS webpage reference without login; use only when reported by get_model_details. Mutually exclusive with documentUrl and requires prompt expansion.',
+  ),
+  enablePromptExpansion: z.boolean().nullable().default(null),
   resolution: z.string().trim().min(1).max(64).nullable().default(null).describe(
     'Use one resolution supported by the selected mode from get_model_details, or null when not applicable.',
   ),
@@ -75,7 +82,7 @@ const canonicalSettingsSchema = z.object({
     'Use only when get_model_details reports a background setting for the selected image model.',
   ),
   outputFormat: z.string().trim().min(1).max(64).nullable().default(null),
-  promptExpansionMode: z.enum(['balanced', 'quality']).nullable().default(null).describe(
+  promptExpansionMode: z.enum(['disabled', 'balanced', 'quality']).nullable().default(null).describe(
     'Use only when get_model_details reports the promptExpansionMode setting for the selected mode.',
   ),
   quality: z.string().trim().min(1).max(64).nullable().default(null),

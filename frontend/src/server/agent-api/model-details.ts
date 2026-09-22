@@ -34,6 +34,7 @@ import { toEngineGenerationMode } from './generation-mode-aliases';
 import { getRuntimeModelById, type RuntimeModelEntry } from '@/config/model-runtime';
 import type { AgentModelAccessContext } from './model-catalog';
 import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
+import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
 
 export type AgentModelDetailsDeps = AgentModelCatalogDeps & {
   getGuidance?(engineId: string): AgentModelGuidance | null;
@@ -104,9 +105,13 @@ function conditionalOwnedReferenceAsset(
 function projectReferenceDuration(
   engine: EngineCaps,
   field: EngineInputField,
+  mode: AgentGenerationMode,
 ): AgentModelReferenceFieldDetails['durationSec'] | null {
   if (field.type !== 'video' && field.type !== 'audio') return null;
-  const combinedMax = field.type === 'video'
+  const combinedModes = engine.inputSchema?.constraints?.combinedDurationModes;
+  const combinedLimitsApply = !Array.isArray(combinedModes)
+    || combinedModes.includes(toEngineGenerationMode(engine.id, mode));
+  const combinedMax = !combinedLimitsApply ? undefined : field.type === 'video'
     ? engine.inputSchema?.constraints?.maxCombinedVideoDurationSec
     : engine.inputSchema?.constraints?.maxCombinedAudioDurationSec;
   if (
@@ -133,7 +138,8 @@ function projectReferences(
     if (!isReferenceField(field) || !applicableToMode(field, mode, engine.id)) return [];
     const roles = canonicalRolesForReferenceField(field.id, mode);
     const assetRequiredWhen = conditionalOwnedReferenceAsset(roles, mode, engine.id);
-    const durationSec = projectReferenceDuration(engine, field);
+    const durationSec = projectReferenceDuration(engine, field, mode);
+    const mediaConstraint = resolveEngineMediaFieldConstraint({ engine, field });
     return [Object.freeze({
       type: field.type,
       roles: Object.freeze([...roles]),
@@ -141,6 +147,11 @@ function projectReferences(
       ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),
       ...(assetRequiredWhen ? { assetRequiredWhen } : {}),
       ...(durationSec ? { durationSec } : {}),
+      ...(mediaConstraint.maxSizeMB ? { maxSizeMB: mediaConstraint.maxSizeMB } : {}),
+      ...(mediaConstraint.acceptedMimeTypes.length
+        ? { acceptedMimeTypes: Object.freeze([...mediaConstraint.acceptedMimeTypes]) } : {}),
+      ...(mediaConstraint.acceptedFileExtensions.length
+        ? { acceptedFileExtensions: Object.freeze([...mediaConstraint.acceptedFileExtensions]) } : {}),
       required: field.requiredInModes
         ? field.requiredInModes.includes(toEngineGenerationMode(engine.id, mode))
         : required,
@@ -148,6 +159,20 @@ function projectReferences(
       max: field.maxCount ?? null,
     })];
   }));
+}
+
+function projectReferenceRequirement(engine: EngineCaps, mode: AgentGenerationMode): AgentModelModeDetails['referenceRequirement'] | undefined {
+  if (mode !== 'i2v' && mode !== 'ref2v') return undefined;
+  const requiredFields = engine.inputSchema?.constraints?.atLeastOneReferenceField;
+  if (!Array.isArray(requiredFields)) return undefined;
+  const alternatives = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])]
+    .filter((field) => requiredFields.includes(field.id) && applicableToMode(field, mode, engine.id))
+    .flatMap((field): Array<{ type: 'image' | 'video' | 'audio'; roles: readonly CanonicalGenerationReferenceRole[] } | { setting: string }> => {
+      if (isReferenceField(field)) return [{ type: field.type, roles: Object.freeze([...canonicalRolesForReferenceField(field.id, mode)]) }];
+      const setting = CANONICAL_SETTING_BY_FIELD_ID[field.id];
+      return setting ? [{ setting }] : [];
+    });
+  return alternatives.length ? Object.freeze({ min: 1, alternatives: Object.freeze(alternatives.map((alternative) => Object.freeze(alternative))) }) : undefined;
 }
 
 function projectGuidance(
@@ -212,6 +237,9 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   cfg_scale: 'cfgScale',
   context: 'contextSec',
   edit_depth_blur: 'editDepthBlur',
+  file_url: 'documentUrl',
+  web_url: 'webpageUrl',
+  enable_prompt_expansion: 'enablePromptExpansion',
   edit_face: 'editFace',
   edit_keyframe_indexes: 'editKeyframeIndexes',
   edit_normals_augmentation: 'editNormalsAugmentation',
@@ -311,6 +339,7 @@ function projectMode(
     : sourceDerivedVideo || !caps.resolution?.length
       ? candidate.engine.resolutions.filter((value) => value !== 'auto').slice(0, 1)
       : [];
+  const referenceRequirement = projectReferenceRequirement(candidate.engine, mode);
   return Object.freeze({
     mode,
     durationPolicy: mode === 'a2v'
@@ -334,6 +363,7 @@ function projectMode(
     }),
     settings: projectSettings(candidate.engine, mode),
     references: projectReferences(candidate.engine, mode),
+    ...(referenceRequirement ? { referenceRequirement } : {}),
   });
 }
 

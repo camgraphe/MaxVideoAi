@@ -33,31 +33,41 @@
       "reference_guided"
     ],
     "considerations": [
-      "Use the current model details to confirm the settings required for the brief."
+      "Text, image and mixed-reference generation are available on the website and through MCP. Choose 5–15 seconds at 480P, 768P, 2K or 4K. Review the current quote before generation.",
+      "Use a start image, an end image, or both in image mode; keep frame inputs separate from mixed references.",
+      "Use target_audio_url as a soundtrack in text or image mode. Use reference_audio_urls in reference mode; audio-only references are supported.",
+      "Use up to 9 images, 3 videos and 3 audio clips, with 12 unique references total. Video and audio each have a 15-second combined limit."
     ],
     "evidenceUrls": [
       "https://maxvideoai.com/models/minimax-h3",
       "https://maxvideoai.com/examples/hailuo"
     ],
-    "reviewedAt": "2026-09-21"
+    "reviewedAt": "2026-09-22"
   },
   {
     "engineId": "minimax-h3-max",
     "strengths": [
-      "Short text-directed product and social-video shots with native audio.",
-      "Balanced or quality prompt expansion for 480P and 768P production."
+      "Text, frame and mixed-reference direction for product and social-video shots with native audio.",
+      "Balanced or quality prompt expansion for 480P, 768P and 1080P production."
     ],
-    "bestFor": ["product_video", "social_video", "native_audio"],
+    "bestFor": [
+      "product_video",
+      "social_video",
+      "native_audio",
+      "reference_guided"
+    ],
     "considerations": [
-      "Text-to-video is currently available on the website and through MCP; image and mixed-reference modes are not enabled.",
-      "Choose MiniMax H3 when 2K or 4K delivery is required."
+      "Text, image and mixed-reference generation are available on the website and through MCP. Choose 5–15 seconds at 480P, 768P or 1080P. Review the current quote before generation.",
+      "Use a start image, an end image, or both in image mode; keep frame inputs separate from mixed references.",
+      "Use target_audio_url as a soundtrack in text or image mode. Use reference_audio_urls in reference mode; audio-only references are supported.",
+      "Use up to 9 images, 3 videos and 3 audio clips, with 12 unique references total. Video and audio each have a 15-second combined limit. Choose MiniMax H3 for 2K or 4K delivery."
     ],
     "evidenceUrls": [
       "https://maxvideoai.com/models/minimax-h3-max",
       "https://maxvideoai.com/ai-video-engines/minimax-h3-vs-minimax-h3-max",
       "https://maxvideoai.com/examples/hailuo"
     ],
-    "reviewedAt": "2026-09-21"
+    "reviewedAt": "2026-09-22"
   },
   {
     "engineId": "gemini-omni-flash",
@@ -124,19 +134,49 @@
   },
   {
     "engineId": "wan-3",
-    "strengths": ["Reference-guided motion and subject consistency across image and video briefs."],
-    "bestFor": ["reference_guided", "cinematic_story"],
-    "considerations": ["Match each reference role to the fields shown for the selected mode."],
-    "evidenceUrls": ["https://maxvideoai.com/models/wan-3"],
-    "reviewedAt": "2026-09-01"
+    "strengths": [
+      "Reference-guided motion and subject consistency across image and video briefs.",
+      "Text, frame and mixed-reference generation, plus editing and extension of a source video."
+    ],
+    "bestFor": [
+      "reference_guided",
+      "cinematic_story",
+      "source_edit",
+      "native_audio"
+    ],
+    "considerations": [
+      "Image mode requires a start image and accepts an optional end image; do not mix these frames with reference-mode inputs.",
+      "Reference mode accepts images, videos, audio, an eligible document URL or a public webpage URL. Audio-only references are supported; document and webpage URLs cannot be combined.",
+      "Edit or extend one source video with optional image and audio references. Source and generated duration together must not exceed 30 seconds.",
+      "Choose 2–30 output seconds and 480p, 720p or 1080p, within the selected workflow limits. Review the current quote before generation."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/wan-3"
+    ],
+    "reviewedAt": "2026-09-22"
   },
   {
     "engineId": "wan-3-prime",
-    "strengths": ["Reference-guided premium shots with controlled composition and motion."],
-    "bestFor": ["reference_guided", "product_video"],
-    "considerations": ["Use only the reference count and media types listed for the selected mode."],
-    "evidenceUrls": ["https://maxvideoai.com/models/wan-3-prime"],
-    "reviewedAt": "2026-09-01"
+    "strengths": [
+      "Reference-guided premium shots with controlled composition and motion.",
+      "Text, frame and mixed-reference generation, plus editing and extension of a source video."
+    ],
+    "bestFor": [
+      "reference_guided",
+      "product_video",
+      "source_edit",
+      "native_audio"
+    ],
+    "considerations": [
+      "Image mode requires a start image and accepts an optional end image; do not mix these frames with reference-mode inputs.",
+      "Reference mode accepts images, videos, audio, an eligible document URL or a public webpage URL. Audio-only references are supported; document and webpage URLs cannot be combined.",
+      "Edit or extend one source video with optional image and audio references. Source and generated duration together must not exceed 30 seconds.",
+      "Choose 2–30 output seconds and 480p, 720p or 1080p, within the selected workflow limits. Review the current quote before generation."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/wan-3-prime"
+    ],
+    "reviewedAt": "2026-09-22"
   },
   {
     "engineId": "ltx-2-5-fast",
