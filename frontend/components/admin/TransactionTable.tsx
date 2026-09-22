@@ -39,6 +39,14 @@ const TYPE_LABEL: Record<AdminTransactionRecord['type'], string> = {
   tax: 'Tax',
 };
 
+const TYPE_ACCENT: Record<AdminTransactionRecord['type'], { edge: string; wash: string; dot: string }> = {
+  charge: { edge: 'border-l-sky-400', wash: 'bg-sky-500/10', dot: 'bg-sky-500' },
+  topup: { edge: 'border-l-emerald-400', wash: 'bg-emerald-500/10', dot: 'bg-emerald-500' },
+  refund: { edge: 'border-l-amber-400', wash: 'bg-amber-500/10', dot: 'bg-amber-500' },
+  discount: { edge: 'border-l-violet-400', wash: 'bg-violet-500/10', dot: 'bg-violet-500' },
+  tax: { edge: 'border-l-slate-400', wash: 'bg-slate-500/10', dot: 'bg-slate-500' },
+};
+
 export function AdminTransactionTable({
   initialTransactions,
   filters,
@@ -135,7 +143,7 @@ export function AdminTransactionTable({
           <tbody className="divide-y divide-hairline">
             {visibleRows.map((row) => (
               <tr key={row.receiptId} className={clsx(selectedId === String(row.receiptId) && 'bg-brand/5')}>
-                <td className="whitespace-nowrap px-3 py-2.5">
+                <td className={clsx('whitespace-nowrap border-l-2 px-3 py-2.5', TYPE_ACCENT[row.type].edge)}>
                   <button
                     type="button"
                     onClick={() => setSelectedId(String(row.receiptId))}
@@ -158,7 +166,17 @@ export function AdminTransactionTable({
                     'Unknown account'
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-sm">{TYPE_LABEL[row.type]}</td>
+                <td className="px-3 py-2.5 text-sm">
+                  <span
+                    className={clsx(
+                      'inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-text-primary',
+                      TYPE_ACCENT[row.type].wash,
+                    )}
+                  >
+                    <span aria-hidden="true" className={clsx('h-2 w-2 rounded-full', TYPE_ACCENT[row.type].dot)} />
+                    {TYPE_LABEL[row.type]}
+                  </span>
+                </td>
                 <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
                   {formatCurrency(row.amountCents, row.currency)}
                 </td>
@@ -186,7 +204,7 @@ export function AdminTransactionTable({
             {!visibleRows.length ? (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-text-secondary">
-                  No transactions match these filters. Try All time or another search.
+                  No transactions match these filters. Try another period, type or search.
                 </td>
               </tr>
             ) : null}
