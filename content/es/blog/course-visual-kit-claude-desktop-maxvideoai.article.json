@@ -1,0 +1,377 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "course-visual-kit-claude-desktop-maxvideoai",
+  "publication": {
+    "articleId": "dcbc4abc-22f9-479a-9044-bcb74f349543",
+    "version": 1,
+    "digest": "a66051aa6601545dad6a2ca5adc87f2b0ef52f9b13225ea9b9a293b89cb7430c",
+    "publishedAt": "2026-09-23T11:42:06.359Z"
+  },
+  "article": {
+    "locale": "es",
+    "audience": "es-419",
+    "slug": "course-visual-kit-claude-desktop-maxvideoai",
+    "title": "Crea un kit visual para cursos con Claude Desktop y MaxVideoAI",
+    "description": "Define una dirección visual, crea una imagen maestra sin texto y tres variaciones para los módulos, agrega títulos editables y anima un detalle aprobado para producir una breve apertura de curso.",
+    "keywords": [
+      "kit visual para cursos",
+      "Claude Desktop",
+      "MaxVideoAI",
+      "GPT Image 2.5 Flare",
+      "Kling 3 Pro",
+      "diseño de portada para cursos",
+      "tarjetas de módulos",
+      "títulos editables",
+      "imagen a video"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Una vasija de terracota rodeada de esmalte cobalto, una cinta curva de arcilla y ladrillos de horno con textura.",
+        "caption": "Ilustración. La arcilla, el cobalto y una curva recurrente establecen la dirección visual del curso."
+      },
+      {
+        "id": "visual-bible",
+        "type": "text",
+        "heading": "Elige las pocas reglas visuales que compartirán todas las piezas",
+        "paragraphs": [
+          {
+            "text": "El temario ya está listo, pero la portada, las tarjetas de los módulos y el video de apertura todavía podrían parecer parte de cuatro proyectos distintos. Imagina un curso de cerámica llamado Arcilla, color, fuego, con módulos sobre modelado, esmaltado y cocción. El objetivo es darles a esas escenas diferentes una dirección reconocible, en lugar de confiar en que la coherencia surgirá por sí sola.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Comienza con una guía visual breve basada en decisiones que puedas repetir: "
+              },
+              {
+                "text": "superficies cálidas de arcilla y tiza, acentos cobalto discretos, luz suave desde la parte superior izquierda, un motivo recurrente de línea curva de arcilla y bastante espacio libre sobre el elemento principal.",
+                "bold": true
+              },
+              {
+                "text": " Estas referencias son lo bastante precisas para comparar las imágenes entre sí, pero permiten que cada módulo tenga su propio tema y encuadre."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "text": "Mantén las palabras separadas de la ilustración. Arcilla, color, fuego y los nombres de los módulos —Modelado, Esmaltado y Cocción— seguirán siendo texto editable que agregarás después en una herramienta de diseño gráfico. Por eso, las imágenes generadas deben reservar áreas claras para los títulos, pero no incluir letras, etiquetas ni marcadores de posición integrados.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "El flujo reúne cinco decisiones relacionadas: definir la guía visual, aprobar una portada maestra sin texto con "
+              },
+              {
+                "text": "GPT Image 2.5 Flare en MaxVideoAI",
+                "href": "https://maxvideoai.com/models/gpt-image-2-5-flare"
+              },
+              {
+                "text": ", adaptarla a tres escenas para los módulos, componer los títulos en capas editables y animar un detalle decorativo sin texto para la apertura. Aprobar primero la imagen maestra ofrece una referencia concreta para cada solicitud posterior, sin suponer que esto garantiza una coincidencia exacta de píxeles."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "master-composition",
+        "type": "media",
+        "assetId": "master-composition",
+        "heading": "Reserva espacio para el título del curso",
+        "presentation": "single",
+        "alt": "Una vasija de terracota y un acento cobalto se ubican debajo de una amplia zona vacía en la parte superior de una propuesta de portada.",
+        "caption": "Ilustración. La vasija queda debajo de un área despejada reservada para un título editable."
+      },
+      {
+        "id": "visual-bible-prompt",
+        "type": "prompt",
+        "heading": "Pide a Claude Desktop que organice la guía visual",
+        "template": "Help me prepare a reusable visual bible for an imagined ceramics course called “Clay, Color, Fire.” The launch kit will contain one course cover, three module cards—Shaping, Glazing, and Firing—and a short opening video.\n\nOrganize the brief under these headings:\n1. Palette\n2. Materials and surface textures\n3. Lighting\n4. Framing and subject scale\n5. Recurring visual motif\n6. Reference roles\n7. Preserve rules\n8. Change rules\n9. Editable-title zones\n10. Animation-safe decorative region\n\nUse these proposed anchors as a starting point, not as fixed facts:\n- warm clay and chalk surfaces\n- restrained cobalt accents\n- soft light from the upper left\n- a recurring curved clay-line motif\n- generous empty space above the main subject\n\nDefine the role of each future asset clearly. The approved master cover should act as a visual reference for palette, lighting character, ceramic texture, motif, and title space. The three module scenes may change their subject and framing to represent shaping, glazing, and firing. A separate text-free crop of the motif or glaze may later become the motion source.\n\nSeparate what should be preserved from what may change. Keep all course and module titles outside the image-generation instructions because they will be added later as editable text layers. Identify a decorative area that could move without containing titles, logos, instructional details, or essential course information.\n\nDo not assume that reference images, masks, layouts, fonts, or brand assets already exist. List any unresolved creative choices and ask me to choose among concise options before finalizing the visual bible. End with a short reusable summary that can be pasted into later image and motion requests.",
+        "note": "Aquí Claude Desktop organiza el brief y las solicitudes posteriores. La generación de imágenes, la composición de los títulos y el acabado del video siguen siendo etapas de producción separadas, realizadas por sus respectivas herramientas conectadas o externas."
+      },
+      {
+        "id": "master-cover",
+        "type": "steps",
+        "heading": "Conecta el generador y aprueba una sola imagen maestra",
+        "steps": [
+          {
+            "title": "Conecta el servicio remoto de confianza",
+            "body": "Sigue las instrucciones oficiales de integración de MaxVideoAI con Claude en https://maxvideoai.com/integrations/claude para agregar su conector MCP remoto en Claude Desktop. Completa la autorización OAuth en el navegador, revisa con atención los permisos solicitados y conéctalo solo si el servidor y los alcances son adecuados. También puedes consultar la guía de configuración de Anthropic en https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp."
+          },
+          {
+            "title": "Habilítalo en la conversación de este curso",
+            "body": "Después de configurar el conector en la cuenta, habilítalo en la conversación que contiene la guía visual aprobada. Mantén claros los roles: Claude Desktop, como host de MCP, prepara y valida la solicitud; MaxVideoAI realiza la generación."
+          },
+          {
+            "title": "Consulta la ruta activa antes de elegir los ajustes",
+            "body": "Pide a Claude Desktop que revise las herramientas expuestas en ese momento, los modos de Flare disponibles, el saldo de la cuenta y los controles de generación. Confirma en https://maxvideoai.com/models/gpt-image-2-5-flare que GPT Image 2.5 Flare admite la solicitud prevista de texto a imagen según sus detalles actuales, en lugar de confiar en ajustes recordados."
+          },
+          {
+            "title": "Elige los ajustes adecuados para la portada",
+            "body": "Selecciona un tamaño de imagen que funcione para la portada vertical y conserve la amplia zona superior destinada al título. La calidad Low o Medium puede reducir el costo de las primeras exploraciones de composición; para el render elegido, usa la calidad apropiada para el resultado final. Elige un formato de salida compatible con el flujo de trabajo gráfico externo y solicita una cantidad deliberada de alternativas —la documentación permite hasta cuatro por solicitud— en vez de generar variantes sin un plan para compararlas."
+          },
+          {
+            "title": "Revisa la solicitud exacta antes de pagar",
+            "body": "Verifica el prompt creativo, el tamaño, la calidad, el formato de salida, la cantidad de variantes, el precio y el efecto sobre la cuenta que aparecen en la cotización exacta. Aprueba la generación de pago solo cuando esos detalles coincidan con la guía visual y el presupuesto."
+          },
+          {
+            "title": "Elige una referencia, no solo una imagen atractiva",
+            "body": "Compara las propuestas con el recorte previsto. Elige la que muestre con mayor claridad la escala del sujeto, la paleta de tonos tierra y cobalto, la iluminación desde la parte superior izquierda, el motivo recurrente de línea de arcilla y un espacio vacío realmente aprovechable para el título. Conserva por separado la imagen fija seleccionada sin texto: será la referencia para las tres solicitudes de módulos, pero no garantiza que los resultados posteriores coincidan con ella de forma exacta."
+          }
+        ]
+      },
+      {
+        "id": "master-image-prompt",
+        "type": "prompt",
+        "heading": "Solicita la imagen sin generar el título",
+        "template": "Create a vertical cover image for the imagined ceramics course “Clay, Color, Fire.”\n\nShow one rounded terracotta ceramic vessel in the lower two-thirds of the composition, resting on a warm chalk surface. Add a restrained cobalt-glaze accent and one graceful curved clay-line motif near the lower edge.\n\nUse tactile ceramic textures and soft light from the upper left. Keep the earth-and-cobalt palette controlled and the arrangement quiet and sculptural.\n\nLeave the upper third pale, uncluttered, and genuinely empty so an editable course title can be added later in a graphics tool. Maintain clear separation between the vessel and this title-safe area.\n\nInclude no lettering, title placeholders, numbers, logos, watermarks, interface elements, or instructional overlays.",
+        "note": "Usa este prompt creativo con el tamaño, la calidad, el formato de salida y la cantidad de variantes elegidos para la portada. Mantén esos ajustes operativos fuera del prompt, revisa la cotización exacta y aprueba la solicitud solo cuando la configuración y el costo sean correctos."
+      },
+      {
+        "id": "module-variations",
+        "type": "comparison",
+        "heading": "Elige entre crear una escena nueva y hacer una corrección delimitada",
+        "columns": [
+          "Decisión",
+          "Cuándo usarla",
+          "Ejemplo del curso de cerámica",
+          "Qué debes conservar",
+          "Límite práctico"
+        ],
+        "rows": [
+          [
+            "Cambio de escena guiado por una referencia",
+            "Cuando el módulo necesita otro tema didáctico o encuadre, pero debe mantener la dirección visual aprobada.",
+            "Transforma la escena maestra de la vasija en una escena de modelado, esmaltado o cocción. Adjunta la imagen maestra aprobada como referencia de estilo y materiales, no como una composición que deba duplicarse.",
+            "La paleta tierra y cobalto, la luz suave desde la parte superior izquierda, las superficies cerámicas táctiles, el motivo curvo de línea de arcilla y un espacio amplio y vacío para el título.",
+            "Adjunta al menos una imagen de referencia, comprueba los ajustes de edición y aprueba la cotización exacta. Compara cada propuesta con la imagen maestra antes de elegirla: las instrucciones de conservación delimitan la solicitud, pero no garantizan que los píxeles permanezcan intactos."
+          ],
+          [
+            "Corrección local con máscara",
+            "Cuando una propuesta ya funciona, salvo por un elemento aislado del fondo.",
+            "Elimina un objeto no deseado del fondo sin rediseñar la vasija, el motivo, la iluminación ni el área reservada para el título.",
+            "Todo lo que quede fuera de la región preparada para la corrección, en especial el elemento principal, su sombra, la paleta, la iluminación, el motivo recurrente y el espacio vacío para el título.",
+            "Prepara externamente la región delimitada. Antes de usarla, verifica los requisitos de máscara aceptados actualmente y la alineación. La ruta documentada requiere una URL pública para la máscara, así que no expongas material privado. Una máscara de capa creada en una herramienta gráfica no garantiza por sí sola una exportación compatible."
+          ]
+        ]
+      },
+      {
+        "id": "module-scene-family",
+        "type": "media",
+        "assetId": "module-scene-family",
+        "heading": "Cambia el tema sin perder los elementos visuales clave",
+        "presentation": "single",
+        "alt": "Tres escenas de cerámica dispuestas verticalmente muestran herramientas de modelado, materiales de esmaltado y una vasija dentro de un horno, todas con colores e iluminación coherentes.",
+        "caption": "Ilustración. El modelado, el esmaltado y la cocción cambian el tema, pero repiten la paleta, la luz, la textura y la curva."
+      },
+      {
+        "id": "module-edit-prompt",
+        "type": "prompt",
+        "heading": "Describe un módulo nuevo sin perder la dirección visual",
+        "template": "Use the attached approved master still as a style and material reference for a new course-module image. Do not duplicate its complete composition.\n\nMODULE SCENE\n[Describe the selected shaping, glazing, or firing scene.]\n\nPRESERVE\nPreserve the controlled earth-and-cobalt palette, warm chalk surfaces, tactile ceramic textures, soft light from the upper left, and the recurring curved clay-line motif. Retain a generous, uncluttered title-safe area at the top. Keep the image free of text, numbers, logos, watermarks, and instructional overlays.\n\nCHANGE\nReplace the central subject and adjust the framing to communicate the module scene clearly. Keep the composition restrained, with one primary ceramic subject and only the objects needed to identify the module.",
+        "note": "Para Modelado, usa una vasija de arcilla parcialmente formada sobre una superficie de trabajo, acompañada por una sola herramienta sencilla de modelado. Para Esmaltado, coloca una vasija de cerámica con un área de esmalte cobalto y un pincel para esmaltar a su lado. Para Cocción, sitúa una vasija sobre una repisa dentro de la cámara apagada de un horno, con la textura de los ladrillos refractarios visible, pero sin llamas, controles, temperaturas ni detalles del procedimiento. Adjunta la imagen maestra aprobada y sin texto, confirma los controles de edición y los ajustes de la ruta disponibles en ese momento, y revisa la cotización exacta antes de generar cada escena."
+      },
+      {
+        "id": "masked-repair-prompt",
+        "type": "prompt",
+        "heading": "Corrige una zona sin rediseñar la tarjeta del módulo",
+        "template": "Use the attached module candidate and the prepared mask to make one bounded correction.\n\nCHANGE INSIDE THE MASK\nRemove the unwanted background object and reconstruct the surrounding background so it remains visually unobtrusive.\n\nPRESERVE\nOutside the prepared region, preserve the ceramic subject, its silhouette and shadow, the controlled earth-and-cobalt palette, the soft upper-left lighting, the tactile surface details, the recurring curved clay-line motif, and the empty title-safe area. Do not add text, numbers, logos, watermarks, instructional overlays, or new objects.",
+        "note": "Usa esta solicitud opcional solo si la imagen seleccionada tiene un defecto localizado y preparaste una máscara en una herramienta externa. Antes de enviarla, revisa los requisitos actuales de la ruta para las máscaras y confirma que la máscara esté alineada con la imagen de origen. La ruta documentada de Flare requiere una URL pública para la máscara, así que no expongas material privado del curso. Si no puedes proporcionar un archivo adecuado de forma segura, omite la edición con máscara. La máscara y las instrucciones de conservación acotan el cambio, pero no garantizan que todos los píxeles fuera de la zona permanezcan intactos."
+      },
+      {
+        "id": "bounded-mask-detail",
+        "type": "media",
+        "assetId": "bounded-mask-detail",
+        "heading": "Mantén la corrección lejos de la vasija",
+        "presentation": "single",
+        "alt": "Una capa translúcida rodea un pequeño objeto del fondo sin cubrir la vasija de cerámica ni el espacio vacío reservado para el título.",
+        "caption": "Ilustración. Puedes preparar en Photoshop una zona de corrección hipotética, alejada de la vasija y del espacio para el título."
+      },
+      {
+        "id": "editable-titles",
+        "type": "steps",
+        "heading": "Crea tarjetas con títulos que puedas seguir editando",
+        "steps": [
+          {
+            "title": "Lleva las imágenes seleccionadas a una herramienta de diseño",
+            "body": "Crea una composición de trabajo para la portada y otra para cada tarjeta de módulo en Photoshop o en otra herramienta gráfica externa. Coloca las imágenes aprobadas y sin texto sin modificar los originales, y aprovecha sus áreas superiores vacías para construir el sistema de títulos."
+          },
+          {
+            "title": "Agrega cada título como texto editable",
+            "body": "Usa Arcilla, color, fuego como título del curso en la portada. Añade Modelado, Esmaltado y Cocción a sus respectivas tarjetas de módulo, cada uno en una capa de texto editable independiente. Al mantener las palabras fuera de los píxeles generados, podrás corregirlas, localizarlas, cambiar su tamaño o adaptar el formato más adelante sin regenerar la ilustración."
+          },
+          {
+            "title": "Repite una jerarquía visual clara",
+            "body": "Mantén en las cuatro composiciones la misma posición y alineación del título, la misma familia tipográfica, la misma lógica de espaciado y la misma relación con el motivo recurrente. Ajusta el tamaño solo cuando el formato lo exija. Esta repetición hace que las distintas escenas se perciban como partes de un mismo curso, mientras la ilustración sigue identificando cada módulo."
+          },
+          {
+            "title": "Conserva los archivos editables y las imágenes originales limpias",
+            "body": "Guarda las composiciones de trabajo con sus capas de texto intactas y luego exporta, desde la herramienta externa, las versiones de entrega en los formatos que necesites para publicar. Conserva por separado la imagen maestra y las imágenes de los módulos originales, todas sin texto. Así podrás usar un detalle de la imagen maestra apto para movimiento sin arrastrar el título a la animación."
+          }
+        ]
+      },
+      {
+        "id": "motif-opener",
+        "type": "steps",
+        "heading": "Elige un detalle decorativo para animarlo y termina la apertura en una herramienta externa",
+        "steps": [
+          {
+            "title": "Selecciona una zona de la imagen aprobada que admita movimiento",
+            "body": "Elige un detalle cercano donde el motivo curvo de líneas de arcilla se encuentre con una zona discreta de esmalte cobalto. Evita los títulos, la información didáctica, los bordes de las vasijas que deban conservarse con exactitud y los elementos visuales demasiado cargados. Una región decorativa reduce la cantidad de componentes importantes que el modelo de movimiento debe preservar."
+          },
+          {
+            "title": "Prepara una sola imagen de origen sin texto",
+            "body": "Recorta el detalle elegido en una herramienta externa, pero conserva suficiente textura cerámica alrededor para permitir un movimiento de cámara suave. Usa esta imagen fija como única fuente para Kling 3 Pro. La ruta documentada de imagen a video no admite un video de referencia; la guía opcional con un fotograma final solo resulta útil si ya tienes una imagen fija adecuada para el encuadre de llegada que buscas."
+          },
+          {
+            "title": "Configura una toma contenida",
+            "body": "Plantea una generación de cinco segundos en 1080p y con el audio desactivado, para poder trabajar después el título y el sonido de forma deliberada. Adjunta el recorte preparado, confirma las opciones disponibles en ese momento para la duración, la resolución, el audio y el movimiento, y revisa el costo exacto y el efecto sobre tu cuenta antes de aprobar la generación."
+          },
+          {
+            "title": "Revisa el movimiento antes de agregar el título",
+            "body": "Después de generar el clip con el prompt específico de movimiento, comprueba que el brillo del esmalte siga siendo sutil, que el motivo de líneas de arcilla permanezca reconocible, que el acercamiento de cámara se sienta tranquilo y que el momento final pueda sostenerse con limpieza. Las indicaciones de preservación orientan la solicitud, pero no garantizan un movimiento sin distorsiones."
+          },
+          {
+            "title": "Monta y exporta en un editor de video",
+            "body": "Lleva el clip aprobado a un editor de video externo, agrega el título editable del curso, elige y mezcla el sonido, y exporta allí la apertura terminada. Conserva el clip generado sin texto y su imagen fija de origen junto con las composiciones de tarjetas por capas. Así, los cambios posteriores de título o duración no exigirán reconstruir todo el kit visual."
+          }
+        ]
+      },
+      {
+        "id": "motif-motion-study",
+        "type": "media",
+        "assetId": "motif-motion-study",
+        "heading": "Anima el esmalte, no el título",
+        "presentation": "single",
+        "alt": "Tres vistas ilustradas se acercan suavemente a un detalle de esmalte cobalto y a un motivo curvo de arcilla mientras el brillo cambia de posición.",
+        "caption": "Ilustración. Movimiento propuesto para Kling 3 Pro: un acercamiento suave, un brillo sutil sobre el esmalte y una llegada serena."
+      },
+      {
+        "id": "motif-animation-prompt",
+        "type": "prompt",
+        "heading": "Describe un solo movimiento suave y una llegada serena",
+        "template": "Create a single continuous opening shot from the supplied ceramic detail. Begin with the existing cobalt-glaze area and curved terracotta clay-line motif clearly recognizable. Introduce a subtle shimmer across the glaze highlight while the camera makes one slow, steady push forward. Keep the ceramic texture, earth-and-cobalt palette, soft lighting, and overall motif arrangement as close to the source image as possible. Avoid dramatic transformations, new objects, abrupt movement, or changes to the material character. Let the motion settle gradually into a calm final composition that can hold for the course title to be added later. No text, letters, logos, captions, instructional overlays, interface elements, or watermarks.",
+        "note": "Adjunta el recorte aprobado sin texto y configura por separado la duración, la resolución y el audio. Las indicaciones de preservación orientan la animación, pero no garantizan que todos los contornos y texturas permanezcan sin cambios."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "GPT Image 2.5 Flare",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/gpt-image-2-5-flare",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-2",
+      "title": "Kling 3 Pro",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/kling-3-pro",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-3",
+      "title": "Create AI Videos with Claude",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/claude",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-4",
+      "title": "Claude for Creative Work",
+      "publisher": "Anthropic",
+      "url": "https://www.anthropic.com/news/claude-for-creative-work",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-04-28"
+    },
+    {
+      "id": "source-5",
+      "title": "Introducing ChatGPT Images 2.5",
+      "publisher": "OpenAI",
+      "url": "https://openai.com/index/introducing-chatgpt-images-2-5/",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-09-08"
+    },
+    {
+      "id": "source-6",
+      "title": "Get Started with Custom Connectors Using Remote MCP",
+      "publisher": "Anthropic",
+      "url": "https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-08-11"
+    },
+    {
+      "id": "source-7",
+      "title": "Kling VIDEO 3.0 Model Guide",
+      "publisher": "Kling AI",
+      "url": "https://kling.ai/quickstart/klingai-video-3-model-user-guide",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-02-06"
+    },
+    {
+      "id": "source-8",
+      "title": "Add and Edit Layer Masks in Photoshop",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/photoshop/desktop/create-masks/layer-masks/add-layer-masks.html",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-9",
+      "title": "Add Text in Photoshop",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/photoshop/desktop/text-typography/get-started-with-text/add-text.html",
+      "retrievedAt": "2026-09-23"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "b9ef69f5b373515dbc08c45947fea500cc0883ffef422d90d8c6246ecbc1ce6c",
+      "url": "https://media.maxvideoai.com/editorial/published/b9ef69f5b373515dbc08c45947fea500cc0883ffef422d90d8c6246ecbc1ce6c.webp"
+    },
+    {
+      "id": "master-composition",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1be6b4b9e421dc646ad18581a8945d85f65226cb2ad5d141c844ed68c3f17ead",
+      "url": "https://media.maxvideoai.com/editorial/published/1be6b4b9e421dc646ad18581a8945d85f65226cb2ad5d141c844ed68c3f17ead.webp"
+    },
+    {
+      "id": "module-scene-family",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1707d2ae4f6a4c40cb53faaa006afeccfe7098e7016c0a24c55a08bfa1606e6c",
+      "url": "https://media.maxvideoai.com/editorial/published/1707d2ae4f6a4c40cb53faaa006afeccfe7098e7016c0a24c55a08bfa1606e6c.webp"
+    },
+    {
+      "id": "bounded-mask-detail",
+      "kind": "generated-illustration",
+      "width": 1145,
+      "height": 1374,
+      "sha256": "8850fa7d1ba64d743fea039563dfeacdc586dfd24b2fa7d4f42022e2166bcc8e",
+      "url": "https://media.maxvideoai.com/editorial/published/8850fa7d1ba64d743fea039563dfeacdc586dfd24b2fa7d4f42022e2166bcc8e.webp"
+    },
+    {
+      "id": "motif-motion-study",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "0a82ea5f597b511e20f83e3f25a00ede136118ff1791562da2c5c3a8ec288e7a",
+      "url": "https://media.maxvideoai.com/editorial/published/0a82ea5f597b511e20f83e3f25a00ede136118ff1791562da2c5c3a8ec288e7a.webp"
+    }
+  ]
+}
