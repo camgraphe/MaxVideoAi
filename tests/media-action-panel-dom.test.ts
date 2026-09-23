@@ -16,7 +16,7 @@ test('media inspector keeps actions with one original reader and restores focus'
   const opener = dom.window.document.getElementById('opener') as HTMLButtonElement;
   opener.focus();
   try {
-    await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'original', url: original, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
+    await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'original', url: original, kind: 'video', source: 'gallery', jobId: 'private-job' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); });
     assert.doesNotMatch(dom.window.document.body.textContent ?? '', /aaaaa|signature|secret/);
     assert.equal(dom.window.document.querySelector('video'), null);
@@ -30,6 +30,8 @@ test('media inspector keeps actions with one original reader and restores focus'
     assert.equal(dom.window.document.querySelectorAll('.app-video-share-destinations > *').length, 7);
     assert.match(dom.window.document.body.textContent ?? '', /TikTok/);
     assert.ok(dom.window.document.querySelector('[data-destination]'));
+    await act(async () => [...dom.window.document.querySelectorAll<HTMLButtonElement>('.app-video-share-destinations button')].find(button => button.textContent === 'TikTok')!.click());
+    assert.match(dom.window.document.querySelector<HTMLAnchorElement>('.app-video-share-file-actions a')?.getAttribute('href') ?? '', /^\/api\/download\?/);
     const second = 'https://private.example/second.mp4';
     await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'second', url: second, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
     assert.equal(dom.window.document.querySelector('video'), null);
