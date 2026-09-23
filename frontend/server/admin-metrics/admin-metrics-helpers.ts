@@ -10,6 +10,7 @@ import type {
 
 export type AdminMetricsOptions = {
   excludeUserIds?: string[];
+  customDays?: number;
 };
 
 export type CountRow = {
@@ -89,7 +90,7 @@ export type FailedEngineRow = {
   total_count: number | string | null;
 };
 
-const RANGE_DAYS: Record<MetricsRangeLabel, number> = {
+const RANGE_DAYS: Record<Exclude<MetricsRangeLabel, 'custom'>, number> = {
   '24h': 1,
   '7d': 7,
   '30d': 30,
@@ -139,6 +140,9 @@ export function normalizeMetricsRange(candidate?: string | null): MetricsRangeLa
     return DEFAULT_METRIC_RANGE;
   }
   const normalized = candidate.trim().toLowerCase();
+  if (normalized === 'custom') {
+    return 'custom';
+  }
   if (normalized === '24h' || normalized.startsWith('24') || normalized === '1d') {
     return '24h';
   }
@@ -154,9 +158,10 @@ export function normalizeMetricsRange(candidate?: string | null): MetricsRangeLa
   return DEFAULT_METRIC_RANGE;
 }
 
-export function resolveRange(candidate?: string | null): MetricsRange {
+export function resolveRange(candidate?: string | null, customDays?: number): MetricsRange {
   const label = normalizeMetricsRange(candidate);
-  const days = RANGE_DAYS[label];
+  const validCustomDays = typeof customDays === 'number' && Number.isInteger(customDays) && customDays >= 2 && customDays <= 90;
+  const days = label === 'custom' ? (validCustomDays ? customDays : 30) : RANGE_DAYS[label];
   return buildRange(days, label);
 }
 

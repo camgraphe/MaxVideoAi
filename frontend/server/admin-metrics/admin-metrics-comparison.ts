@@ -22,7 +22,7 @@ export async function fetchAdminMetricsComparison(
   rangeParam?: string | null,
   options?: AdminMetricsOptions
 ): Promise<AdminMetricsComparison> {
-  const currentRange = resolveRange(rangeParam);
+  const currentRange = resolveRange(rangeParam, options?.customDays);
   const doubledRange = buildRange(currentRange.days * 2, currentRange.label);
   const excludedUserIds = (options?.excludeUserIds ?? []).map((userId) => userId.trim()).filter(Boolean);
   const hasExcludedUsers = excludedUserIds.length > 0;

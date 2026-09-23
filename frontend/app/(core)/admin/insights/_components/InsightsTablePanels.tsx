@@ -13,11 +13,13 @@ import {
 } from '../_lib/insights-formatters';
 import { EmptyStateCard, ShareBar } from './InsightsChartSurfaces';
 
-export function RevenueBoardTable({ rows }: { rows: RevenueBoardRow[] }) {
+export function RevenueBoardTable({ rows, compact = false }: { rows: RevenueBoardRow[]; compact?: boolean }) {
   const columns: AdminStatColumn<RevenueBoardRow>[] = [
     {
       key: 'metric',
       header: 'Metric',
+      headerClassName: 'min-w-[260px]',
+      cellClassName: 'min-w-[260px]',
       render: (row) => (
         <>
           <p className="font-medium text-text-primary">{row.label}</p>
@@ -47,20 +49,23 @@ export function RevenueBoardTable({ rows }: { rows: RevenueBoardRow[] }) {
 
   return (
     <div className="min-w-0 overflow-hidden border-b border-hairline">
-      <div className="border-b border-hairline px-4 py-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue board</p>
-        <p className="mt-1 text-sm text-text-secondary">Current period compared with the previous period.</p>
-      </div>
+      {!compact ? (
+        <div className="border-b border-hairline px-4 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue board</p>
+          <p className="mt-1 text-sm text-text-secondary">Current period compared with the previous period.</p>
+        </div>
+      ) : null}
       <AdminStatTable
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.label}
         empty={null}
         className="rounded-none border-0"
-        tableClassName="min-w-[620px]"
+        tableClassName="min-w-[720px]"
         headerClassName="bg-surface"
         bodyClassName="divide-y divide-hairline"
       />
+      <p className="px-4 pb-2 text-xs text-text-muted sm:hidden">Swipe the table to see previous values and changes.</p>
     </div>
   );
 }

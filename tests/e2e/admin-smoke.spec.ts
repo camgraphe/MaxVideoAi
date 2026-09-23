@@ -15,7 +15,7 @@ const smokeRoutes: SmokeRoute[] = [
   },
   {
     path: '/admin/insights',
-    heading: 'Trends',
+    heading: 'Insights',
     section: 'Activity over time',
   },
   {

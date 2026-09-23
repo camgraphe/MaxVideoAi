@@ -39,7 +39,7 @@ export async function fetchAdminMetrics(
   rangeParam?: string | null,
   options?: AdminMetricsOptions
 ): Promise<AdminMetrics> {
-  const range = resolveRange(rangeParam);
+  const range = resolveRange(rangeParam, options?.customDays);
   const excludedUserIds = (options?.excludeUserIds ?? []).map((userId) => userId.trim()).filter(Boolean);
   const hasExcludedUsers = excludedUserIds.length > 0;
   const exclusionParams = hasExcludedUsers ? [excludedUserIds] : undefined;

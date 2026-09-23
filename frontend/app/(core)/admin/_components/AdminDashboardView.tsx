@@ -45,7 +45,7 @@ export function AdminDashboardView({ data }: { data: AdminOverview }) {
           Today
         </Link>
         <Link className="pb-3 text-text-secondary" href="/admin/insights">
-          Trends
+          Insights
         </Link>
         <Link className="pb-3 text-text-secondary" href="/admin/mcp">
           MCP activity
