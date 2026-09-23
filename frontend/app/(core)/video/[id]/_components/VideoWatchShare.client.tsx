@@ -14,7 +14,7 @@ export function VideoWatchShare({ videoId, videoUrl, watchUrl }: { videoId: stri
   const [open, setOpen] = useState(false);
   const asset: AssetBrowserAsset = { id: videoId, jobId: videoId, url: videoUrl, kind: 'video', source: 'gallery' };
 
-  return <div className="app-experience" style={{ background: 'transparent', paddingBottom: 0 }}>
+  return <div className="app-experience border-b border-hairline px-5 py-3 sm:px-6" style={{ background: 'transparent', paddingBottom: 12 }}>
     <button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)} data-analytics-event={open ? undefined : 'cta_click'} data-analytics-cta-name="video_share_open" data-analytics-cta-location="watch_page" className="inline-flex min-h-9 items-center gap-2 rounded-input border border-hairline px-3 text-xs font-semibold text-text-secondary hover:bg-surface-2">
       <Share2 size={15} aria-hidden />Share this video
     </button>

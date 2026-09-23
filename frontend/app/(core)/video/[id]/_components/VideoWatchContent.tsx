@@ -155,10 +155,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
               videoStyle={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
             />
 
-            <div className="border-b border-hairline px-5 py-3 sm:px-6">
-              <VideoWatchShare videoId={video.id} videoUrl={videoUrl} watchUrl={canonical} />
-            </div>
-
+            <VideoWatchShare videoId={video.id} videoUrl={videoUrl} watchUrl={canonical} />
             <div className="p-5 sm:p-6">
               <div className="max-w-3xl">
                 <h1 className="text-[1.75rem] font-semibold tracking-tight text-text-primary sm:text-[2.1rem]">{signals.title}</h1>

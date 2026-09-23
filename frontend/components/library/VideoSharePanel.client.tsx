@@ -37,8 +37,8 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
     : buildAppDownloadUrl(asset.url, filename);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => panelRef.current?.scrollIntoView({ block: 'nearest' }));
-    return () => cancelAnimationFrame(frame);
+    const frame = window.requestAnimationFrame(() => panelRef.current?.scrollIntoView?.({ block: 'nearest' }));
+    return () => window.cancelAnimationFrame(frame);
   }, [activeVideoTarget, moreOpen, fileError]);
 
   useEffect(() => {
