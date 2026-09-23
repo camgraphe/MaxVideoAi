@@ -32,7 +32,7 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
   const [feedback, setFeedback] = useState<string | null>(null);
   const [revoking, setRevoking] = useState(false);
   const filename = suggestDownloadFilename(asset.url, 'maxvideoai-video.mp4');
-  const downloadHref = asset.source === 'gallery' && asset.jobId
+  const downloadHref = asset.source === 'public-example' && asset.jobId
     ? `/api/video-shares/public-download?${new URLSearchParams({ jobId: asset.jobId })}`
     : buildAppDownloadUrl(asset.url, filename);
 
@@ -148,7 +148,7 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
     <label className="app-video-share-signature"><span>{activeVideoTarget ? copy.hashtag : copy.signature}</span><input value={activeVideoTarget ? hashtag : signature} onChange={event => activeVideoTarget ? setHashtag(event.target.value) : setSignature(event.target.value)} maxLength={240} /></label>
     {activeVideoTarget || moreOpen ? <button className="app-video-share-copy-signature" type="button" onClick={() => void copyCaption()} disabled={activeVideoTarget ? !hashtag.trim() : !signature.trim()}>{feedback === (activeVideoTarget ? copy.hashtagCopied : copy.signatureCopied) ? <Check size={14} aria-hidden /> : null}{feedback === (activeVideoTarget ? copy.hashtagCopied : copy.signatureCopied) ? feedback : activeVideoTarget ? copy.copyHashtag : copy.copySignature}</button> : null}
     <div className="app-video-share-footnote">
-      <small>{loading ? copy.preparing : error ?? (asset.source === 'gallery' ? copy.exampleNotice : copy.publicNotice)}</small>
+      <small>{loading ? copy.preparing : error ?? (asset.source === 'public-example' ? copy.exampleNotice : copy.publicNotice)}</small>
       {token ? <button type="button" onClick={() => void revoke()} disabled={revoking}>{revoking ? copy.revoking : copy.revoke}</button> : null}
     </div>
     {feedback && feedback !== copy.signatureCopied && feedback !== copy.hashtagCopied ? <p role="status" className="app-video-share-feedback">{feedback}</p> : null}

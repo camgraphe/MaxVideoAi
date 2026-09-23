@@ -5,7 +5,7 @@ The Result modal and media library use `MediaActionPanel.client.tsx`. Video shar
 ## Link ownership
 
 - `POST /api/video-shares` checks the exact original URL and the authenticated user's ownership before minting an unguessable `/s/[token]` link. The source remains in `job_outputs`, `media_assets`, `user_assets`, or `app_jobs`; the share table stores only source identity and owner, never a copied media URL.
-- Public app examples use their existing `/video/[id]` watch page after confirming public visibility, indexability, a stable URL, and an exact original match. These links need no token or owner revocation.
+- Public examples use their existing `/video/[id]` watch page after confirming public visibility, indexability, a stable URL, and an exact original match. Only the explicit `public-example` source takes this path; a user's private result gallery uses authenticated ownership checks. These links need no token or owner revocation.
 - `GET /api/video-shares/public-download` streams a verified public example from the owned media CDN. It supports real MP4 saving and compatible browser file shares for visitors; it does not accept an arbitrary source URL.
 - `/s/[token]` reads the current source at request time, is excluded from indexing, and disappears if the source is removed or the owner deactivates the link. `DELETE /api/video-shares` requires the owner.
 - The underlying original may already be publicly reachable. Deactivating the MaxVideoAI share page does not revoke direct media URLs that a recipient copied separately.

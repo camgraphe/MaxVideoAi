@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
   const origin = process.env.VERCEL_ENV === 'production' ? SITE_ORIGIN : req.nextUrl.origin;
 
-  if (body?.source === 'gallery' && jobId) {
+  if (body?.source === 'public-example' && jobId) {
     try {
       const video = (await getPublicVideosByIds([jobId])).get(jobId);
       if (!video || video.videoUrl !== url || !video.indexable || !isStablePublicMediaUrl(url)) {

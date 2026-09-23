@@ -31,6 +31,27 @@ test('a video link is minted only for a matching video owned by the user', async
   assert.equal(inserts, 1);
 });
 
+test('a private result gallery can share its exact owned job video without an output id', async () => {
+  const url = 'https://media.maxvideoai.com/renders/job/video.mp4';
+  const db = fakeQuery((sql, params) => {
+    if (sql.includes('FROM media_assets') || sql.includes('FROM user_assets')) return [];
+    if (sql.includes('FROM job_outputs o')) {
+      assert.match(sql, /o\.job_id = \$1 AND j\.user_id = \$2/);
+      return params[0] === 'job-1' && params[1] === 'owner' && params[2] === url
+        ? [{ id: 'job-1:video:0', url, thumb_url: null }] : [];
+    }
+    if (sql.includes('INSERT INTO video_share_links')) {
+      assert.deepEqual(params.slice(1), ['owner', 'job_output', 'job-1:video:0']);
+      return [{ token: params[0] }];
+    }
+    if (sql.includes('FROM app_jobs')) return [];
+    throw new Error('unexpected query');
+  });
+  assert.match(await createOrGetVideoShareLink({ userId: 'owner', assetId: 'gallery-member', jobId: 'job-1', url }, db) ?? '', /^[a-zA-Z0-9_-]{32}$/);
+  assert.equal(await createOrGetVideoShareLink({ userId: 'stranger', assetId: 'gallery-member', jobId: 'job-1', url }, db), null);
+  assert.equal(await createOrGetVideoShareLink({ userId: 'owner', assetId: 'gallery-member', jobId: 'job-1', url: `${url}?other` }, db), null);
+});
+
 test('signed or temporary originals cannot acquire a persistent share page', async () => {
   const url = 'https://cdn.example/video.mp4?X-Amz-Signature=secret';
   let inserts = 0;
