@@ -38,6 +38,7 @@ function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransact
     job_progress: 100,
     job_created_at: '2026-07-14T09:59:00.000Z',
     job_duration_sec: 8,
+    is_mcp_generation: false,
     has_refund: false,
     latest_charge_id: 10,
     ...overrides,
@@ -62,8 +63,10 @@ test('ledger mapper preserves latest paid-wallet refund eligibility and DTO shap
   assert.equal(record.amountCents, 900);
   assert.equal(record.currency, 'USD');
   assert.equal(record.jobVideoUrl, '/renders/video.mp4');
+  assert.equal(record.isMcpGeneration, false);
   assert.equal(record.isLatestCharge, true);
   assert.equal(record.canRefund, true);
+  assert.equal(mapAdminTransactionRow(rawTransaction({ is_mcp_generation: true }), null).isMcpGeneration, true);
 });
 
 test('ledger mapper preserves rejection and historical missing-job behavior', () => {
