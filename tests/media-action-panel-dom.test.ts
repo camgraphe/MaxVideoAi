@@ -32,6 +32,12 @@ test('media inspector keeps actions with one original reader and restores focus'
     assert.ok(dom.window.document.querySelector('[data-destination]'));
     await act(async () => [...dom.window.document.querySelectorAll<HTMLButtonElement>('.app-video-share-destinations button')].find(button => button.textContent === 'TikTok')!.click());
     assert.match(dom.window.document.querySelector<HTMLAnchorElement>('.app-video-share-file-actions a')?.getAttribute('href') ?? '', /^\/api\/download\?/);
+    await act(async () => [...dom.window.document.querySelectorAll<HTMLButtonElement>('.app-video-share-destinations button')].find(button => button.textContent === 'X')!.click());
+    const xFlow = dom.window.document.querySelector('.app-video-share-x-flow')!;
+    assert.match(xFlow.textContent ?? '', /joignez le MP4 au post/);
+    assert.match(xFlow.querySelector<HTMLAnchorElement>('.app-video-share-file-actions a')?.getAttribute('href') ?? '', /^\/api\/download\?/);
+    assert.match(xFlow.querySelector<HTMLAnchorElement>('.app-video-share-file-actions a:nth-child(2)')?.getAttribute('href') ?? '', /^https:\/\/x\.com\/intent\/tweet\?/);
+    assert.equal(xFlow.querySelector('a[aria-disabled="true"]')?.textContent, 'Partager seulement le lien (aperçu image)');
     const second = 'https://private.example/second.mp4';
     await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'second', url: second, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
     assert.equal(dom.window.document.querySelector('video'), null);

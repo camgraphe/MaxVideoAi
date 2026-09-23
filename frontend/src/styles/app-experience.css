@@ -607,8 +607,12 @@
 .app-experience .app-video-share-destinations span { max-width: 100%; overflow: hidden; font-size: 10px; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
 .app-experience .app-video-share-destinations img, .app-experience .app-video-share-more img { filter: brightness(0); }
 [data-theme="dark"] .app-experience .app-video-share-destinations img, [data-theme="dark"] .app-experience .app-video-share-more img { filter: brightness(0) invert(1); }
-.app-experience .app-video-share-file-actions { display: flex; gap: 6px; }
-.app-experience .app-video-share-file-actions > :is(button, a) { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 7px; min-width: 0; padding: 0 8px; border: 1px solid var(--app-line); text-align: center; text-decoration: none; }
+.app-experience .app-video-share-file-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.app-experience .app-video-share-file-actions > :is(button, a) { display: inline-flex; flex: 1 1 130px; align-items: center; justify-content: center; gap: 7px; min-width: 0; min-height: 34px; padding: 0 8px; border: 1px solid var(--app-line); border-radius: 6px; color: var(--app-ink); font-size: 11px; text-align: center; text-decoration: none; }
+.app-experience .app-video-share-x-flow { display: grid; gap: 6px; }
+.app-experience .app-video-share-x-flow p { margin: 0; color: var(--app-ink); font-size: 11px; }
+.app-experience .app-video-share-x-flow > a { justify-self: start; color: var(--app-muted); font-size: 11px; text-decoration: underline; text-underline-offset: 2px; }
+.app-experience .app-video-share-x-flow > a[aria-disabled="true"] { opacity: .45; cursor: wait; }
 .app-experience .app-video-share-more { display: flex; flex-wrap: wrap; gap: 5px; }
 .app-experience .app-video-share-more > :is(button, a) { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 8px; border: 1px solid var(--app-line); color: var(--app-ink); text-decoration: none; }
 .app-experience .app-video-share-more > [aria-disabled="true"] { opacity: .45; cursor: wait; }
