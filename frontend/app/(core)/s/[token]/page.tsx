@@ -18,13 +18,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pageUrl = new URL(`/s/${token}`, SITE_ORIGIN).toString();
   const image = video.thumbUrl ? new URL(video.thumbUrl, SITE_ORIGIN).toString() : undefined;
   return {
-    title: 'Shared video · MaxVideoAI',
+    title: { absolute: 'Video shared with you | MaxVideoAI' },
     description: 'A video shared by a MaxVideoAI creator.',
     referrer: 'no-referrer',
     robots: { index: false, follow: false },
     openGraph: {
       type: 'video.other',
-      title: 'Shared video · MaxVideoAI',
+      title: 'Video shared with you | MaxVideoAI',
       description: 'A video shared by a MaxVideoAI creator.',
       url: pageUrl,
       images: image ? [image] : undefined,
@@ -38,14 +38,25 @@ export default async function SharedVideoPage({ params }: PageProps) {
   const { token } = await params;
   const video = await readVideo(token);
   if (!video) notFound();
-  return <main className="shared-video-page">
-    <div className="shared-video-page-inner">
-      <Link className="shared-video-brand" href="/" aria-label="MaxVideoAI home">MaxVideoAI</Link>
-      <video controls playsInline preload="none" poster={video.thumbUrl ?? undefined} src={video.url} />
-      <div className="shared-video-footer">
-        <p>Video created with MaxVideoAI</p>
-        <Link href="/app">Create your own video</Link>
-      </div>
+  return <div className="shared-video-page">
+    <nav className="shared-video-breadcrumb" aria-label="Breadcrumb">
+      <Link href="/">Home</Link><span aria-hidden>›</span><span>Shared video</span>
+    </nav>
+    <div className="shared-video-grid">
+      <article className="shared-video-card">
+        <video controls playsInline preload="none" poster={video.thumbUrl ?? undefined} src={video.url} aria-label="Shared MaxVideoAI video" />
+        <div className="shared-video-details">
+          <p className="shared-video-eyebrow">Created with MaxVideoAI</p>
+          <h1>Video shared with you</h1>
+          <p>Watch this video shared by a MaxVideoAI creator.</p>
+        </div>
+      </article>
+      <aside className="shared-video-aside">
+        <h2>Create your own video</h2>
+        <p>Explore AI video models and make something of your own on MaxVideoAI.</p>
+        <Link className="shared-video-primary-link" href="/app">Start creating</Link>
+        <Link className="shared-video-secondary-link" href="/examples">Explore video examples</Link>
+      </aside>
     </div>
-  </main>;
+  </div>;
 }

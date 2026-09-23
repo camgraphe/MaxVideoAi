@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createOrGetVideoShareLink, getSharedVideo, publicExampleDownloadSource, revokeVideoShareLink } from '../frontend/server/video-shares';
-import { buildVideoShareIntent } from '../frontend/components/library/video-share-intents';
+import { buildVideoShareIntent, buildXVideoPostIntent } from '../frontend/components/library/video-share-intents';
 
 type QueryFn = NonNullable<Parameters<typeof createOrGetVideoShareLink>[1]>;
 function fakeQuery(resolve: (sql: string, params: ReadonlyArray<unknown>) => unknown[]): QueryFn {
@@ -102,6 +102,9 @@ test('destinations receive only the message fields they can prefill', () => {
   assert.equal(x.searchParams.get('text'), signature);
   const hashtagPost = new URL(buildVideoShareIntent('x', url, '#MaxVideoAI', 'fr'));
   assert.equal(hashtagPost.searchParams.get('text'), '#MaxVideoAI');
+  const nativeXPost = new URL(buildXVideoPostIntent('#MaxVideoAI', url));
+  assert.equal(nativeXPost.searchParams.get('text'), `#MaxVideoAI\n\n${url}`);
+  assert.equal(new URL(buildXVideoPostIntent('', null)).searchParams.get('text'), '');
   const whatsapp = new URL(buildVideoShareIntent('whatsapp', url, signature, 'fr'));
   assert.match(whatsapp.searchParams.get('text') ?? '', /Vidéo créée avec MaxVideoAI/);
   const linkedin = new URL(buildVideoShareIntent('linkedin', url, signature, 'fr'));
