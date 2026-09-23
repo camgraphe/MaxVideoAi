@@ -312,14 +312,31 @@ export function AdminTransactionTable({
 }
 
 function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
-  const generationContext = formatGenerationContext(row);
+  const model = row.jobId ? row.jobEngineLabel?.trim() : null;
+  const duration = row.jobId ? formatJobDuration(row.jobDurationSec) : null;
   return (
     <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
-      {formatCurrency(row.amountCents, row.currency)}
-      {generationContext ? (
-        <p className="mt-0.5 max-w-[180px] truncate text-xs font-normal text-text-secondary" title={generationContext}>
-          {generationContext}
-        </p>
+      <div className="flex items-center gap-2">
+        <span>{formatCurrency(row.amountCents, row.currency)}</span>
+        {row.isMcpGeneration ? (
+          <span
+            className="rounded border border-brand/20 bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-brand"
+            title="Generation submitted via MCP"
+          >
+            MCP
+          </span>
+        ) : null}
+      </div>
+      {model || duration ? (
+        <div className="mt-0.5 flex max-w-[180px] items-center gap-1 text-xs font-normal text-text-secondary">
+          {model ? (
+            <span className="min-w-0 truncate" title={model}>
+              {model}
+            </span>
+          ) : null}
+          {model && duration ? <span aria-hidden="true">·</span> : null}
+          {duration ? <span className="shrink-0">{duration}</span> : null}
+        </div>
       ) : null}
     </td>
   );
@@ -339,13 +356,6 @@ function formatCurrency(amountCents: number, currency: string) {
 function formatJobDuration(durationSec: number | null) {
   if (durationSec === null || !Number.isFinite(durationSec) || durationSec <= 0) return null;
   return `${durationFormatter.format(durationSec)} s`;
-}
-
-function formatGenerationContext(row: AdminTransactionRecord) {
-  if (!row.jobId) return null;
-  const model = row.jobEngineLabel?.trim();
-  const duration = formatJobDuration(row.jobDurationSec);
-  return [model, duration].filter(Boolean).join(' · ') || null;
 }
 
 function formatDate(value: string | null | undefined) {

@@ -8,7 +8,7 @@ import {
   type TransactionHistoryQuery,
   type TransactionHistoryPage,
 } from '@/lib/admin/transaction-history';
-import { TRANSACTION_SELECT } from './projection';
+import { transactionSelectForCurrentSchema } from './projection';
 import { hydrateTransactionRows } from './read-model';
 import type { RawTransactionRow } from './types';
 
@@ -70,8 +70,9 @@ export async function fetchTransactionHistory(
     );
   }
   if (cursor) where.push(`(r.created_at,r.id)<(${bind(cursor.at)}::timestamptz,${bind(cursor.id)}::bigint)`);
+  const transactionSelect = await transactionSelectForCurrentSchema();
   const rows = await query<RawTransactionRow & { cursor_at: string }>(
-    `${TRANSACTION_SELECT.replace('r.id AS receipt_id,', `r.id AS receipt_id, to_char(r.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_at,`)}
+    `${transactionSelect.replace('r.id AS receipt_id,', `r.id AS receipt_id, to_char(r.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_at,`)}
   WHERE ${where.join(' AND ')} ORDER BY r.created_at DESC,r.id DESC LIMIT ${bind(filters.limit + 1)}`,
     values,
   );
@@ -87,6 +88,7 @@ export async function fetchTransactionHistory(
 }
 export async function fetchTransactionReceipt(id: string) {
   if (!validId(id)) throw new TransactionHistoryInputError('Invalid receipt ID');
-  const rows = await query<RawTransactionRow>(`${TRANSACTION_SELECT} WHERE r.id=$1::bigint`, [id]);
+  const transactionSelect = await transactionSelectForCurrentSchema();
+  const rows = await query<RawTransactionRow>(`${transactionSelect} WHERE r.id=$1::bigint`, [id]);
   return (await hydrateTransactionRows(rows))[0] ?? null;
 }

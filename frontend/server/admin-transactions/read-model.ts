@@ -1,4 +1,4 @@
-import { TRANSACTION_SELECT } from './projection';
+import { transactionSelectForCurrentSchema } from './projection';
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -37,6 +37,7 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     jobEngineLabel: row.job_engine_label,
     jobVideoUrl: row.job_video_url ? (normalizeMediaUrl(row.job_video_url) ?? row.job_video_url) : null,
     jobDurationSec: row.job_duration_sec ?? null,
+    isMcpGeneration: row.is_mcp_generation,
     jobCreatedAt: row.job_created_at,
     jobProgress: row.job_progress ?? null,
     jobMessage: row.job_message,
@@ -52,7 +53,8 @@ export async function fetchAdminTransactions(limit = 100): Promise<AdminTransact
   if (!process.env.DATABASE_URL) return [];
 
   await ensureBillingSchema();
-  const rows = await query<RawTransactionRow>(`${TRANSACTION_SELECT} ORDER BY r.created_at DESC, r.id DESC LIMIT $1`, [
+  const transactionSelect = await transactionSelectForCurrentSchema();
+  const rows = await query<RawTransactionRow>(`${transactionSelect} ORDER BY r.created_at DESC, r.id DESC LIMIT $1`, [
     normalizeTransactionLimit(limit),
   ]);
   return hydrateTransactionRows(rows);

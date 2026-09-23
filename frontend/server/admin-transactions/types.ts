@@ -16,6 +16,7 @@ export type RawTransactionRow = {
   job_progress: number | null;
   job_created_at: string | null;
   job_duration_sec: number | null;
+  is_mcp_generation: boolean;
   has_refund: boolean;
   latest_charge_id: number | null;
 };
@@ -34,6 +35,7 @@ export type AdminTransactionRecord = {
   jobEngineLabel: string | null;
   jobVideoUrl: string | null;
   jobDurationSec: number | null;
+  isMcpGeneration: boolean;
   jobCreatedAt: string | null;
   jobProgress: number | null;
   jobMessage: string | null;
