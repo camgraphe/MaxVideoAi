@@ -21452,7 +21452,19 @@
             "maxDurationSec": 15,
             "maxSizeMB": 15,
             "source": "either",
-            "description": "Combined audio duration <=15 seconds."
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/mp3",
+              "audio/wav",
+              "audio/x-wav",
+              "audio/wave",
+              "audio/vnd.wave"
+            ],
+            "acceptedFileExtensions": [
+              "mp3",
+              "wav"
+            ],
+            "description": "MP3 or WAV only; combined audio duration <=15 seconds."
           },
           {
             "id": "file_url",
@@ -22131,7 +22143,19 @@
             "maxDurationSec": 15,
             "maxSizeMB": 15,
             "source": "either",
-            "description": "Combined audio duration <=15 seconds."
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/mp3",
+              "audio/wav",
+              "audio/x-wav",
+              "audio/wave",
+              "audio/vnd.wave"
+            ],
+            "acceptedFileExtensions": [
+              "mp3",
+              "wav"
+            ],
+            "description": "MP3 or WAV only; combined audio duration <=15 seconds."
           },
           {
             "id": "file_url",

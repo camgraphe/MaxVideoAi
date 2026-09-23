@@ -28,6 +28,8 @@ Wan 2.5, Wan 2.6, and HappyHorse 1.0 are intentionally outside this direct route
 
 Wan 3 Standard and Prime share the same authored capability schema. Reference mode accepts image, video, audio, one public HTTPS document URL, or one public HTTPS webpage URL. Document and webpage references are mutually exclusive and require prompt expansion. The direct adapter maps them to Alibaba `file` and `link` media; the Fal pre-acceptance fallback adds Fal's required `enable_thinking=true` internally, so that transport-specific switch is not exposed as a MaxVideoAI product control.
 
+Reference audio is limited to MP3 and WAV. Keep the authored field formats aligned with the direct adapter so M4A and other unsupported uploads fail with a clear format message before wallet reservation. The adapter retains a specific MP3/WAV message for requests that bypass that early check.
+
 The workspace prompt-expansion control maps to Alibaba `prompt_extend`. Fal's `enable_safety_checker` has no documented direct Alibaba equivalent and remains transport-specific rather than a public cross-provider option.
 
 Alibaba's smart duration (`duration=-1`) is deliberately not exposed. MaxVideoAI quotes and reserves an exact customer amount before submission, while smart duration makes the billed output length unknown at quote time. Keep the explicit 2–30 second duration until a separately reviewed estimate-and-reconciliation billing contract exists.

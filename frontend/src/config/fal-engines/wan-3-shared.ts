@@ -3,6 +3,10 @@ import type { EngineCaps } from '../../../types/engines';
 export const WAN_3_PROVIDER_ASPECT_RATIOS = ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16'] as const;
 export const WAN_3_RESOLUTIONS = ['480p', '720p', '1080p'] as const;
 export const WAN_3_MODES = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'] as const;
+export const WAN_3_REFERENCE_AUDIO_MIME_TYPES = [
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave',
+] as const;
+export const WAN_3_REFERENCE_AUDIO_EXTENSIONS = ['mp3', 'wav'] as const;
 
 const UI_ASPECT_RATIOS = ['auto', '16:9', '4:3', '1:1', '3:4', '9:16'];
 const COMMON_MODES = [...WAN_3_MODES];
@@ -80,7 +84,13 @@ export const WAN_3_INPUT_SCHEMA: NonNullable<EngineCaps['inputSchema']> = {
     { id: 'end_image_url', type: 'image', label: 'End image', modes: ['i2v'], minCount: 0, maxCount: 1, source: 'either', description: 'Only valid with start_image_url.' },
     { id: 'reference_image_urls', type: 'image', label: 'Reference images', modes: ['ref2v', 'v2v', 'extend'], minCount: 0, maxCount: 10, maxSizeMB: 20, source: 'either' },
     { id: 'reference_video_urls', type: 'video', label: 'Reference videos', modes: ['ref2v'], minCount: 0, maxCount: 5, maxDurationSec: 15, maxSizeMB: 100, source: 'either', description: 'Combined video duration <=15 seconds; each video must be >=16 fps.' },
-    { id: 'reference_audio_urls', type: 'audio', label: 'Reference audio', modes: ['ref2v', 'v2v', 'extend'], minCount: 0, maxCount: 5, maxDurationSec: 15, maxSizeMB: 15, source: 'either', description: 'Combined audio duration <=15 seconds.' },
+    {
+      id: 'reference_audio_urls', type: 'audio', label: 'Reference audio', modes: ['ref2v', 'v2v', 'extend'],
+      minCount: 0, maxCount: 5, maxDurationSec: 15, maxSizeMB: 15, source: 'either',
+      acceptedMimeTypes: [...WAN_3_REFERENCE_AUDIO_MIME_TYPES],
+      acceptedFileExtensions: [...WAN_3_REFERENCE_AUDIO_EXTENSIONS],
+      description: 'MP3 or WAV only; combined audio duration <=15 seconds.',
+    },
     { id: 'file_url', type: 'text', label: 'Document URL', modes: ['ref2v'], description: 'Public HTTPS document URL. Supports PDF, Office, iWork, Markdown, and text files up to 100 MB / 50 pages. Cannot be combined with a webpage URL.' },
     { id: 'web_url', type: 'text', label: 'Public webpage URL', modes: ['ref2v'], description: 'Public HTTPS webpage that does not require login. Cannot be combined with a document URL.' },
     { id: 'duration', type: 'number', label: 'Duration (seconds)', modes: COMMON_MODES, min: 2, max: 30, step: 1, default: 5, description: 'Choose a whole-number output duration from 2 to 30 seconds.' },

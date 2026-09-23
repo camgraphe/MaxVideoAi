@@ -117,7 +117,10 @@ export function resolveAlibabaSubmissionMediaInputs(params: {
   };
 }
 
-function userSafeAlibabaMessage(errorClass: string): string {
+function userSafeAlibabaMessage(errorClass: string, errorCode?: string | null): string {
+  if (errorCode === 'ALIBABA_REFERENCE_AUDIO_UNSUPPORTED') {
+    return 'Wan 3 reference audio must be an MP3 or WAV file. Convert the audio and try again.';
+  }
   if (errorClass === 'moderation') {
     return 'This request was blocked by safety checks. Review the prompt and reference media before trying again.';
   }
@@ -460,7 +463,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       });
     }
 
-    const message = userSafeAlibabaMessage(normalized.errorClass);
+    const message = userSafeAlibabaMessage(normalized.errorClass, normalized.code);
     if (!acceptedProviderJobId) {
       await failJobAndRollback({
         jobId: params.jobId,

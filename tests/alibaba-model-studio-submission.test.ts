@@ -194,6 +194,37 @@ test('Alibaba submission forwards a Wan document URL as direct media', async () 
   );
 });
 
+test('Wan reference audio format failure explains MP3/WAV before provider submission', async () => {
+  const { queries, queryFn } = createQueryRecorder();
+  let providerCalls = 0;
+  const audioUrl = 'https://media.example/voice.m4a';
+  const { params } = baseParams({
+    engineId: 'wan-3-prime', engineLabel: 'Wan 3 Prime', mode: 'ref2v',
+    falPayload: {
+      ...falPayload,
+      engineId: 'wan-3-prime', mode: 'ref2v',
+      referenceImages: ['https://media.example/reference.jpg'],
+      audioUrl,
+      inputs: [{ name: 'voice.m4a', type: 'audio/mp4', size: 1000, kind: 'audio', slotId: 'reference_audio_urls', url: audioUrl }],
+    },
+    deps: {
+      queryFn,
+      getAlibabaModelStudioClientFn: () => ({
+        createVideo: async () => { providerCalls += 1; return acceptedTask(); },
+        getTask: async () => acceptedTask(),
+      }),
+    },
+  });
+
+  const result = await submitAlibabaModelStudioGenerateTask(params);
+  assert.equal(result.ok, false);
+  assert.equal(result.body.error, 'ALIBABA_REFERENCE_AUDIO_UNSUPPORTED');
+  assert.match(String(result.body.message), /MP3 or WAV/);
+  assert.equal(providerCalls, 0);
+  assert.equal(queries.some(({ sql, params: values }) =>
+    /UPDATE app_jobs/.test(sql) && values.includes(result.body.message)), true);
+});
+
 test('Alibaba submission falls back once for a retryable error before acceptance', async () => {
   const { queries, queryFn } = createQueryRecorder();
   let falCalls = 0;

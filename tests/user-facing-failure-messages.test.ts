@@ -25,6 +25,15 @@ test('user-facing failure messages hide provider and internal wording', () => {
   assert.doesNotMatch(message, forbidden);
 });
 
+test('Wan reference audio guidance survives job and refund sanitization', () => {
+  const message = 'Wan 3 reference audio must be an MP3 or WAV file. Convert the audio and try again.';
+  assert.equal(toUserFacingFailureMessage(message), message);
+  assert.equal(
+    buildUserFacingRefundDescription({ engineLabel: 'Wan 3 Prime', durationSec: 4, reason: message }),
+    `Refund Wan 3 Prime - 4s - ${message}`,
+  );
+});
+
 test('refund descriptions use product wording instead of raw provider failures', () => {
   const description = buildUserFacingRefundDescription({
     engineLabel: 'Seedance 2.0',
