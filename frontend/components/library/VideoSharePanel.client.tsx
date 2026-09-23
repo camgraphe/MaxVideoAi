@@ -6,10 +6,10 @@ import { Check, Download, Ellipsis, Link2, Linkedin, Mail, Share2 } from 'lucide
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
 import { copyTextToClipboard } from '@/lib/clipboard';
-import { buildVideoShareIntent, type LinkShareTarget } from './video-share-intents';
+import { buildVideoShareIntent, buildXVideoPostIntent, type LinkShareTarget } from './video-share-intents';
 import { videoShareCopy } from './video-share-copy';
 
-type VideoTarget = 'tiktok' | 'reels' | 'shorts';
+type VideoTarget = 'tiktok' | 'reels' | 'shorts' | 'x';
 
 function BrandIcon({ name }: { name: 'tiktok' | 'instagram' | 'youtubeshorts' | 'x' | 'whatsapp' | 'facebook' | 'telegram' }) {
   return <Image src={`/brand/share/${name}.svg`} width={21} height={21} alt="" aria-hidden unoptimized />;
@@ -64,7 +64,7 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
   useEffect(() => {
     setFile(null);
     setFileError(null);
-    if (!activeVideoTarget) return;
+    if (!activeVideoTarget || activeVideoTarget === 'x') return;
     if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') {
       setFileError(copy.fileUnavailable);
       return;
@@ -131,10 +131,18 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
       <button type="button" aria-pressed={activeVideoTarget === 'tiktok'} onClick={() => chooseVideoTarget('tiktok')} data-analytics-event="cta_click" data-analytics-cta-name="video_share_tiktok" data-analytics-cta-location="share_panel"><BrandIcon name="tiktok" /><span>TikTok</span></button>
       <button type="button" aria-pressed={activeVideoTarget === 'reels'} onClick={() => chooseVideoTarget('reels')} data-analytics-event="cta_click" data-analytics-cta-name="video_share_reels" data-analytics-cta-location="share_panel"><BrandIcon name="instagram" /><span>{copy.reels}</span></button>
       <button type="button" aria-pressed={activeVideoTarget === 'shorts'} onClick={() => chooseVideoTarget('shorts')} data-analytics-event="cta_click" data-analytics-cta-name="video_share_shorts" data-analytics-cta-location="share_panel"><BrandIcon name="youtubeshorts" /><span>{copy.shorts}</span></button>
-      <a href={linkIntent('x')} target="_blank" rel="noopener noreferrer" aria-disabled={!shareUrl} onClick={event => { if (!shareUrl) event.preventDefault(); }} data-analytics-event="cta_click" data-analytics-cta-name="video_share_x" data-analytics-cta-location="share_panel"><BrandIcon name="x" /><span>X</span></a>
+      <button type="button" aria-pressed={activeVideoTarget === 'x'} onClick={() => chooseVideoTarget('x')} data-analytics-event="cta_click" data-analytics-cta-name="video_share_x" data-analytics-cta-location="share_panel"><BrandIcon name="x" /><span>X</span></button>
       <button type="button" aria-expanded={moreOpen} onClick={() => { setMoreOpen(value => !value); setActiveVideoTarget(null); }} data-analytics-event="cta_click" data-analytics-cta-name="video_share_more" data-analytics-cta-location="share_panel"><Ellipsis size={21} aria-hidden /><span>{copy.more}</span></button>
     </div>
-    {activeVideoTarget ? <div className="app-video-share-file-actions">
+    {activeVideoTarget === 'x' ? <div className="app-video-share-x-flow">
+      <p>{copy.xVideoIntro}</p>
+      <div className="app-video-share-file-actions">
+        <a href={downloadHref} data-analytics-event="cta_click" data-analytics-cta-name="video_save_mp4" data-analytics-cta-location="share_panel"><Download size={17} aria-hidden />1. {copy.saveMp4}</a>
+        <a href={buildXVideoPostIntent(hashtag, shareUrl)} target="_blank" rel="noopener noreferrer" data-analytics-event="cta_click" data-analytics-cta-name="video_share_x_video" data-analytics-cta-location="share_panel"><BrandIcon name="x" />2. {copy.xOpenComposer}</a>
+      </div>
+      <small>{copy.xAttachVideo}</small>
+      <a href={linkIntent('x')} target="_blank" rel="noopener noreferrer" aria-disabled={!shareUrl} onClick={event => { if (!shareUrl) event.preventDefault(); }} data-analytics-event="cta_click" data-analytics-cta-name="video_share_x_link" data-analytics-cta-location="share_panel">{copy.xLinkOnly}</a>
+    </div> : activeVideoTarget ? <div className="app-video-share-file-actions">
       <button type="button" disabled={!file || preparingFile} onClick={() => void shareFile()} data-analytics-event="cta_click" data-analytics-cta-name="video_share_file_apps" data-analytics-cta-location="share_panel"><Share2 size={17} aria-hidden />{preparingFile ? copy.preparing : copy.shareApps}</button>
       <a href={downloadHref} data-analytics-event="cta_click" data-analytics-cta-name="video_save_mp4" data-analytics-cta-location="share_panel"><Download size={17} aria-hidden />{copy.saveMp4}</a>
     </div> : null}

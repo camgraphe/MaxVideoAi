@@ -1,5 +1,11 @@
 export type LinkShareTarget = 'email' | 'x' | 'whatsapp' | 'telegram' | 'linkedin' | 'facebook';
 
+/** A native X video still has to be attached by the creator in X's composer. */
+export function buildXVideoPostIntent(hashtag: string, shareUrl: string | null): string {
+  const text = [hashtag.trim(), shareUrl].filter(Boolean).join('\n\n');
+  return `https://x.com/intent/tweet?${new URLSearchParams({ text })}`;
+}
+
 /** Only destinations with a documented text field receive the optional signature. */
 export function buildVideoShareIntent(target: LinkShareTarget, url: string, signature: string, locale: string): string {
   const note = signature.trim();

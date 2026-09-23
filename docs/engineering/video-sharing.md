@@ -20,14 +20,14 @@ Apply `neon/migrations/49_video_share_links.sql` before deploying the API and pa
 | Link | Copy the MaxVideoAI page URL. |
 | E-mail | Open a draft with the link and editable “Video created with MaxVideoAI” style footer. |
 | TikTok, Reels, Shorts | Offer the browser's native video file share when supported, plus MP4 saving. Suggest editable `#MaxVideoAI`; a destination app may ignore prefilled text. |
-| X | Open a draft with the link and editable `#MaxVideoAI`. |
+| X | Expand a native-video path: save MP4, open an X draft with editable `#MaxVideoAI` and the share link when available, then attach the MP4 before posting. A separate link-only action explicitly says it produces an image preview. X's intent URL cannot attach the file. |
 | More | WhatsApp and Telegram receive link plus editable footer. LinkedIn and Facebook receive the URL only because their share dialogs do not guarantee custom text. Native link share is offered where available. |
 
 The user may edit or erase either suggestion. No watermark is applied to the video. `video-share-intents.ts` builds the platform URLs; `VideoSharePanel.client.tsx` owns the browser share/file behavior; `video-share-copy.ts` owns EN/FR/ES UI copy.
 
 The existing consent-aware `cta_click` event records panel openings and destination selections with a `video_share_*` action name. It does not send the video URL, token, caption, or hashtag. Use those counts to judge which destinations merit deeper integrations.
 
-The browser's file-share API does not select a specific destination app. It lets the user choose an installed app; saving the MP4 remains a clear alternative. Keep this distinction in UI text and QA.
+The browser's file-share API does not select a specific destination app. It lets the user choose an installed app; saving the MP4 remains a clear alternative. Keep this distinction in UI text and QA. The `/s/[token]` page currently advertises a `summary_large_image` X card, so a link-only X post shows a still cover rather than an in-feed video. A Player Card is a separate integration with platform-specific validation and cannot be treated as a native uploaded video.
 
 Platform references: [Web Share files and user activation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share), [TikTok content sharing and watermark rules](https://developers.tiktok.com/docs/en/content-sharing-guidelines), [TikTok direct-post capability](https://developers.tiktok.com/products/content-posting-api), and [LinkedIn link-post guidance](https://www.linkedin.com/help/linkedin/answer/a525301/sharing-articles-or-links?lang=en). Recheck these before introducing direct publishing or changing text assumptions.
 
