@@ -26,6 +26,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/mcp/reference-upload',
   '/settings',
   '/video',
+  '/s/',
   '/sitemap-video-pages.xml',
   '/sitemap-video.xml',
   '/app',

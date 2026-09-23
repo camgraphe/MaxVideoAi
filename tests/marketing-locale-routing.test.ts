@@ -115,6 +115,10 @@ test('private MCP reference-upload handoffs bypass marketing locale routing', ()
   );
 });
 
+test('private video share links bypass marketing locale routing', () => {
+  assert.equal(shouldHandleLocale(`/s/${'A'.repeat(32)}`), false);
+});
+
 test('model-shaped compatibility redirects are not owned by marketing middleware', () => {
   const source = readFileSync('frontend/lib/middleware/routing-marketing.ts', 'utf8');
   assert.doesNotMatch(source, /['"]\/models\/(?:luma-dream-machine|pika-image-to-video)/);
