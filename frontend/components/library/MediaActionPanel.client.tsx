@@ -9,6 +9,7 @@ import { mediaActionCopy, meaningfulMediaLabel } from './media-action-copy';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
+import { VideoSharePanel } from './VideoSharePanel.client';
 
 /** One original, one reader, and the same selected output for every action. */
 export function MediaActionPanel({ asset, locale, onClose, children, title, boundaryRef, navigation, details }: {
@@ -33,6 +34,7 @@ function MediaContent({ asset, locale, children, details }: { asset: AssetBrowse
   const name = recentMediaFilename(asset.url, asset.kind);
   const label = meaningfulMediaLabel(asset.url, recentMediaCopy(locale)[asset.kind]);
   const share = async () => {
+    if (asset.kind === 'video') { setSharing(value => !value); return; }
     if (typeof navigator.share !== 'function') { setSharing(value => !value); return; }
     try { await navigator.share({ title: label, url: asset.url }); }
     catch (failure) { if (!(failure instanceof Error && failure.name === 'AbortError')) setSharing(true); }
@@ -51,10 +53,10 @@ function MediaContent({ asset, locale, children, details }: { asset: AssetBrowse
       <p className="app-media-panel-filename">{[label, asset.width && asset.height ? `${asset.width} × ${asset.height}` : null, asset.durationSec ? `${asset.durationSec}s` : null].filter(Boolean).join(' · ')}</p>
       <div className="app-media-panel-transport">
         <a href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, name))}><Download size={16} aria-hidden />{copy.download}</a>
-        <button type="button" aria-expanded={sharing} onClick={() => void share()}><Share2 size={16} aria-hidden />{labels[0]}</button>
+        <button type="button" aria-expanded={sharing} onClick={() => void share()} data-analytics-event={sharing ? undefined : 'cta_click'} data-analytics-cta-name="video_share_open" data-analytics-cta-location="result_modal"><Share2 size={16} aria-hidden />{labels[0]}</button>
         <a href={asset.url} target="_blank" rel="noreferrer" aria-label={labels[3]} title={labels[3]}><ExternalLink size={16} aria-hidden /></a>
       </div>
-      {sharing ? <div className="app-media-share">
+      {sharing && asset.kind === 'video' ? <VideoSharePanel asset={asset} locale={locale} /> : sharing ? <div className="app-media-share">
         <button type="button" onClick={async () => { const ok = await copyTextToClipboard(asset.url); setCopied(ok); setError(!ok); }}>{copied ? <Check size={16} aria-hidden /> : <Link2 size={16} aria-hidden />}{copied ? labels[2] : labels[1]}</button>
         <small>{labels[6]}</small>
         {error ? <p role="alert">{labels[5]}</p> : null}

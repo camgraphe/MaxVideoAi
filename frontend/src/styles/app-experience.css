@@ -599,11 +599,34 @@
 .app-experience .app-media-share { display: grid; gap: 6px; padding-top: 12px; }
 .app-experience .app-media-share button { display: flex; align-items: center; gap: 8px; }
 .app-experience .app-media-share small { color: var(--app-muted); font-size: 11px; }
+.app-experience .app-video-share { gap: 8px; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--app-line); border-radius: 10px; }
+.app-experience .app-video-share-destinations { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.app-experience .app-video-share-destinations > :is(button, a) { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 55px; padding: 4px 1px; border: 1px solid transparent; border-radius: 7px; color: var(--app-ink); text-decoration: none; }
+.app-experience .app-video-share-destinations > :is(button, a):is(:hover, :focus-visible), .app-experience .app-video-share-destinations > button[aria-pressed="true"] { border-color: var(--app-accent); background: var(--app-accent-soft); }
+.app-experience .app-video-share-destinations > :is(button, a)[aria-disabled="true"] { opacity: .45; cursor: wait; }
+.app-experience .app-video-share-destinations span { max-width: 100%; overflow: hidden; font-size: 10px; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.app-experience .app-video-share-destinations img, .app-experience .app-video-share-more img { filter: brightness(0); }
+[data-theme="dark"] .app-experience .app-video-share-destinations img, [data-theme="dark"] .app-experience .app-video-share-more img { filter: brightness(0) invert(1); }
+.app-experience .app-video-share-file-actions { display: flex; gap: 6px; }
+.app-experience .app-video-share-file-actions > :is(button, a) { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 7px; min-width: 0; padding: 0 8px; border: 1px solid var(--app-line); text-align: center; text-decoration: none; }
+.app-experience .app-video-share-more { display: flex; flex-wrap: wrap; gap: 5px; }
+.app-experience .app-video-share-more > :is(button, a) { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 8px; border: 1px solid var(--app-line); color: var(--app-ink); text-decoration: none; }
+.app-experience .app-video-share-more > [aria-disabled="true"] { opacity: .45; cursor: wait; }
+.app-experience .app-video-share-signature { display: flex; align-items: center; gap: 8px; min-width: 0; border-top: 1px solid var(--app-line); padding-top: 8px; font-size: 11px; color: var(--app-muted); }
+.app-experience .app-video-share-signature span { flex: none; }
+.app-experience .app-video-share-signature input { width: 100%; min-width: 0; height: 30px; padding: 0 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--app-ink); font-size: 11px; }
+.app-experience .app-video-share-signature input:is(:hover, :focus-visible) { border-color: var(--app-line); outline: none; }
+.app-experience .app-video-share-footnote { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.app-experience .app-video-share-footnote button, .app-experience .app-video-share-copy-signature { min-height: 28px; padding: 0 2px; color: var(--app-muted); font-size: 11px; text-decoration: underline; text-underline-offset: 2px; }
+.app-experience .app-video-share-footnote small { font-size: 10px; }
+.app-experience .app-video-share-note, .app-experience .app-video-share-feedback { margin: 0; color: var(--app-muted); font-size: 11px; }
 @media (max-width: 760px) {
   .app-experience .app-media-panel-backdrop { padding: 8px; }
   .app-experience .app-media-panel { padding: 0 16px max(20px, env(safe-area-inset-bottom)); max-height: calc(100dvh - 16px); border-radius: 14px; }
   .app-experience .app-media-detail-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .app-experience .app-media-panel-cover { height: min(40dvh, 350px); min-height: 180px; }
+  .app-experience .app-video-share { padding: 8px; }
+  .app-experience .app-video-share-signature { flex-wrap: wrap; gap: 2px; }
 }
 .app-experience .app-media-panel-cover .app-media-play { position: relative; display: grid; place-items: center; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; color: #fff; }
 .app-experience .app-media-play > img { position: absolute; inset: 0; }

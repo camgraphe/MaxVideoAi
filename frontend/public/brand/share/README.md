@@ -1,0 +1,1 @@
+These brand glyphs are from [Simple Icons](https://github.com/simple-icons/simple-icons), retrieved 23 September 2026. The library is CC0; platform marks remain subject to their respective brand guidelines. Keep them as assets rather than approximating brand logos in CSS.

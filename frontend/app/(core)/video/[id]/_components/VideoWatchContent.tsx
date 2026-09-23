@@ -11,6 +11,7 @@ import { VideoWatchCard } from './VideoWatchCard';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoWatchSidebar } from './VideoWatchSidebar';
 import { VideoWatchSourceImages } from './VideoWatchSourceImages';
+import { VideoWatchShare } from './VideoWatchShare.client';
 
 const PROMPT_CONTEXT_PREVIEW_MAX_CHARS = 280;
 
@@ -153,6 +154,10 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
               containerStyle={containerStyle}
               videoStyle={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
             />
+
+            <div className="border-b border-hairline px-5 py-3 sm:px-6">
+              <VideoWatchShare videoId={video.id} videoUrl={videoUrl} watchUrl={canonical} />
+            </div>
 
             <div className="p-5 sm:p-6">
               <div className="max-w-3xl">
