@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "course-visual-kit-claude-desktop-maxvideoai": {
+    en: "course-visual-kit-claude-desktop-maxvideoai",
+    fr: "course-visual-kit-claude-desktop-maxvideoai",
+    es: "course-visual-kit-claude-desktop-maxvideoai",
+  },
   "pack-broll-codex-cli-maxvideoai": {
     en: "pack-broll-codex-cli-maxvideoai",
     fr: "pack-broll-codex-cli-maxvideoai",
