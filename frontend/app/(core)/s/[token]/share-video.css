@@ -1,0 +1,8 @@
+.shared-video-page { min-height: 100dvh; padding: clamp(20px, 5vw, 64px); background: #171a18; color: #f4f2ed; }
+.shared-video-page-inner { width: min(1040px, 100%); margin: 0 auto; }
+.shared-video-brand { display: inline-block; margin-bottom: 32px; color: #f4f2ed; font-size: 20px; font-weight: 700; text-decoration: none; }
+.shared-video-page video { display: block; width: 100%; max-height: 75dvh; aspect-ratio: 16 / 9; border: 1px solid #ffffff24; border-radius: 14px; background: #090b0a; }
+.shared-video-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+.shared-video-footer p { margin: 0; color: #b6b9b4; font-size: 14px; }
+.shared-video-footer a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #c7a66a; border-radius: 8px; color: #f4e5c6; font-size: 14px; text-decoration: none; }
+.shared-video-footer a:hover, .shared-video-footer a:focus-visible { background: #c7a66a22; }

@@ -11,6 +11,7 @@ import { VideoWatchCard } from './VideoWatchCard';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoWatchSidebar } from './VideoWatchSidebar';
 import { VideoWatchSourceImages } from './VideoWatchSourceImages';
+import { VideoWatchShare } from './VideoWatchShare.client';
 
 const PROMPT_CONTEXT_PREVIEW_MAX_CHARS = 280;
 
@@ -154,6 +155,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
               videoStyle={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
             />
 
+            <VideoWatchShare videoId={video.id} videoUrl={videoUrl} watchUrl={canonical} />
             <div className="p-5 sm:p-6">
               <div className="max-w-3xl">
                 <h1 className="text-[1.75rem] font-semibold tracking-tight text-text-primary sm:text-[2.1rem]">{signals.title}</h1>

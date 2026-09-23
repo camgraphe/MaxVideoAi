@@ -27,7 +27,8 @@ test('media inspector keeps actions with one original reader and restores focus'
     assert.equal(dom.window.document.querySelector('video')?.hasAttribute('autoplay'), true);
     assert.ok(dom.window.document.querySelector('[data-destination]'));
     await act(async () => [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === 'Partager')!.click());
-    assert.match(dom.window.document.body.textContent ?? '', /Copier le lien du média/);
+    assert.equal(dom.window.document.querySelectorAll('.app-video-share-destinations > *').length, 7);
+    assert.match(dom.window.document.body.textContent ?? '', /TikTok/);
     assert.ok(dom.window.document.querySelector('[data-destination]'));
     const second = 'https://private.example/second.mp4';
     await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'second', url: second, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
@@ -37,7 +38,7 @@ test('media inspector keeps actions with one original reader and restores focus'
     assert.equal(dom.window.document.querySelector('video')?.getAttribute('src'), second);
     const originalLink = dom.window.document.querySelector('a[aria-label="Ouvrir l’original"]');
     assert.equal(originalLink?.getAttribute('href'), second);
-    assert.doesNotMatch(dom.window.document.body.textContent ?? '', /Copier le lien du média/);
+    assert.equal(dom.window.document.querySelector('.app-video-share'), null);
     await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Fermer"]')!.click());
     assert.equal(dom.window.document.activeElement, opener);
   } finally {
