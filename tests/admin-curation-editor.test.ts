@@ -88,7 +88,7 @@ test('curation stages drag order, previews before save, locks requests and prese
         el.getAttribute('data-curation-item'),
       );
     assert.deepEqual(order(), ['b', 'a']);
-    assert.equal(button('Save changes'), undefined, 'saving requires an explicit preview');
+    assert.equal(button('Save changes').disabled, true, 'saving requires an explicit preview');
     await act(async () => button('Cancel').click());
     assert.deepEqual(order(), ['a', 'b']);
     await act(async () =>
@@ -108,6 +108,13 @@ test('curation stages drag order, previews before save, locks requests and prese
         }),
       ),
     );
+    const preview = dom.window.document.querySelector('[aria-label="Page preview"]')!;
+    const selected = dom.window.document.querySelector('[aria-label="Selected media"]')!;
+    assert.ok(preview.compareDocumentPosition(selected) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    assert.match(preview.textContent!, /Page preview · 2 videos/);
+    assert.equal(dom.window.document.activeElement?.textContent, 'Page preview · 2 videos');
+    assert.equal(button('Save changes').disabled, false, 'save is available beside the preview action');
+    assert.equal(button('Preview changes').parentElement?.contains(button('Save changes')), true);
     await act(async () => button('Save changes').click());
     assert.equal(JSON.parse(String(requests[2].init?.body)).token, 't1');
     await act(async () =>
@@ -115,7 +122,7 @@ test('curation stages drag order, previews before save, locks requests and prese
     );
     assert.match(dom.window.document.body.textContent!, /destination changed/);
     assert.deepEqual(order(), ['b', 'a'], 'failed save retains draft');
-    assert.equal(button('Save changes'), undefined, 'failed save invalidates preview');
+    assert.equal(button('Save changes').disabled, true, 'failed save invalidates preview');
     await act(async () => button('Preview changes').click());
     await act(async () =>
       requests[3].resolve(
@@ -143,6 +150,7 @@ test('curation stages drag order, previews before save, locks requests and prese
       ),
     );
     assert.equal(button('Cancel').disabled, true);
+    assert.equal(button('Save changes').disabled, true);
     assert.deepEqual(order(), ['b', 'a']);
     await act(async () =>
       root.render(
