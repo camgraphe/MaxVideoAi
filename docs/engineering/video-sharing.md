@@ -8,8 +8,11 @@ The Result modal and media library use `MediaActionPanel.client.tsx`. Video shar
 - Public examples use their existing `/video/[id]` watch page after confirming public visibility, indexability, a stable URL, and an exact original match. Only the explicit `public-example` source takes this path; a user's private result gallery uses authenticated ownership checks. These links need no token or owner revocation.
 - `GET /api/video-shares/public-download` streams a verified public example from the owned media CDN. It supports real MP4 saving and compatible browser file shares for visitors; it does not accept an arbitrary source URL.
 - `/s/[token]` reads the current source at request time, is excluded from indexing, and disappears if the source is removed or the owner deactivates the link. `DELETE /api/video-shares` requires the owner.
+- The token page reuses the public video site's navigation, footer, and watch-page visual language, but only shows the video and generic context. It never promotes a private generation into the indexable `/video/[id]` example route or reveals its prompt or account details. All token URLs use the same route template.
 - The underlying original may already be publicly reachable. Deactivating the MaxVideoAI share page does not revoke direct media URLs that a recipient copied separately.
 - Signed, temporary, private, and placeholder media URLs cannot receive a lasting link. File sharing remains available when the browser supports it.
+
+The two URL types have different acquisition roles. `/s/[token]` is an unlisted landing page for recipient visits from social posts, messages, and email; it is never submitted as an SEO video page. Curated `/video/[id]` examples are the public, indexable watch pages with editorial context and video metadata. Publishing a customer's generation into that catalog would require a separate, explicit opt-in and quality/rights review; sharing a link must not silently do it.
 
 Apply `neon/migrations/49_video_share_links.sql` before deploying the API and page. This migration does not run in a request path. The new URL must remain same-origin in local development and use `SITE_ORIGIN` in production.
 
