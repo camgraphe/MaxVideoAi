@@ -28,7 +28,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Overview',
     items: [
       { id: 'hub-health', label: 'Today', href: '/admin', icon: 'dashboard' },
-      { id: 'insights', label: 'Trends', href: '/admin/insights', icon: 'insights' },
+      { id: 'insights', label: 'Insights', href: '/admin/insights', icon: 'insights' },
       { id: 'mcp', label: 'MCP activity', href: '/admin/mcp', icon: 'insights' },
     ],
   },

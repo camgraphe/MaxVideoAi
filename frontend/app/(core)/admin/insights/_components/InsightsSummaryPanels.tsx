@@ -12,13 +12,12 @@ export function PrioritySignalPanel({
   return (
     <div className="px-5 py-5">
       <div className="mb-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Priority queue</p>
-        <p className="mt-1 text-sm text-text-secondary">What needs attention in the current {humanRange} before drilling into users, jobs or billing.</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">What needs attention</p>
+        <p className="mt-1 text-sm text-text-secondary">Cash flow for {humanRange}; other signals use fixed 30-day windows.</p>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
-        <div className="divide-y divide-hairline">
+      <div className="divide-y divide-hairline border-t border-hairline">
           {signals.map((signal) => (
-            <Link key={signal.label} href={signal.href} className="flex items-start justify-between gap-4 px-4 py-4 transition hover:bg-bg">
+            <Link key={signal.label} href={signal.href} className="flex items-start justify-between gap-4 py-4 transition hover:bg-bg">
               <div>
                 <p className="text-sm font-medium text-text-primary">{signal.label}</p>
                 <p className="mt-1 text-xs leading-5 text-text-secondary">{signal.helper}</p>
@@ -29,7 +28,6 @@ export function PrioritySignalPanel({
               </div>
             </Link>
           ))}
-        </div>
       </div>
     </div>
   );

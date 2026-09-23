@@ -3,7 +3,6 @@ import type { ChartTheme, DeltaSnapshot, FocusMetric, FocusMetricData, SmallStat
 import {
   formatAverage,
   formatAverageTicket,
-  formatAxisCurrency,
   formatCurrency,
   formatDay,
   formatDeltaLabel,
@@ -43,13 +42,16 @@ export function buildFocusMetricData(
       description: 'Sum of daily active accounts. An account active on several days is counted on each day.',
       theme: CHART_THEMES.active,
       currentPoints: comparison.current.activeAccountsDaily.map((point) => ({
+        date: point.date,
         label: formatDay(point.date),
         value: point.value,
       })),
       previousPoints: comparison.previous.activeAccountsDaily.map((point) => ({
+        date: point.date,
         label: formatDay(point.date),
         value: point.value,
       })),
+      valueKind: 'count',
       stats: buildCountSeriesStats(comparison.current.activeAccountsDaily, comparison.previous.activeAccountsDaily, humanRange, {
         totalLabel: 'Current total',
         totalHelper: 'Summed daily active-account counts',
@@ -65,16 +67,17 @@ export function buildFocusMetricData(
       description: 'Daily wallet loads, including manual credits.',
       theme: CHART_THEMES.topups,
       currentPoints: comparison.current.topupsDaily.map((point) => ({
+        date: point.date,
         label: formatDay(point.date),
         value: point.amountCents / 100,
       })),
       previousPoints: comparison.previous.topupsDaily.map((point) => ({
+        date: point.date,
         label: formatDay(point.date),
         value: point.amountCents / 100,
       })),
+      valueKind: 'currency',
       stats: buildAmountSeriesStats(comparison.current.topupsDaily, comparison.previous.topupsDaily, humanRange, 'loads'),
-      axisFormatter: formatAxisCurrency,
-      tooltipFormatter: (value) => formatCurrency(value, { precise: value < 100 }),
     };
   }
 
@@ -85,16 +88,17 @@ export function buildFocusMetricData(
       description: 'Daily generation charges before refunds. Refunds and net spend appear in the wallet table.',
       theme: CHART_THEMES.charges,
       currentPoints: comparison.current.chargesDaily.map((point) => ({
+        date: point.date,
         label: formatDay(point.date),
         value: point.amountCents / 100,
       })),
       previousPoints: comparison.previous.chargesDaily.map((point) => ({
+        date: point.date,
         label: formatDay(point.date),
         value: point.amountCents / 100,
       })),
+      valueKind: 'currency',
       stats: buildAmountSeriesStats(comparison.current.chargesDaily, comparison.previous.chargesDaily, humanRange, 'gross debits'),
-      axisFormatter: formatAxisCurrency,
-      tooltipFormatter: (value) => formatCurrency(value, { precise: value < 100 }),
     };
   }
 
@@ -104,13 +108,16 @@ export function buildFocusMetricData(
     description: 'Daily signups recorded in synchronized account profiles.',
     theme: CHART_THEMES.signups,
     currentPoints: comparison.current.signupsDaily.map((point) => ({
+      date: point.date,
       label: formatDay(point.date),
       value: point.value,
     })),
     previousPoints: comparison.previous.signupsDaily.map((point) => ({
+      date: point.date,
       label: formatDay(point.date),
       value: point.value,
     })),
+    valueKind: 'count',
     stats: buildCountSeriesStats(comparison.current.signupsDaily, comparison.previous.signupsDaily, humanRange),
   };
 }
