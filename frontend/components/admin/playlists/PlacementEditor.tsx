@@ -1,5 +1,5 @@
 'use client';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { usePlacementEditor } from './usePlacementEditor';
 import { PlacementMediaList } from './PlacementMediaList';
@@ -13,6 +13,10 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
   const state = usePlacementEditor(playlistId, onStateChange);
   const [search, setSearch] = useState('');
   const { loaded, draft, busy, dirty, change, preview } = state;
+  const previewHeadingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (preview) previewHeadingRef.current?.focus();
+  }, [preview]);
   const ordered = draft.orderedIds.flatMap((id) => loaded?.candidates.find((item) => item.id === id) ?? []);
   const available = (loaded?.candidates ?? []).filter(
     (item) => !draft.orderedIds.includes(item.id) && !draft.excludedIds.includes(item.id),
@@ -80,7 +84,7 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
             <option value="hybrid">Featured + Automatic</option>
           </select>
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
             variant="outline"
@@ -101,13 +105,19 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
           >
             Preview changes
           </Button>
+          <Button size="sm" disabled={busy || !preview} onClick={state.save}>
+            Save changes
+          </Button>
         </div>
       </div>
       <p className="text-xs text-text-secondary">
         {draft.mode === 'hybrid'
           ? 'Featured videos stay first in your chosen order. Other eligible published videos follow by creation date, newest first.'
           : 'Only the selected videos appear, in your chosen order. New publications are offered below.'}{' '}
-        {dirty ? 'Unsaved changes.' : ''}
+        {dirty ? 'Unsaved changes.' : ''}{' '}
+        {!preview && (dirty || loaded.removedCount || !loaded.snapshot.config)
+          ? 'Preview changes to enable saving.'
+          : ''}
       </p>
       {state.error ? (
         <p role="alert" className="text-sm text-error">
@@ -118,6 +128,24 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
         <p role="status" className="text-sm text-success">
           {state.message}
         </p>
+      ) : null}
+      {preview ? (
+        <section aria-label="Page preview" className="border-t-2 border-brand pt-4">
+          <h3 ref={previewHeadingRef} tabIndex={-1} className="text-sm font-semibold">
+            Page preview · {preview.items.length} videos
+          </h3>
+          <p className="my-2 text-xs text-text-secondary">
+            {draft.mode === 'manual' ? 'Manual order' : 'Featured + Automatic'}. This selection takes effect after
+            saving. New publications may extend automatic results.
+          </p>
+          <ol className="max-h-64 overflow-auto text-sm">
+            {preview.items.map((item, index) => (
+              <li key={item.id} className="truncate py-1">
+                {index + 1}. {item.prompt || item.id}
+              </li>
+            ))}
+          </ol>
+        </section>
       ) : null}
       <section aria-label="Selected media">
         <h3 className="text-sm font-semibold">
@@ -188,25 +216,6 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
           ))}
         </ul>
       </details>
-      {preview ? (
-        <section aria-label="Page preview" className="border-t-2 border-brand pt-4">
-          <h3 className="text-sm font-semibold">Page preview · {preview.items.length} videos</h3>
-          <p className="my-2 text-xs text-text-secondary">
-            {draft.mode === 'manual' ? 'Manual order' : 'Featured + Automatic'}. This selection takes effect after
-            saving. New publications may extend automatic results.
-          </p>
-          <ol className="max-h-64 overflow-auto text-sm">
-            {preview.items.map((item, index) => (
-              <li key={item.id} className="truncate py-1">
-                {index + 1}. {item.prompt || item.id}
-              </li>
-            ))}
-          </ol>
-          <Button className="mt-3" size="sm" disabled={busy} onClick={state.save}>
-            Save changes
-          </Button>
-        </section>
-      ) : null}
     </div>
   );
 }
