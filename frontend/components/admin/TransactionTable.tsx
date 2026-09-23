@@ -30,6 +30,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
   hourCycle: 'h23',
   timeZone: 'Europe/Madrid',
 });
+const durationFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 
 const TYPE_LABEL: Record<AdminTransactionRecord['type'], string> = {
   charge: 'Charge',
@@ -64,6 +65,7 @@ export function AdminTransactionTable({
   const selected =
     rows.find((row) => String(row.receiptId) === selectedId) ??
     (String(initialReceipt?.receiptId) === selectedId ? initialReceipt : null);
+  const selectedDuration = selected ? formatJobDuration(selected.jobDurationSec) : null;
   const [pendingReceiptId, setPendingReceiptId] = useState<number | null>(null);
   const [status, setStatus] = useState<{ message: string; variant: StatusVariant } | null>(null);
   const visibleRows = rows;
@@ -177,9 +179,7 @@ export function AdminTransactionTable({
                     {TYPE_LABEL[row.type]}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
-                  {formatCurrency(row.amountCents, row.currency)}
-                </td>
+                <TransactionAmount row={row} />
                 <td className="px-3 py-2.5 text-xs">
                   {needsReview(row) ? (
                     <span className="text-warning">Needs review</span>
@@ -267,6 +267,9 @@ export function AdminTransactionTable({
                 <p className="mt-1 text-xs text-text-secondary">
                   {selected.jobStatus ?? (isMissingJobRecord(selected) ? 'Job record missing' : 'Status unavailable')}
                 </p>
+                {selectedDuration ? (
+                  <p className="mt-1 text-xs text-text-secondary">Duration: {selectedDuration}</p>
+                ) : null}
                 {selected.jobVideoUrl ? (
                   <a
                     href={selected.jobVideoUrl}
@@ -308,6 +311,20 @@ export function AdminTransactionTable({
   );
 }
 
+function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
+  const generationContext = formatGenerationContext(row);
+  return (
+    <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
+      {formatCurrency(row.amountCents, row.currency)}
+      {generationContext ? (
+        <p className="mt-0.5 max-w-[180px] truncate text-xs font-normal text-text-secondary" title={generationContext}>
+          {generationContext}
+        </p>
+      ) : null}
+    </td>
+  );
+}
+
 function formatCurrency(amountCents: number, currency: string) {
   try {
     return new Intl.NumberFormat('en-US', {
@@ -317,6 +334,18 @@ function formatCurrency(amountCents: number, currency: string) {
   } catch {
     return `${(amountCents / 100).toFixed(2)} ${currency.toUpperCase()}`;
   }
+}
+
+function formatJobDuration(durationSec: number | null) {
+  if (durationSec === null || !Number.isFinite(durationSec) || durationSec <= 0) return null;
+  return `${durationFormatter.format(durationSec)} s`;
+}
+
+function formatGenerationContext(row: AdminTransactionRecord) {
+  if (!row.jobId) return null;
+  const model = row.jobEngineLabel?.trim();
+  const duration = formatJobDuration(row.jobDurationSec);
+  return [model, duration].filter(Boolean).join(' · ') || null;
 }
 
 function formatDate(value: string | null | undefined) {
