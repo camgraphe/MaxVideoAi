@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "blender-animatic-ai-product-reveal-source-vs-reference": {
+    en: "blender-animatic-ai-product-reveal-source-vs-reference",
+    fr: "blender-animatic-ai-product-reveal-source-vs-reference",
+    es: "blender-animatic-ai-product-reveal-source-vs-reference",
+  },
   "course-visual-kit-claude-desktop-maxvideoai": {
     en: "course-visual-kit-claude-desktop-maxvideoai",
     fr: "course-visual-kit-claude-desktop-maxvideoai",
