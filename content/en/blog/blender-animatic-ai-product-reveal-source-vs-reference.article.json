@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "blender-animatic-ai-product-reveal-source-vs-reference",
+  "publication": {
+    "articleId": "045e8cce-4da7-49e7-ae52-a2f86e913f3f",
+    "version": 1,
+    "digest": "71ac0744c3cd2a0dc972e1155fd1426067752f07c63e2afd0995d18a8be14d17",
+    "publishedAt": "2026-09-24T11:08:55.803Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "blender-animatic-ai-product-reveal-source-vs-reference",
+    "title": "Turn a Blender Animatic Into an AI Product Reveal: Source Video or Motion Reference?",
+    "description": "Build a six-second product-reveal animatic in Blender, then choose whether to edit it as source material with Seedance 2.5 or use it to guide a new MiniMax H3 shot.",
+    "keywords": [
+      "Blender animatic",
+      "AI product video",
+      "product reveal",
+      "Seedance 2.5",
+      "MiniMax H3",
+      "source video",
+      "motion reference",
+      "video-to-video",
+      "reference-to-video"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "A bottle on a pedestal combines clay and amber-glass treatments above a camera path that divides into two routes.",
+        "caption": "Illustration — one planned reveal, two possible roles for the animatic."
+      },
+      {
+        "id": "reveal-target",
+        "type": "text",
+        "heading": "Decide what the reveal must accomplish",
+        "paragraphs": [
+          {
+            "text": "A product can look convincing in Blender while the shot still feels vague. Before refining materials, define a camera move with an unmistakable result: the viewer should understand what is being revealed, when it becomes readable and where the camera finally settles.",
+            "sourceIds": []
+          },
+          {
+            "text": "Imagine an unbranded amber bottle with a charcoal cap on a pale cylindrical pedestal. A teal panel stands in the foreground, partially obscuring the bottle. The bottle remains stationary while the camera moves laterally, using parallax to turn that obstruction into the reveal.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "For a six-second shot, give each phase one clear job. ",
+                "bold": true
+              },
+              {
+                "text": "Open with the bottle partly hidden, clear the panel through the middle of the move, then hold a clean final packshot long enough to read the silhouette, cap and pedestal contact. That settled ending matters because it gives you a usable selection point for the later edit rather than ending while the composition is still changing."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Once that target is clear, you can decide whether the animatic should become source material to transform with "
+              },
+              {
+                "text": "Seedance 2.5",
+                "href": "https://maxvideoai.com/models/seedance-2-5"
+              },
+              {
+                "text": " or motion and composition guidance for a new shot with "
+              },
+              {
+                "text": "MiniMax H3",
+                "href": "https://maxvideoai.com/models/minimax-h3"
+              },
+              {
+                "text": "."
+              }
+            ],
+            "sourceIds": [
+              "source-2",
+              "source-3"
+            ]
+          },
+          {
+            "text": "This is a documented workflow explanation built around an invented example, not a reproduced end-to-end generation. No resulting shot or demonstration playback was independently verified, so treat the reveal as a creative target rather than predicted model behavior.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "reveal-example",
+        "type": "media",
+        "assetId": "reveal-example",
+        "heading": "Give the reveal a clear ending",
+        "presentation": "single",
+        "alt": "Three imagined frames progress from a partly hidden bottle to a clear reveal and a settled final packshot.",
+        "caption": "Illustration — the planned bottle reveal, from partial obstruction to a clear packshot."
+      },
+      {
+        "id": "build-animatic",
+        "type": "steps",
+        "heading": "Make the staging and timing work before export",
+        "steps": [
+          {
+            "title": "Block only the shapes that affect the shot",
+            "body": "Use simple geometry for the bottle, cap, pedestal and foreground panel. Preserve the bottle’s approximate silhouette and contact with the pedestal, but skip polished materials and fine details. The animatic needs to communicate spatial relationships and timing, not resemble a finished product render."
+          },
+          {
+            "title": "Compose the opening and the final packshot",
+            "body": "Place the opening camera so the near panel hides part of the bottle without making the subject impossible to identify. Then set the final camera position with the whole bottle visible and some breathing room around it. Designing the ending early prevents the lateral move from arriving at an awkward crop."
+          },
+          {
+            "title": "Keyframe the lateral camera move",
+            "body": "Keep the bottle, pedestal and panel stationary, and animate the camera directly with keyframes. Add a middle checkpoint where the panel is clearing the bottle and the silhouette becomes readable. The foreground separation creates visible parallax, making the reveal easier to evaluate than a move in which every object sits at roughly the same depth."
+          },
+          {
+            "title": "Review the three decisive moments and the full move",
+            "body": "Inspect the opening obstruction, the middle reveal and the final framing as individual views, then play all six seconds. Still frames expose placement problems; playback reveals whether the panel clears too abruptly, lingers too long or creates an unintended hesitation. Intermediate previews are the place to fix timing before appearance work complicates the decision."
+          },
+          {
+            "title": "Export a clean camera-view preview",
+            "body": "Enter the active camera view and use a lightweight Viewport Render in Solid or Material Preview, hiding overlays so guides and keyframes do not appear in the exported clip. Deliberately choose the resolution, aspect ratio, output path and file format; for example, a 960 × 540, 16:9 preview keeps this planning render light without implying a model upload requirement. Viewport rendering is documented for Workbench and EEVEE rather than Cycles. If you export a frame sequence, assemble it into a video before the handoff."
+          }
+        ]
+      },
+      {
+        "id": "blender-camera-blocking",
+        "type": "media",
+        "assetId": "blender-camera-blocking",
+        "heading": "Design the camera move around the panel",
+        "presentation": "single",
+        "alt": "Illustrated Blender scene showing the foreground panel, bottle, three camera positions and an unobstructed final camera view.",
+        "caption": "Illustration — blocking the panel, camera move and final framing in Blender."
+      },
+      {
+        "id": "choose-input-role",
+        "type": "comparison",
+        "heading": "Choose whether the animatic is material or direction",
+        "columns": [
+          "Seedance 2.5 — edit the animatic",
+          "MiniMax H3 — guide a new shot"
+        ],
+        "rows": [
+          [
+            "Use this route when the Blender preview should be the source material that gets transformed or restyled.",
+            "Use this route when the Blender preview should guide a newly generated shot’s camera direction, reveal pacing and composition."
+          ],
+          [
+            "Required by the supplied website schema: a Prompt and exactly one Source video.",
+            "Required by the supplied website schema: a Prompt. Reference videos are optional in the general contract, with up to three allowed."
+          ],
+          [
+            "Reference images are optional. If you supply them, the schema accepts between one and thirty; the source video does not make an appearance image mandatory.",
+            "For this workflow, deliberately attach the single six-second animatic as a motion reference. That is a creative choice for this shot, not a claim that every H3 reference-mode request requires video."
+          ],
+          [
+            "Give the animatic the role of source footage. Ask for amber glass, a charcoal cap and restrained product lighting while directing the transformation to retain the intended lateral movement, reveal order, pedestal placement and settled ending.",
+            "Give the animatic only the jobs it needs: camera movement, timing and composition. Describe the amber glass and lighting separately in text, or use owned or authorized appearance material only when it is available and supported. Explicitly exclude the grey-box materials from the desired look."
+          ],
+          [
+            "The public Seedance 2.5 page documents source-clip restyling. Preservation instructions still express intent rather than guaranteeing identical geometry, camera motion or timing.",
+            "The MiniMax H3 page separately documents mixed-reference limits of up to nine images, three videos and three audio clips within twelve unique references. Video and audio references each have a fifteen-second combined limit. These broader limits do not create additional required fields in the supplied schema snapshot."
+          ],
+          [
+            "A reviewed MaxVideoAI prompt example assigns a video to motion, blocking, camera path, spatial layout and timing while excluding its low-poly appearance. It is useful as an attributed example of written asset-role assignment, not as verified playback or proof of output quality.",
+            "Apply the same role-labeling discipline here: state what the animatic controls and what it must not define. This separates motion direction from surface appearance without implying that the new shot will preserve the Blender scene exactly."
+          ],
+          [
+            "The model page and local schema document the website contract but prove neither live execution nor a successful render. Separate MCP documentation says direct Seedance video-to-video is not exposed on that MCP route; this does not establish that the website mode has been removed.",
+            "The model page and local schema document reference-to-video inputs but prove neither live deployment nor a successful result. This workflow does not claim that MCP controls Blender or provides an alternative Blender automation path."
+          ]
+        ]
+      },
+      {
+        "id": "input-role-illustration",
+        "type": "media",
+        "assetId": "input-role-illustration",
+        "heading": "Give the same clip a different job",
+        "presentation": "single",
+        "alt": "The same bottle animatic appears as source video in one tier and as a motion reference beside a camera-path sketch in the other.",
+        "caption": "Illustration — source material for Seedance 2.5, or motion guidance for MiniMax H3."
+      },
+      {
+        "id": "seedance-prompt",
+        "type": "prompt",
+        "heading": "Describe the source clip as material to transform",
+        "template": "Treat the uploaded six-second Blender animatic as source material to edit. Transform the grey-box product into an unbranded amber-glass bottle with a charcoal cylindrical cap, using restrained product lighting and a warm ivory environment. Keep the bottle stationary on the pale cylindrical pedestal. Retain the intended lateral camera direction, the initial partial obstruction by the teal foreground panel, the gradual reveal order, the spatial relationship between the panel, pedestal and bottle, and the settled final packshot with breathing room. Replace the preview materials rather than reproducing their low-poly appearance. Maintain a readable bottle silhouette, consistent cap detail and stable contact with the pedestal throughout the panel crossing. No label, logo or on-screen text.",
+        "note": "Upload the animatic as the single required Source video and place this text in the required Prompt field. Choose a six-second duration in the available settings when appropriate. Appearance images are optional, not required; if you supply owned or authorized images, add a clear sentence assigning them only to materials, color and lighting. Requests to retain staging and timing communicate direction, but they do not guarantee exact geometry or camera fidelity."
+      },
+      {
+        "id": "h3-prompt",
+        "type": "prompt",
+        "heading": "Assign the animatic to motion, not appearance",
+        "template": "Create a new six-second product-reveal shot featuring an unbranded amber-glass bottle with a charcoal cylindrical cap on a pale cylindrical pedestal, lit with restrained product lighting in a warm ivory environment. Use the supplied animatic only as a motion, timing and composition reference: follow its lateral camera direction, begin with the bottle partly hidden by the teal foreground panel, reveal the bottle progressively through the middle of the shot, and settle into a clear final packshot with breathing room. Preserve the intended spatial logic and reveal pacing without adopting the animatic’s grey-box geometry, flat preview materials or simplified lighting. Keep the bottle silhouette, cap and pedestal contact coherent while the foreground panel crosses the frame. No label, logo or on-screen text.",
+        "note": "Place this text in the required Prompt field and deliberately attach the six-second animatic as one Reference video. A reference video is optional in the general supplied H3 contract; including it is a choice for this workflow. The prompt defines the appearance in text, so no image is assumed. If an authorized appearance reference is added through a supported input, assign it only to the bottle’s surface and lighting. Select suitable duration and framing through the available output controls rather than embedding configuration instructions in the prompt."
+      },
+      {
+        "id": "inspect-and-edit",
+        "type": "steps",
+        "heading": "Inspect the shot before asking the edit to rescue it",
+        "steps": [
+          {
+            "title": "Compare the opening and final framing",
+            "body": "When an output is available, compare representative opening and ending frames with the animatic. Confirm that the bottle begins partly obscured and finishes as a readable packshot with useful breathing room. If either composition was already unclear in the animatic, revise the Blender camera or panel placement and export again."
+          },
+          {
+            "title": "Check the silhouette and cap detail",
+            "body": "Inspect the bottle shoulder, outer contour and charcoal cap in several frames, not only the attractive ending. If the appearance drifts while the animatic’s motion remains clear, strengthen the surface description or clarify the role of any authorized appearance reference. Do not expect an editor to repair changing geometry reliably."
+          },
+          {
+            "title": "Verify contact with the pedestal",
+            "body": "Look for floating, sinking or sliding where the bottle meets the pedestal. If the source staging causes the problem, correct the object placement in Blender. If the animatic is stable but the generated contact changes, revise the prompt or reference roles before generating another candidate."
+          },
+          {
+            "title": "Play through the foreground crossing",
+            "body": "Watch the complete panel crossing to judge continuity; still inspection frames cannot establish whether the occlusion remains coherent in motion. If the reveal breaks, revise ambiguous Blender timing or make the animatic’s motion-reference role more explicit. If the shot holds together, take the selected candidate into an external editor for selection, raccords, corrections, titles and sound."
+          }
+        ]
+      },
+      {
+        "id": "reveal-inspection",
+        "type": "media",
+        "assetId": "reveal-inspection",
+        "heading": "Look beyond the attractive final frame",
+        "presentation": "single",
+        "alt": "Four illustrated views highlight packshot framing, bottle silhouette, pedestal contact and the foreground occlusion boundary.",
+        "caption": "Illustration — inspect framing, silhouette, contact and the panel crossing; check the crossing in motion too."
+      },
+      {
+        "id": "workflow-handoff",
+        "type": "diagram",
+        "heading": "Keep the handoffs simple",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Blender scene"
+          },
+          {
+            "kind": "video",
+            "label": "Camera-view animatic"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI: Seedance edit OR H3 reference"
+          },
+          {
+            "kind": "video",
+            "label": "Candidate output, when available"
+          },
+          {
+            "kind": "file",
+            "label": "External editing project"
+          }
+        ],
+        "connections": [
+          "Export the planned camera move",
+          "Supply the clip and role-specific prompt",
+          "Generate through the available chosen route",
+          "Inspect, then import the selected shot"
+        ],
+        "alt": "A Blender scene becomes an animatic, enters one chosen MaxVideoAI route, and yields a candidate clip to inspect before external editing.",
+        "caption": "Blender defines the move; the chosen MaxVideoAI route handles generation; an external editor assembles the selected shot."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "Blender 5.2 LTS",
+      "publisher": "Blender Foundation",
+      "url": "https://www.blender.org/releases/5-2/",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-10",
+      "title": "MaxVideoAI MCP: Connectors, Plugins and Workflows",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/docs/mcp",
+      "retrievedAt": "2026-09-24",
+      "publishedAt": "2026-07-14"
+    },
+    {
+      "id": "source-2",
+      "title": "Seedance 2.5 AI Video Generator: 30s, 1080p & Audio",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/seedance-2-5",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-3",
+      "title": "MiniMax H3 AI Video Generator: 4K, References & Audio",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/minimax-h3",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-4",
+      "title": "One-take Creation, Flexible Referencing: Introducing Seedance 2.5",
+      "publisher": "ByteDance Seed",
+      "url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "retrievedAt": "2026-09-24",
+      "publishedAt": "2026-07-31"
+    },
+    {
+      "id": "source-5",
+      "title": "Open General Intelligence: MiniMax H3 Is Now Open Source",
+      "publisher": "MiniMax",
+      "url": "https://www.minimax.io/news/minimax-h3-open-source",
+      "retrievedAt": "2026-09-24",
+      "publishedAt": "2026-08-03"
+    },
+    {
+      "id": "source-6",
+      "title": "Viewport Render — Blender 5.2 LTS Manual",
+      "publisher": "Blender Foundation",
+      "url": "https://docs.blender.org/manual/sl/5.2/editors/3dview/viewport_render.html",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-7",
+      "title": "Introduction — Blender 5.2 LTS Animation Manual",
+      "publisher": "Blender Foundation",
+      "url": "https://docs.blender.org/manual/en/5.2/animation/introduction.html",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-8",
+      "title": "Rendering Animations — Blender 5.2 LTS Manual",
+      "publisher": "Blender Foundation",
+      "url": "https://docs.blender.org/manual/en/latest/render/output/animation.html",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-9",
+      "title": "Seedance 2.5 Video Reference Example: Giant Duck VFX",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/video/seedance-2-5-video-reference-giant-duck-vfx",
+      "retrievedAt": "2026-09-24"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "4a0c381ef9b7e792b5c5c69e822297f84655fe8523b79db6949bd1d64a3d65ee",
+      "url": "https://media.maxvideoai.com/editorial/published/4a0c381ef9b7e792b5c5c69e822297f84655fe8523b79db6949bd1d64a3d65ee.webp"
+    },
+    {
+      "id": "reveal-example",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "051897ae9f1aef5d5963173f0bb2f0bb1ec3e10991bfc98bdb34eb3e80e2469f",
+      "url": "https://media.maxvideoai.com/editorial/published/051897ae9f1aef5d5963173f0bb2f0bb1ec3e10991bfc98bdb34eb3e80e2469f.webp"
+    },
+    {
+      "id": "blender-camera-blocking",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "e3205a8fc4f00667323ed2227a4976afc0b437b35765f8d941b7114407578b18",
+      "url": "https://media.maxvideoai.com/editorial/published/e3205a8fc4f00667323ed2227a4976afc0b437b35765f8d941b7114407578b18.webp"
+    },
+    {
+      "id": "input-role-illustration",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "3b88184aaacff1212df85de6e73c9e91b179d9f445f3e55b7710f9dc2f6c16fb",
+      "url": "https://media.maxvideoai.com/editorial/published/3b88184aaacff1212df85de6e73c9e91b179d9f445f3e55b7710f9dc2f6c16fb.webp"
+    },
+    {
+      "id": "reveal-inspection",
+      "kind": "generated-illustration",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "6f1cb45098ec83b06f65f0bae9685cb6c835a64ee7f5216b41eae6d46e02d4de",
+      "url": "https://media.maxvideoai.com/editorial/published/6f1cb45098ec83b06f65f0bae9685cb6c835a64ee7f5216b41eae6d46e02d4de.webp"
+    }
+  ]
+}
