@@ -15,6 +15,8 @@ function buildTransactionSelect(mcpQuotesAvailable: boolean) {
        r.amount_cents,
        r.currency,
        r.description,
+       CASE WHEN r.type = 'refund' THEN r.metadata ->> 'reason' END AS refund_reason_code,
+       CASE WHEN r.type = 'refund' THEN r.metadata ->> 'note' END AS refund_note,
        r.job_id,
        r.created_at,
        j.status AS job_status,

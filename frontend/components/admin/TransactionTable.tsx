@@ -173,7 +173,9 @@ export function AdminTransactionTable({
                     className={clsx(
                       'inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-text-primary',
                       TYPE_ACCENT[row.type].wash,
+                      row.type === 'refund' && 'cursor-help',
                     )}
+                    title={row.type === 'refund' ? refundTooltip(row) : undefined}
                   >
                     <span aria-hidden="true" className={clsx('h-2 w-2 rounded-full', TYPE_ACCENT[row.type].dot)} />
                     {TYPE_LABEL[row.type]}
@@ -238,10 +240,19 @@ export function AdminTransactionTable({
                 <dt className="text-xs text-text-secondary">Recorded · Europe/Madrid</dt>
                 <dd>{formatDate(selected.createdAt)}</dd>
               </div>
-              <div>
-                <dt className="text-xs text-text-secondary">Description</dt>
-                <dd className="mt-1 break-words">{selected.description ?? 'No description'}</dd>
-              </div>
+              {selected.type === 'refund' ? (
+                <div>
+                  <dt className="text-xs text-text-secondary">Refund reason</dt>
+                  <dd className="mt-1 break-words">{selected.refundReason ?? 'No internal reason recorded'}</dd>
+                  <dt className="mt-3 text-xs text-text-secondary">Shown to customer</dt>
+                  <dd className="mt-1 break-words">{selected.description ?? 'No description recorded'}</dd>
+                </div>
+              ) : (
+                <div>
+                  <dt className="text-xs text-text-secondary">Description</dt>
+                  <dd className="mt-1 break-words">{selected.description ?? 'No description'}</dd>
+                </div>
+              )}
               <div>
                 <dt className="text-xs text-text-secondary">Account</dt>
                 <dd className="break-all">
@@ -340,6 +351,10 @@ function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
       ) : null}
     </td>
   );
+}
+
+function refundTooltip(row: AdminTransactionRecord) {
+  return `Refund reason: ${row.refundReason ?? 'No internal reason recorded'}\nShown to customer: ${row.description ?? 'No description recorded'}`;
 }
 
 function formatCurrency(amountCents: number, currency: string) {

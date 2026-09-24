@@ -14,6 +14,18 @@ export function normalizeTransactionLimit(limit: number): number {
   return Math.min(500, Math.max(1, limit));
 }
 
+function refundReason(reasonCode: string | null, refundNote: string | null): string | null {
+  const code = reasonCode?.trim() ?? '';
+  const note = refundNote?.trim() ?? '';
+  const label =
+    code === 'auto_render_failure_refund'
+      ? 'Automatic refund after generation failure'
+      : code === 'manual_admin_refund'
+        ? 'Manual refund by admin'
+        : code || null;
+  return [label, note].filter(Boolean).join(' — ') || null;
+}
+
 export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string | null): AdminTransactionRecord {
   const type = row.type as AdminTransactionRecord['type'];
   const jobExists = Boolean(
@@ -31,6 +43,7 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     amountCents: coerceNumber(row.amount_cents),
     currency: normalizeCurrency(row.currency),
     description: row.description,
+    refundReason: type === 'refund' ? refundReason(row.refund_reason_code, row.refund_note) : null,
     jobId: row.job_id,
     jobStatus: row.job_status,
     jobPaymentStatus: row.job_payment_status,

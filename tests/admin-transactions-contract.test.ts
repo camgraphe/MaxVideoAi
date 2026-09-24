@@ -27,6 +27,8 @@ function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransact
     amount_cents: '900',
     currency: 'usd',
     description: 'Generation',
+    refund_reason_code: null,
+    refund_note: null,
     job_id: 'job_1',
     created_at: '2026-07-14T10:00:00.000Z',
     job_status: 'completed',
@@ -67,6 +69,25 @@ test('ledger mapper preserves latest paid-wallet refund eligibility and DTO shap
   assert.equal(record.isLatestCharge, true);
   assert.equal(record.canRefund, true);
   assert.equal(mapAdminTransactionRow(rawTransaction({ is_mcp_generation: true }), null).isMcpGeneration, true);
+});
+
+test('refund history includes recorded internal context without inventing missing reasons', () => {
+  const automatic = mapAdminTransactionRow(rawTransaction({
+    type: 'refund',
+    description: 'Refund Veo - 8s - Render queue was temporarily busy.',
+    refund_reason_code: 'auto_render_failure_refund',
+    refund_note: 'The render queue is temporarily busy.',
+  }), null);
+  assert.equal(automatic.refundReason, 'Automatic refund after generation failure — The render queue is temporarily busy.');
+  assert.equal(automatic.description, 'Refund Veo - 8s - Render queue was temporarily busy.');
+
+  const manual = mapAdminTransactionRow(rawTransaction({
+    type: 'refund',
+    refund_reason_code: 'manual_admin_refund',
+    refund_note: 'Goodwill',
+  }), null);
+  assert.equal(manual.refundReason, 'Manual refund by admin — Goodwill');
+  assert.equal(mapAdminTransactionRow(rawTransaction({ type: 'refund' }), null).refundReason, null);
 });
 
 test('ledger mapper preserves rejection and historical missing-job behavior', () => {

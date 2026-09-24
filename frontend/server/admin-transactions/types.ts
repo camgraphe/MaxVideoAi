@@ -5,6 +5,8 @@ export type RawTransactionRow = {
   amount_cents: number | string | null;
   currency: string | null;
   description: string | null;
+  refund_reason_code: string | null;
+  refund_note: string | null;
   job_id: string | null;
   created_at: string;
   job_status: string | null;
@@ -29,6 +31,7 @@ export type AdminTransactionRecord = {
   amountCents: number;
   currency: string;
   description: string | null;
+  refundReason: string | null;
   jobId: string | null;
   jobStatus: string | null;
   jobPaymentStatus: string | null;
