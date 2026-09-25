@@ -1,5 +1,6 @@
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
+import { manualAdminCreditExclusionClause } from '@/server/admin-metrics/admin-topup-filter';
 import type { AdminMetricsComparison, AmountSeriesPoint } from '@/lib/admin/types';
 import {
   buildRange,
@@ -27,6 +28,7 @@ export async function fetchAdminMetricsComparison(
   const excludedUserIds = (options?.excludeUserIds ?? []).map((userId) => userId.trim()).filter(Boolean);
   const hasExcludedUsers = excludedUserIds.length > 0;
   const exclusionParams = hasExcludedUsers ? [excludedUserIds] : undefined;
+  const excludeManualTopupsClause = manualAdminCreditExclusionClause(options?.excludeManualAdminTopups === true);
   const excludeUserIdClause = (column: string, clauseOptions?: { allowNulls?: boolean }) => {
     if (!hasExcludedUsers) return '';
     if (clauseOptions?.allowNulls) {
@@ -85,7 +87,7 @@ export async function fetchAdminMetricsComparison(
           COUNT(*)::bigint AS count,
           COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
         FROM app_receipts
-        WHERE type = 'topup'
+        WHERE type = 'topup' ${excludeManualTopupsClause}
           AND created_at >= NOW() - INTERVAL '${doubledRange.days} days'
           ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket

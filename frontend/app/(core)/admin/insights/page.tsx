@@ -52,6 +52,7 @@ export default async function AdminInsightsPage(props: PageProps) {
   const compare = resolveComparison(searchParams?.compare);
   const queryOptions = {
     excludeUserIds: excludeAdmin ? ADMIN_EXCLUDED_USER_IDS : [],
+    excludeManualAdminTopups: excludeAdmin,
     customDays,
   };
 
@@ -79,7 +80,9 @@ export default async function AdminInsightsPage(props: PageProps) {
       <AdminPageHeader
         eyebrow="Analytics"
         title="Insights"
-        description="Track signups, wallet activity and generation usage. Compare performance over time."
+        description={excludeAdmin
+          ? 'Customer activity excludes Camgraph Admin and manually granted wallet credits.'
+          : 'Wallet activity and generation usage, including internal activity.'}
       />
 
       <InsightsControls

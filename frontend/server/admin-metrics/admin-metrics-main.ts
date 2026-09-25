@@ -1,5 +1,6 @@
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
+import { manualAdminCreditExclusionClause } from '@/server/admin-metrics/admin-topup-filter';
 import type { AdminMetrics } from '@/lib/admin/types';
 import { loadEngineUsageRows } from '@/server/admin-metrics/admin-metrics-engine-usage';
 import {
@@ -43,6 +44,7 @@ export async function fetchAdminMetrics(
   const excludedUserIds = (options?.excludeUserIds ?? []).map((userId) => userId.trim()).filter(Boolean);
   const hasExcludedUsers = excludedUserIds.length > 0;
   const exclusionParams = hasExcludedUsers ? [excludedUserIds] : undefined;
+  const excludeManualTopupsClause = manualAdminCreditExclusionClause(options?.excludeManualAdminTopups === true);
   const excludeUserIdClause = (column: string, options?: { allowNulls?: boolean }) => {
     if (!hasExcludedUsers) return '';
     if (options?.allowNulls) {
@@ -112,7 +114,7 @@ export async function fetchAdminMetrics(
           COUNT(*)::bigint AS count,
           COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
         FROM app_receipts
-        WHERE type = 'topup'
+        WHERE type = 'topup' ${excludeManualTopupsClause}
           AND created_at >= NOW() - INTERVAL '${range.days} days'
           ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
@@ -156,7 +158,7 @@ export async function fetchAdminMetrics(
           COUNT(*)::bigint AS count,
           COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
         FROM app_receipts
-        WHERE type = 'topup'
+        WHERE type = 'topup' ${excludeManualTopupsClause}
           AND created_at >= NOW() - INTERVAL '12 months'
           ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
@@ -195,7 +197,7 @@ export async function fetchAdminMetrics(
       `
         SELECT COUNT(DISTINCT user_id)::bigint AS total
         FROM app_receipts
-        WHERE type = 'topup'
+        WHERE type = 'topup' ${excludeManualTopupsClause}
           ${excludeUserIdClause('user_id', { allowNulls: true })}
       `,
       exclusionParams
@@ -215,7 +217,7 @@ export async function fetchAdminMetrics(
       `
         SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
         FROM app_receipts
-        WHERE type = 'topup'
+        WHERE type = 'topup' ${excludeManualTopupsClause}
           ${excludeUserIdClause('user_id', { allowNulls: true })}
       `,
       exclusionParams
@@ -237,7 +239,7 @@ export async function fetchAdminMetrics(
         WITH first_topups AS (
           SELECT user_id, MIN(created_at) AS first_topup_at
           FROM app_receipts
-          WHERE type = 'topup'
+          WHERE type = 'topup' ${excludeManualTopupsClause}
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
@@ -265,7 +267,7 @@ export async function fetchAdminMetrics(
         WITH first_topups AS (
           SELECT user_id, MIN(created_at) AS first_topup_at
           FROM app_receipts
-          WHERE type = 'topup'
+          WHERE type = 'topup' ${excludeManualTopupsClause}
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
@@ -285,7 +287,7 @@ export async function fetchAdminMetrics(
         WITH first_topups AS (
           SELECT user_id, MIN(created_at) AS first_topup_at
           FROM app_receipts
-          WHERE type = 'topup'
+          WHERE type = 'topup' ${excludeManualTopupsClause}
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
@@ -309,7 +311,7 @@ export async function fetchAdminMetrics(
         WITH paying_users AS (
           SELECT DISTINCT user_id
           FROM app_receipts
-          WHERE type = 'topup'
+          WHERE type = 'topup' ${excludeManualTopupsClause}
             ${excludeUserIdClause('user_id', { allowNulls: true })}
         ),
         render_counts AS (
@@ -361,7 +363,7 @@ export async function fetchAdminMetrics(
         WITH topup_totals AS (
           SELECT user_id, SUM(amount_cents)::bigint AS lifetime_topup_cents, MIN(created_at) AS first_topup_at
           FROM app_receipts
-          WHERE type = 'topup'
+          WHERE type = 'topup' ${excludeManualTopupsClause}
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
