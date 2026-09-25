@@ -4,7 +4,7 @@ import { buildMetadataUrls, SITE_BASE_URL, type LocaleSlugMap } from '@/lib/meta
 import { getHreflangEnglishPath, type HreflangGroupKey } from '@/lib/seo/hreflang';
 import { buildMetaDescription, buildMetaTitle } from '@/lib/seo/meta';
 
-const DEFAULT_OG_IMAGE = '/og/price-before.png';
+const DEFAULT_OG_IMAGE = '/og/brand-2026-09-25.png';
 const DEFAULT_OG_WIDTH = 1200;
 const DEFAULT_OG_HEIGHT = 630;
 const SITE_NAME = 'MaxVideoAI';
@@ -40,6 +40,7 @@ type BuildSeoMetadataOptions = {
   description: string;
   image?: string;
   imageAlt?: string;
+  imageDimensions?: { width: number; height: number };
   ogType?: OgType;
   slugMap?: LocaleSlugMap;
   hreflangGroup?: HreflangGroupKey;
@@ -72,6 +73,7 @@ export function buildSeoMetadata({
   description,
   image,
   imageAlt,
+  imageDimensions,
   ogType = 'website',
   slugMap,
   hreflangGroup,
@@ -97,8 +99,8 @@ export function buildSeoMetadata({
   const defaultImageEntry = [
     {
       url: imageUrl,
-      width: DEFAULT_OG_WIDTH,
-      height: DEFAULT_OG_HEIGHT,
+      width: imageDimensions?.width ?? DEFAULT_OG_WIDTH,
+      height: imageDimensions?.height ?? DEFAULT_OG_HEIGHT,
       alt: imageAlt ?? title,
     },
   ];

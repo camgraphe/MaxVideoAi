@@ -25,7 +25,7 @@ export type BlogPostLocalization = {
 };
 
 function resolveAbsoluteImageUrl(image?: string | null) {
-  const candidate = typeof image === 'string' && image.trim().length > 0 ? image.trim() : '/og/price-before.png';
+  const candidate = typeof image === 'string' && image.trim().length > 0 ? image.trim() : '/og/brand-2026-09-25.png';
   if (candidate.startsWith('http://') || candidate.startsWith('https://')) {
     return candidate;
   }
@@ -145,7 +145,7 @@ export function buildBlogPostJsonLd({
 }) {
   const breadcrumbLabels = getBreadcrumbLabels(locale);
   const imageUrl = resolveAbsoluteImageUrl(post.image);
-  const publisherLogoUrl = resolveAbsoluteImageUrl('/og/price-before.png');
+  const publisherLogoUrl = resolveAbsoluteImageUrl('/assets/branding/logo-mark.svg');
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

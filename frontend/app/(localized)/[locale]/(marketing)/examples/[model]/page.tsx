@@ -108,7 +108,7 @@ export async function generateMetadata(
     offset: 0,
   });
   const heroVideo = pickFirstPlayableVideo(heroResult.items);
-  const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/price-before.png`;
+  const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
   const familyPageConfig = getExampleFamilyPageConfig(canonical);
   const noindex = shouldNoindex(searchParams ?? {}) || familyPageConfig?.stage === 'public_noindex';
 

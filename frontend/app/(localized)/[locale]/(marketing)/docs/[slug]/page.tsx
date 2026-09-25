@@ -141,7 +141,7 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     locale,
     title: `${doc.title} — MaxVideo AI Docs`,
     description: doc.description,
-    image: doc.image ?? '/og/price-before.png',
+    image: doc.image ?? '/og/brand-2026-09-25.png',
     imageAlt: doc.title,
     ogType: 'article',
     englishPath: `/docs/${doc.slug}`,

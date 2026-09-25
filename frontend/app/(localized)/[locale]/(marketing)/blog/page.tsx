@@ -73,7 +73,7 @@ function getBlogLinkProps(locale: AppLocale, post: Pick<ContentEntry, 'slug' | '
 function normalizeImageSrc(src?: string | null) {
   const trimmed = typeof src === 'string' ? src.trim() : '';
   if (!trimmed) {
-    return '/og/price-before.png';
+    return '/og/brand-2026-09-25.png';
   }
   if (trimmed.startsWith('http')) {
     return trimmed;

@@ -145,7 +145,7 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
   const ogImagePath =
-    localized.seo.image ?? MODEL_OG_IMAGE_MAP[canonicalSlug] ?? engine.media?.imagePath ?? '/og/price-before.png';
+    localized.seo.image ?? MODEL_OG_IMAGE_MAP[canonicalSlug] ?? engine.media?.imagePath ?? '/og/brand-2026-09-25.png';
   return buildSeoMetadata({
     locale,
     title,
