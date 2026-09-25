@@ -143,7 +143,7 @@ export function buildDetailSlugMap(slug: string) {
 }
 
 export function toAbsoluteUrl(url?: string | null): string {
-  if (!url) return `${SITE}/og/price-before.png`;
+  if (!url) return `${SITE}/og/brand-2026-09-25.png`;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   if (url.startsWith('//')) return `https:${url}`;
   if (url.startsWith('/')) return `${SITE}${url}`;

@@ -345,7 +345,7 @@ for (const locale of locales) {
       title: content.metadata.title,
       description: content.metadata.description,
       englishPath: PAYG_PAGE_PATH,
-      image: '/og/price-before.png',
+      image: '/og/home-2026-09-25.png',
       imageAlt: content.metadata.imageAlt,
       keywords: content.metadata.keywords,
     });

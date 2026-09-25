@@ -20,6 +20,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     keywords: content.meta.keywords,
     image: '/assets/tools/background-removal-hero-before-after.webp',
     imageAlt: content.meta.imageAlt,
+    imageDimensions: { width: 1586, height: 992 },
   });
 }
 

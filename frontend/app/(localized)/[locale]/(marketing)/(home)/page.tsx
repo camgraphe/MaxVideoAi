@@ -48,7 +48,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: string
     title: t('title'),
     description: t('description'),
     hreflangGroup: 'home',
-    image: '/og/home-hub.png',
+    image: '/og/home-2026-09-25.png',
     imageAlt: t('title'),
   });
 }

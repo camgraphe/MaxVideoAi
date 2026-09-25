@@ -27,7 +27,7 @@ export const ANGLE_ORBIT_ASSETS = {
     source: '/assets/tools/angle-orbit-video-source.webp',
     output: '/assets/tools/angle-orbit-video-45.webp',
   },
-  workspace: '/assets/tools/redesign/angle-workspace-v1.webp',
+  workspace: '/assets/tools/redesign/angle-workspace-v2.webp',
 } as const;
 
 export const ANGLE_SOURCE_URL =
@@ -40,7 +40,6 @@ export const ANGLE_STORY_SOURCE_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp';
 export const ANGLE_HERO_OUTPUT_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
-export const ANGLE_WORKSPACE_SCREENSHOT_PATH = '/assets/tools/angle-workspace.png';
 export const ANGLE_INTENT_EXAMPLE_ASSETS = [
   {
     source: '/assets/tools/angle-example-product-source.jpeg',

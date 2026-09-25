@@ -18,8 +18,9 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     englishPath: '/tools/upscale',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image: '/assets/tools/redesign/upscale-workspace-v1.webp',
+    image: '/assets/tools/redesign/upscale-workspace-v2.webp',
     imageAlt: content.meta.imageAlt,
+    imageDimensions: { width: 1316, height: 820 },
   });
 }
 

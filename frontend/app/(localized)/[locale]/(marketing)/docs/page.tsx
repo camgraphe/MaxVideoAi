@@ -22,7 +22,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
   const description =
     metaCopy.description ??
     'Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.';
-  const ogImage = `${SITE}/og/price-before.png`;
+  const ogImage = `${SITE}/og/brand-2026-09-25.png`;
 
   return buildSeoMetadata({
     locale,

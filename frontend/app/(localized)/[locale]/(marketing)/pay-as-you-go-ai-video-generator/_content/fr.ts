@@ -4,7 +4,7 @@ export const frPayAsYouGoContent = {
   metadata: {
     title: 'Générateur de vidéos IA sans abonnement, paiement à l’usage',
     description: 'Générez des vidéos IA avec des crédits prépayés sans abonnement mensuel. Comparez LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres modèles avant de générer.',
-    imageAlt: 'Flux MaxVideoAI avec prix affiché avant la génération.',
+    imageAlt: 'Vidéo IA MaxVideoAI à la demande.',
     keywords: ['générateur vidéo IA sans abonnement', 'générateur de vidéos IA paiement à l’usage', 'prix vidéo IA avant génération', 'comparer LTX 2.5 Wan 3 Grok Imagine FLUX 3', 'prix Grok Imagine Video', 'prix FLUX 3 Video'],
   },
   common: {

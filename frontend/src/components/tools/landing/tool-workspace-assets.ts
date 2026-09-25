@@ -1,8 +1,8 @@
-/** Actual local-app captures, refreshed 2026-09-15. English visitor UI, never synthetic results. */
+/** Actual production captures, refreshed 2026-09-25. English UI, no synthetic results. */
 export const TOOL_WORKSPACE_CAPTURES = {
-  'character-builder': '/assets/tools/redesign/character-builder-workspace-v1.webp',
-  angle: '/assets/tools/redesign/angle-workspace-v1.webp',
-  upscale: '/assets/tools/redesign/upscale-workspace-v1.webp',
-  'background-removal': '/assets/tools/redesign/background-removal-workspace-v1.webp',
+  'character-builder': '/assets/tools/redesign/character-builder-workspace-v2.webp',
+  angle: '/assets/tools/redesign/angle-workspace-v2.webp',
+  upscale: '/assets/tools/redesign/upscale-workspace-v2.webp',
+  'background-removal': '/assets/tools/redesign/background-removal-workspace-v2.webp',
 } as const;
 export type MarketingToolId = keyof typeof TOOL_WORKSPACE_CAPTURES;

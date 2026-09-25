@@ -67,7 +67,7 @@ export async function generateMetadata(
   const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
-  const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
+  const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
   const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
   const hasPaginatedView = Boolean(normalizedPage && normalizedPage > 1);
   const shouldNoindex =
