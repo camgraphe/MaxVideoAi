@@ -4,7 +4,7 @@ export const esPayAsYouGoContent = {
   metadata: {
     title: 'Generador de video con IA de pago por uso y precio por adelantado',
     description: 'Genera videos con IA con créditos de pago por uso y sin suscripción mensual. Compara LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros modelos antes de generar.',
-    imageAlt: 'Flujo de MaxVideoAI con precio antes de generar.',
+    imageAlt: 'Vídeo con IA de pago por uso en MaxVideoAI.',
     keywords: ['generador de video con IA de pago por uso', 'generador de video IA sin suscripción', 'precio de video con IA antes de generar', 'comparar LTX 2.5 Wan 3 Grok Imagine FLUX 3', 'precio de Grok Imagine Video', 'precio de FLUX 3 Video'],
   },
   common: {

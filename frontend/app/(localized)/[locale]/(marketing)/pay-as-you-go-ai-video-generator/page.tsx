@@ -25,7 +25,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     title: meta.title,
     description: meta.description,
     englishPath: PAYG_PAGE_PATH,
-    image: '/og/price-before.png',
+    image: '/og/home-2026-09-25.png',
     imageAlt: meta.imageAlt,
     keywords: meta.keywords,
   });

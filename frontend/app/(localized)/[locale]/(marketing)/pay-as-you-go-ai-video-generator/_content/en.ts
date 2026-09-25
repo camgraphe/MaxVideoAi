@@ -4,7 +4,7 @@ export const enPayAsYouGoContent = {
   metadata: {
     title: 'Pay-as-you-go AI Video Generator with Upfront Pricing',
     description: 'Generate AI videos with pay-as-you-go credits instead of a monthly subscription. Compare LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo and other models before generation.',
-    imageAlt: 'MaxVideoAI price-before-generation workflow.',
+    imageAlt: 'MaxVideoAI pay-as-you-go AI video.',
     keywords: ['pay-as-you-go AI video generator', 'AI video generator without subscription', 'AI video pricing before generation', 'compare LTX 2.5 Wan 3 Grok Imagine FLUX 3', 'Grok Imagine Video price', 'FLUX 3 Video price'],
   },
   common: {

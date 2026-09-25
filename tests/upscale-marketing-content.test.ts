@@ -98,5 +98,5 @@ test('upscale landing separates illustrative hero from the versioned current wor
   assert.match(source, /alt=\{imageAlt\}/);
   assert.doesNotMatch(source, /SOURCE_IMAGE_URL|OUTPUT_IMAGE_URL/);
   assert.doesNotMatch(source, /<HeroVisual imageAlt=\{content\.meta\.imageAlt\} hero=/);
-  assert.match(pageSource, /image: '\/assets\/tools\/redesign\/upscale-workspace-v1\.webp'/);
+  assert.match(pageSource, /image: '\/assets\/tools\/redesign\/upscale-workspace-v2\.webp'/);
 });

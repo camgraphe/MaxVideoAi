@@ -46,7 +46,7 @@ export const MASCOT_USE_CASE_ASSET = {
   alt: 'Brand mascot prepared as a reusable consistent character asset.',
 } as const;
 
-export const CHARACTER_WORKSPACE_HERO_PATH = '/assets/tools/redesign/character-builder-workspace-v1.webp';
+export const CHARACTER_WORKSPACE_HERO_PATH = '/assets/tools/redesign/character-builder-workspace-v2.webp';
 export const SHEET_IMAGE_CLASSNAME = 'object-cover object-center scale-[1.08]';
 
 export type CharacterBuilderLandingContent = Dictionary['toolMarketing']['characterBuilder'];
