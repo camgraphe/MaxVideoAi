@@ -87,7 +87,7 @@
         "deepLinkEnabled": false,
         "deepLink": null
       },
-      "store": { "target": "n8n-template-library", "status": "submitted" },
+      "store": { "target": "n8n-template-library", "status": "listed" },
       "hosts": ["n8nMcpClient", "n8nMcpClientTool"]
     },
     "cursor": {

@@ -36,7 +36,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /^title:\s*['"].+['"]$/m);
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
-    assert.match(markdown, /^updatedAt:\s*['"]2026-09-15['"]$/m);
+    assert.match(markdown, /^updatedAt:\s*['"]2026-09-25['"]$/m);
     assert.match(markdown, /^authorId:\s*['"]adrien-millot['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, /```text\s+https:\/\/api\.maxvideoai\.com\/mcp\s+```/);
@@ -48,6 +48,18 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /sign in to MaxVideoAI or create|connectez-vous à MaxVideoAI ou créez|inicia sesión en MaxVideoAI o crea/i);
     assert.match(markdown, /connecting is free|connexion.*gratuite|conectar.*gratis/i);
     assert.doesNotMatch(markdown, /localhost|staging[^\n]*\/mcp/i, `${locale} must not publish a non-production endpoint`);
+  }
+});
+
+test('localized MCP guides link the published n8n template without expanding host support', () => {
+  for (const path of Object.values(DOCS)) {
+    const markdown = source(path);
+    assert.match(markdown, /https:\/\/n8n\.io\/workflows\/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review\//);
+    assert.match(markdown, /2\.38\.7/);
+    assert.match(markdown, /manual|manuelle/i);
+    assert.match(markdown, /Cloud/);
+    assert.match(markdown, /AI Agent/);
+    assert.doesNotMatch(markdown, /No public template listing|Aucun workflow publié|Sin plantilla publicada/i);
   }
 });
 

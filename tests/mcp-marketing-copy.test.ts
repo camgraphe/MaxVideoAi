@@ -22,7 +22,8 @@ test('the hub exposes five localized setup routes and four unlinked preparation 
   for(const client of ['cursor','github-copilot','gemini-cli','microsoft-copilot']) assert.ok(!html.includes(`/integrations/${client}"`));
   assert.equal((html.match(/<h1\b/g)??[]).length,1);
   assert.equal((html.match(/data-faq-item="true"/g)??[]).length,8);
-  assert.doesNotMatch(html,/19591|Pending \/ Under review|trial included/i);
+  assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
+  assert.doesNotMatch(html,/Pending \/ Under review|no public template listing|aucun modèle de workflow n’est publié|no hay una plantilla publicada|trial included/i);
  }
 });
 test('each integration has a distinct searchable title and truthful installation context',()=>{
@@ -47,9 +48,10 @@ test('host eligibility is visible and automation never becomes a generic one-cli
   const html=renderToStaticMarkup(React.createElement(IntegrationPageView,{copy:n8n,compatibility:evidence.clients.n8n!,locale,publication:live}));
   assert.doesNotMatch(html,/data-copy-install-instructions/);
   assert.match(html,/data-copy-endpoint/);
-  assert.doesNotMatch(html,/19591|Pending \/ Under review/);
+  assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
+  assert.doesNotMatch(html,/Pending \/ Under review|no public n8n library listing/i);
   const faq=getMcpEditorialCopy(locale).faq.map(item=>item.answer).join(' ');
-  assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);
+  assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
  }
 });
 test('gated views do not show paid workflow, historical proof or price examples',()=>{
