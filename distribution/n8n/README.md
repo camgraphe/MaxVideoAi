@@ -1,7 +1,9 @@
 # MaxVideoAI n8n workflow candidates
 
-These disabled JSON exports are reviewed workflow candidates. One candidate is
-privately submitted for human review; none is a public n8n library template.
+These disabled JSON exports are reviewed workflow candidates. The
+[brief-to-approved-generation workflow](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/)
+is publicly listed as n8n template `19591` as of 2026-09-25; the other two
+have no verified public listing.
 They use the **MCP Client** node for deterministic workflow steps with explicit
 tool inputs and ordering. Use the **MCP Client Tool** only when a bounded AI
 Agent needs selected discovery or planning tools. Paid confirmation remains a
@@ -83,7 +85,7 @@ server-side and idempotent for the same `quoteId`. Polling and lost-response
 recovery always use the accepted `jobId`; they never route back to confirmation.
 A creative retry starts a fresh quote and approval cycle.
 
-Before catalogue release, repeat the relevant checks on the target deployment,
+Before publishing another candidate, repeat the relevant checks on the target deployment,
 configure a Chat Model for the bounded AI Agent path if that path will be
 claimed, and review the sanitized export. The product owner has authorized the
 exact three-file external action recorded in
@@ -91,10 +93,10 @@ exact three-file external action recorded in
 still requires that authorized owner to complete the Creator Portal identity
 step, submit one reviewed workflow at a time, and record the observed result.
 
-The first exact candidate, `brief-to-approved-generation.json`, passed Creator
-Portal AI review and is privately `Pending` / `Under review` as workflow
-`19591`. The other two candidates have not been submitted because the portal
-disables `Share new template` while that review is pending. No public workflow
-library URL exists. None of the three JSON workflows calls `list_media` or
+The first candidate, `brief-to-approved-generation.json`, is publicly listed as
+[workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/).
+Its public setup still requires a manually attached MaxVideoAI OAuth2 credential.
+The other two reviewed candidates have no verified public listing. None of the
+three JSON workflows calls `list_media` or
 `create_reference_upload_link`; private-reference automation remains
 unverified and outside their claimed scope.
