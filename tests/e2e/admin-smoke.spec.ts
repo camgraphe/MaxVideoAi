@@ -164,7 +164,7 @@ test.describe('admin smoke', () => {
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\?range=today&excludeAdmin=0$/);
 
-    await page.getByRole('link', { name: 'Insights', exact: true }).click();
+    await page.getByLabel('Overview views').getByRole('link', { name: 'Insights' }).click();
     await expect(page).toHaveURL(/\/admin\/insights\?excludeAdmin=0$/);
     await expect(page.getByRole('link', { name: 'Include internal activity' })).toBeVisible();
   });
