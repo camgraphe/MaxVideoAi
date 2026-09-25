@@ -30,6 +30,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
   hourCycle: 'h23',
   timeZone: 'Europe/Madrid',
 });
+const durationFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 
 const TYPE_LABEL: Record<AdminTransactionRecord['type'], string> = {
   charge: 'Charge',
@@ -64,6 +65,7 @@ export function AdminTransactionTable({
   const selected =
     rows.find((row) => String(row.receiptId) === selectedId) ??
     (String(initialReceipt?.receiptId) === selectedId ? initialReceipt : null);
+  const selectedDuration = selected ? formatJobDuration(selected.jobDurationSec) : null;
   const [pendingReceiptId, setPendingReceiptId] = useState<number | null>(null);
   const [status, setStatus] = useState<{ message: string; variant: StatusVariant } | null>(null);
   const visibleRows = rows;
@@ -171,15 +173,15 @@ export function AdminTransactionTable({
                     className={clsx(
                       'inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-text-primary',
                       TYPE_ACCENT[row.type].wash,
+                      row.type === 'refund' && 'cursor-help',
                     )}
+                    title={row.type === 'refund' ? refundTooltip(row) : undefined}
                   >
                     <span aria-hidden="true" className={clsx('h-2 w-2 rounded-full', TYPE_ACCENT[row.type].dot)} />
                     {TYPE_LABEL[row.type]}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
-                  {formatCurrency(row.amountCents, row.currency)}
-                </td>
+                <TransactionAmount row={row} />
                 <td className="px-3 py-2.5 text-xs">
                   {needsReview(row) ? (
                     <span className="text-warning">Needs review</span>
@@ -238,10 +240,19 @@ export function AdminTransactionTable({
                 <dt className="text-xs text-text-secondary">Recorded · Europe/Madrid</dt>
                 <dd>{formatDate(selected.createdAt)}</dd>
               </div>
-              <div>
-                <dt className="text-xs text-text-secondary">Description</dt>
-                <dd className="mt-1 break-words">{selected.description ?? 'No description'}</dd>
-              </div>
+              {selected.type === 'refund' ? (
+                <div>
+                  <dt className="text-xs text-text-secondary">Refund reason</dt>
+                  <dd className="mt-1 break-words">{selected.refundReason ?? 'No internal reason recorded'}</dd>
+                  <dt className="mt-3 text-xs text-text-secondary">Shown to customer</dt>
+                  <dd className="mt-1 break-words">{selected.description ?? 'No description recorded'}</dd>
+                </div>
+              ) : (
+                <div>
+                  <dt className="text-xs text-text-secondary">Description</dt>
+                  <dd className="mt-1 break-words">{selected.description ?? 'No description'}</dd>
+                </div>
+              )}
               <div>
                 <dt className="text-xs text-text-secondary">Account</dt>
                 <dd className="break-all">
@@ -267,6 +278,9 @@ export function AdminTransactionTable({
                 <p className="mt-1 text-xs text-text-secondary">
                   {selected.jobStatus ?? (isMissingJobRecord(selected) ? 'Job record missing' : 'Status unavailable')}
                 </p>
+                {selectedDuration ? (
+                  <p className="mt-1 text-xs text-text-secondary">Duration: {selectedDuration}</p>
+                ) : null}
                 {selected.jobVideoUrl ? (
                   <a
                     href={selected.jobVideoUrl}
@@ -308,6 +322,41 @@ export function AdminTransactionTable({
   );
 }
 
+function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
+  const model = row.jobId ? row.jobEngineLabel?.trim() : null;
+  const duration = row.jobId ? formatJobDuration(row.jobDurationSec) : null;
+  return (
+    <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
+      <div className="flex items-center gap-2">
+        <span>{formatCurrency(row.amountCents, row.currency)}</span>
+        {row.isMcpGeneration ? (
+          <span
+            className="rounded border border-brand/20 bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-brand"
+            title="Generation submitted via MCP"
+          >
+            MCP
+          </span>
+        ) : null}
+      </div>
+      {model || duration ? (
+        <div className="mt-0.5 flex max-w-[180px] items-center gap-1 text-xs font-normal text-text-secondary">
+          {model ? (
+            <span className="min-w-0 truncate" title={model}>
+              {model}
+            </span>
+          ) : null}
+          {model && duration ? <span aria-hidden="true">·</span> : null}
+          {duration ? <span className="shrink-0">{duration}</span> : null}
+        </div>
+      ) : null}
+    </td>
+  );
+}
+
+function refundTooltip(row: AdminTransactionRecord) {
+  return `Refund reason: ${row.refundReason ?? 'No internal reason recorded'}\nShown to customer: ${row.description ?? 'No description recorded'}`;
+}
+
 function formatCurrency(amountCents: number, currency: string) {
   try {
     return new Intl.NumberFormat('en-US', {
@@ -317,6 +366,11 @@ function formatCurrency(amountCents: number, currency: string) {
   } catch {
     return `${(amountCents / 100).toFixed(2)} ${currency.toUpperCase()}`;
   }
+}
+
+function formatJobDuration(durationSec: number | null) {
+  if (durationSec === null || !Number.isFinite(durationSec) || durationSec <= 0) return null;
+  return `${durationFormatter.format(durationSec)} s`;
 }
 
 function formatDate(value: string | null | undefined) {

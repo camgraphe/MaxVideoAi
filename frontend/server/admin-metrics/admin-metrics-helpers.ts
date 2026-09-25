@@ -10,6 +10,7 @@ import type {
 
 export type AdminMetricsOptions = {
   excludeUserIds?: string[];
+  excludeManualAdminTopups?: boolean;
   customDays?: number;
 };
 

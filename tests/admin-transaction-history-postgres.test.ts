@@ -23,6 +23,7 @@ test('history filters before pagination, retains precision and resolves receipts
       now,
     );
     assert.equal(defaultArchive.transactions.length, 1, 'the default view includes older receipts');
+    assert.equal(defaultArchive.transactions[0]?.isMcpGeneration, false, 'older schemas still serve receipts');
     const all = await fetchTransactionHistory({ period: 'all', query: '', type: 'all', limit: 50 }, now);
     assert.equal(all.transactions.length, 50);
     assert.equal(String(all.transactions[0].receiptId), '120');
@@ -74,6 +75,23 @@ test('history filters before pagination, retains precision and resolves receipts
       fetchTransactionHistory({ period: 'all', query: 'x', type: 'all', limit: 50, cursor: all.nextCursor! }, now),
       /cursor/i,
     );
+    await db.pool.query(`
+      CREATE TABLE mcp_generation_quotes(job_id text, user_id text);
+      INSERT INTO app_jobs(job_id,status,payment_status,engine_label,duration_sec,created_at)
+        VALUES ('mcp-job','completed','paid_wallet','Veo',8,'2026-09-22T10:00:00Z'),
+               ('app-job','completed','paid_wallet','Veo',8,'2026-09-22T10:00:00Z');
+      INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at)
+        VALUES (123,'11111111-1111-4111-8111-111111111111','charge',500,'USD','mcp-job','2026-09-22T10:00:00Z'),
+               (124,'11111111-1111-4111-8111-111111111111','charge',500,'USD','app-job','2026-09-22T10:00:00Z');
+      INSERT INTO mcp_generation_quotes(job_id,user_id)
+        VALUES ('mcp-job','11111111-1111-4111-8111-111111111111'),
+               ('app-job','22222222-2222-4222-8222-222222222222');
+    `);
+    assert.equal((await fetchTransactionReceipt('123'))?.isMcpGeneration, true);
+    assert.equal((await fetchTransactionReceipt('124'))?.isMcpGeneration, false, 'another user’s quote is not attribution');
+    const mcpHistory = await fetchTransactionHistory({ period: 'all', query: 'mcp-job', type: 'all', limit: 50 }, now);
+    assert.equal(mcpHistory.transactions.length, 1);
+    assert.equal(mcpHistory.transactions[0]?.isMcpGeneration, true);
   } finally {
     await getDb().end();
     await db.cleanup();

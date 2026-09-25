@@ -1,4 +1,4 @@
-import { TRANSACTION_SELECT } from './projection';
+import { transactionSelectForCurrentSchema } from './projection';
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -12,6 +12,18 @@ const FREQUENT_REFUND_MIN_COUNT = 3;
 
 export function normalizeTransactionLimit(limit: number): number {
   return Math.min(500, Math.max(1, limit));
+}
+
+function refundReason(reasonCode: string | null, refundNote: string | null): string | null {
+  const code = reasonCode?.trim() ?? '';
+  const note = refundNote?.trim() ?? '';
+  const label =
+    code === 'auto_render_failure_refund'
+      ? 'Automatic refund after generation failure'
+      : code === 'manual_admin_refund'
+        ? 'Manual refund by admin'
+        : code || null;
+  return [label, note].filter(Boolean).join(' — ') || null;
 }
 
 export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string | null): AdminTransactionRecord {
@@ -31,12 +43,14 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     amountCents: coerceNumber(row.amount_cents),
     currency: normalizeCurrency(row.currency),
     description: row.description,
+    refundReason: type === 'refund' ? refundReason(row.refund_reason_code, row.refund_note) : null,
     jobId: row.job_id,
     jobStatus: row.job_status,
     jobPaymentStatus: row.job_payment_status,
     jobEngineLabel: row.job_engine_label,
     jobVideoUrl: row.job_video_url ? (normalizeMediaUrl(row.job_video_url) ?? row.job_video_url) : null,
     jobDurationSec: row.job_duration_sec ?? null,
+    isMcpGeneration: row.is_mcp_generation,
     jobCreatedAt: row.job_created_at,
     jobProgress: row.job_progress ?? null,
     jobMessage: row.job_message,
@@ -52,7 +66,8 @@ export async function fetchAdminTransactions(limit = 100): Promise<AdminTransact
   if (!process.env.DATABASE_URL) return [];
 
   await ensureBillingSchema();
-  const rows = await query<RawTransactionRow>(`${TRANSACTION_SELECT} ORDER BY r.created_at DESC, r.id DESC LIMIT $1`, [
+  const transactionSelect = await transactionSelectForCurrentSchema();
+  const rows = await query<RawTransactionRow>(`${transactionSelect} ORDER BY r.created_at DESC, r.id DESC LIMIT $1`, [
     normalizeTransactionLimit(limit),
   ]);
   return hydrateTransactionRows(rows);

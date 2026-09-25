@@ -102,7 +102,7 @@ export function InsightsControls({ current, days, excludeAdmin, focus, grain, co
         onClick={() => setOpenMenu(null)}
         className={`ml-auto rounded-md border px-3 py-1.5 text-xs font-medium transition ${excludeAdmin ? 'border-success-border bg-success-bg text-success' : 'border-border text-text-secondary hover:bg-bg'}`}
       >
-        {excludeAdmin ? 'Admin excluded' : 'Include admin'}
+        {excludeAdmin ? 'Internal activity excluded' : 'Include internal activity'}
       </Link>
     </div>
   );

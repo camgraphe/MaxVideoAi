@@ -154,6 +154,21 @@ test.describe('admin smoke', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Service notice' })).toBeVisible();
   });
 
+  test('overview keeps the internal activity filter across periods and Insights', async ({ page }) => {
+    await openAdminRoute(page, '/admin?range=24h');
+    await expect(page.getByRole('link', { name: 'Internal activity excluded' })).toBeVisible();
+
+    await page.getByRole('link', { name: 'Internal activity excluded' }).click();
+    await expect(page).toHaveURL(/\/admin\?range=24h&excludeAdmin=0$/);
+    await page.getByLabel('Reporting period').selectOption('today');
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\?range=today&excludeAdmin=0$/);
+
+    await page.getByLabel('Overview views').getByRole('link', { name: 'Insights' }).click();
+    await expect(page).toHaveURL(/\/admin\/insights\?excludeAdmin=0$/);
+    await expect(page.getByRole('link', { name: 'Include internal activity' })).toBeVisible();
+  });
+
   test('overview switches between Today and a rolling 24 hours', async ({ page }) => {
     const errors = trackClientErrors(page);
     await openAdminRoute(page, '/admin');

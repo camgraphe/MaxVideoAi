@@ -21,30 +21,41 @@ export function AdminDashboardView({ data }: { data: AdminOverview }) {
     <div className="space-y-5">
       <AdminPageHeader
         title="Overview"
-        description="Registrations and wallet activity at a glance."
+        description={data.excludeInternal
+          ? 'Customer activity excludes Camgraph Admin and manually granted wallet credits.'
+          : 'Registrations and wallet activity, including internal activity.'}
         actions={
-          <form className="flex items-center gap-2">
-            <label htmlFor="overview-range" className="sr-only">
-              Reporting period
-            </label>
-            <select
-              id="overview-range"
-              name="range"
-              defaultValue={data.window.period}
-              className="rounded-md border border-border px-3 py-2 text-sm"
+          <div className="flex flex-wrap items-center gap-2">
+            <form className="flex items-center gap-2">
+              <label htmlFor="overview-range" className="sr-only">
+                Reporting period
+              </label>
+              <select
+                id="overview-range"
+                name="range"
+                defaultValue={data.window.period}
+                className="rounded-md border border-border px-3 py-2 text-sm"
+              >
+                <option value="today">Today</option>
+                <option value="24h">Last 24 hours</option>
+              </select>
+              {!data.excludeInternal ? <input type="hidden" name="excludeAdmin" value="0" /> : null}
+              <button className="rounded-md border border-border px-3 py-2 text-sm">Apply</button>
+            </form>
+            <Link
+              href={`/admin?range=${data.window.period}&excludeAdmin=${data.excludeInternal ? '0' : '1'}`}
+              className="rounded-md border border-border px-3 py-2 text-sm font-medium text-text-secondary hover:bg-bg hover:text-text-primary"
             >
-              <option value="today">Today</option>
-              <option value="24h">Last 24 hours</option>
-            </select>
-            <button className="rounded-md border border-border px-3 py-2 text-sm">Apply</button>
-          </form>
+              {data.excludeInternal ? 'Internal activity excluded' : 'Include internal activity'}
+            </Link>
+          </div>
         }
       />
       <nav aria-label="Overview views" className="flex gap-6 border-b border-border text-sm">
         <Link className="border-b-2 border-brand pb-3 font-semibold text-brand" href="/admin" aria-current="page">
           Today
         </Link>
-        <Link className="pb-3 text-text-secondary" href="/admin/insights">
+        <Link className="pb-3 text-text-secondary" href={`/admin/insights?excludeAdmin=${data.excludeInternal ? '1' : '0'}`}>
           Insights
         </Link>
         <Link className="pb-3 text-text-secondary" href="/admin/mcp">
@@ -57,14 +68,16 @@ export function AdminDashboardView({ data }: { data: AdminOverview }) {
           {
             label: 'New users',
             value: data.users?.count ?? 'Unavailable',
-            helper: 'Registered accounts · includes internal users',
+            helper: data.excludeInternal ? 'Registered customer accounts' : 'Registered accounts · includes internal users',
           },
           {
             label: 'Wallet top-ups',
             value: topups ? topups.reduce((total, row) => total + row.count, 0) : 'Unavailable',
             helper: topups?.length
               ? topups.map((row) => money(row.cents, row.currency)).join(' · ')
-              : 'Includes manual credits; not a cash revenue measure',
+              : data.excludeInternal
+                ? 'Manual credits excluded; wallet loads are not a cash revenue measure'
+                : 'Includes manual credits; not a cash revenue measure',
           },
           {
             label: 'Unresolved failures',

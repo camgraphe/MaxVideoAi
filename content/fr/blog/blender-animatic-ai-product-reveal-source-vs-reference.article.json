@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "blender-animatic-ai-product-reveal-source-vs-reference",
+  "publication": {
+    "articleId": "045e8cce-4da7-49e7-ae52-a2f86e913f3f",
+    "version": 1,
+    "digest": "71ac0744c3cd2a0dc972e1155fd1426067752f07c63e2afd0995d18a8be14d17",
+    "publishedAt": "2026-09-24T11:08:55.803Z"
+  },
+  "article": {
+    "locale": "fr",
+    "audience": "fr-FR",
+    "slug": "blender-animatic-ai-product-reveal-source-vs-reference",
+    "title": "Transformer une animatique Blender en révélation produit par IA : vidéo source ou référence de mouvement ?",
+    "description": "Créez dans Blender une animatique de révélation produit de six secondes, puis choisissez entre la transformer comme vidéo source avec Seedance 2.5 ou guider un nouveau plan MiniMax H3.",
+    "keywords": [
+      "animatique Blender",
+      "vidéo produit par IA",
+      "révélation produit",
+      "Seedance 2.5",
+      "MiniMax H3",
+      "vidéo source",
+      "référence de mouvement",
+      "vidéo vers vidéo",
+      "génération vidéo à partir d’une référence"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Sur un socle, un flacon mêle rendu argile et verre ambré, tandis que la trajectoire de la caméra se divise en deux voies.",
+        "caption": "Illustration — une même révélation planifiée, deux rôles possibles pour l’animatique."
+      },
+      {
+        "id": "reveal-target",
+        "type": "text",
+        "heading": "Définissez précisément ce que la révélation doit montrer",
+        "paragraphs": [
+          {
+            "text": "Un produit peut sembler convaincant dans Blender sans que le plan raconte clairement quelque chose. Avant de peaufiner les matériaux, définissez un mouvement de caméra au résultat sans ambiguïté : le public doit comprendre ce qui est révélé, à quel moment le produit devient lisible et où la caméra finit sa course.",
+            "sourceIds": []
+          },
+          {
+            "text": "Imaginez un flacon ambré sans marque, coiffé d’un bouchon anthracite et posé sur un socle cylindrique clair. Au premier plan, un panneau turquoise le masque en partie. Le flacon reste immobile tandis que la caméra se déplace latéralement : grâce à la parallaxe, cet obstacle devient le mécanisme de la révélation.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Sur un plan de six secondes, confiez une seule mission à chaque phase. ",
+                "bold": true
+              },
+              {
+                "text": "Commencez avec le flacon partiellement caché, dépassez le panneau au milieu du mouvement, puis conservez un packshot final suffisamment longtemps pour distinguer la silhouette, le bouchon et le point de contact avec le socle. Cette fin stabilisée est essentielle : elle fournit un point de sélection exploitable pour le montage à venir, au lieu de couper alors que la composition évolue encore."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Une fois cet objectif posé, vous pouvez choisir le rôle de l’animatique : devenir une vidéo source à transformer avec "
+              },
+              {
+                "text": "Seedance 2.5",
+                "href": "https://maxvideoai.com/models/seedance-2-5"
+              },
+              {
+                "text": ", ou servir de guide de mouvement et de composition pour créer un nouveau plan avec "
+              },
+              {
+                "text": "MiniMax H3",
+                "href": "https://maxvideoai.com/models/minimax-h3"
+              },
+              {
+                "text": "."
+              }
+            ],
+            "sourceIds": [
+              "source-2",
+              "source-3"
+            ]
+          },
+          {
+            "text": "Ce workflow documenté s’appuie sur un exemple inventé, et non sur une génération complète reproduite de bout en bout. Aucun plan obtenu ni aucune lecture de démonstration n’ont été vérifiés indépendamment : considérez donc cette révélation comme une intention créative, pas comme une prédiction du comportement des modèles.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "reveal-example",
+        "type": "media",
+        "assetId": "reveal-example",
+        "heading": "Donnez une vraie conclusion à la révélation",
+        "presentation": "single",
+        "alt": "Trois images imaginées montrent le passage d’un flacon partiellement masqué à une révélation nette, puis à un packshot final stabilisé.",
+        "caption": "Illustration — la révélation prévue du flacon, de l’obstruction partielle au packshot bien lisible."
+      },
+      {
+        "id": "build-animatic",
+        "type": "steps",
+        "heading": "Réglez la mise en scène et le rythme avant l’export",
+        "steps": [
+          {
+            "title": "Ne modélisez que les formes utiles au plan",
+            "body": "Utilisez des volumes simples pour le flacon, le bouchon, le socle et le panneau au premier plan. Conservez la silhouette approximative du flacon et son contact avec le socle, mais laissez de côté les matériaux soignés et les détails fins. L’animatique doit rendre lisibles les rapports dans l’espace et le rythme du plan, pas ressembler à un rendu produit finalisé."
+          },
+          {
+            "title": "Composez l’ouverture et le packshot final",
+            "body": "Placez d’abord la caméra de façon à ce que le panneau proche masque une partie du flacon, sans le rendre méconnaissable. Définissez ensuite la position finale, avec le flacon entièrement visible et suffisamment d’espace autour de lui. En préparant la conclusion dès maintenant, vous évitez que le mouvement latéral aboutisse à un cadrage maladroit."
+          },
+          {
+            "title": "Animez le déplacement latéral de la caméra",
+            "body": "Gardez le flacon, le socle et le panneau immobiles, puis animez directement la caméra avec des images clés. Ajoutez une position intermédiaire au moment où le panneau libère le flacon et où sa silhouette devient lisible. L’écart de profondeur avec le premier plan produit une parallaxe visible : la révélation est ainsi plus facile à juger que si tous les objets se trouvaient à peu près sur le même plan."
+          },
+          {
+            "title": "Vérifiez les trois moments décisifs, puis le mouvement complet",
+            "body": "Examinez séparément l’obstruction initiale, la révélation intermédiaire et le cadrage final, puis regardez les six secondes en continu. Les images fixes révèlent les problèmes de placement ; la lecture montre si le panneau se dégage trop brutalement, s’attarde trop longtemps ou provoque une hésitation involontaire. Corrigez ce rythme dans les aperçus intermédiaires, avant que le travail d’apparence ne brouille votre décision."
+          },
+          {
+            "title": "Exportez un aperçu propre depuis la caméra",
+            "body": "Passez dans la vue de la caméra active et lancez un Viewport Render léger en mode Solid ou Material Preview. Masquez les overlays pour que les repères et les images clés n’apparaissent pas dans la vidéo exportée. Choisissez volontairement la résolution, le rapport d’image, le chemin de sortie et le format de fichier. Un aperçu en 960 × 540, au format 16:9, permet par exemple de conserver un rendu de préparation léger, sans suggérer qu’il s’agit d’une exigence d’importation du modèle. Le rendu du viewport est documenté pour Workbench et EEVEE, pas pour Cycles. Si vous exportez une séquence d’images, assemblez-la en vidéo avant de passer à l’étape suivante."
+          }
+        ]
+      },
+      {
+        "id": "blender-camera-blocking",
+        "type": "media",
+        "assetId": "blender-camera-blocking",
+        "heading": "Construisez le mouvement de caméra autour du panneau",
+        "presentation": "single",
+        "alt": "Scène Blender illustrée montrant le panneau au premier plan, le flacon, trois positions de caméra et une vue finale dégagée.",
+        "caption": "Illustration — placement du panneau, mouvement de caméra et cadrage final dans Blender."
+      },
+      {
+        "id": "choose-input-role",
+        "type": "comparison",
+        "heading": "Décidez si l’animatique sert de matière ou de direction",
+        "columns": [
+          "Seedance 2.5 — transformer l’animatique",
+          "MiniMax H3 — guider un nouveau plan"
+        ],
+        "rows": [
+          [
+            "Choisissez cette voie si l’aperçu Blender doit devenir la vidéo source à transformer ou à restyliser.",
+            "Choisissez cette voie si l’aperçu Blender doit guider la caméra, le rythme de la révélation et la composition d’un nouveau plan généré."
+          ],
+          [
+            "Le schéma du site fourni exige un Prompt et exactement une Source video.",
+            "Le schéma du site fourni exige un Prompt. Dans le contrat général, les vidéos de référence sont facultatives, avec un maximum de trois."
+          ],
+          [
+            "Les images de référence sont facultatives. Si vous en fournissez, le schéma en accepte entre une et trente ; la présence de la vidéo source ne rend pas obligatoire l’ajout d’une image d’apparence.",
+            "Pour ce plan, joignez volontairement l’unique animatique de six secondes comme référence de mouvement. C’est un choix créatif propre à ce workflow, pas l’affirmation que toute requête H3 en mode référence exige une vidéo."
+          ],
+          [
+            "Traitez l’animatique comme le métrage source. Demandez un verre ambré, un bouchon anthracite et un éclairage produit sobre, tout en indiquant que la transformation doit conserver le mouvement latéral prévu, l’ordre de la révélation, la position du socle et la fin stabilisée.",
+            "Ne confiez à l’animatique que les rôles nécessaires : mouvement de caméra, rythme et composition. Décrivez séparément le verre ambré et l’éclairage dans le texte, ou utilisez des éléments d’apparence dont vous détenez les droits ou l’autorisation, lorsqu’ils sont disponibles et pris en charge. Excluez explicitement du rendu souhaité les matériaux gris de l’ébauche."
+          ],
+          [
+            "La page publique de Seedance 2.5 documente le restylage d’un clip source. Les consignes de préservation expriment toutefois une intention : elles ne garantissent pas une géométrie, un mouvement de caméra ou un rythme strictement identiques.",
+            "La page de MiniMax H3 documente séparément des limites de références mixtes allant jusqu’à neuf images, trois vidéos et trois pistes audio, dans la limite de douze références distinctes. Les références vidéo et audio sont chacune soumises à une durée cumulée maximale de quinze secondes. Ces limites plus larges n’ajoutent aucun champ obligatoire au schéma fourni."
+          ],
+          [
+            "Un exemple de prompt MaxVideoAI ayant fait l’objet d’une revue attribue à une vidéo le mouvement, le blocking, la trajectoire de caméra, l’organisation spatiale et le rythme, tout en excluant son apparence low-poly. Il constitue un exemple attribué utile pour formuler le rôle d’un média, mais ne vaut ni lecture vérifiée ni preuve de qualité du résultat.",
+            "Appliquez ici la même rigueur : précisez ce que l’animatique doit contrôler et ce qu’elle ne doit surtout pas définir. Vous séparez ainsi la direction du mouvement de l’apparence des surfaces, sans laisser entendre que le nouveau plan reproduira exactement la scène Blender."
+          ],
+          [
+            "La page du modèle et le schéma local documentent le contrat du site, mais ne prouvent ni son exécution en conditions réelles ni la réussite d’un rendu. Une documentation MCP distincte indique que le video-to-video direct de Seedance n’est pas exposé par cette voie MCP ; cela ne démontre pas que le mode correspondant a été retiré du site.",
+            "La page du modèle et le schéma local documentent les entrées de génération vidéo à partir de références, mais ne prouvent ni leur déploiement effectif ni la réussite du résultat. Ce workflow n’affirme pas que MCP contrôle Blender ou fournisse une autre méthode d’automatisation de Blender."
+          ]
+        ]
+      },
+      {
+        "id": "input-role-illustration",
+        "type": "media",
+        "assetId": "input-role-illustration",
+        "heading": "Donnez deux rôles différents au même clip",
+        "presentation": "single",
+        "alt": "La même animatique de bouteille sert de vidéo source dans une approche et de référence de mouvement, à côté d’un schéma de trajectoire de caméra, dans l’autre.",
+        "caption": "Illustration — matière source pour Seedance 2.5 ou guide de mouvement pour MiniMax H3."
+      },
+      {
+        "id": "seedance-prompt",
+        "type": "prompt",
+        "heading": "Présentez le clip source comme une matière à transformer",
+        "template": "Treat the uploaded six-second Blender animatic as source material to edit. Transform the grey-box product into an unbranded amber-glass bottle with a charcoal cylindrical cap, using restrained product lighting and a warm ivory environment. Keep the bottle stationary on the pale cylindrical pedestal. Retain the intended lateral camera direction, the initial partial obstruction by the teal foreground panel, the gradual reveal order, the spatial relationship between the panel, pedestal and bottle, and the settled final packshot with breathing room. Replace the preview materials rather than reproducing their low-poly appearance. Maintain a readable bottle silhouette, consistent cap detail and stable contact with the pedestal throughout the panel crossing. No label, logo or on-screen text.",
+        "note": "Importez l’animatique comme unique Source video requise, puis placez ce texte dans le champ Prompt obligatoire. Lorsque les réglages disponibles le permettent, choisissez une durée de six secondes. Les images d’apparence restent facultatives : si vous ajoutez des visuels dont vous détenez les droits ou l’autorisation, précisez clairement qu’ils doivent uniquement guider les matières, les couleurs et l’éclairage. Demander de conserver la mise en scène et le timing indique la direction souhaitée, sans garantir une fidélité exacte de la géométrie ou du mouvement de caméra."
+      },
+      {
+        "id": "h3-prompt",
+        "type": "prompt",
+        "heading": "Confiez le mouvement à l’animatique, pas l’apparence",
+        "template": "Create a new six-second product-reveal shot featuring an unbranded amber-glass bottle with a charcoal cylindrical cap on a pale cylindrical pedestal, lit with restrained product lighting in a warm ivory environment. Use the supplied animatic only as a motion, timing and composition reference: follow its lateral camera direction, begin with the bottle partly hidden by the teal foreground panel, reveal the bottle progressively through the middle of the shot, and settle into a clear final packshot with breathing room. Preserve the intended spatial logic and reveal pacing without adopting the animatic’s grey-box geometry, flat preview materials or simplified lighting. Keep the bottle silhouette, cap and pedestal contact coherent while the foreground panel crosses the frame. No label, logo or on-screen text.",
+        "note": "Placez ce texte dans le champ Prompt obligatoire et joignez volontairement l’animatique de six secondes comme unique Reference video. Dans le contrat général H3 fourni, une vidéo de référence reste facultative : son ajout est un choix propre à ce workflow. Comme le prompt décrit lui-même l’apparence, aucune image n’est supposée nécessaire. Si vous ajoutez une référence d’apparence autorisée par l’intermédiaire d’une entrée compatible, limitez son rôle à la surface de la bouteille et à l’éclairage. Réglez la durée et le cadrage avec les commandes de sortie disponibles plutôt que d’intégrer ces instructions de configuration au prompt."
+      },
+      {
+        "id": "inspect-and-edit",
+        "type": "steps",
+        "heading": "Inspectez le plan avant de demander au montage de le sauver",
+        "steps": [
+          {
+            "title": "Comparez le cadrage initial et le cadrage final",
+            "body": "Dès qu’un résultat est disponible, comparez des images représentatives du début et de la fin avec l’animatique. Vérifiez que la bouteille apparaît d’abord partiellement masquée, puis termine en packshot lisible, avec assez d’espace autour d’elle. Si l’une de ces compositions manquait déjà de clarté dans l’animatique, ajustez la caméra Blender ou la position du panneau, puis exportez à nouveau."
+          },
+          {
+            "title": "Contrôlez la silhouette et les détails du bouchon",
+            "body": "Examinez l’épaule de la bouteille, son contour extérieur et son bouchon anthracite sur plusieurs images, pas uniquement sur le séduisant plan final. Si l’apparence dérive alors que le mouvement de l’animatique reste clair, précisez davantage la description des surfaces ou le rôle de toute référence d’apparence autorisée. Ne comptez pas sur un outil de montage pour réparer de façon fiable une géométrie qui change."
+          },
+          {
+            "title": "Vérifiez le contact avec le socle",
+            "body": "Repérez tout flottement, enfoncement ou glissement au point de contact entre la bouteille et le socle. Si le problème vient de la mise en scène source, corrigez le placement de l’objet dans Blender. Si l’animatique est stable mais que le contact varie dans la génération, revoyez le prompt ou le rôle des références avant de produire un autre candidat."
+          },
+          {
+            "title": "Regardez toute la traversée du premier plan",
+            "body": "Visionnez le passage complet du panneau pour juger la continuité : des images fixes ne permettent pas de confirmer que l’occlusion reste cohérente en mouvement. Si la révélation se désarticule, clarifiez un timing Blender ambigu ou rendez plus explicite le rôle de l’animatique comme référence de mouvement. Si le plan tient bien, transférez le candidat retenu dans un logiciel de montage externe pour la sélection, les raccords, les corrections, les titres et le son."
+          }
+        ]
+      },
+      {
+        "id": "reveal-inspection",
+        "type": "media",
+        "assetId": "reveal-inspection",
+        "heading": "Ne vous arrêtez pas à la jolie image finale",
+        "presentation": "single",
+        "alt": "Quatre vues illustrées mettent en évidence le cadrage du packshot, la silhouette de la bouteille, son contact avec le socle et la limite d’occlusion créée par le premier plan.",
+        "caption": "Illustration — inspectez le cadrage, la silhouette, le contact et le passage du panneau ; vérifiez aussi ce dernier en mouvement."
+      },
+      {
+        "id": "workflow-handoff",
+        "type": "diagram",
+        "heading": "Simplifiez les passages d’un outil à l’autre",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Scène Blender"
+          },
+          {
+            "kind": "video",
+            "label": "Animatique vue caméra"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI : montage Seedance OU référence H3"
+          },
+          {
+            "kind": "video",
+            "label": "Résultat candidat, si disponible"
+          },
+          {
+            "kind": "file",
+            "label": "Projet de montage externe"
+          }
+        ],
+        "connections": [
+          "Exporter le mouvement de caméra prévu",
+          "Fournir la vidéo et le prompt adapté à son rôle",
+          "Générer avec le parcours choisi et disponible",
+          "Inspecter, puis importer le plan retenu"
+        ],
+        "alt": "Une scène Blender devient une animatique, passe par l’un des parcours MaxVideoAI choisis, puis produit un plan candidat à inspecter avant le montage externe.",
+        "caption": "Blender définit le mouvement ; le parcours MaxVideoAI choisi prend en charge la génération ; un logiciel de montage externe assemble ensuite le plan retenu."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "Blender 5.2 LTS",
+      "publisher": "Blender Foundation",
+      "url": "https://www.blender.org/releases/5-2/",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-10",
+      "title": "MaxVideoAI MCP: Connectors, Plugins and Workflows",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/docs/mcp",
+      "retrievedAt": "2026-09-24",
+      "publishedAt": "2026-07-14"
+    },
+    {
+      "id": "source-2",
+      "title": "Seedance 2.5 AI Video Generator: 30s, 1080p & Audio",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/seedance-2-5",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-3",
+      "title": "MiniMax H3 AI Video Generator: 4K, References & Audio",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/minimax-h3",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-4",
+      "title": "One-take Creation, Flexible Referencing: Introducing Seedance 2.5",
+      "publisher": "ByteDance Seed",
+      "url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "retrievedAt": "2026-09-24",
+      "publishedAt": "2026-07-31"
+    },
+    {
+      "id": "source-5",
+      "title": "Open General Intelligence: MiniMax H3 Is Now Open Source",
+      "publisher": "MiniMax",
+      "url": "https://www.minimax.io/news/minimax-h3-open-source",
+      "retrievedAt": "2026-09-24",
+      "publishedAt": "2026-08-03"
+    },
+    {
+      "id": "source-6",
+      "title": "Viewport Render — Blender 5.2 LTS Manual",
+      "publisher": "Blender Foundation",
+      "url": "https://docs.blender.org/manual/sl/5.2/editors/3dview/viewport_render.html",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-7",
+      "title": "Introduction — Blender 5.2 LTS Animation Manual",
+      "publisher": "Blender Foundation",
+      "url": "https://docs.blender.org/manual/en/5.2/animation/introduction.html",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-8",
+      "title": "Rendering Animations — Blender 5.2 LTS Manual",
+      "publisher": "Blender Foundation",
+      "url": "https://docs.blender.org/manual/en/latest/render/output/animation.html",
+      "retrievedAt": "2026-09-24"
+    },
+    {
+      "id": "source-9",
+      "title": "Seedance 2.5 Video Reference Example: Giant Duck VFX",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/video/seedance-2-5-video-reference-giant-duck-vfx",
+      "retrievedAt": "2026-09-24"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "4a0c381ef9b7e792b5c5c69e822297f84655fe8523b79db6949bd1d64a3d65ee",
+      "url": "https://media.maxvideoai.com/editorial/published/4a0c381ef9b7e792b5c5c69e822297f84655fe8523b79db6949bd1d64a3d65ee.webp"
+    },
+    {
+      "id": "reveal-example",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "051897ae9f1aef5d5963173f0bb2f0bb1ec3e10991bfc98bdb34eb3e80e2469f",
+      "url": "https://media.maxvideoai.com/editorial/published/051897ae9f1aef5d5963173f0bb2f0bb1ec3e10991bfc98bdb34eb3e80e2469f.webp"
+    },
+    {
+      "id": "blender-camera-blocking",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "e3205a8fc4f00667323ed2227a4976afc0b437b35765f8d941b7114407578b18",
+      "url": "https://media.maxvideoai.com/editorial/published/e3205a8fc4f00667323ed2227a4976afc0b437b35765f8d941b7114407578b18.webp"
+    },
+    {
+      "id": "input-role-illustration",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "3b88184aaacff1212df85de6e73c9e91b179d9f445f3e55b7710f9dc2f6c16fb",
+      "url": "https://media.maxvideoai.com/editorial/published/3b88184aaacff1212df85de6e73c9e91b179d9f445f3e55b7710f9dc2f6c16fb.webp"
+    },
+    {
+      "id": "reveal-inspection",
+      "kind": "generated-illustration",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "6f1cb45098ec83b06f65f0bae9685cb6c835a64ee7f5216b41eae6d46e02d4de",
+      "url": "https://media.maxvideoai.com/editorial/published/6f1cb45098ec83b06f65f0bae9685cb6c835a64ee7f5216b41eae6d46e02d4de.webp"
+    }
+  ]
+}

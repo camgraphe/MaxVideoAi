@@ -38,7 +38,8 @@ export async function scanRegistrations(
   from: string,
   to: string,
   signal: AbortSignal,
-  listUsers: (page: number) => Promise<AuthUser[]>
+  listUsers: (page: number) => Promise<AuthUser[]>,
+  excludedUserIds: ReadonlySet<string> = new Set()
 ) {
   let count = 0;
   let recent: OverviewUser[] = [];
@@ -49,6 +50,7 @@ export async function scanRegistrations(
     // Auth SDK has no per-call abort option. Stop subsequent pages after a late response.
     signal.throwIfAborted();
     for (const user of users) {
+      if (excludedUserIds.has(user.id)) continue;
       const createdAt = new Date(user.created_at).toISOString();
       if (createdAt < from || createdAt >= to) continue;
       count++;

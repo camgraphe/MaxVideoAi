@@ -208,6 +208,10 @@ The outcome query returns bounded internal ID arrays solely for this server-side
 See the [Auth account lookup](https://supabase.com/docs/reference/javascript/auth-admin-getuserbyid)
 and [OAuth client lookup](https://supabase.com/docs/reference/javascript/oauth-admin-getclient) contracts.
 
+## Internal activity filter
+
+`/admin` and `/admin/insights` exclude the Camgraph Admin account and manual admin wallet credits by default. The filter preserves the Today/24h and Insights range selections; `excludeAdmin=0` restores the full view. It applies to overview registrations, receipt totals and recent activity, unresolved job failures, and Insights top-up, conversion and usage metrics. It changes reporting only, never receipts or wallet balances. Camgraph's account ID is owned by `frontend/lib/admin/exclusions.ts`; manual wallet grants are marked by `app_receipts.metadata.reason = 'manual_admin_topup'`.
+
 ## Admin navigation and overview (2026-09-22)
 
 `frontend/lib/admin/navigation.ts` owns five work areas: Overview, Users, Transactions,
@@ -238,7 +242,7 @@ Overview authorizes before `fetchAdminOverview`. Reporting windows use Europe/Ma
 with calendar Today (including DST) separate from rolling 24 hours. Auth and wallet
 sources have independent five-second deadlines. Auth scanning is bounded to 100 pages
 of 1000 accounts and stops after a late response; partial scans are unavailable, never
-presented as full counts. This is a read path, without schema creation. Wallet top-ups
+presented as full counts. This is a read path, without schema creation. Wallet top-ups in the full view
 include manual credits and must not be labelled cash revenue. Transactions search and filters apply to the full ledger before pagination; deep
 receipt links resolve independently and preserve PostgreSQL bigint IDs as strings.
 
