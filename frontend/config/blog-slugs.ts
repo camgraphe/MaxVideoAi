@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "animated-cafe-menu-flux-3-codex-cli": {
+    en: "animated-cafe-menu-flux-3-codex-cli",
+    fr: "animated-cafe-menu-flux-3-codex-cli",
+    es: "animated-cafe-menu-flux-3-codex-cli",
+  },
   "blender-animatic-ai-product-reveal-source-vs-reference": {
     en: "blender-animatic-ai-product-reveal-source-vs-reference",
     fr: "blender-animatic-ai-product-reveal-source-vs-reference",
