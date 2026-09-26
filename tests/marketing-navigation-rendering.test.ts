@@ -89,10 +89,11 @@ test('mobile actions skip unchanged desktop menus while desktop state and locale
     await act(async () => { allModels.click(); });
     assert.equal(document.querySelector('#marketing-models-dropdown')?.hasAttribute('hidden'), true);
 
-    await render('fr', JSON.parse(await readFile('frontend/messages/fr.json', 'utf8')));
+    const frenchDictionary = JSON.parse(await readFile('frontend/messages/fr.json', 'utf8'));
+    await render('fr', frenchDictionary);
     assert.match(document.querySelector('button[aria-controls="marketing-models-dropdown"]')!.textContent!, /Modèles/);
     dom.window.history.replaceState(null, '', '/models');
-    await render('fr', JSON.parse(await readFile('frontend/messages/fr.json', 'utf8')));
+    await render('fr', frenchDictionary);
     assert.ok(document.querySelector('button[aria-controls="marketing-models-dropdown"]')?.classList.contains('is-active'));
   } finally {
     if (root) await act(async () => root!.unmount());
