@@ -16,14 +16,13 @@ import { getComparePageOverride } from './_lib/compare-page-overrides';
 import { buildCompareFaqItems, buildCompareFaqJsonLd } from './_lib/compare-page-faq';
 import { buildComparePageMetadata } from './_lib/compare-page-metadata';
 import { buildRelatedComparisonLinks } from './_lib/compare-page-related-links';
-import { buildCompareRouteData } from './_lib/compare-page-route-data';
+import { loadComparePageData } from './_lib/compare-page-route-data';
 import { buildCompareBreadcrumbJsonLd, buildCompareWebPageJsonLd } from './_lib/compare-page-schema';
 import {
   buildCompareSummaryRows,
   buildComparisonMetrics,
 } from './_lib/compare-page-scorecard';
 import { buildCompareSpecRows } from './_lib/compare-page-spec-rows';
-import { loadCompareGallery } from './_lib/compare-gallery-loader';
 import {
   computePricingScore,
   getCanonicalCompareSlug,
@@ -106,29 +105,24 @@ export default async function CompareDetailPage(
   if (shouldSwapDisplayOrder) {
     [left, right] = [right, left];
   }
-  const routeData = await buildCompareRouteData({ activeLocale, left, right });
+  const { routeData, leftGallery, rightGallery } = await loadComparePageData({ activeLocale, left, right });
   left = routeData.left;
   right = routeData.right;
   const {
     criteriaCount,
     engineScoresBySlug,
     hasPrelaunchEngine,
-    leftIsPrelaunch,
     leftOverall,
     leftPricingDisplay,
     leftScore,
     leftSpecs,
     pairHasKling3Native4k,
     pairHasNativeAudio,
-    rightIsPrelaunch,
     rightOverall,
     rightPricingDisplay,
     rightScore,
     rightSpecs,
   } = routeData;
-  const [leftGallery, rightGallery] = await Promise.all([
-    loadCompareGallery(left, leftIsPrelaunch), loadCompareGallery(right, rightIsPrelaunch),
-  ]);
   const {
     generateWithLabel,
     heroIntroTemplate,

@@ -33,18 +33,6 @@ function hasConsent({ storageKey, grantedValue }: { storageKey: string; grantedV
   }
 }
 
-function isLighthouseRun() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  if (ua.includes('Chrome-Lighthouse')) return true;
-  try {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('lh-mode') === '1';
-  } catch {
-    return false;
-  }
-}
-
 type ConsentEventDetail = {
   categories?: {
     analytics?: boolean;
@@ -95,7 +83,7 @@ export function GtmLazyLoader({
 
   useEffect(() => {
     if (!GTM_ID) return;
-    if (DISABLE_GTM || isLighthouseRun()) {
+    if (DISABLE_GTM) {
       return;
     }
     if (routeContext.excludedFromGa4) {

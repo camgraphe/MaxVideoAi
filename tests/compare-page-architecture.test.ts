@@ -579,7 +579,9 @@ test('comparison detail page delegates copy, data, schema, and media responsibil
   assert.ok(pageSource.includes("from './_lib/compare-page-schema'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-scorecard'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-spec-rows'"));
-  assert.ok(pageSource.includes("from './_lib/compare-gallery-loader'"));
+  assert.match(pageSource, /await loadComparePageData\(\{ activeLocale, left, right \}\)/);
+  assert.ok(routeDataSource.includes("from './compare-gallery-loader'"));
+  assert.doesNotMatch(pageSource, /await loadCompareGallery/);
   assert.ok(pageSource.includes("from './_components/CompareDetailContent'"));
   assert.doesNotMatch(pageSource, /const COMPARE_PAGE_OVERRIDES/);
   assert.doesNotMatch(pageSource, /type ComparePageCopy =/);

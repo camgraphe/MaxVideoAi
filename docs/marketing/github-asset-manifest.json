@@ -134,7 +134,7 @@
       "reviewTrigger": "Refresh after an approved MaxVideoAI identity or plugin-icon change.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-26",
-      "lastReviewedRevision": "da7a6bb036b553a2258807c9851153a86b9444a1",
+      "lastReviewedRevision": "9a02f9e9d21faad6f665b8b17a0c691ff2b67321",
       "freshnessStatus": "current"
     },
     {
@@ -526,7 +526,7 @@
       "reviewTrigger": "Review if the historical caption or source proof changes. Replace with reviewed current evidence before promoting a new release or claiming current product UI.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-26",
-      "lastReviewedRevision": "da7a6bb036b553a2258807c9851153a86b9444a1",
+      "lastReviewedRevision": "9a02f9e9d21faad6f665b8b17a0c691ff2b67321",
       "freshnessStatus": "current",
       "sourceProofIds": ["maxvideoai-workspace-production"],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
@@ -551,7 +551,7 @@
       "reviewTrigger": "Review if the historical caption or source proof changes. Replace with reviewed current evidence before promoting a new release or claiming current product UI.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-26",
-      "lastReviewedRevision": "da7a6bb036b553a2258807c9851153a86b9444a1",
+      "lastReviewedRevision": "9a02f9e9d21faad6f665b8b17a0c691ff2b67321",
       "freshnessStatus": "current",
       "sourceProofIds": ["maxvideoai-workspace-production"],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
