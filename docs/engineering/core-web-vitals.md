@@ -16,7 +16,7 @@ A CrUX origin includes eligible traffic across the origin. Marketing URLs in Sea
 
 ## Collection commands
 
-The [shared matrix](../../scripts/performance/site-matrix.json) contains 33 verified public URLs: home, model detail, comparison detail, gallery index, model gallery, pricing, documentation, MCP, public tools, blog and integration detail and integration detail, in EN/FR/ES. This is a representative matrix, not an exhaustive crawl. Workspace journeys are listed separately; they require authentication and are not mixed into marketing summaries. Add high-traffic or anomalous URLs as evidence identifies them.
+The [shared matrix](../../scripts/performance/site-matrix.json) contains 33 verified public URLs: home, model detail, comparison detail, gallery index, model gallery, pricing, documentation, MCP, public tools, blog and integration detail, in EN/FR/ES. This is a representative matrix, not an exhaustive crawl. Workspace journeys are listed separately; they require authentication and are not mixed into marketing summaries. Add high-traffic or anomalous URLs as evidence identifies them.
 
 ```bash
 pnpm cwv:crux --plan
@@ -66,3 +66,12 @@ Do not overwrite metrics, drop inconvenient slow samples or report early values 
 
 First prove the implicated phase/interaction improved on the unchanged user journey. Then segment fresh production RUM by deployment and adequate route/device samples. Finally confirm CrUX's explicit window and Search Console group status. Keep the prior baseline; do not reset a failed validation as proof of recovery. A new 28-day window does not excuse an unresolved present-day RUM regression.
 
+## From a slow metric to a correction
+
+Use existing field tooling before adding another collector. CrUX identifies the outcome; route-level RUM prioritizes affected journeys; a browser or server trace identifies the work to change. If the existing tooling lacks the necessary interaction or server-phase attribution, add only that missing context and document its collection cost and coverage.
+
+For server-heavy routes, time the awaited phases within the same request and retain cache/deployment context. Finding an awaited database query in code is not proof that it dominates real requests. For poor INP, capture the action and its input, processing and presentation delays during a complete visit, including interactions during loading. For LCP, inspect the actual element and distinguish server latency, resource discovery, transfer and rendering.
+
+Keep one evidence record per correction: affected journey, before trace, hypothesis, change, after trace, deployed SHA, field result and sample count. Compare device, geography, consent and cache conditions; report sparse cohorts as inconclusive. Early post-deployment RUM can guide the next correction without waiting for a fully renewed CrUX window, but elapsed time alone does not establish adequate samples or causality.
+
+Use controlled route/component labels for any added attribution. Avoid user content, free-form DOM text, signed URLs and account identifiers. Preserve slow visits, document any metric-independent sampling, and do not count intermediate metric updates as separate visits. Keep consent behavior and the visible user journey intact.
