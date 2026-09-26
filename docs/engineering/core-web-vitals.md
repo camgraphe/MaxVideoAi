@@ -9,10 +9,11 @@ Owner: public performance. Baseline: 2026-09-26. See [dated Google evidence](../
 | CrUX daily / History API | Google's eligible Chrome field population, p75 and distributions, explicit 28-day window | Today's deployment performance; a URL value from an origin fallback |
 | Search Console | Indexed URL groups and validation status | 145 individually measured slow pages; the start date of a recent regression from first detection |
 | Vercel Speed Insights | Prioritize routes with counts, device, country, time range, deployment and element attribution | Identical population to CrUX; reliable route p75 from a handful of events |
+| Microsoft Clarity | Performance widget and recordings to investigate the selected page/session cohort | CrUX population or attribution; an independent slow page load from every matching recording or repeated URL row |
 | Lighthouse | Reproducible load diagnosis and traces | Field INP, full-session CLS, or passing Google CWV from a score of 100 |
 | Normal Chrome journey | Consent, first Play, scroll, SPA transitions and actual interaction diagnosis | Population p75 from a few manual visits |
 
-A CrUX origin includes eligible traffic across the origin. Marketing URLs in Search Console do not establish that later app activity contributes nothing. Keep marketing, public tools and workspace separate in RUM. For SPA diagnosis record the entry URL and the current route, and compare a direct page load with the same page reached through navigation. Do not change navigation to hide later events from the entry page's metrics.
+A CrUX origin includes eligible traffic across the origin. Marketing URLs in Search Console do not establish that later app activity contributes nothing. Google's current [SPA guidance](https://web.dev/articles/vitals-spa-faq) describes CrUX URL aggregation by the URL at document load; do not apply that attribution rule automatically to another collector. Keep marketing, public tools and workspace separate in diagnosis, record the initial document URL and current route, and compare direct arrival with navigation. Preserve later work and the user journey instead of changing navigation or filtering metrics to improve their labels.
 
 ## Collection commands
 
@@ -48,6 +49,30 @@ Choose elapsed ISO windows for the before/after capture and the verified deploym
 
 Vercel may align requested dates to its buckets. Read each file's **actual** query window and `windowAdjusted`, plus `possiblyTruncated` when the group limit is reached. Never average bucket or route percentiles. These exports contain operational traffic data; keep them out of this public repository. Additional diagnostic queries can group INP by `attributionTarget` and `attributionEventName`; a blank target is unavailable attribution, not proof of a harmless event. Keep route attribution distinct from the DOM surface reached later in the visit.
 
+### Route attribution verified on 27 September 2026
+
+The inspected Next integration is `@vercel/speed-insights` **1.2.0**, mounted by `frontend/components/analytics/AnalyticsScripts.tsx` without custom metric filtering. It updates the collector script's `data-route` as the client route changes. The collector captured from `https://maxvideoai.com/_vercel/speed-insights/script.js` at **2026-09-26 23:09 UTC** embeds `scriptVersion: "0.1.3"`.
+
+| Inspected artifact | SHA-256 |
+|---|---|
+| Installed SDK `dist/next/index.mjs` | `d87c482fef823e8c8c3d354299111732fd3e4ee2b27e274dc8cdc0d3279b98fe` |
+| Served collector script, 12,567 bytes | `c703720710415599d2f0b3f31fbfda63e34d6d19e730bada78b9b92197564f5b` |
+
+Exact originals, response headers and a source-only probe are retained locally under `.reports/cwv-2026-09-27-deep/docs-sdk/`. The collector's Last-Modified header is 25 September. This capture does **not** establish the collector bytes used for the 19–21 September anomalies. SDK version, deployed application SHA and remotely served collector version are separate evidence; recheck them when investigating another period.
+
+In that collector, the common metric callback saves the **current URL and script route at callback time**. The transport flush sends these saved labels. Neither the initial document URL, the event's route nor the route at network-send time can be inferred solely from the exported `route` field. `history.pushState` and `popstate` flush queued reports; they do not reset the metric observers.
+
+- **INP:** the selected interaction spans the document lifecycle and, with the inspected defaults, is reported on hidden/pagehide. An earlier workspace interaction can therefore be reported under `/` if the user navigates there before the callback. A synthetic observer probe confirmed this bookkeeping behavior; it did not reproduce a real user slowdown. An app target under `/` is evidence to reconstruct the journey, not proof of homepage work or entry-route attribution.
+- **LCP:** candidates retain their document-relative clock, and the inspected observer finalizes on click, keydown or first hide/pagehide. Ordinary in-page link clicks are not an established cause of destination content becoming a late LCP. A passive history transition without prior input needs a real browser trace before attributing a late candidate to that mechanism. Distinguish same-document traversal from full navigation and BFCache restoration.
+
+The exporter preserves provider route labels and raw responses. It cannot recover missing event-route or initial-URL context from aggregated p75/count rows, and must not relabel or discard them based on a guessed journey.
+
+### Clarity page and session context
+
+Clarity offers both page and session filters; Entry URL and Visited URL express different selection rules. A matching recording can contain several pages. Record the exact widget/tab, time window, browser/device, filter type and available per-metric count before treating a URL row as a comparable page cohort. A session count is not automatically the number of LCP or INP samples. Repeated values across URLs do not establish independent observations or a shared cause. See [Clarity filters](https://learn.microsoft.com/en-us/clarity/filters/clarity-filters).
+
+The Performance widget documents LCP, INP and CLS as p75; opening its related recordings filters toward values above the displayed metric. Those recordings help diagnose the slow tail, not estimate an unfiltered population. Correlate the selected page, navigation and event before assigning a cause. Missing attribution/counts stay unknown; Clarity figures are not substitutes for CrUX's Chrome population and collection window. See [Clarity performance metrics](https://learn.microsoft.com/en-us/clarity/insights/performance-widget).
+
 ## Representative lab protocol
 
 ```bash
@@ -65,6 +90,21 @@ These commands start with a fresh profile, therefore they cover the no-stored-co
 4. Marketing → login → app and direct app entry using the same account, retaining entry/current-route attribution.
 
 Capture LCP element/resource, TTFB, resource discovery delay, transfer duration, render delay, INP interaction/long task, CLS sources, cache state, device, country, deployment and sample count. Keep scripts after consent and late work inside the observation period. Compare the same scenario before/after with at least three lab runs; report the spread. Do not merge lab and field values.
+
+### Correlating a metric with its journey
+
+For a local diagnostic trace, record the following separately; existing aggregate exports do not supply all these fields:
+
+| Context | Record |
+|---|---|
+| Document | Initial URL/route, `performance.timeOrigin`, navigation entry `type` and `activationStart`, browser/version and deployment |
+| Transitions | Current URL/route and collector `data-route` with timestamps; full navigation, client transition or history traversal; `pageshow.persisted` for BFCache |
+| Visibility/input | Initial visibility, first hide, subsequent restores, and first click/keydown relative to the document clock |
+| Metric | Raw LCP candidate or selected interaction timestamp, metric callback time when observable, outbound report time, reported route and controlled element/event-target label |
+
+Compare a fresh direct desktop load kept visible and untouched for at least 30 seconds, a normal link-click arrival, and a separately prepared passive Back/Forward arrival. Check the time origin and navigation events instead of assuming that a changed URL means a new document or metric clock. For INP, compare an interaction on the starting route with the report after a client transition and hide. Preserve intermediate candidates, final values and slow visits; separate a source-only collector probe from a real browser reproduction.
+
+Publish only public paths or controlled route templates, not query strings, fragments, signed URLs, private resource paths, account/session identifiers or DOM text. Use a local run label to join diagnostic events; keep any sensitive raw recording context out of the repository. If callback time or event-route context is unavailable, mark it unknown and retain the competing explanations.
 
 ## Integrity guardrails
 

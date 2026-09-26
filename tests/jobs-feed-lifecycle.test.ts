@@ -20,7 +20,7 @@ test('Activity exposes every supported source and filters real grouped status wi
   }
 });
 
-test('real SWR feed isolates source/account transitions, resets pagination, refreshes and applies status events', async () => {
+test('real SWR feed isolates source/account transitions, resets pagination, refreshes and applies status events', async (t) => {
   const frontend = path.join(process.cwd(), 'frontend');
   const stubs: Record<string, string> = {
     '@/lib/authFetch': `export const authFetch = (url) => window.fixtureFetch(url);`,
@@ -30,16 +30,17 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
     '@/lib/api-job-status': `export const clearMissingStatusRetries = () => {}; export const clearStatusRetry = () => {}; export const getStatusRetryMeta = () => null; export const jobHasRenderableMedia = (job) => Boolean(job.videoUrl); export const scheduleStatusRetry = () => {};`,
   };
   const bundle = await build({ absWorkingDir: frontend, bundle: true, format: 'iife', platform: 'browser', jsx: 'automatic', write: false,
-    define: { 'process.env.NODE_ENV': '"test"' }, tsconfig: path.join(frontend, 'tsconfig.json'),
+    define: { 'process.env.NODE_ENV': '"test"', 'process.env.S3_PUBLIC_BASE_URL': '""', 'process.env.S3_BUCKET': '""', 'process.env.S3_REGION': '""' }, tsconfig: path.join(frontend, 'tsconfig.json'),
     plugins: [{ name: 'jobs-host-boundaries', setup(builder) {
       builder.onResolve({ filter: /.*/ }, (args) => args.path in stubs ? { path: args.path, namespace: 'fixture' } : undefined);
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, (args) => ({ contents: stubs[args.path], loader: 'js', resolveDir: frontend }));
     } }],
     stdin: { loader: 'tsx', resolveDir: frontend, contents: `
-      import React, { act } from 'react';
+      import React, { act, useMemo } from 'react';
       import { createRoot } from 'react-dom/client';
       import { SWRConfig } from 'swr';
       import { useInfiniteJobs } from './lib/api-jobs';
+      import { groupJobsIntoSummaries } from './lib/job-groups';
       window.IS_REACT_ACT_ENVIRONMENT = true;
       window.fixtureUser = 'account-a';
       window.requests = [];
@@ -47,6 +48,7 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
       window.held = null;
       window.fail = false;
       window.revision = 0;
+      window.groupBuilds = 0;
       window.fixtureFetch = async (url) => {
         const user = window.fixtureUser;
         window.requests.push(url);
@@ -54,7 +56,7 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
         const params = new URL(url, 'http://localhost').searchParams;
         const surface = params.get('surface') || 'all';
         const cursor = params.get('cursor');
-        return { ok: !window.fail, status: window.fail ? 503 : 200, json: async () => window.fail ? { error: 'Offline' } : ({ ok: true, jobs: [{
+        return { ok: !window.fail, status: window.fail ? 503 : 200, json: async () => window.fail ? { error: 'Offline' } : ({ ok: true, jobs: window.empty ? [] : [{
           jobId: user + '-' + surface + '-' + (cursor || 'first'), surface: surface === 'all' ? 'video' : surface,
           engineLabel: 'Fixture', durationSec: 5, prompt: 'Revision ' + window.revision,
           createdAt: cursor ? '2026-09-07T11:00:00Z' : '2026-09-07T12:00:00Z', status: 'pending'
@@ -64,6 +66,10 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
       const cache = new Map();
       function Fixture() {
         window.feed = useInfiniteJobs(24, { surface: source });
+        window.feedGroups = useMemo(() => {
+          window.groupBuilds += 1;
+          return groupJobsIntoSummaries(window.feed.stableJobs, { includeSinglesAsGroups: true }).groups;
+        }, [window.feed.stableJobs]);
         window.frames.push({ source, user: window.fixtureUser, ids: window.feed.stableJobs.map(job => job.jobId) });
         return null;
       }
@@ -85,6 +91,18 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
     assert.equal(w.requests.length, 1);
     assert.equal(w.requests[0], '/api/jobs?limit=24');
     assert.equal(w.feed.stableJobs[0].jobId, 'account-a-all-first');
+    const initialJobs = w.feed.stableJobs;
+    const initialGroups = w.feedGroups;
+    const initialGroupBuilds = w.groupBuilds;
+    const renderStart = performance.now();
+    for (let iteration = 0; iteration < 5; iteration += 1) {
+      await w.fixture.act(async () => w.fixture.render());
+    }
+    t.diagnostic(JSON.stringify({ scenario: 'five unrelated parent renders', groupingCalls: w.groupBuilds - initialGroupBuilds, elapsedMs: Number((performance.now() - renderStart).toFixed(2)) }));
+    assert.equal(w.groupBuilds, initialGroupBuilds, 'unchanged jobs must not repeat consumer grouping on parent renders');
+    assert.equal(w.feed.stableJobs, initialJobs, 'unchanged observations retain array identity');
+    assert.equal(w.feedGroups, initialGroups);
+    assert.equal(w.requests.length, 1, 'parent renders do not refetch the collection');
     await w.fixture.act(async () => { await w.feed.setSize(2); }); await settle();
     assert.equal(w.feed.stableJobs.length, 2);
     assert.ok(w.requests.some((url: string) => url.includes('cursor=older')));
@@ -102,9 +120,20 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
     w.hold = false;
     await w.fixture.act(async () => w.held()); await settle();
     assert.equal(w.feed.stableJobs[0].jobId, 'account-b-background-removal-first');
+    const beforeRefreshJobs = w.feed.stableJobs;
+    w.revision = 1;
+    await w.fixture.act(async () => { await w.feed.mutate(); });
+    assert.equal(w.feed.stableJobs[0].prompt, 'Revision 1', 'changed server data reaches memoized consumers');
+    assert.notEqual(w.feed.stableJobs, beforeRefreshJobs);
+    assert.equal(beforeRefreshJobs[0].prompt, 'Revision 0');
     const id = w.feed.stableJobs[0].jobId;
+    const beforeStatusJobs = w.feed.stableJobs;
+    const beforeStatusGroups = w.feedGroups;
     await w.fixture.act(async () => w.dispatchEvent(new w.CustomEvent('jobs:status', { detail: { jobId: id, status: 'completed', videoUrl: 'https://example.invalid/original.mp4' } })));
     assert.equal(w.feed.stableJobs[0].status, 'completed');
+    assert.notEqual(w.feed.stableJobs, beforeStatusJobs, 'a new observation invalidates the array');
+    assert.notEqual(w.feedGroups, beforeStatusGroups, 'status updates reach grouped consumers');
+    assert.equal(beforeStatusJobs[0].status, 'pending', 'older observations are not mutated in place');
     w.revision = 2;
     await w.fixture.act(async () => { await w.feed.mutate(); });
     assert.equal(w.feed.stableJobs[0].status, 'completed', 'refresh cannot regress a completed observation');
@@ -126,6 +155,14 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
     for (const frame of w.frames) for (const jobId of frame.ids) {
       assert.ok(jobId.startsWith(frame.user + '-' + frame.source + '-'), 'no prior account/source in any render frame');
     }
+    w.empty = true;
+    await w.fixture.act(async () => { await w.feed.mutate(); });
+    assert.equal(w.feed.stableJobs.length, 0, 'an empty server refresh clears old observations');
+    const emptyJobs = w.feed.stableJobs;
+    const emptyGroupBuilds = w.groupBuilds;
+    await w.fixture.act(async () => w.fixture.render());
+    assert.equal(w.feed.stableJobs, emptyJobs, 'empty observations also retain array identity');
+    assert.equal(w.groupBuilds, emptyGroupBuilds);
   } finally { await w.fixture.act(async () => w.fixture.unmount()); dom.window.close(); }
 });
 

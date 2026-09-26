@@ -6,7 +6,11 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import type { HomePriceModel } from './home-price-demo-types';
 
-const AppSurface = dynamic(() => import('./HomePriceAppSurface.client').then(module => module.HomePriceAppSurface), {ssr:false});
+function HomePriceAppPlaceholder() {
+ return <div className="price-app-placeholder">MaxVideoAI · Wan 3</div>;
+}
+
+const AppSurface = dynamic(() => import('./HomePriceAppSurface.client').then(module => module.HomePriceAppSurface), {ssr:false,loading:HomePriceAppPlaceholder});
 const COPY = {
  en:{demo:'Inside MaxVideoAI',tag:'Guided demo',steps:['Try an idea','Give it more time','Add more detail'],details:['5 seconds. Enough to explore a direction.','Same model, same quality. A longer scene.','Keep 15 seconds. Switch to Full HD.'],duration:'Duration',resolution:'Resolution',audio:'Audio on · 16:9 · 1 video',quote:'The price is here, before you generate.',pause:'Pause',replay:'Replay',note:'Example quotes in USD. The app confirms the final price before generation.',cta:'Open the studio',pricing:'See all prices',guarantees:['No subscription','Choose your settings','See the price first']},
  fr:{demo:'Dans MaxVideoAI',tag:'Démonstration guidée',steps:['Tester une idée','Laisser durer la scène','Affiner les détails'],details:['5 secondes. De quoi explorer une piste.','Même modèle, même qualité. Une scène plus longue.','Gardez les 15 secondes. Passez en Full HD.'],duration:'Durée',resolution:'Résolution',audio:'Audio activé · 16:9 · 1 vidéo',quote:'Le prix est ici, avant de générer.',pause:'Pause',replay:'Rejouer',note:'Exemples de devis en USD. L’app confirme le prix final avant chaque génération.',cta:'Ouvrir le studio',pricing:'Voir tous les tarifs',guarantees:['Sans abonnement','Vos réglages, votre choix','Le prix avant de lancer']},
@@ -50,7 +54,7 @@ export function HomePriceDemo({locale,models}:{locale:AppLocale;models:HomePrice
   <div className="price-walkthrough-stage" ref={root}>
    <div className="price-walkthrough-play"><span>{c.tag}</span><button type="button" onClick={()=>{if(playing){setPlaying(false);}else{setStepIndex(0);setPlaying(true);}}}>{playing&&!reduced ? c.pause : c.replay} <span aria-hidden>{playing&&!reduced?'Ⅱ':'↻'}</span></button></div>
    <div className="price-app-frame" data-price-step={stepIndex}>
-    {ready ? <AppSurface model={model} step={step} locale={locale}/> : <div className="price-app-placeholder">MaxVideoAI · Wan 3</div>}
+    {ready ? <AppSurface model={model} step={step} locale={locale}/> : <HomePriceAppPlaceholder/>}
     <div className="price-app-annotation"><span aria-hidden>↑</span>{c.quote}</div>
    </div>
    <div className="price-walkthrough-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{c.duration} <strong>{step.seconds} s</strong> · {c.resolution} <strong>{step.resolution}</strong><small>{c.audio}</small></span><strong className="sr-only" key={stepIndex}>{step.display}</strong></div>

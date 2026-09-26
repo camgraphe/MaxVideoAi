@@ -1,3 +1,6 @@
+// Preserve Vercel's attributed route; it is not necessarily the document-entry
+// or interaction route. Aggregate rows cannot reconstruct the missing journey.
+// Collector/version evidence and correlation protocol: docs/engineering/core-web-vitals.md.
 const key = row => JSON.stringify([row.route, row.deviceType]);
 
 export function summarizeVercelMetric(metric, values, counts) {
