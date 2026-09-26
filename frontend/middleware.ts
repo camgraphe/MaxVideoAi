@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isbot as detectBot } from 'isbot';
+import { createIsbotFromList, list as botPatterns } from 'isbot';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
 import mcpPublication from '@/config/mcp-publication.json';
 import { FEATURES } from '@/content/feature-flags';
@@ -39,6 +39,11 @@ import {
 
 const DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE = /^\/(?:fr|es)\/models\/[^/]*\.[^/]*$/;
 const MCP_GATED_NOT_FOUND_SEGMENT = '__mcp-publication-gated__';
+// Browser performance tools must take the visitor routing path. The upstream
+// bot list also classifies these browsers as bots, independently of our code.
+const detectBot = createIsbotFromList(
+  botPatterns.filter((pattern) => !['chrome-lighthouse', 'headless', 'pagespeed'].includes(pattern))
+);
 
 function rewriteGatedMcpRouteToNotFound(req: NextRequest, localePrefix: string) {
   const notFoundUrl = req.nextUrl.clone();
@@ -53,11 +58,9 @@ function rewriteGatedMcpRouteToNotFound(req: NextRequest, localePrefix: string) 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
   const userAgent = req.headers.get('user-agent') ?? '';
-  const isLighthouseAudit = /lighthouse/i.test(userAgent);
   const isLoopbackRequest = isLoopbackHost(req.headers.get('x-forwarded-host') ?? host);
   const bypassLocaleRedirect =
     isLoopbackRequest ||
-    isLighthouseAudit ||
     req.nextUrl.pathname === '/' ||
     req.nextUrl.searchParams.get('nolocale') === '1';
   const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;

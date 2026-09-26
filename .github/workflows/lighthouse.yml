@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check measurement integrity
+        run: pnpm cwv:check
+
       - name: Run Lighthouse (home)
         run: pnpm --dir frontend run lighthouse:home
 

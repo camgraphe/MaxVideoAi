@@ -1,0 +1,254 @@
+{
+  "origin": "https://maxvideoai.com",
+  "description": "Public representative URLs, not exhaustive URL coverage. CrUX availability must be checked per URL and device; workspace remains a separate diagnostic cohort.",
+  "routes": [
+    {
+      "id": "home-en",
+      "family": "home",
+      "locale": "en",
+      "path": "/",
+      "segment": "marketing"
+    },
+    {
+      "id": "home-fr",
+      "family": "home",
+      "locale": "fr",
+      "path": "/fr",
+      "segment": "marketing"
+    },
+    {
+      "id": "home-es",
+      "family": "home",
+      "locale": "es",
+      "path": "/es",
+      "segment": "marketing"
+    },
+    {
+      "id": "models-en",
+      "family": "models",
+      "locale": "en",
+      "path": "/models/veo-3-1",
+      "segment": "marketing"
+    },
+    {
+      "id": "models-fr",
+      "family": "models",
+      "locale": "fr",
+      "path": "/fr/modeles/veo-3-1",
+      "segment": "marketing"
+    },
+    {
+      "id": "models-es",
+      "family": "models",
+      "locale": "es",
+      "path": "/es/modelos/veo-3-1",
+      "segment": "marketing"
+    },
+    {
+      "id": "comparisons-en",
+      "family": "comparisons",
+      "locale": "en",
+      "path": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-5",
+      "segment": "marketing"
+    },
+    {
+      "id": "comparisons-fr",
+      "family": "comparisons",
+      "locale": "fr",
+      "path": "/fr/comparatif/ltx-2-3-fast-vs-wan-2-5",
+      "segment": "marketing"
+    },
+    {
+      "id": "comparisons-es",
+      "family": "comparisons",
+      "locale": "es",
+      "path": "/es/comparativa/ltx-2-3-fast-vs-wan-2-5",
+      "segment": "marketing"
+    },
+    {
+      "id": "gallery-en",
+      "family": "gallery",
+      "locale": "en",
+      "path": "/examples",
+      "segment": "marketing"
+    },
+    {
+      "id": "gallery-fr",
+      "family": "gallery",
+      "locale": "fr",
+      "path": "/fr/galerie",
+      "segment": "marketing"
+    },
+    {
+      "id": "gallery-es",
+      "family": "gallery",
+      "locale": "es",
+      "path": "/es/galeria",
+      "segment": "marketing"
+    },
+    {
+      "id": "gallery-model-en",
+      "family": "gallery-model",
+      "locale": "en",
+      "path": "/examples/veo",
+      "segment": "marketing"
+    },
+    {
+      "id": "gallery-model-fr",
+      "family": "gallery-model",
+      "locale": "fr",
+      "path": "/fr/galerie/veo",
+      "segment": "marketing"
+    },
+    {
+      "id": "gallery-model-es",
+      "family": "gallery-model",
+      "locale": "es",
+      "path": "/es/galeria/veo",
+      "segment": "marketing"
+    },
+    {
+      "id": "pricing-en",
+      "family": "pricing",
+      "locale": "en",
+      "path": "/pricing",
+      "segment": "marketing"
+    },
+    {
+      "id": "pricing-fr",
+      "family": "pricing",
+      "locale": "fr",
+      "path": "/fr/tarifs",
+      "segment": "marketing"
+    },
+    {
+      "id": "pricing-es",
+      "family": "pricing",
+      "locale": "es",
+      "path": "/es/precios",
+      "segment": "marketing"
+    },
+    {
+      "id": "docs-en",
+      "family": "docs",
+      "locale": "en",
+      "path": "/docs/mcp",
+      "segment": "marketing"
+    },
+    {
+      "id": "docs-fr",
+      "family": "docs",
+      "locale": "fr",
+      "path": "/fr/docs/mcp",
+      "segment": "marketing"
+    },
+    {
+      "id": "docs-es",
+      "family": "docs",
+      "locale": "es",
+      "path": "/es/docs/mcp",
+      "segment": "marketing"
+    },
+    {
+      "id": "mcp-en",
+      "family": "mcp",
+      "locale": "en",
+      "path": "/mcp",
+      "segment": "marketing"
+    },
+    {
+      "id": "mcp-fr",
+      "family": "mcp",
+      "locale": "fr",
+      "path": "/fr/mcp",
+      "segment": "marketing"
+    },
+    {
+      "id": "mcp-es",
+      "family": "mcp",
+      "locale": "es",
+      "path": "/es/mcp",
+      "segment": "marketing"
+    },
+    {
+      "id": "tools-en",
+      "family": "tools",
+      "locale": "en",
+      "path": "/tools/character-builder",
+      "segment": "public-tools"
+    },
+    {
+      "id": "tools-fr",
+      "family": "tools",
+      "locale": "fr",
+      "path": "/fr/outils/character-builder",
+      "segment": "public-tools"
+    },
+    {
+      "id": "tools-es",
+      "family": "tools",
+      "locale": "es",
+      "path": "/es/herramientas/character-builder",
+      "segment": "public-tools"
+    },
+    {
+      "id": "blog-en",
+      "family": "blog",
+      "locale": "en",
+      "path": "/blog",
+      "segment": "marketing"
+    },
+    {
+      "id": "blog-fr",
+      "family": "blog",
+      "locale": "fr",
+      "path": "/fr/blog",
+      "segment": "marketing"
+    },
+    {
+      "id": "blog-es",
+      "family": "blog",
+      "locale": "es",
+      "path": "/es/blog",
+      "segment": "marketing"
+    },
+    {
+      "id": "integration-detail-en",
+      "family": "integration-detail",
+      "locale": "en",
+      "path": "/integrations/claude",
+      "segment": "marketing"
+    },
+    {
+      "id": "integration-detail-fr",
+      "family": "integration-detail",
+      "locale": "fr",
+      "path": "/fr/integrations/claude",
+      "segment": "marketing"
+    },
+    {
+      "id": "integration-detail-es",
+      "family": "integration-detail",
+      "locale": "es",
+      "path": "/es/integraciones/claude",
+      "segment": "marketing"
+    }
+  ],
+  "workspaceRoutes": [
+    {
+      "path": "/app",
+      "segment": "workspace",
+      "protocol": "Authenticated RUM/manual journey; noindex URL availability is not assumed."
+    },
+    {
+      "path": "/app/image",
+      "segment": "workspace",
+      "protocol": "Authenticated RUM/manual journey; noindex URL availability is not assumed."
+    },
+    {
+      "path": "/app/studio",
+      "segment": "workspace",
+      "protocol": "Authenticated RUM/manual journey; noindex URL availability is not assumed."
+    }
+  ]
+}

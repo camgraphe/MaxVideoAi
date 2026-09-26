@@ -1,0 +1,354 @@
+{
+  "retrievedAt": "2026-09-26",
+  "protocol": "One unauthenticated GET per URL, concurrency at most 2, local network, normal Chrome UA except integration-detail rows explicitly marked Python urllib. Timing includes DNS/TLS; not a Core Web Vital or p75.",
+  "rows": [
+    {
+      "id": "home-en",
+      "url": "https://maxvideoai.com/",
+      "finalUrl": "https://maxvideoai.com/",
+      "status": 200,
+      "ttfbMs": 1964,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com",
+      "bytes": 394678
+    },
+    {
+      "id": "home-fr",
+      "url": "https://maxvideoai.com/fr",
+      "finalUrl": "https://maxvideoai.com/fr",
+      "status": 200,
+      "ttfbMs": 1197,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr",
+      "bytes": 391970
+    },
+    {
+      "id": "home-es",
+      "url": "https://maxvideoai.com/es",
+      "finalUrl": "https://maxvideoai.com/es",
+      "status": 200,
+      "ttfbMs": 1075,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es",
+      "bytes": 390039
+    },
+    {
+      "id": "models-en",
+      "url": "https://maxvideoai.com/models/veo-3-1",
+      "finalUrl": "https://maxvideoai.com/models/veo-3-1",
+      "status": 200,
+      "ttfbMs": 1978,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/models/veo-3-1",
+      "bytes": 611955
+    },
+    {
+      "id": "models-fr",
+      "url": "https://maxvideoai.com/fr/modeles/veo-3-1",
+      "finalUrl": "https://maxvideoai.com/fr/modeles/veo-3-1",
+      "status": 200,
+      "ttfbMs": 826,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/modeles/veo-3-1",
+      "bytes": 617695
+    },
+    {
+      "id": "models-es",
+      "url": "https://maxvideoai.com/es/modelos/veo-3-1",
+      "finalUrl": "https://maxvideoai.com/es/modelos/veo-3-1",
+      "status": 200,
+      "ttfbMs": 776,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/modelos/veo-3-1",
+      "bytes": 615579
+    },
+    {
+      "id": "comparisons-en",
+      "url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-wan-2-5",
+      "finalUrl": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-wan-2-5",
+      "status": 200,
+      "ttfbMs": 638,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-wan-2-5",
+      "bytes": 387888
+    },
+    {
+      "id": "comparisons-fr",
+      "url": "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-wan-2-5",
+      "finalUrl": "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-wan-2-5",
+      "status": 200,
+      "ttfbMs": 513,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-wan-2-5",
+      "bytes": 391205
+    },
+    {
+      "id": "comparisons-es",
+      "url": "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-wan-2-5",
+      "finalUrl": "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-wan-2-5",
+      "status": 200,
+      "ttfbMs": 550,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-wan-2-5",
+      "bytes": 390598
+    },
+    {
+      "id": "gallery-en",
+      "url": "https://maxvideoai.com/examples",
+      "finalUrl": "https://maxvideoai.com/examples",
+      "status": 200,
+      "ttfbMs": 655,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/examples",
+      "bytes": 350289
+    },
+    {
+      "id": "gallery-fr",
+      "url": "https://maxvideoai.com/fr/galerie",
+      "finalUrl": "https://maxvideoai.com/fr/galerie",
+      "status": 200,
+      "ttfbMs": 456,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/galerie",
+      "bytes": 292834
+    },
+    {
+      "id": "gallery-es",
+      "url": "https://maxvideoai.com/es/galeria",
+      "finalUrl": "https://maxvideoai.com/es/galeria",
+      "status": 200,
+      "ttfbMs": 441,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/galeria",
+      "bytes": 292580
+    },
+    {
+      "id": "gallery-model-en",
+      "url": "https://maxvideoai.com/examples/veo",
+      "finalUrl": "https://maxvideoai.com/examples/veo",
+      "status": 200,
+      "ttfbMs": 470,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/examples/veo",
+      "bytes": 342519
+    },
+    {
+      "id": "gallery-model-fr",
+      "url": "https://maxvideoai.com/fr/galerie/veo",
+      "finalUrl": "https://maxvideoai.com/fr/galerie/veo",
+      "status": 200,
+      "ttfbMs": 740,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/galerie/veo",
+      "bytes": 324516
+    },
+    {
+      "id": "gallery-model-es",
+      "url": "https://maxvideoai.com/es/galeria/veo",
+      "finalUrl": "https://maxvideoai.com/es/galeria/veo",
+      "status": 200,
+      "ttfbMs": 528,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/galeria/veo",
+      "bytes": 325669
+    },
+    {
+      "id": "pricing-en",
+      "url": "https://maxvideoai.com/pricing",
+      "finalUrl": "https://maxvideoai.com/pricing",
+      "status": 200,
+      "ttfbMs": 543,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/pricing",
+      "bytes": 1031953
+    },
+    {
+      "id": "pricing-fr",
+      "url": "https://maxvideoai.com/fr/tarifs",
+      "finalUrl": "https://maxvideoai.com/fr/tarifs",
+      "status": 200,
+      "ttfbMs": 655,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/tarifs",
+      "bytes": 1022532
+    },
+    {
+      "id": "pricing-es",
+      "url": "https://maxvideoai.com/es/precios",
+      "finalUrl": "https://maxvideoai.com/es/precios",
+      "status": 200,
+      "ttfbMs": 538,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/precios",
+      "bytes": 1021188
+    },
+    {
+      "id": "docs-en",
+      "url": "https://maxvideoai.com/docs/mcp",
+      "finalUrl": "https://maxvideoai.com/docs/mcp",
+      "status": 200,
+      "ttfbMs": 525,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/docs/mcp",
+      "bytes": 231027
+    },
+    {
+      "id": "docs-fr",
+      "url": "https://maxvideoai.com/fr/docs/mcp",
+      "finalUrl": "https://maxvideoai.com/fr/docs/mcp",
+      "status": 200,
+      "ttfbMs": 466,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/docs/mcp",
+      "bytes": 234310
+    },
+    {
+      "id": "docs-es",
+      "url": "https://maxvideoai.com/es/docs/mcp",
+      "finalUrl": "https://maxvideoai.com/es/docs/mcp",
+      "status": 200,
+      "ttfbMs": 432,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/docs/mcp",
+      "bytes": 232747
+    },
+    {
+      "id": "mcp-en",
+      "url": "https://maxvideoai.com/mcp",
+      "finalUrl": "https://maxvideoai.com/mcp",
+      "status": 200,
+      "ttfbMs": 349,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/mcp",
+      "bytes": 269769
+    },
+    {
+      "id": "mcp-fr",
+      "url": "https://maxvideoai.com/fr/mcp",
+      "finalUrl": "https://maxvideoai.com/fr/mcp",
+      "status": 200,
+      "ttfbMs": 332,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/mcp",
+      "bytes": 273413
+    },
+    {
+      "id": "mcp-es",
+      "url": "https://maxvideoai.com/es/mcp",
+      "finalUrl": "https://maxvideoai.com/es/mcp",
+      "status": 200,
+      "ttfbMs": 352,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/mcp",
+      "bytes": 272439
+    },
+    {
+      "id": "tools-en",
+      "url": "https://maxvideoai.com/tools/character-builder",
+      "finalUrl": "https://maxvideoai.com/tools/character-builder",
+      "status": 200,
+      "ttfbMs": 462,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/tools/character-builder",
+      "bytes": 329896
+    },
+    {
+      "id": "tools-fr",
+      "url": "https://maxvideoai.com/fr/outils/character-builder",
+      "finalUrl": "https://maxvideoai.com/fr/outils/character-builder",
+      "status": 200,
+      "ttfbMs": 523,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/outils/character-builder",
+      "bytes": 336563
+    },
+    {
+      "id": "tools-es",
+      "url": "https://maxvideoai.com/es/herramientas/character-builder",
+      "finalUrl": "https://maxvideoai.com/es/herramientas/character-builder",
+      "status": 200,
+      "ttfbMs": 552,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/herramientas/character-builder",
+      "bytes": 335133
+    },
+    {
+      "id": "blog-en",
+      "url": "https://maxvideoai.com/blog",
+      "finalUrl": "https://maxvideoai.com/blog",
+      "status": 200,
+      "ttfbMs": 998,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/blog",
+      "bytes": 292859
+    },
+    {
+      "id": "blog-fr",
+      "url": "https://maxvideoai.com/fr/blog",
+      "finalUrl": "https://maxvideoai.com/fr/blog",
+      "status": 200,
+      "ttfbMs": 1721,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/blog",
+      "bytes": 299316
+    },
+    {
+      "id": "blog-es",
+      "url": "https://maxvideoai.com/es/blog",
+      "finalUrl": "https://maxvideoai.com/es/blog",
+      "status": 200,
+      "ttfbMs": 561,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/blog",
+      "bytes": 298548
+    },
+    {
+      "id": "integrations-en",
+      "url": "https://maxvideoai.com/integrations",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "id": "integrations-fr",
+      "url": "https://maxvideoai.com/fr/integrations",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "id": "integrations-es",
+      "url": "https://maxvideoai.com/es/integraciones",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "id": "integration-detail-en",
+      "url": "https://maxvideoai.com/integrations/claude",
+      "finalUrl": "https://maxvideoai.com/integrations/claude",
+      "status": 200,
+      "ttfbMs": 519,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/integrations/claude",
+      "bytes": 282096,
+      "userAgent": "Python urllib (availability check only)"
+    },
+    {
+      "id": "integration-detail-fr",
+      "url": "https://maxvideoai.com/fr/integrations/claude",
+      "finalUrl": "https://maxvideoai.com/fr/integrations/claude",
+      "status": 200,
+      "ttfbMs": 385,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/fr/integrations/claude",
+      "bytes": 271708,
+      "userAgent": "Python urllib (availability check only)"
+    },
+    {
+      "id": "integration-detail-es",
+      "url": "https://maxvideoai.com/es/integraciones/claude",
+      "finalUrl": "https://maxvideoai.com/es/integraciones/claude",
+      "status": 200,
+      "ttfbMs": 368,
+      "cache": "MISS",
+      "canonical": "https://maxvideoai.com/es/integraciones/claude",
+      "bytes": 270682,
+      "userAgent": "Python urllib (availability check only)"
+    }
+  ]
+}
