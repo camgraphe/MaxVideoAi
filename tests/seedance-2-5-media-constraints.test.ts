@@ -110,6 +110,7 @@ async function validateStoredVideo(width: number, height: number) {
         size_bytes: 425_179,
         width,
         height,
+        duration_sec: 10,
       }] as T[],
     },
   });
@@ -222,7 +223,7 @@ test('Seedance 2.5 rejects source videos below the provider pixel floor before s
   });
 
   const aboveFloor = await validateStoredVideo(638, 640);
-  assert.deepEqual(aboveFloor, { ok: true });
+  assert.deepEqual(aboveFloor, { ok: true, trustedDurationSecByField: { video_url: [10] } });
 });
 
 test('Seedance 2.5 probes a trusted stored video when dimension metadata is missing', async () => {
@@ -253,12 +254,13 @@ test('Seedance 2.5 probes a trusted stored video when dimension metadata is miss
         size_bytes: 425_179,
         width: null,
         height: null,
+        duration_sec: 10,
       }] as T[],
       detectVideoDimensionsFn: async () => ({ width: 638, height: 640 }),
     },
   });
 
-  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(result, { ok: true, trustedDurationSecByField: { video_url: [10] } });
 });
 
 async function uploadRequest(params: {

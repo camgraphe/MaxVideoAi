@@ -52,6 +52,7 @@ type UseWorkspaceRenderStateOptions = {
   compositeOverrideSummary: GroupSummary | null;
   writeScopedStorage: (base: string, value: string | null) => void;
   workspaceCopy: WorkspaceFailureCopy;
+  uiLocale: string;
 };
 
 type UseWorkspaceRenderStateResult = {
@@ -91,6 +92,7 @@ export function useWorkspaceRenderState({
   compositeOverrideSummary,
   writeScopedStorage,
   workspaceCopy,
+  uiLocale,
 }: UseWorkspaceRenderStateOptions): UseWorkspaceRenderStateResult {
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
@@ -174,7 +176,7 @@ export function useWorkspaceRenderState({
             if (cancelled) return;
             const status = {
               ...providerStatus,
-              message: getWorkspaceGenerationFailureMessage(providerStatus, workspaceCopy),
+              message: getWorkspaceGenerationFailureMessage(providerStatus, workspaceCopy, { locale: uiLocale }),
             };
             setRenders((prev) =>
               prev.map((item) =>
@@ -233,7 +235,7 @@ export function useWorkspaceRenderState({
         pendingPollRef.current = null;
       }
     };
-  }, [hasRendersNeedingStatusRefresh, workspaceCopy]);
+  }, [hasRendersNeedingStatusRefresh, workspaceCopy, uiLocale]);
 
   useEffect(() => {
     if (!recentJobs.length) return;

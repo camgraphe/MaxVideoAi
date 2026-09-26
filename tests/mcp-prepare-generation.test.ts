@@ -1279,6 +1279,7 @@ test('prepare pricing classifies canonical ref2v video references without trusti
       role: 'reference',
       mediaKind: 'video',
       storageUrl: 'https://assets.example.com/reference.mp4',
+      durationSec: 10,
       width: 1920,
       height: 1080,
       mimeType: 'video/mp4',

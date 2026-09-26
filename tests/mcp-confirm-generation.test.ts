@@ -229,6 +229,7 @@ test('confirmation passes DB-verified ref2v video media into transactional prici
     role: 'reference' as const,
     mediaKind: 'video' as const,
     storageUrl: 'https://assets.example.com/reference.mp4',
+    durationSec: 10,
     width: 1920,
     height: 1080,
     mimeType: 'video/mp4',

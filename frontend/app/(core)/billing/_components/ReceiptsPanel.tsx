@@ -4,6 +4,7 @@ import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingReceiptsView, ReceiptItem, ReceiptsState } from '../_lib/billing-types';
 import { formatReceiptSurfaceLabel } from '../_lib/billing-utils';
 import styles from './billing-receipts.module.css';
+import { localizeSeedanceRefundDescription } from '@/lib/seedance-failure-messages';
 
 type ReceiptsPanelProps = {
   copy: BillingCopy;
@@ -154,7 +155,9 @@ function ReceiptRow({
           {dateFormatter.format(new Date(receipt.created_at))}
         </span>
         <span className={styles.receiptIdentity}>
-          <strong>{receipt.description || typeLabel}</strong>
+          <strong>{(receipt.type === 'refund'
+            ? localizeSeedanceRefundDescription(receipt.description, dateFormatter.resolvedOptions().locale)
+            : receipt.description) || typeLabel}</strong>
           <small>
             <span data-receipt-type={typeKey}>{typeLabel}</span>
             {surfaceLabel ? <span>{surfaceLabel}</span> : null}

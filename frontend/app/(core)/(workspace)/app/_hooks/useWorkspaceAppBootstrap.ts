@@ -87,11 +87,14 @@ export function useWorkspaceAppBootstrap() {
             failureCode: getVideoFailureCodeFromSettingsSnapshot(job.settingsSnapshot),
             message: job.message,
             paymentStatus: job.paymentStatus,
+            finalPriceCents: job.finalPriceCents,
+            currency: job.currency,
           },
-          workspaceCopy
+          workspaceCopy,
+          { locale: uiLocale }
         ),
       })),
-    [latestJobsPages, workspaceCopy]
+    [latestJobsPages, workspaceCopy, uiLocale]
   );
   const formatTakeLabel = useCallback(
     (current: number, total: number) => {

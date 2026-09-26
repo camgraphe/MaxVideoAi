@@ -13845,7 +13845,7 @@
             "id": "video_urls",
             "type": "video",
             "label": "Reference video clips (up to 10)",
-            "description": "Optional motion or pacing references for reference-to-video.",
+            "description": "Optional motion or pacing references. Keep all reference videos within 30 seconds in total.",
             "modes": [
               "ref2v"
             ],
@@ -13857,7 +13857,7 @@
             "id": "extension_source_videos",
             "type": "video",
             "label": "Source clips to extend (up to 3)",
-            "description": "Extend one source clip or stitch a transition from two or three clips.",
+            "description": "Extend one source clip or stitch a transition from two or three clips, within 30 seconds in total.",
             "modes": [
               "extend"
             ],
@@ -13929,6 +13929,12 @@
           "maxImageSizeMB": 30,
           "minImageSidePx": 300,
           "maxVideoSizeMB": 50,
+          "maxCombinedVideoDurationSec": 30.2,
+          "combinedDurationModes": [
+            "ref2v",
+            "v2v",
+            "extend"
+          ],
           "minVideoPixelCount": 407696,
           "maxAudioSizeMB": 15
         }
