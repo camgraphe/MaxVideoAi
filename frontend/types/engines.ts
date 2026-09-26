@@ -335,6 +335,9 @@ export interface PreflightResponse {
   error?: {
     code: string;
     message: string;
+    field?: string;
+    durationSec?: number;
+    maxDurationSec?: number;
     suggestions?: Record<string, unknown>[];
   };
 }

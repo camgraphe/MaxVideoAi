@@ -50,6 +50,7 @@ export default function AppClientPage({
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
     writeScopedStorage: draft.writeScopedStorage,
     workspaceCopy: app.workspaceCopy,
+    uiLocale: app.uiLocale,
   });
 
   const activeDraft = useWorkspaceDraftHydration({

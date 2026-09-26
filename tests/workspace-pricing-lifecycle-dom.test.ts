@@ -53,6 +53,20 @@ async function mount() {
 function masked(fixture: Awaited<ReturnType<typeof mount>>) {
   assert.ok(fixture.observed.every(value => value.preflight === null && value.price === null));
 }
+test('the French composer explains a preflight reference-duration rejection before charging', async () => {
+  const f = await mount();
+  try {
+    await f.update({ locale: 'fr', selectedEngine: { ...f.options.selectedEngine!, id: 'seedance-2-5' }, form: { ...f.options.form!, engineId: 'seedance-2-5' } });
+    await f.tick();
+    await act(async () => f.requests[0].resolve(Response.json({ ok: false, error: {
+      code: 'MEDIA_COMBINED_DURATION_EXCEEDED', message: 'Combined video references must be 30.2 seconds or shorter.', field: 'extension_source_videos', durationSec: 44,
+    } })));
+    assert.equal(f.current.price, null);
+    assert.match(f.current.preflightError!, /vidéos de référence/);
+    assert.match(f.current.preflightError!, /44/);
+    assert.match(f.current.preflightError!, /Aucun crédit.*débité/);
+  } finally { await f.dispose(); }
+});
 test('current draft masks a resolved quote synchronously before debounce and scopes iteration totals', async () => {
   const f = await mount();
   try {

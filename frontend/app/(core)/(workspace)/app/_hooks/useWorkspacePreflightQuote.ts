@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
+import { getSeedanceReferenceValidationMessage } from '@/lib/seedance-failure-messages';
 
 export type WorkspacePreflightQuoteOptions = {
   request: PreflightRequest | null;
   iterations: number;
   accessToken: string | null;
   authChecked: boolean;
+  locale?: string;
 };
 type Scope = { requestKey: string | null; accessToken: string | null; authChecked: boolean };
 type Observation = { scope: Scope; response: PreflightResponse | null; error?: string };
@@ -21,7 +23,9 @@ function requestKey(payload: PreflightRequest): string {
   );
 }
 
-function getPreflightErrorMessage(response: PreflightResponse): string {
+function getPreflightErrorMessage(response: PreflightResponse, engineId: string, locale: string): string {
+  const referenceMessage = getSeedanceReferenceValidationMessage({ ...response.error, error: response.error?.code, engineId, locale });
+  if (referenceMessage) return referenceMessage;
   return (
     (typeof response.error?.message === 'string' && response.error.message.trim().length
       ? response.error.message.trim() : undefined) ??
@@ -31,7 +35,7 @@ function getPreflightErrorMessage(response: PreflightResponse): string {
 }
 
 export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptions) {
-  const { request, iterations, accessToken, authChecked } = options;
+  const { request, iterations, accessToken, authChecked, locale = 'en' } = options;
   const key = request ? requestKey(request) : null;
   const [scope, setScope] = useState<Scope>({ requestKey: key, accessToken, authChecked });
   const [observation, setObservation] = useState<Observation | null>(null);
@@ -60,13 +64,13 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
       Promise.resolve().then(() => runPreflight(payload, { accessToken })).then((response) => {
         if (canceled) return;
         const valid = response.ok && typeof response.total === 'number' && Number.isFinite(response.total) && response.total >= 0;
-        setObservation({ scope, response: valid ? response : null, error: valid ? undefined : getPreflightErrorMessage(response) });
+        setObservation({ scope, response: valid ? response : null, error: valid ? undefined : getPreflightErrorMessage(response, payload.engine, locale) });
       }).catch((error: unknown) => {
         if (!canceled) setObservation({ scope, response: null, error: error instanceof Error ? error.message : 'Preflight failed' });
       });
     }, DEBOUNCE_MS);
     return () => { canceled = true; clearTimeout(timeout); };
-  }, [scope]);
+  }, [scope, locale]);
 
   const preflight = current?.response ?? null;
   const singlePrice = preflight ? preflight.total! / 100 : null;

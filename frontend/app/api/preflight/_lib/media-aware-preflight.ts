@@ -36,11 +36,12 @@ export type MediaAwarePreflightDependencies = {
 function mediaPricingFailure(
   code: string,
   message: string,
+  details: Pick<NonNullable<PreflightResponse['error']>, 'field' | 'durationSec' | 'maxDurationSec'> = {},
 ): PreflightResponse {
   return {
     ok: false,
     messages: [message],
-    error: { code, message },
+    error: { code, message, ...details },
   };
 }
 
@@ -162,7 +163,10 @@ export async function resolveMediaAwarePreflight(
   const needsReferenceImageCount = requiresReferenceImageCount(engine, request);
   const needsInputAudioDuration = requiresInputAudioDuration(engine, request);
   const needsTrustedOwnedMedia = requiresTrustedOwnedMedia(engine, request) && Boolean(request.inputs?.length || request.mode !== 't2v');
-  if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration) {
+  const needsSeedanceReferenceDuration = engine.id === 'seedance-2-5'
+    && ['ref2v', 'v2v', 'extend'].includes(request.mode)
+    && request.inputs?.some((reference) => reference.kind === 'video') === true;
+  if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration) {
     return computeConfiguredPreflightFn(request, { resolvedEngine: engine, bootstrap: false });
   }
   const userId = input.userId === undefined
@@ -191,12 +195,16 @@ export async function resolveMediaAwarePreflight(
     mediaConstraintDeps: dependencies.mediaConstraintDeps,
   });
   if (!processed.ok) {
-    const body = processed.body as { error?: unknown; message?: unknown };
+    const body = processed.body;
     const code = typeof body.error === 'string' ? body.error : 'PRICING_MEDIA_FACTS_UNVERIFIED';
     const message = typeof body.message === 'string'
       ? body.message
       : 'Required media pricing facts could not be verified.';
-    return mediaPricingFailure(code, message);
+    return mediaPricingFailure(code, message, {
+      field: body.field,
+      ...(typeof body.durationSec === 'number' ? { durationSec: body.durationSec } : {}),
+      ...(typeof body.maxDurationSec === 'number' ? { maxDurationSec: body.maxDurationSec } : {}),
+    });
   }
 
   let referenceTokenBudget: number | undefined;
