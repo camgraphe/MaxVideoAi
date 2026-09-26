@@ -1,5 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 import { fetchPublicBenchmarkLatency } from '@/server/benchmark-lab-metrics';
+import { withPublicPageTiming, withoutPublicPageTiming, type MeasurePublicPagePhase } from '@/server/public-page-timing';
+import { loadCompareGallery } from './compare-gallery-loader';
 import { PRICING_ENGINES } from './compare-page-config';
 import {
   buildSpecValues,
@@ -15,16 +17,22 @@ export async function buildCompareRouteData({
   activeLocale,
   left,
   right,
+  measure = withoutPublicPageTiming,
 }: {
   activeLocale: AppLocale;
   left: EngineCatalogEntry;
   right: EngineCatalogEntry;
+  measure?: MeasurePublicPagePhase;
 }) {
-  const latency = await fetchPublicBenchmarkLatency();
+  const [latency, scores, keySpecs, leftPricingDisplay, rightPricingDisplay] = await Promise.all([
+    measure('benchmark', () => fetchPublicBenchmarkLatency()),
+    measure('scores', () => loadEngineScores()),
+    measure('key-specs', () => loadEngineKeySpecs()),
+    measure('left-pricing', () => resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug))),
+    measure('right-pricing', () => resolvePricingDisplay(right, activeLocale, PRICING_ENGINES.get(right.modelSlug))),
+  ]);
   const leftLatency = latency.rows.find((row) => row.engineId === left.engineId) ?? null;
   const rightLatency = latency.rows.find((row) => row.engineId === right.engineId) ?? null;
-  const scores = await loadEngineScores();
-  const keySpecs = await loadEngineKeySpecs();
   const leftScore = scores.get(left.modelSlug) ?? scores.get(left.engineId) ?? null;
   const rightScore = scores.get(right.modelSlug) ?? scores.get(right.engineId) ?? null;
   const leftKeySpecs =
@@ -37,10 +45,6 @@ export async function buildCompareRouteData({
   const criteriaCount = pairHasNativeAudio ? 11 : 10;
   const pairHasKling3Native4k =
     left.modelSlug === 'kling-3-4k' || right.modelSlug === 'kling-3-4k';
-  const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
-    resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug)),
-    resolvePricingDisplay(right, activeLocale, PRICING_ENGINES.get(right.modelSlug)),
-  ]);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
   const engineScoresBySlug = Object.fromEntries(
@@ -72,4 +76,20 @@ export async function buildCompareRouteData({
     rightScore,
     rightSpecs,
   };
+}
+
+export async function loadComparePageData(input: {
+  activeLocale: AppLocale;
+  left: EngineCatalogEntry;
+  right: EngineCatalogEntry;
+}) {
+  return withPublicPageTiming({ route: 'comparison', locale: input.activeLocale }, async measure => {
+    // These reads only depend on the resolved engines; none needs another read's result.
+    const [routeData, leftGallery, rightGallery] = await Promise.all([
+      buildCompareRouteData({ ...input, measure }),
+      measure('left-gallery', () => loadCompareGallery(input.left, isPrelaunchAvailability(input.left))),
+      measure('right-gallery', () => loadCompareGallery(input.right, isPrelaunchAvailability(input.right))),
+    ]);
+    return { routeData, leftGallery, rightGallery };
+  });
 }

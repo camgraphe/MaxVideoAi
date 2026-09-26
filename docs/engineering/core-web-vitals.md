@@ -34,6 +34,20 @@ The exporter writes dated, ignored `.reports/crux/<timestamp>/` artifacts:
 
 An origin is queried independently. URL requests never fall back silently. A permission/quota/network error is not insufficient traffic. Raw success responses retain histograms, fractions and normalization details. Independent p75s cannot be averaged into an origin p75 or added to reconstruct LCP. Overlapping history windows are not independent weekly cohorts. A missing INP value is not a fast page. Inspect histograms/counts and confidence before interpreting small movements.
 
+## Repeatable field exports from Vercel
+
+The authenticated Vercel CLI exposes Speed Insights without adding a collector or drain. Inspect
+`vercel metrics schema vercel.speed_insights --scope camgraphes-projects --json` first when capabilities change.
+
+```bash
+pnpm cwv:vercel --since=2026-09-19T20:00:00Z --until=2026-09-26T20:00:00Z --plan
+pnpm cwv:vercel --since=2026-09-19T20:00:00Z --until=2026-09-26T20:00:00Z --deployment=dpl_REPLACE_WITH_VERIFIED_ID
+```
+
+Choose elapsed ISO windows for the before/after capture and the verified deployment ID. Omit deployment only for a clearly labeled mixed-deployment baseline. The exporter scopes production to `maxvideoai.com`, stores the original JSON and query metadata in a new ignored `.reports/vercel-cwv/` directory, and joins each metric's p75 with its own count by route/device. Missing values remain null. A CLI error leaves the capture marked incomplete and exits nonzero. Capture directories cannot be reused.
+
+Vercel may align requested dates to its buckets. Read each file's **actual** query window and `windowAdjusted`, plus `possiblyTruncated` when the group limit is reached. Never average bucket or route percentiles. These exports contain operational traffic data; keep them out of this public repository. Additional diagnostic queries can group INP by `attributionTarget` and `attributionEventName`; a blank target is unavailable attribution, not proof of a harmless event. Keep route attribution distinct from the DOM surface reached later in the visit.
+
 ## Representative lab protocol
 
 ```bash
@@ -61,6 +75,14 @@ Performance tooling must receive the same resources and route as a normal Chrome
 The routing dependency's bot list includes performance browsers. Its audit/headless entries are excluded from bot routing so those browsers exercise the visitor route. Regression tests compare middleware response targets, not just HTTP status 200.
 
 Do not overwrite metrics, drop inconvenient slow samples or report early values as final values. Existing Vercel collection remains unchanged. No new telemetry destination or field collector is added by this patch.
+
+## Comparison server phases
+
+`loadComparePageData` owns the comparison's independent data and gallery reads. It starts them together; the qualified benchmark, exact prices and complete gallery results still resolve before rendering. Keep prelaunch gallery exclusions in this owner. Its concurrency test holds all read boundaries open to prove that none waits for unrelated data.
+
+Production comparison loads emit one bounded `[cwv:server]` JSON record through existing runtime logs. It contains locale, deployed Git SHA, total **data-loading** duration and the start/duration/status of seven fixed phases: benchmark, scores, key specs, two price reads and two galleries. This is not TTFB, HTML render time or browser LCP. Phases overlap and must not be summed. A resolved fallback still has phase status `ok`; status describes promise completion, not data availability. Pending phases can remain in an error record when a sibling rejects first.
+
+The diagnostic contains no query text, model/job/account IDs, URL or exception content. It preserves rejections and cannot fail a page if logging fails. It is disabled outside production and during a declared production build; `CWV_SERVER_TIMING=0` disables it operationally. No cache, database schema, pricing algorithm, media selection or consent rule is changed by the concurrent loading correction.
 
 ## Acceptance for a real improvement
 
