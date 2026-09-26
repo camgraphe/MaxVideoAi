@@ -90,6 +90,7 @@ export function useWorkspacePricingGate({
     iterations: form?.iterations ?? 1,
     accessToken,
     authChecked,
+    locale,
   });
   const [topUpModal, setTopUpModal] = useState<TopUpModalState>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);

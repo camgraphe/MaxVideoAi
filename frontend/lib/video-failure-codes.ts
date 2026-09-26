@@ -2,6 +2,10 @@ export const SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED = 'seedance_output_copyright_r
 export const SEEDANCE_INPUT_VIDEO_TOO_SMALL = 'seedance_input_video_too_small';
 export const SEEDANCE_I2V_RATIO_REJECTED = 'seedance_i2v_ratio_rejected';
 export const SEEDANCE_TASK_TYPE_CONSTRAINT = 'seedance_task_type_constraint';
+export const SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED = 'seedance_reference_video_duration_exceeded';
+export const SEEDANCE_REFERENCE_IMAGE_BLOCKED = 'seedance_reference_image_blocked';
+export const SEEDANCE_REFERENCE_VIDEO_BLOCKED = 'seedance_reference_video_blocked';
+export const SEEDANCE_REFERENCE_MEDIA_BLOCKED = 'seedance_reference_media_blocked';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

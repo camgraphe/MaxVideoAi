@@ -90,7 +90,7 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(payloadSource, /export function buildBytePlusSeedanceFastPayload/);
   assert.match(responseSource, /export function normalizeBytePlusTask/);
   assert.match(responseSource, /export function scrubBytePlusError/);
-  assert.match(responseSource, /recognizable person/);
+  assert.match(responseSource, /getSeedanceFailureMessage/);
   assert.match(responseSource, /export async function parseJsonResponse/);
 });
 
@@ -275,7 +275,7 @@ test('BytePlus Seedance maps provider task-type constraints to safe actionable g
   );
   assert.equal(
     getBytePlusUserSafeTaskFailureMessage(null, providerCode),
-    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.'
+    'Seedance could not apply the selected edit or extension to the source video. Clarify what should change or continue in the source video, then try again.'
   );
 });
 

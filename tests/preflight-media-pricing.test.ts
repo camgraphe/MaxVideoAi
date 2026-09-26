@@ -27,6 +27,23 @@ function requestFor(engine: EngineCaps, mode: PreflightRequest['mode']): Preflig
   };
 }
 
+test('Seedance preflight rejects long reference videos with measured facts for the customer message', async () => {
+  const engine = engineFor('seedance-2-5');
+  const url = 'https://media.maxvideoai.com/user-assets/pricing-user/reference.mp4';
+  const response = await resolveMediaAwarePreflight({
+    userId: 'pricing-user',
+    request: { ...requestFor(engine, 'extend'), inputs: [{ assetId: 'video-a', slotId: 'extension_source_videos', kind: 'video', url }] },
+  }, {
+    getConfiguredEngineFn: async () => engine,
+    computeConfiguredPreflightFn: async () => { throw new Error('Invalid references must not get a quote'); },
+    mediaConstraintDeps: { queryFn: async () => [{ asset_id: 'video-a', url, origin_url: null, original_name: 'reference.mp4', mime_type: 'video/mp4', size_bytes: 1000, duration_sec: 44, width: 1280, height: 720 }] as never[] },
+  });
+  assert.equal(response.ok, false);
+  assert.equal(response.error?.code, 'MEDIA_COMBINED_DURATION_EXCEEDED');
+  assert.equal(response.error?.field, 'extension_source_videos');
+  assert.equal(response.error?.durationSec, 44);
+});
+
 test('media-aware preflight resolves the normalized Grok reference count and matches final billing', async () => {
   const engine = engineFor('grok-imagine-video-1-5');
   const request: PreflightRequest = {
