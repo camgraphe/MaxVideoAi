@@ -88,6 +88,10 @@ The diagnostic contains no query text, model/job/account IDs, URL or exception c
 
 First prove the implicated phase/interaction improved on the unchanged user journey. Then segment fresh production RUM by deployment and adequate route/device samples. Finally confirm CrUX's explicit window and Search Console group status. Keep the prior baseline; do not reset a failed validation as proof of recovery. A new 28-day window does not excuse an unresolved present-day RUM regression.
 
+## Marketing navigation rendering
+
+`MarketingDesktopNav` keeps its complete server-rendered link tree, but skips unchanged renders when its parent updates mobile or account state. Keep its open/close callbacks stable; desktop selection, pathname and translation changes must still invalidate it. `tests/marketing-navigation-rendering.test.ts` exercises these boundaries through the real navigation components and translation provider. It does not replace real-browser interaction timing, localized navigation or field INP validation.
+
 ## From a slow metric to a correction
 
 Use existing field tooling before adding another collector. CrUX identifies the outcome; route-level RUM prioritizes affected journeys; a browser or server trace identifies the work to change. If the existing tooling lacks the necessary interaction or server-phase attribution, add only that missing context and document its collection cost and coverage.
