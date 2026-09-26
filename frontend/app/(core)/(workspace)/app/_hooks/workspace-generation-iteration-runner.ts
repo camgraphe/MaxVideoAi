@@ -20,6 +20,7 @@ import type { FormState } from '../_lib/workspace-form-state';
 import type { GenerationInputPreparationResult } from '../_lib/workspace-generation-inputs';
 import {
   getWorkspaceGenerationFailureMessage,
+  getWorkspaceGenerationRequestFailureMessage,
   type WorkspaceFailureCopy,
 } from '../_lib/workspace-failure-messages';
 import {
@@ -360,7 +361,7 @@ export async function runWorkspaceGenerationIteration({
         const status = await getJobStatus(jobId);
         const localizedStatus = {
           ...status,
-          message: getWorkspaceGenerationFailureMessage(status, workspaceCopy),
+          message: getWorkspaceGenerationFailureMessage(status, workspaceCopy, { locale: uiLocale }),
         };
         const target = rendersRef.current.find((render) => render.id === jobId);
         const pollProjection = projectGenerationPollStatus({
@@ -448,6 +449,6 @@ export async function runWorkspaceGenerationIteration({
       (error instanceof Error && typeof error.message === 'string' && error.message.trim().length
         ? error.message
         : 'Generate failed');
-    showComposerError(fallbackMessage);
+    showComposerError(getWorkspaceGenerationRequestFailureMessage(enrichedError, fallbackMessage, workspaceCopy, { locale: uiLocale, engineId: selectedEngine.id }));
   }
 }

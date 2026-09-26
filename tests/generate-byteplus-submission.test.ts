@@ -66,6 +66,36 @@ const baseParams = {
   localKey: 'local_123',
 };
 
+test('submission only confirms a wallet refund after finding its matching ledger entry', async () => {
+  for (const ledgerState of ['confirmed', 'missing', 'unavailable'] as const) {
+    let rolledBack = false;
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams, pendingReceipt,
+      deps: {
+        getBytePlusArkConfigFn: () => ({ seedanceModelId: 'model-public', seedanceFastModelId: 'model-fast' }),
+        buildBytePlusSeedancePayloadFn: (payload) => payload,
+        getBytePlusModelArkClientFn: () => ({ createSeedanceFastTask: async () => { throw new Error('provider rejected'); } }),
+        scrubBytePlusErrorFn: () => 'The input video may contain real person.',
+        rollbackPendingPaymentFn: async () => { rolledBack = true; },
+        queryFn: async (sql, values) => {
+          if (sql.includes('SELECT') && sql.includes('app_receipts')) {
+            assert.equal(rolledBack, true);
+            assert.match(sql, /user_id.*amount_cents.*currency/s);
+            assert.deepEqual(values, ['job_123', 'user_123', 1200, 'USD']);
+            if (ledgerState === 'unavailable') throw new Error('ledger unavailable');
+            return ledgerState === 'confirmed' ? [{ id: 'refund_123' }] : [];
+          }
+          return [];
+        },
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.body.failureCode, 'seedance_reference_video_blocked');
+    assert.equal(result.body.paymentStatus, ledgerState === 'confirmed' ? 'refunded_wallet' : 'paid_wallet');
+    assert.equal(result.body.refundedAmountCents, ledgerState === 'confirmed' ? 1200 : undefined);
+  }
+});
+
 test('generate route delegates BytePlus submission', () => {
   assert.ok(existsSync(helperPath), 'BytePlus submission should live in the generate route _lib folder');
   assert.match(preparedServiceSource, /submitBytePlusGenerateTask/);
@@ -317,7 +347,7 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
       'job_123',
       'The render queue is temporarily busy. Please retry in a few moments.',
       'byteplus_modelark',
-      'refunded_wallet',
+      null,
       null,
       'unknown',
     ]);
@@ -327,6 +357,9 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
       ok: false,
       error: 'BYTEPLUS_PROVIDER_ERROR',
       message: 'The render queue is temporarily busy. Please retry in a few moments.',
+      jobId: 'job_123',
+      failureCode: null,
+      paymentStatus: 'paid_wallet',
     });
     assert.equal(result.status, 503);
   } finally {
@@ -366,6 +399,9 @@ test('BytePlus submission persists a normalized failure code for provider pixel-
       ok: false,
       error: 'seedance_input_video_too_small',
       message: 'The source video is too small for Seedance. Use a video with at least 407,696 total pixels and try again.',
+      jobId: 'job_123',
+      failureCode: 'seedance_input_video_too_small',
+      paymentStatus: 'paid_wallet',
     });
     assert.match(queries[0]?.sql ?? '', /providerFailure/);
     assert.equal(

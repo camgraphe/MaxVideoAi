@@ -13,7 +13,8 @@ import type { EngineInputSchema, Mode } from '@/types/engines';
 import type { NormalizedAttachment } from './generation-attachment-types';
 import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
-import { detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { isManagedStorageUrl } from '@/server/provider-output-policy';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
 
 type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promise<T[]>;
@@ -160,6 +161,7 @@ export async function validateGenerationMediaConstraints(params: {
   deps?: {
     queryFn?: QueryFn;
     detectVideoDimensionsFn?: typeof detectVideoDimensions;
+    detectMediaDurationFn?: typeof detectMediaDuration;
   };
 }): Promise<GenerationMediaConstraintValidationResult> {
   const engine =
@@ -195,10 +197,13 @@ export async function validateGenerationMediaConstraints(params: {
   if (!constrainedFields.length) return { ok: true };
 
   const fieldsById = new Map(constrainedFields.map((field) => [field.id, field]));
+  // Extension payloads preserve repeated clips, so every occurrence consumes time.
+  const keepRepeatedVideos = params.engineId === 'seedance-2-5' && params.mode === 'extend';
   const candidates = params.referenceMediaItems
     .filter((item) => fieldsById.has(item.fieldId) && item.url.trim().length > 0)
     .filter(
       (item, index, items) =>
+        (keepRepeatedVideos && item.kind === 'video') ||
         items.findIndex(
           (candidate) =>
             candidate.fieldId === item.fieldId && candidate.url.trim() === item.url.trim()
@@ -434,7 +439,19 @@ export async function validateGenerationMediaConstraints(params: {
         typeof field.maxDurationSec === 'number' ||
         typeof combinedDurationLimit === 'number');
     if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
-      const durationSec = normalizeDurationSec(stored.duration_sec);
+      let durationSec = normalizeDurationSec(stored.duration_sec);
+      // Older web uploads have no measured duration. Only probe an owned storage
+      // original, never an arbitrary browser URL or a claimed client duration.
+      if (durationSec == null && params.engineId === 'seedance-2-5' && field.type === 'video') {
+        const probe = params.deps?.detectMediaDurationFn;
+        // Ownership was established by the scoped metadata query above. Keep
+        // this read-only path independent from storage upload/schema writers.
+        if (probe || isManagedStorageUrl(stored.url)) {
+          durationSec = normalizeDurationSec(
+            await (probe ?? detectMediaDuration)(stored.url, { timeoutMs: 12_000 }, 'v').catch(() => null)
+          );
+        }
+      }
       if (durationSec == null) {
         return failure({
           error: 'MEDIA_DURATION_UNVERIFIED',
@@ -456,7 +473,10 @@ export async function validateGenerationMediaConstraints(params: {
           durationSec,
         });
       }
-      durationByKindAndUrl.set(`${field.type}:${candidate.url}`, {
+      const durationKey = keepRepeatedVideos && field.type === 'video'
+        ? `${field.type}:${candidate.url}:${durationByKindAndUrl.size}`
+        : `${field.type}:${candidate.url}`;
+      durationByKindAndUrl.set(durationKey, {
         kind: field.type,
         durationSec,
         fieldId: candidate.fieldId,
