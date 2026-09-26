@@ -44,17 +44,19 @@ export function useWorkspaceModelAlternatives({
 }) {
   const suggested = useMemo(
     () =>
-      buildWorkspaceModelAlternatives({
+      enabled ? buildWorkspaceModelAlternatives({
         current,
         engines,
         locale,
         memberTier,
         disabledEngineReasons,
         engineScores,
-      }),
-    [current, engines, locale, memberTier, disabledEngineReasons, engineScores],
+      }) : [],
+    [enabled, current, engines, locale, memberTier, disabledEngineReasons, engineScores],
   );
-  const available = useMemo(() => buildWorkspaceModelAlternatives({ current, engines, locale, memberTier, disabledEngineReasons, engineScores, limit: engines.length, includeBlocked: true }), [current, engines, locale, memberTier, disabledEngineReasons, engineScores]);
+  // Candidate preparation clones and validates every eligible model's draft.
+  // Keep it off the composer input path while the comparison is closed.
+  const available = useMemo(() => enabled ? buildWorkspaceModelAlternatives({ current, engines, locale, memberTier, disabledEngineReasons, engineScores, limit: engines.length, includeBlocked: true }) : [], [enabled, current, engines, locale, memberTier, disabledEngineReasons, engineScores]);
   const [selection, setSelection] = useState<{ account: string | null; ids: string[] } | null>(null);
   const selectedIds = selection?.account === accessToken ? selection.ids : suggested.map(item => item.engine.id);
   const alternatives = selectedIds.flatMap(id => { const match = available.find(item => item.engine.id === id); return match ? [match] : []; });

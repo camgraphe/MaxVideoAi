@@ -8,6 +8,8 @@ import type { HomePriceModel, HomePriceStep } from './home-price-demo-types';
 import type { AppLocale } from '@/i18n/locales';
 
 const noop = () => {};
+// React 18 serializes this native attribute as a string, not a boolean.
+const INERT_DEMO_ATTRIBUTES = { inert: '' } as const;
 const COPY = {
  en:{prompt:'A quiet cinematic shot of neon-lit Tokyo streets in the rain.',generate:'Generate',model:'Choose model',video:'Video'},
  fr:{prompt:'Un plan cinématographique des rues de Tokyo sous la pluie, éclairées par les néons.',generate:'Générer',model:'Choisir un modèle',video:'Vidéo'},
@@ -18,7 +20,7 @@ const COPY = {
 export function HomePriceAppSurface({model,step,locale}:{model:HomePriceModel;step:HomePriceStep;locale:AppLocale}) {
  const c = COPY[locale];
  const dictionary = {workspace:model.workspaceCopy} as unknown as Dictionary;
- return <I18nProvider locale={locale} dictionary={dictionary} fallback={dictionary}><div className="price-app-surface" inert aria-hidden="true">
+ return <I18nProvider locale={locale} dictionary={dictionary} fallback={dictionary}><div className="price-app-surface" {...INERT_DEMO_ATTRIBUTES} aria-hidden="true">
    <div className="price-app-top"><strong>MaxVideoAI</strong><span>{c.video}</span></div>
    <div className="price-app-model"><small>{c.model}</small><strong>{model.engine.label}<span>Alibaba · 3.0</span></strong></div>
    <Composer density="workspace" engine={model.engine} caps={model.engine.modeCaps?.t2v}

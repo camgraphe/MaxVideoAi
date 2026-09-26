@@ -1,5 +1,5 @@
 import { generationStage, isStaleGenerationUpdate, mergeGenerationObservation, normalizeGenerationObservation } from '@/lib/generation-observation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
@@ -430,9 +430,12 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     clearMissingStatusRetries(seen);
   }, [swr.data]);
 
-  const stableJobs = stableStore.scope === feedScope
-    ? stableStore.order.map((id) => stableStore.byId[id]).filter(Boolean)
-    : [];
+  const stableJobs = useMemo(
+    () => stableStore.scope === feedScope
+      ? stableStore.order.map((id) => stableStore.byId[id]).filter(Boolean)
+      : [],
+    [feedScope, stableStore]
+  );
 
   return { ...swr, stableJobs } as typeof swr & { stableJobs: Job[] };
 }

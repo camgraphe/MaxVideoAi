@@ -265,7 +265,9 @@
 .marketing-site .price-walkthrough-play{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#5f574c;margin-bottom:4px}
 .marketing-site .price-walkthrough-play>span{letter-spacing:.08em;text-transform:uppercase}
 .marketing-site .price-walkthrough-play button{min-height:44px;display:flex;align-items:center;gap:12px;padding:0 8px}
-.marketing-site .price-app-frame{background:#faf9f5;border-radius:10px;box-shadow:0 14px 40px -22px #211a13aa;overflow:hidden;border:1px solid #c7bca9;min-height:290px}
+.marketing-site .price-app-frame{background:#faf9f5;border-radius:10px;box-shadow:0 14px 40px -22px #211a13aa;overflow:hidden;border:1px solid #c7bca9}
+/* Reserve the same responsive surface before, during and after the lazy import. */
+.marketing-site :is(.price-app-surface,.price-app-placeholder){min-height:326px}
 .marketing-site .price-app-surface{--surface:#faf9f5;--surface-2:#eeebe4;--text-primary:#282622;--text-secondary:#6a6459;--text-muted:#797163;--border:#d1c9bc;--brand:#765020;--on-brand:#fff9e8;--brand-gradient:linear-gradient(#765020,#765020);background:var(--surface);color:var(--text-primary);padding:12px}
 .marketing-site .price-app-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ddd5c8;padding-bottom:8px;font-size:13px}
 .marketing-site .price-app-top>span{font-size:11px;color:#765020}
@@ -287,7 +289,7 @@
 .marketing-site .price-app-annotation{display:flex;align-items:center;justify-content:flex-end;gap:9px;font-size:11px;padding:0 12px 8px;color:#865d2e}
 .marketing-site .price-app-annotation>span{font-size:20px}
 .marketing-site [data-price-step='1'] [data-settings-density]>div:first-child button,.marketing-site [data-price-step='2'] [data-settings-density]>div:nth-child(2) button{outline:2px solid #b28649;outline-offset:2px}
-.marketing-site .price-app-placeholder{min-height:290px;display:grid;place-items:center;color:#797163;font-size:13px}
+.marketing-site .price-app-placeholder{display:grid;place-items:center;color:#797163;font-size:13px}
 .marketing-site .price-walkthrough-caption{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:10px;font-size:12px;color:#635a4c}
 .marketing-site .price-walkthrough-caption small{display:block;font-size:10px;margin-top:5px}
 .marketing-site .price-walkthrough-caption>strong{font-size:22px;font-weight:500;color:#443524;font-variant-numeric:tabular-nums;animation:price-step-in .4s ease both}
@@ -334,7 +336,7 @@
 @keyframes price-quote-first{from{opacity:.3;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes price-quote-second{from{opacity:.3;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
-@media(max-width:700px){.marketing-site .price-app-surface textarea{min-height:78px!important;height:78px}.marketing-site .price-walkthrough{gap:12px}}
+@media(max-width:700px){.marketing-site :is(.price-app-surface,.price-app-placeholder){min-height:384px}.marketing-site .price-app-surface textarea{min-height:78px!important;height:78px}.marketing-site .price-walkthrough{gap:12px}}
 
 /* Homepage SEO review: contextual links within the existing compact chapters. */
 .marketing-site .home-faq-resource{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-top:8px;color:var(--brand);font-size:13px;text-decoration:underline;text-underline-offset:4px}
