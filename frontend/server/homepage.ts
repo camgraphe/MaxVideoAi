@@ -46,7 +46,6 @@ function assertValidType(type: string): asserts type is HomepageSectionType {
 }
 
 export async function listHomepageSections(): Promise<HomepageSectionRecord[]> {
-  await ensureBillingSchema();
   const rows = await query<{
     id: string;
     key: string;

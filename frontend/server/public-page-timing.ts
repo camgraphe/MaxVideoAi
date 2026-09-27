@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 
-export type PublicPagePhase = 'benchmark' | 'scores' | 'key-specs' | 'left-pricing' | 'right-pricing' | 'left-gallery' | 'right-gallery';
+export type PublicPagePhase = 'examples' | 'hero-slots' | 'benchmark' | 'scores' | 'key-specs' | 'left-pricing' | 'right-pricing' | 'left-gallery' | 'right-gallery';
 export type MeasurePublicPagePhase = <T>(phase: PublicPagePhase, operation: () => Promise<T>) => Promise<T>;
 export const withoutPublicPageTiming: MeasurePublicPagePhase = (_phase, operation) => operation();
 
@@ -13,7 +13,7 @@ type PhaseTiming = {
 
 export type PublicPageTimingRecord = {
   schema: 'cwv.server.v1';
-  route: 'comparison';
+  route: 'comparison' | 'home';
   locale: AppLocale;
   deployment: string | null;
   status: 'ok' | 'error';
@@ -28,7 +28,7 @@ type TimingOptions = {
   deployment?: string | null;
 };
 
-/** One bounded server log per comparison data load. No SQL, URLs, IDs or error contents. */
+/** One bounded server log per public-page data load. No SQL, URLs, IDs or error contents. */
 export async function withPublicPageTiming<T>(
   context: Pick<PublicPageTimingRecord, 'route' | 'locale'>,
   load: (measure: MeasurePublicPagePhase) => Promise<T>,

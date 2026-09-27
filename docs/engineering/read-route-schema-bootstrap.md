@@ -6,6 +6,14 @@ configuration as part of a customer request.
 
 ## Current read boundaries
 
+- Homepage `listHomepageSections` and `getHomepageSlots` read existing sections
+  and public-video rows without global billing bootstrap. The 60-second public
+  slot cache, ordering, hydration and admin cache invalidation remain unchanged.
+  Public homepage loading keeps its existing empty-slot fallback on read failure;
+  direct admin reads propagate failures. An uninitialized database, including
+  admin DELETE's metadata pre-read, requires the explicit baseline before use.
+  Create, update, delete and reorder helpers retain their mutation bootstrap.
+
 - `GET /api/jobs` reads `app_jobs` and optionally enriches from `job_outputs`.
 - `GET /api/jobs/[jobId]` reads the owned generation and existing `job_outputs`
   projection without global billing or media schema bootstrap. Its bounded legacy
@@ -63,7 +71,32 @@ The bootstrap requires `APPLICATION_DATABASE_URL`, ignores inherited
 `DATABASE_URL`, validates a direct Neon target, and is not called from a route,
 build, or deploy hook.
 
+## Homepage data loading
+
+`home/_lib/home-page-data.ts` starts examples, programmed hero slots and benchmark
+scores together. The unused successful-generation proof count is no longer read
+by the homepage; shared count/proof helpers remain available. Example selection,
+programmed hero metadata, curated media, localized content and loader fallbacks
+keep their existing owners.
+
+The existing `withPublicPageTiming` logger emits one bounded record with route
+`home` and fixed `examples`, `hero-slots` and `scores` phases. These are loader
+promise durations, not final-HTML wait, TTFB, browser LCP, or all root layout work
+(the theme-token read is outside this owner). Phases overlap and must not be
+summed. A resolved fallback is `ok`; a rejected sibling can leave pending phases
+in the error snapshot. Existing production-only gating, build exclusion and
+`CWV_SERVER_TIMING=0` kill switch apply; no IDs, URLs, SQL or error text are added.
+
 ## Verification
+
+- `tests/home-data-loading.test.ts` holds real homepage read boundaries open to
+  verify concurrency, removal of unused proof work, locale/schema data, one
+  bounded timing record, fallback handling and original error propagation.
+- `tests/homepage-read-postgres.test.ts` explicitly initializes disposable
+  PostgreSQL, then runs the actual reader through a read-only connection. It
+  checks ordering, public-only hydration, empty slots and missing-schema behavior.
+  `tests/read-route-schema-latency-contract.test.ts` also preserves mutation-side
+  bootstrap ownership.
 
 - `tests/read-route-schema-latency-contract.test.ts` locks the exports and
   preflight boundaries.

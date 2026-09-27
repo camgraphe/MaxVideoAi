@@ -6,7 +6,7 @@ import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorl
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
 import { HomeToolsGallery } from '@/components/marketing/home/HomeToolsGallery';
-import { loadEngineScores } from '../ai-video-engines/[slug]/_lib/compare-page-data-loaders';
+import { loadHomePageData } from './_lib/home-page-data';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -25,13 +25,8 @@ import {
   buildBestForGuideCards,
   buildHeroContent,
   buildProgrammedHeroItems,
-  buildProofStats,
-  computeEngineStats,
   filterProviderItems,
-  loadHomepageExamples,
   selectHomepageHeroPreviews,
-  loadProgrammedHomepageHeroSlots,
-  loadSuccessfulGenerationCount,
   type RedesignContent,
 } from './_lib/home-route-data';
 import { buildFaqSchema, buildItemListSchema, buildSoftwareSchema, serializeJsonLd } from './_lib/home-jsonld';
@@ -60,17 +55,10 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const content = dictionary.home.redesign as RedesignContent;
   const workflowSeoCopy = dictionary.home.seoContent as WorkflowSeoSummaryCopy | undefined;
   const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
-  const stats = computeEngineStats();
   const hero = buildHeroContent(locale, content);
-  const [examples, programmedHeroSlots, successfulGenerationCount] = await Promise.all([
-    loadHomepageExamples(locale, content),
-    loadProgrammedHomepageHeroSlots(),
-    loadSuccessfulGenerationCount(),
-  ]);
-  const proofStats = buildProofStats(content, stats, locale, successfulGenerationCount);
+  const { examples, programmedHeroSlots, engineScores } = await loadHomePageData(locale, content);
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
-  const engineScores = await loadEngineScores();
   const comparisonScores = buildHomeComparisonData(engineScores);
   const providers = filterProviderItems(content);
   const mcpLink = getMcpInternalLink(locale, 'home');
@@ -82,7 +70,6 @@ export default async function HomePage(props: { params: Promise<{ locale: string
     <div className="home-monochrome home-cinema">
       <HomeHero
         copy={hero}
-        proofStats={proofStats}
         previews={selectHomepageHeroPreviews(examples)}
         programmedHeroItems={programmedHeroItems}
       />
