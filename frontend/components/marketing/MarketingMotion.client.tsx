@@ -11,9 +11,19 @@ export function MarketingMotion() {
     const main = document.querySelector('.marketing-site > main');
     if (!main) return;
     const animations: Animation[] = [];
+    const initialEntries = new WeakSet<Element>();
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
+        if (!initialEntries.has(entry.target)) {
+          initialEntries.add(entry.target);
+          // Observer geometry does not force synchronous layout of deferred sections.
+          // Keep the initial viewport and content above an anchor arrival still.
+          if (entry.boundingClientRect.top <= (entry.rootBounds?.bottom ?? window.innerHeight)) {
+            observer.unobserve(entry.target);
+            return;
+          }
+        }
+        if (!entry.isIntersecting || entry.intersectionRatio < 0.08) return;
         observer.unobserve(entry.target);
         animations.push(entry.target.animate(
           [{ transform: 'translateY(14px)' }, { transform: 'translateY(0)' }],
@@ -21,10 +31,7 @@ export function MarketingMotion() {
         ));
       });
     }, { threshold: 0.08 });
-    main.querySelectorAll('section').forEach((section) => {
-      // Never animate the initial viewport, its headline or its critical poster.
-      if (section.getBoundingClientRect().top > window.innerHeight) observer.observe(section);
-    });
+    main.querySelectorAll('section').forEach((section) => observer.observe(section));
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     const stop = () => { observer.disconnect(); animations.forEach((animation) => animation.cancel()); };
     preference.addEventListener('change', stop);

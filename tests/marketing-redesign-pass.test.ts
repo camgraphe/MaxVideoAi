@@ -33,7 +33,8 @@ test('site navigation exposes assistants without changing the app shared destina
 test('motion is marketing scoped and never hides critical content', () => {
   const source = readFileSync('frontend/components/marketing/MarketingMotion.client.tsx', 'utf8');
   assert.match(source, /prefers-reduced-motion: reduce/);
-  assert.match(source, /getBoundingClientRect\(\)\.top > window.innerHeight/);
+  assert.doesNotMatch(source, /getBoundingClientRect\(/, 'deferred sections must not be synchronously laid out for decorative motion');
+  assert.match(source, /entry\.boundingClientRect\.top/);
   assert.doesNotMatch(source, /opacity|visibility:|display:/);
   assert.match(source, /animation.cancel\(\)/);
 });
