@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "gpt-6-podcast-maxvideoai-premiere-pro": {
+    en: "gpt-6-podcast-maxvideoai-premiere-pro",
+    fr: "gpt-6-podcast-maxvideoai-premiere-pro",
+    es: "gpt-6-podcast-maxvideoai-premiere-pro",
+  },
   "animated-cafe-menu-flux-3-codex-cli": {
     en: "animated-cafe-menu-flux-3-codex-cli",
     fr: "animated-cafe-menu-flux-3-codex-cli",
