@@ -17,6 +17,10 @@
   transform: translateY(-4px);
 }
 
+.openingColumn {
+  display: contents;
+}
+
 @media (min-width: 768px) {
   .masonry {
     column-count: 2;
@@ -27,5 +31,17 @@
 @media (min-width: 1280px) {
   .masonry {
     column-count: 3;
+  }
+
+  .opening {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-count: auto;
+    gap: var(--examples-grid-row-gap) 10px;
+  }
+
+  .openingColumn {
+    display: block;
+    min-width: 0;
   }
 }

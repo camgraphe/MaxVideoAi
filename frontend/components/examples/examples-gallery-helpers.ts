@@ -37,3 +37,31 @@ export function parseAspectRatio(aspect: string) {
   if (!Number.isFinite(w) || !Number.isFinite(h) || h === 0) return 16 / 9;
   return w / h;
 }
+
+/** Contiguous ranges keep the reading order identical on narrow screens. */
+export function getOpeningColumnRanges(videos: ExampleGalleryVideo[]): [number, number][] {
+  if (!videos.length) return [];
+  const columns = Math.min(3, videos.length);
+  const heights = [0];
+  for (const video of videos) {
+    const ratio = parseAspectRatio(video.aspectRatio ?? '16:9');
+    const safeRatio = ratio > 0 ? ratio : DEFAULT_LANDSCAPE_RATIO;
+    // Estimate existing poster + caption height without measuring the browser DOM.
+    const poster = safeRatio < 1 ? TALL_CARD_MEDIA_PERCENT / 100 : 1 / safeRatio;
+    heights.push(heights[heights.length - 1] + poster + 0.32);
+  }
+  const ranges: [number, number][] = [];
+  let start = 0;
+  for (let column = 1; column < columns; column += 1) {
+    const target = (heights[videos.length] * column) / columns;
+    let end = start + 1;
+    const last = videos.length - (columns - column);
+    for (let index = end + 1; index <= last; index += 1) {
+      if (Math.abs(heights[index] - target) < Math.abs(heights[end] - target)) end = index;
+    }
+    ranges.push([start, end]);
+    start = end;
+  }
+  ranges.push([start, videos.length]);
+  return ranges;
+}

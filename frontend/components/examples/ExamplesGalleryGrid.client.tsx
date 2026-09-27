@@ -9,6 +9,7 @@ import {
   dedupeExamples,
   DEFAULT_INITIAL_DESKTOP_BATCH,
   DEFAULT_INITIAL_MOBILE_BATCH,
+  getOpeningColumnRanges,
 } from '@/components/examples/examples-gallery-helpers';
 import type { ExampleGalleryVideo, ExampleSort } from '@/components/examples/examples-gallery-types';
 import masonryStyles from './examples-masonry.module.css';
@@ -128,29 +129,46 @@ export default function ExamplesGalleryGridClient({
   }, [locale, visibleVideos]);
   const firstVisibleId = visibleVideos[0]?.id;
   const hasMore = nextOffset < pageOffsetEnd;
+  const openingRanges = prioritizeFirstPoster
+    ? getOpeningColumnRanges(visibleVideos.slice(0, initialBatchSize))
+    : [];
+  const openingStarts = new Set(openingRanges.map(([start]) => start));
+  const cards = visibleVideos.map((video, index) => (
+    <div key={video.id} className={masonryStyles.item}>
+      <ExampleGalleryCard
+        video={video}
+        isFirst={video.id === firstVisibleId}
+        forceExclusivePlay={false}
+        enableInlineVideo={allowInlineVideo}
+        detailsCtaLabel={detailsCtaLabel}
+        noPreviewLabel={noPreviewLabel}
+        prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
+        discoverOnDesktop={prioritizeFirstPoster && index > 0 && openingStarts.has(index)}
+        audioAvailableLabel={audioAvailableLabel}
+        locale={locale}
+        altText={resolveAltText(video, altById, locale)}
+      />
+    </div>
+  ));
 
   return (
-    <div className="space-y-3 p-3 sm:space-y-4 sm:p-6">
-      <div className={masonryStyles.masonry}>
-        {visibleVideos.map((video) => (
-          <div key={video.id} className={masonryStyles.item}>
-            <ExampleGalleryCard
-              video={video}
-              isFirst={video.id === firstVisibleId}
-              forceExclusivePlay={false}
-              enableInlineVideo={allowInlineVideo}
-              detailsCtaLabel={detailsCtaLabel}
-              noPreviewLabel={noPreviewLabel}
-              prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
-              audioAvailableLabel={audioAvailableLabel}
-              locale={locale}
-              altText={resolveAltText(video, altById, locale)}
-            />
-          </div>
-        ))}
-      </div>
+    <div className="p-3 sm:p-6">
+      {openingRanges.length ? (
+        <div className={`${masonryStyles.masonry} ${masonryStyles.opening}`}>
+          {openingRanges.map(([start, end]) => (
+            <div key={start} className={masonryStyles.openingColumn}>
+              {cards.slice(start, end)}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {!openingRanges.length || cards.length > initialBatchSize ? (
+        <div className={masonryStyles.masonry}>
+          {openingRanges.length ? cards.slice(initialBatchSize) : cards}
+        </div>
+      ) : null}
       {hasMore ? (
-        <div className="flex justify-center">
+        <div className="mt-3 flex justify-center sm:mt-4">
           <Button
             type="button"
             variant="outline"

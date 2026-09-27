@@ -170,6 +170,20 @@ Watch pages use Auto by default; prepared sources expose Auto/Original. Comparis
 
 Gallery cards retain their responsive optimized image underneath the video until actual `playing`, and show it again when waiting, paused or failed. A visible idle card has no video element. The card's visibility and hover/first-card policy request playback; `useExampleCardPlayback` applies hidden-tab, reduced-motion and Save-Data restrictions, then uses the shared attempt owner. Existing short previews remain preferred; only a missing-preview full video can use its prepared full-duration rendition. A failed short preview leaves the poster and watch link instead of fetching a large full video. Cards keep their existing narrow-mobile poster-only behavior. No native raw poster duplicates the optimized image request.
 
+When the gallery is the route's first visual, its initial batch uses three stable,
+contiguous columns at widths of at least 1280 px. Each column flows independently,
+including portrait leaders; do not align all following cards beneath the tallest
+leader. Narrower layouts retain the existing masonry and source order through
+`display: contents`. Pagination appends after this initial batch without moving
+its leaders. The first poster keeps its existing priority; at most two additional
+column leaders receive desktop-only responsive preloads with high fetch priority.
+Those hints use `getImageProps` with the exact rendered poster's source, sizes and
+quality, including a concrete `href` so React hoists them into the initial head.
+Normal preload priority can still leave requests queued until layout. Hero-led
+galleries receive no additional hints. Check `tests/examples-gallery-opening.test.ts`,
+actual head placement, mixed-aspect layouts, pagination and comparable loading
+measurements when changing this boundary.
+
 ### Playback observations
 
 The shared observer emits only `public_video_startup`, `public_video_rebuffer` and `public_video_error` through the existing consented analytics dispatcher. Common fields are allowlisted `asset_id`, `playback_profile` (`original`, `mobile`, `desktop`), `playback_surface` (`home`, `model`, `examples`, `watch`, `comparison`, `examples-card`) and `playback_trigger` (`user`, `automatic`). Startup adds `measurement_method` (`video_frame_callback` or explicitly labelled `playing_fallback`) and `duration_ms` from 0 to 120,000. Rebuffer adds `duration_ms` from 0 to 120,000 and `rebuffer_count` from 1 to 5. Error may add the native `media_error_code` from 1 to 4 and emits at most twice per observer.
