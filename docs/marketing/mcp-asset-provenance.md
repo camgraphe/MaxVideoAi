@@ -40,6 +40,10 @@ composites. No raster bytes were changed or generated for this recovery. The
 bundle uses the existing colorful product captures and has no version-specific
 release card. The failed generated replacement was not selected or imported.
 
+On September 27, the obsolete 0.3.3 card was also moved to `reference_only`
+after its launch cycle and review freshness expired. Its bytes and historical
+capture/review dates remain unchanged; it has no active release/social placement.
+
 The ImageGen source was created in August from the then-current bytes at the two
 same paths. Those source screenshots were refreshed on September 16. Their old
 hashes are retained below as historical generation inputs; the current captures
