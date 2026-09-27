@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -27,6 +27,7 @@ type ExampleGalleryCardProps = {
   locale: string;
   noPreviewLabel: string;
   prioritizePoster: boolean;
+  discoverOnDesktop?: boolean;
   video: ExampleGalleryVideo;
 };
 
@@ -40,6 +41,7 @@ export function ExampleGalleryCard({
   locale,
   noPreviewLabel,
   prioritizePoster,
+  discoverOnDesktop = false,
   video,
 }: ExampleGalleryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -76,6 +78,9 @@ export function ExampleGalleryCard({
   }, []);
 
   const posterSrc = video.rawPosterUrl ?? null;
+  const desktopPoster = discoverOnDesktop && posterSrc
+    ? getImageProps({ src: posterSrc, alt: altText, fill: true, sizes: posterSizes, quality: 52 }).props
+    : null;
   const watchAnchorText = buildWatchAnchorText(locale, video);
   const playingLabel = locale === 'fr' ? 'Lecture' : locale === 'es' ? 'En reproducción' : 'Playing';
   const durationLabel = locale === 'es' ? `${video.durationSec} s` : `${video.durationSec}s`;
@@ -87,6 +92,17 @@ export function ExampleGalleryCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {desktopPoster ? (
+        <link
+          rel="preload"
+          as="image"
+          href={desktopPoster.src}
+          media="(min-width: 1280px)"
+          imageSrcSet={desktopPoster.srcSet}
+          imageSizes={desktopPoster.sizes}
+          fetchPriority="high"
+        />
+      ) : null}
       <Link href={video.href} className="absolute inset-0 z-0" aria-label={watchAnchorText} prefetch={false}
         data-analytics-event="cta_click" data-analytics-cta-name="view_example_details"
         data-analytics-cta-location="examples_gallery">
