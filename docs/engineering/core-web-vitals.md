@@ -131,6 +131,27 @@ they do not bootstrap billing during page loading. See
 `read-route-schema-bootstrap.md` for read and mutation ownership. Root-layout
 theme reads and rendering are outside these loader timings.
 
+Active model details use the route-local `loadModelPageInputs` to start four
+independent inputs together: `scores`, `engine-settings`, `key-specs` and
+`model-gallery`. The route retains gallery selection, exact-model filtering,
+public revalidation, managed-empty behavior and legacy alias ordering in its
+callback. Price formatting still waits for the selected overrides and uses the
+existing pricing owners. Archive and prelaunch branches never invoke this loader.
+Its `model` timing covers only these inputs; subsequent price quotes, layout and
+rendering are excluded. Starting independent readers together can increase work
+on a failed request because already-started siblings are not cancelled. An error
+record may contain pending siblings; it is not a measurement of their eventual
+completion or database connection wait. No new cross-request cache is introduced.
+
+The root layout separately emits `root-layout` / `theme-tokens` for the existing
+`getThemeTokensSettingCached()` await, **after** `resolveLocale()`. This bounded
+diagnostic uses the same production/build/kill-switch rules and excludes locale
+resolution, module initialization, style construction and HTML rendering. It does
+not change the theme cache, returned tokens or rejection. A timing record alone
+establishes no performance gain and cannot be subtracted from a browser TTFB to
+attribute the rest of the delay. Keep the root record separate from the model,
+home and comparison loaders; these operations can overlap.
+
 When a trace contains an HTTP 103 response, distinguish the interim response from
 the final HTML response before assigning the image's discovery delay to frontend
 work. Retain final response-header timing and CDN cache status. Lighthouse's

@@ -102,21 +102,50 @@ export async function saveCuration(
   });
 }
 
-/** null means legacy behavior; [] is an explicitly managed empty destination. */
-export async function resolveCuratedPlaylist(slug: string): Promise<CurationItem[] | null> {
-  if (!process.env.DATABASE_URL) return null;
-  let rows: Array<{ is_public: boolean; mode: CurationDraft['mode']; ordered_ids: string[]; excluded_ids: string[] }>;
+export type CurationConfiguration = {
+  is_public: boolean;
+  mode: CurationDraft['mode'];
+  ordered_ids: string[];
+  excluded_ids: string[];
+};
+
+/** Read only requested destinations; missing schema retains the legacy fallback. */
+export async function readCurationConfigurations(slugs: string[]): Promise<Map<string, CurationConfiguration>> {
+  if (!process.env.DATABASE_URL || !slugs.length) return new Map();
   try {
-    rows = await query(
+    const rows = await query<CurationConfiguration & { slug: string }>(
+      `SELECT p.slug,p.is_public,c.mode,c.ordered_ids,c.excluded_ids FROM playlists p
+      JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=ANY($1::text[])`,
+      [slugs],
+    );
+    return new Map(rows.map(row => [row.slug, row]));
+  } catch (error) {
+    if ((error as { code?: string }).code === '42P01') return new Map();
+    throw error;
+  }
+}
+
+async function readCurationConfiguration(slug: string): Promise<CurationConfiguration | null> {
+  try {
+    const rows = await query<CurationConfiguration>(
       `SELECT p.is_public,c.mode,c.ordered_ids,c.excluded_ids FROM playlists p
       JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=$1`,
       [slug],
     );
+    return rows[0] ?? null;
   } catch (error) {
     if ((error as { code?: string }).code === '42P01') return null;
     throw error;
   }
-  const saved = rows[0];
+}
+
+/** null means legacy behavior; [] is an explicitly managed empty destination. */
+export async function resolveCuratedPlaylist(
+  slug: string,
+  readConfiguration: typeof readCurationConfiguration = readCurationConfiguration,
+): Promise<CurationItem[] | null> {
+  if (!process.env.DATABASE_URL) return null;
+  const saved = await readConfiguration(slug);
   if (!saved) return null;
   if (!saved.is_public || getCurationAliases(slug) === null) return [];
   return resolveCuration(

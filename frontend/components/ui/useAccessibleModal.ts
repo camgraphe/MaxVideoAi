@@ -103,7 +103,7 @@ export function useAccessibleModal<T extends HTMLElement = HTMLDivElement>({
 
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return;
+    if (!dialog || !closeDisabled) return;
     const focusable = getFocusableElements(dialog);
     const active = document.activeElement;
     const activeIndex = focusable.findIndex((element) => element === active);

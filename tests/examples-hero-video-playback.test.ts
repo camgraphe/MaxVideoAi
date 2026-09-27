@@ -127,6 +127,8 @@ test('examples retain a user pause across visibility changes', async () => {
   const fixture = await mountExample({ desktop: true, ready: 2 });
   try {
     const video = fixture.video()!;
+    assert.equal(fixture.playCalls(), 0, 'automatic playback waits for the first observer result');
+    await fixture.emitVisibility(true);
     assert.ok(fixture.playCalls() >= 1);
     await act(async () => video.dispatchEvent(new fixture.dom.window.Event('playing')));
     await act(async () => video.dispatchEvent(new fixture.dom.window.Event('pause')));
@@ -231,12 +233,18 @@ test('controls-free desktop examples request cold automatic playback and fallbac
     assert.equal(derivativeVideo.controls, false);
     assert.notEqual(derivativeVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
     assert.equal(fixture.loadCalls(), 0);
-    assert.equal(fixture.playCalls(), 1, 'eligible desktop reader must request cold playback on attachment');
+    assert.equal(fixture.playCalls(), 0, 'attachment alone must not start automatic playback');
+    await fixture.emitVisibility(true);
+    assert.equal(fixture.playCalls(), 1, 'eligible desktop reader must request cold playback after its visible observation');
 
     await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
     const originalVideo = fixture.video()!;
     assert.notEqual(originalVideo, derivativeVideo);
     assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
+    assert.equal(fixture.playCalls(), 1, 'replacement reader must wait for its own observer result');
+    await fixture.emitVisibility(false);
+    assert.equal(fixture.playCalls(), 1, 'an offscreen replacement must not request automatic playback');
+    await fixture.emitVisibility(true);
     assert.equal(fixture.playCalls(), 2, 'eligible cold fallback must receive its own guarded play request');
   } finally {
     await fixture.cleanup();

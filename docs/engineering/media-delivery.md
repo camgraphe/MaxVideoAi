@@ -139,6 +139,16 @@ The homepage poster must remain discoverable in server-rendered HTML with its ex
 
 The examples route hero also owns one responsive poster with explicit high fetch priority in the initial HTML. Keep this hint on `ExamplesHeroVideo`, alongside its existing `priority` setting; do not create another route-head preload or prioritize gallery cards while a route hero is present. This scheduling hint does not change the selected image, its quality, geometry, or mobile video loading policy. Validate its effect with comparable browser measurements; the HTML contract alone does not establish a performance gain.
 
+The examples hero waits for the first IntersectionObserver result before automatic
+playback. Each new automatic reader keeps `preload="none"` while visibility is
+unknown; a confirmed offscreen result must not trigger `play()`. No extra timer or
+new threshold is introduced: the existing 0.55 observer controls visibility.
+Native/manual playback and explicit retry do not wait for this initial automatic
+gate. Preserve environment resume, user pauses, source fallback and observer
+cleanup; `tests/examples-hero-visibility.test.ts` covers those transitions with
+controlled browser APIs. Only real network/first-Play checks establish transferred
+bytes or loading gains.
+
 Character Builder's initial reference sheet uses the shared Next Image responsive optimizer and explicit high fetch priority. Preserve its authored source and fixed stage geometry; mount the alternate portrait only after selection. Do not restore `unoptimized` for this public static sheet. `McpStoryVisual` gives high fetch priority only to its `priority` hero instances; secondary instances stay lazy. `tests/marketing-critical-image-delivery.test.ts` checks both SSR boundaries. D95's comparable production-build measurements are recorded in `docs/redesign/performance-optimization-2026-09-15.md`.
 
 - Automatic video loading remains deferred and subject to device/motion/data-saving preferences and visibility. Never mount or preload every video to make selection appear faster.

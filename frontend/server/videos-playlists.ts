@@ -2,22 +2,50 @@ import { query } from '@/lib/db';
 import { isLocalPublicExamplesEnabled, listLocalModelExamples } from './local-public-examples';
 import { mapGalleryVideoRow, type GalleryVideo, type VideoRow } from './videos-normalization';
 import { BASE_SELECT, imageThumbFallbackSelect, videoOutputDimensionSelect } from './videos-query';
-import { resolveCuratedPlaylist, CURATION_ELIGIBILITY } from './playlists/curation-service';
+import {
+  resolveCuratedPlaylist,
+  readCurationConfigurations,
+  CURATION_ELIGIBILITY,
+  type CurationConfiguration,
+} from './playlists/curation-service';
 const PUBLIC_VIDEO_PREDICATE_PLAYLIST = `
   aj.visibility = 'public'
   AND COALESCE(aj.indexable, TRUE)
 `;
 
-export type CurationReadScope = { resolve: typeof resolveCuratedPlaylist };
+export type CurationReadScope = { resolve: (slug: string) => ReturnType<typeof resolveCuratedPlaylist> };
 
 /** One homepage invocation only; retain null/empty results, but allow failed reads to retry. */
 export function createCurationReadScope(): CurationReadScope {
   const resolutions = new Map<string, ReturnType<typeof resolveCuratedPlaylist>>();
+  let scheduled = false;
+  let requested = new Map<string, {
+    resolve: (config: CurationConfiguration | null) => void;
+    reject: (error: unknown) => void;
+  }>();
+  const readConfiguration = (slug: string) => new Promise<CurationConfiguration | null>((resolve, reject) => {
+    requested.set(slug, { resolve, reject });
+    if (scheduled) return;
+    scheduled = true;
+    queueMicrotask(() => {
+      const wave = [...requested];
+      requested = new Map();
+      scheduled = false;
+      // Small batches bound large ID-array responses; later waves never wait for earlier batches.
+      for (let offset = 0; offset < wave.length; offset += 4) {
+        const batch = wave.slice(offset, offset + 4);
+        void readCurationConfigurations(batch.map(([key]) => key)).then(
+          configs => { for (const [key, pending] of batch) pending.resolve(configs.get(key) ?? null); },
+          error => { for (const [, pending] of batch) pending.reject(error); },
+        );
+      }
+    });
+  });
   return {
     resolve(slug) {
       let pending = resolutions.get(slug);
       if (!pending) {
-        pending = resolveCuratedPlaylist(slug).catch(error => {
+        pending = resolveCuratedPlaylist(slug, readConfiguration).catch(error => {
           resolutions.delete(slug);
           throw error;
         });

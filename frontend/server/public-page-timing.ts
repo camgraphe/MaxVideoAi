@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 
-export type PublicPagePhase = 'examples' | 'hero-slots' | 'benchmark' | 'scores' | 'key-specs' | 'left-pricing' | 'right-pricing' | 'left-gallery' | 'right-gallery';
+export type PublicPagePhase = 'examples' | 'hero-slots' | 'benchmark' | 'scores' | 'key-specs' | 'left-pricing' | 'right-pricing' | 'left-gallery' | 'right-gallery' | 'engine-settings' | 'model-gallery' | 'theme-tokens';
 export type MeasurePublicPagePhase = <T>(phase: PublicPagePhase, operation: () => Promise<T>) => Promise<T>;
 export const withoutPublicPageTiming: MeasurePublicPagePhase = (_phase, operation) => operation();
 
@@ -13,7 +13,7 @@ type PhaseTiming = {
 
 export type PublicPageTimingRecord = {
   schema: 'cwv.server.v1';
-  route: 'comparison' | 'home';
+  route: 'comparison' | 'home' | 'model' | 'root-layout';
   locale: AppLocale;
   deployment: string | null;
   status: 'ok' | 'error';

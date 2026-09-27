@@ -40,7 +40,8 @@ test('scored video model pages link their specs to the benchmark methodology', (
   const layoutSource = readSource(layoutPath);
   const specsSectionSource = readSource(specsSectionPath);
 
-  assert.match(modelPageSource, /loadBenchmarkScoreSlugs/);
+  assert.match(modelPageSource, /loadModelPageInputs/);
+  assert.match(readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-inputs.ts')), /loadBenchmarkScoreSlugs/);
   assert.match(layoutSource, /showBenchmarkLink/);
   assert.match(specsSectionSource, /BenchmarkMethodologyLink/);
 });
