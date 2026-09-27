@@ -26,11 +26,11 @@ test('marketing motion uses observer geometry, protects initial content and canc
     observe = (target: Element) => this.targets.add(target);
     unobserve = (target: Element) => this.targets.delete(target);
     disconnect = () => { this.disconnected = true; this.targets.clear(); };
-    emit(target: Element, top: number, intersecting: boolean, ratio: number) {
-      this.callback([{ target, isIntersecting: intersecting, intersectionRatio: ratio, boundingClientRect: { top }, rootBounds: { top: 0, bottom: 800 } } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+    emit(target: Element, top: number, intersecting: boolean, ratio: number, size = 600) {
+      this.callback([{ target, isIntersecting: intersecting, intersectionRatio: ratio, boundingClientRect: { top, height: size, width: size }, rootBounds: { top: 0, bottom: 800 } } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
     }
   }
-  Object.assign(dom.window, { matchMedia: () => media, IntersectionObserver: Observer, __motionPath: '/' });
+  Object.assign(dom.window, { matchMedia: () => media, IntersectionObserver: Observer, __motionPath: '/', innerHeight: 800 });
   let geometryReads = 0;
   dom.window.Element.prototype.getBoundingClientRect = function () { geometryReads++; return { top: this.id === 'below' ? 1200 : 0 } as DOMRect; };
   const animations: { target: Element; canceled: boolean }[] = [];
@@ -78,13 +78,38 @@ test('marketing motion uses observer geometry, protects initial content and canc
     const second = observers[1];
     second.emit(below, 1200, false, 0);
     second.emit(below, 600, true, 0.2);
+    // A skipped content-visibility subtree initially reports a zero-size rectangle.
+    Object.assign(dom.window, { __motionPath: '/deferred', scrollY: 0 });
+    await act(async () => root!.render(React.createElement(MarketingMotion)));
+    const deferred = observers[2];
+    deferred.emit(below, 0, false, 0, 0);
+    assert.equal(deferred.targets.has(below), true, 'unknown geometry must stay observed');
+    Object.assign(dom.window, { scrollY: 1000 });
+    deferred.emit(below, 300, true, 0.5);
+    assert.equal(animations.length, 3, 'revealed below-fold section still animates after scrolling');
+    assert.equal(deferred.targets.has(below), false);
+    // An anchor arrival must also keep deferred content above that arrival still.
+    Object.assign(dom.window, { __motionPath: '/anchor', scrollY: 3000 });
+    await act(async () => root!.render(React.createElement(MarketingMotion)));
+    const anchor = observers[3];
+    anchor.emit(above, 0, false, 0, 0);
+    Object.assign(dom.window, { scrollY: 500 });
+    anchor.emit(above, 500, true, 0.5);
+    assert.equal(animations.length, 3, 'scrolling back above the initial anchor never animates passed content');
+    assert.equal(anchor.targets.has(above), false);
+    anchor.emit(below, 4000, false, 0);
+    Object.assign(dom.window, { scrollY: 3900 });
+    anchor.emit(below, 600, true, 0.2);
+    assert.equal(animations.length, 4);
+    assert.equal(animations[3].canceled, false);
+    assert.equal(anchor.disconnected, false);
     reduced = true;
     listeners.forEach(fn => fn());
-    assert.equal(second.disconnected, true);
-    assert.equal(animations[1].canceled, true);
+    assert.equal(anchor.disconnected, true);
+    assert.equal(animations[3].canceled, true);
     Object.assign(dom.window, { __motionPath: '/models' });
     await act(async () => root!.render(React.createElement(MarketingMotion)));
-    assert.equal(observers.length, 2, 'reduced motion never starts an observer');
+    assert.equal(observers.length, 4, 'reduced motion never starts an observer');
     assert.equal(geometryReads, 0);
   } finally {
     if (root) await act(async () => root!.unmount());

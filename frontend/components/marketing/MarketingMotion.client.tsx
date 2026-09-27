@@ -12,13 +12,16 @@ export function MarketingMotion() {
     if (!main) return;
     const animations: Animation[] = [];
     const initialEntries = new WeakSet<Element>();
+    const initialViewportBottom = window.scrollY + window.innerHeight;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!initialEntries.has(entry.target)) {
+          // content-visibility can initially report empty geometry for skipped content.
+          if (entry.boundingClientRect.width <= 0 || entry.boundingClientRect.height <= 0) return;
           initialEntries.add(entry.target);
           // Observer geometry does not force synchronous layout of deferred sections.
-          // Keep the initial viewport and content above an anchor arrival still.
-          if (entry.boundingClientRect.top <= (entry.rootBounds?.bottom ?? window.innerHeight)) {
+          // Compare document positions even if geometry arrives after a scroll.
+          if (entry.boundingClientRect.top + window.scrollY <= initialViewportBottom) {
             observer.unobserve(entry.target);
             return;
           }
