@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx');
+const pageDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-page-data.ts');
 const routeDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data.ts');
 const routeDataDir = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data');
 const jsonLdPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts');
@@ -56,6 +57,15 @@ test('home route keeps page.tsx as a thin orchestrator', () => {
     assert.doesNotMatch(pageSource, new RegExp(owner), `${owner} should not be owned by home/page.tsx`);
     assert.match(jsonLdSource, new RegExp(owner), `${owner} should live in the route-local JSON-LD module`);
   }
+});
+
+test('home page delegates independent timed reads to its route-local data owner', () => {
+  assert.ok(existsSync(pageDataPath));
+  assert.match(pageSource, /from '\.\/_lib\/home-page-data'/);
+  assert.doesNotMatch(pageSource, /loadHomepageExamples\(|loadProgrammedHomepageHeroSlots\(|loadEngineScores\(|loadSuccessfulGenerationCount\(/);
+  const source = readFileSync(pageDataPath, 'utf8');
+  assert.match(source, /withPublicPageTiming/);
+  assert.ok(source.split('\n').length <= 60, 'the homepage load owner should only coordinate independent reads');
 });
 
 test('home route data module exposes the orchestration contract explicitly', () => {

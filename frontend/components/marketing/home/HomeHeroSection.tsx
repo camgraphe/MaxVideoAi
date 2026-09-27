@@ -10,7 +10,7 @@ import {
   HERO_VIDEO_ORDER,
 } from '@/components/marketing/home/home-redesign-visuals';
 import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
-import type { HomeExampleCard, HomeHeroContent, ProofStat } from '@/components/marketing/home/home-redesign-types';
+import type { HomeExampleCard, HomeHeroContent } from '@/components/marketing/home/home-redesign-types';
 
 function normalizeHeroText(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -107,7 +107,6 @@ export function HomeHero({
   programmedHeroItems = [],
 }: {
   copy: HomeHeroContent;
-  proofStats: ProofStat[];
   previews: HomeExampleCard[];
   programmedHeroItems?: HeroVideoShowcaseItem[];
 }) {

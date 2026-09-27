@@ -51,3 +51,15 @@ test('seed writer and read-only preflight share a pure system-defaults projectio
   assert.doesNotMatch(defaults, /\b(?:async|await|query|process)\b/);
   assert.match(preflight, /if \(bootstrap\) return getConfiguredEngine\(engineId, includeDisabled\);\s*return getReadOnlyConfiguredEngine\(engineId, includeDisabled\);/);
 });
+
+test('homepage section reads use the explicit baseline while mutations retain initialization', () => {
+  const homepage = readFileSync('frontend/server/homepage.ts', 'utf8');
+  const read = homepage.slice(homepage.indexOf('export async function listHomepageSections'), homepage.indexOf('export async function createHomepageSection'));
+  assert.doesNotMatch(read, /ensureBillingSchema/);
+  for (const name of ['createHomepageSection', 'updateHomepageSection', 'deleteHomepageSection', 'reorderHomepageSections']) {
+    const owner = homepage.slice(homepage.indexOf(`export async function ${name}`)).split(/\nexport async function /)[0];
+    assert.match(owner, /await ensureBillingSchema\(\)/, name);
+  }
+  const bootstrap = readFileSync('scripts/bootstrap-application-schema.ts', 'utf8');
+  assert.match(bootstrap, /await ensureBillingSchema\(\)/);
+});

@@ -116,13 +116,26 @@ The routing dependency's bot list includes performance browsers. Its audit/headl
 
 Do not overwrite metrics, drop inconvenient slow samples or report early values as final values. Existing Vercel collection remains unchanged. No new telemetry destination or field collector is added by this patch.
 
-## Comparison server phases
+## Public-page server phases
 
 `loadComparePageData` owns the comparison's independent data and gallery reads. It starts them together; the qualified benchmark, exact prices and complete gallery results still resolve before rendering. Keep prelaunch gallery exclusions in this owner. Its concurrency test holds all read boundaries open to prove that none waits for unrelated data.
 
 Production comparison loads emit one bounded `[cwv:server]` JSON record through existing runtime logs. It contains locale, deployed Git SHA, total **data-loading** duration and the start/duration/status of seven fixed phases: benchmark, scores, key specs, two price reads and two galleries. This is not TTFB, HTML render time or browser LCP. Phases overlap and must not be summed. A resolved fallback still has phase status `ok`; status describes promise completion, not data availability. Pending phases can remain in an error record when a sibling rejects first.
 
 The diagnostic contains no query text, model/job/account IDs, URL or exception content. It preserves rejections and cannot fail a page if logging fails. It is disabled outside production and during a declared production build; `CWV_SERVER_TIMING=0` disables it operationally. No cache, database schema, pricing algorithm, media selection or consent rule is changed by the concurrent loading correction.
+
+The homepage's `loadHomePageData` uses the same logger with route `home` and three
+concurrent phases: `examples`, `hero-slots` and `scores`. It no longer waits for an
+unused generation count. Slot reads require the explicitly initialized schema;
+they do not bootstrap billing during page loading. See
+`read-route-schema-bootstrap.md` for read and mutation ownership. Root-layout
+theme reads and rendering are outside these loader timings.
+
+When a trace contains an HTTP 103 response, distinguish the interim response from
+the final HTML response before assigning the image's discovery delay to frontend
+work. Retain final response-header timing and CDN cache status. Lighthouse's
+reported TTFB can refer to the interim response; the remaining wait is not proof
+of late image discovery or database latency by itself.
 
 ## Acceptance for a real improvement
 
@@ -137,6 +150,12 @@ First prove the implicated phase/interaction improved on the unchanged user jour
 Model hero autoplay must cancel pending LCP-wait, delay and idle callbacks when the player or document becomes hidden, then recheck eligibility before mounting. A rejected playback promise must retain a working manual control and ignore stale/aborted attempts. `tests/model-hero-media-lifecycle.test.ts` covers the real component and shared playback owner; verify actual browser loading and first Play as well, without inferring transferred bytes from a mocked media element.
 
 The connected video workspace memoizes its active setup from all authored inputs. Unchanged parent renders must not reserialize that setup. Changed inputs still validate and persist synchronously before route unmount; account isolation, rejected-record recovery and storage fallbacks remain authoritative. `tests/workspace-active-draft-performance-dom.test.ts` checks serialization work through the real hydration path. Synthetic large drafts are stress fixtures, not field INP samples.
+
+The ready view also stabilizes the separate model-review setup and memoizes its
+signature. `tests/workspace-model-review-performance-dom.test.ts` exercises the
+real ready view and hook: unchanged renders avoid encoding, while each of the ten
+authored input fields still invalidates the signature. Keep this coverage distinct
+from draft hydration; testing one consumer does not cover the other.
 
 ## From a slow metric to a correction
 

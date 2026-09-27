@@ -193,7 +193,6 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
     const copy = buildHeroContent(locale, messages.home.redesign as RedesignContent);
     const hero = HomeHero({
       copy,
-      proofStats: [],
       previews: [],
       programmedHeroItems: [
         {
