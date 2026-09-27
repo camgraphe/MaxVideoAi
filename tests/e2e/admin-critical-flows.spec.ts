@@ -251,7 +251,8 @@ async function waitForUserDirectoryState(page: Page) {
 }
 
 async function waitForMembershipState(page: Page) {
-  const deadline = Date.now() + 10_000;
+  // Match the suite's readiness allowance; cold inventory reads exceeded 10 s in CI.
+  const deadline = Date.now() + 15_000;
   const inventory = page.getByTestId('membership-tier-inventory');
 
   while (Date.now() < deadline) {
@@ -280,7 +281,7 @@ async function waitForMembershipState(page: Page) {
 }
 
 async function waitForBillingProductState(page: Page) {
-  const deadline = Date.now() + 10_000;
+  const deadline = Date.now() + 15_000;
   const inventoryTable = page.getByTestId('billing-products-inventory');
   while (Date.now() < deadline) {
     if (
