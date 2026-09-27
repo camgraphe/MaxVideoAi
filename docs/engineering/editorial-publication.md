@@ -130,3 +130,16 @@ publishes it. The public renderer and editorial content are unchanged.
 Regression coverage proves approval with no report, stale/corrected-version
 rejection, and rejection of publication output without matching technical checks.
 The real pilot remains unapproved until Adrien clicks and confirms the action.
+
+## YouTube player identity
+
+The controlled video block uses `youtube-nocookie.com` with
+`referrerPolicy="strict-origin-when-cross-origin"`. YouTube requires the origin
+through the HTTP Referer header; `no-referrer` causes player error 153. Keep the
+private admin path and query out of that header. The browser regression in
+`tests/editorial-reader-media.test.ts` verifies the actual request from the
+rendered article. Preserve lazy loading and the collapsed player. A passed layout
+check or a working watch URL does not establish embedded playback: check the
+actual player before releasing a video-led article.
+
+Reference: https://developers.google.com/youtube/terms/required-minimum-functionality#embedded-player-api-client-identity
