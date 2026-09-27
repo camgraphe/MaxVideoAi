@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
+import {createServer} from 'node:http';
+import {chromium} from '@playwright/test';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {makeEditorialDraft} from './fixtures/editorial-draft.ts';
 import {parseEditorialDraft} from '../frontend/lib/editorial/schema.ts';
@@ -33,4 +35,28 @@ test('French diagram text can expand naturally and remains visible in the site r
  assert.ok(html.includes(label));
  diagram.connections=['A paragraph instead of a concise diagram label. '.repeat(10)];
  assert.throws(()=>parseEditorialDraft(d));
+});
+
+// YouTube error 153: it requires a Referer, but an admin URL must stay private.
+test('embedded video identifies the site without exposing the private article URL',async()=>{
+ const draft=parseEditorialDraft(fixture());
+ const html=renderToStaticMarkup(React.createElement(EditorialArticle,{draft,locale:'en',articleId:'test',version:1}));
+ const server=createServer((_req,res)=>{res.setHeader('Content-Type','text/html');res.end(html);});
+ await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const origin=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
+ let browser:Awaited<ReturnType<typeof chromium.launch>>|undefined;
+ try{
+  browser=await chromium.launch({headless:true});
+  const page=await browser.newPage();
+  let referer:string|undefined;
+  await page.route('https://www.youtube-nocookie.com/**',async route=>{
+   referer=(await route.request().allHeaders()).referer;
+   await route.fulfill({status:200,contentType:'text/html',body:'Player request captured'});
+  });
+  await page.goto(`${origin}/admin/editorial/private-article?version=2&review=private`);
+  await page.locator('#source-demo summary').click();
+  const frame=page.frameLocator('#source-demo iframe');
+  await frame.getByText('Player request captured').waitFor();
+  assert.equal(referer,`${origin}/`,'YouTube needs the origin, without the admin path or query');
+ }finally{await browser?.close();await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 });
