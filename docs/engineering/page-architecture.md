@@ -15,7 +15,7 @@ Everything else should usually live outside `page.tsx`.
 
 ### Marketing style ownership
 
-The home, model-detail and comparison-detail pages import their own `marketing-home.css`, `marketing-models.css` and `marketing-compare.css`. Keep these imports out of the shared marketing layout so unrelated routes do not download all three stylesheets. Shared marketing styling stays in the layout. Moving an import must preserve the cascade and be checked on direct loads and client navigation, including mobile; `tests/marketing-route-styles-contract.test.ts` locks the ownership boundary.
+The home, model-detail and comparison-detail pages import their own `marketing-home.css`, `marketing-models.css` and `marketing-compare.css`. The localized `tools/layout.tsx` statically imports `marketing-tools.css` for the tool hub and all tool detail pages. The English entry at `frontend/app/tools/layout.tsx` must compose that same `ToolsLayout` inside its marketing layout: default-language routes do not automatically traverse the localized route tree. Keep these imports out of the shared marketing layout so unrelated routes do not download these stylesheets. Route CSS stays available during server rendering; do not move it into an effect or client-only loader. Shared marketing styling stays in the layout. Moving an import must preserve the cascade and be checked on direct loads and client navigation, including mobile; `tests/marketing-route-styles-contract.test.ts` locks both route entries and the ownership boundary.
 
 ## Server Page Pattern
 
