@@ -26,10 +26,12 @@ function useAccountField<T>(scope: string | null, initial: T | (() => T)) {
   const setValue = useCallback<Dispatch<SetStateAction<T>>>(
     (action) => {
       if (!valid()) return;
-      setOwned((previous) => ({
-        scope,
-        value: typeof action === 'function' ? (action as (v: T) => T)(previous.value) : action,
-      }));
+      setOwned((previous) => {
+        const nextValue = typeof action === 'function' ? (action as (v: T) => T)(previous.value) : action;
+        return previous.scope === scope && Object.is(previous.value, nextValue)
+          ? previous
+          : { scope, value: nextValue };
+      });
     },
     [scope, valid],
   );
