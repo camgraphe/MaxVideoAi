@@ -8,14 +8,45 @@ const PUBLIC_VIDEO_PREDICATE_PLAYLIST = `
   AND COALESCE(aj.indexable, TRUE)
 `;
 
-export async function listCuratedGalleryVideos(slug: string, options: {limit?: number; engineAliases?: string[] | null} = {}): Promise<GalleryVideo[] | null> {
-  const curated = await resolveCuratedPlaylist(slug);
+export type CurationReadScope = { resolve: typeof resolveCuratedPlaylist };
+
+/** One homepage invocation only; retain null/empty results, but allow failed reads to retry. */
+export function createCurationReadScope(): CurationReadScope {
+  const resolutions = new Map<string, ReturnType<typeof resolveCuratedPlaylist>>();
+  return {
+    resolve(slug) {
+      let pending = resolutions.get(slug);
+      if (!pending) {
+        pending = resolveCuratedPlaylist(slug).catch(error => {
+          resolutions.delete(slug);
+          throw error;
+        });
+        resolutions.set(slug, pending);
+      }
+      return pending;
+    },
+  };
+}
+
+export async function listCuratedGalleryVideos(
+  slug: string,
+  options: {limit?: number; engineAliases?: string[] | null} = {},
+  curationScope?: CurationReadScope,
+): Promise<GalleryVideo[] | null> {
+  const curated = await (curationScope ? curationScope.resolve(slug) : resolveCuratedPlaylist(slug));
   if (curated === null) return null;
   const aliases = options.engineAliases ? new Set(options.engineAliases.map(id => id.toLowerCase())) : null;
   const eligible = curated.filter(item => !aliases || aliases.has(item.engineId.toLowerCase()));
   const ids = (options.limit === undefined ? eligible : eligible.slice(0, options.limit)).map(item => item.id);
   if (!ids.length) return [];
-  const rows = await query<VideoRow>(`${BASE_SELECT} WHERE job_id=ANY($1::text[]) AND ${CURATION_ELIGIBILITY}`, [ids]);
+  // A shared resolution must not retain access after the playlist becomes private.
+  const publicPlaylist = curationScope
+    ? 'AND EXISTS (SELECT 1 FROM playlists p WHERE p.slug=$2 AND p.is_public=TRUE)'
+    : '';
+  const rows = await query<VideoRow>(
+    `${BASE_SELECT} WHERE job_id=ANY($1::text[]) AND ${CURATION_ELIGIBILITY} ${publicPlaylist}`,
+    curationScope ? [ids, slug] : [ids],
+  );
   const mapped = new Map(rows.map(row => [row.job_id,mapGalleryVideoRow(row)]));
   return ids.flatMap(id => mapped.has(id) ? [mapped.get(id)!] : []);
 }
@@ -29,11 +60,11 @@ export async function listPlaylistVideosWithOptions({
   slug,
   limit,
   engineAliases,
-}: PlaylistVideoQueryOptions): Promise<GalleryVideo[]> {
+}: PlaylistVideoQueryOptions, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
   if (isLocalPublicExamplesEnabled()) {
     return slug.startsWith('examples-') ? listLocalModelExamples(slug.slice('examples-'.length), limit) : [];
   }
-  const curated = await listCuratedGalleryVideos(slug, {limit, engineAliases});
+  const curated = await listCuratedGalleryVideos(slug, {limit, engineAliases}, curationScope);
   if (curated !== null) return curated;
   const params: unknown[] = [slug];
   const aliasFilter =

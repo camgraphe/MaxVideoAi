@@ -1,4 +1,4 @@
-import { listPlaylistVideosWithOptions, listCuratedGalleryVideos } from './videos-playlists';
+import { listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
 import { BASE_SELECT, BASE_SELECT_WITH_SETTINGS } from './videos-query';
 import { getLocalPublicExample, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
 import { query } from '@/lib/db';
@@ -137,13 +137,13 @@ export async function getLatestPublicVideoByPromptAndEngine(
   return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
-export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
+export async function listPlaylistVideos(slug: string, limit: number, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
   if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
-  return listPlaylistVideosWithOptions({ slug, limit });
+  return listPlaylistVideosWithOptions({ slug, limit }, curationScope);
 }
 
-async function listAllPlaylistVideos(slug: string): Promise<GalleryVideo[]> {
-  return listPlaylistVideosWithOptions({ slug });
+async function listAllPlaylistVideos(slug: string, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
+  return listPlaylistVideosWithOptions({ slug }, curationScope);
 }
 
 async function listLatest(limit: number): Promise<GalleryVideo[]> {
@@ -194,11 +194,12 @@ export async function listStarterPlaylistVideos(limit: number): Promise<GalleryV
 
 async function loadExampleFamilyFeed(
   familyId: string,
-  options?: { includeFamilyPlaylist?: boolean }
+  options?: { includeFamilyPlaylist?: boolean },
+  curationScope?: CurationReadScope,
 ): Promise<GalleryVideo[]> {
   const includeFamilyPlaylist = options?.includeFamilyPlaylist ?? true;
   if (includeFamilyPlaylist) {
-    const curated = await listCuratedGalleryVideos(`family-${familyId}`);
+    const curated = await listCuratedGalleryVideos(`family-${familyId}`, {}, curationScope);
     if (curated !== null) return curated;
   }
   const sourceSlugs = getFamilyFeedSourceSlugs(familyId);
@@ -212,13 +213,13 @@ async function loadExampleFamilyFeed(
   const engineAliases = getExampleFamilyEngineAliases(familyId);
 
   const familyVideosPromise =
-    includeFamilyPlaylist && familySlug ? listAllPlaylistVideos(familySlug).catch(() => [] as GalleryVideo[]) : Promise.resolve([]);
+    includeFamilyPlaylist && familySlug ? listAllPlaylistVideos(familySlug, curationScope).catch(() => [] as GalleryVideo[]) : Promise.resolve([]);
   const modelVideosPromise = Promise.all(
-    modelSlugs.map(async (slug) => listAllPlaylistVideos(slug).catch(() => [] as GalleryVideo[]))
+    modelSlugs.map(async (slug) => listAllPlaylistVideos(slug, curationScope).catch(() => [] as GalleryVideo[]))
   );
   const hubVideosPromise =
     hubSlug && engineAliases.length
-      ? listPlaylistVideosWithOptions({ slug: hubSlug, engineAliases }).catch(() => [] as GalleryVideo[])
+      ? listPlaylistVideosWithOptions({ slug: hubSlug, engineAliases }, curationScope).catch(() => [] as GalleryVideo[])
       : Promise.resolve([] as GalleryVideo[]);
 
   const [familyVideos, modelVideos, hubVideos] = await Promise.all([
@@ -248,17 +249,18 @@ export async function listExampleModelCurrentPublicOrder(modelSlug: string): Pro
 
 export async function listExampleFamilyPage(
   familyId: string,
-  options: Omit<ListExamplesPageOptions, 'engineGroup'>
+  options: Omit<ListExamplesPageOptions, 'engineGroup'>,
+  curationScope?: CurationReadScope,
 ): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0 } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(familyId, sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
-  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true });
+  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true }, curationScope);
   const sorted = sortVideosByPreference(merged, sort);
   return paginateGalleryVideos(sorted, limit, offset);
 }
 
-export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
+export async function listExamplesPage(options: ListExamplesPageOptions, curationScope?: CurationReadScope): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0, engineGroup } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(engineGroup ?? '', sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
@@ -268,7 +270,7 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
   }
 
   const normalizedGroup = engineGroup ? engineGroup.trim().toLowerCase() : null;
-  const curated = await listCuratedGalleryVideos(hubSlug, {engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases()});
+  const curated = await listCuratedGalleryVideos(hubSlug, {engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases()}, curationScope);
   if (curated !== null) return paginateGalleryVideos(sortVideosByPreference(curated, sort), limit, offset);
   const baseFetchLimit = Math.max(limit + Math.max(offset, 0), limit);
   const playlistFetchLimit = normalizedGroup
@@ -277,7 +279,7 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
 
   const aggregated = await listPlaylistVideosWithOptions({
     slug: hubSlug, limit: playlistFetchLimit, engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases(),
-  }).catch((error) => {
+  }, curationScope).catch((error) => {
     console.warn(`[examples] failed to load playlist "${hubSlug}"`, error);
     return [] as GalleryVideo[];
   });
@@ -293,8 +295,8 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
   return paginateGalleryVideos(sorted, limit, offset);
 }
 
-export async function listExamples(sort: ExampleSort, limit = 150): Promise<GalleryVideo[]> {
-  const result = await listExamplesPage({ sort, limit, offset: 0 });
+export async function listExamples(sort: ExampleSort, limit = 150, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
+  const result = await listExamplesPage({ sort, limit, offset: 0 }, curationScope);
   return result.items;
 }
 
