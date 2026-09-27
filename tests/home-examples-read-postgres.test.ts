@@ -10,9 +10,10 @@ import { missingDisposablePostgresCommand, startDisposablePostgres } from './hel
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const content = JSON.parse(readFileSync('frontend/messages/en.json', 'utf8')).home.redesign;
-const isConfig = (text: string) => text.includes('SELECT p.is_public,c.mode');
+const isConfig = (text: string) => /SELECT p\.(?:slug,p\.)?is_public,c\.mode/.test(text);
+const configSlugs = (statement: Statement): string[] => Array.isArray(statement.params[0]) ? statement.params[0] as string[] : [String(statement.params[0])];
 const isCandidates = (text: string) => text.includes('SELECT job_id,engine_id,engine_label,prompt');
-type Statement = { text: string; params: unknown[] };
+type Statement = { text: string; params: unknown[]; poolMs?: number; queryMs?: number; rows?: number; bytes?: number };
 
 test('homepage curation reads share only the invocation and preserve PostgreSQL outputs', { timeout: 60_000 }, async (t) => {
   const missing = missingDisposablePostgresCommand();
@@ -70,10 +71,17 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
       builder.onResolve({ filter: /^@\/lib\/db$/ }, () => ({ path: 'db', namespace: 'fixture' }));
       builder.onLoad({ filter: /^db$/, namespace: 'fixture' }, () => ({ contents: `
         export * from ${JSON.stringify(dbPath)};
-        import {query as realQuery} from ${JSON.stringify(dbPath)};
+        import {getDb,createQueryExecutor} from ${JSON.stringify(dbPath)};
         export const statements=[]; let beforeQuery;
         export function setBeforeQuery(hook){beforeQuery=hook;}
-        export async function query(text,params=[]){statements.push({text,params});await beforeQuery?.(text,params);return realQuery(text,params);}
+        export async function query(text,params=[]){
+          const statement={text,params}; statements.push(statement); await beforeQuery?.(text,params);
+          const started=performance.now(); const client=await getDb().connect();
+          statement.poolMs=performance.now()-started; const acquired=performance.now();
+          try {const rows=await createQueryExecutor(client).query(text,params); statement.queryMs=performance.now()-acquired;
+            statement.rows=rows.length; statement.bytes=Buffer.byteLength(JSON.stringify(rows)); return rows;
+          } finally {client.release();}
+        }
       `, loader: 'js', resolveDir: process.cwd() }));
       builder.onResolve({ filter: /^pg$/ }, args => ({ path: requireFrontend.resolve(args.path), external: true }));
     } }],
@@ -106,18 +114,34 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
     const expectedCards = await loadWithoutScope();
     const independentTotal = statements.length;
     statements.length = 0;
+    const started = performance.now();
     const cards = await load();
+    const elapsedMs = performance.now() - started;
     const perSlug: Record<string, number> = {};
-    for (const statement of configs()) perSlug[String(statement.params[0])] = (perSlug[String(statement.params[0])] ?? 0) + 1;
-    evidence[name] = { independentTotal, total: statements.length, configs: configs().length, candidates: statements.filter(({ text }) => isCandidates(text)).length, perSlug, cards };
+    for (const statement of configs()) for (const slug of configSlugs(statement)) perSlug[slug] = (perSlug[slug] ?? 0) + 1;
+    evidence[name] = { independentTotal, elapsedMs, timings: statements.map(({ text, ...data }) => ({ category: isConfig(text) ? 'config' : isCandidates(text) ? 'candidates' : 'hydration', ...data })), total: statements.length, configs: configs().length, candidates: statements.filter(({ text }) => isCandidates(text)).length, perSlug, cards };
+    if (process.env.EXAMPLES_READ_BENCHMARK === '1' && name !== 'errors') {
+      const samples = [];
+      for (let run = 0; run < 9; run++) {
+        statements.length = 0;
+        const start = performance.now();
+        assert.deepEqual(await load(), cards);
+        samples.push({ elapsedMs: performance.now() - start, statements: statements.map(({ text, ...data }) => ({ category: isConfig(text) ? 'config' : isCandidates(text) ? 'candidates' : 'hydration', ...data })) });
+      }
+      evidence[`${name}-samples`] = samples;
+    }
     if (process.env.EXAMPLES_READ_EVIDENCE) writeFileSync(process.env.EXAMPLES_READ_EVIDENCE, JSON.stringify(evidence, null, 2));
     t.diagnostic(`${name}: ${statements.length} SQL; ${configs().length} config; ${statements.filter(({ text }) => isCandidates(text)).length} candidate; cards=${cards.map((c: { id: string }) => c.id).join(',')}`);
     assert.deepEqual(cards, expectedCards, 'all selected card fields equal independent reads');
     if (name !== 'errors') assert.ok(Object.values(perSlug).every(count => count === 1), `each slug resolves once per homepage invocation: ${JSON.stringify(perSlug)}`);
+    if (name === 'all-managed' || name === 'long-ids') {
+      assert.equal(Object.keys(perSlug).length, 14, 'managed families do not open inherited model configuration reads');
+      assert.equal(configs().length, 4, 'the initial concurrent requested set uses four bounded batches');
+    }
     assert.equal(cards.length, 6);
     assert.ok(statements.every(({ text }) => /^\s*SELECT\b/i.test(text)), 'application reads execute SELECT only');
     const kling = cards.find((card: { id: string }) => card.id === 'fallback-kling');
-    if (name === 'legacy' || name === 'public') {
+    if (['legacy', 'public', 'all-managed', 'long-ids'].includes(name)) {
       assert.equal(kling.imageSrc, `https://media.maxvideoai.com/fixture/kling-${name === 'legacy' ? 114 : 130}.webp`);
       assert.equal(kling.duration, '5s');
       const scope = reader.createCurationReadScope();
@@ -135,9 +159,48 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
     }
     return cards;
   };
+  await t.test('scope creation is lazy and concurrent requested slugs use bounded configuration batches', async () => {
+    statements.length = 0;
+    const scope = reader.createCurationReadScope();
+    await Promise.resolve();
+    assert.equal(statements.length, 0, 'constructing a scope does not read unused configuration');
+    const slugs = Array.from({length: 150}, (_, index) => `absent-${index}`);
+    assert.deepEqual(await Promise.all(slugs.map(slug => scope.resolve(slug))), slugs.map(() => null));
+    assert.ok(configs().length <= 38, '150 concurrently requested slugs need at most 38 configuration SELECTs');
+    assert.ok(configs().every(statement => configSlugs(statement).length <= 4), 'each SELECT has a bounded requested set');
+    assert.deepEqual(configs().flatMap(configSlugs).sort(), [...slugs].sort(), 'read only the requested destinations');
+  });
+  await t.test('a blocked configuration batch does not hold other bounded batches', async () => {
+    const scope = reader.createCurationReadScope();
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    reader.setBeforeQuery(async (text: string, params: unknown[]) => {
+      if (isConfig(text) && configSlugs({text, params}).includes('blocked-0')) await gate;
+    });
+    const pending = Array.from({length: 150}, (_, index) => scope.resolve(`blocked-${index}`));
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const others = await Promise.race([Promise.all(pending.slice(4)), new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('independent configuration batches waited for the first')), 1000);
+      })]);
+      assert.deepEqual(others, Array(146).fill(null));
+    } finally {
+      clearTimeout(timeout); release(); reader.setBeforeQuery(undefined); await Promise.all(pending);
+    }
+  });
   await t.test('legacy null resolutions are reused without changing membership reads', () => checkScenario('legacy'));
   await managed();
   await t.test('public managed curation shares selection and leaves final hydration independent', () => checkScenario('public'));
+  const requestedSlugs = Object.keys((evidence.legacy as { perSlug: Record<string, number> }).perSlug);
+  await postgres.pool.query('INSERT INTO playlists(slug,is_public) SELECT unnest($1::text[]),true ON CONFLICT DO NOTHING', [requestedSlugs]);
+  await managed();
+  await t.test('managed families prune their inherited source configuration requests', () => checkScenario('all-managed'));
+  await postgres.pool.query(`UPDATE playlist_curations SET
+    ordered_ids=ARRAY(SELECT 'unused-ordered-'||n FROM generate_series(1,2000) n),
+    excluded_ids=ARRAY(SELECT 'unused-excluded-'||n FROM generate_series(1,5000) n)`);
+  await t.test('large configuration arrays preserve exact output without eager inherited reads', () => checkScenario('long-ids'));
+  await postgres.pool.query("DELETE FROM playlist_curations WHERE playlist_id IN (SELECT id FROM playlists WHERE slug <> ALL($1::text[]))", [['examples','family-kling','examples-kling-3-pro','examples-ltx-2-5-pro']]);
+  await postgres.pool.query("DELETE FROM playlists WHERE slug <> ALL($1::text[])", [['examples','family-kling','examples-kling-3-pro','examples-ltx-2-5-pro']]);
   await managed('manual');
   await t.test('explicitly empty destinations do not inherit legacy items', () => checkScenario('empty'));
   await managed();
@@ -156,7 +219,7 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
     let entered!: () => void;
     const started = new Promise<void>(resolve => { entered = resolve; });
     reader.setBeforeQuery(async (text: string, params: unknown[]) => {
-      if (isConfig(text) && params[0] === 'examples') { entered(); await gate; }
+      if (isConfig(text) && configSlugs({text, params}).includes('examples')) { entered(); await gate; }
     });
     statements.length = 0;
     const first = scope.resolve('examples');
@@ -164,7 +227,7 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
     try {
       await started;
       assert.ok((await scope.resolve('family-kling')).length > 0, 'other slugs proceed while hub is blocked');
-      assert.equal(configs().filter(({ params }) => params[0] === 'examples').length, 1);
+      assert.equal(configs().filter(statement => configSlugs(statement).includes('examples')).length, 1);
     } finally { release(); reader.setBeforeQuery(undefined); }
     assert.deepEqual(await first, await second);
 
@@ -173,6 +236,61 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
     try { await assert.rejects(retryScope.resolve('examples'), (error: { code?: string }) => error.code === '42P01'); }
     finally { await postgres.pool.query('ALTER TABLE unavailable_app_jobs RENAME TO app_jobs'); }
     assert.ok((await retryScope.resolve('examples')).length > 0, 'rejected resolution is evicted rather than cached as null or empty');
+  });
+
+  await t.test('configuration failure rejects its whole batch and every member can retry', async () => {
+    const scope = reader.createCurationReadScope();
+    statements.length = 0;
+    await postgres.pool.query('ALTER TABLE playlist_curations RENAME COLUMN ordered_ids TO unavailable_ordered_ids');
+    let failed: PromiseSettledResult<unknown>[];
+    try {
+      failed = await Promise.allSettled([scope.resolve('examples'), scope.resolve('family-kling')]);
+    } finally {
+      await postgres.pool.query('ALTER TABLE playlist_curations RENAME COLUMN unavailable_ordered_ids TO ordered_ids');
+    }
+    assert.equal(configs().length, 1);
+    assert.deepEqual(failed.map(result => result.status === 'rejected' ? result.reason.code : result.status), ['42703', '42703']);
+    assert.equal((failed[0] as PromiseRejectedResult).reason, (failed[1] as PromiseRejectedResult).reason, 'one failed SQL rejects all batch members');
+    const retried = await Promise.all([scope.resolve('examples'), scope.resolve('family-kling')]);
+    assert.ok(retried.every(items => items.length > 0), 'both rejected resolutions are evicted');
+    assert.equal(configs().length, 2);
+  });
+
+  await t.test('a blocked candidate does not hold other destinations in its configuration wave', async () => {
+    const scope = reader.createCurationReadScope();
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    let entered!: () => void;
+    const started = new Promise<void>(resolve => { entered = resolve; });
+    let firstCandidate = true;
+    reader.setBeforeQuery(async (text: string) => {
+      if (isCandidates(text) && firstCandidate) { firstCandidate = false; entered(); await gate; }
+    });
+    const hub = scope.resolve('examples');
+    const family = scope.resolve('family-kling');
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await started;
+      const result = await Promise.race([family, new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('family waited for unrelated hub candidates')), 1000);
+      })]);
+      assert.equal(result.length, 130);
+    } finally {
+      clearTimeout(timeout); release(); reader.setBeforeQuery(undefined); await hub;
+    }
+  });
+
+  await t.test('unconfigured database and production build shortcuts issue no configuration reads', async () => {
+    statements.length = 0;
+    const configured = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
+    try {
+      const scope = reader.createCurationReadScope();
+      assert.deepEqual(await Promise.all([scope.resolve('examples'), scope.resolve('family-kling')]), [null, null]);
+    } finally { process.env.DATABASE_URL = configured; }
+    process.env.NEXT_PHASE = 'phase-production-build';
+    try { await load(); } finally { delete process.env.NEXT_PHASE; }
+    assert.equal(statements.length, 0);
   });
 
   await t.test('aliases, limits, sorting and public eligibility stay local to each consumer', async () => {

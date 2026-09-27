@@ -22,8 +22,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
-import { listEnginePricingOverrides } from '@/server/engine-settings';
-import { loadBenchmarkScoreSlugs } from '@/server/benchmark-lab-data';
+import { loadModelPageInputs } from './_lib/model-page-inputs';
 import {
   buildDetailSlugMap,
   MODELS_BASE_PATH_MAP,
@@ -44,7 +43,6 @@ import {
   toGalleryCard,
   type FeaturedMedia,
 } from './_lib/model-page-media';
-import { loadEngineKeySpecs } from './_lib/model-page-key-specs';
 import { FEATURED_EXAMPLE_MEDIA, PREFERRED_MEDIA } from './_lib/model-page-static';
 import {
   DEFAULT_DETAIL_COPY,
@@ -195,13 +193,6 @@ async function renderMarketingModelPage({
   const hasImageMode = engineModes.some((mode) => mode.endsWith('i'));
   const isVideoEngine = hasVideoMode;
   const isImageEngine = hasImageMode && !hasVideoMode;
-  const benchmarkScoreSlugs = await loadBenchmarkScoreSlugs();
-  const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
-  const enginePricingOverrides = await listEnginePricingOverrides();
-  const pricingEngine = applyEnginePricingOverride(
-    engine.engine,
-    enginePricingOverrides[engine.engine.id]
-  );
   const backPath = (() => {
     try {
       const url = new URL(canonicalUrl);
@@ -210,63 +201,72 @@ async function renderMarketingModelPage({
       return `/models/${engine.modelSlug}`;
     }
   })();
-  let examples: GalleryVideo[] = [];
-  let managedCuration=false;
-  const examplePlaylistKeys =
-    engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
-  try {
-    for (const playlistKey of examplePlaylistKeys) {
-      examples = await listPlaylistVideos(playlistKey, 200);
-      managedCuration=await hasPlaylistCuration(playlistKey);
-      if (examples.length || managedCuration) break;
-    }
-  } catch (error) {
-    console.warn('[models/sora-2] failed to load examples', error);
-  }
-  const normalizedSlug = normalizeEngineId(engine.modelSlug) ?? engine.modelSlug;
-  const allowedEngineIds = new Set([
-    normalizedSlug,
-    engine.modelSlug,
-    engine.id,
-    ...(engine.modelSlug === 'sora-2-pro' ? ['sora-2', 'sora2'] : []),
-    ...(engine.modelSlug === 'sora-2' ? ['sora-2', 'sora2'] : []),
-  ].map((id) => (id ? id.toString().trim().toLowerCase() : '')).filter(Boolean));
-  const soraExamples = examples.filter((video) => {
-    const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
-    return normalized ? allowedEngineIds.has(normalized) : false;
-  });
-  const safeSoraExamples =
-    engine.modelSlug === 'sora-2'
-      ? soraExamples.filter((video) => {
-          const text = [video.prompt, video.promptExcerpt, video.id].filter(Boolean).join(' ');
-          return !/\b(john\s+lennon|lennon|beatles)\b/i.test(text);
-        })
-      : soraExamples;
-  const validatedMap = await getPublicVideosByIds(safeSoraExamples.map((video) => video.id));
-  let galleryVideos = safeSoraExamples
-    .filter((video) => validatedMap.has(video.id))
-    .map((video) =>
-      toGalleryCard(
-        video,
-        engine.brandId,
-        localizedContent.marketingName ?? engine.marketingName,
+  const { benchmarkScoreSlugs, enginePricingOverrides, keySpecsMap, gallery } = await loadModelPageInputs(
+    locale,
+    async () => {
+      let examples: GalleryVideo[] = [];
+      let managedCuration=false;
+      const examplePlaylistKeys =
+        engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
+      try {
+        for (const playlistKey of examplePlaylistKeys) {
+          examples = await listPlaylistVideos(playlistKey, 200);
+          managedCuration=await hasPlaylistCuration(playlistKey);
+          if (examples.length || managedCuration) break;
+        }
+      } catch (error) {
+        console.warn('[models/sora-2] failed to load examples', error);
+      }
+      const normalizedSlug = normalizeEngineId(engine.modelSlug) ?? engine.modelSlug;
+      const allowedEngineIds = new Set([
+        normalizedSlug,
         engine.modelSlug,
         engine.id,
-        backPath,
-        appPath
-      )
-    )
-    .map((card) => resolveGalleryCardHref(card));
+        ...(engine.modelSlug === 'sora-2-pro' ? ['sora-2', 'sora2'] : []),
+        ...(engine.modelSlug === 'sora-2' ? ['sora-2', 'sora2'] : []),
+      ].map((id) => (id ? id.toString().trim().toLowerCase() : '')).filter(Boolean));
+      const soraExamples = examples.filter((video) => {
+        const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
+        return normalized ? allowedEngineIds.has(normalized) : false;
+      });
+      const safeSoraExamples =
+        engine.modelSlug === 'sora-2'
+          ? soraExamples.filter((video) => {
+              const text = [video.prompt, video.promptExcerpt, video.id].filter(Boolean).join(' ');
+              return !/\b(john\s+lennon|lennon|beatles)\b/i.test(text);
+            })
+          : soraExamples;
+      const validatedMap = await getPublicVideosByIds(safeSoraExamples.map((video) => video.id));
+      let galleryVideos = safeSoraExamples
+        .filter((video) => validatedMap.has(video.id))
+        .map((video) =>
+          toGalleryCard(
+            video,
+            engine.brandId,
+            localizedContent.marketingName ?? engine.marketingName,
+            engine.modelSlug,
+            engine.id,
+            backPath,
+            appPath
+          )
+        )
+        .map((card) => resolveGalleryCardHref(card));
 
-  const preferredIds = managedCuration ? {hero:null,demo:null} : PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
-  galleryVideos=await finalizeModelGallery({
-    managed: managedCuration,
-    cards:galleryVideos,
-    featuredIds:FEATURED_EXAMPLE_MEDIA[engine.modelSlug]??[],
-    preferredIds:[preferredIds.hero,preferredIds.demo].filter((id):id is string=>Boolean(id)),
-    preferLandscape:engine.modelSlug==='kling-2-5-turbo',
-    fetchCards:async(ids)=>Array.from((await getPublicVideosByIds(ids)).values()).map(video=>resolveGalleryCardHref(toGalleryCard(video,engine.brandId,localizedContent.marketingName??engine.marketingName,engine.modelSlug,engine.id,backPath,appPath))),
-  });
+      const preferredIds = managedCuration ? {hero:null,demo:null} : PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
+      galleryVideos=await finalizeModelGallery({
+        managed: managedCuration,
+        cards:galleryVideos,
+        featuredIds:FEATURED_EXAMPLE_MEDIA[engine.modelSlug]??[],
+        preferredIds:[preferredIds.hero,preferredIds.demo].filter((id):id is string=>Boolean(id)),
+        preferLandscape:engine.modelSlug==='kling-2-5-turbo',
+        fetchCards:async(ids)=>Array.from((await getPublicVideosByIds(ids)).values()).map(video=>resolveGalleryCardHref(toGalleryCard(video,engine.brandId,localizedContent.marketingName??engine.marketingName,engine.modelSlug,engine.id,backPath,appPath))),
+      });
+      return { galleryVideos, preferredIds };
+    }
+  );
+  const { galleryVideos, preferredIds } = gallery;
+  const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
+  const pricingEngine = applyEnginePricingOverride(engine.engine, enginePricingOverrides[engine.engine.id]);
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
@@ -304,7 +304,6 @@ async function renderMarketingModelPage({
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const showPriceInSpecs =
     engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
-  const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);

@@ -83,8 +83,20 @@ keep their existing owners.
 Its branches share only `resolveCuratedPlaylist(slug)` promises, including `null`
 (legacy) and `[]` (managed empty/private); rejected promises are evicted so later
 reads can retry. No result survives into the next homepage invocation. Curation
-configuration/candidate IDs are a snapshot within that invocation; alias filters,
-limits, ordering, pagination, family merging and final video reads stay with each
+configuration reads gather only currently requested slugs in a microtask wave,
+with at most four slugs per SELECT. The small bound limits response payloads when
+curations contain long ordered/excluded ID arrays. Scope creation alone performs no read. A managed
+family (including empty/private `[]`) does not request its inherited configuration;
+only legacy `null` opens that branch. Later requests may form additional waves:
+there is no fixed two-query guarantee or barrier waiting for all candidates. Each
+batch and each destination's candidate query progress independently. A failed
+configuration SELECT rejects every member of that batch and evicts their resolution
+promises, allowing a later retry; this deliberately shares transient failure across
+that batch. Missing-table errors on configuration retain the legacy `null` fallback;
+other errors are not converted to empty success. Standalone readers keep their
+independent configuration SELECT. Configuration/candidate IDs are a snapshot within
+that invocation; alias filters, limits, ordering, pagination, family merging and
+final video reads stay with each
 consumer. Managed hydration in this scope rechecks both media eligibility and
 `playlists.is_public` in the same SELECT, so a playlist revoked after resolution
 cannot reuse an earlier public result. Legacy membership already checks its public
@@ -108,7 +120,8 @@ in the error snapshot. Existing production-only gating, build exclusion and
 - `tests/home-examples-read-postgres.test.ts` counts actual SELECTs on disposable
   PostgreSQL through a read-only application connection, compares complete cards
   and video results with independent reads, and covers legacy/managed/empty/private
-  and failed reads, in-flight sharing, rejection eviction, alias/limit/sort
+  and failed reads, bounded requested-only waves, large configuration payloads,
+  blocked batch/candidate independence, whole-batch rejection/retry, alias/limit/sort
   boundaries, fresh invocations and playlist/media revocation before hydration.
   SQL reductions in this fixture are not browser LCP or production latency gains.
 - `tests/homepage-read-postgres.test.ts` explicitly initializes disposable
