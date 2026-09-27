@@ -112,6 +112,24 @@ summed. A resolved fallback is `ok`; a rejected sibling can leave pending phases
 in the error snapshot. Existing production-only gating, build exclusion and
 `CWV_SERVER_TIMING=0` kill switch apply; no IDs, URLs, SQL or error text are added.
 
+## Gallery data loading
+
+`listExamplesPage` and `listExampleFamilyPage` create the same curation read scope
+for each invocation when the caller has not supplied one. This avoids resolving
+the same legacy destination again in the playlist fallback and batches only the
+inherited configurations actually requested by a legacy family. A caller-supplied
+homepage scope retains its existing lifetime. Managed families still skip inherited
+sources, and managed hub/family reads retain their configuration, candidate and
+final hydration SELECTs. No result survives into a later invocation; metadata and
+page loaders remain independent. Sorting, aliases, limits, offsets, total-count
+semantics, merging and public media URLs are unchanged.
+
+The shared-scope freshness and failure rules above also apply to these gallery
+reads. In particular, managed hydration rechecks playlist visibility and media
+eligibility in the final SELECT. Missing curation schema remains a legacy fallback
+without initialization. A failed bounded configuration batch rejects its members;
+the existing inherited-source catches still own fallback behavior.
+
 ## Verification
 
 - `tests/home-data-loading.test.ts` holds real homepage read boundaries open to
@@ -124,6 +142,13 @@ in the error snapshot. Existing production-only gating, build exclusion and
   blocked batch/candidate independence, whole-batch rejection/retry, alias/limit/sort
   boundaries, fresh invocations and playlist/media revocation before hydration.
   SQL reductions in this fixture are not browser LCP or production latency gains.
+- `tests/gallery-read-postgres.test.ts` executes the real gallery readers through
+  a read-only disposable PostgreSQL connection, compares complete results with
+  independent resolution, and counts configuration/candidate/hydration SELECTs.
+  It covers managed/legacy/mixed/empty/private destinations, all six sorts, aliases,
+  pagination, fresh invocations after curation changes, revocation before hydration,
+  failed reads and missing curation schema. Its reductions qualify the legacy
+  fallback path only; managed destinations keep their existing operation count.
 - `tests/homepage-read-postgres.test.ts` explicitly initializes disposable
   PostgreSQL, then runs the actual reader through a read-only connection. It
   checks ordering, public-only hydration, empty slots and missing-schema behavior.

@@ -47,7 +47,7 @@ export function useHeaderAccountState() {
   useEffect(() => {
     let mounted = true;
     let activeUserId: string | null = null;
-    const fetchAccountState = async (token?: string | null, userId?: string | null) => {
+    const fetchAccountState = async (token?: string | null, userId?: string | null, onReadFailure?: () => void) => {
       const requestId = ++accountRequestIdRef.current;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       setWalletLoading(true);
@@ -57,6 +57,7 @@ export function useHeaderAccountState() {
           const walletRes = await fetch('/api/wallet', { headers, cache: 'no-store' });
           const walletJson = await walletRes.json().catch(() => null);
           if (!isCurrentRequest()) return;
+          if (!walletRes.ok || typeof walletJson?.balance !== 'number') onReadFailure?.();
           if (walletRes.ok) {
             const nextBalance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
             if (nextBalance !== null) {
@@ -69,6 +70,7 @@ export function useHeaderAccountState() {
             }
           }
         } catch {
+          onReadFailure?.();
           // Keep a usable balance on transient failures.
         } finally {
           if (isCurrentRequest()) {
@@ -81,8 +83,10 @@ export function useHeaderAccountState() {
           const adminRes = await fetch('/api/admin/access', { headers, cache: 'no-store' });
           const adminJson = await adminRes.json().catch(() => null);
           if (!isCurrentRequest()) return;
+          if (!adminRes.ok || typeof adminJson?.ok !== 'boolean') onReadFailure?.();
           setIsAdmin(Boolean(adminRes.ok && adminJson?.ok));
         } catch {
+          onReadFailure?.();
           // Keep the last known access state on transient failures.
         }
       })();
@@ -139,9 +143,13 @@ export function useHeaderAccountState() {
           setIsAdmin(false);
         }
         setAuthResolved(true);
+        const initialSession = session;
+        let initialAccountReadReusable = Boolean(userId);
+        const retireInitialAccountRead = () => { initialAccountReadReusable = false; };
         if (userId) {
-          void fetchAccountState(session?.access_token, userId);
+          void fetchAccountState(session?.access_token, userId, retireInitialAccountRead).finally(retireInitialAccountRead);
         }
+        const initialAccountRequestId = accountRequestIdRef.current;
         const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (!mounted) return;
           const eventType = event as string;
@@ -158,6 +166,13 @@ export function useHeaderAccountState() {
             return;
           }
           const userId = session?.user?.id ?? null;
+          // Supabase replays the session after subscribing. Keep the matching
+          // in-flight reads useful instead of replacing them with duplicates.
+          const pendingInitialReplay = eventType === 'INITIAL_SESSION'
+            && initialAccountReadReusable
+            && accountRequestIdRef.current === initialAccountRequestId
+            && userId === initialSession?.user?.id
+            && (session?.access_token ?? null) === (initialSession?.access_token ?? null);
           if (activeUserId && activeUserId !== userId) {
             accountRequestIdRef.current += 1;
             setWallet(null);
@@ -174,7 +189,7 @@ export function useHeaderAccountState() {
           }
           setEmail(session?.user?.email ?? null);
           setAuthResolved(true);
-          if (userId) {
+          if (userId && !pendingInitialReplay) {
             void fetchAccountState(session?.access_token, userId);
           }
         });

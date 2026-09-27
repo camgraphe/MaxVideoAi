@@ -1,4 +1,4 @@
-import { listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
+import { createCurationReadScope, listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
 import { BASE_SELECT, BASE_SELECT_WITH_SETTINGS } from './videos-query';
 import { getLocalPublicExample, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
 import { query } from '@/lib/db';
@@ -255,7 +255,8 @@ export async function listExampleFamilyPage(
   const { sort, limit = 150, offset = 0 } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(familyId, sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
-  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true }, curationScope);
+  const readScope = curationScope ?? createCurationReadScope();
+  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true }, readScope);
   const sorted = sortVideosByPreference(merged, sort);
   return paginateGalleryVideos(sorted, limit, offset);
 }
@@ -269,8 +270,9 @@ export async function listExamplesPage(options: ListExamplesPageOptions, curatio
     return { items: [], total: 0, limit, offset, hasMore: false };
   }
 
+  const readScope = curationScope ?? createCurationReadScope();
   const normalizedGroup = engineGroup ? engineGroup.trim().toLowerCase() : null;
-  const curated = await listCuratedGalleryVideos(hubSlug, {engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases()}, curationScope);
+  const curated = await listCuratedGalleryVideos(hubSlug, {engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases()}, readScope);
   if (curated !== null) return paginateGalleryVideos(sortVideosByPreference(curated, sort), limit, offset);
   const baseFetchLimit = Math.max(limit + Math.max(offset, 0), limit);
   const playlistFetchLimit = normalizedGroup
@@ -279,7 +281,7 @@ export async function listExamplesPage(options: ListExamplesPageOptions, curatio
 
   const aggregated = await listPlaylistVideosWithOptions({
     slug: hubSlug, limit: playlistFetchLimit, engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases(),
-  }, curationScope).catch((error) => {
+  }, readScope).catch((error) => {
     console.warn(`[examples] failed to load playlist "${hubSlug}"`, error);
     return [] as GalleryVideo[];
   });
