@@ -335,7 +335,6 @@ test('examples page copy helper exposes localized route copy builders', () => {
 test('examples main video feature owns the hero media card', () => {
   assert.match(mainVideoFeatureSource, /export function ExamplesMainVideoFeature/, 'main video feature should be exported');
   assert.match(mainVideoFeatureSource, /ExamplesHeroVideo/, 'main video feature should own hero video rendering');
-  assert.match(mainVideoFeatureSource, /AudioEqualizerBadge/, 'main video feature should own audio badge rendering');
   assert.match(mainVideoFeatureSource, /DeferredSourcePrompt/, 'main video feature should own prompt disclosure');
 });
 

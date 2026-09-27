@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { formatCurrency, getAspectClass, TILE_ACTIONS } from './quad-preview-helpers';
@@ -140,7 +139,7 @@ export function QuadSingleTilesGrid({
                   <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-surface-2" />
                 )}
                 {tile.status !== 'failed' && tile.videoUrl && tile.hasAudio ? (
-                  <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
+                  <span className="sr-only">Audio available</span>
                 ) : null}
               </div>
               <div className="absolute inset-0 z-10" data-quad-tile-root={tile.localKey} />

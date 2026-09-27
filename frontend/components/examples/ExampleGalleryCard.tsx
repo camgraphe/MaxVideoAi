@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Image, { getImageProps } from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 import {
   buildWatchAnchorText,
@@ -144,7 +143,7 @@ export function ExampleGalleryCard({
                   className={clsx('absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]', videoReady ? 'opacity-100' : 'opacity-0')}
                 />
               ) : null}
-              {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label={audioAvailableLabel} /> : null}
+              {video.hasAudio ? <span className="sr-only">{audioAvailableLabel}</span> : null}
             </div>
           </div>
         </div>

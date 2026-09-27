@@ -5,7 +5,6 @@ import clsx from 'clsx';
 import { WorkspaceAssetSlot } from './WorkspaceAssetSlot.client';
 import type { KeyboardEvent } from 'react';
 import { Lock, Trash2, X } from 'lucide-react';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import { AssetMediaPickerMenu } from './AssetMediaPickerMenu';
 import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
@@ -220,7 +219,7 @@ function DefaultAssetDropzoneSlot({
                     : 'absolute inset-0 h-full w-full'
                 )}
               />
-              <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
+              <span className="sr-only">{assetCopy.videoIncludesAudio}</span>
             </>
           )}
           {visibleBadge && !compactCollectionLayout ? (
