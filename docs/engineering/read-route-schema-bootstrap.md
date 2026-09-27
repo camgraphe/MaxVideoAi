@@ -79,6 +79,19 @@ by the homepage; shared count/proof helpers remain available. Example selection,
 programmed hero metadata, curated media, localized content and loader fallbacks
 keep their existing owners.
 
+`loadHomepageExamples` creates one explicit curation read scope per invocation.
+Its branches share only `resolveCuratedPlaylist(slug)` promises, including `null`
+(legacy) and `[]` (managed empty/private); rejected promises are evicted so later
+reads can retry. No result survives into the next homepage invocation. Curation
+configuration/candidate IDs are a snapshot within that invocation; alias filters,
+limits, ordering, pagination, family merging and final video reads stay with each
+consumer. Managed hydration in this scope rechecks both media eligibility and
+`playlists.is_public` in the same SELECT, so a playlist revoked after resolution
+cannot reuse an earlier public result. Legacy membership already checks its public
+playlist. This is statement-level freshness, not an atomic snapshot across the
+whole response. Other callers keep their independent reads. Missing curation
+schema retains the existing legacy fallback without initialization on the read.
+
 The existing `withPublicPageTiming` logger emits one bounded record with route
 `home` and fixed `examples`, `hero-slots` and `scores` phases. These are loader
 promise durations, not final-HTML wait, TTFB, browser LCP, or all root layout work
@@ -92,6 +105,12 @@ in the error snapshot. Existing production-only gating, build exclusion and
 - `tests/home-data-loading.test.ts` holds real homepage read boundaries open to
   verify concurrency, removal of unused proof work, locale/schema data, one
   bounded timing record, fallback handling and original error propagation.
+- `tests/home-examples-read-postgres.test.ts` counts actual SELECTs on disposable
+  PostgreSQL through a read-only application connection, compares complete cards
+  and video results with independent reads, and covers legacy/managed/empty/private
+  and failed reads, in-flight sharing, rejection eviction, alias/limit/sort
+  boundaries, fresh invocations and playlist/media revocation before hydration.
+  SQL reductions in this fixture are not browser LCP or production latency gains.
 - `tests/homepage-read-postgres.test.ts` explicitly initializes disposable
   PostgreSQL, then runs the actual reader through a read-only connection. It
   checks ordering, public-only hydration, empty slots and missing-schema behavior.

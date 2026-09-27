@@ -7,6 +7,7 @@ import { isDiscoverableExampleEngine } from '@/lib/examples/discovery';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { AcceptedDurableModelAsset } from '@/server/model-launch-assets-validation';
 import { listExampleFamilyPage, listExamples, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
+import { createCurationReadScope } from '@/server/videos-playlists';
 import {
   DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
   EXAMPLE_ENGINE_PRIORITY,
@@ -170,12 +171,13 @@ export async function loadHomepageExamples(
   const familyIds = HOMEPAGE_EXAMPLE_FAMILIES.filter(
     (family) => !['wan', 'grok', 'flux'].includes(family) || promotionFamilies.has(family),
   );
+  const curationScope = createCurationReadScope();
   const [latestVideos, playlistVideos, familyPools, modelPools] = await Promise.all([
-    loadExamples('date-desc', 120).catch(() => [] as GalleryVideo[]),
-    loadExamples('playlist', 120).catch(() => [] as GalleryVideo[]),
+    loadExamples('date-desc', 120, curationScope).catch(() => [] as GalleryVideo[]),
+    loadExamples('playlist', 120, curationScope).catch(() => [] as GalleryVideo[]),
     Promise.all(
       familyIds.map(async (family) => {
-        const result = await loadExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }).catch(() => ({
+        const result = await loadExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }, curationScope).catch(() => ({
           items: [] as GalleryVideo[],
           total: 0,
           limit: 24,
@@ -187,7 +189,7 @@ export async function loadHomepageExamples(
     ),
     Promise.all(promotionTargets.map(async (target) => [
       target.modelId,
-      await loadPlaylistVideos(target.readiness.modelPlaylistSlug, 24).catch(() => [] as GalleryVideo[]),
+      await loadPlaylistVideos(target.readiness.modelPlaylistSlug, 24, curationScope).catch(() => [] as GalleryVideo[]),
     ] as const)),
   ]);
 
