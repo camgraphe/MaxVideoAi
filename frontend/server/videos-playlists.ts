@@ -15,7 +15,7 @@ const PUBLIC_VIDEO_PREDICATE_PLAYLIST = `
 
 export type CurationReadScope = { resolve: (slug: string) => ReturnType<typeof resolveCuratedPlaylist> };
 
-/** One homepage invocation only; retain null/empty results, but allow failed reads to retry. */
+/** One loader invocation only; retain null/empty results, but allow failed reads to retry. */
 export function createCurationReadScope(): CurationReadScope {
   const resolutions = new Map<string, ReturnType<typeof resolveCuratedPlaylist>>();
   let scheduled = false;
