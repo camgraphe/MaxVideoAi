@@ -132,6 +132,12 @@ First prove the implicated phase/interaction improved on the unchanged user jour
 
 `MarketingDesktopNav` keeps its complete server-rendered link tree, but skips unchanged renders when its parent updates mobile or account state. Keep its open/close callbacks stable; desktop selection, pathname and translation changes must still invalidate it. `tests/marketing-navigation-rendering.test.ts` exercises these boundaries through the real navigation components and translation provider. It does not replace real-browser interaction timing, localized navigation or field INP validation.
 
+`MarketingMotion` reads initial section geometry from IntersectionObserver entries, not a synchronous layout loop over deferred content. Initial viewport content and sections above an anchor arrival stay still; eligible sections animate only after crossing the 8% threshold. Keep reduced-motion and route cleanup effective. Browser layout and total CWV still need measurement; avoiding explicit geometry reads alone does not quantify an LCP gain.
+
+Model hero autoplay must cancel pending LCP-wait, delay and idle callbacks when the player or document becomes hidden, then recheck eligibility before mounting. A rejected playback promise must retain a working manual control and ignore stale/aborted attempts. `tests/model-hero-media-lifecycle.test.ts` covers the real component and shared playback owner; verify actual browser loading and first Play as well, without inferring transferred bytes from a mocked media element.
+
+The connected video workspace memoizes its active setup from all authored inputs. Unchanged parent renders must not reserialize that setup. Changed inputs still validate and persist synchronously before route unmount; account isolation, rejected-record recovery and storage fallbacks remain authoritative. `tests/workspace-active-draft-performance-dom.test.ts` checks serialization work through the real hydration path. Synthetic large drafts are stress fixtures, not field INP samples.
+
 ## From a slow metric to a correction
 
 Use existing field tooling before adding another collector. CrUX identifies the outcome; route-level RUM prioritizes affected journeys; a browser or server trace identifies the work to change. If the existing tooling lacks the necessary interaction or server-phase attribution, add only that missing context and document its collection cost and coverage.

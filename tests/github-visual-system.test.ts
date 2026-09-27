@@ -29,7 +29,6 @@ const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/social/github-social-preview.png', [1280, 640]],
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/release-0.3.2.png', [1200, 630]],
-  ['plugins/maxvideoai/assets/social/release-0.3.3.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/directory-thumbnail.png', [1200, 675]],
 ] as const);
 
@@ -44,6 +43,21 @@ const liveScreenshotDimensions = new Map([
 ] as const);
 
 const brandHeroPath = 'plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp';
+
+test('the obsolete 0.3.3 release card keeps its original bytes outside active placements', async () => {
+  const record = manifest.assets.find((asset) => asset.id === 'release-0-3-3');
+  assert.ok(record);
+  assert.equal(record.state, 'reference_only');
+  assert.deepEqual(record.placements, ['historical_release_reference']);
+  assert.match(record.claim, /not current product proof/);
+  const bytes = readFileSync(record.path);
+  await validateImageDecode(bytes);
+  assert.deepEqual(readImageDimensions(bytes), { width: 1200, height: 630, format: 'png' });
+  assert.equal(sha256(bytes), 'ec45497e3603d6d08852cfd0f09313ba2b29b28b8b1482b03618fe9a08bbabae');
+  for (const path of ['README.md', 'plugins/maxvideoai/README.md']) {
+    assert.doesNotMatch(readFileSync(path, 'utf8'), /release-0\.3\.3\.png/);
+  }
+});
 
 test('the cancelled 0.3.4 release card remains historical evidence outside active placements', () => {
   const record = manifest.assets.find((asset) => asset.id === 'release-0-3-4');
