@@ -116,6 +116,31 @@ The routing dependency's bot list includes performance browsers. Its audit/headl
 
 Do not overwrite metrics, drop inconvenient slow samples or report early values as final values. Existing Vercel collection remains unchanged. No new telemetry destination or field collector is added by this patch.
 
+### Google Analytics startup scheduling
+
+`ConsentModeBootstrap` keeps the consented inline `gtag` command queue available
+after hydration, but mounts the remote GA4 script only after document load and an
+idle callback. Browsers without `requestIdleCallback` use a cancellable timer
+after load. The pending load listener, idle callback or timer is cancelled on
+consent withdrawal, excluded-route entry or unmount; the callback also checks
+current browser consent and the current URL before mounting. Waiting outside
+`next/script` delays its App Router preload too and keeps cancellation under the
+application's control. The installed Next loader's own deferred callback has no
+equivalent cleanup.
+
+Page views and product events keep their existing queue and transport contracts.
+Audit browsers use the same scheduling as ordinary Chrome. Moving startup later
+does not remove Google's script-evaluation work or guarantee that its eventual
+execution cannot overlap input. A visit that ends before the remote script loads
+can lose queued events, and very early checkout attribution still depends on
+GA's existing readiness timeout. Measure consented returning visits and early
+interactions, including late script work, before claiming an INP improvement.
+`tests/cwv-audit-parity.test.ts` covers consent, routing and stale-callback
+cancellation, including the timer fallback; real browser evidence is separate
+from provider event receipt and production field measurements. See
+[Next script scheduling](https://nextjs.org/learn/seo/third-party-scripts) and
+[Google's command queue](https://developers.google.com/tag-platform/gtagjs/configure).
+
 ## Public-page server phases
 
 `loadComparePageData` owns the comparison's independent data and gallery reads. It starts them together; the qualified benchmark, exact prices and complete gallery results still resolve before rendering. Keep prelaunch gallery exclusions in this owner. Its concurrency test holds all read boundaries open to prove that none waits for unrelated data.
