@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { EXAMPLES_HERO_POSTER_SIZES } from '@/components/examples/hero-poster';
 import { getExampleReuseCopy } from '../_lib/example-reuse-copy';
 import Link from 'next/link';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ExamplesHeroVideo } from '@/components/examples/ExamplesHeroVideo.client';
 import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 
@@ -110,7 +109,7 @@ export function ExamplesMainVideoFeature({
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/15 to-transparent px-3 py-3">
               {hasAudio ? (
-                <AudioEqualizerBadge tone="light" size="sm" label={copy.audioOn} />
+                <span className="sr-only">{copy.audioOn}</span>
               ) : (
                 <span />
               )}

@@ -198,6 +198,12 @@ Block a reproducible regression beyond baseline variability even if a metric rem
 
 ## Images and URL configuration
 
+Decorative animated audio equalizer overlays have been removed from public and
+workspace media cards. Keep the existing localized screen-reader availability
+labels and the actual player controls. Audio metadata still belongs to the media
+and generation contracts; removing decoration must not change tracks, mute state,
+playback policy, poster geometry or resource priority.
+
 Use `buildExamplePosterProjection` for the shared API/gallery poster fields, or the shared poster builder and its named presets when an explicit optimized URL is needed. `next/image` should normally receive the original allowed source plus responsive `sizes`; do not optimize an already optimized URL again. Widths and qualities in emitted `/_next/image` requests must be admitted by the actual Next configuration. Do not add per-route quality constants or hand-build optimizer query strings.
 
 Native comparison posters use `buildPublicVideoPosterUrl` and the shared hero preset. It admits only unsigned HTTPS sources on `media.maxvideoai.com`; query strings, credentials, unknown origins, relative and opaque URLs pass through exactly. It never converts private/signed media into a public optimizer request. Image-only comparison sides continue to use responsive `next/image`.

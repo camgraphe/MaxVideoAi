@@ -8,7 +8,6 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { GroupedJobCardMenu } from './GroupedJobCardMenu';
@@ -229,7 +228,7 @@ export function GroupedJobCard({
               previews={previews}
             />
           </div>
-          {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
+          {heroHasAudio ? <span className="sr-only">Audio available</span> : null}
           {group.count > 1 ? (
             <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-surface-on-media-dark-65 px-2.5 py-0.5 text-[11px] font-semibold text-on-inverse shadow">
               {splitLabel}

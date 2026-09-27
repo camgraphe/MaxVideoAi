@@ -7,7 +7,6 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import type { VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import {
   getInlinePreviewUrl,
   isVideo,
@@ -122,7 +121,7 @@ export function CompositePreviewDockTile({
         )}
       </div>
       {hasAudio && itemStatus === 'completed' && video ? (
-        <AudioEqualizerBadge tone="light" size="sm" label="Audio available" className="absolute bottom-2 right-2" />
+        <span className="sr-only">Audio available</span>
       ) : null}
       <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
       <div

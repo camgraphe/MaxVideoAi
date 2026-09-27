@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 
 const HeroMediaLightbox = dynamic(
@@ -155,7 +154,7 @@ export function HeroMediaTile({
     <figure className="group relative w-full overflow-hidden rounded-[28px] border border-preview-outline-idle bg-surface shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
-          <AudioEqualizerBadge tone="light" size="sm" label={audioBadgeLabel ?? 'Audio enabled'} />
+          <span className="sr-only">{audioBadgeLabel ?? 'Audio enabled'}</span>
         ) : null}
         <Image
           src={posterSrc}
