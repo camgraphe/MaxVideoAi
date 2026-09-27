@@ -1,3 +1,4 @@
+import { listCatalogPage } from './videos-catalog-page';
 import { createCurationReadScope, listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
 import { BASE_SELECT, BASE_SELECT_WITH_SETTINGS } from './videos-query';
 import { getLocalPublicExample, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
@@ -255,6 +256,7 @@ export async function listExampleFamilyPage(
   const { sort, limit = 150, offset = 0 } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(familyId, sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
+  if (!curationScope) return listCatalogPage({ familyId, sort, limit, offset });
   const readScope = curationScope ?? createCurationReadScope();
   const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true }, readScope);
   const sorted = sortVideosByPreference(merged, sort);
@@ -265,6 +267,8 @@ export async function listExamplesPage(options: ListExamplesPageOptions, curatio
   const { sort, limit = 150, offset = 0, engineGroup } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(engineGroup ?? '', sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
+  if (!curationScope) return listCatalogPage({ sort, limit, offset,
+    engineAliases: engineGroup ? getExampleFamilyEngineAliases(engineGroup.trim().toLowerCase()) : undefined });
   const hubSlug = getExamplesHubPlaylistSlug();
   if (!hubSlug) {
     return { items: [], total: 0, limit, offset, hasMore: false };

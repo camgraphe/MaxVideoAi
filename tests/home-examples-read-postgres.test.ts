@@ -97,11 +97,12 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
   const statements: Statement[] = reader.statements;
   const evidence: Record<string, unknown> = {};
   const load = () => reader.loadHomepageExamples('en', content, { acceptedAssets: [] });
-  // Independent readers retain the pre-scope behavior as a same-fixture output control.
-  const loadWithoutScope = () => reader.loadHomepageExamples('en', content, {
+  // Fresh per-consumer scopes isolate the scope-sharing contract from the SQL catalog
+  // pagination path, which has its own complete-catalog regression test.
+  const loadWithIndependentScopes = () => reader.loadHomepageExamples('en', content, {
     acceptedAssets: [],
-    listExamples: (sort: string, limit: number) => reader.listExamples(sort, limit),
-    listExampleFamilyPage: (family: string, options: unknown) => reader.listExampleFamilyPage(family, options),
+    listExamples: (sort: string, limit: number) => reader.listExamples(sort, limit, reader.createCurationReadScope()),
+    listExampleFamilyPage: (family: string, options: unknown) => reader.listExampleFamilyPage(family, options, reader.createCurationReadScope()),
     listPlaylistVideos: (slug: string, limit: number) => reader.listPlaylistVideos(slug, limit),
   });
   const configs = () => statements.filter(({ text }) => isConfig(text));
@@ -111,7 +112,7 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
   };
   const checkScenario = async (name: string) => {
     statements.length = 0;
-    const expectedCards = await loadWithoutScope();
+    const expectedCards = await loadWithIndependentScopes();
     const independentTotal = statements.length;
     statements.length = 0;
     const started = performance.now();
@@ -146,9 +147,9 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
       assert.equal(kling.duration, '5s');
       const scope = reader.createCurationReadScope();
       for (const sort of ['playlist', 'date-desc', 'date-asc']) {
-        assert.deepEqual(await reader.listExamples(sort, 120, scope), await reader.listExamples(sort, 120));
+        assert.deepEqual(await reader.listExamples(sort, 120, scope), await reader.listExamples(sort, 120, reader.createCurationReadScope()));
         assert.deepEqual(await reader.listExampleFamilyPage('kling', { sort, limit: 24, offset: 4 }, scope),
-          await reader.listExampleFamilyPage('kling', { sort, limit: 24, offset: 4 }));
+          await reader.listExampleFamilyPage('kling', { sort, limit: 24, offset: 4 }, reader.createCurationReadScope()));
       }
       for (const engineAliases of [undefined, [], ['KLING-3-PRO']]) {
         const options = { slug: 'examples', engineAliases, limit: 24 };
