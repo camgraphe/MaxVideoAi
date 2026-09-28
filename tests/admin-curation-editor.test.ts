@@ -20,7 +20,11 @@ test('retains_draft_after_rejection', async () => {
     navigator: dom.window.navigator,
     React,
     IS_REACT_ACT_ENVIRONMENT: true,
-    fetch: (url: string, init?: RequestInit) => new Promise<Response>((resolve) => requests.push({ url, init, resolve })),
+    fetch: (url: string, init?: RequestInit) => {
+      // The intentionally unavailable tail ID now triggers bounded hydration.
+      if (url.includes('/candidates?ids=')) return Promise.resolve(Response.json({ ok: true, items: [], total: 0, nextCursor: null }));
+      return new Promise<Response>((resolve) => requests.push({ url, init, resolve }));
+    },
   })) {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, {
@@ -291,3 +295,65 @@ test('edits_four_slots_and_paged_tail', async () => {
     assert.equal(button('Preview changes').disabled, true, 'new families require all four slots');
   }finally{await act(async()=>root.unmount());dom.window.close();for(const[key,value]of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
 });
+
+for (const scenario of ['freeze-small-hybrid', 'reload-later-window'] as const) {
+  test(`hydrates_current_selection_after_${scenario}`, async () => {
+    const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/admin/playlists' });
+    const previous = new Map<string, PropertyDescriptor | undefined>();
+    const items = Array.from({ length: 160 }, (_, index) => ({
+      id: `window-${index + 1}`, engineId: 'wan-3', engineLabel: 'Wan 3',
+      prompt: `Selected video ${index + 1}`, videoUrl: '/video.mp4', thumbUrl: null,
+      createdAt: '2026-09-28T00:00:00Z', outputWidth: 1280, outputHeight: 720,
+    }));
+    const initialIds = scenario === 'freeze-small-hybrid' ? ['window-1'] : items.slice(0, 120).map(item => item.id);
+    const selectedWindows: string[][] = [];
+    const fetch = async (url: string) => {
+      const params = new URL(url, 'http://localhost').searchParams;
+      if (params.get('idsOnly') === 'true') return Response.json({ ok: true, ids: items.map(item => item.id), total: items.length });
+      if (params.has('ids')) {
+        const ids = params.getAll('ids'); selectedWindows.push(ids);
+        return Response.json({ ok: true, items: items.filter(item => ids.includes(item.id)), total: ids.length, nextCursor: null });
+      }
+      if (url.includes('/candidates')) return Response.json({ ok: true, items: items.slice(0, 48), total: items.length, nextCursor: 'next' });
+      return Response.json({
+        ok: true, snapshot: { available: true, supported: true, slug: 'examples-wan-3', isPublic: true, revision: 'r1',
+          config: { mode: scenario === 'freeze-small-hybrid' ? 'hybrid' : 'manual', orderedIds: initialIds,
+            excludedIds: scenario === 'freeze-small-hybrid' ? ['window-2', 'window-3', 'window-4'] : [] } },
+        initialIds, selectedItems: items.filter(item => initialIds.includes(item.id)).slice(0, 48), selectedTotal: initialIds.length,
+      });
+    };
+    for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, navigator: dom.window.navigator, React, IS_REACT_ACT_ENVIRONMENT: true, fetch })) {
+      previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
+      Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+    }
+    const root = createRoot(dom.window.document.getElementById('root')!);
+    const button = (label: string) => [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === label)!;
+    const visibleIds = () => [...dom.window.document.querySelectorAll('[data-curation-item]')].map(item => item.getAttribute('data-curation-item'));
+    try {
+      const { PlacementEditor } = await import('../frontend/components/admin/playlists/PlacementEditor');
+      await act(async () => root.render(React.createElement(PlacementEditor, { playlistId: 'window-fixture' })));
+      if (scenario === 'freeze-small-hybrid') {
+        const policy = dom.window.document.querySelector('[aria-label="Page order"]') as HTMLSelectElement;
+        await act(async () => { policy.value = 'manual'; policy.dispatchEvent(new dom.window.Event('change', { bubbles: true })); });
+        assert.equal(visibleIds().length, 48, 'the complete first window hydrates even though only one ID was originally featured');
+        assert.equal(visibleIds()[47], 'window-51', 'excluded early candidates are replaced by later eligible IDs');
+        assert.ok(selectedWindows.some(ids => ids.includes('window-51')));
+        assert.ok(selectedWindows.every(ids => ids.length <= 48));
+        assert.match(dom.window.document.querySelector('[aria-label="Selected media"]')!.textContent!, /Manual selection · 157/);
+      } else {
+        await act(async () => button('Next selected').click());
+        assert.equal(visibleIds()[0], 'window-49');
+        assert.equal(visibleIds().length, 48);
+        await act(async () => button('Reload').click());
+        assert.equal(visibleIds().length, 48, 'reloading must leave a complete visible window');
+        assert.equal(visibleIds()[0], 'window-1', 'reload resets the selected page together with its metadata');
+        assert.match(dom.window.document.querySelector('[aria-label="Selected media"]')!.textContent!, /Selected page 1 of 3/);
+      }
+    } finally {
+      await act(async () => root.unmount()); dom.window.close();
+      for (const [key, descriptor] of previous) {
+        if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);
+      }
+    }
+  });
+}

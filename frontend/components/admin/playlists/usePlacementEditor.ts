@@ -93,6 +93,7 @@ export function usePlacementEditor(
         };
         saved.current = next;
         setDraft(next);
+        setSelectedPage(0);
         setLoaded(data);
         setPreview(null);
         setMessage(null);
@@ -153,7 +154,7 @@ export function usePlacementEditor(
   const windowIds = tailIds.slice(page * 48, (page + 1) * 48);
   const windowKey = windowIds.join(',');
   const loadedReady = Boolean(loaded);
-  const needsFirstWindow = Boolean(page === 0 && loaded && loaded.selectedTotal >= 48 && windowIds.some(id => !loaded.candidates.some(item => item.id === id)));
+  const needsFirstWindow = Boolean(page === 0 && loaded && windowIds.some(id => !loaded.candidates.some(item => item.id === id)));
   useEffect(() => {
     if (!loadedReady || (page === 0 && !needsFirstWindow)) { setWindowBusy(false); return; }
     let active = true;
