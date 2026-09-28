@@ -5,6 +5,7 @@ import { paginateGalleryVideos, sortVideosByPreference, type ExampleSort } from 
 export type PublicExampleCard = {
   id: string; engineIconId: string; engineLabel: string; promptFull?: string; prompt: string;
   rawPosterUrl?: string; videoUrl?: string; previewVideoUrl?: string; aspectRatio?: string;
+  outputWidth?: number; outputHeight?: number;
   durationSec: number; hasAudio: boolean; priceLabel?: string | null;
 };
 export type PublicExamplesSnapshot = {
@@ -23,7 +24,7 @@ export function publicCardToVideo(card: PublicExampleCard): GalleryVideo {
     id: card.id, userId: null, engineId: card.engineIconId, engineLabel: card.engineLabel,
     prompt: card.promptFull ?? card.prompt, promptExcerpt: card.prompt,
     thumbUrl: card.rawPosterUrl, videoUrl: card.videoUrl, previewVideoUrl: card.previewVideoUrl,
-    aspectRatio: card.aspectRatio, durationSec: card.durationSec, hasAudio: card.hasAudio,
+    aspectRatio: card.aspectRatio, outputWidth: card.outputWidth, outputHeight: card.outputHeight, durationSec: card.durationSec, hasAudio: card.hasAudio,
     // The public cards do not expose creation dates, owner IDs or input settings.
     createdAt: '', visibility: 'public', indexable: true, canUpscale: false,
     finalPriceCents: usd ? Number(usd[1].replaceAll(',', '')) * 100 + Number(usd[2]) : null,

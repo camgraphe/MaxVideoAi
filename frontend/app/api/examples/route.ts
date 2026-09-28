@@ -154,6 +154,8 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
     promptFull: video.prompt ?? null,
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
+    outputWidth: video.outputWidth,
+    outputHeight: video.outputHeight,
     hasAudio: video.hasAudio,
     ...buildExamplePosterProjection(video.thumbUrl, getPlaceholderPoster(video.aspectRatio ?? null)),
     videoUrl: video.videoUrl ?? null,

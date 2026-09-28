@@ -32,7 +32,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
     CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text DEFAULT 'fixture-owner',engine_id text,engine_label text DEFAULT 'Fixture',prompt text DEFAULT 'Fixture',
       thumb_url text,video_url text,status text DEFAULT 'completed',surface text DEFAULT 'video',visibility text DEFAULT 'public',indexable boolean DEFAULT true,
       created_at timestamptz,duration_sec int DEFAULT 5,aspect_ratio text DEFAULT '16:9',has_audio boolean,can_upscale boolean,
-      featured boolean,featured_order int,final_price_cents int DEFAULT 25,currency text DEFAULT 'USD',pricing_snapshot jsonb);
+      featured boolean,featured_order int,final_price_cents int DEFAULT 25,currency text DEFAULT 'USD',pricing_snapshot jsonb,settings_snapshot jsonb);
     CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
     CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
     INSERT INTO playlists(slug,is_public) VALUES ('examples',true),('family-kling',true),('examples-kling-3-pro',true),('examples-ltx-2-5-pro',true);
@@ -60,6 +60,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
   await build({
     stdin: { contents: `export {loadHomepageExamples} from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples';
       export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
+      export {getExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
@@ -146,4 +147,17 @@ test('public gallery traverses every eligible video beyond the old window and hy
     try {const legacy=await read(504);assert.equal(legacy.total,513);assert.equal(legacy.items.length,9);}
     finally {await postgres.pool.query('ALTER TABLE unavailable_curations RENAME TO playlist_curations');}
   });
+  await t.test('reader rechecks public/deleted eligibility and performs only bounded read-only hydration',async()=>{
+    statements.length=0;
+    const detail=await reader.getExampleWatchDetail('kling-20');assert.equal(detail.id,'kling-20');
+    assert.ok(!JSON.stringify(detail).includes('fixture-owner'));
+    assert.ok(statements.every(statement=>/^\s*SELECT\b/i.test(statement.text)));
+    assert.ok(statements.filter(statement=>statement.text.includes('FROM app_jobs')).every(statement=>statement.rows===1));
+    const editorialRead=statements.find(statement=>statement.text.includes('FROM video_seo_pages'));
+    assert.ok(editorialRead?.text.includes('WHERE video_id=$1'),'single-video reader must not hydrate all editorial entries');
+    for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing'])assert.equal(await reader.getExampleWatchDetail(id),null);
+    await postgres.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='kling-20'");
+    assert.equal(await reader.getExampleWatchDetail('kling-20'),null,'a previously opened public video is checked again');
+  });
+
 });

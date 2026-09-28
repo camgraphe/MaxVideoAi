@@ -323,3 +323,49 @@ The redesign's `ModelDecisionMediaCard` declares `data-media-kind` from the reso
 `src/components/tools/toolbox-art.ts` owns the shared curated illustrations used by `ToolboxScene`, the marketing hub and tool cards. Empty app states keep their Illustration label. Character Builder’s generated fictional portrait and eight-view sheet are illustrations, not recorded app outputs; real workflow demos retain their existing sources and manual playback.
 
 `src/components/tools/landing/tool-workspace-assets.ts` owns versioned WebP captures of the current local tool UI. Capture the actual interface, preserve visible settings, state the locale and visitor/authenticated context, and do not fabricate outputs. Replace captures with new versioned files after UI changes. `ToolWorkspacePreview` preserves intrinsic geometry and lazy loading with a full-size link. Angle keeps its route-local frame; its interactive orbit assets and responsive preparation policy remain separate. New direct WebP captures are bounded below 150 KB; validate loading and production-build performance before rollout, without inferring CWV improvements from byte size alone.
+
+## Video discovery gallery and reader
+
+The examples route now renders 24 unique cards per URL page. `videos-catalog-page.ts`
+counts, orders, deduplicates and selects eligible IDs in one SQL snapshot before
+hydrating only the selected page. There is no catalog-wide 120/400 limit. Homepage
+request-scoped readers retain their separate batching contract. The four optional
+opening slots count within page one: 16:9, 9:16, 16:9, 16:9. Only the two small
+landscape preview frames crop; original watch media stays unchanged. Other sorts
+and later pages use native-ratio rows. Incomplete opening sets fall back to those rows.
+
+`useGalleryPreviewBudget` permits up to three visible short previews on desktop and
+one on mobile, with hover/focus priority, a global pause and suspension while the
+reader is open. Cards still delegate reduced-motion, data-saver, hidden-document,
+autoplay rejection and source fallback to `useExampleCardPlayback`. Only the first
+visible poster is prioritized; there is no competing separate hero. Update root
+LCP guidance accordingly when changing this surface again.
+
+Every card retains its real standalone watch link. An ordinary click dynamically
+loads `ExampleReader.client.tsx`. `useGalleryReader` preserves gallery page/filter
+and scroll, uses one history entry, and fetches adjacent 24-card windows only at a
+reader boundary. Back closes and Forward can reopen the last selection. Source
+playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
+The existing standalone watch page remains the authority for canonical, metadata,
+VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.
+
+`GET /api/examples/[id]` is an uncached read-only detail projection. It rechecks the
+same public/completed/indexable/live-output eligibility as the catalog, returns an
+explicit public DTO and never exposes ownership, raw snapshots or private references.
+Source images use the existing approved-editorial/public-stable-media gate. The
+editorial single-video lookup is bounded to one row. No schema bootstrap belongs
+on this read path.
+
+The recorded example cost is historical. Comparison estimates use one visible
+text-to-video scenario with no references. Measured resolution/aspect take precedence;
+unknown settings produce no invented quotes. Candidates must pass the same workspace
+form coercion used by the explicit recreation handoff, without changing duration,
+resolution, aspect or audio. `computeCanonicalPublicSnapshot` owns prices and shares
+one DB policy read across the response. Show the current model when compatible and
+up to three compatible alternatives closest in price, without claiming equal quality.
+`buildExampleRecreationHref` passes the full scalar scenario through login; generation
+always requotes. Ordinary `/app?from=…` continues the original reuse flow.
+
+Regression coverage: `examples-catalog-pagination-postgres`, `examples-discovery-layout`,
+`gallery-reader-navigation-dom`, `example-watch-detail`, `example-recreation`,
+`workspace-example-recreation-dom`, and existing public-video/watch/SEO contracts.

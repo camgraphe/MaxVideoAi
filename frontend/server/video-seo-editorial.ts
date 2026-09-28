@@ -179,16 +179,8 @@ function withCodeSource(entry: VideoSeoEditorialEntry): PersistedVideoSeoEditori
   };
 }
 
-export async function listVideoSeoEditorialEntries(): Promise<PersistedVideoSeoEditorialEntry[]> {
-  const codeEntries = new Map(VIDEO_SEO_EDITORIAL_ENTRIES.map((entry) => [entry.id, withCodeSource(entry)]));
-  if (!isDatabaseConfigured()) {
-    return [...codeEntries.values()];
-  }
-
-  try {
-    const rows = await query<VideoSeoPageRow>(
-      `
-        SELECT video_id, seo_status, seo_title, meta_description, h1, video_object_name,
+const VIDEO_SEO_PAGE_SELECT = `
+SELECT video_id, seo_status, seo_title, meta_description, h1, video_object_name,
                short_description,
                to_jsonb(video_seo_pages)->>'editorial_prompt_breakdown' AS editorial_prompt_breakdown,
                target_keyword, intent, model_slug, examples_slug,
@@ -197,8 +189,17 @@ export async function listVideoSeoEditorialEntries(): Promise<PersistedVideoSeoE
                COALESCE((to_jsonb(video_seo_pages)->>'rollout_excluded')::boolean, false) AS rollout_excluded,
                notes, updated_at::text AS updated_at, updated_by::text AS updated_by
         FROM video_seo_pages
-        ORDER BY updated_at DESC, video_id ASC
-      `
+`;
+
+export async function listVideoSeoEditorialEntries(): Promise<PersistedVideoSeoEditorialEntry[]> {
+  const codeEntries = new Map(VIDEO_SEO_EDITORIAL_ENTRIES.map((entry) => [entry.id, withCodeSource(entry)]));
+  if (!isDatabaseConfigured()) {
+    return [...codeEntries.values()];
+  }
+
+  try {
+    const rows = await query<VideoSeoPageRow>(
+      `${VIDEO_SEO_PAGE_SELECT} ORDER BY updated_at DESC, video_id ASC`
     );
     for (const row of rows) {
       codeEntries.set(row.video_id, mapVideoSeoPageRow(row));
@@ -219,8 +220,16 @@ export async function listVideoSeoEditorialEntryMap(): Promise<Map<string, Persi
 
 export async function getResolvedVideoSeoEditorialEntry(id?: string | null): Promise<PersistedVideoSeoEditorialEntry | null> {
   if (!id) return null;
-  const entries = await listVideoSeoEditorialEntryMap();
-  return entries.get(id) ?? null;
+  if (isDatabaseConfigured()) {
+    try {
+      const rows = await query<VideoSeoPageRow>(`${VIDEO_SEO_PAGE_SELECT} WHERE video_id=$1 LIMIT 1`, [id]);
+      if (rows[0]) return mapVideoSeoPageRow(rows[0]);
+    } catch (error) {
+      if (!isUndefinedTableError(error)) console.warn('[video-seo-editorial] failed to read persisted page', error);
+    }
+  }
+  const entry = getVideoSeoEditorialEntry(id);
+  return entry ? withCodeSource(entry) : null;
 }
 
 export async function getResolvedVideoSeoEditorialEntryByIdentifier(
