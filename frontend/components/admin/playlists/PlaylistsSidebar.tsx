@@ -28,7 +28,7 @@ export function PlaylistsSidebar({
   const [search, setSearch] = useState('');
   const groups = Object.entries(groupedPlaylists).filter(([key]) => key !== 'draft' || showDraftCollections);
   return (
-    <aside className="min-w-0 border-border xl:border-r xl:pr-5">
+    <aside className="min-w-0 border-border lg:border-r lg:pr-5">
       <label className="text-xs font-medium text-text-secondary">
         Find a destination
         <input

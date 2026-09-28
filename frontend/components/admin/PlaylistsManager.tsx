@@ -431,7 +431,7 @@ export function PlaylistsManager({
 
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
-      <div className="grid gap-6 xl:grid-cols-[250px_minmax(0,1fr)]">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
         <PlaylistsSidebar
           groupedPlaylists={groupedPlaylists}
           onSelectPlaylist={handleSelectPlaylist}
@@ -441,7 +441,7 @@ export function PlaylistsManager({
           showDraftCollections={showDraftCollections}
         />
 
-        <section className="space-y-6">
+        <section className="min-w-0 space-y-6">
           <PlaylistsManagerSelectionPanel
             enableCuration={enableCuration}
             onCurationStateChange={setCurationState}
