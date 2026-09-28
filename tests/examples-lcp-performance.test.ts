@@ -45,17 +45,17 @@ test('examples hero gives its single responsive poster high priority before hydr
   }
 });
 
-test('examples gallery prioritizes its first poster only when no route hero is rendered', () => {
+test('examples gallery owns the single prioritized opening poster', () => {
   const cardSource = readSource(galleryCardPath);
   const clientSource = readSource(galleryClientPath);
   const gridSource = readSource(galleryGridPath);
   const pageViewSource = readSource(examplesPageViewPath);
   const routeSectionsSource = readSource(examplesRouteSectionsPath);
 
-  assert.match(pageViewSource, /const hasRouteHero = Boolean\(mainVideo && mainVideoFeature\.contentUrl\)/);
-  assert.match(pageViewSource, /prioritizeFirstPoster=\{!hasRouteHero\}/);
+  assert.doesNotMatch(pageViewSource, /<ExamplesMainVideoFeature/);
+  assert.match(pageViewSource, /prioritizeFirstPoster=\{true\}/);
   assert.match(routeSectionsSource, /prioritizeFirstPoster=\{prioritizeFirstPoster\}/);
-  assert.match(gridSource, /prioritizeFirstPoster=\{prioritizeFirstPoster\}/);
+  assert.match(gridSource, /<ExamplesGalleryGridClient \{\.\.\.props\}/);
   assert.match(clientSource, /prioritizePoster=\{prioritizeFirstPoster && video\.id === firstVisibleId\}/);
   assert.match(cardSource, /priority=\{prioritizePoster\}/);
   assert.match(cardSource, /fetchPriority=\{prioritizePoster \? 'high' : undefined\}/);
@@ -68,8 +68,8 @@ test('examples gallery keeps one responsive DOM tree through mobile hydration', 
 
   assert.doesNotMatch(clientSource, /const \[isMobile,\s*setIsMobile\]/);
   assert.doesNotMatch(clientSource, /isMobile\s*\?/);
-  assert.match(clientSource, /visibleVideos\.map/);
-  assert.match(stylesSource, /column-count:\s*1/);
+  assert.match(clientSource, /buildGalleryOpening/);
+  assert.match(stylesSource, /flex-wrap:\s*wrap/);
   assert.match(stylesSource, /break-inside:\s*avoid/);
 });
 

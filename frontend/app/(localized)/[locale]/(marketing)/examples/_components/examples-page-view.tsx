@@ -1,4 +1,3 @@
-import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import clsx from 'clsx';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
@@ -7,7 +6,6 @@ import type { ExamplesModelLink } from '../_lib/examples-page-data';
 import type { EngineFilterOption } from '../_lib/examples-route-utils';
 import { ExamplesEngineFilterNav } from './examples-engine-filter-nav';
 import { ExamplesJsonLdScripts } from './examples-jsonld-scripts';
-import { ExamplesMainVideoFeature } from './examples-main-video-feature';
 import {
   ExamplesFaqSection,
   ExamplesGallerySection,
@@ -126,7 +124,6 @@ export function ExamplesPageView({
   hasPreviousPage,
   heroBody,
   heroLead,
-  heroSubtitle,
   heroTitle,
   initialDesktopBatch,
   initialExamples,
@@ -136,9 +133,6 @@ export function ExamplesPageView({
   loadMoreLabel,
   locale,
   longDescription,
-  mainVideo,
-  mainVideoCopy,
-  mainVideoFeature,
   modelLandingSections,
   modelLandingSummary,
   modelLinks,
@@ -162,7 +156,7 @@ export function ExamplesPageView({
   totalPages,
   usesCurrentAndSupportedBlocks,
 }: ExamplesPageViewProps) {
-  const hasRouteHero = Boolean(mainVideo && mainVideoFeature.contentUrl);
+
   const familyNotesLabel = locale === 'fr' ? 'Notes sur la famille' : locale === 'es' ? 'Notas de la familia' : 'Family notes';
 
   return (
@@ -177,50 +171,12 @@ export function ExamplesPageView({
 
       <div
         className={clsx(
-          'container-page max-w-7xl',
+          'container-page max-w-[1800px]',
           engineFilterOptions.length ? 'pb-[var(--section-padding-y)] pt-4 sm:pt-6' : 'section'
         )}
       >
-        <div className="stack-gap-lg">
-          <ExamplesIntroHero heroLead={heroLead} heroSubtitle={heroSubtitle} heroTitle={heroTitle} />
-
-          {mainVideo && mainVideoFeature.contentUrl ? (
-            <ExamplesMainVideoFeature
-              aspectRatio={mainVideoFeature.aspectRatio}
-              contentUrl={mainVideoFeature.contentUrl}
-              copy={mainVideoCopy}
-              durationSec={mainVideo.video.durationSec}
-              engineLabel={mainVideo.card.engineLabel}
-              exampleHref={mainVideo.card.href}
-              recreateHref={isArchivedGenerationModel(mainVideo.video.engineId) ? undefined : `/app?from=${encodeURIComponent(mainVideo.video.id)}`}
-              hasAudio={mainVideo.video.hasAudio}
-              heroLine={mainVideoFeature.heroLine}
-              isPortrait={mainVideoFeature.isPortrait}
-              locale={locale}
-              mimeType={mainVideoFeature.mimeType}
-              modelHref={mainVideo.card.modelHref ?? null}
-              poster={mainVideoFeature.poster ?? null}
-              promptFull={mainVideoFeature.promptFull}
-              title={mainVideoFeature.title}
-            />
-          ) : null}
-
-          <ExamplesModelLinksSection
-            currentModelPagesLabel={currentModelPagesLabel}
-            isModelLanding={isModelLanding}
-            locale={locale}
-            modelLinks={modelLinks}
-            modelPagesLabel={modelPagesLabel}
-            pricingLinkLabel={pricingLinkLabel}
-            pricingPath={pricingPath}
-            primaryModelLinks={primaryModelLinks}
-            selectedEngine={selectedEngine}
-            supportedOlderModelLinks={supportedOlderModelLinks}
-            supportedOlderVersionLabel={supportedOlderVersionLabel}
-            usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
-          />
-
-          <ExamplesModelLandingCardsSection sections={modelLandingSections} />
+        <div className="space-y-6 sm:space-y-8">
+          <ExamplesIntroHero heroLead={heroLead} heroSubtitle={locale === 'fr' ? 'Explorez les vidéos. Retrouvez leur prompt. Créez la vôtre.' : locale === 'es' ? 'Explora los vídeos. Copia el prompt. Crea tu versión.' : 'Explore the videos. Find the prompt. Create your own.'} heroTitle={heroTitle} />
 
           <ExamplesGallerySection
             audioAvailableLabel={galleryUiCopy.audioAvailable}
@@ -235,7 +191,8 @@ export function ExamplesPageView({
             locale={locale}
             noPreviewLabel={galleryUiCopy.noPreview}
             pageOffsetEnd={pageOffsetEnd}
-            prioritizeFirstPoster={!hasRouteHero}
+            prioritizeFirstPoster={true}
+            openingEnabled={currentPage === 1 && sort === 'playlist'}
             show={showGallerySection}
             sort={sort}
           />
@@ -261,6 +218,23 @@ export function ExamplesPageView({
             previousLabel={previousLabel}
             show={totalPages > 1}
           />
+
+          <ExamplesModelLinksSection
+            currentModelPagesLabel={currentModelPagesLabel}
+            isModelLanding={isModelLanding}
+            locale={locale}
+            modelLinks={modelLinks}
+            modelPagesLabel={modelPagesLabel}
+            pricingLinkLabel={pricingLinkLabel}
+            pricingPath={pricingPath}
+            primaryModelLinks={primaryModelLinks}
+            selectedEngine={selectedEngine}
+            supportedOlderModelLinks={supportedOlderModelLinks}
+            supportedOlderVersionLabel={supportedOlderVersionLabel}
+            usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
+          />
+
+          <ExamplesModelLandingCardsSection sections={modelLandingSections} />
 
           <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLandingSummary} />
 

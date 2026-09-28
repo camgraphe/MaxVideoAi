@@ -1,6 +1,6 @@
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
-import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
+
 import { buildExamplePosterProjection } from '@/lib/media-helpers';
 import { getExampleFamilyDescriptor, getExampleNavFamilyIds } from '@/lib/model-families';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
@@ -9,8 +9,6 @@ import {
   ENGINE_META,
   ENGINE_MODEL_LINKS,
   ENGINE_MODEL_LINKS_BY_GROUP,
-  FAMILY_INITIAL_DESKTOP_GALLERY_BATCH,
-  HUB_INITIAL_DESKTOP_GALLERY_BATCH,
   PREFERRED_ENGINE_ORDER,
   buildLocalizedExampleLabel,
   buildMainVideoHeroLine,
@@ -168,10 +166,7 @@ export function buildExamplesGalleryData({
 export function buildExamplesGalleryPresentation({
   allVideos,
   clientVideos,
-  currentPage,
-  isModelLanding,
   pageOffsetStart,
-  sort,
   videos,
 }: {
   allVideos: ExampleRouteVideo[];
@@ -182,25 +177,15 @@ export function buildExamplesGalleryPresentation({
   sort: ExampleSort;
   videos: ExampleRouteVideo[];
 }) {
-  const showModelHero = isModelLanding && currentPage === 1 && sort === 'playlist';
-  const playableHeroCard = showModelHero ? pickFirstPlayableVideo(clientVideos) : null;
-  const mainVideoIndex = playableHeroCard ? clientVideos.indexOf(playableHeroCard) : -1;
-  const mainVideo =
-    mainVideoIndex >= 0
-      ? {
-          video: videos[mainVideoIndex],
-          card: clientVideos[mainVideoIndex],
-        }
-      : null;
-  const galleryVideos = mainVideo ? videos.filter((_, index) => index !== mainVideoIndex) : videos;
-  const galleryClientVideos = mainVideo ? clientVideos.filter((_, index) => index !== mainVideoIndex) : clientVideos;
-  const initialDesktopBatch = isModelLanding ? FAMILY_INITIAL_DESKTOP_GALLERY_BATCH : HUB_INITIAL_DESKTOP_GALLERY_BATCH;
-  const initialExamples = galleryClientVideos.slice(0, initialDesktopBatch);
-  const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
+  // The entire logical page is server rendered. Opening videos are part of these same results.
+  const mainVideo: { video: ExampleRouteVideo; card: ExampleGalleryVideo } | null = null;
+  const galleryVideos = videos;
+  const galleryClientVideos = clientVideos;
+  const initialExamples = clientVideos;
+  const initialDesktopBatch = clientVideos.length;
   const pageOffsetEnd = pageOffsetStart + allVideos.length;
-  const consumedMaxIndex = Math.max(mainVideo?.card.sourceIndex ?? -1, initialMaxIndex);
-  const nextOffsetStart = pageOffsetStart + Math.max(0, consumedMaxIndex + 1);
-  const showGallerySection = galleryClientVideos.length > 0 || nextOffsetStart < pageOffsetEnd;
+  const nextOffsetStart = pageOffsetEnd;
+  const showGallerySection = clientVideos.length > 0;
 
   return {
     galleryClientVideos,
@@ -298,6 +283,8 @@ function buildClientVideo({
     prompt: promptDisplay,
     promptFull: locale === 'en' ? video.prompt ?? null : null,
     aspectRatio: video.aspectRatio ?? null,
+    outputWidth: video.outputWidth,
+    outputHeight: video.outputHeight,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
     ...buildExamplePosterProjection(video.thumbUrl, getPlaceholderPoster(video.aspectRatio)),

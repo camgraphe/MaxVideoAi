@@ -26,7 +26,7 @@ export function ExamplesEngineFilterNav({
 
   return (
     <div className="sticky top-16 z-[35] -mt-px border-b border-hairline bg-surface">
-      <div className="container-page max-w-7xl">
+      <div className="container-page max-w-[1800px]">
         <nav
           aria-label={browseByModelLabel}
           className="flex flex-col gap-2 py-2 lg:flex-row lg:items-center lg:gap-4 lg:py-2"
@@ -36,7 +36,7 @@ export function ExamplesEngineFilterNav({
           </span>
 
           <div className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex w-max min-w-full items-center gap-1 rounded-xl bg-surface-2/70 p-1">
+            <div className="flex w-max min-w-full items-center gap-1 xl:w-full xl:flex-wrap rounded-xl bg-surface-2/70 p-1">
               <Link
                 href={getEngineFilterHref(null)}
                 scroll={false}
@@ -61,8 +61,8 @@ export function ExamplesEngineFilterNav({
                     className={clsx(
                       'flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:text-sm',
                       isActive
-                        ? 'order-1 bg-surface text-text-primary shadow-sm ring-1 ring-black/5'
-                        : 'order-2 text-text-secondary hover:bg-surface hover:text-text-primary'
+                        ? 'bg-surface text-text-primary shadow-sm ring-1 ring-black/5'
+                        : 'text-text-secondary hover:bg-surface hover:text-text-primary'
                     )}
                     style={isActive ? getEngineAccentOutlineStyle(engine.brandId) : undefined}
                   >

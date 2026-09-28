@@ -242,7 +242,8 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const allVideos = pageResult.items;
   const totalCount = pageResult.total;
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));
-  const displayTotalPages = Math.max(totalPages, currentPage);
+  if (currentPage > totalPages) redirectToNormalized(totalPages);
+  const displayTotalPages = totalPages;
 
   const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
   const { engineFilterOptions, selectedEngine, selectedOption } = buildExamplesEngineFilterState({

@@ -291,7 +291,7 @@ test('examples page data helper owns filter, model link, and gallery projections
   assert.match(pageDataSource, /PREFERRED_ENGINE_ORDER/, 'page data helper should own preferred family ordering');
   assert.match(pageDataSource, /buildExamplePosterProjection/, 'page data helper should use the shared poster projection');
   assert.match(pageDataSource, /formatPromptExcerpt/, 'page data helper should own client prompt display shaping');
-  assert.match(pageDataSource, /pickFirstPlayableVideo/, 'page data helper should own hero video selection');
+  assert.match(pageDataSource, /const initialExamples = clientVideos/, 'the full logical page must be rendered, including its opening');
   assert.match(pageDataSource, /buildMainVideoHeroLine/, 'page data helper should own main video hero copy shaping');
   assert.match(
     pageDataSource,
@@ -341,7 +341,7 @@ test('examples main video feature owns the hero media card', () => {
 test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(pageViewSource, /export function ExamplesPageView/, 'page view should be exported');
   assert.match(pageViewSource, /ExamplesEngineFilterNav/, 'page view should compose engine filter nav');
-  assert.match(pageViewSource, /ExamplesMainVideoFeature/, 'page view should compose the main video feature');
+  assert.doesNotMatch(pageViewSource, /<ExamplesMainVideoFeature/, 'opening cards own the critical poster without a competing hero');
   assert.match(pageViewSource, /ExamplesGallerySection/, 'page view should compose the gallery section');
   const gallerySectionIndex = pageViewSource.indexOf('<ExamplesGallerySection');
   const nextStepsIndex = pageViewSource.indexOf('<ExamplesNextStepsSection');
@@ -349,7 +349,7 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.ok(nextStepsIndex > gallerySectionIndex);
   assert.match(
     pageViewSource,
-    /<ExamplesIntroHero heroLead=\{heroLead\} heroSubtitle=\{heroSubtitle\} heroTitle=\{heroTitle\} \/>/,
+    /<ExamplesIntroHero[\s\S]*?heroTitle=\{heroTitle\}/,
   );
   assert.match(pageViewSource, /detailsCtaLabel=\{galleryUiCopy\.detailsCta\}/);
   assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');

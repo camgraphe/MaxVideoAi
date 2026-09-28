@@ -1,5 +1,3 @@
-import { CreativeWorlds } from '@/components/marketing/CreativeWorlds';
-import { normalizeAppLocale } from '@/i18n/locales';
 import Link from 'next/link';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
@@ -80,6 +78,7 @@ type ExamplesModelLandingCardsSectionProps = {
 };
 
 type ExamplesGallerySectionProps = {
+  openingEnabled?: boolean;
   audioAvailableLabel: string;
   detailsCtaLabel: string;
   engineFilter: string | null;
@@ -129,9 +128,9 @@ type ExamplesFaqSectionProps = {
 
 export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
   return (
-    <section className="examples-editorial-hero halo-hero stack-gap-sm text-center sm:stack-gap-md">
-      <header className="mx-auto max-w-3xl stack-gap-sm text-center">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
+    <section className="text-left">
+      <header className="max-w-3xl space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">{heroTitle}</h1>
         <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle || heroLead}</p>
       </header>
     </section>
@@ -230,6 +229,7 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
 }
 
 export function ExamplesGallerySection({
+  openingEnabled,
   audioAvailableLabel,
   detailsCtaLabel,
   engineFilter,
@@ -246,15 +246,12 @@ export function ExamplesGallerySection({
   show,
   sort,
 }: ExamplesGallerySectionProps) {
-  // Keep a useful public selection when the unfiltered first page has no live entries.
-  // Never substitute unrelated films for a model filter or a later pagination page.
-  if (!show) return !engineFilter && initialOffset === 0
-    ? <CreativeWorlds locale={normalizeAppLocale(locale)} compact />
-    : null;
+  if (!show) return <p className="py-12 text-center text-sm text-text-secondary">{locale==='fr'?'Aucune vidéo disponible dans cette galerie.':locale==='es'?'No hay vídeos disponibles en esta galería.':'No videos are available in this gallery yet.'}</p>;
 
   return (
-    <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
+    <section id="gallery" className="min-w-0">
       <ExamplesGalleryGrid
+        openingEnabled={openingEnabled}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}
         loadMoreLabel={loadMoreLabel}
@@ -294,6 +291,7 @@ export function ExamplesPaginationNav({
         {hasPreviousPage ? (
           <Link
             href={previousHref}
+            prefetch={false}
             rel="prev"
             className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -312,6 +310,7 @@ export function ExamplesPaginationNav({
         {hasNextPage ? (
           <Link
             href={nextHref}
+            prefetch={false}
             rel="next"
             className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >

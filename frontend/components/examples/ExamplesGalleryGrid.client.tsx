@@ -1,197 +1,40 @@
 'use client';
+import { useMemo, type CSSProperties } from 'react';
+import { Pause, Play } from 'lucide-react';
+import { getImageAlt } from '@/lib/image-alt';
+import { ExampleGalleryCard } from './ExampleGalleryCard';
+import { dedupeExamples } from './examples-gallery-helpers';
+import { buildGalleryOpening, galleryVideoRatio } from './examples-discovery-layout';
+import { useGalleryPreviewBudget } from './useGalleryPreviewBudget';
+import type { ExamplesGalleryProps } from './examples-gallery-props';
+import type { ExampleGalleryVideo } from './examples-gallery-types';
+import styles from './examples-masonry.module.css';
+export type { ExampleGalleryVideo } from './examples-gallery-types';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
-import { ExampleGalleryCard } from '@/components/examples/ExampleGalleryCard';
-import {
-  BATCH_SIZE,
-  dedupeExamples,
-  DEFAULT_INITIAL_DESKTOP_BATCH,
-  DEFAULT_INITIAL_MOBILE_BATCH,
-  getOpeningColumnRanges,
-} from '@/components/examples/examples-gallery-helpers';
-import type { ExampleGalleryVideo, ExampleSort } from '@/components/examples/examples-gallery-types';
-import masonryStyles from './examples-masonry.module.css';
-
-export type { ExampleGalleryVideo } from '@/components/examples/examples-gallery-types';
-
-export default function ExamplesGalleryGridClient({
-  initialExamples,
-  detailsCtaLabel = 'View settings & price',
-  loadMoreLabel = 'Load more examples',
-  loadingLabel = 'Loading…',
-  noPreviewLabel = 'No preview',
-  prioritizeFirstPoster = false,
-  audioAvailableLabel = 'Audio available on playback',
-  initialDesktopBatch = DEFAULT_INITIAL_DESKTOP_BATCH,
-  initialMobileBatch = DEFAULT_INITIAL_MOBILE_BATCH,
-  sort,
-  engineFilter,
-  initialOffset,
-  pageOffsetEnd,
-  locale,
-}: {
-  initialExamples: ExampleGalleryVideo[];
-  detailsCtaLabel?: string;
-  loadMoreLabel?: string;
-  loadingLabel?: string;
-  noPreviewLabel?: string;
-  prioritizeFirstPoster?: boolean;
-  audioAvailableLabel?: string;
-  initialDesktopBatch?: number;
-  initialMobileBatch?: number;
-  sort: ExampleSort;
-  engineFilter?: string | null;
-  initialOffset: number;
-  pageOffsetEnd: number;
-  locale: string;
-}) {
-  const baseAll = useMemo(() => dedupeExamples(initialExamples), [initialExamples]);
-  const initialBatchSize = Math.max(initialMobileBatch, initialDesktopBatch);
-  const [nextOffset, setNextOffset] = useState(() => initialOffset);
-  const [isLoading, setIsLoading] = useState(false);
-  const [allowInlineVideo, setAllowInlineVideo] = useState(false);
-  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() =>
-    baseAll.slice(0, initialBatchSize)
-  );
-
-  useEffect(() => {
-    setVisibleVideos(baseAll.slice(0, initialBatchSize));
-    setNextOffset(initialOffset);
-  }, [baseAll, initialBatchSize, initialOffset]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(min-width: 640px)');
-    const syncViewport = () => setAllowInlineVideo(mediaQuery.matches);
-    syncViewport();
-    mediaQuery.addEventListener?.('change', syncViewport);
-    return () => {
-      mediaQuery.removeEventListener?.('change', syncViewport);
-    };
-  }, []);
-
-  const handleLoadMore = async () => {
-    if (isLoading || nextOffset >= pageOffsetEnd) return;
-    setIsLoading(true);
-    try {
-      let localOffset = nextOffset;
-      let didAppend = false;
-      while (localOffset < pageOffsetEnd && !didAppend) {
-        const remaining = Math.max(0, pageOffsetEnd - localOffset);
-        const fetchLimit = Math.max(1, Math.min(BATCH_SIZE, remaining));
-        const params = new URLSearchParams();
-        params.set('sort', sort);
-        params.set('limit', String(fetchLimit));
-        params.set('offset', String(localOffset));
-        if (engineFilter) params.set('engine', engineFilter);
-        if (locale) params.set('locale', locale);
-
-        const res = await fetch(`/api/examples?${params.toString()}`, { method: 'GET' });
-        const payload = await res.json();
-        if (!res.ok || !payload?.ok) {
-          localOffset += fetchLimit;
-          continue;
-        }
-        const incoming = Array.isArray(payload.cards) ? payload.cards : [];
-        if (incoming.length) {
-          setVisibleVideos((prev) => dedupeExamples([...prev, ...incoming]));
-          didAppend = true;
-        }
-        localOffset += fetchLimit;
-      }
-      setNextOffset(localOffset);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const altById = useMemo(() => {
-    const alts = visibleVideos.map((video, index) => {
-      const promptSeed = locale === 'en' ? video.promptFull ?? video.prompt : video.engineLabel;
-      const baseAlt = getImageAlt({
-        kind: 'renderThumb',
-        engine: video.engineLabel,
-        label: promptSeed,
-        prompt: promptSeed,
-        locale,
-      });
-      return {
-        id: video.id,
-        alt: baseAlt,
-        tag: inferRenderTag(promptSeed, locale),
-        index: video.sourceIndex ?? index,
-        locale,
-      };
-    });
-    return dedupeAltsInList(alts);
-  }, [locale, visibleVideos]);
-  const firstVisibleId = visibleVideos[0]?.id;
-  const hasMore = nextOffset < pageOffsetEnd;
-  const openingRanges = prioritizeFirstPoster
-    ? getOpeningColumnRanges(visibleVideos.slice(0, initialBatchSize))
-    : [];
-  const openingStarts = new Set(openingRanges.map(([start]) => start));
-  const cards = visibleVideos.map((video, index) => (
-    <div key={video.id} className={masonryStyles.item}>
-      <ExampleGalleryCard
-        video={video}
-        isFirst={video.id === firstVisibleId}
-        forceExclusivePlay={false}
-        enableInlineVideo={allowInlineVideo}
-        detailsCtaLabel={detailsCtaLabel}
-        noPreviewLabel={noPreviewLabel}
-        prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
-        discoverOnDesktop={prioritizeFirstPoster && index > 0 && openingStarts.has(index)}
-        audioAvailableLabel={audioAvailableLabel}
-        locale={locale}
-        altText={resolveAltText(video, altById, locale)}
-      />
+export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLabel='View settings & price',
+  noPreviewLabel='No preview',prioritizeFirstPoster=false,audioAvailableLabel='Audio available on playback',
+  openingEnabled,sort,locale}:ExamplesGalleryProps) {
+  const videos=useMemo(()=>dedupeExamples(initialExamples),[initialExamples]);
+  const {opening,rest}=useMemo(()=>buildGalleryOpening(videos,openingEnabled??(prioritizeFirstPoster&&sort==='playlist')),[videos,openingEnabled,prioritizeFirstPoster,sort]);
+  const visibleVideos=useMemo(()=>[...opening,...rest],[opening,rest]);
+  const ids=useMemo(()=>visibleVideos.filter(video=>video.previewVideoUrl).map(video=>video.id),[visibleVideos]);
+  const preview=useGalleryPreviewBudget(ids);
+  const firstVisibleId=visibleVideos[0]?.id;
+  const card=(video:ExampleGalleryVideo,frame?:'lead'|'portrait'|'side')=><ExampleGalleryCard key={video.id} video={video} locale={locale}
+    altText={getImageAlt({kind:'renderThumb',engine:video.engineLabel,label:video.prompt,locale})}
+    detailsCtaLabel={detailsCtaLabel} audioAvailableLabel={audioAvailableLabel} noPreviewLabel={noPreviewLabel}
+    prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId} requested={preview.active.has(video.id)} frame={frame}
+    onVisibility={preview.onVisibility} onIntent={preview.setIntent} />;
+  const pauseLabel=locale==='fr'?'Pause des aperçus':locale==='es'?'Pausar vistas previas':'Pause previews';
+  const resumeLabel=locale==='fr'?'Animer les aperçus':locale==='es'?'Animar vistas previas':'Animate previews';
+  return <div>
+    <div className="mb-3 flex justify-end">
+      <button type="button" aria-pressed={!preview.paused} onClick={preview.togglePaused}
+        className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-2 text-xs font-medium text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        {preview.paused?<Play size={13}/>:<Pause size={13}/>}{preview.paused?resumeLabel:pauseLabel}
+      </button>
     </div>
-  ));
-
-  return (
-    <div className="p-3 sm:p-6">
-      {openingRanges.length ? (
-        <div className={`${masonryStyles.masonry} ${masonryStyles.opening}`}>
-          {openingRanges.map(([start, end]) => (
-            <div key={start} className={masonryStyles.openingColumn}>
-              {cards.slice(start, end)}
-            </div>
-          ))}
-        </div>
-      ) : null}
-      {!openingRanges.length || cards.length > initialBatchSize ? (
-        <div className={masonryStyles.masonry}>
-          {openingRanges.length ? cards.slice(initialBatchSize) : cards}
-        </div>
-      ) : null}
-      {hasMore ? (
-        <div className="mt-3 flex justify-center sm:mt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleLoadMore}
-            disabled={isLoading}
-            className="border-brand/40 text-brand shadow-card hover:border-brand hover:bg-brand/10"
-          >
-            {isLoading ? loadingLabel : loadMoreLabel}
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function resolveAltText(video: ExampleGalleryVideo, altById: Map<string, string>, locale: string) {
-  return (
-    altById.get(video.id) ??
-    getImageAlt({
-      kind: 'renderThumb',
-      engine: video.engineLabel,
-      label: locale === 'en' ? video.prompt : video.engineLabel,
-      locale,
-    })
-  );
+    {opening.length?<div className={styles.opening} data-gallery-opening>{opening.map((video,index)=>card(video,index===0?'lead':index===1?'portrait':'side'))}</div>:null}
+    <div className={styles.gallery}>{rest.map(video=><div key={video.id} className={styles.item} style={{'--video-ratio':galleryVideoRatio(video)} as CSSProperties}>{card(video)}</div>)}</div>
+  </div>;
 }

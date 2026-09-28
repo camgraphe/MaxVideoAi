@@ -8,6 +8,8 @@ export type ExampleGalleryVideo = {
   prompt: string;
   promptFull?: string | null;
   aspectRatio: string | null;
+  outputWidth?: number | null;
+  outputHeight?: number | null;
   durationSec: number;
   hasAudio: boolean;
   heroPosterUrl?: string | null;
