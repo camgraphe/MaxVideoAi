@@ -84,6 +84,8 @@ These routes are read-only checks, but they still expose operational state. Keep
 
 Supabase is Auth only. Keep authentication templates and configuration under `supabase/`; do not use `supabase db push` for application tables.
 
+Local gallery/admin review uses `http://127.0.0.1:3210`. Google sign-in keeps the current browser origin and returns to `/auth/callback` with the encoded `next` target and language. The deployed Supabase Auth redirect allowlist must include `http://127.0.0.1:3210/auth/callback**`, as recorded in `supabase/config.toml`. An unmatched return falls back to the configured Site URL and can send a local sign-in to production, where its loopback PKCE verifier is unavailable. Append this bounded callback entry to the existing project allowlist; do not replace the Site URL or push the whole local configuration to repair preview access. Browser session persistence and administrator roles still require their normal checks.
+
 Neon is the application Postgres database. Jobs, outputs, media metadata, user assets, billing, admin, and workspace data live there, with migrations under `neon/migrations`.
 
 Amazon S3 stores media bytes: uploads, generated images, video, audio, thumbnails, previews, keyframes, and exports. See [`docs/data-platform.md`](../data-platform.md) for the detailed ownership contract.
