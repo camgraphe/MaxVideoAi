@@ -36,7 +36,7 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
     <Link href={video.href} onClick={open} prefetch={false} aria-label={watchAnchorText}
       className={styles.watchLink} data-analytics-event="cta_click" data-analytics-cta-name="view_example_details" data-analytics-cta-location="examples_gallery">
       {video.rawPosterUrl ? <Image src={video.rawPosterUrl} alt={altText} fill
-        className={frame==='side'?styles.crop:styles.native} sizes={frame==='lead'?'(max-width: 767px) 100vw, 55vw':frame==='portrait'?'(max-width: 767px) 36vw, 18vw':'(max-width: 767px) 100vw, 33vw'}
+        className={frame==='side'?styles.crop:styles.native} sizes={frame==='lead'?'(max-width: 767px) 100vw, 55vw':frame==='portrait'?'(max-width: 767px) 36vw, 18vw':frame==='side'?'(max-width: 767px) 58vw, 33vw':'(max-width: 767px) 100vw, 33vw'}
         quality={52} priority={prioritizePoster} fetchPriority={prioritizePoster ? 'high' : undefined} />
         : <span className={styles.empty}>{noPreviewLabel}</span>}
       {playbackAttempt ? <video key={playbackAttempt.id} ref={videoRef} src={playbackAttempt.rendition.src}

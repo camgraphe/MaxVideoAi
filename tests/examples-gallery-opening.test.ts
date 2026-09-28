@@ -49,3 +49,13 @@ test('later pages keep the complete page without repeating the editorial opening
  try{assert.equal(dom.window.document.querySelector('[data-gallery-opening]'),null);assert.equal(dom.window.document.querySelectorAll('img').length,24);}
  finally{dom.window.close();}
 });
+
+test('narrow opening side posters request their actual column width', async () => {
+  const dom=await renderGallery(true);
+  try {
+    const sideImages=[...dom.window.document.querySelectorAll('[data-frame="side"] img')];
+    assert.equal(sideImages.length,2);
+    for(const image of sideImages) assert.equal(image.getAttribute('sizes'),'(max-width: 767px) 58vw, 33vw');
+    assert.equal(dom.window.document.querySelector('[data-frame="lead"] img')?.getAttribute('sizes'),'(max-width: 767px) 100vw, 55vw');
+  } finally { dom.window.close(); }
+});
