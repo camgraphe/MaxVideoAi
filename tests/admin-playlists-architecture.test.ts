@@ -14,6 +14,7 @@ const missingFamilyCardPath = join(playlistsDir, 'MissingFamilyCard.tsx');
 const missingModelCardPath = join(playlistsDir, 'MissingModelCard.tsx');
 const sidebarPath = join(playlistsDir, 'PlaylistsSidebar.tsx');
 const switcherPath = join(playlistsDir, 'DestinationSwitcher.tsx');
+const pickerPath = join(playlistsDir, 'DestinationPicker.tsx');
 const createFormPath = join(playlistsDir, 'PlaylistCreateForm.tsx');
 const detailsPanelPath = join(playlistsDir, 'PlaylistDetailsPanel.tsx');
 const feedbackBannersPath = join(playlistsDir, 'PlaylistFeedbackBanners.tsx');
@@ -37,6 +38,7 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
     missingModelCardPath,
     sidebarPath,
     switcherPath,
+    pickerPath,
     createFormPath,
     detailsPanelPath,
     feedbackBannersPath,
@@ -53,6 +55,7 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/playlist-helpers'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsSidebar'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/DestinationSwitcher'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/DestinationPicker'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistFeedbackBanners'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistItemsSection'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsManagerToolbar'/);
@@ -221,4 +224,5 @@ test('admin playlist route and refresh share the server destination projection',
   assert.match(route, /loadPlaylistDestinations\(playlists\)/);
   assert.match(route, /ok: true, playlists, destinations/);
   assert.match(switcher, /export function DestinationSwitcher/);
+  assert.match(readFileSync(pickerPath, 'utf8'), /export function DestinationPicker/);
 });

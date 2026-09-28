@@ -23,6 +23,8 @@ function playlist(id: string): PlaylistSummary {
 async function mount(destinations: PlaylistDestination[], initialItems: PlaylistItemRecord[] = [], options: { playlists?: PlaylistSummary[]; enableCuration?: boolean } = {}) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/admin/playlists' });
   Object.defineProperty(dom.window, 'innerWidth', { configurable: true, value: 688 });
+  (dom.window.HTMLElement.prototype as unknown as { attachEvent: () => void; detachEvent: () => void }).attachEvent = () => {};
+  (dom.window.HTMLElement.prototype as unknown as { attachEvent: () => void; detachEvent: () => void }).detachEvent = () => {};
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const requests: Array<{ url: string; init?: RequestInit; resolve: (response: Response) => void }> = [];
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
@@ -47,15 +49,16 @@ test('opens_connected_hub_before_inventory', async () => {
   try {
     const { document, Node } = view.dom.window;
     const editor = document.querySelector('[data-destination-editor]')!;
-    const longInventory = document.querySelector('[data-long-inventory]')!;
+    const picker = document.querySelector('[data-destination-picker]')!;
     assert.match(editor.textContent!, /examples/);
-    assert.ok(editor.compareDocumentPosition(longInventory) & Node.DOCUMENT_POSITION_FOLLOWING,
-      'the long inventory follows the editor in narrow document order');
-    const focusOrder = [...document.querySelectorAll('button:not([disabled]), a[href], input')];
-    assert.ok(focusOrder.indexOf(editor.querySelector('a[href]')!) < focusOrder.indexOf(longInventory.querySelector('input')!),
-      'keyboard traversal reaches the destination editor before the inventory search');
-    assert.equal(document.querySelector('[data-destination-id="examples"]')?.getAttribute('aria-pressed'), 'true');
-    assert.match(document.body.textContent!, /Starter video/);
+    assert.ok(picker.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'the compact destination picker precedes the editor in narrow document order');
+    assert.equal(document.querySelectorAll('[data-destination-picker]').length, 1);
+    assert.equal(document.querySelector('[data-long-inventory]'), null);
+    assert.equal(document.querySelector('[data-current-destination-header]'), null);
+    assert.match(picker.textContent!, /examples/i);
+    assert.equal(document.querySelector('[data-destination-id="examples"]'), null,
+      'the destination list opens on demand instead of occupying the first viewport');
   } finally { await view.close(); }
 });
 
@@ -67,9 +70,10 @@ test('dirty draft blocks destination selection without confirmation', async () =
   try {
     await act(async () => (view.dom.window.document.querySelector('[aria-label="Move item 2 up"]') as HTMLButtonElement).click());
     view.dom.window.confirm = () => false;
+    await act(async () => (view.dom.window.document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
     await act(async () => (view.dom.window.document.querySelector('[data-destination-id="family:wan"]') as HTMLButtonElement).click());
     assert.equal(view.requests.length, 0);
-    assert.equal(view.dom.window.document.querySelector('[data-destination-id="examples"]')?.getAttribute('aria-pressed'), 'true');
+    assert.match(view.dom.window.document.querySelector('[data-destination-picker] button[aria-haspopup]')!.textContent!, /examples/i);
   } finally { await view.close(); }
 });
 
@@ -81,14 +85,14 @@ test('groups_models_by_family', async () => {
   const view = await mount(destinations);
   try {
     const { document } = view.dom.window;
-    assert.match(document.body.textContent!, /Missing examples/);
-    assert.equal(document.querySelector('[data-destination-id="family:wan"]')?.getAttribute('aria-pressed'), 'true');
-    const ids = [...document.querySelectorAll('[data-long-inventory] [data-destination-id]')].map(el => el.getAttribute('data-destination-id'));
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    assert.equal(document.querySelector('[data-destination-id="family:wan"]')?.getAttribute('aria-current'), 'true');
+    const ids = [...document.querySelectorAll('[data-destination-group="families"] [data-destination-id]')].map(el => el.getAttribute('data-destination-id'));
     assert.deepEqual(ids, ['family:wan', 'model:wan-3', 'model:wan-4']);
-    const search = document.querySelector('input[type="search"]') as HTMLInputElement;
+    const search = document.querySelector('[data-destination-picker] input[type="search"]') as HTMLInputElement;
     await act(async () => Simulate.change(search, { target: { value: '/models/wan-4' } }));
     assert.ok(document.querySelector('[data-destination-id="model:wan-4"]'));
-    assert.equal(Boolean(document.querySelector('[data-long-inventory] [data-destination-id="model:wan-3"]')), false);
+    assert.equal(Boolean(document.querySelector('[data-destination-picker] [data-destination-id="model:wan-3"]')), false);
     assert.equal(view.requests.length, 0);
   } finally { await view.close(); }
 });
@@ -103,17 +107,19 @@ test('shared playlist IDs keep the selected logical destination after a successf
   const view = await mount([examples, starter, maintenance], [], { playlists: [playlist('shared'), playlist('orphan')] });
   try {
     const { document } = view.dom.window;
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
     await act(async () => (document.querySelector('[data-destination-id="starter"]') as HTMLButtonElement).click());
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /Examples/);
+    assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /Examples/);
     assert.equal(view.requests[0].url, '/api/admin/playlists/shared');
     await act(async () => view.requests[0].resolve(Response.json({ ok: true, playlist: playlist('shared'), items: [] })));
-    assert.equal(document.querySelector('[data-destination-id="starter"]')?.getAttribute('aria-pressed'), 'true');
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /Starter video/);
-    assert.equal(document.querySelector('[data-destination-editor] a[href]')?.getAttribute('href'), '/app?tab=starter');
+    assert.match(document.querySelector('[data-destination-picker] button[aria-haspopup]')!.textContent!, /Starter video/);
+    assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /Starter video/);
+    assert.equal(document.querySelector('[data-destination-picker] a[data-live-page]')?.getAttribute('href'), '/app?tab=starter');
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
     await act(async () => (document.querySelector('[data-destination-id="playlist:orphan"]') as HTMLButtonElement).click());
     await act(async () => view.requests[1].resolve(Response.json({ ok: true, playlist: playlist('orphan'), items: [] })));
-    assert.equal(document.querySelector('[data-destination-id="playlist:orphan"]')?.getAttribute('aria-pressed'), 'true');
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /Orphan/);
+    assert.match(document.querySelector('[data-destination-picker] button[aria-haspopup]')!.textContent!, /Orphan/);
+    assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /Orphan/);
   } finally { await view.close(); }
 });
 
@@ -125,13 +131,14 @@ test('missing starter and historical rows are diagnostics with a maintenance act
   const view = await mount([destination('examples', 'examples', 'examples'), missing, old]);
   try {
     const { document } = view.dom.window;
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
     assert.match(document.body.textContent!, /Runtime expects live-starter/);
+    assert.equal(document.querySelector('[data-missing-destination="starter"] button'), null);
     const maintenanceLink = document.querySelector('[data-missing-destination="starter"] a[href="#playlist-maintenance"]') as HTMLAnchorElement;
     assert.ok(maintenanceLink);
     await act(async () => maintenanceLink.click());
     assert.equal((document.querySelector('#playlist-maintenance') as HTMLDetailsElement).open, true);
-    assert.equal((document.querySelector('[data-destination-id="starter"]') as HTMLButtonElement).disabled, true);
-    assert.equal(document.querySelector('[data-long-inventory] [data-destination-id="playlist:old"]'), null);
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
     assert.ok(document.querySelector('[data-destination-diagnostics] [data-destination-id="playlist:old"]'));
     assert.equal(document.querySelector('[data-destination-diagnostics] [data-destination-id="playlist:old"] button'), null);
   } finally { await view.close(); }
@@ -152,8 +159,11 @@ test('legacy order save refreshes destination counts and source chain', async ()
     assert.equal(view.requests[2].url, '/api/admin/playlists');
     await act(async () => view.requests[2].resolve(Response.json({ ok: true, playlists: [playlist('examples')],
       destinations: [{ ...examples, publicCount: 1, sourceSlugs: ['new-source'] }] })));
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /1 public media/);
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /new-source/);
+    assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /1 public media/);
+    const details = document.querySelector('[data-source-chain]') as HTMLDetailsElement;
+    assert.ok(details);
+    details.open = true;
+    assert.match(details.textContent!, /new-source/);
   } finally { await view.close(); }
 });
 
@@ -176,8 +186,8 @@ test('curation save refreshes the destination projection', async () => {
     assert.equal(view.requests[4].url, '/api/admin/playlists');
     await act(async () => view.requests[4].resolve(Response.json({ ok: true, playlists: [managed],
       destinations: [{ ...examples, publicCount: 1, sourceSlugs: ['manual-only'] }] })));
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /1 public media/);
-    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /manual-only/);
+    assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /1 public media/);
+    assert.match(document.querySelector('[data-source-chain]')!.textContent!, /manual-only/);
   } finally { await view.close(); }
 });
 
@@ -195,6 +205,6 @@ test('legacy remove refreshes the destination projection', async () => {
     assert.equal(view.requests[2].url, '/api/admin/playlists');
     await act(async () => view.requests[2].resolve(Response.json({ ok: true, playlists: [playlist('examples')],
       destinations: [{ ...examples, publicCount: 0 }] })));
-    assert.match(view.dom.window.document.querySelector('[data-destination-editor]')!.textContent!, /0 public media/);
+    assert.match(view.dom.window.document.querySelector('[data-destination-picker]')!.textContent!, /0 public media/);
   } finally { await view.close(); }
 });

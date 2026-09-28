@@ -11,7 +11,8 @@ import { PlaylistOrderDirtyBar } from '@/components/admin/playlists/PlaylistItem
 import { PlaylistsManagerToolbar } from '@/components/admin/playlists/PlaylistsManagerToolbar';
 import { PlaylistsManagerSelectionPanel } from '@/components/admin/playlists/PlaylistsManagerSelectionPanel';
 import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
-import { DestinationSwitcher, chooseInitialDestination } from '@/components/admin/playlists/DestinationSwitcher';
+import { chooseInitialDestination } from '@/components/admin/playlists/DestinationSwitcher';
+import { DestinationPicker } from '@/components/admin/playlists/DestinationPicker';
 import { usePlaylistHelperActions } from '@/components/admin/playlists/usePlaylistHelperActions';
 import { usePlaylistDragReorder } from '@/components/admin/playlists/usePlaylistDragReorder';
 import { usePlaylistDestinationActions } from '@/components/admin/playlists/usePlaylistDestinationActions';
@@ -427,11 +428,11 @@ export function PlaylistsManager({
 
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
-      {destinations.length ? <DestinationSwitcher destinations={destinations} selectedId={selectedDestination?.id ?? null}
+      {destinations.length ? <DestinationPicker destinations={destinations} selectedId={selectedDestination?.id ?? null}
         onSelect={handleSelectDestination} disabled={isPending || curationState.busy} /> : null}
 
-      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-        <section data-destination-editor className="min-w-0 space-y-6 lg:col-start-2 lg:row-start-1">
+      <div className={clsx('grid min-w-0 grid-cols-1 gap-6', !destinations.length && 'lg:grid-cols-[250px_minmax(0,1fr)]')}>
+        <section data-destination-editor className={clsx('min-w-0 space-y-6', !destinations.length && 'lg:col-start-2 lg:row-start-1')}>
           <PlaylistsManagerSelectionPanel
             destination={selectedDestination}
             enableCuration={enableCuration}
@@ -469,11 +470,11 @@ export function PlaylistsManager({
             playlist={selectedPlaylist}
           />
         </section>
-        <PlaylistsSidebar groupedPlaylists={groupedPlaylists} destinations={destinations}
+        {!destinations.length ? <PlaylistsSidebar groupedPlaylists={groupedPlaylists} destinations={destinations}
           onSelectDestination={handleSelectDestination} onSelectPlaylist={handleSelectPlaylist}
           pending={isPending || curationState.busy} enableCuration={enableCuration}
           selectedId={selectedId} selectedDestinationId={selectedDestination?.id ?? null}
-          showDraftCollections={showDraftCollections} />
+          showDraftCollections={showDraftCollections} /> : null}
       </div>
 
       {selectedPlaylist && isItemsDirty ? (

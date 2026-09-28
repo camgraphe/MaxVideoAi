@@ -69,27 +69,10 @@ export function PlaylistsManagerSelectionPanel({
   );
   return (
     <>
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-lg font-semibold">{destination?.label ?? playlist.name}</h2>
-          <p className="mt-1 text-xs text-text-secondary">
-            {destination?.path ?? playlist.drivesRoute ?? 'Collection without a public page'}
-            {destination ? ` · ${destination.status} · ${destination.publicCount} public media` :
-              !usesCuration ? ` · ${playlist.siteVisibleCount} public media` : ''}
-          </p>
-          {destination ? <p className="mt-1 text-xs text-text-secondary">Source chain: {destination.sourceSlugs.join(' → ')}</p> : null}
-        </div>
-        {(destination?.path ?? playlist.drivesRoute) ? (
-          <a
-            href={destination?.path ?? playlist.drivesRoute ?? '#'}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border border-border px-3 py-2 text-sm"
-          >
-            Open live page
-          </a>
-        ) : null}
-      </header>
+      {destination?.sourceSlugs.length ? <details data-source-chain className="rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
+        <summary className="cursor-pointer font-medium">Source details</summary>
+        <p className="pt-2">Source chain: {destination.sourceSlugs.join(' → ')}</p>
+      </details> : null}
       {usesCuration ? (
         <PlacementEditor
           key={`${destination?.id ?? playlist.id}:${playlist.id}`}
