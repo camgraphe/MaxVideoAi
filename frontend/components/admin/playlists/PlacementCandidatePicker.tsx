@@ -57,7 +57,7 @@ export function PlacementCandidatePicker({ playlistId, initialPage, draft, busy,
       if (item && curationItemFormat(item) === requiredFormat) onChooseSlot(id);
     } else if (!draft.orderedIds.includes(id)) onAdd(id);
   };
-  return <section ref={section} aria-label="Eligible media" className="space-y-3 border-t border-border pt-4">
+  return <section ref={section} aria-label="Eligible media" className="space-y-3">
     <h3 className="text-sm font-semibold">{slot === null ? 'Eligible videos' : `Choose opening slot ${slot + 1} · ${requiredFormat}`} · {page.total}</h3>
     {slot !== null ? <Button size="sm" variant="outline" onClick={onCancelSlot}>Finish choosing opening</Button> : null}
     <div className="grid gap-2 sm:grid-cols-2">
@@ -65,13 +65,15 @@ export function PlacementCandidatePicker({ playlistId, initialPage, draft, busy,
       <select aria-label="Filter family" value={family} onChange={e => { filter(setFamily, e.target.value); setModel(''); }} className="min-w-0 rounded border border-border p-2 text-sm"><option value="">All families</option>{getExampleFamilyIds().map(id => <option key={id} value={id}>{getExampleFamilyLabel(id) ?? id}</option>)}</select>
       <input list="curation-models" aria-label="Filter model slug" placeholder="Model slug (within this destination)" value={model} onChange={e => filter(setModel, e.target.value)} className="min-w-0 rounded border border-border p-2 text-sm" />
       <datalist id="curation-models">{(family ? getExampleFamilyModelSlugs(family) : getExampleFamilyIds().flatMap(getExampleFamilyModelSlugs)).map(slug => <option key={slug} value={slug} />)}</datalist>
-      <input aria-label="Exact video ID" placeholder="Exact video ID" value={exactId} onChange={e => filter(setExactId, e.target.value)} className="min-w-0 rounded border border-border p-2 text-sm" />
       <select aria-label="Filter format" disabled={slot !== null} value={requiredFormat} onChange={e => filter(setFormat, e.target.value)} className="rounded border border-border p-2 text-sm"><option value="">All formats</option><option>16:9</option><option>9:16</option></select>
     </div>
-    <p className="text-xs text-text-muted">Removing only changes this selection. Exclude blocks automatic re-entry here. Publication and Video SEO remain separate.</p>
+    <details className="text-xs text-text-secondary"><summary className="cursor-pointer">Advanced · exact video ID</summary>
+      <input aria-label="Exact video ID" placeholder="Exact video ID" value={exactId} onChange={e => filter(setExactId, e.target.value)} className="mt-2 w-full min-w-0 rounded border border-border p-2 text-sm" />
+    </details>
     {error ? <p role="alert">{error}</p> : null}
     <PlacementMediaList items={page.items} busy={busy || loading || Boolean(error)} onAdd={choose}
-      canAdd={id => !draft.excludedIds.includes(id) && !draft.openingIds?.includes(id) && (slot !== null || !draft.orderedIds.includes(id))}
+      canAdd={id => !draft.excludedIds.includes(id) && !draft.openingIds?.includes(id) &&
+        (slot !== null ? curationItemFormat(page.items.find(item => item.id === id)!) === requiredFormat : !draft.orderedIds.includes(id))}
       canExclude={id => !draft.openingIds?.includes(id) && !draft.excludedIds.includes(id)}
       onExclude={onExclude} />
     <div className="flex items-center gap-3 text-sm">

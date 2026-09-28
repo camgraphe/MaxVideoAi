@@ -32,6 +32,7 @@ test('retains_draft_after_rejection', async () => {
   for (const [key, value] of Object.entries({
     window: dom.window,
     document: dom.window.document,
+    HTMLElement: dom.window.HTMLElement,
     navigator: dom.window.navigator,
     React,
     IS_REACT_ACT_ENVIRONMENT: true,
@@ -84,8 +85,11 @@ test('retains_draft_after_rejection', async () => {
         }),
       ),
     );
+    assert.equal(requests.length, 1, 'opening the workbench does not fetch the general candidate page');
+    await act(async () => button('Add videos').click());
     assert.equal(requests[1]?.url, '/api/admin/playlists/p/curation/candidates?limit=48');
     await act(async () => requests[1].resolve(Response.json({ok:true,items:candidates,nextCursor:null,total:4})));
+    await act(async () => button('Close explorer').click());
     assert.equal(
       button('Preview changes').disabled,
       false,
@@ -285,6 +289,41 @@ test('switching automatic to manual gathers all eligible IDs and retains hybrid 
   }finally {await act(async()=>root.unmount());dom.window.close();for(const [key,value]of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
 });
 
+test('candidate explorer ignores a stale filter response', async () => {
+  const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/admin/playlists' });
+  const previous = new Map<string, PropertyDescriptor | undefined>();
+  const requests: Array<{ url: string; resolve: (response: Response) => void }> = [];
+  const remembered: string[][] = [];
+  for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document,
+    navigator: dom.window.navigator, React, IS_REACT_ACT_ENVIRONMENT: true,
+    fetch: (url: string) => new Promise<Response>(resolve => requests.push({ url, resolve })) })) {
+    previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
+    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  }
+  const root = createRoot(dom.window.document.getElementById('root')!);
+  const item = (id: string) => ({ id, engineId: 'wan-3', engineLabel: 'Wan 3', prompt: id,
+    videoUrl: '/video.mp4', thumbUrl: null, createdAt: '', outputWidth: 1280, outputHeight: 720 });
+  try {
+    const { PlacementCandidatePicker } = await import('../frontend/components/admin/playlists/PlacementCandidatePicker');
+    const props = { playlistId: 'first', draft: { mode: 'manual' as const, orderedIds: [], excludedIds: [] }, busy: false,
+      slot: null, onCancelSlot() {}, onAdd() {}, onExclude() {}, onChooseSlot() {},
+      onItems(items: Array<{ id: string }>) { remembered.push(items.map(value => value.id)); } };
+    await act(async () => root.render(React.createElement(PlacementCandidatePicker, props)));
+    assert.equal(requests[0].url, '/api/admin/playlists/first/curation/candidates?limit=48');
+    await act(async () => Simulate.change(dom.window.document.querySelector('[aria-label="Search eligible media"]') as HTMLInputElement,
+      { target: { value: 'new' } }));
+    assert.match(requests[1].url, /q=new/);
+    await act(async () => requests[1].resolve(Response.json({ ok: true, items: [item('new')], total: 1, nextCursor: null })));
+    await act(async () => requests[0].resolve(Response.json({ ok: true, items: [item('stale')], total: 1, nextCursor: null })));
+    assert.deepEqual(remembered, [['new']]);
+    assert.match(dom.window.document.querySelector('[aria-label="Eligible media"]')!.textContent!, /new/);
+    assert.ok(!dom.window.document.querySelector('[data-media-id="stale"]'));
+  } finally {
+    await act(async () => root.unmount()); dom.window.close();
+    for (const [key, descriptor] of previous) if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);
+  }
+});
+
 test('edits_four_slots_and_paged_tail', async () => {
   const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/admin/playlists'});
   const old=new Map<string,PropertyDescriptor|undefined>();
@@ -293,7 +332,7 @@ test('edits_four_slots_and_paged_tail', async () => {
   let submitted:any;
   let newFamily = false;
   const requests:string[]=[];
-  for(const [key,value]of Object.entries({window:dom.window,document:dom.window.document,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url:string,init?:RequestInit)=>{
+  for(const [key,value]of Object.entries({window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url:string,init?:RequestInit)=>{
     requests.push(url);const params=new URL(url,'http://localhost').searchParams;
     if(init?.method==='POST'){submitted=JSON.parse(String(init.body));return Response.json({ok:true,preview:{items:[],token:'t'}});}
     if(url.includes('/candidates')){const ids=params.getAll('ids');const offset=Number(params.get('cursor')??0);return Response.json({ok:true,items:ids.length?items.filter(i=>ids.includes(i.id)):items.slice(offset,offset+48),total:145,nextCursor:offset+48<145?String(offset+48):null});}
@@ -308,9 +347,22 @@ test('edits_four_slots_and_paged_tail', async () => {
     assert.match(dom.window.document.querySelector('[data-curation-item="v7"]')!.textContent!, /Unknown format/);
     assert.ok(dom.window.document.querySelector('[data-curation-item="v6"] img')?.className.includes('object-contain'));
     assert.match(dom.window.document.body.textContent!,/eligible new videos appended automatically/);
+    await act(async () => button('Add videos').click());
     assert.ok(button('Next candidates'));
     await act(async()=>button('Next candidates').click());await act(async()=>button('Next candidates').click());
     assert.match(dom.window.document.querySelector('[aria-label="Eligible media"]')!.textContent!,/Video 101/);
+    assert.equal((dom.window.document.querySelector('[aria-label="Eligible media"] [data-media-id="v101"] button') as HTMLButtonElement).disabled, true,
+      'already selected videos cannot be added twice');
+    const excludedCard = dom.window.document.querySelector('[aria-label="Eligible media"] [data-media-id="v111"]')!;
+    await act(async () => ([...excludedCard.querySelectorAll('button')].find(el => el.textContent === 'Exclude from this page') as HTMLButtonElement).click());
+    assert.equal(([...excludedCard.querySelectorAll('button')].find(el => el.textContent === 'Add to selection') as HTMLButtonElement).disabled, true,
+      'excluded videos cannot be added');
+    await act(async () => Simulate.change(dom.window.document.querySelector('[aria-label="Search eligible media"]') as HTMLInputElement, { target: { value: 'Video 111' } }));
+    assert.ok(requests.some(url => url.includes('q=Video+111') && !url.includes('cursor=')), 'a new search restarts cursor paging');
+    await act(async () => button('Close explorer').click());
+    await act(async () => (dom.window.document.querySelector('[aria-label="Choose opening slot 2, 9:16"]') as HTMLButtonElement).click());
+    assert.ok(requests.some(url => url.includes('format=9%3A16')), 'portrait slot fixes the server-side candidate filter');
+    await act(async () => button('Close explorer').click());
     await act(async()=>button('Next selected').click());
     const up=dom.window.document.querySelector('[aria-label="Move item 49 up"]') as HTMLButtonElement;
     assert.ok(up);assert.equal(up.disabled,false);

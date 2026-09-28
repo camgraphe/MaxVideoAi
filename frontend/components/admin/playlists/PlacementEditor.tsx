@@ -5,6 +5,7 @@ import { usePlacementEditor } from './usePlacementEditor';
 import { validateCurationOpening } from '@/lib/admin/playlist-curation';
 import { PlacementOpeningEditor } from './PlacementOpeningEditor';
 import { PlacementCandidatePicker } from './PlacementCandidatePicker';
+import { PlacementExplorerDialog } from './PlacementExplorerDialog';
 import { PlacementMediaList } from './PlacementMediaList';
 
 type Props = {
@@ -16,6 +17,7 @@ type Props = {
 export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }: Props) {
   const state = usePlacementEditor(playlistId, onStateChange, onSaved);
   const [slot, setSlot] = useState<number | null>(null);
+  const [explorerOpen, setExplorerOpen] = useState(false);
   const { loaded, draft, busy, dirty, change, preview } = state;
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -78,7 +80,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       {!loaded.snapshot.isPublic ? (
         <p className="text-sm text-warning">This collection is private. Its public page will remain empty.</p>
       ) : null}
-      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={setSlot} /> : null}
+      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} /> : null}
       {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="text-sm">
@@ -166,9 +168,10 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
         </section>
       ) : null}
       <section aria-label="Selected media">
-        <h3 className="text-sm font-semibold">
-          {draft.mode === 'hybrid' ? 'Featured' : 'Manual selection'} · {state.tailIds.length}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold">{draft.mode === 'hybrid' ? 'Featured' : 'Manual selection'} · {state.tailIds.length}</h3>
+          <Button size="sm" onClick={() => { setSlot(null); setExplorerOpen(true); }} disabled={busy}>Add videos</Button>
+        </div>
         <PlacementMediaList
           items={ordered}
           busy={busy || state.windowBusy}
@@ -192,14 +195,16 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           <p className="py-4 text-sm text-text-muted">No videos selected. Add eligible media below.</p>
         ) : null}
       </section>
-      <PlacementCandidatePicker playlistId={playlistId} initialPage={loaded.candidatePage} draft={draft} busy={busy} slot={slot}
-        onCancelSlot={() => setSlot(null)} onItems={state.rememberItems} onChooseSlot={(id) => {
+      {explorerOpen ? <PlacementExplorerDialog open={explorerOpen} slot={slot} onClose={() => { setExplorerOpen(false); setSlot(null); }}>
+        <PlacementCandidatePicker playlistId={playlistId} initialPage={loaded.candidatePage} draft={draft} busy={busy} slot={slot}
+        onCancelSlot={() => { setExplorerOpen(false); setSlot(null); }} onItems={state.rememberItems} onChooseSlot={(id) => {
           if (slot === null) return;
           const openingIds = [...(draft.openingIds ?? ['', '', '', ''])] as [string, string, string, string];
           openingIds[slot] = id;
-          change({ ...draft, openingIds }); setSlot(null);
+          change({ ...draft, openingIds }); setSlot(null); setExplorerOpen(false);
         }}
         onAdd={id => change({ ...draft, orderedIds: [...draft.orderedIds, id] })} onExclude={exclude} />
+      </PlacementExplorerDialog> : null}
       <details className="border-t border-border pt-4">
         <summary className="cursor-pointer text-sm">Excluded from this page · {draft.excludedIds.length}</summary>
         <ul className="mt-3 space-y-2">

@@ -72,9 +72,6 @@ export function usePlacementEditor(
         const data: Loaded = await request();
         const byId = new Map((data.selectedItems ?? []).map(item => [item.id, item]));
         if (data.snapshot.available && data.snapshot.supported) {
-          const page = await request(undefined, '/candidates?limit=48');
-          data.candidatePage = page;
-          for (const item of page.items as CurationItem[]) byId.set(item.id, item);
           const missingOpening = (data.snapshot.config?.openingIds ?? []).filter(id => !byId.has(id));
           if (missingOpening.length) {
             const params = new URLSearchParams();

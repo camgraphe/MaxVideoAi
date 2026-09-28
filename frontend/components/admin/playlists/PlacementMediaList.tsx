@@ -27,7 +27,7 @@ export function PlacementMediaList({ items, orderedIds, busy, onOrder, onRemove,
   return <ol data-selected-grid={onOrder ? '' : undefined} className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
     {items.map(item => {
       const index = allIds.indexOf(item.id);
-      return <li key={item.id} data-curation-item={onOrder ? item.id : undefined}
+      return <li key={item.id} data-curation-item={onOrder ? item.id : undefined} data-media-id={item.id}
         draggable={Boolean(onOrder) && !busy}
         onDragStart={event => {
           if (busy || !onOrder) { event.preventDefault(); return; }
