@@ -55,10 +55,16 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, heading
     {portrait && action}
     <section className={styles.comparison}>
       <h3>{copy.compare}</h3>
-      {detail.scenario && <><p className={styles.scenario}><strong>{detail.scenario.durationSec} s</strong><strong>{detail.scenario.resolution}</strong><strong>{detail.scenario.aspectRatio}</strong><strong>{detail.scenario.audio ? copy.audio : copy.silent}</strong></p><p className={styles.note}>{copy.textOnly}</p></>}
+      <p className={styles.note}>{copy.textOnly}</p>
       <p className={styles.comparisonNote}>{copy.compareNote}</p>
       {detail.quotes.length ? <div className={styles.quotes}>{detail.quotes.map(quote => <article key={quote.engineId} className={styles.quote}>
-        <div><h4>{quote.label}</h4>{quote.original && <p className={styles.current}>{copy.current}</p>}</div>
+        <div><h4>{quote.label}</h4>{quote.original && <p className={styles.current}>{copy.current}</p>}
+          <p className={styles.quoteSettings}>{([
+            ['durationSec', `${quote.settings.durationSec} s`], ['resolution', quote.settings.resolution],
+            ['aspectRatio', quote.settings.aspectRatio], ['audio', quote.settings.audio ? copy.audio : copy.silent],
+          ] as const).map(([key, label]) => <span key={key} data-adjusted={quote.changed.includes(key) || undefined}>{label}</span>)}</p>
+          <p className={styles.current}>{!detail.scenario ? copy.proposed : quote.changed.length ? copy.adjusted : copy.identical}</p>
+        </div>
         <strong className={styles.price}>{price(quote.amountCents, quote.currency)}</strong>
         <a href={quote.href} aria-label={`${copy.use} · ${quote.label}`} data-analytics-event="cta_click" data-analytics-cta-name="compare_example_model" data-analytics-cta-location="example_reader">{copy.use}<ArrowRight size={14}/></a>
       </article>)}</div> : <p className={styles.note}>{copy.unavailable}</p>}

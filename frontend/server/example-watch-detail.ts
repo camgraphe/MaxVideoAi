@@ -2,20 +2,16 @@ import { listFalEngines } from '@/config/falEngines';
 import type { VideoSeoEditorialEntry } from '@/config/video-seo-editorial';
 import { getBaseEngines } from '@/lib/engines';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { buildEngineAddonInput } from '@/lib/pricing-addons';
-import type { PricingContext } from '@/lib/pricing-context';
-import { buildExampleRecreationHref, normalizeExampleResolution, parseExampleRecreationSettings, publicExampleResolution } from '@/lib/example-recreation';
+import { buildExampleRecreationHref, parseExampleRecreationSettings, publicExampleResolution } from '@/lib/example-recreation';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
-import { buildExampleRecreationSnapshot } from '@/app/(core)/(workspace)/app/_lib/workspace-example-recreation';
+import { buildExampleComparisonQuotes, type ExampleQuoteProvider } from './example-comparison-quotes';
 import type { WatchPageDerivedSignals } from './watch-page-signals';
 import { deriveWatchPageSignals } from './watch-page-signals';
 import { parseSnapshot } from './watch-page-signals/snapshot';
 import type { GalleryVideo } from './videos-normalization';
 
-type Quote = (context: PricingContext) => Promise<{ totalCents: number; currency: string }>;
-
 /** Explicit public DTO: never serialize ownership or the raw generation snapshot. */
-export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: Quote, preparedSignals?: WatchPageDerivedSignals): Promise<ExampleWatchDetail | null> {
+export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: ExampleQuoteProvider, preparedSignals?: WatchPageDerivedSignals): Promise<ExampleWatchDetail | null> {
   if (video.visibility !== 'public' || !video.indexable || !video.videoUrl) return null;
   const signals = preparedSignals ?? deriveWatchPageSignals({ video, editorial });
   const snapshot = parseSnapshot(video);
@@ -31,25 +27,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
   const published = new Set(listFalEngines().filter(entry => entry.surfaces.app.enabled && entry.surfaces.modelPage.indexable).map(entry => entry.id));
   const engines = getBaseEngines().filter(engine => published.has(engine.id));
   const sourceId = normalizeEngineId(video.engineId) ?? video.engineId;
-  const quotes = scenario ? (await Promise.all(engines.map(async engine => {
-    const href = buildExampleRecreationHref(video.id, engine.id, scenario);
-    const shared = { ...video, outputWidth: video.outputWidth ?? undefined, outputHeight: video.outputHeight ?? undefined };
-    if (!buildExampleRecreationSnapshot(shared, href.split('?')[1], engines)) return null;
-    // Pricing catalog spelling and app provider spelling can differ (4k / 2160p).
-    const quoteResolution = engine.resolutions.find(value => normalizeExampleResolution(value) === scenario.resolution);
-    if (!quoteResolution) return null;
-    try {
-      const result = await quote({ engine, durationSec: scenario.durationSec, durationOption: scenario.durationSec,
-        resolution: quoteResolution, aspectRatio: scenario.aspectRatio, mode: 't2v', referenceImageCount: 0,
-        addons: buildEngineAddonInput(engine, { audioEnabled: scenario.audio }) });
-      if (!Number.isFinite(result.totalCents) || result.totalCents < 0 || !/^[A-Z]{3}$/.test(result.currency)) return null;
-      return { engineId: engine.id, label: engine.label, amountCents: result.totalCents, currency: result.currency, href, original: engine.id === sourceId };
-    } catch { return null; }
-  }))).filter(value => value !== null) : [];
-  const ownQuote = quotes.find(value => value.original);
-  const baseline = ownQuote?.amountCents ?? video.finalPriceCents ?? 0;
-  const alternatives = quotes.filter(value => !value.original && (!ownQuote || value.currency === ownQuote.currency))
-    .sort((a, b) => Math.abs(a.amountCents - baseline) - Math.abs(b.amountCents - baseline) || a.engineId.localeCompare(b.engineId)).slice(0, 3);
+  const quotes = await buildExampleComparisonQuotes(video, scenario, quote);
   return {
     id: video.id, title: signals.title, prompt: signals.promptText, videoUrl: video.videoUrl,
     posterUrl: video.thumbUrl ?? null, engineLabel: signals.engineLabel,
@@ -58,7 +36,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
     aspectRatio: video.outputWidth && video.outputHeight ? `${video.outputWidth}:${video.outputHeight}` : video.aspectRatio ?? '16:9',
     durationSec: video.durationSec, hasAudio: video.hasAudio,
     historicalCost: typeof video.finalPriceCents === 'number' && video.currency ? { amountCents: video.finalPriceCents, currency: video.currency } : null,
-    scenario, quotes: [...(ownQuote ? [ownQuote] : []), ...alternatives],
+    scenario, quotes,
     references: signals.sourceImages.map(({ key, label, url, alt, thumbUrl }) => ({ key, label, url, alt, ...(thumbUrl ? {thumbUrl} : {}) })),
     context: {
       intro: signals.intro, visualContext: signals.seoPromptContext, negativePrompt: signals.negativePrompt,

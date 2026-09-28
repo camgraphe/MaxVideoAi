@@ -148,3 +148,7 @@ Les tests géométriques couvrent sept largeurs pour le héros, les cinq pages d
 - Le coût historique de l’exemple reste séparé des estimations actuelles. Pour les anciennes sources dont les entrées complètes ne sont pas publiques, la comparaison est explicitement une reprise du prompt en texte-vers-vidéo sans référence. Ne pas prétendre récupérer des références absentes ou privées.
 - « Créer ma version » prépare le formulaire ; il ne lance pas de génération. Le choix d’un modèle dans le comparatif transporte la configuration annoncée et conserve le prompt complet. La reprise du job original ne doit pas écraser ce choix.
 - Remplacer « Ouvrir la fiche complète » par « Voir la page de cette vidéo ». Cette page autonome conserve son rôle SEO et ses URLs ; le lecteur rapide ajoute la navigation précédente/suivante sans supprimer la watchpage.
+
+## User revision: comparison coverage
+
+The later user decision supersedes the exact-settings-only policy: offer three distinct models with canonical prices. Preserve source duration first; use the closest executable format/resolution/audio and, only when needed to fill the proposals, duration. Each proposal displays its full settings and highlights adaptations; its app link carries exactly that quoted configuration. Unknown source configuration is not presented as known. Price-service failures remain explicit.

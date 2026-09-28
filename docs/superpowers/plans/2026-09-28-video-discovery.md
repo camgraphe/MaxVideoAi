@@ -82,3 +82,9 @@
 - [x] Verify canonical/hreflang/schema/localized links, page2 URL, watch redirects, empty/out-of-range and sitemap assumptions. FR/ES localhost redirect loops reproduce on both versions; full localized HTTP verification remains a documented local limit.
 - [x] Fresh whole-branch review under executing-plans. Fix meaningful findings with regression coverage.
 - [x] Create reviewable PR and attach it; production release follows deployment guide and authorized coordination only. PR #363; no production migration, merge or deployment.
+
+## User revision: comparison coverage
+
+The later user decision supersedes the exact-settings-only policy: offer three distinct models with canonical prices. Preserve source duration first; use the closest executable format/resolution/audio and, only when needed to fill the proposals, duration. Each proposal displays its full settings and highlights adaptations; its app link carries exactly that quoted configuration. Unknown source configuration is not presented as known. Price-service failures remain explicit.
+
+The latest menu and comparison changes postdate the measured commits. Performance acceptance now requires a complete stable-environment comparison of the final gallery plus landscape/portrait readers, not only the earlier missing portrait pair. Keep PR #363 draft until this gate is met; do not repeat Lighthouse on the unstable host.

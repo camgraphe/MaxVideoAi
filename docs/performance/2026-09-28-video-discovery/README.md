@@ -49,9 +49,9 @@ These are observed transfers during navigation, not complete site weights. Speed
 | Warm / watch-desktop | 838 → 880 | 1.2 → 1.2 | 1.2 → 1.2 |
 | Warm / watch-mobile | 842 → 823 | 0.2 → 0.2 | 0.2 → 0.2 |
 
-## Final-candidate interpretation and remaining gate
+## Measured candidate interpretation and remaining gate
 
-**PR #363 remains a draft.** Functional checks, the production build, Quality CI and Vercel pass for application commit `611597f62`. Final cold landscape measurements and warm landscape cells completed normally. The final warm portrait comparison is not conclusive, so performance acceptance is not marked complete.
+**PR #363 remains a draft. The final gallery and both landscape/portrait readers now require a complete comparison in a stable isolated environment after functional stabilization.** Later model-menu and pricing changes are outside the measured commits. The following results describe those measured commits only. Functional checks, the production build, Quality CI and Vercel pass for application commit `611597f62`. Final cold landscape measurements and warm landscape cells completed normally. The final warm portrait comparison is not conclusive, so performance acceptance is not marked complete.
 
 The final cold group has 12 audits without warnings or runtime errors, CPU benchmark indices 3,821.5–3,862.5 and total runtimes 25.1–27.0 s. Candidate CLS is zero in all six visits. LCP differences are small (desktop −7.6 ms and mobile −11.7 ms median); these do not establish a broad speed improvement. Watch image transfers increase from 28,581 to 59,159 bytes on desktop and 31,175 to 99,667 bytes on mobile. No video bytes transfer before Play.
 
@@ -96,7 +96,7 @@ Prepared-build shared reader, opened above the retained gallery:
 - Homepage readers retain explicit request scopes and their independent batching/cache contract. Their regression tests compare fresh scopes; catalog tests own complete ordering and totals. This separate homepage behavior does not cap public gallery pagination.
 - Opening slots are optional and separately selected from ordinary ordering. They count within the 24-card page. Only complete compatible 16:9/9:16/16:9/16:9 sets form an opening; otherwise native-format rows remain. Additive migration 53 was applied only to disposable tests, and is required to enable new admin opening configuration in production.
 - One SSR gallery tree uses CSS geometry. No viewport-dependent JavaScript packing, duplicate hero or repeated page-one opening on later pages.
-- Comparison estimates require the displayed exact duration, resolution, aspect and audio in a text-to-video scenario without references. Incompatible models are omitted. Price proximity selects alternatives and does not claim equivalent output quality. Generation requotes.
+- Comparison estimates use explicit per-proposal duration, resolution, aspect and audio in a text-to-video scenario without references. Three distinct executable models are selected by closest duration, then format/resolution/audio, preferring different canonical prices within the closest duration group. Adaptations are highlighted. These estimates do not claim equivalent output quality. Generation requotes.
 - Native history preserves the existing watch route while the gallery stays mounted. A minor remains: popup history initially uses `/video/id`; Share uses the approved canonical slug and direct entry redirects to it.
 - Authenticated local browser composition was unavailable. Actual hook DOM tests cover exact settings, login return URLs, deliberate second choices and protection of user edits; no production login smoke claim is made.
 - New admin SEO writes invalidate affected routes. Other existing publication writers may retain their previous cache-freshness delay; their behavior was not broadly rewritten.
@@ -105,3 +105,7 @@ Prepared-build shared reader, opened above the retained gallery:
 ## Local evidence
 
 Raw reports, network logs, traces, screenshot evidence, fixture script and SQL are retained under `.reports/video-discovery-2026-09-28/` in the implementation worktree. `performance/measure.py` and the two Lighthouse config files reproduce the runs against the matching built commits and fixture. `measurements.json` preserves individual retained/seed values, cache proof, environment and variability for remote review. Incomplete and unsuccessful experiments are explicitly excluded.
+
+### Later comparison coverage change
+
+The reader now selects three nearest executable configurations, retaining duration first and displaying each proposal’s settings. This change is later than the Lighthouse evidence above and is not covered by those measurements. The local 120-video public snapshot returned three canonical quotes per video, all with the original duration; that is functional coverage, not a performance or live pricing override measurement. The remaining performance gate covers the final gallery and both landscape and portrait readers, including cold/warm conditions. Run the complete comparison after the functional lot stabilizes, in a stable isolated environment; do not restart the interrupted Lighthouse loop on this host.
