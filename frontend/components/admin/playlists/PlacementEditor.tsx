@@ -7,6 +7,7 @@ import { PlacementOpeningEditor } from './PlacementOpeningEditor';
 import { PlacementCandidatePicker } from './PlacementCandidatePicker';
 import { PlacementExplorerDialog } from './PlacementExplorerDialog';
 import { PlacementMediaList } from './PlacementMediaList';
+import { PlacementMediaInspector } from './PlacementMediaInspector';
 
 type Props = {
   playlistId: string;
@@ -18,6 +19,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
   const state = usePlacementEditor(playlistId, onStateChange, onSaved);
   const [slot, setSlot] = useState<number | null>(null);
   const [explorerOpen, setExplorerOpen] = useState(false);
+  const [inspectedId, setInspectedId] = useState<string | null>(null);
   const { loaded, draft, busy, dirty, change, preview } = state;
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -41,6 +43,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
     changeOrder(orderedIds); state.setSelectedPage(targetPage);
   };
   const ordered = state.windowIds.flatMap(id => loaded?.candidates.find(item => item.id === id) ?? []);
+  const inspectedItem = loaded?.candidates.find(item => item.id === inspectedId) ?? null;
   const exclude = (id: string) =>
     change({
       ...draft,
@@ -185,6 +188,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           }
           removeLabel={draft.mode === 'hybrid' ? 'Unfeature' : 'Remove'}
           onExclude={exclude}
+          onInspect={setInspectedId}
         />
         <div className="flex items-center gap-3 py-3 text-sm">
           <Button size="sm" title="Drop a video here to move it to the previous page" onDragOver={event => event.preventDefault()} onDrop={event => dropOnPage(event, state.selectedPage - 1)} disabled={busy || state.windowBusy || state.selectedPage === 0} onClick={() => state.setSelectedPage(state.selectedPage - 1)}>Previous selected</Button>
@@ -226,6 +230,9 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           ))}
         </ul>
       </details>
+      {inspectedItem ? <PlacementMediaInspector item={inspectedItem} onClose={() => setInspectedId(null)}
+        onRemove={() => change({ ...draft, orderedIds: draft.orderedIds.filter(id => id !== inspectedItem.id) })}
+        onExclude={() => exclude(inspectedItem.id)} /> : null}
     </div>
   );
 }

@@ -334,6 +334,7 @@ test('edits_four_slots_and_paged_tail', async () => {
   const requests:string[]=[];
   for(const [key,value]of Object.entries({window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url:string,init?:RequestInit)=>{
     requests.push(url);const params=new URL(url,'http://localhost').searchParams;
+    if(url.includes('/api/admin/video-seo/'))return Response.json({ok:true,status:'not_selected',inVideoSitemap:false});
     if(init?.method==='POST'){submitted=JSON.parse(String(init.body));return Response.json({ok:true,preview:{items:[],token:'t'}});}
     if(url.includes('/candidates')){const ids=params.getAll('ids');const offset=Number(params.get('cursor')??0);return Response.json({ok:true,items:ids.length?items.filter(i=>ids.includes(i.id)):items.slice(offset,offset+48),total:145,nextCursor:offset+48<145?String(offset+48):null});}
     return Response.json({ok:true,snapshot:{available:true,supported:true,openingAvailable:true,slug:'family-wan',isPublic:true,revision:'r',config:newFamily ? null : {mode:'hybrid',openingIds:['v1','v2','v3','v4'],orderedIds:items.slice(4,110).map(i=>i.id),excludedIds:[]}},initialIds:items.slice(4,110).map(i=>i.id),selectedItems:items.slice(4,52),selectedTotal:106});
@@ -344,6 +345,11 @@ test('edits_four_slots_and_paged_tail', async () => {
     const {PlacementEditor}=await import('../frontend/components/admin/playlists/PlacementEditor');
     await act(async()=>root.render(React.createElement(PlacementEditor,{playlistId:'p'})));
     assert.ok(dom.window.document.querySelector('[data-selected-grid]'));
+    assert.ok(!requests.some(url => url.includes('/api/admin/video-seo/')));
+    await act(async () => button('Inspect video').click());
+    assert.ok(requests.some(url => url.includes('/api/admin/video-seo/v5/status')));
+    assert.equal(dom.window.document.querySelector('video'), null);
+    await act(async () => button('Close details').click());
     assert.match(dom.window.document.querySelector('[data-curation-item="v7"]')!.textContent!, /Unknown format/);
     assert.ok(dom.window.document.querySelector('[data-curation-item="v6"] img')?.className.includes('object-contain'));
     assert.match(dom.window.document.body.textContent!,/eligible new videos appended automatically/);
