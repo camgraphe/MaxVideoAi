@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  auditManualTariffParity,
   ManualTariffError,
   quoteCanonicalManualTariff,
   resolveManualTariffCell,
@@ -95,4 +96,40 @@ test('below-cost customer tariffs require a separate policy before activation', 
     scenarioId: 'seedance25-720-5s', selector, quantities: {},
     at: '2026-09-29T12:00:00Z', versionedCells: [lossLeader], databaseCells: [],
   }), (error: unknown) => error instanceof ManualTariffError && error.code === 'below_cost');
+});
+
+test('manual tariff parity audit blocks missing cells and changed customer totals', () => {
+  assert.equal(typeof auditManualTariffParity, 'function');
+  const base = {
+    scenarioId: 'seedance25-720-5s', selector,
+    facts: { engineId: 'seedance-2-5', currency: 'USD', vendorSubtotalExactCents: 80.4, unit: 'sec', quantity: 5 },
+    quantities: { '1000_tokens': 100 }, currentCustomerCents: 200,
+  };
+  const report = auditManualTariffParity({
+    scenarios: [base, { ...base, scenarioId: 'another-mode', selector: { ...selector, mode: 'i2v' } },
+      { ...base, scenarioId: 'different-total', currentCustomerCents: 201 }],
+    at: '2026-09-29T12:00:00Z', versionedCells: [versioned], databaseCells: [],
+  });
+  assert.equal(report.ready, false);
+  assert.equal(report.checkedScenarios, 3);
+  assert.deepEqual(report.issues.map((issue) => [issue.scenarioId, issue.code]), [
+    ['another-mode', 'missing_cell'], ['different-total', 'customer_price_mismatch'],
+  ]);
+  assert.equal(report.issues[1]?.currentCustomerCents, 201);
+  assert.equal(report.issues[1]?.manualCustomerCents, 200);
+});
+
+test('manual tariff parity audit refuses an empty or duplicate scenario matrix', () => {
+  const base = {
+    scenarioId: 'same-id', selector,
+    facts: { engineId: 'seedance-2-5', currency: 'USD', vendorSubtotalExactCents: 80.4, unit: 'sec', quantity: 5 },
+    quantities: { '1000_tokens': 100 }, currentCustomerCents: 200,
+  };
+  const input = { at: '2026-09-29T12:00:00Z', versionedCells: [versioned], databaseCells: [] };
+  const empty = auditManualTariffParity({ ...input, scenarios: [] });
+  assert.equal(empty.ready, false);
+  assert.deepEqual(empty.issues.map((issue) => issue.code), ['empty_matrix']);
+  const duplicate = auditManualTariffParity({ ...input, scenarios: [base, base] });
+  assert.equal(duplicate.ready, false);
+  assert.deepEqual(duplicate.issues.map((issue) => issue.code), ['duplicate_scenario']);
 });

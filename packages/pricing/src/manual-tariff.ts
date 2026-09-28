@@ -24,6 +24,21 @@ export type ManualTariffQuote = CanonicalPricingQuote & {
   };
 };
 
+export type ManualTariffParityScenario = {
+  scenarioId: string;
+  selector: ManualTariffSelector;
+  facts: PricingFacts;
+  quantities: Readonly<Record<string, number>>;
+  currentCustomerCents: number;
+};
+
+export type ManualTariffParityIssue = {
+  scenarioId: string;
+  code: ManualTariffError['code'] | 'empty_matrix' | 'duplicate_scenario' | 'invalid_baseline' | 'customer_price_mismatch';
+  currentCustomerCents?: number;
+  manualCustomerCents?: number;
+};
+
 export class ManualTariffError extends Error {
   constructor(readonly code: 'missing_cell' | 'ambiguous_cell' | 'invalid_quantity' | 'below_cost' | 'invalid_cell', message: string) {
     super(message);
@@ -164,4 +179,44 @@ export function quoteCanonicalManualTariff(input: {
       compatibilityProfile: 'manual-tariff',
     },
   };
+}
+
+/** Audits only the supplied scenario matrix; its caller must establish exhaustive sellable coverage. */
+export function auditManualTariffParity(input: {
+  scenarios: readonly ManualTariffParityScenario[];
+  at: string;
+  versionedCells: readonly ManualTariffCell[];
+  databaseCells: readonly ManualTariffCell[];
+}): { ready: boolean; checkedScenarios: number; issues: ManualTariffParityIssue[] } {
+  const issues: ManualTariffParityIssue[] = [];
+  if (!input.scenarios.length) issues.push({ scenarioId: '*', code: 'empty_matrix' });
+  const seen = new Set<string>();
+  for (const scenario of input.scenarios) {
+    if (!scenario.scenarioId.trim() || seen.has(scenario.scenarioId)) {
+      issues.push({ scenarioId: scenario.scenarioId, code: 'duplicate_scenario' });
+      continue;
+    }
+    seen.add(scenario.scenarioId);
+    if (!Number.isSafeInteger(scenario.currentCustomerCents) || scenario.currentCustomerCents < 0) {
+      issues.push({ scenarioId: scenario.scenarioId, code: 'invalid_baseline' });
+      continue;
+    }
+    try {
+      const quote = quoteCanonicalManualTariff({
+        ...scenario,
+        at: input.at,
+        versionedCells: input.versionedCells,
+        databaseCells: input.databaseCells,
+      });
+      if (quote.customerTotalCents !== scenario.currentCustomerCents) {
+        issues.push({ scenarioId: scenario.scenarioId, code: 'customer_price_mismatch',
+          currentCustomerCents: scenario.currentCustomerCents,
+          manualCustomerCents: quote.customerTotalCents });
+      }
+    } catch (error) {
+      if (!(error instanceof ManualTariffError)) throw error;
+      issues.push({ scenarioId: scenario.scenarioId, code: error.code });
+    }
+  }
+  return { ready: issues.length === 0, checkedScenarios: input.scenarios.length, issues };
 }

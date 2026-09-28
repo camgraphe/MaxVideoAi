@@ -30,9 +30,12 @@ export {
   ManualTariffError,
   resolveManualTariffCell,
   quoteCanonicalManualTariff,
+  auditManualTariffParity,
   type ManualTariffCell,
   type ManualTariffSelector,
   type ManualTariffQuote,
+  type ManualTariffParityScenario,
+  type ManualTariffParityIssue,
 } from './manual-tariff';
 export {
   getPlatformFeeCents,
