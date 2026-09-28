@@ -1,7 +1,8 @@
-import { assertLegacyPlaylistEditable } from './curation-store';
+import { assertLegacyPlaylistEditable, lockCuration } from './curation-store';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { mapCreatedPlaylistRow, type CreatedPlaylistRow } from './mappers';
-import { getPlaylistRecordById } from './queries';
+import { isLockedPlaylistSlug } from './runtime-meta';
+import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
 import type { MutablePlaylistFields, PlaylistRecord } from './types';
 
 export class LockedPlaylistError extends Error {
@@ -11,15 +12,12 @@ export class LockedPlaylistError extends Error {
   }
 }
 
-async function assertPlaylistCanEditDetails(playlistId: string): Promise<PlaylistRecord> {
-  const playlist = await getPlaylistRecordById(playlistId);
-  if (!playlist) {
-    throw new Error('Playlist not found');
-  }
-  if (playlist.isLocked) {
-    throw new LockedPlaylistError();
-  }
-  return playlist;
+async function assertPlaylistCanEditDetails(db: QueryExecutor, playlistId: string): Promise<void> {
+  await lockCuration(db, playlistId);
+  await assertDestinationWritable(db, playlistId);
+  const [playlist] = await db.query<{ slug: string }>('SELECT slug FROM playlists WHERE id=$1 FOR UPDATE', [playlistId]);
+  if (!playlist) throw new Error('Playlist not found');
+  if (isLockedPlaylistSlug(playlist.slug)) throw new LockedPlaylistError();
 }
 
 export async function createPlaylist(payload: {
@@ -45,8 +43,6 @@ export async function createPlaylist(payload: {
 }
 
 export async function updatePlaylist(playlistId: string, payload: MutablePlaylistFields): Promise<void> {
-  await assertPlaylistCanEditDetails(playlistId);
-
   const updates: string[] = [];
   const params: unknown[] = [];
 
@@ -76,18 +72,24 @@ export async function updatePlaylist(playlistId: string, payload: MutablePlaylis
   params.push(payload.userId ?? null);
   params.push(playlistId);
 
-  await query(
-    `UPDATE playlists
+  await withDbTransaction(async db => {
+    await assertPlaylistCanEditDetails(db, playlistId);
+    if (payload.slug && isLockedPlaylistSlug(payload.slug)) throw new LockedPlaylistError();
+    await db.query(
+      `UPDATE playlists
      SET ${updates.join(', ')}, updated_at = NOW(), updated_by = $${updatedByIndex}
      WHERE id = $${playlistIdIndex}`,
-    params
-  );
+      params
+    );
+  });
 }
 
 export async function deletePlaylist(playlistId: string): Promise<void> {
-  await assertPlaylistCanEditDetails(playlistId);
-  await query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
-  await query(`DELETE FROM playlists WHERE id = $1`, [playlistId]);
+  await withDbTransaction(async db => {
+    await assertPlaylistCanEditDetails(db, playlistId);
+    await db.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
+    await db.query(`DELETE FROM playlists WHERE id = $1`, [playlistId]);
+  });
 }
 
 export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<void> {
@@ -149,5 +151,5 @@ async function appendPlaylistItemWithExecutor(
 }
 
 export function isPlaylistLockedError(error: unknown): error is LockedPlaylistError {
-  return error instanceof LockedPlaylistError;
+  return error instanceof LockedPlaylistError || error instanceof DestinationWriteError;
 }

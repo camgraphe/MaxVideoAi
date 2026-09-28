@@ -103,6 +103,17 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
       /changed/i,
       'inherited changes must invalidate initial family adoption',
     );
+    const { loadPlaylistDestinations } = await import('../frontend/server/playlists/destinations');
+    const { mapCreatedPlaylistRow } = await import('../frontend/server/playlists/mappers');
+    const inventory = await loadPlaylistDestinations([mapCreatedPlaylistRow({ id: familyId, slug: 'family-wan', name: 'Wan', description: null, is_public: true, created_at: '2026-09-28', updated_at: '2026-09-28' })]);
+    assert.equal(inventory.find(row => row.id === 'family:wan')!.publicCount, 3);
+    assert.equal(inventory.find(row => row.id === 'model:wan-3')!.publicCount, 2);
+    assert.equal(inventory.find(row => row.id === 'examples')!.publicCount, 3);
+    process.env.EXAMPLES_PLAYLIST_SLUG = 'marketing-examples';
+    await db.pool.query("INSERT INTO playlists(id,slug,is_public) VALUES ('55555555-5555-4555-8555-555555555555',' examples ',true)");
+    const historicalId = '55555555-5555-4555-8555-555555555555';
+    await assert.rejects(previewCuration(historicalId, oldFamilyDraft, ''), /historical|configuration/i);
+    await assert.rejects(saveCuration(historicalId, oldFamilyDraft, '', '', null), /historical|configuration/i);
     const family = await getCurationSnapshot(familyId);
     const familyDraft = { mode: 'hybrid' as const, orderedIds: ['a'], excludedIds: ['b', 'c'] };
     const familyPreview = await previewCuration(familyId, familyDraft, family.revision);

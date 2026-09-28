@@ -1,3 +1,4 @@
+import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
 import { createHash } from 'node:crypto';
 import { query, type QueryExecutor } from '@/lib/db';
 import { getDiscoverableExampleEngineAliases, isDiscoverableExampleEngine } from '@/lib/examples/discovery';
@@ -37,6 +38,11 @@ export async function lockCuration(db: QueryExecutor, playlistId: string) {
 }
 export async function assertLegacyPlaylistEditable(db: QueryExecutor, playlistId: string) {
   await lockCuration(db, playlistId);
+  try { await assertDestinationWritable(db, playlistId); }
+  catch (error) {
+    if (error instanceof DestinationWriteError) throw new CurationError(error.message, error.status);
+    throw error;
+  }
   if (!(await curationSchemaAvailable(db))) return;
   const rows = await db.query('SELECT 1 FROM playlist_curations WHERE playlist_id=$1', [playlistId]);
   if (rows.length) throw new CurationError('This destination uses Site placements. Edit its selection there.');

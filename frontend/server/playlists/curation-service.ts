@@ -1,3 +1,4 @@
+import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
 import { PUBLIC_VIDEO_SOURCE_ELIGIBILITY, videoOutputDimensionSelect } from '../videos-query';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
@@ -59,6 +60,11 @@ async function buildPreview(
   revision: string,
   db: QueryExecutor,
 ): Promise<CurationPreview> {
+  try { await assertDestinationWritable(db, playlistId); }
+  catch (error) {
+    if (error instanceof DestinationWriteError) throw new CurationError(error.message, error.status);
+    throw error;
+  }
   const draft = parseCurationDraft(input);
   const snapshot = await readCurationSnapshot(playlistId, db);
   if (!snapshot.available) throw new CurationError('Site placements setup is not available yet', 503);
