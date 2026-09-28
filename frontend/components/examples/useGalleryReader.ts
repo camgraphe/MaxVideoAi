@@ -17,7 +17,7 @@ export function useGalleryReader(videos: ExampleGalleryVideo[], offset: number, 
     remembered.current.set(id, nextWindow);
     setWindow(nextWindow); setSelected(id); setNavigationError(false);
     const state = { ...globalThis.window.history.state, exampleReader: { token, id } };
-    const url = new URL(globalThis.window.location.href); url.hash = `example=${encodeURIComponent(id)}`;
+    const url = nextWindow.items.find(video => video.id === id)?.href ?? `/video/${encodeURIComponent(id)}`;
     globalThis.window.history[push ? 'pushState' : 'replaceState'](state, '', url);
   }, [token]);
   const open = useCallback((video: ExampleGalleryVideo) => navigate(video.id, { items: videos, offset, hasMore: videos.length === 24 }, true), [navigate, videos, offset]);

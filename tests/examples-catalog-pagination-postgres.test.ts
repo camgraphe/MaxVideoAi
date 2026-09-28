@@ -60,11 +60,14 @@ test('public gallery traverses every eligible video beyond the old window and hy
   await build({
     stdin: { contents: `export {loadHomepageExamples} from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples';
       export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
-      export {getExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
+      export {getExampleWatchDetail,buildExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
+      export {getVideoWatchPageDataById} from './frontend/server/video-seo';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'count-real-postgres-reads', setup(builder) {
+      builder.onResolve({ filter: /^react$/ }, () => ({path:'react-cache',namespace:'test-react'}));
+      builder.onLoad({filter:/.*/,namespace:'test-react'}, () => ({contents:'export const cache = fn => fn;',loader:'js'}));
       builder.onResolve({ filter: /^@\/lib\/db$/ }, () => ({ path: 'db', namespace: 'fixture' }));
       builder.onLoad({ filter: /^db$/, namespace: 'fixture' }, () => ({ contents: `
         export * from ${JSON.stringify(dbPath)};
@@ -158,6 +161,27 @@ test('public gallery traverses every eligible video beyond the old window and hy
     for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing'])assert.equal(await reader.getExampleWatchDetail(id),null);
     await postgres.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='kling-20'");
     assert.equal(await reader.getExampleWatchDetail('kling-20'),null,'a previously opened public video is checked again');
+  });
+
+  await t.test('persisted admin editorial content reaches the popup and direct watch page identically',async()=>{
+    for(const migration of ['23_video_seo_pages.sql','24_video_seo_canonical_slug.sql','25_video_seo_visual_context.sql','40_video_seo_rollout_exclusions.sql']) {
+      await postgres.pool.query(readFileSync(`neon/migrations/${migration}`,'utf8'));
+    }
+    await postgres.pool.query(`UPDATE app_jobs SET prompt=$1 WHERE job_id='kling-21'`, ['An original cinematic scene showing a dancer performing precise circular movements in a sunlit courtyard. The camera slowly orbits the dancer from left to right, preserving body proportions, natural lighting, soft shadows, stable architecture, expressive choreography and coherent realistic motion through a continuous five second landscape shot.']);
+    await postgres.pool.query(`INSERT INTO video_seo_pages(video_id,seo_status,seo_title,meta_description,h1,video_object_name,short_description,target_keyword,intent,model_slug,examples_slug,canonical_slug)
+      VALUES('kling-21','approved','Kling dance film — MaxVideoAI','Watch an original Kling dance film with a continuous camera orbit, natural lighting and the complete generation prompt.','Kling 3 Pro cinematic dance in a sunlit courtyard','Kling dance film','An original Kling 3 Pro dance film, with a continuous camera orbit around a sunlit courtyard and realistic choreography in a single flowing shot.','Kling dance film','camera-motion','kling-3-pro','kling','kling-dance-film')`);
+    const popup=await reader.getExampleWatchDetail('kling-21');
+    const page=await reader.getVideoWatchPageDataById('kling-dance-film');
+    assert.ok(page);assert.equal(page.isEligible,true,JSON.stringify(page.signals.editorialQaErrors));
+    const direct=await reader.buildExampleWatchDetail(page.video,page.signals);
+    assert.equal(popup.title,'Kling 3 Pro cinematic dance in a sunlit courtyard');assert.equal(popup.watchHref,'/video/kling-dance-film');
+    assert.equal(popup.context.intro,'An original Kling 3 Pro dance film, with a continuous camera orbit around a sunlit courtyard and realistic choreography in a single flowing shot.');
+    assert.deepEqual(popup,direct,'both surfaces project the same persisted editorial entry');
+    await postgres.pool.query(`UPDATE video_seo_pages SET h1='A new editorial title',seo_status='disabled' WHERE video_id='kling-21'`);
+    const changed=await reader.getExampleWatchDetail('kling-21');
+    const disabledPage=await reader.getVideoWatchPageDataById('kling-dance-film');
+    assert.equal(changed.title,'A new editorial title');assert.equal(disabledPage.isEligible,false);
+    assert.equal(disabledPage.signals.title,changed.title);
   });
 
 });

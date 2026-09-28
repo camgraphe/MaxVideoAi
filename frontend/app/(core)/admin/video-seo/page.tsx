@@ -106,7 +106,7 @@ export default async function AdminVideoSeoPage({ searchParams }: { searchParams
 
       {disabledRows.length ? (
         <AdminSection title="Disabled Archive" description="Database exclusions prevent config fallbacks from restoring these videos to the sitemap. The archive shows up to 20 rows by default." action={<AdminSectionMeta title={`${disabledRows.length} disabled`} lines={['No sitemap, noindex follow']} />}>
-          <details className="rounded-2xl border border-hairline bg-bg/40">
+          <details open={disabledRows.some(row => row.entry.id === selectedVideoId)} className="rounded-2xl border border-hairline bg-bg/40">
             <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-text-primary">Show disabled video SEO pages</summary>
             <div className="border-t border-hairline">
               <VideoSeoInventoryTable rows={disabledRows.filter((row, index) => index < 20 || row.entry.id === selectedVideoId)} initialSelectedId={selectedVideoId} />

@@ -7,6 +7,7 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { buildExampleRecreationHref, normalizeExampleResolution, parseExampleRecreationSettings, publicExampleResolution } from '@/lib/example-recreation';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import { buildExampleRecreationSnapshot } from '@/app/(core)/(workspace)/app/_lib/workspace-example-recreation';
+import type { WatchPageDerivedSignals } from './watch-page-signals';
 import { deriveWatchPageSignals } from './watch-page-signals';
 import { parseSnapshot } from './watch-page-signals/snapshot';
 import type { GalleryVideo } from './videos-normalization';
@@ -14,9 +15,9 @@ import type { GalleryVideo } from './videos-normalization';
 type Quote = (context: PricingContext) => Promise<{ totalCents: number; currency: string }>;
 
 /** Explicit public DTO: never serialize ownership or the raw generation snapshot. */
-export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: Quote): Promise<ExampleWatchDetail | null> {
+export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: Quote, preparedSignals?: WatchPageDerivedSignals): Promise<ExampleWatchDetail | null> {
   if (video.visibility !== 'public' || !video.indexable || !video.videoUrl) return null;
-  const signals = deriveWatchPageSignals({ video, editorial });
+  const signals = preparedSignals ?? deriveWatchPageSignals({ video, editorial });
   const snapshot = parseSnapshot(video);
   const measuredResolution = publicExampleResolution(video.outputWidth ?? undefined, video.outputHeight ?? undefined);
   // Measured output wins over authored settings. Unknown measured sizes cannot claim a different resolution.
@@ -58,6 +59,12 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
     durationSec: video.durationSec, hasAudio: video.hasAudio,
     historicalCost: typeof video.finalPriceCents === 'number' && video.currency ? { amountCents: video.finalPriceCents, currency: video.currency } : null,
     scenario, quotes: [...(ownQuote ? [ownQuote] : []), ...alternatives],
-    references: signals.sourceImages.map(({ key, label, url, alt }) => ({ key, label, url, alt })),
+    references: signals.sourceImages.map(({ key, label, url, alt, thumbUrl }) => ({ key, label, url, alt, ...(thumbUrl ? {thumbUrl} : {}) })),
+    context: {
+      intro: signals.intro, visualContext: signals.seoPromptContext, negativePrompt: signals.negativePrompt,
+      createdAt: video.createdAt, details: signals.detailRows, controls: [...signals.promptRows,...signals.inputRows],
+      highlights: signals.whatThisShows, notes: signals.promptImprovementNotes, engineDescription: signals.engineDescription,
+      engineBadges: signals.engineBadges, compareLinks: signals.compareLinks, keyframes: video.keyframeUrls ?? null,
+    },
   };
 }

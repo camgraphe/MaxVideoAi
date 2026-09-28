@@ -8,7 +8,7 @@ import styles from './example-reader.module.css';
 
 export type ReaderNavigation = { previous: () => void; next: () => void; canPrevious: boolean; canNext: boolean; busy: boolean };
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
-export function DiscoveryVideoPlayer({ detail, copy, navigation }: { detail: ExampleWatchDetail; copy: ReaderCopy; navigation: ReaderNavigation }) {
+export function DiscoveryVideoPlayer({ detail, copy, navigation }: { detail: ExampleWatchDetail; copy: ReaderCopy; navigation?: ReaderNavigation }) {
   const controls = usePublicVideoControls(detail.videoUrl, 'watch');
   const frame = useRef<HTMLDivElement>(null);
   const [width, height] = detail.aspectRatio.split(':').map(Number);
@@ -26,10 +26,10 @@ export function DiscoveryVideoPlayer({ detail, copy, navigation }: { detail: Exa
       <video ref={controls.videoRef} src={detail.videoUrl} poster={detail.posterUrl ?? undefined}
         playsInline preload="none" aria-label={detail.title} {...controls.events} />
       {!controls.isPlaying && <button className={styles.centerPlay} onClick={controls.togglePlayback} aria-label={copy.play}><Play size={28} fill="currentColor" /></button>}
-      <div className={styles.playerNavigation}>
+      {navigation && <div className={styles.playerNavigation}>
         <button onClick={navigation.previous} disabled={!navigation.canPrevious || navigation.busy} aria-label={copy.previous}><ChevronLeft /></button>
         <button onClick={navigation.next} disabled={!navigation.canNext || navigation.busy} aria-label={copy.next}><ChevronRight /></button>
-      </div>
+      </div>}
       {(controls.terminalError || controls.isLoading) && <p className={styles.playerStatus} role="status">{controls.terminalError ? copy.playbackError : copy.loading}</p>}
       <div className={styles.controls}>
         <input aria-label={copy.timeline} type="range" min={0} max={controls.duration || detail.durationSec || 1} step={0.1}

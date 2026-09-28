@@ -6,22 +6,19 @@ import test from 'node:test';
 const root = process.cwd();
 const signalSource = readFileSync(join(root, 'frontend/server/watch-page-signals/content.ts'), 'utf8');
 const contentSource = readFileSync(
-  join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx'),
+  join(root, 'frontend/components/examples/ExampleReaderContent.tsx'),
   'utf8'
 );
 
 test('watch surfaces identify historical job cost as recorded render cost', () => {
   assert.match(signalSource, /label: 'Recorded render cost'/);
-  assert.match(contentSource, /label: 'Recorded render cost'/);
+  assert.match(contentSource, /detail\.historicalCost/);
   assert.doesNotMatch(signalSource, /label: 'Render cost'/);
   assert.doesNotMatch(contentSource, /label: 'Estimated price'/);
 });
 
 test('watch prompt breakdown omits recorded render cost when the job has no stored cost', () => {
-  assert.match(
-    contentSource,
-    /\.\.\.\(costLabel \? \[\{ label: 'Recorded render cost', value: costLabel \}\] : \[\]\)/
-  );
+  assert.match(contentSource, /detail\.historicalCost &&/);
   assert.doesNotMatch(contentSource, /Shown before render/);
 });
 

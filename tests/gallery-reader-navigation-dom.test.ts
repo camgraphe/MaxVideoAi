@@ -6,8 +6,8 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useGalleryReader } from '../frontend/components/examples/useGalleryReader';
 import type { ExampleGalleryVideo } from '../frontend/components/examples/examples-gallery-types';
-const cards=(offset:number,count=24)=>Array.from({length:count},(_,n)=>({id:`v${offset+n}`,aspectRatio:'16:9'}) as ExampleGalleryVideo);
-test('reader crosses a page in both directions, keeps the gallery URL and cancels a closed request',async()=>{
+const cards=(offset:number,count=24)=>Array.from({length:count},(_,n)=>({id:`v${offset+n}`,href:`/video/v${offset+n}`,aspectRatio:'16:9'}) as ExampleGalleryVideo);
+test('reader crosses a page in both directions, uses watch URLs with gallery history and cancels a closed request',async()=>{
  const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/examples/wan?page=2'});
  const saved=new Map<string,PropertyDescriptor|undefined>(),calls:string[]=[];
  let resolveFetch!:(value:Response)=>void;
@@ -19,11 +19,11 @@ test('reader crosses a page in both directions, keeps the gallery URL and cancel
  const root=createRoot(dom.window.document.getElementById('root')!);
  try{
   await act(async()=>root.render(React.createElement(Fixture)));
-  await act(async()=>observed.open(videos[0]));assert.equal(observed.selected,'v24');assert.equal(dom.window.location.search,'?page=2');
+  await act(async()=>observed.open(videos[0]));assert.equal(observed.selected,'v24');assert.equal(dom.window.location.pathname,'/video/v24');
   let pending!:Promise<void>;await act(async()=>{pending=observed.step(-1);});
   assert.equal(observed.busy,true);assert.ok(calls[0].includes('offset=0'));assert.ok(calls[0].includes('engine=wan'));assert.ok(calls[0].includes('limit=24'));
   await act(async()=>{resolveFetch(new Response(JSON.stringify({cards:cards(0),hasMore:true})));await pending;});
-  assert.equal(observed.selected,'v23');assert.equal(dom.window.location.search,'?page=2');
+  assert.equal(observed.selected,'v23');assert.equal(dom.window.location.pathname,'/video/v23');
   await act(async()=>{pending=observed.step(1);});
   await act(async()=>{resolveFetch(new Response(JSON.stringify({cards:cards(24),hasMore:true})));await pending;});
   assert.equal(observed.selected,'v24');

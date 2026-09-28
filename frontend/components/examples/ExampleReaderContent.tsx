@@ -1,12 +1,16 @@
 'use client';
 import { useState } from 'react';
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy, ExternalLink } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy } from 'lucide-react';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import { DiscoveryVideoPlayer, type ReaderNavigation } from './DiscoveryVideoPlayer.client';
 import type { ReaderCopy } from './example-reader-copy';
 import styles from './example-reader.module.css';
+import { ExampleReaderContext } from './ExampleReaderContext';
+import { VideoWatchShare } from '@/app/(core)/video/[id]/_components/VideoWatchShare.client';
 
-export function ExampleReaderContent({ detail, copy, locale, navigation }: { detail: ExampleWatchDetail; copy: ReaderCopy; locale: string; navigation: ReaderNavigation }) {
+export function ExampleReaderContent({ detail, copy, locale, navigation, headingLevel = 'h2' }: { detail: ExampleWatchDetail; copy: ReaderCopy; locale: string; navigation?: ReaderNavigation; headingLevel?: 'h1' | 'h2' }) {
+  const Heading = headingLevel;
   const [expanded, setExpanded] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const price = (amount: number, currency: string) => {
@@ -23,12 +27,12 @@ export function ExampleReaderContent({ detail, copy, locale, navigation }: { det
     {detail.historicalCost && <p className={styles.recorded}>{copy.recorded}<strong>{price(detail.historicalCost.amountCents, detail.historicalCost.currency)}</strong></p>}
     {detail.recreateHref && <><a className={styles.primary} href={detail.recreateHref} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example" data-analytics-cta-location="example_reader">{copy.create}<ArrowRight size={18}/></a><p className={styles.note}>{copy.createNote}</p></>}
   </section>;
-  return <div className={`${styles.layout} ${portrait ? styles.portrait : ''}`}>
+  return <><div className={`${styles.layout} ${portrait ? styles.portrait : ''}`}>
     <DiscoveryVideoPlayer detail={detail} copy={copy} navigation={navigation}/>
     <aside className={styles.editorial}>
       <div className={styles.heading}>
         {detail.modelHref ? <a href={detail.modelHref} className={styles.model}>{detail.engineLabel}<ArrowUpRight size={15}/></a> : <p className={styles.model}>{detail.engineLabel}</p>}
-        <h2 id="example-reader-title">{detail.title}</h2>
+        <Heading id="example-reader-title">{detail.title}</Heading>
         <p className={styles.meta}>{detail.durationSec} s · {detail.scenario?.aspectRatio ?? detail.aspectRatio}{detail.scenario ? ` · ${detail.scenario.resolution}` : ''} · {detail.hasAudio ? copy.audio : copy.silent}</p>
       </div>
       {!portrait && action}
@@ -41,10 +45,10 @@ export function ExampleReaderContent({ detail, copy, locale, navigation }: { det
       {detail.references.length > 0 && <section className={styles.references}><h3>{copy.sources}</h3><div>{detail.references.map(reference => <a href={reference.url} target="_blank" rel="noreferrer" key={reference.key} aria-label={reference.label}>
         {/* Approved stable public inputs only, matching the standalone watch-page gate. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={reference.url} alt={reference.alt} loading="lazy" width={96} height={96}/>
+        <img src={reference.thumbUrl ?? reference.url} alt={reference.alt} loading="lazy" width={96} height={96}/>
       </a>)}</div></section>}
       <nav className={styles.links}>
-        <a href={detail.watchHref}><ExternalLink size={15}/>{copy.watch}</a>
+        <VideoWatchShare videoId={detail.id} videoUrl={detail.videoUrl} watchUrl={new URL(detail.watchHref, SITE_ORIGIN).toString()} locale={locale}/>
         {detail.modelHref && <a href={detail.modelHref}><ArrowUpRight size={15}/>{copy.model}</a>}
       </nav>
     </aside>
@@ -60,5 +64,5 @@ export function ExampleReaderContent({ detail, copy, locale, navigation }: { det
       </article>)}</div> : <p className={styles.note}>{copy.unavailable}</p>}
       <p className={styles.footnote}>{copy.priceNote}</p>
     </section>
-  </div>;
+  </div><ExampleReaderContext context={detail.context} detail={detail} locale={locale}/></>;
 }

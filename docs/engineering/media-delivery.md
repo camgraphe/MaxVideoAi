@@ -151,7 +151,7 @@ The first orbit view uses the still-image style in server HTML and through hydra
 
 The homepage poster must remain discoverable in server-rendered HTML with its existing responsive source, dimensions and critical priority. Do not make it depend on hydration, a video download or an idle callback. Initial media scheduling and an explicit Play action have different priorities.
 
-The examples route hero also owns one responsive poster with explicit high fetch priority in the initial HTML. Keep this hint on `ExamplesHeroVideo`, alongside its existing `priority` setting; do not create another route-head preload or prioritize gallery cards while a route hero is present. This scheduling hint does not change the selected image, its quality, geometry, or mobile video loading policy. Validate its effect with comparable browser measurements; the HTML contract alone does not establish a performance gain.
+The examples routes prioritize only the first visible gallery poster. Other surfaces that use `ExamplesHeroVideo` keep its existing responsive poster priority, without competing gallery hints. Validate scheduling changes with comparable browser measurements; the HTML contract alone does not establish a performance gain.
 
 The examples hero waits for the first IntersectionObserver result before automatic
 playback. Each new automatic reader keeps `preload="none"` while visibility is
@@ -182,21 +182,17 @@ Watch pages use Auto by default; prepared sources expose Auto/Original. Comparis
 
 `usePublicVideoControls` owns manual play intent, visibility pauses, native/custom events, quality changes and original fallback. It changes only the live video source, synchronously before a requested play, while the original remains in SSR/React props and in separate schema/download/edit data. Quality changes and fallback retain the same native video element, time, mute and volume; a different original remounts it. Guard stale events/promises, seek after metadata, and never resume a manually paused or hidden reader automatically. All manual readers use `preload="none"`.
 
-Gallery cards retain their responsive optimized image underneath the video until actual `playing`, and show it again when waiting, paused or failed. A visible idle card has no video element. The card's visibility and hover/first-card policy request playback; `useExampleCardPlayback` applies hidden-tab, reduced-motion and Save-Data restrictions, then uses the shared attempt owner. Existing short previews remain preferred; only a missing-preview full video can use its prepared full-duration rendition. A failed short preview leaves the poster and watch link instead of fetching a large full video. Cards keep their existing narrow-mobile poster-only behavior. No native raw poster duplicates the optimized image request.
+Gallery cards retain their responsive optimized image underneath the video until actual `playing`, and show it again when waiting, paused or failed. A visible idle card has no video element. The examples gallery requests short previews through its bounded controller (three desktop, one mobile); `useExampleCardPlayback` applies hidden-tab, reduced-motion and Save-Data restrictions. Missing or failed previews keep the poster and watch link. Examples never fall back to full originals for incidental animation. Other users of this shared hook retain their own intent and mobile policies. No native raw poster duplicates the optimized image request.
 
-When the gallery is the route's first visual, its initial batch uses three stable,
-contiguous columns at widths of at least 1280 px. Each column flows independently,
-including portrait leaders; do not align all following cards beneath the tallest
-leader. Narrower layouts retain the existing masonry and source order through
-`display: contents`. Pagination appends after this initial batch without moving
-its leaders. The first poster keeps its existing priority; at most two additional
-column leaders receive desktop-only responsive preloads with high fetch priority.
-Those hints use `getImageProps` with the exact rendered poster's source, sizes and
-quality, including a concrete `href` so React hoists them into the initial head.
-Normal preload priority can still leave requests queued until layout. Hero-led
-galleries receive no additional hints. Check `tests/examples-gallery-opening.test.ts`,
-actual head placement, mixed-aspect layouts, pagination and comparable loading
-measurements when changing this boundary.
+The opening and continuation layouts use one server-rendered page of 24 videos. Only the first poster receives high priority; later pages contain distinct entries and no repeated opening. `tests/examples-gallery-opening.test.ts` and `tests/examples-lcp-performance.test.ts` own this HTML boundary.
+
+### One reader for gallery and direct watch URLs
+
+`ExampleReaderContent` is the shared video, prompt, commercial actions and editorial view. `VideoWatchContent` renders it with an H1 on direct `/video/[id]` or canonical-slug requests and keeps metadata, JSON-LD, breadcrumbs and related links on the server. From the gallery, `ExampleReader.client` wraps the same content in an accessible dialog. `useGalleryReader` creates one browser-history entry at the actual watch URL and replaces it for next/previous navigation. Closing or Back returns to the original gallery URL, filter, page and scroll; refreshing the video URL loads the standalone page. Modified clicks remain ordinary watch links. No second video identity or separate popup content is authored.
+
+`example-watch-detail-loader` rechecks public eligibility and reads the selected editorial entry only. Both modes use the watch signals owner for title, introductory copy, approved references and contextual details. `ExampleReaderContext` preserves secondary editorial information in a native disclosure. Original download, schema and recreation URLs stay intact. Prices remain absent from gallery cards; historical cost and exact supported prompt-only comparison estimates are distinct in the reader.
+
+Admin SEO writes revalidate the affected ID and canonical-slug routes after persistence, including the previous slug when changed, plus the video sitemap routes. Failed validation or persistence does not invalidate. SEO status and existing quality gates still govern robots, redirect and sitemap eligibility; opening a public gallery video does not approve it for indexing.
 
 ### Playback observations
 
