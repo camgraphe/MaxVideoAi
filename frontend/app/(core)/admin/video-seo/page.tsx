@@ -17,7 +17,8 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminVideoSeoPage() {
+export default async function AdminVideoSeoPage({ searchParams }: { searchParams: Promise<{video?: string}> }) {
+  const {video: selectedVideoId} = await searchParams;
   const rows = buildWatchRows(await listSeoWatchVideoRows());
   const metrics = buildOverviewItems(rows);
   const { candidateCount, disabledCount, issueCount, sitemapCount, strongRows } = buildVideoSeoSummary(rows);
@@ -55,11 +56,11 @@ export default async function AdminVideoSeoPage() {
         title="Add Candidate"
         description="Add a public video as an editorial draft. It stays outside the sitemap until approval and quality checks pass."
       >
-        <VideoSeoCandidateForm />
+        <VideoSeoCandidateForm initialVideoId={rows.some(row => row.entry.id === selectedVideoId) ? undefined : selectedVideoId} />
       </AdminSection>
 
       <AdminSection
-        title="Indexed Watch Pages"
+        title="Eligible for the video sitemap"
         description="Pages eligible for the video sitemap: approved, complete, quality checked and backed by public media."
         action={
           <AdminSectionMeta
@@ -69,7 +70,7 @@ export default async function AdminVideoSeoPage() {
         }
       >
         {indexedRows.length ? (
-          <VideoSeoInventoryTable rows={indexedRows} />
+          <VideoSeoInventoryTable rows={indexedRows} initialSelectedId={selectedVideoId} />
         ) : (
           <AdminEmptyState>No watch pages currently pass the video sitemap contract.</AdminEmptyState>
         )}
@@ -96,7 +97,7 @@ export default async function AdminVideoSeoPage() {
           </AdminNotice>
 
           {candidateRows.length ? (
-            <VideoSeoInventoryTable rows={candidateRows} />
+            <VideoSeoInventoryTable rows={candidateRows} initialSelectedId={selectedVideoId} />
           ) : (
             <AdminEmptyState>No candidates are currently blocked outside the sitemap.</AdminEmptyState>
           )}
@@ -108,7 +109,7 @@ export default async function AdminVideoSeoPage() {
           <details className="rounded-2xl border border-hairline bg-bg/40">
             <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-text-primary">Show disabled video SEO pages</summary>
             <div className="border-t border-hairline">
-              <VideoSeoInventoryTable rows={disabledRows.slice(0, 20)} />
+              <VideoSeoInventoryTable rows={disabledRows.filter((row, index) => index < 20 || row.entry.id === selectedVideoId)} initialSelectedId={selectedVideoId} />
             </div>
           </details>
         </AdminSection>

@@ -53,8 +53,8 @@ export async function readCurationSnapshot(
   if (!playlist) throw new CurationError('Destination not found', 404);
   const available = await curationSchemaAvailable(db);
   const [saved] = available
-    ? await db.query<{ mode: CurationDraft['mode']; ordered_ids: string[]; excluded_ids: string[]; revision: string }>(
-        'SELECT mode,ordered_ids,excluded_ids,revision::text FROM playlist_curations WHERE playlist_id=$1',
+    ? await db.query<{ mode: CurationDraft['mode']; ordered_ids: string[]; excluded_ids: string[]; revision: string; opening_ids: CurationDraft['openingIds'] }>(
+        "SELECT mode,ordered_ids,excluded_ids,revision::text,to_jsonb(c)->'opening_ids' AS opening_ids FROM playlist_curations c WHERE playlist_id=$1",
         [playlistId],
       )
     : [];
@@ -83,10 +83,11 @@ export async function readCurationSnapshot(
   }
   return {
     available,
+    openingAvailable: available && (await db.query<{available: boolean}>("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='playlist_curations' AND column_name='opening_ids') AS available"))[0]?.available === true,
     supported: getCurationAliases(playlist.slug) !== null,
     slug: playlist.slug,
     isPublic: playlist.is_public,
-    config: saved ? { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids } : null,
+    config: saved ? { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids, openingIds: saved.opening_ids ?? null } : null,
     revision: curationFingerprint({ playlist, saved: saved ?? null, items, inherited }),
     legacyIds: items.map((item) => item.video_id),
   };

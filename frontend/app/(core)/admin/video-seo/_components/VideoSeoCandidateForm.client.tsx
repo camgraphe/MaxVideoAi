@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 
-export function VideoSeoCandidateForm() {
+export function VideoSeoCandidateForm({ initialVideoId = '' }: { initialVideoId?: string }) {
   const router = useRouter();
-  const [videoId, setVideoId] = useState('');
+  const [videoId, setVideoId] = useState(initialVideoId);
   const [pending, startTransition] = useTransition();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);

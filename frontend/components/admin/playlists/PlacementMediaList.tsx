@@ -85,7 +85,8 @@ export function PlacementMediaList({
               {item.engineLabel ?? item.engineId} · {item.id}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs [&>button]:rounded-md [&>button]:border [&>button]:border-border [&>button]:px-2 [&>button]:py-1.5 [&>button:disabled]:opacity-40">
+            <a className="rounded-md px-2 py-1.5 text-brand underline underline-offset-4" href={`/admin/video-seo?video=${encodeURIComponent(item.id)}`}>Video SEO ↗</a>
             {onOrder ? (
               <>
                 <button

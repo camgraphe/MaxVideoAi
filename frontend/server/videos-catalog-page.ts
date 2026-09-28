@@ -28,7 +28,7 @@ const SORT_SQL: Record<ExampleSort, string> = {
 
 function catalogSql(sort: ExampleSort, withCuration: boolean): string {
   const curationColumns = withCuration
-    ? 'c.mode,c.ordered_ids,c.excluded_ids'
+    ? "c.mode,ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids AS ordered_ids,c.excluded_ids"
     : 'NULL::text AS mode,NULL::text[] AS ordered_ids,NULL::text[] AS excluded_ids';
   const curationJoin = withCuration ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : '';
   // Count, selected IDs and media are evaluated in one PostgreSQL statement/snapshot.

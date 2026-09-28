@@ -66,6 +66,7 @@ export function usePlacementEditor(
         const data: Loaded = await request();
         if (!mounted.current) return;
         const next: CurationDraft = {
+          openingIds: data.snapshot.config?.openingIds ?? null,
           mode: data.snapshot.config?.mode ?? 'manual',
           orderedIds: data.initialIds,
           excludedIds: data.snapshot.config?.excludedIds ?? [],

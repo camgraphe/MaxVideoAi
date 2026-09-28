@@ -286,3 +286,11 @@ IDs, generation IDs, description, model and status. These reads perform no schem
 bootstrap. The existing anomaly scan and refund command retain their owners.
 
 First family adoption fingerprints inherited playlists, selections and curation states. Selection writers share an advisory transaction lock; first adoption additionally holds source tables against uncoordinated creation/deletion while revalidating. Configured model galleries bypass static reinsertion and aspect-ratio sorting. Unsupported unconfigured collections retain manual controls; retired configured collections stay closed.
+
+### Four-video gallery opening
+
+Migration `53_playlist_opening.sql` adds optional `opening_ids` without rewriting existing destinations. The admin exposes this feature only after that column exists; old schemas still support ordinary curation saves. Read paths use optional JSON field projection and never install schema.
+
+`lib/admin/playlist-curation.ts` owns the four-slot contract: landscape 16:9, portrait 9:16, then two landscape 16:9 originals. Measured output dimensions take priority over declared aspect ratios, with 2% tolerance for encoded sizes. Slots must be complete, unique, eligible and not excluded. They precede the remaining selection, count as normal page entries, and are deduplicated against it. Other catalog sort orders remain authoritative.
+
+`PlacementOpeningEditor` filters candidates by format, previews desktop/mobile placement, and links directly to `/admin/video-seo?video=…`. Existing SEO entries open their editorial detail; new entries prefill the candidate form and still require explicit draft creation and approval. The inventory describes sitemap eligibility, never assumes Google has indexed a page. Preview/save fingerprints include the media dimensions and opening state, so format or eligibility changes invalidate stale saves. Fixtures cover pre-migration behavior, migration replay, stale formats, private media and paginated ordering.

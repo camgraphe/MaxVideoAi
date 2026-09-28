@@ -32,7 +32,7 @@ test('curation stages drag order, previews before save, locks requests and prese
   const root = createRoot(dom.window.document.getElementById('root')!);
   const button = (name: string) =>
     [...dom.window.document.querySelectorAll('button')].find((el) => el.textContent === name)!;
-  const candidates = ['a', 'b', 'c'].map((id) => ({
+  const candidates = ['a', 'b', 'c', 'd'].map((id) => ({
     id,
     engineId: 'wan-3',
     engineLabel: 'Wan 3',
@@ -40,9 +40,11 @@ test('curation stages drag order, previews before save, locks requests and prese
     videoUrl: '/v.mp4',
     thumbUrl: null,
     createdAt: '2026-09-22T00:00:00Z',
+    outputWidth: id === 'b' ? 480 : 1280, outputHeight: id === 'b' ? 854 : 720,
   }));
   const snapshot = {
     available: true,
+    openingAvailable: true,
     supported: true,
     slug: 'examples-wan-3',
     isPublic: true,
@@ -152,6 +154,21 @@ test('curation stages drag order, previews before save, locks requests and prese
     assert.equal(button('Cancel').disabled, true);
     assert.equal(button('Save changes').disabled, true);
     assert.deepEqual(order(), ['b', 'a']);
+    await act(async () => button('Choose opening videos').click());
+    assert.equal(button('Preview changes').disabled,true,'all four slots are required before preview');
+    const slot = (n: number) => dom.window.document.querySelector(`[aria-label="Opening slot ${n}"]`) as HTMLSelectElement;
+    assert.deepEqual([...slot(2).options].map(option=>option.value),['','b'],'vertical slot filters actual media format');
+    assert.ok(![...slot(1).options].some(option=>option.value==='b'),'landscape slot excludes the portrait');
+    for (const [index,id] of ['a','b','c','d'].entries()) await act(async () => {
+      slot(index+1).value=id;
+      slot(index+1).dispatchEvent(new dom.window.Event('change',{bubbles:true}));
+    });
+    assert.equal(button('Preview changes').disabled,false,'a complete compatible opening can be previewed');
+    assert.ok(dom.window.document.querySelector('a[href="/admin/video-seo?video=a"]'));
+    await act(async () => button('Mobile preview').click());
+    assert.ok(button('Desktop preview'));
+    await act(async () => button('Cancel').click());
+    assert.ok(button('Choose opening videos'),'cancel restores saved opening configuration');
     await act(async () =>
       root.render(
         React.createElement(PlacementEditor, {

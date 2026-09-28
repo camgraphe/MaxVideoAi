@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { usePlacementEditor } from './usePlacementEditor';
+import { validateCurationOpening } from '@/lib/admin/playlist-curation';
+import { PlacementOpeningEditor } from './PlacementOpeningEditor';
 import { PlacementMediaList } from './PlacementMediaList';
 
 type Props = {
@@ -17,9 +19,12 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
   useEffect(() => {
     if (preview) previewHeadingRef.current?.focus();
   }, [preview]);
-  const ordered = draft.orderedIds.flatMap((id) => loaded?.candidates.find((item) => item.id === id) ?? []);
+  let openingError: string | null = null;
+  try { validateCurationOpening(draft, loaded?.candidates ?? []); }
+  catch (error) { openingError = (error as Error).message; }
+  const ordered = draft.orderedIds.filter(id => !draft.openingIds?.includes(id)).flatMap((id) => loaded?.candidates.find((item) => item.id === id) ?? []);
   const available = (loaded?.candidates ?? []).filter(
-    (item) => !draft.orderedIds.includes(item.id) && !draft.excludedIds.includes(item.id),
+    (item) => !draft.openingIds?.includes(item.id) && !draft.orderedIds.includes(item.id) && !draft.excludedIds.includes(item.id),
   );
   const matched = available.filter((item) =>
     `${item.id} ${item.engineLabel} ${item.prompt}`.toLowerCase().includes(search.toLowerCase()),
@@ -100,7 +105,7 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
           </Button>
           <Button
             size="sm"
-            disabled={busy || (!dirty && !loaded.removedCount && Boolean(loaded.snapshot.config))}
+            disabled={busy || Boolean(openingError) || (!dirty && !loaded.removedCount && Boolean(loaded.snapshot.config))}
             onClick={state.makePreview}
           >
             Preview changes
@@ -147,6 +152,8 @@ export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) 
           </ol>
         </section>
       ) : null}
+      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} onChange={change} /> : null}
+      {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
       <section aria-label="Selected media">
         <h3 className="text-sm font-semibold">
           {draft.mode === 'hybrid' ? 'Featured' : 'Manual selection'} · {ordered.length}

@@ -1,7 +1,9 @@
+import { videoOutputDimensionSelect } from '../videos-query';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   parseCurationDraft,
   resolveCuration,
+  validateCurationOpening,
   type CurationDraft,
   type CurationItem,
   type CurationPreview,
@@ -35,8 +37,11 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
     thumb_url: string | null;
     video_url: string;
     created_at: string;
+    output_width: number | null; output_height: number | null; aspect_ratio: string | null;
   }>(
-    `SELECT job_id,engine_id,engine_label,prompt,thumb_url,video_url,created_at
+    `SELECT job_id,engine_id,engine_label,prompt,thumb_url,video_url,created_at,aspect_ratio,
+       (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width,
+       (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height
      FROM app_jobs WHERE ${CURATION_ELIGIBILITY}
        AND LOWER(engine_id)=ANY($1::text[])
      ORDER BY created_at DESC, job_id ASC`,
@@ -50,6 +55,7 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
     thumbUrl: row.thumb_url,
     videoUrl: row.video_url,
     createdAt: new Date(row.created_at).toISOString(),
+    outputWidth: row.output_width, outputHeight: row.output_height, aspectRatio: row.aspect_ratio,
   }));
 }
 
@@ -68,6 +74,9 @@ async function buildPreview(
   const eligible = new Set(candidates.map((item) => item.id));
   if (draft.orderedIds.some((id) => !eligible.has(id)))
     throw new CurationError('Some selected media are no longer eligible. Reload the destination.');
+  if (draft.openingIds && !snapshot.openingAvailable) throw new CurationError('The four-video opening is not available yet', 503);
+  try { validateCurationOpening(draft, candidates); }
+  catch (error) { throw new CurationError((error as Error).message); }
   const items = snapshot.isPublic ? resolveCuration(draft, candidates) : [];
   return { items, revision, token: curationFingerprint({ revision, draft, items }) };
 }
@@ -91,12 +100,14 @@ export async function saveCuration(
     const preview = await buildPreview(playlistId, input, revision, db);
     if (preview.token !== token) throw new CurationError('The preview changed. Preview the page again before saving.');
     const draft = parseCurationDraft(input);
+    const hasOpening = before.openingAvailable;
     await db.query(
-      `INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids,updated_by)
-      VALUES($1,$2,$3,$4,$5) ON CONFLICT(playlist_id) DO UPDATE SET
+      `INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids,updated_by${hasOpening ? ',opening_ids' : ''})
+      VALUES($1,$2,$3,$4,$5${hasOpening ? ',$6' : ''}) ON CONFLICT(playlist_id) DO UPDATE SET
       mode=EXCLUDED.mode,ordered_ids=EXCLUDED.ordered_ids,excluded_ids=EXCLUDED.excluded_ids,
-      updated_by=EXCLUDED.updated_by,updated_at=now(),revision=playlist_curations.revision+1`,
-      [playlistId, draft.mode, draft.orderedIds, draft.excludedIds, actor],
+      updated_by=EXCLUDED.updated_by,updated_at=now(),revision=playlist_curations.revision+1
+      ${hasOpening ? ',opening_ids=EXCLUDED.opening_ids' : ''}`,
+      [playlistId, draft.mode, draft.orderedIds, draft.excludedIds, actor, ...(hasOpening ? [draft.openingIds ?? null] : [])],
     );
     return readCurationSnapshot(playlistId, db);
   });
@@ -107,6 +118,7 @@ export type CurationConfiguration = {
   mode: CurationDraft['mode'];
   ordered_ids: string[];
   excluded_ids: string[];
+  opening_ids?: CurationDraft['openingIds'];
 };
 
 /** Read only requested destinations; missing schema retains the legacy fallback. */
@@ -114,7 +126,7 @@ export async function readCurationConfigurations(slugs: string[]): Promise<Map<s
   if (!process.env.DATABASE_URL || !slugs.length) return new Map();
   try {
     const rows = await query<CurationConfiguration & { slug: string }>(
-      `SELECT p.slug,p.is_public,c.mode,c.ordered_ids,c.excluded_ids FROM playlists p
+      `SELECT p.slug,p.is_public,c.mode,c.ordered_ids,c.excluded_ids,to_jsonb(c)->'opening_ids' AS opening_ids FROM playlists p
       JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=ANY($1::text[])`,
       [slugs],
     );
@@ -128,7 +140,7 @@ export async function readCurationConfigurations(slugs: string[]): Promise<Map<s
 async function readCurationConfiguration(slug: string): Promise<CurationConfiguration | null> {
   try {
     const rows = await query<CurationConfiguration>(
-      `SELECT p.is_public,c.mode,c.ordered_ids,c.excluded_ids FROM playlists p
+      `SELECT p.is_public,c.mode,c.ordered_ids,c.excluded_ids,to_jsonb(c)->'opening_ids' AS opening_ids FROM playlists p
       JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=$1`,
       [slug],
     );
@@ -149,7 +161,7 @@ export async function resolveCuratedPlaylist(
   if (!saved) return null;
   if (!saved.is_public || getCurationAliases(slug) === null) return [];
   return resolveCuration(
-    { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids },
+    { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids, openingIds: saved.opening_ids },
     await listCurationCandidates(slug),
   );
 }
