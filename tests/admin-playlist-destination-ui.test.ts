@@ -20,20 +20,21 @@ function playlist(id: string): PlaylistSummary {
     fallbackModelSlugs: [] };
 }
 
-async function mount(destinations: PlaylistDestination[], initialItems: PlaylistItemRecord[] = []) {
+async function mount(destinations: PlaylistDestination[], initialItems: PlaylistItemRecord[] = [], options: { playlists?: PlaylistSummary[]; enableCuration?: boolean } = {}) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/admin/playlists' });
   Object.defineProperty(dom.window, 'innerWidth', { configurable: true, value: 688 });
   const previous = new Map<string, PropertyDescriptor | undefined>();
-  const requests: Array<{ url: string; resolve: (response: Response) => void }> = [];
+  const requests: Array<{ url: string; init?: RequestInit; resolve: (response: Response) => void }> = [];
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
-    React, IS_REACT_ACT_ENVIRONMENT: true, fetch: (url: string) => new Promise<Response>(resolve => requests.push({ url, resolve })) })) {
+    React, IS_REACT_ACT_ENVIRONMENT: true, fetch: (url: string, init?: RequestInit) => new Promise<Response>(resolve => requests.push({ url, init, resolve })) })) {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
   const { PlaylistsManager } = await import('../frontend/components/admin/PlaylistsManager');
   await act(async () => root.render(React.createElement(PlaylistsManager, { initialDestinations: destinations,
-    initialPlaylists: destinations.filter(d => d.playlistId).map(d => playlist(d.playlistId!)), initialPlaylistId: null, initialItems })));
+    initialPlaylists: options.playlists ?? destinations.filter(d => d.playlistId).map(d => playlist(d.playlistId!)),
+    initialPlaylistId: null, initialItems, enableCuration: options.enableCuration })));
   return { dom, requests, async close() { await act(async () => root.unmount()); dom.window.close();
     for (const [key, descriptor] of previous) if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);
   } };
@@ -89,5 +90,110 @@ test('groups_models_by_family', async () => {
     assert.ok(document.querySelector('[data-destination-id="model:wan-4"]'));
     assert.equal(Boolean(document.querySelector('[data-long-inventory] [data-destination-id="model:wan-3"]')), false);
     assert.equal(view.requests.length, 0);
+  } finally { await view.close(); }
+});
+
+test('shared playlist IDs keep the selected logical destination after a successful fetch', async () => {
+  const examples = destination('examples', 'examples', 'shared');
+  examples.label = 'Examples'; examples.path = '/examples';
+  const starter = destination('starter', 'starter', 'shared');
+  starter.label = 'Starter video'; starter.path = '/app?tab=starter';
+  const maintenance = destination('playlist:orphan', 'maintenance', 'orphan');
+  maintenance.label = 'Orphan'; maintenance.path = null; maintenance.status = 'unconnected';
+  const view = await mount([examples, starter, maintenance], [], { playlists: [playlist('shared'), playlist('orphan')] });
+  try {
+    const { document } = view.dom.window;
+    await act(async () => (document.querySelector('[data-destination-id="starter"]') as HTMLButtonElement).click());
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /Examples/);
+    assert.equal(view.requests[0].url, '/api/admin/playlists/shared');
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true, playlist: playlist('shared'), items: [] })));
+    assert.equal(document.querySelector('[data-destination-id="starter"]')?.getAttribute('aria-pressed'), 'true');
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /Starter video/);
+    assert.equal(document.querySelector('[data-destination-editor] a[href]')?.getAttribute('href'), '/app?tab=starter');
+    await act(async () => (document.querySelector('[data-destination-id="playlist:orphan"]') as HTMLButtonElement).click());
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, playlist: playlist('orphan'), items: [] })));
+    assert.equal(document.querySelector('[data-destination-id="playlist:orphan"]')?.getAttribute('aria-pressed'), 'true');
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /Orphan/);
+  } finally { await view.close(); }
+});
+
+test('missing starter and historical rows are diagnostics with a maintenance action', async () => {
+  const missing = destination('starter', 'starter', null);
+  missing.slug = 'live-starter'; missing.warning = 'Runtime expects live-starter';
+  const old = destination('playlist:old', 'maintenance', 'old');
+  old.status = 'historical'; old.editable = false; old.warning = 'Historical slug mismatch';
+  const view = await mount([destination('examples', 'examples', 'examples'), missing, old]);
+  try {
+    const { document } = view.dom.window;
+    assert.match(document.body.textContent!, /Runtime expects live-starter/);
+    const maintenanceLink = document.querySelector('[data-missing-destination="starter"] a[href="#playlist-maintenance"]') as HTMLAnchorElement;
+    assert.ok(maintenanceLink);
+    await act(async () => maintenanceLink.click());
+    assert.equal((document.querySelector('#playlist-maintenance') as HTMLDetailsElement).open, true);
+    assert.equal((document.querySelector('[data-destination-id="starter"]') as HTMLButtonElement).disabled, true);
+    assert.equal(document.querySelector('[data-long-inventory] [data-destination-id="playlist:old"]'), null);
+    assert.ok(document.querySelector('[data-destination-diagnostics] [data-destination-id="playlist:old"]'));
+    assert.equal(document.querySelector('[data-destination-diagnostics] [data-destination-id="playlist:old"] button'), null);
+  } finally { await view.close(); }
+});
+
+test('legacy order save refreshes destination counts and source chain', async () => {
+  const examples = destination('examples', 'examples', 'examples');
+  const items: PlaylistItemRecord[] = ['one', 'two'].map((videoId, orderIndex) => ({ playlistId: 'examples', videoId,
+    orderIndex, pinned: false, createdAt: '', visibility: 'public', indexable: true, isPublishedOnSite: true }));
+  const view = await mount([examples], items);
+  try {
+    const { document } = view.dom.window;
+    await act(async () => (document.querySelector('[aria-label="Move item 2 up"]') as HTMLButtonElement).click());
+    await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Save order')!.click());
+    assert.equal(view.requests[0].init?.method, 'PUT');
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true })));
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, playlist: playlist('examples'), items })));
+    assert.equal(view.requests[2].url, '/api/admin/playlists');
+    await act(async () => view.requests[2].resolve(Response.json({ ok: true, playlists: [playlist('examples')],
+      destinations: [{ ...examples, publicCount: 1, sourceSlugs: ['new-source'] }] })));
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /1 public media/);
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /new-source/);
+  } finally { await view.close(); }
+});
+
+test('curation save refreshes the destination projection', async () => {
+  const examples = destination('examples', 'examples', 'examples');
+  const managed = { ...playlist('examples'), surfaceRole: 'examplesHub' as const };
+  const view = await mount([examples], [], { playlists: [managed], enableCuration: true });
+  try {
+    const { document } = view.dom.window;
+    assert.equal(view.requests[0].url, '/api/admin/playlists/examples/curation');
+    const snapshot = { available: true, openingAvailable: false, supported: true, slug: 'examples',
+      isPublic: true, revision: 'r1', config: null };
+    const candidate = { id: 'one', prompt: 'One', engineId: 'wan-3', engineLabel: 'Wan 3', videoUrl: '/one.mp4', thumbUrl: null, createdAt: '' };
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true, snapshot, candidates: [candidate], initialIds: ['one'] })));
+    await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Preview changes')!.click());
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, preview: { items: [candidate], token: 't1', revision: 'r1' } })));
+    await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Save changes')!.click());
+    await act(async () => view.requests[2].resolve(Response.json({ ok: true, snapshot: { ...snapshot, revision: 'r2' } })));
+    assert.equal(view.requests[3].url, '/api/admin/playlists');
+    await act(async () => view.requests[3].resolve(Response.json({ ok: true, playlists: [managed],
+      destinations: [{ ...examples, publicCount: 1, sourceSlugs: ['manual-only'] }] })));
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /1 public media/);
+    assert.match(document.querySelector('[data-destination-editor]')!.textContent!, /manual-only/);
+  } finally { await view.close(); }
+});
+
+test('legacy remove refreshes the destination projection', async () => {
+  const examples = destination('examples', 'examples', 'examples');
+  const item: PlaylistItemRecord = { playlistId: 'examples', videoId: 'one', orderIndex: 0, pinned: false,
+    createdAt: '', visibility: 'public', indexable: true, isPublishedOnSite: true };
+  const view = await mount([examples], [item]);
+  try {
+    view.dom.window.confirm = () => true;
+    await act(async () => (view.dom.window.document.querySelector('[aria-label="Remove item 1 from collection"]') as HTMLButtonElement).click());
+    assert.equal(view.requests[0].init?.method, 'DELETE');
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true })));
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, playlist: playlist('examples'), items: [] })));
+    assert.equal(view.requests[2].url, '/api/admin/playlists');
+    await act(async () => view.requests[2].resolve(Response.json({ ok: true, playlists: [playlist('examples')],
+      destinations: [{ ...examples, publicCount: 0 }] })));
+    assert.match(view.dom.window.document.querySelector('[data-destination-editor]')!.textContent!, /0 public media/);
   } finally { await view.close(); }
 });

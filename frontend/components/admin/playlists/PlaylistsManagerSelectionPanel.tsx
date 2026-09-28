@@ -12,6 +12,7 @@ type PlaylistsManagerSelectionPanelProps = PlaylistItemsSectionProps & {
   destination?: PlaylistDestination | null;
   enableCuration?: boolean;
   onCurationStateChange?: (state: { dirty: boolean; busy: boolean }) => void;
+  onCurationSaved?: () => void | Promise<void>;
   onDeletePlaylist: (playlistId: string) => void;
   onFieldChange: (playlistId: string, field: 'name' | 'slug' | 'description', value: string) => void;
   onSavePlaylist: (playlistId: string) => void;
@@ -24,6 +25,7 @@ export function PlaylistsManagerSelectionPanel({
   playlist,
   enableCuration = false,
   onCurationStateChange,
+  onCurationSaved,
   isPending,
   onDeletePlaylist,
   onFieldChange,
@@ -31,15 +33,17 @@ export function PlaylistsManagerSelectionPanel({
   onSeedFamilyPlaylist,
   ...itemsSectionProps
 }: PlaylistsManagerSelectionPanelProps) {
-  if (!playlist) {
+  if (!playlist || (destination && !destination.editable)) {
     return (
       <div className="rounded-card border border-dashed border-hairline bg-surface p-10 text-center text-sm text-text-secondary">
-        Select a connected destination to start curating. Missing and historical collections are listed below for diagnosis.
+        {destination?.warning ?? 'Select a connected destination to start curating. Missing and historical collections are listed below for diagnosis.'}
       </div>
     );
   }
 
-  const usesCuration = enableCuration && ['examplesHub', 'family', 'model'].includes(playlist.surfaceRole);
+  const usesCuration = enableCuration && (destination
+    ? ['examples', 'family', 'model'].includes(destination.kind)
+    : ['examplesHub', 'family', 'model'].includes(playlist.surfaceRole));
   const legacyEditor = (
     <>
       {playlist.surfaceRole === 'family' ? (
@@ -88,9 +92,10 @@ export function PlaylistsManagerSelectionPanel({
       </header>
       {usesCuration ? (
         <PlacementEditor
-          key={playlist.id}
+          key={`${destination?.id ?? playlist.id}:${playlist.id}`}
           playlistId={playlist.id}
           onStateChange={onCurationStateChange}
+          onSaved={onCurationSaved}
           fallback={legacyEditor}
         />
       ) : (

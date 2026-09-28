@@ -52,6 +52,7 @@ export function PlaylistsSidebar({
       </div>
     );
     return (
+      <>
       <aside data-long-inventory className="min-w-0 space-y-4 border-t border-border pt-4 lg:col-start-1 lg:row-start-1 lg:border-r lg:border-t-0 lg:pr-5 lg:pt-0">
         <label className="block text-xs font-medium text-text-secondary">Find a destination
           <input type="search" value={search} onChange={event => setSearch(event.target.value)}
@@ -72,10 +73,13 @@ export function PlaylistsSidebar({
           <section id="playlist-image-audio" className="space-y-1"><h2 className="text-xs font-semibold uppercase text-text-secondary">Image / audio</h2>
             {others.filter(matches).map(entryButton)}
           </section>
-          {diagnostics.length ? <section className="space-y-1"><h2 className="text-xs font-semibold uppercase text-text-secondary">Unconnected collections</h2>
-            {diagnostics.filter(matches).map(entryButton)}</section> : null}
         </div>
       </aside>
+      {diagnostics.length ? <details data-destination-diagnostics className="space-y-2 border-t border-border pt-3 lg:col-start-1">
+        <summary className="cursor-pointer text-xs font-semibold uppercase text-text-secondary">Unconnected and historical collections</summary>
+        <div className="space-y-1 pt-2">{diagnostics.filter(matches).map(entryButton)}</div>
+      </details> : null}
+      </>
     );
   }
   const groups = Object.entries(groupedPlaylists).filter(([key]) => key !== 'draft' || showDraftCollections);

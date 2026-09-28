@@ -14,6 +14,7 @@ import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar'
 import { DestinationSwitcher, chooseInitialDestination } from '@/components/admin/playlists/DestinationSwitcher';
 import { usePlaylistHelperActions } from '@/components/admin/playlists/usePlaylistHelperActions';
 import { usePlaylistDragReorder } from '@/components/admin/playlists/usePlaylistDragReorder';
+import { usePlaylistDestinationActions } from '@/components/admin/playlists/usePlaylistDestinationActions';
 import {
   buildFamilyHelpers,
   buildModelHelpers,
@@ -42,8 +43,9 @@ export function PlaylistsManager({
 }: PlaylistsManagerProps) {
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
   const [destinations, setDestinations] = useState(initialDestinations);
-  const initialDestinationId = chooseInitialDestination(initialDestinations)?.playlistId ?? null;
-  const [selectedId, setSelectedId] = useState<string | null>(initialDestinations.length ? initialDestinationId : initialPlaylistId);
+  const initialDestination = chooseInitialDestination(initialDestinations);
+  const [selectedId, setSelectedId] = useState<string | null>(initialDestinations.length ? initialDestination?.playlistId ?? null : initialPlaylistId);
+  const [selectedDestinationId, setSelectedDestinationId] = useState<string | null>(initialDestination?.id ?? null);
   const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
   const savedItems = useRef(sortItemsForDisplay(initialItems));
   const [isItemsDirty, setItemsDirty] = useState(false);
@@ -73,18 +75,19 @@ export function PlaylistsManager({
   useEffect(() => {
     setPlaylists(sortPlaylists(initialPlaylists));
     setDestinations(initialDestinations);
-    setSelectedId(initialDestinations.length ? initialDestinationId : initialPlaylistId);
+    setSelectedId(initialDestinations.length ? initialDestination?.playlistId ?? null : initialPlaylistId);
+    setSelectedDestinationId(initialDestination?.id ?? null);
     savedItems.current = sortItemsForDisplay(initialItems);
     setItems(savedItems.current);
     setItemsDirty(false);
     clearDragState();
-  }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists, initialDestinations, initialDestinationId]);
+  }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists, initialDestinations, initialDestination?.id, initialDestination?.playlistId]);
 
   const selectedPlaylist = useMemo(
     () => playlists.find((playlist) => playlist.id === selectedId) ?? null,
     [playlists, selectedId],
   );
-  const selectedDestination = destinations.find(destination => destination.playlistId === selectedId && destination.kind !== 'maintenance') ?? null;
+  const selectedDestination = destinations.find(destination => destination.id === selectedDestinationId) ?? null;
 
   useEffect(() => {
     if (selectedPlaylist && getPlaylistGroup(selectedPlaylist) === 'draft') {
@@ -174,20 +177,21 @@ export function PlaylistsManager({
       );
       const nextDestinations = Array.isArray(json.destinations) ? json.destinations as PlaylistDestination[] : destinations;
       setDestinations(nextDestinations);
-      const preferredId =
-        preferredPlaylistId && nextPlaylists.some((playlist) => playlist.id === preferredPlaylistId)
-          ? preferredPlaylistId
-          : (nextDestinations.find(destination => destination.id === 'examples' && destination.status === 'connected')?.playlistId ??
-            nextDestinations.find(destination => destination.kind === 'family' && destination.status === 'connected')?.playlistId ??
-            nextPlaylists.find((playlist) => getPlaylistGroup(playlist) !== 'draft')?.id ??
-            nextPlaylists[0]?.id ??
-            null);
+      const preferredIsEditable = nextDestinations.length === 0 || nextDestinations.some(destination =>
+        destination.playlistId === preferredPlaylistId && destination.editable);
+      const preferredId = preferredPlaylistId && preferredIsEditable && nextPlaylists.some(playlist => playlist.id === preferredPlaylistId)
+        ? preferredPlaylistId
+        : (chooseInitialDestination(nextDestinations)?.playlistId ??
+          (nextDestinations.length ? null : nextPlaylists.find(playlist => getPlaylistGroup(playlist) !== 'draft')?.id ?? nextPlaylists[0]?.id ?? null));
 
       if (preferredId) {
         await refreshPlaylistItems(preferredId, nextPlaylists);
+        setSelectedDestinationId(current => nextDestinations.find(destination => destination.id === current && destination.playlistId === preferredId && destination.editable)?.id
+          ?? nextDestinations.find(destination => destination.playlistId === preferredId && destination.editable)?.id ?? null);
       } else {
         setPlaylists(nextPlaylists);
         setSelectedId(null);
+        setSelectedDestinationId(null);
         savedItems.current = [];
         setItems([]);
         setItemsDirty(false);
@@ -229,28 +233,10 @@ export function PlaylistsManager({
     setError,
   });
 
-  const handleSelectPlaylist = useCallback(
-    (playlistId: string) => {
-      if (busy.current || curationState.busy) return;
-      if ((isItemsDirty || curationState.dirty || selectedPlaylist?.dirty) && !window.confirm('Discard unsaved changes and change destination?'))
-        return;
-      setFeedback(null);
-      setError(null);
-      runAction(async () => {
-        try {
-          await refreshPlaylistItems(playlistId);
-        } catch (loadError) {
-          console.error('[PlaylistsManager] load items failed', loadError);
-          setError(loadError instanceof Error ? loadError.message : 'Failed to load collection items');
-        }
-      });
-    },
-    [busy, curationState, isItemsDirty, refreshPlaylistItems, runAction, selectedPlaylist],
-  );
-  const handleSelectDestination = useCallback((destinationId: string) => {
-    const destination = destinations.find(entry => entry.id === destinationId);
-    if (destination?.playlistId && destination.editable) handleSelectPlaylist(destination.playlistId);
-  }, [destinations, handleSelectPlaylist]);
+  const { handleSelectPlaylist, handleSelectDestination, refreshProjection } = usePlaylistDestinationActions({
+    busy, curationState, destinations, isItemsDirty, metadataDirty: Boolean(selectedPlaylist?.dirty),
+    refreshPlaylistItems, runAction, setDestinations, setSelectedDestinationId, setError, setFeedback,
+  });
 
   const handleFieldChange = useCallback((playlistId: string, field: 'name' | 'slug' | 'description', value: string) => {
     setPlaylists((current) =>
@@ -371,6 +357,7 @@ export function PlaylistsManager({
             throw new Error(json?.error ?? `Failed to remove clip (${res.status})`);
           }
           await refreshPlaylistItems(selectedId);
+          await refreshProjection();
           setFeedback('Clip removed from collection');
         } catch (removeError) {
           console.error('[PlaylistsManager] remove video failed', removeError);
@@ -378,7 +365,7 @@ export function PlaylistsManager({
         }
       });
     },
-    [isItemsDirty, refreshPlaylistItems, runAction, selectedId],
+    [isItemsDirty, refreshPlaylistItems, refreshProjection, runAction, selectedId],
   );
 
   const handleSaveItems = useCallback(() => {
@@ -401,12 +388,13 @@ export function PlaylistsManager({
         setItemsDirty(false);
         setFeedback('Collection order saved');
         await refreshPlaylistItems(selectedId);
+        await refreshProjection();
       } catch (saveError) {
         console.error('[PlaylistsManager] save items failed', saveError);
         setError(saveError instanceof Error ? saveError.message : 'Failed to save collection order');
       }
     });
-  }, [items, refreshPlaylistItems, runAction, selectedId]);
+  }, [items, refreshPlaylistItems, refreshProjection, runAction, selectedId]);
 
   const missingFamilyCount = familyHelpers.filter((helper) => helper.status === 'missing').length;
   const missingModelCount = modelHelpers.filter((helper) => helper.status === 'missing').length;
@@ -448,6 +436,7 @@ export function PlaylistsManager({
             destination={selectedDestination}
             enableCuration={enableCuration}
             onCurationStateChange={setCurationState}
+            onCurationSaved={refreshProjection}
             draggingId={draggingId}
             dropAtEnd={dropAtEnd}
             dropPlacement={dropPlacement}

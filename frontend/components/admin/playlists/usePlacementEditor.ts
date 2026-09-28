@@ -18,6 +18,7 @@ type Loaded = {
 export function usePlacementEditor(
   playlistId: string,
   onStateChange?: (state: { dirty: boolean; busy: boolean }) => void,
+  onSaved?: () => void | Promise<void>,
 ) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [draft, setDraft] = useState<CurationDraft>({
@@ -137,6 +138,7 @@ export function usePlacementEditor(
       });
       setPreview(null);
       setMessage('Page selection saved.');
+      void Promise.resolve().then(() => onSaved?.()).catch(error => console.error('[PlacementEditor] destination refresh failed', error));
     });
   return {
     loaded,

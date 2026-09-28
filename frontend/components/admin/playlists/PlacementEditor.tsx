@@ -10,9 +10,10 @@ type Props = {
   playlistId: string;
   fallback?: ReactNode;
   onStateChange?: (state: { dirty: boolean; busy: boolean }) => void;
+  onSaved?: () => void | Promise<void>;
 };
-export function PlacementEditor({ playlistId, onStateChange, fallback }: Props) {
-  const state = usePlacementEditor(playlistId, onStateChange);
+export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }: Props) {
+  const state = usePlacementEditor(playlistId, onStateChange, onSaved);
   const [search, setSearch] = useState('');
   const { loaded, draft, busy, dirty, change, preview } = state;
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
