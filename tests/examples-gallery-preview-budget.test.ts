@@ -55,7 +55,7 @@ test('mobile gallery keeps videos idle until a scroll gesture, then animates one
   } finally { await fixture.cleanup(); }
 });
 
-test('mobile animate control starts one preview without scrolling; desktop keeps three previews', async () => {
+test('mobile animate control starts one preview; desktop starts one and expands to three after card intent', async () => {
   const mobile = await previewFixture(false);
   try {
     await act(async () => mobile.get().togglePaused());
@@ -63,7 +63,9 @@ test('mobile animate control starts one preview without scrolling; desktop keeps
   } finally { await mobile.cleanup(); }
   const desktop = await previewFixture(true);
   try {
-    assert.deepEqual([...desktop.get().active], ['lead', 'portrait', 'side']);
+    assert.deepEqual([...desktop.get().active], ['lead']);
     assert.equal(desktop.get().paused, false);
+    await act(async () => desktop.get().setIntent('side'));
+    assert.deepEqual([...desktop.get().active], ['side', 'lead', 'portrait']);
   } finally { await desktop.cleanup(); }
 });

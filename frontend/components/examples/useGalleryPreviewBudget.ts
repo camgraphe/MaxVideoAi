@@ -7,6 +7,7 @@ export function useGalleryPreviewBudget(ids: string[], suspended=false) {
   const [budget,setBudget]=useState(0);
   const [userPaused,setUserPaused]=useState(false);
   const [mobileActivated,setMobileActivated]=useState(false);
+  const [desktopActivated,setDesktopActivated]=useState(false);
   useEffect(()=>{
     const query=window.matchMedia('(min-width: 768px)');
     const sync=()=>setBudget(query.matches?3:1);
@@ -27,11 +28,16 @@ export function useGalleryPreviewBudget(ids: string[], suspended=false) {
     if(previous.has(id)===inView)return previous;
     const next=new Set(previous); if(inView)next.add(id);else next.delete(id);return next;
   }),[]);
+  const onIntent=useCallback((id:string|null)=>{
+    setIntent(id);
+    if(id)setDesktopActivated(true);
+  },[]);
   const paused=userPaused||(budget===1&&!mobileActivated);
-  const active=useMemo(()=>new Set(selectPreviewIds(ids,visible,intent,budget,paused||suspended)),[ids,visible,intent,budget,paused,suspended]);
+  const activeBudget=budget===3&&!desktopActivated?1:budget;
+  const active=useMemo(()=>new Set(selectPreviewIds(ids,visible,intent,activeBudget,paused||suspended)),[ids,visible,intent,activeBudget,paused,suspended]);
   const togglePaused=useCallback(()=>{
     if(budget===1&&!mobileActivated){setMobileActivated(true);setUserPaused(false);return;}
     setUserPaused(value=>!value);
   },[budget,mobileActivated]);
-  return {active,onVisibility,setIntent,paused,togglePaused};
+  return {active,onVisibility,setIntent:onIntent,paused,togglePaused};
 }
