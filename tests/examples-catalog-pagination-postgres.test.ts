@@ -176,7 +176,10 @@ test('public gallery traverses every eligible video beyond the old window and hy
     const popup=await reader.getExampleWatchDetail('kling-21');
     const page=await reader.getVideoWatchPageDataById('kling-dance-film');
     assert.ok(page);assert.equal(page.isEligible,true,JSON.stringify(page.signals.editorialQaErrors));
+    statements.length=0;
     const direct=await reader.buildExampleWatchDetail(page.video,page.signals);
+    assert.ok(!statements.some(statement=>statement.text.includes('video_seo_pages')),
+      'the prepared watch page already owns editorial reads; projecting its reader must not repeat them');
     assert.equal(popup.title,'Kling 3 Pro cinematic dance in a sunlit courtyard');assert.equal(popup.watchHref,'/video/kling-dance-film');
     assert.equal(popup.context.intro,'An original Kling 3 Pro dance film, with a continuous camera orbit around a sunlit courtyard and realistic choreography in a single flowing shot.');
     assert.deepEqual(popup,direct,'both surfaces project the same persisted editorial entry');

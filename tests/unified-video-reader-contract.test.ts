@@ -23,8 +23,14 @@ test('direct watch pages and gallery use the same reader without replacing canon
 test('reader styles stay local to both reader shells without adding a blocking stylesheet', () => {
  const folder = 'frontend/components/examples/';
  const watch = read('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
+ const watchLayout = read('frontend/app/(core)/video/layout.tsx');
  const modal = read(`${folder}ExampleReader.client.tsx`);
- assert.match(watch, /<ExampleReaderStyles\s*\/>/);
+ assert.match(watchLayout, /<ExampleReaderStyles\s*\/>/);
+ assert.ok(watchLayout.indexOf('<ExampleReaderStyles') < watchLayout.indexOf('<MarketingVideoLayout'),
+   'emit styles before the existing marketing shell waits for its auth snapshot');
+ assert.match(watchLayout, /<MarketingVideoLayout>\{children\}<\/MarketingVideoLayout>/);
+ assert.doesNotMatch(watchLayout, /\basync\b|\bawait\b/, 'reader CSS must be available before watch data resolves');
+ assert.doesNotMatch(watch, /<ExampleReaderStyles/, 'emit the stylesheet once in the earlier route shell');
  assert.match(modal, /<ExampleReaderStyles\s*\/>/);
  assert.ok(modal.indexOf('<ExampleReaderStyles') < modal.indexOf('{current?.detail ?'), 'loading and error states need the same styles');
  for (const source of [watch, ...['ExampleReader.client.tsx', 'ExampleReaderContent.tsx', 'ExampleReaderContext.tsx', 'DiscoveryVideoPlayer.client.tsx'].map(file => read(folder + file))]) {

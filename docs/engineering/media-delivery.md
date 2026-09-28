@@ -351,9 +351,10 @@ entry uses an H2 in the dialog and the existing watch URL in browser history; cl
 restores the gallery rather than fetching a second record page. Share resolves the
 canonical URL, while direct legacy ID requests keep the existing slug redirect.
 
-`example-reader-styles.tsx` owns the reader's scoped class mapping and CSS. Both
-the watch shell and dialog portal render `ExampleReaderStyles`, including dialog
-loading/error states. The small stylesheet is inline only with the reader; do not
+`example-reader-styles.tsx` owns the reader's scoped class mapping and CSS. The
+synchronous `/video` route layout emits `ExampleReaderStyles` before page data
+resolves; the dialog portal emits it including loading/error states. The small
+stylesheet is inline only on watch routes or with the dialog; do not
 import it from the initial gallery or add it to site-wide CSS. This avoids an extra
 blocking stylesheet request before the watch poster. Every class uses the
 `video-reader-` prefix; descendant integration styles remain scoped beneath it.
@@ -370,6 +371,11 @@ explicit public DTO and never exposes ownership, raw snapshots or private refere
 Source images use the existing approved-editorial/public-stable-media gate. The
 editorial single-video lookup is bounded to one row. No schema bootstrap belongs
 on this read path.
+
+Direct watch pages pass their already prepared signals to `buildExampleWatchDetail`.
+That path reuses the validated editorial/source-image projection from
+`getVideoWatchPageDataById`, without reading editorial entries or resolving source
+images again. API opens still perform their fresh lookup and source-image checks.
 
 The recorded example cost is historical. Comparison estimates use one visible
 text-to-video scenario with no references. Measured resolution/aspect take precedence;

@@ -21,9 +21,11 @@ export async function getExampleWatchDetail(id: string) {
 }
 
 export async function buildExampleWatchDetail(video: GalleryVideo, preparedSignals?: WatchPageDerivedSignals) {
-  const editorial = await getResolvedVideoSeoEditorialEntry(video.id);
+  // Direct watch pages pass the already validated editorial/source-image projection
+  // from getVideoWatchPageDataById. API opens still resolve those gates here.
+  const editorial = preparedSignals ? null : await getResolvedVideoSeoEditorialEntry(video.id);
   const signals = preparedSignals ?? deriveWatchPageSignals({ video, editorial, entry: getBaseSeoWatchVideoMeta(video.id) });
-  const sourceImages = await resolveWatchSourceImageOriginalUrls({ video, sourceImages: signals.sourceImages });
+  const sourceImages = preparedSignals?.sourceImages ?? await resolveWatchSourceImageOriginalUrls({ video, sourceImages: signals.sourceImages });
   // One read for a coherent policy across all compared engines in this response.
   const overrides = loadPricingPolicyOverrides();
   return projectExampleWatchDetail(video, editorial, context => computeCanonicalPublicSnapshot(context, { loadOverrides: () => overrides }), { ...signals, sourceImages });
