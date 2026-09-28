@@ -7,7 +7,7 @@ import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import { ExampleReaderContent } from './ExampleReaderContent';
 import { readerCopy } from './example-reader-copy';
 import type { ReaderNavigation } from './DiscoveryVideoPlayer.client';
-import styles from './example-reader.module.css';
+import styles, { ExampleReaderStyles } from './example-reader-styles';
 
 type Props = { id: string; locale: string; onClose: () => void; navigation: ReaderNavigation; navigationError: boolean };
 export default function ExampleReader({ id, locale, onClose, navigation, navigationError }: Props) {
@@ -32,6 +32,7 @@ export default function ExampleReader({ id, locale, onClose, navigation, navigat
     if (dialog && !dialog.contains(document.activeElement)) dialog.focus();
   }, [id, current, dialogRef]);
   return createPortal(<div className={styles.backdrop} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <ExampleReaderStyles/>
     <section ref={dialogRef} role="dialog" aria-modal="true" aria-label={copy.reader} aria-labelledby={current?.detail ? 'example-reader-title' : undefined}
       tabIndex={-1} onKeyDown={onDialogKeyDown} className={styles.dialog}>
       <button className={styles.close} onClick={onClose} aria-label={copy.close} data-modal-initial-focus="true"><X size={19}/></button>

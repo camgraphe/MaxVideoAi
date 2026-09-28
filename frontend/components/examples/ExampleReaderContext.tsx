@@ -1,6 +1,6 @@
 import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
-import styles from './example-reader.module.css';
+import styles from './example-reader-styles';
 
 /** The same lightweight editorial disclosure is server-rendered on the watch URL. */
 export function ExampleReaderContext({ context, detail, locale }: { context: ExampleWatchDetail['context']; detail: ExampleWatchDetail; locale: string }) {

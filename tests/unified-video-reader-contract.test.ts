@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { ExampleReaderStyles } from '../frontend/components/examples/example-reader-styles';
 const read=(path:string)=>readFileSync(path,'utf8');
 test('direct watch pages and gallery use the same reader without replacing canonical or schema ownership',()=>{
  const watch=read('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
@@ -15,4 +18,25 @@ test('direct watch pages and gallery use the same reader without replacing canon
  const nav=read('frontend/components/examples/useGalleryReader.ts');
  assert.doesNotMatch(nav,/url\.hash\s*=/,'opening a video uses its existing watch URL');
  assert.match(shared,/detail\.context/,'editorial context remains available in the shared view');
+});
+
+test('reader styles stay local to both reader shells without adding a blocking stylesheet', () => {
+ const folder = 'frontend/components/examples/';
+ const watch = read('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
+ const modal = read(`${folder}ExampleReader.client.tsx`);
+ assert.match(watch, /<ExampleReaderStyles\s*\/>/);
+ assert.match(modal, /<ExampleReaderStyles\s*\/>/);
+ assert.ok(modal.indexOf('<ExampleReaderStyles') < modal.indexOf('{current?.detail ?'), 'loading and error states need the same styles');
+ for (const source of [watch, ...['ExampleReader.client.tsx', 'ExampleReaderContent.tsx', 'ExampleReaderContext.tsx', 'DiscoveryVideoPlayer.client.tsx'].map(file => read(folder + file))]) {
+  assert.doesNotMatch(source, /example-reader\.module\.css/, 'a remaining CSS import reintroduces the extra blocking request');
+ }
+ const gallery = read(`${folder}ExamplesGalleryGrid.client.tsx`);
+ assert.doesNotMatch(gallery, /example-reader-styles/, 'the initial gallery must not load reader styles');
+});
+
+test('server-rendered reader styles preserve CSS combinators without HTML escaping', () => {
+ const html = renderToStaticMarkup(React.createElement(ExampleReaderStyles));
+ assert.equal((html.match(/<style/g) ?? []).length, 1);
+ assert.match(html, /\.video-reader-references>div/);
+ assert.doesNotMatch(html, /&gt;|&lt;|:global\(/, 'SSR must emit valid scoped CSS before hydration');
 });

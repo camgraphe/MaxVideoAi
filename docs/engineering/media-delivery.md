@@ -351,12 +351,15 @@ entry uses an H2 in the dialog and the existing watch URL in browser history; cl
 restores the gallery rather than fetching a second record page. Share resolves the
 canonical URL, while direct legacy ID requests keep the existing slug redirect.
 
-The direct watch poster keeps its existing optimized URL. `VideoWatchContent`
-registers its image resource hint before awaiting the detail/quote projection,
-using the App Router resource hint API also used for route styles. Keep one hint
-matching the native video's poster exactly. Verify response headers, HTML and the
-network trace: moving a JSX hint earlier in the HTML alone does not change the
-route CSS hints already sent in the response headers.
+`example-reader-styles.tsx` owns the reader's scoped class mapping and CSS. Both
+the watch shell and dialog portal render `ExampleReaderStyles`, including dialog
+loading/error states. The small stylesheet is inline only with the reader; do not
+import it from the initial gallery or add it to site-wide CSS. This avoids an extra
+blocking stylesheet request before the watch poster. Every class uses the
+`video-reader-` prefix; descendant integration styles remain scoped beneath it.
+The poster keeps its existing optimized URL and single matching preload. Verify
+response headers and the network trace: moving a hint earlier in HTML alone does
+not change style hints that Next has already sent in the response headers.
 
 `GET /api/examples/[id]` is an uncached read-only detail projection. It rechecks the
 same public/completed/indexable/live-output eligibility as the catalog, returns an

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Maximize, Pause, Play, Volume2, VolumeX } fr
 import { usePublicVideoControls } from '@/components/media/usePublicVideoControls';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import type { ReaderCopy } from './example-reader-copy';
-import styles from './example-reader.module.css';
+import styles from './example-reader-styles';
 
 export type ReaderNavigation = { previous: () => void; next: () => void; canPrevious: boolean; canNext: boolean; busy: boolean };
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
