@@ -76,8 +76,9 @@
 **Files:** engineering guide, evidence reports, only focused fixes if validation finds issues.
 **Interfaces:** Candidate branch checked against current main; Core Web chat independently reviews relevant performance evidence.
 
-- [ ] Run focused architecture/contracts, frontend lint/typecheck, exposure, offline public rendition check and git diff --check; then required CI suite/build.
+- [x] Run focused architecture/contracts, frontend lint/typecheck, exposure, offline public rendition check and git diff --check; then required CI suite/build.
 - [ ] Compare prepared before/after identical pages and data, alternating cold/warm desktop/mobile runs; report LCP, CLS, media bytes and first Play separately. Block repeatable regressions; field INP remains a separate measurement.
-- [ ] Verify canonical/hreflang/schema/localized links, page2 URL, watch redirects, empty/out-of-range and sitemap assumptions.
-- [ ] Fresh whole-branch review under executing-plans. Fix meaningful findings with regression coverage.
-- [ ] Create reviewable PR and attach it; production release follows deployment guide and authorized coordination only.
+  - Final application `611597f62`: 12 complete cold audits and complete warm landscape cells, with cache proof. Final warm portrait audit warns that results may be incomplete after a 929.9 s runtime; the full portrait comparison remains diagnostic. PR #363 stays draft until this performance gate is cleared. See `docs/performance/2026-09-28-video-discovery/README.md`; all earlier adverse results and gallery loading costs remain recorded.
+- [x] Verify canonical/hreflang/schema/localized links, page2 URL, watch redirects, empty/out-of-range and sitemap assumptions. FR/ES localhost redirect loops reproduce on both versions; full localized HTTP verification remains a documented local limit.
+- [x] Fresh whole-branch review under executing-plans. Fix meaningful findings with regression coverage.
+- [x] Create reviewable PR and attach it; production release follows deployment guide and authorized coordination only. PR #363; no production migration, merge or deployment.
