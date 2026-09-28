@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { VideoSeoStatus } from '@/config/video-seo-editorial';
 import { authFetch } from '@/lib/authFetch';
 import { curationItemFormat, type CurationItem } from '@/lib/admin/playlist-curation';
@@ -23,7 +23,12 @@ export function PlacementMediaInspector({ item, onClose, onRemove, onExclude }: 
   const [play, setPlay] = useState(false);
   const [seo, setSeo] = useState<SeoState | null>(null);
   const [seoError, setSeoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const format = curationItemFormat(item);
+
+  useEffect(() => {
+    if (play) videoRef.current?.focus();
+  }, [play]);
 
   useEffect(() => {
     let active = true;
@@ -43,7 +48,7 @@ export function PlacementMediaInspector({ item, onClose, onRemove, onExclude }: 
       className="relative z-10 flex max-h-[100dvh] w-full max-w-6xl flex-col overflow-y-auto rounded-t-2xl bg-surface shadow-2xl outline-none sm:max-h-[95vh] sm:rounded-2xl lg:flex-row">
       <div className="flex min-h-64 flex-1 items-center justify-center bg-slate-950 p-3 sm:p-5">
         <div className={`relative w-full overflow-hidden rounded-lg bg-black ${format === '9:16' ? 'max-w-[min(38vh,360px)] aspect-[9/16]' : 'aspect-video max-w-4xl'}`}>
-          {play ? <video src={item.videoUrl} poster={item.thumbUrl ?? undefined} controls playsInline autoPlay preload="none"
+          {play ? <video ref={videoRef} tabIndex={0} src={item.videoUrl} poster={item.thumbUrl ?? undefined} controls playsInline autoPlay preload="none"
             className="absolute inset-0 h-full w-full object-contain" />
             : <>
               {item.thumbUrl ? <Image src={item.thumbUrl} alt="" fill unoptimized sizes="(max-width: 640px) 100vw, 60vw" className="object-contain" />

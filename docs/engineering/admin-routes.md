@@ -320,6 +320,42 @@ configurations and model curation remain editable.
 Rejected saves retain the draft and invalidate its preview; destination-switch and
 before-unload guards retain their existing ownership.
 
+The gallery workbench keeps the complete ID draft in `usePlacementEditor` and
+renders only the current 48-item selected window. `DestinationPicker` is the one
+compact destination control before the editor; it groups hub, starter, families,
+models, image/audio and maintenance entries, with search by name, slug and path.
+Missing and historical entries remain diagnostics linked to explicit collection
+maintenance. Browsing them never creates or reconciles a collection. The legacy
+`PlaylistsSidebar` remains only when no destination projection is available.
+`PlacementOpeningEditor` displays the four measured source slots as a visual board;
+its portrait slot requires a 9:16 source, and the opening IDs are omitted from the
+continuation grid. `PlacementMediaList` presents selected cards and moves an ID to
+a one-based position in the complete order, including unloaded windows.
+
+`PlacementExplorerDialog` mounts `PlacementCandidatePicker` only when Add videos
+or an opening slot is chosen. It reuses the authenticated 48-item cursor endpoint,
+resets cursors on filter/slot change and drops late responses after closing.
+The opening-enabled browser fixture records zero candidate-page requests and zero
+MP4 requests on initial load; opening the explorer starts a candidate-page request,
+and explicit Play starts an MP4 request. The earlier editor requested its first
+candidate page during initial load. This is an admin request-path check, not a
+measured public Core Web Vitals improvement.
+`PlacementMediaInspector` loads no original video until Play; opening it performs
+one authenticated read at `/api/admin/video-seo/[videoId]/status`. That GET derives
+editorial state and actual video-sitemap eligibility from the existing watch-row
+owner, returns no prompt or media URL, and links to the Video SEO editor. Gallery
+selection and Video SEO approval are displayed as separate states. No SEO write is
+performed from the workbench.
+
+`PlacementDraftActions` keeps the current mode, cancel, preview and save in view.
+The focused preview dialog shows effective current/proposed totals, first 24 IDs,
+removals, suppressed sources, opening formats and warnings. Save still requires the
+current preview token and revision through the existing transactional service.
+A failed or 409 save keeps the draft, clears the preview token and requires a new
+preview. A successful save confirms the local snapshot before any inventory refresh.
+The workbench changes admin composition only; it does not alter public pagination,
+watch URLs, SEO publication gates, model registry or media-delivery owners.
+
 
 ### Gallery destinations and reconciliation
 
@@ -335,8 +371,8 @@ unmanaged preferred/featured additions. At most four model projections run
 concurrently; each reads at most 200 playlist videos plus the finite authored
 addition IDs. Counts retain legacy behavior when optional curation storage is absent.
 
-The switcher opens the connected hub, otherwise the first connected family. The editor
-precedes the long family/model inventory at 688px and desktop. Missing/historical
+The picker opens the connected hub, otherwise the first connected family. It precedes
+the opening board and selected cards at narrow and desktop widths. Missing/historical
 entries are diagnostics, not aliases for active readers. Reserved `examples`,
 `marketing-examples`, `welcome`, and `starter` cannot be renamed or deleted, independent
 of configuration. Historical mismatches reject ordering and curation writes too.
@@ -381,9 +417,9 @@ fallback remains for public reads; first family adoption needs opening storage.
 - Keep environment and database unchanged during the audit. Check schema availability
   through catalog reads. Use disposable PostgreSQL for opening-enabled browser fixtures;
   do not migrate a shared local database just to show four slots.
-- At 688 × 900 and desktop 1440 × 1000, confirm the selected editor starts before the
-  family/model inventory, mismatch diagnostics remain visible, and no horizontal
-  overflow occurs. Check search, candidate page 3, selected-window paging, keyboard and
+- At 688 × 900, approximately 960 pixels, desktop 1440 × 1000 and mobile, confirm the
+  compact picker and opening media precede the candidate explorer, mismatch diagnostics
+  are reachable, and no horizontal overflow occurs. Check search, candidate page 3, selected-window paging, keyboard and
   pointer ordering, dirty destination guard, preview summary and rejected-save draft
   retention. Validate 16:9 / 9:16 / 16:9 / 16:9 slot geometry on the disposable fixture.
 - Open `/examples`, a family route, and a model route. Follow available pagination,

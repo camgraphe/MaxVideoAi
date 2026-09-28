@@ -69,10 +69,6 @@ export function PlaylistsManagerSelectionPanel({
   );
   return (
     <>
-      {destination?.sourceSlugs.length ? <details data-source-chain className="rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
-        <summary className="cursor-pointer font-medium">Source details</summary>
-        <p className="pt-2">Source chain: {destination.sourceSlugs.join(' → ')}</p>
-      </details> : null}
       {usesCuration ? (
         <PlacementEditor
           key={`${destination?.id ?? playlist.id}:${playlist.id}`}
@@ -84,6 +80,10 @@ export function PlaylistsManagerSelectionPanel({
       ) : (
         legacyEditor
       )}
+      {destination?.sourceSlugs.length ? <details data-source-chain className="rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
+        <summary className="cursor-pointer font-medium">Source details</summary>
+        <p className="pt-2">Source chain: {destination.sourceSlugs.join(' → ')}</p>
+      </details> : null}
     </>
   );
 }

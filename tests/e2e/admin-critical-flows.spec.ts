@@ -153,6 +153,110 @@ test.describe('admin critical flows', () => {
     expect(mutations).toEqual([]);
   });
 
+  test('gallery workbench keeps media visible, navigable and safe across widths', async ({ page }) => {
+    test.setTimeout(120_000);
+    const mutations: string[] = [];
+    const mediaRequests: string[] = [];
+    const candidateRequests: string[] = [];
+    page.on('request', request => {
+      if (request.url().endsWith('.mp4')) mediaRequests.push(request.url());
+      if (request.url().includes('/curation/candidates')) candidateRequests.push(request.url());
+    });
+    const poster = (label: string, color: string) => `data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="${color}"/><text x="50%" y="52%" text-anchor="middle" fill="white" font-size="80">${label}</text></svg>`
+    )}`;
+    const items = ['Lead', 'Portrait', 'Side A', 'Side B', 'Tail one', 'Tail two'].map((label, index) => ({
+      id: ['lead', 'portrait', 'side-a', 'side-b', 'tail-1', 'tail-2'][index],
+      engineId: 'wan-3', engineLabel: 'Wan 3', prompt: label,
+      videoUrl: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4',
+      thumbUrl: poster(label, index === 1 ? '#7356b8' : '#3157a7'), createdAt: '2026-09-29T00:00:00Z',
+      outputWidth: index === 1 ? 720 : 1280, outputHeight: index === 1 ? 1280 : 720,
+    }));
+    const ids = items.map(item => item.id);
+    const snapshot = { available: true, supported: true, openingAvailable: true, slug: 'family-fixture',
+      isPublic: true, revision: 'r1', config: { mode: 'manual', openingIds: ids.slice(0, 4), orderedIds: ids,
+        excludedIds: [] } };
+    await page.route(/\/api\/admin\/playlists\/[^/]+\/curation\/candidates/, async route => {
+      const query = new URL(route.request().url()).searchParams;
+      const exact = query.getAll('ids');
+      const filtered = exact.length ? items.filter(item => exact.includes(item.id)) :
+        query.get('format') === '9:16' ? items.filter(item => item.id === 'portrait') : items;
+      await route.fulfill({ json: { ok: true, items: filtered, total: filtered.length, nextCursor: null } });
+    });
+    await page.route(/\/api\/admin\/playlists\/[^/]+\/curation$/, async route => {
+      const method = route.request().method();
+      if (method === 'GET') {
+        await route.fulfill({ json: { ok: true, snapshot, initialIds: ids, selectedItems: items, selectedTotal: 6 } });
+      } else if (method === 'POST') {
+        mutations.push(method);
+        await route.fulfill({ json: { ok: true, preview: { items, token: 'preview-fixture', revision: 'r1', effective: {
+          total: 6, currentTotal: 6, firstPageIds: ids, addedCount: 0, removedCount: 0,
+          suppressedSourceSlugs: [], openingFormats: ['16:9', '9:16', '16:9', '16:9'], warnings: [],
+        } } } });
+      } else {
+        mutations.push(method);
+        expect(JSON.parse(route.request().postData() ?? '{}').token).toBe('preview-fixture');
+        await route.fulfill({ json: { ok: true, snapshot: { ...snapshot, revision: 'r2' } } });
+      }
+    });
+    await page.route(/\/api\/admin\/video-seo\/[^/]+\/status$/, async route => {
+      await route.fulfill({ json: { ok: true, status: 'not_selected', inVideoSitemap: false } });
+    });
+    await openAdminRoute(page, '/admin/playlists');
+    const picker = page.locator('[data-destination-picker]');
+    if (!(await picker.count())) test.skip(true, 'requires at least one connected destination');
+    const board = page.locator('[data-opening-board]');
+    await expect(board.locator('[data-opening-slot]')).toHaveCount(4);
+    await expect(page.locator('[data-selected-grid] [data-curation-item]')).toHaveCount(2);
+    await expect(page.locator('[data-explorer-overlay]')).toHaveCount(0);
+    expect(mediaRequests).toHaveLength(0);
+    expect(candidateRequests).toHaveLength(0);
+    for (const width of [688, 960, 1440, 375]) {
+      await page.setViewportSize({ width, height: width === 1440 ? 1000 : 900 });
+      const geometry = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
+        pickerTop: document.querySelector('[data-destination-picker]')!.getBoundingClientRect().top,
+        boardTop: document.querySelector('[data-opening-board]')!.getBoundingClientRect().top,
+        boardBottom: document.querySelector('[data-opening-board]')!.getBoundingClientRect().bottom,
+      }));
+      expect(geometry.overflow, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(1);
+      expect(geometry.pickerTop).toBeLessThan(geometry.boardTop);
+      if (width === 688 || width === 960) expect(geometry.boardTop).toBeLessThan(900);
+    }
+    await page.setViewportSize({ width: 375, height: 812 });
+    const add = page.getByRole('button', { name: 'Add videos', exact: true });
+    await add.click();
+    const explorer = page.getByRole('dialog', { name: 'Add videos' });
+    await expect(explorer).toBeVisible();
+    await expect.poll(() => candidateRequests.length).toBeGreaterThan(0);
+    expect(Math.round((await explorer.boundingBox())!.width)).toBeGreaterThanOrEqual(374);
+    await page.keyboard.press('Escape');
+    await expect(explorer).toHaveCount(0);
+    await expect(add).toBeFocused();
+    const inspect = page.getByRole('button', { name: 'Inspect video' }).first();
+    await inspect.click();
+    const inspector = page.getByRole('dialog', { name: 'Video details' });
+    await expect(inspector).toBeVisible();
+    await expect(inspector.locator('video')).toHaveCount(0);
+    await expect(inspector).toContainText('Not selected for Video SEO');
+    await inspector.getByRole('button', { name: 'Play video' }).click();
+    await expect(inspector.locator('video[preload="none"]')).toBeVisible();
+    await expect(inspector.locator('video')).toBeFocused();
+    await expect.poll(() => mediaRequests.length).toBeGreaterThan(0);
+    await page.keyboard.press('Escape');
+    await expect(inspector).toHaveCount(0);
+    await expect(inspect).toBeFocused();
+    const selected = page.locator('[data-curation-item="tail-1"]');
+    await selected.locator('summary').click();
+    await selected.getByRole('button', { name: 'Move item 1 down' }).click();
+    await page.getByRole('button', { name: 'Preview changes' }).click();
+    const preview = page.getByRole('dialog', { name: 'Page preview' });
+    await expect(preview).toContainText('First page · up to 24 videos');
+    await preview.getByRole('button', { name: 'Save this selection' }).click();
+    await expect(page.locator('[data-draft-status]')).toHaveText('Saved');
+    expect(mutations).toEqual(['POST', 'PUT']);
+  });
+
   test('retired membership tiers remain readable without editing or applying changes', async ({ page }) => {
     const errors = trackClientErrors(page);
     const mutations: string[] = [];

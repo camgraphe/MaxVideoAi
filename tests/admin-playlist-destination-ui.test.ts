@@ -28,6 +28,7 @@ async function mount(destinations: PlaylistDestination[], initialItems: Playlist
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const requests: Array<{ url: string; init?: RequestInit; resolve: (response: Response) => void }> = [];
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
+    HTMLElement: dom.window.HTMLElement,
     React, IS_REACT_ACT_ENVIRONMENT: true, fetch: (url: string, init?: RequestInit) => new Promise<Response>(resolve => requests.push({ url, init, resolve })) })) {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
@@ -162,6 +163,8 @@ test('legacy order save refreshes destination counts and source chain', async ()
     assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /1 public media/);
     const details = document.querySelector('[data-source-chain]') as HTMLDetailsElement;
     assert.ok(details);
+    assert.ok(document.querySelector('[data-destination-editor]')!.compareDocumentPosition(details) & document.defaultView!.Node.DOCUMENT_POSITION_FOLLOWING,
+      'source diagnostics follow the working area');
     details.open = true;
     assert.match(details.textContent!, /new-source/);
   } finally { await view.close(); }
@@ -178,13 +181,13 @@ test('curation save refreshes the destination projection', async () => {
       isPublic: true, revision: 'r1', config: null };
     const candidate = { id: 'one', prompt: 'One', engineId: 'wan-3', engineLabel: 'Wan 3', videoUrl: '/one.mp4', thumbUrl: null, createdAt: '' };
     await act(async () => view.requests[0].resolve(Response.json({ ok: true, snapshot, selectedItems: [candidate], selectedTotal: 1, initialIds: ['one'] })));
-    await act(async () => view.requests[1].resolve(Response.json({ok:true,items:[candidate],nextCursor:null,total:1})));
+    assert.equal(view.requests.length, 1, 'candidate inventory stays deferred until the explorer opens');
     await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Preview changes')!.click());
-    await act(async () => view.requests[2].resolve(Response.json({ ok: true, preview: { items: [candidate], token: 't1', revision: 'r1' } })));
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, preview: { items: [candidate], token: 't1', revision: 'r1' } })));
     await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Save changes')!.click());
-    await act(async () => view.requests[3].resolve(Response.json({ ok: true, snapshot: { ...snapshot, revision: 'r2' } })));
-    assert.equal(view.requests[4].url, '/api/admin/playlists');
-    await act(async () => view.requests[4].resolve(Response.json({ ok: true, playlists: [managed],
+    await act(async () => view.requests[2].resolve(Response.json({ ok: true, snapshot: { ...snapshot, revision: 'r2' } })));
+    assert.equal(view.requests[3].url, '/api/admin/playlists');
+    await act(async () => view.requests[3].resolve(Response.json({ ok: true, playlists: [managed],
       destinations: [{ ...examples, publicCount: 1, sourceSlugs: ['manual-only'] }] })));
     assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /1 public media/);
     assert.match(document.querySelector('[data-source-chain]')!.textContent!, /manual-only/);
