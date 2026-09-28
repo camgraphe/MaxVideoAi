@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ playlis
       return NextResponse.json({ ok: true, items, nextCursor: null, total: items.length });
     }
     const page = await searchCurationCandidatesPage({
-      slug: snapshot.slug, q: params.get('q'), modelSlug: params.get('modelSlug'), format: params.get('format'),
+      slug: snapshot.slug, familyId: params.get('familyId'), q: params.get('q'), modelSlug: params.get('modelSlug'), format: params.get('format'),
       cursor: params.get('cursor'), exactId: params.get('exactId'),
       limit: params.has('limit') ? Number(params.get('limit')) : undefined,
     });

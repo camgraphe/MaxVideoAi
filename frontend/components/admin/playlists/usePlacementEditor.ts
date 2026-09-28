@@ -10,6 +10,7 @@ import {
 } from '@/lib/admin/playlist-curation';
 
 type Loaded = {
+  candidatePage?: {items: CurationItem[]; total: number; nextCursor: string | null};
   snapshot: CurationSnapshot;
   candidates: CurationItem[];
   selectedItems: CurationItem[];
@@ -22,6 +23,8 @@ export function usePlacementEditor(
   onStateChange?: (state: { dirty: boolean; busy: boolean }) => void,
   onSaved?: () => void | Promise<void>,
 ) {
+  const [selectedPage, setSelectedPage] = useState(0);
+  const [windowBusy, setWindowBusy] = useState(false);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [draft, setDraft] = useState<CurationDraft>({
     mode: 'manual',
@@ -70,6 +73,7 @@ export function usePlacementEditor(
         const byId = new Map((data.selectedItems ?? []).map(item => [item.id, item]));
         if (data.snapshot.available && data.snapshot.supported) {
           const page = await request(undefined, '/candidates?limit=48');
+          data.candidatePage = page;
           for (const item of page.items as CurationItem[]) byId.set(item.id, item);
           const missingOpening = (data.snapshot.config?.openingIds ?? []).filter(id => !byId.has(id));
           if (missingOpening.length) {
@@ -141,6 +145,28 @@ export function usePlacementEditor(
       setMessage(null);
     });
   };
+  const rememberItems = useCallback((items: CurationItem[]) => {
+    setLoaded(current => current ? { ...current, candidates: [...new Map([...current.candidates, ...items].map(item => [item.id, item])).values()] } : current);
+  }, []);
+  const tailIds = draft.orderedIds.filter(id => !draft.openingIds?.includes(id));
+  const page = Math.min(selectedPage, Math.max(0, Math.ceil(tailIds.length / 48) - 1));
+  const windowIds = tailIds.slice(page * 48, (page + 1) * 48);
+  const windowKey = windowIds.join(',');
+  const loadedReady = Boolean(loaded);
+  const needsFirstWindow = Boolean(page === 0 && loaded && loaded.selectedTotal >= 48 && windowIds.some(id => !loaded.candidates.some(item => item.id === id)));
+  useEffect(() => {
+    if (!loadedReady || (page === 0 && !needsFirstWindow)) { setWindowBusy(false); return; }
+    let active = true;
+    const params = new URLSearchParams();
+    windowKey.split(',').filter(Boolean).forEach(id => params.append('ids', id));
+    if (!params.size) return;
+    setWindowBusy(true);
+    void request(undefined, `/candidates?${params}`).then(data => {
+      if (active) rememberItems(data.items);
+    }).catch(error => { if (active) setError(error.message); })
+      .finally(() => { if (active) setWindowBusy(false); });
+    return () => { active = false; };
+  }, [page, windowKey, request, rememberItems, loadedReady, needsFirstWindow]);
   const items = resolveCuration(draft, loaded?.candidates ?? []);
   const makePreview = () =>
     run(async () => {
@@ -176,6 +202,7 @@ export function usePlacementEditor(
       void Promise.resolve().then(() => onSaved?.()).catch(error => console.error('[PlacementEditor] destination refresh failed', error));
     });
   return {
+    selectedPage: page, setSelectedPage, windowBusy, windowIds, tailIds, rememberItems,
     loaded,
     draft,
     busy,

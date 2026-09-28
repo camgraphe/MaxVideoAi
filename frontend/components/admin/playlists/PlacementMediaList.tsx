@@ -1,35 +1,42 @@
 'use client';
 import Image from 'next/image';
 import { useRef } from 'react';
-import type { CurationItem } from '@/lib/admin/playlist-curation';
+import { curationItemFormat, type CurationItem } from '@/lib/admin/playlist-curation';
 
 type Props = {
   items: CurationItem[];
   busy: boolean;
+  orderedIds?: string[];
   onOrder?: (ids: string[]) => void;
   onRemove?: (id: string) => void;
   onExclude?: (id: string) => void;
+  canExclude?: (id: string) => boolean;
+  canAdd?: (id: string) => boolean;
   onAdd?: (id: string) => void;
   removeLabel?: string;
 };
 export function PlacementMediaList({
   items,
+  orderedIds,
   busy,
   onOrder,
   onRemove,
   onExclude,
   onAdd,
+  canAdd,
+  canExclude,
   removeLabel = 'Remove',
 }: Props) {
+  const allIds = orderedIds ?? items.map(item => item.id);
   const dragged = useRef<string | null>(null);
   const move = (id: string, index: number) => {
-    const next = items.map((item) => item.id).filter((value) => value !== id);
+    const next = allIds.filter((value) => value !== id);
     next.splice(index, 0, id);
     onOrder?.(next);
   };
   return (
     <ol className="divide-y divide-border">
-      {items.map((item, index) => (
+      {items.map((item) => { const index = allIds.indexOf(item.id); return (
         <li
           key={item.id}
           data-curation-item={onOrder ? item.id : undefined}
@@ -52,7 +59,7 @@ export function PlacementMediaList({
               !busy &&
               dragged.current &&
               dragged.current !== item.id &&
-              items.some((value) => value.id === dragged.current)
+              allIds.includes(dragged.current)
             )
               move(dragged.current, index);
             dragged.current = null;
@@ -82,7 +89,7 @@ export function PlacementMediaList({
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{item.prompt || item.id}</p>
             <p className="truncate text-xs text-text-muted">
-              {item.engineLabel ?? item.engineId} · {item.id}
+              {item.engineLabel ?? item.engineId} · {curationItemFormat(item) ?? 'Unknown format'} · {item.id}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs [&>button]:rounded-md [&>button]:border [&>button]:border-border [&>button]:px-2 [&>button]:py-1.5 [&>button:disabled]:opacity-40">
@@ -99,7 +106,7 @@ export function PlacementMediaList({
                 </button>
                 <button
                   type="button"
-                  disabled={busy || index === items.length - 1}
+                  disabled={busy || index === allIds.length - 1}
                   aria-label={`Move item ${index + 1} down`}
                   onClick={() => move(item.id, index + 1)}
                 >
@@ -108,7 +115,7 @@ export function PlacementMediaList({
               </>
             ) : null}
             {onAdd ? (
-              <button type="button" disabled={busy} onClick={() => onAdd(item.id)}>
+              <button type="button" disabled={busy || (canAdd ? !canAdd(item.id) : false)} onClick={() => onAdd(item.id)}>
                 Add to selection
               </button>
             ) : null}
@@ -118,13 +125,13 @@ export function PlacementMediaList({
               </button>
             ) : null}
             {onExclude ? (
-              <button type="button" disabled={busy} onClick={() => onExclude(item.id)}>
+              <button type="button" disabled={busy || (canExclude ? !canExclude(item.id) : false)} onClick={() => onExclude(item.id)}>
                 Exclude from this page
               </button>
             ) : null}
           </div>
         </li>
-      ))}
+      ); })}
     </ol>
   );
 }

@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { usePlacementEditor } from './usePlacementEditor';
 import { validateCurationOpening } from '@/lib/admin/playlist-curation';
 import { PlacementOpeningEditor } from './PlacementOpeningEditor';
+import { PlacementCandidatePicker } from './PlacementCandidatePicker';
 import { PlacementMediaList } from './PlacementMediaList';
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 };
 export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }: Props) {
   const state = usePlacementEditor(playlistId, onStateChange, onSaved);
-  const [search, setSearch] = useState('');
+  const [slot, setSlot] = useState<number | null>(null);
   const { loaded, draft, busy, dirty, change, preview } = state;
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -23,18 +24,26 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
   let openingError: string | null = null;
   try { validateCurationOpening(draft, loaded?.candidates ?? []); }
   catch (error) { openingError = (error as Error).message; }
-  const ordered = draft.orderedIds.filter(id => !draft.openingIds?.includes(id)).flatMap((id) => loaded?.candidates.find((item) => item.id === id) ?? []);
-  const available = (loaded?.candidates ?? []).filter(
-    (item) => !draft.openingIds?.includes(item.id) && !draft.orderedIds.includes(item.id) && !draft.excludedIds.includes(item.id),
-  );
-  const matched = available.filter((item) =>
-    `${item.id} ${item.engineLabel} ${item.prompt}`.toLowerCase().includes(search.toLowerCase()),
-  );
+  if (loaded?.snapshot.openingAvailable && loaded.snapshot.slug.startsWith('family-') && !loaded.snapshot.config && !draft.openingIds)
+    openingError = 'Choose all four opening videos before adopting this family.';
+  const changeOrder = (tail: string[]) => {
+    let index = 0;
+    change({ ...draft, orderedIds: draft.orderedIds.map(id => draft.openingIds?.includes(id) ? id : tail[index++]) });
+  };
+  const dropOnPage = (event: DragEvent, targetPage: number) => {
+    event.preventDefault();
+    const id = event.dataTransfer.getData('text/plain');
+    if (busy || state.windowBusy || targetPage < 0 || targetPage * 48 >= state.tailIds.length || !state.tailIds.includes(id)) return;
+    const orderedIds = state.tailIds.filter(value => value !== id);
+    orderedIds.splice(targetPage * 48, 0, id);
+    changeOrder(orderedIds); state.setSelectedPage(targetPage);
+  };
+  const ordered = state.windowIds.flatMap(id => loaded?.candidates.find(item => item.id === id) ?? []);
   const exclude = (id: string) =>
     change({
       ...draft,
       orderedIds: draft.orderedIds.filter((value) => value !== id),
-      excludedIds: [...draft.excludedIds, id],
+      excludedIds: [...new Set([...draft.excludedIds, id])],
     });
   if (!loaded)
     return (
@@ -79,8 +88,8 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
             onChange={(event) => void state.changeMode(event.target.value as 'manual' | 'hybrid')}
             className="ml-3 rounded-md border border-border px-3 py-2"
           >
-            <option value="manual">Manual order</option>
-            <option value="hybrid">Featured + Automatic</option>
+            <option value="manual">unselected videos hidden</option>
+            <option value="hybrid">eligible new videos appended automatically</option>
           </select>
         </label>
         <div className="flex flex-wrap gap-2">
@@ -94,7 +103,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           >
             Reload
           </Button>
-          <Button size="sm" variant="outline" disabled={busy || !dirty} onClick={state.cancel}>
+          <Button size="sm" variant="outline" disabled={busy || !dirty} onClick={() => { state.cancel(); setSlot(null); }}>
             Cancel
           </Button>
           <Button
@@ -146,21 +155,17 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           </ol>
         </section>
       ) : null}
-      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} onChange={change} /> : null}
+      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={setSlot} /> : null}
       {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
       <section aria-label="Selected media">
         <h3 className="text-sm font-semibold">
-          {draft.mode === 'hybrid' ? 'Featured' : 'Manual selection'} · {ordered.length}
+          {draft.mode === 'hybrid' ? 'Featured' : 'Manual selection'} · {state.tailIds.length}
         </h3>
         <PlacementMediaList
           items={ordered}
-          busy={busy}
-          onOrder={(orderedIds) => {
-            // The visible window is only part of the selection; retain every other position.
-            const visible = new Set(orderedIds);
-            let index = 0;
-            change({ ...draft, orderedIds: draft.orderedIds.map(id => visible.has(id) ? orderedIds[index++] : id) });
-          }}
+          busy={busy || state.windowBusy}
+          orderedIds={state.tailIds}
+          onOrder={changeOrder}
           onRemove={(id) =>
             change({
               ...draft,
@@ -170,37 +175,23 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           removeLabel={draft.mode === 'hybrid' ? 'Unfeature' : 'Remove'}
           onExclude={exclude}
         />
-        {!ordered.length ? (
+        <div className="flex items-center gap-3 py-3 text-sm">
+          <Button size="sm" title="Drop a video here to move it to the previous page" onDragOver={event => event.preventDefault()} onDrop={event => dropOnPage(event, state.selectedPage - 1)} disabled={busy || state.windowBusy || state.selectedPage === 0} onClick={() => state.setSelectedPage(state.selectedPage - 1)}>Previous selected</Button>
+          <span>Selected page {state.selectedPage + 1} of {Math.max(1, Math.ceil(state.tailIds.length / 48))}</span>
+          <Button size="sm" title="Drop a video here to move it to the next page" onDragOver={event => event.preventDefault()} onDrop={event => dropOnPage(event, state.selectedPage + 1)} disabled={busy || state.windowBusy || (state.selectedPage + 1) * 48 >= state.tailIds.length} onClick={() => state.setSelectedPage(state.selectedPage + 1)}>Next selected</Button>
+        </div>
+        {!state.tailIds.length ? (
           <p className="py-4 text-sm text-text-muted">No videos selected. Add eligible media below.</p>
         ) : null}
       </section>
-      <section className="border-t border-border pt-4" aria-label="Eligible media">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold">
-            {draft.mode === 'hybrid' ? 'Automatic' : 'Available to add'} · {available.length}
-          </h3>
-          <input
-            aria-label="Search eligible media"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search videos…"
-            className="rounded-md border border-border px-3 py-2 text-sm"
-          />
-        </div>
-        <p className="mt-2 text-xs text-text-muted">
-          Published videos matching this destination. Adding or excluding a video here does not change its publication
-          status.
-        </p>
-        <PlacementMediaList
-          items={matched.slice(0, 100)}
-          busy={busy}
-          onAdd={(id) => change({ ...draft, orderedIds: [...draft.orderedIds, id] })}
-          onExclude={exclude}
-        />
-        {matched.length > 100 ? (
-          <p className="text-xs text-text-muted">Showing the first 100 matches. Search to find another video.</p>
-        ) : null}
-      </section>
+      <PlacementCandidatePicker playlistId={playlistId} initialPage={loaded.candidatePage} draft={draft} busy={busy} slot={slot}
+        onCancelSlot={() => setSlot(null)} onItems={state.rememberItems} onChooseSlot={(id) => {
+          if (slot === null) return;
+          const openingIds = [...(draft.openingIds ?? ['', '', '', ''])] as [string, string, string, string];
+          openingIds[slot] = id;
+          change({ ...draft, openingIds }); setSlot(null);
+        }}
+        onAdd={id => change({ ...draft, orderedIds: [...draft.orderedIds, id] })} onExclude={exclude} />
       <details className="border-t border-border pt-4">
         <summary className="cursor-pointer text-sm">Excluded from this page · {draft.excludedIds.length}</summary>
         <ul className="mt-3 space-y-2">

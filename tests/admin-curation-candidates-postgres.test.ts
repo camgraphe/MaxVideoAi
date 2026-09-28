@@ -66,6 +66,15 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
     assert.deepEqual(idPage.ids,['candidate-2001','portrait']);assert.equal(idPage.total,2002);
     const routed=await (await reader.getCandidates(req('exactId=candidate-2001'),context)).json();assert.deepEqual(routed.items.map(i=>i.id),['candidate-2001']);
   });
+  await t.test('family_filter_pages_and_rejects_other_family_cursor', async () => {
+    const first = await (await reader.getCandidates(req('familyId=kling&q=Needle'), context)).json();
+    assert.equal(first.total, 102);
+    const second = await (await reader.getCandidates(req('familyId=kling&q=Needle&cursor='+encodeURIComponent(first.nextCursor)), context)).json();
+    assert.equal(second.items[0].id, 'candidate-0049');
+    assert.equal((await reader.getCandidates(req('familyId=wan&q=Needle&cursor='+encodeURIComponent(first.nextCursor)), context)).status, 400);
+    const foreign = await (await reader.getCandidates(req('familyId=wan'), context)).json();
+    assert.equal(foreign.total, 0, 'family filter intersects destination eligibility');
+  });
   await t.test('adopts_2001_family_ids',async()=>{
     reader.statements.length=0;
     const response=await reader.getCuration(req(),context);assert.equal(response.status,200);

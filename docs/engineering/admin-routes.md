@@ -296,3 +296,21 @@ Migration `53_playlist_opening.sql` adds optional `opening_ids` without rewritin
 `PlacementOpeningEditor` filters candidates by format, previews desktop/mobile placement, and links directly to `/admin/video-seo?video=…`. Existing SEO entries open their editorial detail; new entries prefill the candidate form and still require explicit draft creation and approval. The inventory describes sitemap eligibility, never assumes Google has indexed a page. Preview/save fingerprints include the media dimensions and opening state, so format or eligibility changes invalidate stale saves. Fixtures cover pre-migration behavior, migration replay, stale formats, private media and paginated ordering.
 
 The public popup and direct watch reader share the same editorial projection. Successful SEO create/save/removal APIs call `revalidateVideoSeoPages` after persistence, invalidating the affected watch identifiers and sitemap routes. Rejected writes leave caches intact. A deep link to a disabled video opens its archive section as well as its editor. `tests/admin-video-seo-revalidation.test.ts` and the persisted editorial parity case in `tests/examples-catalog-pagination-postgres.test.ts` cover the connection.
+
+### Paged destination curation editor
+
+`PlacementCandidatePicker` searches the authenticated curation candidates endpoint in
+48-item pages. Family, model, measured format, prompt and exact-ID filters run before
+server pagination; family and all other filters are bound into the cursor fingerprint.
+Family/model aliases are intersected with destination eligibility. A filter change
+restarts at page one. Opening selection uses that same picker with the slot's format.
+
+`usePlacementEditor` retains the complete ordered-ID draft and hydrates selected media
+in windows of at most 48. `PlacementMediaList` receives the complete tail ID order so
+keyboard moves at a window boundary preserve every other ID. Dropping on a selected
+page navigation button moves the video to that adjacent page's first position.
+The explicit automatic-to-manual policy switch still reads IDs in 500-ID pages.
+New family adoption requires four unique, correctly formatted slots when the optional
+opening schema is available. Existing old-schema and model curation behavior remains.
+Rejected saves retain the draft and invalidate its preview; destination-switch and
+before-unload guards retain their existing ownership.

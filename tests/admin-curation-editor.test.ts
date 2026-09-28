@@ -5,7 +5,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
-test('curation stages drag order, previews before save, locks requests and preserves confirmed state', async () => {
+test('retains_draft_after_rejection', async () => {
   const dom = new JSDOM('<div id="root"></div>', {
     url: 'http://localhost/admin/playlists',
   });
@@ -250,4 +250,44 @@ test('switching automatic to manual gathers all eligible IDs and retains hybrid 
     assert.equal(state!.draft.orderedIds[0],'video-2');assert.ok(state!.draft.orderedIds.includes('video-500'));
     assert.ok(!state!.draft.orderedIds.includes('video-3'));
   }finally {await act(async()=>root.unmount());dom.window.close();for(const [key,value]of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
+});
+
+test('edits_four_slots_and_paged_tail', async () => {
+  const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/admin/playlists'});
+  const old=new Map<string,PropertyDescriptor|undefined>();
+  const items=Array.from({length:145},(_,n)=>({id:`v${n+1}`,engineId:'wan-3',engineLabel:'Wan 3',prompt:`Video ${n+1}`,videoUrl:'/v.mp4',thumbUrl:null,outputWidth:n===1?720:1280,outputHeight:n===1?1280:720}));
+  let submitted:any;
+  let newFamily = false;
+  const requests:string[]=[];
+  for(const [key,value]of Object.entries({window:dom.window,document:dom.window.document,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url:string,init?:RequestInit)=>{
+    requests.push(url);const params=new URL(url,'http://localhost').searchParams;
+    if(init?.method==='POST'){submitted=JSON.parse(String(init.body));return Response.json({ok:true,preview:{items:[],token:'t'}});}
+    if(url.includes('/candidates')){const ids=params.getAll('ids');const offset=Number(params.get('cursor')??0);return Response.json({ok:true,items:ids.length?items.filter(i=>ids.includes(i.id)):items.slice(offset,offset+48),total:145,nextCursor:offset+48<145?String(offset+48):null});}
+    return Response.json({ok:true,snapshot:{available:true,supported:true,openingAvailable:true,slug:'family-wan',isPublic:true,revision:'r',config:newFamily ? null : {mode:'hybrid',openingIds:['v1','v2','v3','v4'],orderedIds:items.slice(4,110).map(i=>i.id),excludedIds:[]}},initialIds:items.slice(4,110).map(i=>i.id),selectedItems:items.slice(4,52),selectedTotal:106});
+  }})){old.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});}
+  const root=createRoot(dom.window.document.getElementById('root')!);
+  const button=(name:string)=>[...dom.window.document.querySelectorAll('button')].find(b=>b.textContent===name)!;
+  try{
+    const {PlacementEditor}=await import('../frontend/components/admin/playlists/PlacementEditor');
+    await act(async()=>root.render(React.createElement(PlacementEditor,{playlistId:'p'})));
+    assert.match(dom.window.document.body.textContent!,/eligible new videos appended automatically/);
+    assert.ok(button('Next candidates'));
+    await act(async()=>button('Next candidates').click());await act(async()=>button('Next candidates').click());
+    assert.match(dom.window.document.querySelector('[aria-label="Eligible media"]')!.textContent!,/Video 101/);
+    await act(async()=>button('Next selected').click());
+    const up=dom.window.document.querySelector('[aria-label="Move item 49 up"]') as HTMLButtonElement;
+    assert.ok(up);assert.equal(up.disabled,false);
+    await act(async()=>up.click());await act(async()=>button('Preview changes').click());
+    assert.equal(submitted.draft.orderedIds[47],'v53');assert.equal(submitted.draft.orderedIds.length,106);
+    assert.ok(requests.some(url=>url.includes('ids=v53')));
+    assert.ok(dom.window.document.querySelector('a[href="/admin/video-seo?video=v2"]'));
+    const drop = new dom.window.Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(drop, 'dataTransfer', { value: { getData: () => 'v54' } });
+    await act(async () => button('Previous selected').dispatchEvent(drop));
+    await act(async () => button('Preview changes').click());
+    assert.equal(submitted.draft.orderedIds[0], 'v54', 'drop on previous page moves across windows');
+    newFamily = true;
+    await act(async()=>root.render(React.createElement(PlacementEditor,{key:'new-family',playlistId:'new-family'})));
+    assert.equal(button('Preview changes').disabled, true, 'new families require all four slots');
+  }finally{await act(async()=>root.unmount());dom.window.close();for(const[key,value]of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
 });

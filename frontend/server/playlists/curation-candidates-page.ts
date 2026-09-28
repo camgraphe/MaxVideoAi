@@ -1,6 +1,6 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import type { CurationItem } from '@/lib/admin/playlist-curation';
-import { getExampleModelEngineAliases } from '@/lib/model-families';
+import { getExampleFamilyEngineAliases, getExampleModelEngineAliases } from '@/lib/model-families';
 import { videoOutputDimensionSelect } from '../videos-query';
 import { CURATION_ELIGIBILITY } from './curation-service';
 import { CurationError, curationFingerprint, getCurationAliases } from './curation-store';
@@ -49,13 +49,17 @@ export async function loadSelectedCurationItems(slug: string, ids: string[], db:
 }
 
 export type CandidatePageOptions = {
-  slug: string; q?: string | null; modelSlug?: string | null; format?: string | null;
+  slug: string; familyId?: string | null; q?: string | null; modelSlug?: string | null; format?: string | null;
   cursor?: string | null; limit?: number; exactId?: string | null;
 };
 export async function searchCurationCandidatesPage(options: CandidatePageOptions, db: QueryExecutor = { query }): Promise<{
   items: CurationItem[]; nextCursor: string | null; total: number;
 }> {
   let aliases = aliasesFor(options.slug);
+  if (options.familyId) {
+    const familyAliases = new Set(getExampleFamilyEngineAliases(options.familyId).map(id => id.toLowerCase()));
+    aliases = aliases.filter(alias => familyAliases.has(alias));
+  }
   if (options.modelSlug) {
     const modelAliases = new Set(getExampleModelEngineAliases(options.modelSlug).map(id => id.toLowerCase()));
     aliases = aliases.filter(alias => modelAliases.has(alias));
@@ -64,7 +68,7 @@ export async function searchCurationCandidatesPage(options: CandidatePageOptions
   if (format && format !== '16:9' && format !== '9:16') throw new CurationError('Invalid video format', 400);
   const q = options.q?.trim() || null;
   const exactId = options.exactId || null;
-  const signature = curationFingerprint({ slug: options.slug, aliases, format, q, exactId });
+  const signature = curationFingerprint({ slug: options.slug, familyId: options.familyId || null, aliases, format, q, exactId });
   let after: { date: string | null; id: string } | null = null;
   if (options.cursor) {
     try {
