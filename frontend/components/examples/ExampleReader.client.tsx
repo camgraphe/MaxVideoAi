@@ -26,6 +26,11 @@ export default function ExampleReader({ id, locale, onClose, navigation, navigat
     dialogRef.current?.scrollTo?.(0, 0);
     return () => controller.abort();
   }, [id, retry, dialogRef]);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    // Navigation/retry can remove the focused control while fetching the next detail.
+    if (dialog && !dialog.contains(document.activeElement)) dialog.focus();
+  }, [id, current, dialogRef]);
   return createPortal(<div className={styles.backdrop} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
     <section ref={dialogRef} role="dialog" aria-modal="true" aria-label={copy.reader} aria-labelledby={current?.detail ? 'example-reader-title' : undefined}
       tabIndex={-1} onKeyDown={onDialogKeyDown} className={styles.dialog}>

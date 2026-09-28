@@ -158,7 +158,10 @@ test('public gallery traverses every eligible video beyond the old window and hy
     assert.ok(statements.filter(statement=>statement.text.includes('FROM app_jobs')).every(statement=>statement.rows===1));
     const editorialRead=statements.find(statement=>statement.text.includes('FROM video_seo_pages'));
     assert.ok(editorialRead?.text.includes('WHERE video_id=$1'),'single-video reader must not hydrate all editorial entries');
-    for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing'])assert.equal(await reader.getExampleWatchDetail(id),null);
+    for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing']) {
+      assert.equal(await reader.getExampleWatchDetail(id),null);
+      assert.equal(await reader.getVideoWatchPageDataById(id),null,`direct watch rejects ${id}`);
+    }
     await postgres.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='kling-20'");
     assert.equal(await reader.getExampleWatchDetail('kling-20'),null,'a previously opened public video is checked again');
   });
@@ -177,6 +180,9 @@ test('public gallery traverses every eligible video beyond the old window and hy
     assert.equal(popup.title,'Kling 3 Pro cinematic dance in a sunlit courtyard');assert.equal(popup.watchHref,'/video/kling-dance-film');
     assert.equal(popup.context.intro,'An original Kling 3 Pro dance film, with a continuous camera orbit around a sunlit courtyard and realistic choreography in a single flowing shot.');
     assert.deepEqual(popup,direct,'both surfaces project the same persisted editorial entry');
+    await postgres.pool.query(`INSERT INTO media_assets(user_id,url,status) SELECT user_id,video_url,'deleted' FROM app_jobs WHERE job_id='kling-21'`);
+    assert.equal(await reader.getVideoWatchPageDataById('kling-dance-film'),null,'an approved slug cannot expose a deleted output');
+    await postgres.pool.query(`DELETE FROM media_assets WHERE url='https://media.maxvideoai.com/fixture/kling-21.mp4'`);
     await postgres.pool.query(`UPDATE video_seo_pages SET h1='A new editorial title',seo_status='disabled' WHERE video_id='kling-21'`);
     const changed=await reader.getExampleWatchDetail('kling-21');
     const disabledPage=await reader.getVideoWatchPageDataById('kling-dance-film');

@@ -1,4 +1,4 @@
-import { videoOutputDimensionSelect } from '../videos-query';
+import { PUBLIC_VIDEO_SOURCE_ELIGIBILITY, videoOutputDimensionSelect } from '../videos-query';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   parseCurationDraft,
@@ -18,13 +18,7 @@ import {
 export { CurationError } from './curation-store';
 export const getCurationSnapshot = readCurationSnapshot;
 
-export const CURATION_ELIGIBILITY = `visibility='public' AND indexable IS TRUE
-  AND status='completed' AND COALESCE(surface,'video')='video'
-  AND NULLIF(BTRIM(video_url),'') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM job_outputs removed WHERE removed.job_id=app_jobs.job_id
-    AND removed.kind='video' AND removed.status='deleted' AND COALESCE(removed.url,removed.storage_url)=app_jobs.video_url)
-  AND NOT EXISTS (SELECT 1 FROM media_assets removed WHERE removed.user_id=app_jobs.user_id
-    AND removed.url=app_jobs.video_url AND (removed.deleted_at IS NOT NULL OR removed.status='deleted'))`;
+export const CURATION_ELIGIBILITY = `visibility='public' AND indexable IS TRUE AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY}`;
 
 export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }): Promise<CurationItem[]> {
   const aliases = getCurationAliases(slug);
