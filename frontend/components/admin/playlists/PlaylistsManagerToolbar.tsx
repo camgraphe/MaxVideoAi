@@ -119,8 +119,6 @@ export function PlaylistsManagerToolbar({
             </Button>
           </div>
         </header>
-      </details>
-
       {showCreateForm ? (
         <PlaylistCreateForm
           createDescription={createDescription}
@@ -139,6 +137,7 @@ export function PlaylistsManagerToolbar({
           onSubmit={onCreateSubmit}
         />
       ) : null}
+      </details>
     </>
   );
 }

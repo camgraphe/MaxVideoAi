@@ -11,12 +11,14 @@ import { PlaylistOrderDirtyBar } from '@/components/admin/playlists/PlaylistItem
 import { PlaylistsManagerToolbar } from '@/components/admin/playlists/PlaylistsManagerToolbar';
 import { PlaylistsManagerSelectionPanel } from '@/components/admin/playlists/PlaylistsManagerSelectionPanel';
 import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
+import { DestinationSwitcher, chooseInitialDestination } from '@/components/admin/playlists/DestinationSwitcher';
 import { usePlaylistHelperActions } from '@/components/admin/playlists/usePlaylistHelperActions';
 import { usePlaylistDragReorder } from '@/components/admin/playlists/usePlaylistDragReorder';
 import {
   buildFamilyHelpers,
   buildModelHelpers,
   buildPlaylistUpdateFromItems,
+  groupPlaylists,
   getPlaylistGroup,
   sortItemsForDisplay,
   sortPlaylists,
@@ -26,10 +28,12 @@ import type {
   PlaylistItemRecord,
   PlaylistsManagerProps,
   PlaylistSummary,
+  PlaylistDestination,
 } from '@/components/admin/playlists/playlist-types';
-
+const EMPTY_DESTINATIONS: PlaylistDestination[] = [];
 export function PlaylistsManager({
   initialPlaylists,
+  initialDestinations = EMPTY_DESTINATIONS,
   initialPlaylistId,
   initialItems,
   embedded = false,
@@ -37,7 +41,9 @@ export function PlaylistsManager({
   className,
 }: PlaylistsManagerProps) {
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
-  const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
+  const [destinations, setDestinations] = useState(initialDestinations);
+  const initialDestinationId = chooseInitialDestination(initialDestinations)?.playlistId ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialDestinations.length ? initialDestinationId : initialPlaylistId);
   const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
   const savedItems = useRef(sortItemsForDisplay(initialItems));
   const [isItemsDirty, setItemsDirty] = useState(false);
@@ -66,17 +72,19 @@ export function PlaylistsManager({
 
   useEffect(() => {
     setPlaylists(sortPlaylists(initialPlaylists));
-    setSelectedId(initialPlaylistId);
+    setDestinations(initialDestinations);
+    setSelectedId(initialDestinations.length ? initialDestinationId : initialPlaylistId);
     savedItems.current = sortItemsForDisplay(initialItems);
     setItems(savedItems.current);
     setItemsDirty(false);
     clearDragState();
-  }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists]);
+  }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists, initialDestinations, initialDestinationId]);
 
   const selectedPlaylist = useMemo(
     () => playlists.find((playlist) => playlist.id === selectedId) ?? null,
     [playlists, selectedId],
   );
+  const selectedDestination = destinations.find(destination => destination.playlistId === selectedId && destination.kind !== 'maintenance') ?? null;
 
   useEffect(() => {
     if (selectedPlaylist && getPlaylistGroup(selectedPlaylist) === 'draft') {
@@ -84,15 +92,7 @@ export function PlaylistsManager({
     }
   }, [selectedPlaylist]);
 
-  const groupedPlaylists = useMemo(
-    () => ({
-      runtime: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'runtime'),
-      family: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'family'),
-      model: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'model'),
-      draft: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'draft'),
-    }),
-    [playlists],
-  );
+  const groupedPlaylists = useMemo(() => groupPlaylists(playlists), [playlists]);
 
   const familyHelpers = useMemo(() => buildFamilyHelpers(playlists), [playlists]);
   const modelHelpers = useMemo(() => buildModelHelpers(playlists), [playlists]);
@@ -172,10 +172,14 @@ export function PlaylistsManager({
           ...playlist,
         })),
       );
+      const nextDestinations = Array.isArray(json.destinations) ? json.destinations as PlaylistDestination[] : destinations;
+      setDestinations(nextDestinations);
       const preferredId =
         preferredPlaylistId && nextPlaylists.some((playlist) => playlist.id === preferredPlaylistId)
           ? preferredPlaylistId
-          : (nextPlaylists.find((playlist) => getPlaylistGroup(playlist) !== 'draft')?.id ??
+          : (nextDestinations.find(destination => destination.id === 'examples' && destination.status === 'connected')?.playlistId ??
+            nextDestinations.find(destination => destination.kind === 'family' && destination.status === 'connected')?.playlistId ??
+            nextPlaylists.find((playlist) => getPlaylistGroup(playlist) !== 'draft')?.id ??
             nextPlaylists[0]?.id ??
             null);
 
@@ -191,7 +195,7 @@ export function PlaylistsManager({
       }
       return { nextPlaylists, selectedId: preferredId };
     },
-    [clearDragState, refreshPlaylistItems],
+    [clearDragState, refreshPlaylistItems, destinations],
   );
 
   const {
@@ -228,7 +232,7 @@ export function PlaylistsManager({
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
       if (busy.current || curationState.busy) return;
-      if ((isItemsDirty || curationState.dirty) && !window.confirm('Discard unsaved changes and change destination?'))
+      if ((isItemsDirty || curationState.dirty || selectedPlaylist?.dirty) && !window.confirm('Discard unsaved changes and change destination?'))
         return;
       setFeedback(null);
       setError(null);
@@ -241,8 +245,12 @@ export function PlaylistsManager({
         }
       });
     },
-    [busy, curationState, isItemsDirty, refreshPlaylistItems, runAction],
+    [busy, curationState, isItemsDirty, refreshPlaylistItems, runAction, selectedPlaylist],
   );
+  const handleSelectDestination = useCallback((destinationId: string) => {
+    const destination = destinations.find(entry => entry.id === destinationId);
+    if (destination?.playlistId && destination.editable) handleSelectPlaylist(destination.playlistId);
+  }, [destinations, handleSelectPlaylist]);
 
   const handleFieldChange = useCallback((playlistId: string, field: 'name' | 'slug' | 'description', value: string) => {
     setPlaylists((current) =>
@@ -431,18 +439,13 @@ export function PlaylistsManager({
 
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
-      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-        <PlaylistsSidebar
-          groupedPlaylists={groupedPlaylists}
-          onSelectPlaylist={handleSelectPlaylist}
-          pending={isPending || curationState.busy}
-          enableCuration={enableCuration}
-          selectedId={selectedId}
-          showDraftCollections={showDraftCollections}
-        />
+      {destinations.length ? <DestinationSwitcher destinations={destinations} selectedId={selectedDestination?.id ?? null}
+        onSelect={handleSelectDestination} disabled={isPending || curationState.busy} /> : null}
 
-        <section className="min-w-0 space-y-6">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+        <section data-destination-editor className="min-w-0 space-y-6 lg:col-start-2 lg:row-start-1">
           <PlaylistsManagerSelectionPanel
+            destination={selectedDestination}
             enableCuration={enableCuration}
             onCurationStateChange={setCurationState}
             draggingId={draggingId}
@@ -477,6 +480,11 @@ export function PlaylistsManager({
             playlist={selectedPlaylist}
           />
         </section>
+        <PlaylistsSidebar groupedPlaylists={groupedPlaylists} destinations={destinations}
+          onSelectDestination={handleSelectDestination} onSelectPlaylist={handleSelectPlaylist}
+          pending={isPending || curationState.busy} enableCuration={enableCuration}
+          selectedId={selectedId} selectedDestinationId={selectedDestination?.id ?? null}
+          showDraftCollections={showDraftCollections} />
       </div>
 
       {selectedPlaylist && isItemsDirty ? (
