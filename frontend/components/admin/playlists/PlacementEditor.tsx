@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useEffect, useState, type DragEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { usePlacementEditor } from './usePlacementEditor';
 import { validateCurationOpening } from '@/lib/admin/playlist-curation';
@@ -8,6 +8,8 @@ import { PlacementCandidatePicker } from './PlacementCandidatePicker';
 import { PlacementExplorerDialog } from './PlacementExplorerDialog';
 import { PlacementMediaList } from './PlacementMediaList';
 import { PlacementMediaInspector } from './PlacementMediaInspector';
+import { PlacementDraftActions } from './PlacementDraftActions';
+import { PlacementPreviewDialog } from './PlacementPreviewDialog';
 
 type Props = {
   playlistId: string;
@@ -20,10 +22,10 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
   const [slot, setSlot] = useState<number | null>(null);
   const [explorerOpen, setExplorerOpen] = useState(false);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { loaded, draft, busy, dirty, change, preview } = state;
-  const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (preview) previewHeadingRef.current?.focus();
+    setPreviewOpen(Boolean(preview));
   }, [preview]);
   let openingError: string | null = null;
   try { validateCurationOpening(draft, loaded?.candidates ?? []); }
@@ -69,11 +71,6 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
     );
   return (
     <div className="space-y-5">
-      {!loaded.snapshot.config ? (
-        <p className="text-sm text-text-secondary">
-          Existing selection is active. Preview and save to choose how this page is filled.
-        </p>
-      ) : null}
       {loaded.removedCount ? (
         <p className="text-sm text-warning">
           {loaded.removedCount} saved items are no longer eligible and are hidden. Your next save will remove them from
@@ -85,55 +82,12 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       ) : null}
       {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} /> : null}
       {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <label className="text-sm">
-          Page order
-          <select
-            aria-label="Page order"
-            value={draft.mode}
-            disabled={busy}
-            onChange={(event) => void state.changeMode(event.target.value as 'manual' | 'hybrid')}
-            className="ml-3 rounded-md border border-border px-3 py-2"
-          >
-            <option value="manual">unselected videos hidden</option>
-            <option value="hybrid">eligible new videos appended automatically</option>
-          </select>
-        </label>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={busy}
-            onClick={() => {
-              if (!dirty || window.confirm('Discard unsaved changes and reload this destination?')) void state.reload();
-            }}
-          >
-            Reload
-          </Button>
-          <Button size="sm" variant="outline" disabled={busy || !dirty} onClick={() => { state.cancel(); setSlot(null); }}>
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            disabled={busy || Boolean(openingError) || (!dirty && !loaded.removedCount && Boolean(loaded.snapshot.config))}
-            onClick={state.makePreview}
-          >
-            Preview changes
-          </Button>
-          <Button size="sm" disabled={busy || !preview} onClick={state.save}>
-            Save changes
-          </Button>
-        </div>
-      </div>
-      <p className="text-xs text-text-secondary">
-        {draft.mode === 'hybrid'
-          ? 'Featured videos stay first in your chosen order. Other eligible published videos follow by creation date, newest first.'
-          : 'Only the selected videos appear, in your chosen order. New publications are offered below.'}{' '}
-        {dirty ? 'Unsaved changes.' : ''}{' '}
-        {!preview && (dirty || loaded.removedCount || !loaded.snapshot.config)
-          ? 'Preview changes to enable saving.'
-          : ''}
-      </p>
+      <PlacementDraftActions dirty={dirty} busy={busy} preview={preview} openingError={openingError}
+        mode={draft.mode} canPreview={dirty || Boolean(loaded.removedCount) || !loaded.snapshot.config}
+        needsAdoption={!loaded.snapshot.config} onModeChange={mode => void state.changeMode(mode)}
+        onCancel={() => { state.cancel(); setSlot(null); setExplorerOpen(false); }}
+        onPreview={state.makePreview} onSave={state.save}
+        onReload={() => { if (!dirty || window.confirm('Discard unsaved changes and reload this destination?')) void state.reload(); }} />
       {state.error ? (
         <p role="alert" className="text-sm text-error">
           {state.error}
@@ -143,32 +97,6 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
         <p role="status" className="text-sm text-success">
           {state.message}
         </p>
-      ) : null}
-      {preview ? (
-        <section aria-label="Page preview" className="border-t-2 border-brand pt-4">
-          <h3 ref={previewHeadingRef} tabIndex={-1} className="text-sm font-semibold">
-            Page preview · {preview.effective?.total ?? preview.items.length} videos
-          </h3>
-          <p className="my-2 text-xs text-text-secondary">
-            {draft.mode === 'manual' ? 'Manual order' : 'Featured + Automatic'}. This selection takes effect after
-            saving. New publications may extend automatic results.
-          </p>
-          {preview.effective ? <div className="my-3 space-y-2 text-sm">
-            <p>Currently {preview.effective.currentTotal} videos → after saving {preview.effective.total} videos.</p>
-            <p>{preview.effective.addedCount} added · {preview.effective.removedCount} removed.</p>
-            {preview.effective.openingFormats.length ? <p>Opening formats: {preview.effective.openingFormats.map(format => format ?? 'Unknown').join(' · ')}</p> : null}
-            {preview.effective.suppressedSourceSlugs.length ? <p>Suppressed inherited sources: {preview.effective.suppressedSourceSlugs.join(', ')}</p> : null}
-            {preview.effective.warnings.map(warning => <p key={warning} className="text-warning">{warning}</p>)}
-            <p className="font-medium">First page · up to 24 videos</p>
-          </div> : null}
-          <ol className="max-h-64 overflow-auto text-sm">
-            {(preview.effective?.firstPageIds ?? preview.items.slice(0, 24).map(item => item.id)).map((id, index) => (
-              <li key={id} className="truncate py-1">
-                {index + 1}. {preview.items.find(item => item.id === id)?.prompt || id}
-              </li>
-            ))}
-          </ol>
-        </section>
       ) : null}
       <section aria-label="Selected media">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -233,6 +161,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       {inspectedItem ? <PlacementMediaInspector item={inspectedItem} onClose={() => setInspectedId(null)}
         onRemove={() => change({ ...draft, orderedIds: draft.orderedIds.filter(id => id !== inspectedItem.id) })}
         onExclude={() => exclude(inspectedItem.id)} /> : null}
+      {preview && previewOpen ? <PlacementPreviewDialog preview={preview} onClose={() => setPreviewOpen(false)} onSave={state.save} /> : null}
     </div>
   );
 }

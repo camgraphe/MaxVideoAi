@@ -90,6 +90,8 @@ test('retains_draft_after_rejection', async () => {
     assert.equal(requests[1]?.url, '/api/admin/playlists/p/curation/candidates?limit=48');
     await act(async () => requests[1].resolve(Response.json({ok:true,items:candidates,nextCursor:null,total:4})));
     await act(async () => button('Close explorer').click());
+    assert.equal(dom.window.document.querySelector('[data-draft-status]')?.textContent, 'Ready to preview');
+    assert.ok(dom.window.document.querySelector('[data-draft-actions]'));
     assert.equal(
       button('Preview changes').disabled,
       false,
@@ -115,6 +117,7 @@ test('retains_draft_after_rejection', async () => {
         el.getAttribute('data-curation-item'),
       );
     assert.deepEqual(order(), ['b', 'a']);
+    assert.equal(dom.window.document.querySelector('[data-draft-status]')?.textContent, 'Unsaved changes');
     assert.equal(button('Save changes').disabled, true, 'saving requires an explicit preview');
     await act(async () => button('Cancel').click());
     assert.deepEqual(order(), ['a', 'b']);
@@ -137,15 +140,15 @@ test('retains_draft_after_rejection', async () => {
         }),
       ),
     );
-    const preview = dom.window.document.querySelector('[aria-label="Page preview"]')!;
+    const preview = dom.window.document.querySelector('[role="dialog"][aria-label="Page preview"]')!;
     const selected = dom.window.document.querySelector('[aria-label="Selected media"]')!;
-    assert.ok(preview.compareDocumentPosition(selected) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    assert.ok(selected.compareDocumentPosition(preview) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.match(preview.textContent!, /Page preview · 2 videos/);
     assert.match(preview.textContent!, /Currently 40 videos → after saving 2 videos/);
     assert.match(preview.textContent!, /38 removed/);
     assert.match(preview.textContent!, /Suppressed inherited sources: examples-wan-3/);
     assert.deepEqual([...preview.querySelectorAll('li')].map(li=>li.textContent?.trim()), ['1. a','2. b'], 'display the effective page order, not the draft item order');
-    assert.equal(dom.window.document.activeElement?.textContent, 'Page preview · 2 videos');
+    assert.equal(dom.window.document.querySelector('[data-draft-status]')?.textContent, 'Preview ready');
     assert.equal(button('Save changes').disabled, false, 'save is available beside the preview action');
     assert.equal(button('Preview changes').parentElement?.contains(button('Save changes')), true);
     await act(async () => button('Save changes').click());
@@ -154,6 +157,7 @@ test('retains_draft_after_rejection', async () => {
       requests[3].resolve(Response.json({ ok: false, error: 'This destination changed. Reload it.' }, { status: 409 })),
     );
     assert.match(dom.window.document.body.textContent!, /destination changed/);
+    assert.equal(dom.window.document.querySelector('[data-draft-status]')?.textContent, 'Unsaved changes');
     assert.deepEqual(order(), ['b', 'a'], 'failed save retains draft');
     assert.equal(button('Save changes').disabled, true, 'failed save invalidates preview');
     await act(async () => button('Preview changes').click());
@@ -184,6 +188,7 @@ test('retains_draft_after_rejection', async () => {
     );
     assert.equal(button('Cancel').disabled, true);
     assert.equal(button('Save changes').disabled, true);
+    assert.equal(dom.window.document.querySelector('[data-draft-status]')?.textContent, 'Saved');
     assert.deepEqual(order(), ['b', 'a']);
     await act(async () => button('Choose opening videos').click());
     assert.equal(button('Preview changes').disabled,true,'all four slots are required before preview');
