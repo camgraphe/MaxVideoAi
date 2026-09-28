@@ -10,10 +10,10 @@ export function isHistoricalCoreSlug(slug: string): boolean {
 }
 
 export function isInactiveHistoricalCoreSlug(slug: string): boolean {
-  const normalized = normalizeDestinationSlug(slug);
-  return isHistoricalCoreSlug(normalized)
-    && normalized !== normalizeDestinationSlug(getExamplesHubPlaylistSlug())
-    && normalized !== normalizeDestinationSlug(getStarterPlaylistSlug());
+  // Readers select stored slugs with exact equality. Normalization only reserves names.
+  return isHistoricalCoreSlug(slug)
+    && slug !== getExamplesHubPlaylistSlug()
+    && slug !== getStarterPlaylistSlug();
 }
 
 export class DestinationWriteError extends Error {

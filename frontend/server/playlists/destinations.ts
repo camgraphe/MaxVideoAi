@@ -4,7 +4,7 @@ import { STARTER_MEDIA_SLUGS } from '@/lib/starter-media';
 import { listCatalogPage } from '../videos-catalog-page';
 import { CURATION_ELIGIBILITY, readCurationConfigurations } from './curation-service';
 import { curationSchemaAvailable, getCurationAliases } from './curation-store';
-import { isInactiveHistoricalCoreSlug, normalizeDestinationSlug } from './destination-protection';
+import { isInactiveHistoricalCoreSlug } from './destination-protection';
 import { getExamplesHubPlaylistSlug, getStarterPlaylistSlug, getFamilyPlaylistSlug, getModelPlaylistSlug, getFamilyFeedSourceSlugs } from './slugs';
 import type { PlaylistDestination, PlaylistRecord } from './types';
 
@@ -31,16 +31,15 @@ function destinationSpecs(): DestinationSpec[] {
 
 /** Effective counts are keyed by runtime slug, never by the playlist display name. */
 export function buildPlaylistDestinations(playlists: readonly PlaylistRecord[], effectiveCounts: ReadonlyMap<string, number>): PlaylistDestination[] {
-  const bySlug = new Map(playlists.map(playlist => [normalizeDestinationSlug(playlist.slug), playlist]));
-  const counts = new Map([...effectiveCounts].map(([slug, count]) => [normalizeDestinationSlug(slug), count]));
+  const bySlug = new Map(playlists.map(playlist => [playlist.slug, playlist]));
   const connected = new Set<string>();
   const destinations: PlaylistDestination[] = destinationSpecs().map(spec => {
-    const playlist = bySlug.get(normalizeDestinationSlug(spec.slug));
+    const playlist = bySlug.get(spec.slug);
     if (playlist) connected.add(playlist.id);
     return {
       ...spec, playlistId: playlist?.id ?? null,
       itemCount: playlist?.itemCount ?? 0,
-      publicCount: counts.get(normalizeDestinationSlug(spec.slug)) ?? (playlist?.isPublic ? playlist.siteVisibleCount : 0),
+      publicCount: effectiveCounts.get(spec.slug) ?? (playlist?.isPublic ? playlist.siteVisibleCount : 0),
       status: playlist ? 'connected' : 'missing', editable: Boolean(playlist),
       warning: playlist ? (playlist.isPublic ? null : 'This collection is private.') : `Runtime configuration expects "${spec.slug}". No playlist is connected; reconcile configuration or create the expected collection in maintenance.`,
     };

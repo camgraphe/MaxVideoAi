@@ -29,9 +29,29 @@ test('projects_missing_and_historical_core_destinations', async () => {
     }
     process.env.EXAMPLES_PLAYLIST_SLUG = ' EXAMPLES ';
     process.env.STARTER_PLAYLIST_SLUG = ' WELCOME ';
+    const mismatched = buildPlaylistDestinations([playlist('examples'), playlist('welcome')], new Map([['examples', 99]]));
+    for (const id of ['examples', 'starter']) {
+      assert.equal(mismatched.find(row => row.id === id)?.status, 'missing');
+      assert.equal(mismatched.find(row => row.id === id)?.editable, false);
+    }
+    assert.equal(mismatched.find(row => row.id === 'examples')?.publicCount, 0);
+    for (const slug of ['examples', 'welcome']) {
+      const diagnostic = mismatched.find(row => row.id === `playlist:${slug}`);
+      assert.equal(diagnostic?.status, 'historical');
+      assert.equal(diagnostic?.editable, false);
+    }
+    process.env.EXAMPLES_PLAYLIST_SLUG = 'examples';
+    process.env.STARTER_PLAYLIST_SLUG = 'welcome';
+    const variants = buildPlaylistDestinations([playlist('examples'), playlist('welcome'), playlist(' EXAMPLES '), playlist(' WELCOME ')], new Map());
+    assert.equal(variants.find(row => row.id === 'examples')?.playlistId, 'examples');
+    assert.equal(variants.find(row => row.id === 'starter')?.playlistId, 'welcome');
+    for (const slug of [' EXAMPLES ', ' WELCOME ']) {
+      assert.equal(variants.find(row => row.id === `playlist:${slug}`)?.status, 'historical');
+      assert.equal(variants.find(row => row.id === `playlist:${slug}`)?.editable, false);
+    }
     const connected = buildPlaylistDestinations([playlist('examples'), playlist('welcome')], new Map());
     assert.equal(connected.find(row => row.id === 'examples')?.status, 'connected');
-    assert.equal(connected.find(row => row.id === 'starter')?.slug.trim(), 'WELCOME');
+    assert.equal(connected.find(row => row.id === 'starter')?.slug, 'welcome');
     const { isHistoricalCoreSlug } = await import('../frontend/server/playlists/destination-protection');
     for (const slug of [' EXAMPLES ', 'Marketing-Examples', ' WELCOME ', 'STARTER']) assert.equal(isHistoricalCoreSlug(slug), true);
     assert.equal(isHistoricalCoreSlug('custom'), false);

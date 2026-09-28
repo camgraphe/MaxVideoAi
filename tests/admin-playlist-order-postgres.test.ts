@@ -23,7 +23,12 @@ test('playlist reorder is atomic and preserves the previous order when insertion
     });
     const { CurationError } = await import('../frontend/server/playlists/curation-store');
     await assert.rejects(reorderPlaylistItems('historical', []), error => error instanceof CurationError && error.status === 409);
+    process.env.STARTER_PLAYLIST_SLUG = 'welcome';
+    await assert.rejects(reorderPlaylistItems('historical', [{ videoId: 'a' }]), /historical|configuration/i);
     process.env.STARTER_PLAYLIST_SLUG = ' WELCOME ';
+    await assert.rejects(reorderPlaylistItems('historical', [{ videoId: 'a' }]), /historical|configuration/i);
+    // Reconciliation changes the stored source to the exact slug selected by readers.
+    await database.pool.query("UPDATE playlists SET slug='WELCOME' WHERE id='historical'");
     await reorderPlaylistItems('historical', [{ videoId: 'a' }]);
     await assert.rejects(deletePlaylist('historical'), /locked/i);
     process.env.STARTER_PLAYLIST_SLUG = 'starter';
