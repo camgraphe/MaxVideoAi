@@ -351,12 +351,12 @@ entry uses an H2 in the dialog and the existing watch URL in browser history; cl
 restores the gallery rather than fetching a second record page. Share resolves the
 canonical URL, while direct legacy ID requests keep the existing slug redirect.
 
-The direct watch poster keeps its existing optimized URL. Its route-local
-`VideoWatchPosterPreload` uses the App Router resource hint API also used by
-`next/image`: the high-priority image is emitted before blocking styles. Keep one
-hint matching the native video's poster exactly. A plain JSX preload link can be
-emitted after route CSS and delay the critical image; verify actual HTML ordering
-and the network trace when changing this boundary.
+The direct watch poster keeps its existing optimized URL. `VideoWatchContent`
+registers its image resource hint before awaiting the detail/quote projection,
+using the App Router resource hint API also used for route styles. Keep one hint
+matching the native video's poster exactly. Verify response headers, HTML and the
+network trace: moving a JSX hint earlier in the HTML alone does not change the
+route CSS hints already sent in the response headers.
 
 `GET /api/examples/[id]` is an uncached read-only detail projection. It rechecks the
 same public/completed/indexable/live-output eligibility as the catalog, returns an

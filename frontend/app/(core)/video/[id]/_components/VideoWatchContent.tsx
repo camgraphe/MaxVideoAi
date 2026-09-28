@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ReactDOM from 'react-dom';
 import { ExampleReaderContent } from '@/components/examples/ExampleReaderContent';
 import { readerCopy } from '@/components/examples/example-reader-copy';
 import styles from '@/components/examples/example-reader.module.css';
@@ -7,7 +8,6 @@ import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoUnavailableState } from './VideoUnavailableState';
-import { VideoWatchPosterPreload } from './VideoWatchPosterPreload.client';
 
 export async function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
@@ -15,6 +15,10 @@ export async function VideoWatchContent({ page }: { page: WatchPageData }) {
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const playbackPoster = buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER, { width: 1200, quality: 72 }) ?? video.thumbUrl ?? FALLBACK_POSTER;
+  // Register before the detail lookup suspends so the poster can join the early
+  // response hints already used by Next for route styles.
+  const canPreloadPoster = typeof ReactDOM.preload === 'function';
+  if (canPreloadPoster) ReactDOM.preload(playbackPoster, { as: 'image', fetchPriority: 'high' });
   const detail = await buildExampleWatchDetail(video, signals);
   if (!detail) return <VideoUnavailableState backHref={signals.parentPath ?? '/examples'}/>;
   const videoJsonLd = isEligible
@@ -56,7 +60,7 @@ export async function VideoWatchContent({ page }: { page: WatchPageData }) {
 
 
   return <div className="mx-auto w-full max-w-[1440px] px-0 pb-16 pt-4 sm:px-6">
-    <VideoWatchPosterPreload poster={playbackPoster} />
+    {!canPreloadPoster && <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />}
     <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-2 px-5 text-xs text-text-secondary sm:px-0">
       {signals.breadcrumbs.map((crumb,index) => <span key={`${crumb.label}-${index}`}>
         {index > 0 && <span aria-hidden className="mr-2">›</span>}
