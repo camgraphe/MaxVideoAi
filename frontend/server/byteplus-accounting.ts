@@ -42,6 +42,41 @@ const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; 
   },
 };
 
+// Seedance 1.5 has a different 480p raster from Seedance 2.5. These are
+// published output dimensions, used only when provider token usage is absent.
+const SEEDANCE_1_5_TOKEN_DIMENSIONS: typeof BYTEPLUS_TOKEN_DIMENSIONS = {
+  '480p': {
+    '21:9': { width: 992, height: 432 },
+    '16:9': { width: 864, height: 496 },
+    '4:3': { width: 752, height: 560 },
+    '1:1': { width: 640, height: 640 },
+    '3:4': { width: 560, height: 752 },
+    '9:16': { width: 496, height: 864 },
+  },
+  '720p': {
+    '21:9': { width: 1470, height: 630 },
+    '16:9': { width: 1280, height: 720 },
+    '4:3': { width: 1112, height: 834 },
+    '1:1': { width: 960, height: 960 },
+    '3:4': { width: 834, height: 1112 },
+    '9:16': { width: 720, height: 1280 },
+  },
+  '1080p': {
+    '21:9': { width: 2206, height: 946 },
+    '16:9': { width: 1920, height: 1080 },
+    '4:3': { width: 1664, height: 1248 },
+    '1:1': { width: 1440, height: 1440 },
+    '3:4': { width: 1248, height: 1664 },
+    '9:16': { width: 1080, height: 1920 },
+  },
+};
+
+function tokenDimensions(engineId: string, resolution: string, aspectRatio: string) {
+  return (engineId === 'seedance-1-5-pro'
+    ? SEEDANCE_1_5_TOKEN_DIMENSIONS
+    : BYTEPLUS_TOKEN_DIMENSIONS)[resolution]?.[aspectRatio];
+}
+
 export function expectedBytePlusTokens(
   job: Pick<BytePlusPendingJob, 'engine_id' | 'duration_sec' | 'settings_snapshot'>
 ): number {
@@ -62,7 +97,7 @@ export function expectedBytePlusTokens(
       : profile.aspectRatios[0];
   const dimensions =
     resolution && aspectRatio
-      ? BYTEPLUS_TOKEN_DIMENSIONS[resolution]?.[aspectRatio]
+      ? tokenDimensions(job.engine_id, resolution, aspectRatio)
       : undefined;
   if (!dimensions) {
     throw new BytePlusModelArkError(
@@ -150,7 +185,7 @@ export function estimateBytePlusProviderCostCents(input: {
   if (!Number.isSafeInteger(input.durationSec) || input.durationSec < 1) {
     throw new Error('Invalid BytePlus provider-cost duration.');
   }
-  const dimensions = BYTEPLUS_TOKEN_DIMENSIONS[input.resolution]?.[input.aspectRatio];
+  const dimensions = tokenDimensions(input.engineId, input.resolution, input.aspectRatio);
   if (!dimensions) throw new Error('Invalid BytePlus provider-cost dimensions.');
   const totalTokens = (
     dimensions.width * dimensions.height * input.durationSec * 24

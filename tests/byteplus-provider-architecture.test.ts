@@ -33,6 +33,16 @@ test('Seedance 1.5 direct list accounting distinguishes audio on and off', () =>
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '720p', false), 0.0012);
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '1080p', true), 0.0024);
   assert.throws(() => getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '4k', true));
+  assert.equal(expectedBytePlusTokens({
+    engine_id: 'seedance-1-5-pro',
+    duration_sec: 5,
+    settings_snapshot: { core: { resolution: '480p', aspectRatio: '16:9' } },
+  }), (864 * 496 * 5 * 24) / 1024);
+  assert.equal(expectedBytePlusTokens({
+    engine_id: 'seedance-1-5-pro',
+    duration_sec: 4,
+    settings_snapshot: { core: { resolution: '1080p', aspectRatio: '4:3' } },
+  }), (1664 * 1248 * 4 * 24) / 1024);
 });
 
 const pollPath = 'frontend/server/byteplus-poll.ts';

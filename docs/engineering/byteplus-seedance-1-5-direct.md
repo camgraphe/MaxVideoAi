@@ -10,6 +10,7 @@ The public `seedance-1-5-pro` identity and customer quotes remain unchanged. Fal
 4. Only after those checks, set `BYTEPLUS_ARK_ENABLED=true`, `SEEDANCE_1_5_BYTEPLUS_ENABLED=true`, and `SEEDANCE_1_5_PROVIDER=byteplus_modelark`. `SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY` defaults to `true`; allowed modes default to `t2v,i2v` through `SEEDANCE_1_5_BYTEPLUS_MODES`. Keep admin-only until the live canary and rollback have passed.
 
 The direct profile sends camera lock and seed when selected. It removes the Fal-only safety-checker toggle from direct runtime options. The current 1.5 Draft path is not implemented and must not be advertised.
+When provider usage is unavailable, the list-cost estimate uses the 1.5 output dimensions from the [official video generation tutorial](https://docs.byteplus.com/en/docs/modelark/video-generation-tutorial), which differ from 2.5 at several aspect ratios.
 
 ## Retirement check — engineering owner, 2026-10-28
 
