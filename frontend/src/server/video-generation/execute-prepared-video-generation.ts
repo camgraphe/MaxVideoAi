@@ -276,6 +276,8 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           effectiveResolution,
           aspectRatio,
           audioEnabled,
+          cameraFixed: falPayload.cameraFixed,
+          seed: falPayload.seed,
           placeholderThumb,
           pricing,
           paymentStatus,

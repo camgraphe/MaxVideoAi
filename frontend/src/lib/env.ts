@@ -97,6 +97,7 @@ export const ENV = {
     'dreamina-seedance-2-0-fast-260128'
   ),
   BYTEPLUS_ARK_SEEDANCE_MODEL_ID: getOptionalEnv('BYTEPLUS_ARK_SEEDANCE_MODEL_ID', 'dreamina-seedance-2-0-260128'),
+  BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID: getOptionalEnv('BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID'),
   BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID: getOptionalEnv(
     'BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID',
     'dreamina-seedance-2-0-mini-260615'
@@ -111,6 +112,10 @@ export const ENV = {
     'dola-seedream-5-0-pro-260628'
   ),
   BYTEPLUS_ARK_ENABLED: getOptionalEnv('BYTEPLUS_ARK_ENABLED', 'false'),
+  SEEDANCE_1_5_BYTEPLUS_ENABLED: getOptionalEnv('SEEDANCE_1_5_BYTEPLUS_ENABLED', 'false'),
+  SEEDANCE_1_5_PROVIDER: getOptionalEnv('SEEDANCE_1_5_PROVIDER', 'fal'),
+  SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY: getOptionalEnv('SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY', 'true'),
+  SEEDANCE_1_5_BYTEPLUS_MODES: getOptionalEnv('SEEDANCE_1_5_BYTEPLUS_MODES', 't2v,i2v'),
   SEEDANCE_2_PROVIDER: getOptionalEnv('SEEDANCE_2_PROVIDER', 'fal'),
   SEEDANCE_2_BYTEPLUS_ADMIN_ONLY: getOptionalEnv('SEEDANCE_2_BYTEPLUS_ADMIN_ONLY', 'true'),
   SEEDANCE_2_BYTEPLUS_MODES: getOptionalEnv('SEEDANCE_2_BYTEPLUS_MODES', 't2v,i2v,ref2v,v2v,extend'),

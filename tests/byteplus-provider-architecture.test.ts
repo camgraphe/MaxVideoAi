@@ -28,6 +28,13 @@ import {
   getBytePlusUnitPriceUsdPer1kTokens,
 } from '../frontend/server/byteplus-accounting';
 
+test('Seedance 1.5 direct list accounting distinguishes audio on and off', () => {
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '720p', true), 0.0024);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '720p', false), 0.0012);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '1080p', true), 0.0024);
+  assert.throws(() => getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '4k', true));
+});
+
 const pollPath = 'frontend/server/byteplus-poll.ts';
 const pollFailurePath = 'frontend/server/byteplus-poll-failure.ts';
 const accountingPath = 'frontend/server/byteplus-accounting.ts';

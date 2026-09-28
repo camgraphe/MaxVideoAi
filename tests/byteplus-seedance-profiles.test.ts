@@ -15,12 +15,29 @@ import {
   isBytePlusSeedanceHiddenEngine,
   resolveBytePlusSeedanceModelId,
   resolveBytePlusSeedanceRouteProfile,
+  shouldRouteSeedanceEngineToBytePlus,
 } from '../frontend/src/server/video-providers/byteplus-modelark';
+import { isSeedance15DirectAvailableAt } from '../frontend/src/server/video-providers/byteplus-modelark-profile-policy';
 import { ENV } from '../frontend/src/lib/env';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { normalizeBytePlusOptions } from '../frontend/app/api/generate/_lib/request-options-byteplus';
 
 const expected = [
+  {
+    engineId: 'seedance-1-5-pro',
+    modelConfigKey: 'seedance15ModelId',
+    pricingProfileKey: 'seedance15',
+    defaultDurationSec: 5,
+    defaultResolution: '720p',
+    defaultAspectRatio: '16:9',
+    motionControls: false,
+    resolutions: ['480p', '720p', '1080p'],
+    durations: [4, 5, 6, 7, 8, 9, 10, 11, 12],
+    alwaysDirect: false,
+    providerOverrideKey: 'SEEDANCE_1_5_PROVIDER',
+    adminOnlyKey: 'SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY',
+    allowedModesKey: 'SEEDANCE_1_5_BYTEPLUS_MODES',
+  },
   {
     engineId: 'seedance-2-0',
     modelConfigKey: 'seedanceModelId',
@@ -113,11 +130,69 @@ test('every current BytePlus Seedance engine has an explicit parity profile', ()
     assert.equal(profile.routing.providerOverrideKey, entry.providerOverrideKey);
     assert.equal(profile.routing.adminOnlyKey, entry.adminOnlyKey);
     assert.equal(profile.routing.allowedModesKey, entry.allowedModesKey);
-    assert.deepEqual(profile.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+    assert.deepEqual(profile.supportedModes, entry.engineId === 'seedance-1-5-pro'
+      ? ['t2v', 'i2v']
+      : ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
     assert.deepEqual(profile.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
     assert.equal(profile.framesPerSecond, 24);
     assert.equal(profile.generatedAudio, true);
   }
+});
+
+test('Seedance 1.5 direct route defaults to Fal and closes before provider shutdown', { concurrency: false }, () => {
+  const original = {
+    enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
+    provider: ENV.SEEDANCE_1_5_PROVIDER,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID,
+  };
+  try {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'false';
+    ENV.SEEDANCE_1_5_PROVIDER = 'fal';
+    assert.equal(shouldRouteSeedanceEngineToBytePlus('seedance-1-5-pro'), false);
+    assert.equal(resolveBytePlusSeedanceRouteProfile('seedance-1-5-pro', 'bytedance'), null);
+    assert.throws(() => assertBytePlusSeedanceSubmissionEnabled('seedance-1-5-pro'));
+    assert.equal(isSeedance15DirectAvailableAt('2026-11-11T08:59:59Z'), true);
+    assert.equal(isSeedance15DirectAvailableAt('2026-11-11T09:00:00Z'), false);
+    assert.equal(isSeedance15DirectAvailableAt('not-a-date'), false);
+
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
+    ENV.SEEDANCE_1_5_PROVIDER = 'byteplus_modelark';
+    ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID = '';
+    assert.equal(shouldRouteSeedanceEngineToBytePlus('seedance-1-5-pro'), true);
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-1-5-pro'), true);
+    assert.throws(() => resolveBytePlusSeedanceModelId('seedance-1-5-pro', {
+      seedance15ModelId: '',
+    } as never));
+  } finally {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
+    ENV.SEEDANCE_1_5_PROVIDER = original.provider;
+    ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID = original.modelId;
+  }
+});
+
+test('Seedance 1.5 direct runtime keeps only T2V and I2V with its existing customer options', () => {
+  const entry = getFalEngineById('seedance-1-5-pro');
+  assert.ok(entry);
+  const runtime = applyBytePlusSeedanceRuntimeOptions(entry.engine, {
+    provider: 'byteplus_modelark', allowedModes: ['t2v', 'i2v', 'ref2v'],
+  });
+  assert.deepEqual(runtime.modes, ['t2v', 'i2v']);
+  assert.deepEqual(runtime.resolutions, ['480p', '720p', '1080p']);
+  assert.equal(runtime.audio, true);
+  assert.equal(runtime.extend, false);
+  assert.equal(runtime.motionControls, false);
+  const fields = [...(runtime.inputSchema?.required ?? []), ...(runtime.inputSchema?.optional ?? [])];
+  assert.ok(fields.some((field) => field.id === 'camera_fixed'));
+  assert.ok(fields.some((field) => field.id === 'seed'));
+  assert.equal(fields.some((field) => field.id === 'enable_safety_checker'), false);
+  assert.equal(normalizeBytePlusOptions({
+    engineId: 'seedance-1-5-pro', durationSec: 12,
+    requestedResolution: '1080p', aspectRatio: '9:16', mode: 'i2v',
+  }).ok, true);
+  assert.equal(normalizeBytePlusOptions({
+    engineId: 'seedance-1-5-pro', durationSec: 13,
+    requestedResolution: '1080p', aspectRatio: '9:16', mode: 't2v',
+  }).ok, false);
 });
 
 test('Seedance 2.5 has a dedicated disabled-by-default provider profile', () => {

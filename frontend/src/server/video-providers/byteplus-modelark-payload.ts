@@ -39,6 +39,8 @@ export type BytePlusSeedanceFastPayload = {
   ratio?: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
   duration: number;
   generate_audio: boolean;
+  camera_fixed?: boolean;
+  seed?: number;
   watermark: false;
 };
 
@@ -89,6 +91,8 @@ export function buildBytePlusSeedancePayload(params: {
   resolution?: string | null;
   ratio?: string | null;
   generateAudio?: boolean;
+  cameraFixed?: boolean;
+  seed?: number;
   allowedModes?: readonly Mode[];
   allowedAspectRatios?: readonly AspectRatio[];
   allowedResolutions?: Resolution[];
@@ -291,6 +295,11 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'BYTEPLUS_MODEL_MISSING',
     });
   }
+  if (params.seed !== undefined && (!Number.isSafeInteger(params.seed) || params.seed < -1)) {
+    throw new BytePlusModelArkError('BytePlus Seedance seed is invalid.', {
+      code: 'BYTEPLUS_SEED_INVALID',
+    });
+  }
   if (!allowedResolutions.includes(requestedResolution)) {
     throw new BytePlusModelArkError('BytePlus Seedance resolution is not supported by this model.', {
       code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
@@ -352,6 +361,8 @@ export function buildBytePlusSeedancePayload(params: {
       : { ratio: requestedRatio as BytePlusSeedancePayload['ratio'] }),
     duration,
     generate_audio: params.generateAudio === true,
+    ...(typeof params.cameraFixed === 'boolean' ? { camera_fixed: params.cameraFixed } : {}),
+    ...(params.seed !== undefined ? { seed: params.seed } : {}),
     watermark: false,
   };
 }

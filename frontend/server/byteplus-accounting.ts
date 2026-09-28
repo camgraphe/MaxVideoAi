@@ -125,7 +125,8 @@ export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_sn
 export function getBytePlusUnitPriceUsdPer1kTokens(
   engineId: string | null | undefined,
   billingInputType?: string | null,
-  resolution?: string | null
+  resolution?: string | null,
+  generateAudio = true,
 ): number {
   const profile = requireBytePlusSeedanceProfile(engineId);
   const selectedResolution = resolution ?? (profile.resolutions.includes('720p') ? '720p' : profile.resolutions[0]);
@@ -134,6 +135,7 @@ export function getBytePlusUnitPriceUsdPer1kTokens(
     profile: profile.pricingProfileKey,
     resolution: selectedResolution,
     billingInputType: billingInputType === 'video_input' ? 'video_input' : 'no_video_input',
+    generateAudio,
   }).unitPriceUsdPer1kTokens;
 }
 
@@ -143,6 +145,7 @@ export function estimateBytePlusProviderCostCents(input: {
   resolution: string;
   aspectRatio: string;
   billingInputType: 'video_input' | 'no_video_input';
+  generateAudio?: boolean;
 }): number {
   if (!Number.isSafeInteger(input.durationSec) || input.durationSec < 1) {
     throw new Error('Invalid BytePlus provider-cost duration.');
@@ -156,6 +159,7 @@ export function estimateBytePlusProviderCostCents(input: {
     input.engineId,
     input.billingInputType,
     input.resolution,
+    input.generateAudio,
   );
   const costCents = Math.ceil(
     ((totalTokens * unitPriceUsdPer1kTokens) / 1000) * 100 - Number.EPSILON,
@@ -177,7 +181,7 @@ export function buildBytePlusListCostBreakdown(input: {
   const totalTokens = usage?.totalTokens ?? expectedBytePlusTokens(job);
   const accounting = getBytePlusAccounting(job);
   const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
-    job.engine_id, accounting.byteplusBillingInputType, input.resolution,
+    job.engine_id, accounting.byteplusBillingInputType, input.resolution, accounting.generateAudio,
   );
   const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
   return {

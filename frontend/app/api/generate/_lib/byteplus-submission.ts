@@ -78,6 +78,8 @@ export async function submitBytePlusGenerateTask(params: {
   effectiveResolution: string;
   aspectRatio: string | null;
   audioEnabled: boolean | undefined;
+  cameraFixed?: boolean | null;
+  seed?: number | null;
   placeholderThumb: string;
   pricing: PricingSnapshot;
   paymentStatus: string;
@@ -148,6 +150,10 @@ export async function submitBytePlusGenerateTask(params: {
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
       generateAudio,
+      ...(params.engineId === 'seedance-1-5-pro' && typeof params.cameraFixed === 'boolean'
+        ? { cameraFixed: params.cameraFixed } : {}),
+      ...(params.engineId === 'seedance-1-5-pro' && typeof params.seed === 'number'
+        ? { seed: params.seed } : {}),
       allowedModes: profile.supportedModes,
       allowedAspectRatios: profile.aspectRatios,
       allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),

@@ -6,7 +6,7 @@ export const BYTEPLUS_MODELARK_LIST_PRICE_SOURCE = {
 } as const;
 
 type VideoRate = Readonly<{ noVideoInput: number; videoInput: number }>;
-type VideoProfile = 'standard' | 'fast' | 'mini' | 'seedance25';
+type VideoProfile = 'seedance15' | 'standard' | 'fast' | 'mini' | 'seedance25';
 
 const LIMITED_CAMPAIGN = {
   startsAt: '2026-08-07T06:00:00.000Z',
@@ -14,7 +14,7 @@ const LIMITED_CAMPAIGN = {
   status: 'published_temporary_promotion' as const,
 };
 
-const VIDEO_RATES_USD_PER_1K_TOKENS: Readonly<Record<VideoProfile, Readonly<Record<string, VideoRate>>>> = {
+const VIDEO_RATES_USD_PER_1K_TOKENS: Readonly<Record<Exclude<VideoProfile, 'seedance15'>, Readonly<Record<string, VideoRate>>>> = {
   standard: {
     '480p': { noVideoInput: 0.007, videoInput: 0.0043 },
     '720p': { noVideoInput: 0.007, videoInput: 0.0043 },
@@ -40,7 +40,24 @@ export function getBytePlusVideoListRate(input: {
   profile: VideoProfile;
   resolution: string;
   billingInputType: 'no_video_input' | 'video_input';
+  generateAudio?: boolean;
 }) {
+  if (input.profile === 'seedance15') {
+    if (!['480p', '720p', '1080p'].includes(input.resolution.toLowerCase())) {
+      throw new Error(`Unsupported BytePlus seedance15 resolution: ${input.resolution}`);
+    }
+    return {
+      unitPriceUsdPer1kTokens: getSeedance15ListRate({
+        audio: input.generateAudio !== false,
+        step: 'normal',
+      }).unitPriceUsdPer1kTokens,
+      unit: 'USD / 1,000 tokens' as const,
+      status: 'published_list' as const,
+      source: BYTEPLUS_MODELARK_LIST_PRICE_SOURCE,
+      promotion: null,
+      effectiveUnitPriceUsdPer1kTokens: null,
+    };
+  }
   const rates = VIDEO_RATES_USD_PER_1K_TOKENS[input.profile][input.resolution.toLowerCase()];
   if (!rates) throw new Error(`Unsupported BytePlus ${input.profile} resolution: ${input.resolution}`);
   const unitPriceUsdPer1kTokens = input.billingInputType === 'video_input' ? rates.videoInput : rates.noVideoInput;

@@ -7,6 +7,7 @@ import {
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
   PUBLIC_SEEDANCE_MINI_ENGINE_ID,
   SEEDANCE_2_5_ENGINE_ID,
+  SEEDANCE_1_5_ENGINE_ID,
   isPublicSeedanceEngine,
   isPublicSeedanceFastEngine,
   isPublicSeedanceMiniEngine,
@@ -59,11 +60,23 @@ function assertNever(value: never): never {
   );
 }
 
+// ModelArk's published shutdown is 2026-11-11 17:00 UTC+8. No automatic
+// replacement is authorized: existing Fal jobs keep their recorded provider.
+const SEEDANCE_1_5_DIRECT_ENDS_AT = Date.parse('2026-11-11T09:00:00Z');
+
+export function isSeedance15DirectAvailableAt(at: string): boolean {
+  const instant = Date.parse(at);
+  return Number.isFinite(instant) && instant < SEEDANCE_1_5_DIRECT_ENDS_AT;
+}
+
 function readProviderOverride(
   key: BytePlusSeedanceProfile['routing']['providerOverrideKey']
 ): 'fal' | 'byteplus_modelark' {
   let raw: string | undefined;
   switch (key) {
+    case 'SEEDANCE_1_5_PROVIDER':
+      raw = ENV.SEEDANCE_1_5_PROVIDER;
+      break;
     case 'SEEDANCE_2_PROVIDER':
       raw = ENV.SEEDANCE_2_PROVIDER;
       break;
@@ -88,6 +101,9 @@ function readEnabled(profile: BytePlusSeedanceProfile): boolean {
   switch (profile.routing.enabledKey) {
     case null:
       return true;
+    case 'SEEDANCE_1_5_BYTEPLUS_ENABLED':
+      return envFlagEnabled(ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED) &&
+        isSeedance15DirectAvailableAt(new Date().toISOString());
     case 'SEEDANCE_2_5_BYTEPLUS_ENABLED':
       return envFlagEnabled(ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED ?? 'false');
     default:
@@ -100,6 +116,10 @@ function readAdminOnly(profile: BytePlusSeedanceProfile): boolean {
   let raw: string | undefined;
   let defaultValue: boolean;
   switch (key) {
+    case 'SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY':
+      raw = ENV.SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY;
+      defaultValue = true;
+      break;
     case 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY':
       raw = ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY;
       defaultValue = true;
@@ -126,6 +146,9 @@ function readAllowedModes(profile: BytePlusSeedanceProfile): Mode[] {
   const key = profile.routing.allowedModesKey;
   let raw: string | undefined;
   switch (key) {
+    case 'SEEDANCE_1_5_BYTEPLUS_MODES':
+      raw = ENV.SEEDANCE_1_5_BYTEPLUS_MODES;
+      break;
     case 'SEEDANCE_2_BYTEPLUS_MODES':
       raw = ENV.SEEDANCE_2_BYTEPLUS_MODES;
       break;
@@ -181,6 +204,7 @@ function filterInputFieldsForModes(
     : fields;
   return sourceFields
     .map(expandBytePlusFieldModes)
+    .filter((field) => profile.engineId !== SEEDANCE_1_5_ENGINE_ID || field.id !== 'enable_safety_checker')
     .filter((field) => !field.modes?.length || field.modes.some((mode) => allowedModes.includes(mode)))
     .map((field) => {
       if (field.id === 'resolution' && field.type === 'enum') {
@@ -229,10 +253,11 @@ export function isBytePlusSeedanceSubmissionEnabled(
 ): boolean {
   const profile = getBytePlusSeedanceProfile(engineId);
   if (!profile || !readEnabled(profile)) return false;
-  return (
-    profile.routing.providerOverrideKey !== 'SEEDANCE_2_5_PROVIDER' ||
-    readProviderOverride(profile.routing.providerOverrideKey) === BYTEPLUS_MODELARK_PROVIDER
-  );
+  const key = profile.routing.providerOverrideKey;
+  if (key === 'SEEDANCE_1_5_PROVIDER' || key === 'SEEDANCE_2_5_PROVIDER') {
+    return readProviderOverride(key) === BYTEPLUS_MODELARK_PROVIDER;
+  }
+  return true;
 }
 
 export function assertBytePlusSeedanceSubmissionEnabled(
@@ -377,10 +402,7 @@ export function getBytePlusSeedanceGeneratedAudio(
 
 export function resolveBytePlusSeedanceModelId(
   engineId: string | null | undefined,
-  config: Record<
-    'seedanceModelId' | 'seedanceFastModelId' | 'seedanceMiniModelId' | 'seedance25ModelId',
-    string
-  >
+  config: Record<BytePlusSeedanceProfile['modelConfigKey'], string>
 ): string {
   const profile = requireBytePlusSeedanceProfile(engineId);
   const modelId = config[profile.modelConfigKey]?.trim();
