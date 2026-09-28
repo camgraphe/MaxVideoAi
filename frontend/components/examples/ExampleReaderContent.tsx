@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy } from 'lucide-react';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import { DiscoveryVideoPlayer, type ReaderNavigation } from './DiscoveryVideoPlayer.client';
@@ -58,7 +59,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, heading
       <p className={styles.note}>{copy.textOnly}</p>
       <p className={styles.comparisonNote}>{copy.compareNote}</p>
       {detail.quotes.length ? <div className={styles.quotes}>{detail.quotes.map(quote => <article key={quote.engineId} className={styles.quote}>
-        <div><h4>{quote.label}</h4>{quote.original && <p className={styles.current}>{copy.current}</p>}
+        <div><div className={styles.quoteIdentity}><div data-theme="dark" aria-hidden="true"><EngineIcon engine={{ id: quote.engineId, label: quote.label, brandId: quote.brandId }} size={32}/></div><h4>{quote.label}</h4></div>{quote.original && <p className={styles.current}>{copy.current}</p>}
           <p className={styles.quoteSettings}>{([
             ['durationSec', `${quote.settings.durationSec} s`], ['resolution', quote.settings.resolution],
             ['aspectRatio', quote.settings.aspectRatio], ['audio', quote.settings.audio ? copy.audio : copy.silent],

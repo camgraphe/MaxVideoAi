@@ -57,7 +57,7 @@ export async function buildExampleComparisonQuotes(video: GalleryVideo, source: 
       if (!Number.isFinite(result.totalCents) || result.totalCents < 0 || !/^[A-Z]{3}$/.test(result.currency)) return null;
       const known = { durationSec: video.durationSec, audio: video.hasAudio, resolution: source?.resolution, aspectRatio: source?.aspectRatio };
       const changed = (['durationSec', 'resolution', 'aspectRatio', 'audio'] as const).filter(key => settings[key] !== known[key]);
-      return { engineId: engine.id, label: engine.label, amountCents: result.totalCents, currency: result.currency, href, original: engine.id === sourceId, settings, changed };
+      return { engineId: engine.id, brandId: engine.brandId, label: engine.label, amountCents: result.totalCents, currency: result.currency, href, original: engine.id === sourceId, settings, changed };
     } catch { return null; }
   }));
   const valid = results.filter(value => value !== null);

@@ -1,5 +1,5 @@
 import type { ExampleRecreationSettings } from './example-recreation';
-export type ExampleComparisonQuote = {engineId:string;label:string;amountCents:number;currency:string;href:string;original:boolean;settings:ExampleRecreationSettings;changed:Array<'durationSec'|'resolution'|'aspectRatio'|'audio'>};
+export type ExampleComparisonQuote = {engineId:string;brandId?:string;label:string;amountCents:number;currency:string;href:string;original:boolean;settings:ExampleRecreationSettings;changed:Array<'durationSec'|'resolution'|'aspectRatio'|'audio'>};
 export type ExampleWatchDetail = {
   id:string;title:string;prompt:string;videoUrl:string;posterUrl:string|null;engineLabel:string;
   watchHref:string;modelHref:string|null;recreateHref:string|null;aspectRatio:string;durationSec:number;hasAudio:boolean;
