@@ -16,6 +16,14 @@ export type CurationSnapshot = {
   slug: string; isPublic: boolean; legacyIds: string[];
 };
 
+/** Move one selected ID in the complete draft; position is one-based across all pages. */
+export function moveCurationIdToPosition(ids: string[], id: string, position: number): string[] {
+  if (!Number.isInteger(position) || position < 1 || position > ids.length || !ids.includes(id)) return ids;
+  const next = ids.filter(value => value !== id);
+  next.splice(position - 1, 0, id);
+  return next;
+}
+
 export function parseCurationDraft(value: unknown): CurationDraft {
   if (!value || typeof value !== 'object') throw new Error('Invalid curation');
   const row = value as Record<string, unknown>;

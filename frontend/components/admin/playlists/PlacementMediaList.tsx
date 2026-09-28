@@ -1,7 +1,8 @@
 'use client';
-import Image from 'next/image';
+
 import { useRef } from 'react';
-import { curationItemFormat, type CurationItem } from '@/lib/admin/playlist-curation';
+import { moveCurationIdToPosition, type CurationItem } from '@/lib/admin/playlist-curation';
+import { PlacementMediaCard } from './PlacementMediaCard';
 
 type Props = {
   items: CurationItem[];
@@ -13,125 +14,44 @@ type Props = {
   canExclude?: (id: string) => boolean;
   canAdd?: (id: string) => boolean;
   onAdd?: (id: string) => void;
+  onInspect?: (id: string) => void;
   removeLabel?: string;
 };
-export function PlacementMediaList({
-  items,
-  orderedIds,
-  busy,
-  onOrder,
-  onRemove,
-  onExclude,
-  onAdd,
-  canAdd,
-  canExclude,
-  removeLabel = 'Remove',
-}: Props) {
+
+export function PlacementMediaList({ items, orderedIds, busy, onOrder, onRemove, onExclude, onAdd, onInspect,
+  canAdd, canExclude, removeLabel = 'Remove' }: Props) {
   const allIds = orderedIds ?? items.map(item => item.id);
   const dragged = useRef<string | null>(null);
-  const move = (id: string, index: number) => {
-    const next = allIds.filter((value) => value !== id);
-    next.splice(index, 0, id);
-    onOrder?.(next);
-  };
-  return (
-    <ol className="divide-y divide-border">
-      {items.map((item) => { const index = allIds.indexOf(item.id); return (
-        <li
-          key={item.id}
-          data-curation-item={onOrder ? item.id : undefined}
-          draggable={Boolean(onOrder) && !busy}
-          onDragStart={(event) => {
-            if (busy || !onOrder) {
-              event.preventDefault();
-              return;
-            }
-            dragged.current = item.id;
-            event.dataTransfer.effectAllowed = 'move';
-            event.dataTransfer.setData('text/plain', item.id);
-          }}
-          onDragOver={(event) => {
-            if (!busy && onOrder) event.preventDefault();
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            if (
-              !busy &&
-              dragged.current &&
-              dragged.current !== item.id &&
-              allIds.includes(dragged.current)
-            )
-              move(dragged.current, index);
-            dragged.current = null;
-          }}
-          onDragEnd={() => {
-            dragged.current = null;
-          }}
-          className="flex flex-wrap items-center gap-3 py-3"
-        >
-          {onOrder ? (
-            <span title="Drag to reorder" className="cursor-grab text-xs tabular-nums text-text-muted">
-              ⠿ {index + 1}
-            </span>
-          ) : null}
-          {item.thumbUrl ? (
-            <Image
-              src={item.thumbUrl}
-              width={64}
-              height={40}
-              unoptimized
-              alt=""
-              className="h-10 w-16 rounded object-cover"
-            />
-          ) : (
-            <span className="h-10 w-16 rounded bg-surface-2" />
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{item.prompt || item.id}</p>
-            <p className="truncate text-xs text-text-muted">
-              {item.engineLabel ?? item.engineId} · {curationItemFormat(item) ?? 'Unknown format'} · {item.id}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs [&>button]:rounded-md [&>button]:border [&>button]:border-border [&>button]:px-2 [&>button]:py-1.5 [&>button:disabled]:opacity-40">
-            <a className="rounded-md px-2 py-1.5 text-brand underline underline-offset-4" href={`/admin/video-seo?video=${encodeURIComponent(item.id)}`}>Video SEO ↗</a>
-            {onOrder ? (
-              <>
-                <button
-                  type="button"
-                  disabled={busy || index === 0}
-                  aria-label={`Move item ${index + 1} up`}
-                  onClick={() => move(item.id, index - 1)}
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  disabled={busy || index === allIds.length - 1}
-                  aria-label={`Move item ${index + 1} down`}
-                  onClick={() => move(item.id, index + 1)}
-                >
-                  ↓
-                </button>
-              </>
-            ) : null}
-            {onAdd ? (
-              <button type="button" disabled={busy || (canAdd ? !canAdd(item.id) : false)} onClick={() => onAdd(item.id)}>
-                Add to selection
-              </button>
-            ) : null}
-            {onRemove ? (
-              <button type="button" disabled={busy} onClick={() => onRemove(item.id)}>
-                {removeLabel}
-              </button>
-            ) : null}
-            {onExclude ? (
-              <button type="button" disabled={busy || (canExclude ? !canExclude(item.id) : false)} onClick={() => onExclude(item.id)}>
-                Exclude from this page
-              </button>
-            ) : null}
-          </div>
-        </li>
-      ); })}
-    </ol>
-  );
+  const move = (id: string, position: number) => onOrder?.(moveCurationIdToPosition(allIds, id, position));
+
+  return <ol data-selected-grid={onOrder ? '' : undefined} className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    {items.map(item => {
+      const index = allIds.indexOf(item.id);
+      return <li key={item.id} data-curation-item={onOrder ? item.id : undefined}
+        draggable={Boolean(onOrder) && !busy}
+        onDragStart={event => {
+          if (busy || !onOrder) { event.preventDefault(); return; }
+          dragged.current = item.id;
+          event.dataTransfer.effectAllowed = 'move';
+          event.dataTransfer.setData('text/plain', item.id);
+        }}
+        onDragOver={event => { if (!busy && onOrder) event.preventDefault(); }}
+        onDrop={event => {
+          event.preventDefault();
+          if (!busy && dragged.current && dragged.current !== item.id && allIds.includes(dragged.current))
+            move(dragged.current, index + 1);
+          dragged.current = null;
+        }}
+        onDragEnd={() => { dragged.current = null; }}
+        className="min-w-0">
+        <PlacementMediaCard item={item} index={index} total={allIds.length} busy={busy}
+          onMove={onOrder ? position => move(item.id, position) : undefined}
+          onRemove={onRemove ? () => onRemove(item.id) : undefined}
+          onExclude={onExclude ? () => onExclude(item.id) : undefined}
+          onAdd={onAdd ? () => onAdd(item.id) : undefined}
+          onInspect={onInspect ? () => onInspect(item.id) : undefined}
+          canAdd={canAdd?.(item.id)} canExclude={canExclude?.(item.id)} removeLabel={removeLabel} />
+      </li>;
+    })}
+  </ol>;
 }

@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Simulate } from 'react-dom/test-utils';
 import { validateCurationOpening, type CurationItem } from '../frontend/lib/admin/playlist-curation';
 
 test('opening validation rejects duplicate and unmeasured sources', () => {
@@ -287,7 +288,8 @@ test('switching automatic to manual gathers all eligible IDs and retains hybrid 
 test('edits_four_slots_and_paged_tail', async () => {
   const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/admin/playlists'});
   const old=new Map<string,PropertyDescriptor|undefined>();
-  const items=Array.from({length:145},(_,n)=>({id:`v${n+1}`,engineId:'wan-3',engineLabel:'Wan 3',prompt:`Video ${n+1}`,videoUrl:'/v.mp4',thumbUrl:null,outputWidth:n===1?720:1280,outputHeight:n===1?1280:720}));
+  const items=Array.from({length:145},(_,n)=>({id:`v${n+1}`,engineId:'wan-3',engineLabel:'Wan 3',prompt:`Video ${n+1}`,videoUrl:'/v.mp4',thumbUrl:n===5?'/portrait.jpg':null,
+    outputWidth:n===6?undefined:n===1||n===5?720:1280,outputHeight:n===6?undefined:n===1||n===5?1280:720}));
   let submitted:any;
   let newFamily = false;
   const requests:string[]=[];
@@ -302,6 +304,9 @@ test('edits_four_slots_and_paged_tail', async () => {
   try{
     const {PlacementEditor}=await import('../frontend/components/admin/playlists/PlacementEditor');
     await act(async()=>root.render(React.createElement(PlacementEditor,{playlistId:'p'})));
+    assert.ok(dom.window.document.querySelector('[data-selected-grid]'));
+    assert.match(dom.window.document.querySelector('[data-curation-item="v7"]')!.textContent!, /Unknown format/);
+    assert.ok(dom.window.document.querySelector('[data-curation-item="v6"] img')?.className.includes('object-contain'));
     assert.match(dom.window.document.body.textContent!,/eligible new videos appended automatically/);
     assert.ok(button('Next candidates'));
     await act(async()=>button('Next candidates').click());await act(async()=>button('Next candidates').click());
@@ -318,6 +323,22 @@ test('edits_four_slots_and_paged_tail', async () => {
     await act(async () => button('Previous selected').dispatchEvent(drop));
     await act(async () => button('Preview changes').click());
     assert.equal(submitted.draft.orderedIds[0], 'v54', 'drop on previous page moves across windows');
+    const position = dom.window.document.querySelector('[aria-label="Move item 1 to position"]') as HTMLInputElement;
+    await act(async () => Simulate.change(position, { target: { value: '100' } }));
+    await act(async () => (dom.window.document.querySelector('[aria-label="Apply position for item 1"]') as HTMLButtonElement).click());
+    await act(async () => button('Preview changes').click());
+    assert.equal(submitted.draft.orderedIds[99], 'v54');
+    assert.equal(submitted.draft.orderedIds.length, 106);
+    const remove = [...dom.window.document.querySelectorAll('[data-curation-item="v5"] button')].find(el => el.textContent === 'Unfeature') as HTMLButtonElement;
+    await act(async () => remove.click());
+    await act(async () => button('Preview changes').click());
+    assert.ok(!submitted.draft.orderedIds.includes('v5'));
+    assert.ok(!submitted.draft.excludedIds.includes('v5'), 'unfeature does not blacklist the public feed');
+    const exclude = [...dom.window.document.querySelectorAll('[data-curation-item="v6"] button')].find(el => el.textContent === 'Exclude from this page') as HTMLButtonElement;
+    await act(async () => exclude.click());
+    await act(async () => button('Preview changes').click());
+    assert.ok(submitted.draft.excludedIds.includes('v6'), 'exclude suppresses the video from the page');
+    assert.ok(!submitted.draft.orderedIds.includes('v6'));
     newFamily = true;
     await act(async()=>root.render(React.createElement(PlacementEditor,{key:'new-family',playlistId:'new-family'})));
     assert.equal(button('Preview changes').disabled, true, 'new families require all four slots');
