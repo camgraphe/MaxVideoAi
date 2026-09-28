@@ -222,30 +222,31 @@ test('curation destination switches guard staged changes and pending preview', a
             revision: 'r1',
             config: null,
           },
-          candidates,
+          selectedItems: candidates, selectedTotal: 2,
           initialIds: ['one', 'two'],
         }),
       ),
     );
+    await act(async () => requests[1].resolve(Response.json({ok:true,items:candidates,nextCursor:null,total:2})));
     await act(async () =>
       (dom.window.document.querySelector('[aria-label="Move item 2 up"]') as HTMLButtonElement).click(),
     );
     dom.window.confirm = () => false;
     await act(async () => button('Destination b').click());
-    assert.equal(requests.length, 1, 'declining discard keeps the draft');
+    assert.equal(requests.length, 2, 'declining discard keeps the draft');
     await act(async () => button('Preview changes').click());
     assert.equal(button('Destination b').disabled, true, 'pending preview locks destination');
     await act(async () =>
-      requests[1].resolve(Response.json({ ok: false, error: 'Preview unavailable' }, { status: 503 })),
+      requests[2].resolve(Response.json({ ok: false, error: 'Preview unavailable' }, { status: 503 })),
     );
     assert.match(dom.window.document.body.textContent!, /Preview unavailable/);
     assert.equal(button('Cancel').disabled, false, 'failed preview preserves draft');
     dom.window.confirm = () => true;
     await act(async () => button('Destination b').click());
-    await act(async () => requests[2].resolve(Response.json({ ok: true, playlist: playlists[1], items: [] })));
-    assert.equal(requests[3].url, '/api/admin/playlists/b/curation');
+    await act(async () => requests[3].resolve(Response.json({ ok: true, playlist: playlists[1], items: [] })));
+    assert.equal(requests[4].url, '/api/admin/playlists/b/curation');
     await act(async () =>
-      requests[3].resolve(
+      requests[4].resolve(
         Response.json({
           ok: true,
           snapshot: {
@@ -256,11 +257,12 @@ test('curation destination switches guard staged changes and pending preview', a
             revision: 'r2',
             config: null,
           },
-          candidates: [],
+          selectedItems: [], selectedTotal: 0,
           initialIds: [],
         }),
       ),
     );
+    await act(async () => requests[5].resolve(Response.json({ok:true,items:[],nextCursor:null,total:0})));
     assert.equal(button('Destination b').getAttribute('aria-pressed'), 'true');
     assert.equal(button('Cancel').disabled, true, 'destination starts with a clean draft');
   } finally {

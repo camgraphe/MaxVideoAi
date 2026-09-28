@@ -12,6 +12,8 @@ import {
 type Loaded = {
   snapshot: CurationSnapshot;
   candidates: CurationItem[];
+  selectedItems: CurationItem[];
+  selectedTotal: number;
   initialIds: string[];
   removedCount?: number;
 };
@@ -36,8 +38,8 @@ export function usePlacementEditor(
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved.current);
   const url = `/api/admin/playlists/${playlistId}/curation`;
   const request = useCallback(
-    async (init?: RequestInit) => {
-      const response = await authFetch(url, init);
+    async (init?: RequestInit, suffix = '') => {
+      const response = await authFetch(url + suffix, init);
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) throw new Error(payload?.error ?? 'Unable to load or save this destination.');
       return payload;
@@ -65,6 +67,19 @@ export function usePlacementEditor(
     () =>
       run(async () => {
         const data: Loaded = await request();
+        const byId = new Map((data.selectedItems ?? []).map(item => [item.id, item]));
+        if (data.snapshot.available && data.snapshot.supported) {
+          const page = await request(undefined, '/candidates?limit=48');
+          for (const item of page.items as CurationItem[]) byId.set(item.id, item);
+          const missingOpening = (data.snapshot.config?.openingIds ?? []).filter(id => !byId.has(id));
+          if (missingOpening.length) {
+            const params = new URLSearchParams();
+            missingOpening.forEach(id => params.append('ids', id));
+            const window = await request(undefined, `/candidates?${params}`);
+            for (const item of window.items as CurationItem[]) byId.set(item.id, item);
+          }
+        }
+        data.candidates = [...byId.values()];
         if (!mounted.current) return;
         const next: CurationDraft = {
           openingIds: data.snapshot.config?.openingIds ?? null,
@@ -105,6 +120,26 @@ export function usePlacementEditor(
     setDraft(next);
     setPreview(null);
     setMessage(null);
+  };
+  const changeMode = (mode: CurationDraft['mode']) => {
+    if (running.current || mode === draft.mode) return;
+    if (mode === 'hybrid') { change({ ...draft, mode }); return; }
+    return run(async () => {
+      const eligible: string[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const page: { ids: string[]; total: number } = await request(undefined, `/candidates?idsOnly=true&limit=500&offset=${offset}`);
+        eligible.push(...page.ids);
+        if (!page.ids.length || offset + page.ids.length >= page.total) break;
+      }
+      if (!mounted.current) return;
+      const eligibleSet = new Set(eligible);
+      const excluded = new Set(draft.excludedIds);
+      const orderedIds = [...new Set([...(draft.openingIds ?? []), ...draft.orderedIds, ...eligible])]
+        .filter(id => eligibleSet.has(id) && !excluded.has(id));
+      setDraft({ ...draft, mode, orderedIds });
+      setPreview(null);
+      setMessage(null);
+    });
   };
   const items = resolveCuration(draft, loaded?.candidates ?? []);
   const makePreview = () =>
@@ -150,6 +185,7 @@ export function usePlacementEditor(
     dirty,
     items,
     change,
+    changeMode,
     makePreview,
     save,
     reload,

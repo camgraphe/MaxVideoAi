@@ -59,7 +59,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
   const output = join(folder, 'reader.cjs');
   await build({
     stdin: { contents: `export {loadHomepageExamples} from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples';
-      export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
+      export * from './frontend/server/videos-catalog-page'; export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
       export {getExampleWatchDetail,buildExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
       export {getVideoWatchPageDataById} from './frontend/server/video-seo';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
@@ -126,6 +126,8 @@ test('public gallery traverses every eligible video beyond the old window and hy
   await t.test('family inheritance deduplicates overlapping model and hub membership before counting',async()=>{
     const page=await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:504});
     assert.equal(page.total,513);assert.equal(page.items.length,9);
+    const ids=await reader.listCatalogMembershipIds({familyId:'kling',limit:500,offset:504});
+    assert.equal(ids.total,513);assert.deepEqual(ids.ids,['kling-505','kling-506','kling-507','kling-508','kling-509','kling-510','kling-511','kling-512','kling-513']);
   });
   await t.test('the general catalog includes independently published family/model media and honors explicit selection',async()=>{
     await postgres.pool.query(`
@@ -169,6 +171,8 @@ test('public gallery traverses every eligible video beyond the old window and hy
       WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling')`);
     const picked=await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:2,offset:1});
     assert.equal(picked.total,3);assert.deepEqual(picked.items.map(item=>item.id),['kling-20','kling-1']);
+    assert.deepEqual(await reader.listCatalogMembershipIds({familyId:'kling',offset:1,limit:2}),{ids:['kling-20','kling-1'],total:3});
+    assert.deepEqual(await reader.listPlaylistVideoIds('family-kling',{offset:1,limit:2}),{ids:['kling-20','kling-1'],total:3});
   });
   await t.test('missing curation schema uses the same complete legacy pagination read-only',async()=>{
     await postgres.pool.query('ALTER TABLE playlist_curations RENAME TO unavailable_curations');

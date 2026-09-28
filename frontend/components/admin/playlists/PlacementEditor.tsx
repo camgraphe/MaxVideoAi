@@ -76,14 +76,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
             aria-label="Page order"
             value={draft.mode}
             disabled={busy}
-            onChange={(event) => {
-              const mode = event.target.value as 'manual' | 'hybrid';
-              change({
-                ...draft,
-                mode,
-                orderedIds: mode === 'manual' ? state.items.map((item) => item.id) : draft.orderedIds,
-              });
-            }}
+            onChange={(event) => void state.changeMode(event.target.value as 'manual' | 'hybrid')}
             className="ml-3 rounded-md border border-border px-3 py-2"
           >
             <option value="manual">Manual order</option>
@@ -162,7 +155,12 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
         <PlacementMediaList
           items={ordered}
           busy={busy}
-          onOrder={(orderedIds) => change({ ...draft, orderedIds })}
+          onOrder={(orderedIds) => {
+            // The visible window is only part of the selection; retain every other position.
+            const visible = new Set(orderedIds);
+            let index = 0;
+            change({ ...draft, orderedIds: draft.orderedIds.map(id => visible.has(id) ? orderedIds[index++] : id) });
+          }}
           onRemove={(id) =>
             change({
               ...draft,

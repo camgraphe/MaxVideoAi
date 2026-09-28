@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, type QueryExecutor } from '@/lib/db';
 import { listRuntimeModels } from '@/config/model-runtime';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
 import { getExampleFamilyEngineAliases, getExampleFamilyIds } from '@/lib/model-families';
@@ -26,7 +26,7 @@ const SORT_SQL: Record<ExampleSort, string> = {
   'engine-asc': "COALESCE(engine_label,'') ASC, created_at DESC, job_id ASC",
 };
 
-function catalogSql(sort: ExampleSort, withCuration: boolean): string {
+function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false): string {
   const curationColumns = withCuration
     ? "c.mode,ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids AS ordered_ids,c.excluded_ids"
     : 'NULL::text AS mode,NULL::text[] AS ordered_ids,NULL::text[] AS excluded_ids';
@@ -62,18 +62,20 @@ function catalogSql(sort: ExampleSort, withCuration: boolean): string {
   ), selected_page AS (
     SELECT job_id,ROW_NUMBER() OVER (ORDER BY ${SORT_SQL[sort]}) AS ordinal
     FROM unique_memberships ORDER BY ${SORT_SQL[sort]} LIMIT $3 OFFSET $4
-  ) SELECT totals.total,media.*
+  ) ${idsOnly ? `SELECT totals.total,page.job_id
+    FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
+    LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,media.*
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE
     LEFT JOIN LATERAL (${BASE_SELECT} WHERE app_jobs.job_id=page.job_id) media ON TRUE
-    ORDER BY page.ordinal`;
+    ORDER BY page.ordinal`}`;
 }
 
-export async function listCatalogPage(options: CatalogPageOptions): Promise<ListExamplesPageResult> {
+async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db: QueryExecutor) {
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.floor(options.limit)) : 24;
   const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
-  const empty = { items: [], total: 0, limit, offset, hasMore: false };
-  if (!process.env.DATABASE_URL) return empty;
+  const empty: Array<VideoRow & { total: number }> = [];
+
   const hub = getExamplesHubPlaylistSlug();
   const sourceSpecs = options.familyId
     ? getFamilyFeedSourceSlugs(options.familyId).map(slug => ({ slug, parent_slug: null as string | null }))
@@ -101,13 +103,30 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
   type CatalogRow = VideoRow & { total: number };
   let result: CatalogRow[];
   try {
-    result = await query<CatalogRow>(catalogSql(options.sort, true), params);
+    result = await db.query<CatalogRow>(catalogSql(options.sort, true, idsOnly), params);
   } catch (error) {
     // Missing optional curation storage is the only schema error that permits fallback.
     const failure = error as { code?: string; message?: string };
     if (failure.code !== '42P01' || !failure.message?.includes('playlist_curations')) throw error;
-    result = await query<CatalogRow>(catalogSql(options.sort, false), params);
+    result = await db.query<CatalogRow>(catalogSql(options.sort, false, idsOnly), params);
   }
+  return result;
+}
+
+/** Same membership, precedence and order as the public reader, without media hydration. */
+export async function listCatalogMembershipIds(
+  options: { familyId?: string; offset: number; limit: number }, db: QueryExecutor = { query },
+): Promise<{ ids: string[]; total: number }> {
+  const limit = Number.isFinite(options.limit) ? Math.max(1, Math.min(500, Math.floor(options.limit))) : 500;
+  const result = await readCatalogRows({ ...options, limit, sort: 'playlist' }, true, db);
+  return { ids: result.filter(row => row.job_id).map(row => row.job_id), total: Number(result[0]?.total ?? 0) };
+}
+
+export async function listCatalogPage(options: CatalogPageOptions): Promise<ListExamplesPageResult> {
+  const limit = Number.isFinite(options.limit) ? Math.max(1, Math.floor(options.limit)) : 24;
+  const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
+  if (!process.env.DATABASE_URL) return { items: [], total: 0, limit, offset, hasMore: false };
+  const result = await readCatalogRows(options, false, { query });
   const total = Number(result[0]?.total ?? 0);
   const items = result.filter(row => row.job_id).map(mapGalleryVideoRow);
   return { items, total, limit, offset, hasMore: offset + items.length < total };

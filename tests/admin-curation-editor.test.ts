@@ -11,7 +11,7 @@ test('curation stages drag order, previews before save, locks requests and prese
   });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const requests: Array<{
-    init?: RequestInit;
+    url: string; init?: RequestInit;
     resolve: (response: Response) => void;
   }> = [];
   for (const [key, value] of Object.entries({
@@ -20,7 +20,7 @@ test('curation stages drag order, previews before save, locks requests and prese
     navigator: dom.window.navigator,
     React,
     IS_REACT_ACT_ENVIRONMENT: true,
-    fetch: (_url: string, init?: RequestInit) => new Promise<Response>((resolve) => requests.push({ init, resolve })),
+    fetch: (url: string, init?: RequestInit) => new Promise<Response>((resolve) => requests.push({ url, init, resolve })),
   })) {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, {
@@ -60,11 +60,13 @@ test('curation stages drag order, previews before save, locks requests and prese
         Response.json({
           ok: true,
           snapshot,
-          candidates,
-          initialIds: ['a', 'b'],
+          selectedItems: candidates.slice(0,2), selectedTotal: 3,
+          initialIds: ['a', 'b', 'unhydrated-tail'],
         }),
       ),
     );
+    assert.equal(requests[1]?.url, '/api/admin/playlists/p/curation/candidates?limit=48');
+    await act(async () => requests[1].resolve(Response.json({ok:true,items:candidates,nextCursor:null,total:4})));
     assert.equal(
       button('Preview changes').disabled,
       false,
@@ -97,9 +99,10 @@ test('curation stages drag order, previews before save, locks requests and prese
       (dom.window.document.querySelector('[aria-label="Move item 2 up"]') as HTMLButtonElement).click(),
     );
     await act(async () => button('Preview changes').click());
+    assert.deepEqual(JSON.parse(String(requests[2].init?.body)).draft.orderedIds, ['b','a','unhydrated-tail'], 'reordering the loaded window preserves all unhydrated IDs');
     assert.equal(button('Cancel').disabled, true);
     await act(async () =>
-      requests[1].resolve(
+      requests[2].resolve(
         Response.json({
           ok: true,
           preview: {
@@ -118,16 +121,16 @@ test('curation stages drag order, previews before save, locks requests and prese
     assert.equal(button('Save changes').disabled, false, 'save is available beside the preview action');
     assert.equal(button('Preview changes').parentElement?.contains(button('Save changes')), true);
     await act(async () => button('Save changes').click());
-    assert.equal(JSON.parse(String(requests[2].init?.body)).token, 't1');
+    assert.equal(JSON.parse(String(requests[3].init?.body)).token, 't1');
     await act(async () =>
-      requests[2].resolve(Response.json({ ok: false, error: 'This destination changed. Reload it.' }, { status: 409 })),
+      requests[3].resolve(Response.json({ ok: false, error: 'This destination changed. Reload it.' }, { status: 409 })),
     );
     assert.match(dom.window.document.body.textContent!, /destination changed/);
     assert.deepEqual(order(), ['b', 'a'], 'failed save retains draft');
     assert.equal(button('Save changes').disabled, true, 'failed save invalidates preview');
     await act(async () => button('Preview changes').click());
     await act(async () =>
-      requests[3].resolve(
+      requests[4].resolve(
         Response.json({
           ok: true,
           preview: {
@@ -140,7 +143,7 @@ test('curation stages drag order, previews before save, locks requests and prese
     );
     await act(async () => button('Save changes').click());
     await act(async () =>
-      requests[4].resolve(
+      requests[5].resolve(
         Response.json({
           ok: true,
           snapshot: {
@@ -179,8 +182,8 @@ test('curation stages drag order, previews before save, locks requests and prese
       ),
     );
     await act(async () =>
-      requests[5].resolve(
-        Response.json({ ok: true, snapshot: { ...snapshot, supported: false }, candidates: [], initialIds: [] }),
+      requests[6].resolve(
+        Response.json({ ok: true, snapshot: { ...snapshot, supported: false }, selectedItems: [], selectedTotal: 0, initialIds: [] }),
       ),
     );
     assert.ok(button('Legacy ordering'), 'unsupported unconfigured destinations preserve their manual editor');
@@ -194,11 +197,11 @@ test('curation stages drag order, previews before save, locks requests and prese
       ),
     );
     await act(async () =>
-      requests[6].resolve(
+      requests[7].resolve(
         Response.json({
           ok: true,
           snapshot: { ...snapshot, supported: false, config: { mode: 'manual', orderedIds: [], excludedIds: [] } },
-          candidates: [],
+          selectedItems: [], selectedTotal: 0,
           initialIds: [],
         }),
       ),
@@ -216,4 +219,35 @@ test('curation stages drag order, previews before save, locks requests and prese
       else Reflect.deleteProperty(globalThis, key);
     }
   }
+});
+
+test('switching automatic to manual gathers all eligible IDs and retains hybrid on failure', async () => {
+  const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost/admin/playlists'});
+  const old = new Map<string,PropertyDescriptor | undefined>();
+  let fail = true;
+  const ids = Array.from({length:501},(_,n)=>`video-${n}`);
+  const snapshot={available:true,supported:true,slug:'examples-wan-3',isPublic:true,revision:'r',legacyIds:[],config:{mode:'hybrid',orderedIds:['video-2'],excludedIds:['video-3'],openingIds:null}};
+  for (const [key,value] of Object.entries({window:dom.window,document:dom.window.document,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url:string)=> {
+    if(url.includes('idsOnly=true')) {
+      if(fail) return Response.json({ok:false,error:'ID read failed'},{status:500});
+      const offset=Number(new URL(url,'http://localhost').searchParams.get('offset'));
+      return Response.json({ok:true,ids:ids.slice(offset,offset+500),total:501});
+    }
+    if(url.includes('/candidates'))return Response.json({ok:true,items:[],nextCursor:null,total:501});
+    return Response.json({ok:true,snapshot,initialIds:['video-2'],selectedItems:[],selectedTotal:1});
+  }})) {old.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});}
+  const root=createRoot(dom.window.document.getElementById('root')!);
+  try {
+    const {usePlacementEditor}=await import('../frontend/components/admin/playlists/usePlacementEditor');
+    let state: ReturnType<typeof usePlacementEditor>;
+    function Harness(){state=usePlacementEditor('p');return null;}
+    await act(async()=>root.render(React.createElement(Harness)));
+    await act(async()=>state.changeMode('manual'));
+    assert.equal(state!.draft.mode,'hybrid');assert.deepEqual(state!.draft.orderedIds,['video-2']);assert.match(state!.error!,/ID read failed/);
+    fail=false;
+    await act(async()=>state.changeMode('manual'));
+    assert.equal(state!.draft.mode,'manual');assert.equal(state!.draft.orderedIds.length,500);
+    assert.equal(state!.draft.orderedIds[0],'video-2');assert.ok(state!.draft.orderedIds.includes('video-500'));
+    assert.ok(!state!.draft.orderedIds.includes('video-3'));
+  }finally {await act(async()=>root.unmount());dom.window.close();for(const [key,value]of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
 });

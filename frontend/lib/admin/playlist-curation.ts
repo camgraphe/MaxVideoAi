@@ -22,9 +22,10 @@ export function parseCurationDraft(value: unknown): CurationDraft {
     if (new Set(input).size !== input.length) throw new Error('Duplicate media selection');
     return input as string[];
   };
-  const orderedIds = ids(row.orderedIds, 2000);
+  const orderedIds = ids(row.orderedIds, Infinity);
   const excludedIds = ids(row.excludedIds, 5000);
-  if (orderedIds.some(id => excludedIds.includes(id))) throw new Error('A selected video cannot also be excluded');
+  const excluded = new Set(excludedIds);
+  if (orderedIds.some(id => excluded.has(id))) throw new Error('A selected video cannot also be excluded');
   const openingIds = row.openingIds == null ? null : ids(row.openingIds, 4);
   if (openingIds && openingIds.length !== 4) throw new Error('Choose all four opening videos');
   if (openingIds?.some(id => excludedIds.includes(id))) throw new Error('An opening video cannot also be excluded');
