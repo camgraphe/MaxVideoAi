@@ -29,6 +29,7 @@ type ConsentEventDetail = {
 export default function ConsentModeBootstrap() {
   const pathname = usePathname();
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
+  const [externalScriptReady, setExternalScriptReady] = useState(false);
   const routeContext = getAnalyticsRouteContext(pathname);
 
   useEffect(() => {
@@ -62,6 +63,40 @@ export default function ConsentModeBootstrap() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!GA_ID || DISABLE_GA || externalScriptReady || !analyticsConsentGranted || routeContext.excludedFromGa4) {
+      return;
+    }
+
+    // Delay Next's preload as well as script insertion, with cancellable consent/route checks.
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timerId: number | undefined;
+    const mountScript = () => {
+      if (cancelled || !hasAnalyticsConsentInBrowser()) return;
+      if (getAnalyticsRouteContext(window.location.pathname).excludedFromGa4) return;
+      setExternalScriptReady(true);
+    };
+    const scheduleScript = () => {
+      if (cancelled) return;
+      if (typeof window.requestIdleCallback === 'function') {
+        idleId = window.requestIdleCallback(mountScript);
+      } else {
+        timerId = window.setTimeout(mountScript, 1);
+      }
+    };
+
+    if (document.readyState === 'complete') scheduleScript();
+    else window.addEventListener('load', scheduleScript, { once: true });
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('load', scheduleScript);
+      if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
+      if (timerId !== undefined) window.clearTimeout(timerId);
+    };
+  }, [analyticsConsentGranted, externalScriptReady, routeContext.excludedFromGa4]);
+
   if (!GA_ID) return null;
   if (DISABLE_GA) return null;
   if (routeContext.excludedFromGa4) return null;
@@ -86,7 +121,9 @@ export default function ConsentModeBootstrap() {
           gtag('set', 'url_passthrough', true);
         `}
       </Script>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+      {externalScriptReady ? (
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+      ) : null}
       <Script id="ga-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
