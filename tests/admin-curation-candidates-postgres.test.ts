@@ -52,6 +52,8 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
     assert.equal(response.status, 200);
     const inventory = await response.json();
     assert.ok(inventory.destinations.length > 0);
+    assert.ok(reader.statements.filter(s=>s.text.includes('AS output_width')).every(s=>s.rows<=200),
+      'model inventory uses bounded public-page hydration, not the full membership');
     assert.equal((await reader.getCuration(req(), context)).status, 200);
     assert.equal((await reader.getCandidates(req(), context)).status, 200);
     assert.ok(reader.statements.length > 0);

@@ -2,6 +2,7 @@ import type { QueryExecutor } from '@/lib/db';
 import { curationItemFormat, type CurationDraft, type CurationItem, type EffectiveCurationPreview } from '@/lib/admin/playlist-curation';
 import { getExampleFamilyIds } from '@/lib/model-families';
 import { listCatalogPreviewIds } from '../videos-catalog-page';
+import { getCurationCandidateAliases } from './curation-candidate-aliases';
 import { listCurationCandidates } from './curation-candidates';
 import { readEffectiveModelPageGallery } from './curation-model-preview';
 import { modelExamplePlaylistKeys } from '../model-gallery-projection';
@@ -18,7 +19,7 @@ export async function readEffectiveCurationPreview(
   { playlistId, slug, draft, candidates: suppliedCandidates }: { playlistId: string; slug: string; draft: CurationDraft; candidates?: CurationItem[] },
   db: QueryExecutor,
 ): Promise<EffectiveCurationPreview> {
-  const candidates = suppliedCandidates ?? await listCurationCandidates(slug, db);
+  const candidates = suppliedCandidates ?? await listCurationCandidates(slug, db, getCurationCandidateAliases(slug));
   const isCatalog = slug === getExamplesHubPlaylistSlug() || slug.startsWith('family-');
   const familyId = slug.startsWith('family-') ? slug.slice(7) : undefined;
   const collect = async (override: boolean) => {

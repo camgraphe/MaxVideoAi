@@ -302,8 +302,12 @@ The public popup and direct watch reader share the same editorial projection. Su
 `PlacementCandidatePicker` searches the authenticated curation candidates endpoint in
 48-item pages. Family, model, measured format, prompt and exact-ID filters run before
 server pagination; family and all other filters are bound into the cursor fingerprint.
-Family/model aliases are intersected with destination eligibility. A filter change
-restarts at page one. Opening selection uses that same picker with the slot's format.
+Family/model aliases are intersected with destination eligibility. Hub and family
+candidate reads expand historical registry aliases exactly as the public catalog does;
+search, selected windows, complete-ID adoption and preview/save share that scope.
+Direct model candidate semantics stay unchanged. Cursor fingerprints still bind the
+resolved aliases and filters; changing eligibility requires restarting an old cursor.
+A filter change restarts at page one. Opening selection uses that same picker with the slot's format.
 
 `usePlacementEditor` retains the complete ordered-ID draft and hydrates selected media
 in windows of at most 48. `PlacementMediaList` receives the complete tail ID order so
@@ -325,7 +329,11 @@ row; `missing` means that row does not exist; `historical` marks an inactive res
 hub/starter slug; `unconnected` is an unrelated collection. Direct membership and
 effective public counts are distinct. Empty family membership can inherit public
 videos from model playlists and the hub. A saved family curation suppresses those
-inherited sources; a saved hub curation is authoritative for the hub.
+inherited sources; a saved hub curation is authoritative for the hub. Model counts use
+the shared final model-gallery projection, including filtering, LTX fallback and
+unmanaged preferred/featured additions. At most four model projections run
+concurrently; each reads at most 200 playlist videos plus the finite authored
+addition IDs. Counts retain legacy behavior when optional curation storage is absent.
 
 The switcher opens the connected hub, otherwise the first connected family. The editor
 precedes the long family/model inventory at 688px and desktop. Missing/historical

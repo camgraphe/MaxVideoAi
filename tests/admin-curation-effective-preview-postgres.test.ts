@@ -1,3 +1,7 @@
+import { JSDOM } from 'jsdom';
+import * as React from 'react';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -52,6 +56,10 @@ test('effective preview and atomic save', async t => {
       const snapshot=await service.getCurationSnapshot(id);
       const hybrid=await service.previewCuration(id,{mode:'hybrid',orderedIds:[],excludedIds:[]},snapshot.revision);
       assert.equal(hybrid.effective.total,200);
+      await service.saveCuration(id,{mode:'hybrid',orderedIds:[],excludedIds:[]},snapshot.revision,hybrid.token,null);
+      const {loadPlaylistDestinations}=await import('../frontend/server/playlists/destinations');
+      assert.equal((await loadPlaylistDestinations([])).find(row=>row.slug==='examples-wan-3')?.publicCount,200);
+      await db.pool.query('DELETE FROM playlist_curations');
       assert.ok(hybrid.effective.warnings.some(w=>/200/.test(w)));
       const empty=await service.previewCuration(id,{mode:'manual',orderedIds:[],excludedIds:[]},snapshot.revision);
       assert.equal(empty.effective.total,0);
@@ -74,6 +82,9 @@ test('effective preview and atomic save', async t => {
       const before=await publicProjection(false);
       const preview=await service.previewCuration(id,draft,snapshot.revision);
       assert.equal(preview.effective.currentTotal,before.galleryVideos.length);
+      const {loadPlaylistDestinations}=await import('../frontend/server/playlists/destinations');
+      assert.equal((await loadPlaylistDestinations([])).find(row=>row.slug==='examples-wan-3')?.publicCount,202);
+
       assert.equal(preview.effective.currentTotal,202,'the rendered legacy page includes preferred cards outside playlist membership');
       assert.equal(preview.effective.removedCount,202);
       assert.equal(preview.effective.addedCount,1);
@@ -88,6 +99,7 @@ test('effective preview and atomic save', async t => {
       const after=await publicProjection(true);
       assert.deepEqual(preview.effective.firstPageIds,after.galleryVideos.slice(0,24).map(card=>card.id));
       assert.equal(preview.effective.total,after.galleryVideos.length);
+      assert.equal((await loadPlaylistDestinations([])).find(row=>row.slug==='examples-wan-3')?.publicCount,1);
       await db.pool.query('DELETE FROM playlist_curations');
       await db.pool.query('DELETE FROM app_jobs WHERE job_id=ANY($1::text[])',[preferred]);
       const sora=(await db.pool.query("INSERT INTO playlists(slug) VALUES ('examples-sora-2') RETURNING id")).rows[0].id;
@@ -99,6 +111,82 @@ test('effective preview and atomic save', async t => {
       await db.pool.query('DELETE FROM playlist_items WHERE playlist_id=$1',[sora]);
       await db.pool.query('DELETE FROM playlists WHERE id=$1',[sora]);
       await db.pool.query("DELETE FROM app_jobs WHERE job_id IN ('safe-sora','unsafe-sora','wrong-sora')");
+    });
+    await t.test('model inventory follows filtered LTX fallback and optional schema behavior', async () => {
+      const {loadPlaylistDestinations}=await import('../frontend/server/playlists/destinations');
+      const {readEffectiveModelPageGallery}=await import('../frontend/server/playlists/curation-model-preview');
+      const reader={query:async <T>(sql:string,params?:readonly unknown[])=>(await db.pool.query(sql,params as unknown[])).rows as T[]};
+      await db.pool.query("INSERT INTO playlists(slug) VALUES ('examples-ltx-2-3-pro'),('examples-ltx-2-3')");
+      const canonical=(await db.pool.query("SELECT id FROM playlists WHERE slug='examples-ltx-2-3-pro'")).rows[0].id;
+      await db.pool.query("INSERT INTO app_jobs(job_id,engine_id) VALUES ('fallback-ltx','ltx-2-3-pro'),('wrong-ltx','wan-3')");
+      await db.pool.query("INSERT INTO playlist_items SELECT id,job,1,false FROM playlists CROSS JOIN unnest(ARRAY['fallback-ltx','wrong-ltx']) job WHERE slug='examples-ltx-2-3'");
+      try {
+        const cards=await readEffectiveModelPageGallery({slug:'examples-ltx-2-3-pro'},reader);
+        assert.deepEqual(cards.map(card=>card.id),['fallback-ltx']);
+        assert.equal((await loadPlaylistDestinations([])).find(row=>row.slug==='examples-ltx-2-3-pro')?.publicCount,cards.length);
+        await db.pool.query("INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids) VALUES ($1,'manual','{}','{}')",[canonical]);
+        assert.equal((await loadPlaylistDestinations([])).find(row=>row.slug==='examples-ltx-2-3-pro')?.publicCount,0,'managed empty suppresses legacy fallback');
+        await db.pool.query('ALTER TABLE playlist_curations RENAME TO unavailable_curations');
+        try {assert.equal((await loadPlaylistDestinations([])).find(row=>row.slug==='examples-ltx-2-3-pro')?.publicCount,1);}
+        finally {await db.pool.query('ALTER TABLE unavailable_curations RENAME TO playlist_curations');}
+      } finally {
+        await db.pool.query('DELETE FROM playlist_curations WHERE playlist_id=$1',[canonical]);
+        await db.pool.query("DELETE FROM playlist_items WHERE video_id IN ('fallback-ltx','wrong-ltx')");
+        await db.pool.query("DELETE FROM playlists WHERE slug IN ('examples-ltx-2-3-pro','examples-ltx-2-3')");
+        await db.pool.query("DELETE FROM app_jobs WHERE job_id IN ('fallback-ltx','wrong-ltx')");
+      }
+    });
+    await t.test('family historical aliases survive candidate windows and a real hybrid-to-manual save', async () => {
+      const candidates=await import('../frontend/server/playlists/curation-candidates-page');
+      const id=ids.get('family-wan')!;
+      await db.pool.query("INSERT INTO app_jobs(job_id,engine_id) VALUES ('legacy-wan','wan26')");
+      await db.pool.query("INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids) VALUES ($1,'hybrid','{}','{}')",[id]);
+      try {
+        const before=await listCatalogPage({familyId:'wan',sort:'playlist',limit:24,offset:0});
+        assert.equal(before.total,221);
+        assert.equal((await candidates.searchCurationCandidatesPage({slug:'family-wan',exactId:'legacy-wan'})).total,1);
+        assert.equal((await candidates.searchCurationCandidatesPage({slug:'family-wan',modelSlug:'wan-2-6',exactId:'legacy-wan'})).total,1);
+        assert.equal((await candidates.searchCurationCandidatesPage({slug:'examples',familyId:'wan',modelSlug:'wan-2-6',exactId:'legacy-wan'})).total,1);
+        assert.equal((await candidates.searchCurationCandidatesPage({slug:'examples-wan-2-6',exactId:'legacy-wan'})).total,0,'direct model eligibility stays unchanged');
+        assert.deepEqual(await candidates.filterEligibleCurationIds('family-wan',['legacy-wan']),['legacy-wan']);
+        assert.deepEqual((await candidates.loadSelectedCurationItems('family-wan',['legacy-wan'])).map(item=>item.id),['legacy-wan']);
+        const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/admin/playlists'});
+        const previous=new Map<string,PropertyDescriptor|undefined>();
+        for(const [key,value] of Object.entries({window:dom.window,document:dom.window.document,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,
+          fetch:async(url:string,init?:RequestInit)=>{
+            const params=new URL(url,'http://localhost').searchParams;
+            if(init?.method==='POST') { const body=JSON.parse(String(init.body));return Response.json({ok:true,preview:await service.previewCuration(id,body.draft,body.revision)}); }
+            if(init?.method==='PUT') { const body=JSON.parse(String(init.body));return Response.json({ok:true,snapshot:await service.saveCuration(id,body.draft,body.revision,body.token,null)}); }
+            if(url.includes('/candidates')) {
+              if(params.get('idsOnly')) return Response.json({ok:true,...await candidates.listCurationCandidateIdsPage('family-wan',{offset:Number(params.get('offset')),limit:500})});
+              const selected=params.getAll('ids');
+              return Response.json({ok:true,...(selected.length?{items:await candidates.loadSelectedCurationItems('family-wan',selected)}:await candidates.searchCurationCandidatesPage({slug:'family-wan',limit:48}))});
+            }
+            const snapshot=await service.getCurationSnapshot(id);
+            const initialIds=await candidates.filterEligibleCurationIds('family-wan',snapshot.config?.orderedIds ?? []);
+            return Response.json({ok:true,snapshot,initialIds,selectedItems:await candidates.loadSelectedCurationItems('family-wan',initialIds.slice(0,48)),selectedTotal:initialIds.length,removedCount:0});
+          }})) {previous.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});}
+        const root=createRoot(dom.window.document.getElementById('root')!);
+        try {
+          const {usePlacementEditor}=await import('../frontend/components/admin/playlists/usePlacementEditor');
+          let state:ReturnType<typeof usePlacementEditor>;
+          function Harness(){state=usePlacementEditor(id);return null;}
+          await act(async()=>{root.render(React.createElement(Harness));});
+          // React's act does not await database-backed effects by itself.
+          for(let attempt=0;attempt<100&&!state!.loaded;attempt++) await act(async()=>{await new Promise(resolve=>setTimeout(resolve,5));});
+          assert.ok(state!.loaded);
+          await act(async()=>{await state!.changeMode('manual');});
+          assert.ok(state!.draft.orderedIds.includes('legacy-wan'));
+          await act(async()=>{await state!.makePreview();});
+          assert.ok(state!.preview,state!.error ?? 'preview available');
+          await act(async()=>{await state!.save();});
+          assert.equal(state!.error,null);
+          assert.ok((await service.getCurationSnapshot(id)).config?.orderedIds.includes('legacy-wan'));
+          const after=await listCatalogPage({familyId:'wan',sort:'playlist',limit:24,offset:0});
+          assert.equal(after.total,before.total);
+          assert.deepEqual(after.items.map(item=>item.id),before.items.map(item=>item.id));
+        } finally {await act(async()=>root.unmount());dom.window.close();for(const[key,value]of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
+      } finally {await db.pool.query('DELETE FROM playlist_curations WHERE playlist_id=$1',[id]);await db.pool.query("DELETE FROM app_jobs WHERE job_id='legacy-wan'");}
     });
     await t.test('effective projection and save traverse more than 2000 IDs', async () => {
       await db.pool.query("INSERT INTO app_jobs(job_id) SELECT 'v'||n FROM generate_series(221,2201) n");

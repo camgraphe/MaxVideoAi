@@ -1,4 +1,4 @@
-import { expandCatalogAliases } from './curation-eligibility';
+import { getCurationCandidateAliases } from './curation-candidate-aliases';
 import { guardCurationSave } from './curation-save-guard';
 import { effectiveSourceSlugs, readEffectiveCurationPreview } from './curation-effective-preview';
 import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
@@ -42,7 +42,7 @@ async function buildPreview(
   if (!snapshot.available) throw new CurationError('Site placements setup is not available yet', 503);
   if (!snapshot.supported) throw new CurationError('Curation is not supported for this destination', 400);
   if (snapshot.revision !== revision) throw new CurationError('This destination changed. Reload it before saving.');
-  const candidates = await listCurationCandidates(snapshot.slug, db);
+  const candidates = await listCurationCandidates(snapshot.slug, db, getCurationCandidateAliases(snapshot.slug));
   const eligible = new Set(candidates.map((item) => item.id));
   if (draft.orderedIds.some((id) => !eligible.has(id)))
     throw new CurationError('Some selected media are no longer eligible. Reload the destination.');
@@ -54,18 +54,13 @@ async function buildPreview(
   try { validateCurationOpening(draft, candidates); }
   catch (error) { throw new CurationError((error as Error).message); }
   const items = snapshot.isPublic ? resolveCuration(draft, candidates) : [];
-  // Catalog families include historical aliases beyond the direct model reader. Bind their
-  // media too, without changing candidate selection or the public model reader's semantics.
-  const eligibleMedia = snapshot.slug.startsWith('family-')
-    ? await listCurationCandidates(snapshot.slug, db, expandCatalogAliases(getCurationAliases(snapshot.slug) ?? []))
-    : candidates;
   const effective = await readEffectiveCurationPreview({ playlistId, slug: snapshot.slug, draft, candidates }, db);
   // Bind every source, including suppressed sources and off-page membership, to the preview.
   const sources = await db.query(`SELECT p.*,to_jsonb(c) AS curation,
     (SELECT jsonb_agg(to_jsonb(pi) ORDER BY pi.video_id) FROM playlist_items pi WHERE pi.playlist_id=p.id) AS membership
     FROM playlists p LEFT JOIN playlist_curations c ON c.playlist_id=p.id
     WHERE p.slug=ANY($1::text[]) ORDER BY p.slug`, [effectiveSourceSlugs(snapshot.slug)]);
-  return { items, revision, effective, token: curationFingerprint({ revision, draft, eligibleMedia, effective, sources }) };
+  return { items, revision, effective, token: curationFingerprint({ revision, draft, eligibleMedia: candidates, effective, sources }) };
 }
 export async function previewCuration(playlistId: string, draft: unknown, revision: string) {
   return withDbTransaction(async db => {

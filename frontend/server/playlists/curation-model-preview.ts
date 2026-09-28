@@ -12,7 +12,7 @@ import { toGalleryCard } from '../../app/(localized)/[locale]/(marketing)/models
 
 /** Transaction-bound readers for the same final projection used by the model route. */
 export async function readEffectiveModelPageGallery(
-  { slug, draft }: { slug: string; draft?: CurationDraft }, db: QueryExecutor,
+  { slug, draft, curationAvailable = true }: { slug: string; draft?: CurationDraft; curationAvailable?: boolean }, db: QueryExecutor,
 ) {
   const modelSlug = slug.slice('examples-'.length);
   const engine = getFalEngineBySlug(modelSlug) ?? { id: modelSlug, modelSlug };
@@ -27,8 +27,8 @@ export async function readEffectiveModelPageGallery(
   let managed = false;
   for (const key of modelExamplePlaylistKeys(modelSlug)) {
     const [source] = await db.query<{ is_public: boolean; managed: boolean }>(
-      `SELECT p.is_public,c.playlist_id IS NOT NULL AS managed FROM playlists p
-       LEFT JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=$1`, [key],
+      `SELECT p.is_public,${curationAvailable ? 'c.playlist_id IS NOT NULL' : 'false'} AS managed FROM playlists p
+       ${curationAvailable ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : ''} WHERE p.slug=$1`, [key],
     );
     managed = Boolean(source?.managed || (draft && key === slug));
     if (!managed) {

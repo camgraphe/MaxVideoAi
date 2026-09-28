@@ -2,8 +2,9 @@ import { query, type QueryExecutor } from '@/lib/db';
 import type { CurationItem } from '@/lib/admin/playlist-curation';
 import { getExampleFamilyEngineAliases, getExampleModelEngineAliases } from '@/lib/model-families';
 import { videoOutputDimensionSelect } from '../videos-query';
-import { CURATION_ELIGIBILITY } from './curation-service';
-import { CurationError, curationFingerprint, getCurationAliases } from './curation-store';
+import { CURATION_ELIGIBILITY, expandCatalogAliases } from './curation-eligibility';
+import { getCurationCandidateAliases, usesCatalogCurationAliases } from './curation-candidate-aliases';
+import { CurationError, curationFingerprint } from './curation-store';
 
 type CandidateRow = {
   job_id: string; engine_id: string; engine_label: string | null; prompt: string | null;
@@ -20,7 +21,7 @@ const mapItem = (row: CandidateRow): CurationItem => ({
   outputWidth: row.output_width, outputHeight: row.output_height, aspectRatio: row.aspect_ratio,
 });
 function aliasesFor(slug: string): string[] {
-  const aliases = getCurationAliases(slug);
+  const aliases = getCurationCandidateAliases(slug);
   if (!aliases) throw new CurationError('Automatic curation is not supported for this destination', 400);
   return aliases.map(alias => alias.toLowerCase());
 }
@@ -56,12 +57,13 @@ export async function searchCurationCandidatesPage(options: CandidatePageOptions
   items: CurationItem[]; nextCursor: string | null; total: number;
 }> {
   let aliases = aliasesFor(options.slug);
+  const filterAliases = (values: string[]) => usesCatalogCurationAliases(options.slug) ? expandCatalogAliases(values) : values.map(id => id.toLowerCase());
   if (options.familyId) {
-    const familyAliases = new Set(getExampleFamilyEngineAliases(options.familyId).map(id => id.toLowerCase()));
+    const familyAliases = new Set(filterAliases(getExampleFamilyEngineAliases(options.familyId)));
     aliases = aliases.filter(alias => familyAliases.has(alias));
   }
   if (options.modelSlug) {
-    const modelAliases = new Set(getExampleModelEngineAliases(options.modelSlug).map(id => id.toLowerCase()));
+    const modelAliases = new Set(filterAliases(getExampleModelEngineAliases(options.modelSlug)));
     aliases = aliases.filter(alias => modelAliases.has(alias));
   }
   const format = options.format || null;
