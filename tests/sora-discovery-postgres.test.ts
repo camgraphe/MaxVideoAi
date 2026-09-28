@@ -26,9 +26,11 @@ test('public hub excludes archived identities before SQL limit while historical 
       prompt text DEFAULT 'Example', thumb_url text DEFAULT 'https://media.maxvideoai.com/test.webp',
       video_url text DEFAULT 'https://media.maxvideoai.com/test.mp4', aspect_ratio text DEFAULT '16:9',
       has_audio boolean, can_upscale boolean, created_at timestamptz DEFAULT now(), visibility text DEFAULT 'public',
-      indexable boolean DEFAULT true, featured boolean, featured_order integer,
+      indexable boolean DEFAULT true, status text DEFAULT 'completed', surface text DEFAULT 'video',
+      featured boolean, featured_order integer,
       final_price_cents integer, currency text, pricing_snapshot jsonb, settings_snapshot jsonb
     );
+    CREATE TABLE media_assets(user_id text, url text, status text, deleted_at timestamptz);
     CREATE TABLE job_outputs (job_id text, kind text, thumb_url text, url text, storage_url text, status text, position integer, width integer, height integer, created_at timestamptz);
     INSERT INTO playlists VALUES ('hub', 'discovery-fixture', true), ('archive', 'family-sora', true);
   `);

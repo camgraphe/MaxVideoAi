@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { listRuntimeModels } from '@/config/model-runtime';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
 import { getExampleFamilyEngineAliases } from '@/lib/model-families';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs } from './playlists/slugs';
@@ -77,8 +78,18 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
   const aliases = options.engineAliases ?? (options.familyId
     ? getExampleFamilyEngineAliases(options.familyId)
     : getDiscoverableExampleEngineAliases());
-  const sources = slugs.map((slug, source_rank) => ({ slug, source_rank, aliases: getCurationAliases(slug) ?? [] }));
-  const params = [JSON.stringify(sources), aliases.map(alias => alias.toLowerCase()), limit, offset];
+  const expandAliases = (values: string[]) => {
+    const expanded = new Set(values.map(alias => alias.toLowerCase()));
+    for (const model of listRuntimeModels()) {
+      if (expanded.has(model.id) || expanded.has(model.slug)) {
+        model.aliases.internal.forEach(alias => expanded.add(alias.toLowerCase()));
+      }
+    }
+    return [...expanded];
+  };
+  // Historical internal IDs use the same registry identity for eligibility and curated membership.
+  const sources = slugs.map((slug, source_rank) => ({ slug, source_rank, aliases: expandAliases(getCurationAliases(slug) ?? []) }));
+  const params = [JSON.stringify(sources), expandAliases(aliases), limit, offset];
   type CatalogRow = VideoRow & { total: number };
   let result: CatalogRow[];
   try {
