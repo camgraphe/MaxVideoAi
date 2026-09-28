@@ -62,7 +62,7 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
         });
         builder.onLoad({ filter: /.*/, namespace: 'route' }, args => ({ contents: args.path === 'next/navigation'
           ? 'export const usePathname=()=>window.location.pathname;'
-          : "import {createElement} from 'react'; export default function Script({src,id}){return createElement('script',{src,id});}", loader: 'js' }));
+          : "import {createElement} from 'react'; export default function Script({src,id,strategy}){return createElement('script',{src,id,'data-nscript':strategy});}", loader: 'js' }));
       } }],
     });
     for (const [label, ua, path] of [
@@ -77,6 +77,16 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
           const { GA, GTM } = require(output);
           const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.com' + path });
           Object.defineProperty(dom.window.navigator, 'userAgent', { value: ua });
+          const idleCallbacks = new Map<number, IdleRequestCallback>();
+          let nextIdleId = 1;
+          Object.defineProperty(dom.window, 'requestIdleCallback', { configurable: true, value: (callback: IdleRequestCallback) => {
+            const id = nextIdleId++;
+            idleCallbacks.set(id, callback);
+            return id;
+          } });
+          Object.defineProperty(dom.window, 'cancelIdleCallback', { configurable: true, value: (id: number) => {
+            idleCallbacks.delete(id);
+          } });
           if (granted) dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
           const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, self: dom.window, React, IS_REACT_ACT_ENVIRONMENT: true };
           const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
@@ -84,6 +94,13 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
           const root = createRoot(dom.window.document.getElementById('root')!);
           try {
             await act(async () => { root.render(React.createElement(React.Fragment, null, React.createElement(GA), React.createElement(GTM, { delayMs: 0 }))); });
+            assert.equal(Boolean(dom.window.document.querySelector('script[src*="/gtag/js?id=G-CWVTEST"]')), false, 'GA network script waits while the page is interactive');
+            assert.equal(Boolean(dom.window.document.querySelector('script#ga-init')), granted && path !== '/admin', 'the command queue remains available before the external script');
+            await act(async () => { dom.window.dispatchEvent(new dom.window.Event('load')); });
+            await act(async () => {
+              for (const callback of idleCallbacks.values()) callback({ didTimeout: false, timeRemaining: () => 50 });
+              idleCallbacks.clear();
+            });
             await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
             const shouldLoad = granted && path !== '/admin';
             assert.equal(Boolean(dom.window.document.querySelector('script[src*="/gtag/js?id=G-CWVTEST"]')), shouldLoad, 'GA network script follows consent');
@@ -98,6 +115,65 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
           }
         });
       }
+    }
+    const cancellationCases = (['consent withdrawn', 'excluded route', 'unmount'] as const)
+      .flatMap(scenario => (['idle callback', 'timer fallback'] as const).map(scheduling => ({ scenario, scheduling })));
+    for (const { scenario, scheduling } of cancellationCases) {
+      await t.test('pending GA load cancels on ' + scenario + ' / ' + scheduling, async () => {
+        const { GA } = require(output);
+        const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.com/pricing' });
+        dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
+        const issuedCallbacks: Array<() => void> = [];
+        const pending = new Set<number>();
+        const schedule = (callback: () => void) => {
+          issuedCallbacks.push(callback);
+          pending.add(issuedCallbacks.length);
+          return issuedCallbacks.length;
+        };
+        const cancel = (id: number) => pending.delete(id);
+        if (scheduling === 'idle callback') {
+          Object.defineProperty(dom.window, 'requestIdleCallback', { configurable: true, value: (callback: IdleRequestCallback) =>
+            schedule(() => callback({ didTimeout: false, timeRemaining: () => 50 })) });
+          Object.defineProperty(dom.window, 'cancelIdleCallback', { configurable: true, value: cancel });
+        } else {
+          Object.defineProperty(dom.window, 'setTimeout', { configurable: true, value: schedule });
+          Object.defineProperty(dom.window, 'clearTimeout', { configurable: true, value: cancel });
+        }
+        const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, self: dom.window, React, IS_REACT_ACT_ENVIRONMENT: true };
+        const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+        for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+        const root = createRoot(dom.window.document.getElementById('root')!);
+        let unmounted = false;
+        try {
+          await act(async () => { root.render(React.createElement(GA)); });
+          await act(async () => { dom.window.dispatchEvent(new dom.window.Event('load')); });
+          assert.ok(issuedCallbacks.length > 0, 'a consented visit schedules deferred work');
+          await act(async () => {
+            if (scenario === 'consent withdrawn') {
+              dom.window.localStorage.setItem('mv-consent-analytics', 'denied');
+              dom.window.dispatchEvent(new dom.window.CustomEvent('consent:updated', { detail: { categories: { analytics: false } } }));
+            } else if (scenario === 'excluded route') {
+              dom.reconfigure({ url: 'https://maxvideoai.com/auth/reset-password' });
+              root.render(React.createElement(GA));
+            } else {
+              root.unmount();
+              unmounted = true;
+            }
+          });
+          assert.equal(pending.size, 0, 'pending callbacks are cancelled');
+          await act(async () => {
+            for (const callback of issuedCallbacks) callback();
+          });
+          assert.equal(Boolean(dom.window.document.querySelector('script[src*="/gtag/js?id=G-CWVTEST"]')), false, 'even a stale callback cannot load GA');
+        } finally {
+          if (!unmounted) await act(async () => { root.unmount(); });
+          dom.window.close();
+          for (const [key, descriptor] of saved) {
+            if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+            else Reflect.deleteProperty(globalThis, key);
+          }
+        }
+      });
     }
   } finally {
     await rm(directory, { recursive: true, force: true });
