@@ -19,6 +19,7 @@ import type {
   PricingChangePreviewRow,
   PricingScenarioSelector,
 } from './canonical-scenarios';
+import type { ProviderCostComparisonRow } from './provider-cost-comparison';
 
 export type PricingPolicyChangeProposal =
   | { operation: 'create'; rule: unknown }
@@ -69,6 +70,7 @@ export type PricingPolicyInventoryResponse = {
   databaseStatus: PricingPolicyOverrideLoadResult['status'];
   warnings: string[];
   rows: PricingPolicyInventoryRow[];
+  providerComparisons: ProviderCostComparisonRow[];
 };
 
 export type PricingPolicyServiceDependencies = {

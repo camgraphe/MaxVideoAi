@@ -8,8 +8,10 @@ import type {
   ListPricingChangeEventsInput,
   PricingChangeEvent,
 } from '@/lib/admin/pricing-change-contract';
+import { getFalEngineById } from '@/config/falEngines';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark-profile-policy';
 
 import {
   quoteCanonicalAdminScenarios,
@@ -24,6 +26,10 @@ import type {
   PricingPolicyServiceDependencies,
 } from './policy-contract';
 import { DEFAULT_POLICY_SERVICE_DEPENDENCIES } from './policy-dependencies';
+import {
+  buildProviderCostComparisonRows,
+  providerComparisonInputFromScenario,
+} from './provider-cost-comparison';
 import {
   canonicalRule,
   scenarioSelectorKey,
@@ -185,12 +191,41 @@ export async function loadPricingPolicyInventory(
     };
   });
 
+  const billingScenarios = buildPricingAuditScenarios().filter((scenario) =>
+    scenario.surface === 'billing' && scenario.membershipTier === 'member');
+  const bytedanceScenarios = billingScenarios.flatMap((scenario) => {
+    const entry = getFalEngineById(scenario.engineId);
+    return entry?.brandId === 'bytedance' && entry.surfaces.pricing.includeInEstimator
+      ? [{ scenario, entry }]
+      : [];
+  });
+  const comparisons = bytedanceScenarios.map(({ scenario, entry }) => {
+    const declaredProvider = entry.engine.providerMeta?.provider;
+    const executionProvider = entry.category === 'image'
+      ? declaredProvider === 'byteplus_modelark' ? 'byteplus_modelark' : 'fal'
+      : resolveBytePlusSeedanceRouteProfile(entry.id, declaredProvider)
+        ? 'byteplus_modelark' : 'fal';
+    const quote = loaded.status === 'loaded'
+      ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: [scenario] })[0]
+      : null;
+    return providerComparisonInputFromScenario({
+      scenario,
+      quote: quote?.status === 'quoted' ? quote : null,
+      engine: entry.engine,
+      brandId: entry.brandId,
+      executionProvider,
+    });
+  });
+
   return {
     versionedPolicyVersion: policy.version,
     databaseStatus: loaded.status,
-    warnings: loaded.status === 'unavailable' ? ['Pricing policy database is unavailable; showing versioned policy only.'] : [],
+    warnings: loaded.status === 'unavailable'
+      ? ['Pricing policy database is unavailable; showing versioned policy only; effective customer quotes unavailable.']
+      : [],
     rows: rows.sort((left, right) => scenarioSelectorKey(left.selector).localeCompare(
       scenarioSelectorKey(right.selector)
     )),
+    providerComparisons: buildProviderCostComparisonRows(comparisons, new Date().toISOString()),
   };
 }

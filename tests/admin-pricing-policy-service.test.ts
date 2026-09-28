@@ -667,6 +667,65 @@ test('inventory scenario rows inherit the effective database override routing an
   assert.equal(inherited?.lastEvent?.id, event.id);
 });
 
+test('inventory compares ByteDance billing scenarios with their actual execution route and independent supplier evidence', async () => {
+  const inventory = await loadPricingPolicyInventory(createMemoryHarness().deps);
+  const rows = inventory.providerComparisons;
+  const seedance25 = rows.find((row) => row.engineId === 'seedance-2-5' && row.mode === 't2v');
+  const seedance15 = rows.find((row) => row.engineId === 'seedance-1-5-pro');
+  const seedream = rows.find((row) => row.engineId === 'seedream');
+
+  assert.ok(seedance25);
+  assert.equal(seedance25.brandId, 'bytedance');
+  assert.equal(seedance25.executionProvider, 'byteplus_modelark');
+  assert.equal(seedance25.supplierList.status, 'published_list_estimate');
+  assert.ok((seedance25.supplierList.amountUsd ?? 0) > 0);
+  assert.equal(seedance25.supplierEffective.amountUsd, null);
+  assert.equal(seedance25.supplierObserved.amountUsd, null);
+  assert.equal(seedance25.customerQuote?.source, 'versioned');
+  assert.ok((seedance25.customerQuote?.totalCents ?? 0) > 0);
+
+  assert.ok(seedance15);
+  assert.equal(seedance15.executionProvider, 'fal');
+  assert.equal(seedance15.supplierList.amountUsd, null);
+  assert.equal(seedance15.supplierList.reason, 'supplier_rate_unverified_for_route');
+  assert.ok(seedream);
+  assert.equal(seedream.executionProvider, 'byteplus_modelark');
+  assert.equal(seedream.supplierList.amountUsd, null);
+  assert.equal(seedream.supplierList.reason, 'image_usage_unavailable');
+});
+
+test('inventory supplier facts never reprice an effective database customer quote', async () => {
+  const baseline = await loadPricingPolicyInventory(createMemoryHarness().deps);
+  const override = policyRule('db-seedance-25', {
+    engineId: 'seedance-2-5', mode: 't2v', resolution: '480p', marginFlatCents: 137,
+  });
+  const changed = await loadPricingPolicyInventory(createMemoryHarness([override]).deps);
+  const current = changed.providerComparisons.find((row) =>
+    row.engineId === 'seedance-2-5' && row.mode === 't2v' && row.resolution === '480p');
+  const prior = baseline.providerComparisons.find((row) => row.scenarioId === current?.scenarioId);
+
+  assert.ok(current?.customerQuote);
+  assert.ok(prior?.customerQuote);
+  assert.equal(current.customerQuote.source, 'database');
+  assert.equal(current.customerQuote.ruleId, override.id);
+  assert.equal(current.customerQuote.totalCents, prior.customerQuote.totalCents + 137);
+  assert.equal(current.supplierList.amountUsd, prior.supplierList.amountUsd);
+});
+
+test('unavailable production overrides leave the customer side unknown', async () => {
+  const harness = createMemoryHarness();
+  const inventory = await loadPricingPolicyInventory({
+    ...harness.deps,
+    loadOverrides: async () => ({ status: 'unavailable' }),
+  });
+  const row = inventory.providerComparisons.find((candidate) => candidate.engineId === 'seedance-2-5');
+
+  assert.equal(inventory.databaseStatus, 'unavailable');
+  assert.equal(row?.customerQuote, null);
+  assert.equal(row?.indicativeDifferenceVsListCents, null);
+  assert.ok(inventory.warnings.some((warning) => warning.includes('customer quotes unavailable')));
+});
+
 test('inventory enriches a seeded versioned selector from its effective database global override', async () => {
   const dbGlobal = {
     ...policyRule('db-global', { engineId: undefined, mode: undefined, resolution: undefined }),

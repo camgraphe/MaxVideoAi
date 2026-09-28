@@ -49,6 +49,60 @@ export type PricingPolicyInventory = {
   databaseStatus: 'loaded' | 'unavailable';
   warnings: string[];
   rows: PricingPolicyInventoryRow[];
+  providerComparisons: ProviderCostComparisonRowView[];
+};
+
+export type ProviderCostComparisonRowView = {
+  scenarioId: string;
+  brandId: string;
+  engineId: string;
+  executionProvider: string;
+  mode: string;
+  resolution: string;
+  step: 'normal' | 'draft' | 'final';
+  durationSec: number | null;
+  aspectRatio: string | null;
+  billingInputType: 'no_video_input' | 'video_input' | null;
+  audio: boolean | null;
+  videoTokens: number | null;
+  tokenEvidence: 'scenario_estimate' | 'provider_reported' | null;
+  outputPixels: number[] | null;
+  inputImages: number | null;
+  supplierList: {
+    status: 'published_list_estimate' | 'published_list_from_usage' | 'unavailable';
+    amountUsd: number | null;
+    unitPriceUsdPer1kTokens: number | null;
+    sourceUrl: string | null;
+    checkedAt: string | null;
+    reason: string | null;
+  };
+  publicPromotion: {
+    amountUsd: number | null;
+    unitPriceUsdPer1kTokens: number;
+    startsAt: string;
+    endsAt: string;
+  } | null;
+  supplierEffective: {
+    status: 'confirmed' | 'account_contract_unconfirmed' | 'unavailable';
+    amountUsd: number | null;
+    source: string | null;
+    confirmedAt: string | null;
+  };
+  supplierObserved: {
+    status: 'invoice_observed' | 'unavailable';
+    amountUsd: number | null;
+    source: string | null;
+    observedAt: string | null;
+  };
+  customerQuote: {
+    totalCents: number;
+    currency: string;
+    source: 'database' | 'versioned';
+    ruleId: string;
+    pricingMode: 'legacy_margin_rule' | 'manual_tariff';
+  } | null;
+  indicativeDifferenceVsListCents: number | null;
+  realizedGrossDifferenceCents: number | null;
 };
 
 export type PricingPolicyDraft = {
