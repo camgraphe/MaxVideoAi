@@ -345,6 +345,19 @@ playback uses `usePublicVideoControls` with Auto/Original policy and `preload="n
 The existing standalone watch page remains the authority for canonical, metadata,
 VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.
 
+`ExampleReaderContent` is shared by both presentations. A direct request renders
+its H1, primary video, editorial context and structured data on the server. A gallery
+entry uses an H2 in the dialog and the existing watch URL in browser history; closing
+restores the gallery rather than fetching a second record page. Share resolves the
+canonical URL, while direct legacy ID requests keep the existing slug redirect.
+
+The direct watch poster keeps its existing optimized URL. Its route-local
+`VideoWatchPosterPreload` uses the App Router resource hint API also used by
+`next/image`: the high-priority image is emitted before blocking styles. Keep one
+hint matching the native video's poster exactly. A plain JSX preload link can be
+emitted after route CSS and delay the critical image; verify actual HTML ordering
+and the network trace when changing this boundary.
+
 `GET /api/examples/[id]` is an uncached read-only detail projection. It rechecks the
 same public/completed/indexable/live-output eligibility as the catalog, returns an
 explicit public DTO and never exposes ownership, raw snapshots or private references.

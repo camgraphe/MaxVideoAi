@@ -7,6 +7,7 @@ import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoUnavailableState } from './VideoUnavailableState';
+import { VideoWatchPosterPreload } from './VideoWatchPosterPreload.client';
 
 export async function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
@@ -55,7 +56,7 @@ export async function VideoWatchContent({ page }: { page: WatchPageData }) {
 
 
   return <div className="mx-auto w-full max-w-[1440px] px-0 pb-16 pt-4 sm:px-6">
-    <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />
+    <VideoWatchPosterPreload poster={playbackPoster} />
     <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-2 px-5 text-xs text-text-secondary sm:px-0">
       {signals.breadcrumbs.map((crumb,index) => <span key={`${crumb.label}-${index}`}>
         {index > 0 && <span aria-hidden className="mr-2">›</span>}
