@@ -162,6 +162,7 @@ export function ExamplesPageView({
   return (
     <>
       <ExamplesEngineFilterNav
+        locale={locale}
         browseByModelLabel={browseByModelLabel}
         engineFilterAllLabel={engineFilterAllLabel}
         engineFilterOptions={engineFilterOptions}

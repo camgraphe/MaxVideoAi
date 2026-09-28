@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 
 import { getModelFamilyDefinition } from '../frontend/config/model-families.ts';
@@ -358,7 +358,9 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');
   assert.match(engineFilterNavSource, /sticky top-16 z-\[35\]/, 'engine filter nav should own sticky filter markup');
   assert.match(engineFilterNavSource, /getEngineAccentOutlineStyle/, 'engine filter nav should own active brand outline styling');
-  assert.match(engineFilterNavSource, /overflow-x-auto overscroll-x-contain/, 'the expanded family rail should scroll instead of squeezing labels');
+  assert.match(engineFilterNavSource, /ExamplesModelRail/, 'the server-rendered family links use the scroll control island');
+  const modelRailSource = readFileSync(join(dirname(engineFilterNavPath), 'examples-model-rail.client.tsx'), 'utf8');
+  assert.match(modelRailSource, /overflow-x-auto overscroll-x-contain/, 'the expanded family rail should scroll instead of squeezing labels');
   assert.match(engineFilterNavSource, /flex w-max min-w-full/, 'family filters should keep their natural label width');
   assert.match(pageSource, /compactLeadCopy\(heroBody, modelLanding \? 220 : 152\)/, 'family landing heroes should stay concise above the fold');
   assert.match(jsonLdScriptsSource, /export function ExamplesJsonLdScripts/, 'JSON-LD scripts component should be exported');

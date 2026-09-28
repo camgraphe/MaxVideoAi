@@ -1,6 +1,10 @@
 # Video discovery acceptance — 28 September 2026
 
-Final application candidate `611597f62`, compared with main `add7b773b`. Gallery measurements use `7c6294177`; subsequent changes are confined to the reader and its direct-route preparation. Earlier reader measurements remain in the JSON as diagnostic evidence with their own application SHA/build ID. The warm portrait performance gate remains open; PR #363 is a draft. No production migration, merge or deployment was performed.
+Measured application candidate `611597f62`, compared with main `add7b773b`. Gallery measurements use `7c6294177`; changes up to the measured candidate are confined to the reader and its direct-route preparation. Earlier reader measurements remain in the JSON as diagnostic evidence with their own application SHA/build ID. The warm portrait performance gate remains open; PR #363 is a draft. No production migration, merge or deployment was performed.
+
+### Subsequent model-menu refinement
+
+The gallery model menu now stays on one row with native horizontal scrolling and overflow arrows. Its links remain server-rendered; a small client component observes the edges, respects reduced motion and reveals the active model. Browser checks at 390 and 1440 px cover pointer/keyboard scrolling to the last model, selected-family visibility, no horizontal page overflow and hidden controls when everything fits. Ten route contracts, focused lint and TypeScript pass. This later gallery change is **not included in the Lighthouse measurements below**; the portrait verification gate remains open.
 
 ## Prepared-build measurements
 

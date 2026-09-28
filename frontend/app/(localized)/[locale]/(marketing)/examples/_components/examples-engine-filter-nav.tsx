@@ -1,11 +1,13 @@
 import clsx from 'clsx';
 import Link from 'next/link';
+import { ExamplesModelRail } from './examples-model-rail.client';
 import {
   getEngineAccentOutlineStyle,
   type EngineFilterOption,
 } from '../_lib/examples-route-utils';
 
 type ExamplesEngineFilterNavProps = {
+  locale: string;
   browseByModelLabel: string;
   engineFilterAllLabel: string;
   engineFilterOptions: EngineFilterOption[];
@@ -14,6 +16,7 @@ type ExamplesEngineFilterNavProps = {
 };
 
 export function ExamplesEngineFilterNav({
+  locale,
   browseByModelLabel,
   engineFilterAllLabel,
   engineFilterOptions,
@@ -35,12 +38,17 @@ export function ExamplesEngineFilterNav({
             {browseByModelLabel}
           </span>
 
-          <div className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex w-max min-w-full items-center gap-1 xl:w-full xl:flex-wrap rounded-xl bg-surface-2/70 p-1">
+          <ExamplesModelRail
+            activeModel={selectedEngine}
+            previousLabel={locale === 'fr' ? 'Modèles précédents' : locale === 'es' ? 'Modelos anteriores' : 'Previous models'}
+            nextLabel={locale === 'fr' ? 'Plus de modèles' : locale === 'es' ? 'Más modelos' : 'More models'}
+          >
+            <div className="flex w-max min-w-full items-center gap-1 rounded-xl bg-surface-2/70 p-1">
               <Link
                 href={getEngineFilterHref(null)}
                 scroll={false}
                 prefetch={false}
+                aria-current={!selectedEngine ? 'page' : undefined}
                 className={clsx(
                   'order-0 flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:text-sm',
                   selectedEngine
@@ -58,6 +66,7 @@ export function ExamplesEngineFilterNav({
                     href={getEngineFilterHref(engine.id)}
                     scroll={false}
                     prefetch={false}
+                    aria-current={isActive ? 'page' : undefined}
                     className={clsx(
                       'flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:text-sm',
                       isActive
@@ -71,7 +80,7 @@ export function ExamplesEngineFilterNav({
                 );
               })}
             </div>
-          </div>
+          </ExamplesModelRail>
         </nav>
       </div>
     </div>
