@@ -90,6 +90,7 @@ export function buildBytePlusSeedancePayload(params: {
   referenceAudioUrls?: string[];
   resolution?: string | null;
   ratio?: string | null;
+  inheritSourceAspectRatio?: boolean;
   generateAudio?: boolean;
   cameraFixed?: boolean;
   seed?: number;
@@ -254,7 +255,8 @@ export function buildBytePlusSeedancePayload(params: {
   const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
   const inheritsSourceAspectRatio =
     mode === 'i2v' &&
-    params.modelId.trim().toLowerCase().includes('seedance-2-5');
+    (params.inheritSourceAspectRatio === true ||
+      params.modelId.trim().toLowerCase().includes('seedance-2-5'));
   if (!prompt) {
     throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
   }

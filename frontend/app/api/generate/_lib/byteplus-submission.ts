@@ -149,6 +149,7 @@ export async function submitBytePlusGenerateTask(params: {
           : undefined,
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
+      ...(params.engineId === 'seedance-2-5' ? { inheritSourceAspectRatio: true } : {}),
       generateAudio,
       ...(params.engineId === 'seedance-1-5-pro' && typeof params.cameraFixed === 'boolean'
         ? { cameraFixed: params.cameraFixed } : {}),
