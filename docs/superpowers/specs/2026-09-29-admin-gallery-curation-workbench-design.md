@@ -4,7 +4,7 @@ Date: 2026-09-29
 
 Branch: `codex/video-discovery`
 
-Status: design approved in conversation for the compact workbench and SEO handoff; implementation pending written-spec review
+Status: approved by the user on 2026-09-29; implementation plan in progress
 
 ## Intent and success
 
