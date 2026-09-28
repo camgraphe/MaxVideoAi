@@ -5,63 +5,72 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { curationItemFormat, type CurationDraft, type CurationItem, type CurationOpening } from '@/lib/admin/playlist-curation';
 
-const slots = ['Main video · 16:9', 'Vertical video · 9:16', 'Side video · 16:9', 'Side video · 16:9'];
+const slots = [
+  { name: 'Lead', format: '16:9' },
+  { name: 'Portrait', format: '9:16' },
+  { name: 'Side A', format: '16:9' },
+  { name: 'Side B', format: '16:9' },
+] as const;
+
 export function PlacementOpeningEditor({ draft, candidates, busy, onChange, onChooseSlot, required = false }: {
   required?: boolean;
   onChooseSlot?: (index: number) => void;
   draft: CurationDraft; candidates: CurationItem[]; busy: boolean; onChange: (draft: CurationDraft) => void;
 }) {
-  const [search, setSearch] = useState('');
   const [mobile, setMobile] = useState(false);
   const opening = draft.openingIds ?? (required ? ['', '', '', ''] as CurationOpening : null);
   const setSlot = (index: number, id: string) => {
     const next = [...(opening ?? ['', '', '', ''])] as CurationOpening;
     next[index] = id;
-    onChange({...draft, openingIds: next});
+    onChange({ ...draft, openingIds: next });
   };
-  return <section aria-label="Opening videos" className="space-y-4 rounded-xl border border-border bg-surface-2/40 p-4">
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div><h3 className="text-sm font-semibold">Four videos to open the gallery</h3>
-        <p className="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary">A landscape lead, one vertical video and two landscape previews. These videos count within the first page and keep their original format in the player.</p></div>
-      {!required ? <Button size="sm" variant="outline" disabled={busy} onClick={() => onChange({...draft, openingIds: opening ? null : ['', '', '', '']})}>
-        {opening ? 'Use existing order' : 'Choose opening videos'}
-      </Button> : null}
+
+  return <section aria-label="Opening videos" data-opening-board className="space-y-3 rounded-xl border border-border bg-surface-2/60 p-3 sm:p-4">
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div><h3 className="text-sm font-semibold text-text-primary">Opening four</h3>
+        <p className="text-xs text-text-secondary">These videos lead the first gallery page.</p></div>
+      <div className="flex items-center gap-2">
+        {opening ? <Button size="sm" variant="ghost" onClick={() => setMobile(!mobile)}>{mobile ? 'Desktop preview' : 'Mobile preview'}</Button> : null}
+        {!required ? <Button size="sm" variant="outline" disabled={busy} onClick={() => onChange({ ...draft, openingIds: opening ? null : ['', '', '', ''] })}>
+          {opening ? 'Use existing order' : 'Choose opening videos'}
+        </Button> : null}
+      </div>
     </div>
-    {opening ? <>
-      <label className="block text-xs text-text-secondary">Find an opening video
-        <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Model, prompt or video ID"
-          className="mt-1 block w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text-primary" />
-      </label>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {slots.map((label, index) => {
-          const format = index === 1 ? '9:16' : '16:9';
-          const selected = candidates.find(item => item.id === opening[index]);
-          const options = candidates.filter(item => !draft.excludedIds.includes(item.id) && curationItemFormat(item) === format &&
-            (!opening.includes(item.id) || item.id === opening[index]) && `${item.id} ${item.engineLabel} ${item.prompt}`.toLowerCase().includes(search.toLowerCase()));
-          if (selected && !options.some(item => item.id === selected.id)) options.unshift(selected);
-          return <label key={index} className="text-xs font-medium">{index + 1}. {label}
-            <select aria-label={`Opening slot ${index + 1}`} disabled={busy} value={opening[index]} onChange={event => setSlot(index,event.target.value)}
-              className="mt-1 block w-full min-w-0 rounded-lg border border-border bg-bg px-3 py-2 text-sm">
-              <option value="">Choose a {format} video</option>
-              {options.map(item => <option key={item.id} value={item.id}>{item.engineLabel ?? item.engineId} · {item.prompt.slice(0,90) || item.id}</option>)}
-            </select>
-            <Button size="sm" variant="outline" disabled={busy} onClick={() => onChooseSlot?.(index)}>Browse slot {index + 1}</Button>
-            {selected ? <><span className="block">{selected.engineLabel ?? selected.engineId} · {curationItemFormat(selected) ?? 'Unknown format'}</span><Button size="sm" variant="ghost" disabled={busy} onClick={() => setSlot(index, '')}>Remove slot {index + 1}</Button></> : null}
-            {selected ? <a className="mt-1 inline-block text-xs text-brand underline underline-offset-4" href={`/admin/video-seo?video=${encodeURIComponent(selected.id)}`}>Publication &amp; video SEO ↗</a> : null}
-          </label>;
-        })}
-      </div>
-      <div className="flex items-center justify-between text-xs"><span className="text-text-secondary">Opening preview · original videos remain intact</span>
-        <Button size="sm" variant="ghost" onClick={() => setMobile(!mobile)}>{mobile ? 'Desktop preview' : 'Mobile preview'}</Button></div>
-      <div className={`mx-auto grid w-full gap-1 overflow-hidden rounded-lg ${mobile ? 'max-w-[280px] grid-cols-2' : 'grid-cols-[3.56fr_1.125fr_2fr]'}`}>
-        {opening.map((id,index) => {
-          const item = candidates.find(candidate => candidate.id===id);
-          return <div key={index} className={`relative overflow-hidden rounded bg-surface-2 ${mobile ? index===0 ? 'col-span-2 aspect-video' : index===1 ? 'row-span-2 aspect-[9/16]' : 'aspect-[2/1]' : index<2 ? 'row-span-2' : 'col-start-3 aspect-[2/1]'}`}>
-            {item?.thumbUrl ? <Image src={item.thumbUrl} alt="" fill unoptimized sizes="(max-width: 640px) 50vw, 400px" className="object-cover" /> : null}
-            <span className="relative m-2 inline-flex rounded bg-black/60 px-2 py-1 text-[10px] text-white">{index+1} · {index===1?'9:16':index===0?'16:9':'2:1 preview'}</span>
-          </div>;
-        })}
-      </div>
-    </> : null}
+    {opening ? <div className={`grid min-w-0 gap-2 ${mobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-[minmax(0,2fr)_minmax(0,.76fr)_minmax(0,1.12fr)]'}`}>
+      {slots.map((slot, index) => {
+        const id = opening[index];
+        const selected = candidates.find(item => item.id === id);
+        const actual = selected ? curationItemFormat(selected) : null;
+        const invalid = Boolean(id) && (!selected || actual !== slot.format);
+        const options = candidates.filter(item => !draft.excludedIds.includes(item.id) && curationItemFormat(item) === slot.format &&
+          (!opening.includes(item.id) || item.id === id));
+        return <div key={index} data-opening-slot={index + 1} data-required-format={slot.format} data-opening-id={id || undefined}
+          className={`min-w-0 overflow-hidden rounded-xl border bg-surface shadow-sm ${invalid ? 'border-amber-400' : 'border-border'} ${index === 0 ? 'col-span-2 md:col-span-1 md:row-span-2' : index === 1 ? 'row-span-2 md:col-start-2' : `md:col-start-3 ${index === 2 ? 'md:row-start-1' : 'md:row-start-2'}`}`}>
+          <button type="button" disabled={busy} onClick={() => onChooseSlot?.(index)} aria-label={`Choose opening slot ${index + 1}, ${slot.format}`}
+            className={`group relative block w-full overflow-hidden bg-surface-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${index === 0 ? 'aspect-video md:h-full' : index === 1 ? 'aspect-[9/16] h-full' : 'aspect-[16/9] md:h-full'}`}>
+            {selected?.thumbUrl ? <Image src={selected.thumbUrl} alt="" fill unoptimized sizes="(max-width: 767px) 50vw, 38vw"
+              className={index === 1 ? 'object-contain' : 'object-cover'} /> : <span className="absolute inset-0 grid place-items-center px-2 text-center text-xs text-text-muted">{id ? 'Video unavailable' : 'Choose video'}</span>}
+            <span className="absolute left-2 top-2 rounded-md bg-black/75 px-2 py-1 text-[11px] font-semibold text-white">{index + 1} · {slot.name} · {slot.format}</span>
+            <span className="absolute bottom-2 right-2 rounded-md bg-black/75 px-2 py-1 text-[11px] font-medium text-white group-hover:bg-brand">{selected ? 'Change' : 'Browse'} ↗</span>
+          </button>
+          <div className="space-y-1 px-2 py-2 text-xs">
+            <p className="truncate font-medium text-text-primary">{selected?.engineLabel ?? selected?.engineId ?? (id ? id : 'Empty slot')}</p>
+            {invalid ? <p className="text-amber-900">{selected ? `Source ${actual ?? 'format unknown'} · needs ${slot.format}` : 'Source unavailable'}</p> : null}
+            <details>
+              <summary className="cursor-pointer text-text-secondary">Quick select</summary>
+              <select aria-label={`Opening slot ${index + 1}`} disabled={busy} value={id} onChange={event => setSlot(index, event.target.value)}
+                className="mt-1 w-full min-w-0 rounded-md border border-border bg-bg px-2 py-1.5 text-xs">
+                <option value="">Choose a {slot.format} video</option>
+                {options.map(item => <option key={item.id} value={item.id}>{item.engineLabel ?? item.engineId} · {item.prompt.slice(0, 70) || item.id}</option>)}
+              </select>
+            </details>
+            {selected ? <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <button type="button" disabled={busy} onClick={() => setSlot(index, '')} className="text-text-secondary underline">Remove slot {index + 1}</button>
+              <a href={`/admin/video-seo?video=${encodeURIComponent(selected.id)}`} className="text-brand underline">Video SEO ↗</a>
+            </div> : null}
+          </div>
+        </div>;
+      })}
+    </div> : null}
   </section>;
 }

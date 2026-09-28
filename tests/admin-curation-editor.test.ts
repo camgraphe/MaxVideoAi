@@ -4,6 +4,20 @@ import { JSDOM } from 'jsdom';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { validateCurationOpening, type CurationItem } from '../frontend/lib/admin/playlist-curation';
+
+test('opening validation rejects duplicate and unmeasured sources', () => {
+  const videos = [
+    { id: 'wide-1', outputWidth: 1280, outputHeight: 720 },
+    { id: 'portrait', outputWidth: 720, outputHeight: 1280 },
+    { id: 'wide-2', outputWidth: 1280, outputHeight: 720 },
+    { id: 'wide-3', outputWidth: 1280, outputHeight: 720 },
+    { id: 'unknown' },
+  ] as CurationItem[];
+  const base = { mode: 'manual' as const, orderedIds: [], excludedIds: [] };
+  assert.throws(() => validateCurationOpening({ ...base, openingIds: ['wide-1', 'portrait', 'wide-1', 'wide-3'] }, videos), /unique|same video/i);
+  assert.throws(() => validateCurationOpening({ ...base, openingIds: ['wide-1', 'unknown', 'wide-2', 'wide-3'] }, videos), /slot 2 requires a 9:16/i);
+});
 
 test('retains_draft_after_rejection', async () => {
   const dom = new JSDOM('<div id="root"></div>', {
@@ -168,6 +182,11 @@ test('retains_draft_after_rejection', async () => {
     assert.deepEqual(order(), ['b', 'a']);
     await act(async () => button('Choose opening videos').click());
     assert.equal(button('Preview changes').disabled,true,'all four slots are required before preview');
+    const board = dom.window.document.querySelector('[data-opening-board]')!;
+    const selectedSection = dom.window.document.querySelector('[aria-label="Selected media"]')!;
+    assert.ok(board.compareDocumentPosition(selectedSection) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    assert.deepEqual([...board.querySelectorAll('[data-opening-slot]')].map(el => el.getAttribute('data-required-format')),
+      ['16:9', '9:16', '16:9', '16:9']);
     const slot = (n: number) => dom.window.document.querySelector(`[aria-label="Opening slot ${n}"]`) as HTMLSelectElement;
     assert.deepEqual([...slot(2).options].map(option=>option.value),['','b'],'vertical slot filters actual media format');
     assert.ok(![...slot(1).options].some(option=>option.value==='b'),'landscape slot excludes the portrait');
@@ -176,6 +195,10 @@ test('retains_draft_after_rejection', async () => {
       slot(index+1).dispatchEvent(new dom.window.Event('change',{bubbles:true}));
     });
     assert.equal(button('Preview changes').disabled,false,'a complete compatible opening can be previewed');
+    assert.deepEqual([...board.querySelectorAll('[data-opening-slot]')].map(el => el.getAttribute('data-opening-id')),
+      ['a', 'b', 'c', 'd']);
+    assert.equal(dom.window.document.querySelector('[aria-label="Selected media"] [data-curation-item="a"]'), null,
+      'the opening media is not duplicated in the continuation');
     assert.ok(dom.window.document.querySelector('a[href="/admin/video-seo?video=a"]'));
     await act(async () => button('Mobile preview').click());
     assert.ok(button('Desktop preview'));

@@ -65,6 +65,8 @@ export function curationItemFormat(item: Pick<CurationItem, 'outputWidth' | 'out
 
 export function validateCurationOpening(draft: CurationDraft, candidates: CurationItem[]): void {
   if (!draft.openingIds) return;
+  if (new Set(draft.openingIds).size !== draft.openingIds.length)
+    throw new Error('Each opening slot needs a unique video.');
   for (const [index, id] of draft.openingIds.entries()) {
     const item = candidates.find(candidate => candidate.id === id);
     if (!item) throw new Error('An opening video is no longer eligible. Choose another video.');

@@ -78,6 +78,8 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       {!loaded.snapshot.isPublic ? (
         <p className="text-sm text-warning">This collection is private. Its public page will remain empty.</p>
       ) : null}
+      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={setSlot} /> : null}
+      {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="text-sm">
           Page order
@@ -163,8 +165,6 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           </ol>
         </section>
       ) : null}
-      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={setSlot} /> : null}
-      {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
       <section aria-label="Selected media">
         <h3 className="text-sm font-semibold">
           {draft.mode === 'hybrid' ? 'Featured' : 'Manual selection'} · {state.tailIds.length}
