@@ -357,6 +357,9 @@ loading/error states. The small stylesheet is inline only with the reader; do no
 import it from the initial gallery or add it to site-wide CSS. This avoids an extra
 blocking stylesheet request before the watch poster. Every class uses the
 `video-reader-` prefix; descendant integration styles remain scoped beneath it.
+On mobile, comparisons follow prompt/reference/share content in DOM order. Do not
+move a later streamed comparison block ahead of an already painted prompt with CSS
+`order`: warm-cache navigation can shift that prompt by the full quote block height.
 The poster keeps its existing optimized URL and single matching preload. Verify
 response headers and the network trace: moving a hint earlier in HTML alone does
 not change style hints that Next has already sent in the response headers.
