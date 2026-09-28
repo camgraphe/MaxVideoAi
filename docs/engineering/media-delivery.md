@@ -357,6 +357,13 @@ entry uses an H2 in the dialog and the existing watch URL in browser history; cl
 restores the gallery rather than fetching a second record page. Share resolves the
 canonical URL, while direct legacy ID requests keep the existing slug redirect.
 
+`VideoWatchShare` presents a persistent compact row in the public reader, with a
+canonical-link copy action and an announced confirmation. Clipboard failures expose
+the same URL in a selectable read-only field, and the clipboard fallback returns
+focus to the reader action. Feedback belongs to its watch URL, so navigation cannot
+show another video's copied state. The public reader does not mount the owned-video
+social publishing panel or prepare a video file for this link action.
+
 `example-reader-styles.tsx` owns the reader's scoped class mapping and CSS. The
 synchronous `/video` route layout emits `ExampleReaderStyles` before page data
 resolves; the dialog portal emits it including loading/error states. The small

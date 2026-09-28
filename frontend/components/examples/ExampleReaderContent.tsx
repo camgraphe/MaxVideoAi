@@ -48,10 +48,10 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, heading
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={reference.thumbUrl ?? reference.url} alt={reference.alt} loading="lazy" width={96} height={96}/>
       </a>)}</div></section>}
-      <nav className={styles.links}>
-        <VideoWatchShare videoId={detail.id} videoUrl={detail.videoUrl} watchUrl={new URL(detail.watchHref, SITE_ORIGIN).toString()} locale={locale}/>
+      <div className={styles.links}>
+        <VideoWatchShare watchUrl={new URL(detail.watchHref, SITE_ORIGIN).toString()} locale={locale}/>
         {detail.modelHref && <a href={detail.modelHref}><ArrowUpRight size={15}/>{copy.model}</a>}
-      </nav>
+      </div>
     </aside>
     {portrait && action}
     <section className={styles.comparison}>

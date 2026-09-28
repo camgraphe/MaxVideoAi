@@ -122,3 +122,11 @@ included in the final stable-environment gallery/reader performance comparison. 
 old 120-record performance fixture manifest and existing results remain historical.
 PostgreSQL traversal covers 513 eligible IDs on 22 pages with no missing/duplicate
 IDs and page-sized hydration; that establishes functionality, not current performance.
+
+### Later public reader share simplification
+
+The public reader now shows a persistent canonical-link copy row instead of mounting
+the library social publishing panel. Browser checks cover the visible confirmation
+and mobile geometry; DOM checks cover the actual URL, navigation feedback and clipboard
+failure recovery. This change also postdates the measurements above and belongs in
+the final stable-environment gallery/reader performance comparison.
