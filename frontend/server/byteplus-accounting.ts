@@ -1,18 +1,11 @@
 import {
+  BYTEPLUS_MODELARK_PROVIDER,
   BytePlusModelArkError,
   requireBytePlusSeedanceProfile,
 } from '@/server/video-providers/byteplus-modelark';
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
-
-const BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0056;
-const BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS = 0.007;
-const BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.004;
-const BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0024;
-const BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0035;
-const BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0021;
-const BYTEPLUS_SEEDANCE_2_5_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0107;
-const BYTEPLUS_SEEDANCE_2_5_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0064;
+import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
 
 const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '480p': {
@@ -134,34 +127,14 @@ export function getBytePlusUnitPriceUsdPer1kTokens(
   billingInputType?: string | null,
   resolution?: string | null
 ): number {
-  const pricingProfileKey = requireBytePlusSeedanceProfile(engineId).pricingProfileKey;
-
-  switch (pricingProfileKey) {
-    case 'standard':
-      if ((resolution ?? '').trim().toLowerCase() === '4k') {
-        return billingInputType === 'video_input'
-          ? BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
-          : BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
-      }
-      return BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS;
-    case 'mini':
-      return billingInputType === 'video_input'
-        ? BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
-        : BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
-    case 'fast':
-      return BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
-    case 'seedance25':
-      return billingInputType === 'video_input'
-        ? BYTEPLUS_SEEDANCE_2_5_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
-        : BYTEPLUS_SEEDANCE_2_5_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
-    default: {
-      const unsupportedProfile: never = pricingProfileKey;
-      throw new BytePlusModelArkError(
-        `Unsupported BytePlus pricing profile: ${String(unsupportedProfile)}`,
-        { status: 500, code: 'BYTEPLUS_PRICING_PROFILE_INVALID' }
-      );
-    }
-  }
+  const profile = requireBytePlusSeedanceProfile(engineId);
+  const selectedResolution = resolution ?? (profile.resolutions.includes('720p') ? '720p' : profile.resolutions[0]);
+  if (!selectedResolution) throw new Error(`BytePlus resolution missing for ${engineId}`);
+  return getBytePlusVideoListRate({
+    profile: profile.pricingProfileKey,
+    resolution: selectedResolution,
+    billingInputType: billingInputType === 'video_input' ? 'video_input' : 'no_video_input',
+  }).unitPriceUsdPer1kTokens;
 }
 
 export function estimateBytePlusProviderCostCents(input: {
@@ -191,4 +164,48 @@ export function estimateBytePlusProviderCostCents(input: {
     throw new Error('Invalid BytePlus provider-cost estimate.');
   }
   return costCents;
+}
+
+export function buildBytePlusListCostBreakdown(input: {
+  job: BytePlusPendingJob;
+  model: string;
+  resolution: string;
+  aspectRatio: string;
+  usage: { totalTokens: number | null; completionTokens: number | null } | null;
+}) {
+  const { job, usage } = input;
+  const totalTokens = usage?.totalTokens ?? expectedBytePlusTokens(job);
+  const accounting = getBytePlusAccounting(job);
+  const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
+    job.engine_id, accounting.byteplusBillingInputType, input.resolution,
+  );
+  const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
+  return {
+    provider: BYTEPLUS_MODELARK_PROVIDER,
+    provider_cost_source: 'byteplus_published_list_rate',
+    provider_cost_status: usage?.totalTokens == null
+      ? 'list_estimate_from_dimensions'
+      : 'list_estimate_from_provider_usage',
+    provider_list_rate_source: BYTEPLUS_MODELARK_LIST_PRICE_SOURCE.url,
+    model: input.model,
+    mode: accounting.mode,
+    input_type: accounting.inputType,
+    byteplus_billing_input_type: accounting.byteplusBillingInputType,
+    generate_audio: accounting.generateAudio,
+    has_start_image: accounting.hasStartImage,
+    has_end_image: accounting.hasEndImage,
+    has_reference_images: accounting.hasReferenceImages,
+    has_reference_videos: accounting.hasReferenceVideos,
+    has_reference_audio: accounting.hasReferenceAudio,
+    resolution: input.resolution,
+    aspect_ratio: input.aspectRatio,
+    duration_sec: job.duration_sec,
+    provider_tokens: totalTokens,
+    total_tokens: totalTokens,
+    completion_tokens: usage?.completionTokens ?? null,
+    unit_price_usd_per_1k_tokens: unitPriceUsdPer1kTokens,
+    provider_cost_usd_list: providerCostUsd,
+    provider_cost_usd_effective: null,
+    provider_cost_usd_observed: null,
+  };
 }

@@ -18,7 +18,7 @@ import {
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
 import {
-  expectedBytePlusTokens,
+  buildBytePlusListCostBreakdown,
   getBytePlusAccounting,
   getBytePlusUnitPriceUsdPer1kTokens,
 } from './byteplus-accounting';
@@ -302,38 +302,13 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
       const core = isRecord(settings.core) ? settings.core : {};
       const costResolution = typeof core.resolution === 'string' ? core.resolution : '720p';
       const costAspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : job.aspect_ratio ?? '16:9';
-      const totalTokens = task.usage?.totalTokens ?? expectedBytePlusTokens(job);
-      const accounting = getBytePlusAccounting(job);
-      const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
-        job.engine_id,
-        accounting.byteplusBillingInputType,
-        costResolution
-      );
-      const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
-      const costBreakdown = {
-        provider: BYTEPLUS_MODELARK_PROVIDER,
-        provider_cost_source: 'byteplus_usage_tokens',
+      const costBreakdown = buildBytePlusListCostBreakdown({
+        job,
         model: resolveBytePlusSeedanceModelId(job.engine_id, config),
-        mode: accounting.mode,
-        input_type: accounting.inputType,
-        byteplus_billing_input_type: accounting.byteplusBillingInputType,
-        generate_audio: accounting.generateAudio,
-        has_start_image: accounting.hasStartImage,
-        has_end_image: accounting.hasEndImage,
-        has_reference_images: accounting.hasReferenceImages,
-        has_reference_videos: accounting.hasReferenceVideos,
-        has_reference_audio: accounting.hasReferenceAudio,
         resolution: costResolution,
-        aspect_ratio: costAspectRatio,
-        duration_sec: job.duration_sec,
-        provider_tokens: totalTokens,
-        total_tokens: totalTokens,
-        completion_tokens: task.usage?.completionTokens ?? null,
-        unit_price_usd_per_1k_tokens: unitPriceUsdPer1kTokens,
-        provider_cost_usd_list: providerCostUsd,
-        provider_cost_usd_effective: providerCostUsd,
-        vendor_cost_usd: providerCostUsd,
-      };
+        aspectRatio: costAspectRatio,
+        usage: task.usage,
+      });
 
       const completedRows = await queryFn<{ job_id: string }>(
         `UPDATE app_jobs
@@ -394,9 +369,9 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         }),
       ]);
       await recordBytePlusPollEventFn(job, 'poll:completed', {
-        totalTokens,
+        totalTokens: costBreakdown.total_tokens,
         completionTokens: task.usage?.completionTokens ?? null,
-        providerCostUsd,
+        providerCostUsd: costBreakdown.provider_cost_usd_list,
         copiedVideo: true,
       });
       updates += 1;

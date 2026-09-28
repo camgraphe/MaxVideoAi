@@ -1,5 +1,11 @@
 # Pricing Engine
 
+## ByteDance supplier facts migration (2026-09-28)
+
+`frontend/server/byteplus-list-tariff.ts` owns a dated, published ModelArk list-rate projection for Seedance 2.0/2.5, Seedance 1.5 audio and Draft, and Seedream 5.0 Lite/Pro. It records Fast and Mini's time-limited public promotion separately. The promotion is not an account-specific effective rate. Until the BytePlus contract and invoice are confirmed, effective and observed costs stay `null`; the BytePlus poller records a list-price estimate from reported tokens (or dimensions when tokens are missing), with its provenance. Draft and final are separate paid provider tasks.
+
+Seedance 2.x's existing customer quote still uses the historical padded basis in `frontend/src/lib/seedance-2-pricing.ts`. The value and new quote metadata are named `legacyRetailBasis` so they cannot be mistaken for supplier cost. Its current pricing rule and customer totals are preserved during this preparatory slice. The authored commercial formula in `launch-config.ts` remains pending a complete, verified manual-tariff cutover. See the [dated path audit](bytedance-pricing-path-audit-2026-09-28.md) and [implementation plan](../superpowers/plans/2026-09-28-family-manual-pricing-grid.md).
+
 ## Current status
 
 The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.

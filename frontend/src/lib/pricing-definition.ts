@@ -177,7 +177,7 @@ function resolveBaseUnitPriceCents(engine: EngineCaps): {
               resolution,
               aspectRatio: tokenPricing.tokenPricing.defaultAspectRatio,
             });
-            return [resolution, quote.vendorCostPerSecondUsd * 100] as const;
+            return [resolution, quote.legacyRetailBasisPerSecondUsd * 100] as const;
           } catch {
             return null;
           }

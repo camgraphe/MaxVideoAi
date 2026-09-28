@@ -50,12 +50,14 @@ function runWithDeps(params: {
   providerStatus: 'completed' | 'running' | 'error';
 }) {
   const outputs: unknown[] = [];
+  const events: string[] = [];
   const run = runBytePlusPoll as unknown as (options: {
     deps: Record<string, unknown>;
   }) => Promise<Response>;
 
   return {
     outputs,
+    events,
     response: run({
       deps: {
       claimPollFn: allowGenerationPoll,
@@ -91,7 +93,7 @@ function runWithDeps(params: {
         generateAndPersistJobPreviewVideoFn: async () => null,
         generateAndPersistJobKeyframesFn: async () => [],
         applyBytePlusTrialOutcomeSafelyFn: async () => undefined,
-        recordBytePlusPollEventFn: async () => undefined,
+        recordBytePlusPollEventFn: async (_job: unknown, event: string) => { events.push(event); },
       },
     }),
   };
@@ -115,6 +117,13 @@ test('an old BytePlus job that succeeded at the provider is completed without a 
     'a successful provider task must never be refunded because of its age'
   );
   assert.equal(run.outputs.length, 1);
+  assert.deepEqual(run.events, ['poll:status', 'poll:completed']);
+  const cost = JSON.parse(String(completedUpdate.params?.[3])) as Record<string, unknown>;
+  assert.equal(cost.provider_cost_usd_list, 1.057546);
+  assert.equal(cost.provider_cost_usd_effective, null);
+  assert.equal(cost.provider_cost_usd_observed, null);
+  assert.equal(cost.provider_cost_status, 'list_estimate_from_provider_usage');
+  assert.equal('vendor_cost_usd' in cost, false);
 });
 
 test('an old BytePlus job still running at the provider is stalled without a refund', async () => {
