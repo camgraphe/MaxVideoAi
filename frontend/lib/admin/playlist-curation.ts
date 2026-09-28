@@ -5,7 +5,11 @@ export type CurationItem = {
   thumbUrl: string | null; videoUrl: string; createdAt: string;
   outputWidth?: number | null; outputHeight?: number | null; aspectRatio?: string | null;
 };
-export type CurationPreview = { items: CurationItem[]; token: string; revision: string };
+export type EffectiveCurationPreview = {
+  total: number; firstPageIds: string[]; currentTotal: number; addedCount: number; removedCount: number;
+  suppressedSourceSlugs: string[]; openingFormats: Array<'16:9' | '9:16' | null>; warnings: string[];
+};
+export type CurationPreview = { items: CurationItem[]; token: string; revision: string; effective: EffectiveCurationPreview };
 export type CurationSnapshot = {
   available: boolean; openingAvailable?: boolean; supported: boolean; revision: string; config: CurationDraft | null;
   slug: string; isPublic: boolean; legacyIds: string[];

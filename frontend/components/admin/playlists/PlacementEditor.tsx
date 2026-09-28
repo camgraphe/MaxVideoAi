@@ -140,16 +140,24 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       {preview ? (
         <section aria-label="Page preview" className="border-t-2 border-brand pt-4">
           <h3 ref={previewHeadingRef} tabIndex={-1} className="text-sm font-semibold">
-            Page preview · {preview.items.length} videos
+            Page preview · {preview.effective?.total ?? preview.items.length} videos
           </h3>
           <p className="my-2 text-xs text-text-secondary">
             {draft.mode === 'manual' ? 'Manual order' : 'Featured + Automatic'}. This selection takes effect after
             saving. New publications may extend automatic results.
           </p>
+          {preview.effective ? <div className="my-3 space-y-2 text-sm">
+            <p>Currently {preview.effective.currentTotal} videos → after saving {preview.effective.total} videos.</p>
+            <p>{preview.effective.addedCount} added · {preview.effective.removedCount} removed.</p>
+            {preview.effective.openingFormats.length ? <p>Opening formats: {preview.effective.openingFormats.map(format => format ?? 'Unknown').join(' · ')}</p> : null}
+            {preview.effective.suppressedSourceSlugs.length ? <p>Suppressed inherited sources: {preview.effective.suppressedSourceSlugs.join(', ')}</p> : null}
+            {preview.effective.warnings.map(warning => <p key={warning} className="text-warning">{warning}</p>)}
+            <p className="font-medium">First page · up to 24 videos</p>
+          </div> : null}
           <ol className="max-h-64 overflow-auto text-sm">
-            {preview.items.map((item, index) => (
-              <li key={item.id} className="truncate py-1">
-                {index + 1}. {item.prompt || item.id}
+            {(preview.effective?.firstPageIds ?? preview.items.slice(0, 24).map(item => item.id)).map((id, index) => (
+              <li key={id} className="truncate py-1">
+                {index + 1}. {preview.items.find(item => item.id === id)?.prompt || id}
               </li>
             ))}
           </ol>

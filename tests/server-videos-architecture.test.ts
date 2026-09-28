@@ -71,7 +71,9 @@ test('server videos facade keeps public gallery and SEO contracts available', ()
 test('direct watch and curation share the playable-source and deletion SQL gate', () => {
   const query = readFileSync('frontend/server/videos-query.ts', 'utf8');
   const videos = readFileSync('frontend/server/videos.ts', 'utf8');
-  const curation = readFileSync('frontend/server/playlists/curation-service.ts', 'utf8');
+  const curation = readFileSync('frontend/server/playlists/curation-eligibility.ts', 'utf8');
+  assert.match(readFileSync('frontend/server/playlists/curation-service.ts', 'utf8'), /export \{ CURATION_ELIGIBILITY \} from '\.\/curation-eligibility'/);
+  assert.doesNotMatch(curation, /curation-service/);
   assert.match(query, /export const PUBLIC_VIDEO_SOURCE_ELIGIBILITY/);
   assert.match(query, /removed\.status='deleted'/);
   assert.match(videos, /BASE_SELECT_WITH_SETTINGS[\s\S]*PUBLIC_VIDEO_SOURCE_ELIGIBILITY/);

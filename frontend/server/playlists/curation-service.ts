@@ -1,5 +1,7 @@
+import { expandCatalogAliases } from './curation-eligibility';
+import { guardCurationSave } from './curation-save-guard';
+import { effectiveSourceSlugs, readEffectiveCurationPreview } from './curation-effective-preview';
 import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
-import { PUBLIC_VIDEO_SOURCE_ELIGIBILITY, videoOutputDimensionSelect } from '../videos-query';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   parseCurationDraft,
@@ -19,40 +21,10 @@ import {
 export { CurationError } from './curation-store';
 export const getCurationSnapshot = readCurationSnapshot;
 
-export const CURATION_ELIGIBILITY = `visibility='public' AND indexable IS TRUE AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY}`;
+export { CURATION_ELIGIBILITY } from './curation-eligibility';
 
-export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }): Promise<CurationItem[]> {
-  const aliases = getCurationAliases(slug);
-  if (!aliases) throw new CurationError('Automatic curation is not supported for this destination', 400);
-  const rows = await db.query<{
-    job_id: string;
-    engine_id: string;
-    engine_label: string | null;
-    prompt: string | null;
-    thumb_url: string | null;
-    video_url: string;
-    created_at: string;
-    output_width: number | null; output_height: number | null; aspect_ratio: string | null;
-  }>(
-    `SELECT job_id,engine_id,engine_label,prompt,thumb_url,video_url,created_at,aspect_ratio,
-       (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width,
-       (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height
-     FROM app_jobs WHERE ${CURATION_ELIGIBILITY}
-       AND LOWER(engine_id)=ANY($1::text[])
-     ORDER BY created_at DESC, job_id ASC`,
-    [aliases.map((alias) => alias.toLowerCase())],
-  );
-  return rows.map((row) => ({
-    id: row.job_id,
-    engineId: row.engine_id,
-    engineLabel: row.engine_label,
-    prompt: row.prompt ?? '',
-    thumbUrl: row.thumb_url,
-    videoUrl: row.video_url,
-    createdAt: new Date(row.created_at).toISOString(),
-    outputWidth: row.output_width, outputHeight: row.output_height, aspectRatio: row.aspect_ratio,
-  }));
-}
+export { listCurationCandidates } from './curation-candidates';
+import { listCurationCandidates } from './curation-candidates';
 
 async function buildPreview(
   playlistId: string,
@@ -75,13 +47,31 @@ async function buildPreview(
   if (draft.orderedIds.some((id) => !eligible.has(id)))
     throw new CurationError('Some selected media are no longer eligible. Reload the destination.');
   if (draft.openingIds && !snapshot.openingAvailable) throw new CurationError('The four-video opening is not available yet', 503);
+  if (!snapshot.config && snapshot.slug.startsWith('family-')) {
+    if (!snapshot.openingAvailable) throw new CurationError('The four-video opening is not available yet', 503);
+    if (!draft.openingIds) throw new CurationError('Choose all four opening videos before adopting this family.');
+  }
   try { validateCurationOpening(draft, candidates); }
   catch (error) { throw new CurationError((error as Error).message); }
   const items = snapshot.isPublic ? resolveCuration(draft, candidates) : [];
-  return { items, revision, token: curationFingerprint({ revision, draft, items }) };
+  // Catalog families include historical aliases beyond the direct model reader. Bind their
+  // media too, without changing candidate selection or the public model reader's semantics.
+  const eligibleMedia = snapshot.slug.startsWith('family-')
+    ? await listCurationCandidates(snapshot.slug, db, expandCatalogAliases(getCurationAliases(snapshot.slug) ?? []))
+    : candidates;
+  const effective = await readEffectiveCurationPreview({ playlistId, slug: snapshot.slug, draft, candidates }, db);
+  // Bind every source, including suppressed sources and off-page membership, to the preview.
+  const sources = await db.query(`SELECT p.*,to_jsonb(c) AS curation,
+    (SELECT jsonb_agg(to_jsonb(pi) ORDER BY pi.video_id) FROM playlist_items pi WHERE pi.playlist_id=p.id) AS membership
+    FROM playlists p LEFT JOIN playlist_curations c ON c.playlist_id=p.id
+    WHERE p.slug=ANY($1::text[]) ORDER BY p.slug`, [effectiveSourceSlugs(snapshot.slug)]);
+  return { items, revision, effective, token: curationFingerprint({ revision, draft, eligibleMedia, effective, sources }) };
 }
 export async function previewCuration(playlistId: string, draft: unknown, revision: string) {
-  return buildPreview(playlistId, draft, revision, { query });
+  return withDbTransaction(async db => {
+    await db.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    return buildPreview(playlistId, draft, revision, db);
+  });
 }
 export async function saveCuration(
   playlistId: string,
@@ -90,13 +80,11 @@ export async function saveCuration(
   token: string,
   actor: string | null,
 ) {
-  return withDbTransaction(async (db) => {
-    await lockCuration(db, playlistId);
-    const before = await readCurationSnapshot(playlistId, db);
-    if (!before.config && before.slug.startsWith('family-')) {
-      // Also guard uncoordinated source creation/deletion during first adoption.
-      await db.query('LOCK TABLE playlists, playlist_items IN SHARE MODE');
-    }
+  return withDbTransaction(async (transaction) => {
+    await lockCuration(transaction, playlistId);
+    const before = await readCurationSnapshot(playlistId, transaction);
+    if (!before.available) throw new CurationError('Site placements setup is not available yet', 503);
+    const db = await guardCurationSave(transaction);
     const preview = await buildPreview(playlistId, input, revision, db);
     if (preview.token !== token) throw new CurationError('The preview changed. Preview the page again before saving.');
     const draft = parseCurationDraft(input);
@@ -110,6 +98,10 @@ export async function saveCuration(
       [playlistId, draft.mode, draft.orderedIds, draft.excludedIds, actor, ...(hasOpening ? [draft.openingIds ?? null] : [])],
     );
     return readCurationSnapshot(playlistId, db);
+  }).catch(error => {
+    if (['55P03', '57014'].includes((error as { code?: string }).code ?? ''))
+      throw new CurationError('Media is changing or validation took too long. Preview again and retry saving.');
+    throw error;
   });
 }
 

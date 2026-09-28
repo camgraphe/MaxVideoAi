@@ -111,6 +111,7 @@ test('retains_draft_after_rejection', async () => {
           ok: true,
           preview: {
             items: [candidates[1], candidates[0]],
+            effective: { total: 2, firstPageIds: ['a','b'], currentTotal: 40, addedCount: 0, removedCount: 38, suppressedSourceSlugs: ['examples-wan-3'], openingFormats: ['16:9','9:16','16:9','16:9'], warnings: ['Review removals before saving.'] },
             token: 't1',
             revision: 'r1',
           },
@@ -121,6 +122,10 @@ test('retains_draft_after_rejection', async () => {
     const selected = dom.window.document.querySelector('[aria-label="Selected media"]')!;
     assert.ok(preview.compareDocumentPosition(selected) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.match(preview.textContent!, /Page preview · 2 videos/);
+    assert.match(preview.textContent!, /Currently 40 videos → after saving 2 videos/);
+    assert.match(preview.textContent!, /38 removed/);
+    assert.match(preview.textContent!, /Suppressed inherited sources: examples-wan-3/);
+    assert.deepEqual([...preview.querySelectorAll('li')].map(li=>li.textContent?.trim()), ['1. a','2. b'], 'display the effective page order, not the draft item order');
     assert.equal(dom.window.document.activeElement?.textContent, 'Page preview · 2 videos');
     assert.equal(button('Save changes').disabled, false, 'save is available beside the preview action');
     assert.equal(button('Preview changes').parentElement?.contains(button('Save changes')), true);

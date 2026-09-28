@@ -1,15 +1,19 @@
 import { query, type QueryExecutor } from '@/lib/db';
-import { listRuntimeModels } from '@/config/model-runtime';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
 import { getExampleFamilyEngineAliases, getExampleFamilyIds } from '@/lib/model-families';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs } from './playlists/slugs';
 import { getCurationAliases } from './playlists/curation-store';
-import { CURATION_ELIGIBILITY } from './playlists/curation-service';
+import { CURATION_ELIGIBILITY, expandCatalogAliases } from './playlists/curation-eligibility';
 import { BASE_SELECT } from './videos-query';
 import { mapGalleryVideoRow, type VideoRow } from './videos-normalization';
 import type { ExampleSort, ListExamplesPageResult } from './videos-examples';
 
+export type CatalogCurationOverride = { playlistId: string; draft: import('@/lib/admin/playlist-curation').CurationDraft };
+
+type CatalogRow = VideoRow & { total: number; suppressed_source_slugs?: string[] };
+
 type CatalogPageOptions = {
+  curationOverride?: CatalogCurationOverride;
   familyId?: string;
   engineAliases?: string[];
   sort: ExampleSort;
@@ -26,10 +30,13 @@ const SORT_SQL: Record<ExampleSort, string> = {
   'engine-asc': "COALESCE(engine_label,'') ASC, created_at DESC, job_id ASC",
 };
 
-function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false): string {
-  const curationColumns = withCuration
+function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, override = false): string {
+  const savedCurationColumns = withCuration
     ? "c.mode,ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids AS ordered_ids,c.excluded_ids"
     : 'NULL::text AS mode,NULL::text[] AS ordered_ids,NULL::text[] AS excluded_ids';
+  const curationColumns = override ? `CASE WHEN p.id::text=$5::jsonb->>'playlistId' THEN $5::jsonb->'draft'->>'mode' ELSE c.mode END AS mode,
+    CASE WHEN p.id::text=$5::jsonb->>'playlistId' THEN ARRAY(SELECT jsonb_array_elements_text(COALESCE(NULLIF($5::jsonb->'draft'->'openingIds','null'::jsonb),'[]'::jsonb))) || ARRAY(SELECT jsonb_array_elements_text($5::jsonb->'draft'->'orderedIds')) ELSE ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids END AS ordered_ids,
+    CASE WHEN p.id::text=$5::jsonb->>'playlistId' THEN ARRAY(SELECT jsonb_array_elements_text($5::jsonb->'draft'->'excludedIds')) ELSE c.excluded_ids END AS excluded_ids` : savedCurationColumns;
   const curationJoin = withCuration ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : '';
   // Count, selected IDs and media are evaluated in one PostgreSQL statement/snapshot.
   // Only page membership reaches the expensive media/settings projection.
@@ -62,7 +69,8 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false): 
   ), selected_page AS (
     SELECT job_id,ROW_NUMBER() OVER (ORDER BY ${SORT_SQL[sort]}) AS ordinal
     FROM unique_memberships ORDER BY ${SORT_SQL[sort]} LIMIT $3 OFFSET $4
-  ) ${idsOnly ? `SELECT totals.total,page.job_id
+  ) ${idsOnly ? `SELECT totals.total,page.job_id,
+      ARRAY(SELECT slug FROM sources WHERE is_public=TRUE AND id NOT IN (SELECT id FROM active_sources) ORDER BY slug) AS suppressed_source_slugs
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,media.*
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
@@ -74,7 +82,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false): 
 async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db: QueryExecutor) {
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.floor(options.limit)) : 24;
   const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
-  const empty: Array<VideoRow & { total: number }> = [];
+  const empty: CatalogRow[] = [];
 
   const hub = getExamplesHubPlaylistSlug();
   const sourceSpecs = options.familyId
@@ -88,26 +96,16 @@ async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db
   const aliases = options.engineAliases ?? (options.familyId
     ? getExampleFamilyEngineAliases(options.familyId)
     : getDiscoverableExampleEngineAliases());
-  const expandAliases = (values: string[]) => {
-    const expanded = new Set(values.map(alias => alias.toLowerCase()));
-    for (const model of listRuntimeModels()) {
-      if (expanded.has(model.id) || expanded.has(model.slug)) {
-        model.aliases.internal.forEach(alias => expanded.add(alias.toLowerCase()));
-      }
-    }
-    return [...expanded];
-  };
   // Historical internal IDs use the same registry identity for eligibility and curated membership.
-  const sources = slugs.map((source, source_rank) => ({ ...source, source_rank, aliases: expandAliases(getCurationAliases(source.slug) ?? []) }));
-  const params = [JSON.stringify(sources), expandAliases(aliases), limit, offset];
-  type CatalogRow = VideoRow & { total: number };
+  const sources = slugs.map((source, source_rank) => ({ ...source, source_rank, aliases: expandCatalogAliases(getCurationAliases(source.slug) ?? []) }));
+  const params = [JSON.stringify(sources), expandCatalogAliases(aliases), limit, offset, ...(options.curationOverride ? [JSON.stringify(options.curationOverride)] : [])];
   let result: CatalogRow[];
   try {
-    result = await db.query<CatalogRow>(catalogSql(options.sort, true, idsOnly), params);
+    result = await db.query<CatalogRow>(catalogSql(options.sort, true, idsOnly, Boolean(options.curationOverride)), params);
   } catch (error) {
     // Missing optional curation storage is the only schema error that permits fallback.
     const failure = error as { code?: string; message?: string };
-    if (failure.code !== '42P01' || !failure.message?.includes('playlist_curations')) throw error;
+    if (options.curationOverride || failure.code !== '42P01' || !failure.message?.includes('playlist_curations')) throw error;
     result = await db.query<CatalogRow>(catalogSql(options.sort, false, idsOnly), params);
   }
   return result;
@@ -115,7 +113,7 @@ async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db
 
 /** Same membership, precedence and order as the public reader, without media hydration. */
 export async function listCatalogMembershipIds(
-  options: { familyId?: string; offset: number; limit: number }, db: QueryExecutor = { query },
+  options: { familyId?: string; offset: number; limit: number; curationOverride?: CatalogCurationOverride }, db: QueryExecutor = { query },
 ): Promise<{ ids: string[]; total: number }> {
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.min(500, Math.floor(options.limit))) : 500;
   const result = await readCatalogRows({ ...options, limit, sort: 'playlist' }, true, db);
@@ -130,4 +128,14 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
   const total = Number(result[0]?.total ?? 0);
   const items = result.filter(row => row.job_id).map(mapGalleryVideoRow);
   return { items, total, limit, offset, hasMore: offset + items.length < total };
+}
+
+/** Preview diagnostics use the exact same active-source CTE as public membership. */
+export async function listCatalogPreviewIds(options: CatalogPageOptions, db: QueryExecutor) {
+  const rows = await readCatalogRows(options, true, db);
+  return {
+    ids: rows.filter(row => row.job_id).map(row => row.job_id),
+    total: Number(rows[0]?.total ?? 0),
+    suppressedSourceSlugs: rows[0]?.suppressed_source_slugs ?? [],
+  };
 }
