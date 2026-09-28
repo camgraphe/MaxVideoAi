@@ -64,7 +64,7 @@
 ### Task 4: Watch dialog, compatible comparisons and app handoff
 
 **Files:** shared public watch detail/alternatives projection; gallery dialog client; existing watch sections; workspace reuse owner only if needed; quote and acquisition tests.
-**Interfaces:** Direct watch href always exists. Dialog loads public detail and canonical estimated quotes on demand; three alternatives maximum, same mode/aspect/audio and supported scenario preferred. Adaptations explicit. `/app?from=<id>&engine=<id>` must preserve chosen engine and prompt through login and explicit reuse.
+**Interfaces:** Direct watch href always exists. Dialog loads public detail and canonical estimated quotes on demand; three alternatives maximum, same mode/aspect/audio and supported scenario preferred. Adaptations explicit. `buildExampleRecreationHref` serializes the explicit prompt-only comparison (from/engine/remix/mode/duration/resolution/aspect/audio). The captured request must preserve chosen settings through login and source hydration; original-job hydration is skipped for this explicit comparison. Ordinary from links keep the existing original recreation flow.
 
 - [ ] Test public/private detail boundary, approved public source images only, three distinct executable compatible alternatives, unsupported duration adaptations, no guessed price when unavailable, engine override after example hydration.
 - [ ] Implement dialog with original-format player, recorded cost/settings, visible copy prompt, model/watch links and primary app CTA; three comparison cards under the player. Use existing media controls and canonical DB-aware pricing orchestration.

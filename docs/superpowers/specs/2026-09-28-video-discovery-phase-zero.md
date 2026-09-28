@@ -140,3 +140,11 @@ Les tests géométriques couvrent sept largeurs pour le héros, les cinq pages d
 - Pop-up soigné : vidéo, coût enregistré, paramètres, prompt copiable, références publiques, liens modèle et reprise dans l’app.
 - Jusqu’à trois alternatives compatibles sous le lecteur, avec prix canonique selon un scénario déclaré ; différences de durée/résolution explicites.
 - L’URL watch individuelle, le lecteur au premier plan et les métadonnées serveur restent la destination SEO.
+
+## Précisions finales sur le lecteur et la comparaison — 28 septembre
+
+- Direction choisie : les deux maquettes sombres d’origine, avec les couleurs et la typographie actuelles de l’app. Paysage avec informations à droite ; portrait avec vidéo entière au centre. Les essais crème sont abandonnés. Respecter les dimensions réelles du média, sans étirement.
+- « Prix à réglages identiques » affiche une seule configuration explicite, commune aux tarifs présentés. Aucun tarif de 10 s ne peut servir de comparaison implicite pour un exemple de 22 ou 30 s. Si le modèle ne prend pas en charge cette configuration, il n’est pas proposé. Jusqu’à trois alternatives exécutables, sans forcer leur nombre.
+- Le coût historique de l’exemple reste séparé des estimations actuelles. Pour les anciennes sources dont les entrées complètes ne sont pas publiques, la comparaison est explicitement une reprise du prompt en texte-vers-vidéo sans référence. Ne pas prétendre récupérer des références absentes ou privées.
+- « Créer ma version » prépare le formulaire ; il ne lance pas de génération. Le choix d’un modèle dans le comparatif transporte la configuration annoncée et conserve le prompt complet. La reprise du job original ne doit pas écraser ce choix.
+- Remplacer « Ouvrir la fiche complète » par « Voir la page de cette vidéo ». Cette page autonome conserve son rôle SEO et ses URLs ; le lecteur rapide ajoute la navigation précédente/suivante sans supprimer la watchpage.

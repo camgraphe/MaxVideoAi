@@ -22,6 +22,14 @@ Comparison detail pages load optional public `examples-<modelSlug>` playlists th
 
 `CompareGalleryCard.client.tsx` owns intent and visibility only, delegating incidental muted previews to `useExampleCardPlayback`. Preserve responsive lazy covers, the configured image quality and fixed geometry. Ordinary activation opens `CompareVideoDialog.client.tsx`, loaded on demand; modified clicks and the underlying HTML link retain the watch-page URL. The modal delegates focus, Escape and restoration to `useAccessibleModal` and full playback to `PublicVideoPlayer`, with original fidelity and `preload="none"`. No automatic playback of all gallery items. Show independent-example labeling; do not imply identical prompts or controlled test conditions.
 
+## Public example comparison handoff
+
+`frontend/lib/example-recreation.ts` owns the explicit text-only comparison URL and its scalar settings contract. Prices never travel as trusted URL inputs. `remix=1` requires engine, mode, duration, resolution, aspect and audio; unsupported settings are rejected rather than silently replaced with another quote scenario. `workspace-example-recreation.ts` checks the actual workspace engine capabilities and form coercion before producing the snapshot. `workspace-example-resolution.ts` maps equivalent public resolution labels to native capability tokens; incompatible coupled LTX Fast duration/resolution/fps settings are refused before hydration. The ordinary public snapshot projection lives in `workspace-shared-video-snapshot.ts`.
+
+`useWorkspaceVideoSettings` captures this intent before removing `from`. After the public video loads, it applies the selected model and full prompt once and skips private/original-job hydration for this comparison. Reference inputs from the source and the visitor's previous form are not carried into this explicitly text-only mode. Ordinary example links retain their existing recreation flow; their derived snapshot now includes public audio and a conventional resolution only when measured dimensions support it. Saved job snapshots remain authoritative on the ordinary path.
+
+The comparison UI must show one shared configuration, separate historical cost from estimated current cost, omit unsupported models and confirm the final quote in the app before generation. Do not present a 10-second quote beside a 22-second example without an explicit user-selected scenario change. Preserve the full request through the existing login redirect owner. Tests: `example-recreation`, `workspace-example-recreation-dom`, `workspace-video-settings`, `workspace-shared-video-load-dom`.
+
 ## Existing ownership
 
 Homepage mobile composition puts the main video before the comparison and assistant

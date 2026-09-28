@@ -1,3 +1,4 @@
+import { buildExampleRecreationSnapshot } from '../_lib/workspace-example-recreation';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
@@ -153,6 +154,7 @@ export function useWorkspaceVideoSettings({
   const restoredPreviewJobRef = useRef<string | null>(null);
   const appliedStoryboardHandoffRef = useRef<string | null>(null);
   const appliedSharedVideoIdRef = useRef<string | null>(null);
+  const exampleRecreationRef = useRef<{ videoId: string; searchString: string } | null>(null);
 
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
@@ -278,20 +280,37 @@ export function useWorkspaceVideoSettings({
 
   useEffect(() => {
     if (!activeDraftReady || !valid()) return;
+    const recreation = exampleRecreationRef.current;
+    const hydrationId = recreation && recreation.videoId === sharedVideoSettings?.id
+      ? `${recreation.videoId}:${recreation.searchString}`
+      : sharedVideoSettings?.id;
     const hydrationClaim = claimSharedVideoHydration(
       appliedSharedVideoIdRef.current,
-      sharedVideoSettings?.id,
+      hydrationId,
       engines.length,
     );
     appliedSharedVideoIdRef.current = hydrationClaim.nextAppliedVideoId;
     if (!hydrationClaim.shouldApply || !sharedVideoSettings) return;
+    if (recreation?.videoId === sharedVideoSettings.id) {
+      const snapshot = buildExampleRecreationSnapshot(sharedVideoSettings, recreation.searchString, engines);
+      if (snapshot) applyVideoSettingsSnapshot(snapshot);
+      else setNotice(locale === 'fr'
+        ? 'Cette configuration n’est plus disponible avec ce modèle. Choisissez vos réglages dans l’app.'
+        : locale === 'es'
+          ? 'Esta configuración ya no está disponible con este modelo. Elige los ajustes en la aplicación.'
+          : 'This configuration is no longer available with this model. Choose your settings in the app.');
+      // Do not hydrate the original job: it would replace the chosen model and may restore private inputs.
+      return;
+    }
     applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
     void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
   }, [
     activeDraftReady,
     valid,
     applyVideoSettingsSnapshot,
-    engines.length,
+    engines,
+    locale,
+    setNotice,
     hydrateVideoSettingsFromJob,
     sharedVideoSettings,
   ]);
@@ -407,6 +426,9 @@ export function useWorkspaceVideoSettings({
           throw new Error('Shared video response unavailable');
         }
         const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
+        exampleRecreationRef.current = new URLSearchParams(searchString).get('remix') === '1'
+          ? { videoId: video.id, searchString }
+          : null;
         const overrideGroup = mapSharedVideoToGroup(video, provider);
         setCompositeOverride(overrideGroup);
         setCompositeOverrideSummary(null);
