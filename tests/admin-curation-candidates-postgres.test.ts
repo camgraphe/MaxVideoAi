@@ -16,9 +16,9 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
   let reader;
   t.after(async () => { await reader?.getDb().end(); if(oldUrl === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL=oldUrl; rmSync(folder,{recursive:true,force:true}); await pg.cleanup(); });
   await pg.pool.query(`
-    CREATE TABLE playlists(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),slug text UNIQUE,is_public boolean,updated_at timestamptz DEFAULT now());
+    CREATE TABLE playlists(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),slug text UNIQUE,name text,description text,created_at timestamptz DEFAULT now(),is_public boolean,updated_at timestamptz DEFAULT now());
     CREATE TABLE playlist_items(playlist_id uuid,video_id text,order_index int,pinned boolean DEFAULT false,created_at timestamptz DEFAULT now(),PRIMARY KEY(playlist_id,video_id));
-    CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,engine_id text,engine_label text DEFAULT 'Fixture',prompt text DEFAULT 'Needle',thumb_url text DEFAULT '/thumb.webp',video_url text DEFAULT '/video.mp4',status text DEFAULT 'completed',surface text DEFAULT 'video',visibility text DEFAULT 'public',indexable boolean DEFAULT true,created_at timestamptz DEFAULT '2026-09-20 10:00:00.123456Z',aspect_ratio text DEFAULT '16:9',duration_sec int DEFAULT 5,has_audio boolean,can_upscale boolean,featured boolean,featured_order int,final_price_cents int,currency text,pricing_snapshot jsonb);
+    CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,engine_id text,engine_label text DEFAULT 'Fixture',prompt text DEFAULT 'Needle',thumb_url text DEFAULT '/thumb.webp',video_url text DEFAULT '/video.mp4',audio_url text,render_ids jsonb,status text DEFAULT 'completed',surface text DEFAULT 'video',visibility text DEFAULT 'public',indexable boolean DEFAULT true,created_at timestamptz DEFAULT '2026-09-20 10:00:00.123456Z',aspect_ratio text DEFAULT '16:9',duration_sec int DEFAULT 5,has_audio boolean,can_upscale boolean,featured boolean,featured_order int,final_price_cents int,currency text,pricing_snapshot jsonb);
     CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
     CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
     INSERT INTO playlists(slug,is_public) VALUES('family-kling',true),('examples-kling-3-pro',true);
@@ -30,8 +30,9 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
     INSERT INTO playlist_items SELECT p.id,j.job_id,2002-substring(j.job_id from 11)::int,false,now() FROM playlists p CROSS JOIN app_jobs j WHERE p.slug='examples-kling-3-pro' AND j.job_id LIKE 'candidate-%';
   `);
   await pg.pool.query(readFileSync('neon/migrations/52_playlist_curations.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/53_playlist_opening.sql','utf8'));
   const out=join(folder,'reader.cjs');
-  await build({stdin:{contents:`export * from './frontend/server/playlists/curation-candidates-page'; export * from './frontend/server/videos-catalog-page'; export * from './frontend/server/videos-playlists'; export {GET as getCuration,POST as previewCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route'; export {GET as getCandidates} from './frontend/app/api/admin/playlists/[playlistId]/curation/candidates/route'; export {parseCurationDraft} from './frontend/lib/admin/playlist-curation'; export {getDb,statements} from '@/lib/db';`,resolveDir:process.cwd()},define:{'import.meta.url':JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href)},outfile:out,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',plugins:[{name:'fixture',setup(b){
+  await build({stdin:{contents:`export * from './frontend/server/playlists/curation-candidates-page'; export * from './frontend/server/videos-catalog-page'; export * from './frontend/server/videos-playlists'; export {GET as getInventory} from './frontend/app/api/admin/playlists/route'; export {GET as getCuration,POST as previewCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route'; export {GET as getCandidates} from './frontend/app/api/admin/playlists/[playlistId]/curation/candidates/route'; export {parseCurationDraft} from './frontend/lib/admin/playlist-curation'; export {getDb,statements} from '@/lib/db';`,resolveDir:process.cwd()},define:{'import.meta.url':JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href)},outfile:out,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',plugins:[{name:'fixture',setup(b){
     b.onResolve({filter:/^@\/server\/admin$/},()=>({path:'admin',namespace:'fixture'}));
     b.onLoad({filter:/^admin$/,namespace:'fixture'},()=>({contents:`export async function requireAdmin(req){if(req.headers.get('x-admin')!=='yes')throw new Error('Forbidden');return 'admin';} export function adminErrorToResponse(){return Response.json({ok:false},{status:403});}`,loader:'js'}));
     b.onResolve({filter:/^@\/lib\/db$/},()=>({path:'db',namespace:'fixture'}));
@@ -43,6 +44,20 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
   const {rows:[playlist]}=await pg.pool.query("SELECT id FROM playlists WHERE slug='family-kling'");
   const context={params:Promise.resolve({playlistId:playlist.id})};
   const req=(query='',admin=true)=>new Request('http://localhost/api?'+query,{headers:admin?{'x-admin':'yes'}:{}});
+  await t.test('admin_is_read_only_until_save', async () => {
+    reader.statements.length = 0;
+    assert.equal((await reader.getDb().query('SHOW default_transaction_read_only')).rows[0].default_transaction_read_only, 'on');
+    assert.equal((await reader.getInventory(req('', false))).status, 403);
+    const response = await reader.getInventory(req());
+    assert.equal(response.status, 200);
+    const inventory = await response.json();
+    assert.ok(inventory.destinations.length > 0);
+    assert.equal((await reader.getCuration(req(), context)).status, 200);
+    assert.equal((await reader.getCandidates(req(), context)).status, 200);
+    assert.ok(reader.statements.length > 0);
+    assert.ok(reader.statements.every(s => /^\s*(SELECT|WITH)\b/i.test(s.text)));
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM playlist_curations')).rows[0].count, 0);
+  });
   await t.test('pages_eligible_candidates_without_skips',async()=>{
     const ids=[];let cursor=null;
     do { const page=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Needle',format:'16:9',limit:48,cursor});assert.equal(page.total,101);assert.ok(page.items.length<=48);ids.push(...page.items.map(i=>i.id));cursor=page.nextCursor; }while(cursor);
@@ -83,9 +98,9 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
     assert.ok(reader.statements.filter(s=>s.text.includes('AS output_width')).every(s=>s.rows<=48));
     assert.ok(reader.statements.every(s=>/^\s*(SELECT|WITH)\b/i.test(s.text)));
     assert.equal(reader.parseCurationDraft({mode:'manual',orderedIds:body.initialIds,excludedIds:[]}).orderedIds.length,2001);
-    const previewRequest=new Request('http://localhost/api',{method:'POST',headers:{'x-admin':'yes','content-type':'application/json'},body:JSON.stringify({revision:body.snapshot.revision,draft:{mode:'manual',orderedIds:body.initialIds,excludedIds:[]}})});
+    const previewRequest=new Request('http://localhost/api',{method:'POST',headers:{'x-admin':'yes','content-type':'application/json'},body:JSON.stringify({revision:body.snapshot.revision,draft:{mode:'manual',orderedIds:body.initialIds,excludedIds:[],openingIds:['candidate-0001','portrait','candidate-0002','candidate-0003']}})});
     const previewResponse=await reader.previewCuration(previewRequest,context);assert.equal(previewResponse.status,200);
-    assert.equal((await previewResponse.json()).preview.items.length,2001);
+    assert.equal((await previewResponse.json()).preview.items.length,2002);
     const direct=await reader.listPlaylistVideoIds('examples-kling-3-pro',{offset:2000,limit:500});assert.deepEqual(direct,{ids:['candidate-2001'],total:2001});
     const family=await reader.listCatalogMembershipIds({familyId:'kling',offset:2000,limit:500});assert.deepEqual(family,{ids:['candidate-2001'],total:2001});
   });

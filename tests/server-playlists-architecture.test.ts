@@ -77,3 +77,14 @@ test('server playlist focused modules expose the expected contracts', () => {
   assert.match(readModule('mutations.ts'), /export function isPlaylistLockedError/);
   assert.match(readModule('candidates.ts'), /export async function searchPlaylistCandidates/);
 });
+
+test('admin read paths retain separate mutation entry points', () => {
+  const route = readFileSync(join(root, 'frontend/app/api/admin/playlists/route.ts'), 'utf8');
+  const get = route.split('export async function GET')[1].split('export async function POST')[0];
+  assert.match(get, /requireAdmin/);
+  assert.match(get, /loadPlaylistDestinations/);
+  assert.doesNotMatch(get, /createPlaylist|saveCuration|ensureSchema|INSERT|UPDATE|DELETE|CREATE TABLE/);
+  assert.doesNotMatch(readModule('queries.ts'), /ensureSchema|CREATE TABLE|INSERT INTO|UPDATE playlists|DELETE FROM/);
+  const guide = readFileSync(join(root, 'docs/engineering/admin-routes.md'), 'utf8');
+  assert.match(guide, /Read-only gallery release checklist/);
+});

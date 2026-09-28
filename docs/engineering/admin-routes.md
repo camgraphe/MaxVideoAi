@@ -310,7 +310,83 @@ in windows of at most 48. `PlacementMediaList` receives the complete tail ID ord
 keyboard moves at a window boundary preserve every other ID. Dropping on a selected
 page navigation button moves the video to that adjacent page's first position.
 The explicit automatic-to-manual policy switch still reads IDs in 500-ID pages.
-New family adoption requires four unique, correctly formatted slots when the optional
-opening schema is available. Existing old-schema and model curation behavior remains.
+New family adoption requires four unique, correctly formatted slots. If optional
+opening storage is unavailable, adoption returns 503; existing saved legacy family
+configurations and model curation remain editable.
 Rejected saves retain the draft and invalidate its preview; destination-switch and
 before-unload guards retain their existing ownership.
+
+
+### Gallery destinations and reconciliation
+
+`server/playlists/destinations.ts` projects the authored registry and current public
+reader helpers into the inventory. `connected` means the expected runtime slug has a
+row; `missing` means that row does not exist; `historical` marks an inactive reserved
+hub/starter slug; `unconnected` is an unrelated collection. Direct membership and
+effective public counts are distinct. Empty family membership can inherit public
+videos from model playlists and the hub. A saved family curation suppresses those
+inherited sources; a saved hub curation is authoritative for the hub.
+
+The switcher opens the connected hub, otherwise the first connected family. The editor
+precedes the long family/model inventory at 688px and desktop. Missing/historical
+entries are diagnostics, not aliases for active readers. Reserved `examples`,
+`marketing-examples`, `welcome`, and `starter` cannot be renamed or deleted, independent
+of configuration. Historical mismatches reject ordering and curation writes too.
+Reconcile deployment settings deliberately; never rename rows to conceal a mismatch.
+
+Collection maintenance contains legacy creation/seeding/raw collection controls.
+Opening it or selecting a destination does not create, migrate, rename, delete or
+republish anything. Missing expected collections require a separate explicit operator
+decision. Maintenance and destination changes respect dirty-draft/busy guards.
+
+### Effective preview and explicit save
+
+Authenticated GET inventory, snapshot and candidate routes are read-only. Schema
+installation belongs to deployment operations. POST preview runs in a read-only,
+repeatable-read transaction. PUT is the curation write boundary and requires the
+current revision and preview token. Manual retains the authored order; hybrid appends
+eligible new videos automatically. Changing the policy is explicit.
+
+Preview shows effective first-page IDs, total, additions/removals, suppressed sources,
+opening formats and empty/large-removal warnings. Hub/family projection shares the
+public catalog's source precedence and deduplication; opening entries count within
+its 24 cards. Model preview shares the final model-gallery projector, including
+engine/editorial/public filtering and unmanaged preferred/featured additions. The
+model reader takes at most 200 playlist videos before these rules; that is not a
+200-card final render cap. Preview does not change Video SEO or publication state.
+
+Save rechecks draft, revision, eligible media, source snapshots and effective output.
+A changed source, visibility, format or media URL rejects the stale token. The draft
+survives a 409 and Save stays disabled until a fresh preview. Save uses NOWAIT SHARE
+locks on six source tables with a two-second SQL deadline; writer contention returns
+a retryable 409. Never retry automatically with an old token. Existing optional-schema
+fallback remains for public reads; first family adoption needs opening storage.
+
+### Read-only gallery release checklist
+
+- Record the exact candidate SHA and verify the local server's checkout. Read the
+  production values of `EXAMPLES_PLAYLIST_SLUG`, `INDEXABLE_PLAYLIST_SLUGS`, and
+  `STARTER_PLAYLIST_SLUG`, then compare active slugs with live playlist rows and the
+  hub/starter readers. Record unset values and the deployed source defaults explicitly.
+  Never infer production settings from local diagnostics. If settings, rows or deployed
+  reader evidence is inaccessible, leave this release gate unresolved.
+- Keep environment and database unchanged during the audit. Check schema availability
+  through catalog reads. Use disposable PostgreSQL for opening-enabled browser fixtures;
+  do not migrate a shared local database just to show four slots.
+- At 688 × 900 and desktop 1440 × 1000, confirm the selected editor starts before the
+  family/model inventory, mismatch diagnostics remain visible, and no horizontal
+  overflow occurs. Check search, candidate page 3, selected-window paging, keyboard and
+  pointer ordering, dirty destination guard, preview summary and rejected-save draft
+  retention. Validate 16:9 / 9:16 / 16:9 / 16:9 slot geometry on the disposable fixture.
+- Open `/examples`, a family route, and a model route. Follow available pagination,
+  inspect the first 24 hub/family IDs for duplicates, and exercise first Play plus watch
+  navigation. Model pages retain their existing gallery behavior, not hub pagination.
+  Verify canonical, localized hreflang/paths, JSON-LD watch URLs, redirects, and sitemap
+  eligibility through their existing owners. Curation must not take ownership of SEO.
+- Run Tasks 1–6 focused tests with disposable PostgreSQL available, frontend TypeScript,
+  frontend lint, exposure lint, and `git diff --check`. Preserve server-rendered poster
+  discovery, single priority image, media originals and shared playback owners.
+  Attach comparable before/after Core Web Vitals only when initial public loading changes.
+- Record screenshots/observations and precise limitations in the release report; a
+  passing source contract is not a browser or production check. Review the committed
+  branch before any separate production merge/deployment procedure.

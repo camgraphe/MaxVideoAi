@@ -384,3 +384,20 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(routeSectionsSource, /rel="next"/, 'pagination nav should own next link markup');
   assert.match(routeSectionsSource, /<details key=\{item\.question\}/, 'FAQ section should own FAQ disclosure markup');
 });
+
+test('public_routes_keep_seo_and_media_owners', () => {
+  assert.match(pageSource, /buildSeoMetadata/);
+  assert.match(pageSource, /canonicalOverride: metadataUrls.canonical/);
+  assert.match(pageSource, /buildExamplesJsonLd/);
+  assert.match(pageSource, /listExampleFamilyPage/);
+  assert.match(pageSource, /listExamplesPage/);
+  assert.match(pageViewSource, /ExamplesJsonLdScripts/);
+  assert.ok(jsonLdSource.includes('const detailPath = `/video/${encodeURIComponent(video.id)}`'));
+  for (const source of [pageSource, modelPageSource, pageViewSource, jsonLdSource]) {
+    assert.doesNotMatch(source, /playlists\/destinations|curation-service|saveCuration|loadPlaylistDestinations/);
+  }
+  const watch = readFileSync(join(root, 'frontend/app/(core)/video/[id]/page.tsx'), 'utf8');
+  assert.match(watch, /getVideoWatchPageDataById/);
+  const card = readFileSync(join(root, 'frontend/components/examples/ExampleGalleryCard.tsx'), 'utf8');
+  assert.match(card, /useExampleCardPlayback/);
+});
