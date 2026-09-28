@@ -7,6 +7,9 @@ import {
   quoteSeedreamListCost,
 } from '@/server/byteplus-list-tariff';
 import type { CanonicalPricingQuote, ManualTariffQuote } from '@maxvideoai/pricing';
+import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
+import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
+import type { EngineCaps } from '@/types/engines';
 
 type CostEvidence = { amountUsd: number; source: string; confirmedAt: string };
 type CustomerQuoteSummary = {
@@ -50,6 +53,54 @@ export type ProviderCostComparisonInput = {
   observedInvoiceCost?: CostEvidence | null;
   customerQuote: CustomerQuoteSummary | null;
 };
+
+/** Projects an audit scenario without treating its padded retail basis as supplier cost. */
+export function providerComparisonInputFromScenario(input: {
+  scenario: PricingAuditScenario;
+  quote: CanonicalPricingQuote | ManualTariffQuote | null;
+  engine: EngineCaps;
+  brandId: string;
+  executionProvider: string;
+}): ProviderCostComparisonInput {
+  const { scenario, engine } = input;
+  const mode = scenario.mode ?? 'unknown';
+  const billingInputType = mode === 'v2v' || mode === 'extend'
+    ? 'video_input' as const
+    : mode === 't2v' || mode === 'i2v'
+      ? 'no_video_input' as const
+      : undefined;
+  const aspectRatio = typeof scenario.input.aspectRatio === 'string' ? scenario.input.aspectRatio : undefined;
+  let tokenEstimate: ReturnType<typeof computeSeedance2TokenQuote> | null = null;
+  if (billingInputType && isSeedance2TokenPricing(engine.pricingDetails) && scenario.durationSec && scenario.resolution) {
+    try {
+      tokenEstimate = computeSeedance2TokenQuote({
+        details: engine.pricingDetails,
+        durationSec: scenario.durationSec,
+        resolution: scenario.resolution,
+        aspectRatio,
+        billingInputType,
+      });
+    } catch {
+      // Unsupported dimensions remain unavailable in the supplier column.
+    }
+  }
+  return {
+    scenarioId: scenario.id,
+    brandId: input.brandId,
+    engineId: scenario.engineId,
+    executionProvider: input.executionProvider,
+    mode,
+    resolution: scenario.resolution ?? 'unknown',
+    durationSec: scenario.durationSec,
+    aspectRatio: tokenEstimate?.aspectRatio ?? aspectRatio,
+    step: 'normal',
+    billingInputType,
+    audio: typeof scenario.input.audio === 'boolean' ? scenario.input.audio : undefined,
+    videoTokens: tokenEstimate?.tokenCount ?? null,
+    tokenEvidence: tokenEstimate ? 'scenario_estimate' : null,
+    customerQuote: input.quote ? customerQuoteFromCanonical(input.quote) : null,
+  };
+}
 
 type UnavailableReason =
   | 'supplier_rate_unverified_for_route'
@@ -105,9 +156,9 @@ function amountUsd(tokens: number, rateUsdPer1kTokens: number): number {
   return Number(((tokens * rateUsdPer1kTokens) / 1000).toFixed(6));
 }
 
-function validEvidence(value: CostEvidence | null | undefined): value is CostEvidence {
+function validEvidence(value: CostEvidence | null | undefined, at: string): value is CostEvidence {
   return Boolean(value && Number.isFinite(value.amountUsd) && value.amountUsd >= 0 && value.source.trim() &&
-    Number.isFinite(Date.parse(value.confirmedAt)));
+    Number.isFinite(Date.parse(value.confirmedAt)) && Date.parse(value.confirmedAt) <= Date.parse(at));
 }
 
 function listCost(input: ProviderCostComparisonInput, at: string): Pick<ProviderCostComparisonRow, 'supplierList' | 'publicPromotion'> {
@@ -194,8 +245,8 @@ export function buildProviderCostComparisonRows(
   if (!Number.isFinite(Date.parse(at))) throw new Error('Invalid provider comparison date.');
   return inputs.map((input) => {
     const { supplierList, publicPromotion } = listCost(input, at);
-    const effective = validEvidence(input.confirmedEffectiveCost) ? input.confirmedEffectiveCost : null;
-    const observed = validEvidence(input.observedInvoiceCost) ? input.observedInvoiceCost : null;
+    const effective = validEvidence(input.confirmedEffectiveCost, at) ? input.confirmedEffectiveCost : null;
+    const observed = validEvidence(input.observedInvoiceCost, at) ? input.observedInvoiceCost : null;
     const sameCurrency = input.customerQuote?.currency.toUpperCase() === 'USD';
     return {
       scenarioId: input.scenarioId,

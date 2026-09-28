@@ -4,9 +4,11 @@ import test from 'node:test';
 import {
   buildProviderCostComparisonRows,
   customerQuoteFromCanonical,
+  providerComparisonInputFromScenario,
   type ProviderCostComparisonInput,
 } from '../frontend/server/pricing-admin/provider-cost-comparison';
 import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { buildPricingAuditScenarios } from '../frontend/src/lib/pricing-audit/scenarios';
 
 const customerQuote = {
@@ -165,4 +167,55 @@ test('unverifiable contract evidence never becomes a confirmed price', () => {
   })], '2026-09-28T12:00:00Z');
   assert.equal(row.supplierEffective.amountUsd, null);
   assert.equal(row.supplierEffective.status, 'account_contract_unconfirmed');
+});
+
+test('future contract and invoice evidence cannot appear in an earlier comparison', () => {
+  const [row] = buildProviderCostComparisonRows([video({
+    confirmedEffectiveCost: { amountUsd: 0.49, source: 'contract:active-rate', confirmedAt: '2026-09-30T12:00:00Z' },
+    observedInvoiceCost: { amountUsd: 0.51, source: 'invoice:settled-line', confirmedAt: '2026-10-01T12:00:00Z' },
+  })], '2026-09-29T12:00:00Z');
+  assert.equal(row.supplierEffective.status, 'account_contract_unconfirmed');
+  assert.equal(row.supplierEffective.amountUsd, null);
+  assert.equal(row.supplierObserved.status, 'unavailable');
+  assert.equal(row.supplierObserved.amountUsd, null);
+  assert.equal(row.realizedGrossDifferenceCents, null);
+});
+
+test('representative Seedance 2.5 cost uses output tokens while customer quote stays canonical', () => {
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+  const scenario = buildPricingAuditScenarios().find((candidate) =>
+    candidate.engineId === 'seedance-2-5' && candidate.surface === 'billing' &&
+    candidate.mode === 't2v' && candidate.membershipTier === 'member');
+  assert.ok(scenario);
+  const [quote] = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: [scenario] });
+  assert.equal(quote.status, 'quoted');
+  if (quote.status !== 'quoted') return;
+  const input = providerComparisonInputFromScenario({
+    scenario, quote, engine: entry.engine, brandId: entry.brandId ?? 'bytedance',
+    executionProvider: 'byteplus_modelark',
+  });
+  const [row] = buildProviderCostComparisonRows([input], '2026-09-29T12:00:00Z');
+  assert.equal(row.videoTokens, 38_430);
+  assert.equal(row.tokenEvidence, 'scenario_estimate');
+  assert.equal(row.supplierList.amountUsd, 0.411201);
+  assert.equal(row.customerQuote?.totalCents, quote.customerTotalCents);
+  assert.equal(row.customerQuote?.ruleId, quote.policyProvenance.sourceRuleId);
+  assert.equal(row.supplierEffective.amountUsd, null);
+});
+
+test('reference mode without known video inputs leaves its supplier rate unavailable', () => {
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+  const input = providerComparisonInputFromScenario({
+    scenario: {
+      id: 'reference-with-unknown-media', surface: 'billing', engineId: 'seedance-2-5',
+      mode: 'ref2v', resolution: '720p', durationSec: 5, membershipTier: 'member', input: {},
+    },
+    quote: null, engine: entry.engine, brandId: 'bytedance', executionProvider: 'byteplus_modelark',
+  });
+  const [row] = buildProviderCostComparisonRows([input], '2026-09-29T12:00:00Z');
+  assert.equal(row.billingInputType, null);
+  assert.equal(row.supplierList.amountUsd, null);
+  assert.equal(row.supplierList.reason, 'billable_tokens_unavailable');
 });
