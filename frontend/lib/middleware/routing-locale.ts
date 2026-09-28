@@ -4,6 +4,7 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from '@/i18n/routing';
 import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
+import { getAuthRequestUrl } from '@/lib/auth-request-url';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 
 const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
@@ -284,7 +285,7 @@ export function resolveLangParamRedirect(req: NextRequest, pathname: string): Ne
   const localizedPath = shouldHandleLocale(pathWithoutLocale)
     ? localizePathForLocale(targetLocale, pathWithoutLocale)
     : pathWithoutLocale;
-  const redirectUrl = req.nextUrl.clone();
+  const redirectUrl = getAuthRequestUrl(req);
   redirectUrl.pathname = localizedPath;
   redirectUrl.searchParams.delete('lang');
   const response = NextResponse.redirect(redirectUrl, 307);
