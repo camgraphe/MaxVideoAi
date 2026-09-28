@@ -12,13 +12,19 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { useAdminPricingCockpitController } from '../_hooks/useAdminPricingCockpitController';
+import { providerComparisonPolicySelectorKey, type ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view-model';
 import { PricingPolicyInspector } from './PricingPolicyInspector';
 import { PricingPolicyTable } from './PricingPolicyTable';
+import { ProviderPriceComparisonTable } from './ProviderPriceComparisonTable';
 
 export function AdminPricingCockpit() {
   const controller = useAdminPricingCockpitController();
   const inventoryRows = controller.inventory?.rows ?? [];
   const databaseOverrideCount = inventoryRows.filter((row) => row.databaseOverride).length;
+  const inspectComparison = (row: ProviderCostComparisonRowView) => {
+    controller.setFilters({ query: '', source: 'all', status: 'all' });
+    controller.selectRow(providerComparisonPolicySelectorKey(row));
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -60,6 +66,17 @@ export function AdminPricingCockpit() {
       {controller.loading ? (
         <AdminLoadingPanel rows={6} />
       ) : inventoryRows.length ? (
+        <>
+        <AdminSection
+          title="Supplier cost and customer price"
+          description="Read-only comparison of representative ByteDance scenarios. Contract rates and settled costs remain unavailable until verified."
+        >
+          <ProviderPriceComparisonTable
+            rows={controller.inventory?.providerComparisons ?? []}
+            disabled={controller.interactionLocked}
+            onInspect={inspectComparison}
+          />
+        </AdminSection>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.75fr)]">
           <AdminSection
             title="Policy inventory"
@@ -93,6 +110,7 @@ export function AdminPricingCockpit() {
             <AdminEmptyState>Select a pricing policy row to inspect it.</AdminEmptyState>
           )}
         </div>
+        </>
       ) : (
         <AdminEmptyState>No canonical pricing policy rows are available.</AdminEmptyState>
       )}

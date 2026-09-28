@@ -128,7 +128,8 @@ export function PricingPolicyInspector({
                 <li key={quote.scenarioId} className="rounded-lg border border-hairline bg-bg p-3 text-xs text-text-secondary">
                   <span className="block font-medium text-text-primary">{quote.surface}</span>
                   <span className="mt-1 block break-all font-mono text-[11px] text-text-muted">{quote.scenarioId}</span>
-                  <span className="mt-2 block">Supplier subtotal: {formatUsdCents(quote.vendorSubtotalCents)}</span>
+                  <span className="mt-2 block">Legacy pricing basis: {formatUsdCents(quote.vendorSubtotalCents)}</span>
+                  <span className="block">This historical input may include commercial padding; it is not a verified supplier cost.</span>
                   <span className="block">Billing/public total: {formatUsdCents(quote.totalCents)}</span>
                 </li>
               ))}

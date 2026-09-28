@@ -37,6 +37,8 @@ export type ProviderCostComparisonInput = {
   brandId: string;
   engineId: string;
   executionProvider: string;
+  mediaType?: 'video' | 'image';
+  workflowPairId?: string;
   mode: string;
   resolution: string;
   durationSec?: number;
@@ -61,6 +63,7 @@ export function providerComparisonInputFromScenario(input: {
   engine: EngineCaps;
   brandId: string;
   executionProvider: string;
+  mediaType?: 'video' | 'image';
 }): ProviderCostComparisonInput {
   const { scenario, engine } = input;
   const mode = scenario.mode ?? 'unknown';
@@ -89,6 +92,7 @@ export function providerComparisonInputFromScenario(input: {
     brandId: input.brandId,
     engineId: scenario.engineId,
     executionProvider: input.executionProvider,
+    mediaType: input.mediaType ?? 'video',
     mode,
     resolution: scenario.resolution ?? 'unknown',
     durationSec: scenario.durationSec,
@@ -113,6 +117,8 @@ export type ProviderCostComparisonRow = {
   brandId: string;
   engineId: string;
   executionProvider: string;
+  mediaType: 'video' | 'image';
+  workflowPairId: string | null;
   mode: string;
   resolution: string;
   step: ProviderCostComparisonInput['step'];
@@ -253,6 +259,8 @@ export function buildProviderCostComparisonRows(
       brandId: input.brandId,
       engineId: input.engineId,
       executionProvider: input.executionProvider,
+      mediaType: input.mediaType ?? 'video',
+      workflowPairId: input.workflowPairId ?? null,
       mode: input.mode,
       resolution: input.resolution,
       step: input.step,

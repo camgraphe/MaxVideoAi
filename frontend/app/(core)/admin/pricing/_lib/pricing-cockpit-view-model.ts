@@ -57,6 +57,8 @@ export type ProviderCostComparisonRowView = {
   brandId: string;
   engineId: string;
   executionProvider: string;
+  mediaType: 'video' | 'image';
+  workflowPairId: string | null;
   mode: string;
   resolution: string;
   step: 'normal' | 'draft' | 'final';
@@ -104,6 +106,75 @@ export type ProviderCostComparisonRowView = {
   indicativeDifferenceVsListCents: number | null;
   realizedGrossDifferenceCents: number | null;
 };
+
+export type ProviderComparisonFilters = {
+  brandId: string;
+  executionProvider: string;
+  mediaType: 'all' | 'video' | 'image';
+  query: string;
+};
+
+export function filterProviderComparisonRows(
+  rows: ProviderCostComparisonRowView[], filters: ProviderComparisonFilters,
+): ProviderCostComparisonRowView[] {
+  const query = filters.query.trim().toLowerCase();
+  return rows.filter((row) =>
+    (filters.brandId === 'all' || row.brandId === filters.brandId) &&
+    (filters.executionProvider === 'all' || row.executionProvider === filters.executionProvider) &&
+    (filters.mediaType === 'all' || row.mediaType === filters.mediaType) &&
+    (!query || [row.engineId, row.mode, row.resolution, row.scenarioId]
+      .some((value) => value.toLowerCase().includes(query))));
+}
+
+export function formatProviderComparisonScenario(row: ProviderCostComparisonRowView): string {
+  return [
+    row.step === 'draft' ? 'Draft' : row.step === 'final' ? 'Final' : null,
+    row.mode.toUpperCase(),
+    row.resolution,
+    row.durationSec != null ? `${row.durationSec} s` : null,
+    row.aspectRatio,
+    row.billingInputType === 'video_input' ? 'video input' : null,
+    row.audio === true ? 'audio on' : row.audio === false ? 'audio off' : null,
+  ].filter(Boolean).join(' · ');
+}
+
+export function providerComparisonPolicySelectorKey(row: ProviderCostComparisonRowView): string {
+  return pricingPolicySelectorKey({ engineId: row.engineId, mode: row.mode, resolution: row.resolution });
+}
+
+export type ProviderDraftFinalSummary = {
+  workflowPairId: string;
+  draftScenarioId: string;
+  finalScenarioId: string;
+  customerTotalCents: number | null;
+  supplierListUsd: number | null;
+};
+
+export function summarizeProviderDraftFinalPairs(
+  rows: ProviderCostComparisonRowView[],
+): ProviderDraftFinalSummary[] {
+  const byPair = new Map<string, { draft?: ProviderCostComparisonRowView; final?: ProviderCostComparisonRowView }>();
+  for (const row of rows) {
+    if (!row.workflowPairId || row.step === 'normal') continue;
+    const pair = byPair.get(row.workflowPairId) ?? {};
+    pair[row.step] = row;
+    byPair.set(row.workflowPairId, pair);
+  }
+  return [...byPair].flatMap(([workflowPairId, pair]) => {
+    if (!pair.draft || !pair.final) return [];
+    const { draft, final } = pair;
+    return [{
+      workflowPairId,
+      draftScenarioId: draft.scenarioId,
+      finalScenarioId: final.scenarioId,
+      customerTotalCents: draft.customerQuote && final.customerQuote &&
+        draft.customerQuote.currency === final.customerQuote.currency
+        ? draft.customerQuote.totalCents + final.customerQuote.totalCents : null,
+      supplierListUsd: draft.supplierList.amountUsd != null && final.supplierList.amountUsd != null
+        ? Number((draft.supplierList.amountUsd + final.supplierList.amountUsd).toFixed(6)) : null,
+    }];
+  });
+}
 
 export type PricingPolicyDraft = {
   id: string;

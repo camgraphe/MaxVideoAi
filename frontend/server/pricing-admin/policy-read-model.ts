@@ -51,6 +51,7 @@ export async function loadPricingPolicyInventory(
   const loaded = await dependencies.loadOverrides();
   const databaseRules = loaded.status === 'loaded' ? loaded.rules.map(canonicalRule) : [];
   const routingRules = loaded.status === 'loaded' ? loaded.routingRules ?? [] : [];
+  const auditScenarios = buildPricingAuditScenarios();
   const bySelector = new Map<string, {
     selector: PricingScenarioSelector;
     versionedRule: PricingPolicyRule | null;
@@ -70,7 +71,7 @@ export async function loadPricingPolicyInventory(
     };
     bySelector.set(key, { ...existing, databaseOverride: canonicalRule(rule) });
   });
-  buildPricingAuditScenarios().forEach((scenario) => {
+  auditScenarios.forEach((scenario) => {
     const selector: PricingScenarioSelector = {
       engineId: scenario.engineId,
       ...(scenario.mode ? { mode: scenario.mode } : {}),
@@ -191,7 +192,7 @@ export async function loadPricingPolicyInventory(
     };
   });
 
-  const billingScenarios = buildPricingAuditScenarios().filter((scenario) =>
+  const billingScenarios = auditScenarios.filter((scenario) =>
     scenario.surface === 'billing' && scenario.membershipTier === 'member');
   const bytedanceScenarios = billingScenarios.flatMap((scenario) => {
     const entry = getFalEngineById(scenario.engineId);
@@ -199,21 +200,24 @@ export async function loadPricingPolicyInventory(
       ? [{ scenario, entry }]
       : [];
   });
+  const comparisonOutcomes = loaded.status === 'loaded'
+    ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: bytedanceScenarios.map(({ scenario }) => scenario) })
+    : [];
+  const comparisonQuoteById = new Map(comparisonOutcomes.map((outcome) => [outcome.scenarioId, outcome]));
   const comparisons = bytedanceScenarios.map(({ scenario, entry }) => {
     const declaredProvider = entry.engine.providerMeta?.provider;
     const executionProvider = entry.category === 'image'
       ? declaredProvider === 'byteplus_modelark' ? 'byteplus_modelark' : 'fal'
       : resolveBytePlusSeedanceRouteProfile(entry.id, declaredProvider)
         ? 'byteplus_modelark' : 'fal';
-    const quote = loaded.status === 'loaded'
-      ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: [scenario] })[0]
-      : null;
+    const quote = comparisonQuoteById.get(scenario.id);
     return providerComparisonInputFromScenario({
       scenario,
       quote: quote?.status === 'quoted' ? quote : null,
       engine: entry.engine,
       brandId: entry.brandId,
       executionProvider,
+      mediaType: entry.category === 'image' ? 'image' : 'video',
     });
   });
 

@@ -97,6 +97,14 @@ test('canonical pricing cockpit modules exist and compose shared admin-system su
   assert.match(inspectorSource, /AdminInspectorPanel/, 'policy editor should use AdminInspectorPanel');
 });
 
+test('pricing cockpit consumes server-projected supplier comparisons without client pricing math', () => {
+  const cockpitSource = readOrEmpty(cockpitPath);
+  assert.match(cockpitSource, /ProviderPriceComparisonTable/);
+  assert.match(cockpitSource, /providerComparisons/);
+  assert.match(cockpitSource, /onInspect=/);
+  assert.doesNotMatch(cockpitSource, /vendorSubtotalCents\s*[-+*/]/);
+});
+
 test('navigation retires pricing and membership editors while retaining billing products', () => {
   const items = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
   assert.equal(
@@ -170,7 +178,7 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
     'vendor account must never be editable'
   );
   for (const context of [
-    'Supplier subtotal',
+    'Legacy pricing basis',
     'Effective provenance',
     'Matched versioned rule',
     'Database override',
