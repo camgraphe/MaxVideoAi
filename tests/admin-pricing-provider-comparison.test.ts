@@ -1,0 +1,168 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import {
+  buildProviderCostComparisonRows,
+  customerQuoteFromCanonical,
+  type ProviderCostComparisonInput,
+} from '../frontend/server/pricing-admin/provider-cost-comparison';
+import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios';
+import { buildPricingAuditScenarios } from '../frontend/src/lib/pricing-audit/scenarios';
+
+const customerQuote = {
+  totalCents: 200,
+  currency: 'USD',
+  source: 'database' as const,
+  ruleId: 'current-customer-rule',
+  pricingMode: 'legacy_margin_rule' as const,
+};
+
+function video(overrides: Partial<ProviderCostComparisonInput> = {}): ProviderCostComparisonInput {
+  return {
+    scenarioId: 'seedance-2-5:1080p:video-input',
+    brandId: 'bytedance',
+    engineId: 'seedance-2-5',
+    executionProvider: 'byteplus_modelark',
+    mode: 'v2v',
+    resolution: '1080p',
+    durationSec: 5,
+    aspectRatio: '16:9',
+    step: 'normal',
+    billingInputType: 'video_input',
+    videoTokens: 100_000,
+    tokenEvidence: 'scenario_estimate',
+    customerQuote,
+    ...overrides,
+  };
+}
+
+test('2.5 1080p supplier list and current customer quote remain independent', () => {
+  const [row] = buildProviderCostComparisonRows([video()], '2026-09-28T12:00:00Z');
+  assert.equal(row.supplierList.amountUsd, 0.7);
+  assert.equal(row.supplierList.unitPriceUsdPer1kTokens, 0.007);
+  assert.equal(row.supplierList.status, 'published_list_estimate');
+  assert.equal(row.supplierEffective.amountUsd, null);
+  assert.equal(row.supplierEffective.status, 'account_contract_unconfirmed');
+  assert.equal(row.supplierObserved.amountUsd, null);
+  assert.equal(row.customerQuote?.totalCents, 200);
+  assert.equal(row.customerQuote?.ruleId, 'current-customer-rule');
+  assert.equal(row.billingInputType, 'video_input');
+  assert.equal(row.tokenEvidence, 'scenario_estimate');
+  assert.equal(row.videoTokens, 100_000);
+  assert.equal(row.indicativeDifferenceVsListCents, 130);
+  assert.equal(row.realizedGrossDifferenceCents, null);
+});
+
+test('canonical customer total and DB rule provenance are projected without using padded vendor subtotal', () => {
+  const scenario = buildPricingAuditScenarios().find((candidate) =>
+    candidate.engineId === 'seedance-2-5' && candidate.surface === 'billing');
+  assert.ok(scenario);
+  const [outcome] = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: [scenario] });
+  assert.equal(outcome.status, 'quoted');
+  if (outcome.status !== 'quoted') return;
+  const summary = customerQuoteFromCanonical({
+    ...outcome,
+    vendorSubtotalCents: 999_999,
+    policyProvenance: { ...outcome.policyProvenance, source: 'database', sourceRuleId: 'db-live-rule' },
+  });
+  assert.equal(summary.totalCents, outcome.customerTotalCents);
+  assert.equal(summary.ruleId, 'db-live-rule');
+  assert.equal(summary.source, 'database');
+  assert.equal(summary.pricingMode, 'legacy_margin_rule');
+  assert.notEqual(summary.totalCents, 999_999);
+});
+
+test('2.5 Draft and final are separate paid rows at 480p and 1080p', () => {
+  const rows = buildProviderCostComparisonRows([
+    video({ scenarioId: 'draft', mode: 't2v', billingInputType: 'no_video_input', resolution: '480p', step: 'draft' }),
+    video({ scenarioId: 'final', mode: 't2v', billingInputType: 'no_video_input', resolution: '1080p', step: 'final' }),
+  ], '2026-09-28T12:00:00Z');
+  assert.deepEqual(rows.map((row) => row.scenarioId), ['draft', 'final']);
+  assert.deepEqual(rows.map((row) => row.supplierList.amountUsd), [1.07, 1.17]);
+  assert.deepEqual(rows.map((row) => row.step), ['draft', 'final']);
+});
+
+test('Fal execution cannot inherit a BytePlus supplier cost', () => {
+  const [row] = buildProviderCostComparisonRows([video({ executionProvider: 'fal' })], '2026-09-28T12:00:00Z');
+  assert.equal(row.supplierList.amountUsd, null);
+  assert.equal(row.supplierList.status, 'unavailable');
+  assert.equal(row.supplierList.reason, 'supplier_rate_unverified_for_route');
+  assert.equal(row.indicativeDifferenceVsListCents, null);
+  assert.equal(row.customerQuote?.totalCents, 200);
+});
+
+test('missing token evidence never becomes an invented supplier estimate', () => {
+  const [row] = buildProviderCostComparisonRows([video({ videoTokens: null, tokenEvidence: null })], '2026-09-28T12:00:00Z');
+  assert.equal(row.supplierList.amountUsd, null);
+  assert.equal(row.supplierList.reason, 'billable_tokens_unavailable');
+  assert.equal(row.indicativeDifferenceVsListCents, null);
+});
+
+test('Seedream Pro output tier and paid references have independent list cost', () => {
+  const [row] = buildProviderCostComparisonRows([{
+    scenarioId: 'seedream-pro:large:3refs', brandId: 'bytedance', engineId: 'seedream-5-0-pro',
+    executionProvider: 'byteplus_modelark', mode: 'i2i', resolution: '2K',
+    step: 'normal', outputPixels: [2_610_001], inputImages: 3,
+    customerQuote: { ...customerQuote, totalCents: 20 },
+  }], '2026-09-28T12:00:00Z');
+  assert.equal(row.supplierList.amountUsd, 0.096);
+  assert.equal(row.indicativeDifferenceVsListCents, 10.4);
+  assert.equal(row.supplierEffective.amountUsd, null);
+  assert.deepEqual(row.outputPixels, [2_610_001]);
+  assert.equal(row.inputImages, 3);
+});
+
+test('an image scenario without an output is unavailable instead of a zero-cost item', () => {
+  const [row] = buildProviderCostComparisonRows([{
+    scenarioId: 'seedream-pro:no-output', brandId: 'bytedance', engineId: 'seedream-5-0-pro',
+    executionProvider: 'byteplus_modelark', mode: 't2i', resolution: '2K',
+    step: 'normal', outputPixels: [], inputImages: 0, customerQuote,
+  }], '2026-09-28T12:00:00Z');
+  assert.equal(row.supplierList.amountUsd, null);
+  assert.equal(row.supplierList.reason, 'image_usage_unavailable');
+  assert.equal(row.indicativeDifferenceVsListCents, null);
+});
+
+test('Seedance 1.5 draft multiplier applies only to normal-token estimates', () => {
+  const base = video({ engineId: 'seedance-1-5-pro', resolution: '480p', mode: 't2v',
+    billingInputType: 'no_video_input', audio: true, step: 'draft' });
+  const rows = buildProviderCostComparisonRows([
+    base,
+    { ...base, scenarioId: 'reported-draft', tokenEvidence: 'provider_reported' },
+  ], '2026-09-28T12:00:00Z');
+  assert.deepEqual(rows.map((row) => row.supplierList.amountUsd), [0.144, 0.24]);
+});
+
+test('Fast promotion is dated and never populates the account-effective field', () => {
+  const scenario = video({ engineId: 'seedance-2-0-fast', resolution: '720p',
+    billingInputType: 'no_video_input', mode: 't2v' });
+  const [during] = buildProviderCostComparisonRows([scenario], '2026-09-28T12:00:00Z');
+  const [after] = buildProviderCostComparisonRows([scenario], '2026-10-07T06:00:00Z');
+  assert.equal(during.supplierList.amountUsd, 0.56);
+  assert.equal(during.publicPromotion?.amountUsd, 0.42);
+  assert.equal(during.supplierEffective.amountUsd, null);
+  assert.equal(after.publicPromotion, null);
+});
+
+test('contract evidence and settled billing evidence remain separate from list and customer prices', () => {
+  const [row] = buildProviderCostComparisonRows([video({
+    confirmedEffectiveCost: { amountUsd: 0.49, source: 'contract:verified-rate', confirmedAt: '2026-09-29T12:00:00Z' },
+    observedInvoiceCost: { amountUsd: 0.51, source: 'usage:settled-line', confirmedAt: '2026-09-30T12:00:00Z' },
+  })], '2026-09-30T13:00:00Z');
+  assert.equal(row.supplierList.amountUsd, 0.7);
+  assert.equal(row.supplierEffective.amountUsd, 0.49);
+  assert.equal(row.supplierEffective.source, 'contract:verified-rate');
+  assert.equal(row.supplierObserved.amountUsd, 0.51);
+  assert.equal(row.supplierObserved.source, 'usage:settled-line');
+  assert.equal(row.indicativeDifferenceVsListCents, 130);
+  assert.equal(row.realizedGrossDifferenceCents, 149);
+  assert.equal(row.customerQuote?.totalCents, 200);
+});
+
+test('unverifiable contract evidence never becomes a confirmed price', () => {
+  const [row] = buildProviderCostComparisonRows([video({
+    confirmedEffectiveCost: { amountUsd: 0, source: '', confirmedAt: 'not-a-date' },
+  })], '2026-09-28T12:00:00Z');
+  assert.equal(row.supplierEffective.amountUsd, null);
+  assert.equal(row.supplierEffective.status, 'account_contract_unconfirmed');
+});
