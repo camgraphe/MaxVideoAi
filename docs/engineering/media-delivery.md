@@ -186,7 +186,7 @@ Gallery cards retain their responsive optimized image underneath the video until
 
 On mobile, the gallery initially keeps incidental previews idle. A deliberate scroll gesture or the “Animate previews” control enables the one-video budget. Desktop starts one visible preview and expands to up to three after a card receives hover or keyboard focus. This preserves the server-rendered posters and watch links during first load while allowing visitors to animate the gallery as they explore it. Pausing stays explicit until the visitor resumes it.
 
-The opening and continuation layouts use one server-rendered page of 24 videos. Only the first poster receives high priority; later pages contain distinct entries and no repeated opening. `tests/examples-gallery-opening.test.ts` and `tests/examples-lcp-performance.test.ts` own this HTML boundary.
+The opening and continuation layouts use one server-rendered page of 24 videos. Only the first poster receives high priority; side posters and narrow continuation portraits request image widths matched to their rendered columns. Later pages contain distinct entries and no repeated opening. `tests/examples-gallery-opening.test.ts` and `tests/examples-lcp-performance.test.ts` own this HTML boundary.
 
 ### One reader for gallery and direct watch URLs
 

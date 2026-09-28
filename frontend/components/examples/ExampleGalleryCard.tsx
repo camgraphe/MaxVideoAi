@@ -22,6 +22,13 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
   const cardRef=useRef<HTMLDivElement>(null);
   const {videoRef,playbackAttempt,events,videoReady}=useExampleCardPlayback(video.previewVideoUrl??null,requested,false);
   const watchAnchorText=buildWatchAnchorText(locale,video);
+  const ratio=galleryVideoRatio(video);
+  // The desktop vw branch makes Next include small srcset widths; CSS caps portrait cards at ratio × 340px.
+  const posterSizes=frame==='lead'?'(max-width: 767px) 100vw, 55vw'
+    :frame==='portrait'?'(max-width: 767px) 36vw, 18vw'
+    :frame==='side'?'(max-width: 767px) 58vw, 28vw'
+    :ratio<0.8?`(max-width: 767px) 100vw, (max-width: 1024px) 25vw, ${Math.ceil(ratio*340)}px`
+    :'(max-width: 767px) 100vw, 33vw';
   useEffect(()=>{
     const node=cardRef.current;if(!node)return;
     const observer=new IntersectionObserver(([entry])=>onVisibility(video.id,entry.isIntersecting),{threshold:0.4});
@@ -31,12 +38,12 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
     if(!onOpen||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.button!==0)return;
     event.preventDefault();onOpen(video);
   };
-  return <div ref={cardRef} className={styles.card} data-frame={frame} style={frame?undefined:{aspectRatio:galleryVideoRatio(video)}}
+  return <div ref={cardRef} className={styles.card} data-frame={frame} style={frame?undefined:{aspectRatio:ratio}}
     onMouseEnter={()=>onIntent(video.id)} onMouseLeave={()=>onIntent(null)} onFocus={()=>onIntent(video.id)} onBlur={()=>onIntent(null)}>
     <Link href={video.href} onClick={open} prefetch={false} aria-label={watchAnchorText}
       className={styles.watchLink} data-analytics-event="cta_click" data-analytics-cta-name="view_example_details" data-analytics-cta-location="examples_gallery">
       {video.rawPosterUrl ? <Image src={video.rawPosterUrl} alt={altText} fill
-        className={frame==='side'?styles.crop:styles.native} sizes={frame==='lead'?'(max-width: 767px) 100vw, 55vw':frame==='portrait'?'(max-width: 767px) 36vw, 18vw':frame==='side'?'(max-width: 767px) 58vw, 33vw':'(max-width: 767px) 100vw, 33vw'}
+        className={frame==='side'?styles.crop:styles.native} sizes={posterSizes}
         quality={52} priority={prioritizePoster} fetchPriority={prioritizePoster ? 'high' : undefined} />
         : <span className={styles.empty}>{noPreviewLabel}</span>}
       {playbackAttempt ? <video key={playbackAttempt.id} ref={videoRef} src={playbackAttempt.rendition.src}

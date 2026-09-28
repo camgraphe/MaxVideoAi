@@ -50,12 +50,16 @@ test('later pages keep the complete page without repeating the editorial opening
  finally{dom.window.close();}
 });
 
-test('narrow opening side posters request their actual column width', async () => {
+test('opening sides and continuation portraits request their actual desktop widths', async () => {
   const dom=await renderGallery(true);
   try {
     const sideImages=[...dom.window.document.querySelectorAll('[data-frame="side"] img')];
     assert.equal(sideImages.length,2);
-    for(const image of sideImages) assert.equal(image.getAttribute('sizes'),'(max-width: 767px) 58vw, 33vw');
+    for(const image of sideImages) assert.equal(image.getAttribute('sizes'),'(max-width: 767px) 58vw, 28vw');
     assert.equal(dom.window.document.querySelector('[data-frame="lead"] img')?.getAttribute('sizes'),'(max-width: 767px) 100vw, 55vw');
+    const portrait=dom.window.document.querySelector('a[href="/video/v5"] img');
+    assert.equal(portrait?.getAttribute('sizes'),'(max-width: 767px) 100vw, (max-width: 1024px) 25vw, 192px');
+    assert.match(portrait?.getAttribute('srcset')??'', /w=256[^,]* 256w/, 'Next should offer a small desktop portrait rendition');
+    assert.equal(dom.window.document.querySelector('a[href="/video/v4"] img')?.getAttribute('sizes'),'(max-width: 767px) 100vw, 33vw');
   } finally { dom.window.close(); }
 });
