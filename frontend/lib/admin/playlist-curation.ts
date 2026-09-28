@@ -6,6 +6,7 @@ export type CurationItem = {
   outputWidth?: number | null; outputHeight?: number | null; aspectRatio?: string | null;
 };
 export type EffectiveCurationPreview = {
+  mediaRevision?: string;
   total: number; firstPageIds: string[]; currentTotal: number; addedCount: number; removedCount: number;
   suppressedSourceSlugs: string[]; openingFormats: Array<'16:9' | '9:16' | null>; warnings: string[];
 };

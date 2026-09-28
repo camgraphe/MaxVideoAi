@@ -57,6 +57,49 @@ test('effective preview and atomic save', async t => {
       assert.equal(empty.effective.total,0);
       assert.ok(empty.effective.warnings.some(w=>/empty|zero/i.test(w)));
     });
+    await t.test('model preview includes unmanaged preferred additions and filtered rendered cards', async () => {
+      const {PREFERRED_MEDIA}=await import('../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media');
+      const preferred=Object.values(PREFERRED_MEDIA['wan-3']).filter(Boolean);
+      for(const id of preferred) await db.pool.query("INSERT INTO app_jobs(job_id) VALUES ($1)",[id]);
+      const id=ids.get('examples-wan-3')!;
+      const snapshot=await service.getCurationSnapshot(id);
+      const draft={mode:'manual',orderedIds:['v1'],excludedIds:[]};
+      const {projectModelPageGallery}=await import('../frontend/server/model-gallery-projection');
+      const {getPublicVideosByIds}=await import('../frontend/server/videos');
+      const {toGalleryCard}=await import('../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media');
+      const publicProjection=async(managed:boolean)=>projectModelPageGallery({
+        engine:{modelSlug:'wan-3',id:'wan-3'},examples:await listPlaylistVideosWithOptions({slug:'examples-wan-3',limit:200}),managed,
+        preferred:PREFERRED_MEDIA['wan-3'],featuredIds:[],getPublicVideosByIds,toCard:video=>toGalleryCard(video),
+      });
+      const before=await publicProjection(false);
+      const preview=await service.previewCuration(id,draft,snapshot.revision);
+      assert.equal(preview.effective.currentTotal,before.galleryVideos.length);
+      assert.equal(preview.effective.currentTotal,202,'the rendered legacy page includes preferred cards outside playlist membership');
+      assert.equal(preview.effective.removedCount,202);
+      assert.equal(preview.effective.addedCount,1);
+      assert.ok(preview.effective.warnings.some(w=>/200.*playlist|playlist.*200/i.test(w)));
+      assert.ok(!preview.effective.warnings.some(w=>/render at most 200/.test(w)));
+      await service.saveCuration(id,draft,snapshot.revision,preview.token,null);
+      const {readEffectiveModelPageGallery}=await import('../frontend/server/playlists/curation-model-preview');
+      const reader={query:async <T>(sql:string,params?:readonly unknown[])=>(await db.pool.query(sql,params as unknown[])).rows as T[]};
+      const actual=await readEffectiveModelPageGallery({slug:'examples-wan-3'},reader);
+      assert.deepEqual(preview.effective.firstPageIds,actual.map(item=>item.id).slice(0,24));
+      assert.equal(preview.effective.total,actual.length);
+      const after=await publicProjection(true);
+      assert.deepEqual(preview.effective.firstPageIds,after.galleryVideos.slice(0,24).map(card=>card.id));
+      assert.equal(preview.effective.total,after.galleryVideos.length);
+      await db.pool.query('DELETE FROM playlist_curations');
+      await db.pool.query('DELETE FROM app_jobs WHERE job_id=ANY($1::text[])',[preferred]);
+      const sora=(await db.pool.query("INSERT INTO playlists(slug) VALUES ('examples-sora-2') RETURNING id")).rows[0].id;
+      await db.pool.query("INSERT INTO app_jobs(job_id,engine_id,prompt) VALUES ('safe-sora','sora-2','A landscape'),('unsafe-sora','sora-2','John Lennon with the Beatles'),('wrong-sora','wan-3','Wrong model')");
+      await db.pool.query("INSERT INTO playlist_items SELECT $1,job_id,5,false FROM app_jobs WHERE job_id IN ('safe-sora','unsafe-sora','wrong-sora')",[sora]);
+      // Sora is no longer an editable destination, but its public reader's legacy filter remains policy.
+      assert.deepEqual((await readEffectiveModelPageGallery({slug:'examples-sora-2'},reader)).map(item=>item.id),['safe-sora']);
+      await db.pool.query('DELETE FROM playlist_curations');
+      await db.pool.query('DELETE FROM playlist_items WHERE playlist_id=$1',[sora]);
+      await db.pool.query('DELETE FROM playlists WHERE id=$1',[sora]);
+      await db.pool.query("DELETE FROM app_jobs WHERE job_id IN ('safe-sora','unsafe-sora','wrong-sora')");
+    });
     await t.test('effective projection and save traverse more than 2000 IDs', async () => {
       await db.pool.query("INSERT INTO app_jobs(job_id) SELECT 'v'||n FROM generate_series(221,2201) n");
       const id=ids.get('family-wan')!;

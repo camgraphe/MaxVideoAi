@@ -61,7 +61,7 @@ async function makeRouteHarness() {
     MODELS_BASE_PATH_MAP: `{en:'models',fr:'modeles',es:'modelos'}`,
   };
   // The extracted orchestration owns these imports after the change.
-  for (const name of ['loadBenchmarkScoreSlugs','listEnginePricingOverrides','loadEngineKeySpecs']) names.add(name);
+  for (const name of ['loadBenchmarkScoreSlugs','listEnginePricingOverrides','loadEngineKeySpecs','finalizeModelGallery']) names.add(name);
   const fixture = `
     export const calls=[];export const details=[];export const failure=new Error('fixture read failure');
     let releaseGate;let gate;let failAt='';let managed=false;let prelaunch=false;let playlistRows;
@@ -83,9 +83,10 @@ async function makeRouteHarness() {
       plugins: [{ name: 'model-read-boundaries', setup(builder) {
         builder.onResolve({ filter: /.*/ }, args => {
           if (args.path === 'model-fixture') return { path: 'fixture', namespace: 'controlled' };
-          if (args.importer === routePath && !args.path.endsWith('/model-page-inputs') && !args.path.startsWith('react')) {
+          if (args.importer === routePath && !args.path.endsWith('/model-page-inputs') && args.path !== '@/server/model-gallery-projection' && !args.path.startsWith('react')) {
             return { path: args.path.endsWith('.css') ? 'empty' : 'fixture', namespace: 'controlled' };
           }
+          if (args.importer.endsWith('/model-gallery-projection.ts') && args.path.endsWith('/model-gallery-curation')) return {path:'fixture',namespace:'controlled'};
           if (args.importer.endsWith('/model-page-inputs.ts') && args.path !== '@/server/public-page-timing') {
             return { path: 'fixture', namespace: 'controlled' };
           }
