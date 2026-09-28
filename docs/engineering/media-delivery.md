@@ -325,7 +325,13 @@ The redesign's `ModelDecisionMediaCard` declares `data-media-kind` from the reso
 The examples route now renders 24 unique cards per URL page. `videos-catalog-page.ts`
 counts, orders, deduplicates and selects eligible IDs in one SQL snapshot before
 hydrating only the selected page. There is no catalog-wide 120/400 limit. Homepage
-request-scoped readers retain their separate batching contract. The four optional
+request-scoped readers retain their separate batching contract. Without an explicit global
+curation, the general catalog combines the hub plus public family/model destinations.
+Family curations suppress their inherited model destinations; an explicit global
+manual/hybrid curation remains authoritative. Membership already authored in the hub
+stays independent of a family's inherited selection; family exclusions are not a
+catalog-wide deletion. Resolve stored engine IDs and aliases
+through the registry and apply discovery policy before count and pagination. The four optional
 opening slots count within page one: 16:9, 9:16, 16:9, 16:9. Only the two small
 landscape preview frames crop; original watch media stays unchanged. Other sorts
 and later pages use native-ratio rows. Incomplete opening sets fall back to those rows.
@@ -390,3 +396,15 @@ always requotes. Ordinary `/app?from=…` continues the original reuse flow.
 Regression coverage: `examples-catalog-pagination-postgres`, `examples-discovery-layout`,
 `gallery-reader-navigation-dom`, `example-watch-detail`, `example-recreation`,
 `workspace-example-recreation-dom`, and existing public-video/watch/SEO contracts.
+
+### Local public gallery review data
+
+Run `pnpm --dir frontend exec tsx --tsconfig tsconfig.json scripts/capture-public-examples-review.ts`
+to capture JSON from each public family independently, paging until the API reports a complete
+feed. The opt-in development snapshot unions real public hub/family media for the general
+catalog, retaining current discovery policy and deduplicating IDs. Historical archive feeds
+remain separate. Never derive families from the first 120 hub videos. The deployed hub API
+can report its loaded window as the total; this local union reviews the new default catalog,
+not the production admin's private configuration. Captured prompts and original media URLs
+come only from public APIs; no production database or publication writes occur. The server
+caches this file in process, so restart the opted-in dev server after recapturing it.

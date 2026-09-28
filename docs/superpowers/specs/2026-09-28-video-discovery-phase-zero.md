@@ -152,3 +152,7 @@ Les tests géométriques couvrent sept largeurs pour le héros, les cinq pages d
 ## User revision: comparison coverage
 
 The later user decision supersedes the exact-settings-only policy: offer three distinct models with canonical prices. Preserve source duration first; use the closest executable format/resolution/audio and, only when needed to fill the proposals, duration. Each proposal displays its full settings and highlights adaptations; its app link carries exactly that quoted configuration. Unknown source configuration is not presented as known. Price-service failures remain explicit.
+
+## Catalog completeness correction
+
+The general gallery's default feed includes independently published family/model media, not only the old hub playlist. Explicit global curation remains authoritative; explicit family curation suppresses its inherited model feeds. Existing hub membership remains independent, so family exclusions do not remove a video selected directly in the hub. Public-source eligibility, registry discovery policy and ID deduplication apply before the SQL count/limit. Local visual review must capture every family independently and reproduce the full default public catalog, rather than classify a limited 120-card hub sample.

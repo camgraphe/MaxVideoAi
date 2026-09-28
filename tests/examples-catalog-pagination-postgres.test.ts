@@ -127,6 +127,31 @@ test('public gallery traverses every eligible video beyond the old window and hy
     const page=await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:504});
     assert.equal(page.total,513);assert.equal(page.items.length,9);
   });
+  await t.test('the general catalog includes independently published family/model media and honors explicit selection',async()=>{
+    await postgres.pool.query(`
+      INSERT INTO playlists(slug,is_public) VALUES ('family-seedance',true),('examples-seedance-2-0',true);
+      INSERT INTO app_jobs(job_id,engine_id,thumb_url,video_url,created_at) VALUES
+        ('family-only','seedance-2-0','https://media.maxvideoai.com/family.webp','https://media.maxvideoai.com/family.mp4','2026-09-22'),
+        ('model-only','seedance-2-0','https://media.maxvideoai.com/model.webp','https://media.maxvideoai.com/model.mp4','2026-09-22');
+      INSERT INTO playlist_items(playlist_id,video_id,order_index)
+        SELECT id,CASE WHEN slug='family-seedance' THEN 'family-only' ELSE 'model-only' END,1
+        FROM playlists WHERE slug IN ('family-seedance','examples-seedance-2-0');
+    `);
+    const general = () => reader.listExamplesPage({sort:'date-desc',limit:24,offset:0});
+    const before=await general();
+    assert.ok(before.items.some(item=>item.id==='family-only'));
+    assert.ok(before.items.some(item=>item.id==='model-only'));
+    await postgres.pool.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
+      SELECT id,'manual',ARRAY['family-only'],'{}' FROM playlists WHERE slug='family-seedance'`);
+    const curatedFamily=await general();
+    assert.equal(curatedFamily.total,before.total-1);
+    assert.ok(!curatedFamily.items.some(item=>item.id==='model-only'),'explicit family selection suppresses its inherited model feed');
+    await postgres.pool.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
+      SELECT id,'manual',ARRAY['kling-1'],'{}' FROM playlists WHERE slug='examples'`);
+    const selected=await general();assert.equal(selected.total,1);assert.equal(selected.items[0].id,'kling-1');
+    await postgres.pool.query(`DELETE FROM playlist_curations WHERE playlist_id IN (SELECT id FROM playlists WHERE slug IN ('examples','family-seedance'))`);
+    await postgres.pool.query(`DELETE FROM playlist_items WHERE video_id IN ('family-only','model-only');DELETE FROM app_jobs WHERE job_id IN ('family-only','model-only')`);
+  });
   await t.test('configured hybrid excludes before count and rejects deleted/private sources',async()=>{
     await postgres.pool.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
       SELECT id,'hybrid',ARRAY['kling-500','kling-1'],ARRAY['kling-2'] FROM playlists WHERE slug='examples'`);

@@ -109,3 +109,16 @@ Raw reports, network logs, traces, screenshot evidence, fixture script and SQL a
 ### Later comparison coverage change
 
 The reader now selects three nearest executable configurations, retaining duration first and displaying each proposal’s settings. This change is later than the Lighthouse evidence above and is not covered by those measurements. The local 120-video public snapshot returned three canonical quotes per video, all with the original duration; that is functional coverage, not a performance or live pricing override measurement. The remaining performance gate covers the final gallery and both landscape and portrait readers, including cold/warm conditions. Run the complete comparison after the functional lot stabilizes, in a stable isolated environment; do not restart the interrupted Lighthouse loop on this host.
+
+### Later catalog completeness correction
+
+The default general catalog now aggregates public hub, family and model destinations,
+with explicit global/family curation priority preserved before count/pagination.
+Historical stored Veo/Pika aliases and case-insensitive Luma discovery are corrected.
+The local review snapshot was recaptured independently per family: 316 unique public
+records, of which 266 enter the general discovery catalog across 12 pages of 24.
+This dataset and SQL source selection postdate the measurements above. They must be
+included in the final stable-environment gallery/reader performance comparison. The
+old 120-record performance fixture manifest and existing results remain historical.
+PostgreSQL traversal covers 513 eligible IDs on 22 pages with no missing/duplicate
+IDs and page-sized hydration; that establishes functionality, not current performance.

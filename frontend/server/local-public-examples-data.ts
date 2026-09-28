@@ -1,3 +1,4 @@
+import { normalizeEngineId } from '@/lib/engine-alias';
 import { isDiscoverableExampleEngine } from '@/lib/examples/discovery';
 import type { GalleryVideo } from './videos-normalization';
 import { paginateGalleryVideos, sortVideosByPreference, type ExampleSort } from './videos-examples';
@@ -44,8 +45,9 @@ export function selectLocalPublicExamples(snapshot: PublicExamplesSnapshot, fami
 }
 
 export function selectLocalModelExamples(snapshot: PublicExamplesSnapshot, modelSlug: string, limit = 200) {
+  const canonical = normalizeEngineId(modelSlug)?.toLowerCase();
   return Object.values(snapshot.cards)
-    .filter(card => card.engineIconId === modelSlug)
+    .filter(card => normalizeEngineId(card.engineIconId)?.toLowerCase() === canonical)
     .slice(0, Math.max(0, limit))
     .map(publicCardToVideo);
 }

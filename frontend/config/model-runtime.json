@@ -1846,7 +1846,8 @@
         "internal": [
           "pika-2-2",
           "pika-22",
-          "pika22"
+          "pika22",
+          "pika-image-to-video"
         ],
         "publicSlugs": [
           "pika-2-2",
@@ -2613,7 +2614,9 @@
       "aliases": {
         "internal": [
           "veo3",
-          "veo3-fast"
+          "veo3-fast",
+          "veo-3-fast",
+          "veo3fast"
         ],
         "publicSlugs": [
           "google-veo-3-1-fast",

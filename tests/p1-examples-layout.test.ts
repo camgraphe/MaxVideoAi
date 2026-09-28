@@ -9,6 +9,7 @@ const filterNav = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-engine-filter-nav.tsx',
   'utf8',
 );
+const filterRail = readFileSync('frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-model-rail.client.tsx', 'utf8');
 const header = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
 const navigation = readFileSync('frontend/config/navigation.ts', 'utf8');
 
@@ -21,7 +22,9 @@ test('responsive opening uses a fixed CSS layout and native ratios in the contin
 });
 
 test('extra model and family filters scroll instead of widening the examples page', () => {
-  assert.match(filterNav, /min-w-0 flex-1 overflow-x-auto overscroll-x-contain/);
+  assert.match(filterNav, /<ExamplesModelRail/);
+  assert.match(filterRail, /relative min-w-0 flex-1/);
+  assert.match(filterRail, /overflow-x-auto overscroll-x-contain/);
   assert.match(filterNav, /flex w-max min-w-full items-center/);
   assert.match(filterNav, /shrink-0[\s\S]*whitespace-nowrap/);
   assert.match(navigation, /examples:\s*\{[\s\S]*desktopColumns:\s*2/);

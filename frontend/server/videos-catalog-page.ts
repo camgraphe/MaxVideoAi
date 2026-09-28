@@ -1,7 +1,7 @@
 import { query } from '@/lib/db';
 import { listRuntimeModels } from '@/config/model-runtime';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
-import { getExampleFamilyEngineAliases } from '@/lib/model-families';
+import { getExampleFamilyEngineAliases, getExampleFamilyIds } from '@/lib/model-families';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs } from './playlists/slugs';
 import { getCurationAliases } from './playlists/curation-store';
 import { CURATION_ELIGIBILITY } from './playlists/curation-service';
@@ -34,13 +34,14 @@ function catalogSql(sort: ExampleSort, withCuration: boolean): string {
   // Count, selected IDs and media are evaluated in one PostgreSQL statement/snapshot.
   // Only page membership reaches the expensive media/settings projection.
   return `WITH source_specs AS (
-    SELECT * FROM jsonb_to_recordset($1::jsonb) AS spec(slug text,source_rank int,aliases text[])
+    SELECT * FROM jsonb_to_recordset($1::jsonb) AS spec(slug text,source_rank int,parent_slug text,aliases text[])
   ), sources AS (
     SELECT spec.*,p.id,p.is_public,${curationColumns}
     FROM source_specs spec JOIN playlists p ON p.slug=spec.slug ${curationJoin}
   ), active_sources AS (
-    SELECT * FROM sources WHERE is_public=TRUE
-      AND (source_rank=0 OR NOT EXISTS (SELECT 1 FROM sources WHERE source_rank=0 AND mode IS NOT NULL))
+    SELECT s.* FROM sources s WHERE s.is_public=TRUE
+      AND (s.source_rank=0 OR NOT EXISTS (SELECT 1 FROM sources WHERE source_rank=0 AND mode IS NOT NULL))
+      AND NOT EXISTS (SELECT 1 FROM sources parent WHERE parent.slug=s.parent_slug AND parent.mode IS NOT NULL)
   ), eligible AS NOT MATERIALIZED (
     SELECT job_id,engine_id,engine_label,created_at,duration_sec FROM app_jobs
     WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($2::text[])
@@ -73,7 +74,14 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
   const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
   const empty = { items: [], total: 0, limit, offset, hasMore: false };
   if (!process.env.DATABASE_URL) return empty;
-  const slugs = options.familyId ? getFamilyFeedSourceSlugs(options.familyId) : [getExamplesHubPlaylistSlug()];
+  const hub = getExamplesHubPlaylistSlug();
+  const sourceSpecs = options.familyId
+    ? getFamilyFeedSourceSlugs(options.familyId).map(slug => ({ slug, parent_slug: null as string | null }))
+    : [{ slug: hub, parent_slug: null as string | null }, ...getExampleFamilyIds().flatMap(family => {
+        const [parent, ...children] = getFamilyFeedSourceSlugs(family);
+        return [{ slug: parent, parent_slug: null }, ...children.filter(slug => slug !== hub).map(slug => ({ slug, parent_slug: parent }))];
+      })];
+  const slugs = [...new Map(sourceSpecs.map(source => [source.slug, source])).values()];
   if (!slugs.length) return empty;
   const aliases = options.engineAliases ?? (options.familyId
     ? getExampleFamilyEngineAliases(options.familyId)
@@ -88,7 +96,7 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
     return [...expanded];
   };
   // Historical internal IDs use the same registry identity for eligibility and curated membership.
-  const sources = slugs.map((slug, source_rank) => ({ slug, source_rank, aliases: expandAliases(getCurationAliases(slug) ?? []) }));
+  const sources = slugs.map((source, source_rank) => ({ ...source, source_rank, aliases: expandAliases(getCurationAliases(source.slug) ?? []) }));
   const params = [JSON.stringify(sources), expandAliases(aliases), limit, offset];
   type CatalogRow = VideoRow & { total: number };
   let result: CatalogRow[];
