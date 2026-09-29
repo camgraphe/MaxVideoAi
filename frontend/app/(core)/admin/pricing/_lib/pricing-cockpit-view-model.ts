@@ -25,7 +25,7 @@ export type PricingPolicyRepresentativeQuote = {
   engineId: string;
   surface: string;
   vendorSubtotalCents: number;
-  totalCents: number;
+  customerTotalCents: number;
   policyProvenance: PricingChangePreviewProvenance;
 };
 

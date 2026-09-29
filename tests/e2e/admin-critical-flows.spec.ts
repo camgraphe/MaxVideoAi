@@ -101,6 +101,8 @@ test.describe('admin critical flows', () => {
     await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
     const inventory = page.getByTestId('pricing-policy-inventory');
     await expect(inventory.locator('tbody tr').first()).toBeVisible({ timeout: 15_000 });
+    await expect(inventory.locator('tbody tr').first().locator('td').last()).toContainText(/\$\d+\.\d{2}/);
+    await expect(inventory).not.toContainText('$NaN');
     await page.getByLabel('Search policy selectors').fill('seedance-2-5');
     await inventory.locator('tbody tr').first().getByRole('button').click();
     await expect(page.getByText('Policy inspector', { exact: true })).toBeVisible();

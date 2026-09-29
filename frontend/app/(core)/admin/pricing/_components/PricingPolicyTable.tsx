@@ -113,7 +113,7 @@ export function PricingPolicyTable({
                   <td className="px-4 py-3 text-text-secondary">{rule ? formatUsdCents(rule.marginFlatCents) : '—'}</td>
                   <td className="px-4 py-3 text-text-secondary">{rule?.compatibilityProfile ?? 'standard'}</td>
                   <td className="px-4 py-3 text-text-secondary">
-                    {row.representativeQuotes[0] ? formatUsdCents(row.representativeQuotes[0].totalCents) : 'Unavailable'}
+                    {row.representativeQuotes[0] ? formatUsdCents(row.representativeQuotes[0].customerTotalCents) : 'Unavailable'}
                   </td>
                 </tr>
               );
