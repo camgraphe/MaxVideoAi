@@ -39,10 +39,17 @@ test('all24 watch links render once before hydration, with one critical poster a
     assert.equal(doc.querySelectorAll('img[fetchpriority="high"]').length,1);
     assert.equal(doc.querySelectorAll('img').length,24);
     assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="view_example_details"]')].map(a=>a.getAttribute('href')),videos.map(v=>v.href));
-    assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="reuse_example"]')].map(a=>a.getAttribute('href')),['/app?from=v0']);
+    assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="reuse_example"]')].map(a=>a.getAttribute('href')),[]);
     const opening=doc.querySelector('[data-gallery-opening]');
-    assert.match(opening?.children[1]?.textContent ?? '', /A cinematic public example/);
-    assert.ok(opening?.children[1]?.querySelector('a[href="/app?from=v0"]'), 'the app action follows the lead card');
+    const guide=opening?.querySelector('[data-gallery-guide]');
+    assert.ok(guide, 'one guide explains all four cards');
+    assert.equal(opening?.lastElementChild,guide, 'the guide follows all four watch cards in reading order');
+    assert.match(guide.textContent ?? '', /Open any video/i);
+    assert.match(guide.textContent ?? '', /Prompt/);
+    assert.match(guide.textContent ?? '', /Settings/);
+    assert.match(guide.textContent ?? '', /Recorded cost/);
+    assert.doesNotMatch(guide.textContent ?? '', /A cinematic public example|Featured video/);
+    assert.equal(guide.querySelector('a[href="/app"]')?.textContent?.trim(), 'Create in the app');
     assert.equal(doc.querySelector('video'),null);
     assert.equal(opening?.querySelectorAll('[data-frame]').length,4);
     assert.deepEqual([...doc.querySelectorAll('[data-frame]')].map(el=>el.getAttribute('data-frame')),['lead','portrait','side','side']);
@@ -51,7 +58,7 @@ test('all24 watch links render once before hydration, with one critical poster a
 });
 test('later pages keep the complete page without repeating the editorial opening',async()=>{
  const dom=await renderGallery(true,false);
- try{assert.equal(dom.window.document.querySelector('[data-gallery-opening]'),null);assert.equal(dom.window.document.querySelector('a[data-analytics-cta-name="reuse_example"]'),null);assert.equal(dom.window.document.querySelectorAll('img').length,24);}
+ try{assert.equal(dom.window.document.querySelector('[data-gallery-opening]'),null);assert.equal(dom.window.document.querySelector('[data-gallery-guide]'),null);assert.equal(dom.window.document.querySelectorAll('img').length,24);}
  finally{dom.window.close();}
 });
 
