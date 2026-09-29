@@ -64,6 +64,8 @@
 .comparisonCard:hover .comparisonArrow{background:#f4e5d4;transform:translate(2px,-2px)}
 .resourceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
 .resourceLink{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:49px;padding:10px 16px;border:1px solid #d9d0c4;border-radius:11px;background:#f4eee6;color:var(--text-primary);font-size:13px;font-weight:690;line-height:1.4;text-decoration:none;transition:border-color .18s,background .18s,transform .18s}
+.resourceIdentity{display:flex;align-items:center;gap:10px;min-width:0}
+.resourceLogo{display:grid;flex:none;place-items:center;width:30px;height:30px;border:1px solid #e5dfd5;border-radius:8px;background:#fff;box-shadow:0 2px 6px #3b30210c}
 .resourceLink:last-child:nth-child(odd){grid-column:1/-1}
 .resourceLink:hover{border-color:var(--brand);background:#eee2d3;transform:translateY(-1px)}
 .resourceLink>span:last-child{color:var(--brand);font-size:18px;transition:transform .18s}

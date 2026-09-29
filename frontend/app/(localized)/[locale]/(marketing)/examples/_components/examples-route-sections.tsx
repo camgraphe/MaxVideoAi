@@ -423,11 +423,18 @@ export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNext
         </div>
       ) : null}
       <div className={styles.resourceGrid}>
-        {resourceLinks.map((item) => (
-          <Link key={item.href} href={item.href} className={styles.resourceLink}>
-            <span>{item.label}</span><span aria-hidden="true">↗</span>
-          </Link>
-        ))}
+        {resourceLinks.map((item) => {
+          const model = item.modelSlug ? ENGINE_META.get(item.modelSlug) : null;
+          return <Link key={item.href} href={item.href} className={styles.resourceLink}>
+            <span className={styles.resourceIdentity}>
+              {item.modelSlug ? <span className={styles.resourceLogo} aria-hidden="true">
+                <EngineIcon engine={{ id: model?.id ?? item.modelSlug, label: model?.label ?? item.label, brandId: model?.brandId }} size={24} framed={false} />
+              </span> : null}
+              <span>{item.label}</span>
+            </span>
+            <span aria-hidden="true">↗</span>
+          </Link>;
+        })}
         {mcpLink ? (
           <Link href={mcpLink.href} className={styles.resourceLink}>
             <span>{mcpLink.label}</span><span aria-hidden="true">↗</span>

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getExampleModelLanding } from '../frontend/lib/examples/modelLanding.ts';
-import { getExamplesEditorialSections, getExamplesModelPageLabels } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts';
+import { buildExamplesNextStepLinks, getExamplesEditorialSections, getExamplesModelPageLabels } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts';
 
 test('family guidance retains complete authored paragraphs instead of ellipses', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
@@ -31,4 +31,17 @@ test('Seedance model navigation invites a choice in each locale', () => {
     });
     assert.equal(labels.currentModelPagesLabel, expected[locale]);
   }
+});
+
+test('hub next steps identify only model links for their engine logos', () => {
+  const links = buildExamplesNextStepLinks({
+    appLocale: 'en', locale: 'en', familySlug: '', isKlingLanding: false,
+    isLtxLanding: false, isSeedanceLanding: false, isVeoLanding: false,
+    pricingPath: '/pricing',
+  });
+  assert.deepEqual(links.filter(link => link.modelSlug).map(link => [link.href, link.modelSlug]), [
+    ['/models/seedance-2-5', 'seedance-2-5'],
+    ['/models/minimax-h3', 'minimax-h3'],
+    ['/models/wan-3', 'wan-3'],
+  ]);
 });

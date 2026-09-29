@@ -12,6 +12,7 @@ export type ExamplesNextStepLink = {
   href: string;
   label: string;
   comparison?: readonly [leftEngineId: string, rightEngineId: string];
+  modelSlug?: string;
 };
 
 export function getExamplesEditorialSections(
@@ -234,9 +235,9 @@ export function buildExamplesNextStepLinks({
   const selected = comparisons[family];
   if (selected) return selected.map(([slug, label]) => comparisonLink(slug, label));
   return [
-    { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5' },
-    { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3' },
-    { href: buildModelHref(appLocale, 'wan-3'), label: 'Wan 3' },
+    { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5', modelSlug: 'seedance-2-5' },
+    { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3', modelSlug: 'minimax-h3' },
+    { href: buildModelHref(appLocale, 'wan-3'), label: 'Wan 3', modelSlug: 'wan-3' },
     comparisonLink('kling-3-pro-vs-seedance-2-5', 'Kling 3 Pro vs Seedance 2.5'),
     { href: pricingPath, label: locale === 'fr' ? 'Voir les tarifs' : locale === 'es' ? 'Ver precios' : 'View pricing' },
   ];
