@@ -33,6 +33,8 @@ test('finite price-changing duration, resolution and audio boundaries are distin
   assert.ok(wanVideo.every((row) => Number(row.selector.durationSec) + Number(row.selector.inputVideoDurationSec) <= 30));
   const omni = coverage.scenarios.filter((row) => row.modelId === 'gemini-omni-flash' && row.selector.mode === 'v2v');
   assert.ok(omni.some((row) => row.selector.inputVideoDurationSec === '3' && row.selector.inheritedDurationSec === '3'));
+  assert.ok(coverage.scenarios.filter((row) => row.modelId === 'gemini-omni-flash' && row.selector.mode === 'fl2v')
+    .every((row) => row.context.inputImageCount === 2 && row.selector.inputImageCount === '2'));
   const h3 = coverage.scenarios.filter((row) => row.modelId === 'minimax-h3-max' && row.selector.mode === 'ref2v');
   assert.ok(h3.some((row) => row.selector.referenceTokenBudget === '4096'));
   assert.ok(coverage.gaps.some((gap) => gap.modelId === 'minimax-h3-max' && gap.reason.includes('reference token')));

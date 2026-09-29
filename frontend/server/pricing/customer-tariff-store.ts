@@ -128,6 +128,7 @@ export async function upsertCustomerTariffCell(
     'SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE FOR UPDATE'
   );
   if (!state) throw new Error('Customer tariff state is missing');
+  if (state.active || versionedDocument.active) throw new Error('Active tariff updates require temporal versioning');
   const nextRevision = integer(state.revision) + 1;
   const [row] = await executor.query<RawCell>(
     `INSERT INTO app_customer_tariff_cells
@@ -145,4 +146,20 @@ export async function upsertCustomerTariffCell(
   if (!row) throw new Error('Customer tariff cell was not persisted');
   await executor.query('UPDATE app_customer_tariff_state SET revision = $1, updated_at = NOW() WHERE singleton = TRUE', [nextRevision]);
   return mapCell(row);
+}
+
+/** Remove a staged database cell; an active tariff may never silently fall through. */
+export async function deleteStagedCustomerTariffCell(
+  executor: TransactionQueryExecutor, id: string,
+): Promise<number> {
+  if (!isTransactionQueryExecutor(executor)) throw new Error('Customer tariff writes require an active transaction');
+  const [state] = await executor.query<RawState>(
+    'SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE FOR UPDATE'
+  );
+  if (!state || state.active || versionedDocument.active) throw new Error('Active customer tariffs cannot be deleted');
+  const deleted = await executor.query<{ id: string }>('DELETE FROM app_customer_tariff_cells WHERE id = $1 RETURNING id', [id]);
+  if (deleted.length !== 1) throw new Error('Customer tariff cell does not exist');
+  const revision = integer(state.revision) + 1;
+  await executor.query('UPDATE app_customer_tariff_state SET revision = $1, updated_at = NOW() WHERE singleton = TRUE', [revision]);
+  return revision;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { History, RefreshCw, Scale, SlidersHorizontal } from 'lucide-react';
+import { CircleDollarSign, History, RefreshCw, Scale, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
@@ -17,10 +17,11 @@ import { providerComparisonPolicySelectorKey, type ProviderCostComparisonRowView
 import { PricingPolicyInspector } from './PricingPolicyInspector';
 import { PricingPolicyTable } from './PricingPolicyTable';
 import { ProviderPriceComparisonTable } from './ProviderPriceComparisonTable';
+import { CustomerTariffPanel } from './CustomerTariffPanel.client';
 
 export function AdminPricingCockpit() {
   const controller = useAdminPricingCockpitController();
-  const [activeTab, setActiveTab] = useState<'comparison' | 'rules' | 'history'>('comparison');
+  const [activeTab, setActiveTab] = useState<'comparison' | 'tariffs' | 'rules' | 'history'>('comparison');
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const inspectorRef = useRef<HTMLDivElement>(null);
   const inventoryRows = controller.inventory?.rows ?? [];
@@ -53,9 +54,10 @@ export function AdminPricingCockpit() {
         }
       />
 
-      <div className="grid grid-cols-3 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Model pricing sections">
+      <div className="grid grid-cols-4 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Model pricing sections">
         {([
           { id: 'comparison', label: 'Price comparison', icon: Scale },
+          { id: 'tariffs', label: 'Customer prices', icon: CircleDollarSign },
           { id: 'rules', label: 'Pricing rules', icon: SlidersHorizontal },
           { id: 'history', label: 'History', icon: History },
         ] as const).map(({ id, label, icon: Icon }) => (
@@ -64,7 +66,7 @@ export function AdminPricingCockpit() {
             tabIndex={activeTab === id ? 0 : -1}
             onClick={() => setActiveTab(id)}
             onKeyDown={(event) => {
-              const tabs = ['comparison', 'rules', 'history'] as const;
+              const tabs = ['comparison', 'tariffs', 'rules', 'history'] as const;
               const index = tabs.indexOf(id);
               const nextIndex = event.key === 'ArrowRight' ? (index + 1) % tabs.length
                 : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
@@ -104,6 +106,10 @@ export function AdminPricingCockpit() {
               <ProviderPriceComparisonTable rows={controller.inventory.providerComparisons}
                 disabled={controller.interactionLocked} onInspect={inspectComparison} />
             </AdminSection> : null}
+          </div>
+
+          <div id="pricing-panel-tariffs" role="tabpanel" aria-labelledby="pricing-tab-tariffs" hidden={activeTab !== 'tariffs'}>
+            {activeTab === 'tariffs' ? <CustomerTariffPanel /> : null}
           </div>
 
           <div id="pricing-panel-rules" role="tabpanel" aria-labelledby="pricing-tab-rules" hidden={activeTab !== 'rules'}>

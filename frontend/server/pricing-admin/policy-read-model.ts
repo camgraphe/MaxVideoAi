@@ -11,8 +11,10 @@ import type {
 import { getFalEngineById, listFalEngines } from '@/config/falEngines';
 import { listRuntimeModels } from '@/config/model-runtime';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
+import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import {
   isBytePlusSeedanceSubmissionEnabled,
   resolveBytePlusSeedanceRouteProfile,
@@ -70,6 +72,30 @@ export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditSce
     };
     return [{ scenario, entry }];
   });
+}
+
+export function selectRepresentativeTariffScenario(
+  entry: ReturnType<typeof listFalEngines>[number], scenario: PricingAuditScenario,
+  options: readonly ManualTariffCoverageScenario[],
+): ManualTariffCoverageScenario | null {
+  const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
+  const defaultAspect = fields.find((field) => field.id === 'aspect_ratio' && typeof field.default === 'string' && field.default !== 'auto')?.default
+    ?? (typeof scenario.input.aspectRatio === 'string' && scenario.input.aspectRatio !== 'auto' ? scenario.input.aspectRatio : undefined)
+    ?? (entry.engine.aspectRatios.includes('16:9') ? '16:9' : entry.engine.aspectRatios.includes('1:1') ? '1:1' : undefined);
+  const defaultQuality = fields.find((field) => field.id === 'quality' && typeof field.default === 'string')?.default;
+  let chosen: ManualTariffCoverageScenario | null = null;
+  let best = Infinity;
+  for (const candidate of options) {
+    const selector = candidate.selector;
+    const score = (selector.mode === scenario.mode ? 0 : 10_000)
+      + (selector.resolution.toLowerCase() === scenario.resolution?.toLowerCase() ? 0 : 1_000)
+      + Math.abs(Number(selector.durationSec) - (scenario.durationSec ?? 1)) * 10
+      + (defaultAspect && selector.aspectRatio !== defaultAspect ? 4 : 0)
+      + (defaultQuality && selector.quality !== defaultQuality ? 3 : 0)
+      + (scenario.input.audio === false && selector.audio === 'true' ? 2 : 0);
+    if (score < best) { chosen = candidate; best = score; }
+  }
+  return chosen;
 }
 
 function isActivePolicyRule(rule: PricingPolicyRule): boolean {
@@ -236,26 +262,58 @@ export async function loadPricingPolicyInventory(
   });
 
   const allModelScenarios = buildAllModelComparisonScenarios(buildPricingAuditScenarios());
-  const comparisonOutcomes = loaded.status === 'loaded'
-    ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: allModelScenarios.map(({ scenario }) => scenario) })
-    : [];
-  const comparisonQuoteById = new Map(comparisonOutcomes.map((outcome) => [outcome.scenarioId, outcome]));
-  const comparisons = allModelScenarios.map(({ scenario, entry }) => {
+  const coverageByModel = new Map<string, ReturnType<typeof collectSellableManualTariffCoverage>['scenarios']>();
+  for (const candidate of collectSellableManualTariffCoverage().scenarios) {
+    const bucket = coverageByModel.get(candidate.modelId) ?? [];
+    bucket.push(candidate);
+    coverageByModel.set(candidate.modelId, bucket);
+  }
+  const comparisons = await Promise.all(allModelScenarios.map(async ({ scenario, entry }) => {
+    const options = coverageByModel.get(entry.id) ?? [];
+    const selected = selectRepresentativeTariffScenario(entry, scenario, options);
+    const comparableScenario: PricingAuditScenario = selected ? {
+      ...scenario,
+      id: selected.id,
+      mode: selected.selector.mode,
+      resolution: selected.selector.resolution,
+      durationSec: selected.context.durationSec,
+      input: {
+        ...(typeof selected.context.aspectRatio === 'string' ? { aspectRatio: selected.context.aspectRatio } : {}),
+        ...(typeof selected.context.addons?.audio === 'boolean' ? { audio: selected.context.addons.audio } : {}),
+      },
+    } : scenario;
     const declaredProvider = entry.engine.providerMeta?.provider;
     const executionProvider = entry.category === 'image'
       ? declaredProvider === 'byteplus_modelark' ? 'byteplus_modelark' : 'fal'
       : resolveBytePlusSeedanceRouteProfile(entry.id, declaredProvider)
         ? 'byteplus_modelark' : 'fal';
-    const quote = comparisonQuoteById.get(scenario.id);
     const comparison = providerComparisonInputFromScenario({
-      scenario,
-      quote: quote?.status === 'quoted' ? quote : null,
+      scenario: comparableScenario,
+      quote: null,
       engine: entry.engine,
       brandId: entry.brandId,
       familyId: entry.family,
       executionProvider,
       mediaType: entry.category === 'image' ? 'image' : 'video',
     });
+    if (selected && loaded.status === 'loaded') {
+      try {
+        const snapshot = await computeCanonicalBillingSnapshot(selected.context, {
+          pricingPolicy: { loadOverrides: async () => loaded },
+        });
+        const provenance = snapshot.meta?.pricingPolicy as { source?: unknown; sourceRuleId?: unknown } | undefined;
+        if (Number.isSafeInteger(snapshot.totalCents) && typeof provenance?.sourceRuleId === 'string' &&
+          (provenance.source === 'database' || provenance.source === 'versioned')) {
+          comparison.customerQuote = {
+            totalCents: snapshot.totalCents, currency: snapshot.currency,
+            source: provenance.source, ruleId: provenance.sourceRuleId,
+            pricingMode: snapshot.meta?.pricingMode === 'manual_tariff' ? 'manual_tariff' : 'legacy_margin_rule',
+          };
+        }
+      } catch {
+        // No numeric customer price when an exact billing quote cannot be produced.
+      }
+    }
     if (entry.id !== 'seedance-1-5-pro') return comparison;
     const ark = getBytePlusArkConfig();
     return {
@@ -264,7 +322,7 @@ export async function loadPricingPolicyInventory(
         && isBytePlusModelArkEnabled()
         && Boolean(ark.apiKey?.trim() && ark.seedance15ModelId.trim()),
     };
-  });
+  }));
 
   return {
     versionedPolicyVersion: policy.version,

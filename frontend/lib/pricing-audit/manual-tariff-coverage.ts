@@ -133,6 +133,7 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
             engineId: entry.id, mode, resolution, durationSec: String(durationSec), aspectRatio,
             ...(audio == null ? {} : { audio: String(audio) }),
             ...(quality == null ? {} : { quality }),
+            ...(mode === 'fl2v' ? { inputImageCount: '2' } : {}),
             ...media.selector,
           };
           const context: PricingContext = {
@@ -141,8 +142,9 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
             ...(quality == null ? {} : { quality }),
             ...(audio == null ? {} : { addons: { audio, ...(!audio ? { audio_off: true } : {}) } }),
             hasVideoInput: ['v2v', 'extend', 'retake', 'reframe'].includes(mode),
-            referenceImageCount: mode === 'ref2v' || mode === 'r2v' ? 1 : 0,
-            inputImageCount: mode === 'i2v' || mode === 'i2i' ? 1 : 0,
+            ...(mode === 'ref2v' || mode === 'r2v' ? { referenceImageCount: 1 } : {}),
+            ...(mode === 'i2v' || mode === 'i2i' ? { inputImageCount: 1 } : {}),
+            ...(mode === 'fl2v' ? { inputImageCount: 2 } : {}),
             ...media.context,
           };
           scenarios.push({ id: selectorId(selector), modelId: model.id, selector, quantities: {}, context,

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { listRuntimeModels } from '../frontend/config/model-runtime.ts';
-import { buildAllModelComparisonScenarios } from '../frontend/server/pricing-admin/policy-read-model.ts';
+import { buildAllModelComparisonScenarios, selectRepresentativeTariffScenario } from '../frontend/server/pricing-admin/policy-read-model.ts';
+import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage.ts';
 import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios.ts';
 import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts';
 
@@ -17,6 +18,19 @@ test('admin comparison inventory contains every app-published model, including p
   assert.ok(rows.every(({ scenario }) => scenario.durationSec && scenario.resolution && scenario.mode));
   const quotes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: rows.map(({ scenario }) => scenario) });
   assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 48);
+});
+
+test('representative admin quotes use catalog defaults instead of the cheapest enumerated option', () => {
+  const comparisons = buildAllModelComparisonScenarios();
+  const coverage = collectSellableManualTariffCoverage().scenarios;
+  const pick = (modelId: string) => {
+    const row = comparisons.find(({ entry }) => entry.id === modelId)!;
+    return selectRepresentativeTariffScenario(row.entry, row.scenario,
+      coverage.filter((candidate) => candidate.modelId === modelId));
+  };
+  assert.equal(pick('seedance-2-0-mini')?.selector.aspectRatio, '16:9');
+  assert.equal(pick('gpt-image-2')?.selector.quality, 'high');
+  assert.equal(pick('nano-banana-pro')?.selector.resolution, '2k');
 });
 
 test('family filter separates Luma video from Luma image models', () => {
