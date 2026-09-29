@@ -51,7 +51,7 @@ export function PricingPolicyInspector({
   return (
     <AdminInspectorPanel
       title="Policy inspector"
-      description="Edit canonical policy inputs. The server computes every quote and impact preview."
+      description="Edit an existing pricing rule. One rule may affect many customer quotes; review every scenario in the server preview."
     >
       <div className="space-y-4">
         <label className="block space-y-1 text-xs text-text-secondary">
@@ -65,6 +65,7 @@ export function PricingPolicyInspector({
           />
         </label>
 
+        <p className="text-xs text-text-secondary">Enter 30 for 30%. The server computes the resulting customer prices.</p>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
           {EDITABLE_FIELDS.map(({ field, label, type = 'text', step }) => (
             <label key={field} className="block space-y-1 text-xs text-text-secondary">

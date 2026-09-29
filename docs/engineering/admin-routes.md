@@ -69,7 +69,7 @@ Use shared admin-system components for shell and surfaces:
 
 Commercial services retain three domain owners; their UI exposure differs:
 
-- `/admin/pricing` authorizes then redirects to `/admin/settings`; canonical pricing services and authenticated APIs remain intact. `/admin/engines` shows read-only model activity. Removing either editor must not change persisted overrides, resolution precedence, caches or quotes;
+- `/admin/pricing` is an authenticated cockpit for representative supplier/customer comparisons and the existing margin-based pricing rules. Its rule editor uses preview and explicit confirmation; exact manual customer-tariff cells remain inactive. `/admin/engines` shows read-only model activity;
 - `/admin/membership` owns read-only historical membership thresholds, discounts, and audit events;
 - `/admin/billing-products` owns fixed products referenced by live billing consumers.
 
@@ -79,7 +79,7 @@ The server rejects a stale preview fingerprint without persistence or cache inva
 
 Pricing proposals exclude settlement routing. `vendorAccountId` may appear only as read-only operational context; policy updates preserve its stored value and creates cannot set it. When the database is unavailable, public quote resolution may use versioned fallback policy, but commercial admin inventory must show the outage and every mutation must fail explicitly.
 
-The retained commercial views share `AdminPricingHistory`; the membership view locks rollback controls. The pricing cockpit modules remain dormant for service/history compatibility, not exposed from navigation. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims. The detailed operating procedure and verification commands live in `docs/engineering/pricing-engine.md` under **Safe price-change runbook**.
+The retained commercial views share `AdminPricingHistory`; the membership view locks rollback controls. The pricing cockpit is linked from Settings navigation. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims. The detailed operating procedure and verification commands live in `docs/engineering/pricing-engine.md` under **Safe price-change runbook**.
 
 ## What Belongs Where
 

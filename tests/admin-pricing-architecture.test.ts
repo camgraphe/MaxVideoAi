@@ -77,9 +77,10 @@ test('admin pricing route is an authenticated server orchestrator under 60 lines
   assert.match(pageSource, /await requireAdmin\(\)/, 'pricing route should explicitly require admin');
   assert.match(
     pageSource,
-    /redirect\('\/admin\/settings'\)/,
-    'retired pricing editor redirects without loading commercial data'
+    /<AdminPricingCockpit\s*\/>/,
+    'admin pricing route should render the cockpit'
   );
+  assert.doesNotMatch(pageSource, /redirect\('\/admin\/settings'\)/);
   assert.ok(pageSource.split('\n').length < 60, 'pricing route should stay below 60 lines');
 });
 
@@ -105,12 +106,10 @@ test('pricing cockpit consumes server-projected supplier comparisons without cli
   assert.doesNotMatch(cockpitSource, /vendorSubtotalCents\s*[-+*/]/);
 });
 
-test('navigation retires pricing and membership editors while retaining billing products', () => {
+test('navigation exposes model pricing and billing products while membership remains historical', () => {
   const items = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
-  assert.equal(
-    items.some((item) => item.href === '/admin/pricing' || item.href === '/admin/membership'),
-    false
-  );
+  assert.equal(items.some((item) => item.href === '/admin/pricing'), true);
+  assert.equal(items.some((item) => item.href === '/admin/membership'), false);
   assert.equal(
     items.some((item) => item.href === '/admin/billing-products'),
     true
@@ -172,6 +171,9 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
     assert.match(inspectorSource, new RegExp(field), `policy inspector should expose ${field}`);
   }
   assert.match(inspectorSource, /Vendor account/, 'policy inspector should expose routing context');
+  assert.match(inspectorSource, /Margin \(%\)/);
+  assert.match(inspectorSource, /Audio surcharge \(%\)/);
+  assert.match(inspectorSource, /Enter 30 for 30%/);
   assert.doesNotMatch(
     inspectorSource,
     /name=["']vendorAccountId["']|onChange[^\n]*vendorAccountId/,
@@ -311,10 +313,12 @@ test('preview and confirmation lock every mutable cockpit control', () => {
   assert.match(inspectorSource, /disabled=\{locked\}/g);
 });
 
-test('pricing E2E covers the retired route without commercial API activity', () => {
+test('pricing E2E covers the authorized comparison and safe policy preview', () => {
   const e2eSource = readOrEmpty(e2ePath);
-  assert.match(e2eSource, /retired pricing editor redirects without commercial API activity/);
-  assert.match(e2eSource, /expect\(requests\)\.toEqual\(\[\]\)/);
+  assert.match(e2eSource, /pricing cockpit compares costs and previews a policy change/);
+  assert.match(e2eSource, /Supplier cost and customer price/);
+  assert.match(e2eSource, /Preview policy change/);
+  assert.match(e2eSource, /expect\(confirmRequests\)\.toEqual\(\[\]\)/);
 });
 
 test('cockpit view model preserves an inherited database override selector in update proposals', () => {

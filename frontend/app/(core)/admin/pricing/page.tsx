@@ -1,6 +1,7 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { requireAdmin } from '@/server/admin';
+import { AdminPricingCockpit } from './_components/AdminPricingCockpit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -13,6 +14,5 @@ export default async function AdminPricingPage() {
     notFound();
   }
 
-  // Retiring the editor must not mutate pricing rules, overrides or their cache.
-  redirect('/admin/settings');
+  return <AdminPricingCockpit />;
 }

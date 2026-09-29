@@ -7,8 +7,9 @@ test('five operator work areas, secondary settings and no obsolete site map', ()
     ['Overview', 'Users', 'Transactions', 'Generations', 'Content']
   );
   const paths = ADMIN_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
-  for (const retired of ['/admin/theme', '/admin/pricing', '/admin/membership', '/admin/seo/cockpit'])
+  for (const retired of ['/admin/theme', '/admin/membership', '/admin/seo/cockpit'])
     assert.ok(!paths.includes(retired));
+  assert.ok(paths.includes('/admin/pricing'));
   assert.equal(
     paths.every((path) => path.startsWith('/admin')),
     true

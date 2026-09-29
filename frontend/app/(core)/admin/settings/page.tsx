@@ -6,7 +6,7 @@ export default function AdminSettingsPage() {
   const items = ADMIN_NAV_GROUPS.find((group) => group.id === 'settings')!.items;
   const groups = [
     { title: 'Operations', ids: ['service-notice', 'infra-costs', 'audit-log'] },
-    { title: 'Billing', ids: ['billing-products'] },
+    { title: 'Billing', ids: ['pricing', 'billing-products'] },
     { title: 'Compliance', ids: ['legal', 'marketing', 'consents'] },
   ];
   return (
@@ -34,8 +34,9 @@ export default function AdminSettingsPage() {
         </section>
       ))}
       <p className="border-t border-border pt-4 text-sm text-text-secondary">
-        Model prices are managed through the engineering workflow. Existing database overrides remain active.
-        Existing theme settings also remain active; visual changes are now managed in code.
+        Model pricing shows current customer quotes beside available supplier estimates. Existing pricing rules can be
+        changed only after reviewing the server preview and confirming it. Exact customer tariff cells and the Seedance
+        Draft price are still under development. Theme settings remain active; visual changes are managed in code.
       </p>
     </div>
   );

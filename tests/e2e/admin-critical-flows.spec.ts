@@ -91,16 +91,26 @@ test.describe('admin critical flows', () => {
     assertNoClientErrors(errors);
   });
 
-  test('retired pricing editor redirects without commercial API activity', async ({ page }) => {
-    const requests: string[] = [];
+  test('pricing cockpit compares costs and previews a policy change', async ({ page }) => {
+    const confirmRequests: string[] = [];
     page.on('request', (request) => {
-      if (request.url().includes('/api/admin/pricing/')) requests.push(request.url());
+      if (request.url().includes('/api/admin/pricing/confirm')) confirmRequests.push(request.url());
     });
-    await openAdminRoute(page, '/admin/settings');
-    await page.goto('/admin/pricing');
-    await expect(page).toHaveURL(/\/admin\/settings$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
-    expect(requests).toEqual([]);
+    await openAdminRoute(page, '/admin/pricing');
+    await expect(page.getByRole('heading', { level: 1, name: 'Model pricing' })).toBeVisible();
+    await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
+    const inventory = page.getByTestId('pricing-policy-inventory');
+    await expect(inventory.locator('tbody tr').first()).toBeVisible({ timeout: 15_000 });
+    await page.getByLabel('Search policy selectors').fill('seedance-2-5');
+    await inventory.locator('tbody tr').first().getByRole('button').click();
+    await expect(page.getByText('Policy inspector', { exact: true })).toBeVisible();
+    const margin = page.getByLabel('Margin (%)');
+    await margin.fill(String(Number(await margin.inputValue()) + 5));
+    await page.getByRole('button', { name: 'Preview policy change' }).click();
+    const preview = page.getByRole('dialog');
+    await expect(preview.getByText('Canonical server preview')).toBeVisible();
+    await preview.getByRole('button', { name: 'Cancel' }).click();
+    expect(confirmRequests).toEqual([]);
   });
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {

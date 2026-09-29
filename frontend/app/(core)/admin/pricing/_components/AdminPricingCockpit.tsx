@@ -30,8 +30,8 @@ export function AdminPricingCockpit() {
     <div className="flex flex-col gap-5">
       <AdminPageHeader
         eyebrow="Commercial policy"
-        title="Canonical pricing policy"
-        description="Inspect and propose canonical engine policy changes. Every mutation requires a fresh server-computed impact preview and explicit confirmation."
+        title="Model pricing"
+        description="Compare supplier estimates with customer quotes and edit existing pricing rules. A rule may change several prices; every change requires a server preview and explicit confirmation. Exact customer tariff cells are not active yet."
         actions={
           <>
             <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.refreshLocked}>
