@@ -44,10 +44,17 @@ export function PlacementOpeningEditor({ draft, candidates, busy, onChange, onCh
         const invalid = Boolean(id) && (!selected || actual !== slot.format);
         const options = candidates.filter(item => !draft.excludedIds.includes(item.id) && curationItemFormat(item) === slot.format &&
           (!opening.includes(item.id) || item.id === id));
+        const placement = mobile
+          ? index === 0 ? 'col-span-2' : index === 1 ? 'row-span-2' : ''
+          : index === 0 ? 'col-span-2 md:col-span-1 md:row-span-2'
+            : index === 1 ? 'row-span-2 md:col-start-2'
+              : `md:col-start-3 ${index === 2 ? 'md:row-start-1' : 'md:row-start-2'}`;
+        const mediaSize = index === 1 ? `aspect-[9/16] ${mobile ? '' : 'md:h-full'}`
+          : `aspect-video ${mobile ? '' : 'md:h-full'}`;
         return <div key={index} data-opening-slot={index + 1} data-required-format={slot.format} data-opening-id={id || undefined}
-          className={`min-w-0 overflow-hidden rounded-xl border bg-surface shadow-sm ${invalid ? 'border-amber-400' : 'border-border'} ${index === 0 ? 'col-span-2 md:col-span-1 md:row-span-2' : index === 1 ? 'row-span-2 md:col-start-2' : `md:col-start-3 ${index === 2 ? 'md:row-start-1' : 'md:row-start-2'}`}`}>
+          className={`grid min-w-0 grid-rows-[minmax(0,1fr)_auto] overflow-hidden rounded-xl border bg-surface shadow-sm ${invalid ? 'border-amber-400' : 'border-border'} ${placement}`}>
           <button type="button" disabled={busy} onClick={() => onChooseSlot?.(index)} aria-label={`Choose opening slot ${index + 1}, ${slot.format}`}
-            className={`group relative block w-full overflow-hidden bg-surface-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${index === 0 ? 'aspect-video md:h-full' : index === 1 ? 'aspect-[9/16] h-full' : 'aspect-[16/9] md:h-full'}`}>
+            className={`group relative block min-h-0 w-full overflow-hidden bg-surface-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${mediaSize}`}>
             {selected?.thumbUrl ? <Image src={selected.thumbUrl} alt="" fill unoptimized sizes="(max-width: 767px) 50vw, 38vw"
               className={index === 1 ? 'object-contain' : 'object-cover'} /> : <span className="absolute inset-0 grid place-items-center px-2 text-center text-xs text-text-muted">{id ? 'Video unavailable' : 'Choose video'}</span>}
             <span className="absolute left-2 top-2 rounded-md bg-black/75 px-2 py-1 text-[11px] font-semibold text-white">{index + 1} · {slot.name} · {slot.format}</span>

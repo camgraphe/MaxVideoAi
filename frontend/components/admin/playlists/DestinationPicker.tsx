@@ -76,7 +76,7 @@ export function DestinationPicker({ destinations, selectedId, disabled, onSelect
     <section data-destination-picker className="relative z-20 rounded-xl border border-border bg-surface p-3 shadow-sm sm:p-4"
       onKeyDown={event => { if (event.key === 'Escape' && open) { event.stopPropagation(); close(); } }}>
       <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-full sm:flex-1">
           <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-muted">Gallery destination</span>
           <button ref={triggerRef} type="button" aria-haspopup="dialog" aria-expanded={open} disabled={disabled}
             onClick={() => setOpen(previous => !previous)}

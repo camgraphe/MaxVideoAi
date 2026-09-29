@@ -80,7 +80,10 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       {!loaded.snapshot.isPublic ? (
         <p className="text-sm text-warning">This collection is private. Its public page will remain empty.</p>
       ) : null}
-      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} /> : null}
+      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} />
+        : <p data-opening-unavailable role="status" className="rounded-lg border border-border bg-surface-2/60 px-3 py-2 text-xs text-text-secondary">
+          Opening four is unavailable until gallery storage is enabled. You can still arrange the selection below.
+        </p>}
       {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
       <PlacementDraftActions dirty={dirty} busy={busy} preview={preview} openingError={openingError}
         mode={draft.mode} canPreview={dirty || Boolean(loaded.removedCount) || !loaded.snapshot.config}

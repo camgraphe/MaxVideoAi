@@ -153,7 +153,7 @@ test.describe('admin critical flows', () => {
     expect(mutations).toEqual([]);
   });
 
-  test('gallery workbench keeps media visible, navigable and safe across widths', async ({ page }) => {
+  test('gallery workbench keeps media visible, navigable and safe across widths', async ({ page }, testInfo) => {
     test.setTimeout(120_000);
     const mutations: string[] = [];
     const mediaRequests: string[] = [];
@@ -222,8 +222,33 @@ test.describe('admin critical flows', () => {
       expect(geometry.overflow, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(1);
       expect(geometry.pickerTop).toBeLessThan(geometry.boardTop);
       if (width === 688 || width === 960) expect(geometry.boardTop).toBeLessThan(900);
+      if (width === 375) {
+        const pickerWidths = await picker.evaluate(element => ({
+          card: element.getBoundingClientRect().width,
+          trigger: element.querySelector('button[aria-haspopup]')!.getBoundingClientRect().width,
+        }));
+        expect(pickerWidths.trigger / pickerWidths.card, 'mobile destination stays readable').toBeGreaterThan(0.85);
+      }
+      const slotsHaveVisibleControls = await board.locator('[data-opening-slot]').evaluateAll(cards => cards.every(card => {
+        const cardBox = card.getBoundingClientRect();
+        const footerBox = card.lastElementChild!.getBoundingClientRect();
+        return footerBox.top < cardBox.bottom - 1 && footerBox.bottom <= cardBox.bottom + 1;
+      }));
+      expect(slotsHaveVisibleControls, `opening controls remain visible at ${width}px`).toBe(true);
     }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const desktopCapture = testInfo.outputPath('gallery-workbench-desktop.png');
+    await page.screenshot({ path: desktopCapture });
+    await testInfo.attach('Desktop gallery workbench', { path: desktopCapture, contentType: 'image/png' });
+    await board.getByRole('button', { name: 'Mobile preview' }).click();
+    const previewColumnCount = await board.locator('[data-opening-slot]').evaluateAll(cards =>
+      new Set(cards.map(card => Math.round(card.getBoundingClientRect().left))).size);
+    expect(previewColumnCount, 'mobile preview uses two columns even in a wide browser').toBe(2);
+    await board.getByRole('button', { name: 'Desktop preview' }).click();
     await page.setViewportSize({ width: 375, height: 812 });
+    const mobileCapture = testInfo.outputPath('gallery-workbench-mobile.png');
+    await page.screenshot({ path: mobileCapture });
+    await testInfo.attach('Mobile gallery workbench', { path: mobileCapture, contentType: 'image/png' });
     const add = page.getByRole('button', { name: 'Add videos', exact: true });
     await add.click();
     const explorer = page.getByRole('dialog', { name: 'Add videos' });

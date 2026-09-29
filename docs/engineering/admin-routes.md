@@ -329,7 +329,9 @@ maintenance. Browsing them never creates or reconciles a collection. The legacy
 `PlaylistsSidebar` remains only when no destination projection is available.
 `PlacementOpeningEditor` displays the four measured source slots as a visual board;
 its portrait slot requires a 9:16 source, and the opening IDs are omitted from the
-continuation grid. `PlacementMediaList` presents selected cards and moves an ID to
+continuation grid. When opening storage is absent, the editor states that the four-slot
+layout is unavailable and keeps the ordered selection usable; it does not attempt a
+schema write. `PlacementMediaList` presents selected cards and moves an ID to
 a one-based position in the complete order, including unloaded windows.
 
 `PlacementExplorerDialog` mounts `PlacementCandidatePicker` only when Add videos

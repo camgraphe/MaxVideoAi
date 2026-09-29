@@ -181,6 +181,7 @@ test('curation save refreshes the destination projection', async () => {
       isPublic: true, revision: 'r1', config: null };
     const candidate = { id: 'one', prompt: 'One', engineId: 'wan-3', engineLabel: 'Wan 3', videoUrl: '/one.mp4', thumbUrl: null, createdAt: '' };
     await act(async () => view.requests[0].resolve(Response.json({ ok: true, snapshot, selectedItems: [candidate], selectedTotal: 1, initialIds: ['one'] })));
+    assert.match(document.querySelector('[data-opening-unavailable]')?.textContent ?? '', /opening four is unavailable/i);
     assert.equal(view.requests.length, 1, 'candidate inventory stays deferred until the explorer opens');
     await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Preview changes')!.click());
     await act(async () => view.requests[1].resolve(Response.json({ ok: true, preview: { items: [candidate], token: 't1', revision: 'r1' } })));
