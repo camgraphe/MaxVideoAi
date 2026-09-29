@@ -3,6 +3,13 @@ import test from 'node:test';
 import { projectExampleWatchDetail } from '../frontend/server/example-watch-detail';
 import type { GalleryVideo } from '../frontend/server/videos-normalization';
 const video:GalleryVideo={id:'public-example',userId:'private-owner',engineId:'wan-3-prime',engineLabel:'Wan 3 Prime',prompt:'Complete public prompt',promptExcerpt:'Short',durationSec:22,aspectRatio:'16:9',outputWidth:1280,outputHeight:720,hasAudio:true,createdAt:'',visibility:'public',indexable:true,canUpscale:false,videoUrl:'https://media.maxvideoai.com/example.mp4',thumbUrl:'https://media.maxvideoai.com/example.webp',finalPriceCents:401,currency:'USD',settingsSnapshot:{refs:{imageUrl:'https://private.example/secret.jpg'}}};
+test('watch detail projects database Date values as stable ISO strings for identical server/client markup',async()=>{
+ const date=new Date('2026-09-03T20:55:09.000Z');
+ const detail=await projectExampleWatchDetail({...video,createdAt:date as unknown as string},null,async()=>({totalCents:200,currency:'USD'}));
+ assert.equal(detail?.context.createdAt,date.toISOString());
+ const invalid=await projectExampleWatchDetail({...video,createdAt:''},null,async()=>({totalCents:200,currency:'USD'}));
+ assert.equal(invalid?.context.createdAt,'');
+});
 test('public detail serializes no ownership/private references and offers three executable proposals',async()=>{
  const contexts:any[]=[];
  const detail=await projectExampleWatchDetail(video,null,async context=>{contexts.push(context);return {totalCents:200,currency:'USD'};});

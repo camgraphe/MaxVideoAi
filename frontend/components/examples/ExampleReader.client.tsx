@@ -35,8 +35,8 @@ export default function ExampleReader({ id, locale, onClose, navigation, navigat
     <ExampleReaderStyles/>
     <section ref={dialogRef} role="dialog" aria-modal="true" aria-label={copy.reader} aria-labelledby={current?.detail ? 'example-reader-title' : undefined}
       tabIndex={-1} onKeyDown={onDialogKeyDown} className={styles.dialog}>
-      <button className={styles.close} onClick={onClose} aria-label={copy.close} data-modal-initial-focus="true"><X size={19}/></button>
-      {current?.detail ? <ExampleReaderContent key={id} detail={current.detail} copy={copy} locale={locale} navigation={navigation}/> : <div className={styles.loading}>
+      {!current?.detail && <button className={styles.close} onClick={onClose} aria-label={copy.close} data-modal-initial-focus="true"><X size={19}/></button>}
+      {current?.detail ? <ExampleReaderContent key={id} detail={current.detail} copy={copy} locale={locale} navigation={navigation} onClose={onClose}/> : <div className={styles.loading}>
         <p role="status">{current?.error ? copy.error : copy.loading}</p>
         {current?.error && <><button onClick={() => setRetry(value => value + 1)}>{copy.retry}</button><div className={styles.errorNavigation}>
           <button onClick={navigation.previous} disabled={!navigation.canPrevious || navigation.busy}><ChevronLeft size={16}/>{copy.previous}</button>

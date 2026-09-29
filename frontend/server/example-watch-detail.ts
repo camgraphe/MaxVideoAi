@@ -23,6 +23,9 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
   const proposed = { durationSec: video.durationSec, resolution: resolution ?? '', aspectRatio: aspectRatio ?? '', audio: video.hasAudio, mode: 't2v' as const };
   const scenario = parseExampleRecreationSettings(new URLSearchParams(buildExampleRecreationHref(video.id, video.engineId, proposed).split('?')[1]));
   const quotes = await buildExampleComparisonQuotes(video, scenario, quote);
+  // PostgreSQL can return Date objects despite the legacy GalleryVideo string type.
+  // Keep this public DTO identical over RSC and JSON, including the <time> attribute.
+  const createdAt = video.createdAt ? new Date(video.createdAt) : null;
   return {
     id: video.id, title: signals.title, prompt: signals.promptText, videoUrl: video.videoUrl,
     posterUrl: video.thumbUrl ?? null, engineLabel: signals.engineLabel,
@@ -35,7 +38,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
     references: signals.sourceImages.map(({ key, label, url, alt, thumbUrl }) => ({ key, label, url, alt, ...(thumbUrl ? {thumbUrl} : {}) })),
     context: {
       intro: signals.intro, visualContext: signals.seoPromptContext, negativePrompt: signals.negativePrompt,
-      createdAt: video.createdAt, details: signals.detailRows, controls: [...signals.promptRows,...signals.inputRows],
+      createdAt: createdAt && Number.isFinite(createdAt.getTime()) ? createdAt.toISOString() : '', details: signals.detailRows, controls: [...signals.promptRows,...signals.inputRows],
       highlights: signals.whatThisShows, notes: signals.promptImprovementNotes, engineDescription: signals.engineDescription,
       engineBadges: signals.engineBadges, compareLinks: signals.compareLinks, keyframes: video.keyframeUrls ?? null,
     },

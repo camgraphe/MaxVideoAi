@@ -389,6 +389,20 @@ Source images use the existing approved-editorial/public-stable-media gate. The
 editorial single-video lookup is bounded to one row. No schema bootstrap belongs
 on this read path.
 
+The reader uses a landscape media/tools layout and a portrait media column with
+tools and comparison offers alongside it. Container queries collapse these into
+document order on narrower surfaces; small screens show compact offer rows with
+44px generation controls. The media frame keeps its exact ratio and transport
+controls sit outside it. The gallery toolbar keeps Previous/Next/Close available
+while scrolling, including loading/error close behavior and the existing focus trap.
+Historical render cost belongs with the original media settings; each new-generation
+estimate belongs to its own settings and app handoff. Unknown original settings are
+labelled as incomplete, without claiming that a proposed configuration is identical.
+Persistent sharing opens X/WhatsApp composers with the canonical link only. Prompt
+copy uses the shared clipboard fallback and retains a manual full-text fallback.
+The public detail DTO normalizes database dates into ISO strings for identical RSC
+and JSON output, avoiding server/client differences in the editorial time attribute.
+
 Direct watch pages pass their already prepared signals to `buildExampleWatchDetail`.
 That path reuses the validated editorial/source-image projection from
 `getVideoWatchPageDataById`, without reading editorial entries or resolving source

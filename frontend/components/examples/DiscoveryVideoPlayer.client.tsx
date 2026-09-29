@@ -1,6 +1,6 @@
 'use client';
 import { useRef, type CSSProperties } from 'react';
-import { ChevronLeft, ChevronRight, Maximize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
+import { Maximize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { usePublicVideoControls } from '@/components/media/usePublicVideoControls';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import type { ReaderCopy } from './example-reader-copy';
@@ -8,7 +8,7 @@ import styles from './example-reader-styles';
 
 export type ReaderNavigation = { previous: () => void; next: () => void; canPrevious: boolean; canNext: boolean; busy: boolean };
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
-export function DiscoveryVideoPlayer({ detail, copy, navigation }: { detail: ExampleWatchDetail; copy: ReaderCopy; navigation?: ReaderNavigation }) {
+export function DiscoveryVideoPlayer({ detail, copy }: { detail: ExampleWatchDetail; copy: ReaderCopy }) {
   const controls = usePublicVideoControls(detail.videoUrl, 'watch');
   const frame = useRef<HTMLDivElement>(null);
   const [width, height] = detail.aspectRatio.split(':').map(Number);
@@ -22,15 +22,13 @@ export function DiscoveryVideoPlayer({ detail, copy, navigation }: { detail: Exa
     } catch { /* Fullscreen can be denied by the browser; inline playback remains available. */ }
   };
   return <div className={styles.player}>
-    <div ref={frame} className={styles.frame} style={{ '--ratio': ratio } as CSSProperties}>
+    <div ref={frame} className={styles.stage}>
+    <div className={styles.frame} style={{ '--ratio': ratio } as CSSProperties}>
       <video ref={controls.videoRef} src={detail.videoUrl} poster={detail.posterUrl ?? undefined}
         playsInline preload="none" aria-label={detail.title} {...controls.events} />
       {!controls.isPlaying && <button className={styles.centerPlay} onClick={controls.togglePlayback} aria-label={copy.play}><Play size={28} fill="currentColor" /></button>}
-      {navigation && <div className={styles.playerNavigation}>
-        <button onClick={navigation.previous} disabled={!navigation.canPrevious || navigation.busy} aria-label={copy.previous}><ChevronLeft /></button>
-        <button onClick={navigation.next} disabled={!navigation.canNext || navigation.busy} aria-label={copy.next}><ChevronRight /></button>
-      </div>}
       {(controls.terminalError || controls.isLoading) && <p className={styles.playerStatus} role="status">{controls.terminalError ? copy.playbackError : copy.loading}</p>}
+    </div>
       <div className={styles.controls}>
         <input aria-label={copy.timeline} type="range" min={0} max={controls.duration || detail.durationSec || 1} step={0.1}
           value={controls.currentTime} disabled={!controls.duration} onChange={event => controls.seek(event.target.value)} />
