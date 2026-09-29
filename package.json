@@ -36,6 +36,7 @@
     "model:setup": "node scripts/model-setup.mjs",
     "models:audit": "tsx --tsconfig frontend/tsconfig.json scripts/models-audit.mjs",
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
+    "pricing:bytedance-effective-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-effective-bytedance-baseline.ts",
     "pricing:public-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts",
     "pricing:public-baseline:generate": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts --write",
     "pricing:shadow-additions": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-shadow-additions.ts",
