@@ -27,10 +27,21 @@ test('public reader sharing copies the current canonical URL and exposes recover
     const button = dom.window.document.querySelector('button')!;
     assert.ok(button.textContent?.includes('Copy link'), 'copy must be available immediately without opening a second panel');
     const shareLinks = [...dom.window.document.querySelectorAll<HTMLAnchorElement>('a')];
-    assert.equal(shareLinks.length, 2, 'social share actions are visible alongside the copy button');
-    assert.equal(new URL(shareLinks[0].href).searchParams.get('url'), first);
-    assert.equal(new URL(shareLinks[1].href).searchParams.get('text'), first);
-    assert.ok(shareLinks.every(link => link.target === '_blank' && link.rel.includes('noopener')));
+    const destinations = [
+      ['Share on X', 'x.com', 'url'], ['Share on WhatsApp', 'wa.me', 'text'],
+      ['Share on Telegram', 't.me', 'url'], ['Share on LinkedIn', 'www.linkedin.com', 'url'],
+      ['Share on Facebook', 'www.facebook.com', 'u'], ['Share by e-mail', '', 'body'],
+    ] as const;
+    assert.equal(shareLinks.length, destinations.length, 'all existing link-sharing destinations are available without a disclosure');
+    for (const [label, host, parameter] of destinations) {
+      const link = shareLinks.find(link => link.getAttribute('aria-label') === label);
+      assert.ok(link, `${label} must be named accessibly`);
+      const intent = new URL(link.href);
+      assert.equal(intent.hostname, host);
+      assert.equal(intent.searchParams.get(parameter), first, 'share the canonical URL on every destination');
+      if (host) assert.ok(link.target === '_blank' && link.rel.includes('noopener'));
+      else assert.equal(intent.protocol, 'mailto:');
+    }
     await act(async () => button.click());
     assert.deepEqual(copied, [first], 'share the canonical watch URL, never the gallery or media URL');
     assert.ok(button.textContent?.includes('Link copied'));
@@ -38,7 +49,10 @@ test('public reader sharing copies the current canonical URL and exposes recover
 
     await act(async () => root.render(React.createElement(VideoWatchShare, { watchUrl: second, locale: 'fr' })));
     assert.ok(button.textContent?.includes('Copier le lien'), 'the next video must not retain the previous copied confirmation');
-    assert.equal(new URL(shareLinks[0].href).searchParams.get('url'), second, 'social actions follow the current canonical URL too');
+    for (const [index, [, , parameter]] of destinations.entries()) {
+      assert.equal(new URL(shareLinks[index].href).searchParams.get(parameter), second, 'every destination follows the next video');
+    }
+    assert.equal(shareLinks[5].getAttribute('aria-label'), 'Partager par e-mail');
     clipboardBlocked = true;
     button.focus();
     await act(async () => button.click());

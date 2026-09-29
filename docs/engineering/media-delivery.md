@@ -366,7 +366,14 @@ canonical-link copy action and an announced confirmation. Clipboard failures exp
 the same URL in a selectable read-only field, and the clipboard fallback returns
 focus to the reader action. Feedback belongs to its watch URL, so navigation cannot
 show another video's copied state. The public reader does not mount the owned-video
-social publishing panel or prepare a video file for this link action.
+social publishing panel or prepare a video file for this link action. Its six visible
+link destinations (X, WhatsApp, Telegram, LinkedIn, Facebook and e-mail) reuse the
+library's pure `buildVideoShareIntent` owner, always using the current canonical
+watch URL. Existing local brand icons are lazy images; no platform SDK is loaded.
+TikTok, Reels and Shorts in the owned-video panel are file-publication workflows,
+not canonical-link destinations. Reader settings are plain text with separators;
+only actions retain outlined buttons. Adapted quote values keep their gold dotted
+underline without a button-like border.
 
 `example-reader-styles.tsx` owns the reader's scoped class mapping and CSS. The
 synchronous `/video` route layout emits `ExampleReaderStyles` before page data
@@ -398,7 +405,7 @@ while scrolling, including loading/error close behavior and the existing focus t
 Historical render cost belongs with the original media settings; each new-generation
 estimate belongs to its own settings and app handoff. Unknown original settings are
 labelled as incomplete, without claiming that a proposed configuration is identical.
-Persistent sharing opens X/WhatsApp composers with the canonical link only. Prompt
+Persistent sharing reuses the library's link intents with the canonical link only. Prompt
 copy uses the shared clipboard fallback and retains a manual full-text fallback.
 The public detail DTO normalizes database dates into ISO strings for identical RSC
 and JSON output, avoiding server/client differences in the editorial time attribute.
