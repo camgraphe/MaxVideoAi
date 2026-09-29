@@ -1,6 +1,6 @@
 # Gallery admin destinations and safe curation
 
-Date: 2026-09-28  
+Date: 2026-09-28
 Status: approved for implementation planning in conversation
 Scope: `/admin/playlists`, its destination inventory and curation APIs, and the route contracts they expose. Public gallery presentation, watch pages, and SEO metadata remain under their existing owners.
 

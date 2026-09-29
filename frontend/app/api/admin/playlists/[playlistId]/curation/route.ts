@@ -7,6 +7,7 @@ import {
   saveCuration,
   CurationError,
 } from '@/server/playlists/curation-service';
+import { getExamplesHubPlaylistSlug } from '@/server/playlists/slugs';
 import { listCatalogMembershipIds } from '@/server/videos-catalog-page';
 import { listPlaylistVideoIds } from '@/server/videos-playlists';
 import { filterEligibleCurationIds, loadSelectedCurationItems } from '@/server/playlists/curation-candidates-page';
@@ -50,8 +51,8 @@ export async function GET(req: NextRequest, context: Context) {
     const initialIds: string[] = snapshot.config ? [...snapshot.config.orderedIds] : [];
     if (!snapshot.config) {
       for (let offset = 0; ; offset += 500) {
-        const page = snapshot.slug.startsWith('family-')
-          ? await listCatalogMembershipIds({ familyId: snapshot.slug.slice(7), offset, limit: 500 })
+        const page = snapshot.slug === getExamplesHubPlaylistSlug() || snapshot.slug.startsWith('family-')
+          ? await listCatalogMembershipIds({ familyId: snapshot.slug.startsWith('family-') ? snapshot.slug.slice(7) : undefined, offset, limit: 500 })
           : await listPlaylistVideoIds(snapshot.slug, { offset, limit: 500 });
         initialIds.push(...page.ids);
         if (!page.ids.length || offset + page.ids.length >= page.total) break;

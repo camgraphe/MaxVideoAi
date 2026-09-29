@@ -35,4 +35,3 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
     outputWidth: row.output_width, outputHeight: row.output_height, aspectRatio: row.aspect_ratio,
   }));
 }
-

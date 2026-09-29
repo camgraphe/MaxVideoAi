@@ -309,6 +309,14 @@ Direct model candidate semantics stay unchanged. Cursor fingerprints still bind 
 resolved aliases and filters; changing eligibility requires restarting an old cursor.
 A filter change restarts at page one. Opening selection uses that same picker with the slot's format.
 
+First adoption of the active examples hub seeds its draft from the complete effective
+catalog, including independent family/model sources, in 500-ID read windows. Family
+adoption uses the same membership reader for its scope. Saved manual or hybrid
+selections remain authoritative and are never expanded by opening the editor.
+Removing or excluding an opening video in its inspector clears that slot and removes
+any duplicate from the continuation. Preview stays disabled until the four slots are
+complete again; exclusions cannot leave an excluded ID in the opening.
+
 `usePlacementEditor` retains the complete ordered-ID draft and hydrates selected media
 in windows of at most 48. `PlacementMediaList` receives the complete tail ID order so
 keyboard moves at a window boundary preserve every other ID. Dropping on a selected

@@ -33,6 +33,8 @@ test('public gallery traverses every eligible video beyond the old window and hy
       thumb_url text,video_url text,status text DEFAULT 'completed',surface text DEFAULT 'video',visibility text DEFAULT 'public',indexable boolean DEFAULT true,
       created_at timestamptz,duration_sec int DEFAULT 5,aspect_ratio text DEFAULT '16:9',has_audio boolean,can_upscale boolean,
       featured boolean,featured_order int,final_price_cents int DEFAULT 25,currency text DEFAULT 'USD',pricing_snapshot jsonb,settings_snapshot jsonb);
+    CREATE TABLE engine_settings(engine_id text PRIMARY KEY,options jsonb,pricing jsonb,updated_at timestamptz,updated_by text);
+    CREATE TABLE engine_overrides(engine_id text PRIMARY KEY,active boolean,availability text,status text,latency_tier text);
     CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
     CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
     INSERT INTO playlists(slug,is_public) VALUES ('examples',true),('family-kling',true),('examples-kling-3-pro',true),('examples-ltx-2-5-pro',true);
@@ -60,12 +62,15 @@ test('public gallery traverses every eligible video beyond the old window and hy
   await build({
     stdin: { contents: `export {loadHomepageExamples} from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples';
       export * from './frontend/server/videos-catalog-page'; export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
+      export {GET as getInitialCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route';
       export {getExampleWatchDetail,buildExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
       export {getVideoWatchPageDataById} from './frontend/server/video-seo';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'count-real-postgres-reads', setup(builder) {
+      builder.onResolve({filter:/^@\/server\/admin$/},()=>({path:'admin',namespace:'fixture-admin'}));
+      builder.onLoad({filter:/.*/,namespace:'fixture-admin'},()=>({contents:'export const requireAdmin=async()=>"fixture-admin"; export const adminErrorToResponse=()=>{throw Error("Unexpected authorization error");};',loader:'js'}));
       builder.onResolve({ filter: /^react$/ }, () => ({path:'react-cache',namespace:'test-react'}));
       builder.onLoad({filter:/.*/,namespace:'test-react'}, () => ({contents:'export const cache = fn => fn;',loader:'js'}));
       builder.onResolve({ filter: /^@\/lib\/db$/ }, () => ({ path: 'db', namespace: 'fixture' }));
@@ -143,6 +148,19 @@ test('public gallery traverses every eligible video beyond the old window and hy
     const before=await general();
     assert.ok(before.items.some(item=>item.id==='family-only'));
     assert.ok(before.items.some(item=>item.id==='model-only'));
+    const hub=(await postgres.pool.query("SELECT id FROM playlists WHERE slug='examples'")).rows[0].id;
+    const initial=await (await reader.getInitialCuration({}, {params:Promise.resolve({playlistId:hub})})).json();
+    assert.equal(initial.ok,true);
+    assert.equal(initial.selectedTotal,before.total,'first adoption retains independently published family and model videos');
+    assert.ok(initial.initialIds.includes('family-only'));
+    assert.ok(initial.initialIds.includes('model-only'));
+    assert.ok(initial.initialIds.includes('kling-513'),'adoption traverses the ID page boundary');
+    assert.equal(new Set(initial.initialIds).size,initial.initialIds.length);
+    assert.ok(initial.selectedItems.length<=48,'only the visible selection window is hydrated');
+    const db={query:async(sql,params)=>(await postgres.pool.query(sql,params)).rows};
+    const proposed=await reader.listCatalogPreviewIds({sort:'playlist',offset:0,limit:24,curationOverride:{playlistId:hub,draft:{mode:'manual',orderedIds:initial.initialIds,excludedIds:[]}}},db);
+    assert.equal(proposed.total,before.total,'previewing an unchanged initial hub selection loses no media');
+
     await postgres.pool.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
       SELECT id,'manual',ARRAY['family-only'],'{}' FROM playlists WHERE slug='family-seedance'`);
     const curatedFamily=await general();
@@ -151,6 +169,9 @@ test('public gallery traverses every eligible video beyond the old window and hy
     await postgres.pool.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
       SELECT id,'manual',ARRAY['kling-1'],'{}' FROM playlists WHERE slug='examples'`);
     const selected=await general();assert.equal(selected.total,1);assert.equal(selected.items[0].id,'kling-1');
+    const saved=await (await reader.getInitialCuration({}, {params:Promise.resolve({playlistId:hub})})).json();
+    assert.deepEqual(saved.initialIds,['kling-1'],'explicit saved selections are never expanded during reads');
+
     await postgres.pool.query(`DELETE FROM playlist_curations WHERE playlist_id IN (SELECT id FROM playlists WHERE slug IN ('examples','family-seedance'))`);
     await postgres.pool.query(`DELETE FROM playlist_items WHERE video_id IN ('family-only','model-only');DELETE FROM app_jobs WHERE job_id IN ('family-only','model-only')`);
   });
@@ -187,6 +208,12 @@ test('public gallery traverses every eligible video beyond the old window and hy
     assert.ok(statements.filter(statement=>statement.text.includes('FROM app_jobs')).every(statement=>statement.rows===1));
     const editorialRead=statements.find(statement=>statement.text.includes('FROM video_seo_pages'));
     assert.ok(editorialRead?.text.includes('WHERE video_id=$1'),'single-video reader must not hydrate all editorial entries');
+    await postgres.pool.query("INSERT INTO engine_overrides(engine_id,active) VALUES ('kling-3-pro',false)");
+    const disabled=await reader.getExampleWatchDetail('kling-20');
+    assert.equal(disabled.recreateHref,null,'loader honors disabled engines from the actual app catalog');
+    assert.ok(disabled.quotes.every(quote=>quote.engineId!=='kling-3-pro'));
+    await postgres.pool.query("DELETE FROM engine_overrides WHERE engine_id='kling-3-pro'");
+
     for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing']) {
       assert.equal(await reader.getExampleWatchDetail(id),null);
       assert.equal(await reader.getVideoWatchPageDataById(id),null,`direct watch rejects ${id}`);

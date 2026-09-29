@@ -196,6 +196,14 @@ The opening and continuation layouts use one server-rendered page of 24 videos. 
 
 `example-watch-detail-loader` rechecks public eligibility and reads the selected editorial entry only. Curation and direct SEO watch readers share `PUBLIC_VIDEO_SOURCE_ELIGIBILITY` from `videos-query.ts`, excluding incomplete jobs and deleted output/asset sources before hydration. Gallery discovery keeps its explicit indexable flag, while direct SEO readers retain the existing legacy null-indexability policy. Both modes use the watch signals owner for title, introductory copy, approved references and contextual details. `ExampleReaderContext` preserves secondary editorial information in a native disclosure. Original download, schema and recreation URLs stay intact. Prices remain absent from gallery cards; historical cost and supported prompt-only comparison estimates with explicit per-proposal settings are distinct in the reader.
 
+`example-watch-detail-loader` loads the read-only configured video catalog used by the
+app once per response. Both the proposal selector and the workspace handoff validator
+consume that same catalog, including disabled models and administrator capability
+limits. The public projection receives it explicitly; offline tests supply their
+own authored catalog fixture. Historical render costs remain independent of current
+canonical quotes. A disabled source model keeps its public video readable, but has
+no direct recreation action or comparison proposal.
+
 `ExampleReaderContext` omits empty disclosures, headings and lists. Its intro remains
 visible even when there is no additional context. `ExampleReaderDisclosure.client`
 keeps populated children in the initial server HTML and owns only the native toggle

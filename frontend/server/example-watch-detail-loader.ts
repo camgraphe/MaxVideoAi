@@ -1,3 +1,4 @@
+import { getPublicConfiguredEnginesByCategory } from '@/server/engines';
 import { query } from '@/lib/db';
 import { loadPricingPolicyOverrides } from '@/lib/pricing-rule-store';
 import { BASE_SELECT_WITH_SETTINGS } from './videos-query';
@@ -23,10 +24,13 @@ export async function getExampleWatchDetail(id: string) {
 export async function buildExampleWatchDetail(video: GalleryVideo, preparedSignals?: WatchPageDerivedSignals) {
   // Direct watch pages pass the already validated editorial/source-image projection
   // from getVideoWatchPageDataById. API opens still resolve those gates here.
-  const editorial = preparedSignals ? null : await getResolvedVideoSeoEditorialEntry(video.id);
+  const [editorial, engines] = await Promise.all([
+    preparedSignals ? null : getResolvedVideoSeoEditorialEntry(video.id),
+    getPublicConfiguredEnginesByCategory('video'),
+  ]);
   const signals = preparedSignals ?? deriveWatchPageSignals({ video, editorial, entry: getBaseSeoWatchVideoMeta(video.id) });
   const sourceImages = preparedSignals?.sourceImages ?? await resolveWatchSourceImageOriginalUrls({ video, sourceImages: signals.sourceImages });
   // One read for a coherent policy across all compared engines in this response.
   const overrides = loadPricingPolicyOverrides();
-  return projectExampleWatchDetail(video, editorial, context => computeCanonicalPublicSnapshot(context, { loadOverrides: () => overrides }), { ...signals, sourceImages });
+  return projectExampleWatchDetail(video, editorial, context => computeCanonicalPublicSnapshot(context, { loadOverrides: () => overrides }), engines, { ...signals, sourceImages });
 }

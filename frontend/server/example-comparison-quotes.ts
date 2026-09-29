@@ -1,5 +1,5 @@
 import { listFalEngines } from '@/config/falEngines';
-import { getBaseEngines } from '@/lib/engines';
+import type { EngineCaps } from '@/types/engines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildEngineAddonInput } from '@/lib/pricing-addons';
 import type { PricingContext } from '@/lib/pricing-context';
@@ -21,9 +21,9 @@ const compareRank = (a: number[], b: number[]) => {
  * Duration takes precedence over format, resolution and audio. Unknown source settings
  * remain unknown: proposals show their own complete configuration instead.
  */
-export async function buildExampleComparisonQuotes(video: GalleryVideo, source: ExampleRecreationSettings | null, quote: ExampleQuoteProvider): Promise<ExampleComparisonQuote[]> {
+export async function buildExampleComparisonQuotes(video: GalleryVideo, source: ExampleRecreationSettings | null, quote: ExampleQuoteProvider, configuredEngines: EngineCaps[]): Promise<ExampleComparisonQuote[]> {
   const published = new Set(listFalEngines().filter(entry => entry.surfaces.app.enabled && entry.surfaces.modelPage.indexable).map(entry => entry.id));
-  const engines = getBaseEngines().filter(engine => published.has(engine.id) && engine.modes.includes('t2v'));
+  const engines = configuredEngines.filter(engine => published.has(engine.id) && engine.modes.includes('t2v'));
   const sourceId = normalizeEngineId(video.engineId) ?? video.engineId;
   const targetDuration = Number.isFinite(video.durationSec) && video.durationSec > 0 ? video.durationSec : 5;
   const measuredRatio = video.outputWidth && video.outputHeight ? video.outputWidth / video.outputHeight : ratio(video.aspectRatio ?? '');

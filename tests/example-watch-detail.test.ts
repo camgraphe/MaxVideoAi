@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { projectExampleWatchDetail } from '../frontend/server/example-watch-detail';
+import { projectExampleWatchDetail as projectConfiguredWatchDetail } from '../frontend/server/example-watch-detail';
 import type { GalleryVideo } from '../frontend/server/videos-normalization';
+import { getBaseEngines } from '../frontend/src/lib/engines';
+import type { VideoSeoEditorialEntry } from '../frontend/config/video-seo-editorial';
+import type { ExampleQuoteProvider } from '../frontend/server/example-comparison-quotes';
+// Offline fixtures deliberately supply the authored catalog; production passes the configured app catalog.
+const projectExampleWatchDetail = (video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: ExampleQuoteProvider) =>
+ projectConfiguredWatchDetail(video,editorial,quote,getBaseEngines());
 const video:GalleryVideo={id:'public-example',userId:'private-owner',engineId:'wan-3-prime',engineLabel:'Wan 3 Prime',prompt:'Complete public prompt',promptExcerpt:'Short',durationSec:22,aspectRatio:'16:9',outputWidth:1280,outputHeight:720,hasAudio:true,createdAt:'',visibility:'public',indexable:true,canUpscale:false,videoUrl:'https://media.maxvideoai.com/example.mp4',thumbUrl:'https://media.maxvideoai.com/example.webp',finalPriceCents:401,currency:'USD',settingsSnapshot:{refs:{imageUrl:'https://private.example/secret.jpg'}}};
 test('watch detail projects database Date values as stable ISO strings for identical server/client markup',async()=>{
  const date=new Date('2026-09-03T20:55:09.000Z');
@@ -91,3 +97,28 @@ test('unusual output sizes and aspect ratios still get three honest, executable 
   if(source.durationSec===90)assert.ok(detail.quotes.some(q=>q.changed.includes('durationSec')));
  }
 });
+
+for (const disabled of [true, false]) {
+ test(`comparisons respect the app catalog ${disabled ? 'disabled engine' : 'administrator duration cap'}`, async () => {
+  const {getReadOnlyConfiguredEnginesByCategory}=await import('../frontend/src/server/agent-api/read-only-engine-catalog');
+  const {buildExampleComparisonQuotes}=await import('../frontend/server/example-comparison-quotes');
+  const engines=await getReadOnlyConfiguredEnginesByCategory('video',false,{
+   databaseConfigured:()=>true,
+   fetchSettings:async()=>new Map(disabled ? [] : [['wan-3-prime',{engine_id:'wan-3-prime',updated_by:'administrator',updated_at:'2026-09-30',pricing:null,options:{maxDurationSec:10}}]]),
+   fetchOverrides:async()=>new Map(disabled ? [['wan-3-prime',{engine_id:'wan-3-prime',active:false,availability:null,status:null,latency_tier:null}]] : []),
+  });
+  // Isolate the source model's proposal so other equally good engines cannot mask invalid settings.
+  const available=engines.filter(engine=>engine.id==='wan-3-prime');
+  const contexts:any[]=[];
+  const quotes=await buildExampleComparisonQuotes(video,null,async context=>{contexts.push(context);return {totalCents:401,currency:'USD'};},available);
+  const detail=await projectConfiguredWatchDetail(video,null,async()=>({totalCents:401,currency:'USD'}),engines);
+  if(disabled){ assert.deepEqual(quotes,[]);assert.deepEqual(contexts,[]);assert.equal(detail?.recreateHref,null);assert.ok(detail?.quotes.every(q=>q.engineId!=='wan-3-prime')); }
+  else {
+   assert.equal(quotes.length,1);
+   assert.equal(quotes[0].settings.durationSec,10);
+   assert.equal(contexts[0].engine.maxDurationSec,10);
+   const {buildExampleRecreationSnapshot}=await import('../frontend/app/(core)/(workspace)/app/_lib/workspace-example-recreation');
+   assert.ok(buildExampleRecreationSnapshot({...video,outputWidth:1280,outputHeight:720},quotes[0].href.split('?')[1],engines));
+  }
+ });
+}

@@ -2,7 +2,7 @@
 import { useEffect, useState, type DragEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { usePlacementEditor } from './usePlacementEditor';
-import { validateCurationOpening } from '@/lib/admin/playlist-curation';
+import { validateCurationOpening, type CurationOpening } from '@/lib/admin/playlist-curation';
 import { PlacementOpeningEditor } from './PlacementOpeningEditor';
 import { PlacementCandidatePicker } from './PlacementCandidatePicker';
 import { PlacementExplorerDialog } from './PlacementExplorerDialog';
@@ -46,12 +46,15 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
   };
   const ordered = state.windowIds.flatMap(id => loaded?.candidates.find(item => item.id === id) ?? []);
   const inspectedItem = loaded?.candidates.find(item => item.id === inspectedId) ?? null;
-  const exclude = (id: string) =>
+  const withoutOpeningVideo = (id: string) => draft.openingIds?.map(value => value === id ? '' : value) as CurationOpening | null | undefined;
+  const remove = (id: string, excluded = false) =>
     change({
       ...draft,
-      orderedIds: draft.orderedIds.filter((value) => value !== id),
-      excludedIds: [...new Set([...draft.excludedIds, id])],
+      openingIds: withoutOpeningVideo(id),
+      orderedIds: draft.orderedIds.filter(value => value !== id),
+      excludedIds: excluded ? [...new Set([...draft.excludedIds, id])] : draft.excludedIds,
     });
+  const exclude = (id: string) => remove(id, true);
   if (!loaded)
     return (
       <div>
@@ -176,7 +179,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
         onPreview={state.makePreview} onSave={state.save}
         onReload={() => { if (!dirty || window.confirm('Discard unsaved changes and reload this destination?')) void state.reload(); }} />
       {inspectedItem ? <PlacementMediaInspector item={inspectedItem} onClose={() => setInspectedId(null)}
-        onRemove={() => change({ ...draft, orderedIds: draft.orderedIds.filter(id => id !== inspectedItem.id) })}
+        onRemove={() => remove(inspectedItem.id)}
         onExclude={() => exclude(inspectedItem.id)} /> : null}
       {preview && previewOpen ? <PlacementPreviewDialog preview={preview} onClose={() => setPreviewOpen(false)} onSave={state.save} /> : null}
     </div>

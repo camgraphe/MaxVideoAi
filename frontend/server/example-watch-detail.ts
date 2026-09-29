@@ -1,3 +1,5 @@
+import type { EngineCaps } from '@/types/engines';
+import { normalizeEngineId } from '@/lib/engine-alias';
 import type { VideoSeoEditorialEntry } from '@/config/video-seo-editorial';
 import { buildExampleRecreationHref, parseExampleRecreationSettings, publicExampleResolution } from '@/lib/example-recreation';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
@@ -9,7 +11,7 @@ import { parseSnapshot } from './watch-page-signals/snapshot';
 import type { GalleryVideo } from './videos-normalization';
 
 /** Explicit public DTO: never serialize ownership or the raw generation snapshot. */
-export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: ExampleQuoteProvider, preparedSignals?: WatchPageDerivedSignals): Promise<ExampleWatchDetail | null> {
+export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: ExampleQuoteProvider, engines: EngineCaps[], preparedSignals?: WatchPageDerivedSignals): Promise<ExampleWatchDetail | null> {
   if (video.visibility !== 'public' || !video.indexable || !video.videoUrl) return null;
   const signals = preparedSignals ?? deriveWatchPageSignals({ video, editorial });
   const snapshot = parseSnapshot(video);
@@ -22,7 +24,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
   });
   const proposed = { durationSec: video.durationSec, resolution: resolution ?? '', aspectRatio: aspectRatio ?? '', audio: video.hasAudio, mode: 't2v' as const };
   const scenario = parseExampleRecreationSettings(new URLSearchParams(buildExampleRecreationHref(video.id, video.engineId, proposed).split('?')[1]));
-  const quotes = await buildExampleComparisonQuotes(video, scenario, quote);
+  const quotes = await buildExampleComparisonQuotes(video, scenario, quote, engines);
   // PostgreSQL can return Date objects despite the legacy GalleryVideo string type.
   // Keep this public DTO identical over RSC and JSON, including the <time> attribute.
   const createdAt = video.createdAt ? new Date(video.createdAt) : null;
@@ -30,7 +32,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
     id: video.id, title: signals.title, prompt: signals.promptText, videoUrl: video.videoUrl,
     posterUrl: video.thumbUrl ?? null, engineLabel: signals.engineLabel,
     watchHref: new URL(signals.canonicalUrl).pathname, modelHref: signals.modelPath,
-    recreateHref: canRecreatePublicExample(video.engineId) ? signals.recreatePath : null,
+    recreateHref: canRecreatePublicExample(video.engineId) && engines.some(engine => engine.id === (normalizeEngineId(video.engineId) ?? video.engineId)) ? signals.recreatePath : null,
     aspectRatio: signals.aspectRatio ?? video.aspectRatio ?? '16:9',
     durationSec: video.durationSec, hasAudio: video.hasAudio,
     historicalCost: typeof video.finalPriceCents === 'number' && video.currency ? { amountCents: video.finalPriceCents, currency: video.currency } : null,

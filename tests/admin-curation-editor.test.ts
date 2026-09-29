@@ -469,3 +469,34 @@ for (const scenario of ['freeze-small-hybrid', 'reload-later-window'] as const) 
     }
   });
 }
+
+for (const action of ['Remove from selection','Exclude from page']) {
+ test(`opening inspector ${action} clears its slot before another preview`, async () => {
+  const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/admin/playlists'});
+  const old=new Map<string,PropertyDescriptor|undefined>();
+  const items=['a','b','c','d','e'].map(id=>({id,engineId:'wan-3',engineLabel:'Wan 3',prompt:id,videoUrl:'/v.mp4',thumbUrl:null,createdAt:'',outputWidth:id==='b'?720:1280,outputHeight:id==='b'?1280:720}));
+  let submitted:any;
+  for(const [key,value] of Object.entries({window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,navigator:dom.window.navigator,React,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url:string,init?:RequestInit)=>{
+   if(url.includes('/video-seo/'))return Response.json({ok:true,status:'not_selected',inVideoSitemap:false});
+   if(init?.method==='POST'){submitted=JSON.parse(String(init.body));return Response.json({ok:true,preview:{items:[],token:'t'}});}
+   return Response.json({ok:true,snapshot:{available:true,supported:true,openingAvailable:true,slug:'family-wan',isPublic:true,revision:'r',config:{mode:'manual',openingIds:['a','b','c','d'],orderedIds:['a','e'],excludedIds:[]}},initialIds:['a','e'],selectedItems:items,selectedTotal:2});
+  }})){old.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});}
+  const root=createRoot(dom.window.document.getElementById('root')!);
+  const button=(name:string)=>[...dom.window.document.querySelectorAll('button')].find(b=>b.textContent===name)!;
+  try {
+   const {PlacementEditor}=await import('../frontend/components/admin/playlists/PlacementEditor');
+   await act(async()=>root.render(React.createElement(PlacementEditor,{playlistId:'p'})));
+   await act(async()=> ([...dom.window.document.querySelectorAll('[data-opening-slot="1"] button')].find(b=>b.textContent==='Details') as HTMLButtonElement).click());
+   await act(async()=>button(action).click());
+   assert.equal(dom.window.document.querySelector('[data-opening-slot="1"]')?.getAttribute('data-opening-id'),null);
+   assert.equal(button('Cancel').disabled,false,'removing an opening video marks the draft dirty');
+   assert.equal(button('Preview changes').disabled,true,'an incomplete opening cannot be previewed or saved');
+   const slot=dom.window.document.querySelector('[aria-label="Opening slot 1"]') as HTMLSelectElement;
+   await act(async()=>{slot.value='e';slot.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
+   await act(async()=>button('Preview changes').click());
+   assert.deepEqual(submitted.draft.openingIds,['e','b','c','d']);
+   assert.ok(!submitted.draft.orderedIds.includes('a'));
+   assert.deepEqual(submitted.draft.excludedIds,action==='Exclude from page'?['a']:[]);
+  } finally {await act(async()=>root.unmount());dom.window.close();for(const[key,value]of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
+ });
+}

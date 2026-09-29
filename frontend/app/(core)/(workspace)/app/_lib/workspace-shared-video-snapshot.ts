@@ -31,4 +31,3 @@ export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVid
     meta: { derived: true },
   };
 }
-
