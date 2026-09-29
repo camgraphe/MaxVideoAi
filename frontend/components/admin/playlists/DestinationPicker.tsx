@@ -73,17 +73,17 @@ export function DestinationPicker({ destinations, selectedId, disabled, onSelect
   );
 
   return (
-    <section data-destination-picker className="relative z-20 rounded-xl border border-border bg-surface p-3 shadow-sm sm:p-4"
+    <section data-destination-picker className="relative z-40 rounded-xl border border-border bg-surface p-3 shadow-sm sm:p-4"
       onKeyDown={event => { if (event.key === 'Escape' && open) { event.stopPropagation(); close(); } }}>
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-0 basis-full sm:flex-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-muted">Gallery destination</span>
+          <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-muted">Choose a gallery</span>
           <button ref={triggerRef} type="button" aria-haspopup="dialog" aria-expanded={open} disabled={disabled}
             onClick={() => setOpen(previous => !previous)}
             className="mt-1 flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-50">
             <span className="min-w-0"><span className="block truncate text-sm font-semibold text-text-primary">{current?.label ?? 'Choose a destination'}</span>
               <span className="block truncate text-xs text-text-secondary">{current ? `${current.kind} · ${current.publicCount} public media` : `${destinations.length} destinations`}</span></span>
-            <span aria-hidden="true" className="shrink-0 text-text-secondary">⌄</span>
+            <span className="shrink-0 text-xs font-semibold text-brand">Change gallery <span aria-hidden="true">⌄</span></span>
           </button>
         </div>
         {current?.path ? <a data-live-page href={current.path} target="_blank" rel="noreferrer"

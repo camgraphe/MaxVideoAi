@@ -15,16 +15,18 @@ type Props = {
   canAdd?: (id: string) => boolean;
   onAdd?: (id: string) => void;
   onInspect?: (id: string) => void;
+  addLabel?: string;
   removeLabel?: string;
 };
 
 export function PlacementMediaList({ items, orderedIds, busy, onOrder, onRemove, onExclude, onAdd, onInspect,
-  canAdd, canExclude, removeLabel = 'Remove' }: Props) {
+  canAdd, canExclude, addLabel, removeLabel = 'Remove' }: Props) {
   const allIds = orderedIds ?? items.map(item => item.id);
   const dragged = useRef<string | null>(null);
   const move = (id: string, position: number) => onOrder?.(moveCurationIdToPosition(allIds, id, position));
 
-  return <ol data-selected-grid={onOrder ? '' : undefined} className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+  return <ol data-selected-grid={onOrder ? '' : undefined}
+    className={`grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 ${onOrder ? 'min-[900px]:grid-cols-3 xl:grid-cols-4' : ''}`}>
     {items.map(item => {
       const index = allIds.indexOf(item.id);
       return <li key={item.id} data-curation-item={onOrder ? item.id : undefined} data-media-id={item.id}
@@ -50,7 +52,7 @@ export function PlacementMediaList({ items, orderedIds, busy, onOrder, onRemove,
           onExclude={onExclude ? () => onExclude(item.id) : undefined}
           onAdd={onAdd ? () => onAdd(item.id) : undefined}
           onInspect={onInspect ? () => onInspect(item.id) : undefined}
-          canAdd={canAdd?.(item.id)} canExclude={canExclude?.(item.id)} removeLabel={removeLabel} />
+          canAdd={canAdd?.(item.id)} canExclude={canExclude?.(item.id)} addLabel={addLabel} removeLabel={removeLabel} />
       </li>;
     })}
   </ol>;

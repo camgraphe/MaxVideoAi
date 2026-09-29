@@ -34,7 +34,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
     openingError = 'Choose all four opening videos before adopting this family.';
   const changeOrder = (tail: string[]) => {
     let index = 0;
-    change({ ...draft, orderedIds: draft.orderedIds.map(id => draft.openingIds?.includes(id) ? id : tail[index++]) });
+    change({ ...draft, orderedIds: draft.orderedIds.map(id => state.openingPreviewIds.includes(id) ? id : tail[index++]) });
   };
   const dropOnPage = (event: DragEvent, targetPage: number) => {
     event.preventDefault();
@@ -70,9 +70,12 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       <p className="text-sm text-text-secondary">The page selection editor is not available for this destination.</p>
     );
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
+      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} onInspect={setInspectedId} />
+        : <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} readOnly
+          previewIds={state.openingPreviewIds} onChange={change} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} onInspect={setInspectedId} />}
       {loaded.removedCount ? (
-        <p className="text-sm text-warning">
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           {loaded.removedCount} saved items are no longer eligible and are hidden. Your next save will remove them from
           the selection.
         </p>
@@ -80,17 +83,7 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
       {!loaded.snapshot.isPublic ? (
         <p className="text-sm text-warning">This collection is private. Its public page will remain empty.</p>
       ) : null}
-      {loaded.snapshot.openingAvailable ? <PlacementOpeningEditor draft={draft} candidates={loaded.candidates} busy={busy} required={!loaded.snapshot.config && loaded.snapshot.slug.startsWith('family-')} onChange={next => { change(next); if (!next.openingIds) setSlot(null); }} onChooseSlot={index => { setSlot(index); setExplorerOpen(true); }} />
-        : <p data-opening-unavailable role="status" className="rounded-lg border border-border bg-surface-2/60 px-3 py-2 text-xs text-text-secondary">
-          Opening four is unavailable until gallery storage is enabled. You can still arrange the selection below.
-        </p>}
       {openingError ? <p role="status" className="text-sm text-warning">{openingError}</p> : null}
-      <PlacementDraftActions dirty={dirty} busy={busy} preview={preview} openingError={openingError}
-        mode={draft.mode} canPreview={dirty || Boolean(loaded.removedCount) || !loaded.snapshot.config}
-        needsAdoption={!loaded.snapshot.config} onModeChange={mode => void state.changeMode(mode)}
-        onCancel={() => { state.cancel(); setSlot(null); setExplorerOpen(false); }}
-        onPreview={state.makePreview} onSave={state.save}
-        onReload={() => { if (!dirty || window.confirm('Discard unsaved changes and reload this destination?')) void state.reload(); }} />
       {state.error ? (
         <p role="alert" className="text-sm text-error">
           {state.error}
@@ -134,6 +127,21 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
         <PlacementCandidatePicker playlistId={playlistId} initialPage={loaded.candidatePage} draft={draft} busy={busy} slot={slot}
         onCancelSlot={() => { setExplorerOpen(false); setSlot(null); }} onItems={state.rememberItems} onChooseSlot={(id) => {
           if (slot === null) return;
+          if (!loaded.snapshot.openingAvailable) {
+            const next = [...draft.orderedIds];
+            const oldIndex = next.indexOf(id);
+            if (oldIndex >= 0) {
+              [next[slot], next[oldIndex]] = [next[oldIndex], next[slot]];
+            } else if (slot < next.length) {
+              const replaced = next[slot];
+              next[slot] = id;
+              next.splice(Math.min(4, next.length), 0, replaced);
+            } else {
+              next.splice(slot, 0, id);
+            }
+            change({ ...draft, orderedIds: next }); setSlot(null); setExplorerOpen(false);
+            return;
+          }
           const openingIds = [...(draft.openingIds ?? ['', '', '', ''])] as [string, string, string, string];
           openingIds[slot] = id;
           change({ ...draft, openingIds }); setSlot(null); setExplorerOpen(false);
@@ -161,6 +169,12 @@ export function PlacementEditor({ playlistId, onStateChange, onSaved, fallback }
           ))}
         </ul>
       </details>
+      <PlacementDraftActions dirty={dirty} busy={busy} preview={preview} openingError={openingError}
+        mode={draft.mode} canPreview={dirty || Boolean(loaded.removedCount) || !loaded.snapshot.config}
+        needsAdoption={!loaded.snapshot.config} onModeChange={mode => void state.changeMode(mode)}
+        onCancel={() => { state.cancel(); setSlot(null); setExplorerOpen(false); }}
+        onPreview={state.makePreview} onSave={state.save}
+        onReload={() => { if (!dirty || window.confirm('Discard unsaved changes and reload this destination?')) void state.reload(); }} />
       {inspectedItem ? <PlacementMediaInspector item={inspectedItem} onClose={() => setInspectedId(null)}
         onRemove={() => change({ ...draft, orderedIds: draft.orderedIds.filter(id => id !== inspectedItem.id) })}
         onExclude={() => exclude(inspectedItem.id)} /> : null}

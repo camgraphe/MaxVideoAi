@@ -72,6 +72,7 @@ export function PlacementCandidatePicker({ playlistId, initialPage, draft, busy,
     </details>
     {error ? <p role="alert">{error}</p> : null}
     <PlacementMediaList items={page.items} busy={busy || loading || Boolean(error)} onAdd={choose}
+      addLabel={slot === null ? 'Add to selection' : 'Use for opening'}
       canAdd={id => !draft.excludedIds.includes(id) && !draft.openingIds?.includes(id) &&
         (slot !== null ? curationItemFormat(page.items.find(item => item.id === id)!) === requiredFormat : !draft.orderedIds.includes(id))}
       canExclude={id => !draft.openingIds?.includes(id) && !draft.excludedIds.includes(id)}

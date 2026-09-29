@@ -16,11 +16,12 @@ type Props = {
   onInspect?: () => void;
   canAdd?: boolean;
   canExclude?: boolean;
+  addLabel?: string;
   removeLabel: string;
 };
 
 export function PlacementMediaCard({ item, index, total, busy, onMove, onRemove, onExclude, onAdd, onInspect,
-  canAdd = true, canExclude = true, removeLabel }: Props) {
+  canAdd = true, canExclude = true, addLabel = 'Add to selection', removeLabel }: Props) {
   const format = curationItemFormat(item);
   const [position, setPosition] = useState(index + 1);
   useEffect(() => setPosition(index + 1), [index]);
@@ -42,7 +43,7 @@ export function PlacementMediaCard({ item, index, total, busy, onMove, onRemove,
         {onInspect ? <button type="button" disabled={busy} onClick={onInspect}
           className="flex-1 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand/90 disabled:opacity-50">Inspect video</button> : null}
         {onAdd ? <button type="button" disabled={busy || !canAdd} onClick={onAdd}
-          className="flex-1 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand/90 disabled:opacity-50">Add to selection</button> : null}
+          className="flex-1 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand/90 disabled:opacity-50">{addLabel}</button> : null}
         <details className="relative z-10 shrink-0">
           <summary aria-label={`More actions for item ${index + 1}`} className="list-none cursor-pointer rounded-lg border border-border px-3 py-2 text-xs font-semibold text-text-primary hover:bg-surface-2">More</summary>
           <div className="absolute bottom-full right-0 z-10 mb-1 min-w-48 space-y-1 rounded-lg border border-border bg-surface p-2 text-xs shadow-lg [&_button]:w-full [&_button]:rounded [&_button]:px-2 [&_button]:py-1.5 [&_button]:text-left [&_button:hover]:bg-surface-2 [&_button:disabled]:opacity-40">

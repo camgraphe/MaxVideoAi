@@ -146,7 +146,8 @@ export function usePlacementEditor(
   const rememberItems = useCallback((items: CurationItem[]) => {
     setLoaded(current => current ? { ...current, candidates: [...new Map([...current.candidates, ...items].map(item => [item.id, item])).values()] } : current);
   }, []);
-  const tailIds = draft.orderedIds.filter(id => !draft.openingIds?.includes(id));
+  const openingPreviewIds = draft.openingIds ?? (loaded?.snapshot.openingAvailable === false ? draft.orderedIds.slice(0, 4) : []);
+  const tailIds = draft.orderedIds.filter(id => !openingPreviewIds.includes(id));
   const page = Math.min(selectedPage, Math.max(0, Math.ceil(tailIds.length / 48) - 1));
   const windowIds = tailIds.slice(page * 48, (page + 1) * 48);
   const windowKey = windowIds.join(',');
@@ -200,7 +201,7 @@ export function usePlacementEditor(
       void Promise.resolve().then(() => onSaved?.()).catch(error => console.error('[PlacementEditor] destination refresh failed', error));
     });
   return {
-    selectedPage: page, setSelectedPage, windowBusy, windowIds, tailIds, rememberItems,
+    selectedPage: page, setSelectedPage, windowBusy, windowIds, tailIds, openingPreviewIds, rememberItems,
     loaded,
     draft,
     busy,

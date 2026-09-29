@@ -402,30 +402,6 @@ export function PlaylistsManager({
 
   return (
     <div className={clsx('space-y-4', isItemsDirty && 'pb-28', className)}>
-      <PlaylistsManagerToolbar
-        createDescription={createDescription}
-        createName={createName}
-        createSlug={createSlug}
-        draftCount={groupedPlaylists.draft.length}
-        embedded={embedded}
-        isPending={isPending || isItemsDirty || curationState.busy || curationState.dirty}
-        enableCuration={enableCuration}
-        missingFamilyCount={missingFamilyCount}
-        missingModelCount={missingModelCount}
-        onCreateDescriptionChange={setCreateDescription}
-        onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
-        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
-        onCreateNameChange={setCreateName}
-        onCreateSlugChange={setCreateSlug}
-        onCreateSubmit={handleCreatePlaylist}
-        onSeedAllFamilyPlaylists={handleSeedAllFamilyPlaylists}
-        onSeedAllModelPlaylists={handleSeedAllModelPlaylists}
-        showCreateForm={showCreateForm}
-        onToggleCreateForm={() => setShowCreateForm((current) => !current)}
-        onToggleDraftCollections={() => setShowDraftCollections((current) => !current)}
-        showDraftCollections={showDraftCollections}
-      />
-
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
       {destinations.length ? <DestinationPicker destinations={destinations} selectedId={selectedDestination?.id ?? null}
@@ -476,6 +452,30 @@ export function PlaylistsManager({
           selectedId={selectedId} selectedDestinationId={selectedDestination?.id ?? null}
           showDraftCollections={showDraftCollections} /> : null}
       </div>
+
+      <PlaylistsManagerToolbar
+        createDescription={createDescription}
+        createName={createName}
+        createSlug={createSlug}
+        draftCount={groupedPlaylists.draft.length}
+        embedded={embedded}
+        isPending={isPending || isItemsDirty || curationState.busy || curationState.dirty}
+        enableCuration={enableCuration}
+        missingFamilyCount={missingFamilyCount}
+        missingModelCount={missingModelCount}
+        onCreateDescriptionChange={setCreateDescription}
+        onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
+        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
+        onCreateNameChange={setCreateName}
+        onCreateSlugChange={setCreateSlug}
+        onCreateSubmit={handleCreatePlaylist}
+        onSeedAllFamilyPlaylists={handleSeedAllFamilyPlaylists}
+        onSeedAllModelPlaylists={handleSeedAllModelPlaylists}
+        showCreateForm={showCreateForm}
+        onToggleCreateForm={() => setShowCreateForm((current) => !current)}
+        onToggleDraftCollections={() => setShowDraftCollections((current) => !current)}
+        showDraftCollections={showDraftCollections}
+      />
 
       {selectedPlaylist && isItemsDirty ? (
         <PlaylistOrderDirtyBar

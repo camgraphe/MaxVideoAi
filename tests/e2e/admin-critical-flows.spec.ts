@@ -165,8 +165,8 @@ test.describe('admin critical flows', () => {
     const poster = (label: string, color: string) => `data:image/svg+xml,${encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="${color}"/><text x="50%" y="52%" text-anchor="middle" fill="white" font-size="80">${label}</text></svg>`
     )}`;
-    const items = ['Lead', 'Portrait', 'Side A', 'Side B', 'Tail one', 'Tail two'].map((label, index) => ({
-      id: ['lead', 'portrait', 'side-a', 'side-b', 'tail-1', 'tail-2'][index],
+    const items = ['Lead', 'Portrait', 'Side A', 'Side B', 'Tail one', 'Tail two', 'Tail three', 'Tail four', 'Tail five', 'Tail six'].map((label, index) => ({
+      id: ['lead', 'portrait', 'side-a', 'side-b', 'tail-1', 'tail-2', 'tail-3', 'tail-4', 'tail-5', 'tail-6'][index],
       engineId: 'wan-3', engineLabel: 'Wan 3', prompt: label,
       videoUrl: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4',
       thumbUrl: poster(label, index === 1 ? '#7356b8' : '#3157a7'), createdAt: '2026-09-29T00:00:00Z',
@@ -186,11 +186,11 @@ test.describe('admin critical flows', () => {
     await page.route(/\/api\/admin\/playlists\/[^/]+\/curation$/, async route => {
       const method = route.request().method();
       if (method === 'GET') {
-        await route.fulfill({ json: { ok: true, snapshot, initialIds: ids, selectedItems: items, selectedTotal: 6 } });
+        await route.fulfill({ json: { ok: true, snapshot, initialIds: ids, selectedItems: items, selectedTotal: 10 } });
       } else if (method === 'POST') {
         mutations.push(method);
         await route.fulfill({ json: { ok: true, preview: { items, token: 'preview-fixture', revision: 'r1', effective: {
-          total: 6, currentTotal: 6, firstPageIds: ids, addedCount: 0, removedCount: 0,
+          total: 10, currentTotal: 10, firstPageIds: ids, addedCount: 0, removedCount: 0,
           suppressedSourceSlugs: [], openingFormats: ['16:9', '9:16', '16:9', '16:9'], warnings: [],
         } } } });
       } else {
@@ -207,8 +207,22 @@ test.describe('admin critical flows', () => {
     if (!(await picker.count())) test.skip(true, 'requires at least one connected destination');
     const board = page.locator('[data-opening-board]');
     await expect(board.locator('[data-opening-slot]')).toHaveCount(4);
-    await expect(page.locator('[data-selected-grid] [data-curation-item]')).toHaveCount(2);
+    await expect(page.locator('[data-selected-grid] [data-curation-item]')).toHaveCount(6);
     await expect(page.locator('[data-explorer-overlay]')).toHaveCount(0);
+    await page.setViewportSize({ width: 1152, height: 950 });
+    await picker.locator('button[aria-haspopup]').click();
+    const destinationMenu = page.getByRole('dialog', { name: 'Site destinations' });
+    await expect(destinationMenu).toBeVisible();
+    const firstDestinationHit = await destinationMenu.locator('button[data-destination-id]').first().evaluate(button => {
+      const box = button.getBoundingClientRect();
+      return button.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2));
+    });
+    expect(firstDestinationHit, 'destination choices are not covered by save controls').toBe(true);
+    const firstFamily = destinationMenu.locator('[data-destination-group="families"] button[data-destination-id]').first();
+    const familyLabel = await firstFamily.locator('span').nth(1).innerText();
+    await firstFamily.click();
+    await expect(destinationMenu).toHaveCount(0);
+    await expect(picker.locator('button[aria-haspopup]')).toContainText(familyLabel);
     expect(mediaRequests).toHaveLength(0);
     expect(candidateRequests).toHaveLength(0);
     for (const width of [688, 960, 1440, 375]) {
@@ -221,7 +235,11 @@ test.describe('admin critical flows', () => {
       }));
       expect(geometry.overflow, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(1);
       expect(geometry.pickerTop).toBeLessThan(geometry.boardTop);
-      if (width === 688 || width === 960) expect(geometry.boardTop).toBeLessThan(900);
+      if (width === 688 || width === 960) expect(geometry.boardTop).toBeLessThan(400);
+      if (width >= 960) expect(geometry.boardBottom - geometry.boardTop, `compact opening at ${width}px`).toBeLessThanOrEqual(width >= 1280 ? 460 : 310);
+      const selectedColumns = await page.locator('[data-selected-grid] [data-curation-item]').evaluateAll(cards =>
+        new Set(cards.map(card => Math.round(card.getBoundingClientRect().left))).size);
+      expect(selectedColumns, `selected card columns at ${width}px`).toBe(width >= 1280 ? 4 : width >= 900 ? 3 : width >= 640 ? 2 : 1);
       if (width === 375) {
         const pickerWidths = await picker.evaluate(element => ({
           card: element.getBoundingClientRect().width,
@@ -258,6 +276,14 @@ test.describe('admin critical flows', () => {
     await page.keyboard.press('Escape');
     await expect(explorer).toHaveCount(0);
     await expect(add).toBeFocused();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await add.click();
+    await expect(explorer).toBeVisible();
+    const candidateColumns = await explorer.locator('[data-media-id]').evaluateAll(cards =>
+      new Set(cards.map(card => Math.round(card.getBoundingClientRect().left))).size);
+    expect(candidateColumns, 'search results retain readable two-column cards').toBe(2);
+    await page.keyboard.press('Escape');
+    await expect(explorer).toHaveCount(0);
     const inspect = page.getByRole('button', { name: 'Inspect video' }).first();
     await inspect.click();
     const inspector = page.getByRole('dialog', { name: 'Video details' });

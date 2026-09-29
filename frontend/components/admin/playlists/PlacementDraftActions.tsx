@@ -19,7 +19,7 @@ export function PlacementDraftActions({ dirty, busy, preview, openingError, mode
   onReload?: () => void;
 }) {
   const status = openingError ? 'Opening needs attention' : preview ? 'Preview ready' : dirty ? 'Unsaved changes' : needsAdoption ? 'Ready to preview' : 'Saved';
-  return <div data-draft-actions className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface/95 p-3 shadow-lg backdrop-blur-sm">
+  return <div data-draft-actions className="sticky bottom-0 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface/95 p-3 shadow-lg backdrop-blur-sm">
     <div className="flex min-w-0 flex-wrap items-center gap-3">
       <span data-draft-status className={`rounded-full px-2.5 py-1 text-xs font-semibold ${openingError ? 'bg-amber-100 text-amber-900' : preview ? 'bg-brand/10 text-brand' : dirty ? 'bg-amber-50 text-amber-900' : 'bg-surface-2 text-text-secondary'}`}>{status}</span>
       <label className="flex items-center gap-2 text-xs font-medium text-text-secondary">Page order

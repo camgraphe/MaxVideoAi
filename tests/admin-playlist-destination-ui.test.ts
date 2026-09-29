@@ -54,6 +54,9 @@ test('opens_connected_hub_before_inventory', async () => {
     assert.match(editor.textContent!, /examples/);
     assert.ok(picker.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING,
       'the compact destination picker precedes the editor in narrow document order');
+    const maintenance = document.querySelector('#playlist-maintenance')!;
+    assert.ok(editor.compareDocumentPosition(maintenance) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'collection maintenance follows the gallery work area');
     assert.equal(document.querySelectorAll('[data-destination-picker]').length, 1);
     assert.equal(document.querySelector('[data-long-inventory]'), null);
     assert.equal(document.querySelector('[data-current-destination-header]'), null);
@@ -181,7 +184,12 @@ test('curation save refreshes the destination projection', async () => {
       isPublic: true, revision: 'r1', config: null };
     const candidate = { id: 'one', prompt: 'One', engineId: 'wan-3', engineLabel: 'Wan 3', videoUrl: '/one.mp4', thumbUrl: null, createdAt: '' };
     await act(async () => view.requests[0].resolve(Response.json({ ok: true, snapshot, selectedItems: [candidate], selectedTotal: 1, initialIds: ['one'] })));
-    assert.match(document.querySelector('[data-opening-unavailable]')?.textContent ?? '', /opening four is unavailable/i);
+    assert.match(document.querySelector('[data-opening-unavailable]')?.textContent ?? '', /until gallery storage is enabled/i);
+    assert.ok(document.querySelector('[data-opening-board]')?.contains(document.querySelector('[data-opening-unavailable]')),
+      'the storage note stays inside the opening board instead of adding another row before the videos');
+    assert.equal(document.querySelectorAll('[data-opening-board] [data-opening-slot]').length, 4,
+      'the current first four remain visible as the page-order gallery preview without opening storage');
+    assert.match((document.querySelector('[data-opening-slot="1"] button') as HTMLButtonElement).getAttribute('aria-label') ?? '', /choose opening slot 1/i);
     assert.equal(view.requests.length, 1, 'candidate inventory stays deferred until the explorer opens');
     await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === 'Preview changes')!.click());
     await act(async () => view.requests[1].resolve(Response.json({ ok: true, preview: { items: [candidate], token: 't1', revision: 'r1' } })));
@@ -192,6 +200,34 @@ test('curation save refreshes the destination projection', async () => {
       destinations: [{ ...examples, publicCount: 1, sourceSlugs: ['manual-only'] }] })));
     assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /1 public media/);
     assert.match(document.querySelector('[data-source-chain]')!.textContent!, /manual-only/);
+  } finally { await view.close(); }
+});
+
+test('fallback opening keeps its first four videos separate from the manual tail', async () => {
+  const examples = destination('examples', 'examples', 'examples');
+  const view = await mount([examples], [], { enableCuration: true });
+  try {
+    const candidates = ['lead', 'portrait', 'side-a', 'side-b', 'tail-a', 'tail-b'].map((id, index) => ({
+      id, prompt: id, engineId: 'wan-3', engineLabel: 'Wan 3', videoUrl: `/${id}.mp4`, thumbUrl: null,
+      createdAt: '', outputWidth: index === 1 ? 720 : 1280, outputHeight: index === 1 ? 1280 : 720,
+    }));
+    const ids = candidates.map(item => item.id);
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true, snapshot: {
+      available: true, openingAvailable: false, supported: true, slug: 'examples', isPublic: true,
+      revision: 'r1', config: { mode: 'manual', openingIds: null, orderedIds: ids, excludedIds: [] },
+    }, selectedItems: candidates, selectedTotal: 6, initialIds: ids })));
+    const { document } = view.dom.window;
+    assert.deepEqual([...document.querySelectorAll('[data-opening-slot]')].map(slot => slot.getAttribute('data-opening-id')), ids.slice(0, 4));
+    assert.deepEqual([...document.querySelectorAll('[data-selected-grid] [data-curation-item]')].map(item => item.getAttribute('data-curation-item')), ids.slice(4));
+    assert.match((document.querySelector('[data-opening-slot="1"] button') as HTMLButtonElement).getAttribute('aria-label') ?? '', /choose opening slot 1/i);
+    await act(async () => (document.querySelector('[data-opening-slot="1"] button') as HTMLButtonElement).click());
+    assert.match(view.requests[1].url, /\/curation\/candidates\?/);
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, items: candidates, total: 6, nextCursor: null })));
+    await act(async () => (document.querySelector('[aria-label="Eligible media"] [data-media-id="tail-a"] button') as HTMLButtonElement).click());
+    assert.deepEqual([...document.querySelectorAll('[data-opening-slot]')].map(slot => slot.getAttribute('data-opening-id')),
+      ['tail-a', 'portrait', 'side-a', 'side-b']);
+    assert.deepEqual([...document.querySelectorAll('[data-selected-grid] [data-curation-item]')].map(item => item.getAttribute('data-curation-item')),
+      ['lead', 'tail-b'], 'the replaced lead remains selected after an unsaved slot swap');
   } finally { await view.close(); }
 });
 
