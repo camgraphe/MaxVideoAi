@@ -149,9 +149,9 @@ The [local acceptance record](../../engineering/2026-09-29-pricing-local-accepta
 | Task | Implemented locally | Remaining gate |
 | --- | --- | --- |
 | 1 | 48 models/15 families; 66,549 effective baseline quotes; zero sampled missing cells or cent differences | 122 unresolved capability boundaries; exhaustive supported coverage |
-| 2 | Inactive DB seed; transactional state; migration 55 immutable closed versions; active update/rollback tests | Complete reviewed versioned seed and first versioned-only override rollback |
+| 2 | Inactive DB seed; transactional state; migration 55 immutable closed versions; active update/rollback and first fixed versioned-only override/rollback tests | Complete reviewed versioned seed and temporal quote acceptance for that initial override |
 | 3 | Inactive canonical resolver; displayed revision propagation; atomic new-wallet charge guard; immutable paid recovery; MCP stale protocol | Actual supplier settlement provenance and captured direct-payment quote binding |
-| 4 | All-family representative inventory; exact-selector navigation; preview/confirm/history/rollback; local API cycle | Desktop/mobile visual acceptance and globally active legacy-rule retirement |
+| 4 | All-family inventory; exact-selector customer and supplier scenarios; dated LIST/catalogue evidence; preview/confirm/history/rollback; local API cycle and preview-race protection | Desktop/mobile visual acceptance, real account/invoice evidence and globally active legacy-rule retirement |
 | 5 | Current server quotes across public matrix/model offers/examples/home and browser consumers; Studio/Storyboard snapshot propagation and refresh | Remaining consumer/bundle inventory, localized/browser acceptance |
 | 6 | Global switch remains off; local parity evidence recorded | Complete activation implementation and isolated local acceptance after every preceding gate |
 

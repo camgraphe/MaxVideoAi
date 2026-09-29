@@ -14,12 +14,17 @@ The production manual-tariff flag in `frontend/config/customer-tariffs.json` is 
 - **66,549** captured customer scenarios staged as explicit cents from the reviewed effective baseline. The local read-only parity check finds **0 missing sampled cells and 0 cent differences**. This proves parity for the collected scenarios, not exhaustive supported capabilities.
 - Local authenticated API cycle: preview, confirm, immutable history and rollback; a Mini 5s/720p/16:9/silent price was changed from 95 to 96 cents and restored to 95. Global activation remains false.
 - Supplier LIST estimate, verified account cost, observed invoice cost and historical retail basis have separate provenance. Unknown effective/observed costs remain unavailable rather than zero.
+- Exact supplier comparisons now retain duration, resolution, audio, quality and reference inputs when changing admin options. Reviewed Fal LIST records and dated catalogue references are distinct; sources, reference providers and units are expandable. Seedance's padded retail basis is excluded. GPT reference inputs retain exact sub-cent costs, and Veo catalogue references retain Google provenance.
 - Closed active tariff versions are immutable. New active updates and rollbacks append server-timed versions and increment the shared revision; deletion of active cells is rejected.
+- A first active override of a fixed versioned-only tariff is tested on disposable PostgreSQL: **26 → 31 → 26 cents**, preserving authored event provenance and an immutable closed database version. This accepts that fixed-cell rollback case, not a complete versioned seed or historical quote cutover.
+- The real customer editor DOM test locks model/options during pending preview or confirmation; changing options discards the old preview. Late responses and confirmation are bound to the selected scenario.
 - Manual displayed revisions are propagated by web/image/Studio/Storyboard. The new wallet debit checks and locks that revision in the same transaction. MCP revalidates its prepared snapshot and maps tariff races to its stale-quote protocol.
 - A stale displayed quote refreshes browser estimates without retrying generation automatically. Owned paid image/storyboard jobs and recovered reservations retain their original amounts and snapshots.
 - Current database-aware quotes feed public Pricing, visible model offers and JSON-LD, model decision cards, estimators/chips, the homepage price demo, and current/reference/unavailable example prices. Stored receipts and refunds are not repriced.
 
 The independent safety review found and prompted fixes for paid image recovery and missing storyboard snapshot propagation. Its follow-up found no remaining important issue in those reviewed inactive flows; it did not establish cutover readiness.
+
+The supplier follow-up review found and prompted fixes for GPT source counts/itemization, known Seedance reference inputs, Ark/LAS route readiness, Veo provenance and the existing preview race. Recheck at `256651142` found no remaining actionable finding in that scope and independently passed 60 focused tests plus TypeScript. Real account/invoice evidence and complete tariff activation remain outside this acceptance.
 
 ## Verification
 
@@ -27,18 +32,19 @@ Focused revision, wallet transaction, paid-image recovery, MCP confirmation, Stu
 
 Final verification:
 
-- Standard validator stage: **6,284 passed, 0 failed, 2 skipped** across 1,057 test files.
-- Isolated Studio validator stage: **11 passed, 0 failed**, against committed snapshot `946d73d5a`. This stage deliberately refuses env files; the sanitized local file was temporarily moved and restored in `finally`, with no change to that safety guard.
-- Local Next.js build, TypeScript, lint, public-exposure, model-registry and localization checks pass. The build retains the existing Supabase Edge Runtime `process.version` warning.
+- Standard validator stage after supplier corrections: **6,297 passed, 0 failed, 2 skipped** across 1,058 test files.
+- Isolated Studio validator stage: **11 passed, 0 failed**, against committed snapshot `4257fdad6`. This stage deliberately refuses env files; the sanitized local file was temporarily moved and restored in `finally`, with no change to that safety guard.
+- Local Next.js build, TypeScript, lint, public-exposure and model-registry checks pass after the supplier corrections. Localization checks passed in the preceding pricing-consumer acceptance.
 - Immutable billing baseline: **178 rows**. Current public baseline: **577 rows**. Pricing audit passes without rewriting frozen fixtures.
-- Local admin HTTP and inventory responses are verified. Visual desktop/mobile admin acceptance remains pending: in-app browser control timed out at `Emulation.setFocusEmulationEnabled`, and Chrome blocked the local tab with `net::ERR_BLOCKED_BY_CLIENT`.
+- After restarting the same private database and sanitized Next.js runtime, local admin HTTP returns 200. Inventory returns **48 models / 15 families**, **8 published LIST estimates / 40 catalogue references**, and **no missing representative supplier amounts**. All 48 scenario identities and current customer cents match the saved pre-supplier inventory; tariff revision remains 3 and activation false. Exact Mini 5s/10s supplier amounts and GPT edit-reference amounts were checked through the scenario API. Contracts and invoices remain unavailable.
+- Visual desktop/mobile admin acceptance remains pending: in-app browser control timed out at `Emulation.setFocusEmulationEnabled`, and Chrome blocked the local tab with `net::ERR_BLOCKED_BY_CLIENT`. HTTP/DOM checks do not establish visual acceptance.
 
-The two validator stages together verify **6,295 passing tests** with two skips. After the paid-recovery extraction, the suite caught a legacy-membership ordering regression; new discounted requests now reject before database access, while paid owned retries can recover their immutable snapshot. The existing membership tests and full standard stage pass after that fix.
+The two validator stages together verify **6,308 passing tests** with two skips. The initial supplier run caught two UI assertions still expecting the old evidence labels; the corrected view contracts and complete final validator pass. Earlier, the paid-recovery extraction caught a legacy-membership ordering regression; new discounted requests now reject before database access, while paid owned retries can recover their immutable snapshot. The existing membership tests and full standard stage pass after that fix.
 
 ## Remaining release gates
 
 1. Resolve **122 capability boundaries**: automatic/custom selectors, open or fractional media durations, reference metadata, and unbounded token budgets. They are gaps in scenarios, not 122 missing models. Select exact supported tariffs or explicit reviewed unit terms without changing initial effective cents.
-2. Generate and review the complete versioned retail seed. Test the first DB override and rollback of a versioned-only cell, including temporal quote history.
+2. Generate and review the complete versioned retail seed. The first fixed versioned-only override/rollback case is accepted locally; temporal quote history for that initial override still requires acceptance.
 3. Define supplier evidence and settlement policy. Seedance's padded legacy retail basis is not a verified provider invoice and cannot govern a misleading below-cost decision.
 4. Bind captured direct PaymentIntents to their original paid quotes through generation recovery and refunds. Metadata revision alone is insufficient; current preflight cannot establish that guarantee after an edit.
 5. Complete the remaining consumer inventory and localized/browser acceptance, including open media quotes and bundle semantics. Revalidation is not permission to advertise a stale fallback as current.
