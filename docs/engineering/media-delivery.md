@@ -413,6 +413,11 @@ while scrolling, including loading/error close behavior and the existing focus t
 Historical render cost belongs with the original media settings; each new-generation
 estimate belongs to its own settings and app handoff. Unknown original settings are
 labelled as incomplete, without claiming that a proposed configuration is identical.
+The comparison heading states that these are prices for this prompt and one new
+video per estimate. Each model action opens the prompt and its displayed settings
+in the app; it does not launch or charge a generation. Explain adapted settings only
+when a proposal differs, and keep the prompt-only reference exclusion and final
+price confirmation visible below the offers.
 Persistent sharing reuses the library's link intents with the canonical link only. Prompt
 copy uses the shared clipboard fallback and retains a manual full-text fallback.
 The public detail DTO normalizes database dates into ISO strings for identical RSC

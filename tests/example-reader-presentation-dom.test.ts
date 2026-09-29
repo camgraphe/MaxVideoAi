@@ -42,8 +42,14 @@ test('reader distinguishes historical cost from each executable quote and recove
     assert.equal(quotes.length, 3);
     assert.deepEqual(quotes.map(quote => quote.querySelector('a')?.getAttribute('href')), detail.quotes.map(quote => quote.href));
     assert.ok(quotes[0].textContent?.includes('$1.46') && !quotes[0].textContent?.includes('$1.39'));
-    assert.ok(quotes[1].textContent?.includes('720p') && quotes[1].textContent?.includes('Adjusted settings'));
-    assert.ok(quotes[0].textContent?.includes('Same settings'));
+    assert.ok(quotes[1].textContent?.includes('720p') && quotes[1].textContent?.includes('Adapted video settings'));
+    assert.ok(quotes[0].textContent?.includes('Matches original video settings'));
+    const comparison = doc.querySelector('.video-reader-comparison')!;
+    assert.ok(comparison.textContent?.includes('one new video with the settings shown'));
+    assert.ok(comparison.textContent?.includes('open this prompt in the app'));
+    assert.ok(comparison.textContent?.includes('reference images and videos are not included'));
+    assert.ok(comparison.querySelector('.video-reader-comparisonNote'), 'adaptations are explained when a proposal differs');
+    assert.ok(quotes.every(quote => quote.querySelector('a')?.textContent?.includes('Use this model')));
     const copy = [...doc.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent?.includes('Copy prompt'));
     assert.ok(copy, 'prompt copy is an explicit control');
     await act(async () => copy.click());
@@ -54,6 +60,12 @@ test('reader distinguishes historical cost from each executable quote and recove
     const fallback = doc.querySelector<HTMLTextAreaElement>('textarea[readonly]');
     assert.equal(fallback?.value, detail.prompt, 'the full prompt remains copyable if browser clipboard APIs fail');
     assert.equal(doc.activeElement, copy, 'clipboard fallback returns keyboard focus to the copy action');
+    const matching = { ...detail, quotes: detail.quotes.map(quote => ({ ...quote, settings, changed: [] })) };
+    await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: matching, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
+    assert.equal(doc.querySelector('.video-reader-comparisonNote'), null, 'identical proposals do not display an irrelevant adaptations explanation');
+    await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: { ...matching, scenario: null }, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
+    assert.ok(doc.querySelector('.video-reader-comparisonNote')?.textContent?.includes('original settings are incomplete'));
+    assert.ok([...doc.querySelectorAll('article')].every(quote => quote.textContent?.includes('Suggested video settings')), 'unknown originals must not claim matching settings');
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

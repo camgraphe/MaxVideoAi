@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Volume2, VolumeX, X } from 'lucide-react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
@@ -32,6 +32,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
   const [width, height] = detail.aspectRatio.split(':').map(Number);
   const portrait = width / height < 1;
   const originalModel = detail.quotes.find(quote => quote.original);
+  const comparisonNote = !detail.scenario ? copy.proposedNote : detail.quotes.some(quote => quote.changed.length > 0) ? copy.compareNote : null;
 
   return <>
     {navigation && <nav className={styles.playerNavigation} aria-label={copy.reader}>
@@ -87,8 +88,11 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
       </aside>
       <section className={styles.comparison} aria-labelledby="example-reader-comparison-title">
         <div className={styles.comparisonHeading}>
-          <div><SectionHeading id="example-reader-comparison-title">{copy.compare}</SectionHeading><p className={styles.note}>{copy.textOnly}</p></div>
-          <p className={styles.comparisonNote}>{detail.scenario ? copy.compareNote : copy.proposedNote}</p>
+          <SectionHeading id="example-reader-comparison-title">{copy.compare}</SectionHeading>
+          {detail.quotes.length > 0 && <>
+            <p className={styles.note}>{copy.comparisonIntro}</p>
+            {comparisonNote && <p className={styles.comparisonNote}>{comparisonNote}</p>}
+          </>}
         </div>
         {detail.quotes.length ? <div className={styles.quotes}>{detail.quotes.map(quote => <article key={quote.engineId} className={styles.quote} data-original={quote.original || undefined}>
           <div className={styles.quoteInfo}>
@@ -103,9 +107,9 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
             <p className={styles.settingsStatus} data-adjusted={quote.changed.length > 0 || undefined}>{!detail.scenario ? copy.proposed : quote.changed.length ? copy.adjusted : copy.identical}</p>
           </div>
           <div className={styles.quotePrice}><strong className={styles.price}>{price(quote.amountCents, quote.currency)}</strong><span>{copy.estimate}</span></div>
-          <a className={styles.quoteCta} href={quote.href} aria-label={`${copy.use} · ${quote.label}`} data-analytics-event="cta_click" data-analytics-cta-name="compare_example_model" data-analytics-cta-location="example_reader"><span className={styles.ctaFull}>{copy.use}</span><span className={styles.ctaCompact}>{copy.useShort}</span><ArrowRight size={15}/></a>
+          <a className={styles.quoteCta} href={quote.href} aria-label={`${copy.use} · ${quote.label}`} data-analytics-event="cta_click" data-analytics-cta-name="compare_example_model" data-analytics-cta-location="example_reader"><span className={styles.ctaFull}>{copy.use}</span><span className={styles.ctaCompact}>{copy.useShort}</span><ArrowUpRight size={15}/></a>
         </article>)}</div> : <p className={styles.note}>{copy.unavailable}</p>}
-        <p className={styles.footnote}>{copy.priceNote}</p>
+        {detail.quotes.length > 0 && <p className={styles.footnote}>{copy.textOnly} {copy.priceNote}</p>}
       </section>
     </div>
     <ExampleReaderContext context={detail.context} detail={detail} locale={locale}/>
