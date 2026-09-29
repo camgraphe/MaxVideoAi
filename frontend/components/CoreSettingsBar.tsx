@@ -9,7 +9,7 @@ import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface CoreSettingsBarProps {
-  density?: 'default' | 'workspace';
+  density?: 'default' | 'workspace' | 'comparison';
   trailingControl?: ReactNode;
   engine: EngineCaps;
   mode: Mode;
@@ -210,6 +210,7 @@ function InlineSelectControl({
   disabled,
   className,
   compact = false,
+  comparison = false,
   action = false,
 }: {
   kind: CoreControlKind;
@@ -219,6 +220,7 @@ function InlineSelectControl({
   disabled?: boolean;
   className?: string;
   compact?: boolean;
+  comparison?: boolean;
   action?: boolean;
 }) {
   const { t } = useI18n();
@@ -242,10 +244,10 @@ function InlineSelectControl({
             ? 'h-11 !min-w-0 border-brand !bg-[image:var(--brand-gradient)] px-2.5 text-[11px] !text-on-brand shadow-card'
             : compact ? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1.5 px-2.5 text-xs' : 'h-10 px-3 text-[12px]'
         )}
-        menuPlacement="top"
-        menuClassName={compact ? 'app-experience app-settings-menu' : undefined}
+        menuPlacement={comparison ? 'auto' : 'top'}
+        menuClassName={compact ? clsx('app-experience app-settings-menu', comparison && 'app-comparison-settings-menu !z-[140]') : undefined}
         portal={compact}
-        hideChevron={compact}
+        hideChevron={compact && !comparison}
       />
     </div>
   );
@@ -262,7 +264,7 @@ export function CoreIterationsControl({
   onIterationsChange,
   action = false,
 }: {
-  density?: 'default' | 'workspace';
+  density?: 'default' | 'workspace' | 'comparison';
   iterations?: number;
   onIterationsChange: (value: number) => void;
   action?: boolean;
@@ -272,7 +274,8 @@ export function CoreIterationsControl({
       kind="iterations"
       options={ITERATION_OPTIONS}
       value={iterations}
-      compact={density === 'workspace' || action}
+      compact={density !== 'default' || action}
+      comparison={density === 'comparison'}
       action={action}
       onChange={(value) => onIterationsChange(Number(value))}
     />
@@ -311,7 +314,8 @@ export function CoreSettingsBar({
   durationManagedLabel,
 }: CoreSettingsBarProps) {
   const { t } = useI18n();
-  const workspaceDensity = density === 'workspace';
+  const workspaceDensity = density !== 'default';
+  const comparisonDensity = density === 'comparison';
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
     | Partial<typeof DEFAULT_CONTROLS_COPY>
     | undefined;
@@ -459,6 +463,7 @@ export function CoreSettingsBar({
             options={durationOptions}
             value={durationValue}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => {
               if (frameOptions && frameOptions.length) {
                 onNumFramesChange?.(Number(value));
@@ -473,6 +478,7 @@ export function CoreSettingsBar({
             options={durationRangeOptions}
             value={durationSec}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => onDurationChange(Number(value))}
           />
         ) : null}
@@ -483,6 +489,7 @@ export function CoreSettingsBar({
             options={resolutionOptionsList}
             value={resolution}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => onResolutionChange(String(value))}
             disabled={resolutionLocked}
           />
@@ -494,6 +501,7 @@ export function CoreSettingsBar({
             options={hdrOptions}
             value={Boolean(hdrEnabled)}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => onHdrChange?.(value === true || value === 'true' || value === 1)}
             disabled={typeof onHdrChange !== 'function'}
           />
@@ -505,6 +513,7 @@ export function CoreSettingsBar({
             options={aspectOptionsList}
             value={aspectRatio}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => onAspectRatioChange(String(value))}
           />
         ) : null}
@@ -515,6 +524,7 @@ export function CoreSettingsBar({
             options={fpsOptionsList}
             value={fps}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => onFpsChange(Number(value))}
           />
         ) : null}
@@ -525,6 +535,7 @@ export function CoreSettingsBar({
             options={audioOptions}
             value={audioValue}
             compact={workspaceDensity}
+            comparison={comparisonDensity}
             onChange={(value) => {
               if (audioSelectLocked || typeof onAudioChange !== 'function') return;
               onAudioChange(Boolean(value));

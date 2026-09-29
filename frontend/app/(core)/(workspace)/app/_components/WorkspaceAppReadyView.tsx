@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
 import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
 import dynamic from 'next/dynamic';
+import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
@@ -405,7 +406,26 @@ export function WorkspaceAppReadyView({
       />}
       </WorkspaceRecentReferences>
       {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
-        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError} /> : null}
+        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError}
+        comparisonSettings={<CoreSettingsBar
+          density="comparison" engine={selectedEngine} mode={submissionMode} caps={capability}
+          durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
+          durationOption={form.durationOption ?? null} onDurationChange={handleDurationChange}
+          numFrames={form.numFrames} onNumFramesChange={handleFramesChange}
+          resolution={form.resolution} onResolutionChange={handleResolutionChange}
+          aspectRatio={form.aspectRatio} onAspectRatioChange={handleAspectRatioChange}
+          fps={form.fps} onFpsChange={handleFpsChange}
+          showAudioControl={supportsAudioToggle} audioEnabled={form.audio}
+          audioControlDisabled={voiceControlEnabled}
+          audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
+          onAudioChange={audio => setForm(current => current ? { ...current, audio } : current)}
+          durationManaged={multiPromptActive}
+          durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
+          iterations={form.iterations} onIterationsChange={iterations => {
+            setForm(current => current ? { ...current, iterations } : current);
+            if (iterations <= 1) setViewMode('single');
+          }}
+        />} /> : null}
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}

@@ -6,7 +6,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { listFalEngines } from '../frontend/src/config/falEngines';
-import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import { coerceFormState, getModeCaps } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import {
   decodeWorkspaceModelSetups,
   workspaceModelSetupsKey,
@@ -94,6 +94,7 @@ async function mount({
     '../frontend/app/(core)/(workspace)/app/_components/WorkspaceModelReviewCommands'
   );
   const { I18nProvider } = await import('../frontend/lib/i18n/I18nProvider');
+  const { CoreSettingsBar } = await import('../frontend/components/CoreSettingsBar');
   const engines = listFalEngines()
     .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id) || (mixedCatalogue && e.engine.modes.includes('t2i')))
     .map((e) => e.engine);
@@ -180,6 +181,29 @@ async function mount({
       panel: current.panel,
       memoryOnly: current.memoryOnly,
     });
+    const updateSetting = (patch: Partial<WorkspaceModelSetup['form']>) => {
+      setup = { ...setup, form: { ...setup.form, ...patch } };
+      rerender();
+    };
+    const comparisonSettings = React.createElement(CoreSettingsBar, {
+      density: 'comparison',
+      engine: engines.find((engine) => engine.id === setup.form.engineId)!,
+      mode: setup.form.mode,
+      caps: getModeCaps(engines.find((engine) => engine.id === setup.form.engineId)!, setup.form.mode),
+      durationSec: setup.form.durationSec,
+      onDurationChange: (value) => updateSetting({ durationSec: Number(value), durationOption: value }),
+      resolution: setup.form.resolution,
+      onResolutionChange: (resolution) => updateSetting({ resolution }),
+      aspectRatio: setup.form.aspectRatio,
+      onAspectRatioChange: (aspectRatio) => updateSetting({ aspectRatio }),
+      fps: setup.form.fps,
+      onFpsChange: (fps) => updateSetting({ fps }),
+      showAudioControl: true,
+      audioEnabled: setup.form.audio,
+      onAudioChange: (audio) => updateSetting({ audio }),
+      iterations: setup.form.iterations,
+      onIterationsChange: (iterations) => updateSetting({ iterations }),
+    });
     return React.createElement(I18nProvider, {
       locale: locale as 'en',
       dictionary: {},
@@ -200,6 +224,7 @@ async function mount({
               currentPrice: 1,
               currentCurrency: 'USD',
               currentPricing: false,
+              ...{ comparisonSettings },
             })
           : null,
       ),
@@ -806,18 +831,59 @@ test('Cancel, target replacement and Retry invalidate Apply immediately within o
   }
 });
 
+test('comparison settings reprice within the dialog and discard quotes for earlier settings', async () => {
+  const f = await mount();
+  try {
+    await f.click('Compare'); await f.tick();
+    const oldRequestCount = f.requests.length;
+    const duration = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('button[aria-haspopup="listbox"]')]
+      .find(button => button.textContent?.startsWith('Duration:'));
+    assert.ok(duration, 'the duration is editable inside Compare');
+    await act(async () => duration.click());
+    const option = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('[role="option"]')]
+      .find(button => button.textContent === 'Duration: 8s');
+    assert.ok(option);
+    await act(async () => option.click());
+    assert.equal(f.dom.window.document.activeElement, duration, 'selection restores focus to the setting');
+    assert.equal(f.current.panel, 'compare');
+    assert.equal(f.setup.form.durationSec, 8);
+    assert.equal(f.current.candidate, null);
+    await f.tick();
+    assert.ok(f.requests.length > oldRequestCount);
+    assert.ok(f.requests.slice(oldRequestCount).some(request => (request.body as { durationSec: number }).durationSec === 8));
+    for (let index = 0; index < oldRequestCount; index++) await f.respond(index, 9999);
+    assert.ok(f.current.alternatives.every(alternative => alternative.price === null), 'late earlier prices stay hidden');
+    for (let index = oldRequestCount; index < f.requests.length; index++) await f.respond(index, 125);
+    assert.ok(f.current.alternatives.some(alternative => alternative.price === 1.25));
+    assert.deepEqual(f.writes, [], 'editing settings never applies a different model');
+    assert.equal(f.storage.getItem(workspaceModelSetupsKey('a')), null);
+  } finally { await f.dispose(); }
+});
+
+test('Escape closes a settings menu before closing Compare', async () => {
+  const f = await mount();
+  try {
+    await f.click('Compare');
+    const duration = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('button[aria-haspopup="listbox"]')]
+      .find(button => button.textContent?.startsWith('Duration:'));
+    assert.ok(duration);
+    await act(async () => { duration.focus(); duration.click(); });
+    await act(async () => duration.dispatchEvent(new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(f.current.panel, 'compare');
+    assert.equal(f.dom.window.document.querySelector('[role="listbox"]'), null);
+    assert.equal(f.dom.window.document.activeElement, duration);
+    await act(async () => duration.dispatchEvent(new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(f.current.panel, null);
+  } finally { await f.dispose(); }
+});
+
 test('comparison family picker adds and removes models without mutating the draft or requoting unchanged choices', async () => {
   const f = await mount();
   try {
     const before = structuredClone(f.setup);
     await f.click('Compare'); await f.tick();
     for (let index = 0; index < f.requests.length; index++) await f.respond(index);
-    assert.match(f.dom.window.document.body.textContent ?? '', /Current Create video settings/);
-    assert.match(f.dom.window.document.body.textContent ?? '', /Used to calculate every price below/);
-    await f.click('Edit settings');
-    assert.equal(f.current.panel, null, 'editing returns to the composer');
-    assert.deepEqual(f.setup, before, 'returning to settings leaves the current setup intact');
-    await f.click('Compare'); await f.tick();
+    assert.match(f.dom.window.document.body.textContent ?? '', /Common settings/);
     const originalCount = f.requests.length;
     const removed = f.current.alternatives[0];
     await act(async () => f.current.comparison.remove(removed.engine.id));
