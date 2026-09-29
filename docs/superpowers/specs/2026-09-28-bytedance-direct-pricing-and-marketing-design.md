@@ -2,11 +2,11 @@
 
 Date: 2026-09-28
 
-Status: design for review; no production price or provider switch is authorized by this document.
+Status: design updated 2026-09-29 for the Seedance 1.5 withdrawal decision; no production price or provider switch is authorized by this document.
 
 ## Outcome
 
-Make BytePlus the direct execution path for MaxVideoAI's ByteDance video and image family, give creators a genuine Seedance Draft-to-final workflow, and give admins one clear place to compare supplier cost with the customer quote before changing commercial policy. Once the behavior and prices are verified, review every affected marketing surface in English, French, and Spanish.
+Make BytePlus the direct execution path for MaxVideoAI's supported current ByteDance video and image models, give creators a genuine Seedance 2.5 Draft-to-final workflow, and give admins one clear place to compare supplier cost with the customer quote before changing commercial policy. Once the behavior and prices are verified, review every affected marketing surface in English, French, and Spanish.
 
 ## Current evidence and scope
 
@@ -18,7 +18,16 @@ Make BytePlus the direct execution path for MaxVideoAI's ByteDance video and ima
 - The BytePlus negotiated quote CT20260925128931 was still `To be confirmed` in the console on 2026-09-28. Show list rates and pending proposed discounts separately; do not label unconfirmed discounts as effective.
 - Current Seedance 2.5 1080p cost accounting uses the 480p/720p no-video token rate; BytePlus publishes a distinct 1080p rate. Current Seedream 5.0 Pro marketing mentions 4K although the provider's Pro API supports at most 2K. These are factual review items, not authorization to change customer prices.
 - The existing Seedance 2.x public/billing token rate is intentionally padded by `2.5 / 1.3` before the versioned default `+30%` rule. Consequently the canonical `vendorSubtotalCents` and the admin “Supplier subtotal” are not reliable BytePlus cost for these rows. The separate poller rate table estimates cost from usage but currently equates list and effective cost. See `docs/engineering/bytedance-pricing-path-audit-2026-09-28.md`.
-- BytePlus schedules Seedance 1.5 Pro shutdown for 2026-11-11. Keep the requested direct 1.5 connection in scope if the account supports it, with an explicit sunset guard and a path to Seedance 2.0 Mini.
+- BytePlus schedules Seedance 1.5 Pro shutdown for 2026-11-11. The activated model still returned `InvalidEndpointOrModel.NotFound` to the direct canary in this account on 2026-09-29. Keep the new direct path disabled; do not treat console activation as a successful generation canary. Preserve historical Fal reads and the dated shutdown guard.
+
+## Seedance 1.5 withdrawal and offer positioning (decision added 2026-09-29)
+
+- Stop planning a public Seedance 1.5 direct launch or 1.5 Draft parity. Keep any existing adapter code behind its disabled gate until historical job, receipt, refund and polling paths are verified; then remove unused new-job compatibility in a bounded change. Do not remap a saved 1.5 job or a paid request to another model.
+- Seedance 2.0 Mini is the **candidate budget entry offer**, conditional on comparing live MaxVideoAI customer quotes for equivalent settings and confirming the supplier cost in the admin grid. It is not the technical successor to 1.5 Pro. Seedance 2.0 Fast is a separate, prominent option for speed and cost balance. Seedance 2.5 is the relevant option to evaluate for 1080p and the Draft-to-final workflow. Do not present any one of these as feature-identical to 1.5.
+- Prefer a localized, indexable historical 1.5 archive page that explains the closure and offers contextual Mini, Fast and 2.5 paths. This preserves 1.5-specific search intent and media history. Audit Search Console queries, landing pages, backlinks and locale paths before deciding whether any 301 is better. If a single permanent redirect is eventually justified, compare Fast with Mini and 2.5 against the observed intent, document the destination and change the authored model registry through its retirement contract. No automatic 301 or `successorId` is implied by this decision.
+- Plan the public withdrawal early enough to verify it before the provider shutdown. Close new 1.5 generation, app and pricing discovery only with tested lifecycle and historical-reader gates. Preserve old model, comparison, example and media URLs while the archive remains published. Remove live Product/Offer and generation CTAs from archived pages and structured data.
+- Market the distinctions with factual comparisons: Mini for a verified lower customer price, Fast for its supported speed/cost proposition, and 2.5 for supported higher-resolution/Draft use. State actual resolution and mode limits. Do not call Mini the cheapest until exact canonical quotes across comparable live scenarios prove the claim; do not conflate a temporary provider discount with an approved customer tariff.
+- SEO/GEO work covers EN/FR/ES canonical and hreflang, sitemap, robots and crawler access, internal links, comparison and example pages, accurate visible structured data, stable video playback and thumbnails, and search-intent-based page copy. Measure indexing, impressions, clicks and qualified traffic after release. Use ordinary crawlable, helpful content for AI search; do not add unsupported GEO schema or promise placement in generated answers.
 
 ## Creator workflow
 
@@ -26,7 +35,7 @@ Make BytePlus the direct execution path for MaxVideoAI's ByteDance video and ima
 2. Save the original provider Draft task ID, account/region, owner, generation time, expiry, model, input provenance, and a link to the MaxVideoAI Draft job. Store no provider credentials in browser data.
 3. On a completed Draft, show **Finaliser en 1080p** in the library and Studio. Requote the final independently, show the second charge, and require the ordinary generation confirmation. Reject expired, foreign-account, failed, already-finalizing, or unsupported Drafts before charging. A final may be retried only through an explicit new quote; duplicate requests must not double-charge.
 4. Preserve two separate job/receipt records and an intelligible relationship between them. A user who keeps only the Draft pays only for that step. Explain that the final is a new model render with consistent creative inputs, not a guaranteed frame-for-frame upscale.
-5. Migrate Seedance 1.5 to direct BytePlus, including its own Draft path, if available for this account. Add a scheduled shutdown/replacement check before 2026-11-11 and keep historical Fal jobs readable. Retire ByteDance-specific Fal compatibility choices only after direct-mode canaries and rollback readiness; leave Fal infrastructure for unrelated providers.
+5. Keep Seedance 1.5 new direct/Draft execution disabled and prepare its public withdrawal before 2026-11-11. Preserve historical Fal jobs and their provider-specific readers. Retire ByteDance-specific new-job Fal choices only after the remaining supported direct modes pass canaries and rollback checks; leave Fal infrastructure for unrelated providers.
 6. Keep Seedream Lite and Pro direct. Evaluate Flash as a distinct candidate before publication. Test same-account original Seedream Lite output reuse in Seedance; the existing copy-to-MaxVideoAI-storage path may remove the provider's trust signal. Authorized real-person/virtual asset workflows require their own consent and capacity design.
 
 ## Admin pricing comparison
@@ -42,7 +51,7 @@ Make BytePlus the direct execution path for MaxVideoAI's ByteDance video and ima
 
 ## Final marketing review
 
-After the provider paths, Draft lifecycle, factual rates, and admin projections pass their release gates, inventory and review the home page, model catalogue and pages, pricing matrix, comparisons, examples, workflow pages, Studio onboarding, and MCP/assistant guidance in EN/FR/ES. Present Draft as a two-step paid workflow and distinguish it from the separate Fast/Mini models. Correct provider capability and resolution claims, quote exact supported scenarios, and decide whether Flash or a Seedream-to-Seedance journey merits prominent placement. Verify canonical URLs, hreflang, JSON-LD offers, localized copy, examples and first playback before publishing changes. Do not advertise unpublished or unverified features.
+The 1.5 archive and closure can proceed as a separately verified release before the 2.5 Draft and manual pricing-grid launches. For each release, inventory and review the home page, model catalogue and pages, pricing matrix, comparisons, examples, workflow pages, Studio onboarding, and MCP/assistant guidance in EN/FR/ES. Present 2.5 Draft as a two-step paid workflow only when live, distinguish it from Fast/Mini, and keep 1.5 historical content distinct from current offers. Correct provider capability and resolution claims, quote exact supported scenarios, and decide whether Flash or a Seedream-to-Seedance journey merits prominent placement. Verify canonical URLs, hreflang, structured data, localized copy, examples and first playback before publishing changes. Do not advertise unpublished or unverified features.
 
 ## Release boundaries
 
@@ -54,5 +63,6 @@ After the provider paths, Draft lifecycle, factual rates, and admin projections 
 ## Sources and code owners
 
 - Provider rules: <https://docs.byteplus.com/en/docs/ModelArk/2607688>, <https://docs.byteplus.com/en/docs/ModelArk/1544106>, <https://docs.byteplus.com/en/docs/modelark/image-generation-api>.
+- Model sunset and discovery: <https://docs.byteplus.com/en/docs/ModelArk/1350667>, <https://docs.byteplus.com/en/docs/ModelArk/seedance-2-0>, <https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes>, <https://developers.google.com/search/docs/fundamentals/ai-optimization-guide>.
 - Current model and routing owners: `frontend/config/model-registry.json`, `frontend/src/server/video-providers/byteplus-modelark-profiles.ts`, `frontend/src/config/fal-engines/seedance-1-5.ts`, `frontend/src/config/fal-engines/seedream.ts`.
 - Pricing owners and runbook: `docs/engineering/pricing-engine.md`, `frontend/server/pricing-admin/`, `frontend/app/(core)/admin/pricing/`, `packages/pricing/`.
