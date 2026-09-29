@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "rates": [
+    {
+      "engineId": "veo-3-1", "mode": "t2v", "provider": "fal",
+      "sourceUrl": "https://fal.ai/models/fal-ai/veo3.1", "checkedAt": "2026-09-29T22:36:56.000Z",
+      "unit": "second",
+      "byResolution": {
+        "720p": { "silent": 0.2, "audio": 0.4 },
+        "1080p": { "silent": 0.2, "audio": 0.4 },
+        "4k": { "silent": 0.4, "audio": 0.6 }
+      }
+    },
+    {
+      "engineId": "veo-3-1-fast", "mode": "t2v", "provider": "fal",
+      "sourceUrl": "https://fal.ai/models/fal-ai/veo3.1/fast", "checkedAt": "2026-09-29T22:36:56.000Z",
+      "unit": "second",
+      "byResolution": {
+        "720p": { "silent": 0.1, "audio": 0.15 },
+        "1080p": { "silent": 0.1, "audio": 0.15 },
+        "4k": { "silent": 0.3, "audio": 0.35 }
+      }
+    },
+    {
+      "engineId": "kling-2-6-pro", "mode": "t2v", "provider": "fal",
+      "sourceUrl": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video", "checkedAt": "2026-09-29T22:36:56.000Z",
+      "unit": "second", "byResolution": { "1080p": { "silent": 0.07, "audio": 0.14 } }
+    },
+    {
+      "engineId": "lumaRay2", "mode": "t2v", "provider": "fal",
+      "sourceUrl": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2", "checkedAt": "2026-09-29T22:36:56.000Z",
+      "unit": "task",
+      "byResolutionAndDuration": {
+        "540p": { "5": 0.5, "9": 1 }, "720p": { "5": 1, "9": 2 }, "1080p": { "5": 2, "9": 4 }
+      }
+    }
+  ]
+}

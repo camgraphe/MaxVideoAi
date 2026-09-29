@@ -4,7 +4,7 @@ import test from 'node:test';
 
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage.ts';
 import { confirmCustomerTariffChange, loadCustomerTariffHistory,
-  previewCustomerTariffChange } from '../frontend/server/pricing-admin/customer-tariff-service.ts';
+  previewCustomerTariffChange, loadCustomerTariffScenarioDetail } from '../frontend/server/pricing-admin/customer-tariff-service.ts';
 import { getDb } from '../frontend/src/lib/db.ts';
 import { startDisposablePostgres } from './helpers/disposable-postgres.ts';
 
@@ -36,8 +36,14 @@ test('admin tariff preview, stale rejection and confirmation are atomic on dispo
     await db.pool.query(readFileSync('neon/migrations/54_customer_tariff_cells.sql', 'utf8'));
     const scenario = collectSellableManualTariffCoverage().scenarios.find((row) =>
       row.modelId === 'seedance-2-0-mini' && row.selector.mode === 't2v' &&
-      row.selector.resolution === '720p' && row.selector.durationSec === '5');
+      row.selector.resolution === '720p' && row.selector.durationSec === '5' && row.selector.aspectRatio === '16:9');
     assert.ok(scenario);
+    const selected = await loadCustomerTariffScenarioDetail(scenario.modelId, scenario.selector);
+    const longer = await loadCustomerTariffScenarioDetail(scenario.modelId, { ...scenario.selector, durationSec: '10' });
+    assert.equal(selected.supplierComparison.supplierList.amountUsd, 0.378);
+    assert.equal(longer.supplierComparison.supplierList.amountUsd, 0.756);
+    assert.equal(longer.supplierComparison.scenarioId, longer.scenarioId);
+    assert.ok(longer.currentCents! > selected.currentCents!);
     const proposal = { operation: 'create' as const, scenarioId: scenario.id, customerCents: 95 };
     const preview = await previewCustomerTariffChange(proposal);
     assert.equal(preview.proposedCents, 95);
@@ -62,6 +68,9 @@ test('admin tariff preview, stale rejection and confirmation are atomic on dispo
     const restored = await confirmCustomerTariffChange(rollback, rollbackPreview.fingerprint,
       '11111111-1111-4111-8111-111111111111');
     assert.equal(restored.revision, 3);
+    const afterEdit = await loadCustomerTariffScenarioDetail(scenario.modelId, scenario.selector);
+    assert.equal(afterEdit.currentCents, selected.currentCents);
+    assert.equal(afterEdit.supplierComparison.supplierList.amountUsd, selected.supplierComparison.supplierList.amountUsd);
     const remove = { operation: 'rollback' as const, scenarioId: scenario.id, eventId: confirmation.event.id };
     const removePreview = await previewCustomerTariffChange(remove);
     assert.equal(removePreview.proposedCents, null);

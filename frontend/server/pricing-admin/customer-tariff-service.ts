@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type { ManualTariffCell } from '@maxvideoai/pricing';
+import { resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { loadPricingPolicyOverridesWithExecutor, loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
@@ -14,6 +14,8 @@ import { getPricingChangeEventById, insertPricingChangeEvent, listPricingChangeE
 import { loadPricingPolicyInventory } from './policy-read-model';
 import { revalidateCustomerTariffChangeSurfaces } from './revalidation';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
+import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
+import { buildProviderCostComparisonRows } from './provider-cost-comparison';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
@@ -54,9 +56,10 @@ export async function loadCustomerTariffScenarioDetail(
   let currentCents: number | null = null;
   try { currentCents = await quoteCurrent(scenario, policy, state); } catch { /* No numeric fallback for an unavailable live quote. */ }
   const staged = currentDatabaseCell(state, cellId(scenario));
+  const [supplierComparison] = buildProviderCostComparisonRows([providerComparisonForTariffScenario(scenario)], new Date().toISOString());
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
     currentCents, stagedCents: staged?.price.kind === 'fixed' ? staged.price.customerCents : null,
-    currency: 'USD' };
+    currency: 'USD', supplierComparison };
 }
 
 function cellId(scenario: ManualTariffCoverageScenario): string {
@@ -139,6 +142,7 @@ export async function loadCustomerTariffInventory(): Promise<CustomerTariffInven
       supplierListUsd: comparison.supplierList.amountUsd,
       supplierEffectiveUsd: comparison.supplierEffective.amountUsd,
       supplierObservedUsd: comparison.supplierObserved.amountUsd,
+      supplierComparison: comparison,
     };
   });
   return {
@@ -172,11 +176,16 @@ async function buildPreview(
   const scenario = scenarioById(proposal.scenarioId);
   const currentCents = await quoteCurrent(scenario, policy, state);
   const id = cellId(scenario);
-  const previousCell = currentDatabaseCell(state, id);
-  if (proposal.operation === 'create' && previousCell ||
-      (proposal.operation === 'update' || proposal.operation === 'delete') && !previousCell) {
+  const previousDatabaseCell = currentDatabaseCell(state, id);
+  if (proposal.operation === 'create' && previousDatabaseCell ||
+      (proposal.operation === 'update' || proposal.operation === 'delete') && !previousDatabaseCell) {
     throw new PricingAdminError('invalid_payload', 'Tariff operation does not match the current cell');
   }
+  // The first DB override must retain the authored effective price for an append-only rollback.
+  const previousCell = previousDatabaseCell ?? (state.active ? resolveManualTariffCell({
+    selector: scenario.selector, at: new Date().toISOString(),
+    databaseCells: state.databaseCells, versionedCells: state.versionedCells,
+  }) : null);
   let proposedCents: number | null = 'customerCents' in proposal ? proposal.customerCents : null;
   if (proposal.operation === 'rollback') {
     const event = await getPricingChangeEventById(proposal.eventId, 'customer_tariff', executor);
@@ -187,8 +196,13 @@ async function buildPreview(
       if (!event.previousState || typeof event.previousState !== 'object' || Array.isArray(event.previousState)) {
         throw new PricingAdminError('invalid_payload', 'Historical tariff cell is invalid');
       }
-      const historical = validateCustomerTariffCell(event.previousState as ManualTariffCell);
-      if (historical.id !== id ||
+      const historical = event.previousState as ManualTariffCell;
+      if (historical.source !== 'versioned' && historical.source !== 'database') {
+        throw new PricingAdminError('invalid_payload', 'Historical tariff source is invalid');
+      }
+      // Reuse structural validation without falsely relabeling versioned event provenance.
+      validateCustomerTariffCell({ ...historical, source: 'database' });
+      if ((historical.source === 'database' && historical.id !== id) ||
           Object.keys(historical.selector).length !== Object.keys(scenario.selector).length ||
           Object.entries(scenario.selector).some(([key, value]) => historical.selector[key] !== value) ||
           historical.price.kind !== 'fixed') {

@@ -109,6 +109,18 @@ test('pricing cockpit consumes server-projected supplier comparisons without cli
   assert.doesNotMatch(cockpitSource, /vendorSubtotalCents\s*[-+*/]/);
 });
 
+test('exact admin supplier evidence shares a server owner and cannot author customer prices', () => {
+  const service = readOrEmpty(join(root, 'frontend/server/pricing-admin/customer-tariff-service.ts'));
+  const inventory = readOrEmpty(pricingPolicyReadModelPath);
+  assert.match(service, /providerComparisonForTariffScenario\(scenario\)/);
+  assert.match(inventory, /providerComparisonForTariffScenario\(selected\)/);
+  for (const file of ['catalog-supplier-reference.ts', 'published-supplier-tariffs.ts', 'tariff-provider-comparison.ts']) {
+    const source = readOrEmpty(join(root, 'frontend/server/pricing-admin', file));
+    assert.doesNotMatch(source, /quoteCanonicalPricing|computeCanonicalBillingSnapshot|resolveCustomerTariffQuote/,
+      `${file} must stay factual and independent from customer policy`);
+  }
+});
+
 test('navigation exposes model pricing and billing products while membership remains historical', () => {
   const items = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
   assert.equal(items.some((item) => item.href === '/admin/pricing'), true);

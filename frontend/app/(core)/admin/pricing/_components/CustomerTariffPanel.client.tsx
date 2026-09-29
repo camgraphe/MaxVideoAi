@@ -10,6 +10,8 @@ import type { PricingChangeEvent } from '@/lib/admin/pricing-change-contract';
 import type { CustomerTariffChangePreview, CustomerTariffInventory,
   CustomerTariffScenarioDetail, CustomerTariffChangeProposal, CustomerTariffChangeConfirmation } from '@/server/pricing-admin/customer-tariff-contract';
 
+import { SupplierPriceDetails, supplierAmount, supplierEvidenceLabel } from './SupplierPriceDetails';
+
 const INVENTORY_URL = '/api/admin/pricing/tariffs/inventory';
 
 async function getInventory(url: string): Promise<CustomerTariffInventory> {
@@ -45,11 +47,6 @@ function money(cents: number | null): string {
   return cents == null ? 'Unavailable' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
-function supplierMoney(usd: number | null): string {
-  return usd == null ? 'Unconfirmed' : new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 6,
-  }).format(usd);
-}
 
 function title(modelId: string): string {
   return modelId.split(/[-_]/).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
@@ -186,8 +183,8 @@ export function CustomerTariffPanel() {
         <button key={row.modelId} type="button" onClick={() => select(row.modelId)}
           aria-pressed={selectedId === row.modelId}
           className={`grid w-full gap-3 rounded-xl border p-3 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_minmax(100px,0.55fr)_minmax(100px,0.55fr)] ${selectedId === row.modelId ? 'border-brand bg-[#f7f3ff]' : 'border-border bg-surface hover:border-brand/50'}`}>
-          <span className="min-w-0"><strong className="block truncate text-sm text-text-primary">{title(row.modelId)}</strong><span className="text-xs text-text-secondary">{title(row.familyId)} · {row.selector.mode} · {row.selector.durationSec}s · {row.selector.resolution}</span></span>
-          <span className="rounded-lg border border-info-border bg-info-bg p-2"><span className="block text-[10px] font-bold uppercase text-info">Supplier list</span><strong className="text-sm text-text-primary">{supplierMoney(row.supplierListUsd)}</strong></span>
+          <span className="min-w-0"><strong className="block truncate text-sm text-text-primary">{title(row.modelId)}</strong><span className="text-xs text-text-secondary">{title(row.familyId)} · {row.selector.mode} · {row.mediaType === 'image' ? '1 image' : `${row.selector.durationSec}s`} · {row.selector.resolution}</span></span>
+          <span className="rounded-lg border border-info-border bg-info-bg p-2"><span className="block text-[10px] font-bold uppercase text-info">Supplier LIST / reference</span><strong className="text-sm text-text-primary">{supplierAmount(row.supplierListUsd)}</strong><span className="mt-1 block text-[10px] text-text-secondary">{supplierEvidenceLabel(row.supplierComparison.supplierList)}</span></span>
           <span className="rounded-lg border border-[#cbb9ff] bg-[#f1ebff] p-2"><span className="block text-[10px] font-bold uppercase text-[#5937b8]">Customer live</span><strong className="text-sm text-text-primary">{money(row.currentCents)}</strong></span>
         </button>) : <p className="rounded-xl border border-border bg-surface p-5 text-sm text-text-secondary">No models match these filters.</p>}</div>
       <div className="xl:sticky xl:top-4 xl:self-start">{selected ? <section className="rounded-2xl border border-border bg-surface p-5">
@@ -199,7 +196,8 @@ export function CustomerTariffPanel() {
           className="mt-1 min-h-9 w-full rounded-lg border border-border bg-bg px-2 text-sm text-text-primary">
           {choice.options.map((value) => <option key={value} value={value}>{scenarioValue(choice.key, value)}</option>)}
         </select></label>)}</div> : null}
-        <div className="mt-5 grid gap-2 sm:grid-cols-2"><div className="rounded-xl border border-info-border bg-info-bg p-3"><p className="text-xs font-semibold text-info">Supplier list</p><p className="text-xl font-bold">{supplierMoney(exact?.scenarioId === selected.scenarioId ? selected.supplierListUsd : null)}</p><p className="text-xs text-text-secondary">{exact?.scenarioId === selected.scenarioId ? `Account effective: ${supplierMoney(selected.supplierEffectiveUsd)} · invoice: ${supplierMoney(selected.supplierObservedUsd)}` : 'Supplier evidence is only mapped for the comparison scenario.'}</p></div><div className="rounded-xl border border-[#cbb9ff] bg-[#f1ebff] p-3"><p className="text-xs font-semibold text-[#5937b8]">Customer total · live</p><p className="text-xl font-bold">{money(exact?.currentCents ?? null)}</p></div></div>
+        <div className="mt-5 grid gap-2 sm:grid-cols-2"><div className="rounded-xl border border-info-border bg-info-bg p-3"><p className="text-xs font-semibold text-info">Supplier LIST / reference</p><p className="mb-3 text-xl font-bold">{supplierAmount(exact?.supplierComparison.supplierList.amountUsd ?? null)}</p></div><div className="rounded-xl border border-[#cbb9ff] bg-[#f1ebff] p-3"><p className="text-xs font-semibold text-[#5937b8]">Customer total · live</p><p className="text-xl font-bold">{money(exact?.currentCents ?? null)}</p></div></div>
+        {exact ? <div className="mt-3 rounded-xl border border-info-border bg-info-bg p-3"><SupplierPriceDetails row={exact.supplierComparison} /></div> : null}
         <label className="mt-5 block text-sm font-semibold text-text-primary">Manual customer total · USD<input type="number" min="0" step="0.01" inputMode="decimal" value={draft} onChange={(event) => { setDraft(event.target.value); setPreview(null); setPendingProposal(null); }} disabled={!editable || busy} className="mt-2 min-h-11 w-full rounded-lg border border-border bg-bg px-3 text-base" /></label>
         {exact?.stagedCents != null ? <p className="mt-2 text-xs text-amber-800">Prepared value: {money(exact.stagedCents)}{data.active ? ' · live' : ' · pending global activation'}</p> : null}
         <div className="mt-4 flex flex-wrap gap-2"><AdminActionButton type="button" variant="primary" disabled={!editable || busy || !draft} onClick={() => void requestPreview()}>Preview price change</AdminActionButton>{!data.active && exact?.stagedCents != null ? <AdminActionButton type="button" disabled={!editable || busy} onClick={() => void requestPreview({ operation: 'delete', scenarioId: exact.scenarioId })}>Remove prepared price</AdminActionButton> : null}</div>

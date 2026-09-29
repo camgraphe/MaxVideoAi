@@ -10,6 +10,7 @@ import {
 import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { buildPricingAuditScenarios } from '../frontend/src/lib/pricing-audit/scenarios';
+import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import {
   filterProviderComparisonRows,
   formatProviderComparisonScenario,
@@ -24,6 +25,93 @@ const customerQuote = {
   ruleId: 'current-customer-rule',
   pricingMode: 'legacy_margin_rule' as const,
 };
+
+function exactInput(modelId: string, selector: Record<string, string>, executionProvider: string) {
+  const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === modelId
+    && Object.entries(selector).every(([key, value]) => row.selector[key] === value));
+  assert.ok(scenario, `Missing supported scenario for ${modelId}`);
+  const entry = getFalEngineById(modelId);
+  assert.ok(entry);
+  return providerComparisonInputFromScenario({
+    scenario: { id: scenario.id, engineId: modelId, mode: scenario.context.mode,
+      resolution: scenario.context.resolution, durationSec: scenario.context.durationSec,
+      surface: 'billing', membershipTier: 'member', input: { ...scenario.selector } },
+    context: scenario.context, quote: null, engine: entry.engine, brandId: entry.brandId,
+    familyId: entry.family, executionProvider, mediaType: entry.category === 'image' ? 'image' : 'video',
+  });
+}
+
+test('Fal catalog supplier reference includes duration and audio without claiming a fresh published list', () => {
+  const [silent, audio] = buildProviderCostComparisonRows([
+    exactInput('kling-2-6-pro', { mode: 'i2v', durationSec: '5', audio: 'false' }, 'fal'),
+    exactInput('kling-2-6-pro', { mode: 'i2v', durationSec: '10', audio: 'true' }, 'fal'),
+  ], '2026-09-30T12:00:00Z');
+  assert.equal(silent.supplierList.amountUsd, 0.35);
+  assert.equal(audio.supplierList.amountUsd, 1.4);
+  assert.equal(silent.supplierList.status, 'catalog_reference_estimate');
+  assert.equal(silent.supplierList.checkedAt, null);
+  assert.match(silent.supplierList.sourceUrl!, /fal.ai\/models\/fal-ai\/kling-video\/v2.6\/pro\/image-to-video/);
+  assert.equal(silent.supplierList.rateBreakdown?.[0].quantity, 5);
+  assert.equal(silent.supplierEffective.amountUsd, null);
+  assert.equal(silent.customerQuote, null);
+});
+
+test('reviewed Fal LIST uses current published audio rates rather than the legacy retail basis', () => {
+  const [silent, audio, direct] = buildProviderCostComparisonRows([
+    exactInput('veo-3-1-fast', { mode: 't2v', durationSec: '6', resolution: '720p', audio: 'false' }, 'fal'),
+    exactInput('veo-3-1-fast', { mode: 't2v', durationSec: '6', resolution: '720p', audio: 'true' }, 'fal'),
+    exactInput('veo-3-1-fast', { mode: 't2v', durationSec: '6', resolution: '720p', audio: 'true' }, 'google_vertex_veo_direct'),
+  ], '2026-09-30T12:00:00Z');
+  assert.equal(silent.supplierList.amountUsd, 0.6);
+  assert.equal(audio.supplierList.amountUsd, 0.9);
+  assert.equal(silent.supplierList.status, 'published_list_estimate');
+  assert.equal(silent.supplierList.checkedAt, '2026-09-29T22:36:56.000Z');
+  assert.equal(silent.supplierList.referenceProvider, 'fal');
+  assert.equal(silent.supplierList.rateBreakdown?.[0].unitPriceUsd, 0.1);
+  assert.equal(direct.supplierList.status, 'catalog_reference_estimate');
+  assert.equal(direct.supplierList.checkedAt, null);
+  assert.equal(direct.supplierList.routeMatches, false);
+  const [beforeReview] = buildProviderCostComparisonRows([
+    exactInput('veo-3-1-fast', { mode: 't2v', durationSec: '6', resolution: '720p', audio: 'true' }, 'fal'),
+  ], '2026-09-29T00:00:00Z');
+  assert.equal(beforeReview.supplierList.status, 'catalog_reference_estimate');
+  assert.equal(beforeReview.supplierList.checkedAt, null);
+});
+
+test('supplier image reference keeps sub-cent precision and selected quality', () => {
+  const [low, high] = buildProviderCostComparisonRows([
+    exactInput('gpt-image-2-5-flare', { mode: 't2i', resolution: 'landscape_4_3', quality: 'low' }, 'fal'),
+    exactInput('gpt-image-2-5-flare', { mode: 't2i', resolution: 'landscape_4_3', quality: 'high' }, 'fal'),
+  ], '2026-09-30T12:00:00Z');
+  assert.equal(low.supplierList.amountUsd, 0.00402);
+  assert.ok(high.supplierList.amountUsd! > low.supplierList.amountUsd!);
+  assert.equal(low.supplierList.rateBreakdown?.[0].unit, 'image');
+});
+
+test('direct Luma execution never relabels a Fal pricing reference as its account list', () => {
+  const [row] = buildProviderCostComparisonRows([
+    exactInput('luma-uni-1', { mode: 't2i' }, 'luma_agents_direct'),
+  ], '2026-09-30T12:00:00Z');
+  assert.equal(row.supplierList.amountUsd, 0.042);
+  assert.equal(row.supplierList.status, 'catalog_reference_estimate');
+  assert.equal(row.supplierList.referenceProvider, 'fal');
+  assert.equal(row.executionProvider, 'luma_agents_direct');
+  assert.equal(row.supplierList.routeMatches, false);
+  assert.equal(row.supplierEffective.amountUsd, null);
+});
+
+test('Seedream exact options project output dimensions and references into published supplier cost', () => {
+  const [lite, pro2k, proEdit] = buildProviderCostComparisonRows([
+    exactInput('seedream', { mode: 't2i', resolution: '2K', aspectRatio: '1:1' }, 'byteplus_modelark'),
+    exactInput('seedream-5-0-pro', { mode: 't2i', resolution: '2K', aspectRatio: '1:1' }, 'byteplus_modelark'),
+    exactInput('seedream-5-0-pro', { mode: 'i2i', resolution: '2K', aspectRatio: '1:1' }, 'byteplus_modelark'),
+  ], '2026-09-30T12:00:00Z');
+  assert.equal(lite.supplierList.amountUsd, 0.035);
+  assert.equal(pro2k.supplierList.amountUsd, 0.09);
+  assert.equal(proEdit.supplierList.amountUsd, 0.09);
+  assert.deepEqual(pro2k.outputPixels, [2048 * 2048]);
+  assert.equal(proEdit.inputImages, 1);
+});
 
 function video(overrides: Partial<ProviderCostComparisonInput> = {}): ProviderCostComparisonInput {
   return {

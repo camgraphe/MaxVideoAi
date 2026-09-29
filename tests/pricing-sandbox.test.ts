@@ -20,6 +20,9 @@ test('pricing sandbox cannot inherit remote credentials or remote database confi
   assert.equal(environment.NEXT_PUBLIC_API_BASE, 'http://localhost:3106');
   assert.equal(environment.NEXT_PUBLIC_SUPABASE_URL, 'http://127.0.0.1:54321');
   assert.equal(environment.LOCAL_ADMIN_BYPASS, '1');
+  assert.equal(environment.SEEDANCE_2_PROVIDER, 'byteplus_modelark');
+  assert.equal(environment.SEEDANCE_FAST_PROVIDER, 'byteplus_modelark');
+  assert.equal(environment.SEEDANCE_2_5_BYTEPLUS_ENABLED, 'false');
   assert.ok(!Object.values(environment).includes('production'));
 });
 

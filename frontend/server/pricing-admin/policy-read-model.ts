@@ -15,11 +15,6 @@ import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario 
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
-import {
-  isBytePlusSeedanceSubmissionEnabled,
-  resolveBytePlusSeedanceRouteProfile,
-} from '@/server/video-providers/byteplus-modelark-profile-policy';
-import { getBytePlusArkConfig, isBytePlusModelArkEnabled } from '@/server/video-providers/byteplus-modelark';
 
 import {
   quoteCanonicalAdminScenarios,
@@ -36,8 +31,8 @@ import type {
 import { DEFAULT_POLICY_SERVICE_DEPENDENCIES } from './policy-dependencies';
 import {
   buildProviderCostComparisonRows,
-  providerComparisonInputFromScenario,
 } from './provider-cost-comparison';
+import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
 import {
   canonicalRule,
   scenarioSelectorKey,
@@ -271,31 +266,8 @@ export async function loadPricingPolicyInventory(
   const comparisons = await Promise.all(allModelScenarios.map(async ({ scenario, entry }) => {
     const options = coverageByModel.get(entry.id) ?? [];
     const selected = selectRepresentativeTariffScenario(entry, scenario, options);
-    const comparableScenario: PricingAuditScenario = selected ? {
-      ...scenario,
-      id: selected.id,
-      mode: selected.selector.mode,
-      resolution: selected.selector.resolution,
-      durationSec: selected.context.durationSec,
-      input: {
-        ...(typeof selected.context.aspectRatio === 'string' ? { aspectRatio: selected.context.aspectRatio } : {}),
-        ...(typeof selected.context.addons?.audio === 'boolean' ? { audio: selected.context.addons.audio } : {}),
-      },
-    } : scenario;
-    const declaredProvider = entry.engine.providerMeta?.provider;
-    const executionProvider = entry.category === 'image'
-      ? declaredProvider === 'byteplus_modelark' ? 'byteplus_modelark' : 'fal'
-      : resolveBytePlusSeedanceRouteProfile(entry.id, declaredProvider)
-        ? 'byteplus_modelark' : 'fal';
-    const comparison = providerComparisonInputFromScenario({
-      scenario: comparableScenario,
-      quote: null,
-      engine: entry.engine,
-      brandId: entry.brandId,
-      familyId: entry.family,
-      executionProvider,
-      mediaType: entry.category === 'image' ? 'image' : 'video',
-    });
+    if (!selected) throw new Error(`No supported supplier comparison scenario for ${entry.id}`);
+    const comparison = providerComparisonForTariffScenario(selected);
     if (selected && loaded.status === 'loaded') {
       try {
         const snapshot = await computeCanonicalBillingSnapshot(selected.context, {
@@ -314,14 +286,7 @@ export async function loadPricingPolicyInventory(
         // No numeric customer price when an exact billing quote cannot be produced.
       }
     }
-    if (entry.id !== 'seedance-1-5-pro') return comparison;
-    const ark = getBytePlusArkConfig();
-    return {
-      ...comparison,
-      routeConfigured: isBytePlusSeedanceSubmissionEnabled(entry.id)
-        && isBytePlusModelArkEnabled()
-        && Boolean(ark.apiKey?.trim() && ark.seedance15ModelId.trim()),
-    };
+    return comparison;
   }));
 
   return {

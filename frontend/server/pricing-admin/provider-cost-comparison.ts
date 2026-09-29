@@ -11,6 +11,10 @@ import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { expectedBytePlusTokens } from '@/server/byteplus-accounting';
 import type { EngineCaps } from '@/types/engines';
+import type { PricingContext } from '@/lib/pricing-context';
+import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
+import { catalogSupplierReference, type CatalogSupplierReference, type SupplierRateLine } from './catalog-supplier-reference';
+import { publishedSupplierEstimate, type PublishedSupplierEstimate } from './published-supplier-tariffs';
 
 type CostEvidence = { amountUsd: number; source: string; confirmedAt: string };
 type CustomerQuoteSummary = {
@@ -57,6 +61,8 @@ export type ProviderCostComparisonInput = {
   inputImages?: number;
   confirmedEffectiveCost?: CostEvidence | null;
   observedInvoiceCost?: CostEvidence | null;
+  catalogReference?: CatalogSupplierReference | null;
+  publishedList?: PublishedSupplierEstimate | null;
   customerQuote: CustomerQuoteSummary | null;
 };
 
@@ -69,6 +75,7 @@ export function providerComparisonInputFromScenario(input: {
   familyId?: string;
   executionProvider: string;
   mediaType?: 'video' | 'image';
+  context?: PricingContext;
 }): ProviderCostComparisonInput {
   const { scenario, engine } = input;
   const mode = scenario.mode ?? 'unknown';
@@ -111,6 +118,19 @@ export function providerComparisonInputFromScenario(input: {
         settings_snapshot: { core: { resolution: scenario.resolution, aspectRatio: seedance15AspectRatio } },
       })
       : null;
+  const seedream = scenario.engineId === 'seedream' || scenario.engineId === 'seedream-5-0-pro';
+  const quantity = Number(scenario.input.quantity ?? input.context?.durationSec ?? 1);
+  const inputImages = input.context
+    ? (input.context.inputImageCount ?? 0) + (input.context.referenceImageCount ?? 0)
+    : typeof scenario.input.referenceImageCount === 'number' ? scenario.input.referenceImageCount
+      : mode === 't2i' ? 0 : undefined;
+  const size = seedream ? resolveSeedreamProviderSize(scenario.resolution ?? '', aspectRatio) : '';
+  const dimensions = /^(\d+)x(\d+)$/.exec(size);
+  const outputPixels = dimensions && Number.isSafeInteger(quantity) && quantity > 0 && quantity <= 15
+    ? Array.from({ length: quantity }, () => Number(dimensions[1]) * Number(dimensions[2])) : undefined;
+  let catalogReference: CatalogSupplierReference | null = null;
+  try { if (input.context) catalogReference = catalogSupplierReference(input.context); }
+  catch { /* Unsupported or incomplete factual inputs have no supplier reference. */ }
   return {
     scenarioId: scenario.id,
     brandId: input.brandId,
@@ -121,7 +141,7 @@ export function providerComparisonInputFromScenario(input: {
     mode,
     resolution: scenario.resolution ?? 'unknown',
     durationSec: input.mediaType === 'image' ? undefined : scenario.durationSec,
-    outputQuantity: input.mediaType === 'image' ? Number(scenario.input.quantity ?? 1) : undefined,
+    outputQuantity: input.mediaType === 'image' ? quantity : undefined,
     aspectRatio: tokenEstimate?.aspectRatio ?? seedance15AspectRatio ?? aspectRatio,
     step: 'normal',
     billingInputType,
@@ -130,6 +150,9 @@ export function providerComparisonInputFromScenario(input: {
       : seedance15AudioDefault === 'true' ? true : seedance15AudioDefault === 'false' ? false : undefined,
     videoTokens: tokenEstimate?.tokenCount ?? seedance15Tokens,
     tokenEvidence: tokenEstimate || seedance15Tokens ? 'scenario_estimate' : null,
+    ...(seedream ? { outputPixels, inputImages } : {}),
+    catalogReference,
+    publishedList: input.context ? publishedSupplierEstimate(input.context, input.executionProvider) : null,
     customerQuote: input.quote ? customerQuoteFromCanonical(input.quote) : null,
   };
 }
@@ -155,19 +178,24 @@ export type ProviderCostComparisonRow = {
   durationSec: number | null;
   outputQuantity: number | null;
   aspectRatio: string | null;
-  billingInputType: ProviderCostComparisonInput['billingInputType'] | null;
+  billingInputType: NonNullable<ProviderCostComparisonInput['billingInputType']> | null;
   audio: boolean | null;
   videoTokens: number | null;
-  tokenEvidence: ProviderCostComparisonInput['tokenEvidence'] | null;
+  tokenEvidence: NonNullable<ProviderCostComparisonInput['tokenEvidence']> | null;
   outputPixels: number[] | null;
   inputImages: number | null;
   supplierList: {
-    status: 'published_list_estimate' | 'published_list_from_usage' | 'unavailable';
+    status: 'published_list_estimate' | 'published_list_from_usage' | 'catalog_reference_estimate' | 'unavailable';
     amountUsd: number | null;
     unitPriceUsdPer1kTokens: number | null;
     sourceUrl: string | null;
     checkedAt: string | null;
     reason: UnavailableReason | null;
+    sourceLabel?: string;
+    referenceProvider?: string;
+    routeMatches?: boolean;
+    versionedAt?: string | null;
+    rateBreakdown?: SupplierRateLine[];
   };
   publicPromotion: {
     amountUsd: number | null;
@@ -204,7 +232,22 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
       sourceUrl: null, checkedAt: null, reason },
     publicPromotion: null,
   });
-  if (input.executionProvider !== 'byteplus_modelark') return unavailable('supplier_rate_unverified_for_route');
+  if (input.executionProvider !== 'byteplus_modelark') {
+    const published = input.publishedList;
+    if (published && published.referenceProvider === input.executionProvider &&
+      Number.isFinite(published.amountUsd) && published.amountUsd >= 0 &&
+      Number.isFinite(Date.parse(published.checkedAt)) && Date.parse(published.checkedAt) <= Date.parse(at)) {
+      return { supplierList: { ...published, status: 'published_list_estimate',
+        unitPriceUsdPer1kTokens: null, reason: null, routeMatches: true }, publicPromotion: null };
+    }
+    const reference = input.catalogReference;
+    if (!reference || !Number.isFinite(reference.amountUsd) || reference.amountUsd < 0) {
+      return unavailable('supplier_rate_unverified_for_route');
+    }
+    return { supplierList: { status: 'catalog_reference_estimate', ...reference,
+      unitPriceUsdPer1kTokens: null, checkedAt: null, reason: null,
+      routeMatches: input.executionProvider === reference.referenceProvider }, publicPromotion: null };
+  }
 
   if (input.engineId === 'seedream' || input.engineId === 'seedream-5-0-pro') {
     if (input.step !== 'normal' || !input.outputPixels?.length || input.inputImages == null) {
@@ -281,7 +324,24 @@ export function buildProviderCostComparisonRows(
 ): ProviderCostComparisonRow[] {
   if (!Number.isFinite(Date.parse(at))) throw new Error('Invalid provider comparison date.');
   return inputs.map((input) => {
-    const { supplierList, publicPromotion } = listCost(input, at);
+    const priced = listCost(input, at);
+    const { publicPromotion } = priced;
+    const supplierList = priced.supplierList;
+    if (input.executionProvider === 'byteplus_modelark' && supplierList.status.startsWith('published_list')) {
+      supplierList.sourceLabel = 'BytePlus ModelArk published LIST';
+      supplierList.referenceProvider = 'byteplus_modelark';
+      supplierList.routeMatches = true;
+      if (supplierList.unitPriceUsdPer1kTokens != null && supplierList.amountUsd != null) {
+        const rate = supplierList.unitPriceUsdPer1kTokens;
+        supplierList.rateBreakdown = [{ label: 'Billable video tokens', unit: '1000_tokens',
+          quantity: supplierList.amountUsd / rate, unitPriceUsd: rate, amountUsd: supplierList.amountUsd }];
+      } else if (supplierList.amountUsd != null && input.outputPixels?.length && input.inputImages != null) {
+        const estimate = quoteSeedreamListCost({ model: input.engineId === 'seedream' ? 'lite' : 'pro',
+          outputPixels: input.outputPixels, inputImages: input.inputImages });
+        supplierList.rateBreakdown = [{ label: 'Generated images and reference charges', unit: 'task',
+          quantity: 1, unitPriceUsd: estimate.totalUsd, amountUsd: estimate.totalUsd }];
+      }
+    }
     const effective = validEvidence(input.confirmedEffectiveCost, at) ? input.confirmedEffectiveCost : null;
     const observed = validEvidence(input.observedInvoiceCost, at) ? input.observedInvoiceCost : null;
     const sameCurrency = input.customerQuote?.currency.toUpperCase() === 'USD';

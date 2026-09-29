@@ -74,12 +74,18 @@ export type ProviderCostComparisonRowView = {
   outputPixels: number[] | null;
   inputImages: number | null;
   supplierList: {
-    status: 'published_list_estimate' | 'published_list_from_usage' | 'unavailable';
+    status: 'published_list_estimate' | 'published_list_from_usage' | 'catalog_reference_estimate' | 'unavailable';
     amountUsd: number | null;
     unitPriceUsdPer1kTokens: number | null;
     sourceUrl: string | null;
     checkedAt: string | null;
     reason: string | null;
+    sourceLabel?: string;
+    referenceProvider?: string;
+    routeMatches?: boolean;
+    versionedAt?: string | null;
+    rateBreakdown?: Array<{ label: string; quantity: number; unit: 'second' | 'image' | '1000_tokens' | 'task';
+      unitPriceUsd: number; amountUsd: number }>;
   };
   publicPromotion: {
     amountUsd: number | null;

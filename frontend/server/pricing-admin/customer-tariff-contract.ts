@@ -1,6 +1,7 @@
 import type { ManualTariffCell, ManualTariffSelector } from '@maxvideoai/pricing';
 
 import type { PricingChangeEvent } from '@/lib/admin/pricing-change-contract';
+import type { ProviderCostComparisonRow } from './provider-cost-comparison';
 
 export type CustomerTariffInventoryRow = {
   modelId: string;
@@ -14,6 +15,7 @@ export type CustomerTariffInventoryRow = {
   supplierListUsd: number | null;
   supplierEffectiveUsd: number | null;
   supplierObservedUsd: number | null;
+  supplierComparison: ProviderCostComparisonRow;
 };
 
 export type CustomerTariffInventory = {
@@ -39,6 +41,7 @@ export type CustomerTariffScenarioDetail = {
   currentCents: number | null;
   stagedCents: number | null;
   currency: string;
+  supplierComparison: ProviderCostComparisonRow;
 };
 
 export type CustomerTariffChangeProposal =

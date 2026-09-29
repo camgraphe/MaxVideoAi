@@ -700,8 +700,13 @@ test('inventory compares ByteDance billing scenarios with their actual execution
   assert.match(formatProviderComparisonScenario(seedream), /1 image/);
   assert.doesNotMatch(formatProviderComparisonScenario(seedream), /\d+ s/);
   assert.equal(seedream.executionProvider, 'byteplus_modelark');
-  assert.equal(seedream.supplierList.amountUsd, null);
-  assert.equal(seedream.supplierList.reason, 'image_usage_unavailable');
+  assert.equal(seedream.supplierList.amountUsd, 0.035);
+  assert.equal(seedream.supplierList.reason, null);
+  const kling = rows.find((row) => row.engineId === 'kling-2-6-pro');
+  assert.equal(kling?.supplierList.amountUsd, 0.35);
+  assert.equal(kling?.supplierList.status, 'published_list_estimate');
+  const banana = rows.find((row) => row.engineId === 'nano-banana');
+  assert.equal(banana?.executionProvider, 'google_vertex_image');
 });
 
 test('an archived model database override remains out of the active price inventory', async () => {

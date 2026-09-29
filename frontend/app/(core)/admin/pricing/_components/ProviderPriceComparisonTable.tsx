@@ -14,6 +14,8 @@ import {
   type ProviderCostComparisonRowView,
 } from '../_lib/pricing-cockpit-view-model';
 
+import { SupplierPriceDetails, supplierEvidenceLabel } from './SupplierPriceDetails';
+
 type Props = { rows: ProviderCostComparisonRowView[]; disabled: boolean; onInspect: (row: ProviderCostComparisonRowView) => void };
 
 const BRAND_LABELS: Record<string, string> = { bytedance: 'ByteDance' };
@@ -24,12 +26,6 @@ const MODEL_LABELS: Record<string, string> = {
 };
 const FEATURED_MODEL_ORDER = ['seedance-2-0-mini', 'seedance-2-0-fast', 'seedance-2-0', 'seedance-2-5', 'seedream', 'seedream-5-0-pro'];
 const PROVIDER_LABELS: Record<string, string> = { byteplus_modelark: 'BytePlus ModelArk', fal: 'Fal' };
-const UNAVAILABLE_REASONS: Record<string, string> = {
-  supplier_rate_unverified_for_route: 'Supplier rate unverified for this route',
-  billable_tokens_unavailable: 'Billable token evidence unavailable',
-  image_usage_unavailable: 'Image usage unavailable',
-  unsupported_model_options: 'Supplier rate unavailable for these options',
-};
 
 function displayName(id: string, overrides: Record<string, string>): string {
   return overrides[id] ?? id.split(/[-_]/).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
@@ -65,9 +61,6 @@ function PriceTile({ label, amount, tone }: { label: string; amount: string; ton
 }
 
 function ComparisonDetails({ row, disabled, onInspect }: { row: ProviderCostComparisonRowView } & Pick<Props, 'disabled' | 'onInspect'>) {
-  const listDescription = row.supplierList.status === 'published_list_estimate' ? 'Estimated from published list'
-    : row.supplierList.status === 'published_list_from_usage' ? 'List from provider usage'
-      : UNAVAILABLE_REASONS[row.supplierList.reason ?? ''] ?? 'Supplier cost unavailable';
   const difference = row.realizedGrossDifferenceCents ?? row.indicativeDifferenceVsListCents;
   return (
     <div className="border-t border-hairline bg-bg/60 p-4 sm:p-5">
@@ -84,12 +77,7 @@ function ComparisonDetails({ row, disabled, onInspect }: { row: ProviderCostComp
         <section className="rounded-xl border border-info-border bg-info-bg p-4">
           <h5 className="text-xs font-bold uppercase tracking-wide text-info">Supplier information</h5>
           <p className="mt-3 text-2xl font-bold text-text-primary">{formatCost(row.supplierList.amountUsd)}</p>
-          <p className="mt-1 text-xs text-text-secondary">Supplier list · {listDescription}</p>
-          <div className="mt-4 border-t border-info-border pt-3 text-xs text-text-secondary">
-            {row.publicPromotion ? <p>Public promotion: {formatCost(row.publicPromotion.amountUsd)} until {row.publicPromotion.endsAt.slice(0, 10)}; account rate unconfirmed.</p> : null}
-            {row.supplierList.sourceUrl ? <a href={row.supplierList.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-info underline">Published list <ExternalLink className="h-3 w-3" aria-hidden="true" /></a> : <p>Source unavailable</p>}
-            {row.supplierList.checkedAt ? <p className="mt-1">Checked {row.supplierList.checkedAt.slice(0, 10)}</p> : null}
-          </div>
+          <div className="mt-3"><SupplierPriceDetails row={row} showSettlement={false} /></div>
         </section>
         <section className="rounded-xl border border-[#cbb9ff] bg-[#f1ebff] p-4">
           <h5 className="text-xs font-bold uppercase tracking-wide text-[#5937b8]">Customer pricing</h5>
@@ -176,8 +164,9 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect }: Prop
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-border bg-surface px-4 py-3 text-xs text-text-secondary" aria-label="Price color key">
         <span className="font-semibold text-text-primary">Reading the prices</span>
-        <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded-sm border border-info-border bg-info-bg" aria-hidden="true" />Blue: supplier list estimate</span>
+        <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded-sm border border-info-border bg-info-bg" aria-hidden="true" />Blue: supplier LIST or reference</span>
         <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded-sm border border-[#cbb9ff] bg-[#f1ebff]" aria-hidden="true" />Purple: customer total</span>
+        <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded-sm border border-amber-300 bg-amber-50" aria-hidden="true" />Amber: reference to verify</span>
       </div>
 
       {groups.length ? groups.map(([familyId, entries]) => (
@@ -189,7 +178,7 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect }: Prop
                 <summary className="grid cursor-pointer list-none grid-cols-2 items-center gap-3 p-4 transition hover:bg-bg/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden sm:p-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)_minmax(135px,.85fr)_minmax(135px,.85fr)_auto]">
                   <span className="col-span-2 min-w-0 lg:col-span-1"><span className="block text-base font-bold text-text-primary">{displayName(row.engineId, MODEL_LABELS)}</span><span className="mt-1 inline-flex rounded-full border border-border bg-bg px-2.5 py-0.5 text-[11px] font-medium text-text-secondary">{row.mediaType === 'image' ? 'Image' : 'Video'}</span></span>
                   <span className="col-span-2 min-w-0 text-sm text-text-secondary lg:col-span-1">{formatProviderComparisonScenario(row)}</span>
-                  <PriceTile label="Supplier list" amount={formatCost(row.supplierList.amountUsd)} tone="supplier" />
+                  <PriceTile label={supplierEvidenceLabel(row.supplierList)} amount={formatCost(row.supplierList.amountUsd)} tone="supplier" />
                   <PriceTile label="Customer total" amount={row.customerQuote ? formatUsdCents(row.customerQuote.totalCents) : 'Unavailable'} tone="customer" />
                   <span className="col-span-2 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-brand bg-brand px-3 text-xs font-semibold text-white transition group-open:bg-brand-hover lg:col-span-1">View details<ChevronDown className="h-4 w-4 transition group-open:rotate-180" aria-hidden="true" /></span>
                 </summary>

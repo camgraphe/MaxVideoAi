@@ -33,5 +33,11 @@ export function buildPricingSandboxEnvironment(input: {
     LOCAL_ADMIN_BYPASS: '1',
     LOCAL_ADMIN_BYPASS_USER_ID: '11111111-1111-4111-8111-111111111111',
     PRICING_SANDBOX: '1',
+    // Price the intended direct route without enabling submissions or retaining credentials.
+    SEEDANCE_2_PROVIDER: 'byteplus_modelark',
+    SEEDANCE_FAST_PROVIDER: 'byteplus_modelark',
+    SEEDANCE_2_5_PROVIDER: 'byteplus_modelark',
+    SEEDANCE_1_5_BYTEPLUS_ENABLED: 'false',
+    SEEDANCE_2_5_BYTEPLUS_ENABLED: 'false',
   };
 }
