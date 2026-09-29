@@ -25,7 +25,15 @@ The independent safety review found and prompted fixes for paid image recovery a
 
 Focused revision, wallet transaction, paid-image recovery, MCP confirmation, Studio pricing and Storyboard tests: **56 passed**. The Storyboard DOM test verifies both generation and edit revisions refresh while only calling the estimate endpoint.
 
-TypeScript, lint and the public-exposure guard pass. Full-suite and build results are recorded after the final validation run. Local admin HTTP and inventory responses are verified. Visual desktop/mobile browser acceptance remains pending: in-app browser control timed out at `Emulation.setFocusEmulationEnabled`, and Chrome blocked the local tab with `net::ERR_BLOCKED_BY_CLIENT`.
+Final verification:
+
+- Standard validator stage: **6,284 passed, 0 failed, 2 skipped** across 1,057 test files.
+- Isolated Studio validator stage: **11 passed, 0 failed**, against committed snapshot `946d73d5a`. This stage deliberately refuses env files; the sanitized local file was temporarily moved and restored in `finally`, with no change to that safety guard.
+- Local Next.js build, TypeScript, lint, public-exposure, model-registry and localization checks pass. The build retains the existing Supabase Edge Runtime `process.version` warning.
+- Immutable billing baseline: **178 rows**. Current public baseline: **577 rows**. Pricing audit passes without rewriting frozen fixtures.
+- Local admin HTTP and inventory responses are verified. Visual desktop/mobile admin acceptance remains pending: in-app browser control timed out at `Emulation.setFocusEmulationEnabled`, and Chrome blocked the local tab with `net::ERR_BLOCKED_BY_CLIENT`.
+
+The two validator stages together verify **6,295 passing tests** with two skips. After the paid-recovery extraction, the suite caught a legacy-membership ordering regression; new discounted requests now reject before database access, while paid owned retries can recover their immutable snapshot. The existing membership tests and full standard stage pass after that fix.
 
 ## Remaining release gates
 
