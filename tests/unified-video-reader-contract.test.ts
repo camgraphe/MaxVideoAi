@@ -33,7 +33,7 @@ test('reader styles stay local to both reader shells without adding a blocking s
  assert.doesNotMatch(watch, /<ExampleReaderStyles/, 'emit the stylesheet once in the earlier route shell');
  assert.match(modal, /<ExampleReaderStyles\s*\/>/);
  assert.ok(modal.indexOf('<ExampleReaderStyles') < modal.indexOf('{current?.detail ?'), 'loading and error states need the same styles');
- for (const source of [watch, ...['ExampleReader.client.tsx', 'ExampleReaderContent.tsx', 'ExampleReaderContext.tsx', 'DiscoveryVideoPlayer.client.tsx'].map(file => read(folder + file))]) {
+ for (const source of [watch, ...['ExampleReader.client.tsx', 'ExampleReaderContent.tsx', 'ExampleReaderContext.tsx', 'ExampleReaderDisclosure.client.tsx', 'DiscoveryVideoPlayer.client.tsx'].map(file => read(folder + file))]) {
   assert.doesNotMatch(source, /example-reader\.module\.css/, 'a remaining CSS import reintroduces the extra blocking request');
  }
  const gallery = read(`${folder}ExamplesGalleryGrid.client.tsx`);

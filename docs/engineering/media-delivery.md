@@ -196,6 +196,14 @@ The opening and continuation layouts use one server-rendered page of 24 videos. 
 
 `example-watch-detail-loader` rechecks public eligibility and reads the selected editorial entry only. Curation and direct SEO watch readers share `PUBLIC_VIDEO_SOURCE_ELIGIBILITY` from `videos-query.ts`, excluding incomplete jobs and deleted output/asset sources before hydration. Gallery discovery keeps its explicit indexable flag, while direct SEO readers retain the existing legacy null-indexability policy. Both modes use the watch signals owner for title, introductory copy, approved references and contextual details. `ExampleReaderContext` preserves secondary editorial information in a native disclosure. Original download, schema and recreation URLs stay intact. Prices remain absent from gallery cards; historical cost and supported prompt-only comparison estimates with explicit per-proposal settings are distinct in the reader.
 
+`ExampleReaderContext` omits empty disclosures, headings and lists. Its intro remains
+visible even when there is no additional context. `ExampleReaderDisclosure.client`
+keeps populated children in the initial server HTML and owns only the native toggle
+interaction. Opening near the bottom of the viewport brings the summary and first
+content below the sticky toolbar; mounting, closing and already-visible content do
+not move the reading position. An empty keyframe URL object does not create a
+keyframe section. Tests: `example-reader-context-dom` and `video-page-architecture`.
+
 Admin SEO writes revalidate the affected ID and canonical-slug routes after persistence, including the previous slug when changed, plus the video sitemap routes. Failed validation or persistence does not invalidate. SEO status and existing quality gates still govern robots, redirect and sitemap eligibility; opening a public gallery video does not approve it for indexing.
 
 ### Playback observations

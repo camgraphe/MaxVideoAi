@@ -55,15 +55,18 @@ test('video watch page stays a route orchestrator', () => {
 test('video watch modules own rendering and helper contracts', () => {
   const readerSource = readFileSync(join(root,'frontend/components/examples/ExampleReaderContent.tsx'),'utf8');
   const contextSource = readFileSync(join(root,'frontend/components/examples/ExampleReaderContext.tsx'),'utf8');
+  const disclosureSource = readFileSync(join(root,'frontend/components/examples/ExampleReaderDisclosure.client.tsx'),'utf8');
   assert.match(contentSource,/export async function VideoWatchContent/);
   assert.match(contentSource,/ExampleReaderContent/,'direct page shares the gallery reader');
   assert.match(contentSource,/buildExampleWatchDetail/,'server owns public projection and quotes');
   assert.match(contentSource,/headingLevel="h1"/,'standalone reader owns one page heading');
   assert.match(contentSource,/videoJsonLd/);assert.match(contentSource,/breadcrumbJsonLd/);
-  assert.match(readerSource,/DiscoveryVideoPlayer/);assert.match(readerSource,/clipboard.writeText\(detail.prompt\)/);
+  assert.match(readerSource,/DiscoveryVideoPlayer/);assert.match(readerSource,/copyTextToClipboard\(detail.prompt\)/);
   assert.match(readerSource,/promptExpanded/);assert.match(readerSource,/historicalCost/);
   assert.match(contextSource,/Prompt improvement notes/);assert.match(contextSource,/Compare this model/);
-  assert.match(contextSource,/Visual workflow context/);assert.match(contextSource,/<details>/);
+  assert.match(contextSource,/Visual workflow context/);assert.match(contextSource,/ExampleReaderDisclosure/);
+  assert.match(disclosureSource,/<details\b/);assert.match(disclosureSource,/'use client'/);
+  assert.doesNotMatch(contextSource,/'use client'|scrollIntoView/,'editorial projection remains server-renderable');
   assert.match(contextSource,/WatchKeyFrames/);assert.match(contextSource,/context.details/);
   assert.doesNotMatch(contentSource,/VideoWatchSidebar|WatchVideoPlayer/,'no second reader presentation');
   assert.ok(contentSource.split('\n').length <= 120,'watch wrapper stays a server orchestrator');
