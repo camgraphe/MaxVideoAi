@@ -22,6 +22,12 @@ test('missing source configuration still offers explicit proposals; unavailable 
 test('private or non-discoverable videos do not produce a public detail',async()=>{
  for(const hidden of [{visibility:'private' as const},{indexable:false},{videoUrl:undefined}])assert.equal(await projectExampleWatchDetail({...video,...hidden},null,async()=>({totalCents:1,currency:'USD'})),null);
 });
+test('reader labels near-standard measured dimensions with the familiar ratio',async()=>{
+ for(const [width,height,expected] of [[1920,1088,'16:9'],[1088,1920,'9:16'],[1440,1440,'1:1']] as const){
+  const detail=await projectExampleWatchDetail({...video,outputWidth:width,outputHeight:height},null,async()=>({totalCents:200,currency:'USD'}));
+  assert.equal(detail?.aspectRatio,expected);
+ }
+});
 test('unavailable source engines do not offer a misleading recreate action',async()=>{
  const detail=await projectExampleWatchDetail({...video,engineId:'unavailable-source'},null,async()=>({totalCents:200,currency:'USD'}));
  assert.equal(detail?.recreateHref,null);

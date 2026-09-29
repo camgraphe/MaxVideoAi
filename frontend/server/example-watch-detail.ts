@@ -28,7 +28,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
     posterUrl: video.thumbUrl ?? null, engineLabel: signals.engineLabel,
     watchHref: new URL(signals.canonicalUrl).pathname, modelHref: signals.modelPath,
     recreateHref: canRecreatePublicExample(video.engineId) ? signals.recreatePath : null,
-    aspectRatio: video.outputWidth && video.outputHeight ? `${video.outputWidth}:${video.outputHeight}` : video.aspectRatio ?? '16:9',
+    aspectRatio: signals.aspectRatio ?? video.aspectRatio ?? '16:9',
     durationSec: video.durationSec, hasAudio: video.hasAudio,
     historicalCost: typeof video.finalPriceCents === 'number' && video.currency ? { amountCents: video.finalPriceCents, currency: video.currency } : null,
     scenario, quotes,
