@@ -75,8 +75,10 @@ export function useAdminPricingCockpitController() {
   const refreshLocked = previewing || confirming || Boolean(preview);
   const interactionLocked = refreshLocked || Boolean(postCommitWarning);
 
-  const inventory = inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
-  const history = historyQuery.data?.ok ? historyQuery.data.events : [];
+  // SWR may retain a previous response after an auth or network error. Never show
+  // that cached response as the current commercial policy.
+  const inventory = !inventoryQuery.error && inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
+  const history = !historyQuery.error && historyQuery.data?.ok ? historyQuery.data.events : [];
   const rows = useMemo(() => inventory?.rows ?? [], [inventory]);
   const filteredRows = useMemo(() => filterPricingPolicyRows(rows, filters), [filters, rows]);
   const selectedRow = useMemo(

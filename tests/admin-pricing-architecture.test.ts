@@ -90,9 +90,12 @@ test('canonical pricing cockpit modules exist and compose shared admin-system su
   const tableSource = readOrEmpty(tablePath);
   const inspectorSource = readOrEmpty(inspectorPath);
 
-  for (const component of ['AdminMetricGrid', 'AdminNotice', 'AdminEmptyState']) {
+  for (const component of ['AdminSection', 'AdminNotice', 'AdminEmptyState']) {
     assert.match(cockpitSource, new RegExp(component), `cockpit should use ${component}`);
   }
+  assert.match(cockpitSource, /role="tablist"/, 'comparison, rules and history should have separate views');
+  assert.match(cockpitSource, /pricing-panel-comparison/);
+  assert.match(cockpitSource, /pricing-panel-rules/);
   assert.match(tableSource, /AdminDataTable/, 'policy inventory should use AdminDataTable');
   assert.match(tableSource, /AdminFilterBar/, 'policy inventory should use AdminFilterBar');
   assert.match(inspectorSource, /AdminInspectorPanel/, 'policy editor should use AdminInspectorPanel');

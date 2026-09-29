@@ -129,16 +129,20 @@ export function filterProviderComparisonRows(
 }
 
 export function formatProviderComparisonScenario(row: ProviderCostComparisonRowView): string {
+  const modeLabels: Record<string, string> = {
+    t2v: 'Text to video', i2v: 'Image to video', v2v: 'Video to video',
+    ref2v: 'Reference to video', t2i: 'Text to image', i2i: 'Image to image',
+  };
   return [
     row.step === 'draft' ? 'Draft' : row.step === 'final' ? 'Final' : null,
-    row.mode.toUpperCase(),
-    row.resolution,
+    modeLabels[row.mode] ?? row.mode.toUpperCase(),
     row.mediaType === 'image' && row.outputQuantity != null
       ? `${row.outputQuantity} ${row.outputQuantity === 1 ? 'image' : 'images'}`
       : row.durationSec != null ? `${row.durationSec} s` : null,
+    row.resolution,
     row.aspectRatio,
     row.billingInputType === 'video_input' ? 'video input' : null,
-    row.audio === true ? 'audio on' : row.audio === false ? 'audio off' : null,
+    row.audio === true ? 'with audio' : row.audio === false ? 'silent' : null,
   ].filter(Boolean).join(' · ');
 }
 

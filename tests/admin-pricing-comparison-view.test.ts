@@ -74,3 +74,19 @@ test('verified contract and invoice dates appear beside their distinct amounts',
   assert.match(html, /\$0\.49/);
   assert.match(html, /\$0\.51/);
 });
+
+test('family navigation accepts future supplier families from inventory data', async () => {
+  const module = await import('../frontend/app/(core)/admin/pricing/_components/ProviderPriceComparisonTable');
+  const rows = buildProviderCostComparisonRows([{
+    scenarioId: 'runway-gen-4:720p', brandId: 'runway', engineId: 'runway-gen-4',
+    executionProvider: 'fal', mediaType: 'video', mode: 't2v', resolution: '720p',
+    durationSec: 5, step: 'normal', customerQuote: null,
+  }], '2026-09-29T12:00:00Z');
+  const html = renderToStaticMarkup(createElement(module.ProviderPriceComparisonTable, {
+    rows, disabled: false, onInspect: () => {},
+  }));
+  assert.match(html, /All families/);
+  assert.match(html, /Runway price comparison/);
+  assert.match(html, /Runway Gen 4/);
+  assert.doesNotMatch(html, /\$0\.00/);
+});

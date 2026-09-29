@@ -99,6 +99,14 @@ test.describe('admin critical flows', () => {
     await openAdminRoute(page, '/admin/pricing');
     await expect(page.getByRole('heading', { level: 1, name: 'Model pricing' })).toBeVisible();
     await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: 'Price comparison' }).focus();
+    await page.keyboard.press('End');
+    await expect(page.getByRole('tab', { name: 'History' })).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Home');
+    await expect(page.getByRole('tab', { name: 'Price comparison' })).toHaveAttribute('aria-selected', 'true');
+    await page.getByRole('button', { name: 'Image', exact: true }).click();
+    await expect(page.getByText('Seedream 5.0 Lite', { exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: 'Pricing rules' }).click();
     const inventory = page.getByTestId('pricing-policy-inventory');
     await expect(inventory.locator('tbody tr').first()).toBeVisible({ timeout: 15_000 });
     await expect(inventory.locator('tbody tr').first().locator('td').last()).toContainText(/\$\d+\.\d{2}/);
@@ -113,6 +121,21 @@ test.describe('admin critical flows', () => {
     await expect(preview.getByText('Canonical server preview')).toBeVisible();
     await preview.getByRole('button', { name: 'Cancel' }).click();
     expect(confirmRequests).toEqual([]);
+  });
+
+  test('expired pricing inventory does not leave cached customer prices visible', async ({ page }) => {
+    await openAdminRoute(page, '/admin/pricing');
+    await expect(page.getByText('Seedance 2.0 Mini', { exact: true })).toBeVisible();
+    await page.route('**/api/admin/pricing/inventory', (route) => route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, error: 'unauthorized', message: 'Session expired.' }),
+    }));
+    const refresh = page.getByRole('button', { name: 'Refresh' });
+    await expect(refresh).toBeEnabled();
+    await refresh.click();
+    await expect(page.getByText(/Current prices are unavailable/)).toBeVisible();
+    await expect(page.getByText('Seedance 2.0 Mini', { exact: true })).toHaveCount(0);
   });
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {

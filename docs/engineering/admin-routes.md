@@ -69,7 +69,7 @@ Use shared admin-system components for shell and surfaces:
 
 Commercial services retain three domain owners; their UI exposure differs:
 
-- `/admin/pricing` is an authenticated cockpit for representative supplier/customer comparisons and the existing margin-based pricing rules. Its rule editor uses preview and explicit confirmation; exact manual customer-tariff cells remain inactive. `/admin/engines` shows read-only model activity;
+- `/admin/pricing` is an authenticated cockpit with a comparison-first view, separate pricing-rule and history tabs, and family/media/provider filters derived from the comparison inventory. Its rule editor uses preview and explicit confirmation; exact manual customer-tariff cells remain inactive. The staged UI and tariff work is tracked in `docs/engineering/admin-pricing-ux-backlog.md`. `/admin/engines` shows read-only model activity;
 - `/admin/membership` owns read-only historical membership thresholds, discounts, and audit events;
 - `/admin/billing-products` owns fixed products referenced by live billing consumers.
 
