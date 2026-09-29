@@ -6,6 +6,7 @@ The `/admin/pricing` cockpit is the single admin entry point for supplier eviden
 
 - [x] Put the comparison first; move the policy inventory and immutable history into separate tabs.
 - [x] Show one short row per model/scenario with supplier **list estimate** and current customer quote. Reveal contract, invoice, promotion, source, policy and indicative gap on demand.
+- [x] Separate each model into a card with blue supplier-list and purple customer-total tiles, a visible details control, and distinct evidence panels. Use current quote and supplier projections; do not copy illustrative mockup amounts.
 - [x] Provide family, media, provider and text filters from the returned comparison rows. Future families enter through data, without a new page layout or invented placeholder prices.
 - [x] Keep an explicit route from a comparison detail to its pricing rule and the existing server preview/confirmation flow.
 - [x] Hide stale SWR data when the inventory request fails, and show a sign-in/retry path.

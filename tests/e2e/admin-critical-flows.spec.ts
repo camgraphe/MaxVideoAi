@@ -105,7 +105,7 @@ test.describe('admin critical flows', () => {
     await page.keyboard.press('Home');
     await expect(page.getByRole('tab', { name: 'Price comparison' })).toHaveAttribute('aria-selected', 'true');
     await page.getByRole('button', { name: 'Image', exact: true }).click();
-    await expect(page.getByText('Seedream 5.0 Lite', { exact: true })).toBeVisible();
+    await expect(page.locator('summary').filter({ hasText: 'Seedream 5.0 Lite' })).toBeVisible();
     await page.getByRole('tab', { name: 'Pricing rules' }).click();
     const inventory = page.getByTestId('pricing-policy-inventory');
     await expect(inventory.locator('tbody tr').first()).toBeVisible({ timeout: 15_000 });
@@ -125,7 +125,7 @@ test.describe('admin critical flows', () => {
 
   test('expired pricing inventory does not leave cached customer prices visible', async ({ page }) => {
     await openAdminRoute(page, '/admin/pricing');
-    await expect(page.getByText('Seedance 2.0 Mini', { exact: true })).toBeVisible();
+    await expect(page.locator('summary').filter({ hasText: 'Seedance 2.0 Mini' })).toBeVisible();
     await page.route('**/api/admin/pricing/inventory', (route) => route.fulfill({
       status: 401,
       contentType: 'application/json',
@@ -135,7 +135,7 @@ test.describe('admin critical flows', () => {
     await expect(refresh).toBeEnabled();
     await refresh.click();
     await expect(page.getByText(/Current prices are unavailable/)).toBeVisible();
-    await expect(page.getByText('Seedance 2.0 Mini', { exact: true })).toHaveCount(0);
+    await expect(page.locator('summary').filter({ hasText: 'Seedance 2.0 Mini' })).toHaveCount(0);
   });
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {
