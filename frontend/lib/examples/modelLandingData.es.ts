@@ -150,8 +150,8 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription: "Mira ejemplos de video Seedance 2.5 con prompts y ajustes. Compara resultados de otras versiones y usa un ejemplo como punto de partida.",
     heroTitle: 'Ejemplos de video Seedance 2.5, 2.0, Fast y Mini',
     subtitle: "Seedance 2.5 y versiones anteriores: mira los resultados y encuentra un prompt para tu idea.",
-    intro: "Explora ejemplos de Seedance 2.5 junto con Seedance 2.0, Fast y Mini. Abre un video para ver el prompt, los ajustes, el costo registrado y el modelo original.",
-    summary: "Seedance 2.5 permite crear videos de 4 a 30 segundos hasta 1080p, con audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para 4K; Fast y Mini ofrecen otras opciones para pruebas y series de videos. Los ejemplos anteriores de 1.5 Pro conservan su nombre original.",
+    intro: "Explora ejemplos de Seedance 2.5 junto a Seedance 2.0, Fast y Mini. Abre un video para ver su prompt, sus ajustes y su costo registrado. Cada resultado conserva el nombre del modelo que lo generó.",
+    summary: "Seedance 2.5 permite crear videos de 4 a 30 segundos hasta 1080p, con audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para 4K; Fast ofrece renders normales de iteración y Mini se centra en series orientadas al coste. Los vídeos 1.5 Pro conservan su nombre, pero las nuevas generaciones 1.5 están cerradas.",
     promptPatterns:
       'Para Seedance 2.5, define una acción principal, la dirección de cámara y el papel de cada referencia antes de añadir detalles de escena. Mantén la misma estructura de prompt al comparar 2.5 con Seedance 2.0, Fast o Mini.',
     strengthsLimits:
@@ -161,7 +161,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: '¿Todos los ejemplos de Seedance de esta página se generaron con Seedance 2.5?',
         answer:
-          'No. La galería conserva las etiquetas exactas de los renders Seedance 2.5, Seedance 2.0, Fast, Mini y 1.5 Pro aún compatibles para que puedas comparar el modelo utilizado.',
+          'No. La galería conserva las etiquetas exactas de los renders Seedance 2.5, Seedance 2.0, Fast, Mini y los antiguos renders 1.5 Pro para comparar el modelo utilizado. Las nuevas generaciones 1.5 están cerradas.',
       },
       {
         question: '¿Con qué modelo Seedance debería empezar para ejemplos y pruebas de prompt?',

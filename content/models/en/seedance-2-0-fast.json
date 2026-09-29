@@ -173,6 +173,10 @@
     {
       "q": "When should I use Seedance 2.0 Fast instead of standard Seedance 2.0?",
       "a": "Use Fast when the goal is iteration speed, shot planning, timing checks, and quick comparison passes. Move to standard Seedance 2.0 when you want the most polished final take."
+    },
+    {
+      "q": "Is Seedance 2.0 Fast the Seedance 2.5 Draft mode?",
+      "a": "No. Fast is a separate Seedance 2.0 model. Its 480p or 720p iteration previews are ordinary quoted generations. BytePlus describes Seedance 2.5 Draft as a distinct, separately billed 480p preview followed by an optional new 1080p render from its task ID. That Draft-to-final workflow is not offered in MaxVideoAI today."
     }
   ],
   "custom": {

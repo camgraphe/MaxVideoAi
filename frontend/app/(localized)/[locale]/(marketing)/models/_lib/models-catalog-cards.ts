@@ -75,7 +75,7 @@ const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
   'gpt-image-2-5-flare': 'Best for fast high-quality stills, readable text, product work, and everyday edits.',
   'gpt-image-2-5-sunburst': 'Best for maximum detail, precision edits, typography, and premium campaign finals.',
   seedream: 'Best for clean reference images, product visuals, and Seedance-ready stills.',
-  'seedream-5-0-pro': 'Best for professional stills, dense infographics, and 4K campaign-ready images.',
+  'seedream-5-0-pro': 'Best for professional stills, dense infographics, and 2K campaign-ready images.',
   'nano-banana-lite': 'Best for fast 1K image drafts, social visuals, and local reference edits.',
   'nano-banana-2': 'Best for grounded stills, wide-format edits, and image references for video workflows.',
   'nano-banana-pro': 'Best for campaign stills, typography-focused edits, and polished product visuals.',

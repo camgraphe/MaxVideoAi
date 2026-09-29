@@ -134,6 +134,14 @@ async function main(): Promise<void> {
       appliedH3Changes.add(row.id);
       return change.current;
     })
+    .map((row) => {
+      // Seedream Pro's high sample now selects its supported 2K tier. The frozen row quoted an unsupported 4K choice.
+      if (row.id !== 'pricing-hub-image:seedream-5-0-pro:high') return row;
+      if (row.customerTotalCents !== 32 || row.displayedAmount !== '$0.32') {
+        throw new Error(`Unexpected historical Seedream Pro high sample: ${row.id}`);
+      }
+      return { ...row, customerTotalCents: 16, displayedAmount: '$0.16' };
+    })
     .sort((left, right) => left.id.localeCompare(right.id));
   if (appliedH3Changes.size !== h3Changes.size) throw new Error('Missing H3 capability pricing scenario.');
   if (appliedCustomerOfferRepairs.size !== customerOfferRepairs.size) throw new Error('Missing Product customer-price repair scenario.');
@@ -142,7 +150,7 @@ async function main(): Promise<void> {
     const changed = rows.filter((row) => !isDeepStrictEqual(row, expectedById.get(row.id))).map((row) => row.id);
     const actualIds = new Set(rows.map((row) => row.id));
     const missing = expectedWithLaunch.filter((row) => !actualIds.has(row.id)).map((row) => row.id);
-    console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', { changed, missing });
+    console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', JSON.stringify({ changed, missing, details: rows.filter((row) => changed.includes(row.id)).map((row) => ({ actual: row, expected: expectedById.get(row.id) })) }, null, 2));
     process.exitCode = 1;
     return;
   }

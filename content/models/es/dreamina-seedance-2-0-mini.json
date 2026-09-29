@@ -148,6 +148,10 @@
     {
       "q": "¿Cuándo debería usar Seedance 2.0 en vez de Mini?",
       "a": "Usa Seedance 2.0 cuando necesites la ruta Seedance final, pulida, con mayor techo, entrega de mayor resolución y calidad de producción más fuerte. Usa Mini para exploración batch/valor antes de ese paso."
+    },
+    {
+      "q": "¿Es Seedance 2.0 Mini siempre el modelo de vídeo más barato?",
+      "a": "No se presupone una clasificación universal de precios. Mini es una opción Seedance orientada al coste para usos compatibles en 480p y 720p. Compara presupuestos actuales de MaxVideoAI con la misma duración, resolución, audio y modo de entrada antes de elegirlo frente a Fast, Seedance estándar u otro modelo."
     }
   ],
   "custom": {

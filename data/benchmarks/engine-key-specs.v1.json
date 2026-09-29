@@ -1545,14 +1545,14 @@
     {
       "modelSlug": "seedream-5-0-pro",
       "sources": [
-        "https://www.byteplus.com/en/product/modelark",
-        "https://www.byteplus.com/en/docs/ModelArk"
+        "https://docs.byteplus.com/en/docs/ModelArk/1824121",
+        "https://docs.byteplus.com/en/docs/modelark/image-generation-api"
       ],
       "keySpecs": {
         "textToImage": "Supported",
         "imageToImage": "Supported",
         "imageReferences": "Up to 10 references for edit workflows",
-        "maxResolution": "4K",
+        "maxResolution": "2K",
         "aspectRatios": [
           "auto",
           "1:1",

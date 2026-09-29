@@ -152,8 +152,8 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription: "Watch Seedance 2.5 video examples with prompts and settings. Compare results from other Seedance versions and use an example as a starting point.",
     heroTitle: 'Seedance 2.5, 2.0, Fast & Mini video examples',
     subtitle: "Seedance 2.5 and earlier versions: watch the results, inspect the prompts and find a starting point.",
-    intro: "Explore Seedance 2.5 examples alongside Seedance 2.0, Fast and Mini. Open any video to see its prompt, settings, recorded cost and model.",
-    summary: "Seedance 2.5 supports 4–30 second videos up to 1080p, generated audio, references, editing and extension. Seedance 2.0 remains available for 4K, while Fast and Mini offer other options for drafts and batches. Earlier 1.5 Pro examples keep their original labels.",
+    intro: "Explore Seedance 2.5 examples alongside Seedance 2.0, Fast and Mini. Open a video to inspect its prompt, settings and recorded cost. Each result keeps its original model label so you can compare the versions accurately.",
+    summary: "Seedance 2.5 supports 4–30 second videos up to 1080p, generated audio, references, editing and extension. Seedance 2.0 remains available for 4K; Fast offers ordinary iteration renders and Mini focuses on value-oriented batches. Earlier 1.5 Pro videos remain labeled, although new 1.5 generations are closed.",
     promptPatterns:
       'For Seedance 2.5, define one core action, camera direction and reference role before adding scene detail. Keep the same prompt structure when comparing 2.5 with Seedance 2.0, Fast or Mini.',
     strengthsLimits:
@@ -163,7 +163,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: 'Are all Seedance examples on this page generated with Seedance 2.5?',
         answer:
-          'No. The gallery keeps factual labels for Seedance 2.5, Seedance 2.0, Fast, Mini and supported 1.5 Pro renders so you can compare the actual route used.',
+          'No. The gallery keeps factual labels for Seedance 2.5, Seedance 2.0, Fast, Mini and historical 1.5 Pro renders so you can compare the actual route used. New 1.5 generations are closed.',
       },
       {
         question: 'Which Seedance model should I start with for examples and prompt testing?',
