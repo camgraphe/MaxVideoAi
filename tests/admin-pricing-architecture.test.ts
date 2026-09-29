@@ -121,6 +121,16 @@ test('exact admin supplier evidence shares a server owner and cannot author cust
   }
 });
 
+test('local decision analysis cannot resolve or persist commercial tariffs', () => {
+  const decision = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_lib/pricing-decision.ts'));
+  const panel = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/PricingDecisionPanel.client.tsx'));
+  const cockpit = readOrEmpty(cockpitPath);
+  assert.doesNotMatch(decision, /quoteCanonicalPricing|quote-billing|@\/lib\/db|\bfetch\(|server-only/);
+  assert.doesNotMatch(panel, /\bfetch\(|\/api\/admin|customer-tariff-service/);
+  assert.match(cockpit, /tariffEditorSelection/);
+  assert.match(cockpit, /initialSelection=\{tariffSelection\}/);
+});
+
 test('navigation exposes model pricing and billing products while membership remains historical', () => {
   const items = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
   assert.equal(items.some((item) => item.href === '/admin/pricing'), true);

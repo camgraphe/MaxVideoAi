@@ -9,7 +9,7 @@ import { buildProviderCostComparisonRows } from '../frontend/server/pricing-admi
 import type { CustomerTariffInventory, CustomerTariffScenarioDetail, CustomerTariffChangePreview }
   from '../frontend/server/pricing-admin/customer-tariff-contract';
 
-test('a pending price preview locks its scenario, and selecting another scenario discards confirmation', async () => {
+for (const initialCents of [undefined, 75]) test(`a pending preview locks its scenario and discards old confirmation (${initialCents == null ? 'manual selection' : 'comparison handoff'})`, async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/admin/pricing' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const requests: Array<{ url: string; init?: RequestInit; resolve: (response: Response) => void }> = [];
@@ -49,16 +49,22 @@ test('a pending price preview locks its scenario, and selecting another scenario
     const { CustomerTariffPanel } = await import('../frontend/app/(core)/admin/pricing/_components/CustomerTariffPanel.client');
     await act(async () => root.render(React.createElement(SWRConfig, { value: {
       provider: () => new Map(), dedupingInterval: 0, revalidateOnFocus: false, revalidateOnReconnect: false,
-    } }, React.createElement(CustomerTariffPanel))));
+    } }, React.createElement(CustomerTariffPanel, { initialSelection: initialCents == null ? undefined : {
+      modelId: scenario.modelId, scenarioId: scenario.scenarioId, selector: scenario.selector, customerCents: initialCents,
+    } }))));
     await respond('/inventory', { ok: true, inventory });
-    await act(async () => (dom.window.document.querySelector('[aria-pressed="false"]') as HTMLButtonElement).click());
+    if (initialCents == null) await act(async () => (dom.window.document.querySelector('[aria-pressed="false"]') as HTMLButtonElement).click());
     await respond('/scenarios?', { ok: true, scenario });
     await respond('/history?', { ok: true, events: [] });
+    assert.equal((dom.window.document.querySelector('input[type="number"]') as HTMLInputElement).value,
+      ((initialCents ?? 95) / 100).toFixed(2), 'a comparison proposal survives the asynchronous live scenario read');
     await act(async () => button('Preview price change').click());
     const duration = dom.window.document.querySelector('[aria-label="Duration (seconds)"]') as HTMLSelectElement;
     assert.equal(duration.disabled, true, 'the visible scenario cannot change while its preview is pending');
     assert.equal(JSON.parse(requests.find((item) => item.url.endsWith('/preview'))!.init!.body as string).scenarioId,
       'scenario-a');
+    assert.equal(JSON.parse(requests.find((item) => item.url.endsWith('/preview'))!.init!.body as string).customerCents,
+      initialCents ?? 95);
     await respond('/preview', { ok: true, preview });
     assert.ok(button('Confirm'));
     assert.equal(duration.disabled, false);

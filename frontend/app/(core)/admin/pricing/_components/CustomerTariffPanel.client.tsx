@@ -11,6 +11,7 @@ import type { CustomerTariffChangePreview, CustomerTariffInventory,
   CustomerTariffScenarioDetail, CustomerTariffChangeProposal, CustomerTariffChangeConfirmation } from '@/server/pricing-admin/customer-tariff-contract';
 
 import { SupplierPriceDetails, supplierAmount, supplierEvidenceLabel } from './SupplierPriceDetails';
+import type { TariffEditorSelection } from '../_lib/tariff-editor-selection';
 
 const INVENTORY_URL = '/api/admin/pricing/tariffs/inventory';
 
@@ -70,13 +71,15 @@ function parseDollars(value: string): number | null {
   return Number.isSafeInteger(cents) ? cents : null;
 }
 
-export function CustomerTariffPanel() {
+export function CustomerTariffPanel({ initialSelection }: { initialSelection?: TariffEditorSelection | null } = {}) {
   const { data, error: loadError, isLoading, mutate } = useSWR(INVENTORY_URL, getInventory);
   const [family, setFamily] = useState('all');
   const [media, setMedia] = useState<'all' | 'video' | 'image'>('all');
   const [query, setQuery] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [requested, setRequested] = useState<Record<string, string>>({});
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelection?.modelId ?? null);
+  const [requested, setRequested] = useState<Record<string, string>>(initialSelection?.selector ?? {});
+  const initialPrice = useRef(initialSelection?.customerCents);
+  const editorRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState('');
   const [preview, setPreview] = useState<CustomerTariffChangePreview | null>(null);
   const [pendingProposal, setPendingProposal] = useState<CustomerTariffChangeProposal | null>(null);
@@ -90,6 +93,7 @@ export function CustomerTariffPanel() {
     (!query.trim() || `${row.modelId} ${row.familyId}`.toLowerCase().includes(query.trim().toLowerCase()))
   ), [data, family, media, query]);
   const selected = data?.rows.find((row) => row.modelId === selectedId) ?? null;
+  const selectedModelId = selected?.modelId;
   const scenarioUrl = useMemo(() => {
     if (!selectedId) return null;
     const params = new URLSearchParams({ modelId: selectedId, ...requested });
@@ -109,15 +113,27 @@ export function CustomerTariffPanel() {
   const { data: history, mutate: mutateHistory } = useSWR(historyUrl, getHistory);
 
   useEffect(() => {
+    if (selectedModelId) editorRef.current?.scrollIntoView?.({ block: 'start' });
+  }, [selectedModelId]);
+
+  useEffect(() => {
     if (!exactScenarioId) return;
-    setDraft(exactStagedCents != null ? (exactStagedCents / 100).toFixed(2)
+    if (initialPrice.current !== undefined && exactScenarioId === initialSelection?.scenarioId) {
+      setDraft((initialPrice.current / 100).toFixed(2));
+      initialPrice.current = undefined;
+    } else {
+      if (initialPrice.current !== undefined) setError('The requested options changed. Review this scenario before preparing its price.');
+      initialPrice.current = undefined;
+      setDraft(exactStagedCents != null ? (exactStagedCents / 100).toFixed(2)
       : exactCurrentCents != null ? (exactCurrentCents / 100).toFixed(2) : '');
+    }
     setPreview(null);
     setPendingProposal(null);
-  }, [exactScenarioId, exactStagedCents, exactCurrentCents]);
+  }, [exactScenarioId, exactStagedCents, exactCurrentCents, initialSelection?.scenarioId]);
 
   const select = (modelId: string) => {
     if (busy) return;
+    initialPrice.current = undefined;
     const row = data?.rows.find((item) => item.modelId === modelId);
     setSelectedId(modelId);
     setRequested(row?.selector ?? {});
@@ -194,7 +210,7 @@ export function CustomerTariffPanel() {
           <span className="rounded-lg border border-info-border bg-info-bg p-2"><span className="block text-[10px] font-bold uppercase text-info">Supplier LIST / reference</span><strong className="text-sm text-text-primary">{supplierAmount(row.supplierListUsd)}</strong><span className="mt-1 block text-[10px] text-text-secondary">{supplierEvidenceLabel(row.supplierComparison.supplierList)}</span></span>
           <span className="rounded-lg border border-[#cbb9ff] bg-[#f1ebff] p-2"><span className="block text-[10px] font-bold uppercase text-[#5937b8]">Customer live</span><strong className="text-sm text-text-primary">{money(row.currentCents)}</strong></span>
         </button>) : <p className="rounded-xl border border-border bg-surface p-5 text-sm text-text-secondary">No models match these filters.</p>}</div>
-      <div className="xl:sticky xl:top-4 xl:self-start">{selected ? <section className="rounded-2xl border border-border bg-surface p-5">
+      <div ref={editorRef} className={`scroll-mt-4 xl:sticky xl:top-4 xl:order-none xl:self-start ${selected ? 'order-first' : ''}`}>{selected ? <section className="rounded-2xl border border-border bg-surface p-5">
         <div className="flex items-start justify-between gap-2"><div><h3 className="text-lg font-bold text-text-primary">{title(selected.modelId)}</h3><p className="text-xs text-text-secondary">Exact scenario for this price</p></div><span className="rounded-full bg-[#f1ebff] px-2 py-1 text-xs font-semibold text-[#5937b8]">{selected.mediaType}</span></div>
         {scenarioError ? <AdminNotice tone="error">{scenarioError instanceof Error ? scenarioError.message : 'Scenario unavailable.'}</AdminNotice> : null}
         {scenarioLoading ? <p className="mt-4 text-sm text-text-secondary">Loading scenario…</p> : null}

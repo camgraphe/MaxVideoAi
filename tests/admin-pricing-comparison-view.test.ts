@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import React, { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
 import test from 'node:test';
 
 import { buildProviderCostComparisonRows } from '../frontend/server/pricing-admin/provider-cost-comparison';
@@ -90,4 +91,30 @@ test('family navigation accepts future supplier families from inventory data', a
   assert.match(html, /Runway price comparison/);
   assert.match(html, /Runway Gen 4/);
   assert.doesNotMatch(html, /\$0\.00/);
+});
+
+test('comparison summary puts exact per-second prices and indicative margin beside the scenario', async () => {
+  const { ProviderPriceComparisonTable } = await import('../frontend/app/(core)/admin/pricing/_components/ProviderPriceComparisonTable');
+  const rows = buildProviderCostComparisonRows([{
+    scenarioId: 'engineId=seedance-2-0-mini|mode=t2v|resolution=720p|durationSec=5|aspectRatio=16%3A9|audio=false',
+    brandId: 'bytedance', engineId: 'seedance-2-0-mini', executionProvider: 'byteplus_modelark',
+    mediaType: 'video', mode: 't2v', resolution: '720p', durationSec: 5, aspectRatio: '16:9',
+    audio: false, step: 'normal', billingInputType: 'no_video_input', videoTokens: 108_000,
+    tokenEvidence: 'scenario_estimate', customerQuote: { totalCents: 95, currency: 'USD',
+      source: 'database', ruleId: 'current', pricingMode: 'legacy_margin_rule' },
+  }], '2026-09-30T12:00:00Z');
+  const dom = new JSDOM(renderToStaticMarkup(createElement(ProviderPriceComparisonTable, {
+    rows, disabled: false, onInspect: () => {}, onEdit: () => {},
+  })));
+  const summary = dom.window.document.querySelector('section details > summary')!;
+  assert.match(summary.textContent!, /Supplier \/s/);
+  assert.match(summary.textContent!, /\$0\.0756/);
+  assert.match(summary.textContent!, /Customer \/s/);
+  assert.match(summary.textContent!, /\$0\.19/);
+  assert.match(summary.textContent!, /60\.2%/);
+  assert.match(summary.textContent!, /\$0\.1144\/s/);
+  assert.match(summary.textContent!, /\$0\.95 total/);
+  assert.match(dom.window.document.body.textContent!, /Edit customer price/);
+  assert.match(dom.window.document.body.textContent!, /Prepare this price/);
+  dom.window.close();
 });
