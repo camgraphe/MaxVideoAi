@@ -1,3 +1,5 @@
+import { EXAMPLE_OPENING_RATIO_TOLERANCE } from '@/lib/aspect';
+
 export type CurationOpening = [string, string, string, string];
 export type CurationDraft = { mode: 'manual' | 'hybrid'; orderedIds: string[]; excludedIds: string[]; openingIds?: CurationOpening | null };
 export type CurationItem = {
@@ -66,8 +68,8 @@ export function curationItemFormat(item: Pick<CurationItem, 'outputWidth' | 'out
   const ratio = width && height && width > 0 && height > 0
     ? width / height
     : parts?.length === 2 && parts[0] > 0 && parts[1] > 0 ? parts[0] / parts[1] : NaN;
-  if (Math.abs(ratio / (16 / 9) - 1) <= 0.02) return '16:9';
-  if (Math.abs(ratio / (9 / 16) - 1) <= 0.02) return '9:16';
+  if (Math.abs(ratio / (16 / 9) - 1) <= EXAMPLE_OPENING_RATIO_TOLERANCE) return '16:9';
+  if (Math.abs(ratio / (9 / 16) - 1) <= EXAMPLE_OPENING_RATIO_TOLERANCE) return '9:16';
   return null;
 }
 

@@ -11,6 +11,15 @@ test('opening uses four compatible formats within the same page; other sort/page
  const measured=videos.map((v,i)=>({...v,aspectRatio:'unknown',outputWidth:i%4===1?480:1280,outputHeight:i%4===1?854:720}));
  assert.equal(buildGalleryOpening(measured,true).opening.length,4);
 });
+test('opening accepts FLUX codec-rounded 16:9 and 9:16 output dimensions',()=>{
+ const flux=[
+  {id:'lead',aspectRatio:'16:9',outputWidth:1280,outputHeight:704},
+  {id:'portrait',aspectRatio:'9:16',outputWidth:704,outputHeight:1280},
+  {id:'side-a',aspectRatio:'16:9',outputWidth:1280,outputHeight:704},
+  {id:'side-b',aspectRatio:'16:9',outputWidth:1280,outputHeight:704},
+ ];
+ assert.deepEqual(buildGalleryOpening(flux,true).opening.map(video=>video.id),flux.map(video=>video.id));
+});
 test('preview budget is bounded, prioritizes intent and stops every preview when paused',()=>{
  const ids=videos.map(v=>v.id),visible=new Set(ids.slice(0,8));
  assert.deepEqual(selectPreviewIds(ids,visible,null,3,false),['v0','v1','v2']);

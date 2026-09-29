@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseCurationDraft, resolveCuration, validateCurationOpening, type CurationItem } from '../frontend/lib/admin/playlist-curation';
+import { curationItemFormat, parseCurationDraft, resolveCuration, validateCurationOpening, type CurationItem } from '../frontend/lib/admin/playlist-curation';
 const item = (id: string, width: number, height: number, aspectRatio = '16:9'): CurationItem => ({
   id, engineId: 'wan-3', engineLabel: 'Wan 3', prompt: id, thumbUrl: null, videoUrl: '/v.mp4', createdAt: '',
   outputWidth: width, outputHeight: height, aspectRatio,
@@ -27,4 +27,9 @@ test('measured dimensions take priority over declarations; missing, wrong and un
     assert.throws(() => validateCurationOpening(draft,broken), /opening|16:9|9:16|eligible/i);
   }
   validateCurationOpening(draft,candidates.map(v => v.id==='b'?{...v,outputWidth:undefined,outputHeight:undefined,aspectRatio:'9:16'}:v));
+});
+test('admin opening accepts FLUX codec-rounded output without accepting square media', () => {
+  assert.equal(curationItemFormat(item('flux-wide',1280,704)), '16:9');
+  assert.equal(curationItemFormat(item('flux-portrait',704,1280,'9:16')), '9:16');
+  assert.equal(curationItemFormat(item('square',1024,1024)), null);
 });

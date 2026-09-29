@@ -113,4 +113,12 @@ test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async
     assert.deepEqual(body.selectedItems.map(i=>i.id),['candidate-2001','candidate-0001']);
     assert.deepEqual(body.snapshot.config.orderedIds,['candidate-2001','private','candidate-0001']);
   });
+  await t.test('candidate format filters accept codec-rounded video dimensions',async()=>{
+    await pg.pool.query("INSERT INTO app_jobs(job_id,engine_id,prompt) VALUES('rounded-wide','kling-3-pro','Rounded'),('rounded-tall','kling-3-pro','Rounded')");
+    await pg.pool.query("INSERT INTO job_outputs(job_id,kind,status,width,height,url) VALUES('rounded-wide','video','completed',1280,704,'/video.mp4'),('rounded-tall','video','completed',704,1280,'/video.mp4')");
+    const wide=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Rounded',format:'16:9'});
+    const tall=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Rounded',format:'9:16'});
+    assert.deepEqual(wide.items.map(item=>item.id),['rounded-wide']);
+    assert.deepEqual(tall.items.map(item=>item.id),['rounded-tall']);
+  });
 });

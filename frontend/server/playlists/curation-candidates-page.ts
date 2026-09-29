@@ -1,3 +1,4 @@
+import { EXAMPLE_OPENING_RATIO_TOLERANCE } from '@/lib/aspect';
 import { query, type QueryExecutor } from '@/lib/db';
 import type { CurationItem } from '@/lib/admin/playlist-curation';
 import { getExampleFamilyEngineAliases, getExampleModelEngineAliases } from '@/lib/model-families';
@@ -97,7 +98,7 @@ export async function searchCurationCandidatesPage(options: CandidatePageOptions
       THEN split_part(replace(aspect_ratio,'/',':'),':',1)::double precision / NULLIF(split_part(replace(aspect_ratio,'/',':'),':',2)::double precision,0)
       ELSE NULL END AS ratio FROM eligible
   ), filtered AS (
-    SELECT * FROM ratios WHERE $4::text IS NULL OR abs(ratio / CASE WHEN $4='16:9' THEN 16.0/9 ELSE 9.0/16 END - 1)<=0.02
+    SELECT * FROM ratios WHERE $4::text IS NULL OR abs(ratio / CASE WHEN $4='16:9' THEN 16.0/9 ELSE 9.0/16 END - 1)<=${EXAMPLE_OPENING_RATIO_TOLERANCE}
   ), page AS (
     SELECT job_id,created_at FROM filtered WHERE NOT $5::boolean
       OR ($6::timestamptz IS NULL AND (created_at IS NOT NULL OR job_id>$7))

@@ -3,6 +3,10 @@ export type AspectRatioParts = {
   height: number;
 };
 
+// Some providers encode a requested 16:9 frame at 1280×704. Keep the gallery
+// and admin opening selectors in agreement about this small rounding difference.
+export const EXAMPLE_OPENING_RATIO_TOLERANCE = 0.025;
+
 const NAMED_RATIOS: Record<string, AspectRatioParts> = {
   square: { width: 1, height: 1 },
   portrait: { width: 3, height: 4 },

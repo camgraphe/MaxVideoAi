@@ -1,4 +1,4 @@
-import { getAspectRatioFromDimensions, getAspectRatioNumber } from '@/lib/aspect';
+import { EXAMPLE_OPENING_RATIO_TOLERANCE, getAspectRatioFromDimensions, getAspectRatioNumber } from '@/lib/aspect';
 type FramedVideo = {id: string; aspectRatio?: string | null; outputWidth?: number | null; outputHeight?: number | null};
 export function galleryVideoRatio(video: FramedVideo, fallback=16/9): number {
   const dimensions = getAspectRatioFromDimensions(video.outputWidth,video.outputHeight);
@@ -9,7 +9,7 @@ export function buildGalleryOpening<T extends FramedVideo>(videos: T[], enabled:
   if(!enabled) return {opening:[],rest:videos};
   const opening:T[]=[];
   for(const ratio of [16/9,9/16,16/9,16/9]) {
-    const item=videos.find(video=>!opening.includes(video)&&Math.abs(galleryVideoRatio(video,NaN)/ratio-1)<=0.02);
+    const item=videos.find(video=>!opening.includes(video)&&Math.abs(galleryVideoRatio(video,NaN)/ratio-1)<=EXAMPLE_OPENING_RATIO_TOLERANCE);
     if(!item) return {opening:[],rest:videos};
     opening.push(item);
   }
