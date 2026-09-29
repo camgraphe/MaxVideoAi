@@ -24,10 +24,11 @@ import {
 } from './resolve-pricing-policy';
 import {
   customerTariffsEnabledByCode,
-  loadEffectiveCustomerTariffState,
+  loadCustomerTariffQuoteState,
   type EffectiveCustomerTariffState,
 } from './customer-tariff-store';
 import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
+import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
 
 /** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
 export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string }): Promise<PricingSnapshot> {
@@ -72,7 +73,8 @@ export async function computeCanonicalBillingSnapshot(
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
   if (dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
-    const tariffState = await (dependencies.loadCustomerTariffState ?? loadEffectiveCustomerTariffState)();
+    const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
+    const tariffState = await (dependencies.loadCustomerTariffState ?? (() => loadCustomerTariffQuoteState(selector)))();
     const manual = resolveCustomerTariffQuote({ context, facts: billingFacts.facts,
       at: new Date().toISOString(), state: tariffState });
     if (manual) {

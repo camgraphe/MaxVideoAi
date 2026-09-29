@@ -8,7 +8,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import type { PricingChangeEvent } from '@/lib/admin/pricing-change-contract';
 import type { CustomerTariffChangePreview, CustomerTariffInventory,
-  CustomerTariffScenarioDetail, CustomerTariffChangeProposal } from '@/server/pricing-admin/customer-tariff-contract';
+  CustomerTariffScenarioDetail, CustomerTariffChangeProposal, CustomerTariffChangeConfirmation } from '@/server/pricing-admin/customer-tariff-contract';
 
 const INVENTORY_URL = '/api/admin/pricing/tariffs/inventory';
 
@@ -104,7 +104,7 @@ export function CustomerTariffPanel() {
   const exactScenarioId = exact?.scenarioId;
   const exactStagedCents = exact?.stagedCents;
   const exactCurrentCents = exact?.currentCents;
-  const editable = data?.databaseStatus === 'loaded' && !data.active && exact?.currentCents != null;
+  const editable = data?.databaseStatus === 'loaded' && exact?.currentCents != null;
   const historyUrl = data?.databaseStatus === 'loaded' && exact
     ? `/api/admin/pricing/tariffs/history?targetId=${encodeURIComponent(exact.tariffCellId)}` : null;
   const { data: history, mutate: mutateHistory } = useSWR(historyUrl, getHistory);
@@ -150,12 +150,13 @@ export function CustomerTariffPanel() {
     if (!preview || !pendingProposal) return;
     setBusy(true); setError(null);
     try {
-      await post('/api/admin/pricing/tariffs/confirm', {
+      const result = await post<{ confirmation: CustomerTariffChangeConfirmation }>('/api/admin/pricing/tariffs/confirm', {
         proposal: pendingProposal, previewFingerprint: preview.fingerprint,
       });
       setPreview(null);
       setPendingProposal(null);
       setNotice(data?.active ? 'Customer tariff updated.' : 'Manual tariff saved as a staged value. The live customer price has not changed.');
+      if (result.confirmation.operationalWarnings.length) setError(result.confirmation.operationalWarnings.join(' '));
       await mutate();
       await mutateScenario();
       await mutateHistory();
@@ -201,7 +202,7 @@ export function CustomerTariffPanel() {
         <div className="mt-5 grid gap-2 sm:grid-cols-2"><div className="rounded-xl border border-info-border bg-info-bg p-3"><p className="text-xs font-semibold text-info">Supplier list</p><p className="text-xl font-bold">{supplierMoney(exact?.scenarioId === selected.scenarioId ? selected.supplierListUsd : null)}</p><p className="text-xs text-text-secondary">{exact?.scenarioId === selected.scenarioId ? `Account effective: ${supplierMoney(selected.supplierEffectiveUsd)} · invoice: ${supplierMoney(selected.supplierObservedUsd)}` : 'Supplier evidence is only mapped for the comparison scenario.'}</p></div><div className="rounded-xl border border-[#cbb9ff] bg-[#f1ebff] p-3"><p className="text-xs font-semibold text-[#5937b8]">Customer total · live</p><p className="text-xl font-bold">{money(exact?.currentCents ?? null)}</p></div></div>
         <label className="mt-5 block text-sm font-semibold text-text-primary">Manual customer total · USD<input type="number" min="0" step="0.01" inputMode="decimal" value={draft} onChange={(event) => { setDraft(event.target.value); setPreview(null); setPendingProposal(null); }} disabled={!editable || busy} className="mt-2 min-h-11 w-full rounded-lg border border-border bg-bg px-3 text-base" /></label>
         {exact?.stagedCents != null ? <p className="mt-2 text-xs text-amber-800">Prepared value: {money(exact.stagedCents)}{data.active ? ' · live' : ' · pending global activation'}</p> : null}
-        <div className="mt-4 flex flex-wrap gap-2"><AdminActionButton type="button" variant="primary" disabled={!editable || busy || !draft} onClick={() => void requestPreview()}>Preview price change</AdminActionButton>{exact?.stagedCents != null ? <AdminActionButton type="button" disabled={!editable || busy} onClick={() => void requestPreview({ operation: 'delete', scenarioId: exact.scenarioId })}>Remove prepared price</AdminActionButton> : null}</div>
+        <div className="mt-4 flex flex-wrap gap-2"><AdminActionButton type="button" variant="primary" disabled={!editable || busy || !draft} onClick={() => void requestPreview()}>Preview price change</AdminActionButton>{!data.active && exact?.stagedCents != null ? <AdminActionButton type="button" disabled={!editable || busy} onClick={() => void requestPreview({ operation: 'delete', scenarioId: exact.scenarioId })}>Remove prepared price</AdminActionButton> : null}</div>
         {preview ? <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4"><p className="text-sm font-bold text-text-primary">Review this exact price</p><p className="mt-2 text-sm">{money(preview.currentCents)} → <strong>{preview.proposedCents == null ? 'Remove prepared price' : money(preview.proposedCents)}</strong></p>{preview.warnings.map((warning) => <p key={warning} className="mt-2 text-xs text-amber-900">{warning}</p>)}<div className="mt-4 flex gap-2"><AdminActionButton type="button" variant="primary" disabled={busy} onClick={() => void confirm()}><Check className="mr-1 h-4 w-4" /> Confirm</AdminActionButton><AdminActionButton type="button" disabled={busy} onClick={() => { setPreview(null); setPendingProposal(null); }}>Cancel</AdminActionButton></div></div> : null}
         {history?.length ? <div className="mt-5 border-t border-border pt-4"><h4 className="text-sm font-semibold text-text-primary">Tariff history</h4><div className="mt-2 space-y-2">{history.slice(0, 5).map((event) => <div key={event.id} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2 text-xs"><span>{event.operation} · {new Date(event.createdAt).toLocaleString()}</span><AdminActionButton type="button" disabled={!editable || busy} onClick={() => void requestPreview({ operation: 'rollback', scenarioId: exact!.scenarioId, eventId: event.id })}>Preview rollback</AdminActionButton></div>)}</div></div> : null}
       </section> : <div className="rounded-2xl border border-border bg-surface p-6 text-sm text-text-secondary">Select a model to inspect its scenario and prepare a customer price.</div>}</div>

@@ -19,6 +19,17 @@ function resolveModelSlug(engineId: string): string | null {
   return entry?.modelSlug ?? null;
 }
 
+export function revalidateCustomerTariffChangeSurfaces(
+  modelId: string,
+  invalidatePath: (path: string, type?: 'page' | 'layout') => void = revalidatePath,
+): void {
+  const paths = new Set<string>([...PRICING_PATHS, ...CURRENT_EXAMPLE_PATHS]);
+  const slug = resolveModelSlug(modelId);
+  if (slug) for (const prefix of ['/models', '/fr/modeles', '/es/modelos']) paths.add(`${prefix}/${slug}`);
+  paths.forEach((path) => invalidatePath(path));
+  CURRENT_EXAMPLE_DYNAMIC_PATHS.forEach((path) => invalidatePath(path, 'page'));
+}
+
 export function revalidatePricingChangeSurfaces(
   preview: PricingChangePreview,
   invalidatePath: (path: string, type?: 'page' | 'layout') => void = revalidatePath

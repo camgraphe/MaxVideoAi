@@ -19,7 +19,15 @@ export type EffectiveCustomerTariffState =
   | { status: 'unavailable' };
 
 export function customerTariffsEnabledByCode(): boolean {
-  return versionedDocument.active === true;
+  if (versionedDocument.active === true) return true;
+  if (process.env.PRICING_SANDBOX !== '1' || process.env.NODE_ENV !== 'development') return false;
+  try {
+    const address = new URL(process.env.DATABASE_URL ?? '');
+    const hosts = address.searchParams.getAll('host');
+    return ['localhost', '127.0.0.1'].includes(address.hostname) &&
+      hosts.length === 1 && Boolean(hosts[0]?.startsWith('/')) &&
+      [...address.searchParams.keys()].every((key) => key === 'host');
+  } catch { return false; }
 }
 
 function dateIso(value: Date | string): string {
@@ -81,27 +89,45 @@ function mapCell(row: RawCell): ManualTariffCell {
   return validateCustomerTariffCell(cell);
 }
 
-async function readState(executor: QueryExecutor): Promise<EffectiveCustomerTariffState> {
+async function readState(executor: QueryExecutor, selector?: ManualTariffSelector): Promise<EffectiveCustomerTariffState> {
   const [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
   if (!state) return { status: 'unavailable' };
   const rows = await executor.query<RawCell>(
-    'SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision FROM app_customer_tariff_cells ORDER BY id'
+    `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
+     FROM app_customer_tariff_cells ${selector ? 'WHERE selector_key = $1' : ''} ORDER BY id`,
+    selector ? [selectorKey(selector)] : []
   );
+  const versions = state.active ? await executor.query<RawCell>(
+    `SELECT tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
+     FROM app_customer_tariff_cell_versions ${selector ? 'WHERE selector_key = $1' : ''} ORDER BY tariff_id, revision`,
+    selector ? [selectorKey(selector)] : []
+  ) : [];
   if (versionedDocument.schemaVersion !== 1 || !Array.isArray(versionedDocument.cells)) return { status: 'unavailable' };
   return {
-    status: 'loaded', revision: integer(state.revision), active: state.active && versionedDocument.active,
-    versionedCells: versionedDocument.cells as ManualTariffCell[], databaseCells: rows.map(mapCell),
+    status: 'loaded', revision: integer(state.revision), active: state.active && customerTariffsEnabledByCode(),
+    versionedCells: (versionedDocument.cells as ManualTariffCell[])
+      .filter((cell) => !selector || selectorKey(cell.selector) === selectorKey(selector)),
+    databaseCells: [...versions, ...rows].map(mapCell),
   };
 }
 
 /** A failed database read never becomes an empty versioned-only state. */
 export async function loadEffectiveCustomerTariffState(executor?: QueryExecutor): Promise<EffectiveCustomerTariffState> {
+  return loadState(executor);
+}
+
+/** A quote reads only its exact selector; the admin inventory can explicitly read all cells. */
+export async function loadCustomerTariffQuoteState(selector: ManualTariffSelector, executor?: QueryExecutor): Promise<EffectiveCustomerTariffState> {
+  return loadState(executor, selector);
+}
+
+async function loadState(executor?: QueryExecutor, selector?: ManualTariffSelector): Promise<EffectiveCustomerTariffState> {
   try {
-    if (executor) return await readState(executor);
+    if (executor) return await readState(executor, selector);
     const client = await getDb().connect();
     try {
       await client.query('BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
-      const loaded = await readState(createQueryExecutor(client));
+      const loaded = await readState(createQueryExecutor(client), selector);
       await client.query('COMMIT');
       return loaded;
     } catch {
@@ -128,7 +154,7 @@ export async function upsertCustomerTariffCell(
     'SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE FOR UPDATE'
   );
   if (!state) throw new Error('Customer tariff state is missing');
-  if (state.active || versionedDocument.active) throw new Error('Active tariff updates require temporal versioning');
+  if (state.active) return appendActiveCustomerTariffVersion(executor, cell, actorId, integer(state.revision));
   const nextRevision = integer(state.revision) + 1;
   const [row] = await executor.query<RawCell>(
     `INSERT INTO app_customer_tariff_cells
@@ -148,6 +174,45 @@ export async function upsertCustomerTariffCell(
   return mapCell(row);
 }
 
+async function appendActiveCustomerTariffVersion(
+  executor: TransactionQueryExecutor, cell: ManualTariffCell, actorId: string, revision: number,
+): Promise<ManualTariffCell> {
+  const [previous] = await executor.query<RawCell>(
+    `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
+     FROM app_customer_tariff_cells WHERE id = $1 FOR UPDATE`, [cell.id]
+  );
+  if (previous && (selectorKey(mapCell(previous).selector) !== selectorKey(cell.selector) || previous.currency !== cell.currency)) {
+    throw new Error('An active tariff selector and currency cannot be changed');
+  }
+  // Effective instants belong to the server, never to an admin-supplied historical date.
+  let effectiveFrom = new Date().toISOString();
+  if (previous) {
+    const previousFrom = Date.parse(dateIso(previous.effective_from));
+    if (previousFrom > Date.now() + 1000 || previous.effective_until) throw new Error('Invalid current tariff interval');
+    while (Date.parse(effectiveFrom) <= previousFrom) {
+      await new Promise((done) => setTimeout(done, 1));
+      effectiveFrom = new Date().toISOString();
+    }
+    await executor.query(`INSERT INTO app_customer_tariff_cell_versions
+      (tariff_id, selector_key, selector_json, price_json, currency, effective_from, effective_until, revision, updated_by)
+      SELECT id, selector_key, selector_json, price_json, currency, effective_from, $2::timestamptz, revision, updated_by
+      FROM app_customer_tariff_cells WHERE id = $1`, [cell.id, effectiveFrom]);
+  }
+  const nextRevision = revision + 1;
+  const [persisted] = await executor.query<RawCell>(`INSERT INTO app_customer_tariff_cells
+    (id, selector_key, selector_json, price_json, currency, effective_from, effective_until, revision, updated_by)
+    VALUES ($1, $2, $3::jsonb, $4::jsonb, $5, $6::timestamptz, NULL, $7, $8::uuid)
+    ON CONFLICT (id) DO UPDATE SET price_json = EXCLUDED.price_json,
+      effective_from = EXCLUDED.effective_from, effective_until = NULL,
+      revision = EXCLUDED.revision, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+    RETURNING id, selector_json, price_json, currency, effective_from, effective_until, revision`,
+  [cell.id, selectorKey(cell.selector), JSON.stringify(cell.selector), JSON.stringify(cell.price), cell.currency,
+    effectiveFrom, nextRevision, actorId]);
+  if (!persisted) throw new Error('Customer tariff version was not persisted');
+  await executor.query('UPDATE app_customer_tariff_state SET revision = $1, updated_at = NOW() WHERE singleton = TRUE', [nextRevision]);
+  return mapCell(persisted);
+}
+
 /** Remove a staged database cell; an active tariff may never silently fall through. */
 export async function deleteStagedCustomerTariffCell(
   executor: TransactionQueryExecutor, id: string,
@@ -156,7 +221,7 @@ export async function deleteStagedCustomerTariffCell(
   const [state] = await executor.query<RawState>(
     'SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE FOR UPDATE'
   );
-  if (!state || state.active || versionedDocument.active) throw new Error('Active customer tariffs cannot be deleted');
+  if (!state || state.active) throw new Error('Active customer tariffs cannot be deleted');
   const deleted = await executor.query<{ id: string }>('DELETE FROM app_customer_tariff_cells WHERE id = $1 RETURNING id', [id]);
   if (deleted.length !== 1) throw new Error('Customer tariff cell does not exist');
   const revision = integer(state.revision) + 1;

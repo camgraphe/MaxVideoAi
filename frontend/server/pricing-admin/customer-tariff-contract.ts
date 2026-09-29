@@ -68,4 +68,5 @@ export type CustomerTariffChangeConfirmation = {
   revision: number;
   event: PricingChangeEvent;
   preview: CustomerTariffChangePreview;
+  operationalWarnings: string[];
 };

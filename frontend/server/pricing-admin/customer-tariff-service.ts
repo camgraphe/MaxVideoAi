@@ -12,6 +12,8 @@ import { customerTariffsEnabledByCode, loadEffectiveCustomerTariffState, upsertC
 import { PricingAdminError } from './errors';
 import { getPricingChangeEventById, insertPricingChangeEvent, listPricingChangeEvents } from './event-store';
 import { loadPricingPolicyInventory } from './policy-read-model';
+import { revalidateCustomerTariffChangeSurfaces } from './revalidation';
+import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
@@ -51,14 +53,21 @@ export async function loadCustomerTariffScenarioDetail(
   const [state, policy] = await Promise.all([loadEffectiveCustomerTariffState(), loadPricingPolicyOverrides()]);
   let currentCents: number | null = null;
   try { currentCents = await quoteCurrent(scenario, policy, state); } catch { /* No numeric fallback for an unavailable live quote. */ }
-  const staged = state.status === 'loaded' ? state.databaseCells.find((cell) => cell.id === cellId(scenario)) : null;
+  const staged = currentDatabaseCell(state, cellId(scenario));
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
     currentCents, stagedCents: staged?.price.kind === 'fixed' ? staged.price.customerCents : null,
     currency: 'USD' };
 }
 
 function cellId(scenario: ManualTariffCoverageScenario): string {
-  return `customer:${createHash('sha256').update(scenario.id).digest('hex').slice(0, 32)}`;
+  return customerTariffCellId(scenario.id);
+}
+
+function currentDatabaseCell(state: EffectiveCustomerTariffState, id: string): ManualTariffCell | null {
+  if (state.status !== 'loaded') return null;
+  const now = Date.now();
+  return state.databaseCells.find((cell) => cell.id === id && Date.parse(cell.effectiveFrom) <= now &&
+    (!cell.effectiveUntil || now < Date.parse(cell.effectiveUntil))) ?? null;
 }
 
 function scenarioById(id: string): ManualTariffCoverageScenario {
@@ -117,7 +126,7 @@ export async function loadCustomerTariffInventory(): Promise<CustomerTariffInven
     const options = byModel.get(comparison.engineId) ?? [];
     const selected = options.find((candidate) => candidate.id === comparison.scenarioId);
     if (!selected) throw new PricingAdminError('unsupported_scenario', `No tariff scenario for ${comparison.engineId}`);
-    const staged = state.status === 'loaded' ? state.databaseCells.find((cell) => cell.id === cellId(selected)) : null;
+    const staged = currentDatabaseCell(state, cellId(selected));
     return {
       modelId: comparison.engineId,
       familyId: comparison.familyId ?? comparison.brandId,
@@ -157,11 +166,13 @@ async function buildPreview(
     throw new PricingAdminError('invalid_payload', 'Rollback needs a pricing event ID');
   }
   const state = loadedState(stateInput);
-  if (state.active) throw new PricingAdminError('unsupported_scenario', 'Active tariff changes need temporal versioning');
+  if (state.active && proposal.operation === 'delete') {
+    throw new PricingAdminError('unsupported_scenario', 'Active customer tariffs cannot be deleted');
+  }
   const scenario = scenarioById(proposal.scenarioId);
   const currentCents = await quoteCurrent(scenario, policy, state);
   const id = cellId(scenario);
-  const previousCell = state.databaseCells.find((cell) => cell.id === id) ?? null;
+  const previousCell = currentDatabaseCell(state, id);
   if (proposal.operation === 'create' && previousCell ||
       (proposal.operation === 'update' || proposal.operation === 'delete') && !previousCell) {
     throw new PricingAdminError('invalid_payload', 'Tariff operation does not match the current cell');
@@ -189,11 +200,18 @@ async function buildPreview(
       throw new PricingAdminError('invalid_payload', 'No staged tariff exists to remove');
     }
   }
+  if (state.active && proposedCents === null) {
+    throw new PricingAdminError('unsupported_scenario', 'Active customer tariffs cannot be deleted by rollback');
+  }
   const proposedCell: ManualTariffCell | null = proposedCents === null ? null : {
     id, selector: scenario.selector, source: 'database', version: state.revision + 1,
     currency: 'USD', effectiveFrom: previousCell?.effectiveFrom ?? '2026-09-29T00:00:00.000Z',
     price: { kind: 'fixed', customerCents: proposedCents },
   };
+  if (state.active && proposedCell) {
+    await quoteCurrent(scenario, policy, { ...state,
+      databaseCells: [...state.databaseCells.filter((cell) => cell.id !== id), proposedCell] });
+  }
   const previewBase = {
     operation: proposal.operation, scenarioId: scenario.id, modelId: scenario.modelId,
     selector: scenario.selector, currentCents, proposedCents,
@@ -212,6 +230,7 @@ export async function previewCustomerTariffChange(proposal: CustomerTariffChange
 
 export async function confirmCustomerTariffChange(
   proposal: CustomerTariffChangeProposal, expectedFingerprint: string, actorId: string,
+  revalidate: (modelId: string) => void = revalidateCustomerTariffChangeSurfaces,
 ): Promise<CustomerTariffChangeConfirmation> {
   if (!expectedFingerprint?.trim()) throw new PricingAdminError('preview_stale', 'Preview this tariff again');
   const committed = await withDbTransaction(async (executor: TransactionQueryExecutor) => {
@@ -222,14 +241,14 @@ export async function confirmCustomerTariffChange(
     if (preview.fingerprint !== expectedFingerprint) {
       throw new PricingAdminError('preview_stale', 'Tariff preview changed; review the current price again');
     }
-    const revision = preview.proposedCell
-      ? (await upsertCustomerTariffCell(executor, preview.proposedCell, actorId)).version
-      : await deleteStagedCustomerTariffCell(executor, cellId(scenarioById(preview.scenarioId)));
+    const persistedCell = preview.proposedCell
+      ? await upsertCustomerTariffCell(executor, preview.proposedCell, actorId) : null;
+    const revision = persistedCell?.version ?? await deleteStagedCustomerTariffCell(executor, cellId(scenarioById(preview.scenarioId)));
     const event = await insertPricingChangeEvent(executor, {
       domain: 'customer_tariff', operation: proposal.operation,
       targetId: cellId(scenarioById(preview.scenarioId)), actorId,
       previousState: preview.previousCell as unknown as null | Record<string, string | number | boolean | null>,
-      nextState: preview.proposedCell as unknown as null | Record<string, string | number | boolean | null>,
+      nextState: persistedCell as unknown as null | Record<string, string | number | boolean | null>,
       previewSummary: { fingerprint: preview.fingerprint, currentCents: preview.currentCents,
         proposedCents: preview.proposedCents, tariffRevision: revision, active: preview.active,
         ...(preview.rollbackEventId ? { rollbackEventId: preview.rollbackEventId } : {}) },
@@ -237,7 +256,12 @@ export async function confirmCustomerTariffChange(
     });
     return { committed: true as const, revision, event, preview };
   });
-  return committed;
+  const operationalWarnings: string[] = [];
+  if (committed.preview.active) {
+    try { revalidate(committed.preview.modelId); }
+    catch { operationalWarnings.push('Customer price saved; public page refresh failed. Retry page revalidation.'); }
+  }
+  return { ...committed, operationalWarnings };
 }
 
 export async function loadCustomerTariffHistory(targetId?: string) {

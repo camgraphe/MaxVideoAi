@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { insertPricingChangeEvent, listPricingChangeEvents } from '../frontend/server/pricing-admin/event-store.ts';
-import { loadEffectiveCustomerTariffState, upsertCustomerTariffCell } from '../frontend/server/pricing/customer-tariff-store.ts';
+import { loadEffectiveCustomerTariffState, loadCustomerTariffQuoteState, upsertCustomerTariffCell } from '../frontend/server/pricing/customer-tariff-store.ts';
 import { getDb, withDbTransaction } from '../frontend/src/lib/db.ts';
 import { startDisposablePostgres } from './helpers/disposable-postgres.ts';
 
@@ -50,6 +50,12 @@ test('disposable PostgreSQL enforces interval overlap and atomic tariff/event re
     if (loaded.status !== 'loaded') return;
     assert.equal(loaded.revision, 1);
     assert.deepEqual(loaded.databaseCells[0]?.price, cell.price);
+    const neighbor = await loadCustomerTariffQuoteState({ ...cell.selector, durationSec: '6' });
+    assert.equal(neighbor.status, 'loaded');
+    if (neighbor.status === 'loaded') assert.equal(neighbor.databaseCells.length, 0);
+    const exact = await loadCustomerTariffQuoteState(cell.selector);
+    assert.equal(exact.status, 'loaded');
+    if (exact.status === 'loaded') assert.deepEqual(exact.databaseCells.map((row) => row.id), [cell.id]);
     const events = await listPricingChangeEvents({ domain: 'customer_tariff' });
     assert.equal(events.length, 1);
     assert.equal(events[0]?.targetId, cell.id);
