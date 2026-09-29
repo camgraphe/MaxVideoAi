@@ -40,9 +40,11 @@ test('all24 watch links render once before hydration, with one critical poster a
     assert.equal(doc.querySelectorAll('img').length,24);
     assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="view_example_details"]')].map(a=>a.getAttribute('href')),videos.map(v=>v.href));
     assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="reuse_example"]')].map(a=>a.getAttribute('href')),['/app?from=v0']);
-    assert.match(doc.querySelector('[data-gallery-opening] + div')?.textContent ?? '', /A cinematic public example/);
+    const opening=doc.querySelector('[data-gallery-opening]');
+    assert.match(opening?.children[1]?.textContent ?? '', /A cinematic public example/);
+    assert.ok(opening?.children[1]?.querySelector('a[href="/app?from=v0"]'), 'the app action follows the lead card');
     assert.equal(doc.querySelector('video'),null);
-    assert.equal(doc.querySelectorAll('[data-gallery-opening]>div').length,4);
+    assert.equal(opening?.querySelectorAll('[data-frame]').length,4);
     assert.deepEqual([...doc.querySelectorAll('[data-frame]')].map(el=>el.getAttribute('data-frame')),['lead','portrait','side','side']);
     assert.ok(!doc.body.textContent?.includes('Load more'));
   }finally{dom.window.close();}

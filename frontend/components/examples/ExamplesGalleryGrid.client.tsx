@@ -35,7 +35,8 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
   const continuationLabel=locale==='fr'?'Encore des vidéos':locale==='es'?'Más vídeos':'More videos';
   const pageCountLabel=locale==='fr'?'sur cette page':locale==='es'?'en esta página':'on this page';
   const featuredLabel=locale==='fr'?'Vidéo à la une':locale==='es'?'Vídeo destacado':'Featured video';
-  const reuseLabel=locale==='fr'?'Partir de cet exemple':locale==='es'?'Crear a partir de este ejemplo':'Start from this example';
+  const detailsLabel=locale==='fr'?'Voir le prompt et le prix':locale==='es'?'Ver el prompt y el precio':'See prompt & price';
+  const reuseLabel=locale==='fr'?'Utiliser ce prompt dans l’app':locale==='es'?'Usar este prompt en la app':'Use this prompt in the app';
   return <div>
     {reader.selected && <ExampleReader id={reader.selected} locale={locale} onClose={reader.close} navigationError={reader.navigationError} navigation={{previous:()=>void reader.step(-1),next:()=>void reader.step(1),canPrevious:reader.canPrevious,canNext:reader.canNext,busy:reader.busy}}/>}
     <div className="mb-3 flex justify-end">
@@ -44,14 +45,21 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
         {preview.paused?<Play size={13}/>:<Pause size={13}/>}{preview.paused?resumeLabel:pauseLabel}
       </button>
     </div>
-    {opening.length?<div className={styles.opening} data-gallery-opening>{opening.map((video,index)=>card(video,index===0?'lead':index===1?'portrait':'side'))}</div>:null}
-    {opening[0]?<div className={styles.openingAction}>
-      <span className={styles.openingActionSummary}>
-        <strong>{featuredLabel}<span aria-hidden="true"> · </span>{opening[0].engineLabel}</strong>
-        <span className={styles.openingActionPrompt}>{opening[0].prompt}</span>
-      </span>
-      {opening[0].recreateHref?<a href={opening[0].recreateHref} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
-        data-analytics-cta-location="examples_opening" data-analytics-target-family="workspace">{reuseLabel}<span aria-hidden="true"> ↗</span></a>:null}
+    {opening.length?<div className={styles.opening} data-gallery-opening>
+      {card(opening[0],'lead')}
+      <div className={styles.openingAction}>
+        <span className={styles.openingActionSummary}>
+          <strong>{featuredLabel}<span aria-hidden="true"> · </span>{opening[0].engineLabel}</strong>
+          <span className={styles.openingActionPrompt}>{opening[0].prompt}</span>
+        </span>
+        <div className={styles.openingActionLinks}>
+          <button type="button" onClick={()=>reader.open(opening[0])} data-analytics-event="cta_click"
+            data-analytics-cta-name="view_example_details" data-analytics-cta-location="examples_opening">{detailsLabel}</button>
+          {opening[0].recreateHref?<a href={opening[0].recreateHref} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
+            data-analytics-cta-location="examples_opening" data-analytics-target-family="workspace">{reuseLabel}<span aria-hidden="true"> ↗</span></a>:null}
+        </div>
+      </div>
+      {opening.slice(1).map((video,index)=>card(video,index===0?'portrait':'side'))}
     </div>:null}
     {opening.length>0&&rest.length>0?<div className={styles.continuationHeading}><h2>{continuationLabel}</h2><span>{rest.length} {pageCountLabel}</span></div>:null}
     <div className={styles.gallery}>{rest.map(video=><div key={video.id} className={styles.item} style={{'--video-ratio':galleryVideoRatio(video)} as CSSProperties}>{card(video)}</div>)}</div>
