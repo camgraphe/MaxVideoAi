@@ -96,10 +96,10 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.ok(lineCount <= 400, `examples page should stay below 400 lines after route extraction, got ${lineCount}`);
 });
 
-test('examples hub metadata sends visitors to detail pages for recorded costs', () => {
-  const title = 'AI Video Examples: Prompts, Models & Recorded Costs';
+test('examples hub metadata sends visitors to detail pages for current prices', () => {
+  const title = 'AI Video Examples: Prompts, Models & Current Prices';
   const description =
-    'Browse real AI video examples, then open a video to inspect its prompt, settings, duration and recorded render cost before recreating it.';
+    'Browse real AI video examples, then open a video to inspect its prompt, settings, duration and current model price before recreating it.';
 
   assert.equal(enMessages.gallery?.meta?.title, title);
   assert.equal(enMessages.gallery?.meta?.description, description);

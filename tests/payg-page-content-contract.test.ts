@@ -148,8 +148,9 @@ test('showcase formatting uses exact-locale content while retaining runtime numb
     fixtureGalleryVideo({ finalPriceCents: 123 }),
     'en',
     getPayAsYouGoContent('en').showcase.runtime,
+    { kind: 'reference', amountCents: 141, currency: 'USD', modelId: 'kling-3-pro', scenarioLabel: 'Text to video · 5s · 1080p' },
   );
-  assert.equal(priced.priceLabel, '$1.23');
+  assert.equal(priced.priceLabel, 'From $1.41 · Text to video · 5s · 1080p');
 
   for (const locale of ['fr', 'es'] as const) {
     const copy = getPayAsYouGoContent(locale).showcase.runtime;

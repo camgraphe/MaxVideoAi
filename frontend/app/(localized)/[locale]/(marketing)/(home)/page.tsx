@@ -30,6 +30,8 @@ import {
   type RedesignContent,
 } from './_lib/home-route-data';
 import { buildFaqSchema, buildItemListSchema, buildSoftwareSchema, serializeJsonLd } from './_lib/home-jsonld';
+import { quoteCurrentExamplePrices } from '@/server/current-example-price';
+import type { GalleryVideo } from '@/server/videos';
 
 export const revalidate = 60;
 
@@ -57,6 +59,11 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
   const hero = buildHeroContent(locale, content);
   const { examples, programmedHeroSlots, engineScores } = await loadHomePageData(locale, content);
+  const currentHeroPrices = await quoteCurrentExamplePrices(content.hero.mockup.engineRecommendations.map((recommendation) => ({
+    id: recommendation.engineId,
+    engineId: recommendation.engineId,
+    durationSec: 0,
+  } as GalleryVideo)));
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
   const comparisonScores = buildHomeComparisonData(engineScores);
@@ -72,6 +79,8 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         copy={hero}
         previews={selectHomepageHeroPreviews(examples)}
         programmedHeroItems={programmedHeroItems}
+        currentHeroPrices={currentHeroPrices}
+        locale={locale}
       />
       <DeferredMarketingContent><HomeCreationSection locale={locale} assistantHref={mcpLink?.href} /></DeferredMarketingContent>
       <DeferredMarketingContent><HomeCreativeWorlds locale={locale} cards={primaryBestForCards} examples={examples} providers={providers} examplesCopy={content.examples} /></DeferredMarketingContent>

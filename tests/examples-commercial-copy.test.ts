@@ -67,12 +67,12 @@ test('gallery affordance and accessible watch names describe settings and price'
   assert.doesNotMatch(cardSource, /recreateHref|recreateLabel|showRecreateLink/);
 });
 
-test('localized Examples copy sends visitors to the detail page for recorded cost', () => {
+test('localized Examples copy sends visitors to the detail page for current model prices', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const description = getExamplesLongDescription(locale);
     const mainVideo = getExamplesMainVideoCopy(locale);
     const faq = getHubExamplesFaq(locale);
-    assert.match(description, /recorded (?:render )?cost|coût enregistré|coût du rendu|cost[eo] registrado|cost[eo] del render/i);
+    assert.match(description, /current model price|tarif actuel du modèle|precio actual del modelo/i);
     assert.match(mainVideo.openExample, /settings|réglages|ajustes/i);
     assert.match(faq.items[2]?.answer ?? '', /open|ouvrez|abre/i);
   }

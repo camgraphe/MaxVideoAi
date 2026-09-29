@@ -64,7 +64,13 @@ function exactContext(video: GalleryVideo, entry: FalEngineEntry): PricingContex
   const durationSec = positiveNumber(core?.durationSec);
   const resolution = core?.resolution;
   const aspectRatio = core?.aspectRatio;
+  // Unknown saved controls may affect price. A same-model reference is safer
+  // than claiming that an incomplete projection reproduces the old render.
+  const knownSettings = new Set(['inputMode', 'core', 'refs']);
+  const knownCore = new Set(['durationSec', 'resolution', 'aspectRatio', 'audio']);
   if (!settings || !core || typeof mode !== 'string' || !entry.engine.modes.includes(mode as Mode) ||
+      Object.keys(settings).some((key) => !knownSettings.has(key)) ||
+      Object.keys(core).some((key) => !knownCore.has(key)) ||
       mode !== 't2v' || durationSec == null || durationSec !== video.durationSec ||
       !supportedDuration(entry, mode as Mode, durationSec) ||
       typeof resolution !== 'string' || !entry.engine.resolutions.some((supported) => supported === resolution) ||

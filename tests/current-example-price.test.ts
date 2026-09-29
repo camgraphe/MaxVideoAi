@@ -64,6 +64,18 @@ test('a complete old Kling render shows its current exact quote, not the old pai
   assert.equal(calls[0]?.durationSec, 5);
 });
 
+test('unmapped quality or add-on settings cannot be labeled as an exact current price', async () => {
+  const calls: PricingContext[] = [];
+  const result = await quoteCurrentExamplePrice(video({
+    settingsSnapshot: {
+      inputMode: 't2v',
+      core: { durationSec: 5, resolution: '1080p', audio: true, aspectRatio: '16:9', quality: 'premium' },
+      refs: {},
+    },
+  }), { quote: currentQuote(calls) });
+  assert.equal(result.kind, 'reference');
+});
+
 test('missing saved resolution gives a named current reference, not a claimed exact recreation', async () => {
   const calls: PricingContext[] = [];
   const result = await quoteCurrentExamplePrice(video({

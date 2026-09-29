@@ -75,12 +75,12 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
 
 export function getExamplesLongDescription(locale: AppLocale) {
   if (locale === 'fr') {
-    return 'Parcourez des exemples vidéo IA par famille de modèles. Ouvrez un exemple pour consulter son prompt, ses réglages, sa durée et le coût enregistré du rendu, puis recréez-le dans votre studio.';
+    return 'Parcourez des exemples vidéo IA par famille de modèles. Ouvrez un exemple pour consulter son prompt, ses réglages, sa durée et le tarif actuel du modèle, puis recréez-le dans votre studio.';
   }
   if (locale === 'es') {
-    return 'Explora ejemplos de video IA por modelo. Abre un ejemplo para consultar su prompt, ajustes, duración y costo registrado de la generación, y después recréalo en tu espacio de trabajo.';
+    return 'Explora ejemplos de video IA por modelo. Abre un ejemplo para consultar su prompt, ajustes, duración y precio actual del modelo, y después recréalo en tu espacio de trabajo.';
   }
-  return 'Browse AI video examples by model. Open any example to inspect its prompt, settings, duration, and recorded render cost, then recreate it in your workspace.';
+  return 'Browse AI video examples by model. Open any example to inspect its prompt, settings, duration, and current model price, then recreate it in your workspace.';
 }
 
 export function getKlingExamplesSectionTitles(locale: AppLocale, isKlingLanding: boolean) {

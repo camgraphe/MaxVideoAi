@@ -151,7 +151,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const loadMoreLabel = galleryUiCopy.loadMore;
   const longDescription = getExamplesLongDescription(appLocale);
   const HERO_BODY_FALLBACK =
-    'Browse AI video examples by model. Open an example to inspect its prompt, settings, duration, and recorded render cost, then recreate it in your workspace.';
+    'Browse AI video examples by model. Open an example to inspect its prompt, settings, duration, and current model price, then recreate it in your workspace.';
   const hubHeroBody =
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
   const isSeedanceLanding = modelLanding?.slug === 'seedance';

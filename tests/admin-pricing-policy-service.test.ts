@@ -843,7 +843,7 @@ test('rollback uses direct event lookup beyond the 200-row history window and re
   assert.equal(harness.rules[0]?.vendorAccountId, undefined);
 });
 
-test('targeted revalidation maps pricing hub and model rows to exact localized public paths only', () => {
+test('pricing edits revalidate localized prices, examples, model pages and watch pages', () => {
   const paths: string[] = [];
   revalidatePricingChangeSurfaces(
     {
@@ -875,12 +875,16 @@ test('targeted revalidation maps pricing hub and model rows to exact localized p
   );
 
   assert.deepEqual(paths, [
+    '/', '/fr', '/es',
+    '/examples', '/fr/galerie', '/es/galeria',
+    '/pay-as-you-go-ai-video-generator', '/fr/pay-as-you-go-ai-video-generator', '/es/pay-as-you-go-ai-video-generator',
     '/pricing',
     '/fr/tarifs',
     '/es/precios',
     '/models/kling-3-pro',
     '/fr/modeles/kling-3-pro',
     '/es/modelos/kling-3-pro',
+    '/examples/[model]', '/fr/galerie/[model]', '/es/galeria/[model]', '/video/[id]',
   ]);
   assert.ok(paths.every((path) => !path.includes('/admin') && !path.includes('/blog') && !path.includes('/app')));
 });

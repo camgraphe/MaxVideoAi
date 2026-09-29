@@ -76,6 +76,9 @@ test('watch page signal modules expose the expected contracts', () => {
   assert.match(readModule('recommendations.ts'), /export function buildPromptImprovementNotes/);
   assert.match(readModule('recommendations.ts'), /export function buildCompareLinks/);
   assert.match(readModule('visual.ts'), /export function buildWatchPageVisualContext/);
-  assert.match(readModule('content.ts'), /Recorded render cost/);
-  assert.doesNotMatch(readModule('content.ts'), /label: 'Render cost'/);
+  assert.doesNotMatch(readModule('content.ts'), /finalPriceCents|Recorded render cost/);
+  const watchData = readFileSync(join(root, 'frontend/server/video-seo.ts'), 'utf8');
+  const watchContent = readFileSync(join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx'), 'utf8');
+  assert.match(watchData, /quoteCurrentExamplePrice\(video\)/);
+  assert.match(watchContent, /formatCurrentExamplePrice\(page\.currentPrice, 'en'\)/);
 });

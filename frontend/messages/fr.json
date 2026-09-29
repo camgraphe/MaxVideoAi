@@ -793,14 +793,14 @@
       },
       "examples": {
         "title": "Des histoires, des styles, des idées.",
-        "subtitle": "Ouvrez un exemple pour retrouver les instructions, les réglages et le coût enregistré lors de sa création. Inspirez-vous-en pour votre propre projet.",
+        "subtitle": "Ouvrez un exemple pour retrouver les instructions, les réglages et le tarif actuel du modèle. Inspirez-vous-en pour votre propre projet.",
         "eyebrow": "Exemples réels",
         "cta": "Parcourir tous les exemples",
         "modelsCta": "Voir les caractéristiques",
         "compareLink": "Comparer les modèles",
         "featuredModelCta": "Découvrir Seedance 2.5",
         "modelCta": "Découvrir {model}",
-        "costUnavailable": "Coût non renseigné",
+        "costUnavailable": "Tarif actuel indisponible",
         "providerLabel": "Modèles pris en charge :",
         "viewPrompt": "Cloner les réglages",
         "fallbackCards": [
@@ -2572,7 +2572,7 @@
     "hero": {
       "title": "Des histoires, des styles, des idées.",
       "subtitle": "Découvrez de vraies vidéos IA : personnages, scènes de cinéma, animation et expériences visuelles.",
-      "body": "Ouvrez un exemple pour retrouver les instructions, les réglages et le coût enregistré lors de sa création. Inspirez-vous-en pour votre propre projet."
+      "body": "Ouvrez un exemple pour retrouver les instructions, les réglages et le tarif actuel du modèle. Inspirez-vous-en pour votre propre projet."
     },
     "items": [
       {
@@ -2992,7 +2992,7 @@
       "aspectLabel": "Ratio",
       "aspectAuto": "Auto",
       "createdLabel": "Créée le",
-      "priceTotalLabel": "Coût enregistré du rendu",
+      "priceTotalLabel": "Tarif actuel du modèle",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Indisponible",
       "audioLabel": "Audio",
@@ -3248,10 +3248,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "Exemples vidéo IA : prompts, modèles et coûts enregistrés",
-      "description": "Parcourez des exemples vidéo IA, puis ouvrez une vidéo pour consulter son prompt, ses réglages, sa durée et le coût enregistré avant de la recréer.",
+      "title": "Exemples vidéo IA : prompts, modèles et tarifs actuels",
+      "description": "Parcourez des exemples vidéo IA, puis ouvrez une vidéo pour consulter son prompt, ses réglages, sa durée et le tarif actuel du modèle avant de la recréer.",
       "title_engine": "Exemples vidéo IA — {engineName} | MaxVideoAI",
-      "description_engine": "Parcourez des exemples {engineName}, puis ouvrez une vidéo pour consulter son prompt, sa durée, ses réglages audio et le coût enregistré."
+      "description_engine": "Parcourez des exemples {engineName}, puis ouvrez une vidéo pour consulter son prompt, sa durée, ses réglages audio et le tarif actuel du modèle."
     }
   },
   "workspace": {
