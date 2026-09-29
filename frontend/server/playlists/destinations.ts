@@ -1,4 +1,5 @@
 import { readEffectiveModelPageGallery } from './curation-model-preview';
+import { getFalEngineBySlug } from '@/config/falEngines';
 import { query } from '@/lib/db';
 import { getExampleFamilyIds, getExampleFamilyLabel, getExampleFamilyModelSlugs } from '@/lib/model-families';
 import { STARTER_MEDIA_SLUGS } from '@/lib/starter-media';
@@ -23,7 +24,7 @@ function destinationSpecs(): DestinationSpec[] {
     ...families.flatMap(familyId => [
       { ...spec(`family:${familyId}`, 'family', getFamilyPlaylistSlug(familyId), getExampleFamilyLabel(familyId) ?? familyId, `/examples/${familyId}`), familyId, sourceSlugs: getFamilyFeedSourceSlugs(familyId) },
       ...getExampleFamilyModelSlugs(familyId).map(modelSlug => ({
-        ...spec(`model:${modelSlug}`, 'model', getModelPlaylistSlug(modelSlug), modelSlug, `/models/${modelSlug}`), familyId, modelSlug,
+        ...spec(`model:${modelSlug}`, 'model', getModelPlaylistSlug(modelSlug), getFalEngineBySlug(modelSlug)?.marketingName ?? modelSlug, `/models/${modelSlug}`), familyId, modelSlug,
       })),
     ]),
     ...Object.entries(STARTER_MEDIA_SLUGS).map(([surface, slug]) => spec(`starter:${surface}`, surface as 'image' | 'audio', slug, `Starter ${surface}`, `/app/${surface}`)),
@@ -37,12 +38,15 @@ export function buildPlaylistDestinations(playlists: readonly PlaylistRecord[], 
   const destinations: PlaylistDestination[] = destinationSpecs().map(spec => {
     const playlist = bySlug.get(spec.slug);
     if (playlist) connected.add(playlist.id);
+    const publicCount = effectiveCounts.get(spec.slug) ?? (playlist?.isPublic ? playlist.siteVisibleCount : 0);
     return {
       ...spec, playlistId: playlist?.id ?? null,
       itemCount: playlist?.itemCount ?? 0,
-      publicCount: effectiveCounts.get(spec.slug) ?? (playlist?.isPublic ? playlist.siteVisibleCount : 0),
+      publicCount,
       status: playlist ? 'connected' : 'missing', editable: Boolean(playlist),
-      warning: playlist ? (playlist.isPublic ? null : 'This collection is private.') : `Runtime configuration expects "${spec.slug}". No playlist is connected; reconcile configuration or create the expected collection in maintenance.`,
+      warning: playlist ? (playlist.isPublic ? null : 'This collection is private.') : spec.kind === 'model'
+        ? `The model page currently displays ${publicCount} public videos from its editorial selections. Its editable collection "${spec.slug}" has not been created.`
+        : `Runtime configuration expects "${spec.slug}". No playlist is connected; reconcile configuration or create the expected collection in maintenance.`,
     };
   });
   for (const playlist of playlists) {

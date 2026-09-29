@@ -8,6 +8,8 @@ type Props = {
   selectedId: string | null;
   disabled: boolean;
   onSelect: (id: string) => void;
+  onCreateMissingModelPlaylists: () => void;
+  createMissingModelPlaylistsDisabled: boolean;
 };
 
 function matches(destination: PlaylistDestination, query: string) {
@@ -15,13 +17,15 @@ function matches(destination: PlaylistDestination, query: string) {
     .toLocaleLowerCase().includes(query.toLocaleLowerCase());
 }
 
-export function DestinationPicker({ destinations, selectedId, disabled, onSelect }: Props) {
+export function DestinationPicker({ destinations, selectedId, disabled, onSelect,
+  onCreateMissingModelPlaylists, createMissingModelPlaylistsDisabled }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const current = destinations.find(destination => destination.id === selectedId) ?? null;
   const diagnosticCount = destinations.filter(destination => destination.status !== 'connected').length;
+  const missingModelCount = destinations.filter(destination => destination.kind === 'model' && destination.status === 'missing').length;
 
   useEffect(() => {
     if (open) searchRef.current?.focus();
@@ -60,15 +64,15 @@ export function DestinationPicker({ destinations, selectedId, disabled, onSelect
     <div key={entry.id} data-destination-id={entry.id} data-missing-destination={entry.status === 'missing' ? entry.id : undefined}
       className="rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm">
       <div className="flex items-center justify-between gap-2"><span className="font-medium">{entry.label}</span>
-        <span className="text-xs capitalize text-amber-900">{entry.status}</span></div>
+        <span className="text-xs text-amber-900">{entry.kind === 'model' && entry.status === 'missing' ? 'Collection missing' : entry.status}</span></div>
       <p className="mt-1 text-xs text-text-secondary">{entry.warning ?? `Collection ${entry.slug} is unavailable.`}</p>
-      <a href="#playlist-maintenance" className="mt-1 inline-block text-xs font-medium text-brand underline" onClick={() => {
+      {entry.kind !== 'model' ? <a href="#playlist-maintenance" className="mt-1 inline-block text-xs font-medium text-brand underline" onClick={() => {
         const details = document.getElementById('playlist-maintenance') as HTMLDetailsElement | null;
         if (details) details.open = true;
         close();
       }}>
         Open collection maintenance
-      </a>
+      </a> : null}
     </div>
   );
 
@@ -96,6 +100,15 @@ export function DestinationPicker({ destinations, selectedId, disabled, onSelect
           <input ref={searchRef} type="search" value={query} onChange={event => setQuery(event.target.value)}
             placeholder="Family, model or page…" className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </label>
+        {missingModelCount ? <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-xs text-amber-950">
+          <span>{missingModelCount} model {missingModelCount === 1 ? 'page needs' : 'pages need'} an editable collection</span>
+          <button data-create-missing-model-collections type="button"
+            disabled={disabled || createMissingModelPlaylistsDisabled}
+            onClick={() => { close(); onCreateMissingModelPlaylists(); }}
+            className="rounded-md border border-amber-300 bg-white px-2.5 py-1.5 font-semibold text-amber-950 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-50">
+            Create {missingModelCount} empty model {missingModelCount === 1 ? 'collection' : 'collections'}
+          </button>
+        </div> : null}
         <div className="mt-3 space-y-3">
           {groups.map(group => group.items.length ? <section key={group.id} data-destination-group={group.id}
             data-destination-diagnostics={group.id === 'maintenance' ? '' : undefined}>

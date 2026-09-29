@@ -71,7 +71,7 @@ export function usePlaylistHelperActions({
       }),
     handleCreateMissingModelPlaylists: (preferredModelSlug?: string | null) =>
       runHelperAction({
-        feedback: 'Model playlists synced',
+        feedback: 'Empty model collections created. Existing editorial videos remain visible until you save a new curation.',
         logLabel: 'create missing model playlists',
         payload: { action: 'create-missing-model-playlists' },
         preferredId: (json) => getCreatedPlaylistId(json, 'modelSlug', preferredModelSlug),

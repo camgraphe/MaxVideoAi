@@ -405,7 +405,9 @@ export function PlaylistsManager({
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
       {destinations.length ? <DestinationPicker destinations={destinations} selectedId={selectedDestination?.id ?? null}
-        onSelect={handleSelectDestination} disabled={isPending || curationState.busy} /> : null}
+        onSelect={handleSelectDestination} disabled={isPending || curationState.busy}
+        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
+        createMissingModelPlaylistsDisabled={isItemsDirty || curationState.dirty || Boolean(selectedPlaylist?.dirty)} /> : null}
 
       <div className={clsx('grid min-w-0 grid-cols-1 gap-6', !destinations.length && 'lg:grid-cols-[250px_minmax(0,1fr)]')}>
         <section data-destination-editor className={clsx('min-w-0 space-y-6', !destinations.length && 'lg:col-start-2 lg:row-start-1')}>

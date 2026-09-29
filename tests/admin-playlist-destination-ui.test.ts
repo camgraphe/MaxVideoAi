@@ -148,6 +148,31 @@ test('missing starter and historical rows are diagnostics with a maintenance act
   } finally { await view.close(); }
 });
 
+test('missing model collections offer one explicit creation action without writing on open', async () => {
+  const examples = destination('examples', 'examples', 'examples');
+  const first = destination('model:dreamina-seedance-2-0-mini', 'model', null, 'seedance');
+  const second = destination('model:happy-horse-1-1', 'model', null, 'happy-horse');
+  const view = await mount([examples, first, second]);
+  try {
+    const { document } = view.dom.window;
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    const create = document.querySelector('[data-create-missing-model-collections]') as HTMLButtonElement;
+    assert.ok(create);
+    assert.match(create.textContent ?? '', /create 2 empty model collections/i);
+    assert.equal(view.requests.length, 0, 'opening the selector remains read-only');
+    await act(async () => create.click());
+    assert.equal(view.requests.length, 1);
+    assert.equal(view.requests[0].url, '/api/admin/playlists/helpers');
+    assert.equal(view.requests[0].init?.method, 'POST');
+    assert.deepEqual(JSON.parse(String(view.requests[0].init?.body)), { action: 'create-missing-model-playlists' });
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true, playlists: [] })));
+    await act(async () => view.requests[1].resolve(Response.json({ ok: true, playlists: [playlist('examples')], destinations: [examples] })));
+    await act(async () => view.requests[2].resolve(Response.json({ ok: true, playlist: playlist('examples'), items: [] })));
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    assert.equal(document.querySelector('[data-create-missing-model-collections]'), null);
+  } finally { await view.close(); }
+});
+
 test('legacy order save refreshes destination counts and source chain', async () => {
   const examples = destination('examples', 'examples', 'examples');
   const items: PlaylistItemRecord[] = ['one', 'two'].map((videoId, orderIndex) => ({ playlistId: 'examples', videoId,

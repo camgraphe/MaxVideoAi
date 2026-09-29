@@ -27,6 +27,13 @@ test('projects_missing_and_historical_core_destinations', async () => {
       assert.ok(byId.has(`family:${family}`));
       for (const model of getExampleFamilyModelSlugs(family)) assert.ok(byId.has(`model:${model}`));
     }
+    const missingModel = byId.get('model:happy-horse-1-1');
+    assert.equal(missingModel?.status, 'missing');
+    assert.equal(missingModel?.label, 'Happy Horse 1.1');
+    assert.equal(byId.get('model:dreamina-seedance-2-0-mini')?.label, 'Dreamina Seedance 2.0 Mini');
+    assert.match(missingModel?.warning ?? '', /editable collection/i);
+    assert.match(missingModel?.warning ?? '', /currently displays 0 public videos/i);
+    assert.match(missingModel?.warning ?? '', /examples-happy-horse-1-1/);
     process.env.EXAMPLES_PLAYLIST_SLUG = ' EXAMPLES ';
     process.env.STARTER_PLAYLIST_SLUG = ' WELCOME ';
     const mismatched = buildPlaylistDestinations([playlist('examples'), playlist('welcome')], new Map([['examples', 99]]));
