@@ -213,7 +213,7 @@ export function ExamplesModelLinksSection({
           const poster = posterFor(model.href);
           return (
             <Link key={model.slug} href={model.href} className={`${styles.modelLink} ${poster ? '' : styles.modelLinkFallback}`}>
-              {poster ? <Image src={poster} alt="" fill sizes="(max-width: 767px) 50vw, (max-width: 1200px) 33vw, 25vw" quality={52} loading="lazy" className={styles.modelPoster} /> : null}
+              {poster ? <Image src={poster} alt="" aria-hidden="true" fill sizes="(max-width: 767px) 50vw, (max-width: 1200px) 33vw, 25vw" quality={52} loading="lazy" className={styles.modelPoster} /> : null}
               {!poster ? <span className={styles.modelWordmark} aria-hidden="true">{model.label.split(' ').slice(-1)[0]}</span> : null}
               <span className={styles.modelIdentity} aria-hidden="true">
                 <span className={styles.modelIcon}><EngineIcon engine={{ id: model.engineId, label: model.label, brandId: model.brandId }} size={30} framed={false} /></span>
