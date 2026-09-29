@@ -1,8 +1,5 @@
-import { requiresMembershipPricingRefresh, MEMBERSHIP_PRICING_REFRESH_MESSAGE } from '@/lib/membership-policy';
 import { randomUUID } from 'crypto';
 import type { ImageGenerationResponse } from '@/types/image-generation';
-import { isDatabaseConfigured } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
@@ -50,6 +47,7 @@ import { executeAfterInitialJobReservation } from '@/server/generations/initial-
 import type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
 import { markImageProviderOutcomeAmbiguous, shouldKeepImageProviderOutcomePending } from './image-provider-failure-policy';
 import { resolveImageGenerationPricingSnapshot } from './image-generation-pricing';
+import { prepareImageGenerationAccounting } from './image-generation-accounting';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
@@ -68,29 +66,11 @@ export async function executeImageGeneration({
   billingProductKey = null,
   billingQuantityMultiplier = 1,
   isAdminForDirectProvider = false,
+  customerTariffRevision,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
-  if (
-    (walletReservation === 'already_reserved'
-      && (!preReservedInitialState
-        || preReservedInitialState.kind !== 'created'
-        || preReservedInitialState.recoveredCharge !== true
-        || !trustedQuotedBilling))
-    || (walletReservation === 'reserve'
-      && (preReservedInitialState !== undefined || trustedQuotedBilling !== undefined))
-  ) {
-    fail('t2i', 'job_charge_conflict', 'Invalid pre-reserved image generation state.', 409);
-  }
-  if (!trustedQuotedBilling && requiresMembershipPricingRefresh(body.membershipTier)) fail('t2i', 'PRICING_REFRESH_REQUIRED', MEMBERSHIP_PRICING_REFRESH_MESSAGE, 409);
-  if (!isDatabaseConfigured()) {
-    fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
-  }
-
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[images] failed to ensure billing schema', error);
-    fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
-  }
+  const recovered = await prepareImageGenerationAccounting({ userId, body, walletReservation,
+    preReservedInitialState, trustedQuotedBilling });
+  if (recovered) return recovered;
 
   const { engineEntry, engine, mode, modeConfig, resolvedAspectRatio, prompt, numImages, durationSec } =
     resolveImageGenerationRequestContext(body);
@@ -266,12 +246,11 @@ export async function executeImageGeneration({
       enableWebSearch, numImages, billingProductKey, billingQuantityMultiplier,
       jobSurface, source: body.source, metadata: requestMetadata,
       includedKlingFirstFrameParentJobId, resolvedAspectRatio,
-      requestedMembershipTier: typeof body.membershipTier === 'string' && body.membershipTier.trim().length
-        ? body.membershipTier.trim()
-        : undefined,
       trustedQuotedBilling,
+      customerTariffRevision,
     });
   } catch (error) {
+    if (error instanceof ImageGenerationExecutionError) throw error;
     console.error('[images] failed to compute pricing snapshot', error);
     fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, engineResponseExtras);
   }

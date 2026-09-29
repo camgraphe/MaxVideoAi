@@ -9,6 +9,8 @@ import type { EngineCaps, PricingSnapshot } from '@/types/engines';
 import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import { applyStoryboardImagePricing } from './storyboard-image-billing';
+import { assertDisplayedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
+import { ImageGenerationExecutionError } from './image-generation-error';
 
 const DISPLAY_CURRENCY = 'USD';
 
@@ -29,8 +31,8 @@ export async function resolveImageGenerationPricingSnapshot(params: {
   metadata: ImageGenerationRequest['metadata'] | null;
   includedKlingFirstFrameParentJobId: string | null;
   resolvedAspectRatio: string | null;
-  requestedMembershipTier: string | undefined;
   trustedQuotedBilling: TrustedQuotedBilling | undefined;
+  customerTariffRevision?: string | null;
 }): Promise<{ pricing: PricingSnapshot; membershipTier: string | undefined }> {
   const membershipTier = params.trustedQuotedBilling?.membershipTier ?? LIVE_MEMBERSHIP_POLICY.tier;
   const referenceImageCount = isLumaAgentsImageEngineId(params.engine.id)
@@ -54,6 +56,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
         durationSec: params.durationSec,
         resolution: params.resolution,
         mode: params.mode,
+        aspectRatio: params.resolvedAspectRatio,
         customImageSize: params.customImageSize,
         quality: params.quality,
         referenceImageCount,
@@ -88,5 +91,11 @@ export async function resolveImageGenerationPricingSnapshot(params: {
     membershipTier,
     currency: DISPLAY_CURRENCY,
   });
+  // The included frame is already paid by its validated parent storyboard bundle.
+  try { if (!params.includedKlingFirstFrameParentJobId) assertDisplayedCustomerTariffRevision(params.customerTariffRevision, pricing); }
+  catch (error) {
+    if (!(error instanceof CustomerTariffRevisionError)) throw error;
+    throw new ImageGenerationExecutionError(error.message, { mode: params.mode, status: error.status, code: error.code });
+  }
   return { pricing, membershipTier };
 }

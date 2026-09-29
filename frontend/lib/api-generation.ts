@@ -14,6 +14,7 @@ import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { BackgroundRemovalToolRequest, BackgroundRemovalToolResponse } from '@/types/tools-background-removal';
 import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 import { upscaleClientAttempt, waitForAcceptedUpscale } from '@/lib/upscale-client-lifecycle';
+import { customerTariffRequestHeaders, notifyCustomerPricingRefresh } from '@/lib/customer-tariff-revision';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -63,6 +64,7 @@ type GeneratePayload = {
 
 type GenerateOptions = {
   token?: string;
+  pricingSnapshot?: PricingSnapshot | null;
 };
 
 type GenerateResult = {
@@ -142,7 +144,8 @@ export async function runGenerate(
   payload: GeneratePayload,
   options?: GenerateOptions
 ): Promise<GenerateResult> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
+    ...customerTariffRequestHeaders(options?.pricingSnapshot) };
   if (options?.token) {
     headers.Authorization = `Bearer ${options.token}`;
   }
@@ -157,6 +160,7 @@ export async function runGenerate(
 
   if (!response.ok) {
     const payload = body && typeof body === 'object' ? (body as Record<string, unknown>) : null;
+    notifyCustomerPricingRefresh(payload?.error);
     const primitiveValue = toPrimitive(payload?.value);
     const allowedValues = toPrimitiveArray(payload?.allowed);
     const translation = translateError({
@@ -195,10 +199,11 @@ export async function runGenerate(
   return body as GenerateResult;
 }
 
-export async function runImageGeneration(payload: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null): Promise<ImageGenerationResponse> {
   const response = await authFetch('/api/images/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
+      ...customerTariffRequestHeaders(pricingSnapshot) },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;
@@ -206,6 +211,7 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
     throw new Error('Image generation response malformed');
   }
   if (!response.ok || !data.ok) {
+    notifyCustomerPricingRefresh(data.error?.code);
     const error = new Error(data.error?.message ?? `Image generation failed (${response.status})`);
     Object.assign(error, {
       code: data.error?.code ?? 'image_generation_failed',

@@ -169,6 +169,7 @@ async function estimateImageGenerationInternal(
   const pricing = await computeCanonicalPublicSnapshot({
     engine,
     durationSec: numImages,
+    aspectRatio: typeof input.aspectRatio === 'string' ? input.aspectRatio : undefined,
     resolution: resolutionResult.resolution,
     mode,
     customImageSize,

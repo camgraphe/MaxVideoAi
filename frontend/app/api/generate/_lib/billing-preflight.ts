@@ -18,6 +18,8 @@ import type { TrustedPreflightMediaPricingFacts } from '@/server/engines';
 import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
 import { buildReceiptSnapshot } from './receipt-snapshot';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
+import { CUSTOMER_TARIFF_REVISION_HEADER } from '@/lib/customer-tariff-revision';
+import { assertDisplayedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
@@ -185,6 +187,11 @@ export async function resolveGenerateBillingPreflight(params: {
     currency: DISPLAY_CURRENCY,
     addons: pricingAddons,
   });
+  try { assertDisplayedCustomerTariffRevision(params.req.headers.get(CUSTOMER_TARIFF_REVISION_HEADER), pricing); }
+  catch (error) {
+    if (!(error instanceof CustomerTariffRevisionError)) throw error;
+    return { ok: false, status: 409, body: { ok: false, error: error.code, message: error.message } };
+  }
   const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = await convertCentsFn(
     pricing.totalCents,
     DISPLAY_CURRENCY_LOWER,

@@ -26,6 +26,18 @@ An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` 
 
 Migration 55 preserves closed customer cell versions. Active update/rollback behavior is tested on disposable databases, and billing reads only the requested exact selector rather than the whole grid. A separate code gate enables this path for an isolated development sandbox only; the versioned production flag remains false. No production schema, tariff or deployment is changed by local continuation.
 
+### Displayed revision, new charges and paid recovery
+
+Manual snapshots carry `meta.customerTariffRevision`. Web, image, Studio and Storyboard submissions forward the displayed revision in `x-maxvideoai-customer-tariff`; MCP confirmation compares its persisted prepared snapshot with the transactional current quote. A manual web request with a missing or outdated revision returns `409 PRICING_REFRESH_REQUIRED` before preparing a new payment. The initial wallet reservation also takes a shared lock on the tariff state inside the charge transaction, rejecting an edit that occurred after preflight. The lock lasts through the debit commit.
+
+Browser consumers invalidate their displayed estimates on the refresh response. They request a fresh quote but never automatically resubmit generation. The customer must confirm the next request. Image estimates account for the selected aspect ratio and complete reference count; partial reference-size metadata cannot undercount the references.
+
+An existing owned paid job or recovered charge keeps its stored snapshot and amount. Image execution resolves an owned persisted image/storyboard job before current-price validation, reference access or provider submission. Included Kling first frames use the separately validated owned paid parent bundle and do not create another charge. Tests exercise a paid revision-7 image recovery while the current tariff state is revision 8, and new video/image reservations that reject stale revisions without changing the wallet or inserting a job.
+
+This is an inactive integration. Global activation still requires complete capability coverage, a reviewed versioned seed, real supplier/settlement provenance and the direct-payment contract. In particular, a captured Stripe PaymentIntent must be bound to its original paid quote through recovery and refunds before manual tariffs can be enabled for direct generation. Recording its revision in metadata alone does not satisfy that gate. The first database override of a versioned-only tariff also needs rollback acceptance before the complete versioned seed is introduced.
+
+See the [local acceptance record](2026-09-29-pricing-local-acceptance.md) for the tested scope and remaining work.
+
 ## Current status
 
 The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
@@ -198,7 +210,7 @@ Each domain then completed a controlled `preview → confirmation → history �
 
 Use only the owner for the value being changed:
 
-1. `/admin/pricing` compares representative provider/customer amounts for all app-published models. The **Pricing rules** tab edits the current margin-based rules. The **Customer prices** tab navigates exact supported scenarios and can stage fixed customer-tariff cells with preview, confirmation, history and rollback after migration 54; those cells are not charged until the separate all-model activation gate passes. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. The current branch blocks active-cell updates pending temporal versioning and public revision propagation.
+1. `/admin/pricing` compares representative provider/customer amounts for all app-published models. The **Pricing rules** tab edits the current margin-based rules. The **Customer prices** tab navigates exact supported scenarios and can stage fixed customer-tariff cells with preview, confirmation, history and rollback after migration 54; those cells are not charged until the separate all-model activation gate passes. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. Migration 55 preserves active-cell history; active editing is exercised on disposable databases while the production code flag remains false. An active cell cannot be deleted or silently fall through to the margin rule.
 2. `/admin/membership` to inspect historical `member`, `plus`, and `pro` thresholds, discounts, and immutable events. It cannot apply or roll back changes.
 3. `/admin/billing-products` for active fixed products referenced by production billing consumers.
 

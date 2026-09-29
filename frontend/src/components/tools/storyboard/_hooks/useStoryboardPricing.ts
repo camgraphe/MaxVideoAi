@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
+import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
+import type { PricingSnapshot } from '@/types/engines';
 import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import { resolveStoryboardVisiblePrice } from '../_lib/storyboard-price-display';
 import type { StoryboardTargetModel } from '../_lib/storyboard-prompt';
@@ -15,7 +17,7 @@ import {
   type StoryboardTier,
 } from '../_lib/storyboard-templates';
 
-export type StoryboardPriceValue = { cents: number; currency: string } | null;
+export type StoryboardPriceValue = { cents: number; currency: string; pricing?: PricingSnapshot } | null;
 export type StoryboardPriceState = Record<StoryboardTier, StoryboardPriceValue>;
 
 export type UseStoryboardPricingParams = {
@@ -52,9 +54,17 @@ export function useStoryboardPricing({
   activePrice: string;
   editPriceLabel: string;
   tierPriceLabels: Record<StoryboardTier, string>;
+  generationPricingSnapshot: PricingSnapshot | null;
+  editPricingSnapshot: PricingSnapshot | null;
 } {
   const [tierPrices, setTierPrices] = useState<StoryboardPriceState>({ hd: null, '4k': null, ultra: null });
   const [editPrice, setEditPrice] = useState<StoryboardPriceValue>(null);
+  const [priceRefresh, setPriceRefresh] = useState(0);
+  useEffect(() => {
+    const refresh = () => { setTierPrices({ hd: null, '4k': null, ultra: null }); setEditPrice(null); setPriceRefresh((value) => value + 1); };
+    window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
+    return () => window.removeEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
+  }, []);
   const tierConfig = getStoryboardOutputConfig(storyboardTier, storyboardOrientation);
   const editOutputConfig = getStoryboardEditOutputConfig();
 
@@ -80,12 +90,12 @@ export function useStoryboardPricing({
           });
           const payload = (await response.json().catch(() => null)) as {
             ok?: boolean;
-            pricing?: { totalCents?: number; currency?: string };
+            pricing?: PricingSnapshot;
           } | null;
           return [
             tier,
             payload?.ok && payload.pricing?.totalCents != null
-              ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD' }
+              ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD', pricing: payload.pricing }
               : null,
           ] as const;
         })
@@ -99,7 +109,7 @@ export function useStoryboardPricing({
     return () => {
       active = false;
     };
-  }, [storyboardOrientation]);
+  }, [storyboardOrientation, priceRefresh]);
 
   useEffect(() => {
     if (!selectedImage?.url) {
@@ -127,12 +137,12 @@ export function useStoryboardPricing({
       });
       const payload = (await response.json().catch(() => null)) as {
         ok?: boolean;
-        pricing?: { totalCents?: number; currency?: string };
+        pricing?: PricingSnapshot;
       } | null;
       if (!active) return;
       setEditPrice(
         payload?.ok && payload.pricing?.totalCents != null
-          ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD' }
+          ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD', pricing: payload.pricing }
           : null
       );
     }
@@ -143,6 +153,7 @@ export function useStoryboardPricing({
       active = false;
     };
   }, [
+    priceRefresh,
     selectedImage?.height,
     selectedImage?.url,
     selectedImage?.width,
@@ -179,5 +190,7 @@ export function useStoryboardPricing({
     activePrice,
     editPriceLabel,
     tierPriceLabels,
+    generationPricingSnapshot: tierPrices[storyboardTier]?.pricing ?? null,
+    editPricingSnapshot: editPrice?.pricing ?? null,
   };
 }

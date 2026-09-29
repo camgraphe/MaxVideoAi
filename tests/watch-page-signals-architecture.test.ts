@@ -80,5 +80,5 @@ test('watch page signal modules expose the expected contracts', () => {
   const watchData = readFileSync(join(root, 'frontend/server/video-seo.ts'), 'utf8');
   const watchContent = readFileSync(join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx'), 'utf8');
   assert.match(watchData, /quoteCurrentExamplePrice\(video\)/);
-  assert.match(watchContent, /formatCurrentExamplePrice\(page\.currentPrice, 'en'\)/);
+  assert.match(watchContent, /formatCurrentExamplePrice\((?:page\.)?currentPrice, 'en'\)/);
 });

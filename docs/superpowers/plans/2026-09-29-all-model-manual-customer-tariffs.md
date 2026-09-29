@@ -141,3 +141,18 @@
 ## Execution order
 
 Task 1 establishes actual effective cents before any activation. Tasks 2–5 can be built and tested while activation remains off. The separate `2026-09-29-current-public-example-prices.md` plan can start immediately against the existing DB-aware `computeCanonicalPublicSnapshot`; Task 3 then changes the resolver beneath it. Task 6 follows both plans and is the only activation step. The whole release is ready only when all 48 model scenarios pass parity, admin edits change the same quote used by every consumer, and public examples pass their exact/reference/unavailable cases.
+
+## Local continuation progress — 2026-09-29
+
+The [local acceptance record](../../engineering/2026-09-29-pricing-local-acceptance.md) is the current evidence owner. Task checkboxes above describe complete gates; partial implementation does not mark an entire gate complete.
+
+| Task | Implemented locally | Remaining gate |
+| --- | --- | --- |
+| 1 | 48 models/15 families; 66,549 effective baseline quotes; zero sampled missing cells or cent differences | 122 unresolved capability boundaries; exhaustive supported coverage |
+| 2 | Inactive DB seed; transactional state; migration 55 immutable closed versions; active update/rollback tests | Complete reviewed versioned seed and first versioned-only override rollback |
+| 3 | Inactive canonical resolver; displayed revision propagation; atomic new-wallet charge guard; immutable paid recovery; MCP stale protocol | Actual supplier settlement provenance and captured direct-payment quote binding |
+| 4 | All-family representative inventory; exact-selector navigation; preview/confirm/history/rollback; local API cycle | Desktop/mobile visual acceptance and globally active legacy-rule retirement |
+| 5 | Current server quotes across public matrix/model offers/examples/home and browser consumers; Studio/Storyboard snapshot propagation and refresh | Remaining consumer/bundle inventory, localized/browser acceptance |
+| 6 | Global switch remains off; local parity evidence recorded | Complete activation implementation and isolated local acceptance after every preceding gate |
+
+No production write, deployment or support message is part of this continuation. The 30% legacy rule remains live until a complete approved cutover.

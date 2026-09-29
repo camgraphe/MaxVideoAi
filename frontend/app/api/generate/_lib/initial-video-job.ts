@@ -3,6 +3,7 @@ import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
 import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
 import { validateInitialVideoFunding } from './initial-video-job-funding';
+import { lockQuotedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
 
 const DISPLAY_CURRENCY = 'USD';
 
@@ -116,6 +117,7 @@ export type ProvisionalVideoJobInsert = {
 };
 
 type CreateVideoInitialJobBaseParams = {
+  auditPricingSnapshot?: unknown;
   jobId: string;
   userId: string;
   pendingReceipt: PendingReceipt | null;
@@ -271,6 +273,18 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
   );
 }
 
+async function validateInitialVideoTariffRevision(executor: TransactionQueryExecutor, params: CreateVideoInitialJobParams) {
+  try {
+    await lockQuotedCustomerTariffRevision(executor, params.jobInsert.engineId,
+      params.auditPricingSnapshot ?? params.pendingReceipt?.auditPricingSnapshot ?? JSON.parse(params.jobInsert.pricingSnapshotJson));
+  } catch (error) {
+    if (!(error instanceof CustomerTariffRevisionError)) throw error;
+    throw new VideoInitialJobError(error.message, { status: 409,
+      body: { ok: false, error: error.code, message: error.message }, metricKind: 'rejected', metricCode: error.code });
+  }
+
+}
+
 export async function createInitialVideoJobInExecutor(
   executor: TransactionQueryExecutor,
   params: CreateVideoInitialJobParams
@@ -314,6 +328,7 @@ export async function createInitialVideoJobInExecutor(
   }
 
   let walletChargeReserved = false;
+
 
   if (!includedTrialFunding && params.paymentMode === 'wallet') {
     const existingRefunds = await executor.query<{ id: number }>(
@@ -398,6 +413,7 @@ export async function createInitialVideoJobInExecutor(
         });
       }
 
+      await validateInitialVideoTariffRevision(executor, params);
       const reserveResult = await reserveWalletChargeInExecutor(
         executor,
         {
@@ -448,6 +464,7 @@ export async function createInitialVideoJobInExecutor(
     }
   }
 
+  if (includedTrialFunding || params.paymentMode !== 'wallet') await validateInitialVideoTariffRevision(executor, params);
   await insertProvisionalVideoJob(executor, params.jobInsert);
 
   if (includedTrialFunding) {

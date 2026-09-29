@@ -54,8 +54,8 @@ export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditSce
       && scenario.id.startsWith(`billing:${entry.id}:`));
     const image = entry.category === 'image';
     const mode = baseline?.mode ?? (image ? 't2i' : 't2v');
-    const resolution = baseline?.resolution ?? (entry.engine.resolutions.includes('720p') ? '720p' : entry.engine.resolutions[0]);
-    const durationSec = baseline?.durationSec ?? (image ? 1 : 5);
+    const resolution = !image && entry.engine.resolutions.includes('720p') ? '720p' : baseline?.resolution ?? entry.engine.resolutions[0];
+    const durationSec = image ? 1 : 5;
     if (!resolution || !entry.modes.some((item) => item.mode === mode)) return [];
     const scenario: PricingAuditScenario = {
       ...(baseline ?? {

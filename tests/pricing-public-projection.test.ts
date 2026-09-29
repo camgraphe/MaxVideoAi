@@ -333,8 +333,8 @@ test('browser estimator and price chip delegate commercial totals to the public 
     ['PriceEstimator.tsx', estimator],
     ['PriceChip.tsx', chip],
   ] as const) {
-    assert.match(source, /pricing-public-facts/, `${path} should build provider facts`);
-    assert.match(source, /pricing-public-quote/, `${path} should quote canonically`);
+    assert.match(source, /fetchCurrentPrice/, `${path} should request the effective server quote`);
+    assert.doesNotMatch(source, /buildPublicPricingFacts|quotePublicPricing/, `${path} should not calculate commercial totals in the browser`);
     assert.doesNotMatch(source, /computePricingSnapshot/, `${path} should not call the legacy client kernel`);
     assert.doesNotMatch(source, /platformFeePct:/, `${path} should not mutate commercial policy`);
   }

@@ -100,7 +100,7 @@ export default function StoryboardWorkspace() {
   const selectedRecentImage = selectedRecentOutput ? { url: selectedRecentOutput.url, thumbUrl: selectedRecentOutput.thumbUrl ?? selectedRecentOutput.previewUrl ?? null, width: selectedRecentOutput.width, height: selectedRecentOutput.height, mimeType: selectedRecentOutput.mime } : null;
   const selectedImage = previewingTemplate ? null : selectedRecentImage ?? generatedImage;
   const selectedImageJobId = previewingTemplate ? null : selectedRecentOutput?.jobId ?? result?.jobId ?? null;
-  const { activePrice, editOutputConfig, editPriceLabel, tierConfig, tierPriceLabels } = useStoryboardPricing({ locale, storyboardOrientation, storyboardTier, targetModel, selectedImage });
+  const { activePrice, editOutputConfig, editPriceLabel, tierConfig, tierPriceLabels, generationPricingSnapshot, editPricingSnapshot } = useStoryboardPricing({ locale, storyboardOrientation, storyboardTier, targetModel, selectedImage });
   const selectedKlingFirstFrame = useMemo(() => {
     if (!selectedImage?.url || previewingTemplate) return null;
     if (selectedRecentOutput) {
@@ -226,7 +226,7 @@ export default function StoryboardWorkspace() {
         outputFormat: 'png',
         source: edit ? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE,
         metadata: edit ? undefined : { storyboard: { role: 'board', targetModel } },
-      });
+      }, edit ? editPricingSnapshot : generationPricingSnapshot);
       setResult(response);
       setPreviewingTemplate(false);
       setSelectedRecentOutput(null);
@@ -274,7 +274,7 @@ export default function StoryboardWorkspace() {
               targetModel: 'kling',
             },
           },
-        });
+        }, response.pricing);
         const firstFrameImage = firstFrameResponse.images[0] ?? null;
         if (!firstFrameImage?.url) {
           throw new Error(copy.generationFailed);

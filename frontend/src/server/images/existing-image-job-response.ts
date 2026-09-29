@@ -63,7 +63,7 @@ export function buildResponseFromExistingJob(args: {
   mode: ImageGenerationMode;
   engineId: string;
   engineLabel: string;
-  pricing: PricingSnapshot;
+  pricing?: PricingSnapshot;
   resolvedAspectRatio: string | null;
   resolution: string;
 }): ImageGenerationResponse {

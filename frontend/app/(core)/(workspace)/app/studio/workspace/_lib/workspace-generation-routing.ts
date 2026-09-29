@@ -33,6 +33,7 @@ import {
 import { resolveWorkspaceSelectedOutputCount } from './workspace-output-count';
 
 type WorkspaceGenerationRouteParams = {
+  pricingSnapshot?: PricingSnapshot | null;
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   shotNode: WorkspaceGraphNode;
@@ -233,7 +234,7 @@ async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Pr
     shotNodeId: params.shotNode.id,
     outputName: params.outputName,
     submissionId: params.submissionId,
-  }))) as VideoGenerationMediaResult;
+  }), { pricingSnapshot: params.pricingSnapshot })) as VideoGenerationMediaResult;
   const primaryImageUrl = referenceImages[0] ?? null;
   const audioUrl = result.audioUrl ?? result.audio?.url ?? null;
   const audioProvenance = resolveWorkspaceAudioProvenance({
@@ -311,7 +312,7 @@ async function submitImageGeneration(params: WorkspaceGenerationRouteParams): Pr
     prompt: params.prompt,
     referenceImages,
     policy,
-  }));
+  }), params.pricingSnapshot);
   if (!result.images.some((image) => Boolean(image.url))) {
     throw new Error('Image generation returned no image output.');
   }
@@ -557,7 +558,7 @@ async function submitStoryboardGeneration(params: WorkspaceGenerationRouteParams
     settings: params.settings,
     prompt: params.prompt,
     referenceImages,
-  }));
+  }), params.pricingSnapshot);
   if (!result.images.some((image) => Boolean(image.url))) {
     throw new Error('Storyboard generation returned no image output.');
   }

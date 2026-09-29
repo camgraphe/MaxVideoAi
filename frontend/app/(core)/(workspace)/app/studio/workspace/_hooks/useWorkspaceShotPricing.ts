@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
+import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 import { validateShotConnections } from '../_lib/workspace-capabilities';
 import {
   buildWorkspaceStoryboardImageEstimateRequest,
@@ -127,6 +128,12 @@ export function useWorkspaceShotPricing({
 }: UseWorkspaceShotPricingOptions): Record<string, WorkspacePricingEstimate> {
   const [memberTier, setMemberTier] = useState('Member');
   const [estimates, setEstimates] = useState<Record<string, WorkspacePricingEstimate & { requestKey: string }>>({});
+  const [priceRefresh, setPriceRefresh] = useState(0);
+  useEffect(() => {
+    const refresh = () => { setEstimates({}); setPriceRefresh((value) => value + 1); };
+    window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
+    return () => window.removeEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
+  }, []);
 
   useEffect(() => {
     let canceled = false;
@@ -363,7 +370,7 @@ export function useWorkspaceShotPricing({
       canceled = true;
       window.clearTimeout(timeout);
     };
-  }, [pricingRequestSignature]);
+  }, [pricingRequestSignature, priceRefresh]);
 
   // Projection happens during render: an old quote is never actionable for new settings,
   // even before effect cleanup or the next debounced request starts.

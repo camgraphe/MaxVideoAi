@@ -23,6 +23,7 @@ async function makeRouteHarness() {
     listPlaylistVideos: `async(key,limit)=>{const rows=await read('gallery',playlistRows);details.push(['playlist',key,limit]);if(failAt==='playlist')throw failure;return rows;}`,
     hasPlaylistCuration: `async(key)=>{details.push(['curation',key]);return managed;}`,
     getPublicVideosByIds: `async(ids)=>{details.push(['public-validation',...ids]);if(failAt==='validation')throw failure;return new Map(videos.filter(v=>ids.includes(v.id)).map(v=>[v.id,v]));}`,
+    quoteCurrentExamplePrices: `async(rows)=>new Map(rows.map(v=>[v.id,{kind:'unavailable',reason:'fixture'}]))`,
     finalizeModelGallery: `async(input)=>{details.push(['finalize',input.managed]);return input.cards;}`,
     buildMetadataUrls: `(locale)=>({canonical:'https://maxvideoai.com/'+locale+'/models/veo-3-1'})`,
     resolveLocalesForEnglishPath: `()=>new Set(['en','fr','es'])`,

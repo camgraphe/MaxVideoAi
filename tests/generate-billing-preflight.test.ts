@@ -38,6 +38,25 @@ function createReq(country = 'US') {
   } as never;
 }
 
+test('a stale manual customer tariff rejects before currency conversion or payment preparation', async () => {
+  let converted = false;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq(), engine, mode: 't2v', userId: 'user_123', payment: { mode: 'wallet' },
+    jobId: 'stale-tariff', durationSec: 5, durationLabel: '5s', pricingResolution: '720p',
+    effectiveResolution: '720p', aspectRatio: '16:9', membershipTier: 'member', isLumaRay2: false,
+    loop: false, rawDurationOption: null, lumaDurationLabel: null, audioEnabled: false, voiceControl: false,
+    deps: { getUserPreferredCurrencyFn: async () => 'usd', resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => ({ ...pricing, meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7 } }),
+      convertCentsFn: async () => { converted = true; return { cents: 1200, rate: 1, source: 'test' }; },
+      applyEngineVariantPricingFn: (value) => value, buildEngineAddonInputFn: () => ({}) },
+  });
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.status, 409);
+  assert.equal(result.body.error, 'PRICING_REFRESH_REQUIRED');
+  assert.equal(converted, false);
+});
+
 test('generate route delegates billing and payment preflight', () => {
   assert.ok(existsSync(helperPath), 'billing preflight should live in the generate route _lib folder');
   assert.match(serviceSource, /generate\/_lib\/billing-preflight/);

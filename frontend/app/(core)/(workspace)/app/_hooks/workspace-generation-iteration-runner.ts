@@ -294,7 +294,7 @@ export async function runWorkspaceGenerationIteration({
     });
 
     if (!isSubmissionCurrent()) return;
-    const res = await runGenerate(generatePayload, token ? { token } : undefined);
+    const res = await runGenerate(generatePayload, { ...(token ? { token } : {}), pricingSnapshot: preflight?.pricing });
 
     const acceptedResult = projectAcceptedGenerationResult({
       response: res,

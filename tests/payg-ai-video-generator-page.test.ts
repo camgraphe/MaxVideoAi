@@ -115,7 +115,8 @@ test('pay-as-you-go page uses an admin-controlled public video playlist strip', 
   assert.match(showcaseDataSource, /PAYG_VIDEO_PLAYLIST_SLUG = 'payg-ai-video-generator'/);
   assert.match(showcaseDataSource, /listPlaylistVideos\(PAYG_VIDEO_PLAYLIST_SLUG/);
   assert.match(showcaseDataSource, /listGalleryVideos\('starter'/);
-  assert.match(showcaseDataSource, /finalPriceCents/);
+  assert.match(showcaseDataSource, /quoteCurrentExamplePrices/);
+  assert.doesNotMatch(showcaseDataSource, /finalPriceCents/);
   assert.match(showcaseDataSource, /SHOWCASE_DISALLOWED_MODEL_PATTERN/);
   assert.match(showcaseDataSource, /SHOWCASE_MODEL_PRIORITY/);
   assert.match(showcaseDataSource, /formatVideoTitle/);

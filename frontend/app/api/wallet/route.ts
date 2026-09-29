@@ -1,4 +1,4 @@
-import { requireCurrentWalletDirectPricingPolicy } from '@/server/pricing/wallet-direct-policy';
+import { requireCurrentWalletDirectPricingPolicy, requireDisplayedWalletCustomerTariff, walletCustomerPricingMetadata } from '@/server/pricing/wallet-direct-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import Stripe from 'stripe';
@@ -306,6 +306,8 @@ export async function POST(req: NextRequest) {
       membershipTier: body.membershipTier,
     });
 
+    const displayedTariffError = requireDisplayedWalletCustomerTariff(req, pricing);
+    if (displayedTariffError) return displayedTariffError;
     const settlementCurrencyUpper = resolvedCurrencyUpper;
     const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
       pricing.totalCents,
@@ -340,13 +342,7 @@ export async function POST(req: NextRequest) {
       metadata.mode = soraRequest.mode;
     }
 
-    if (pricing.meta?.ruleId) {
-      metadata.rule_id = String(pricing.meta.ruleId);
-    }
-    const pricingSnapshotJson = JSON.stringify(pricing);
-    if (pricingSnapshotJson.length <= 450) {
-      metadata.pricing_snapshot = pricingSnapshotJson;
-    }
+    Object.assign(metadata, walletCustomerPricingMetadata(pricing));
 
     try {
       const params: Stripe.PaymentIntentCreateParams = {

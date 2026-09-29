@@ -69,8 +69,8 @@ test('public projections use their canonical owner without importing billing int
     ['frontend/src/server/images/estimate-image-generation.ts', 'computeCanonicalPublicSnapshot'],
     ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts', 'computeCanonicalPublicSnapshot'],
     ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts', 'quotePublicPricing'],
-    ['frontend/components/marketing/PriceEstimator.tsx', 'quotePublicPricing'],
-    ['frontend/components/marketing/PriceChip.tsx', 'quotePublicPricing'],
+    ['frontend/components/marketing/PriceEstimator.tsx', 'fetchCurrentPrice'],
+    ['frontend/components/marketing/PriceChip.tsx', 'fetchCurrentPrice'],
   ]);
   for (const [path, symbol] of owners) {
     assert.match(read(path), new RegExp(symbol), `${path} should use ${symbol}`);
