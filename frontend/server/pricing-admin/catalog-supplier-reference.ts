@@ -45,7 +45,10 @@ export function catalogSupplierReference(context: PricingContext): CatalogSuppli
     : typeof pricing.meta.source === 'string' ? pricing.meta.source : 'versioned engine supplier rates';
   let referenceProvider = 'fal';
   let sourceUrl: string | null = `https://fal.ai/models/${endpoint}`;
-  if (engine.providerMeta?.provider === 'google_vertex_image' || engine.id === 'gemini-omni-flash') {
+  if (['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'].includes(engine.id)) {
+    referenceProvider = 'google_vertex_veo_direct';
+    sourceUrl = 'https://cloud.google.com/vertex-ai/generative-ai/pricing';
+  } else if (engine.providerMeta?.provider === 'google_vertex_image' || engine.id === 'gemini-omni-flash') {
     referenceProvider = engine.id === 'gemini-omni-flash' ? 'google_vertex_omni_direct' : 'google_vertex_image';
     sourceUrl = 'https://cloud.google.com/vertex-ai/generative-ai/pricing';
   } else if (engine.id === 'wan-3' || engine.id === 'wan-3-prime') {

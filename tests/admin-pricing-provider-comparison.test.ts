@@ -73,12 +73,27 @@ test('reviewed Fal LIST uses current published audio rates rather than the legac
   assert.equal(silent.supplierList.rateBreakdown?.[0].unitPriceUsd, 0.1);
   assert.equal(direct.supplierList.status, 'catalog_reference_estimate');
   assert.equal(direct.supplierList.checkedAt, null);
-  assert.equal(direct.supplierList.routeMatches, false);
+  assert.equal(direct.supplierList.routeMatches, true);
+  assert.equal(direct.supplierList.referenceProvider, 'google_vertex_veo_direct');
   const [beforeReview] = buildProviderCostComparisonRows([
     exactInput('veo-3-1-fast', { mode: 't2v', durationSec: '6', resolution: '720p', audio: 'true' }, 'fal'),
   ], '2026-09-29T00:00:00Z');
   assert.equal(beforeReview.supplierList.status, 'catalog_reference_estimate');
   assert.equal(beforeReview.supplierList.checkedAt, null);
+});
+
+test('Veo catalogue references retain Google provenance on direct and Fal execution routes', () => {
+  const [direct, fal] = buildProviderCostComparisonRows([
+    exactInput('veo-3-1-fast', { mode: 'i2v', durationSec: '6', resolution: '720p', audio: 'true' }, 'google_vertex_veo_direct'),
+    exactInput('veo-3-1-fast', { mode: 'i2v', durationSec: '6', resolution: '720p', audio: 'true' }, 'fal'),
+  ], '2026-09-30T12:00:00Z');
+  assert.equal(direct.supplierList.amountUsd, 0.6);
+  assert.equal(direct.supplierList.referenceProvider, 'google_vertex_veo_direct');
+  assert.equal(direct.supplierList.routeMatches, true);
+  assert.equal(direct.supplierList.checkedAt, null);
+  assert.match(direct.supplierList.sourceUrl!, /cloud.google.com\/vertex-ai/);
+  assert.equal(fal.supplierList.referenceProvider, 'google_vertex_veo_direct');
+  assert.equal(fal.supplierList.routeMatches, false);
 });
 
 test('supplier image reference keeps sub-cent precision and selected quality', () => {
