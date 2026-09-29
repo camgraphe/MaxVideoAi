@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import {
   captureSeedanceDraftValidityStart,
+  getOwnedReadySeedanceDraftLink,
   markSeedanceDraftFailed,
   markSeedanceDraftReady,
   registerSeedanceDraftLink,
@@ -72,6 +73,15 @@ test('Draft finalization is account-bound, completed-only, unexpired and single-
   }, queryFn, beforeExpiry), null, 'pending Draft cannot finalize');
   await db.pool.query("UPDATE app_jobs SET status = 'completed' WHERE job_id = 'draft-owned'");
   assert.equal(await markSeedanceDraftReady('owner', 'draft-owned', queryFn), true);
+  assert.equal(await getOwnedReadySeedanceDraftLink('other', 'draft-owned', queryFn, beforeExpiry), null);
+  assert.equal(await getOwnedReadySeedanceDraftLink('owner', 'draft-will-fail', queryFn, beforeExpiry), null);
+  assert.equal(await getOwnedReadySeedanceDraftLink('owner', 'draft-owned', queryFn, atExpiry), null);
+  assert.deepEqual(await getOwnedReadySeedanceDraftLink('owner', 'draft-owned', queryFn, beforeExpiry), {
+    draftJobId: 'draft-owned',
+    providerTaskId: 'cgt-owned',
+    providerModelId: 'dreamina-seedance-2-5-260628',
+    expiresAt: '2026-10-05T10:00:00.000Z',
+  });
   const attempts = await Promise.all(['final-1', 'final-2'].map((finalJobId) =>
     reserveSeedanceDraftFinal({
       userId: 'owner', draftJobId: 'draft-owned', finalJobId,
@@ -79,6 +89,8 @@ test('Draft finalization is account-bound, completed-only, unexpired and single-
   ));
   assert.equal(attempts.filter(Boolean).length, 1);
   const winner = attempts.find(Boolean)!;
+  assert.equal(await getOwnedReadySeedanceDraftLink('owner', 'draft-owned', queryFn, beforeExpiry), null,
+    'a reserved final cannot receive a fresh quote');
   assert.equal(winner.providerTaskId, 'cgt-owned');
   assert.equal(winner.providerModelId, 'dreamina-seedance-2-5-260628');
   const repeated = await reserveSeedanceDraftFinal({

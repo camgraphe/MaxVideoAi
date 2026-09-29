@@ -26,6 +26,13 @@ export type ReservedSeedanceDraftFinal = {
   finalJobId: string;
 };
 
+export type OwnedReadySeedanceDraftLink = {
+  draftJobId: string;
+  providerTaskId: string;
+  providerModelId: string;
+  expiresAt: string;
+};
+
 function required(value: string, name: string): string {
   const trimmed = value.trim();
   if (!trimmed || trimmed.length > 255 || /\s|\0/u.test(trimmed)) {
@@ -122,6 +129,39 @@ export async function markSeedanceDraftReady(
     RETURNING draft_job_id
   `, [required(userId, 'Draft owner'), required(draftJobId, 'Draft job ID')]);
   return rows.length === 1;
+}
+
+/** Read the owned provider reference before offering a separate final quote. */
+export async function getOwnedReadySeedanceDraftLink(
+  userId: string,
+  draftJobId: string,
+  queryFn: QueryFn = query,
+  now: () => Date = () => new Date(),
+): Promise<OwnedReadySeedanceDraftLink | null> {
+  const at = now();
+  if (!Number.isFinite(at.getTime())) throw new Error('Invalid Draft lookup time.');
+  const rows = await queryFn<{
+    draftJobId: string;
+    providerTaskId: string;
+    providerModelId: string;
+    expiresAt: Date | string;
+  }>(`
+    SELECT d.draft_job_id AS "draftJobId",
+           d.provider_task_id AS "providerTaskId",
+           d.provider_model_id AS "providerModelId",
+           d.expires_at AS "expiresAt"
+    FROM seedance_draft_links d
+    JOIN app_jobs j ON j.job_id = d.draft_job_id AND j.user_id = d.user_id
+    WHERE d.user_id = $1 AND d.draft_job_id = $2
+      AND d.draft_state = 'ready' AND d.final_state = 'none'
+      AND d.final_job_id IS NULL AND d.expires_at > $3::timestamptz
+      AND j.engine_id = 'seedance-2-5'
+      AND j.provider = 'byteplus_modelark'
+      AND j.status = 'completed' AND j.provider_job_id = d.provider_task_id
+    LIMIT 1
+  `, [required(userId, 'Draft owner'), required(draftJobId, 'Draft job ID'), at.toISOString()]);
+  const row = rows[0];
+  return row ? { ...row, expiresAt: new Date(row.expiresAt).toISOString() } : null;
 }
 
 export async function reserveSeedanceDraftFinal(input: {
