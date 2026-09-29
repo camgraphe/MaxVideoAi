@@ -77,7 +77,7 @@
 .marketing-site .model-story-copy>div:nth-child(2){grid-column:2;grid-row:3;flex-direction:row;align-content:start;margin:0;gap:10px}
 .marketing-site .model-story-copy>div:nth-child(3){grid-column:1/-1;grid-row:4;justify-content:flex-end;margin:0;padding:0;border:0}
 .marketing-site .model-story-media figure{max-width:100%;border-radius:8px}
-.marketing-site .model-story-media figure>div:first-child{aspect-ratio:2.15}
+.marketing-site .model-story-media figure>div:first-child{aspect-ratio:16/9}
 .marketing-site .model-story-media figure>div:first-child img,.marketing-site .model-story-media figure>div:first-child video{object-fit:cover;background:#171716}
 @media(max-width:700px){
  .marketing-site .model-story-copy{display:flex;flex-direction:column;gap:18px}
