@@ -16,6 +16,7 @@ for (const locale of ['en', 'fr', 'es'] as const) {
       for (const link of links) {
         assert.ok(link.href.startsWith(locale === 'en' ? '/ai-video-engines/' : `/${locale}/`));
         const slug = link.href.split('/').pop()!;
+        assert.deepEqual(link.comparison, slug.split('-vs-'), `${link.href} must show the models named by its route`);
         const canonical = getCanonicalCompareSlug(slug);
         assert.ok(canonical, `${link.href} must resolve through the comparison route`);
         assert.ok(resolveEngines(canonical.canonicalSlug), `${link.href} must resolve both published models`);

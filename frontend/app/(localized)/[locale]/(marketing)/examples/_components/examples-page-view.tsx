@@ -4,6 +4,7 @@ import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryG
 import type { AppLocale } from '@/i18n/locales';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import type { ExamplesModelLink } from '../_lib/examples-page-data';
+import type { ExamplesNextStepLink } from '../_lib/examples-page-copy';
 import type { EngineFilterOption } from '../_lib/examples-route-utils';
 import { ExamplesEngineFilterNav } from './examples-engine-filter-nav';
 import { ExamplesJsonLdScripts } from './examples-jsonld-scripts';
@@ -91,10 +92,7 @@ type ExamplesPageViewProps = {
   nextHref: ExamplesPaginationHref;
   nextLabel: string;
   nextOffsetStart: number;
-  nextStepLinks: Array<{
-    href: string;
-    label: string;
-  }>;
+  nextStepLinks: ExamplesNextStepLink[];
   pageLabel: string;
   pageOffsetEnd: number;
   previousHref: ExamplesPaginationHref;

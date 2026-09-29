@@ -11,6 +11,7 @@ type PaginationDictionary = {
 export type ExamplesNextStepLink = {
   href: string;
   label: string;
+  comparison?: readonly [leftEngineId: string, rightEngineId: string];
 };
 
 export function getExamplesEditorialSections(
@@ -182,6 +183,14 @@ export function buildExamplesNextStepLinks({
   pricingPath: string;
 }): ExamplesNextStepLink[] {
   const compareLabel = locale === 'fr' ? 'Comparer' : locale === 'es' ? 'Comparar' : 'Compare';
+  const comparisonLink = (slug: string, label: string): ExamplesNextStepLink => {
+    const separator = slug.indexOf('-vs-');
+    return {
+      href: buildCompareHref(appLocale, slug),
+      label: `${compareLabel} ${label}`,
+      comparison: separator > 0 ? [slug.slice(0, separator), slug.slice(separator + 4)] : undefined,
+    };
+  };
   const family = familySlug ?? (isLtxLanding ? 'ltx' : isKlingLanding ? 'kling' : isSeedanceLanding ? 'seedance' : isVeoLanding ? 'veo' : '');
   // Lead with the current generation; retain selected historical comparisons for
   // visitors evaluating older examples. Published routes remain unchanged.
@@ -223,12 +232,12 @@ export function buildExamplesNextStepLinks({
     ],
   };
   const selected = comparisons[family];
-  if (selected) return selected.map(([slug, label]) => ({ href: buildCompareHref(appLocale, slug), label: `${compareLabel} ${label}` }));
+  if (selected) return selected.map(([slug, label]) => comparisonLink(slug, label));
   return [
     { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5' },
     { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3' },
     { href: buildModelHref(appLocale, 'wan-3'), label: 'Wan 3' },
-    { href: buildCompareHref(appLocale, 'kling-3-pro-vs-seedance-2-5'), label: `${compareLabel} Kling 3 Pro vs Seedance 2.5` },
+    comparisonLink('kling-3-pro-vs-seedance-2-5', 'Kling 3 Pro vs Seedance 2.5'),
     { href: pricingPath, label: locale === 'fr' ? 'Voir les tarifs' : locale === 'es' ? 'Ver precios' : 'View pricing' },
   ];
 }

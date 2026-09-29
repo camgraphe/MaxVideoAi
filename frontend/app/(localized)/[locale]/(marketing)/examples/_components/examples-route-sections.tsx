@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { BadgeDollarSign, FilePenLine, Scale } from 'lucide-react';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ExampleSort } from '@/server/videos';
+import type { ExamplesNextStepLink } from '../_lib/examples-page-copy';
+import { ENGINE_META } from '../_lib/examples-route-utils';
 import styles from './examples-editorial.module.css';
 
 type ExamplesIntroHeroProps = {
@@ -22,10 +25,7 @@ type ExamplesFamilyIntroProps = {
 
 type ExamplesNextStepsSectionProps = {
   locale: AppLocale;
-  nextStepLinks: Array<{
-    href: string;
-    label: string;
-  }>;
+  nextStepLinks: ExamplesNextStepLink[];
 };
 
 type ExamplesModelLink = {
@@ -256,19 +256,23 @@ export function ExamplesModelLinksSection({
 
 export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLandingCardsSectionProps) {
   if (!sections?.length) return null;
+  const guidanceIcons = [FilePenLine, Scale, BadgeDollarSign];
 
   return (
     <section className={styles.guidanceGrid}>
-      {sections.map((section, index) => (
-        <article
-          key={section.title}
-          className={styles.guidanceItem}
-        >
-          <span className={styles.linkIndex}>{String(index + 1).padStart(2, '0')}</span>
-          <h2>{section.title}</h2>
-          <p>{section.body}</p>
-        </article>
-      ))}
+      {sections.map((section, index) => {
+        const Icon = guidanceIcons[index] ?? FilePenLine;
+        return (
+          <article key={section.title} className={styles.guidanceItem}>
+            <div className={styles.guidanceTop} aria-hidden="true">
+              <span className={styles.guidanceIcon}><Icon size={21} strokeWidth={1.7} /></span>
+              <span className={styles.guidanceIndex}>{String(index + 1).padStart(2, '0')}</span>
+            </div>
+            <h2>{section.title}</h2>
+            <p>{section.body}</p>
+          </article>
+        );
+      })}
     </section>
   );
 }
@@ -381,22 +385,51 @@ export function ExamplesSummarySection({ longDescription, modelLandingSummary }:
 
 export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNextStepsSectionProps) {
   const mcpLink = getMcpInternalLink(locale, 'examples');
+  const comparisonLinks = nextStepLinks.filter(
+    (item): item is ExamplesNextStepLink & { comparison: readonly [string, string] } => Boolean(item.comparison)
+  );
+  const resourceLinks = nextStepLinks.filter((item) => !item.comparison);
+  const hasMatchups = comparisonLinks.length > 1;
   return (
     <section className={styles.nextSteps}>
       <div className={styles.sectionHeading}>
         <span className={styles.eyebrow}>
           {locale === 'fr' ? 'Continuer' : locale === 'es' ? 'Continuar' : 'Keep exploring'}
         </span>
-        <h2>{locale === 'fr' ? 'Aller plus loin' : locale === 'es' ? 'Siguientes pasos' : 'Next steps'}</h2>
+        <h2>{hasMatchups
+          ? locale === 'fr' ? 'Les duels de modèles' : locale === 'es' ? 'Duelos de modelos' : 'Model matchups'
+          : locale === 'fr' ? 'Aller plus loin' : locale === 'es' ? 'Siguientes pasos' : 'Next steps'}</h2>
       </div>
-      <div className={styles.nextGrid}>
-        {nextStepLinks.map((item) => (
-          <Link key={item.label} href={item.href} className={styles.nextLink}>
+      {comparisonLinks.length ? (
+        <div className={styles.comparisonGrid}>
+          {comparisonLinks.map((item) => {
+            const [leftId, rightId] = item.comparison;
+            const left = ENGINE_META.get(leftId);
+            const right = ENGINE_META.get(rightId);
+            return (
+              <Link key={item.href} href={item.href} className={styles.comparisonCard}>
+                <span className={styles.comparisonEmblems} aria-hidden="true">
+                  <span className={styles.comparisonLogo}><EngineIcon engine={{ id: leftId, label: left?.label ?? leftId, brandId: left?.brandId }} size={36} framed={false} /></span>
+                  <span className={styles.comparisonVs}>VS</span>
+                  <span className={styles.comparisonLogo}><EngineIcon engine={{ id: rightId, label: right?.label ?? rightId, brandId: right?.brandId }} size={36} framed={false} /></span>
+                </span>
+                <span className={styles.comparisonBottom}>
+                  <span>{item.label}</span>
+                  <span className={styles.comparisonArrow} aria-hidden="true">↗</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
+      <div className={styles.resourceGrid}>
+        {resourceLinks.map((item) => (
+          <Link key={item.href} href={item.href} className={styles.resourceLink}>
             <span>{item.label}</span><span aria-hidden="true">↗</span>
           </Link>
         ))}
         {mcpLink ? (
-          <Link href={mcpLink.href} className={styles.nextLink}>
+          <Link href={mcpLink.href} className={styles.resourceLink}>
             <span>{mcpLink.label}</span><span aria-hidden="true">↗</span>
           </Link>
         ) : null}
