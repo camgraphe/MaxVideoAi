@@ -1,0 +1,1 @@
+module.exports={"extends": "lighthouse:default", "settings": {"onlyCategories": ["performance"], "throttlingMethod": "devtools", "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36"}};

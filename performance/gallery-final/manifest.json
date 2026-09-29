@@ -1,0 +1,12 @@
+{
+  "baselineCommit": "0c6572d8ff43803b7a7024f6c4c854b96d932953",
+  "candidateApplicationCommit": "6d406f497aa4db6b42153e33139554915d95f48d",
+  "snapshotSha256": "c84a0c37a3d91325952f91f3ecc40315edabc80a1fe6c2babf2ed9f586e35dcb",
+  "editorialSqlSha256": "5c4e21a94f78960f913cb93c1167cbd1306a5580e41edb9165700ae1dc716818",
+  "migration53Sha256": "6c097cb6e6760d46d8efb05a1ba9b975b909e3be951f4d600b415b8a6de4b26d",
+  "cards": 316,
+  "hub": 266,
+  "feeds": 13,
+  "capturedAt": "2026-09-28T11:34:21.356Z",
+  "source": "https://maxvideoai.com/api/examples"
+}
