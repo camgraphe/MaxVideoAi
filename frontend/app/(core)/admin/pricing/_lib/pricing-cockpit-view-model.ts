@@ -64,6 +64,7 @@ export type ProviderCostComparisonRowView = {
   resolution: string;
   step: 'normal' | 'draft' | 'final';
   durationSec: number | null;
+  outputQuantity?: number | null;
   aspectRatio: string | null;
   billingInputType: 'no_video_input' | 'video_input' | null;
   audio: boolean | null;
@@ -132,7 +133,9 @@ export function formatProviderComparisonScenario(row: ProviderCostComparisonRowV
     row.step === 'draft' ? 'Draft' : row.step === 'final' ? 'Final' : null,
     row.mode.toUpperCase(),
     row.resolution,
-    row.durationSec != null ? `${row.durationSec} s` : null,
+    row.mediaType === 'image' && row.outputQuantity != null
+      ? `${row.outputQuantity} ${row.outputQuantity === 1 ? 'image' : 'images'}`
+      : row.durationSec != null ? `${row.durationSec} s` : null,
     row.aspectRatio,
     row.billingInputType === 'video_input' ? 'video input' : null,
     row.audio === true ? 'audio on' : row.audio === false ? 'audio off' : null,

@@ -44,6 +44,7 @@ export type ProviderCostComparisonInput = {
   mode: string;
   resolution: string;
   durationSec?: number;
+  outputQuantity?: number;
   aspectRatio?: string;
   step: 'normal' | 'draft' | 'final';
   billingInputType?: 'no_video_input' | 'video_input';
@@ -116,7 +117,8 @@ export function providerComparisonInputFromScenario(input: {
     mediaType: input.mediaType ?? 'video',
     mode,
     resolution: scenario.resolution ?? 'unknown',
-    durationSec: scenario.durationSec,
+    durationSec: input.mediaType === 'image' ? undefined : scenario.durationSec,
+    outputQuantity: input.mediaType === 'image' ? Number(scenario.input.quantity ?? 1) : undefined,
     aspectRatio: tokenEstimate?.aspectRatio ?? seedance15AspectRatio ?? aspectRatio,
     step: 'normal',
     billingInputType,
@@ -147,6 +149,7 @@ export type ProviderCostComparisonRow = {
   resolution: string;
   step: ProviderCostComparisonInput['step'];
   durationSec: number | null;
+  outputQuantity: number | null;
   aspectRatio: string | null;
   billingInputType: ProviderCostComparisonInput['billingInputType'] | null;
   audio: boolean | null;
@@ -290,6 +293,7 @@ export function buildProviderCostComparisonRows(
       resolution: input.resolution,
       step: input.step,
       durationSec: input.durationSec ?? null,
+      outputQuantity: input.outputQuantity ?? null,
       aspectRatio: input.aspectRatio ?? null,
       billingInputType: input.billingInputType ?? null,
       audio: input.audio ?? null,

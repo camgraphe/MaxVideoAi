@@ -13,6 +13,7 @@ import { PricingAdminError } from '../frontend/server/pricing-admin/errors.ts';
 import { buildPricingPreviewFingerprint } from '../frontend/server/pricing-admin/fingerprint.ts';
 import type { PricingChangeJsonValue } from '../frontend/lib/admin/pricing-change-contract.ts';
 import { buildPricingAuditScenarios } from '../frontend/src/lib/pricing-audit/scenarios.ts';
+import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 const globalRule: PricingPolicyRule = {
   id: 'db-global',
@@ -124,7 +125,9 @@ test('preview fingerprints reject every non-JSON state value instead of collapsi
 });
 
 test('affected scenario selection follows canonical global, engine, mode, resolution, and precise selectors', () => {
-  const scenarios = buildPricingAuditScenarios();
+  const activeEngines = new Map(listFalEngines().map((entry) => [entry.id, entry.surfaces.pricing.includeInEstimator]));
+  const scenarios = buildPricingAuditScenarios().filter((scenario) => activeEngines.get(scenario.engineId) !== false);
+  assert.equal(scenarios.some((scenario) => scenario.engineId === 'seedance-1-5-pro'), false);
   const representative = findScenario('billing:kling-3-pro:t2v:5:1080p:member');
 
   assert.deepEqual(selectAffectedPricingScenarios({}).map((row) => row.id), scenarios.map((row) => row.id));

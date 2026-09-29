@@ -13,8 +13,8 @@
     "intro": "Seedance 1.5 Pro reste disponible comme ancien workflow Seedance Pro encore pris en charge pour des clips cinématiques courts et répétables, tandis que Seedance 2.0 est désormais le modèle Seedance principal pour une meilleure continuité multi-plans, un audio plus riche et des workflows de référence plus larges.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
-      "label": "Générer avec Seedance 1.5 Pro",
-      "href": "/app?engine=seedance-1-5-pro"
+      "label": "Découvrir les modèles actuels",
+      "href": "/fr/modeles"
     },
     "secondaryLinks": [
       {
@@ -219,8 +219,8 @@
       ],
       "paragraph": "Utilisez Seedance 1.5 Pro pour l’ancienne route Seedance encore prise en charge : clips courts répétables, audio optionnel, seed, camera_fixed et fins image-to-video. Passez à Seedance 2.0 pour la route actuelle.",
       "primaryCta": {
-        "label": "Générer avec Seedance 1.5 Pro",
-        "href": "/app?engine=seedance-1-5-pro"
+        "label": "Découvrir les modèles actuels",
+        "href": "/fr/modeles"
       },
       "secondaryCta": {
         "label": "Voir Seedance 2.0",

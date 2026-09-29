@@ -54,12 +54,18 @@ export type PricingChangePreviewRow = {
   compatibilityProfile: string;
 };
 
+const falEntries = listFalEngines();
+const pricingEntriesById = new Map(falEntries.map((entry) => [entry.id, entry]));
 const engineCapabilitiesById = new Map(
-  listFalEngines().flatMap((entry) => [
+  falEntries.flatMap((entry) => [
     [entry.id, entry.engine] as const,
     [entry.engine.id, entry.engine] as const,
   ])
 );
+
+function isActivePricingScenario(scenario: PricingAuditScenario): boolean {
+  return pricingEntriesById.get(scenario.engineId)?.surfaces.pricing.includeInEstimator !== false;
+}
 
 function scenarioMatchesSelector(scenario: PricingAuditScenario, selector: PricingScenarioSelector): boolean {
   return (
@@ -138,7 +144,8 @@ function resolveScenarioPolicy(
 }
 
 export function selectAffectedPricingScenarios(selector: PricingScenarioSelector): PricingAuditScenario[] {
-  return buildPricingAuditScenarios().filter((scenario) => scenarioMatchesSelector(scenario, selector));
+  return buildPricingAuditScenarios().filter((scenario) =>
+    isActivePricingScenario(scenario) && scenarioMatchesSelector(scenario, selector));
 }
 
 export function resolveCanonicalAdminScenarioPolicy(input: {
@@ -168,7 +175,8 @@ function quoteCanonicalScenarios(
   const policyDocument = getVersionedPricingPolicy();
   const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
   const membershipDiscounts = projection === 'live' ? LIVE_MEMBERSHIP_DISCOUNTS : HISTORICAL_MEMBERSHIP_DISCOUNTS;
-  const scenarios = input.scenarios ?? buildPricingAuditScenarios();
+  const scenarios = input.scenarios ?? buildPricingAuditScenarios().filter((scenario) =>
+    projection === 'historical' || isActivePricingScenario(scenario));
   const projectionScenarios = [
     ...scenarios,
     ...(input.requestedSurcharges ?? []).map((request) => buildRequestedSurchargeScenario(scenarios, request)),

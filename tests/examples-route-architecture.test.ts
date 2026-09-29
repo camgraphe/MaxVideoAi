@@ -153,7 +153,7 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini video examples');
   assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
-  assert.match(landing.summary, /Earlier 1\.5 Pro examples keep their original labels/);
+  assert.match(landing.summary, /Earlier 1\.5 Pro videos remain labeled, although new 1\.5 generations are closed/);
   assert.doesNotMatch(landing.intro, /every example|all examples.*2\.5/i);
   assert.equal(family.defaultModelSlug, 'seedance-2-0');
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);

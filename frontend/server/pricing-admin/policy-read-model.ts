@@ -8,8 +8,9 @@ import type {
   ListPricingChangeEventsInput,
   PricingChangeEvent,
 } from '@/lib/admin/pricing-change-contract';
-import { getFalEngineById } from '@/config/falEngines';
+import { getFalEngineById, listFalEngines } from '@/config/falEngines';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
+import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import {
   isBytePlusSeedanceSubmissionEnabled,
@@ -41,6 +42,38 @@ import {
   selectorOf,
 } from './policy-rules';
 
+function buildByteDanceComparisonScenarios(auditScenarios: PricingAuditScenario[]) {
+  return listFalEngines().flatMap((entry) => {
+    if (entry.brandId !== 'bytedance' || !entry.surfaces.pricing.includeInEstimator) return [];
+    const baseline = auditScenarios.find((scenario) => scenario.engineId === entry.id
+      && scenario.surface === 'billing' && scenario.membershipTier === 'member'
+      && scenario.id.startsWith(`billing:${entry.id}:`));
+    if (!baseline) return [];
+    const image = entry.category === 'image';
+    const resolution = image ? '2K' : '720p';
+    const mode = image ? 't2i' : 't2v';
+    if (!entry.engine.resolutions.includes(resolution) || !entry.modes.some((item) => item.mode === mode)) return [];
+    if (!image) {
+      const duration = entry.modes.find((item) => item.mode === mode)?.ui.duration;
+      if (!duration || !('options' in duration) || !duration.options.some((value) => Number(value) === 5)) return [];
+    }
+    const scenario: PricingAuditScenario = {
+      ...baseline,
+      id: `provider-comparison:${entry.id}:${mode}:${image ? '1-image' : '5s'}:${resolution}:member`,
+      mode,
+      resolution,
+      durationSec: image ? 1 : 5,
+      input: image ? { quantity: 1, referenceImageCount: 0 } : { audio: false, aspectRatio: '16:9' },
+    };
+    return [{ scenario, entry }];
+  });
+}
+
+function isActivePolicyRule(rule: PricingPolicyRule): boolean {
+  if (!rule.engineId) return true;
+  return getFalEngineById(rule.engineId)?.surfaces.pricing.includeInEstimator !== false;
+}
+
 export async function loadPricingPolicyHistory(
   filter: Omit<ListPricingChangeEventsInput, 'domain'> = {},
   dependencies: PricingPolicyServiceDependencies = DEFAULT_POLICY_SERVICE_DEPENDENCIES
@@ -55,18 +88,21 @@ export async function loadPricingPolicyInventory(
   const loaded = await dependencies.loadOverrides();
   const databaseRules = loaded.status === 'loaded' ? loaded.rules.map(canonicalRule) : [];
   const routingRules = loaded.status === 'loaded' ? loaded.routingRules ?? [] : [];
-  const auditScenarios = buildPricingAuditScenarios();
+  const auditScenarios = buildPricingAuditScenarios().filter((scenario) => {
+    const engine = getFalEngineById(scenario.engineId);
+    return !engine || engine.surfaces.pricing.includeInEstimator;
+  });
   const bySelector = new Map<string, {
     selector: PricingScenarioSelector;
     versionedRule: PricingPolicyRule | null;
     databaseOverride: PricingPolicyRule | null;
   }>();
-  policy.rules.forEach((rule) => bySelector.set(selectorKey(rule), {
+  policy.rules.filter(isActivePolicyRule).forEach((rule) => bySelector.set(selectorKey(rule), {
     selector: selectorOf(rule),
     versionedRule: canonicalRule(rule),
     databaseOverride: null,
   }));
-  databaseRules.forEach((rule) => {
+  databaseRules.filter(isActivePolicyRule).forEach((rule) => {
     const key = selectorKey(rule);
     const existing = bySelector.get(key) ?? {
       selector: selectorOf(rule),
@@ -198,12 +234,7 @@ export async function loadPricingPolicyInventory(
 
   const billingScenarios = auditScenarios.filter((scenario) =>
     scenario.surface === 'billing' && scenario.membershipTier === 'member');
-  const bytedanceScenarios = billingScenarios.flatMap((scenario) => {
-    const entry = getFalEngineById(scenario.engineId);
-    return entry?.brandId === 'bytedance' && entry.surfaces.pricing.includeInEstimator
-      ? [{ scenario, entry }]
-      : [];
-  });
+  const bytedanceScenarios = buildByteDanceComparisonScenarios(billingScenarios);
   const comparisonOutcomes = loaded.status === 'loaded'
     ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: bytedanceScenarios.map(({ scenario }) => scenario) })
     : [];

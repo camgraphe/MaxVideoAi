@@ -19,6 +19,7 @@ import {
   type PricingPolicyServiceDependencies,
 } from '../frontend/server/pricing-admin/policy-service.ts';
 import { revalidatePricingChangeSurfaces } from '../frontend/server/pricing-admin/revalidation.ts';
+import { formatProviderComparisonScenario } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts';
 import type { PricingRule } from '../frontend/src/lib/pricing-rule-store.ts';
 
 const actorId = '00000000-0000-0000-0000-000000000001';
@@ -670,6 +671,7 @@ test('inventory scenario rows inherit the effective database override routing an
 test('inventory compares ByteDance billing scenarios with their actual execution route and independent supplier evidence', async () => {
   const inventory = await loadPricingPolicyInventory(createMemoryHarness().deps);
   const rows = inventory.providerComparisons;
+  assert.equal(inventory.rows.some((row) => row.selector.engineId === 'seedance-1-5-pro'), false);
   const seedance25 = rows.find((row) => row.engineId === 'seedance-2-5' && row.mode === 't2v');
   const seedream = rows.find((row) => row.engineId === 'seedream');
 
@@ -684,20 +686,41 @@ test('inventory compares ByteDance billing scenarios with their actual execution
   assert.ok((seedance25.customerQuote?.totalCents ?? 0) > 0);
 
   assert.equal(rows.some((row) => row.engineId === 'seedance-1-5-pro'), false);
+  for (const engineId of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5']) {
+    const row = rows.find((candidate) => candidate.engineId === engineId && candidate.mode === 't2v');
+    assert.ok(row, `${engineId} comparison row`);
+    assert.equal(row.durationSec, 5, `${engineId} supported comparable duration`);
+    assert.equal(row.resolution, '720p', `${engineId} comparable resolution`);
+    assert.equal(row.audio, false, `${engineId} comparable silent quote`);
+    assert.ok(row.customerQuote, `${engineId} canonical customer quote`);
+  }
   assert.ok(seedream);
+  assert.equal(seedream.durationSec, null);
+  assert.equal(seedream.outputQuantity, 1);
+  assert.match(formatProviderComparisonScenario(seedream), /1 image/);
+  assert.doesNotMatch(formatProviderComparisonScenario(seedream), /\d+ s/);
   assert.equal(seedream.executionProvider, 'byteplus_modelark');
   assert.equal(seedream.supplierList.amountUsd, null);
   assert.equal(seedream.supplierList.reason, 'image_usage_unavailable');
 });
 
+test('an archived model database override remains out of the active price inventory', async () => {
+  const legacy = policyRule('db-seedance-15-historical', {
+    engineId: 'seedance-1-5-pro', mode: 't2v', resolution: '720p',
+  });
+  const inventory = await loadPricingPolicyInventory(createMemoryHarness([legacy]).deps);
+  assert.equal(inventory.rows.some((row) => row.selector.engineId === legacy.engineId), false);
+  assert.equal(inventory.providerComparisons.some((row) => row.engineId === legacy.engineId), false);
+});
+
 test('inventory supplier facts never reprice an effective database customer quote', async () => {
   const baseline = await loadPricingPolicyInventory(createMemoryHarness().deps);
   const override = policyRule('db-seedance-25', {
-    engineId: 'seedance-2-5', mode: 't2v', resolution: '480p', marginFlatCents: 137,
+    engineId: 'seedance-2-5', mode: 't2v', resolution: '720p', marginFlatCents: 137,
   });
   const changed = await loadPricingPolicyInventory(createMemoryHarness([override]).deps);
   const current = changed.providerComparisons.find((row) =>
-    row.engineId === 'seedance-2-5' && row.mode === 't2v' && row.resolution === '480p');
+    row.engineId === 'seedance-2-5' && row.mode === 't2v' && row.resolution === '720p');
   const prior = baseline.providerComparisons.find((row) => row.scenarioId === current?.scenarioId);
 
   assert.ok(current?.customerQuote);
