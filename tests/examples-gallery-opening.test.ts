@@ -12,6 +12,7 @@ const videos: ExampleGalleryVideo[] = Array.from({length:24},(_,i)=>i%4===1?'9:1
   id: `v${i}`, href: `/video/v${i}`, engineLabel: 'Example', engineIconId: 'example',
   priceLabel: null, prompt: 'A cinematic public example', aspectRatio, durationSec: 10,
   hasAudio: false, rawPosterUrl: `/test-${i}.jpg`,
+  ...(i === 0 ? { recreateHref: '/app?from=v0' } : {}),
 }));
 
 async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = true) {
@@ -38,6 +39,8 @@ test('all24 watch links render once before hydration, with one critical poster a
     assert.equal(doc.querySelectorAll('img[fetchpriority="high"]').length,1);
     assert.equal(doc.querySelectorAll('img').length,24);
     assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="view_example_details"]')].map(a=>a.getAttribute('href')),videos.map(v=>v.href));
+    assert.deepEqual([...doc.querySelectorAll('a[data-analytics-cta-name="reuse_example"]')].map(a=>a.getAttribute('href')),['/app?from=v0']);
+    assert.match(doc.querySelector('[data-gallery-opening] + div')?.textContent ?? '', /A cinematic public example/);
     assert.equal(doc.querySelector('video'),null);
     assert.equal(doc.querySelectorAll('[data-gallery-opening]>div').length,4);
     assert.deepEqual([...doc.querySelectorAll('[data-frame]')].map(el=>el.getAttribute('data-frame')),['lead','portrait','side','side']);
@@ -46,7 +49,7 @@ test('all24 watch links render once before hydration, with one critical poster a
 });
 test('later pages keep the complete page without repeating the editorial opening',async()=>{
  const dom=await renderGallery(true,false);
- try{assert.equal(dom.window.document.querySelector('[data-gallery-opening]'),null);assert.equal(dom.window.document.querySelectorAll('img').length,24);}
+ try{assert.equal(dom.window.document.querySelector('[data-gallery-opening]'),null);assert.equal(dom.window.document.querySelector('a[data-analytics-cta-name="reuse_example"]'),null);assert.equal(dom.window.document.querySelectorAll('img').length,24);}
  finally{dom.window.close();}
 });
 

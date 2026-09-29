@@ -3,6 +3,7 @@ import type { AppLocale } from '@/i18n/locales';
 
 import { buildExamplePosterProjection } from '@/lib/media-helpers';
 import { getExampleFamilyDescriptor, getExampleNavFamilyIds } from '@/lib/model-families';
+import { canRecreatePublicExample } from '@/lib/public-example-recreation';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import {
   CURRENT_ENGINE_MODEL_LINKS_BY_GROUP,
@@ -290,6 +291,7 @@ function buildClientVideo({
     ...buildExamplePosterProjection(video.thumbUrl, getPlaceholderPoster(video.aspectRatio)),
     videoUrl: video.videoUrl ?? null,
     previewVideoUrl: video.previewVideoUrl ?? null,
+    recreateHref: canRecreatePublicExample(video.engineId) ? `/app?from=${encodeURIComponent(video.id)}` : null,
     modelHref,
     sourceIndex: index,
   };

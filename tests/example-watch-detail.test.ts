@@ -7,6 +7,7 @@ test('public detail serializes no ownership/private references and offers three 
  const contexts:any[]=[];
  const detail=await projectExampleWatchDetail(video,null,async context=>{contexts.push(context);return {totalCents:200,currency:'USD'};});
  assert.ok(detail);assert.equal(detail.prompt,video.prompt);assert.equal(detail.historicalCost?.amountCents,401);
+ assert.equal(detail.recreateHref,'/app?from=public-example');
  assert.equal(detail.scenario?.durationSec,22);assert.equal(detail.scenario?.resolution,'720p');
  assert.equal(detail.references.length,0);assert.ok(!JSON.stringify(detail).includes('private-owner'));assert.ok(!JSON.stringify(detail).includes('secret.jpg'));
  assert.equal(detail.quotes.length,3);assert.equal(new Set(detail.quotes.map(q=>q.engineId)).size,detail.quotes.length);
@@ -20,6 +21,10 @@ test('missing source configuration still offers explicit proposals; unavailable 
 });
 test('private or non-discoverable videos do not produce a public detail',async()=>{
  for(const hidden of [{visibility:'private' as const},{indexable:false},{videoUrl:undefined}])assert.equal(await projectExampleWatchDetail({...video,...hidden},null,async()=>({totalCents:1,currency:'USD'})),null);
+});
+test('unavailable source engines do not offer a misleading recreate action',async()=>{
+ const detail=await projectExampleWatchDetail({...video,engineId:'unavailable-source'},null,async()=>({totalCents:200,currency:'USD'}));
+ assert.equal(detail?.recreateHref,null);
 });
 test('measured configuration wins, references need explicit editorial approval, and source images never enter app links',async()=>{
  const {VIDEO_SEO_EDITORIAL_ENTRIES}=await import('../frontend/config/video-seo-editorial');

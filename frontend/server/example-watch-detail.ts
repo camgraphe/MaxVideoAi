@@ -1,9 +1,7 @@
-import { listFalEngines } from '@/config/falEngines';
 import type { VideoSeoEditorialEntry } from '@/config/video-seo-editorial';
-import { getBaseEngines } from '@/lib/engines';
-import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildExampleRecreationHref, parseExampleRecreationSettings, publicExampleResolution } from '@/lib/example-recreation';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
+import { canRecreatePublicExample } from '@/lib/public-example-recreation';
 import { buildExampleComparisonQuotes, type ExampleQuoteProvider } from './example-comparison-quotes';
 import type { WatchPageDerivedSignals } from './watch-page-signals';
 import { deriveWatchPageSignals } from './watch-page-signals';
@@ -24,15 +22,12 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
   });
   const proposed = { durationSec: video.durationSec, resolution: resolution ?? '', aspectRatio: aspectRatio ?? '', audio: video.hasAudio, mode: 't2v' as const };
   const scenario = parseExampleRecreationSettings(new URLSearchParams(buildExampleRecreationHref(video.id, video.engineId, proposed).split('?')[1]));
-  const published = new Set(listFalEngines().filter(entry => entry.surfaces.app.enabled && entry.surfaces.modelPage.indexable).map(entry => entry.id));
-  const engines = getBaseEngines().filter(engine => published.has(engine.id));
-  const sourceId = normalizeEngineId(video.engineId) ?? video.engineId;
   const quotes = await buildExampleComparisonQuotes(video, scenario, quote);
   return {
     id: video.id, title: signals.title, prompt: signals.promptText, videoUrl: video.videoUrl,
     posterUrl: video.thumbUrl ?? null, engineLabel: signals.engineLabel,
     watchHref: new URL(signals.canonicalUrl).pathname, modelHref: signals.modelPath,
-    recreateHref: engines.some(engine => engine.id === sourceId) ? signals.recreatePath : null,
+    recreateHref: canRecreatePublicExample(video.engineId) ? signals.recreatePath : null,
     aspectRatio: video.outputWidth && video.outputHeight ? `${video.outputWidth}:${video.outputHeight}` : video.aspectRatio ?? '16:9',
     durationSec: video.durationSec, hasAudio: video.hasAudio,
     historicalCost: typeof video.finalPriceCents === 'number' && video.currency ? { amountCents: video.finalPriceCents, currency: video.currency } : null,
