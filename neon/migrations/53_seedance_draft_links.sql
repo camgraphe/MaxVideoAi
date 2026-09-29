@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS seedance_draft_links (
   user_id text NOT NULL,
   provider_task_id text NOT NULL UNIQUE,
   provider_model_id text NOT NULL,
-  provider_created_at timestamptz NOT NULL,
+  validity_started_at timestamptz NOT NULL,
+  validity_start_source text NOT NULL
+    CHECK (validity_start_source = 'server_request_started'),
   expires_at timestamptz NOT NULL,
   draft_state text NOT NULL DEFAULT 'pending'
     CHECK (draft_state IN ('pending', 'ready', 'failed')),
@@ -14,7 +16,7 @@ CREATE TABLE IF NOT EXISTS seedance_draft_links (
     CHECK (final_state IN ('none', 'reserved', 'submitted', 'failed')),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CHECK ((final_job_id IS NULL) = (final_state = 'none')),
-  CHECK (expires_at > provider_created_at)
+  CHECK (expires_at > validity_started_at)
 );
 
 CREATE INDEX IF NOT EXISTS seedance_draft_links_user_state_idx
