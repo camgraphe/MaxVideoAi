@@ -1,8 +1,9 @@
 import { getFalEngineById } from '@/config/falEngines';
 import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { resolveVideoProviderRoutingPlan } from '@/server/video-providers/router';
-import { isBytePlusSeedanceSubmissionEnabled, resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark-profile-policy';
-import { getBytePlusArkConfig, isBytePlusModelArkEnabled } from '@/server/video-providers/byteplus-modelark';
+import { getBytePlusSeedanceAllowedModes, isBytePlusSeedanceSubmissionEnabled,
+  resolveBytePlusSeedanceModelId, resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark-profile-policy';
+import { assertBytePlusTransportConfigured, getBytePlusArkConfig, isBytePlusModelArkEnabled } from '@/server/video-providers/byteplus-modelark';
 import { lumaAgentsImageDirectEnabled } from '@/server/images/luma-agents-execution';
 import { providerComparisonInputFromScenario, type ProviderCostComparisonInput } from './provider-cost-comparison';
 
@@ -21,9 +22,15 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
     }
   } else if (resolveBytePlusSeedanceRouteProfile(entry.id, declared)) {
     executionProvider = 'byteplus_modelark';
-    const ark = getBytePlusArkConfig();
-    routeConfigured = isBytePlusSeedanceSubmissionEnabled(entry.id) && isBytePlusModelArkEnabled()
-      && Boolean(ark.apiKey?.trim());
+    routeConfigured = false;
+    try {
+      if (context.mode && isBytePlusSeedanceSubmissionEnabled(entry.id) && isBytePlusModelArkEnabled()
+        && getBytePlusSeedanceAllowedModes(entry.id).includes(context.mode)) {
+        resolveBytePlusSeedanceModelId(entry.id, getBytePlusArkConfig());
+        assertBytePlusTransportConfigured(entry.id, context.mode);
+        routeConfigured = true;
+      }
+    } catch { /* Missing model selectors or transport credentials keep this read-only route unavailable. */ }
   } else {
     const plan = resolveVideoProviderRoutingPlan({ engineId: entry.id, mode: context.mode ?? 't2v', isAdmin: true });
     if ('primaryProvider' in plan) executionProvider = plan.primaryProvider;

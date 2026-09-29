@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Search } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
@@ -99,6 +99,8 @@ export function CustomerTariffPanel() {
     useSWR(scenarioUrl, getScenario);
   const exact = scenario?.modelId === selectedId ? scenario : null;
   const exactScenarioId = exact?.scenarioId;
+  const selectedScenario = useRef({ url: scenarioUrl, id: exactScenarioId });
+  selectedScenario.current = { url: scenarioUrl, id: exactScenarioId };
   const exactStagedCents = exact?.stagedCents;
   const exactCurrentCents = exact?.currentCents;
   const editable = data?.databaseStatus === 'loaded' && exact?.currentCents != null;
@@ -122,12 +124,14 @@ export function CustomerTariffPanel() {
     setDraft(row?.stagedCents != null ? (row.stagedCents / 100).toFixed(2)
       : row?.currentCents != null ? (row.currentCents / 100).toFixed(2) : '');
     setPreview(null);
+    setPendingProposal(null);
     setError(null);
     setNotice(null);
   };
 
   const requestPreview = async (requestedProposal?: CustomerTariffChangeProposal) => {
-    if (!exact || !editable) return;
+    if (!exact || !editable || busy) return;
+    const requestedScenario = selectedScenario.current;
     const cents = parseDollars(draft);
     if (!requestedProposal && cents == null) { setError('Enter a USD amount with at most two decimals.'); return; }
     const proposal = requestedProposal ?? { operation: exact.stagedCents == null ? 'create' : 'update',
@@ -137,6 +141,8 @@ export function CustomerTariffPanel() {
       const result = await post<{ preview: CustomerTariffChangePreview }>(
         '/api/admin/pricing/tariffs/preview', proposal,
       );
+      if (selectedScenario.current.url !== requestedScenario.url
+        || selectedScenario.current.id !== proposal.scenarioId || result.preview.scenarioId !== proposal.scenarioId) return;
       setPreview(result.preview);
       setPendingProposal(proposal);
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'Preview failed.'); }
@@ -144,7 +150,8 @@ export function CustomerTariffPanel() {
   };
 
   const confirm = async () => {
-    if (!preview || !pendingProposal) return;
+    if (!preview || !pendingProposal || busy || pendingProposal.scenarioId !== exact?.scenarioId
+      || preview.scenarioId !== exact.scenarioId) return;
     setBusy(true); setError(null);
     try {
       const result = await post<{ confirmation: CustomerTariffChangeConfirmation }>('/api/admin/pricing/tariffs/confirm', {
@@ -180,7 +187,7 @@ export function CustomerTariffPanel() {
     </div>
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.8fr)]">
       <div className="space-y-2" aria-label="Model customer tariffs">{visible.length ? visible.map((row) =>
-        <button key={row.modelId} type="button" onClick={() => select(row.modelId)}
+        <button key={row.modelId} type="button" disabled={busy} onClick={() => select(row.modelId)}
           aria-pressed={selectedId === row.modelId}
           className={`grid w-full gap-3 rounded-xl border p-3 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_minmax(100px,0.55fr)_minmax(100px,0.55fr)] ${selectedId === row.modelId ? 'border-brand bg-[#f7f3ff]' : 'border-border bg-surface hover:border-brand/50'}`}>
           <span className="min-w-0"><strong className="block truncate text-sm text-text-primary">{title(row.modelId)}</strong><span className="text-xs text-text-secondary">{title(row.familyId)} · {row.selector.mode} · {row.mediaType === 'image' ? '1 image' : `${row.selector.durationSec}s`} · {row.selector.resolution}</span></span>
@@ -191,8 +198,8 @@ export function CustomerTariffPanel() {
         <div className="flex items-start justify-between gap-2"><div><h3 className="text-lg font-bold text-text-primary">{title(selected.modelId)}</h3><p className="text-xs text-text-secondary">Exact scenario for this price</p></div><span className="rounded-full bg-[#f1ebff] px-2 py-1 text-xs font-semibold text-[#5937b8]">{selected.mediaType}</span></div>
         {scenarioError ? <AdminNotice tone="error">{scenarioError instanceof Error ? scenarioError.message : 'Scenario unavailable.'}</AdminNotice> : null}
         {scenarioLoading ? <p className="mt-4 text-sm text-text-secondary">Loading scenario…</p> : null}
-        {exact ? <div className="mt-4 grid gap-2 sm:grid-cols-2">{exact.choices.map((choice) => <label key={choice.key} className="text-xs text-text-secondary">{SCENARIO_LABELS[choice.key] ?? title(choice.key)}<select aria-label={SCENARIO_LABELS[choice.key] ?? title(choice.key)} value={choice.value}
-          onChange={(event) => { setRequested({ ...exact.selector, [choice.key]: event.target.value }); setPreview(null); setPendingProposal(null); }}
+        {exact ? <div className="mt-4 grid gap-2 sm:grid-cols-2">{exact.choices.map((choice) => <label key={choice.key} className="text-xs text-text-secondary">{SCENARIO_LABELS[choice.key] ?? title(choice.key)}<select aria-label={SCENARIO_LABELS[choice.key] ?? title(choice.key)} value={choice.value} disabled={busy}
+          onChange={(event) => { if (busy) return; setRequested({ ...exact.selector, [choice.key]: event.target.value }); setPreview(null); setPendingProposal(null); }}
           className="mt-1 min-h-9 w-full rounded-lg border border-border bg-bg px-2 text-sm text-text-primary">
           {choice.options.map((value) => <option key={value} value={value}>{scenarioValue(choice.key, value)}</option>)}
         </select></label>)}</div> : null}

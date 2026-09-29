@@ -2,6 +2,7 @@ import { getFalEngineById } from '@/config/falEngines';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import type { PricingContext } from '@/lib/pricing-context';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
+import { isGptImage25EngineId } from '@/lib/image/gptImage2';
 
 export type SupplierRateLine = {
   label: string;
@@ -32,7 +33,12 @@ export function catalogSupplierReference(context: PricingContext): CatalogSuppli
   if (!entry) return null;
   const endpoint = entry.modes.find((item) => item.mode === context.mode)?.falModelId;
   if (!endpoint) return null;
-  const pricing = buildBillingPricingFacts(context, engine.pricingDetails, 'USD');
+  // GPT counts all submitted edit sources; coverage can describe that first source as inputImageCount.
+  // These fields can be aliases, unlike Luma's count of additional references beyond its source.
+  const supplierContext = isGptImage25EngineId(engine.id) && context.mode === 'i2i'
+    ? { ...context, referenceImageCount: Math.max(context.referenceImageCount ?? 0, context.inputImageCount ?? 0) }
+    : context;
+  const pricing = buildBillingPricingFacts(supplierContext, engine.pricingDetails, 'USD');
   const amountUsd = precise(pricing.facts.vendorSubtotalExactCents / 100);
   if (!Number.isFinite(amountUsd) || amountUsd < 0) return null;
   const source = typeof pricing.meta.provider_cost_source === 'string' ? pricing.meta.provider_cost_source
@@ -54,15 +60,25 @@ export function catalogSupplierReference(context: PricingContext): CatalogSuppli
   }
   const quantity = pricing.facts.quantity;
   if (!Number.isFinite(quantity) || quantity <= 0) return null;
-  const addonUsd = pricing.addons.reduce((sum, addon) => sum + addon.amountCents / 100, 0);
-  const baseUsd = precise(amountUsd - addonUsd);
   const unit = entry.category === 'image' ? 'image' : 'second';
+  // Presentation addons are rounded cents. Only exact factual components may split a supplier subtotal.
+  const rateBreakdown: SupplierRateLine[] = [{ label: 'Supplier reference including selected options', quantity, unit,
+    unitPriceUsd: precise(amountUsd / quantity), amountUsd }];
+  if (isGptImage25EngineId(engine.id)) {
+    const outputRate = Number(pricing.meta.base_unit_price_exact_cents) / 100;
+    const referencesUsd = Number(pricing.meta.reference_image_subtotal_exact_cents) / 100;
+    const referenceCount = Number(pricing.meta.provider_reference_image_count);
+    if (Number.isFinite(outputRate) && Number.isFinite(referencesUsd)) {
+      rateBreakdown.splice(0, rateBreakdown.length, { label: 'Generated images', quantity, unit: 'image',
+        unitPriceUsd: precise(outputRate), amountUsd: precise(outputRate * quantity) });
+      if (referencesUsd > 0 && referenceCount > 0) rateBreakdown.push({ label: 'Paid reference images',
+        quantity: referenceCount, unit: 'image', unitPriceUsd: precise(referencesUsd / referenceCount),
+        amountUsd: precise(referencesUsd) });
+    }
+  }
   return {
     amountUsd, referenceProvider, sourceLabel: `${source} · repository reference`, sourceUrl,
     versionedAt: Number.isFinite(Date.parse(engine.updatedAt)) ? engine.updatedAt : null,
-    rateBreakdown: [{ label: 'Base supplier reference', quantity, unit,
-      unitPriceUsd: precise(baseUsd / quantity), amountUsd: baseUsd },
-      ...pricing.addons.map((addon) => ({ label: addon.type, quantity: 1, unit: 'task' as const,
-        unitPriceUsd: precise(addon.amountCents / 100), amountUsd: precise(addon.amountCents / 100) }))],
+    rateBreakdown,
   };
 }

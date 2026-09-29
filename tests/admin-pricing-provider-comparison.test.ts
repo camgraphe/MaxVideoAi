@@ -11,6 +11,9 @@ import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/c
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { buildPricingAuditScenarios } from '../frontend/src/lib/pricing-audit/scenarios';
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
+import { catalogSupplierReference } from '../frontend/server/pricing-admin/catalog-supplier-reference';
+import { providerComparisonForTariffScenario } from '../frontend/server/pricing-admin/tariff-provider-comparison';
+import { ENV } from '../frontend/src/lib/env';
 import {
   filterProviderComparisonRows,
   formatProviderComparisonScenario,
@@ -86,6 +89,68 @@ test('supplier image reference keeps sub-cent precision and selected quality', (
   assert.equal(low.supplierList.amountUsd, 0.00402);
   assert.ok(high.supplierList.amountUsd! > low.supplierList.amountUsd!);
   assert.equal(low.supplierList.rateBreakdown?.[0].unit, 'image');
+});
+
+test('GPT edit supplier reference includes the source once and preserves exact component costs', () => {
+  const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'gpt-image-2-5-flare'
+    && row.selector.mode === 'i2i' && row.selector.resolution === 'landscape_4_3' && row.selector.quality === 'low');
+  assert.ok(scenario);
+  const reference = catalogSupplierReference(scenario.context);
+  assert.equal(reference?.amountUsd, 0.01202);
+  assert.deepEqual(reference?.rateBreakdown.map(({ amountUsd }) => amountUsd), [0.00402, 0.008]);
+  const aliased = catalogSupplierReference({ ...scenario.context, referenceImageCount: 1 });
+  assert.equal(aliased?.amountUsd, 0.01202, 'the same source described by both fields is counted once');
+});
+
+test('GPT exact reference itemization never subtracts rounded display addons', () => {
+  const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'gpt-image-2-5-flare'
+    && row.selector.mode === 'i2i' && row.selector.resolution === 'landscape_4_3' && row.selector.quality === 'low');
+  assert.ok(scenario);
+  const reference = catalogSupplierReference({ ...scenario.context, referenceImageCount: 1 });
+  assert.deepEqual(reference?.rateBreakdown.map(({ amountUsd }) => amountUsd), [0.00402, 0.008]);
+});
+
+test('image-only Seedance references retain their known no-video supplier token estimate', () => {
+  for (const modelId of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5']) {
+    const input = exactInput(modelId, { mode: 'ref2v', durationSec: '5', resolution: '720p', aspectRatio: '16:9' }, 'byteplus_modelark');
+    assert.equal(input.billingInputType, 'no_video_input');
+    assert.ok(input.videoTokens! > 0);
+    const [row] = buildProviderCostComparisonRows([input], '2026-09-30T12:00:00Z');
+    assert.equal(row.supplierList.status, 'published_list_estimate');
+    assert.ok(row.supplierList.amountUsd! > 0);
+  }
+});
+
+test('BytePlus availability follows the exact selected transport, model selector and allowed modes', () => {
+  const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'seedance-2-5'
+    && row.selector.mode === 'v2v');
+  assert.ok(scenario);
+  const env = ENV as unknown as Record<string, string | undefined>;
+  const values = { BYTEPLUS_ARK_ENABLED: 'true', BYTEPLUS_ARK_API_KEY: 'fixture-ark-key',
+    BYTEPLUS_LAS_API_KEY: 'fixture-las-key', SEEDANCE_2_5_LAS_ENABLED: 'false',
+    SEEDANCE_2_5_BYTEPLUS_ENABLED: 'true', SEEDANCE_2_5_PROVIDER: 'byteplus_modelark',
+    SEEDANCE_2_5_BYTEPLUS_MODES: 't2v,i2v,ref2v,v2v', BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID: 'fixture-model' };
+  const previous = Object.fromEntries(Object.keys(values).map((key) => [key, env[key]]));
+  const previousSandbox = process.env.PRICING_SANDBOX;
+  try {
+    delete process.env.PRICING_SANDBOX;
+    Object.assign(env, values);
+    assert.equal(providerComparisonForTariffScenario(scenario).routeConfigured, false, 'LAS disabled');
+    env.SEEDANCE_2_5_LAS_ENABLED = 'true';
+    assert.equal(providerComparisonForTariffScenario(scenario).routeConfigured, true);
+    env.BYTEPLUS_LAS_API_KEY = '';
+    assert.equal(providerComparisonForTariffScenario(scenario).routeConfigured, false, 'Ark key cannot substitute for LAS');
+    env.BYTEPLUS_LAS_API_KEY = 'fixture-las-key';
+    env.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = '';
+    assert.equal(providerComparisonForTariffScenario(scenario).routeConfigured, false, 'model selector required');
+    env.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = 'fixture-model';
+    env.SEEDANCE_2_5_BYTEPLUS_MODES = 't2v';
+    assert.equal(providerComparisonForTariffScenario(scenario).routeConfigured, false, 'mode excluded');
+  } finally {
+    Object.assign(env, previous);
+    if (previousSandbox === undefined) delete process.env.PRICING_SANDBOX;
+    else process.env.PRICING_SANDBOX = previousSandbox;
+  }
 });
 
 test('direct Luma execution never relabels a Fal pricing reference as its account list', () => {

@@ -79,7 +79,9 @@ export function providerComparisonInputFromScenario(input: {
 }): ProviderCostComparisonInput {
   const { scenario, engine } = input;
   const mode = scenario.mode ?? 'unknown';
-  const billingInputType = mode === 'v2v' || mode === 'extend'
+  const billingInputType = typeof input.context?.hasVideoInput === 'boolean'
+    ? input.context.hasVideoInput ? 'video_input' as const : 'no_video_input' as const
+    : mode === 'v2v' || mode === 'extend'
     ? 'video_input' as const
     : mode === 't2v' || mode === 'i2v'
       ? 'no_video_input' as const
