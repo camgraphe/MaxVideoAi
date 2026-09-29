@@ -24,6 +24,23 @@ import {
 
 const slug = 'seedance-2-5';
 const locales = ['en', 'fr', 'es'] as const;
+
+test('Fast conversion and price headlines distinguish ordinary iterations from Seedance 2.5 Draft', () => {
+  for (const locale of locales) {
+    const content = JSON.parse(readFileSync(`content/models/${locale}/seedance-2-0-fast.json`, 'utf8')) as {
+      decision: {
+        hero: { eyebrow: string; primaryCta: { label: string } };
+        media: { badges: string[] };
+        pricingCopy: { title: string; subtitle: string };
+        meta: { title: string };
+      };
+    };
+    const prominent = [content.decision.hero.eyebrow, content.decision.hero.primaryCta.label,
+      ...content.decision.media.badges, content.decision.pricingCopy.title,
+      content.decision.pricingCopy.subtitle, content.decision.meta.title].join(' ');
+    assert.doesNotMatch(prominent, /draft|brouillon|borrador/i, `${locale} Fast headline`);
+  }
+});
 const priorityComparisonSlugs = [
   'seedance-2-0-vs-seedance-2-5',
   'kling-3-pro-vs-seedance-2-5',

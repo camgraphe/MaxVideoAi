@@ -513,13 +513,13 @@
   },
   "archive": {
     "title": "Seedance 1.5 Pro : génération arrêtée",
-    "intro": "Seedance 1.5 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont arrêtées avant la fermeture annoncée par le fournisseur pour le 11 novembre 2026. Les anciens exemples et comparatifs restent accessibles. Découvrez Mini, Fast et Seedance 2.5 pour vos nouveaux projets.",
+    "intro": "Seedance 1.5 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont arrêtées avant la fermeture annoncée par le fournisseur pour le 11 novembre 2026. Les anciens comparatifs et vos vidéos existantes restent accessibles. Découvrez Mini, Fast et Seedance 2.5 pour vos nouveaux projets.",
     "alternativesTitle": "Choisir un modèle Seedance actuel",
     "chooseLabel": "Découvrir ce modèle",
     "historyTitle": "Vos vidéos existantes",
     "historyBody": "Vos vidéos Seedance 1.5 Pro restent dans votre bibliothèque avec leur modèle et fournisseur d’origine. Vous pouvez toujours consulter et télécharger les résultats disponibles. Vérifiez les réglages et le devis actuel avant de créer avec un autre modèle.",
     "historyLabel": "Ouvrir ma bibliothèque",
-    "examplesLabel": "Voir les exemples Seedance historiques",
+    "examplesLabel": "Parcourir les exemples Seedance",
     "sourcesLabel": "Lire l’annonce du fournisseur",
     "sourceUrl": "https://docs.byteplus.com/en/docs/ModelArk/1350667",
     "alternatives": [

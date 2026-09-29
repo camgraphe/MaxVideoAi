@@ -671,7 +671,6 @@ test('inventory compares ByteDance billing scenarios with their actual execution
   const inventory = await loadPricingPolicyInventory(createMemoryHarness().deps);
   const rows = inventory.providerComparisons;
   const seedance25 = rows.find((row) => row.engineId === 'seedance-2-5' && row.mode === 't2v');
-  const seedance15 = rows.find((row) => row.engineId === 'seedance-1-5-pro');
   const seedream = rows.find((row) => row.engineId === 'seedream');
 
   assert.ok(seedance25);
@@ -684,11 +683,7 @@ test('inventory compares ByteDance billing scenarios with their actual execution
   assert.equal(seedance25.customerQuote?.source, 'versioned');
   assert.ok((seedance25.customerQuote?.totalCents ?? 0) > 0);
 
-  assert.ok(seedance15);
-  assert.equal(seedance15.executionProvider, 'byteplus_modelark');
-  assert.equal(seedance15.routeConfigured, false);
-  assert.equal(seedance15.supplierList.status, 'published_list_estimate');
-  assert.ok((seedance15.supplierList.amountUsd ?? 0) > 0);
+  assert.equal(rows.some((row) => row.engineId === 'seedance-1-5-pro'), false);
   assert.ok(seedream);
   assert.equal(seedream.executionProvider, 'byteplus_modelark');
   assert.equal(seedream.supplierList.amountUsd, null);
