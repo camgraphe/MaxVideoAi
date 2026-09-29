@@ -1935,7 +1935,7 @@
         },
         "examples": {
           "published": true,
-          "includeInFamilyCopy": true,
+          "includeInFamilyCopy": false,
           "current": false,
           "familyRank": 4
         },
@@ -1972,16 +1972,16 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "lifecycle": "current",
+      "lifecycle": "deep_legacy",
       "successorId": null,
       "successorSlug": null
     },

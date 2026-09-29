@@ -112,8 +112,8 @@ async function main(): Promise<void> {
   ) {
     throw new Error('Invalid reviewed GPT Image 2.5 public pricing launch matrix.');
   }
-  // Approved Sora sunset: remove purchasable surfaces and invalidate its two Product offers.
-  // Keep the pre-sunset fixtures intact as historical pricing evidence.
+  // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
+  // Keep the pre-archive fixtures intact as historical pricing evidence.
   const expectedWithLaunch = [...expected, ...launchAdditions.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
@@ -122,9 +122,9 @@ async function main(): Promise<void> {
     }
     appliedCustomerOfferRepairs.add(row.id);
     return { ...row, customerTotalCents: repair.totalCents, structuredDataAmount: (repair.totalCents / 100).toFixed(2) };
-  }).filter((row) => !(['sora-2', 'sora-2-pro'].includes(row.engineId)
+  }).filter((row) => !(['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(row.engineId)
     && ['estimator', 'pricing-hub-video', 'workspace-preflight'].includes(row.surface)))
-    .map((row) => ['sora-2', 'sora-2-pro'].includes(row.engineId) && row.surface === 'json-ld'
+    .map((row) => ['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(row.engineId) && row.surface === 'json-ld'
       ? { id: row.id, surface: row.surface, engineId: row.engineId, status: 'unavailable' as const }
       : row)
     .map((row) => {
@@ -140,7 +140,9 @@ async function main(): Promise<void> {
   if (!isDeepStrictEqual(rows, expectedWithLaunch)) {
     const expectedById = new Map(expectedWithLaunch.map((row) => [row.id, row]));
     const changed = rows.filter((row) => !isDeepStrictEqual(row, expectedById.get(row.id))).map((row) => row.id);
-    console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', changed);
+    const actualIds = new Set(rows.map((row) => row.id));
+    const missing = expectedWithLaunch.filter((row) => !actualIds.has(row.id)).map((row) => row.id);
+    console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', { changed, missing });
     process.exitCode = 1;
     return;
   }

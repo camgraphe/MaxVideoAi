@@ -370,7 +370,7 @@ test('archived Sora preflight rejects before reading configuration or quoting', 
   }
 });
 
-test('Seedance 1.5 preflight does not quote when direct execution is disabled', { concurrency: false }, async () => {
+test('archived Seedance 1.5 preflight never quotes, even with direct execution enabled', { concurrency: false }, async () => {
   const original = {
     enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
     provider: ENV.SEEDANCE_1_5_PROVIDER,
@@ -387,13 +387,13 @@ test('Seedance 1.5 preflight does not quote when direct execution is disabled', 
       computeConfiguredPreflightFn: async () => { throw new Error('Pricing must not be reached'); },
     });
     assert.equal(response.ok, false);
-    assert.equal(response.error?.code, 'ENGINE_UNAVAILABLE');
+    assert.equal(response.error?.code, 'ENGINE_RETIRED');
     const aliasResponse = await resolveMediaAwarePreflight({
       request: { ...requestFor(engineFor('seedance-1-5-pro'), 't2v'), engine: 'seedance-v1-5-pro' },
     }, {
       getConfiguredEngineFn: async () => { throw new Error('Alias must be blocked before configuration'); },
     });
-    assert.equal(aliasResponse.error?.code, 'ENGINE_UNAVAILABLE');
+    assert.equal(aliasResponse.error?.code, 'ENGINE_RETIRED');
 
     ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
     ENV.SEEDANCE_1_5_PROVIDER = 'byteplus_modelark';
@@ -404,7 +404,8 @@ test('Seedance 1.5 preflight does not quote when direct execution is disabled', 
     }, {
       getConfiguredEngineFn: async () => engineFor('seedance-1-5-pro'),
     });
-    assert.equal(configured.ok, true);
+    assert.equal(configured.ok, false);
+    assert.equal(configured.error?.code, 'ENGINE_RETIRED');
   } finally {
     ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
     ENV.SEEDANCE_1_5_PROVIDER = original.provider;

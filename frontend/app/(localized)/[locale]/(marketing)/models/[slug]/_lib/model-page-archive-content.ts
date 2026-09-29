@@ -11,6 +11,7 @@ const archiveContentSchema = z.object({
   historyLabel: text,
   examplesLabel: text,
   sourcesLabel: text,
+  sourceUrl: z.string().url().optional(),
   alternatives: z.array(z.object({
     modelId: text,
     title: text,

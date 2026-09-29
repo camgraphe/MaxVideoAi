@@ -188,7 +188,7 @@ test('Seedance 2.5 hard-disable and routing gates run before database and billin
   }
 });
 
-test('Seedance 1.5 rejects new requests before billing when direct routing is disabled', { concurrency: false }, async () => {
+test('archived Seedance 1.5 rejects new requests before billing regardless of direct routing flags', { concurrency: false }, async () => {
   const original = {
     enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
     provider: ENV.SEEDANCE_1_5_PROVIDER,
@@ -209,8 +209,8 @@ test('Seedance 1.5 rejects new requests before billing when direct routing is di
     });
     assert.deepEqual(result, {
       ok: false,
-      status: 404,
-      body: { ok: false, error: 'Engine unavailable' },
+      status: 410,
+      body: { ok: false, error: 'ENGINE_RETIRED' },
     });
     const engine = getFalEngineById('seedance-1-5-pro')?.engine;
     assert.ok(engine);
@@ -218,7 +218,7 @@ test('Seedance 1.5 rejects new requests before billing when direct routing is di
       body: {}, engine, jobId: 'job_15', mode: 't2v',
     });
     assert.equal(trusted.ok, false);
-    if (!trusted.ok) assert.equal(trusted.body.error, 'Engine unavailable');
+    if (!trusted.ok) assert.equal(trusted.body.error, 'ENGINE_RETIRED');
 
     ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
     const disabledOverride = resolveTrustedPaidGenerateRouteContext({
@@ -234,8 +234,8 @@ test('Seedance 1.5 rejects new requests before billing when direct routing is di
     const direct = resolveTrustedPaidGenerateRouteContext({
       body: {}, engine, jobId: 'job_15_direct', mode: 't2v',
     });
-    assert.equal(direct.ok, true);
-    if (direct.ok) assert.equal(direct.context.providerKey, 'byteplus_modelark');
+    assert.equal(direct.ok, false);
+    if (!direct.ok) assert.equal(direct.body.error, 'ENGINE_RETIRED');
   } finally {
     ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
     ENV.SEEDANCE_1_5_PROVIDER = original.provider;
