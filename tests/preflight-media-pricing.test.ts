@@ -6,6 +6,7 @@ import { computeConfiguredPreflight } from '../frontend/src/server/engines.ts';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max.ts';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing.ts';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight.ts';
+import { ENV } from '../frontend/src/lib/env.ts';
 import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request.ts';
 import type { EngineCaps, PreflightRequest } from '../frontend/types/engines.ts';
 
@@ -366,5 +367,48 @@ test('archived Sora preflight rejects before reading configuration or quoting', 
     });
     assert.equal(response.ok, false);
     assert.equal(response.error?.code, 'ENGINE_RETIRED');
+  }
+});
+
+test('Seedance 1.5 preflight does not quote when direct execution is disabled', { concurrency: false }, async () => {
+  const original = {
+    enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
+    provider: ENV.SEEDANCE_1_5_PROVIDER,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID,
+    arkEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+  };
+  try {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'false';
+    ENV.SEEDANCE_1_5_PROVIDER = 'fal';
+    const response = await resolveMediaAwarePreflight({
+      request: requestFor(engineFor('seedance-1-5-pro'), 't2v'),
+    }, {
+      getConfiguredEngineFn: async () => { throw new Error('Configuration must not be read'); },
+      computeConfiguredPreflightFn: async () => { throw new Error('Pricing must not be reached'); },
+    });
+    assert.equal(response.ok, false);
+    assert.equal(response.error?.code, 'ENGINE_UNAVAILABLE');
+    const aliasResponse = await resolveMediaAwarePreflight({
+      request: { ...requestFor(engineFor('seedance-1-5-pro'), 't2v'), engine: 'seedance-v1-5-pro' },
+    }, {
+      getConfiguredEngineFn: async () => { throw new Error('Alias must be blocked before configuration'); },
+    });
+    assert.equal(aliasResponse.error?.code, 'ENGINE_UNAVAILABLE');
+
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
+    ENV.SEEDANCE_1_5_PROVIDER = 'byteplus_modelark';
+    ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID = 'seedance-1-5-pro-251215';
+    ENV.BYTEPLUS_ARK_ENABLED = 'true';
+    const configured = await resolveMediaAwarePreflight({
+      request: requestFor(engineFor('seedance-1-5-pro'), 't2v'),
+    }, {
+      getConfiguredEngineFn: async () => engineFor('seedance-1-5-pro'),
+    });
+    assert.equal(configured.ok, true);
+  } finally {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
+    ENV.SEEDANCE_1_5_PROVIDER = original.provider;
+    ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID = original.modelId;
+    ENV.BYTEPLUS_ARK_ENABLED = original.arkEnabled;
   }
 });

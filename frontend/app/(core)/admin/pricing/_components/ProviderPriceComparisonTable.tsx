@@ -121,6 +121,8 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect }: Prop
               <tr key={row.scenarioId} className="border-t border-hairline align-top text-xs text-text-secondary">
                 <td className="px-3 py-3">
                   <span className="block font-medium text-text-primary">{row.engineId}</span>
+                  {row.routeConfigured === false ? <span className="block font-medium text-warning">New generation disabled; direct BytePlus access pending</span> : null}
+                  {row.routeConfigured === true ? <span className="block text-text-secondary">Direct BytePlus route configured</span> : null}
                   <span className="block">{formatProviderComparisonScenario(row)}</span>
                   <span className="block break-all font-mono text-[10px] text-text-muted">{row.scenarioId}</span>
                 </td>

@@ -847,6 +847,7 @@ test('hidden direct Fast keeps its narrow raw runtime caps by default', () => {
 });
 
 test('Seedance early gating is independent from hidden-engine resolution', () => {
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-1-5-pro'), true);
   assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-5'), true);
   assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0-fast-byteplus'), true);
   assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0'), false);

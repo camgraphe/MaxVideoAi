@@ -57,6 +57,7 @@ export type ProviderCostComparisonRowView = {
   brandId: string;
   engineId: string;
   executionProvider: string;
+  routeConfigured: boolean | null;
   mediaType: 'video' | 'image';
   workflowPairId: string | null;
   mode: string;

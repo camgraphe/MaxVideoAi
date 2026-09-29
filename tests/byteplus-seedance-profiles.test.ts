@@ -33,7 +33,7 @@ const expected = [
     motionControls: false,
     resolutions: ['480p', '720p', '1080p'],
     durations: [4, 5, 6, 7, 8, 9, 10, 11, 12],
-    alwaysDirect: false,
+    alwaysDirect: true,
     providerOverrideKey: 'SEEDANCE_1_5_PROVIDER',
     adminOnlyKey: 'SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY',
     allowedModesKey: 'SEEDANCE_1_5_BYTEPLUS_MODES',
@@ -139,7 +139,7 @@ test('every current BytePlus Seedance engine has an explicit parity profile', ()
   }
 });
 
-test('Seedance 1.5 direct route defaults to Fal and closes before provider shutdown', { concurrency: false }, () => {
+test('Seedance 1.5 has no new Fal route and closes before provider shutdown', { concurrency: false }, () => {
   const original = {
     enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
     provider: ENV.SEEDANCE_1_5_PROVIDER,
@@ -148,8 +148,8 @@ test('Seedance 1.5 direct route defaults to Fal and closes before provider shutd
   try {
     ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'false';
     ENV.SEEDANCE_1_5_PROVIDER = 'fal';
-    assert.equal(shouldRouteSeedanceEngineToBytePlus('seedance-1-5-pro'), false);
-    assert.equal(resolveBytePlusSeedanceRouteProfile('seedance-1-5-pro', 'bytedance'), null);
+    assert.equal(shouldRouteSeedanceEngineToBytePlus('seedance-1-5-pro'), true);
+    assert.ok(resolveBytePlusSeedanceRouteProfile('seedance-1-5-pro', 'bytedance'));
     assert.throws(() => assertBytePlusSeedanceSubmissionEnabled('seedance-1-5-pro'));
     assert.equal(isSeedance15DirectAvailableAt('2026-11-11T08:59:59Z'), true);
     assert.equal(isSeedance15DirectAvailableAt('2026-11-11T09:00:00Z'), false);

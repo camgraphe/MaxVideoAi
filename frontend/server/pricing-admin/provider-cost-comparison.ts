@@ -9,6 +9,7 @@ import {
 import type { CanonicalPricingQuote, ManualTariffQuote } from '@maxvideoai/pricing';
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
+import { expectedBytePlusTokens } from '@/server/byteplus-accounting';
 import type { EngineCaps } from '@/types/engines';
 
 type CostEvidence = { amountUsd: number; source: string; confirmedAt: string };
@@ -37,6 +38,7 @@ export type ProviderCostComparisonInput = {
   brandId: string;
   engineId: string;
   executionProvider: string;
+  routeConfigured?: boolean | null;
   mediaType?: 'video' | 'image';
   workflowPairId?: string;
   mode: string;
@@ -73,6 +75,13 @@ export function providerComparisonInputFromScenario(input: {
       ? 'no_video_input' as const
       : undefined;
   const aspectRatio = typeof scenario.input.aspectRatio === 'string' ? scenario.input.aspectRatio : undefined;
+  const schemaAspectRatio = engine.inputSchema?.optional?.find((field) => field.id === 'aspect_ratio')?.default;
+  const seedance15AspectRatio = scenario.engineId === 'seedance-1-5-pro'
+    ? aspectRatio ?? (typeof schemaAspectRatio === 'string' ? schemaAspectRatio : undefined)
+    : undefined;
+  const seedance15AudioDefault = scenario.engineId === 'seedance-1-5-pro'
+    ? engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio')?.default
+    : undefined;
   let tokenEstimate: ReturnType<typeof computeSeedance2TokenQuote> | null = null;
   if (billingInputType && isSeedance2TokenPricing(engine.pricingDetails) && scenario.durationSec && scenario.resolution) {
     try {
@@ -87,6 +96,18 @@ export function providerComparisonInputFromScenario(input: {
       // Unsupported dimensions remain unavailable in the supplier column.
     }
   }
+  const seedance15Tokens = scenario.engineId === 'seedance-1-5-pro'
+    && scenario.durationSec
+    && scenario.resolution
+    && ['480p', '720p', '1080p'].includes(scenario.resolution)
+    && seedance15AspectRatio
+    && ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'].includes(seedance15AspectRatio)
+      ? expectedBytePlusTokens({
+        engine_id: scenario.engineId,
+        duration_sec: scenario.durationSec,
+        settings_snapshot: { core: { resolution: scenario.resolution, aspectRatio: seedance15AspectRatio } },
+      })
+      : null;
   return {
     scenarioId: scenario.id,
     brandId: input.brandId,
@@ -96,12 +117,14 @@ export function providerComparisonInputFromScenario(input: {
     mode,
     resolution: scenario.resolution ?? 'unknown',
     durationSec: scenario.durationSec,
-    aspectRatio: tokenEstimate?.aspectRatio ?? aspectRatio,
+    aspectRatio: tokenEstimate?.aspectRatio ?? seedance15AspectRatio ?? aspectRatio,
     step: 'normal',
     billingInputType,
-    audio: typeof scenario.input.audio === 'boolean' ? scenario.input.audio : undefined,
-    videoTokens: tokenEstimate?.tokenCount ?? null,
-    tokenEvidence: tokenEstimate ? 'scenario_estimate' : null,
+    audio: typeof scenario.input.audio === 'boolean'
+      ? scenario.input.audio
+      : seedance15AudioDefault === 'true' ? true : seedance15AudioDefault === 'false' ? false : undefined,
+    videoTokens: tokenEstimate?.tokenCount ?? seedance15Tokens,
+    tokenEvidence: tokenEstimate || seedance15Tokens ? 'scenario_estimate' : null,
     customerQuote: input.quote ? customerQuoteFromCanonical(input.quote) : null,
   };
 }
@@ -117,6 +140,7 @@ export type ProviderCostComparisonRow = {
   brandId: string;
   engineId: string;
   executionProvider: string;
+  routeConfigured: boolean | null;
   mediaType: 'video' | 'image';
   workflowPairId: string | null;
   mode: string;
@@ -259,6 +283,7 @@ export function buildProviderCostComparisonRows(
       brandId: input.brandId,
       engineId: input.engineId,
       executionProvider: input.executionProvider,
+      routeConfigured: input.routeConfigured ?? null,
       mediaType: input.mediaType ?? 'video',
       workflowPairId: input.workflowPairId ?? null,
       mode: input.mode,

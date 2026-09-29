@@ -241,7 +241,9 @@ export function isBytePlusSeedanceFastEngine(engineId: string | null | undefined
 export function requiresBytePlusSeedanceEarlyGate(
   engineId: string | null | undefined
 ): boolean {
-  return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID || engineId === SEEDANCE_2_5_ENGINE_ID;
+  return engineId === SEEDANCE_1_5_ENGINE_ID
+    || engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID
+    || engineId === SEEDANCE_2_5_ENGINE_ID;
 }
 
 export function isBytePlusSeedanceHiddenEngine(engineId: string | null | undefined): boolean {

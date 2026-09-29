@@ -109,7 +109,7 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
       providerOverrideKey: 'SEEDANCE_1_5_PROVIDER',
       adminOnlyKey: 'SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY',
       allowedModesKey: 'SEEDANCE_1_5_BYTEPLUS_MODES',
-      alwaysDirect: false,
+      alwaysDirect: true,
     },
   },
   [PUBLIC_SEEDANCE_ENGINE_ID]: {

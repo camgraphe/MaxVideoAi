@@ -11,7 +11,11 @@ import type {
 import { getFalEngineById } from '@/config/falEngines';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
-import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark-profile-policy';
+import {
+  isBytePlusSeedanceSubmissionEnabled,
+  resolveBytePlusSeedanceRouteProfile,
+} from '@/server/video-providers/byteplus-modelark-profile-policy';
+import { getBytePlusArkConfig, isBytePlusModelArkEnabled } from '@/server/video-providers/byteplus-modelark';
 
 import {
   quoteCanonicalAdminScenarios,
@@ -211,7 +215,7 @@ export async function loadPricingPolicyInventory(
       : resolveBytePlusSeedanceRouteProfile(entry.id, declaredProvider)
         ? 'byteplus_modelark' : 'fal';
     const quote = comparisonQuoteById.get(scenario.id);
-    return providerComparisonInputFromScenario({
+    const comparison = providerComparisonInputFromScenario({
       scenario,
       quote: quote?.status === 'quoted' ? quote : null,
       engine: entry.engine,
@@ -219,6 +223,14 @@ export async function loadPricingPolicyInventory(
       executionProvider,
       mediaType: entry.category === 'image' ? 'image' : 'video',
     });
+    if (entry.id !== 'seedance-1-5-pro') return comparison;
+    const ark = getBytePlusArkConfig();
+    return {
+      ...comparison,
+      routeConfigured: isBytePlusSeedanceSubmissionEnabled(entry.id)
+        && isBytePlusModelArkEnabled()
+        && Boolean(ark.apiKey?.trim() && ark.seedance15ModelId.trim()),
+    };
   });
 
   return {

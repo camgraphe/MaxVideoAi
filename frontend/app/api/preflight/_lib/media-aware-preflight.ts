@@ -1,6 +1,13 @@
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
-import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
+import { getGenerationModelIdentity, isArchivedGenerationModel } from '@/lib/model-generation-policy';
+import {
+  BytePlusModelArkError,
+  assertBytePlusSeedanceSubmissionEnabled,
+  getBytePlusArkConfig,
+  isBytePlusModelArkEnabled,
+  resolveBytePlusSeedanceModelId,
+} from '@/server/video-providers/byteplus-modelark';
 import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/normalized-generation-attachment-validation';
 import {
   computeConfiguredPreflight,
@@ -103,6 +110,20 @@ export async function resolveMediaAwarePreflight(
   const request = parsedRequest.request;
   if (isArchivedGenerationModel(request.engine)) {
     return { ok: false, messages: ['This model is no longer available. Choose another model.'], error: { code: 'ENGINE_RETIRED', message: 'This model is no longer available.' } };
+  }
+  if (getGenerationModelIdentity(request.engine)?.id === 'seedance-1-5-pro') {
+    if (!isBytePlusModelArkEnabled()) {
+      return mediaPricingFailure('ENGINE_UNAVAILABLE', 'This model is temporarily unavailable.');
+    }
+    try {
+      assertBytePlusSeedanceSubmissionEnabled('seedance-1-5-pro');
+      resolveBytePlusSeedanceModelId('seedance-1-5-pro', getBytePlusArkConfig());
+    } catch (error) {
+      if (error instanceof BytePlusModelArkError) {
+        return mediaPricingFailure('ENGINE_UNAVAILABLE', 'This model is temporarily unavailable.');
+      }
+      throw error;
+    }
   }
   const getConfiguredEngineFn = dependencies.getConfiguredEngineFn ?? getReadOnlyConfiguredEngine;
   const getConfiguredEngineIncludingHiddenFn =

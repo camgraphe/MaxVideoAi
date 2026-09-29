@@ -685,9 +685,10 @@ test('inventory compares ByteDance billing scenarios with their actual execution
   assert.ok((seedance25.customerQuote?.totalCents ?? 0) > 0);
 
   assert.ok(seedance15);
-  assert.equal(seedance15.executionProvider, 'fal');
-  assert.equal(seedance15.supplierList.amountUsd, null);
-  assert.equal(seedance15.supplierList.reason, 'supplier_rate_unverified_for_route');
+  assert.equal(seedance15.executionProvider, 'byteplus_modelark');
+  assert.equal(seedance15.routeConfigured, false);
+  assert.equal(seedance15.supplierList.status, 'published_list_estimate');
+  assert.ok((seedance15.supplierList.amountUsd ?? 0) > 0);
   assert.ok(seedream);
   assert.equal(seedream.executionProvider, 'byteplus_modelark');
   assert.equal(seedream.supplierList.amountUsd, null);
