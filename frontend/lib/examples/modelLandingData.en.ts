@@ -131,7 +131,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   seedance: {
     metaTitle: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
     metaDescription: "Watch Seedance 2.5 video examples with prompts and settings. Compare results from other Seedance versions and use an example as a starting point.",
-    heroTitle: 'Seedance 2.5 AI Video Examples, Prompts & Settings',
+    heroTitle: 'Seedance 2.5, 2.0, Fast & Mini video examples',
     subtitle: "Seedance 2.5 and earlier versions: watch the results, inspect the prompts and find a starting point.",
     intro: "Explore Seedance 2.5 examples alongside Seedance 2.0, Fast and Mini. Open a video to inspect its prompt, settings and recorded cost. Each result keeps its original model label so you can compare the versions accurately.",
     summary: "Seedance 2.5 supports 4–30 second videos up to 1080p, generated audio, references, editing and extension. Seedance 2.0 remains available for 4K, while Fast and Mini offer other options for drafts and batches. Earlier 1.5 Pro examples keep their original labels.",

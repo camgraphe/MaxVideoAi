@@ -13,6 +13,16 @@ export type ExamplesNextStepLink = {
   label: string;
 };
 
+export function getExamplesEditorialSections(
+  sections: Array<{ title: string; body: string }>,
+  replacementTitles: string[] | null,
+) {
+  return sections.map((section, index) => ({
+    title: replacementTitles?.[index] ?? section.title,
+    body: section.body,
+  }));
+}
+
 export function getExamplesBrowseByModelLabel(locale: AppLocale) {
   return locale === 'fr' ? 'Parcourir par marque' : locale === 'es' ? 'Explorar por modelo' : 'Browse by brand';
 }
@@ -85,10 +95,12 @@ export function getKlingExamplesSectionTitles(locale: AppLocale, isKlingLanding:
 export function getExamplesModelPageLabels({
   isKlingLanding,
   isLtxLanding,
+  isSeedanceLanding,
   locale,
 }: {
   isKlingLanding: boolean;
   isLtxLanding: boolean;
+  isSeedanceLanding: boolean;
   locale: AppLocale;
 }) {
   const modelPagesLabel =
@@ -110,11 +122,17 @@ export function getExamplesModelPageLabels({
           : locale === 'es'
             ? 'Elige tu modelo LTX'
             : 'Choose your LTX model'
-      : locale === 'fr'
-        ? 'Pages modèles actuelles'
-        : locale === 'es'
-          ? 'Páginas de modelo actuales'
-          : 'Current model pages';
+      : isSeedanceLanding
+        ? locale === 'fr'
+          ? 'Choisissez votre modèle Seedance'
+          : locale === 'es'
+            ? 'Elige tu modelo Seedance'
+            : 'Choose your Seedance model'
+        : locale === 'fr'
+          ? 'Pages modèles actuelles'
+          : locale === 'es'
+            ? 'Páginas de modelo actuales'
+            : 'Current model pages';
   const supportedOlderVersionLabel =
     isKlingLanding
       ? locale === 'fr'

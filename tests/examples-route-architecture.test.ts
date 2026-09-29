@@ -150,7 +150,7 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
   assert.match(landing.metaDescription, /^Watch Seedance 2\.5 video examples/);
-  assert.equal(landing.heroTitle, 'Seedance 2.5 AI Video Examples, Prompts & Settings');
+  assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini video examples');
   assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
   assert.match(landing.summary, /Earlier 1\.5 Pro examples keep their original labels/);
@@ -353,8 +353,8 @@ test('examples route components own nav and JSON-LD rendering', () => {
   );
   assert.match(pageViewSource, /detailsCtaLabel=\{galleryUiCopy\.detailsCta\}/);
   assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');
-  assert.match(pageViewSource, /<details className="rounded-\[12px\]/, 'long family notes should stay available without dominating the page');
-  assert.match(pageViewSource, /Notes sur la famille|Notas de la familia|Family notes/, 'the compact family disclosure should be localized');
+  assert.match(pageViewSource, /<ExamplesFamilyIntro body=\{heroBody\}/, 'family context should be visible after the gallery');
+  assert.doesNotMatch(pageViewSource, /Family notes/, 'family context should no longer be hidden in a disclosure');
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');
   assert.match(engineFilterNavSource, /sticky top-16 z-\[35\]/, 'engine filter nav should own sticky filter markup');
   assert.match(engineFilterNavSource, /getEngineAccentOutlineStyle/, 'engine filter nav should own active brand outline styling');

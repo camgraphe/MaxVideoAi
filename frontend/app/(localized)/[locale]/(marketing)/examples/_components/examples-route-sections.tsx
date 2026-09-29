@@ -3,11 +3,19 @@ import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/exam
 import type { AppLocale } from '@/i18n/locales';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ExampleSort } from '@/server/videos';
+import styles from './examples-editorial.module.css';
 
 type ExamplesIntroHeroProps = {
   heroLead: string;
   heroSubtitle: string;
   heroTitle: string;
+  locale: AppLocale;
+};
+
+type ExamplesFamilyIntroProps = {
+  body: string;
+  label: string;
+  locale: AppLocale;
 };
 
 type ExamplesNextStepsSectionProps = {
@@ -126,13 +134,36 @@ type ExamplesFaqSectionProps = {
   };
 };
 
-export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
+export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle, locale }: ExamplesIntroHeroProps) {
   return (
-    <section className="text-left">
-      <header className="max-w-3xl space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">{heroTitle}</h1>
-        <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle || heroLead}</p>
+    <section className={styles.hero}>
+      <header className={styles.heroCopy}>
+        <span className={styles.eyebrow}>
+          {locale === 'fr' ? 'La vidéothèque' : locale === 'es' ? 'La videoteca' : 'The video library'}
+        </span>
+        <h1>{heroTitle}</h1>
+        <p>{heroSubtitle || heroLead}</p>
       </header>
+    </section>
+  );
+}
+
+export function ExamplesFamilyIntro({ body, label, locale }: ExamplesFamilyIntroProps) {
+  return (
+    <section className={styles.familyIntro} aria-labelledby="examples-family-guide-title">
+      <div>
+        <span className={styles.eyebrow}>
+          {locale === 'fr' ? 'Après les vidéos' : locale === 'es' ? 'Después de los vídeos' : 'Beyond the videos'}
+        </span>
+        <h2 id="examples-family-guide-title">
+          {locale === 'fr'
+            ? `Explorer la famille ${label}`
+            : locale === 'es'
+              ? `Explora la familia ${label}`
+              : `Explore the ${label} family`}
+        </h2>
+      </div>
+      <p>{body}</p>
     </section>
   );
 }
@@ -155,45 +186,48 @@ export function ExamplesModelLinksSection({
   const pricingCallout = resolveExamplesPricingCallout(selectedEngine, locale, pricingPath);
 
   return (
-    <section className="mx-auto max-w-5xl">
-      <div className="flex flex-col items-center gap-3 text-sm text-text-secondary">
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-            {usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}
+    <section className={styles.modelSection} aria-labelledby="examples-model-pages-title">
+      <div className={styles.sectionHeading}>
+        <div>
+          <span className={styles.eyebrow}>
+            {locale === 'fr' ? 'Les modèles' : locale === 'es' ? 'Los modelos' : 'The models'}
           </span>
-          {primaryModelLinks.map((model) => (
-            <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-              {model.label}
+          <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}</h2>
+        </div>
+        <Link href={pricingPath} className={styles.textAction}>
+          {pricingLinkLabel}<span aria-hidden="true"> ↗</span>
+        </Link>
+      </div>
+      <div className={styles.modelGrid}>
+        {primaryModelLinks.map((model, index) => (
+          <Link key={model.slug} href={model.href} className={styles.modelLink}>
+            <span className={styles.linkIndex}>{String(index + 1).padStart(2, '0')}</span>
+            <span className={styles.modelName}>{model.label}</span>
+            <span className={styles.linkArrow} aria-hidden="true">↗</span>
+          </Link>
+        ))}
+      </div>
+      {supportedOlderModelLinks.length ? (
+        <div className={styles.olderModels}>
+          <span className={styles.eyebrow}>{supportedOlderVersionLabel}</span>
+          {supportedOlderModelLinks.map((model) => (
+            <Link key={model.slug} href={model.href} className={styles.textAction}>
+              {model.label}<span aria-hidden="true"> ↗</span>
             </Link>
           ))}
-          <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
-            {pricingLinkLabel}
+        </div>
+      ) : null}
+      {pricingCallout ? (
+        <div className={styles.pricingCallout}>
+          <span>
+            <strong>{pricingCallout.title}</strong>
+            <span>{pricingCallout.body}</span>
+          </span>
+          <Link href={pricingCallout.href} className={styles.textAction}>
+            {pricingLinkLabel}<span aria-hidden="true"> ↗</span>
           </Link>
         </div>
-        {supportedOlderModelLinks.length ? (
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-              {supportedOlderVersionLabel}
-            </span>
-            {supportedOlderModelLinks.map((model) => (
-              <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-                {model.label}
-              </Link>
-            ))}
-          </div>
-        ) : null}
-        {pricingCallout ? (
-          <div className="flex w-full flex-col gap-2 rounded-[10px] border border-hairline bg-surface/75 px-4 py-3 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              <span className="block text-sm font-semibold text-text-primary">{pricingCallout.title}</span>
-              <span className="mt-1 block text-xs leading-5 text-text-secondary">{pricingCallout.body}</span>
-            </span>
-            <Link href={pricingCallout.href} className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover">
-              {pricingLinkLabel}
-            </Link>
-          </div>
-        ) : null}
-      </div>
+      ) : null}
     </section>
   );
 }
@@ -202,26 +236,15 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
   if (!sections?.length) return null;
 
   return (
-    <section className="grid gap-3 md:grid-cols-3">
-      {sections.map((section) => (
+    <section className={styles.guidanceGrid}>
+      {sections.map((section, index) => (
         <article
           key={section.title}
-          className="rounded-[20px] border border-hairline/80 bg-surface/85 px-4 py-4 text-left shadow-sm"
+          className={styles.guidanceItem}
         >
-          <div className="min-w-0">
-            <h2 className="text-sm font-semibold leading-tight text-text-primary">{section.title}</h2>
-            <p
-              className="mt-2 text-xs leading-relaxed text-text-secondary/90"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {section.body}
-            </p>
-          </div>
+          <span className={styles.linkIndex}>{String(index + 1).padStart(2, '0')}</span>
+          <h2>{section.title}</h2>
+          <p>{section.body}</p>
         </article>
       ))}
     </section>
@@ -328,7 +351,7 @@ export function ExamplesPaginationNav({
 
 export function ExamplesSummarySection({ longDescription, modelLandingSummary }: ExamplesSummarySectionProps) {
   return (
-    <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+    <section className={styles.summary}>
       <p>{modelLandingSummary ?? longDescription}</p>
     </section>
   );
@@ -337,19 +360,22 @@ export function ExamplesSummarySection({ longDescription, modelLandingSummary }:
 export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNextStepsSectionProps) {
   const mcpLink = getMcpInternalLink(locale, 'examples');
   return (
-    <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-      <h2 className="text-lg font-semibold text-text-primary">
-        {locale === 'fr' ? 'Aller plus loin' : locale === 'es' ? 'Siguientes pasos' : 'Next steps'}
-      </h2>
-      <div className="mt-3 flex flex-wrap gap-3 text-sm">
+    <section className={styles.nextSteps}>
+      <div className={styles.sectionHeading}>
+        <span className={styles.eyebrow}>
+          {locale === 'fr' ? 'Continuer' : locale === 'es' ? 'Continuar' : 'Keep exploring'}
+        </span>
+        <h2>{locale === 'fr' ? 'Aller plus loin' : locale === 'es' ? 'Siguientes pasos' : 'Next steps'}</h2>
+      </div>
+      <div className={styles.nextGrid}>
         {nextStepLinks.map((item) => (
-          <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
-            {item.label}
+          <Link key={item.label} href={item.href} className={styles.nextLink}>
+            <span>{item.label}</span><span aria-hidden="true">↗</span>
           </Link>
         ))}
         {mcpLink ? (
-          <Link href={mcpLink.href} className="font-semibold text-brand hover:text-brandHover">
-            {mcpLink.label}
+          <Link href={mcpLink.href} className={styles.nextLink}>
+            <span>{mcpLink.label}</span><span aria-hidden="true">↗</span>
           </Link>
         ) : null}
       </div>
@@ -361,13 +387,16 @@ export function ExamplesFaqSection({ faqBlock }: ExamplesFaqSectionProps) {
   if (!faqBlock.items.length) return null;
 
   return (
-    <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-      <h2 className="text-lg font-semibold text-text-primary">{faqBlock.title}</h2>
-      <div className="mt-4 space-y-3">
+    <section className={styles.faq}>
+      <div className={styles.sectionHeading}>
+        <span className={styles.eyebrow}>FAQ</span>
+        <h2>{faqBlock.title}</h2>
+      </div>
+      <div className={styles.faqList}>
         {faqBlock.items.map((item) => (
-          <details key={item.question} className="rounded-lg border border-hairline bg-surface px-4 py-3">
-            <summary className="cursor-pointer text-sm font-semibold text-text-primary">{item.question}</summary>
-            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.answer}</p>
+          <details key={item.question} className={styles.faqItem}>
+            <summary>{item.question}<span aria-hidden="true">+</span></summary>
+            <p>{item.answer}</p>
           </details>
         ))}
       </div>

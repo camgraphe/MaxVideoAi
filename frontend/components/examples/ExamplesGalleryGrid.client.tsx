@@ -32,6 +32,8 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
     onVisibility={preview.onVisibility} onIntent={preview.setIntent} onOpen={reader.open} />;
   const pauseLabel=locale==='fr'?'Pause des aperçus':locale==='es'?'Pausar vistas previas':'Pause previews';
   const resumeLabel=locale==='fr'?'Animer les aperçus':locale==='es'?'Animar vistas previas':'Animate previews';
+  const continuationLabel=locale==='fr'?'Encore des vidéos':locale==='es'?'Más vídeos':'More videos';
+  const pageCountLabel=locale==='fr'?'sur cette page':locale==='es'?'en esta página':'on this page';
   return <div>
     {reader.selected && <ExampleReader id={reader.selected} locale={locale} onClose={reader.close} navigationError={reader.navigationError} navigation={{previous:()=>void reader.step(-1),next:()=>void reader.step(1),canPrevious:reader.canPrevious,canNext:reader.canNext,busy:reader.busy}}/>}
     <div className="mb-3 flex justify-end">
@@ -41,6 +43,7 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
       </button>
     </div>
     {opening.length?<div className={styles.opening} data-gallery-opening>{opening.map((video,index)=>card(video,index===0?'lead':index===1?'portrait':'side'))}</div>:null}
+    {opening.length>0&&rest.length>0?<div className={styles.continuationHeading}><h2>{continuationLabel}</h2><span>{rest.length} {pageCountLabel}</span></div>:null}
     <div className={styles.gallery}>{rest.map(video=><div key={video.id} className={styles.item} style={{'--video-ratio':galleryVideoRatio(video)} as CSSProperties}>{card(video)}</div>)}</div>
   </div>;
 }

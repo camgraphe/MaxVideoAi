@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import styles from './examples-editorial.module.css';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
@@ -8,6 +9,7 @@ import { ExamplesEngineFilterNav } from './examples-engine-filter-nav';
 import { ExamplesJsonLdScripts } from './examples-jsonld-scripts';
 import {
   ExamplesFaqSection,
+  ExamplesFamilyIntro,
   ExamplesGallerySection,
   ExamplesIntroHero,
   ExamplesModelLandingCardsSection,
@@ -83,6 +85,7 @@ type ExamplesPageViewProps = {
     body: string;
   }>;
   modelLandingSummary?: string;
+  modelLandingLabel?: string;
   modelLinks: ExamplesModelLink[];
   modelPagesLabel: string;
   nextHref: ExamplesPaginationHref;
@@ -124,6 +127,7 @@ export function ExamplesPageView({
   hasPreviousPage,
   heroBody,
   heroLead,
+  heroSubtitle,
   heroTitle,
   initialDesktopBatch,
   initialExamples,
@@ -134,6 +138,7 @@ export function ExamplesPageView({
   locale,
   longDescription,
   modelLandingSections,
+  modelLandingLabel,
   modelLandingSummary,
   modelLinks,
   modelPagesLabel,
@@ -156,8 +161,11 @@ export function ExamplesPageView({
   totalPages,
   usesCurrentAndSupportedBlocks,
 }: ExamplesPageViewProps) {
-
-  const familyNotesLabel = locale === 'fr' ? 'Notes sur la famille' : locale === 'es' ? 'Notas de la familia' : 'Family notes';
+  const hubSubtitle = locale === 'fr'
+    ? 'Explorez les vidéos. Retrouvez leur prompt. Créez la vôtre.'
+    : locale === 'es'
+      ? 'Explora los vídeos. Copia el prompt. Crea tu versión.'
+      : 'Explore the videos. Find the prompt. Create your own.';
 
   return (
     <>
@@ -177,7 +185,12 @@ export function ExamplesPageView({
         )}
       >
         <div className="space-y-6 sm:space-y-8">
-          <ExamplesIntroHero heroLead={heroLead} heroSubtitle={locale === 'fr' ? 'Explorez les vidéos. Retrouvez leur prompt. Créez la vôtre.' : locale === 'es' ? 'Explora los vídeos. Copia el prompt. Crea tu versión.' : 'Explore the videos. Find the prompt. Create your own.'} heroTitle={heroTitle} />
+          <ExamplesIntroHero
+            heroLead={heroLead}
+            heroSubtitle={isModelLanding ? heroSubtitle : hubSubtitle}
+            heroTitle={heroTitle}
+            locale={locale}
+          />
 
           <ExamplesGallerySection
             audioAvailableLabel={galleryUiCopy.audioAvailable}
@@ -198,15 +211,6 @@ export function ExamplesPageView({
             sort={sort}
           />
 
-          {isModelLanding && heroBody ? (
-            <section className="mx-auto w-full max-w-4xl">
-              <details className="rounded-[12px] border border-hairline bg-surface/75 px-4 py-3 text-sm text-text-secondary shadow-sm">
-                <summary className="cursor-pointer font-semibold text-text-primary">{familyNotesLabel}</summary>
-                <p className="mt-3 leading-relaxed text-text-secondary/90">{heroBody}</p>
-              </details>
-            </section>
-          ) : null}
-
           <ExamplesPaginationNav
             currentPage={currentPage}
             displayTotalPages={displayTotalPages}
@@ -220,28 +224,34 @@ export function ExamplesPageView({
             show={totalPages > 1}
           />
 
-          <ExamplesModelLinksSection
-            currentModelPagesLabel={currentModelPagesLabel}
-            isModelLanding={isModelLanding}
-            locale={locale}
-            modelLinks={modelLinks}
-            modelPagesLabel={modelPagesLabel}
-            pricingLinkLabel={pricingLinkLabel}
-            pricingPath={pricingPath}
-            primaryModelLinks={primaryModelLinks}
-            selectedEngine={selectedEngine}
-            supportedOlderModelLinks={supportedOlderModelLinks}
-            supportedOlderVersionLabel={supportedOlderVersionLabel}
-            usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
-          />
+          <div className={styles.editorial}>
+            {isModelLanding && heroBody && modelLandingLabel ? (
+              <ExamplesFamilyIntro body={heroBody} label={modelLandingLabel} locale={locale} />
+            ) : null}
 
-          <ExamplesModelLandingCardsSection sections={modelLandingSections} />
+            <ExamplesModelLinksSection
+              currentModelPagesLabel={currentModelPagesLabel}
+              isModelLanding={isModelLanding}
+              locale={locale}
+              modelLinks={modelLinks}
+              modelPagesLabel={modelPagesLabel}
+              pricingLinkLabel={pricingLinkLabel}
+              pricingPath={pricingPath}
+              primaryModelLinks={primaryModelLinks}
+              selectedEngine={selectedEngine}
+              supportedOlderModelLinks={supportedOlderModelLinks}
+              supportedOlderVersionLabel={supportedOlderVersionLabel}
+              usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
+            />
 
-          <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLandingSummary} />
+            <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLandingSummary} />
 
-          <ExamplesNextStepsSection locale={locale} nextStepLinks={nextStepLinks} />
+            <ExamplesModelLandingCardsSection sections={modelLandingSections} />
 
-          <ExamplesFaqSection faqBlock={faqBlock} />
+            <ExamplesNextStepsSection locale={locale} nextStepLinks={nextStepLinks} />
+
+            <ExamplesFaqSection faqBlock={faqBlock} />
+          </div>
         </div>
 
         <ExamplesJsonLdScripts
