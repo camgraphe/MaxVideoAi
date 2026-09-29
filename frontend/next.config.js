@@ -96,6 +96,9 @@ const nextConfig = {
   compress: true,
   trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
+  experimental: {
+    webpackMemoryOptimizations: true,
+  },
   images: {
     deviceSizes: imageOptimizer.deviceSizes,
     imageSizes: imageOptimizer.imageSizes,

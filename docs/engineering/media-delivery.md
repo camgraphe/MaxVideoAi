@@ -331,7 +331,7 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 
 ### Model editorial hero framing (redesign D81)
 
-The redesign's `ModelDecisionMediaCard` declares `data-media-kind` from the resolved playable source. `frontend/src/styles/marketing-models.css` crops video and its poster together with `object-fit: cover` inside the existing 2.15 desktop / 16:9 mobile frame, following the explicit design review. The full-render link preserves access to the uncropped original. Image-only heroes use a 16:9 frame and `contain` so typography and composition are not cut off. This is presentation only: keep `ModelHeroMedia`, priority, source identity and public playback policy unchanged. Do not claim loading gains from a crop or a shorter introduction; compare equivalent production builds before shipping changes to initial media loading.
+`ModelDecisionMediaCard` declares `data-media-kind` from the resolved playable source. Model heroes use a 16:9 frame at desktop and mobile widths; video and poster use `object-fit: cover`, while image-only heroes use `contain` to preserve typography and composition. For galleries without admin curation, prefer a reviewed landscape video; preserve the order of admin-curated galleries. Video hero badges describe the selected render's audio, duration and aspect ratio; capability claims belong in the specs section. The full-render link preserves access to the original. Keep `ModelHeroMedia` priority and public playback policy unchanged. Compare equivalent production builds before claiming initial-loading gains.
 
 
 ### Tools illustrations and workspace captures (redesign D84)

@@ -12,7 +12,7 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     demo: null,
   },
   'veo-3-1': {
-    hero: 'job_a3e088db-b1e2-430f-83b3-2efce518c282',
+    hero: 'job_680c9803-172b-4179-950b-e56d288456c2',
     demo: 'job_8547a19e-ebad-4376-8889-1d88355c0f52',
   },
   'veo-3-1-fast': {
@@ -106,6 +106,10 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
   'seedance-1-5-pro': {
     hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
     demo: 'job_b748b50c-30bc-42ba-a83b-208abbd4fb7f',
+  },
+  'seedance-2-5': {
+    hero: 'job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9',
+    demo: null,
   },
   'seedance-2-0': {
     hero: 'job_39509619-83fe-4f46-8a15-c164b17c414e',

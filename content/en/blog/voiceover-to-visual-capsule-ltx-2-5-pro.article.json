@@ -1,0 +1,584 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "voiceover-to-visual-capsule-ltx-2-5-pro",
+  "publication": {
+    "articleId": "6bde4b19-e99e-4fe2-8e67-7ac176782adb",
+    "version": 1,
+    "digest": "e44b0cf4b841630f363f230554d0e1decae6ee6c22c0385cfcb3bc834484de70",
+    "publishedAt": "2026-09-28T13:07:12.542Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "voiceover-to-visual-capsule-ltx-2-5-pro",
+    "title": "Turn a Voiceover into a Focused Visual Capsule with LTX 2.5 Pro",
+    "description": "Learn how to translate one narration cue into a clear visual idea, prepare the required audio and optional opening image, review the candidate clip, and finish the capsule with titles and captions in an external editor.",
+    "keywords": [
+      "voiceover to video",
+      "LTX 2.5 Pro",
+      "audio-to-video",
+      "visual capsule",
+      "video prompt",
+      "narrated video",
+      "captioned video",
+      "MaxVideoAI"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "An illustrated reviewer examines one page beside a separate audio waveform.",
+        "caption": "Illustration. One narration cue, one deliberate visual idea."
+      },
+      {
+        "id": "one-cue-one-action",
+        "type": "text",
+        "heading": "Give one narration cue one visual job",
+        "paragraphs": [
+          {
+            "text": "Your voiceover is approved, but the capsule still needs a picture that earns its place. Instead of illustrating every noun, assign one visible action to one useful narration cue. The result is a focused shot you can later combine with the approved narration, titles and captions in an external editor.",
+            "sourceIds": []
+          },
+          {
+            "text": "Imagine the training line: “Before you share a document, pause and check that it is the version you intend to send.” A restrained shot of a reviewer examining one page supports that instruction without pretending to reproduce every word. The narration remains the editor’s timing reference, not a promise of automatic word-by-word synchronization.",
+            "sourceIds": []
+          },
+          {
+            "text": "Build the shot with a compact worksheet before writing a prompt. This separates the message from decorative ideas and gives you a clear intention against which to judge any candidate clip.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Audio cue: ",
+                "bold": true
+              },
+              {
+                "text": "the approved sentence about checking a document before sharing it. "
+              },
+              {
+                "text": "Intended message: ",
+                "bold": true
+              },
+              {
+                "text": "pause and verify the correct version. "
+              },
+              {
+                "text": "One visible action: ",
+                "bold": true
+              },
+              {
+                "text": "a reviewer slowly examines one page. "
+              },
+              {
+                "text": "Scene: ",
+                "bold": true
+              },
+              {
+                "text": "a quiet desk with no competing activity. "
+              },
+              {
+                "text": "Camera: ",
+                "bold": true
+              },
+              {
+                "text": "a restrained oblique medium view. "
+              },
+              {
+                "text": "Protected details: ",
+                "bold": true
+              },
+              {
+                "text": "one reviewer, one page, a clear focal point and a composed ending."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "text": "Now compare three possible scenes against that same job: making the checking action immediately understandable.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "three-visual-intentions",
+        "type": "media",
+        "assetId": "three-visual-intentions",
+        "heading": "Three ways to picture the same message",
+        "presentation": "single",
+        "alt": "Three illustrated alternatives: a reviewer checking one page, a quiet office, and a distracting swirl of documents.",
+        "caption": "Illustration. A checking action, an office atmosphere and a document montage offer different support for the same narration."
+      },
+      {
+        "id": "choose-the-supporting-scene",
+        "type": "comparison",
+        "heading": "Choose the scene that makes the message clearest",
+        "columns": [
+          "Visual choice",
+          "What it communicates",
+          "Decision for this cue"
+        ],
+        "rows": [
+          [
+            "A reviewer checking one page",
+            "The viewer can see the pause and verification described by the narration.",
+            "Choose this option. It turns the instruction into one readable action without competing with the voiceover."
+          ],
+          [
+            "A quiet office atmosphere",
+            "The setting conveys calm and professionalism, but the document check remains unstated.",
+            "Keep it only as atmosphere or a separate cutaway; it is too indirect for the main shot."
+          ],
+          [
+            "A fast montage of documents",
+            "The movement suggests paperwork and activity, but multiple pages divide attention.",
+            "Reject it for this cue. Its spectacle competes with the simple instruction to check one version."
+          ]
+        ]
+      },
+      {
+        "id": "prepare-the-inputs",
+        "type": "comparison",
+        "heading": "Decide whether the opening needs an image",
+        "columns": [
+          "Decision point",
+          "Without an orientation image",
+          "With an orientation image"
+        ],
+        "rows": [
+          [
+            "Required and optional inputs",
+            "Supply one private source-audio item. A prompt is optional, but the recommended scene description helps define the single checking action.",
+            "Supply one private source-audio item and no more than one Optional first frame. A prompt remains optional, but the recommended scene description helps connect the image to the intended action."
+          ],
+          [
+            "What each input does",
+            "The approved narration provides the timing reference. The visual description asks for one reviewer slowly examining one page with restrained framing.",
+            "The narration and visual description keep the same roles. The image additionally indicates an opening composition or subject appearance."
+          ],
+          [
+            "When this branch helps",
+            "Choose this when the exact starting arrangement is flexible and the visual description provides enough direction.",
+            "Choose this when the reviewer’s position, page placement, identity reference or opening framing matters enough to specify visually."
+          ],
+          [
+            "Practical limitation",
+            "The opening composition is less specifically directed, so judge the resulting candidate against the narration rather than assuming automatic synchronization.",
+            "The image provides guidance, not a guarantee that its composition, identity details or page placement will be preserved."
+          ],
+          [
+            "Choice for the fictional example",
+            "Start here if a restrained reviewer-and-page scene is sufficient.",
+            "Use this branch only if you need to establish details such as the reviewer on the left, the page near the center or clear lower-frame space for captions."
+          ],
+          [
+            "Preparation boundary",
+            "Record and clean the narration outside MaxVideoAI, then supply the approved segment and recommended visual description.",
+            "Prepare the narration and any reference image outside MaxVideoAI before supplying them to the same LTX 2.5 Pro audio-to-video workflow."
+          ],
+          [
+            "What acceptance establishes",
+            "Accepted source-audio duration provides the basis for pricing. It does not establish whether the imagery will support each spoken phrase.",
+            "Accepted audio and image inputs provide material for a candidate generation. They do not guarantee preservation, semantic relevance or synchronization."
+          ]
+        ]
+      },
+      {
+        "id": "audio-to-candidate-flow",
+        "type": "diagram",
+        "heading": "From source audio to a candidate clip",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Private source audio"
+          },
+          {
+            "kind": "model",
+            "label": "LTX 2.5 Pro audio-to-video"
+          },
+          {
+            "kind": "video",
+            "label": "Candidate clip"
+          }
+        ],
+        "connections": [
+          "Supply audio; optionally add a prompt and first frame",
+          "Generate, then review against the narration"
+        ],
+        "alt": "Private source audio is supplied to LTX 2.5 Pro audio-to-video, producing a candidate clip for review.",
+        "caption": "Source audio is required. A prompt and one opening image are optional."
+      },
+      {
+        "id": "orientation-image-decision",
+        "type": "comparison",
+        "heading": "Choose whether the opening composition needs an image",
+        "columns": [
+          "Decision",
+          "Without an orientation image",
+          "With an orientation image"
+        ],
+        "rows": [
+          [
+            "What you specify",
+            "The audio and recommended scene description, without using an image to define the opening frame.",
+            "The audio, scene description and one opening reference for framing or subject appearance."
+          ],
+          [
+            "When it helps",
+            "Use this branch when the exact starting arrangement is flexible and the prompt provides enough visual direction.",
+            "Use this branch when the reviewer’s position, page placement or opening framing matters enough to show visually."
+          ],
+          [
+            "Practical limitation",
+            "The opening composition remains less specifically directed.",
+            "The image provides guidance, not a guarantee that its composition or details will be preserved."
+          ],
+          [
+            "Choice for this example",
+            "Start here if a restrained reviewer-and-page scene is sufficient.",
+            "Choose this only if you need to establish the reviewer to the left, the page near the center and clear lower-frame space for later captions."
+          ]
+        ]
+      },
+      {
+        "id": "opening-composition-detail",
+        "type": "media",
+        "assetId": "opening-composition-detail",
+        "heading": "Give the page a clear place in the frame",
+        "presentation": "single",
+        "alt": "A reviewer and one page fill a restrained composition, with uncluttered space along the lower edge.",
+        "caption": "Illustration. A possible opening reference for LTX 2.5 Pro: one reviewer, one page and space for captions added later."
+      },
+      {
+        "id": "describe-the-shot",
+        "type": "text",
+        "heading": "Describe one action the editor can judge",
+        "paragraphs": [
+          {
+            "text": "Whichever branch you choose, connect the opening composition to one visible action: an adult reviewer slowly examines a single page. Keeping one person, one page and one action makes it easier to judge whether the picture supports the narration rather than merely adding movement.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Keep the camera restrained. ",
+                "bold": true
+              },
+              {
+                "text": "An oblique medium view can hold the reviewer’s face and the page as the two focal subjects while leaving the checking action readable. End with the reviewer settled and the page still visible, giving the editor a composed frame on which to cut or hold."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "text": "Leave document wording, titles, captions and narration timing out of the visual request. Ask for abstract, unreadable page markings instead of legible text, and do not request word-level synchronization or a speaking performance. The approved voiceover remains separate, while editable language and final timing belong in the external edit.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "visual-prompt",
+        "type": "prompt",
+        "heading": "Copy and adapt the single-action prompt",
+        "template": "An adult reviewer with short dark hair and a muted teal shirt sits at a pale wood desk, slowly examining one cream-colored page. The reviewer’s face and the page remain the clear focal subjects. Show the scene in a restrained oblique medium view with steady, subtle camera movement. The reviewer makes one small hand adjustment while checking the page, then settles into a composed ending with the page still clearly visible. Use quiet warm lighting and an uncluttered setting. Keep all page markings abstract and unreadable. No speaking, no additional documents, no added titles or on-screen text.",
+        "note": "This prompt defines a focused visual intention rather than guaranteed output details. If you use an orientation image, keep its reviewer position, page placement and camera angle compatible with this description."
+      },
+      {
+        "id": "before-you-generate",
+        "type": "text",
+        "heading": "Confirm the inputs and quote before you generate",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "With the visual intention defined, open the documented "
+              },
+              {
+                "text": "LTX 2.5 Pro audio-to-video workflow",
+                "href": "https://maxvideoai.com/models/ltx-2-5-pro"
+              },
+              {
+                "text": " and prepare the approved narration segment as your private source audio. Add the visual prompt, and include one opening image only if you decided that the initial composition needs a visual reference."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Before committing, check that MaxVideoAI accepts the current inputs and review the displayed quote. "
+              },
+              {
+                "text": "Pricing is based on the trusted duration of the source audio",
+                "bold": true
+              },
+              {
+                "text": ", and MaxVideoAI confirms the quote before generation. Input acceptance or audio duration does not, by itself, promise that the imagery will follow each spoken phrase or support the intended message."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "generate-in-maxvideoai",
+        "type": "steps",
+        "heading": "Generate one candidate clip in MaxVideoAI",
+        "steps": [
+          {
+            "title": "Open the audio-to-video workflow",
+            "body": "Choose the documented LTX 2.5 Pro audio-to-video workflow rather than carrying over settings from a text-to-video project."
+          },
+          {
+            "title": "Supply the approved narration segment",
+            "body": "Add the private source audio that contains the bounded cue you want this shot to support."
+          },
+          {
+            "title": "Add the visual direction",
+            "body": "Use the single-action prompt describing the reviewer, one page, restrained framing and a composed ending."
+          },
+          {
+            "title": "Include an opening image only if chosen",
+            "body": "Supply no more than one Optional first frame. Use it when the opening placement of the reviewer and page matters enough to specify visually, without assuming that every detail will be preserved."
+          },
+          {
+            "title": "Check the preflight information",
+            "body": "Confirm that the current inputs are accepted and review the quoted price before generating. If either differs from what you expected, pause and revise the inputs rather than guessing about unsupported limits or controls."
+          },
+          {
+            "title": "Generate a candidate for review",
+            "body": "Treat the resulting video as a candidate clip, not a finished capsule. Its usefulness depends on whether the visible action supports the approved narration."
+          }
+        ]
+      },
+      {
+        "id": "review-and-finish",
+        "type": "steps",
+        "heading": "Keep the useful picture, then finish the capsule",
+        "steps": [
+          {
+            "title": "Judge the candidate against the narration",
+            "body": "Return to the instruction to pause and check a document before sharing it. Watch the candidate with the approved narration and ask whether one person checking one page is immediately understandable. Judge this non-speaking scene for semantic support rather than lip sync."
+          },
+          {
+            "title": "Check the opening, action and ending",
+            "body": "Confirm that the reviewer and page are easy to locate at the start, the checking action remains the focal point and the reviewer settles with the page visible at the end. The accompanying illustrated storyboard is a reference for that intended progression, not a generated result."
+          },
+          {
+            "title": "Retain or reject deliberately",
+            "body": "Retain the clip when its framing clarifies the document check and provides a clean edit point. Reject or revise it when spectacle obscures the action, unwanted lettering attracts attention, extra documents divide the focus, details drift distractingly or a polished image communicates a different idea. Treat these as review questions, not defects assumed to be present."
+          },
+          {
+            "title": "Inspect the candidate’s existing audio",
+            "body": "Listen before arranging the approved narration. Decide deliberately whether to mute, replace or retain any audio already in the clip so overlapping voices or unintended sound do not compete with the message."
+          },
+          {
+            "title": "Picture lane: preserve the useful action",
+            "body": "Import the retained candidate into an external editor and trim or reposition it around the spoken cue. Keep the reviewer and page clear, preserve room for captions and use the composed ending as a deliberate cut or hold point."
+          },
+          {
+            "title": "Narration lane: protect the approved message",
+            "body": "Add the cleaned, approved narration as the timing reference. Recording and cleanup remain outside MaxVideoAI, as do final timing and mixing decisions."
+          },
+          {
+            "title": "Titles and captions lane: keep language editable",
+            "body": "Add titles separately and create captions from the narration transcript. In Premiere, captions created from a transcript can be adjusted for length, duration, gaps, line count and style. Review every word and its timing against the approved recording rather than assuming the transcript is final."
+          },
+          {
+            "title": "Review the assembled capsule",
+            "body": "Play the edit with sound on. Confirm that the checking action lands with the relevant sentence, the narration remains intelligible, captions do not cover the page and the ending still offers a clean place to finish or transition."
+          }
+        ]
+      },
+      {
+        "id": "checking-action-storyboard",
+        "type": "media",
+        "assetId": "checking-action-storyboard",
+        "heading": "A pause, a check, a composed ending",
+        "presentation": "single",
+        "alt": "Three storyboard frames show a reviewer holding a page, examining it and settling into a still ending.",
+        "caption": "Illustration. The intended action and ending provide a reference for judging a candidate clip."
+      },
+      {
+        "id": "retain-or-reject-choice",
+        "type": "comparison",
+        "heading": "Keep the clip only if it clarifies the check",
+        "columns": [
+          "Review question",
+          "Retain when",
+          "Reject or revise when"
+        ],
+        "rows": [
+          [
+            "Is the action immediately understandable?",
+            "The reviewer is clearly examining one page.",
+            "Movement or spectacle obscures the document check."
+          ],
+          [
+            "Does the framing support the message?",
+            "The reviewer and page remain the obvious focal subjects.",
+            "Extra documents, competing subjects or camera movement pull attention elsewhere."
+          ],
+          [
+            "Do the details remain useful?",
+            "The page, reviewer and desk stay consistent enough to sustain the scene.",
+            "Changing page placement, drifting subject details or prominent unwanted lettering become distracting."
+          ],
+          [
+            "Is the clip relevant rather than merely impressive?",
+            "The picture reinforces the instruction to pause and verify a document.",
+            "The imagery looks polished but communicates a different idea."
+          ],
+          [
+            "Does the ending give you an edit point?",
+            "The reviewer settles with the page still visible.",
+            "A new action begins, the composition breaks down or the shot ends without a clean place to cut."
+          ]
+        ]
+      },
+      {
+        "id": "finish-in-your-editor",
+        "type": "text",
+        "heading": "Bring the retained picture and approved narration together",
+        "paragraphs": [
+          {
+            "text": "Before placing the approved narration, inspect and listen to any audio already present in the candidate clip. Decide deliberately whether to mute, replace or retain it; otherwise, overlapping voices or unintended sound may compete with the message.",
+            "sourceIds": []
+          },
+          {
+            "text": "Place the retained picture in your external editor, then arrange the approved narration as the timing reference. Trim or reposition the shot around the spoken cue, while preserving the clearest view of the reviewer and page. Keep titles, final timing and sound mixing in this editing stage rather than treating generation as the finished capsule.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "For example, "
+              },
+              {
+                "text": "Premiere can create captions from a transcript",
+                "href": "https://helpx.adobe.com/premiere/desktop/add-text-images/insert-captions/create-captions.html"
+              },
+              {
+                "text": " and lets you adjust their length, duration, gaps, line count and style. Review the resulting wording and timing against the approved narration instead of assuming the transcript is final."
+              }
+            ],
+            "sourceIds": [
+              "source-6"
+            ]
+          },
+          {
+            "text": "Use the quiet area of the composition for readable captions, but check every frame rather than relying on one safe position. The finished capsule should preserve the checking action, keep the narration intelligible and let viewers read without covering the page that carries the idea.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "external-edit-map",
+        "type": "steps",
+        "heading": "Assign each element to a separate editing lane",
+        "steps": [
+          {
+            "title": "Picture lane: retain the useful action",
+            "body": "Import the chosen candidate clip and trim it so the reviewer’s document check remains clear. Position the opening around the narration cue, preserve space for captions and keep the composed ending as a clean cut point."
+          },
+          {
+            "title": "Narration lane: protect the approved message",
+            "body": "Add the cleaned, approved narration as the timing reference. After inspecting the candidate’s existing audio, mute, replace or retain that sound intentionally so voices do not double and incidental audio does not compete with the instruction."
+          },
+          {
+            "title": "Titles and captions lane: keep language editable",
+            "body": "Create captions from the narration transcript, then review the words against the approved recording. Adjust timing, caption length, gaps, line breaks and style for comfortable reading, and add any title separately rather than embedding essential wording in the generated picture."
+          },
+          {
+            "title": "Final handoff: check picture and sound together",
+            "body": "Play the assembled capsule with sound on. Confirm that the checking action lands with the relevant sentence, captions do not cover the page, the mix keeps the narration clear and the ending still provides a deliberate place to finish or transition."
+          }
+        ]
+      },
+      {
+        "id": "external-finishing-handoff",
+        "type": "diagram",
+        "heading": "Finish the capsule outside generation",
+        "nodes": [
+          {
+            "kind": "video",
+            "label": "Retained candidate clip"
+          },
+          {
+            "kind": "file",
+            "label": "External editing project"
+          },
+          {
+            "kind": "video",
+            "label": "Finished captioned capsule"
+          }
+        ],
+        "connections": [
+          "Import clip and approved narration; inspect clip audio",
+          "Arrange picture, titles and captions; mix and export"
+        ],
+        "alt": "A retained clip enters an external editing project with the approved narration, then becomes a finished captioned capsule.",
+        "caption": "Arrange narration, titles and captions in the external edit, after checking the clip's existing audio."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "LTX 2.5 Pro",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/ltx-2-5-pro",
+      "retrievedAt": "2026-09-28"
+    },
+    {
+      "id": "source-6",
+      "title": "Create Captions in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/add-text-images/insert-captions/create-captions.html",
+      "retrievedAt": "2026-09-28"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "a40fb8ffc810466e11339b091fdff5d5b1cc83835544c7fb9725f2e5dab763dc",
+      "url": "https://media.maxvideoai.com/editorial/published/a40fb8ffc810466e11339b091fdff5d5b1cc83835544c7fb9725f2e5dab763dc.webp"
+    },
+    {
+      "id": "three-visual-intentions",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "5aba2c7579ad54696a983007d6b2b161c9a455c0e08d416f82dc829f68bcf1a2",
+      "url": "https://media.maxvideoai.com/editorial/published/5aba2c7579ad54696a983007d6b2b161c9a455c0e08d416f82dc829f68bcf1a2.webp"
+    },
+    {
+      "id": "opening-composition-detail",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "b27bb40b69773f497f50f7c148a149cc0fda03d60dd312864eb7eb3dbc7f8f1b",
+      "url": "https://media.maxvideoai.com/editorial/published/b27bb40b69773f497f50f7c148a149cc0fda03d60dd312864eb7eb3dbc7f8f1b.webp"
+    },
+    {
+      "id": "checking-action-storyboard",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1413af086007e55c46a2b08a02c19f0b256ff632de45abfe9936fe69405faceb",
+      "url": "https://media.maxvideoai.com/editorial/published/1413af086007e55c46a2b08a02c19f0b256ff632de45abfe9936fe69405faceb.webp"
+    }
+  ]
+}
