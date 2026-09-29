@@ -18,6 +18,10 @@ export type EffectiveCustomerTariffState =
   | { status: 'loaded'; revision: number; active: boolean; versionedCells: ManualTariffCell[]; databaseCells: ManualTariffCell[] }
   | { status: 'unavailable' };
 
+export function customerTariffsEnabledByCode(): boolean {
+  return versionedDocument.active === true;
+}
+
 function dateIso(value: Date | string): string {
   const date = value instanceof Date ? value : new Date(value);
   if (!Number.isFinite(date.getTime())) throw new Error('Invalid customer tariff date');

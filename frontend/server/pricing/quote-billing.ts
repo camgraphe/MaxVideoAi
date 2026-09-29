@@ -22,6 +22,12 @@ import {
   resolveServerBillingPolicy,
   type ResolveServerPricingPolicyDependencies,
 } from './resolve-pricing-policy';
+import {
+  customerTariffsEnabledByCode,
+  loadEffectiveCustomerTariffState,
+  type EffectiveCustomerTariffState,
+} from './customer-tariff-store';
+import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
 
 /** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
 export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string }): Promise<PricingSnapshot> {
@@ -47,6 +53,7 @@ export async function computeCanonicalBillingSnapshot(
   dependencies: {
     pricingPolicy?: ResolveServerPricingPolicyDependencies;
     membershipDiscounts?: Record<string, number>;
+    loadCustomerTariffState?: () => Promise<EffectiveCustomerTariffState>;
   } = {}
 ): Promise<PricingSnapshot> {
   const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
@@ -64,6 +71,27 @@ export async function computeCanonicalBillingSnapshot(
   const memberTierDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
+  if (dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
+    const tariffState = await (dependencies.loadCustomerTariffState ?? loadEffectiveCustomerTariffState)();
+    const manual = resolveCustomerTariffQuote({ context, facts: billingFacts.facts,
+      at: new Date().toISOString(), state: tariffState });
+    if (manual) {
+      return projectCanonicalQuoteToSnapshot({
+        quote: manual.quote,
+        base: billingFacts.base,
+        addons: billingFacts.addons,
+        vendorAccountId,
+        meta: {
+          ...billingFacts.meta,
+          pricingMode: 'manual_tariff',
+          customerTariffRevision: manual.revision,
+          customerTariffCellId: manual.quote.manualTariff.cellId,
+          engineLabel: context.engine.label,
+          engineVersion: context.engine.version,
+        },
+      });
+    }
+  }
   const policyDocument = getVersionedPricingPolicy();
   const profileId = policy.rule.compatibilityProfile ?? billingFacts.compatibilityProfileId;
   const compatibilityProfile: PricingCompatibilityProfile | undefined = policyDocument.compatibilityProfiles.find(
