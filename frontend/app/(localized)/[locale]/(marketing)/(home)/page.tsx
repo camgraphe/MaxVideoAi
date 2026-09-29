@@ -1,7 +1,7 @@
 import '@/styles/marketing-home.css';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
-import { buildHomePriceDemo } from './_lib/home-price-demo-data';
+import { buildCurrentHomePriceDemo } from './_lib/current-home-price-demo-data';
 import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
@@ -91,7 +91,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         <HomeToolsGallery locale={locale} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <HomePricingSection locale={locale} models={buildHomePriceDemo(locale)} copy={content.pricingTrust} />
+        <HomePricingSection locale={locale} models={await buildCurrentHomePriceDemo(locale)} copy={content.pricingTrust} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
         {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} locale={locale} /> : null}

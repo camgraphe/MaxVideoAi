@@ -14,7 +14,7 @@ import { PricingOtherSurfacesSection } from './_components/PricingOtherSurfacesS
 import { PricingPopularChecksSection } from './_components/PricingPopularChecksSection';
 import { PricingRefundsFaqSection } from './_components/PricingRefundsFaqSection';
 import { PricingVideoMatrixSection } from './_components/PricingVideoMatrixSection';
-import { buildPricingHubData } from './_lib/pricingHubData';
+import { buildCurrentPricingHubData } from './_lib/currentPricingHubData';
 import { PRICING_SLUG_MAP, buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from './_lib/pricing-jsonld';
 
 export const revalidate = 600;
@@ -39,7 +39,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
-  const pricingHub = buildPricingHubData(locale);
+  const pricingHub = await buildCurrentPricingHubData(locale);
   const faq = content.faq;
   const faqEntries = (faq.entries ?? []).slice(0, 12);
   const canonical = buildMetadataUrls(locale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;

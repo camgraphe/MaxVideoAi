@@ -101,18 +101,21 @@ export function CustomerTariffPanel() {
   const { data: scenario, error: scenarioError, isLoading: scenarioLoading, mutate: mutateScenario } =
     useSWR(scenarioUrl, getScenario);
   const exact = scenario?.modelId === selectedId ? scenario : null;
+  const exactScenarioId = exact?.scenarioId;
+  const exactStagedCents = exact?.stagedCents;
+  const exactCurrentCents = exact?.currentCents;
   const editable = data?.databaseStatus === 'loaded' && !data.active && exact?.currentCents != null;
   const historyUrl = data?.databaseStatus === 'loaded' && exact
     ? `/api/admin/pricing/tariffs/history?targetId=${encodeURIComponent(exact.tariffCellId)}` : null;
   const { data: history, mutate: mutateHistory } = useSWR(historyUrl, getHistory);
 
   useEffect(() => {
-    if (!exact) return;
-    setDraft(exact.stagedCents != null ? (exact.stagedCents / 100).toFixed(2)
-      : exact.currentCents != null ? (exact.currentCents / 100).toFixed(2) : '');
+    if (!exactScenarioId) return;
+    setDraft(exactStagedCents != null ? (exactStagedCents / 100).toFixed(2)
+      : exactCurrentCents != null ? (exactCurrentCents / 100).toFixed(2) : '');
     setPreview(null);
     setPendingProposal(null);
-  }, [exact?.scenarioId, exact?.stagedCents, exact?.currentCents]);
+  }, [exactScenarioId, exactStagedCents, exactCurrentCents]);
 
   const select = (modelId: string) => {
     if (busy) return;

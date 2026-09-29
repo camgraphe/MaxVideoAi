@@ -85,7 +85,7 @@ test('disabled app models have neither a purchasable Product nor a visible offer
 test('route passes one offer to both structured data and visible pricing, including legacy layouts', () => {
   const root = 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]';
   const layout = readFileSync(`${root}/_components/MarketingModelPageLayout.tsx`, 'utf8');
-  assert.equal((layout.match(/resolveModelPublicOffer\(engine, pricingEngine\)/g) ?? []).length, 1);
+  assert.equal((layout.match(/resolveCurrentModelPublicOffer\(engine, pricingEngine\)/g) ?? []).length, 1);
   assert.match(layout, /pricingEngine, publicOffer,/);
   assert.match(layout, /ModelDecisionPricingCard[^>]*offer=\{publicOffer\}[^>]*locale=\{locale\}/);
   assert.match(layout, /!templateData \? <ModelPublicOfferLine offer=\{publicOffer\} locale=\{locale\}/);

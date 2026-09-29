@@ -8,9 +8,12 @@ import {
   type CanonicalStoryboardSnapshotInput,
 } from './quote-billing';
 
-export function computeCanonicalPublicSnapshot(context: PricingContext, pricingPolicy?: ResolveServerPricingPolicyDependencies): Promise<PricingSnapshot> {
+export function computeCanonicalPublicSnapshot(
+  context: PricingContext,
+  dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {},
+): Promise<PricingSnapshot> {
   return computeCanonicalBillingSnapshot(context, {
-    pricingPolicy: { warn: () => undefined, ...pricingPolicy },
+    pricingPolicy: { ...dependencies.pricingPolicy, warn: () => undefined },
   });
 }
 

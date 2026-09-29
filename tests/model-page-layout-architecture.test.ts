@@ -129,7 +129,7 @@ test('model page layout delegates template page ownership', () => {
   const decisionCompareSource = readSource(decisionCompareSectionPath);
   const decisionSafetyFaqSource = readSource(decisionSafetyFaqSectionPath);
 
-  assert.match(layoutSource, /buildModelDecisionData/, 'layout should delegate template data building');
+  assert.match(layoutSource, /buildCurrentModelDecisionData/, 'layout should delegate current template data building');
   assert.match(layoutSource, /parseModelPromptingContent/, 'layout should validate exact-locale Prompt Lab content');
   assert.match(layoutSource, /buildModelPromptingViewModel/, 'layout should derive Prompt Lab display state once');
   assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the template hero');
@@ -143,7 +143,7 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionDataSource, /parseModelDecisionContent/);
   assert.match(decisionDataSource, /decisionContent:\s*unknown/);
   assert.match(modelPageSource, /decisionContent:\s*localized\.decision/);
-  assert.match(layoutSource, /decisionContent:\s*localizedContent\.decision/);
+  assert.match(layoutSource, /buildCurrentModelDecisionData\(engine, locale, localizedContent\.decision\)/);
   assert.doesNotMatch(
     decisionDataSource,
     /SEEDANCE_20_COPY|SEEDANCE_20_FAST_COPY|LTX_23_FAST_COPY|COPY_BY_MODEL_SLUG|buildSlugMap\('pricing'\)|Seedance 2\.0 or Fast\?/,

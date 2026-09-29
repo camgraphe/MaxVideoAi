@@ -25,7 +25,7 @@ export async function prepareExampleWatchDetailContext(dependencies: {
   loadOverrides: loadPricingPolicyOverrides,
 }): Promise<ExampleWatchDetailContext> {
   const [engines, overrides] = await Promise.all([dependencies.loadEngines(), dependencies.loadOverrides()]);
-  return { engines, quote: context => computeCanonicalPublicSnapshot(context, { loadOverrides: async () => overrides }) };
+  return { engines, quote: context => computeCanonicalPublicSnapshot(context, { pricingPolicy: { loadOverrides: async () => overrides } }) };
 }
 
 /** No schema/bootstrap writes on this public read path. Eligibility is rechecked on each open. */
