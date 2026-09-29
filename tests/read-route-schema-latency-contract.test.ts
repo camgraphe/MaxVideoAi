@@ -31,6 +31,13 @@ test('Billing GETs read migrated tables and preserve currency POST initializatio
   assert.match(get, /getWalletBalancesByCurrency\(userId, \{ throwOnError: true \}\)/);
 });
 
+test('shared video GET reads migrated storage while indexing PATCH retains initialization', () => {
+  const video = readFileSync('frontend/app/api/videos/[videoId]/route.ts', 'utf8');
+  const [get, patch] = video.split('export async function PATCH');
+  assert.doesNotMatch(get, /await ensureBillingSchema/);
+  assert.match(patch, /await ensureBillingSchema/);
+});
+
 test('pricing preflight uses the read-only engine catalog and disables fallback bootstrap', () => {
   assert.match(
     mediaAwarePreflightSource,

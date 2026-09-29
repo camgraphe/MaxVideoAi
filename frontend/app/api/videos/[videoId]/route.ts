@@ -27,7 +27,6 @@ export async function GET(_req: NextRequest, props: RouteParams) {
   }
 
   try {
-    await ensureBillingSchema();
     const video = await getVideoById(videoId);
     if (!video) {
       return privateJson({ ok: false, error: 'Not found' }, 404);
