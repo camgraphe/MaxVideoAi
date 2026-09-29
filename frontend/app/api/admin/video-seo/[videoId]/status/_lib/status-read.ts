@@ -32,4 +32,3 @@ export async function handleVideoSeoStatusGet(req: NextRequest, props: RoutePara
     return NextResponse.json({ ok: false, error: 'Video SEO status unavailable' }, { status: 503, headers: noStore });
   }
 }
-
