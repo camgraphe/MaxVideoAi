@@ -13,6 +13,8 @@ Inventaire du 29 septembre 2026, établi depuis les galeries publiques de la bra
 
 **Minimum : quatre nouvelles vidéos** (Happy Horse ×1, Grok ×2, FLUX ×1), plus le choix d'une verticale existante pour LTX. **Sélection recommandée : six nouvelles vidéos**, en ajoutant LTX 2.5 Pro ×1 et une deuxième horizontale Happy Horse 1.1 ×1.
 
+Des [prompts candidats issus des concepts retenus par Studio RS](example-gallery-social-prompts-2026-09-29.md) couvrent ces quatre besoins et les deux options. Ils restent des propositions créatives avant devis et génération.
+
 Pour LTX, trois verticales existantes sont disponibles dans le catalogue public : `job_cfcdb24a-b404-47b1-8e43-1eb45ee4daf9` (LTX 2.3 Pro, 6 s), `job_d2e0b731-ba85-498b-bf45-a1b17b468963` (LTX 2.3 Pro, 10 s) et `job_a757f656-43b8-47bc-83d2-0bd6728b320b` (LTX 2.3 Fast, 10 s). Choisir celle dont le cadrage et la qualité conviennent ; la placer dans l'ouverture sans dupliquer sa carte dans la suite de la galerie.
 
 ## Validation avant publication
