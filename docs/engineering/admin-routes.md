@@ -373,8 +373,11 @@ unmanaged preferred/featured additions. At most four model projections run
 concurrently; each reads at most 200 playlist videos plus the finite authored
 addition IDs. Counts retain legacy behavior when optional curation storage is absent.
 
-The picker opens the connected hub, otherwise the first connected family. It precedes
-the opening board and selected cards at narrow and desktop widths. Missing/historical
+The picker opens the connected hub, otherwise the first connected family. Its
+menu separates Examples & starters, Families, and Models; model submenus are
+grouped by family. Search reveals matching destinations across all sections,
+and reopening a selected model expands its family. It precedes the opening board
+and selected cards at narrow and desktop widths. Missing/historical
 entries are diagnostics, not aliases for active readers. Reserved `examples`,
 `marketing-examples`, `welcome`, and `starter` cannot be renamed or deleted, independent
 of configuration. Historical mismatches reject ordering and curation writes too.

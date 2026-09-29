@@ -75,29 +75,51 @@ test('dirty draft blocks destination selection without confirmation', async () =
     await act(async () => (view.dom.window.document.querySelector('[aria-label="Move item 2 up"]') as HTMLButtonElement).click());
     view.dom.window.confirm = () => false;
     await act(async () => (view.dom.window.document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    await act(async () => (view.dom.window.document.querySelector('[data-destination-section-toggle="families"]') as HTMLButtonElement).click());
     await act(async () => (view.dom.window.document.querySelector('[data-destination-id="family:wan"]') as HTMLButtonElement).click());
     assert.equal(view.requests.length, 0);
     assert.match(view.dom.window.document.querySelector('[data-destination-picker] button[aria-haspopup]')!.textContent!, /examples/i);
   } finally { await view.close(); }
 });
 
-test('groups_models_by_family', async () => {
-  const destinations = [destination('examples', 'examples', null), destination('starter', 'starter', 'starter'),
-    destination('family:wan', 'family', 'family:wan', 'wan'), destination('model:wan-3', 'model', 'model:wan-3', 'wan'),
-    destination('model:wan-4', 'model', 'model:wan-4', 'wan')];
-  destinations[3].path = '/models/wan-3'; destinations[4].path = '/models/wan-4';
+test('separates examples, families and models with models grouped by family', async () => {
+  const destinations = [destination('examples', 'examples', 'examples'), destination('starter', 'starter', 'starter'),
+    destination('family:wan', 'family', 'family:wan', 'wan'), destination('family:kling', 'family', 'family:kling', 'kling'),
+    destination('model:wan-3', 'model', 'model:wan-3', 'wan'), destination('model:wan-4', 'model', 'model:wan-4', 'wan'),
+    destination('model:kling-3', 'model', 'model:kling-3', 'kling')];
+  destinations[4].path = '/models/wan-3'; destinations[5].path = '/models/wan-4';
   const view = await mount(destinations);
   try {
     const { document } = view.dom.window;
     await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
-    assert.equal(document.querySelector('[data-destination-id="family:wan"]')?.getAttribute('aria-current'), 'true');
-    const ids = [...document.querySelectorAll('[data-destination-group="families"] [data-destination-id]')].map(el => el.getAttribute('data-destination-id'));
-    assert.deepEqual(ids, ['family:wan', 'model:wan-3', 'model:wan-4']);
+    assert.ok(document.querySelector('[data-destination-id="examples"]'));
+    assert.ok(document.querySelector('[data-destination-id="starter"]'));
+    assert.equal(document.querySelector('[data-destination-id="family:wan"]'), null);
+    assert.equal(document.querySelector('[data-destination-id="model:wan-3"]'), null);
+    await act(async () => (document.querySelector('[data-destination-section-toggle="families"]') as HTMLButtonElement).click());
+    assert.ok(document.querySelector('[data-destination-id="family:wan"]'));
+    assert.ok(document.querySelector('[data-destination-id="family:kling"]'));
+    assert.equal(document.querySelector('[data-destination-id="model:wan-3"]'), null);
+    await act(async () => (document.querySelector('[data-destination-section-toggle="models"]') as HTMLButtonElement).click());
+    assert.equal(document.querySelector('[data-destination-id="family:wan"]'), null);
+    assert.equal(document.querySelector('[data-destination-id="model:wan-3"]'), null);
+    await act(async () => (document.querySelector('[data-model-family-toggle="wan"]') as HTMLButtonElement).click());
+    assert.deepEqual([...document.querySelectorAll('[data-destination-group="models"] [data-destination-id]')]
+      .map(el => el.getAttribute('data-destination-id')), ['model:wan-3', 'model:wan-4']);
+    await act(async () => (document.querySelector('[data-model-family-toggle="kling"]') as HTMLButtonElement).click());
+    assert.deepEqual([...document.querySelectorAll('[data-destination-group="models"] [data-destination-id]')]
+      .map(el => el.getAttribute('data-destination-id')), ['model:kling-3']);
     const search = document.querySelector('[data-destination-picker] input[type="search"]') as HTMLInputElement;
     await act(async () => Simulate.change(search, { target: { value: '/models/wan-4' } }));
     assert.ok(document.querySelector('[data-destination-id="model:wan-4"]'));
     assert.equal(Boolean(document.querySelector('[data-destination-picker] [data-destination-id="model:wan-3"]')), false);
-    assert.equal(view.requests.length, 0);
+    await act(async () => (document.querySelector('[data-destination-id="model:wan-4"]') as HTMLButtonElement).click());
+    await act(async () => view.requests[0].resolve(Response.json({ ok: true, playlist: playlist('model:wan-4'), items: [] })));
+    await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    assert.equal(document.querySelector('[data-destination-section-toggle="models"]')?.getAttribute('aria-expanded'), 'true');
+    assert.equal(document.querySelector('[data-model-family-toggle="wan"]')?.getAttribute('aria-expanded'), 'true');
+    assert.ok(document.querySelector('[data-destination-id="model:wan-4"]'));
+    assert.equal(view.requests.length, 1);
   } finally { await view.close(); }
 });
 
@@ -120,6 +142,7 @@ test('shared playlist IDs keep the selected logical destination after a successf
     assert.match(document.querySelector('[data-destination-picker]')!.textContent!, /Starter video/);
     assert.equal(document.querySelector('[data-destination-picker] a[data-live-page]')?.getAttribute('href'), '/app?tab=starter');
     await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    await act(async () => (document.querySelector('[data-destination-section-toggle="maintenance"]') as HTMLButtonElement).click());
     await act(async () => (document.querySelector('[data-destination-id="playlist:orphan"]') as HTMLButtonElement).click());
     await act(async () => view.requests[1].resolve(Response.json({ ok: true, playlist: playlist('orphan'), items: [] })));
     assert.match(document.querySelector('[data-destination-picker] button[aria-haspopup]')!.textContent!, /Orphan/);
@@ -143,6 +166,7 @@ test('missing starter and historical rows are diagnostics with a maintenance act
     await act(async () => maintenanceLink.click());
     assert.equal((document.querySelector('#playlist-maintenance') as HTMLDetailsElement).open, true);
     await act(async () => (document.querySelector('[data-destination-picker] button[aria-haspopup]') as HTMLButtonElement).click());
+    await act(async () => (document.querySelector('[data-destination-section-toggle="maintenance"]') as HTMLButtonElement).click());
     assert.ok(document.querySelector('[data-destination-diagnostics] [data-destination-id="playlist:old"]'));
     assert.equal(document.querySelector('[data-destination-diagnostics] [data-destination-id="playlist:old"] button'), null);
   } finally { await view.close(); }
