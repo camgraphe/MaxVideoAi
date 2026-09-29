@@ -27,7 +27,7 @@ test('admin comparison labels unknown supplier facts and canonical customer tota
   assert.match(html, /ByteDance/i);
   assert.match(html, /BytePlus/i);
   assert.match(html, /Supplier list/i);
-  assert.match(html, /Estimated/i);
+  assert.match(html, /Published LIST estimate/i);
   assert.match(html, /Contract unconfirmed/i);
   assert.match(html, /Observed unavailable/i);
   assert.match(html, /Customer total/i);
@@ -49,7 +49,8 @@ test('missing supplier usage shows an explanation rather than a zero or green ma
   const html = renderToStaticMarkup(createElement(module.ProviderPriceComparisonTable, {
     rows, disabled: false, onInspect: () => {},
   }));
-  assert.match(html, /Image usage unavailable/i);
+  assert.match(html, /Data missing/i);
+  assert.match(html, /Exact output dimensions or the number of input images are missing/i);
   assert.match(html, /Customer quote unavailable/i);
   assert.doesNotMatch(html, /\$0\.00/);
 });
