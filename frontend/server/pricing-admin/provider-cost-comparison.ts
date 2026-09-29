@@ -36,6 +36,7 @@ export function customerQuoteFromCanonical(quote: CanonicalPricingQuote | Manual
 export type ProviderCostComparisonInput = {
   scenarioId: string;
   brandId: string;
+  familyId?: string;
   engineId: string;
   executionProvider: string;
   routeConfigured?: boolean | null;
@@ -65,6 +66,7 @@ export function providerComparisonInputFromScenario(input: {
   quote: CanonicalPricingQuote | ManualTariffQuote | null;
   engine: EngineCaps;
   brandId: string;
+  familyId?: string;
   executionProvider: string;
   mediaType?: 'video' | 'image';
 }): ProviderCostComparisonInput {
@@ -112,6 +114,7 @@ export function providerComparisonInputFromScenario(input: {
   return {
     scenarioId: scenario.id,
     brandId: input.brandId,
+    familyId: input.familyId,
     engineId: scenario.engineId,
     executionProvider: input.executionProvider,
     mediaType: input.mediaType ?? 'video',
@@ -140,6 +143,7 @@ type UnavailableReason =
 export type ProviderCostComparisonRow = {
   scenarioId: string;
   brandId: string;
+  familyId?: string;
   engineId: string;
   executionProvider: string;
   routeConfigured: boolean | null;
@@ -284,6 +288,7 @@ export function buildProviderCostComparisonRows(
     return {
       scenarioId: input.scenarioId,
       brandId: input.brandId,
+      familyId: input.familyId,
       engineId: input.engineId,
       executionProvider: input.executionProvider,
       routeConfigured: input.routeConfigured ?? null,

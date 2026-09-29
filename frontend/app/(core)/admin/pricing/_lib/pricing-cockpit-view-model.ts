@@ -55,6 +55,7 @@ export type PricingPolicyInventory = {
 export type ProviderCostComparisonRowView = {
   scenarioId: string;
   brandId: string;
+  familyId?: string;
   engineId: string;
   executionProvider: string;
   routeConfigured: boolean | null;
@@ -121,7 +122,7 @@ export function filterProviderComparisonRows(
 ): ProviderCostComparisonRowView[] {
   const query = filters.query.trim().toLowerCase();
   return rows.filter((row) =>
-    (filters.brandId === 'all' || row.brandId === filters.brandId) &&
+    (filters.brandId === 'all' || (row.familyId ?? row.brandId) === filters.brandId) &&
     (filters.executionProvider === 'all' || row.executionProvider === filters.executionProvider) &&
     (filters.mediaType === 'all' || row.mediaType === filters.mediaType) &&
     (!query || [row.engineId, row.mode, row.resolution, row.scenarioId]

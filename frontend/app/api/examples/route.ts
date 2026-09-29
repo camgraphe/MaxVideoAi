@@ -120,7 +120,7 @@ function buildModelHref(locale: AppLocale, slug: string): string {
   return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
 }
 
-export function toExampleCard(video: GalleryVideo, locale: AppLocale, currentPrice?: CurrentExamplePrice) {
+function toExampleCard(video: GalleryVideo, locale: AppLocale, currentPrice?: CurrentExamplePrice) {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
   const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
   const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;

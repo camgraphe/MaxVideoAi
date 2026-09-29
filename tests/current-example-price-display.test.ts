@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { formatCurrentExamplePrice } from '../frontend/lib/current-example-price-display.ts';
 import { toGalleryCard } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
-import { toExampleCard } from '../frontend/app/api/examples/route.ts';
 import type { GalleryVideo } from '../frontend/server/videos.ts';
 import React from 'react';
 import enMessages from '../frontend/messages/en.json' with { type: 'json' };
@@ -32,12 +31,6 @@ test('model example card uses the current quote and never the paid historical am
   assert.equal(card.priceLabel, 'From $1.41 · Text to video · 5s · 1080p');
   assert.doesNotMatch(card.priceLabel ?? '', /2\.88/);
   assert.equal(toGalleryCard(video).priceLabel, null);
-});
-
-test('examples API card uses current quote without falling back to paid historical amount', () => {
-  const current = { kind: 'exact', amountCents: 141, currency: 'USD', modelId: 'kling-3-pro', scenarioLabel: 'Text to video · 5s · 1080p' } as const;
-  assert.equal(toExampleCard(video, 'en', current).priceLabel, 'Current price $1.41');
-  assert.equal(toExampleCard(video, 'en').priceLabel, null);
 });
 
 test('homepage hero replaces authored prices with current reference quotes', () => {

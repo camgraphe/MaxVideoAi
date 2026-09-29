@@ -41,10 +41,13 @@ function formatCost(amountUsd: number | null): string {
   }).format(amountUsd);
 }
 
-function groupByBrand(rows: ProviderCostComparisonRowView[]) {
+function groupByFamily(rows: ProviderCostComparisonRowView[]) {
   const groups = new Map<string, ProviderCostComparisonRowView[]>();
-  for (const row of rows) groups.set(row.brandId, [...(groups.get(row.brandId) ?? []), row]);
-  return [...groups].map(([brandId, entries]) => [brandId, [...entries].sort((left, right) => {
+  for (const row of rows) {
+    const familyId = row.familyId ?? row.brandId;
+    groups.set(familyId, [...(groups.get(familyId) ?? []), row]);
+  }
+  return [...groups].map(([familyId, entries]) => [familyId, [...entries].sort((left, right) => {
     const leftRank = FEATURED_MODEL_ORDER.indexOf(left.engineId);
     const rightRank = FEATURED_MODEL_ORDER.indexOf(right.engineId);
     if (leftRank !== rightRank) return (leftRank < 0 ? Infinity : leftRank) - (rightRank < 0 ? Infinity : rightRank);
@@ -124,9 +127,9 @@ function ComparisonDetails({ row, disabled, onInspect }: { row: ProviderCostComp
 export function ProviderPriceComparisonTable({ rows, disabled, onInspect }: Props) {
   const [filters, setFilters] = useState<ProviderComparisonFilters>({ brandId: 'all', executionProvider: 'all', mediaType: 'all', query: '' });
   const visible = useMemo(() => filterProviderComparisonRows(rows, filters), [rows, filters]);
-  const groups = useMemo(() => groupByBrand(visible), [visible]);
+  const groups = useMemo(() => groupByFamily(visible), [visible]);
   const pairs = useMemo(() => summarizeProviderDraftFinalPairs(visible), [visible]);
-  const brands = [...new Set(rows.map((row) => row.brandId))].sort();
+  const brands = [...new Set(rows.map((row) => row.familyId ?? row.brandId))].sort();
   const providers = [...new Set(rows.map((row) => row.executionProvider))].sort();
 
   return (
@@ -177,9 +180,9 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect }: Prop
         <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded-sm border border-[#cbb9ff] bg-[#f1ebff]" aria-hidden="true" />Purple: customer total</span>
       </div>
 
-      {groups.length ? groups.map(([brandId, entries]) => (
-        <section key={brandId} aria-label={`${displayName(brandId, BRAND_LABELS)} price comparison`} className="space-y-3">
-          <div className="flex items-baseline justify-between gap-3"><h3 className="text-lg font-semibold text-text-primary">{displayName(brandId, BRAND_LABELS)}</h3><span className="text-xs text-text-muted">{entries.length} {entries.length === 1 ? 'scenario' : 'scenarios'}</span></div>
+      {groups.length ? groups.map(([familyId, entries]) => (
+        <section key={familyId} aria-label={`${displayName(familyId, BRAND_LABELS)} price comparison`} className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3"><h3 className="text-lg font-semibold text-text-primary">{displayName(familyId, BRAND_LABELS)}</h3><span className="text-xs text-text-muted">{entries.length} {entries.length === 1 ? 'scenario' : 'scenarios'}</span></div>
           <div className="grid gap-3">
             {entries.map((row) => (
               <details key={row.scenarioId} className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-sm open:border-brand/40 open:shadow-md">

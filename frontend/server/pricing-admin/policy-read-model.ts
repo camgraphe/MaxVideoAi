@@ -9,6 +9,7 @@ import type {
   PricingChangeEvent,
 } from '@/lib/admin/pricing-change-contract';
 import { getFalEngineById, listFalEngines } from '@/config/falEngines';
+import { listRuntimeModels } from '@/config/model-runtime';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
@@ -42,28 +43,30 @@ import {
   selectorOf,
 } from './policy-rules';
 
-function buildByteDanceComparisonScenarios(auditScenarios: PricingAuditScenario[]) {
+export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditScenario[] = buildPricingAuditScenarios()) {
+  const appPublished = new Set(listRuntimeModels().filter((model) => model.publication.app.published).map((model) => model.id));
   return listFalEngines().flatMap((entry) => {
-    if (entry.brandId !== 'bytedance' || !entry.surfaces.pricing.includeInEstimator) return [];
+    if (!appPublished.has(entry.id)) return [];
     const baseline = auditScenarios.find((scenario) => scenario.engineId === entry.id
       && scenario.surface === 'billing' && scenario.membershipTier === 'member'
       && scenario.id.startsWith(`billing:${entry.id}:`));
-    if (!baseline) return [];
     const image = entry.category === 'image';
-    const resolution = image ? '2K' : '720p';
-    const mode = image ? 't2i' : 't2v';
-    if (!entry.engine.resolutions.includes(resolution) || !entry.modes.some((item) => item.mode === mode)) return [];
-    if (!image) {
-      const duration = entry.modes.find((item) => item.mode === mode)?.ui.duration;
-      if (!duration || !('options' in duration) || !duration.options.some((value) => Number(value) === 5)) return [];
-    }
+    const mode = baseline?.mode ?? (image ? 't2i' : 't2v');
+    const resolution = baseline?.resolution ?? (entry.engine.resolutions.includes('720p') ? '720p' : entry.engine.resolutions[0]);
+    const durationSec = baseline?.durationSec ?? (image ? 1 : 5);
+    if (!resolution || !entry.modes.some((item) => item.mode === mode)) return [];
     const scenario: PricingAuditScenario = {
-      ...baseline,
-      id: `provider-comparison:${entry.id}:${mode}:${image ? '1-image' : '5s'}:${resolution}:member`,
+      ...(baseline ?? {
+        surface: 'billing' as const,
+        engineId: entry.id,
+        membershipTier: 'member' as const,
+        input: {},
+      }),
+      id: `provider-comparison:${entry.id}:${mode}:${image ? '1-image' : `${durationSec}s`}:${resolution}:member`,
       mode,
       resolution,
-      durationSec: image ? 1 : 5,
-      input: image ? { quantity: 1, referenceImageCount: 0 } : { audio: false, aspectRatio: '16:9' },
+      durationSec,
+      input: image ? { quantity: 1, referenceImageCount: 0 } : { audio: false, aspectRatio: entry.engine.aspectRatios[0] ?? '16:9' },
     };
     return [{ scenario, entry }];
   });
@@ -232,14 +235,12 @@ export async function loadPricingPolicyInventory(
     };
   });
 
-  const billingScenarios = auditScenarios.filter((scenario) =>
-    scenario.surface === 'billing' && scenario.membershipTier === 'member');
-  const bytedanceScenarios = buildByteDanceComparisonScenarios(billingScenarios);
+  const allModelScenarios = buildAllModelComparisonScenarios(buildPricingAuditScenarios());
   const comparisonOutcomes = loaded.status === 'loaded'
-    ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: bytedanceScenarios.map(({ scenario }) => scenario) })
+    ? quoteCanonicalAdminScenarios({ databaseRules, scenarios: allModelScenarios.map(({ scenario }) => scenario) })
     : [];
   const comparisonQuoteById = new Map(comparisonOutcomes.map((outcome) => [outcome.scenarioId, outcome]));
-  const comparisons = bytedanceScenarios.map(({ scenario, entry }) => {
+  const comparisons = allModelScenarios.map(({ scenario, entry }) => {
     const declaredProvider = entry.engine.providerMeta?.provider;
     const executionProvider = entry.category === 'image'
       ? declaredProvider === 'byteplus_modelark' ? 'byteplus_modelark' : 'fal'
@@ -251,6 +252,7 @@ export async function loadPricingPolicyInventory(
       quote: quote?.status === 'quoted' ? quote : null,
       engine: entry.engine,
       brandId: entry.brandId,
+      familyId: entry.family,
       executionProvider,
       mediaType: entry.category === 'image' ? 'image' : 'video',
     });
