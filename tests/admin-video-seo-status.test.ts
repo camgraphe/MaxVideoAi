@@ -6,7 +6,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AdminAuthError } from '../frontend/src/server/admin';
-import { handleVideoSeoStatusGet } from '../frontend/app/api/admin/video-seo/[videoId]/status/route';
+import { handleVideoSeoStatusGet } from '../frontend/app/api/admin/video-seo/[videoId]/status/_lib/status-read';
 
 const request = new NextRequest('http://localhost/api/admin/video-seo/video-1/status');
 const props = { params: Promise.resolve({ videoId: 'video-1' }) };

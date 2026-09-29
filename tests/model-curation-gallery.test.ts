@@ -32,6 +32,10 @@ test('adopted model galleries cannot reinject excluded static media or override 
   assert.match(readFileSync('frontend/server/videos-playlists.ts','utf8'), /readLegacyPlaylistVideos/);
   assert.doesNotMatch(readFileSync('frontend/server/model-gallery-projection.ts','utf8'), /curation-service|videos-playlists/);
   assert.match(route, /managed: managedCuration/);
+  assert.match(route, /pickHeroMedia\(galleryVideos, preferredIds.hero, fallbackMedia, \{ preserveOrder: managedCuration \}\)/,
+    'the route passes curation ownership to its hero selector');
+  assert.match(route, /if \(!managedCuration && engine.modelSlug === 'kling-2-5-turbo'\)/,
+    'legacy Kling hero preference cannot override managed selection');
   assert.doesNotMatch(route, /galleryVideos = \[\.\.\.galleryVideos\]\.sort/);
 });
 

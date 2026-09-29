@@ -227,7 +227,7 @@ async function renderMarketingModelPage({
       });
     }
   );
-  const { galleryVideos, preferredIds } = gallery;
+  const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
   const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
   const pricingEngine = applyEnginePricingOverride(engine.engine, enginePricingOverrides[engine.engine.id]);
   const modelName = localizedContent.marketingName ?? engine.marketingName;
@@ -248,8 +248,8 @@ async function renderMarketingModelPage({
     label: modelName ?? 'Sora',
   };
 
-  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
-  if (engine.modelSlug === 'kling-2-5-turbo') {
+  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia, { preserveOrder: managedCuration });
+  if (!managedCuration && engine.modelSlug === 'kling-2-5-turbo') {
     const heroCandidate =
       galleryVideos.find((video) => video.aspectRatio === '16:9' && Boolean(video.videoUrl)) ??
       galleryVideos.find((video) => video.aspectRatio === '16:9');

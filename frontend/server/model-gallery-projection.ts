@@ -34,5 +34,5 @@ export async function projectModelPageGallery<T extends {id: string; aspectRatio
     preferLandscape: engine.modelSlug === 'kling-2-5-turbo',
     fetchCards: async ids => Array.from((await getPublicVideosByIds(ids)).values()).map(toCard),
   });
-  return {galleryVideos,preferredIds};
+  return {galleryVideos,preferredIds,managed};
 }
