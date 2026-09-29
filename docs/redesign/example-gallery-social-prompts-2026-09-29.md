@@ -1,59 +1,69 @@
-# Prompts candidats — vidéos manquantes des galeries
+# Nouveaux clips pour les galeries et Studio RS
 
-Propositions à confronter à la sélection de Studio RS avant tout devis ou génération. Les concepts PR sont des références **externes** déjà retenues pour examen dans la bibliothèque Studio RS : les textes ci-dessous sont de nouvelles adaptations, pas des copies de leurs prompts. Produire nos propres sorties natives. Le montage social peut ensuite utiliser ces sorties ; la galerie et la watch page doivent garder chaque fichier natif, son modèle exact et ses réglages.
+Sélection du 29 septembre 2026. Ces scènes sont **nouvelles** : elles ne reprennent ni les épisodes déjà publiés ou en file dans `social-publishing/queue.json`, ni les quatre rendus du lot `prochains-quatre-2026-09-29` de Studio RS. Une recherche dans les prompts complets des douze galeries publiques n'a pas trouvé ces mises en scène. Studio RS doit encore confirmer qu'aucun brouillon privé plus récent ne les recoupe.
 
-## Les quatre rendus nécessaires
+Chaque ligne correspond à **une seule génération texte-vers-vidéo en 1080p**, sans image de référence. Le ratio est un réglage de génération et doit aussi être contrôlé sur le fichier livré. Happy Horse et Grok produisent le son nativement ; l'option audio est activée pour FLUX et LTX. Les quatre premières lignes réparent les ouvertures incomplètes ; les deux dernières modernisent une galerie qui peut déjà fonctionner avec ses médias existants. Les clips retenus peuvent ensuite être montés et publiés par Studio RS, sans publication automatique depuis cette liste.
 
-### 1. Happy Horse 1.1 · 9:16 · 12 s — Le jetpack de piscine
+| Priorité | Galerie et modèle | Format | Durée | Usage visé |
+| --- | --- | --- | --- | --- |
+| 1 | Happy Horse 1.1 | 9:16 | 10 s | Deuxième emplacement du héros ; accroche sociale portrait |
+| 2 | Grok Imagine Video 1.5 | 9:16 | 6 s | Deuxième emplacement du héros ; accroche sociale portrait |
+| 3 | Grok Imagine Video 1.5 | 16:9 | 6 s | Troisième place horizontale du héros |
+| 4 | FLUX 3 | 9:16 | 8 s | Deuxième emplacement du héros ; accroche sociale portrait |
+| 5, facultatif | LTX 2.5 Pro | 9:16 | 8 s | Remplacer une verticale LTX 2.3 existante dans le héros |
+| 6, facultatif | Happy Horse 1.1 | 16:9 | 10 s | Montrer davantage la version 1.1 dans le héros |
 
-Inspiration : PR-031, déjà exploré avec Wan 3 Prime. Une autre interprétation permettrait un court social comparatif et une verticale pour le héros Happy Horse.
+## 1 — Le nuage du fleuriste · Happy Horse 1.1 · 9:16
 
-> A vertical poolside phone video in bright afternoon light. In the first frame, an adult stunt performer in an orange helmet stands on a diving board with a comically improvised twin-cylinder jetpack already sputtering. The jets lift the performer just above the board; they wobble, drift sideways, and splash into the pool before the ninth second. The camera follows the entire motion in one continuous take, keeping the full body and the pool visible. The performer surfaces smiling while the jets release their last harmless bubbles. Natural splash, engine sputter and crowd reaction, believable water and body movement, no added music, captions or logos.
+**Prompt**
 
-À vérifier au rendu : départ immédiat, vol réellement lisible et splash dans le cadre portrait. Le gag tient aussi sans le dernier plan si le modèle manque de temps.
+> A vertical, photorealistic single take at an outdoor flower stall on a bright dry morning. Start close on one visibly wilted sunflower in a narrow ceramic pot. A tiny charcoal-gray rain cloud, no wider than the flower, floats into frame beneath the awning and stops directly over the sunflower. It rains on this one pot only. The stem rises, the petals open toward the camera, and the cloud becomes a faint puff of white vapor. Keep the flower, cloud and small circle of rain visible together throughout. Slow, steady camera push-in; believable water, leaves and sunlight. Natural market ambience and soft rain, no dialogue, no captions, no logos.
 
-### 2. Grok Imagine Video 1.5 · 9:16 · 6 s — Le café suspendu
+**Contrôle du rendu :** la pluie reste limitée au pot, le nuage est immédiatement lisible, et l'ouverture de la fleur est visible en dix secondes.
 
-Inspiration : PR-009, avec le bureau chargé et une référence image **originale** demandés par Adrien. Préparer une première image 9:16 puis utiliser le mode image-vers-vidéo ; Grok n'expose pas de réglage de ratio dans ce mode, donc contrôler le format du fichier livré. Un effet visuel court qui fonctionne en boucle sur mobile.
+## 2 — La boîte aux lettres boréale · Grok Imagine Video 1.5 · 9:16
 
-Première image originale à créer :
+**Prompt**
 
-> Vertical 9:16 photorealistic first frame for a short film. A busy creative studio desk with scattered sketches, colored pencils and an open laptop. A plain paper coffee cup is tipping over at the edge of the desk; the first droplets and one loose sheet are already suspended in midair. A startled adult person stands behind the desk. Keep the person, cup, droplets and tabletop visually separate, with enough space around them for a camera orbit. Warm window light, strong depth, no visible text, brand marks or watermark.
+> Vertical cinematic realism, one continuous shot in a narrow rain-soaked city alley at blue hour. Begin with a plain brass mailbox glowing faintly at the edges. A bicycle courier opens its small door. A ribbon of green and violet aurora pours out, curls upward between the buildings, and briefly lights the wet pavement and the courier's silhouette. The courier closes the door and the light folds neatly back inside, leaving the alley dark again. Keep the mailbox and the upward light trail in the same portrait composition. A gentle handheld camera move, convincing reflections, rain and a subtle electrical shimmer. No readable text, no dialogue, no captions, no logos.
 
-> A vertical close view of a busy creative desk with sketches, pencils, a laptop and a paper coffee cup. The cup has just tipped over in the first frame. Coffee droplets, loose pages and one falling pencil hang motionless in midair while a handheld camera makes a smooth half-circle around the desk and the startled person behind it. Keep every suspended object fixed in space as the camera moves; at the very end, time resumes for a brief natural splash. Warm window light, crisp depth, one continuous shot, no slow motion, text or logos.
+**Contrôle du rendu :** une seule boîte aux lettres, un seul geste ouvrir/fermer, et une trajectoire verticale claire de la lumière.
 
-À vérifier au rendu : la caméra bouge alors que les objets restent fixes ; le plan reste lisible en vignette verticale.
+## 3 — Le film qui déborde · Grok Imagine Video 1.5 · 16:9
 
-### 3. Grok Imagine Video 1.5 · 16:9 · 6 s — Un seul salto sur l’aile
+**Prompt**
 
-Inspiration : PR-022. Ce plan large complète le héros Grok et peut être mis en regard des versions Wan/MiniMax déjà produites, en indiquant leurs durées et cadrages différents.
+> Wide 16:9 cinematic single shot of an empty outdoor cinema in a misty meadow at dusk. A small projector throws a black-and-white ocean wave onto the screen. The projected wave suddenly pushes past the screen's lower edge as a thin sheet of real seawater, rolling across the grass toward the camera. Just before reaching the projector, it reverses and slips back into the flat moving image; the grass remains wet. Hold the cinema screen, projector and full path of the water in one stable wide frame. Strong physical contrast between projected light and real water, natural wind, projector hum and a single soft wave sound. No people, no titles, no captions, no logos.
 
-> A wide cinematic chase-camera view of a brightly painted stunt plane flying steadily above a sunlit coastline. A clearly visible adult stunt performer in a vivid orange flight suit stands on one wing. Starting immediately, they perform one clean backflip and land on the same marked spot, then crouch and hold the wing safely. Keep the plane, wing, coastline and performer spatially consistent in a single continuous shot. Clear full-body silhouette, realistic wind movement, dynamic but stable camera, no second flip, no cuts, captions or logos.
+**Contrôle du rendu :** on voit simultanément l'écran et l'eau réelle ; le plan reste large et exploitable en carte 16:9.
 
-À vérifier au rendu : un seul salto complet, même point d’atterrissage, personnage assez grand à l’écran.
+## 4 — La baleine de l'atlas · FLUX 3 · 9:16
 
-### 4. FLUX 3 · 9:16 · 10 s — Le saut en POV dans le canyon
+**Prompt**
 
-Inspiration : PR-002. La version verticale corrige précisément le décalage de format observé sur la référence de revue.
+> A vertical, tactile cinematic shot inside a quiet bookbinder's workshop. Begin close on a pair of hands opening an old fictional sea atlas on a wooden table. The dark blue ink of a printed whale starts moving, rises from the paper as a tiny three-dimensional whale made of ink and water, swims one slow loop above the book, then dives back into the map. A few droplets land on the page and form a fresh circular blue stain. Keep the open book and the entire whale inside the portrait frame. One continuous camera move from the page upward and back, detailed paper texture, believable liquid motion, warm desk lamp. Soft page rustle and water sounds; no speech, no readable text, no captions, no logos.
 
-> A first-person vertical action-camera shot at the edge of a sunlit red-rock canyon. Bare hands and the tips of shoes enter the bottom of the frame as the camera looks down toward a clear emerald pool. Jump immediately; the camera drops in one continuous trajectory, passes the rock walls, hits the water with a convincing splash, travels briefly through bubbles, then rises to the surface under bright daylight. Keep one coherent canyon, one fall and a visible waterline. Immersive natural sound, no cuts, slow motion, text or logos.
+**Contrôle du rendu :** la baleine ne sort pas du cadre portrait ; la transformation papier → volume → papier est compréhensible sans voix off.
 
-À vérifier au rendu : format mesuré proche de 9:16, trajectoire air/eau cohérente et début compréhensible dès la vignette.
+## 5 — La couture du ciel · LTX 2.5 Pro · 9:16 · facultatif
 
-## Deux rendus éditoriaux supplémentaires
+**Prompt**
 
-### 5. LTX 2.5 Pro · 9:16 · 10 s — Le dunk de la grand-mère
+> Portrait cinematic realism in a dark tailor's workshop. In one continuous close shot, a dressmaker draws a single glowing silver thread through the sleeve of a plain black jacket on a mannequin. With each visible stitch, tiny moving stars appear in the fabric. The camera tracks the needle upward as a small constellation travels along the seam; when the dressmaker finishes and lifts the needle, the stars settle into the jacket and softly glow. Keep the needle, hands and changing sleeve clearly framed. Precise hand motion, real fabric texture, restrained light spill. Quiet needle-and-thread sounds, fabric movement and a faint tonal shimmer. No dialogue, no captions, no logos.
 
-Inspiration : PR-003, déjà produit avec Seedance 2.5. Ce test apporterait une verticale de la génération LTX récente et un comparatif social entre modèles.
+**Contrôle du rendu :** geste de couture crédible et effet localisé sur la manche ; composition portrait utile à la galerie et aux réseaux.
 
-> A vertical courtside shot at a lively neighborhood basketball court at golden hour. In the first frame, an older woman in a cobalt tracksuit already has the ball and faces a defender. She makes one sharp crossover, drives straight to the basket and finishes with one unmistakable dunk before landing safely. The camera tracks her in a continuous shot, keeping her full body, the ball and the hoop visible. The small crowd reacts naturally after the basket. Energetic real-time motion and court sound, no cuts, slow motion, captions or logos.
+## 6 — Le microsillon de course · Happy Horse 1.1 · 16:9 · facultatif
 
-À vérifier au rendu : le ballon reste dans sa main et le panier est visible au moment du dunk. Si le mouvement échoue, conserver l’exemple historique plutôt que publier une action ambiguë.
+**Prompt**
 
-### 6. Happy Horse 1.1 · 16:9 · 6 s — Variante du salto
+> A wide 16:9 single take in a warmly lit second-hand record shop. A record turns on a vintage player in the foreground. As the needle touches the vinyl, one miniature red racing car appears in the outer groove and follows it, circling the record smoothly. It reaches the tonearm, makes one tiny clean jump over it, lands in the next groove and keeps moving while the shop owner watches in astonishment from behind the counter. Frame the entire turntable and the owner's reaction without cutting. Photorealistic scale, steady camera, lively vinyl crackle, a small motor whirr and the owner's short surprised laugh. No readable labels, no dialogue, no captions, no logos.
 
-Même adaptation PR-022 que pour Grok, aux **mêmes ratio et durée**, afin d’obtenir un vrai comparatif de modèle et une troisième horizontale Happy Horse 1.1 pour son héros. Réutiliser le prompt anglais du point 3 sans changement de scène ; conserver les réglages et les différences de résultat dans les fiches respectives.
+**Contrôle du rendu :** voiture et microsillon restent lisibles dans un plan horizontal ; pas de voiture supplémentaire ni de saut répété.
 
-## Avant génération et mise au propre
+## Après génération
 
-Demander les devis exacts pour les modèles, modes texte-vers-vidéo, durées, ratios et résolutions retenus. Vérifier ensuite le ratio **mesuré**, l’action, la lecture, le son et la qualité de la vignette. Garder l’origine des idées PR dans le suivi interne et attribuer la source quand le contexte social l’exige ; ne pas réutiliser la vidéo source externe. La publication dans les exemples et l’approbation Video SEO sont des étapes séparées après sélection des meilleures prises.
+1. Contrôler le ratio et les dimensions **mesurés**, l'original, la vignette, la lecture, la durée, le son et le coût enregistré.
+2. Écarter un rendu confus avant publication ; tout nouvel essai payant demande un nouveau devis et une nouvelle approbation.
+3. Publier la vidéo choisie comme exemple avec son modèle exact et ses réglages, puis la placer dans l'emplacement voulu de l'atelier sans créer de doublon dans la suite paginée.
+4. Remettre uniquement le fichier validé et ses droits d'utilisation à Studio RS pour montage et programmation éditoriale séparés.
