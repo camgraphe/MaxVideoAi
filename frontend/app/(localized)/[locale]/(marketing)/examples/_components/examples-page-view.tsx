@@ -231,6 +231,7 @@ export function ExamplesPageView({
 
             <ExamplesModelLinksSection
               currentModelPagesLabel={currentModelPagesLabel}
+              galleryExamples={initialExamples}
               isModelLanding={isModelLanding}
               locale={locale}
               modelLinks={modelLinks}

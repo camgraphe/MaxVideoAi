@@ -130,7 +130,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription: "Découvrez les exemples vidéo Seedance 2.5, leurs prompts et réglages. Comparez les versions Seedance et partez d’un exemple pour votre création.",
     heroTitle: 'Exemples vidéo Seedance 2.5, 2.0, Fast et Mini',
     subtitle: "Seedance 2.5 et les versions précédentes : regardez les résultats et trouvez un prompt à adapter.",
-    intro: "Explorez les exemples Seedance 2.5 aux côtés de Seedance 2.0, Fast et Mini. Ouvrez une vidéo pour voir son prompt, ses réglages et son coût enregistré. Chaque résultat conserve le nom de son modèle d’origine.",
+    intro: "Explorez les exemples Seedance 2.5 avec Seedance 2.0, Fast et Mini. Ouvrez une vidéo pour voir son prompt, ses réglages, son coût enregistré et son modèle d’origine.",
     summary: "Seedance 2.5 permet de créer des vidéos de 4 à 30 secondes jusqu’en 1080p, avec audio généré, références, édition et prolongation. Seedance 2.0 reste disponible pour la 4K ; Fast et Mini offrent d’autres options pour les essais et les séries de vidéos. Les anciens exemples 1.5 Pro conservent leur nom d’origine.",
     promptPatterns:
       'Pour Seedance 2.5, définissez une action principale, une direction caméra et le rôle de chaque référence avant d’ajouter les détails de scène. Gardez la même structure de prompt quand vous comparez 2.5 avec Seedance 2.0, Fast ou Mini.',

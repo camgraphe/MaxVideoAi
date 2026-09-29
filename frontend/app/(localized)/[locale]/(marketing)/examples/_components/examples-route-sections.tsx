@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ExampleSort } from '@/server/videos';
@@ -30,10 +32,13 @@ type ExamplesModelLink = {
   slug: string;
   label: string;
   href: string;
+  engineId: string;
+  brandId?: string;
 };
 
 type ExamplesModelLinksSectionProps = {
   currentModelPagesLabel: string;
+  galleryExamples: ExampleGalleryVideo[];
   isModelLanding: boolean;
   locale: AppLocale;
   modelLinks: ExamplesModelLink[];
@@ -151,9 +156,9 @@ export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle, locale }:
 export function ExamplesFamilyIntro({ body, label, locale }: ExamplesFamilyIntroProps) {
   return (
     <section className={styles.familyIntro} aria-labelledby="examples-family-guide-title">
-      <div>
+      <div className={styles.familyIntroHeading}>
         <span className={styles.eyebrow}>
-          {locale === 'fr' ? 'Après les vidéos' : locale === 'es' ? 'Después de los vídeos' : 'Beyond the videos'}
+          {locale === 'fr' ? 'Famille de modèles' : locale === 'es' ? 'Familia de modelos' : 'Model family'}
         </span>
         <h2 id="examples-family-guide-title">
           {locale === 'fr'
@@ -170,6 +175,7 @@ export function ExamplesFamilyIntro({ body, label, locale }: ExamplesFamilyIntro
 
 export function ExamplesModelLinksSection({
   currentModelPagesLabel,
+  galleryExamples,
   isModelLanding,
   locale,
   modelLinks,
@@ -184,6 +190,12 @@ export function ExamplesModelLinksSection({
 }: ExamplesModelLinksSectionProps) {
   if (!isModelLanding || !selectedEngine || !modelLinks.length) return null;
   const pricingCallout = resolveExamplesPricingCallout(selectedEngine, locale, pricingPath);
+  const posterFor = (href: string) => {
+    const candidates = galleryExamples.filter(
+      (video) => video.modelHref === href && video.rawPosterUrl && !video.rawPosterUrl.startsWith('/assets/frames/')
+    );
+    return (candidates.find((video) => video.aspectRatio === '16:9') ?? candidates[0])?.rawPosterUrl ?? null;
+  };
 
   return (
     <section className={styles.modelSection} aria-labelledby="examples-model-pages-title">
@@ -194,18 +206,28 @@ export function ExamplesModelLinksSection({
           </span>
           <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}</h2>
         </div>
-        <Link href={pricingPath} className={styles.textAction}>
+        <Link href={pricingPath} className={styles.pricingAction}>
           {pricingLinkLabel}<span aria-hidden="true"> ↗</span>
         </Link>
       </div>
       <div className={styles.modelGrid}>
-        {primaryModelLinks.map((model, index) => (
-          <Link key={model.slug} href={model.href} className={styles.modelLink}>
-            <span className={styles.linkIndex}>{String(index + 1).padStart(2, '0')}</span>
-            <span className={styles.modelName}>{model.label}</span>
-            <span className={styles.linkArrow} aria-hidden="true">↗</span>
-          </Link>
-        ))}
+        {primaryModelLinks.map((model, index) => {
+          const poster = posterFor(model.href);
+          return (
+            <Link key={model.slug} href={model.href} className={`${styles.modelLink} ${poster ? '' : styles.modelLinkFallback}`}>
+              {poster ? <Image src={poster} alt="" fill sizes="(max-width: 767px) 50vw, (max-width: 1200px) 33vw, 25vw" quality={52} loading="lazy" className={styles.modelPoster} /> : null}
+              {!poster ? <span className={styles.modelWordmark} aria-hidden="true">{model.label.split(' ').slice(-1)[0]}</span> : null}
+              <span className={styles.modelIdentity} aria-hidden="true">
+                <span className={styles.modelIcon}><EngineIcon engine={{ id: model.engineId, label: model.label, brandId: model.brandId }} size={30} framed={false} /></span>
+                <span className={styles.modelIndex}>{String(index + 1).padStart(2, '0')}</span>
+              </span>
+              <span className={styles.modelBottom}>
+                <span className={styles.modelName}>{model.label}</span>
+                <span className={styles.linkArrow} aria-hidden="true">↗</span>
+              </span>
+            </Link>
+          );
+        })}
       </div>
       {supportedOlderModelLinks.length ? (
         <div className={styles.olderModels}>

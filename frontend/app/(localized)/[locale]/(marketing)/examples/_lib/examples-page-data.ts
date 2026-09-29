@@ -33,6 +33,8 @@ export type ExamplesModelLink = {
   slug: string;
   label: string;
   href: string;
+  engineId: string;
+  brandId?: string;
 };
 
 export function buildExamplesEngineFilterState({
@@ -103,11 +105,14 @@ export function buildExamplesModelLinks({
 }) {
   const modelSlugs = selectedEngine ? ENGINE_MODEL_LINKS_BY_GROUP[selectedEngine.toLowerCase()] ?? [] : [];
   const modelLinks = modelSlugs.map((slug) => {
-    const label = ENGINE_META.get(slug)?.label ?? formatModelSlugLabel(slug);
+    const meta = ENGINE_META.get(slug);
+    const label = meta?.label ?? formatModelSlugLabel(slug);
     return {
       slug,
       label,
       href: buildModelHref(locale, slug),
+      engineId: meta?.id ?? slug,
+      brandId: meta?.brandId,
     };
   });
   const currentModelSlugs = selectedEngine ? CURRENT_ENGINE_MODEL_LINKS_BY_GROUP[selectedEngine.toLowerCase()] ?? [] : [];
