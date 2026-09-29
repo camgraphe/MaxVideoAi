@@ -14,13 +14,13 @@ type ExamplesIntroHeroProps = {
   heroLead: string;
   heroSubtitle: string;
   heroTitle: string;
-  locale: AppLocale;
 };
 
 type ExamplesFamilyIntroProps = {
   body: string;
   label: string;
   locale: AppLocale;
+  title?: string;
 };
 
 type ExamplesNextStepsSectionProps = {
@@ -91,6 +91,7 @@ type ExamplesModelLandingCardsSectionProps = {
 };
 
 type ExamplesGallerySectionProps = {
+  familyLabel?: string;
   openingEnabled?: boolean;
   audioAvailableLabel: string;
   detailsCtaLabel: string;
@@ -139,13 +140,10 @@ type ExamplesFaqSectionProps = {
   };
 };
 
-export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle, locale }: ExamplesIntroHeroProps) {
+export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
   return (
     <section className={styles.hero}>
       <header className={styles.heroCopy}>
-        <span className={styles.eyebrow}>
-          {locale === 'fr' ? 'La vidéothèque' : locale === 'es' ? 'La videoteca' : 'The video library'}
-        </span>
         <h1>{heroTitle}</h1>
         <p>{heroSubtitle || heroLead}</p>
       </header>
@@ -153,7 +151,7 @@ export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle, locale }:
   );
 }
 
-export function ExamplesFamilyIntro({ body, label, locale }: ExamplesFamilyIntroProps) {
+export function ExamplesFamilyIntro({ body, label, locale, title }: ExamplesFamilyIntroProps) {
   return (
     <section className={styles.familyIntro} aria-labelledby="examples-family-guide-title">
       <div className={styles.familyIntroHeading}>
@@ -161,11 +159,11 @@ export function ExamplesFamilyIntro({ body, label, locale }: ExamplesFamilyIntro
           {locale === 'fr' ? 'Famille de modèles' : locale === 'es' ? 'Familia de modelos' : 'Model family'}
         </span>
         <h2 id="examples-family-guide-title">
-          {locale === 'fr'
+          {title ?? (locale === 'fr'
             ? `Explorer la famille ${label}`
             : locale === 'es'
               ? `Explora la familia ${label}`
-              : `Explore the ${label} family`}
+              : `Explore the ${label} family`)}
         </h2>
       </div>
       <p>{body}</p>
@@ -278,6 +276,7 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
 }
 
 export function ExamplesGallerySection({
+  familyLabel,
   openingEnabled,
   audioAvailableLabel,
   detailsCtaLabel,
@@ -300,6 +299,7 @@ export function ExamplesGallerySection({
   return (
     <section id="gallery" className="min-w-0">
       <ExamplesGalleryGrid
+        familyLabel={familyLabel}
         openingEnabled={openingEnabled}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}

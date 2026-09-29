@@ -371,6 +371,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       mainVideoCopy={mainVideoCopy}
       mainVideoFeature={mainVideoFeature}
       modelLandingSections={modelLandingSections}
+      modelLandingGuideTitle={modelLanding?.guideTitle}
       modelLandingLabel={modelLanding?.label}
       modelLandingSummary={modelLanding?.summary}
       modelLinks={modelLinks}

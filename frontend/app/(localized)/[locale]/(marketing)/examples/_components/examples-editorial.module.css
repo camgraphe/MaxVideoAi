@@ -1,7 +1,7 @@
 .hero{padding:10px 0 2px}
 .heroCopy{max-width:920px}
 .eyebrow{display:block;color:var(--text-muted);font-size:10px;font-weight:700;letter-spacing:.17em;line-height:1.5;text-transform:uppercase}
-.hero h1{max-width:22ch;margin:9px 0 0;color:var(--text-primary);font-size:clamp(34px,4.6vw,62px);line-height:1.04;letter-spacing:-.05em}
+.hero h1{max-width:22ch;margin:0;color:var(--text-primary);font-size:clamp(34px,4.6vw,62px);line-height:1.04;letter-spacing:-.05em}
 .hero p{max-width:62ch;margin:14px 0 0;color:var(--text-secondary);font-size:clamp(14px,1.45vw,17px);line-height:1.55}
 .editorial{display:grid;gap:clamp(22px,2.5vw,34px);margin-top:clamp(16px,2vw,26px);padding:0 0 44px}
 .familyIntro{display:grid;grid-template-columns:minmax(190px,.55fr) minmax(0,1.45fr);align-items:center;gap:16px 32px;padding:15px 0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}

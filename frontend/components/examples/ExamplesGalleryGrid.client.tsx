@@ -18,7 +18,7 @@ const ExampleReader = dynamic(() => import('./ExampleReader.client'), { ssr: fal
 
 export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLabel='View settings & price',
   noPreviewLabel='No preview',prioritizeFirstPoster=false,audioAvailableLabel='Audio available on playback',
-  openingEnabled,sort,locale,engineFilter,initialOffset}:ExamplesGalleryProps) {
+  openingEnabled,sort,locale,engineFilter,initialOffset,familyLabel}:ExamplesGalleryProps) {
   const videos=useMemo(()=>dedupeExamples(initialExamples),[initialExamples]);
   const {opening,rest}=useMemo(()=>buildGalleryOpening(videos,openingEnabled??(prioritizeFirstPoster&&sort==='playlist')),[videos,openingEnabled,prioritizeFirstPoster,sort]);
   const visibleVideos=useMemo(()=>[...opening,...rest],[opening,rest]);
@@ -33,7 +33,9 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
     onVisibility={preview.onVisibility} onIntent={preview.setIntent} onOpen={reader.open} />;
   const pauseLabel=locale==='fr'?'Pause des aperçus':locale==='es'?'Pausar vistas previas':'Pause previews';
   const resumeLabel=locale==='fr'?'Animer les aperçus':locale==='es'?'Animar vistas previas':'Animate previews';
-  const continuationLabel=locale==='fr'?'Encore des vidéos':locale==='es'?'Más vídeos':'More videos';
+  const continuationLabel=familyLabel
+    ? locale==='fr'?`Plus de vidéos ${familyLabel}`:locale==='es'?`Más videos de ${familyLabel}`:`More ${familyLabel} videos`
+    : locale==='fr'?'Encore des vidéos':locale==='es'?'Más vídeos':'More videos';
   const pageCountLabel=locale==='fr'?'sur cette page':locale==='es'?'en esta página':'on this page';
   const guideLabel=locale==='fr'?'Ouvrez une vidéo pour voir comment elle a été créée.':locale==='es'?'Abre un vídeo para ver cómo se creó.':'Open any video to see how it was made.';
   const guidePills=locale==='fr'?['Prompt','Réglages','Coût enregistré']:locale==='es'?['Prompt','Ajustes','Coste registrado']:['Prompt','Settings','Recorded cost'];

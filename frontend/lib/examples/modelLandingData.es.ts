@@ -47,6 +47,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   luma: {
+    heroTitle: 'Ejemplos de video Luma Ray 3.2',
     metaTitle: 'Ejemplos de Luma Ray 3.2 Modify y Reframe | MaxVideoAI',
     metaDescription: "Mira ejemplos de video Luma Ray 3.2 Modify y Reframe, con prompts y ajustes. Edita tu propio video y consulta el precio antes de generar.",
     subtitle: "Cambia una escena con Modify o adapta su encuadre con Reframe: ejemplos de video Luma Ray 3.2.",
@@ -70,8 +71,13 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   wan: {
-    subtitle: "Ejemplos de video Wan con prompts, ajustes y el modelo utilizado en cada resultado.",
-    intro: "Mira ejemplos de Wan para comparar movimiento, encuadre y continuidad. Abre un video para ver su prompt, sus ajustes y su costo registrado, y adáptalo a tu proyecto. Revisa la versión del modelo antes de reutilizar los ajustes.",
+    metaTitle: 'Ejemplos de Wan 3 y Wan 3 Prime: prompts y ajustes | MaxVideoAI',
+    metaDescription: 'Mira ejemplos de video Wan 3 y Wan 3 Prime. Abre cada resultado para ver su prompt, ajustes y costo registrado; las versiones anteriores conservan su etiqueta.',
+    heroTitle: 'Ejemplos Wan 3 y Wan 3 Prime',
+    subtitle: 'Compara videos Wan 3 y Wan 3 Prime. Abre un clip para ver su prompt, ajustes y costo registrado.',
+    guideTitle: 'Wan 3, Wan 3 Prime y resultados anteriores',
+    intro: 'Esta galería reúne Wan 3 y Wan 3 Prime junto con resultados de versiones Wan anteriores. Cada video identifica el modelo utilizado. Mira el clip completo para comparar movimiento, encuadre y continuidad; ábrelo para consultar el prompt, los ajustes y el costo registrado. Revisa el presupuesto actual antes de generar otro video.',
+    sectionTitles: ['Escribir un prompt de video Wan', 'Evaluar los resultados de Wan 3 y Prime', 'Costo registrado y presupuesto Wan actual'],
     promptPatterns: "Describe un sujeto, una acción principal y un movimiento de cámara. Si la toma tiene varias etapas, indica su orden y mantén una secuencia fácil de seguir. Cambia una sola instrucción a la vez durante las pruebas.",
     strengthsLimits: "Revisa todo el video para detectar cambios en el sujeto, cortes inesperados o movimientos que no siguen el prompt. Las fuentes, duraciones y opciones de salida varían según el modelo Wan y el modo elegido.",
     pricingNotes: "La ficha del ejemplo muestra su costo registrado. El modelo, la duración y los demás ajustes determinan una nueva cotización en el estudio. Revisa el precio antes de generar y empieza con una prueba corta para evaluar el resultado.",
@@ -88,6 +94,19 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
         question: "¿Cambiar la duración modifica el precio de Wan?",
         answer: "La duración es uno de los ajustes que pueden cambiar la cotización. Elige el modelo y las opciones que necesitas, y consulta el precio antes de generar.",
       },
+    ],
+  },
+  'happy-horse': {
+    heroTitle: 'Ejemplos de video Happy Horse 1.1 y 1.0',
+    subtitle: 'Mira videos Happy Horse 1.1 y 1.0 y abre cada uno para ver su prompt, ajustes y costo registrado.',
+    intro: 'Compara los ejemplos Happy Horse 1.1 y 1.0 viendo el clip completo. Cada video conserva la etiqueta de su modelo original. Ábrelo para revisar el prompt, la duración y los ajustes, y consulta el presupuesto actual antes de crear el tuyo.',
+    promptPatterns: 'Describe el sujeto, una acción visible y la dirección de cámara. Si partes de una imagen, indica qué debe moverse sin perder la composición original.',
+    strengthsLimits: 'Revisa la estabilidad del sujeto, el movimiento y el encuadre hasta el final. Un ejemplo no garantiza el mismo resultado ni controles idénticos en las versiones 1.1 y 1.0.',
+    pricingNotes: 'La ficha muestra el costo registrado del ejemplo. El estudio calcula un presupuesto nuevo según el modelo, la duración y los ajustes elegidos.',
+    faq: [
+      { question: '¿Todos los videos usan Happy Horse 1.1?', answer: 'No. La galería también contiene resultados Happy Horse 1.0. Revisa el modelo indicado en cada video.' },
+      { question: '¿Puedo partir de un ejemplo Happy Horse?', answer: 'Abre su ficha para ver el prompt y los ajustes, y adáptalos en el estudio. Agrega tus propios archivos si hacen falta y revisa el nuevo presupuesto.' },
+      { question: '¿El mismo prompt creará el mismo video?', answer: 'No. El ejemplo sirve como punto de partida. Revisa el nuevo clip completo, incluidos el movimiento y el final.' },
     ],
   },
   kling: {
@@ -196,31 +215,33 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   pika: {
-    subtitle: 'Ejemplos de Pika pensados para loops cortos, un estilo social marcado y una edición ágil.',
+    heroTitle: 'Ejemplos de video Pika 2.2',
+    subtitle: 'Mira resultados Pika 2.2 y consulta el prompt, los ajustes y el costo registrado de cada video.',
     intro:
-      'Esta página de Pika se centra en formatos cortos y estilizados. Permite reutilizar patrones de movimiento ya probados y ajustar sujeto y estilo sin rehacer toda la configuración.',
+      'Explora los resultados Pika 2.2 viendo cada clip completo. Abre un video para consultar su prompt y sus ajustes, y adapta la idea en el estudio. Un ejemplo es un punto de partida: revisa el nuevo resultado y su presupuesto antes de usarlo.',
     promptPatterns:
-      'Empieza por el estilo, suma la acción principal y cierra con una instrucción breve de cámara.',
+      'Describe el sujeto, una acción clara, el estilo visual y una instrucción breve de cámara. Cambia una sola indicación a la vez durante las pruebas.',
     strengthsLimits:
-      'Pika suele funcionar bien para loops rápidos y piezas muy pensadas para redes. Evita prompts sobrecargados para reducir la inestabilidad.',
+      'Mira el clip completo para comprobar la coherencia del sujeto, la claridad del movimiento y el final. Una miniatura no muestra cómo funciona una transición.',
     pricingNotes:
-      'El precio es más predecible con duraciones cortas y presets constantes.',
+      'La ficha muestra el costo registrado. La duración y los ajustes de salida afectan al nuevo presupuesto en el estudio; revísalo antes de generar variantes.',
     faq: [
       {
         question: '¿Cómo reutilizo bien un ejemplo de Pika?',
-        answer: 'Clona el patrón de movimiento y cambia primero sujeto y estilo.',
+        answer: 'Abre la ficha para consultar el prompt y los ajustes. Adapta sujeto o estilo, y revisa el nuevo resultado sin suponer un movimiento idéntico.',
       },
       {
         question: '¿Estos ejemplos de Pika sirven para variantes de anuncios en redes sociales?',
-        answer: 'Sí, están pensados para iteraciones rápidas.',
+        answer: 'Pueden inspirar variantes cortas. Revisa el clip completo, el formato y los requisitos de uso antes de publicar.',
       },
       {
         question: '¿Cómo mantengo costes estables en Pika?',
-        answer: 'Fija duración y resolución antes de lanzar múltiples variantes.',
+        answer: 'Elige la duración y los ajustes de salida, y consulta el presupuesto actual antes de cada serie.',
       },
     ],
   },
   hailuo: {
+    heroTitle: 'Ejemplos de video MiniMax H3 y H3 Max',
     subtitle: "Ejemplos de video MiniMax H3 Max, H3 y versiones anteriores de Hailuo, con prompts y ajustes.",
     intro: "Mira MiniMax H3 Max y H3 junto a ejemplos anteriores de Hailuo. Abre un video para consultar su prompt, sus ajustes y su costo registrado, y úsalo como punto de partida para tu propia escena.",
     summary: "Cada ejemplo de MiniMax o Hailuo conserva el nombre del modelo que lo generó. Compara el movimiento, la continuidad y el audio, si lo tiene, en todo el video. Las fichas de H3 y H3 Max detallan las fuentes y los ajustes disponibles para tu proyecto.",
@@ -243,6 +264,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   grok: {
+    heroTitle: 'Ejemplos de Grok Imagine Video 1.5',
     subtitle: 'Ejemplos de Grok Imagine Video 1.5 para texto a vídeo, imagen inicial y clips guiados por referencia.',
     intro:
       'Esta página permite estudiar Grok Imagine Video 1.5 mediante la ruta Fal de MaxVideoAI. Incluye texto a vídeo, imagen a vídeo desde una imagen inicial y generación guiada por entre una y siete imágenes de referencia; esta disponibilidad no implica una integración directa con xAI. La galería sirve para elegir una estrategia de entrada, no para asumir que un mismo prompt funciona en todos los modos. El texto es adecuado cuando la composición puede inventarse desde el brief. Una imagen inicial resulta más útil cuando el primer encuadre, la posición del sujeto, el producto, el vestuario o la paleta ya existen. Un conjunto de referencias encaja cuando cada fuente autorizada tiene una función distinta, como identidad, diseño de objeto, entorno o iluminación. Para leer un ejemplo, revisa juntos el prompt, el modo, la duración, la resolución, el encuadre y la salida aceptada. Una imagen atractiva no demuestra por sí sola fidelidad a las referencias, texto incidental legible, manos estables o continuidad hasta el último beat. Define criterios de aceptación antes del render y conserva revisión humana para semejanzas, derechos de las fuentes y seguridad de marca.',
@@ -260,6 +282,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   flux: {
+    heroTitle: 'Ejemplos de FLUX 3 y FLUX 3 Draft',
     subtitle: 'Ejemplos de FLUX 3 y FLUX 3 Draft para texto a vídeo, fotogramas inicial/final y Extend.',
     intro:
       'Esta página compara la ruta FLUX 3 estándar con FLUX 3 Draft mediante la distribución Fal de MaxVideoAI. Incluye texto a vídeo, imagen a vídeo desde un fotograma inicial, transiciones entre primera y última imagen y el flujo Extend separado para continuar un clip existente. La vista de familia ayuda a elegir tanto el nivel de modelo como la entrada. Draft sirve para exploración controlada a 720p cuando el equipo todavía debe validar acción, cámara, compatibilidad de fuentes o lógica de transición. FLUX 3 estándar es el modelo hermano orientado a producción y expone la opción de resolución superior indicada en su página. Ninguna etiqueta elimina la necesidad de revisar la salida. Un ejemplo útil registra el papel de la fuente, el prompt, el modo, la duración, la resolución y la pregunta visual que debe responder. Compara tareas equivalentes: un puente entre dos imágenes se evalúa por el recorrido entre anclas, una extensión por la continuidad con el clip fuente y un inicio de texto por la toma inventada desde el brief. Black Forest Labs es propietario de FLUX; la ruta aquí descrita se distribuye mediante Fal y no afirma ejecución directa en el proveedor.',

@@ -50,6 +50,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   luma: {
     metaTitle: 'Luma Ray 3.2 Modify & Reframe Examples | MaxVideoAI',
     metaDescription: "See Luma Ray 3.2 Modify and Reframe video examples. Inspect prompts and settings for editing a source clip, then check the price before creating your own.",
+    heroTitle: 'Luma Ray 3.2 video examples',
     subtitle: "Luma Ray 3.2 video edits: change a scene with Modify or adapt its framing with Reframe.",
     intro: "Explore Luma Ray 3.2 Modify and Reframe examples. Open a video to inspect the prompt and settings used to edit it. Ray 2 and Ray 2 Flash examples retain their original model labels.",
     promptPatterns: "For Modify, describe what to preserve from the source video, then the change you want. For Reframe, identify the subject that must remain visible and what should fill the new frame. Use guide images or keyframes only in modes that support them.",
@@ -71,8 +72,13 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   wan: {
-    subtitle: "Wan video examples with prompts, settings and the model used for each result.",
-    intro: "Watch Wan examples to compare movement, framing and scene continuity. Open a video for its prompt, settings and recorded cost, then adapt it to your project. Check its model version before reusing the settings.",
+    metaTitle: 'Wan 3 & Wan 3 Prime Examples: Prompts & Settings | MaxVideoAI',
+    metaDescription: 'Watch Wan 3 and Wan 3 Prime video examples. Open each result for its prompt, settings and recorded cost; earlier Wan versions remain identified.',
+    heroTitle: 'Wan 3 & Wan 3 Prime examples',
+    subtitle: 'Compare Wan 3 and Wan 3 Prime videos. Open a clip for its prompt, settings and recorded cost.',
+    guideTitle: 'Wan 3, Wan 3 Prime and earlier results',
+    intro: 'This gallery brings together Wan 3 and Wan 3 Prime, alongside older Wan results. Each video names the model that made it. Watch the full clip for motion, framing and scene continuity, then open it for the actual prompt, settings and recorded cost. Check the current quote before creating a new version.',
+    sectionTitles: ['How to prompt a Wan video', 'What to check in Wan 3 and Prime results', 'Recorded cost and current Wan quote'],
     promptPatterns: "Describe one subject, one main action and a camera movement. If the shot has several stages, put them in order and keep the sequence short enough to follow. Change one instruction at a time when testing.",
     strengthsLimits: "Watch the whole clip for changes in the subject, unexpected cuts and motion that does not follow the prompt. Inputs, duration and output options vary across Wan models, so check the selected version and mode.",
     pricingNotes: "The example shows a recorded cost on its detail page. Your model, duration and other settings determine a new quote in the workspace. Review that quote before generating; start with a short test to assess the result.",
@@ -89,6 +95,19 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
         question: "Does changing the duration change the Wan price?",
         answer: "Duration is one of the settings that can change the quote. Select the model and settings you need, then check the price shown before generating.",
       },
+    ],
+  },
+  'happy-horse': {
+    heroTitle: 'Happy Horse 1.1 & 1.0 video examples',
+    subtitle: 'Watch Happy Horse 1.1 and 1.0 results. Open a video for its prompt, settings and recorded cost.',
+    intro: 'Compare Happy Horse 1.1 and 1.0 examples by watching the complete clip, not just its thumbnail. Each video keeps its original model label. Open one to inspect the prompt, duration and settings used for that result, then check the current quote before making your own.',
+    promptPatterns: 'Describe the subject, one visible action and the camera direction. If you start from an image, say what should move while keeping the source composition recognizable. Test a short shot before extending the idea.',
+    strengthsLimits: 'Look for stable subjects, readable movement and coherent framing through the final moment. Examples show individual outcomes; they do not establish identical controls or guaranteed results across Happy Horse 1.1 and 1.0. Confirm the selected model and mode before reusing a setup.',
+    pricingNotes: 'The video detail records what that example cost when it was made. A new render gets a current quote based on the selected model and settings. Compare costs only after checking the duration and output choices.',
+    faq: [
+      { question: 'Are all these videos made with Happy Horse 1.1?', answer: 'No. The gallery also includes Happy Horse 1.0 results. Read the model label on each video before comparing prompts or settings.' },
+      { question: 'Can I start from a Happy Horse example?', answer: 'Open the video for its prompt and recorded settings, then adapt them in the workspace. Add your own source image if the chosen mode needs one, and review the new quote before generating.' },
+      { question: 'Will the same prompt create the same video?', answer: 'No. An example is a starting point. Review the new result in full, including motion, framing and the ending.' },
     ],
   },
   kling: {
@@ -199,31 +218,33 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   pika: {
-    subtitle: 'Pika examples for short-form creative loops, stylized edits, and social-ready motion.',
+    heroTitle: 'Pika 2.2 video examples',
+    subtitle: 'Watch Pika 2.2 results, then inspect each video’s prompt, settings and recorded cost.',
     intro:
-      'This Pika examples page is built for short-form, stylized output patterns. It helps creators and growth teams quickly clone proven motions, update prompt details, and publish social-ready variants without rebuilding settings from scratch. The content is intentionally focused on Pika behavior only.',
+      'Explore Pika 2.2 results by watching the complete clip. Open a video for the prompt and settings used, then adapt the idea in your workspace. An example is a starting point, not a repeatable motion template; check your new result and current quote before using it.',
     promptPatterns:
-      'Use style-first prompts with one clear action and concise camera direction. Pika examples usually improve when scene scope stays narrow.',
+      'Describe the subject, one clear action, the visual style and a concise camera direction. Change one instruction at a time when testing a variant.',
     strengthsLimits:
-      'Pika is often effective for fast loops and stylized social visuals. Keep prompt structure simple to avoid unstable transitions.',
+      'Watch the full clip for subject consistency, readable motion and a stable ending. A thumbnail cannot confirm how a transition behaves.',
     pricingNotes:
-      'Pricing is easiest to control with short durations and fixed output settings. Validate one successful template, then duplicate.',
+      'The video detail shows its recorded cost. Duration and output settings affect the new quote in the workspace; check it before generating variants.',
     faq: [
       {
         question: 'What is the best way to reuse Pika examples?',
-        answer: 'Clone a relevant example, keep the motion template, and swap only subject/style elements first.',
+        answer: 'Open a relevant video for its prompt and settings. Adapt the subject or style, then review the new result rather than assuming identical motion.',
       },
       {
         question: 'Are Pika examples suitable for social ad variants?',
-        answer: 'Yes. They are optimized for short, stylized, and iteration-friendly outputs.',
+        answer: 'They can inspire short-form variants. Check the full result, format and usage requirements before publishing.',
       },
       {
         question: 'How do I keep Pika costs predictable?',
-        answer: 'Lock duration and resolution presets before running multiple variants.',
+        answer: 'Choose the intended duration and output settings, then check the current quote before each batch.',
       },
     ],
   },
   hailuo: {
+    heroTitle: 'MiniMax H3 & H3 Max video examples',
     subtitle: "MiniMax H3 Max, H3 and earlier Hailuo video examples, with prompts and settings to explore.",
     intro: "Watch MiniMax H3 Max and H3 alongside earlier Hailuo examples. Open a video to inspect its prompt, settings and recorded cost, then use it as a starting point for your own scene.",
     summary: "Each MiniMax or Hailuo example keeps the name of the model that generated it. Compare motion, scene continuity and any audio across the full clip. Use the H3 and H3 Max model pages to check the inputs and settings available for your project.",
@@ -246,6 +267,8 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   grok: {
+    metaTitle: 'Grok Imagine Video 1.5 Examples, Prompts & Settings | MaxVideoAI',
+    heroTitle: 'Grok Imagine Video 1.5 examples',
     subtitle: 'Grok Imagine Video 1.5 examples for text-to-video, opening-image animation, and reference-guided clips.',
     intro:
       'Use this family page to study Grok Imagine Video 1.5 through MaxVideoAI’s Fal route. It covers text-to-video, image-to-video from one opening image, and reference-to-video workflows using one to seven reference images; availability on MaxVideoAI does not imply a direct xAI integration. Treat the gallery as evidence for choosing an input strategy, not as a promise that one prompt works for every mode. Text starts are useful when composition can be invented from the brief. An opening image is better when the first composition, subject placement, wardrobe, product, or palette already exists. A reference set is appropriate when several permitted images have separate jobs, such as identity, object design, environment, or lighting. Review prompt, mode, duration, resolution, framing, and accepted output together. A visually attractive result does not by itself prove reference fidelity, readable incidental text, stable hands, or continuity through the final beat. Compare examples with the same acceptance criteria and keep likeness consent, source rights, and brand safety in the production review.',
@@ -263,6 +286,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   flux: {
+    heroTitle: 'FLUX 3 & FLUX 3 Draft examples',
     subtitle: 'FLUX 3 and FLUX 3 Draft examples for text-to-video, image animation, start/end frames, and Extend.',
     intro:
       'This page compares the standard FLUX 3 route with FLUX 3 Draft through MaxVideoAI’s Fal distribution. Use it for text-to-video, image-to-video from an opening frame, first-and-last-frame transitions, and the separate Extend workflow for continuing an existing clip. The family view helps decide both model tier and input workflow. Draft is for controlled 720p exploration when the team still needs to validate action, camera, source compatibility, or transition logic. Standard FLUX 3 is the production-oriented sibling and exposes the higher resolution option shown on its model page. Neither label removes the need to review the output. A useful example records the source role, prompt, mode, duration, resolution, and visual acceptance question. Compare like with like: a frame bridge should be judged on the path between anchors, an extension on continuity with the source clip, and a text start on the shot invented from the brief. Black Forest Labs owns FLUX; the route described here is Fal-distributed rather than a claim of direct provider execution.',

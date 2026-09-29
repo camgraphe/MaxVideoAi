@@ -85,6 +85,7 @@ type ExamplesPageViewProps = {
     title: string;
     body: string;
   }>;
+  modelLandingGuideTitle?: string;
   modelLandingSummary?: string;
   modelLandingLabel?: string;
   modelLinks: ExamplesModelLink[];
@@ -136,6 +137,7 @@ export function ExamplesPageView({
   locale,
   longDescription,
   modelLandingSections,
+  modelLandingGuideTitle,
   modelLandingLabel,
   modelLandingSummary,
   modelLinks,
@@ -187,10 +189,10 @@ export function ExamplesPageView({
             heroLead={heroLead}
             heroSubtitle={isModelLanding ? heroSubtitle : hubSubtitle}
             heroTitle={heroTitle}
-            locale={locale}
           />
 
           <ExamplesGallerySection
+            familyLabel={isModelLanding ? modelLandingLabel : undefined}
             audioAvailableLabel={galleryUiCopy.audioAvailable}
             detailsCtaLabel={galleryUiCopy.detailsCta}
             engineFilter={selectedEngine?.toLowerCase() ?? null}
@@ -224,7 +226,7 @@ export function ExamplesPageView({
 
           <div className={styles.editorial}>
             {isModelLanding && heroBody && modelLandingLabel ? (
-              <ExamplesFamilyIntro body={heroBody} label={modelLandingLabel} locale={locale} />
+              <ExamplesFamilyIntro body={heroBody} label={modelLandingLabel} locale={locale} title={modelLandingGuideTitle} />
             ) : null}
 
             <ExamplesModelLinksSection

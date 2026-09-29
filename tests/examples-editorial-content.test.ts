@@ -45,3 +45,33 @@ test('hub next steps identify only model links for their engine logos', () => {
     ['/models/wan-3', 'wan-3'],
   ]);
 });
+
+test('Wan gallery copy identifies both current models without erasing older results', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const landing = getExampleModelLanding(locale, 'wan');
+    assert.ok(landing);
+    for (const name of ['Wan 3', 'Wan 3 Prime']) {
+      assert.ok(landing.metaTitle.includes(name), `${locale}: metadata must name ${name}`);
+      assert.ok(landing.heroTitle.includes(name), `${locale}: H1 must name ${name}`);
+      assert.ok(landing.heroSubtitle.includes(name), `${locale}: visible introduction must name ${name}`);
+    }
+    assert.match(landing.intro, /older|anciens?|anteriores?/i);
+    assert.match(landing.guideTitle ?? '', /Wan 3/);
+    assert.equal(landing.sections.length, 3);
+    assert.ok(landing.sections.every((section) => /Wan/i.test(section.title)));
+  }
+});
+
+test('other active example families expose their current version in the visible H1', () => {
+  const versions = new Map([
+    ['hailuo', 'H3'], ['happy-horse', '1.1'], ['luma', '3.2'],
+    ['grok', '1.5'], ['flux', 'FLUX 3'], ['pika', '2.2'],
+  ]);
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const [slug, version] of versions) {
+      const landing = getExampleModelLanding(locale, slug);
+      assert.ok(landing);
+      assert.ok(landing.heroTitle.includes(version), `${locale}/${slug}: H1 must identify ${version}`);
+    }
+  }
+});
