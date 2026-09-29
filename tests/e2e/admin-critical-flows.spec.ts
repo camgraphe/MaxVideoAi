@@ -105,51 +105,54 @@ test.describe('admin critical flows', () => {
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {
     const mutations: string[] = [];
-    // Supply browser-only media for the selected destination. This interaction
-    // must run even when the database's first collection is empty, without writes.
-    await page.route(/\/api\/admin\/playlists\/[^/]+$/, async (route) => {
+    // Keep the opening separate from the two reorderable cards, and intercept
+    // every playlist mutation so this interaction cannot publish any change.
+    const items = ['Opening lead', 'Opening portrait', 'Opening side A', 'Opening side B',
+      'First drag fixture', 'Second drag fixture'].map((prompt, index) => ({
+      id: `drag-fixture-${index}`, engineId: 'wan-3', engineLabel: 'Wan 3', prompt,
+      videoUrl: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4', createdAt: '2026-09-29T00:00:00Z',
+      outputWidth: index === 1 ? 720 : 1280, outputHeight: index === 1 ? 1280 : 720,
+    }));
+    const ids = items.map(item => item.id);
+    const snapshot = { available: true, supported: true, openingAvailable: true, slug: 'family-fixture',
+      isPublic: true, revision: 'r1', config: { mode: 'manual', openingIds: ids.slice(0, 4),
+        orderedIds: ids, excludedIds: [] } };
+    await page.route(/\/api\/admin\/playlists(?:\/[^?#]*)?(?:\?[^#]*)?$/, async (route) => {
       if (route.request().method() !== 'GET') {
         mutations.push(route.request().method());
         await route.abort();
         return;
       }
-      const playlistId = new URL(route.request().url()).pathname.split('/').at(-1);
-      await route.fulfill({
-        json: {
-          ok: true,
-          items: ['First drag fixture', 'Second drag fixture'].map((prompt, orderIndex) => ({
-            playlistId,
-            videoId: `drag-fixture-${orderIndex}`,
-            orderIndex,
-            pinned: false,
-            createdAt: '2026-09-22T00:00:00Z',
-            engineLabel: 'Test media',
-            prompt,
-            visibility: 'public',
-            indexable: true,
-            isPublishedOnSite: true,
-          })),
-        },
-      });
-    });
-    await page.route(/\/api\/admin\/playlists\/[^/]+\/items(?:\/.*)?$/, async (route) => {
-      mutations.push(route.request().method());
-      await route.abort();
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/curation')) {
+        await route.fulfill({ json: { ok: true, snapshot, initialIds: ids, selectedItems: items, selectedTotal: ids.length } });
+      } else if (path.endsWith('/curation/candidates')) {
+        await route.fulfill({ json: { ok: true, items, total: items.length, nextCursor: null } });
+      } else {
+        await route.continue();
+      }
     });
     await openAdminRoute(page, '/admin/playlists');
-    await page.getByLabel('Site destinations', { exact: true }).getByRole('button').first().click();
-    const rows = page.locator('article[draggable]');
+    await expect(page.locator('[data-destination-picker]')).toBeVisible();
+    const opening = page.locator('[data-opening-board] [data-opening-slot]');
+    await expect(opening).toHaveCount(4);
+    const openingBefore = await opening.allTextContents();
+    const rows = page.locator('[data-selected-grid] [data-curation-item]');
     await expect(rows).toHaveCount(2);
     await expect(page.getByText('First drag fixture', { exact: false })).toBeVisible();
-    const before = await rows.allTextContents();
+    const order = () => rows.evaluateAll(cards => cards.map(card => card.getAttribute('data-curation-item')));
+    const before = await order();
     await rows.first().dragTo(rows.nth(1), {
       sourcePosition: { x: 8, y: 35 },
       targetPosition: { x: 150, y: 65 },
     });
-    await expect(page.getByText('Unsaved order changes', { exact: true })).toBeVisible();
-    expect(await rows.allTextContents()).not.toEqual(before);
+    await expect(page.locator('[data-draft-status]')).toHaveText('Unsaved changes');
+    await expect.poll(order).toEqual([...before].reverse());
+    await expect(opening).toHaveText(openingBefore);
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(rows).toHaveText(before);
+    await expect.poll(order).toEqual(before);
+    await expect(page.locator('[data-draft-status]')).toHaveText('Saved');
+    await expect(opening).toHaveText(openingBefore);
     expect(mutations).toEqual([]);
   });
 
