@@ -10,7 +10,8 @@ The `/admin/pricing` cockpit is the single admin entry point for supplier eviden
 - [x] Keep an explicit route from a comparison detail to its pricing rule and the existing server preview/confirmation flow.
 - [x] Hide stale SWR data when the inventory request fails, and show a sign-in/retry path.
 - [x] Confirm comparison, detail and rule flows in an isolated authenticated dev browser at desktop and mobile widths.
-- [ ] Reconnect the user's in-app admin session and inspect the fresh inventory there; that session currently receives 401.
+- [x] Open the user's in-app `localhost:3105` admin tab through the existing local development session and inspect the fresh comparison, supplier detail and rules inventory there.
+- [ ] Diagnose the separate Google OAuth callback error in the in-app browser; the ordinary sign-in flow still does not restore that session.
 
 ## Next: complete commercial control
 
