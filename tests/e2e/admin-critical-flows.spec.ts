@@ -139,7 +139,7 @@ test.describe('admin critical flows', () => {
     const openingBefore = await opening.allTextContents();
     const rows = page.locator('[data-selected-grid] [data-curation-item]');
     await expect(rows).toHaveCount(2);
-    await expect(page.getByText('First drag fixture', { exact: false })).toBeVisible();
+    await expect(rows.getByText('First drag fixture', { exact: true })).toBeVisible();
     const order = () => rows.evaluateAll(cards => cards.map(card => card.getAttribute('data-curation-item')));
     const before = await order();
     await rows.first().dragTo(rows.nth(1), {
