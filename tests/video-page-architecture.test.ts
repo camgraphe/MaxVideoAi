@@ -100,3 +100,13 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(utilsSource, /export function isRenderable/, 'helper module should own renderability guard');
   assert.match(utilsSource, /export type WatchPageData/, 'helper module should export route data type');
 });
+
+test('watch quote reads overlap video data without entering metadata or the public reader payload', () => {
+  const metadata = pageSource.slice(pageSource.indexOf('export async function generateMetadata'), pageSource.indexOf('export default async function VideoPage'));
+  assert.doesNotMatch(metadata, /prepareExampleWatchDetailContext/, 'metadata remains independent of live price policy');
+  assert.ok(pageSource.indexOf('const quotePreparation = prepareExampleWatchDetailContext()') < pageSource.indexOf('const page = await getWatchPageData(params.id);', pageSource.indexOf('export default async function VideoPage')));
+  assert.ok(pageSource.indexOf('const quoteResult = await quotePreparation') > pageSource.indexOf('if (!isRenderable(page))', pageSource.indexOf('export default async function VideoPage')), 'price preparation cannot delay or replace route guards');
+  assert.match(pageSource, /<VideoWatchContent page=\{page\} quoteContext=\{quoteResult\.value\}/);
+  assert.match(contentSource, /buildExampleWatchDetail\(video, signals, quoteContext\)/);
+  assert.doesNotMatch(contentSource, /<ExampleReaderContent[^>]*quoteContext/, 'functions and configuration remain on the server');
+});

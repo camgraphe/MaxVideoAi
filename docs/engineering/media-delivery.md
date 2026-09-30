@@ -360,8 +360,10 @@ and later pages use native-ratio rows. Incomplete opening sets fall back to thos
 one on mobile, with hover/focus priority, a global pause and suspension while the
 reader is open. Cards still delegate reduced-motion, data-saver, hidden-document,
 autoplay rejection and source fallback to `useExampleCardPlayback`. Only the first
-visible poster is prioritized; there is no competing separate hero. Update root
-LCP guidance accordingly when changing this surface again.
+visible poster is prioritized; the other three opening posters are eager with low
+fetch priority, so the browser discovers the complete opening without another
+high-priority hint. The continuation remains lazy. There is no competing separate
+hero. Update root LCP guidance accordingly when changing this surface again.
 
 Every card retains its real standalone watch link. An ordinary click dynamically
 loads `ExampleReader.client.tsx`. `useGalleryReader` preserves gallery page/filter
@@ -430,6 +432,14 @@ Persistent sharing reuses the library's link intents with the canonical link onl
 copy uses the shared clipboard fallback and retains a manual full-text fallback.
 The public detail DTO normalizes database dates into ISO strings for identical RSC
 and JSON output, avoiding server/client differences in the editorial time attribute.
+
+Direct watch pages start the configured engine and price-policy reads alongside
+their watch-data lookup with `prepareExampleWatchDetailContext`. Both context reads
+run concurrently, and every comparison reuses that one request-scoped policy and
+configured catalog. The context remains server-only; only the explicit public
+detail DTO reaches the reader. There is no cross-request quote cache or streamed
+replacement that changes the reader geometry. Verify measured loading before
+claiming that this overlap improves Core Web Vitals.
 
 Direct watch pages pass their already prepared signals to `buildExampleWatchDetail`.
 That path reuses the validated editorial/source-image projection from

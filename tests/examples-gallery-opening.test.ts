@@ -62,6 +62,27 @@ test('later pages keep the complete page without repeating the editorial opening
  finally{dom.window.close();}
 });
 
+test('the opening posters are discoverable immediately without competing with the lead image', async () => {
+  const dom = await renderGallery(true);
+  try {
+    const doc = dom.window.document;
+    const openingImages = [...doc.querySelectorAll('[data-gallery-opening] img')];
+    assert.equal(openingImages.length, 4);
+    assert.deepEqual(openingImages.map(image => image.getAttribute('loading')), ['eager', 'eager', 'eager', 'eager']);
+    assert.deepEqual(openingImages.map(image => image.getAttribute('fetchpriority')), ['high', 'low', 'low', 'low']);
+    const continuationImages = [...doc.querySelectorAll('img')].slice(4);
+    assert.equal(continuationImages.length, 20);
+    assert.ok(continuationImages.every(image => image.getAttribute('loading') === 'lazy'));
+    assert.equal(doc.querySelector('video'), null, 'poster intent must not start additional videos');
+  } finally { dom.window.close(); }
+
+  const laterPage = await renderGallery(true, false);
+  try {
+    assert.equal(laterPage.window.document.querySelectorAll('img[loading="eager"]').length, 1);
+    assert.equal(laterPage.window.document.querySelectorAll('img[loading="lazy"]').length, 23);
+  } finally { laterPage.window.close(); }
+});
+
 test('opening sides and continuation portraits request their actual desktop widths', async () => {
   const dom=await renderGallery(true);
   try {

@@ -2,19 +2,19 @@ import Link from 'next/link';
 import { ExampleReaderContent } from '@/components/examples/ExampleReaderContent';
 import { readerCopy } from '@/components/examples/example-reader-copy';
 import styles from '@/components/examples/example-reader-styles';
-import { buildExampleWatchDetail } from '@/server/example-watch-detail-loader';
+import { buildExampleWatchDetail, type ExampleWatchDetailContext } from '@/server/example-watch-detail-loader';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoUnavailableState } from './VideoUnavailableState';
 
-export async function VideoWatchContent({ page }: { page: WatchPageData }) {
+export async function VideoWatchContent({ page, quoteContext }: { page: WatchPageData; quoteContext?: ExampleWatchDetailContext }) {
   const { video, signals, related, isEligible } = page;
   const canonical = signals.canonicalUrl;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const playbackPoster = buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER, { width: 1200, quality: 72 }) ?? video.thumbUrl ?? FALLBACK_POSTER;
-  const detail = await buildExampleWatchDetail(video, signals);
+  const detail = await buildExampleWatchDetail(video, signals, quoteContext);
   if (!detail) return <VideoUnavailableState backHref={signals.parentPath ?? '/examples'}/>;
   const videoJsonLd = isEligible
     ? {

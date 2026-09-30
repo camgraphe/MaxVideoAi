@@ -44,7 +44,9 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
       className={styles.watchLink} data-analytics-event="cta_click" data-analytics-cta-name="view_example_details" data-analytics-cta-location="examples_gallery">
       {video.rawPosterUrl ? <Image src={video.rawPosterUrl} alt={altText} fill
         className={frame==='side'?styles.crop:styles.native} sizes={posterSizes}
-        quality={52} priority={prioritizePoster} fetchPriority={prioritizePoster ? 'high' : undefined} />
+        quality={52} priority={prioritizePoster}
+        loading={prioritizePoster || frame ? 'eager' : 'lazy'}
+        fetchPriority={prioritizePoster ? 'high' : frame ? 'low' : undefined} />
         : <span className={styles.empty}>{noPreviewLabel}</span>}
       {playbackAttempt ? <video key={playbackAttempt.id} ref={videoRef} src={playbackAttempt.rendition.src}
         muted loop playsInline preload="none" aria-hidden="true" data-examples-card {...events}
