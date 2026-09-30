@@ -93,7 +93,7 @@ export function useAdminBillingProductsController() {
     setNotice(null);
   }, [interactionLocked, products]);
 
-  const updateDraft = useCallback((field: 'label' | 'currency' | 'unitPriceCents', value: string) => {
+  const updateDraft = useCallback((field: 'label' | 'currency' | 'unitPriceCents' | 'dynamicPriceMultiplier', value: string) => {
     if (interactionLocked) return;
     setDraft((current) => current ? { ...current, [field]: value } : current);
     setNotice(null);

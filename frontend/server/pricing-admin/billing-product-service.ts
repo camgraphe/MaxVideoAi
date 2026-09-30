@@ -24,6 +24,8 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { getAngleBillingProductKeyForEngine } from '@/server/tools/angle-request-utils';
 import { getBillingProductKey } from '@/server/tools/character-builder/utils';
 import type { BillingProductRecord } from '@/types/billing';
+import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
+import { buildDynamicToolProductPreviews } from './billing-product-dynamic-preview';
 
 import { PricingAdminError } from './errors';
 import {
@@ -45,6 +47,7 @@ export type BillingProductChangeProposal =
       currency?: unknown;
       unitPriceCents?: unknown;
       active?: unknown;
+      dynamicPriceMultiplier?: unknown;
     }
   | { operation: 'rollback'; targetId: string; eventId: string };
 
@@ -136,6 +139,7 @@ function normalizeJson(value: unknown): PricingChangeJsonValue | null {
 }
 
 function productJson(product: BillingProductRecord): PricingChangeJsonObject {
+  const dynamicPriceMultiplier = resolveDynamicToolPriceMultiplier(product.productKey, product.metadata);
   return {
     productKey: product.productKey,
     surface: product.surface,
@@ -145,6 +149,7 @@ function productJson(product: BillingProductRecord): PricingChangeJsonObject {
     unitPriceCents: product.unitPriceCents,
     active: product.active,
     metadata: normalizeJson(product.metadata),
+    ...(dynamicPriceMultiplier == null ? {} : { dynamicPriceMultiplier }),
   };
 }
 
@@ -159,6 +164,11 @@ function mutableStateFrom(value: unknown, current: BillingProductRecord): Billin
     currency: record.currency,
     unitPriceCents: record.unitPriceCents,
     active: record.active,
+    ...(resolveDynamicToolPriceMultiplier(current.productKey) == null ? {} : {
+      dynamicPriceMultiplier: record.dynamicPriceMultiplier ?? resolveDynamicToolPriceMultiplier(current.productKey,
+        record.metadata && typeof record.metadata === 'object' && !Array.isArray(record.metadata)
+          ? record.metadata as Record<string, unknown> : null),
+    }),
   }, current);
 }
 
@@ -191,12 +201,25 @@ function normalizeUpdate(
   if (proposal.active !== undefined && typeof proposal.active !== 'boolean') {
     throw new PricingAdminError('invalid_payload', 'active must be a boolean');
   }
+  let metadata = current.metadata;
+  if (proposal.dynamicPriceMultiplier !== undefined) {
+    if (resolveDynamicToolPriceMultiplier(productKey) == null) {
+      throw new PricingAdminError('invalid_payload', 'This product has no dynamic price coefficient');
+    }
+    try {
+      const multiplier = resolveDynamicToolPriceMultiplier(productKey, { dynamicPriceMultiplier: proposal.dynamicPriceMultiplier });
+      metadata = { ...current.metadata, dynamicPriceMultiplier: multiplier };
+    } catch (error) {
+      throw new PricingAdminError('invalid_number', error instanceof Error ? error.message : 'Invalid dynamic price multiplier');
+    }
+  }
   return {
     ...current,
     label,
     currency,
     unitPriceCents: unitPriceCents as number,
     active: proposal.active === undefined ? current.active : proposal.active,
+    metadata,
   };
 }
 
@@ -322,6 +345,24 @@ async function previewBillingProductChangeWithExecutor(
   }
   if (context.current.label !== context.proposed.label) warnings.push('The customer-facing billing product label will change.');
   if (context.current.currency !== context.proposed.currency) warnings.push('The billing product currency will change.');
+  const currentDynamic = buildDynamicToolProductPreviews(context.current);
+  const proposedDynamic = buildDynamicToolProductPreviews(context.proposed);
+  const dynamicRows = currentDynamic.map((row, index) => {
+    const next = proposedDynamic[index];
+    if (!next || next.scenarioId !== row.scenarioId) throw new PricingAdminError('unsupported_scenario', 'Dynamic reference scenarios changed');
+    const delta = next.totalCents - row.totalCents;
+    return { scenarioId: row.scenarioId, engineId: context.current.productKey, surface: context.current.surface,
+      currentTotalCents: row.totalCents, proposedTotalCents: next.totalCents, deltaCents: delta,
+      deltaPercent: deltaPercent(row.totalCents, delta), currentProvenance, proposedProvenance,
+      compatibilityProfile: 'fixed-product-current' };
+  });
+  const affectedScenarioIds = [scenarioId, ...dynamicRows.map(row => row.scenarioId)];
+  if (dynamicRows.length) {
+    const before = resolveDynamicToolPriceMultiplier(context.current.productKey, context.current.metadata);
+    const after = resolveDynamicToolPriceMultiplier(context.proposed.productKey, context.proposed.metadata);
+    warnings.push(`Video price is the greater of the product minimum and the source processing estimate × coefficient (${before} → ${after}).`);
+    warnings.push('Processing rows are reference examples, not exhaustive costs. Actual duration, dimensions and target resolution determine the quote. Existing paid snapshots are unchanged.');
+  }
   const projectionState: PricingChangeJsonValue = {
     current: {
       currency: currentSnapshot.currency,
@@ -334,6 +375,7 @@ async function previewBillingProductChangeWithExecutor(
       pricingPolicy: normalizeJson(proposedSnapshot.meta?.pricingPolicy),
     },
     ...(context.rollbackEventId ? { rollbackEventId: context.rollbackEventId } : {}),
+    dynamicReferences: normalizeJson(dynamicRows),
   };
   const previewFingerprint = buildPricingPreviewFingerprint({
     domain: 'billing_product',
@@ -342,7 +384,7 @@ async function previewBillingProductChangeWithExecutor(
     currentState,
     proposedState,
     versionedPolicyVersion: getVersionedPricingPolicy().version,
-    affectedScenarioIds: [scenarioId],
+    affectedScenarioIds,
     unsupportedScenarioIds: [],
     projectionState,
   });
@@ -353,7 +395,7 @@ async function previewBillingProductChangeWithExecutor(
     targetId: context.current.productKey,
     currentState,
     proposedState,
-    affectedScenarioIds: [scenarioId],
+    affectedScenarioIds,
     affectedSurfaces: [context.current.surface],
     rows: [{
       scenarioId,
@@ -366,7 +408,7 @@ async function previewBillingProductChangeWithExecutor(
       currentProvenance,
       proposedProvenance,
       compatibilityProfile: 'fixed-product-current',
-    }],
+    }, ...dynamicRows],
     warnings,
     ...(context.rollbackEventId ? { rollbackEventId: context.rollbackEventId } : {}),
   };
@@ -403,6 +445,7 @@ function mutationFromState(state: PricingChangeJsonValue | null): BillingProduct
     currency: requiredText(record.currency, 'currency'),
     unitPriceCents: record.unitPriceCents as number,
     active: record.active as boolean,
+    metadata: record.metadata as Record<string, unknown> | null,
   };
 }
 

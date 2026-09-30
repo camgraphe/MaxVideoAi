@@ -1,5 +1,6 @@
 import { computeBillingProductSnapshot, repriceCanonicalFixedProductSnapshot } from '@/lib/billing-products';
 import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
+import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 import type { PricingSnapshot } from '@/types/engines';
 import type { BackgroundRemovalOutputCodec, BackgroundRemovalToolEngineDefinition } from '@/types/tools-background-removal';
 import { BackgroundRemovalToolError } from './background-removal-errors';
@@ -26,11 +27,14 @@ export async function resolveBackgroundRemovalPricingContext(params: {
       quantity: 1,
       engineId: params.engine.id,
     });
+    const multiplier = resolveDynamicToolPriceMultiplier(params.billingProductKey, pricing.meta);
+    if (multiplier == null) throw new Error('Dynamic background-removal billing product is unsupported');
     const preview = buildBackgroundRemovalPricingPreview({
       unitPriceCents: pricing.totalCents,
       currency: pricing.currency,
       durationSec: params.videoMetadata.durationSec,
       outputCodec: params.outputCodec,
+      priceMultiplier: multiplier,
     });
     const dynamicCents = Math.max(1, preview.totalCents ?? pricing.totalCents);
     const dynamicFloorCents = pricing.totalCents;

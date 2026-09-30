@@ -87,6 +87,10 @@ Pricing proposals exclude settlement routing. `vendorAccountId` may appear only 
 
 The retained commercial views share `AdminPricingHistory`; the membership view locks rollback controls. The pricing cockpit is linked from Settings navigation. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims. The detailed operating procedure and verification commands live in `docs/engineering/pricing-engine.md` under **Safe price-change runbook**.
 
+### Dynamic video tool coefficients (2026-09-30 continuation)
+
+The Tools editor also exposes the customer coefficient for all three video upscalers and background removal. It shares `AdminDynamicToolPriceField`, the billing-products controller and the existing transactional preview/confirmation/history owner. Only `dynamicPriceMultiplier` is an editable metadata field; source rates and unrelated operational metadata remain separate. Product minimum plus coefficient edits project several real duration/resolution totals in the confirmation dialog. Rollback restores the commercial coefficient, preserving current operational metadata and paid snapshots. Defaults retain prior prices until explicitly edited. See `billing-product-dynamic-preview.ts` and the dated all-product pricing audit.
+
 ## What Belongs Where
 
 GPT Image tariffs use six **Billing size tier** choices from the actual billing owner. Preset aliases, automatic dimensions and custom sizes share their mapped tier; aspect ratio is not a separate priced control. Quality, output count and priced edit references remain distinct. Public estimates require valid known dimensions for auto/custom sizes. Requested pixels remain quote metadata. See [dated coverage evidence](2026-09-30-bounded-tariff-coverage.md#gpt-size-tier-continuation); manual activation stays off.

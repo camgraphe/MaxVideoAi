@@ -36,7 +36,7 @@ sandbox evidence, not a production inventory or a count of executable products.
 | Video / Image | Canonical model billing, effective policy and manual tariff selector | Existing exact variants, unit editing, preview, history and rollback; manual activation remains gated |
 | Audio | `computeCanonicalAudioBillingSnapshot` and shared factual Audio presentation | Seven packs, Seed voice/clone and MiniMax variants, Lyria Clip/Pro, Song, SFX and Ambience; pack-scoped rule editing |
 | Fixed Tools | `computeBillingProductSnapshot` and normalized quantities | Inline unit-price editor reuses billing-products preview/confirm/history service |
-| Dynamic video Tools | Existing upscale/background-removal pricing contexts | Source scenario, estimate, final total and editable minimum; authored multiplier is explicitly separate |
+| Dynamic video Tools | Existing upscale/background-removal pricing contexts and billing-product coefficient | Source scenario, estimate, final total; minimum and coefficient editable with processing examples, confirmation and rollback |
 | Finishing | Canonical finishing quote, factual provider budget and release registry | Seven candidates remain explicit unavailable/unreleased where no qualified tool policy exists; price editing is disabled without a current quote |
 | Storyboard | Underlying GPT Image 2 facts and `computeCanonicalStoryboardBillingSnapshot` | Generate/edit × HD/4K/Ultra, board unit, effective operation policy and canonical tier impact preview |
 
@@ -130,9 +130,6 @@ initialization responsibilities.
 - Complete the previously documented manual model tariff coverage, quote/revision
   binding and settlement provenance gates before activation and removal of the
   legacy global markup. This change does not activate staged model cells.
-- Dynamic video tool multipliers remain authored. Only their real fixed minimum
-  is editable here; a future rate editor must reuse canonical preview and atomic
-  event history rather than creating a parallel formula.
 - Qualify finishing provider profiles and tool-specific policies before release.
   Candidate budgets are not executable customer prices.
 - Supplier contracts and observed invoices remain unconfirmed where evidence is
@@ -141,4 +138,36 @@ initialization responsibilities.
 - The public Audio table retains its existing pack selection; the complete
   seven-pack inventory is currently an admin surface.
 - Verification is bounded reference coverage on local fixtures and a sanitized
-  sandbox, not exhaustive production-state validation or a production build.
+  sandbox; the optimized build is compiled locally without production credentials.
+  It is not exhaustive production-state validation or a deployment.
+
+## Dynamic video Tools continuation
+
+The three video upscalers and Bria background removal now read an optional
+`dynamicPriceMultiplier` from the same persisted billing product as their minimum.
+Missing overrides preserve the reviewed defaults (upscale ×4, background removal
+×2); malformed values fail. The admin accepts finite coefficients from 1 to 1000
+and cannot write arbitrary product metadata or change a supplier rate.
+
+The shared billing-products preview/confirmation service projects reference clips
+at 1/10/30/60 seconds and an additional 2160p example where supported. Its locked
+fingerprint includes full current product state, effective coefficients and those
+actual calculated totals. Confirmation and rollback preserve operational metadata
+and invalidate the product cache. New events record the effective default as well
+as any override; rollback does not silently take a changed operational value from
+an old event.
+
+The compact Tools editor exposes both minimum and coefficient. The compatibility
+billing-products view uses the same field and controller. Processing estimates,
+actual charging, the server Tool/Studio quote and admin comparison all consume the
+same product coefficient. Public Pricing continues to show the product minimum
+plus a live-quote label for source-dependent video processing.
+
+Three new tests first failed on ignored coefficient edits, then passed. The focused
+product/server/rounding suite passes25 tests, admin and tool architecture40 tests,
+and Tool quote consumers6 tests. A disposable Unix-only PostgreSQL integration
+checks persistence, supplier independence, stale preview, old client acceptance,
+rollback, unchanged paid job snapshot and unavailable current database. TypeScript,
+frontend lint, exposure lint and unchanged178-row billing baseline pass. The
+previous committed candidate passed6,420 tests (3 skips) and optimized local build;
+fresh integrated validation of this continuation is pending.

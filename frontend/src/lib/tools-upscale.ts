@@ -1,4 +1,5 @@
 import { getUpscaleToolEngine } from '@/config/tools-upscale-engines';
+import { UPSCALE_VIDEO_DEFAULT_PRICE_MULTIPLIER, validateToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 import type {
   UpscaleMediaType,
   UpscaleMode,
@@ -9,7 +10,7 @@ import type {
 } from '@/types/tools-upscale';
 
 export const UPSCALE_VIDEO_DEFAULT_FPS = 30;
-export const UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER = 4;
+export const UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER = UPSCALE_VIDEO_DEFAULT_PRICE_MULTIPLIER;
 export const UPSCALE_OUTPUT_IMAGE_FETCH_TIMEOUT_MS = 20_000;
 export const UPSCALE_OUTPUT_VIDEO_MIN_FETCH_TIMEOUT_MS = 60_000;
 export const UPSCALE_OUTPUT_VIDEO_MAX_FETCH_TIMEOUT_MS = 10 * 60_000;
@@ -133,6 +134,7 @@ export function buildUpscalePricingPreview(params: {
   videoMetadata?: UpscaleVideoPricingMetadata | null;
   targetResolution?: UpscaleTargetResolution | null;
   upscaleFactor?: number | null;
+  priceMultiplier?: number;
 }): UpscalePricingPreview {
   const unitPriceCents =
     typeof params.unitPriceCents === 'number' && Number.isFinite(params.unitPriceCents)
@@ -174,7 +176,8 @@ export function buildUpscalePricingPreview(params: {
     targetResolution: params.targetResolution,
     factor: params.upscaleFactor,
   });
-  const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
+  const multiplier = validateToolPriceMultiplier(params.priceMultiplier ?? UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER);
+  const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * multiplier));
 
   return {
     totalCents: Math.max(unitPriceCents, dynamicCents),

@@ -8,6 +8,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPricingChangePreviewDialog } from '@/components/admin-system/pricing/AdminPricingChangePreviewDialog';
 import { AdminPricingHistory } from '@/components/admin-system/pricing/AdminPricingHistory';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
+import { AdminDynamicToolPriceField } from '@/components/admin-system/pricing/AdminDynamicToolPriceField.client';
 import { useAdminBillingProductsController } from '../../billing-products/_hooks/useAdminBillingProductsController';
 import { pricingPolicySelectorKey } from '../_lib/pricing-cockpit-view-model';
 
@@ -39,13 +40,16 @@ export function ProductPricingTable({ category, onInspectPolicy, onLock, policyE
   const rows = currentInventory?.rows.filter((row) => row.category === category &&
     `${row.label} ${row.scenario}`.toLowerCase().includes(query.toLowerCase())) ?? [];
   const productEditor = editorOpen && billing.draft && billing.selectedProduct ? <div className="space-y-3 rounded-lg border border-[#cbb9ff] bg-[#f1ebff] p-3">
-      <div className="flex items-center justify-between gap-2"><strong className="text-sm">{billing.selectedProduct.label} · current {money(billing.selectedProduct.unitPriceCents, billing.selectedProduct.currency)}/{billing.selectedProduct.unitKind}</strong>
+      <div className="flex items-center justify-between gap-2"><strong className="text-sm">{billing.selectedProduct.label} · current {billing.draft.dynamicPriceMultiplier === undefined ? '' : 'minimum '}{money(billing.selectedProduct.unitPriceCents, billing.selectedProduct.currency)}/{billing.selectedProduct.unitKind}</strong>
         <button type="button" disabled={locked} onClick={() => setEditorOpen(false)} className="text-xs underline">Close editor</button></div>
-      <div className="flex flex-wrap items-end gap-3"><label className="space-y-1 text-xs"><span className="block">Unit price in cents (100 = {billing.draft.currency} 1)</span>
+      <div className="flex flex-wrap items-end gap-3"><label className="space-y-1 text-xs"><span className="block">{billing.draft.dynamicPriceMultiplier === undefined ? 'Unit price' : 'Minimum'} in cents (100 = {billing.draft.currency} 1)</span>
         <input aria-label="Product unit price in cents" type="number" min={0} step={1} value={billing.draft.unitPriceCents}
           disabled={billing.interactionLocked || policyLocked} onChange={(event) => billing.updateDraft('unitPriceCents', event.target.value)} className="w-36 rounded-md border border-border bg-surface px-3 py-2 text-sm" /></label>
+        <AdminDynamicToolPriceField value={billing.draft.dynamicPriceMultiplier} disabled={billing.interactionLocked || policyLocked}
+          onChange={value => billing.updateDraft('dynamicPriceMultiplier', value)} />
         <AdminActionButton type="button" variant="primary" disabled={billing.interactionLocked || policyLocked} onClick={billing.previewDraft}>Preview price change</AdminActionButton></div>
-      <p className="text-xs text-text-secondary">Applies after explicit confirmation. Dynamic video processing keeps its separate duration/source calculation.</p>
+      <p className="text-xs text-text-secondary">{billing.draft.dynamicPriceMultiplier === undefined ? 'Applies after explicit confirmation.'
+        : 'Customer total = max(minimum, supplier processing estimate × coefficient). Preview compares actual totals across several reference durations and resolutions.'}</p>
     </div> : null;
   return <div className="space-y-3">
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-bg p-3">
@@ -79,7 +83,7 @@ export function ProductPricingTable({ category, onInspectPolicy, onLock, policyE
         <div className="flex flex-wrap items-start justify-between gap-3 border-t border-border bg-bg p-3">
           <ul className="min-w-0 flex-1 space-y-1 text-xs text-text-secondary">{row.notes.map((note) => <li key={note}>{note}</li>)}</ul>
           {row.billingProductKey ? <AdminActionButton type="button" disabled={billing.interactionLocked || policyLocked || !billing.inventory?.products.some((product) => product.productKey === row.billingProductKey)}
-            onClick={() => { billing.selectProduct(row.billingProductKey!); setEditorOpen(true); }}>Edit {row.unit === 's' ? 'minimum' : 'price'}</AdminActionButton>
+            onClick={() => { billing.selectProduct(row.billingProductKey!); setEditorOpen(true); }}>Edit pricing</AdminActionButton>
             : row.policySelector ? <AdminActionButton type="button" disabled={locked || row.totalCents == null} onClick={() => { setPolicyEditorRow(row.id); onInspectPolicy(row.policySelector!); }}>Edit pricing policy</AdminActionButton> : null}
         </div>
         {row.billingProductKey === billing.selectedProductKey ? productEditor : null}

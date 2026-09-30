@@ -1,9 +1,9 @@
 import { computeBillingProductSnapshot, repriceCanonicalFixedProductSnapshot } from '@/lib/billing-products';
 import {
-  UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
   estimateImageUpscaleCostUsd,
   estimateVideoUpscaleCostUsd,
 } from '@/lib/tools-upscale';
+import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 import type { PricingSnapshot } from '@/types/engines';
 import type { UpscaleToolEngineDefinition, UpscaleToolRequest } from '@/types/tools-upscale';
 import {
@@ -55,7 +55,9 @@ export async function resolveUpscalePricingContext({
         targetResolution,
         factor: upscaleFactor,
       });
-      const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
+      const multiplier = resolveDynamicToolPriceMultiplier(billingProductKey, pricing.meta);
+      if (multiplier == null) throw new Error('Dynamic upscale billing product is unsupported');
+      const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * multiplier));
       const dynamicFloorCents = pricing.totalCents;
       pricing = repriceCanonicalFixedProductSnapshot(pricing, dynamicCents, {
         ...(dynamicCents > dynamicFloorCents
@@ -64,7 +66,7 @@ export async function resolveUpscalePricingContext({
         surface: UPSCALE_SURFACE,
         billingProductKey,
         providerEstimateUsd: estimate.costUsd,
-        dynamicMultiplier: UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
+        dynamicMultiplier: multiplier,
         videoMetadata,
       });
       return {

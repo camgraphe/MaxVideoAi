@@ -21,6 +21,7 @@ import type { ProductPricingInventory, ProductPricingRow } from '@/lib/admin/pro
 import { listReferencedBillingProductKeys } from './billing-product-service';
 import { buildAdminAudioReferenceInputs } from './product-policy-scenarios';
 import { catalogSupplierReference } from './catalog-supplier-reference';
+import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 
 /** Bounded comparison scenarios only. No media reads, submissions, charges or schema writes. */
 export async function loadAdminProductPricing(durationSec = 10): Promise<ProductPricingInventory> {
@@ -74,7 +75,10 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
         unit: engine?.mediaType === 'video' || background ? 's' : product.unitKind,
         billingProductKey: product.productKey, notes: [`Fixed ${engine?.mediaType === 'video' || background ? 'minimum' : 'unit price'}: ${product.unitPriceCents} cents.`,
           ...(product.active ? [] : ['Inactive product.']),
-          ...(engine?.mediaType === 'video' || background ? ['Final video price also depends on duration, dimensions and processing. Editing the minimum does not edit the authored dynamic multiplier.'] : [])] };
+          ...(engine?.mediaType === 'video' || background ? [
+            `Customer coefficient: ×${resolveDynamicToolPriceMultiplier(product.productKey, product.metadata)} on the processing estimate, subject to the fixed minimum.`,
+            'Minimum and coefficient are editable together. Actual duration, dimensions and processing determine the final price; supplier contract and invoice remain unconfirmed.',
+          ] : [])] };
       const characterQuality = (['draft', 'final'] as const).find((quality) => getBillingProductKey(quality) === product.productKey);
       const angle = ANGLE_TOOL_ENGINES.find((item) => [false, true].some((multi) => getAngleBillingProductKeyForEngine(item.id, multi) === product.productKey));
       if (characterQuality) {
