@@ -14,6 +14,8 @@ For each of four routes (hub, Wan family, landscape watch, portrait watch) on mo
 
 An early dev-server fixture/First Play smoke runs before the expensive builds; it is functional evidence only. The production-build smoke and complete Lighthouse matrix still run afterward. First Play contexts click the real **Reject all** consent button before Play; their choice is isolated from the Lighthouse profiles, whose initial banner is untouched. Failures preserve the original error and a viewport screenshot.
 
+The first diagnostic preflight confirmed an existing pinned-main mobile defect: the control-bar gradient intercepts clicks on its center Play button. Paired First Play uses each version's actual control-bar button, without forcing a click or changing baseline application code. The candidate center button is additionally tested in fresh contexts for both routes/devices; those rows are labelled `center`, separate from paired `controls` timings. The production check therefore requires 12 successful playback rows.
+
 Local fixture sanity checks (no browser measurement):
 
 ```bash

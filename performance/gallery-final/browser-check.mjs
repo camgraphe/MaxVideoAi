@@ -13,7 +13,10 @@ const routes = mode === 'prewarm'
 try {
   for (const device of ['mobile', 'desktop']) {
     for (const route of routes) {
-      for (const [variant, base] of [['baseline', baseline], ['candidate', candidate]]) {
+      const cases = [['baseline', baseline], ['candidate', candidate]].flatMap(([variant, base]) =>
+        (mode === 'play' && variant === 'candidate' ? ['controls', 'center'] : [mode === 'play' ? 'controls' : 'none'])
+          .map(control => [variant, base, control]));
+      for (const [variant, base, control] of cases) {
         // A fresh context keeps First Play cold for each version and route.
         const context = await browser.newContext(device === 'mobile'
           ? { viewport: { width: 412, height: 823 }, deviceScaleFactor: 1.75, isMobile: true, hasTouch: true }
@@ -49,18 +52,22 @@ try {
               video.addEventListener('playing', () => { clearTimeout(timeout); resolve(true); }, { once: true });
               video.addEventListener('error', () => { clearTimeout(timeout); reject(new Error(`media error ${video.error?.code}`)); }, { once: true });
             }));
+            // Pinned main's gradient overlaps its center button on mobile. Use
+            // each real control bar for the paired timing; also test the new
+            // center control separately in its own cold context.
             const playButton = variant === 'baseline'
-              ? page.locator('button[aria-label^="Play "]').first()
-              : page.locator('button.video-reader-centerPlay');
+              ? page.locator('main button[aria-label="Play video"]').first()
+              : control === 'center' ? page.locator('button.video-reader-centerPlay')
+                : page.locator('.video-reader-controls button[aria-label="Play video"]');
             // Attach handlers to both promises immediately so a blocked click cannot
             // be hidden by an unhandled evaluate rejection when the browser closes.
             await Promise.all([playing, playButton.click({ timeout: 10000 })]);
-            rows.push({ variant, device, route, status: response.status(), requestsBeforePlay, firstPlayMs: Date.now() - start, mediaRequests: requests });
+            rows.push({ variant, device, route, control, status: response.status(), requestsBeforePlay, firstPlayMs: Date.now() - start, mediaRequests: requests });
           }
         } catch (error) {
-          const screenshot = output.replace(/\.json$/, `-${variant}-${device}-failure.png`);
+          const screenshot = output.replace(/\.json$/, `-${variant}-${device}-${control}-failure.png`);
           await page.screenshot({ path: screenshot }).catch(() => undefined);
-          rows.push({ variant, device, route, error: String(error), screenshot, mediaRequests: requests });
+          rows.push({ variant, device, route, control, error: String(error), screenshot, mediaRequests: requests });
           throw new Error(`${variant} ${device} ${route}: ${String(error)}`, { cause: error });
         } finally {
           await page.close();
