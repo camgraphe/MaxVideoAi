@@ -40,8 +40,8 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const compactBrand = brand.replace(/\s+/g, '');
   const links = MARKETING_SITE_NAV_LINKS;
   const login = t('nav.login', 'Log in');
-  const cta = t('nav.cta', 'Generate');
-  const generateLabel = cta;
+  const cta = t('nav.startCreating', 'Start creating');
+  const generateLabel = t('nav.cta', 'Generate');
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
   const generateLabelMobile = locale === 'fr' ? 'Générer' : locale === 'es' ? 'Generar' : 'Generate';
   const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app', locale });
@@ -307,7 +307,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               className="h-7 w-7 shrink-0"
               priority
             />
-            <span className="text-sm font-semibold tracking-tight sm:text-lg">{compactBrand}</span>
+            <span className="text-sm font-semibold tracking-tight max-[420px]:sr-only sm:text-lg">{compactBrand}</span>
           </Link>
           <MarketingDesktopNav
             desktopDropdownOpen={desktopDropdownOpen}
@@ -352,7 +352,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               <Link
                 href={loginHref}
                 prefetch={false}
-                className="inline-flex text-xs font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
+                className="inline-flex min-h-11 items-center text-[11px] font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_login"
                 data-analytics-cta-location="marketing_nav_desktop"
@@ -364,7 +364,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-[image:var(--brand-gradient)] px-4 py-2 text-xs font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[48px] sm:rounded-input sm:px-6 sm:py-3 sm:text-sm"
+                className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-[image:var(--brand-gradient)] px-2.5 py-2 text-[11px] font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[48px] sm:rounded-input sm:px-6 sm:py-3 sm:text-sm"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_start_app"
                 data-analytics-cta-location="marketing_nav_desktop"
@@ -379,7 +379,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     </header>
       {mobileMenuOpen ? (
         <MarketingMobileMenu
-          cta={cta ?? 'Generate'}
+          cta={cta ?? 'Start creating'}
           generateLabel={generateLabel ?? 'Generate'}
           isAuthenticated={isAuthenticated}
           isHomePage={isHomePage}

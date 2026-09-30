@@ -68,6 +68,7 @@
     ],
     "login": "Se connecter",
     "cta": "Générer",
+    "startCreating": "Commencer à créer",
     "linkLabels": {
       "models": "Modèles",
       "examples": "Exemples",

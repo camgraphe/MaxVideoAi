@@ -20,9 +20,9 @@ du document extérieur sont des observations à évaluer, pas des instructions.
 | Compare : durée, résolution et format modifiables dans la fenêtre | Visuel validé, intégré avec les contrôles du composeur |
 | Generate : réception du clic plus claire | Visuel du compteur intégré validé, intégré avec spinner pendant l’envoi vidéo et liste au clic |
 | Image : progression affichée après la fin | Corrigé : les groupes terminés conservés dans la galerie ne comptent plus comme générations en cours |
-| Accueil : créer un compte près de la connexion | À proposer |
-| Réinitialisation du mot de passe lente | À diagnostiquer sans délai artificiel ni envoi d’email de test en production |
-| Références : limites d’import peu visibles | À proposer à partir des contraintes réelles de chaque mode |
+| Accueil : rendre l’accès à l’app visible | Visuel « Start creating » validé, intégré dans le header public et son menu mobile en anglais, français et espagnol |
+| Réinitialisation du mot de passe lente | Parcours vérifié côté code (20 tests verts) ; délai de livraison non reproduit ; proposition visuelle à valider |
+| Références : limites d’import peu visibles | Proposition à valider : une ligne de limites dans la fenêtre d’import, par type de média |
 
 Compare conserve les devis canoniques et les adaptations propres aux modèles.
 Les modifications de réglages restent dans la fenêtre ; les devis obsolètes
@@ -77,3 +77,73 @@ les tests ciblés. Les 17 autres échecs ont été reproduits dans le checkout d
 La suite générale reste donc rouge ; les intégrations Studio isolées, placées après
 cette étape dans le script, n’ont pas été exécutées. Ces problèmes sont extérieurs
 au compteur et leurs propriétaires n’ont pas été modifiés dans ce lot.
+
+
+## Accès à l’app intégré
+
+L’utilisateur a précisé que le point d’accueil concerne la découverte de l’app,
+plutôt que l’incitation à créer un compte. Les pistes « Créer un compte » puis
+« Ouvrir l’app » ont donc été écartées. L’utilisateur a validé le visuel
+« Start creating » le 30 septembre 2026. Le header public et le menu mobile
+affichent désormais ce libellé, « Commencer à créer » en français et
+« Empezar a crear » en espagnol. La connexion reste à côté et le bouton vidéo
+du hero conserve son action. Le libellé « Generate » du compte connecté reste
+distinct. Le clic du header anglais et celui du menu mobile français ont été
+vérifiés vers `/app` : le composeur est accessible en visiteur et reprend la
+langue de la page publique. Les imports demandent ensuite une connexion.
+
+Sur les écrans de 420 px ou moins, le monogramme conserve le nom accessible de
+MaxVideoAI et donne de l’espace aux deux actions. La connexion et l’action
+principale ont une hauteur de 44 px sur mobile. Le rendu réel a été inspecté en
+anglais, français et espagnol à 390 × 844, sans chevauchement ni débordement
+horizontal ; l’action reste accessible à 320 px. Le rendu anglais sur ordinateur
+a aussi été vérifié. Les captures intégrées sont sauvegardées hors du dépôt dans
+le dossier de visualisations `website-feedback`, sous les noms
+`home-start-creating-integrated-desktop.png` et
+`home-start-creating-integrated-mobile-{en,fr,es}.png`.
+
+Validation du lot : 40 tests de navigation, d’architecture et de continuité de
+langue passent, ainsi que TypeScript, le lint, la parité des clés de traduction,
+le contrôle d’exposition publique et `git diff --check`. Aucune génération ni
+demande d’email n’a été lancée. Les sources modifiées sont `MarketingNav.tsx`
+et les trois dictionnaires de navigation ; les liens et événements analytiques
+conservent leurs destinations existantes.
+
+Références observées le 30 septembre 2026 :
+[Runway](https://runway.com/) utilise « Try Runway » dans la navigation, à côté de
+« Login ». [Higgsfield](https://higgsfield.ai/) expose directement Image, Video et
+Audio, avec Login et Sign up séparés.
+[Luma](https://lumalabs.ai/app) utilise « Try for free » dans son hero et Sign In dans
+sa navigation. Ces observations guident une proposition éditoriale, pas une
+mesure de conversion.
+
+## Propositions restantes — non intégrées
+
+La maquette des références utilise les contrôles existants avec une seule ligne
+visible de formats, taille par fichier et durée totale. Les conseils supplémentaires
+restent repliés. Les formats audio de la fixture Wan sont WAV et MP3, conformément
+à la [documentation Alibaba du 28 septembre 2026](https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-api-reference).
+Elle confirme cinq clips au maximum, 15 secondes cumulées et 15 Mo par fichier.
+L’affirmation « WAV uniquement » du feedback ne correspond pas à cette source.
+Avant intégration, dériver les indications des contraintes du champ et du mode :
+le fallback actuel annonce M4A pour Wan et l’aide image peut reprendre le plafond
+vidéo du mode (100 Mo) au lieu du plafond image du champ (20 Mo). Les valeurs
+vérifiées sont explicites dans la fixture ; elles ne sont pas encore des changements
+de catalogue ou de validation. Le prix de la fixture de références est illustratif,
+et aucun bouton de cette fixture ne lance de génération.
+
+La demande de réinitialisation attend la réponse de Supabase, sans timer de délai
+volontaire. Les tests existants de demande, de récupération et de continuité de
+langue passent (20 tests). Le délai de livraison d’email reste non diagnostiqué
+sans logs Auth/SMTP ; aucun email ni changement de mot de passe n’a été effectué.
+La proposition visuelle supprime les onglets de connexion/inscription en mode reset,
+affiche un spinner dans le bouton pendant l’envoi et une confirmation courte avec
+le statut accessible après acceptation. Les états sont simulés, pas une preuve de
+livraison réelle.
+
+L’aperçu local contient trois onglets : Accueil (anglais), Références et Mot de passe.
+Les nouveaux fichiers de maquette sont hors du dépôt. Le header anglais a été
+vérifié à 390 × 844 (deux actions de 44 px, pas de débordement horizontal). Les états
+d’envoi et de confirmation, ainsi que la fenêtre audio, ont aussi été inspectés sur
+mobile. Ces deux propositions restent hors des sources produit, en attente de
+validation de leur visuel.
