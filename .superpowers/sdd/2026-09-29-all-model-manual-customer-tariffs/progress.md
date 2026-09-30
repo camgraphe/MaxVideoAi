@@ -389,3 +389,19 @@ repeatable-read/read-only transaction, requires clean committed code, refuses
 overwrite and leaves original staged data/history/global switch unchanged.
 Fresh full private matrix preparation and final types/lint checks follow commit.
 Task1 and6 remain partial; no support/provider/payment/storage/push/deployment.
+
+Committed5418f7d30. Fresh actual command produces20113/20113 accepted quotes,
+20089 unchanged/24 approved +1cent floors,14691 inactive versioned cells,
+552 reviewed bounded classes. Actual artifact integrity check passes and local
+readiness rejects exactly the three unbounded domains. Capture at
+2026-09-30T23:06:40.278Z (Oct1 local); fingerprint
+5e07f3bb2849264a80497619fc4ece4a05524440dccbf6ee99127d7f005954f0.
+Artifacts/tmp/maxvideoai-pricing-release-20261001-5418f7d. Original sourceDB
+read-only before/after:revision3/inactive,66549 cells,13 products,0 coefficient
+overrides,Topaz80/Flash18 minima; no writes/history changes. Main/origin/main/
+fresh ls-remote10589cc6b aligned. TS, app/new-owner lint/exposure/diff pass.
+New code is operational preparation only, no full-suite/build rerun claim.
+Browser reads existing actual admin with supplier/customer per-second rates and
+margin/simulator; tab2 marked deliverable, no edits/confirmation or new auth.
+Following documentation commit requires a fresh candidate to bind final HEAD;
+no complete-plan/final-review/activation claim, workspace remains for continuation.

@@ -332,3 +332,31 @@ by this smoke. A final six-phrase EN/FR/ES current-estimate copy correction pass
 Full manual activation still requires the previously documented unbounded-domain,
 versioned seed/certificate and fresh production parity gates. No production change
 or publication occurred.
+## Local release preparation after main rebase — 2026-10-01
+
+Code `5418f7d30` adds `pnpm pricing:release:local`. A fresh read-only local run
+accepts all 20,113 captured scenarios against the inactive candidate: 20,089
+unchanged and exactly the 24 approved GPT Image 2.5 +1-cent floors. The artifact
+has 14,691 versioned cells and 552 bounded continuous classes. Candidate and
+report integrity were checked on the actual generated files; local readiness is
+refused for the three unresolved domains. No production certificate is issued.
+
+The original local database remains revision 3, inactive, with 66,549 staged
+cells, 13 products and zero dynamic coefficient overrides. Topaz/Flash minima
+remain 80/18 cents. The admin remains available on localhost:3106 and shows
+current supplier/customer per-second prices, estimated margin and its simulator.
+The local main, origin/main and fresh remote main are all
+`10589cc6b368bae3647ec9d00fba1b73c8b20128` at this check.
+
+New operational tests: six RED→GREEN checks, integrated seed/compiler 24/24;
+TypeScript, app/new-owner lint, exposure and diff checks pass. This continuation
+changes no billing kernel, provider execution, UI or production configuration;
+the earlier full rebased code validation remains separate evidence. No new
+full-suite/build claim is made for the operational tooling.
+
+Still required: full-domain independent customer tariffs for Ray 2/Flash Modify
+and H3 Max reference budgets, then complete versioned seed evidence, locked
+atomic local activation/event acceptance, and separately authorized fresh
+effective production parity. Source account/invoice evidence and legacy direct
+payment reconciliation retain their preceding operational gates. Current local
+preparation reports must not be accepted as production or activation tokens.
