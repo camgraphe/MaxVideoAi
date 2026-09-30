@@ -1,6 +1,6 @@
 import { buildExampleRecreationSnapshot } from '../_lib/workspace-example-recreation';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
@@ -48,6 +48,12 @@ import { sharedVideoLoadFailureCopy } from '../_lib/workspace-shared-video-copy'
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
+type SharedVideoImport = {
+  sourceId: string;
+  searchString: string;
+  generation: () => boolean;
+  videoId?: string;
+};
 
 type UseWorkspaceVideoSettingsOptions = {
   locale?: string;
@@ -155,6 +161,42 @@ export function useWorkspaceVideoSettings({
   const appliedStoryboardHandoffRef = useRef<string | null>(null);
   const appliedSharedVideoIdRef = useRef<string | null>(null);
   const exampleRecreationRef = useRef<{ videoId: string; searchString: string } | null>(null);
+  const sharedVideoImportRef = useRef<SharedVideoImport | null>(null);
+  const [settledSharedImport, setSettledSharedImport] = useState<SharedVideoImport | null>(null);
+  const [committingSharedImport, setCommittingSharedImport] = useState<SharedVideoImport | null>(null);
+  // Keep the composer closed until this explicit import commits or fails. Startup
+  // schema/settings reconciliation can then run without being mistaken for a user edit.
+  const sharedVideoImportPending = Boolean(fromVideoId && (
+    settledSharedImport?.sourceId !== fromVideoId ||
+    settledSharedImport.searchString !== searchString ||
+    settledSharedImport.generation !== valid
+  ));
+  const finishSharedVideoImport = useCallback((imported: SharedVideoImport, applied: boolean) => {
+    if (!valid() || imported.generation !== valid || sharedVideoImportRef.current !== imported ||
+      imported.sourceId !== fromVideoId || imported.searchString !== searchString) return;
+    setSettledSharedImport(imported);
+    if (applied) {
+      const params = new URLSearchParams(imported.searchString);
+      params.delete('from');
+      const next = params.toString();
+      replaceRoute(next ? `/app?${next}` : '/app');
+    }
+  }, [valid, fromVideoId, searchString, replaceRoute]);
+  // Active-draft persistence runs earlier in this commit. Only now may clearing
+  // `from` let ordinary draft restoration run again without restoring the old setup.
+  useLayoutEffect(() => {
+    if (!committingSharedImport) return;
+    finishSharedVideoImport(committingSharedImport, true);
+    setCommittingSharedImport(null);
+  }, [committingSharedImport, finishSharedVideoImport]);
+  useEffect(() => {
+    if (!fromVideoId) setSettledSharedImport(null);
+  }, [fromVideoId]);
+  useLayoutEffect(() => {
+    // A new explicit source owns subsequent writes. Clearing our completed `from`
+    // param still lets that source's original job enrich its freshly imported draft.
+    if (fromVideoId) pendingRecallRef.current = null;
+  }, [fromVideoId, searchString, valid]);
 
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
@@ -280,6 +322,11 @@ export function useWorkspaceVideoSettings({
 
   useEffect(() => {
     if (!activeDraftReady || !valid()) return;
+    const imported = sharedVideoImportRef.current;
+    if (sharedVideoSettings && imported && (
+      imported.videoId !== sharedVideoSettings.id || imported.sourceId !== fromVideoId ||
+      imported.searchString !== searchString || imported.generation !== valid
+    )) return;
     const recreation = exampleRecreationRef.current;
     const hydrationId = recreation && recreation.videoId === sharedVideoSettings?.id
       ? `${recreation.videoId}:${recreation.searchString}`
@@ -300,12 +347,17 @@ export function useWorkspaceVideoSettings({
           ? 'Esta configuración ya no está disponible con este modelo. Elige los ajustes en la aplicación.'
           : 'This configuration is no longer available with this model. Choose your settings in the app.');
       // Do not hydrate the original job: it would replace the chosen model and may restore private inputs.
-      return;
+    } else {
+      applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
+      void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
     }
-    applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
-    void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
+    if (imported?.videoId === sharedVideoSettings.id && imported.generation === valid) {
+      setCommittingSharedImport(imported);
+    }
   }, [
     activeDraftReady,
+    fromVideoId,
+    searchString,
     valid,
     applyVideoSettingsSnapshot,
     engines,
@@ -411,21 +463,25 @@ export function useWorkspaceVideoSettings({
 
   useEffect(() => {
     if (!fromVideoId || !activeDraftReady || !valid()) return undefined;
-    const revision = revisionRef.current;
+    if (!sharedVideoImportPending) return undefined;
+    const imported: SharedVideoImport = { sourceId: fromVideoId, searchString, generation: valid };
+    sharedVideoImportRef.current = imported;
     let cancelled = false;
     (async () => {
-      let shouldStripParam = false;
       try {
         const res = await authFetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, {
           cache: 'no-store',
         });
         if (!res.ok) throw new Error('Shared video request failed');
         const json = await res.json();
-        if (cancelled || !valid() || revisionRef.current !== revision) return;
+        if (cancelled || !valid()) return;
         if (!json?.ok || !json.video || typeof json.video.id !== 'string') {
           throw new Error('Shared video response unavailable');
         }
         const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
+        imported.videoId = video.id;
+        // A fresh explicit choice may select the same video again after editing it.
+        appliedSharedVideoIdRef.current = null;
         exampleRecreationRef.current = new URLSearchParams(searchString).get('remix') === '1'
           ? { videoId: video.id, searchString }
           : null;
@@ -442,19 +498,11 @@ export function useWorkspaceVideoSettings({
           aspectRatio: video.aspectRatio ?? undefined,
           prompt: video.prompt ?? video.promptExcerpt ?? undefined,
         });
-        shouldStripParam = true;
       } catch (error) {
-        console.warn('[app] failed to load shared video', error);
-        if (!cancelled && valid() && revisionRef.current === revision) {
+        if (!cancelled && valid()) {
+          console.warn('[app] failed to load shared video', error);
           setNotice(sharedVideoLoadFailureCopy(locale));
-        }
-      } finally {
-        if (cancelled || !valid() || revisionRef.current !== revision) return;
-        if (shouldStripParam && searchString.includes('from=')) {
-          const params = new URLSearchParams(searchString);
-          params.delete('from');
-          const next = params.toString();
-          replaceRoute(next ? `/app?${next}` : '/app');
+          finishSharedVideoImport(imported, false);
         }
       }
     })();
@@ -463,6 +511,8 @@ export function useWorkspaceVideoSettings({
     };
   }, [
     activeDraftReady,
+    sharedVideoImportPending,
+    finishSharedVideoImport,
     valid,
     fromVideoId,
     locale,
@@ -607,6 +657,7 @@ export function useWorkspaceVideoSettings({
   ]);
 
   return {
+    sharedVideoImportPending,
     applyVideoSettingsSnapshot,
     hydrateVideoSettingsFromJob,
     applyVideoSettingsFromTile,

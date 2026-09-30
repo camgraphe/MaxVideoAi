@@ -464,6 +464,12 @@ one DB policy read across the response. Show the current model when compatible a
 up to three compatible alternatives closest in price, without claiming equal quality.
 `buildExampleRecreationHref` passes the full scalar scenario through login; generation
 always requotes. Ordinary `/app?from=…` continues the original reuse flow.
+That flow waits for the selected example to commit before exposing the composer or
+clearing `from`; startup draft reconciliation cannot discard the import. Source,
+route and account guards reject stale responses. The public video read projects only
+the validated `requestedResolution` scalar from the stored settings, without returning
+the raw snapshot or private inputs. Measured output dimensions take precedence;
+the recorded resolution fills missing dimensions rather than selecting the engine default.
 
 Regression coverage: `examples-catalog-pagination-postgres`, `examples-discovery-layout`,
 `gallery-reader-navigation-dom`, `example-watch-detail`, `example-recreation`,

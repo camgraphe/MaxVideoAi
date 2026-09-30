@@ -285,7 +285,7 @@ export default function AppClientPage({
     authLoading: app.authLoading,
     engineCount: app.engines.length,
     enginesError: app.enginesError,
-    hasForm: activeDraft.ready && Boolean(routeForm.form),
+    hasForm: activeDraft.ready && Boolean(routeForm.form) && !videoSettings.sharedVideoImportPending,
     hasSelectedEngine: Boolean(composer.selectedEngine),
     initialPreviewFallbackGroup: previewState.initialPreviewFallbackGroup,
     initialPreviewPosterSrc: previewState.compositePreviewPosterSrc,

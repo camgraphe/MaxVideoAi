@@ -1,4 +1,4 @@
-import { publicExampleResolution } from '@/lib/example-recreation';
+import { publicExampleRequestedResolution, publicExampleResolution } from '@/lib/example-recreation';
 import type { SharedVideoPreview } from '@/lib/video-preview-group';
 
 export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVideoPreview): unknown {
@@ -21,7 +21,9 @@ export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVid
       durationOption: null,
       numFrames: null,
       aspectRatio,
-      resolution: publicExampleResolution(sharedVideo.outputWidth, sharedVideo.outputHeight),
+      resolution: sharedVideo.outputWidth && sharedVideo.outputHeight
+        ? publicExampleResolution(sharedVideo.outputWidth, sharedVideo.outputHeight)
+        : publicExampleRequestedResolution(sharedVideo.requestedResolution),
       fps: null,
       iterationCount: 1,
       audio: typeof sharedVideo.hasAudio === 'boolean' ? sharedVideo.hasAudio : null,
