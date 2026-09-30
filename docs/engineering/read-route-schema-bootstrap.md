@@ -15,6 +15,10 @@ configuration as part of a customer request.
   Create, update, delete and reorder helpers retain their mutation bootstrap.
 
 - `GET /api/jobs` reads `app_jobs` and optionally enriches from `job_outputs`.
+- `GET /api/videos/[videoId]` reads an existing shared video without global billing
+  bootstrap. Public sharing remains readable independently of search indexability;
+  private videos still require their owner and responses stay `private, no-store`.
+  Its indexing PATCH retains authentication and mutation-side initialization.
 - `GET /api/jobs/[jobId]` reads the owned generation and existing `job_outputs`
   projection without global billing or media schema bootstrap. Its bounded legacy
   output repair remains a mutation owner only when the migrated projection is

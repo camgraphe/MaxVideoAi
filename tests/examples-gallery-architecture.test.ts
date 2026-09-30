@@ -30,7 +30,7 @@ test('examples gallery delegates card rendering, helpers, responsive columns, an
   assert.match(cardSource, /IntersectionObserver|AudioEqualizerBadge|data-examples-card/, 'card should own media loading and hover playback');
   assert.match(cardSource, /useExampleCardPlayback/, 'card playback delegates attempt, visibility and preference handling');
   assert.match(helpersSource, /export function dedupeExamples|export function parseAspectRatio/, 'helpers should own gallery pure logic');
-  assert.match(masonryStylesSource, /column-count:\s*1|column-count:\s*2|column-count:\s*3/, 'CSS should own responsive columns');
+  assert.match(masonryStylesSource, /grid-template-columns|flex-wrap/, 'CSS should own responsive columns');
   assert.match(typesSource, /export type ExampleGalleryVideo|export type ExampleSort/, 'types module should own public gallery contracts');
   assert.match(gridSource, /detailsCtaLabel=\{detailsCtaLabel\}/, 'grid should pass the detail affordance to every card');
   assert.match(cardSource, /aria-label=\{watchAnchorText\}/, 'the full-card watch link should own the descriptive accessible name');

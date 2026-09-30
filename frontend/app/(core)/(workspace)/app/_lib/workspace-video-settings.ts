@@ -1,8 +1,8 @@
+import { resolveExampleResolution } from './workspace-example-resolution';
 import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile } from '@/components/QuadPreviewPanel';
-import type { SharedVideoPreview } from '@/lib/video-preview-group';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { ReferenceAsset } from './workspace-assets';
 import { coerceStoredExtraInputValues, type FormState } from './workspace-form-state';
@@ -302,7 +302,9 @@ export function resolveVideoSettingsSnapshot(
           ? core.durationOption
           : undefined,
       numFrames: readInteger(core.numFrames),
-      resolution: typeof core.resolution === 'string' ? core.resolution : undefined,
+      resolution: typeof core.resolution === 'string'
+        ? meta.derived === true ? resolveExampleResolution(engine, mode, core.resolution) ?? core.resolution : core.resolution
+        : undefined,
       aspectRatio:
         typeof core.aspectRatio === 'string'
           ? meta.derived === true
@@ -386,36 +388,7 @@ export function buildVideoSettingsSnapshotFromTile(tile: QuadPreviewTile): unkno
   };
 }
 
-export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVideoPreview): unknown {
-  const durationSec =
-    typeof sharedVideo.durationSec === 'number' && sharedVideo.durationSec > 0 ? sharedVideo.durationSec : null;
-  const aspectRatio =
-    typeof sharedVideo.aspectRatio === 'string' && sharedVideo.aspectRatio.trim().length
-      ? sharedVideo.aspectRatio.trim()
-      : '16:9';
-  return {
-    schemaVersion: 1,
-    surface: 'video',
-    engineId: sharedVideo.engineId,
-    engineLabel: sharedVideo.engineLabel,
-    inputMode: 't2v',
-    prompt: sharedVideo.prompt ?? sharedVideo.promptExcerpt ?? '',
-    negativePrompt: null,
-    core: {
-      durationSec,
-      durationOption: null,
-      numFrames: null,
-      aspectRatio,
-      resolution: null,
-      fps: null,
-      iterationCount: 1,
-      audio: null,
-    },
-    advanced: { cfgScale: null, loop: null },
-    refs: { imageUrl: null, referenceImages: null, firstFrameUrl: null, lastFrameUrl: null, inputs: null },
-    meta: { derived: true },
-  };
-}
+export { buildVideoSettingsSnapshotFromSharedVideo } from './workspace-shared-video-snapshot';
 
 export {
   applyVideoJobMediaPatchToCompositeOverride,

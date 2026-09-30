@@ -150,13 +150,19 @@ function isWideVideo(card: ExampleGalleryVideo): boolean {
 export function pickHeroMedia(
   cards: ExampleGalleryVideo[],
   preferredId: string | null,
-  fallback: FeaturedMedia
+  fallback: FeaturedMedia,
+  options?: { preserveOrder?: boolean }
 ): FeaturedMedia {
   // Image model heroes are deliberately curated in the engine registry. Keep a
   // model playlist available to the gallery without letting its first item
   // silently replace the authored hero artwork.
   if (!fallback.videoUrl && fallback.posterUrl) {
     return fallback;
+  }
+  // Explicit admin order owns the selected hero; legacy galleries keep landscape preference.
+  if (options?.preserveOrder) {
+    const first = cards.find((card) => isPlayableVideoUrl(card.videoUrl)) ?? cards[0];
+    return toFeaturedMedia(first) ?? fallback;
   }
   const preferred = preferredId ? cards.find((card) => card.id === preferredId) : null;
   if (preferred && isWideVideo(preferred)) {

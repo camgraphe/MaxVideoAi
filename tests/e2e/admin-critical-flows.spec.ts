@@ -105,52 +105,210 @@ test.describe('admin critical flows', () => {
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {
     const mutations: string[] = [];
-    // Supply browser-only media for the selected destination. This interaction
-    // must run even when the database's first collection is empty, without writes.
-    await page.route(/\/api\/admin\/playlists\/[^/]+$/, async (route) => {
+    // Keep the opening separate from the two reorderable cards, and intercept
+    // every playlist mutation so this interaction cannot publish any change.
+    const items = ['Opening lead', 'Opening portrait', 'Opening side A', 'Opening side B',
+      'First drag fixture', 'Second drag fixture'].map((prompt, index) => ({
+      id: `drag-fixture-${index}`, engineId: 'wan-3', engineLabel: 'Wan 3', prompt,
+      videoUrl: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4', createdAt: '2026-09-29T00:00:00Z',
+      outputWidth: index === 1 ? 720 : 1280, outputHeight: index === 1 ? 1280 : 720,
+    }));
+    const ids = items.map(item => item.id);
+    const snapshot = { available: true, supported: true, openingAvailable: true, slug: 'family-fixture',
+      isPublic: true, revision: 'r1', config: { mode: 'manual', openingIds: ids.slice(0, 4),
+        orderedIds: ids, excludedIds: [] } };
+    await page.route(/\/api\/admin\/playlists(?:\/[^?#]*)?(?:\?[^#]*)?$/, async (route) => {
       if (route.request().method() !== 'GET') {
         mutations.push(route.request().method());
         await route.abort();
         return;
       }
-      const playlistId = new URL(route.request().url()).pathname.split('/').at(-1);
-      await route.fulfill({
-        json: {
-          ok: true,
-          items: ['First drag fixture', 'Second drag fixture'].map((prompt, orderIndex) => ({
-            playlistId,
-            videoId: `drag-fixture-${orderIndex}`,
-            orderIndex,
-            pinned: false,
-            createdAt: '2026-09-22T00:00:00Z',
-            engineLabel: 'Test media',
-            prompt,
-            visibility: 'public',
-            indexable: true,
-            isPublishedOnSite: true,
-          })),
-        },
-      });
-    });
-    await page.route(/\/api\/admin\/playlists\/[^/]+\/items(?:\/.*)?$/, async (route) => {
-      mutations.push(route.request().method());
-      await route.abort();
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/curation')) {
+        await route.fulfill({ json: { ok: true, snapshot, initialIds: ids, selectedItems: items, selectedTotal: ids.length } });
+      } else if (path.endsWith('/curation/candidates')) {
+        await route.fulfill({ json: { ok: true, items, total: items.length, nextCursor: null } });
+      } else {
+        await route.continue();
+      }
     });
     await openAdminRoute(page, '/admin/playlists');
-    await page.getByLabel('Site destinations', { exact: true }).getByRole('button').first().click();
-    const rows = page.locator('article[draggable]');
+    await expect(page.locator('[data-destination-picker]')).toBeVisible();
+    const opening = page.locator('[data-opening-board] [data-opening-slot]');
+    await expect(opening).toHaveCount(4);
+    const openingBefore = await opening.allTextContents();
+    const rows = page.locator('[data-selected-grid] [data-curation-item]');
     await expect(rows).toHaveCount(2);
-    await expect(page.getByText('First drag fixture', { exact: false })).toBeVisible();
-    const before = await rows.allTextContents();
+    await expect(rows.getByText('First drag fixture', { exact: true })).toBeVisible();
+    const order = () => rows.evaluateAll(cards => cards.map(card => card.getAttribute('data-curation-item')));
+    const before = await order();
     await rows.first().dragTo(rows.nth(1), {
       sourcePosition: { x: 8, y: 35 },
       targetPosition: { x: 150, y: 65 },
     });
-    await expect(page.getByText('Unsaved order changes', { exact: true })).toBeVisible();
-    expect(await rows.allTextContents()).not.toEqual(before);
+    await expect(page.locator('[data-draft-status]')).toHaveText('Unsaved changes');
+    await expect.poll(order).toEqual([...before].reverse());
+    await expect(opening).toHaveText(openingBefore);
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(rows).toHaveText(before);
+    await expect.poll(order).toEqual(before);
+    await expect(page.locator('[data-draft-status]')).toHaveText('Saved');
+    await expect(opening).toHaveText(openingBefore);
     expect(mutations).toEqual([]);
+  });
+
+  test('gallery workbench keeps media visible, navigable and safe across widths', async ({ page }, testInfo) => {
+    test.setTimeout(120_000);
+    const mutations: string[] = [];
+    const mediaRequests: string[] = [];
+    const candidateRequests: string[] = [];
+    page.on('request', request => {
+      if (request.url().endsWith('.mp4')) mediaRequests.push(request.url());
+      if (request.url().includes('/curation/candidates')) candidateRequests.push(request.url());
+    });
+    const poster = (label: string, color: string) => `data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="${color}"/><text x="50%" y="52%" text-anchor="middle" fill="white" font-size="80">${label}</text></svg>`
+    )}`;
+    const items = ['Lead', 'Portrait', 'Side A', 'Side B', 'Tail one', 'Tail two', 'Tail three', 'Tail four', 'Tail five', 'Tail six'].map((label, index) => ({
+      id: ['lead', 'portrait', 'side-a', 'side-b', 'tail-1', 'tail-2', 'tail-3', 'tail-4', 'tail-5', 'tail-6'][index],
+      engineId: 'wan-3', engineLabel: 'Wan 3', prompt: label,
+      videoUrl: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4',
+      thumbUrl: poster(label, index === 1 ? '#7356b8' : '#3157a7'), createdAt: '2026-09-29T00:00:00Z',
+      outputWidth: index === 1 ? 720 : 1280, outputHeight: index === 1 ? 1280 : 720,
+    }));
+    const ids = items.map(item => item.id);
+    const snapshot = { available: true, supported: true, openingAvailable: true, slug: 'family-fixture',
+      isPublic: true, revision: 'r1', config: { mode: 'manual', openingIds: ids.slice(0, 4), orderedIds: ids,
+        excludedIds: [] } };
+    await page.route(/\/api\/admin\/playlists\/[^/]+\/curation\/candidates/, async route => {
+      const query = new URL(route.request().url()).searchParams;
+      const exact = query.getAll('ids');
+      const filtered = exact.length ? items.filter(item => exact.includes(item.id)) :
+        query.get('format') === '9:16' ? items.filter(item => item.id === 'portrait') : items;
+      await route.fulfill({ json: { ok: true, items: filtered, total: filtered.length, nextCursor: null } });
+    });
+    await page.route(/\/api\/admin\/playlists\/[^/]+\/curation$/, async route => {
+      const method = route.request().method();
+      if (method === 'GET') {
+        await route.fulfill({ json: { ok: true, snapshot, initialIds: ids, selectedItems: items, selectedTotal: 10 } });
+      } else if (method === 'POST') {
+        mutations.push(method);
+        await route.fulfill({ json: { ok: true, preview: { items, token: 'preview-fixture', revision: 'r1', effective: {
+          total: 10, currentTotal: 10, firstPageIds: ids, addedCount: 0, removedCount: 0,
+          suppressedSourceSlugs: [], openingFormats: ['16:9', '9:16', '16:9', '16:9'], warnings: [],
+        } } } });
+      } else {
+        mutations.push(method);
+        expect(JSON.parse(route.request().postData() ?? '{}').token).toBe('preview-fixture');
+        await route.fulfill({ json: { ok: true, snapshot: { ...snapshot, revision: 'r2' } } });
+      }
+    });
+    await page.route(/\/api\/admin\/video-seo\/[^/]+\/status$/, async route => {
+      await route.fulfill({ json: { ok: true, status: 'not_selected', inVideoSitemap: false } });
+    });
+    await openAdminRoute(page, '/admin/playlists');
+    const picker = page.locator('[data-destination-picker]');
+    if (!(await picker.count())) test.skip(true, 'requires at least one connected destination');
+    const board = page.locator('[data-opening-board]');
+    await expect(board.locator('[data-opening-slot]')).toHaveCount(4);
+    await expect(page.locator('[data-selected-grid] [data-curation-item]')).toHaveCount(6);
+    await expect(page.locator('[data-explorer-overlay]')).toHaveCount(0);
+    await page.setViewportSize({ width: 1152, height: 950 });
+    await picker.locator('button[aria-haspopup]').click();
+    const destinationMenu = page.getByRole('dialog', { name: 'Site destinations' });
+    await expect(destinationMenu).toBeVisible();
+    const firstDestinationHit = await destinationMenu.locator('button[data-destination-id]').first().evaluate(button => {
+      const box = button.getBoundingClientRect();
+      return button.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2));
+    });
+    expect(firstDestinationHit, 'destination choices are not covered by save controls').toBe(true);
+    const firstFamily = destinationMenu.locator('[data-destination-group="families"] button[data-destination-id]').first();
+    const familyLabel = await firstFamily.locator('span').nth(1).innerText();
+    await firstFamily.click();
+    await expect(destinationMenu).toHaveCount(0);
+    await expect(picker.locator('button[aria-haspopup]')).toContainText(familyLabel);
+    expect(mediaRequests).toHaveLength(0);
+    expect(candidateRequests).toHaveLength(0);
+    for (const width of [688, 960, 1440, 375]) {
+      await page.setViewportSize({ width, height: width === 1440 ? 1000 : 900 });
+      const geometry = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
+        pickerTop: document.querySelector('[data-destination-picker]')!.getBoundingClientRect().top,
+        boardTop: document.querySelector('[data-opening-board]')!.getBoundingClientRect().top,
+        boardBottom: document.querySelector('[data-opening-board]')!.getBoundingClientRect().bottom,
+      }));
+      expect(geometry.overflow, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(1);
+      expect(geometry.pickerTop).toBeLessThan(geometry.boardTop);
+      if (width === 688 || width === 960) expect(geometry.boardTop).toBeLessThan(400);
+      if (width >= 960) expect(geometry.boardBottom - geometry.boardTop, `compact opening at ${width}px`).toBeLessThanOrEqual(width >= 1280 ? 460 : 310);
+      const selectedColumns = await page.locator('[data-selected-grid] [data-curation-item]').evaluateAll(cards =>
+        new Set(cards.map(card => Math.round(card.getBoundingClientRect().left))).size);
+      expect(selectedColumns, `selected card columns at ${width}px`).toBe(width >= 1280 ? 4 : width >= 900 ? 3 : width >= 640 ? 2 : 1);
+      if (width === 375) {
+        const pickerWidths = await picker.evaluate(element => ({
+          card: element.getBoundingClientRect().width,
+          trigger: element.querySelector('button[aria-haspopup]')!.getBoundingClientRect().width,
+        }));
+        expect(pickerWidths.trigger / pickerWidths.card, 'mobile destination stays readable').toBeGreaterThan(0.85);
+      }
+      const slotsHaveVisibleControls = await board.locator('[data-opening-slot]').evaluateAll(cards => cards.every(card => {
+        const cardBox = card.getBoundingClientRect();
+        const footerBox = card.lastElementChild!.getBoundingClientRect();
+        return footerBox.top < cardBox.bottom - 1 && footerBox.bottom <= cardBox.bottom + 1;
+      }));
+      expect(slotsHaveVisibleControls, `opening controls remain visible at ${width}px`).toBe(true);
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const desktopCapture = testInfo.outputPath('gallery-workbench-desktop.png');
+    await page.screenshot({ path: desktopCapture });
+    await testInfo.attach('Desktop gallery workbench', { path: desktopCapture, contentType: 'image/png' });
+    await board.getByRole('button', { name: 'Mobile preview' }).click();
+    const previewColumnCount = await board.locator('[data-opening-slot]').evaluateAll(cards =>
+      new Set(cards.map(card => Math.round(card.getBoundingClientRect().left))).size);
+    expect(previewColumnCount, 'mobile preview uses two columns even in a wide browser').toBe(2);
+    await board.getByRole('button', { name: 'Desktop preview' }).click();
+    await page.setViewportSize({ width: 375, height: 812 });
+    const mobileCapture = testInfo.outputPath('gallery-workbench-mobile.png');
+    await page.screenshot({ path: mobileCapture });
+    await testInfo.attach('Mobile gallery workbench', { path: mobileCapture, contentType: 'image/png' });
+    const add = page.getByRole('button', { name: 'Add videos', exact: true });
+    await add.click();
+    const explorer = page.getByRole('dialog', { name: 'Add videos' });
+    await expect(explorer).toBeVisible();
+    await expect.poll(() => candidateRequests.length).toBeGreaterThan(0);
+    expect(Math.round((await explorer.boundingBox())!.width)).toBeGreaterThanOrEqual(374);
+    await page.keyboard.press('Escape');
+    await expect(explorer).toHaveCount(0);
+    await expect(add).toBeFocused();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await add.click();
+    await expect(explorer).toBeVisible();
+    const candidateColumns = await explorer.locator('[data-media-id]').evaluateAll(cards =>
+      new Set(cards.map(card => Math.round(card.getBoundingClientRect().left))).size);
+    expect(candidateColumns, 'search results retain readable two-column cards').toBe(2);
+    await page.keyboard.press('Escape');
+    await expect(explorer).toHaveCount(0);
+    const inspect = page.getByRole('button', { name: 'Inspect video' }).first();
+    await inspect.click();
+    const inspector = page.getByRole('dialog', { name: 'Video details' });
+    await expect(inspector).toBeVisible();
+    await expect(inspector.locator('video')).toHaveCount(0);
+    await expect(inspector).toContainText('Not selected for Video SEO');
+    await inspector.getByRole('button', { name: 'Play video' }).click();
+    await expect(inspector.locator('video[preload="none"]')).toBeVisible();
+    await expect(inspector.locator('video')).toBeFocused();
+    await expect.poll(() => mediaRequests.length).toBeGreaterThan(0);
+    await page.keyboard.press('Escape');
+    await expect(inspector).toHaveCount(0);
+    await expect(inspect).toBeFocused();
+    const selected = page.locator('[data-curation-item="tail-1"]');
+    await selected.locator('summary').click();
+    await selected.getByRole('button', { name: 'Move item 1 down' }).click();
+    await page.getByRole('button', { name: 'Preview changes' }).click();
+    const preview = page.getByRole('dialog', { name: 'Page preview' });
+    await expect(preview).toContainText('First page · up to 24 videos');
+    await preview.getByRole('button', { name: 'Save this selection' }).click();
+    await expect(page.locator('[data-draft-status]')).toHaveText('Saved');
+    expect(mutations).toEqual(['POST', 'PUT']);
   });
 
   test('retired membership tiers remain readable without editing or applying changes', async ({ page }) => {

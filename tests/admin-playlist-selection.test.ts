@@ -222,11 +222,12 @@ test('curation destination switches guard staged changes and pending preview', a
             revision: 'r1',
             config: null,
           },
-          candidates,
+          selectedItems: candidates, selectedTotal: 2,
           initialIds: ['one', 'two'],
         }),
       ),
     );
+    assert.equal(requests.length, 1, 'candidate inventory is deferred until explicitly opened');
     await act(async () =>
       (dom.window.document.querySelector('[aria-label="Move item 2 up"]') as HTMLButtonElement).click(),
     );
@@ -256,11 +257,12 @@ test('curation destination switches guard staged changes and pending preview', a
             revision: 'r2',
             config: null,
           },
-          candidates: [],
+          selectedItems: [], selectedTotal: 0,
           initialIds: [],
         }),
       ),
     );
+    assert.equal(requests.length, 4, 'switching destination does not prefetch its candidate inventory');
     assert.equal(button('Destination b').getAttribute('aria-pressed'), 'true');
     assert.equal(button('Cancel').disabled, true, 'destination starts with a clean draft');
   } finally {

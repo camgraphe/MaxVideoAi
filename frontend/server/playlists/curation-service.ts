@@ -1,7 +1,12 @@
+import { getCurationCandidateAliases } from './curation-candidate-aliases';
+import { guardCurationSave } from './curation-save-guard';
+import { effectiveSourceSlugs, readEffectiveCurationPreview } from './curation-effective-preview';
+import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   parseCurationDraft,
   resolveCuration,
+  validateCurationOpening,
   type CurationDraft,
   type CurationItem,
   type CurationPreview,
@@ -16,42 +21,10 @@ import {
 export { CurationError } from './curation-store';
 export const getCurationSnapshot = readCurationSnapshot;
 
-export const CURATION_ELIGIBILITY = `visibility='public' AND indexable IS TRUE
-  AND status='completed' AND COALESCE(surface,'video')='video'
-  AND NULLIF(BTRIM(video_url),'') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM job_outputs removed WHERE removed.job_id=app_jobs.job_id
-    AND removed.kind='video' AND removed.status='deleted' AND COALESCE(removed.url,removed.storage_url)=app_jobs.video_url)
-  AND NOT EXISTS (SELECT 1 FROM media_assets removed WHERE removed.user_id=app_jobs.user_id
-    AND removed.url=app_jobs.video_url AND (removed.deleted_at IS NOT NULL OR removed.status='deleted'))`;
+export { CURATION_ELIGIBILITY } from './curation-eligibility';
 
-export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }): Promise<CurationItem[]> {
-  const aliases = getCurationAliases(slug);
-  if (!aliases) throw new CurationError('Automatic curation is not supported for this destination', 400);
-  const rows = await db.query<{
-    job_id: string;
-    engine_id: string;
-    engine_label: string | null;
-    prompt: string | null;
-    thumb_url: string | null;
-    video_url: string;
-    created_at: string;
-  }>(
-    `SELECT job_id,engine_id,engine_label,prompt,thumb_url,video_url,created_at
-     FROM app_jobs WHERE ${CURATION_ELIGIBILITY}
-       AND LOWER(engine_id)=ANY($1::text[])
-     ORDER BY created_at DESC, job_id ASC`,
-    [aliases.map((alias) => alias.toLowerCase())],
-  );
-  return rows.map((row) => ({
-    id: row.job_id,
-    engineId: row.engine_id,
-    engineLabel: row.engine_label,
-    prompt: row.prompt ?? '',
-    thumbUrl: row.thumb_url,
-    videoUrl: row.video_url,
-    createdAt: new Date(row.created_at).toISOString(),
-  }));
-}
+export { listCurationCandidates } from './curation-candidates';
+import { listCurationCandidates } from './curation-candidates';
 
 async function buildPreview(
   playlistId: string,
@@ -59,20 +32,41 @@ async function buildPreview(
   revision: string,
   db: QueryExecutor,
 ): Promise<CurationPreview> {
+  try { await assertDestinationWritable(db, playlistId); }
+  catch (error) {
+    if (error instanceof DestinationWriteError) throw new CurationError(error.message, error.status);
+    throw error;
+  }
   const draft = parseCurationDraft(input);
   const snapshot = await readCurationSnapshot(playlistId, db);
   if (!snapshot.available) throw new CurationError('Site placements setup is not available yet', 503);
   if (!snapshot.supported) throw new CurationError('Curation is not supported for this destination', 400);
   if (snapshot.revision !== revision) throw new CurationError('This destination changed. Reload it before saving.');
-  const candidates = await listCurationCandidates(snapshot.slug, db);
+  const candidates = await listCurationCandidates(snapshot.slug, db, getCurationCandidateAliases(snapshot.slug));
   const eligible = new Set(candidates.map((item) => item.id));
   if (draft.orderedIds.some((id) => !eligible.has(id)))
     throw new CurationError('Some selected media are no longer eligible. Reload the destination.');
+  if (draft.openingIds && !snapshot.openingAvailable) throw new CurationError('The four-video opening is not available yet', 503);
+  if (!snapshot.config && snapshot.slug.startsWith('family-')) {
+    if (!snapshot.openingAvailable) throw new CurationError('The four-video opening is not available yet', 503);
+    if (!draft.openingIds) throw new CurationError('Choose all four opening videos before adopting this family.');
+  }
+  try { validateCurationOpening(draft, candidates); }
+  catch (error) { throw new CurationError((error as Error).message); }
   const items = snapshot.isPublic ? resolveCuration(draft, candidates) : [];
-  return { items, revision, token: curationFingerprint({ revision, draft, items }) };
+  const effective = await readEffectiveCurationPreview({ playlistId, slug: snapshot.slug, draft, candidates }, db);
+  // Bind every source, including suppressed sources and off-page membership, to the preview.
+  const sources = await db.query(`SELECT p.*,to_jsonb(c) AS curation,
+    (SELECT jsonb_agg(to_jsonb(pi) ORDER BY pi.video_id) FROM playlist_items pi WHERE pi.playlist_id=p.id) AS membership
+    FROM playlists p LEFT JOIN playlist_curations c ON c.playlist_id=p.id
+    WHERE p.slug=ANY($1::text[]) ORDER BY p.slug`, [effectiveSourceSlugs(snapshot.slug)]);
+  return { items, revision, effective, token: curationFingerprint({ revision, draft, eligibleMedia: candidates, effective, sources }) };
 }
 export async function previewCuration(playlistId: string, draft: unknown, revision: string) {
-  return buildPreview(playlistId, draft, revision, { query });
+  return withDbTransaction(async db => {
+    await db.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    return buildPreview(playlistId, draft, revision, db);
+  });
 }
 export async function saveCuration(
   playlistId: string,
@@ -81,24 +75,28 @@ export async function saveCuration(
   token: string,
   actor: string | null,
 ) {
-  return withDbTransaction(async (db) => {
-    await lockCuration(db, playlistId);
-    const before = await readCurationSnapshot(playlistId, db);
-    if (!before.config && before.slug.startsWith('family-')) {
-      // Also guard uncoordinated source creation/deletion during first adoption.
-      await db.query('LOCK TABLE playlists, playlist_items IN SHARE MODE');
-    }
+  return withDbTransaction(async (transaction) => {
+    await lockCuration(transaction, playlistId);
+    const before = await readCurationSnapshot(playlistId, transaction);
+    if (!before.available) throw new CurationError('Site placements setup is not available yet', 503);
+    const db = await guardCurationSave(transaction);
     const preview = await buildPreview(playlistId, input, revision, db);
     if (preview.token !== token) throw new CurationError('The preview changed. Preview the page again before saving.');
     const draft = parseCurationDraft(input);
+    const hasOpening = before.openingAvailable;
     await db.query(
-      `INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids,updated_by)
-      VALUES($1,$2,$3,$4,$5) ON CONFLICT(playlist_id) DO UPDATE SET
+      `INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids,updated_by${hasOpening ? ',opening_ids' : ''})
+      VALUES($1,$2,$3,$4,$5${hasOpening ? ',$6' : ''}) ON CONFLICT(playlist_id) DO UPDATE SET
       mode=EXCLUDED.mode,ordered_ids=EXCLUDED.ordered_ids,excluded_ids=EXCLUDED.excluded_ids,
-      updated_by=EXCLUDED.updated_by,updated_at=now(),revision=playlist_curations.revision+1`,
-      [playlistId, draft.mode, draft.orderedIds, draft.excludedIds, actor],
+      updated_by=EXCLUDED.updated_by,updated_at=now(),revision=playlist_curations.revision+1
+      ${hasOpening ? ',opening_ids=EXCLUDED.opening_ids' : ''}`,
+      [playlistId, draft.mode, draft.orderedIds, draft.excludedIds, actor, ...(hasOpening ? [draft.openingIds ?? null] : [])],
     );
     return readCurationSnapshot(playlistId, db);
+  }).catch(error => {
+    if (['55P03', '57014'].includes((error as { code?: string }).code ?? ''))
+      throw new CurationError('Media is changing or validation took too long. Preview again and retry saving.');
+    throw error;
   });
 }
 
@@ -107,6 +105,7 @@ export type CurationConfiguration = {
   mode: CurationDraft['mode'];
   ordered_ids: string[];
   excluded_ids: string[];
+  opening_ids?: CurationDraft['openingIds'];
 };
 
 /** Read only requested destinations; missing schema retains the legacy fallback. */
@@ -114,7 +113,7 @@ export async function readCurationConfigurations(slugs: string[]): Promise<Map<s
   if (!process.env.DATABASE_URL || !slugs.length) return new Map();
   try {
     const rows = await query<CurationConfiguration & { slug: string }>(
-      `SELECT p.slug,p.is_public,c.mode,c.ordered_ids,c.excluded_ids FROM playlists p
+      `SELECT p.slug,p.is_public,c.mode,c.ordered_ids,c.excluded_ids,to_jsonb(c)->'opening_ids' AS opening_ids FROM playlists p
       JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=ANY($1::text[])`,
       [slugs],
     );
@@ -128,7 +127,7 @@ export async function readCurationConfigurations(slugs: string[]): Promise<Map<s
 async function readCurationConfiguration(slug: string): Promise<CurationConfiguration | null> {
   try {
     const rows = await query<CurationConfiguration>(
-      `SELECT p.is_public,c.mode,c.ordered_ids,c.excluded_ids FROM playlists p
+      `SELECT p.is_public,c.mode,c.ordered_ids,c.excluded_ids,to_jsonb(c)->'opening_ids' AS opening_ids FROM playlists p
       JOIN playlist_curations c ON c.playlist_id=p.id WHERE p.slug=$1`,
       [slug],
     );
@@ -149,7 +148,7 @@ export async function resolveCuratedPlaylist(
   if (!saved) return null;
   if (!saved.is_public || getCurationAliases(slug) === null) return [];
   return resolveCuration(
-    { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids },
+    { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids, openingIds: saved.opening_ids },
     await listCurationCandidates(slug),
   );
 }

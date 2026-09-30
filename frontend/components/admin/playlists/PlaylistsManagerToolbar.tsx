@@ -54,7 +54,7 @@ export function PlaylistsManagerToolbar({
 }: PlaylistsManagerToolbarProps) {
   return (
     <>
-      <details className="border-b border-border pb-3">
+      <details id="playlist-maintenance" className="border-b border-border pb-3">
         <summary className="cursor-pointer text-xs font-medium text-text-secondary">Collection maintenance</summary>
         <header className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           {!embedded ? (
@@ -119,8 +119,6 @@ export function PlaylistsManagerToolbar({
             </Button>
           </div>
         </header>
-      </details>
-
       {showCreateForm ? (
         <PlaylistCreateForm
           createDescription={createDescription}
@@ -139,6 +137,7 @@ export function PlaylistsManagerToolbar({
           onSubmit={onCreateSubmit}
         />
       ) : null}
+      </details>
     </>
   );
 }

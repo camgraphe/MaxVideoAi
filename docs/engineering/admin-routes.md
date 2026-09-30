@@ -286,3 +286,170 @@ IDs, generation IDs, description, model and status. These reads perform no schem
 bootstrap. The existing anomaly scan and refund command retain their owners.
 
 First family adoption fingerprints inherited playlists, selections and curation states. Selection writers share an advisory transaction lock; first adoption additionally holds source tables against uncoordinated creation/deletion while revalidating. Configured model galleries bypass static reinsertion and aspect-ratio sorting. Unsupported unconfigured collections retain manual controls; retired configured collections stay closed.
+
+### Four-video gallery opening
+
+Migration `53_playlist_opening.sql` adds optional `opening_ids` without rewriting existing destinations. The admin exposes this feature only after that column exists; old schemas still support ordinary curation saves. Read paths use optional JSON field projection and never install schema.
+
+The [video discovery release runbook](../deployment/video-discovery-release.md)
+covers schema preflight, bounded migration, missing model collection reconciliation
+and rollback. `tests/gallery-release-rehearsal-postgres.test.ts` replays the migration
+and the actual collection helper in disposable PostgreSQL, verifying unchanged public
+projections and stored authoring, membership, media and SEO records.
+
+`lib/admin/playlist-curation.ts` owns the four-slot contract: landscape 16:9, portrait 9:16, then two landscape 16:9 originals. Measured output dimensions take priority over declared aspect ratios, with 2% tolerance for encoded sizes. Slots must be complete, unique, eligible and not excluded. They precede the remaining selection, count as normal page entries, and are deduplicated against it. Other catalog sort orders remain authoritative.
+
+`PlacementOpeningEditor` filters candidates by format, previews desktop/mobile placement, and links directly to `/admin/video-seo?video=…`. Existing SEO entries open their editorial detail; new entries prefill the candidate form and still require explicit draft creation and approval. The inventory describes sitemap eligibility, never assumes Google has indexed a page. Preview/save fingerprints include the media dimensions and opening state, so format or eligibility changes invalidate stale saves. Fixtures cover pre-migration behavior, migration replay, stale formats, private media and paginated ordering.
+
+The public popup and direct watch reader share the same editorial projection. Successful SEO create/save/removal APIs call `revalidateVideoSeoPages` after persistence, invalidating the affected watch identifiers and sitemap routes. Rejected writes leave caches intact. A deep link to a disabled video opens its archive section as well as its editor. `tests/admin-video-seo-revalidation.test.ts` and the persisted editorial parity case in `tests/examples-catalog-pagination-postgres.test.ts` cover the connection.
+
+### Paged destination curation editor
+
+`PlacementCandidatePicker` searches the authenticated curation candidates endpoint in
+48-item pages. Family, model, measured format, prompt and exact-ID filters run before
+server pagination; family and all other filters are bound into the cursor fingerprint.
+Family/model aliases are intersected with destination eligibility. Hub and family
+candidate reads expand historical registry aliases exactly as the public catalog does;
+search, selected windows, complete-ID adoption and preview/save share that scope.
+Direct model candidate semantics stay unchanged. Cursor fingerprints still bind the
+resolved aliases and filters; changing eligibility requires restarting an old cursor.
+A filter change restarts at page one. Opening selection uses that same picker with the slot's format.
+
+First adoption of the active examples hub seeds its draft from the complete effective
+catalog, including independent family/model sources, in 500-ID read windows. Family
+adoption uses the same membership reader for its scope. Saved manual or hybrid
+selections remain authoritative and are never expanded by opening the editor.
+Removing or excluding an opening video in its inspector clears that slot and removes
+any duplicate from the continuation. Preview stays disabled until the four slots are
+complete again; exclusions cannot leave an excluded ID in the opening.
+
+`usePlacementEditor` retains the complete ordered-ID draft and hydrates selected media
+in windows of at most 48. `PlacementMediaList` receives the complete tail ID order so
+keyboard moves at a window boundary preserve every other ID. Dropping on a selected
+page navigation button moves the video to that adjacent page's first position.
+The explicit automatic-to-manual policy switch still reads IDs in 500-ID pages.
+New family adoption requires four unique, correctly formatted slots. If optional
+opening storage is unavailable, adoption returns 503; existing saved legacy family
+configurations and model curation remain editable.
+Rejected saves retain the draft and invalidate its preview; destination-switch and
+before-unload guards retain their existing ownership.
+
+The gallery workbench keeps the complete ID draft in `usePlacementEditor` and
+renders only the current 48-item selected window. `DestinationPicker` is the one
+compact destination control before the editor; it groups hub, starter, families,
+models, image/audio and maintenance entries, with search by name, slug and path.
+Missing and historical entries remain diagnostics linked to explicit collection
+maintenance. Browsing them never creates or reconciles a collection. The legacy
+`PlaylistsSidebar` remains only when no destination projection is available.
+`PlacementOpeningEditor` displays the four measured source slots as a visual board;
+its portrait slot requires a 9:16 source, and the opening IDs are omitted from the
+continuation grid. When opening storage is absent, the editor states that the four-slot
+layout is unavailable and keeps the ordered selection usable; it does not attempt a
+schema write. `PlacementMediaList` presents selected cards and moves an ID to
+a one-based position in the complete order, including unloaded windows.
+
+`PlacementExplorerDialog` mounts `PlacementCandidatePicker` only when Add videos
+or an opening slot is chosen. It reuses the authenticated 48-item cursor endpoint,
+resets cursors on filter/slot change and drops late responses after closing.
+The opening-enabled browser fixture records zero candidate-page requests and zero
+MP4 requests on initial load; opening the explorer starts a candidate-page request,
+and explicit Play starts an MP4 request. The earlier editor requested its first
+candidate page during initial load. This is an admin request-path check, not a
+measured public Core Web Vitals improvement.
+`PlacementMediaInspector` loads no original video until Play; opening it performs
+one authenticated read at `/api/admin/video-seo/[videoId]/status`. That GET derives
+editorial state and actual video-sitemap eligibility from the existing watch-row
+owner, returns no prompt or media URL, and links to the Video SEO editor. Gallery
+selection and Video SEO approval are displayed as separate states. No SEO write is
+performed from the workbench.
+
+`PlacementDraftActions` keeps the current mode, cancel, preview and save in view.
+The focused preview dialog shows effective current/proposed totals, first 24 IDs,
+removals, suppressed sources, opening formats and warnings. Save still requires the
+current preview token and revision through the existing transactional service.
+A failed or 409 save keeps the draft, clears the preview token and requires a new
+preview. A successful save confirms the local snapshot before any inventory refresh.
+The workbench changes admin composition only; it does not alter public pagination,
+watch URLs, SEO publication gates, model registry or media-delivery owners.
+
+
+### Gallery destinations and reconciliation
+
+`server/playlists/destinations.ts` projects the authored registry and current public
+reader helpers into the inventory. `connected` means the expected runtime slug has a
+row; `missing` means that row does not exist; `historical` marks an inactive reserved
+hub/starter slug; `unconnected` is an unrelated collection. Direct membership and
+effective public counts are distinct. Empty family membership can inherit public
+videos from model playlists and the hub. A saved family curation suppresses those
+inherited sources; a saved hub curation is authoritative for the hub. Model counts use
+the shared final model-gallery projection, including filtering, LTX fallback and
+unmanaged preferred/featured additions. At most four model projections run
+concurrently; each reads at most 200 playlist videos plus the finite authored
+addition IDs. Counts retain legacy behavior when optional curation storage is absent.
+
+The picker opens the connected hub, otherwise the first connected family. Its
+menu separates Examples & starters, Families, and Models; model submenus are
+grouped by family. Search reveals matching destinations across all sections,
+and reopening a selected model expands its family. It precedes the opening board
+and selected cards at narrow and desktop widths. Missing/historical
+entries are diagnostics, not aliases for active readers. Reserved `examples`,
+`marketing-examples`, `welcome`, and `starter` cannot be renamed or deleted, independent
+of configuration. Historical mismatches reject ordering and curation writes too.
+Reconcile deployment settings deliberately; never rename rows to conceal a mismatch.
+
+Collection maintenance contains legacy creation/seeding/raw collection controls.
+Opening it or selecting a destination does not create, migrate, rename, delete or
+republish anything. Missing expected collections require a separate explicit operator
+decision. Maintenance and destination changes respect dirty-draft/busy guards.
+
+### Effective preview and explicit save
+
+Authenticated GET inventory, snapshot and candidate routes are read-only. Schema
+installation belongs to deployment operations. POST preview runs in a read-only,
+repeatable-read transaction. PUT is the curation write boundary and requires the
+current revision and preview token. Manual retains the authored order; hybrid appends
+eligible new videos automatically. Changing the policy is explicit.
+
+Preview shows effective first-page IDs, total, additions/removals, suppressed sources,
+opening formats and empty/large-removal warnings. Hub/family projection shares the
+public catalog's source precedence and deduplication; opening entries count within
+its 24 cards. Model preview shares the final model-gallery projector, including
+engine/editorial/public filtering and unmanaged preferred/featured additions. The
+model reader takes at most 200 playlist videos before these rules; that is not a
+200-card final render cap. Preview does not change Video SEO or publication state.
+
+Save rechecks draft, revision, eligible media, source snapshots and effective output.
+A changed source, visibility, format or media URL rejects the stale token. The draft
+survives a 409 and Save stays disabled until a fresh preview. Save uses NOWAIT SHARE
+locks on six source tables with a two-second SQL deadline; writer contention returns
+a retryable 409. Never retry automatically with an old token. Existing optional-schema
+fallback remains for public reads; first family adoption needs opening storage.
+
+### Read-only gallery release checklist
+
+- Record the exact candidate SHA and verify the local server's checkout. Read the
+  production values of `EXAMPLES_PLAYLIST_SLUG`, `INDEXABLE_PLAYLIST_SLUGS`, and
+  `STARTER_PLAYLIST_SLUG`, then compare active slugs with live playlist rows and the
+  hub/starter readers. Record unset values and the deployed source defaults explicitly.
+  Never infer production settings from local diagnostics. If settings, rows or deployed
+  reader evidence is inaccessible, leave this release gate unresolved.
+- Keep environment and database unchanged during the audit. Check schema availability
+  through catalog reads. Use disposable PostgreSQL for opening-enabled browser fixtures;
+  do not migrate a shared local database just to show four slots.
+- At 688 × 900, approximately 960 pixels, desktop 1440 × 1000 and mobile, confirm the
+  compact picker and opening media precede the candidate explorer, mismatch diagnostics
+  are reachable, and no horizontal overflow occurs. Check search, candidate page 3, selected-window paging, keyboard and
+  pointer ordering, dirty destination guard, preview summary and rejected-save draft
+  retention. Validate 16:9 / 9:16 / 16:9 / 16:9 slot geometry on the disposable fixture.
+- Open `/examples`, a family route, and a model route. Follow available pagination,
+  inspect the first 24 hub/family IDs for duplicates, and exercise first Play plus watch
+  navigation. Model pages retain their existing gallery behavior, not hub pagination.
+  Verify canonical, localized hreflang/paths, JSON-LD watch URLs, redirects, and sitemap
+  eligibility through their existing owners. Curation must not take ownership of SEO.
+- Run Tasks 1–6 focused tests with disposable PostgreSQL available, frontend TypeScript,
+  frontend lint, exposure lint, and `git diff --check`. Preserve server-rendered poster
+  discovery, single priority image, media originals and shared playback owners.
+  Attach comparable before/after Core Web Vitals only when initial public loading changes.
+- Record screenshots/observations and precise limitations in the release report; a
+  passing source contract is not a browser or production check. Review the committed
+  branch before any separate production merge/deployment procedure.

@@ -45,6 +45,7 @@ export type PlaylistItemRecord = {
 };
 
 export type PlaylistsManagerProps = {
+  initialDestinations?: PlaylistDestination[];
   initialPlaylists: PlaylistSummary[];
   initialPlaylistId: string | null;
   initialItems: PlaylistItemRecord[];
@@ -79,3 +80,5 @@ export type ModelPlaylistHelperCard = {
   status: 'ready' | 'missing' | 'empty';
   playlistId: string | null;
 };
+import type { PlaylistDestination } from '@/server/playlists/types';
+export type { PlaylistDestination } from '@/server/playlists/types';

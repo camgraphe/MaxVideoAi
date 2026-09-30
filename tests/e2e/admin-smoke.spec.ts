@@ -31,7 +31,7 @@ const smokeRoutes: SmokeRoute[] = [
   {
     path: '/admin/video-seo',
     heading: 'Video SEO watch pages',
-    section: 'Indexed Watch Pages',
+    section: 'Eligible for the video sitemap',
   },
   {
     path: '/admin/settings',
@@ -79,7 +79,7 @@ test.describe('admin smoke', () => {
     });
 
     await expect(page.getByRole('heading', { level: 1, name: 'Video SEO watch pages' })).toBeVisible();
-    await expect(page.locator('body')).toContainText('Indexed Watch Pages');
+    await expect(page.locator('body')).toContainText('Eligible for the video sitemap');
 
     assertNoClientErrors(errors);
   });

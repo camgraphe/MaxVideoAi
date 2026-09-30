@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 
 import { getModelFamilyDefinition } from '../frontend/config/model-families.ts';
@@ -150,7 +150,7 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
   assert.match(landing.metaDescription, /^Watch Seedance 2\.5 video examples/);
-  assert.equal(landing.heroTitle, 'Seedance 2.5 AI Video Examples, Prompts & Settings');
+  assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini video examples');
   assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
   assert.match(landing.summary, /Earlier 1\.5 Pro examples keep their original labels/);
@@ -291,7 +291,7 @@ test('examples page data helper owns filter, model link, and gallery projections
   assert.match(pageDataSource, /PREFERRED_ENGINE_ORDER/, 'page data helper should own preferred family ordering');
   assert.match(pageDataSource, /buildExamplePosterProjection/, 'page data helper should use the shared poster projection');
   assert.match(pageDataSource, /formatPromptExcerpt/, 'page data helper should own client prompt display shaping');
-  assert.match(pageDataSource, /pickFirstPlayableVideo/, 'page data helper should own hero video selection');
+  assert.match(pageDataSource, /const initialExamples = clientVideos/, 'the full logical page must be rendered, including its opening');
   assert.match(pageDataSource, /buildMainVideoHeroLine/, 'page data helper should own main video hero copy shaping');
   assert.match(
     pageDataSource,
@@ -341,7 +341,7 @@ test('examples main video feature owns the hero media card', () => {
 test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(pageViewSource, /export function ExamplesPageView/, 'page view should be exported');
   assert.match(pageViewSource, /ExamplesEngineFilterNav/, 'page view should compose engine filter nav');
-  assert.match(pageViewSource, /ExamplesMainVideoFeature/, 'page view should compose the main video feature');
+  assert.doesNotMatch(pageViewSource, /<ExamplesMainVideoFeature/, 'opening cards own the critical poster without a competing hero');
   assert.match(pageViewSource, /ExamplesGallerySection/, 'page view should compose the gallery section');
   const gallerySectionIndex = pageViewSource.indexOf('<ExamplesGallerySection');
   const nextStepsIndex = pageViewSource.indexOf('<ExamplesNextStepsSection');
@@ -349,16 +349,18 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.ok(nextStepsIndex > gallerySectionIndex);
   assert.match(
     pageViewSource,
-    /<ExamplesIntroHero heroLead=\{heroLead\} heroSubtitle=\{heroSubtitle\} heroTitle=\{heroTitle\} \/>/,
+    /<ExamplesIntroHero[\s\S]*?heroTitle=\{heroTitle\}/,
   );
   assert.match(pageViewSource, /detailsCtaLabel=\{galleryUiCopy\.detailsCta\}/);
   assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');
-  assert.match(pageViewSource, /<details className="rounded-\[12px\]/, 'long family notes should stay available without dominating the page');
-  assert.match(pageViewSource, /Notes sur la famille|Notas de la familia|Family notes/, 'the compact family disclosure should be localized');
+  assert.match(pageViewSource, /<ExamplesFamilyIntro body=\{heroBody\}/, 'family context should be visible after the gallery');
+  assert.doesNotMatch(pageViewSource, /Family notes/, 'family context should no longer be hidden in a disclosure');
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');
   assert.match(engineFilterNavSource, /sticky top-16 z-\[35\]/, 'engine filter nav should own sticky filter markup');
   assert.match(engineFilterNavSource, /getEngineAccentOutlineStyle/, 'engine filter nav should own active brand outline styling');
-  assert.match(engineFilterNavSource, /overflow-x-auto overscroll-x-contain/, 'the expanded family rail should scroll instead of squeezing labels');
+  assert.match(engineFilterNavSource, /ExamplesModelRail/, 'the server-rendered family links use the scroll control island');
+  const modelRailSource = readFileSync(join(dirname(engineFilterNavPath), 'examples-model-rail.client.tsx'), 'utf8');
+  assert.match(modelRailSource, /overflow-x-auto overscroll-x-contain/, 'the expanded family rail should scroll instead of squeezing labels');
   assert.match(engineFilterNavSource, /flex w-max min-w-full/, 'family filters should keep their natural label width');
   assert.match(pageSource, /compactLeadCopy\(heroBody, modelLanding \? 220 : 152\)/, 'family landing heroes should stay concise above the fold');
   assert.match(jsonLdScriptsSource, /export function ExamplesJsonLdScripts/, 'JSON-LD scripts component should be exported');
@@ -381,4 +383,21 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(routeSectionsSource, /rel="prev"/, 'pagination nav should own previous link markup');
   assert.match(routeSectionsSource, /rel="next"/, 'pagination nav should own next link markup');
   assert.match(routeSectionsSource, /<details key=\{item\.question\}/, 'FAQ section should own FAQ disclosure markup');
+});
+
+test('public_routes_keep_seo_and_media_owners', () => {
+  assert.match(pageSource, /buildSeoMetadata/);
+  assert.match(pageSource, /canonicalOverride: metadataUrls.canonical/);
+  assert.match(pageSource, /buildExamplesJsonLd/);
+  assert.match(pageSource, /listExampleFamilyPage/);
+  assert.match(pageSource, /listExamplesPage/);
+  assert.match(pageViewSource, /ExamplesJsonLdScripts/);
+  assert.ok(jsonLdSource.includes('const detailPath = `/video/${encodeURIComponent(video.id)}`'));
+  for (const source of [pageSource, modelPageSource, pageViewSource, jsonLdSource]) {
+    assert.doesNotMatch(source, /playlists\/destinations|curation-service|saveCuration|loadPlaylistDestinations/);
+  }
+  const watch = readFileSync(join(root, 'frontend/app/(core)/video/[id]/page.tsx'), 'utf8');
+  assert.match(watch, /getVideoWatchPageDataById/);
+  const card = readFileSync(join(root, 'frontend/components/examples/ExampleGalleryCard.tsx'), 'utf8');
+  assert.match(card, /useExampleCardPlayback/);
 });

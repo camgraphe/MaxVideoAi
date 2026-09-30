@@ -93,7 +93,7 @@ export default async function AdminModerationPage() {
               Video SEO
             </AdminActionLink>
             <AdminActionLink href="/admin/playlists">
-              Site placements
+              Galleries
             </AdminActionLink>
           </>
         }

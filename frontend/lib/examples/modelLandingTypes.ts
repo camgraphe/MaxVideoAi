@@ -17,6 +17,7 @@ export type ExampleModelLanding = {
   metaDescription: string;
   heroTitle: string;
   heroSubtitle: string;
+  guideTitle?: string;
   intro: string;
   summary: string;
   sections: ExampleSectionItem[];
@@ -30,6 +31,8 @@ export type LocalizedModelDescriptor = {
   metaTitle?: string;
   metaDescription?: string;
   heroTitle?: string;
+  guideTitle?: string;
+  sectionTitles?: readonly [prompt: string, limits: string, pricing: string];
   summary?: string;
   subtitle: string;
   intro: string;

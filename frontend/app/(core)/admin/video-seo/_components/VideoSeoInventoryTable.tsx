@@ -21,8 +21,8 @@ const CANONICAL_BLOCKER_LABELS = [
   'Canonical target not indexable',
 ] as const;
 
-export function VideoSeoInventoryTable({ rows }: { rows: WatchRow[] }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function VideoSeoInventoryTable({ rows, initialSelectedId }: { rows: WatchRow[]; initialSelectedId?: string }) {
+  const [selectedId, setSelectedId] = useState<string | null>(() => rows.some(row => row.entry.id === initialSelectedId) ? initialSelectedId! : null);
   const selectedRow = useMemo(
     () => rows.find((row) => row.entry.id === selectedId) ?? null,
     [rows, selectedId]

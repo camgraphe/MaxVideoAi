@@ -1,10 +1,14 @@
-import { CreativeWorlds } from '@/components/marketing/CreativeWorlds';
-import { normalizeAppLocale } from '@/i18n/locales';
 import Link from 'next/link';
+import Image from 'next/image';
+import { BadgeDollarSign, FilePenLine, Scale } from 'lucide-react';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ExampleSort } from '@/server/videos';
+import type { ExamplesNextStepLink } from '../_lib/examples-page-copy';
+import { ENGINE_META } from '../_lib/examples-route-utils';
+import styles from './examples-editorial.module.css';
 
 type ExamplesIntroHeroProps = {
   heroLead: string;
@@ -12,22 +16,29 @@ type ExamplesIntroHeroProps = {
   heroTitle: string;
 };
 
+type ExamplesFamilyIntroProps = {
+  body: string;
+  label: string;
+  locale: AppLocale;
+  title?: string;
+};
+
 type ExamplesNextStepsSectionProps = {
   locale: AppLocale;
-  nextStepLinks: Array<{
-    href: string;
-    label: string;
-  }>;
+  nextStepLinks: ExamplesNextStepLink[];
 };
 
 type ExamplesModelLink = {
   slug: string;
   label: string;
   href: string;
+  engineId: string;
+  brandId?: string;
 };
 
 type ExamplesModelLinksSectionProps = {
   currentModelPagesLabel: string;
+  galleryExamples: ExampleGalleryVideo[];
   isModelLanding: boolean;
   locale: AppLocale;
   modelLinks: ExamplesModelLink[];
@@ -80,6 +91,8 @@ type ExamplesModelLandingCardsSectionProps = {
 };
 
 type ExamplesGallerySectionProps = {
+  familyLabel?: string;
+  openingEnabled?: boolean;
   audioAvailableLabel: string;
   detailsCtaLabel: string;
   engineFilter: string | null;
@@ -129,17 +142,38 @@ type ExamplesFaqSectionProps = {
 
 export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
   return (
-    <section className="examples-editorial-hero halo-hero stack-gap-sm text-center sm:stack-gap-md">
-      <header className="mx-auto max-w-3xl stack-gap-sm text-center">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
-        <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle || heroLead}</p>
+    <section className={styles.hero}>
+      <header className={styles.heroCopy}>
+        <h1>{heroTitle}</h1>
+        <p>{heroSubtitle || heroLead}</p>
       </header>
+    </section>
+  );
+}
+
+export function ExamplesFamilyIntro({ body, label, locale, title }: ExamplesFamilyIntroProps) {
+  return (
+    <section className={styles.familyIntro} aria-labelledby="examples-family-guide-title">
+      <div className={styles.familyIntroHeading}>
+        <span className={styles.eyebrow}>
+          {locale === 'fr' ? 'Famille de modèles' : locale === 'es' ? 'Familia de modelos' : 'Model family'}
+        </span>
+        <h2 id="examples-family-guide-title">
+          {title ?? (locale === 'fr'
+            ? `Explorer la famille ${label}`
+            : locale === 'es'
+              ? `Explora la familia ${label}`
+              : `Explore the ${label} family`)}
+        </h2>
+      </div>
+      <p>{body}</p>
     </section>
   );
 }
 
 export function ExamplesModelLinksSection({
   currentModelPagesLabel,
+  galleryExamples,
   isModelLanding,
   locale,
   modelLinks,
@@ -154,82 +188,96 @@ export function ExamplesModelLinksSection({
 }: ExamplesModelLinksSectionProps) {
   if (!isModelLanding || !selectedEngine || !modelLinks.length) return null;
   const pricingCallout = resolveExamplesPricingCallout(selectedEngine, locale, pricingPath);
+  const posterFor = (href: string) => {
+    const candidates = galleryExamples.filter(
+      (video) => video.modelHref === href && video.rawPosterUrl && !video.rawPosterUrl.startsWith('/assets/frames/')
+    );
+    return (candidates.find((video) => video.aspectRatio === '16:9') ?? candidates[0])?.rawPosterUrl ?? null;
+  };
 
   return (
-    <section className="mx-auto max-w-5xl">
-      <div className="flex flex-col items-center gap-3 text-sm text-text-secondary">
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-            {usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}
+    <section className={styles.modelSection} aria-labelledby="examples-model-pages-title">
+      <div className={styles.sectionHeading}>
+        <div>
+          <span className={styles.eyebrow}>
+            {locale === 'fr' ? 'Les modèles' : locale === 'es' ? 'Los modelos' : 'The models'}
           </span>
-          {primaryModelLinks.map((model) => (
-            <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-              {model.label}
+          <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}</h2>
+        </div>
+        <Link href={pricingPath} className={styles.pricingAction}>
+          {pricingLinkLabel}<span aria-hidden="true"> ↗</span>
+        </Link>
+      </div>
+      <div className={styles.modelGrid}>
+        {primaryModelLinks.map((model, index) => {
+          const poster = posterFor(model.href);
+          return (
+            <Link key={model.slug} href={model.href} className={`${styles.modelLink} ${poster ? '' : styles.modelLinkFallback}`}>
+              {poster ? <Image src={poster} alt="" aria-hidden="true" fill sizes="(max-width: 767px) 50vw, (max-width: 1200px) 33vw, 25vw" quality={52} loading="lazy" className={styles.modelPoster} /> : null}
+              {!poster ? <span className={styles.modelWordmark} aria-hidden="true">{model.label.split(' ').slice(-1)[0]}</span> : null}
+              <span className={styles.modelIdentity} aria-hidden="true">
+                <span className={styles.modelIcon}><EngineIcon engine={{ id: model.engineId, label: model.label, brandId: model.brandId }} size={30} framed={false} /></span>
+                <span className={styles.modelIndex}>{String(index + 1).padStart(2, '0')}</span>
+              </span>
+              <span className={styles.modelBottom}>
+                <span className={styles.modelName}>{model.label}</span>
+                <span className={styles.linkArrow} aria-hidden="true">↗</span>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+      {supportedOlderModelLinks.length ? (
+        <div className={styles.olderModels}>
+          <span className={styles.eyebrow}>{supportedOlderVersionLabel}</span>
+          {supportedOlderModelLinks.map((model) => (
+            <Link key={model.slug} href={model.href} className={styles.textAction}>
+              {model.label}<span aria-hidden="true"> ↗</span>
             </Link>
           ))}
-          <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
-            {pricingLinkLabel}
+        </div>
+      ) : null}
+      {pricingCallout ? (
+        <div className={styles.pricingCallout}>
+          <span>
+            <strong>{pricingCallout.title}</strong>
+            <span>{pricingCallout.body}</span>
+          </span>
+          <Link href={pricingCallout.href} className={styles.textAction}>
+            {pricingLinkLabel}<span aria-hidden="true"> ↗</span>
           </Link>
         </div>
-        {supportedOlderModelLinks.length ? (
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-              {supportedOlderVersionLabel}
-            </span>
-            {supportedOlderModelLinks.map((model) => (
-              <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-                {model.label}
-              </Link>
-            ))}
-          </div>
-        ) : null}
-        {pricingCallout ? (
-          <div className="flex w-full flex-col gap-2 rounded-[10px] border border-hairline bg-surface/75 px-4 py-3 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              <span className="block text-sm font-semibold text-text-primary">{pricingCallout.title}</span>
-              <span className="mt-1 block text-xs leading-5 text-text-secondary">{pricingCallout.body}</span>
-            </span>
-            <Link href={pricingCallout.href} className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover">
-              {pricingLinkLabel}
-            </Link>
-          </div>
-        ) : null}
-      </div>
+      ) : null}
     </section>
   );
 }
 
 export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLandingCardsSectionProps) {
   if (!sections?.length) return null;
+  const guidanceIcons = [FilePenLine, Scale, BadgeDollarSign];
 
   return (
-    <section className="grid gap-3 md:grid-cols-3">
-      {sections.map((section) => (
-        <article
-          key={section.title}
-          className="rounded-[20px] border border-hairline/80 bg-surface/85 px-4 py-4 text-left shadow-sm"
-        >
-          <div className="min-w-0">
-            <h2 className="text-sm font-semibold leading-tight text-text-primary">{section.title}</h2>
-            <p
-              className="mt-2 text-xs leading-relaxed text-text-secondary/90"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {section.body}
-            </p>
-          </div>
-        </article>
-      ))}
+    <section className={styles.guidanceGrid}>
+      {sections.map((section, index) => {
+        const Icon = guidanceIcons[index] ?? FilePenLine;
+        return (
+          <article key={section.title} className={styles.guidanceItem}>
+            <div className={styles.guidanceTop} aria-hidden="true">
+              <span className={styles.guidanceIcon}><Icon size={21} strokeWidth={1.7} /></span>
+              <span className={styles.guidanceIndex}>{String(index + 1).padStart(2, '0')}</span>
+            </div>
+            <h2>{section.title}</h2>
+            <p>{section.body}</p>
+          </article>
+        );
+      })}
     </section>
   );
 }
 
 export function ExamplesGallerySection({
+  familyLabel,
+  openingEnabled,
   audioAvailableLabel,
   detailsCtaLabel,
   engineFilter,
@@ -246,15 +294,13 @@ export function ExamplesGallerySection({
   show,
   sort,
 }: ExamplesGallerySectionProps) {
-  // Keep a useful public selection when the unfiltered first page has no live entries.
-  // Never substitute unrelated films for a model filter or a later pagination page.
-  if (!show) return !engineFilter && initialOffset === 0
-    ? <CreativeWorlds locale={normalizeAppLocale(locale)} compact />
-    : null;
+  if (!show) return <p className="py-12 text-center text-sm text-text-secondary">{locale==='fr'?'Aucune vidéo disponible dans cette galerie.':locale==='es'?'No hay vídeos disponibles en esta galería.':'No videos are available in this gallery yet.'}</p>;
 
   return (
-    <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
+    <section id="gallery" className="min-w-0">
       <ExamplesGalleryGrid
+        familyLabel={familyLabel}
+        openingEnabled={openingEnabled}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}
         loadMoreLabel={loadMoreLabel}
@@ -294,6 +340,7 @@ export function ExamplesPaginationNav({
         {hasPreviousPage ? (
           <Link
             href={previousHref}
+            prefetch={false}
             rel="prev"
             className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -312,6 +359,7 @@ export function ExamplesPaginationNav({
         {hasNextPage ? (
           <Link
             href={nextHref}
+            prefetch={false}
             rel="next"
             className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -329,7 +377,7 @@ export function ExamplesPaginationNav({
 
 export function ExamplesSummarySection({ longDescription, modelLandingSummary }: ExamplesSummarySectionProps) {
   return (
-    <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+    <section className={styles.summary}>
       <p>{modelLandingSummary ?? longDescription}</p>
     </section>
   );
@@ -337,20 +385,59 @@ export function ExamplesSummarySection({ longDescription, modelLandingSummary }:
 
 export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNextStepsSectionProps) {
   const mcpLink = getMcpInternalLink(locale, 'examples');
+  const comparisonLinks = nextStepLinks.filter(
+    (item): item is ExamplesNextStepLink & { comparison: readonly [string, string] } => Boolean(item.comparison)
+  );
+  const resourceLinks = nextStepLinks.filter((item) => !item.comparison);
+  const hasMatchups = comparisonLinks.length > 1;
   return (
-    <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-      <h2 className="text-lg font-semibold text-text-primary">
-        {locale === 'fr' ? 'Aller plus loin' : locale === 'es' ? 'Siguientes pasos' : 'Next steps'}
-      </h2>
-      <div className="mt-3 flex flex-wrap gap-3 text-sm">
-        {nextStepLinks.map((item) => (
-          <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
-            {item.label}
-          </Link>
-        ))}
+    <section className={styles.nextSteps}>
+      <div className={styles.sectionHeading}>
+        <span className={styles.eyebrow}>
+          {locale === 'fr' ? 'Continuer' : locale === 'es' ? 'Continuar' : 'Keep exploring'}
+        </span>
+        <h2>{hasMatchups
+          ? locale === 'fr' ? 'Les duels de modèles' : locale === 'es' ? 'Duelos de modelos' : 'Model matchups'
+          : locale === 'fr' ? 'Aller plus loin' : locale === 'es' ? 'Siguientes pasos' : 'Next steps'}</h2>
+      </div>
+      {comparisonLinks.length ? (
+        <div className={styles.comparisonGrid}>
+          {comparisonLinks.map((item) => {
+            const [leftId, rightId] = item.comparison;
+            const left = ENGINE_META.get(leftId);
+            const right = ENGINE_META.get(rightId);
+            return (
+              <Link key={item.href} href={item.href} className={styles.comparisonCard}>
+                <span className={styles.comparisonEmblems} aria-hidden="true">
+                  <span className={styles.comparisonLogo}><EngineIcon engine={{ id: leftId, label: left?.label ?? leftId, brandId: left?.brandId }} size={36} framed={false} /></span>
+                  <span className={styles.comparisonVs}>VS</span>
+                  <span className={styles.comparisonLogo}><EngineIcon engine={{ id: rightId, label: right?.label ?? rightId, brandId: right?.brandId }} size={36} framed={false} /></span>
+                </span>
+                <span className={styles.comparisonBottom}>
+                  <span>{item.label}</span>
+                  <span className={styles.comparisonArrow} aria-hidden="true">↗</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
+      <div className={styles.resourceGrid}>
+        {resourceLinks.map((item) => {
+          const model = item.modelSlug ? ENGINE_META.get(item.modelSlug) : null;
+          return <Link key={item.href} href={item.href} className={styles.resourceLink}>
+            <span className={styles.resourceIdentity}>
+              {item.modelSlug ? <span className={styles.resourceLogo} aria-hidden="true">
+                <EngineIcon engine={{ id: model?.id ?? item.modelSlug, label: model?.label ?? item.label, brandId: model?.brandId }} size={24} framed={false} />
+              </span> : null}
+              <span>{item.label}</span>
+            </span>
+            <span aria-hidden="true">↗</span>
+          </Link>;
+        })}
         {mcpLink ? (
-          <Link href={mcpLink.href} className="font-semibold text-brand hover:text-brandHover">
-            {mcpLink.label}
+          <Link href={mcpLink.href} className={styles.resourceLink}>
+            <span>{mcpLink.label}</span><span aria-hidden="true">↗</span>
           </Link>
         ) : null}
       </div>
@@ -362,13 +449,16 @@ export function ExamplesFaqSection({ faqBlock }: ExamplesFaqSectionProps) {
   if (!faqBlock.items.length) return null;
 
   return (
-    <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-      <h2 className="text-lg font-semibold text-text-primary">{faqBlock.title}</h2>
-      <div className="mt-4 space-y-3">
+    <section className={styles.faq}>
+      <div className={styles.sectionHeading}>
+        <span className={styles.eyebrow}>FAQ</span>
+        <h2>{faqBlock.title}</h2>
+      </div>
+      <div className={styles.faqList}>
         {faqBlock.items.map((item) => (
-          <details key={item.question} className="rounded-lg border border-hairline bg-surface px-4 py-3">
-            <summary className="cursor-pointer text-sm font-semibold text-text-primary">{item.question}</summary>
-            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.answer}</p>
+          <details key={item.question} className={styles.faqItem}>
+            <summary>{item.question}<span aria-hidden="true">+</span></summary>
+            <p>{item.answer}</p>
           </details>
         ))}
       </div>

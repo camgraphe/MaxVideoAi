@@ -1,0 +1,17 @@
+# Read-only CWV review: shared reader redesign `d44b3c7b0`
+
+Reviewed 29 September 2026 against `d44b3c7b0^` in the isolated `codex/video-discovery` worktree. No product files, production deployment, or Lighthouse runs were changed or started for this review. This addendum follows `final-evidence-2d.md`; that document's measurements predate this reader redesign.
+
+## Initial-load and first-Play contracts
+
+- `DiscoveryVideoPlayer.client.tsx` still receives `detail.videoUrl` and `detail.posterUrl` unchanged, renders one video with `preload="none"`, and delegates manual playback/source selection to the existing `usePublicVideoControls`. `VideoWatchContent.tsx` and its optimized poster/preload link are untouched by `d44`; there is no new eager full-video request in this diff.
+- The gallery still dynamically imports `ExampleReader.client.tsx` only while a reader is selected. The new persistent navigation toolbar, share anchors and quote cards do not add third-party scripts or preload links. One additional above-fold `EngineIcon` for the original model may create a small brand-mark image request; actual request counts need a browser trace.
+- The inline scoped reader CSS grows from 15,589 to 16,875 authored bytes (+1,286 B), or 3,365 to 3,620 B under the same local gzip check (+255 B). It remains an inline `<style>` at the existing direct-route/reader boundary, so this commit does not introduce another render-blocking CSS request. The source components also grow, but production JS chunk deltas were not measured on the unstable host.
+- The presentation materially changes poster geometry: landscape media moves inside a larger media column and controls move outside the frame; portrait frame sizing is newly bounded by width and viewport height. The direct-route H1 moves under the media in document order. These can change the LCP element/paint time and layout behavior even when the poster URL and media byte count stay fixed. No equivalence claim follows from source inspection.
+- The server's `createdAt` normalization to an ISO string makes the same public detail DTO serializable through RSC and JSON. The direct-route metadata/JSON-LD owner is untouched. The implementation task independently checked canonical, robots, H1 and JSON-LD output on the approved watch route before/after and reports them identical.
+
+## Review result and remaining gate
+
+No actionable loading regression is established from the source diff. The new layout has no Lighthouse-only branch and preserves the consent/media controls. Functional checks reported by the implementation task are 21/21 focused tests plus lint/TypeScript and browser geometry/Play checks from 320 to 1280 px; they do not certify Core Web Vitals.
+
+The current draft PR still requires a comparable **final-commit** cold/warm route matrix in a stable environment: gallery hub/family plus direct landscape and portrait readers on mobile and desktop, same frozen content, browser/server cache state, media requests, LCP/CLS, Speed Index and first Play. Include normal consented Analytics where relevant. The 120-card historical reader measurements and the valid 316-card gallery groups at `75f`/`bb6`/`80a` do not cover `d44`. The `2d` local image-sizing check proves narrower desktop image requests only; its Lighthouse groups were invalidated by host CPU collapse. Field INP and GSC recovery remain separate post-deployment observations.

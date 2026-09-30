@@ -180,7 +180,7 @@ Read `docs/engineering/media-delivery.md` before changing media presentation, im
 
 Keep original download, edit and schema URLs distinct from immutable display derivatives. Public playback policy belongs in `frontend/lib/public-video-playback.ts`, browser attempt lifecycle in `frontend/components/media/usePublicVideoPlayback.ts`, and encoding/storage/database work outside browser modules. Preserve the critical server-rendered poster, fixed geometry and lazy mobile loading. Unknown or signed media must retain exact-original fallback behavior; do not introduce model-specific playback branches or per-route optimizer settings.
 
-For examples pages, keep the route hero's responsive poster explicitly prioritized in `ExamplesHeroVideo`. Do not add a competing route-head preload or prioritize the first gallery poster when that hero is present; `tests/examples-lcp-performance.test.ts` covers this boundary.
+For examples pages, the four-video opening lives inside the 24-card SSR gallery. Prioritize only its first visible poster; do not add a competing route-head preload or separate hero. `tests/examples-lcp-performance.test.ts` covers this boundary. Other readers that still use `ExamplesHeroVideo` retain their own explicit poster priority.
 
 For below-fold manual demonstrations, preserve the poster and geometry but default to `preload="none"`. `metadata` does not guarantee a small transfer. Check real network requests and first-Play behavior before adding or changing these readers; Character Builder's workflow is a native manual reader.
 

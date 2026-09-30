@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import {
   getCurationSnapshot,
-  listCurationCandidates,
   previewCuration,
   saveCuration,
   CurationError,
 } from '@/server/playlists/curation-service';
-import { listExampleFamilyPage, listPlaylistVideos } from '@/server/videos';
+import { getExamplesHubPlaylistSlug } from '@/server/playlists/slugs';
+import { listCatalogMembershipIds } from '@/server/videos-catalog-page';
+import { listPlaylistVideoIds } from '@/server/videos-playlists';
+import { filterEligibleCurationIds, loadSelectedCurationItems } from '@/server/playlists/curation-candidates-page';
 
 async function readInput(req: NextRequest) {
   let body;
@@ -44,34 +46,23 @@ export async function GET(req: NextRequest, context: Context) {
       return NextResponse.json({
         ok: true,
         snapshot,
-        candidates: [],
-        initialIds: [],
+        initialIds: [], selectedItems: [], selectedTotal: 0, removedCount: 0,
       });
-    const candidates = await listCurationCandidates(snapshot.slug);
-    const current = snapshot.config
-      ? []
-      : snapshot.slug.startsWith('family-')
-        ? (
-            await listExampleFamilyPage(snapshot.slug.slice(7), {
-              sort: 'playlist',
-              limit: 2001,
-              offset: 0,
-            })
-          ).items
-        : await listPlaylistVideos(snapshot.slug, 2001);
-    if (current.length > 2000)
-      throw new CurationError(
-        'This destination has more than 2,000 videos. Its existing feed is preserved; prepare a bounded migration before adopting a new order.',
-        409,
-      );
-    const eligible = new Set(candidates.map((item) => item.id));
-    const initialIds = snapshot.config?.orderedIds ?? current.map((item) => item.id);
+    const initialIds: string[] = snapshot.config ? [...snapshot.config.orderedIds] : [];
+    if (!snapshot.config) {
+      for (let offset = 0; ; offset += 500) {
+        const page = snapshot.slug === getExamplesHubPlaylistSlug() || snapshot.slug.startsWith('family-')
+          ? await listCatalogMembershipIds({ familyId: snapshot.slug.startsWith('family-') ? snapshot.slug.slice(7) : undefined, offset, limit: 500 })
+          : await listPlaylistVideoIds(snapshot.slug, { offset, limit: 500 });
+        initialIds.push(...page.ids);
+        if (!page.ids.length || offset + page.ids.length >= page.total) break;
+      }
+    }
+    const eligibleIds = await filterEligibleCurationIds(snapshot.slug, initialIds);
+    const selectedItems = await loadSelectedCurationItems(snapshot.slug, eligibleIds.slice(0, 48));
     return NextResponse.json({
-      ok: true,
-      snapshot,
-      candidates,
-      initialIds: initialIds.filter((id) => eligible.has(id)),
-      removedCount: initialIds.filter((id) => !eligible.has(id)).length,
+      ok: true, snapshot, initialIds: eligibleIds, selectedItems, selectedTotal: eligibleIds.length,
+      removedCount: initialIds.length - eligibleIds.length,
     });
   } catch (error) {
     return failure(error);

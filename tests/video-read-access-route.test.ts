@@ -11,7 +11,7 @@ const requireFrontend = createRequire(resolve('frontend/package.json'));
 test('video GET preserves public sharing and limits private videos to their owner', async (t) => {
   const folder = mkdtempSync(join(tmpdir(), 'video-read-access-'));
   const fixture = {
-    configured: true, userId: null as string | null, authCalls: 0,
+    configured: true, userId: null as string | null, authCalls: 0, bootstrapCalls: 0,
     video: null as Record<string, unknown> | null,
   };
   const globals = globalThis as typeof globalThis & { __videoReadFixture?: typeof fixture };
@@ -24,7 +24,7 @@ test('video GET preserves public sharing and limits private videos to their owne
     plugins: [{ name: 'video-read-fixtures', setup(builder) {
       const mocks: Record<string, string> = {
         '@/lib/db': 'export function isDatabaseConfigured(){return globalThis.__videoReadFixture.configured;}',
-        '@/lib/schema': 'export async function ensureBillingSchema(){}',
+        '@/lib/schema': 'export async function ensureBillingSchema(){globalThis.__videoReadFixture.bootstrapCalls++; throw new Error("Schema writes are forbidden on this read-only connection");}',
         '@/server/videos': 'export async function getVideoById(){return globalThis.__videoReadFixture.video;} export async function updateVideoIndexableForUser(){throw new Error("No writes in GET tests");}',
         '@/lib/supabase-ssr': 'export async function getRouteAuthContext(){globalThis.__videoReadFixture.authCalls++; return {userId:globalThis.__videoReadFixture.userId};}',
       };
@@ -45,6 +45,7 @@ test('video GET preserves public sharing and limits private videos to their owne
       assert.equal(response.status, 200);
       assert.deepEqual(await response.json(), { ok: true, video: fixture.video });
       assert.equal(fixture.authCalls, 0);
+      assert.equal(fixture.bootstrapCalls, 0, 'sharing an existing video must work with read-only storage');
       assert.equal(response.headers.get('cache-control'), 'private, no-store');
     }
   });

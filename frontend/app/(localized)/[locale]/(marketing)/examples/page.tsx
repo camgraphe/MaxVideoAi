@@ -26,6 +26,7 @@ import {
 import { ExamplesPageView } from './_components/examples-page-view';
 import {
   buildExamplesNextStepLinks,
+  getExamplesEditorialSections,
   getExamplesBrowseByModelLabel,
   getExamplesGalleryUiCopy,
   getExamplesLongDescription,
@@ -162,11 +163,9 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const heroBody = (modelLanding?.intro ?? hubHeroBody).replace(/\s+/g, ' ').trim();
   const heroLead = compactLeadCopy(heroBody, modelLanding ? 220 : 152);
   const klingSectionTitles = getKlingExamplesSectionTitles(appLocale, isKlingLanding);
-  const modelLandingSections = modelLanding?.sections.map((section, index) => ({
-    ...section,
-    title: klingSectionTitles?.[index] ?? section.title,
-    body: compactLeadCopy(section.body, 86),
-  }));
+  const modelLandingSections = modelLanding
+    ? getExamplesEditorialSections(modelLanding.sections, klingSectionTitles)
+    : undefined;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
@@ -242,7 +241,8 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const allVideos = pageResult.items;
   const totalCount = pageResult.total;
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));
-  const displayTotalPages = Math.max(totalPages, currentPage);
+  if (currentPage > totalPages) redirectToNormalized(totalPages);
+  const displayTotalPages = totalPages;
 
   const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
   const { engineFilterOptions, selectedEngine, selectedOption } = buildExamplesEngineFilterState({
@@ -263,6 +263,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   } = getExamplesModelPageLabels({
     isKlingLanding,
     isLtxLanding,
+    isSeedanceLanding,
     locale: appLocale,
   });
   const nextStepLinks = buildExamplesNextStepLinks({
@@ -370,6 +371,8 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       mainVideoCopy={mainVideoCopy}
       mainVideoFeature={mainVideoFeature}
       modelLandingSections={modelLandingSections}
+      modelLandingGuideTitle={modelLanding?.guideTitle}
+      modelLandingLabel={modelLanding?.label}
       modelLandingSummary={modelLanding?.summary}
       modelLinks={modelLinks}
       modelPagesLabel={modelPagesLabel}

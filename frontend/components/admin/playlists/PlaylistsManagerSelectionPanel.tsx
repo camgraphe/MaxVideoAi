@@ -4,13 +4,15 @@ import { PlacementEditor } from './PlacementEditor';
 import type { ComponentProps } from 'react';
 import { PlaylistDetailsPanel } from '@/components/admin/playlists/PlaylistDetailsPanel';
 import { PlaylistItemsSection } from '@/components/admin/playlists/PlaylistItemsSection';
-import type { EditablePlaylist } from '@/components/admin/playlists/playlist-types';
+import type { EditablePlaylist, PlaylistDestination } from '@/components/admin/playlists/playlist-types';
 
 type PlaylistItemsSectionProps = ComponentProps<typeof PlaylistItemsSection>;
 
 type PlaylistsManagerSelectionPanelProps = PlaylistItemsSectionProps & {
+  destination?: PlaylistDestination | null;
   enableCuration?: boolean;
   onCurationStateChange?: (state: { dirty: boolean; busy: boolean }) => void;
+  onCurationSaved?: () => void | Promise<void>;
   onDeletePlaylist: (playlistId: string) => void;
   onFieldChange: (playlistId: string, field: 'name' | 'slug' | 'description', value: string) => void;
   onSavePlaylist: (playlistId: string) => void;
@@ -19,9 +21,11 @@ type PlaylistsManagerSelectionPanelProps = PlaylistItemsSectionProps & {
 };
 
 export function PlaylistsManagerSelectionPanel({
+  destination,
   playlist,
   enableCuration = false,
   onCurationStateChange,
+  onCurationSaved,
   isPending,
   onDeletePlaylist,
   onFieldChange,
@@ -29,15 +33,17 @@ export function PlaylistsManagerSelectionPanel({
   onSeedFamilyPlaylist,
   ...itemsSectionProps
 }: PlaylistsManagerSelectionPanelProps) {
-  if (!playlist) {
+  if (!playlist || (destination && !destination.editable)) {
     return (
       <div className="rounded-card border border-dashed border-hairline bg-surface p-10 text-center text-sm text-text-secondary">
-        Select a collection from the left rail to start curating.
+        {destination?.warning ?? 'Select a connected destination to start curating. Missing and historical collections are listed below for diagnosis.'}
       </div>
     );
   }
 
-  const usesCuration = enableCuration && ['examplesHub', 'family', 'model'].includes(playlist.surfaceRole);
+  const usesCuration = enableCuration && (destination
+    ? ['examples', 'family', 'model'].includes(destination.kind)
+    : ['examplesHub', 'family', 'model'].includes(playlist.surfaceRole));
   const legacyEditor = (
     <>
       {playlist.surfaceRole === 'family' ? (
@@ -63,35 +69,21 @@ export function PlaylistsManagerSelectionPanel({
   );
   return (
     <>
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-lg font-semibold">{playlist.name}</h2>
-          <p className="mt-1 text-xs text-text-secondary">
-            {playlist.drivesRoute ?? 'Collection without a public page'}
-            {!usesCuration ? ` · ${playlist.siteVisibleCount} public media` : ''}
-          </p>
-        </div>
-        {playlist.drivesRoute ? (
-          <a
-            href={playlist.drivesRoute}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border border-border px-3 py-2 text-sm"
-          >
-            Open live page
-          </a>
-        ) : null}
-      </header>
       {usesCuration ? (
         <PlacementEditor
-          key={playlist.id}
+          key={`${destination?.id ?? playlist.id}:${playlist.id}`}
           playlistId={playlist.id}
           onStateChange={onCurationStateChange}
+          onSaved={onCurationSaved}
           fallback={legacyEditor}
         />
       ) : (
         legacyEditor
       )}
+      {destination?.sourceSlugs.length ? <details data-source-chain className="rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
+        <summary className="cursor-pointer font-medium">Source details</summary>
+        <p className="pt-2">Source chain: {destination.sourceSlugs.join(' → ')}</p>
+      </details> : null}
     </>
   );
 }

@@ -67,6 +67,7 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
     );
     const initial = await getCurationSnapshot(id);
     assert.equal(initial.config, null);
+    assert.equal(initial.openingAvailable, false);
     assert.equal(await resolveCuratedPlaylist('examples-wan-3'), null);
     const draft = { mode: 'hybrid' as const, orderedIds: ['a'], excludedIds: ['b'] };
     const preview = await previewCuration(id, draft, initial.revision);
@@ -92,16 +93,33 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
     await db.pool.query("INSERT INTO playlists(id,slug,is_public) VALUES ($1,'family-wan',true)", [familyId]);
     const staleFamily = await getCurationSnapshot(familyId);
     const oldFamilyDraft = { mode: 'manual' as const, orderedIds: ['a'], excludedIds: [] };
-    const oldFamilyPreview = await previewCuration(familyId, oldFamilyDraft, staleFamily.revision);
+    await assert.rejects(previewCuration(familyId, oldFamilyDraft, staleFamily.revision), /four-video opening/);
+    // A previously saved family remains editable on the older optional schema.
+    await db.pool.query("INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids) VALUES ($1,'manual',ARRAY['a'],'{}')", [familyId]);
+    const legacyFamily = await getCurationSnapshot(familyId);
+    const oldFamilyPreview = await previewCuration(familyId, oldFamilyDraft, legacyFamily.revision);
     await db.pool.query(
       "INSERT INTO playlists(id,slug,is_public) VALUES ('44444444-4444-4444-8444-444444444444','examples-wan-2-6',true)",
     );
     await appendPlaylistItem('44444444-4444-4444-8444-444444444444', 'b');
     await assert.rejects(
-      saveCuration(familyId, oldFamilyDraft, staleFamily.revision, oldFamilyPreview.token, null),
+      saveCuration(familyId, oldFamilyDraft, legacyFamily.revision, oldFamilyPreview.token, null),
       /changed/i,
-      'inherited changes must invalidate initial family adoption',
+      'source changes must invalidate a family preview',
     );
+    await db.pool.query('DELETE FROM playlist_curations WHERE playlist_id=$1', [familyId]);
+    const { loadPlaylistDestinations } = await import('../frontend/server/playlists/destinations');
+    const { mapCreatedPlaylistRow } = await import('../frontend/server/playlists/mappers');
+    const inventory = await loadPlaylistDestinations([mapCreatedPlaylistRow({ id: familyId, slug: 'family-wan', name: 'Wan', description: null, is_public: true, created_at: '2026-09-28', updated_at: '2026-09-28' })]);
+    assert.equal(inventory.find(row => row.id === 'family:wan')!.publicCount, 3);
+    assert.equal(inventory.find(row => row.id === 'model:wan-3')!.publicCount, 2);
+    assert.equal(inventory.find(row => row.id === 'examples')!.publicCount, 3);
+    process.env.EXAMPLES_PLAYLIST_SLUG = 'marketing-examples';
+    await db.pool.query("INSERT INTO playlists(id,slug,is_public) VALUES ('55555555-5555-4555-8555-555555555555',' examples ',true)");
+    const historicalId = '55555555-5555-4555-8555-555555555555';
+    await assert.rejects(previewCuration(historicalId, oldFamilyDraft, ''), /historical|configuration/i);
+    await assert.rejects(saveCuration(historicalId, oldFamilyDraft, '', '', null), /historical|configuration/i);
+    await db.pool.query("INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids) VALUES ($1,'manual',ARRAY['a'],'{}')", [familyId]);
     const family = await getCurationSnapshot(familyId);
     const familyDraft = { mode: 'hybrid' as const, orderedIds: ['a'], excludedIds: ['b', 'c'] };
     const familyPreview = await previewCuration(familyId, familyDraft, family.revision);
@@ -148,6 +166,34 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
     assert.deepEqual(await listPlaylistVideos('examples-wan-3', 10), []);
     await db.pool.query('UPDATE playlists SET is_public=false WHERE id=$1', [id]);
     assert.deepEqual(await resolveCuratedPlaylist('examples-wan-3'), []);
+    await db.pool.query(readFileSync('neon/migrations/53_playlist_opening.sql', 'utf8'));
+    await db.pool.query(readFileSync('neon/migrations/53_playlist_opening.sql', 'utf8')); // migration runner replays files
+    await db.pool.query('UPDATE playlists SET is_public=true WHERE id=$1', [id]);
+    for (const name of ['open-a','open-b','open-c','open-d']) {
+      await add(name,{aspect_ratio:'16:9'});
+      await db.pool.query("INSERT INTO job_outputs(job_id,kind,status,width,height,position,created_at) VALUES ($1,'video','completed',$2,$3,0,now())",[name,name==='open-b'?480:1280,name==='open-b'?854:720]);
+    }
+    const openingSnapshot = await getCurationSnapshot(id);
+    assert.equal(openingSnapshot.openingAvailable,true);
+    const openingDraft = {mode:'manual' as const, orderedIds:['c','open-a'], excludedIds:[], openingIds:['open-a','open-b','open-c','open-d']};
+    const openingPreview = await previewCuration(id,openingDraft,openingSnapshot.revision);
+    assert.deepEqual(openingPreview.items.map(item=>item.id),['open-a','open-b','open-c','open-d','c']);
+    await db.pool.query("UPDATE job_outputs SET width=1280,height=720 WHERE job_id='open-b'");
+    await assert.rejects(saveCuration(id,openingDraft,openingSnapshot.revision,openingPreview.token,null),/9:16/);
+    await db.pool.query("UPDATE job_outputs SET width=480,height=854 WHERE job_id='open-b'");
+    await saveCuration(id,openingDraft,openingSnapshot.revision,openingPreview.token,null);
+    assert.deepEqual((await getCurationSnapshot(id)).config?.openingIds,openingDraft.openingIds);
+    assert.deepEqual((await resolveCuratedPlaylist('examples-wan-3'))?.map(item=>item.id),['open-a','open-b','open-c','open-d','c']);
+    const {listCatalogPage} = await import('../frontend/server/videos-catalog-page');
+    // Remove family override so its inherited model source owns this assertion.
+    await db.pool.query('DELETE FROM playlist_curations WHERE playlist_id=$1',[familyId]);
+    const page = await listCatalogPage({familyId:'wan',sort:'playlist',limit:4,offset:0});
+    assert.deepEqual(page.items.map(item=>item.id),openingDraft.openingIds);
+    assert.equal(new Set(page.items.map(item=>item.id)).size,4);
+    const dated = await listCatalogPage({familyId:'wan',sort:'date-asc',limit:30,offset:0});
+    assert.notDeepEqual(dated.items.slice(0,4).map(item=>item.id),openingDraft.openingIds);
+    await db.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='open-c'");
+    assert.ok(!(await listCatalogPage({familyId:'wan',sort:'playlist',limit:30,offset:0})).items.some(item=>item.id==='open-c'));
   } finally {
     await getDb().end();
     await db.cleanup();

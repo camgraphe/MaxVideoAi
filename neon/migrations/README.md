@@ -77,3 +77,7 @@ recovers available historical completion evidence. Apply before deploying the ad
 `app_jobs`, `fal_queue_log` and `provider_attempts`. Test on a production branch copy
 before promotion; see `docs/engineering/generation-observations.md` for semantics and
 rollback. The migration does not repair or update source jobs.
+
+## Gallery opening slots
+
+`53_playlist_opening.sql` follows migration52 and adds optional four-video opening IDs. It is additive and replayable; it does not change any destination or media. Before applying it, test on a database branch. Runtime readers and ordinary curation retain compatibility without the column; the new admin selector appears only after migration. Do not apply migrations from a public request.

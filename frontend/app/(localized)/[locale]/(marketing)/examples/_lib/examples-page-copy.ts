@@ -11,7 +11,19 @@ type PaginationDictionary = {
 export type ExamplesNextStepLink = {
   href: string;
   label: string;
+  comparison?: readonly [leftEngineId: string, rightEngineId: string];
+  modelSlug?: string;
 };
+
+export function getExamplesEditorialSections(
+  sections: Array<{ title: string; body: string }>,
+  replacementTitles: string[] | null,
+) {
+  return sections.map((section, index) => ({
+    title: replacementTitles?.[index] ?? section.title,
+    body: section.body,
+  }));
+}
 
 export function getExamplesBrowseByModelLabel(locale: AppLocale) {
   return locale === 'fr' ? 'Parcourir par marque' : locale === 'es' ? 'Explorar por modelo' : 'Browse by brand';
@@ -85,10 +97,12 @@ export function getKlingExamplesSectionTitles(locale: AppLocale, isKlingLanding:
 export function getExamplesModelPageLabels({
   isKlingLanding,
   isLtxLanding,
+  isSeedanceLanding,
   locale,
 }: {
   isKlingLanding: boolean;
   isLtxLanding: boolean;
+  isSeedanceLanding: boolean;
   locale: AppLocale;
 }) {
   const modelPagesLabel =
@@ -110,11 +124,17 @@ export function getExamplesModelPageLabels({
           : locale === 'es'
             ? 'Elige tu modelo LTX'
             : 'Choose your LTX model'
-      : locale === 'fr'
-        ? 'Pages modèles actuelles'
-        : locale === 'es'
-          ? 'Páginas de modelo actuales'
-          : 'Current model pages';
+      : isSeedanceLanding
+        ? locale === 'fr'
+          ? 'Choisissez votre modèle Seedance'
+          : locale === 'es'
+            ? 'Elige tu modelo Seedance'
+            : 'Choose your Seedance model'
+        : locale === 'fr'
+          ? 'Pages modèles actuelles'
+          : locale === 'es'
+            ? 'Páginas de modelo actuales'
+            : 'Current model pages';
   const supportedOlderVersionLabel =
     isKlingLanding
       ? locale === 'fr'
@@ -164,6 +184,14 @@ export function buildExamplesNextStepLinks({
   pricingPath: string;
 }): ExamplesNextStepLink[] {
   const compareLabel = locale === 'fr' ? 'Comparer' : locale === 'es' ? 'Comparar' : 'Compare';
+  const comparisonLink = (slug: string, label: string): ExamplesNextStepLink => {
+    const separator = slug.indexOf('-vs-');
+    return {
+      href: buildCompareHref(appLocale, slug),
+      label: `${compareLabel} ${label}`,
+      comparison: separator > 0 ? [slug.slice(0, separator), slug.slice(separator + 4)] : undefined,
+    };
+  };
   const family = familySlug ?? (isLtxLanding ? 'ltx' : isKlingLanding ? 'kling' : isSeedanceLanding ? 'seedance' : isVeoLanding ? 'veo' : '');
   // Lead with the current generation; retain selected historical comparisons for
   // visitors evaluating older examples. Published routes remain unchanged.
@@ -205,12 +233,12 @@ export function buildExamplesNextStepLinks({
     ],
   };
   const selected = comparisons[family];
-  if (selected) return selected.map(([slug, label]) => ({ href: buildCompareHref(appLocale, slug), label: `${compareLabel} ${label}` }));
+  if (selected) return selected.map(([slug, label]) => comparisonLink(slug, label));
   return [
-    { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5' },
-    { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3' },
-    { href: buildModelHref(appLocale, 'wan-3'), label: 'Wan 3' },
-    { href: buildCompareHref(appLocale, 'kling-3-pro-vs-seedance-2-5'), label: `${compareLabel} Kling 3 Pro vs Seedance 2.5` },
+    { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5', modelSlug: 'seedance-2-5' },
+    { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3', modelSlug: 'minimax-h3' },
+    { href: buildModelHref(appLocale, 'wan-3'), label: 'Wan 3', modelSlug: 'wan-3' },
+    comparisonLink('kling-3-pro-vs-seedance-2-5', 'Kling 3 Pro vs Seedance 2.5'),
     { href: pricingPath, label: locale === 'fr' ? 'Voir les tarifs' : locale === 'es' ? 'Ver precios' : 'View pricing' },
   ];
 }

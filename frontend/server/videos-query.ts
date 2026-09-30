@@ -1,3 +1,11 @@
+/** Shared playable-source/deletion gate for gallery and direct SEO watch readers. */
+export const PUBLIC_VIDEO_SOURCE_ELIGIBILITY = `status='completed' AND COALESCE(surface,'video')='video'
+  AND NULLIF(BTRIM(video_url),'') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM job_outputs removed WHERE removed.job_id=app_jobs.job_id
+    AND removed.kind='video' AND removed.status='deleted' AND COALESCE(removed.url,removed.storage_url)=app_jobs.video_url)
+  AND NOT EXISTS (SELECT 1 FROM media_assets removed WHERE removed.user_id=app_jobs.user_id
+    AND removed.url=app_jobs.video_url AND (removed.deleted_at IS NOT NULL OR removed.status='deleted'))`;
+
 export const imageThumbFallbackSelect = (jobAlias: string) => `
              SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
                FROM job_outputs jo

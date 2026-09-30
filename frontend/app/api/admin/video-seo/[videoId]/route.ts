@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateVideoSeoPages } from '@/server/video-seo-revalidation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { isStablePublicMediaUrl } from '@/lib/media';
 import { buildExpectedVideoCanonicalUrl } from '@/lib/video-seo-canonical';
@@ -91,6 +92,7 @@ export async function PUT(req: NextRequest, props: RouteParams) {
       typeof payload.notes === 'string' ? payload.notes : null
     );
 
+    revalidateVideoSeoPages(editorial, fallback);
     return NextResponse.json({ ok: true, editorial, qa: validation.qa });
   } catch (error) {
     console.error('[api/admin/video-seo/:videoId] failed to save page', error);
@@ -119,6 +121,7 @@ export async function DELETE(req: NextRequest, props: RouteParams) {
 
   try {
     const editorial = await removeVideoSeoEditorialEntryFromRollout(videoId, adminUserId);
+    revalidateVideoSeoPages(editorial);
     return NextResponse.json({ ok: true, editorial });
   } catch (error) {
     console.error('[api/admin/video-seo/:videoId] failed to remove rollout candidate', error);

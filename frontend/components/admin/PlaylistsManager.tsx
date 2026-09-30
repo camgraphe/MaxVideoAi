@@ -11,12 +11,16 @@ import { PlaylistOrderDirtyBar } from '@/components/admin/playlists/PlaylistItem
 import { PlaylistsManagerToolbar } from '@/components/admin/playlists/PlaylistsManagerToolbar';
 import { PlaylistsManagerSelectionPanel } from '@/components/admin/playlists/PlaylistsManagerSelectionPanel';
 import { PlaylistsSidebar } from '@/components/admin/playlists/PlaylistsSidebar';
+import { chooseInitialDestination } from '@/components/admin/playlists/DestinationSwitcher';
+import { DestinationPicker } from '@/components/admin/playlists/DestinationPicker';
 import { usePlaylistHelperActions } from '@/components/admin/playlists/usePlaylistHelperActions';
 import { usePlaylistDragReorder } from '@/components/admin/playlists/usePlaylistDragReorder';
+import { usePlaylistDestinationActions } from '@/components/admin/playlists/usePlaylistDestinationActions';
 import {
   buildFamilyHelpers,
   buildModelHelpers,
   buildPlaylistUpdateFromItems,
+  groupPlaylists,
   getPlaylistGroup,
   sortItemsForDisplay,
   sortPlaylists,
@@ -26,10 +30,12 @@ import type {
   PlaylistItemRecord,
   PlaylistsManagerProps,
   PlaylistSummary,
+  PlaylistDestination,
 } from '@/components/admin/playlists/playlist-types';
-
+const EMPTY_DESTINATIONS: PlaylistDestination[] = [];
 export function PlaylistsManager({
   initialPlaylists,
+  initialDestinations = EMPTY_DESTINATIONS,
   initialPlaylistId,
   initialItems,
   embedded = false,
@@ -37,7 +43,10 @@ export function PlaylistsManager({
   className,
 }: PlaylistsManagerProps) {
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
-  const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
+  const [destinations, setDestinations] = useState(initialDestinations);
+  const initialDestination = chooseInitialDestination(initialDestinations);
+  const [selectedId, setSelectedId] = useState<string | null>(initialDestinations.length ? initialDestination?.playlistId ?? null : initialPlaylistId);
+  const [selectedDestinationId, setSelectedDestinationId] = useState<string | null>(initialDestination?.id ?? null);
   const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
   const savedItems = useRef(sortItemsForDisplay(initialItems));
   const [isItemsDirty, setItemsDirty] = useState(false);
@@ -66,17 +75,20 @@ export function PlaylistsManager({
 
   useEffect(() => {
     setPlaylists(sortPlaylists(initialPlaylists));
-    setSelectedId(initialPlaylistId);
+    setDestinations(initialDestinations);
+    setSelectedId(initialDestinations.length ? initialDestination?.playlistId ?? null : initialPlaylistId);
+    setSelectedDestinationId(initialDestination?.id ?? null);
     savedItems.current = sortItemsForDisplay(initialItems);
     setItems(savedItems.current);
     setItemsDirty(false);
     clearDragState();
-  }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists]);
+  }, [clearDragState, initialItems, initialPlaylistId, initialPlaylists, initialDestinations, initialDestination?.id, initialDestination?.playlistId]);
 
   const selectedPlaylist = useMemo(
     () => playlists.find((playlist) => playlist.id === selectedId) ?? null,
     [playlists, selectedId],
   );
+  const selectedDestination = destinations.find(destination => destination.id === selectedDestinationId) ?? null;
 
   useEffect(() => {
     if (selectedPlaylist && getPlaylistGroup(selectedPlaylist) === 'draft') {
@@ -84,15 +96,7 @@ export function PlaylistsManager({
     }
   }, [selectedPlaylist]);
 
-  const groupedPlaylists = useMemo(
-    () => ({
-      runtime: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'runtime'),
-      family: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'family'),
-      model: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'model'),
-      draft: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'draft'),
-    }),
-    [playlists],
-  );
+  const groupedPlaylists = useMemo(() => groupPlaylists(playlists), [playlists]);
 
   const familyHelpers = useMemo(() => buildFamilyHelpers(playlists), [playlists]);
   const modelHelpers = useMemo(() => buildModelHelpers(playlists), [playlists]);
@@ -172,18 +176,23 @@ export function PlaylistsManager({
           ...playlist,
         })),
       );
-      const preferredId =
-        preferredPlaylistId && nextPlaylists.some((playlist) => playlist.id === preferredPlaylistId)
-          ? preferredPlaylistId
-          : (nextPlaylists.find((playlist) => getPlaylistGroup(playlist) !== 'draft')?.id ??
-            nextPlaylists[0]?.id ??
-            null);
+      const nextDestinations = Array.isArray(json.destinations) ? json.destinations as PlaylistDestination[] : destinations;
+      setDestinations(nextDestinations);
+      const preferredIsEditable = nextDestinations.length === 0 || nextDestinations.some(destination =>
+        destination.playlistId === preferredPlaylistId && destination.editable);
+      const preferredId = preferredPlaylistId && preferredIsEditable && nextPlaylists.some(playlist => playlist.id === preferredPlaylistId)
+        ? preferredPlaylistId
+        : (chooseInitialDestination(nextDestinations)?.playlistId ??
+          (nextDestinations.length ? null : nextPlaylists.find(playlist => getPlaylistGroup(playlist) !== 'draft')?.id ?? nextPlaylists[0]?.id ?? null));
 
       if (preferredId) {
         await refreshPlaylistItems(preferredId, nextPlaylists);
+        setSelectedDestinationId(current => nextDestinations.find(destination => destination.id === current && destination.playlistId === preferredId && destination.editable)?.id
+          ?? nextDestinations.find(destination => destination.playlistId === preferredId && destination.editable)?.id ?? null);
       } else {
         setPlaylists(nextPlaylists);
         setSelectedId(null);
+        setSelectedDestinationId(null);
         savedItems.current = [];
         setItems([]);
         setItemsDirty(false);
@@ -191,7 +200,7 @@ export function PlaylistsManager({
       }
       return { nextPlaylists, selectedId: preferredId };
     },
-    [clearDragState, refreshPlaylistItems],
+    [clearDragState, refreshPlaylistItems, destinations],
   );
 
   const {
@@ -225,24 +234,10 @@ export function PlaylistsManager({
     setError,
   });
 
-  const handleSelectPlaylist = useCallback(
-    (playlistId: string) => {
-      if (busy.current || curationState.busy) return;
-      if ((isItemsDirty || curationState.dirty) && !window.confirm('Discard unsaved changes and change destination?'))
-        return;
-      setFeedback(null);
-      setError(null);
-      runAction(async () => {
-        try {
-          await refreshPlaylistItems(playlistId);
-        } catch (loadError) {
-          console.error('[PlaylistsManager] load items failed', loadError);
-          setError(loadError instanceof Error ? loadError.message : 'Failed to load collection items');
-        }
-      });
-    },
-    [busy, curationState, isItemsDirty, refreshPlaylistItems, runAction],
-  );
+  const { handleSelectPlaylist, handleSelectDestination, refreshProjection } = usePlaylistDestinationActions({
+    busy, curationState, destinations, isItemsDirty, metadataDirty: Boolean(selectedPlaylist?.dirty),
+    refreshPlaylistItems, runAction, setDestinations, setSelectedDestinationId, setError, setFeedback,
+  });
 
   const handleFieldChange = useCallback((playlistId: string, field: 'name' | 'slug' | 'description', value: string) => {
     setPlaylists((current) =>
@@ -363,6 +358,7 @@ export function PlaylistsManager({
             throw new Error(json?.error ?? `Failed to remove clip (${res.status})`);
           }
           await refreshPlaylistItems(selectedId);
+          await refreshProjection();
           setFeedback('Clip removed from collection');
         } catch (removeError) {
           console.error('[PlaylistsManager] remove video failed', removeError);
@@ -370,7 +366,7 @@ export function PlaylistsManager({
         }
       });
     },
-    [isItemsDirty, refreshPlaylistItems, runAction, selectedId],
+    [isItemsDirty, refreshPlaylistItems, refreshProjection, runAction, selectedId],
   );
 
   const handleSaveItems = useCallback(() => {
@@ -393,58 +389,33 @@ export function PlaylistsManager({
         setItemsDirty(false);
         setFeedback('Collection order saved');
         await refreshPlaylistItems(selectedId);
+        await refreshProjection();
       } catch (saveError) {
         console.error('[PlaylistsManager] save items failed', saveError);
         setError(saveError instanceof Error ? saveError.message : 'Failed to save collection order');
       }
     });
-  }, [items, refreshPlaylistItems, runAction, selectedId]);
+  }, [items, refreshPlaylistItems, refreshProjection, runAction, selectedId]);
 
   const missingFamilyCount = familyHelpers.filter((helper) => helper.status === 'missing').length;
   const missingModelCount = modelHelpers.filter((helper) => helper.status === 'missing').length;
 
   return (
     <div className={clsx('space-y-4', isItemsDirty && 'pb-28', className)}>
-      <PlaylistsManagerToolbar
-        createDescription={createDescription}
-        createName={createName}
-        createSlug={createSlug}
-        draftCount={groupedPlaylists.draft.length}
-        embedded={embedded}
-        isPending={isPending || isItemsDirty || curationState.busy || curationState.dirty}
-        enableCuration={enableCuration}
-        missingFamilyCount={missingFamilyCount}
-        missingModelCount={missingModelCount}
-        onCreateDescriptionChange={setCreateDescription}
-        onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
-        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
-        onCreateNameChange={setCreateName}
-        onCreateSlugChange={setCreateSlug}
-        onCreateSubmit={handleCreatePlaylist}
-        onSeedAllFamilyPlaylists={handleSeedAllFamilyPlaylists}
-        onSeedAllModelPlaylists={handleSeedAllModelPlaylists}
-        showCreateForm={showCreateForm}
-        onToggleCreateForm={() => setShowCreateForm((current) => !current)}
-        onToggleDraftCollections={() => setShowDraftCollections((current) => !current)}
-        showDraftCollections={showDraftCollections}
-      />
-
       <PlaylistFeedbackBanners error={error} feedback={feedback} />
 
-      <div className="grid gap-6 xl:grid-cols-[250px_minmax(0,1fr)]">
-        <PlaylistsSidebar
-          groupedPlaylists={groupedPlaylists}
-          onSelectPlaylist={handleSelectPlaylist}
-          pending={isPending || curationState.busy}
-          enableCuration={enableCuration}
-          selectedId={selectedId}
-          showDraftCollections={showDraftCollections}
-        />
+      {destinations.length ? <DestinationPicker destinations={destinations} selectedId={selectedDestination?.id ?? null}
+        onSelect={handleSelectDestination} disabled={isPending || curationState.busy}
+        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
+        createMissingModelPlaylistsDisabled={isItemsDirty || curationState.dirty || Boolean(selectedPlaylist?.dirty)} /> : null}
 
-        <section className="space-y-6">
+      <div className={clsx('grid min-w-0 grid-cols-1 gap-6', !destinations.length && 'lg:grid-cols-[250px_minmax(0,1fr)]')}>
+        <section data-destination-editor className={clsx('min-w-0 space-y-6', !destinations.length && 'lg:col-start-2 lg:row-start-1')}>
           <PlaylistsManagerSelectionPanel
+            destination={selectedDestination}
             enableCuration={enableCuration}
             onCurationStateChange={setCurationState}
+            onCurationSaved={refreshProjection}
             draggingId={draggingId}
             dropAtEnd={dropAtEnd}
             dropPlacement={dropPlacement}
@@ -477,7 +448,36 @@ export function PlaylistsManager({
             playlist={selectedPlaylist}
           />
         </section>
+        {!destinations.length ? <PlaylistsSidebar groupedPlaylists={groupedPlaylists} destinations={destinations}
+          onSelectDestination={handleSelectDestination} onSelectPlaylist={handleSelectPlaylist}
+          pending={isPending || curationState.busy} enableCuration={enableCuration}
+          selectedId={selectedId} selectedDestinationId={selectedDestination?.id ?? null}
+          showDraftCollections={showDraftCollections} /> : null}
       </div>
+
+      <PlaylistsManagerToolbar
+        createDescription={createDescription}
+        createName={createName}
+        createSlug={createSlug}
+        draftCount={groupedPlaylists.draft.length}
+        embedded={embedded}
+        isPending={isPending || isItemsDirty || curationState.busy || curationState.dirty}
+        enableCuration={enableCuration}
+        missingFamilyCount={missingFamilyCount}
+        missingModelCount={missingModelCount}
+        onCreateDescriptionChange={setCreateDescription}
+        onCreateMissingFamilyPlaylists={() => handleCreateMissingFamilyPlaylists()}
+        onCreateMissingModelPlaylists={() => handleCreateMissingModelPlaylists()}
+        onCreateNameChange={setCreateName}
+        onCreateSlugChange={setCreateSlug}
+        onCreateSubmit={handleCreatePlaylist}
+        onSeedAllFamilyPlaylists={handleSeedAllFamilyPlaylists}
+        onSeedAllModelPlaylists={handleSeedAllModelPlaylists}
+        showCreateForm={showCreateForm}
+        onToggleCreateForm={() => setShowCreateForm((current) => !current)}
+        onToggleDraftCollections={() => setShowDraftCollections((current) => !current)}
+        showDraftCollections={showDraftCollections}
+      />
 
       {selectedPlaylist && isItemsDirty ? (
         <PlaylistOrderDirtyBar

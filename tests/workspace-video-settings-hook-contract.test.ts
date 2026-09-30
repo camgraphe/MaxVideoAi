@@ -60,6 +60,7 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   );
 
   assert.match(settingsSource, /from '\.\/workspace-derived-aspect-ratio'/);
+  assert.match(settingsSource, /export \{ buildVideoSettingsSnapshotFromSharedVideo \} from '\.\/workspace-shared-video-snapshot'/);
   assert.match(settingsSource, /from '\.\/workspace-video-job-media'/);
   assert.match(jobMediaSource, /export function buildVideoJobMediaPatch/);
   assert.match(jobMediaSource, /export function buildRequestedJobPreview/);

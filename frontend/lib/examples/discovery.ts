@@ -5,7 +5,7 @@ import { getExampleModelEngineAliases } from '@/lib/model-families';
 /** Public archive routes do not make a model eligible for acquisition surfaces. */
 export function isDiscoverableExampleEngine(id: string, models: readonly RuntimeModelEntry[] = listRuntimeModels()): boolean {
   const canonical = normalizeEngineId(id)?.trim().toLowerCase();
-  const model = models.find(candidate => candidate.id === canonical || candidate.slug === canonical);
+  const model = models.find(candidate => candidate.id.toLowerCase() === canonical || candidate.slug.toLowerCase() === canonical);
   return Boolean(model && model.lifecycle !== 'deep_legacy' && model.lifecycle !== 'retired'
     && model.publication.app.published && model.publication.examples.published);
 }

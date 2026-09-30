@@ -54,3 +54,20 @@ test('video hero badges describe the displayed clip; image badges keep editorial
   );
   assert.deepEqual(getHeroMediaBadges({ ...fallback, videoUrl: null }, authored, 'Audio enabled'), authored);
 });
+
+
+test('a managed model selection keeps its first playable hero while unmanaged galleries prefer landscape', async () => {
+  const {projectModelPageGallery}=await import('../frontend/server/model-gallery-projection');
+  type Video=import('../frontend/server/videos-normalization').GalleryVideo;
+  const cards=[card('portrait','9:16'),card('landscape','16:9')];
+  const videos=cards.map(item=>({...item,engineId:'wan-3'})) as unknown as Video[];
+  const gallery=await projectModelPageGallery({
+    engine:{modelSlug:'wan-3',id:'wan-3'},examples:videos,managed:true,
+    preferred:{hero:'landscape',demo:null},featuredIds:['landscape'],
+    getPublicVideosByIds:async()=>new Map(videos.map(video=>[video.id,video])),
+    toCard:video=>cards.find(item=>item.id===video.id)!,
+  });
+  assert.deepEqual(gallery.galleryVideos.map(item=>item.id),['portrait','landscape']);
+  assert.equal(pickHeroMedia(gallery.galleryVideos,gallery.preferredIds.hero,fallback,{preserveOrder:gallery.managed}).id,'portrait');
+  assert.equal(pickHeroMedia(cards,null,fallback).id,'landscape');
+});

@@ -13,6 +13,8 @@ const railCardPath = join(playlistsDir, 'PlaylistRailCard.tsx');
 const missingFamilyCardPath = join(playlistsDir, 'MissingFamilyCard.tsx');
 const missingModelCardPath = join(playlistsDir, 'MissingModelCard.tsx');
 const sidebarPath = join(playlistsDir, 'PlaylistsSidebar.tsx');
+const switcherPath = join(playlistsDir, 'DestinationSwitcher.tsx');
+const pickerPath = join(playlistsDir, 'DestinationPicker.tsx');
 const createFormPath = join(playlistsDir, 'PlaylistCreateForm.tsx');
 const detailsPanelPath = join(playlistsDir, 'PlaylistDetailsPanel.tsx');
 const feedbackBannersPath = join(playlistsDir, 'PlaylistFeedbackBanners.tsx');
@@ -35,6 +37,8 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
     missingFamilyCardPath,
     missingModelCardPath,
     sidebarPath,
+    switcherPath,
+    pickerPath,
     createFormPath,
     detailsPanelPath,
     feedbackBannersPath,
@@ -50,6 +54,8 @@ test('admin playlists manager delegates contracts, helper logic, and card UI', (
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/playlist-types'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/playlist-helpers'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsSidebar'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/DestinationSwitcher'/);
+  assert.match(managerSource, /from '@\/components\/admin\/playlists\/DestinationPicker'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistFeedbackBanners'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistItemsSection'/);
   assert.match(managerSource, /from '@\/components\/admin\/playlists\/PlaylistsManagerToolbar'/);
@@ -207,4 +213,16 @@ test('admin playlist helper modules expose the expected contract', () => {
       `${exportName} should be exported`
     );
   }
+});
+
+test('admin playlist route and refresh share the server destination projection', () => {
+  const page = readFileSync(join(root, 'frontend/app/(core)/admin/playlists/page.tsx'), 'utf8');
+  const route = readFileSync(join(root, 'frontend/app/api/admin/playlists/route.ts'), 'utf8');
+  const switcher = readFileSync(switcherPath, 'utf8');
+  assert.match(page, /loadPlaylistDestinations\(playlists\)/);
+  assert.match(page, /initialDestinations=\{destinations\}/);
+  assert.match(route, /loadPlaylistDestinations\(playlists\)/);
+  assert.match(route, /ok: true, playlists, destinations/);
+  assert.match(switcher, /export function DestinationSwitcher/);
+  assert.match(readFileSync(pickerPath, 'utf8'), /export function DestinationPicker/);
 });

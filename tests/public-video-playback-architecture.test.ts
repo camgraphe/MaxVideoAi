@@ -41,7 +41,8 @@ test('watch, comparisons and card previews keep shared lifecycle and original UR
   }
   assert.match(comparison, /usePublicVideoControls\(src, 'comparison', 'original'\)/);
   assert.match(comparisonMedia, /buildPublicVideoPosterUrl\(side.posterUrl\)/);
-  assert.match(card, /video.previewVideoUrl \?\? video.videoUrl/);
+  assert.match(card, /video.previewVideoUrl\?\?null/);
+  assert.doesNotMatch(card, /video.previewVideoUrl\s*\?\?\s*video.videoUrl/, 'incidental previews never autoplay full originals');
   assert.match(card, /useExampleCardPlayback/);
   assert.match(card, /preload="none"/);
   assert.doesNotMatch(card, /poster=\{/);

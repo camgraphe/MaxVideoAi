@@ -14,7 +14,7 @@ const isConfig = (text: string) => /SELECT p\.(?:slug,p\.)?is_public,c\.mode/.te
 const isCandidates = (text: string) => text.includes('SELECT job_id,engine_id,engine_label,prompt');
 const configSlugs = ({params}: Statement): string[] => Array.isArray(params[0]) ? params[0] as string[] : [String(params[0])];
 
-test('gallery readers resolve each requested curation once per invocation with unchanged PostgreSQL results', { timeout: 60_000 }, async t => {
+test('scoped gallery readers resolve each requested curation once per invocation with unchanged PostgreSQL results', { timeout: 60_000 }, async t => {
   const missing = missingDisposablePostgresCommand();
   if (missing) return t.skip(`${missing} is unavailable`);
   const postgres = await startDisposablePostgres('gallery-read');
@@ -63,6 +63,7 @@ test('gallery readers resolve each requested curation once per invocation with u
   await build({
     stdin: { contents: `export * from './frontend/server/videos';
       export {resolveCuratedPlaylist} from './frontend/server/playlists/curation-service';
+      export {createCurationReadScope} from './frontend/server/videos-playlists';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
@@ -88,7 +89,13 @@ test('gallery readers resolve each requested curation once per invocation with u
   process.env.EXAMPLES_PLAYLIST_SLUG = 'examples';
   delete process.env.NEXT_PHASE;
   delete process.env.MAXVIDEOAI_PUBLIC_EXAMPLES_SNAPSHOT;
-  const reader = requireFrontend(output);
+  const unscopedReader = requireFrontend(output);
+  // This suite owns request-scope batching. Full public SQL pagination has its own catalog suite.
+  const reader = {
+    ...unscopedReader,
+    listExamplesPage: (options: unknown, scope = unscopedReader.createCurationReadScope()) => unscopedReader.listExamplesPage(options, scope),
+    listExampleFamilyPage: (family: string, options: unknown, scope = unscopedReader.createCurationReadScope()) => unscopedReader.listExampleFamilyPage(family, options, scope),
+  };
   closeDb = () => reader.getDb().end();
   const statements: Statement[] = reader.statements;
   const evidence: Record<string, unknown> = {};

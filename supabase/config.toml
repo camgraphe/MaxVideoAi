@@ -130,7 +130,9 @@ additional_redirect_urls = [
   "https://maxvideoai.com/app/login",
   "https://maxvideoai.com/auth/reset-password",
   "https://maxvideoai.com/auth/callback",
-  "http://localhost:3000/*"
+  "http://localhost:3000/*",
+  # Gallery/admin review: preserve the loopback origin and callback query parameters.
+  "http://127.0.0.1:3210/auth/callback**"
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

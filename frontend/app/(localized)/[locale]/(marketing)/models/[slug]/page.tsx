@@ -1,4 +1,4 @@
-import {finalizeModelGallery} from './_lib/model-gallery-curation';
+import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
 import { hasPlaylistCuration } from '@/server/playlists/curation-service';
 import '@/styles/marketing-models.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
@@ -18,7 +18,6 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
-import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
@@ -206,8 +205,7 @@ async function renderMarketingModelPage({
     async () => {
       let examples: GalleryVideo[] = [];
       let managedCuration=false;
-      const examplePlaylistKeys =
-        engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
+      const examplePlaylistKeys = modelExamplePlaylistKeys(engine.modelSlug);
       try {
         for (const playlistKey of examplePlaylistKeys) {
           examples = await listPlaylistVideos(playlistKey, 200);
@@ -217,54 +215,19 @@ async function renderMarketingModelPage({
       } catch (error) {
         console.warn('[models/sora-2] failed to load examples', error);
       }
-      const normalizedSlug = normalizeEngineId(engine.modelSlug) ?? engine.modelSlug;
-      const allowedEngineIds = new Set([
-        normalizedSlug,
-        engine.modelSlug,
-        engine.id,
-        ...(engine.modelSlug === 'sora-2-pro' ? ['sora-2', 'sora2'] : []),
-        ...(engine.modelSlug === 'sora-2' ? ['sora-2', 'sora2'] : []),
-      ].map((id) => (id ? id.toString().trim().toLowerCase() : '')).filter(Boolean));
-      const soraExamples = examples.filter((video) => {
-        const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
-        return normalized ? allowedEngineIds.has(normalized) : false;
+      return projectModelPageGallery({
+        engine, examples, managed: managedCuration,
+        preferred: PREFERRED_MEDIA[engine.modelSlug] ?? {hero:null,demo:null},
+        featuredIds: FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [],
+        getPublicVideosByIds,
+        toCard: video => resolveGalleryCardHref(toGalleryCard(
+          video, engine.brandId, localizedContent.marketingName ?? engine.marketingName,
+          engine.modelSlug, engine.id, backPath, appPath,
+        )),
       });
-      const safeSoraExamples =
-        engine.modelSlug === 'sora-2'
-          ? soraExamples.filter((video) => {
-              const text = [video.prompt, video.promptExcerpt, video.id].filter(Boolean).join(' ');
-              return !/\b(john\s+lennon|lennon|beatles)\b/i.test(text);
-            })
-          : soraExamples;
-      const validatedMap = await getPublicVideosByIds(safeSoraExamples.map((video) => video.id));
-      let galleryVideos = safeSoraExamples
-        .filter((video) => validatedMap.has(video.id))
-        .map((video) =>
-          toGalleryCard(
-            video,
-            engine.brandId,
-            localizedContent.marketingName ?? engine.marketingName,
-            engine.modelSlug,
-            engine.id,
-            backPath,
-            appPath
-          )
-        )
-        .map((card) => resolveGalleryCardHref(card));
-
-      const preferredIds = managedCuration ? {hero:null,demo:null} : PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
-      galleryVideos=await finalizeModelGallery({
-        managed: managedCuration,
-        cards:galleryVideos,
-        featuredIds:FEATURED_EXAMPLE_MEDIA[engine.modelSlug]??[],
-        preferredIds:[preferredIds.hero,preferredIds.demo].filter((id):id is string=>Boolean(id)),
-        preferLandscape:engine.modelSlug==='kling-2-5-turbo',
-        fetchCards:async(ids)=>Array.from((await getPublicVideosByIds(ids)).values()).map(video=>resolveGalleryCardHref(toGalleryCard(video,engine.brandId,localizedContent.marketingName??engine.marketingName,engine.modelSlug,engine.id,backPath,appPath))),
-      });
-      return { galleryVideos, preferredIds };
     }
   );
-  const { galleryVideos, preferredIds } = gallery;
+  const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
   const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
   const pricingEngine = applyEnginePricingOverride(engine.engine, enginePricingOverrides[engine.engine.id]);
   const modelName = localizedContent.marketingName ?? engine.marketingName;
@@ -285,8 +248,8 @@ async function renderMarketingModelPage({
     label: modelName ?? 'Sora',
   };
 
-  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
-  if (engine.modelSlug === 'kling-2-5-turbo') {
+  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia, { preserveOrder: managedCuration });
+  if (!managedCuration && engine.modelSlug === 'kling-2-5-turbo') {
     const heroCandidate =
       galleryVideos.find((video) => video.aspectRatio === '16:9' && Boolean(video.videoUrl)) ??
       galleryVideos.find((video) => video.aspectRatio === '16:9');

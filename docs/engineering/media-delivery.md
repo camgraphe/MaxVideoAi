@@ -22,6 +22,22 @@ Comparison detail pages load optional public `examples-<modelSlug>` playlists th
 
 `CompareGalleryCard.client.tsx` owns intent and visibility only, delegating incidental muted previews to `useExampleCardPlayback`. Preserve responsive lazy covers, the configured image quality and fixed geometry. Ordinary activation opens `CompareVideoDialog.client.tsx`, loaded on demand; modified clicks and the underlying HTML link retain the watch-page URL. The modal delegates focus, Escape and restoration to `useAccessibleModal` and full playback to `PublicVideoPlayer`, with original fidelity and `preload="none"`. No automatic playback of all gallery items. Show independent-example labeling; do not imply identical prompts or controlled test conditions.
 
+## Paginated discovery gallery
+
+Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.
+
+The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. A continuation heading and spacing distinguish the opening four from later cards without changing their media geometry. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
+
+A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and recorded cost, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, settings and recorded cost remain available in the reader and canonical watch page; never put a historic cost on gallery cards. Per-video reuse links still follow the source engine's app availability rule in the reader.
+
+## Public example comparison handoff
+
+`frontend/lib/example-recreation.ts` owns the explicit text-only comparison URL and its scalar settings contract. Prices never travel as trusted URL inputs. `remix=1` requires engine, mode, duration, resolution, aspect and audio; unsupported settings are rejected rather than silently replaced with another quote scenario. `workspace-example-recreation.ts` checks the actual workspace engine capabilities and form coercion before producing the snapshot. `workspace-example-resolution.ts` maps equivalent public resolution labels to native capability tokens; incompatible coupled LTX Fast duration/resolution/fps settings are refused before hydration. The ordinary public snapshot projection lives in `workspace-shared-video-snapshot.ts`.
+
+`useWorkspaceVideoSettings` captures this intent before removing `from`. After the public video loads, it applies the selected model and full prompt once and skips private/original-job hydration for this comparison. Reference inputs from the source and the visitor's previous form are not carried into this explicitly text-only mode. Ordinary example links retain their existing recreation flow; their derived snapshot now includes public audio and a conventional resolution only when measured dimensions support it. Saved job snapshots remain authoritative on the ordinary path.
+
+The comparison UI shows three distinct executable model proposals, each with its own duration, resolution, aspect and audio. `server/example-comparison-quotes.ts` ranks configurations by duration distance first, then aspect, resolution and audio; exact configurations win. Explicitly highlight every adapted setting. Unknown source settings stay unknown; label those quotes as proposed configurations. Validate each proposal with the workspace handoff owner before quoting it once through the canonical public price owner. Keep historical cost separate and confirm the final quote in the app before generation. A genuine quote-service failure may leave fewer proposals; never fabricate prices to fill a slot. Preserve the full request through the existing login redirect owner. Tests: `example-recreation`, `workspace-example-recreation-dom`, `workspace-video-settings`, `workspace-shared-video-load-dom`.
+
 ## Existing ownership
 
 Homepage mobile composition puts the main video before the comparison and assistant
@@ -137,7 +153,7 @@ The first orbit view uses the still-image style in server HTML and through hydra
 
 The homepage poster must remain discoverable in server-rendered HTML with its existing responsive source, dimensions and critical priority. Do not make it depend on hydration, a video download or an idle callback. Initial media scheduling and an explicit Play action have different priorities.
 
-The examples route hero also owns one responsive poster with explicit high fetch priority in the initial HTML. Keep this hint on `ExamplesHeroVideo`, alongside its existing `priority` setting; do not create another route-head preload or prioritize gallery cards while a route hero is present. This scheduling hint does not change the selected image, its quality, geometry, or mobile video loading policy. Validate its effect with comparable browser measurements; the HTML contract alone does not establish a performance gain.
+The examples routes prioritize only the first visible gallery poster. Other surfaces that use `ExamplesHeroVideo` keep its existing responsive poster priority, without competing gallery hints. Validate scheduling changes with comparable browser measurements; the HTML contract alone does not establish a performance gain.
 
 The examples hero waits for the first IntersectionObserver result before automatic
 playback. Each new automatic reader keeps `preload="none"` while visibility is
@@ -168,21 +184,35 @@ Watch pages use Auto by default; prepared sources expose Auto/Original. Comparis
 
 `usePublicVideoControls` owns manual play intent, visibility pauses, native/custom events, quality changes and original fallback. It changes only the live video source, synchronously before a requested play, while the original remains in SSR/React props and in separate schema/download/edit data. Quality changes and fallback retain the same native video element, time, mute and volume; a different original remounts it. Guard stale events/promises, seek after metadata, and never resume a manually paused or hidden reader automatically. All manual readers use `preload="none"`.
 
-Gallery cards retain their responsive optimized image underneath the video until actual `playing`, and show it again when waiting, paused or failed. A visible idle card has no video element. The card's visibility and hover/first-card policy request playback; `useExampleCardPlayback` applies hidden-tab, reduced-motion and Save-Data restrictions, then uses the shared attempt owner. Existing short previews remain preferred; only a missing-preview full video can use its prepared full-duration rendition. A failed short preview leaves the poster and watch link instead of fetching a large full video. Cards keep their existing narrow-mobile poster-only behavior. No native raw poster duplicates the optimized image request.
+Gallery cards retain their responsive optimized image underneath the video until actual `playing`, and show it again when waiting, paused or failed. A visible idle card has no video element. The examples gallery requests short previews through its bounded controller (three desktop, one mobile); `useExampleCardPlayback` applies hidden-tab, reduced-motion and Save-Data restrictions. Missing or failed previews keep the poster and watch link. Examples never fall back to full originals for incidental animation. Other users of this shared hook retain their own intent and mobile policies. No native raw poster duplicates the optimized image request.
 
-When the gallery is the route's first visual, its initial batch uses three stable,
-contiguous columns at widths of at least 1280 px. Each column flows independently,
-including portrait leaders; do not align all following cards beneath the tallest
-leader. Narrower layouts retain the existing masonry and source order through
-`display: contents`. Pagination appends after this initial batch without moving
-its leaders. The first poster keeps its existing priority; at most two additional
-column leaders receive desktop-only responsive preloads with high fetch priority.
-Those hints use `getImageProps` with the exact rendered poster's source, sizes and
-quality, including a concrete `href` so React hoists them into the initial head.
-Normal preload priority can still leave requests queued until layout. Hero-led
-galleries receive no additional hints. Check `tests/examples-gallery-opening.test.ts`,
-actual head placement, mixed-aspect layouts, pagination and comparable loading
-measurements when changing this boundary.
+On mobile, the gallery initially keeps incidental previews idle. A deliberate scroll gesture or the “Animate previews” control enables the one-video budget. Desktop starts one visible preview and expands to up to three after a card receives hover or keyboard focus. This preserves the server-rendered posters and watch links during first load while allowing visitors to animate the gallery as they explore it. Pausing stays explicit until the visitor resumes it.
+
+The opening and continuation layouts use one server-rendered page of 24 videos. Only the first poster receives high priority; side posters and narrow continuation portraits request image widths matched to their rendered columns. Later pages contain distinct entries and no repeated opening. `tests/examples-gallery-opening.test.ts` and `tests/examples-lcp-performance.test.ts` own this HTML boundary.
+
+### One reader for gallery and direct watch URLs
+
+`ExampleReaderContent` is the shared video, prompt, commercial actions and editorial view. `VideoWatchContent` renders it with an H1 on direct `/video/[id]` or canonical-slug requests and keeps metadata, JSON-LD, breadcrumbs and related links on the server. From the gallery, `ExampleReader.client` wraps the same content in an accessible dialog. `useGalleryReader` creates one browser-history entry at the actual watch URL and replaces it for next/previous navigation. Closing or Back returns to the original gallery URL, filter, page and scroll; refreshing the video URL loads the standalone page. Modified clicks remain ordinary watch links. No second video identity or separate popup content is authored.
+
+`example-watch-detail-loader` rechecks public eligibility and reads the selected editorial entry only. Curation and direct SEO watch readers share `PUBLIC_VIDEO_SOURCE_ELIGIBILITY` from `videos-query.ts`, excluding incomplete jobs and deleted output/asset sources before hydration. Gallery discovery keeps its explicit indexable flag, while direct SEO readers retain the existing legacy null-indexability policy. Both modes use the watch signals owner for title, introductory copy, approved references and contextual details. `ExampleReaderContext` preserves secondary editorial information in a native disclosure. Original download, schema and recreation URLs stay intact. Prices remain absent from gallery cards; historical cost and supported prompt-only comparison estimates with explicit per-proposal settings are distinct in the reader.
+
+`example-watch-detail-loader` loads the read-only configured video catalog used by the
+app once per response. Both the proposal selector and the workspace handoff validator
+consume that same catalog, including disabled models and administrator capability
+limits. The public projection receives it explicitly; offline tests supply their
+own authored catalog fixture. Historical render costs remain independent of current
+canonical quotes. A disabled source model keeps its public video readable, but has
+no direct recreation action or comparison proposal.
+
+`ExampleReaderContext` omits empty disclosures, headings and lists. Its intro remains
+visible even when there is no additional context. `ExampleReaderDisclosure.client`
+keeps populated children in the initial server HTML and owns only the native toggle
+interaction. Opening near the bottom of the viewport brings the summary and first
+content below the sticky toolbar; mounting, closing and already-visible content do
+not move the reading position. An empty keyframe URL object does not create a
+keyframe section. Tests: `example-reader-context-dom` and `video-page-architecture`.
+
+Admin SEO writes revalidate the affected ID and canonical-slug routes after persistence, including the previous slug when changed, plus the video sitemap routes. Failed validation or persistence does not invalidate. SEO status and existing quality gates still govern robots, redirect and sitemap eligibility; opening a public gallery video does not approve it for indexing.
 
 ### Playback observations
 
@@ -309,3 +339,144 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 `src/components/tools/toolbox-art.ts` owns the shared curated illustrations used by `ToolboxScene`, the marketing hub and tool cards. Empty app states keep their Illustration label. Character Builder’s generated fictional portrait and eight-view sheet are illustrations, not recorded app outputs; real workflow demos retain their existing sources and manual playback.
 
 `src/components/tools/landing/tool-workspace-assets.ts` owns versioned WebP captures of the current local tool UI. Capture the actual interface, preserve visible settings, state the locale and visitor/authenticated context, and do not fabricate outputs. Replace captures with new versioned files after UI changes. `ToolWorkspacePreview` preserves intrinsic geometry and lazy loading with a full-size link. Angle keeps its route-local frame; its interactive orbit assets and responsive preparation policy remain separate. New direct WebP captures are bounded below 150 KB; validate loading and production-build performance before rollout, without inferring CWV improvements from byte size alone.
+
+## Video discovery gallery and reader
+
+The examples route now renders 24 unique cards per URL page. `videos-catalog-page.ts`
+counts, orders, deduplicates and selects eligible IDs in one SQL snapshot before
+hydrating only the selected page. There is no catalog-wide 120/400 limit. Homepage
+request-scoped readers retain their separate batching contract. Without an explicit global
+curation, the general catalog combines the hub plus public family/model destinations.
+Family curations suppress their inherited model destinations; an explicit global
+manual/hybrid curation remains authoritative. Membership already authored in the hub
+stays independent of a family's inherited selection; family exclusions are not a
+catalog-wide deletion. Resolve stored engine IDs and aliases
+through the registry and apply discovery policy before count and pagination. The four optional
+opening slots count within page one: 16:9, 9:16, 16:9, 16:9. Only the two small
+landscape preview frames crop; original watch media stays unchanged. Other sorts
+and later pages use native-ratio rows. Incomplete opening sets fall back to those rows.
+
+`useGalleryPreviewBudget` permits up to three visible short previews on desktop and
+one on mobile, with hover/focus priority, a global pause and suspension while the
+reader is open. Cards still delegate reduced-motion, data-saver, hidden-document,
+autoplay rejection and source fallback to `useExampleCardPlayback`. Only the first
+visible poster is prioritized; the other three opening posters are eager with
+normal (`auto`) fetch priority. Do not demote these visible posters to `low`:
+Chrome can promote nearby lazy continuation images ahead of them, leaving opening
+cards blank after the lead has painted. They add no preload or explicit high-priority
+hint. The continuation remains lazy. There is no competing separate
+hero. Update root LCP guidance accordingly when changing this surface again.
+
+Every card retains its real standalone watch link. An ordinary click dynamically
+loads `ExampleReader.client.tsx`. `useGalleryReader` preserves gallery page/filter
+and scroll, uses one history entry, and fetches adjacent 24-card windows only at a
+reader boundary. Back closes and Forward can reopen the last selection.
+
+The server `ExamplesGalleryGrid` boundary sends card summaries without the unused
+`promptFull` field. Prompt excerpts, accessible labels, sources and links stay the
+same; opening the reader or continuing in the app still loads the full approved
+prompt from the existing detail endpoint. Do not duplicate every complete prompt
+in the initial gallery's RSC client props.
+
+Source playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
+The existing standalone watch page remains the authority for canonical, metadata,
+VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.
+
+`ExampleReaderContent` is shared by both presentations. A direct request renders
+its H1, primary video, editorial context and structured data on the server. A gallery
+entry uses an H2 in the dialog and the existing watch URL in browser history; closing
+restores the gallery rather than fetching a second record page. Share resolves the
+canonical URL, while direct legacy ID requests keep the existing slug redirect.
+
+`VideoWatchShare` presents a persistent compact row in the public reader, with a
+canonical-link copy action and an announced confirmation. Clipboard failures expose
+the same URL in a selectable read-only field, and the clipboard fallback returns
+focus to the reader action. Feedback belongs to its watch URL, so navigation cannot
+show another video's copied state. The public reader does not mount the owned-video
+social publishing panel or prepare a video file for this link action. Its six visible
+link destinations (X, WhatsApp, Telegram, LinkedIn, Facebook and e-mail) reuse the
+library's pure `buildVideoShareIntent` owner, always using the current canonical
+watch URL. Existing local brand icons are lazy images; no platform SDK is loaded.
+TikTok, Reels and Shorts in the owned-video panel are file-publication workflows,
+not canonical-link destinations. Reader settings are plain text with separators;
+only actions retain outlined buttons. Adapted quote values keep their gold dotted
+underline without a button-like border.
+
+`example-reader-styles.tsx` owns the reader's scoped class mapping and CSS. The
+synchronous `/video` route layout emits `ExampleReaderStyles` before page data
+resolves; the dialog portal emits it including loading/error states. The small
+stylesheet is inline only on watch routes or with the dialog; do not
+import it from the initial gallery or add it to site-wide CSS. This avoids an extra
+blocking stylesheet request before the watch poster. Every class uses the
+`video-reader-` prefix; descendant integration styles remain scoped beneath it.
+On mobile, comparisons follow prompt/reference/share content in DOM order. Do not
+move a later streamed comparison block ahead of an already painted prompt with CSS
+`order`: warm-cache navigation can shift that prompt by the full quote block height.
+The poster keeps its existing optimized URL and single matching preload. Verify
+response headers and the network trace: moving a hint earlier in HTML alone does
+not change style hints that Next has already sent in the response headers.
+
+`GET /api/examples/[id]` is an uncached read-only detail projection. It rechecks the
+same public/completed/indexable/live-output eligibility as the catalog, returns an
+explicit public DTO and never exposes ownership, raw snapshots or private references.
+Source images use the existing approved-editorial/public-stable-media gate. The
+editorial single-video lookup is bounded to one row. No schema bootstrap belongs
+on this read path.
+
+The reader uses a landscape media/tools layout and a portrait media column with
+tools and comparison offers alongside it. Container queries collapse these into
+document order on narrower surfaces; small screens show compact offer rows with
+44px generation controls. The media frame keeps its exact ratio and transport
+controls sit outside it. The gallery toolbar keeps Previous/Next/Close available
+while scrolling, including loading/error close behavior and the existing focus trap.
+Historical render cost belongs with the original media settings; each new-generation
+estimate belongs to its own settings and app handoff. Unknown original settings are
+labelled as incomplete, without claiming that a proposed configuration is identical.
+The comparison heading states that these are prices for this prompt and one new
+video per estimate. Each model action opens the prompt and its displayed settings
+in the app; it does not launch or charge a generation. Explain adapted settings only
+when a proposal differs, and keep the prompt-only reference exclusion and final
+price confirmation visible below the offers.
+Persistent sharing reuses the library's link intents with the canonical link only. Prompt
+copy uses the shared clipboard fallback and retains a manual full-text fallback.
+The public detail DTO normalizes database dates into ISO strings for identical RSC
+and JSON output, avoiding server/client differences in the editorial time attribute.
+
+Direct watch pages start the configured engine and price-policy reads alongside
+their watch-data lookup with `prepareExampleWatchDetailContext`. Both context reads
+run concurrently, and every comparison reuses that one request-scoped policy and
+configured catalog. The context remains server-only; only the explicit public
+detail DTO reaches the reader. There is no cross-request quote cache or streamed
+replacement that changes the reader geometry. Verify measured loading before
+claiming that this overlap improves Core Web Vitals.
+
+Direct watch pages pass their already prepared signals to `buildExampleWatchDetail`.
+That path reuses the validated editorial/source-image projection from
+`getVideoWatchPageDataById`, without reading editorial entries or resolving source
+images again. API opens still perform their fresh lookup and source-image checks.
+
+The recorded example cost is historical. Comparison estimates use one visible
+text-to-video scenario with no references. Measured resolution/aspect take precedence;
+unknown settings produce no invented quotes. Candidates must pass the same workspace
+form coercion used by the explicit recreation handoff, without changing duration,
+resolution, aspect or audio. `computeCanonicalPublicSnapshot` owns prices and shares
+one DB policy read across the response. Show the current model when compatible and
+up to three compatible alternatives closest in price, without claiming equal quality.
+`buildExampleRecreationHref` passes the full scalar scenario through login; generation
+always requotes. Ordinary `/app?from=…` continues the original reuse flow.
+
+Regression coverage: `examples-catalog-pagination-postgres`, `examples-discovery-layout`,
+`gallery-reader-navigation-dom`, `example-watch-detail`, `example-recreation`,
+`workspace-example-recreation-dom`, and existing public-video/watch/SEO contracts.
+
+### Local public gallery review data
+
+Run `pnpm --dir frontend exec tsx --tsconfig tsconfig.json scripts/capture-public-examples-review.ts`
+to capture JSON from each public family independently, paging until the API reports a complete
+feed. The opt-in development snapshot unions real public hub/family media for the general
+catalog, retaining current discovery policy and deduplicating IDs. Historical archive feeds
+remain separate. Never derive families from the first 120 hub videos. The deployed hub API
+can report its loaded window as the total; this local union reviews the new default catalog,
+not the production admin's private configuration. Captured prompts and original media URLs
+come only from public APIs; no production database or publication writes occur. The server
+caches this file in process, so restart the opted-in dev server after recapturing it.

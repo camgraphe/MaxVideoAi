@@ -1,0 +1,43 @@
+export function readerCopy(locale: string) {
+  return locale === 'fr' ? {
+    close: 'Fermer le lecteur', previous: 'Vidéo précédente', next: 'Vidéo suivante', loading: 'Ouverture de la vidéo…', error: 'Cette vidéo est indisponible pour le moment.', retry: 'Réessayer',
+    play: 'Lire la vidéo', pause: 'Pause', mute: 'Couper le son', unmute: 'Activer le son', fullscreen: 'Plein écran', timeline: 'Position dans la vidéo', quality: 'Qualité', original: 'Original',
+    previousShort: 'Précédente', nextShort: 'Suivante', tools: 'Prompt et création', originalSettings: 'Réglages du rendu original',
+    recorded: 'Coût du rendu original', create: 'Utiliser ce prompt dans l’app',
+    identical: 'Mêmes réglages vidéo que l’original', adjusted: 'Réglages vidéo adaptés', proposed: 'Réglages vidéo proposés', compare: 'Comparer les prix pour ce prompt',
+    comparisonIntro: 'Choisissez un modèle pour ouvrir ce prompt dans l’app. Chaque estimation concerne une nouvelle vidéo avec les réglages affichés.',
+    textOnly: 'Seul le texte du prompt est repris, sans les images ou vidéos de référence.', audio: 'Audio activé', silent: 'Sans audio',
+    compareNote: 'Les réglages en doré sont adaptés à ce modèle.', unavailable: 'Aucune estimation compatible disponible pour ces réglages.',
+    proposedNote: 'Les réglages d’origine sont incomplets. Ces configurations sont proposées pour votre nouvelle vidéo.',
+    priceNote: 'Vérifiez le prix final dans l’app avant de générer.', use: 'Utiliser ce modèle', useShort: 'Ouvrir l’app', estimate: 'Estimé / vidéo', current: 'Utilisé pour cette vidéo',
+    prompt: 'Prompt', copy: 'Copier le prompt', copied: 'Prompt copié', copyError: 'Copie indisponible. Vous pouvez sélectionner le prompt ci-dessous.', manualCopy: 'Prompt à copier manuellement', expand: 'Voir tout le prompt', collapse: 'Réduire',
+    watch: 'Voir la page de cette vidéo', model: 'Découvrir le modèle', sources: 'Images de référence', navError: 'Impossible de charger la suite. Réessayez.', reader: 'Lecteur vidéo', playbackError: 'Lecture indisponible. Réessayez.',
+  } : locale === 'es' ? {
+    close: 'Cerrar el reproductor', previous: 'Vídeo anterior', next: 'Vídeo siguiente', loading: 'Abriendo el vídeo…', error: 'Este vídeo no está disponible por el momento.', retry: 'Reintentar',
+    play: 'Reproducir vídeo', pause: 'Pausa', mute: 'Silenciar', unmute: 'Activar sonido', fullscreen: 'Pantalla completa', timeline: 'Posición del vídeo', quality: 'Calidad', original: 'Original',
+    previousShort: 'Anterior', nextShort: 'Siguiente', tools: 'Prompt y creación', originalSettings: 'Ajustes del vídeo original',
+    recorded: 'Coste del vídeo original', create: 'Usar este prompt en la app',
+    identical: 'Mismos ajustes de vídeo que el original', adjusted: 'Ajustes de vídeo adaptados', proposed: 'Ajustes de vídeo propuestos', compare: 'Compara precios para este prompt',
+    comparisonIntro: 'Elige un modelo para abrir este prompt en la app. Cada estimación corresponde a un nuevo vídeo con los ajustes mostrados.',
+    textOnly: 'Solo se reutiliza el texto del prompt, sin las imágenes o vídeos de referencia.', audio: 'Con audio', silent: 'Sin audio',
+    compareNote: 'Los ajustes en dorado se han adaptado a ese modelo.', unavailable: 'No hay estimaciones compatibles con estos ajustes.',
+    proposedNote: 'Los ajustes originales están incompletos. Estas configuraciones se proponen para tu nuevo vídeo.',
+    priceNote: 'Revisa el precio final en la app antes de generar.', use: 'Usar este modelo', useShort: 'Abrir app', estimate: 'Estimado / vídeo', current: 'Usado en este vídeo',
+    prompt: 'Prompt', copy: 'Copiar prompt', copied: 'Prompt copiado', copyError: 'No se pudo copiar. Selecciona el prompt a continuación.', manualCopy: 'Prompt para copiar manualmente', expand: 'Ver el prompt completo', collapse: 'Reducir',
+    watch: 'Ver la página de este vídeo', model: 'Descubrir el modelo', sources: 'Imágenes de referencia', navError: 'No se pudo cargar el siguiente vídeo. Reintenta.', reader: 'Reproductor de vídeo', playbackError: 'Vídeo no disponible. Reintenta.',
+  } : {
+    close: 'Close video player', previous: 'Previous video', next: 'Next video', loading: 'Opening video…', error: 'This video is unavailable right now.', retry: 'Try again',
+    play: 'Play video', pause: 'Pause', mute: 'Mute', unmute: 'Unmute', fullscreen: 'Full screen', timeline: 'Video position', quality: 'Quality', original: 'Original',
+    previousShort: 'Previous', nextShort: 'Next', tools: 'Prompt and creation', originalSettings: 'Original render settings',
+    recorded: 'Original render cost', create: 'Use this prompt in the app',
+    identical: 'Matches original video settings', adjusted: 'Adapted video settings', proposed: 'Suggested video settings', compare: 'Compare prices for this prompt',
+    comparisonIntro: 'Choose a model to open this prompt in the app. Each estimate is for one new video with the settings shown.',
+    textOnly: 'Only the text prompt is reused; reference images and videos are not included.', audio: 'Audio on', silent: 'No audio',
+    compareNote: 'Settings in gold have been adapted for that model.', unavailable: 'No compatible estimates available for these settings.',
+    proposedNote: 'The original settings are incomplete. These are suggested settings for your new video.',
+    priceNote: 'Review the final price in the app before generating.', use: 'Use this model', useShort: 'Open app', estimate: 'Estimated / video', current: 'Used for this video',
+    prompt: 'Prompt', copy: 'Copy prompt', copied: 'Prompt copied', copyError: 'Copy unavailable. Select the full prompt below.', manualCopy: 'Prompt for manual copying', expand: 'Show full prompt', collapse: 'Show less',
+    watch: 'View this video’s page', model: 'Explore the model', sources: 'Reference images', navError: 'Could not load more videos. Try again.', reader: 'Video player', playbackError: 'Playback unavailable. Try again.',
+  };
+}
+export type ReaderCopy = ReturnType<typeof readerCopy>;
