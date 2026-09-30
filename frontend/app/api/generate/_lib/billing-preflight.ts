@@ -108,7 +108,7 @@ export async function resolveGenerateBillingPreflight(params: {
   voiceControl: boolean;
   deps?: BillingPreflightDeps;
 }): Promise<GenerateBillingPreflightResult> {
-  if (params.payment.mode !== 'direct' && requiresMembershipPricingRefresh(params.membershipTier)) {
+  if (params.payment?.mode !== 'direct' && requiresMembershipPricingRefresh(params.membershipTier)) {
     return { ok: false, status: 409, body: { ok: false, error: 'PRICING_REFRESH_REQUIRED', message: MEMBERSHIP_PRICING_REFRESH_MESSAGE } };
   }
   const deps = params.deps ?? {};

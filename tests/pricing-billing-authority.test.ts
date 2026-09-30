@@ -7,7 +7,7 @@ const read = (path: string) => readFileSync(path, 'utf8');
 test('new generation charges enter through canonical server pricing owners', () => {
   const canonicalConsumers = new Map<string, string>([
     ['frontend/app/api/generate/_lib/billing-preflight.ts', 'computeCanonicalBillingSnapshot'],
-    ['frontend/app/api/wallet/route.ts', 'computeCanonicalBillingSnapshot'],
+    ['frontend/server/wallet-direct-checkout.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/image-generation-pricing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/storyboard-image-billing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/audio/prepare-audio.ts', 'computeCanonicalAudioBillingSnapshot'],

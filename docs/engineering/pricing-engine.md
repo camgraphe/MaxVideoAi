@@ -78,6 +78,8 @@ Paid preflight verifies Stripe `kind`, owner, job, immutable quote ID, exact sce
 
 Refund snapshots and USD ledger cents retain the original paid quote. Receipt charge/payment-intent columns are globally unique in the application schema, so refund rows retain the original Stripe references in `metadata.original_stripe_payment_intent_id` and `metadata.original_stripe_charge_id`; the dedicated `stripe_refund_id` remains on the refund row. This permits both charged and refunded receipts without weakening existing payment uniqueness constraints. Disposable PostgreSQL acceptance includes those real uniqueness indexes.
 
+`WALLET_FUNDED_RECEIPT_SQL` owns receipt funding classification for wallet balance, reservation, summary, Timeline export billing and fraud-cleanup balance reads. Topups fund the wallet even when Stripe references are present. Direct card charges and their refunds (including original references retained in refund metadata) never debit or credit the wallet. Ordinary wallet charge/refund rows still affect its balance. Business spend/history can include both payment methods; it must not be reused as a wallet balance.
+
 This work does not migrate production or activate model tariffs. Existing captured intents without `direct_quote_id` fail closed with `DIRECT_PAYMENT_QUOTE_UNAVAILABLE`; no price is reconstructed from today's tariff. Deployment requires migration 56 and an explicit reconciliation decision for such legacy payments.
 
 See the [local acceptance record](2026-09-29-pricing-local-acceptance.md) for the tested scope and remaining work.
