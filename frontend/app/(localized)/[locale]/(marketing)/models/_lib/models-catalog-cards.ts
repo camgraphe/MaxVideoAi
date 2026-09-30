@@ -37,7 +37,6 @@ import {
   getCatalogBySlug,
   getEngineDisplayName,
   getEngineTypeKey,
-  getMinPricePerSecond,
   getPrelaunchPricingLabel,
   getPrelaunchPricingNote,
   loadEngineKeySpecs,
@@ -150,7 +149,7 @@ export async function buildModelsCatalogCards({
   const pricingRangeMap = new Map(
     await Promise.all(
       engines.map(async (engine) => {
-        const range = await computeMarketingPriceRange(engine.engine, { durationSec: 5, memberTier: 'member' });
+        const range = await computeMarketingPriceRange(engine.engine, { durationSec: 5, memberTier: 'member', requireCurrentPolicy: true });
         return [engine.modelSlug, range] as const;
       })
     )
@@ -226,7 +225,7 @@ export async function buildModelsCatalogCards({
       catalogEntry?.engine?.maxDurationSec ?? null
     );
     const pricingRange = pricingRangeMap.get(engine.modelSlug) ?? null;
-    const priceFromCents = pricingRange?.min.cents ?? getMinPricePerSecond(catalogEntry);
+    const priceFromCents = pricingRange?.min.cents ?? null;
     const isPrelaunchWaitlist = engine.availability === 'waitlist';
     const hasConfirmedPricing = !isPrelaunchWaitlist && typeof priceFromCents === 'number' && priceFromCents > 0;
     const showPrelaunchPricePlaceholder = isPrelaunchWaitlist;

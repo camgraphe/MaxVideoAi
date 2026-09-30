@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
+import type { AudioGenerateRequestBody } from '@/lib/audio-generation';
+import { buildWorkspaceAudioGenerationRequest, workspaceVideoReferencesForGeneration } from '../_lib/workspace-generation-routing';
+import { formatWorkspaceAudioQuote } from '../_lib/workspace-audio-pricing';
 import { validateShotConnections } from '../_lib/workspace-capabilities';
 import {
   buildWorkspaceStoryboardImageEstimateRequest,
@@ -68,7 +71,8 @@ type WorkspaceAnyPricingRequest =
   | WorkspacePricingRequest
   | WorkspaceLocalPricingRequest
   | WorkspaceImageEstimatePricingRequest
-  | WorkspaceBillingProductPricingRequest;
+  | WorkspaceBillingProductPricingRequest
+  | { kind: 'audio-quote'; nodeId: string; key: string; request: AudioGenerateRequestBody };
 
 type UseWorkspaceShotPricingOptions = {
   nodes: WorkspaceGraphNode[];
@@ -195,6 +199,14 @@ export function useWorkspaceShotPricing({
             key: JSON.stringify({ status: estimate.status, label: estimate.label, settings, connectedInputs }),
           }];
         }
+        if (settings.family === 'audio') {
+          const request = buildWorkspaceAudioGenerationRequest({
+            settings,
+            prompt: promptTextForNode(node.id, nodes, edges),
+            videoReferences: workspaceVideoReferencesForGeneration({ nodes, edges, shotNode: node }),
+          });
+          return [{ kind: 'audio-quote', nodeId: node.id, request, key: JSON.stringify(request) }];
+        }
         const toolEstimate = buildWorkspaceToolPricingEstimate({
           settings,
           validation,
@@ -305,7 +317,7 @@ export function useWorkspaceShotPricing({
     );
 
     const remoteRequests = currentPricingRequests.filter(
-      (request): request is WorkspacePricingRequest | WorkspaceImageEstimatePricingRequest | WorkspaceBillingProductPricingRequest => request.kind !== 'local'
+      (request): request is Exclude<WorkspaceAnyPricingRequest, WorkspaceLocalPricingRequest> => request.kind !== 'local'
     );
     if (!remoteRequests.length) {
       return () => {
@@ -317,6 +329,15 @@ export function useWorkspaceShotPricing({
       void Promise.all(
         remoteRequests.map(async (pricingRequest) => {
           try {
+            if (pricingRequest.kind === 'audio-quote') {
+              const response = await authFetch('/api/audio/quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pricingRequest.request),
+              });
+              const payload = await response.json().catch(() => null);
+              return [pricingRequest.nodeId, formatWorkspaceAudioQuote(response.ok ? payload : { ok: false, message: payload?.message })] as const;
+            }
             if (pricingRequest.kind === 'billing-product') {
               const response = await authFetch(
                 `/api/billing-products?productKey=${encodeURIComponent(pricingRequest.request.productKey)}`

@@ -67,7 +67,10 @@ async function main() {
     await writeFile(join(directory, 'local.env'), `DATABASE_URL=${databaseUrl}\n`, { mode: 0o600 });
     console.info(`[pricing-sandbox] Local PostgreSQL ready. Runtime directory: ${directory}`);
     console.info(`[pricing-sandbox] Admin: http://localhost:${port}/admin/pricing. External credentials disabled.`);
-    const child = spawn(join(frontend, 'node_modules/.bin/next'), ['dev', '-p', String(port), '-H', '127.0.0.1'], {
+    // Match the advertised origin: Next normalizes loopback middleware URLs to
+    // localhost, and a different listener hostname makes rewrites proxy back
+    // through middleware instead of reaching their internal localized route.
+    const child = spawn(join(frontend, 'node_modules/.bin/next'), ['dev', '-p', String(port), '-H', 'localhost'], {
       cwd: frontend, env: environment, stdio: 'inherit',
     });
     const stop = () => child.kill('SIGTERM');

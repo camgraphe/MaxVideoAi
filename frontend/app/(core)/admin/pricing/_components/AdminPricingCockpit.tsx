@@ -14,21 +14,26 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useAdminPricingCockpitController } from '../_hooks/useAdminPricingCockpitController';
-import { providerComparisonPolicySelectorKey, type ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view-model';
+import { pricingPolicySelectorKey, providerComparisonPolicySelectorKey, type ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view-model';
 import { PricingPolicyInspector } from './PricingPolicyInspector';
 import { PricingPolicyTable } from './PricingPolicyTable';
 import { ProviderPriceComparisonTable } from './ProviderPriceComparisonTable';
+import { ProductPricingTable } from './ProductPricingTable.client';
+import { ProductPolicyEditor } from './ProductPolicyEditor.client';
 
 export function AdminPricingCockpit() {
   const controller = useAdminPricingCockpitController();
   const { mutate } = useSWRConfig();
   const refresh = async () => {
     await Promise.all([controller.refresh(), mutate(
-      (key) => typeof key === 'string' && key.startsWith('/api/admin/pricing/tariffs/'),
+      (key) => typeof key === 'string' && (key.startsWith('/api/admin/pricing/tariffs/') || key.startsWith('/api/admin/pricing/products') || key.startsWith('/api/admin/billing-products')),
       undefined, { revalidate: true },
     )]);
   };
   const [activeTab, setActiveTab] = useState<'comparison' | 'rules' | 'history'>('comparison');
+  const [category, setCategory] = useState<'video' | 'image' | 'audio' | 'tools' | 'storyboard'>('video');
+  const [productLocked, setProductLocked] = useState(false);
+  const [productPolicyKey, setProductPolicyKey] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const inspectorRef = useRef<HTMLDivElement>(null);
   const inventoryRows = controller.inventory?.rows ?? [];
@@ -50,17 +55,17 @@ export function AdminPricingCockpit() {
   return (
     <div className="flex flex-col gap-5">
       <AdminPageHeader
-        title="Model pricing"
-        description="See the customer price beside supplier evidence for each model."
+        title="Pricing"
+        description="Current customer prices, supplier evidence and margins for every creation product."
         actions={
-          <AdminActionButton type="button" onClick={() => void refresh()} disabled={controller.refreshing || controller.refreshLocked}>
+          <AdminActionButton type="button" onClick={() => void refresh()} disabled={controller.refreshing || controller.refreshLocked || productLocked}>
             <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </AdminActionButton>
         }
       />
 
-      <div className="grid grid-cols-3 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Model pricing sections">
+      <div className="grid grid-cols-3 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Pricing sections">
         {([
           { id: 'comparison', label: 'Pricing', icon: Scale },
           { id: 'rules', label: 'Pricing rules', icon: SlidersHorizontal },
@@ -69,6 +74,7 @@ export function AdminPricingCockpit() {
           <button key={id} id={`pricing-tab-${id}`} type="button" role="tab"
             aria-selected={activeTab === id} aria-controls={`pricing-panel-${id}`}
             tabIndex={activeTab === id ? 0 : -1}
+            disabled={productLocked || controller.refreshLocked}
             onClick={() => setActiveTab(id)}
             onKeyDown={(event) => {
               const tabs = ['comparison', 'rules', 'history'] as const;
@@ -106,10 +112,28 @@ export function AdminPricingCockpit() {
           <div id="pricing-panel-comparison" role="tabpanel" aria-labelledby="pricing-tab-comparison" hidden={activeTab !== 'comparison'}>
             {activeTab === 'comparison' ? <AdminSection
               title="Supplier cost and customer price"
-              description="Compare prices per second or image, preview and confirm a customer price. Margins are estimates unless the supplier contract is confirmed."
+              description="Compare unit prices, preview and confirm a change. Margins are estimates unless the supplier contract is confirmed."
             >
-              <ProviderPriceComparisonTable rows={controller.inventory.providerComparisons}
+              <div className="mb-3 flex flex-wrap gap-2" aria-label="Pricing product categories">
+                {([['video', 'Video'], ['image', 'Image'], ['audio', 'Audio'], ['tools', 'Tools'], ['storyboard', 'Storyboard']] as const).map(([id, label]) =>
+                  <button key={id} type="button" aria-pressed={category === id} disabled={productLocked || controller.refreshLocked}
+                    onClick={() => { setCategory(id); setProductPolicyKey(null); }} className={`rounded-lg border px-4 py-2 text-sm font-semibold ${category === id ? 'border-brand bg-brand/5 text-brand' : 'border-border bg-surface text-text-secondary'}`}>{label}</button>)}
+              </div>
+              {category === 'video' || category === 'image' ? <ProviderPriceComparisonTable key={category}
+                rows={controller.inventory.providerComparisons.filter((row) => row.mediaType === category)} fixedMediaType={category}
                 disabled={controller.interactionLocked} onInspect={inspectComparison} onSaved={controller.refresh} />
+                : <ProductPricingTable key={category} category={category} onLock={setProductLocked}
+                  policyLocked={controller.refreshLocked} policyEditorKey={productPolicyKey}
+                  policyEditor={productPolicyKey && controller.selectedKey === productPolicyKey && controller.selectedRow && controller.draft ?
+                    <ProductPolicyEditor row={controller.selectedRow} draft={controller.draft} locked={controller.interactionLocked}
+                      busy={controller.previewing || controller.confirming} onChange={controller.updateDraft}
+                      onPreview={() => void controller.openPreview('save')} onClose={() => setProductPolicyKey(null)} /> : null}
+                  onInspectPolicy={(selector) => {
+                  controller.setFilters({ query: '', source: 'all', status: 'all' });
+                  const key = pricingPolicySelectorKey(selector);
+                  controller.selectRow(key, true);
+                  setProductPolicyKey(key);
+                }} />}
             </AdminSection> : null}
           </div>
 
@@ -150,7 +174,9 @@ export function AdminPricingCockpit() {
       {controller.preview ? (
         <AdminPricingChangePreviewDialog
           preview={controller.preview}
-          onConfirm={() => void controller.confirmPreview()}
+          onConfirm={() => void controller.confirmPreview().then(() => mutate(
+            (key) => typeof key === 'string' && key.startsWith('/api/admin/pricing/products'), undefined, { revalidate: true },
+          ))}
           onCancel={controller.cancelPreview}
           busy={controller.confirming}
           error={controller.error?.message}

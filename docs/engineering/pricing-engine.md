@@ -242,7 +242,7 @@ Use only the owner for the value being changed:
 
 1. `/admin/pricing` compares representative provider/customer amounts for all app-published models. The **Pricing rules** tab edits the current margin-based rules. The unified **Pricing** view navigates exact supported scenarios and stages fixed customer-tariff cells inline with preview, confirmation, history and rollback after migration 54; those cells are not charged until the separate all-model activation gate passes. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. Migration 55 preserves active-cell history; active editing is exercised on disposable databases while the production code flag remains false. An active cell cannot be deleted or silently fall through to the margin rule.
 2. `/admin/membership` to inspect historical `member`, `plus`, and `pro` thresholds, discounts, and immutable events. It cannot apply or roll back changes.
-3. `/admin/billing-products` for active fixed products referenced by production billing consumers.
+3. `/admin/pricing` → **Tools** (or the retained `/admin/billing-products` view) for active fixed products referenced by production billing consumers. Audio and Storyboard categories show their canonical effective policies and representative quotes in the same workspace.
 
 For the retained pricing policy service or the billing-products UI, inspect the current source and provenance, prepare the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change in either active domain, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history. Membership history has no active rollback control.
 
@@ -337,3 +337,48 @@ Wan 3 and Prime use actual owned input-video duration plus requested output dura
 H3 Max reference generation uses a versioned conservative supplier-cost budget from verified owned media, then the existing canonical commercial policy. The fixed customer quote is authoritative; estimated supplier tokens are never presented as an invoice. See [multimodal reference parity](multimodal-reference-parity.md) for the dated authorization, formula, examples and limitations.
 
 The same provider review adds H3 480P and H3 Max 1080P. Seven exact public projection changes are recorded in `tests/fixtures/h3-capability-pricing-change-2026-09-22.json`, preserving the historical fixture. H3's 10-second estimator entry is now $0.65 at 480P, its 768P pricing-hub entry is $0.78, and H3 Max's newly available 1080P scenarios are $1.67 for eight seconds or $2.08 for ten seconds. These apply the existing 30% markup to reviewed regular supplier rates; reference surcharges are additional and quoted from the selected media. The baseline guard validates each previous row and every field of each replacement.
+
+
+## Unified commercial workspace and current display — 2026-09-30
+
+`/admin/pricing` has Video, Image, Audio, Tools and Storyboard categories. Identity
+stays in the model registry; amounts stay in effective policy, tariff cells and
+billing products with their existing mutation services. The shared UI reads
+`product-pricing-inventory.ts` for non-model rows and never owns pricing math.
+Supplier references, current customer amounts and estimated gross margins are
+separate. Missing supplier evidence means unknown margin; catalogue/budget costs
+are not negotiated contracts or invoices. Song uses a per-song unit, MiniMax a
+1,000-character scenario, and other per-second amounts explicitly normalize a
+reference scenario. Dynamic video tools show their fixed minimum and current
+source-dependent quote; changing that minimum does not change their authored
+multiplier. Finishing candidates stay unavailable without released profiles and
+qualified tool-specific rules.
+
+Audio rows select a pack-specific `audio-generation` policy with resolution
+`audio`; inherited global rules produce a new scoped draft. This policy covers
+variants within that pack. Active previews use `product-policy-scenarios.ts`,
+shared with inventory inputs, and canonical factual Audio/Storyboard bases.
+Cloning, MiniMax characters, Lyria duration normalization and source-backed
+limits remain with the factual billing owner. Historical audit scenarios stay
+unchanged. Storyboard operation previews cover HD, 4K and Ultra generation/edit.
+
+Live model range/catalogue/compare and current example readers now opt into
+`computeCurrentPublicSnapshot`, which requires loaded effective policy and
+captures it once per quote. Failed current quotes omit numbers; historical
+fixtures retain the offline adapter. Public Pricing Audio uses
+`computeCurrentAudioSnapshot`; fixed Tools use current billing-product snapshots
+with actual quantity/format normalization. Unsupported source-backed Audio
+reference durations omit prices. No paid-history amount is recalculated.
+
+Studio Audio obtains a server quote from the same normalized request used for
+submission. Its debounced hook binds responses to that request, drops superseded
+responses and submits the expected quote key, currency, total and expiry.
+`audio_quote_stale` dispatches the existing pricing refresh event. Server
+acceptance remains responsible for checking the quote before charging.
+
+Confirmed changes revalidate Pricing for model/audio/tool surfaces, localized
+model indexes, model details, current examples/home/watch and public tool routes.
+Billing-product reads require migrated schema and do not perform global bootstrap
+or seeding. The complete local audit, verification evidence and outstanding model
+activation/dynamic-rate/provider-evidence gates are recorded in
+[the all-product pricing acceptance](2026-09-30-all-product-pricing-audit.md).

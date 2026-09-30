@@ -65,6 +65,7 @@ export function useAdminPricingCockpitController() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [draft, setDraft] = useState<PricingPolicyDraft | null>(null);
   const [draftSelectionKey, setDraftSelectionKey] = useState<string | null>(null);
+  const [scopeToSelector, setScopeToSelector] = useState(false);
   const [preview, setPreview] = useState<PricingChangePreview | null>(null);
   const [previewProposal, setPreviewProposal] = useState<PricingPolicyProposal | null>(null);
   const [previewing, setPreviewing] = useState(false);
@@ -95,15 +96,17 @@ export function useAdminPricingCockpitController() {
 
   useEffect(() => {
     if (!selectedRow || selectedKey === draftSelectionKey) return;
-    setDraft(createPricingPolicyDraft(selectedRow));
+    setDraft(createPricingPolicyDraft(selectedRow, scopeToSelector));
     setDraftSelectionKey(selectedKey);
-  }, [draftSelectionKey, selectedKey, selectedRow]);
+  }, [draftSelectionKey, selectedKey, selectedRow, scopeToSelector]);
 
-  const selectRow = useCallback((key: string) => {
+  const selectRow = useCallback((key: string, scoped = false) => {
     if (interactionLocked) return;
     setError(null);
     setNotice(null);
     setSelectedKey(key);
+    setScopeToSelector(scoped);
+    setDraftSelectionKey(null);
   }, [interactionLocked]);
   const setFilters = useCallback((nextFilters: PricingCockpitFilters) => {
     if (interactionLocked) return;
@@ -118,6 +121,7 @@ export function useAdminPricingCockpitController() {
   const openPreview = useCallback(async (kind: 'save' | 'delete' = 'save') => {
     if (interactionLocked) return;
     if (!selectedRow || !activeDraft) return;
+    if (kind === 'delete' && activeDraft.id !== selectedRow.databaseOverride?.id) return;
     setPreviewing(true);
     setError(null);
     setNotice(null);

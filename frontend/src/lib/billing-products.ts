@@ -117,7 +117,7 @@ export async function loadBillingProductsWithExecutor(
 
 export async function listBillingProducts(): Promise<BillingProductRecord[]> {
   if (!isDatabaseConfigured()) return [];
-  await ensureBillingSchema();
+  // Reads require a migrated schema; initialization remains with explicit mutation/bootstrap owners.
   if (cachedProducts && Date.now() - cacheLoadedAt < CACHE_TTL_MS) {
     return cachedProducts;
   }

@@ -139,7 +139,9 @@ export function isEngineGeneratable(entry: EngineCatalogEntry) {
 export async function resolvePricingDisplay(
   entry: EngineCatalogEntry,
   locale: AppLocale,
-  pricingEngine?: EngineCaps | null
+  pricingEngine?: EngineCaps | null,
+  quotePoints: (engine: EngineCaps) => Promise<MarketingPricePoint[]> = (engine) =>
+    computeMarketingPricePoints(engine, { durationSec: 5, memberTier: 'member', requireCurrentPolicy: true }),
 ): Promise<ComparePricingDisplay> {
   if (entry.surfaces?.app?.enabled === false) {
     return { headline: locale === 'fr' ? 'Génération indisponible' : locale === 'es' ? 'Generación no disponible' : 'Generation unavailable', subline: null, prices: [], scorePrices: [] };
@@ -156,11 +158,12 @@ export async function resolvePricingDisplay(
 
   if (pricingEngine) {
     const display = buildPricingDisplayFromPoints(
-      await computeMarketingPricePoints(pricingEngine, { durationSec: 5, memberTier: 'member' })
+      await quotePoints(pricingEngine)
     );
     if (display) {
       return display;
     }
+    return { headline: 'Data pending', subline: null, prices: [], scorePrices: [] };
   }
   const perSecond = entry.engine?.pricingDetails?.perSecondCents;
   const byResolution = perSecond?.byResolution ?? {};

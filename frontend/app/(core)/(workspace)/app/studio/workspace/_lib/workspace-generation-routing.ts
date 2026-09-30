@@ -31,6 +31,7 @@ import {
   buildWorkspaceUpscaleToolRequest,
 } from './workspace-tool-requests';
 import { resolveWorkspaceSelectedOutputCount } from './workspace-output-count';
+import { expectedWorkspaceAudioQuote } from './workspace-audio-pricing';
 
 type WorkspaceGenerationRouteParams = {
   pricingSnapshot?: PricingSnapshot | null;
@@ -414,11 +415,12 @@ export function buildWorkspaceAudioGenerationRequest({
 }
 
 async function submitAudioGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
-  const result = await runAudioGenerate(buildWorkspaceAudioGenerationRequest({
+  const request = buildWorkspaceAudioGenerationRequest({
     settings: params.settings,
     prompt: params.prompt,
     videoReferences: videoReferencesFor(params),
-  }));
+  });
+  const result = await runAudioGenerate({ ...request, expectedQuote: expectedWorkspaceAudioQuote(params.pricingSnapshot) });
   const audioUrl = result.audioUrl ?? (result.outputKind === 'audio' ? result.videoUrl : null);
   const mediaUrl = result.outputKind === 'video' ? result.videoUrl : audioUrl;
   const outputKind = result.outputKind === 'video' ? 'video' : 'audio';

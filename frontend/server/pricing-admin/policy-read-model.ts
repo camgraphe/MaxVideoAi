@@ -112,7 +112,7 @@ export async function loadPricingPolicyInventory(
   const loaded = await dependencies.loadOverrides();
   const databaseRules = loaded.status === 'loaded' ? loaded.rules.map(canonicalRule) : [];
   const routingRules = loaded.status === 'loaded' ? loaded.routingRules ?? [] : [];
-  const auditScenarios = buildPricingAuditScenarios().filter((scenario) => {
+  const auditScenarios = selectAffectedPricingScenarios({}).filter((scenario) => {
     const engine = getFalEngineById(scenario.engineId);
     return !engine || engine.surfaces.pricing.includeInEstimator;
   });

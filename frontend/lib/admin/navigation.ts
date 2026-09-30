@@ -66,7 +66,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     secondary: true,
     items: [
       { id: 'settings', label: 'Settings', href: '/admin/settings', icon: 'settings' },
-      { id: 'pricing', label: 'Model pricing', href: '/admin/pricing', icon: 'billing-products' },
+      { id: 'pricing', label: 'Pricing', href: '/admin/pricing', icon: 'billing-products' },
       { id: 'service-notice', label: 'Service notice', href: '/admin/system', icon: 'bell' },
       { id: 'infra-costs', label: 'Infrastructure costs', href: '/admin/infra-costs', icon: 'costs' },
       { id: 'audit-log', label: 'Audit log', href: '/admin/audit', icon: 'audit' },

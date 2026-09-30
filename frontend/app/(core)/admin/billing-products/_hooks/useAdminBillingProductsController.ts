@@ -57,8 +57,8 @@ export function useAdminBillingProductsController() {
   const historyQuery = useSWR<BillingProductHistoryApiResponse>(BILLING_PRODUCTS_HISTORY_ENDPOINT, apiFetcher);
   const refreshInventory = inventoryQuery.mutate;
   const refreshHistory = historyQuery.mutate;
-  const inventory = inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
-  const history = historyQuery.data?.ok ? historyQuery.data.events : [];
+  const inventory = !inventoryQuery.error && inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
+  const history = !historyQuery.error && historyQuery.data?.ok ? historyQuery.data.events : [];
   const [query, setQuery] = useState('');
   const [selectedProductKey, setSelectedProductKey] = useState<string | null>(null);
   const [draft, setDraft] = useState<BillingProductDraft | null>(null);

@@ -1,5 +1,5 @@
 import type { EngineCaps } from '@/types/engines';
-import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
+import { computeCanonicalPublicSnapshot, computeCurrentPublicSnapshot } from '@/server/pricing/quote-public';
 import {
   GPT_IMAGE_2_CANONICAL_SIZE_VALUES,
   isGptImage25EngineId,
@@ -42,7 +42,7 @@ export type MarketingPricePoint = {
 
 export async function computeMarketingPricePoints(
   engine: EngineCaps,
-  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null }
+  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean }
 ): Promise<MarketingPricePoint[]> {
   const durationSec = isPerImageEngine(engine) ? 1 : options?.durationSec ?? DEFAULT_DURATION_SEC;
   const memberTier = options?.memberTier ?? 'member';
@@ -62,7 +62,7 @@ export async function computeMarketingPricePoints(
   for (const resolution of resolutions) {
     for (const quality of qualities) {
       try {
-        const snapshot = await computeCanonicalPublicSnapshot({
+        const snapshot = await (options?.requireCurrentPolicy ? computeCurrentPublicSnapshot : computeCanonicalPublicSnapshot)({
           engine,
           durationSec,
           resolution,
@@ -98,7 +98,7 @@ export type MarketingPriceRange = {
 
 export async function computeMarketingPriceRange(
   engine: EngineCaps,
-  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null }
+  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean }
 ): Promise<MarketingPriceRange | null> {
   const points = await computeMarketingPricePoints(engine, options);
   if (!points.length) return null;

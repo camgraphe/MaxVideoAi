@@ -3,14 +3,14 @@ import { resolveRuntimeEngineInput } from '@/config/model-runtime';
 import type { PricingContext } from '@/lib/pricing-context';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { GalleryVideo } from '@/server/videos';
-import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
+import { computeCurrentPublicSnapshot } from '@/server/pricing/quote-public';
 
 export type CurrentExamplePrice =
   | { kind: 'exact' | 'reference'; amountCents: number; currency: string; modelId: string; scenarioLabel: string; revision?: string }
   | { kind: 'unavailable'; modelId: string | null };
 
 export type CurrentExampleQuoteDependencies = {
-  quote?: typeof computeCanonicalPublicSnapshot;
+  quote?: typeof computeCurrentPublicSnapshot;
 };
 
 function record(value: unknown): Record<string, unknown> | null {
@@ -137,7 +137,7 @@ export async function quoteCurrentExamplePrice(
   const context = exact ?? referenceContext(entry);
   if (!context) return { kind: 'unavailable', modelId };
   try {
-    const snapshot = await (dependencies.quote ?? computeCanonicalPublicSnapshot)(context);
+    const snapshot = await (dependencies.quote ?? computeCurrentPublicSnapshot)(context);
     return priceFromSnapshot(snapshot, exact ? 'exact' : 'reference', entry, context);
   } catch {
     return { kind: 'unavailable', modelId };
@@ -148,7 +148,7 @@ export async function quoteCurrentExamplePrices(
   videos: readonly GalleryVideo[],
   dependencies: CurrentExampleQuoteDependencies = {},
 ): Promise<Map<string, CurrentExamplePrice>> {
-  const quote = dependencies.quote ?? computeCanonicalPublicSnapshot;
+  const quote = dependencies.quote ?? computeCurrentPublicSnapshot;
   const pending = new Map<string, Promise<PricingSnapshot>>();
   const cachedQuote = (context: PricingContext): Promise<PricingSnapshot> => {
     const key = JSON.stringify([

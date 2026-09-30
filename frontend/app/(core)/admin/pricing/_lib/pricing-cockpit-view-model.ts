@@ -310,13 +310,14 @@ function selectorsMatch(left: PricingPolicySelector, right: PricingPolicySelecto
   return left.engineId === right.engineId && left.mode === right.mode && left.resolution === right.resolution;
 }
 
-export function createPricingPolicyDraft(row: PricingPolicyInventoryRow): PricingPolicyDraft {
+export function createPricingPolicyDraft(row: PricingPolicyInventoryRow, scopeToSelector = false): PricingPolicyDraft {
   const base = row.databaseOverride ?? row.versionedRule;
   if (!base) {
     throw new Error('Pricing inventory row has no policy rule');
   }
-  const draftSelector = row.databaseOverride ?? row.selector;
-  const id = row.databaseOverride?.id ?? (selectorsMatch(base, row.selector) ? base.id : makeGeneratedRuleId(row.selector));
+  const createScoped = scopeToSelector && row.databaseOverride && !selectorsMatch(row.databaseOverride, row.selector);
+  const draftSelector = createScoped ? row.selector : row.databaseOverride ?? row.selector;
+  const id = createScoped ? makeGeneratedRuleId(row.selector) : row.databaseOverride?.id ?? (selectorsMatch(base, row.selector) ? base.id : makeGeneratedRuleId(row.selector));
   return {
     id,
     engineId: draftSelector.engineId ?? '',
@@ -327,7 +328,7 @@ export function createPricingPolicyDraft(row: PricingPolicyInventoryRow): Pricin
     surchargeAudioPercent: ratioToPercentInput(base.surchargeAudioPercent),
     surchargeUpscalePercent: ratioToPercentInput(base.surchargeUpscalePercent),
     currency: base.currency,
-    compatibilityProfile: base.compatibilityProfile ?? 'standard',
+    compatibilityProfile: (createScoped ? row.effectiveProvenance?.compatibilityProfile : undefined) ?? base.compatibilityProfile ?? 'standard',
   };
 }
 
@@ -367,7 +368,7 @@ export function buildPricingPolicyProposal(
       : {}),
   };
   if (!rule.id) throw new Error('Rule ID is required.');
-  return row.databaseOverride
+  return row.databaseOverride && draft.id === row.databaseOverride.id
     ? { operation: 'update', targetId: row.databaseOverride.id, rule }
     : { operation: 'create', rule };
 }

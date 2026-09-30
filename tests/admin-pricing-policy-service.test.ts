@@ -185,6 +185,23 @@ test('create preview normalizes the complete rule and quotes through the canonic
   assert.equal(harness.rules.length, 0, 'preview must not persist');
 });
 
+test('a scoped Audio pack rule validates live selectors and previews every billed voice variant', async () => {
+  const globalRule = { ...policyRule('default'), engineId: undefined, mode: undefined, resolution: undefined };
+  const harness = createMemoryHarness([globalRule]);
+  const proposal: PricingPolicyChangeProposal = { operation: 'create', rule: {
+    ...globalRule, id: 'admin-voice', engineId: 'audio-generation', mode: 'voice_only', resolution: 'audio',
+    marginFlatCents: 10, compatibilityProfile: 'audio-tripled-rounded',
+  } };
+  const preview = await previewPricingPolicyChange(proposal, harness.deps);
+  assert.ok(preview.rows.length > 0);
+  assert.ok(preview.rows.every((row) => row.engineId === 'audio-generation' && row.scenarioId.startsWith('admin-audio:voice_only:')));
+  assert.equal((preview.proposedState as Record<string, unknown>).resolution, 'audio');
+  assert.ok(preview.rows.some((row) => row.scenarioId.includes('voice_only:2:')), 'MiniMax character variant must be included');
+  assert.ok(preview.rows.some((row) => row.scenarioId.includes('voice_only:1:')), 'reference voice variant must be included');
+  assert.equal(harness.rules.length, 1, 'preview does not create a rule');
+  assert.deepEqual(harness.rules[0], globalRule, 'inherited global policy is untouched');
+});
+
 test('update and delete previews use fresh database state and default deletion is forbidden', async () => {
   const existing = policyRule('db-kling');
   const harness = createMemoryHarness([existing]);
@@ -883,6 +900,7 @@ test('pricing edits revalidate localized prices, examples, model pages and watch
     '/', '/fr', '/es',
     '/examples', '/fr/galerie', '/es/galeria',
     '/pay-as-you-go-ai-video-generator', '/fr/pay-as-you-go-ai-video-generator', '/es/pay-as-you-go-ai-video-generator',
+    '/models', '/fr/modeles', '/es/modelos',
     '/pricing',
     '/fr/tarifs',
     '/es/precios',

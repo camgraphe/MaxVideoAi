@@ -67,7 +67,7 @@ test('public projections use their canonical owner without importing billing int
     ['frontend/src/server/engines.ts', 'computeCanonicalPublicSnapshot'],
     ['frontend/app/api/images/estimate/route.ts', 'estimateWebImageGeneration'],
     ['frontend/src/server/images/estimate-image-generation.ts', 'computeCanonicalPublicSnapshot'],
-    ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts', 'computeCanonicalPublicSnapshot'],
+    ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts', 'computeCurrentPublicSnapshot'],
     ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts', 'quotePublicPricing'],
     ['frontend/components/marketing/PriceEstimator.tsx', 'fetchCurrentPrice'],
     ['frontend/components/marketing/PriceChip.tsx', 'fetchCurrentPrice'],

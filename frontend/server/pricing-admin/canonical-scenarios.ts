@@ -13,6 +13,7 @@ import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib
 import { LIVE_MEMBERSHIP_DISCOUNTS, LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 
 import { PricingAdminError } from './errors';
+import { buildLiveProductPolicyScenarios, buildLiveProductPolicyFacts } from './product-policy-scenarios';
 
 export type PricingScenarioSelector = Pick<PricingPolicyRule, 'engineId' | 'mode' | 'resolution'>;
 export type PricingMembershipDiscountMap = Record<'member' | 'plus' | 'pro', number>;
@@ -144,7 +145,7 @@ function resolveScenarioPolicy(
 }
 
 export function selectAffectedPricingScenarios(selector: PricingScenarioSelector): PricingAuditScenario[] {
-  return buildPricingAuditScenarios().filter((scenario) =>
+  return [...buildPricingAuditScenarios().filter((scenario) => scenario.surface !== 'audio'), ...buildLiveProductPolicyScenarios()].filter((scenario) =>
     isActivePricingScenario(scenario) && scenarioMatchesSelector(scenario, selector));
 }
 
@@ -175,8 +176,7 @@ function quoteCanonicalScenarios(
   const policyDocument = getVersionedPricingPolicy();
   const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
   const membershipDiscounts = projection === 'live' ? LIVE_MEMBERSHIP_DISCOUNTS : HISTORICAL_MEMBERSHIP_DISCOUNTS;
-  const scenarios = input.scenarios ?? buildPricingAuditScenarios().filter((scenario) =>
-    projection === 'historical' || isActivePricingScenario(scenario));
+  const scenarios = input.scenarios ?? (projection === 'historical' ? buildPricingAuditScenarios() : selectAffectedPricingScenarios({}));
   const projectionScenarios = [
     ...scenarios,
     ...(input.requestedSurcharges ?? []).map((request) => buildRequestedSurchargeScenario(scenarios, request)),
@@ -246,7 +246,8 @@ function quoteCanonicalScenarios(
           surcharge,
         };
       }
-      const facts = buildCanonicalPricingFacts(scenario, projection === 'historical');
+      const facts = projection === 'live' && scenario.input.adminProduct
+        ? buildLiveProductPolicyFacts(scenario) : buildCanonicalPricingFacts(scenario, projection === 'historical');
       if (!facts) {
         return {
           status: 'unsupported',

@@ -4,6 +4,7 @@ import { listFalEngines } from '@/config/falEngines';
 import type { PricingChangePreview } from '@/lib/admin/pricing-change-contract';
 
 const PRICING_PATHS = ['/pricing', '/fr/tarifs', '/es/precios'] as const;
+const MODEL_INDEX_PATHS = ['/models', '/fr/modeles', '/es/modelos'] as const;
 const CURRENT_EXAMPLE_PATHS = [
   '/', '/fr', '/es',
   '/examples', '/fr/galerie', '/es/galeria',
@@ -23,7 +24,7 @@ export function revalidateCustomerTariffChangeSurfaces(
   modelId: string,
   invalidatePath: (path: string, type?: 'page' | 'layout') => void = revalidatePath,
 ): void {
-  const paths = new Set<string>([...PRICING_PATHS, ...CURRENT_EXAMPLE_PATHS]);
+  const paths = new Set<string>([...PRICING_PATHS, ...MODEL_INDEX_PATHS, ...CURRENT_EXAMPLE_PATHS]);
   const slug = resolveModelSlug(modelId);
   if (slug) for (const prefix of ['/models', '/fr/modeles', '/es/modelos']) paths.add(`${prefix}/${slug}`);
   paths.forEach((path) => invalidatePath(path));
@@ -36,7 +37,8 @@ export function revalidatePricingChangeSurfaces(
 ): void {
   const paths = new Set<string>();
   CURRENT_EXAMPLE_PATHS.forEach((path) => paths.add(path));
-  if (preview.affectedSurfaces.includes('pricing-hub')) {
+  MODEL_INDEX_PATHS.forEach((path) => paths.add(path));
+  if (preview.affectedSurfaces.some((surface) => ['pricing-hub', 'tool', 'audio'].includes(surface))) {
     PRICING_PATHS.forEach((path) => paths.add(path));
   }
 
@@ -51,4 +53,8 @@ export function revalidatePricingChangeSurfaces(
 
   paths.forEach((path) => invalidatePath(path));
   CURRENT_EXAMPLE_DYNAMIC_PATHS.forEach((path) => invalidatePath(path, 'page'));
+  if (preview.affectedSurfaces.includes('tool')) {
+    invalidatePath('/tools/[slug]', 'page');
+    invalidatePath('/[locale]/tools/[slug]', 'page');
+  }
 }

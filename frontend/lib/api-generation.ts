@@ -238,6 +238,7 @@ export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promi
   }
 
   if (!response.ok || !data.ok) {
+    notifyCustomerPricingRefresh(data.error === 'audio_quote_stale' ? 'PRICING_REFRESH_REQUIRED' : data.error);
     const error = new Error(data.message ?? `Audio generation failed (${response.status})`);
     Object.assign(error, {
       code: data.error ?? 'audio_generation_failed',

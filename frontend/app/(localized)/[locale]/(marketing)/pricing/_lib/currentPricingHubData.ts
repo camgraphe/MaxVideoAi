@@ -5,6 +5,7 @@ import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-sc
 
 import { formatCurrencyForLocale } from './pricingPageContent';
 import { getPricingHubCopy } from './pricingHubCopy';
+import { buildCurrentOtherPricing, type CurrentOtherPricingDependencies } from './current-other-pricing';
 import { buildPopularChecks, buildPricingHubData, buildVideoHighlights,
   DEFAULT_VIDEO_PRICE_PRESET_ID, getExactVideoPresetInput, getImagePricePresetInput, markCheapestQuotes,
   orderPricingRows, VIDEO_PRICE_PRESETS, type PricingHubData, type PresetQuote,
@@ -14,6 +15,7 @@ import { buildPopularChecks, buildPricingHubData, buildVideoHighlights,
 export async function buildCurrentPricingHubData(
   locale: AppLocale,
   quote: (input: PublicModelQuoteInput) => Promise<PublicModelQuote> = quotePublicModelScenario,
+  otherDependencies?: CurrentOtherPricingDependencies,
 ): Promise<PricingHubData> {
   const base = buildPricingHubData(locale);
   const entries = new Map(listFalEngines().map((entry) => [entry.id, entry]));
@@ -71,9 +73,10 @@ export async function buildCurrentPricingHubData(
       exactRank * 1_000_000 + amount * 100 + index;
   });
   const currentRows = markCheapestQuotes(orderPricingRows(rows));
+  const otherSurfaces = await buildCurrentOtherPricing({ ...base.otherSurfaces, imageRows }, locale, otherDependencies);
   return { ...base,
     video: { ...base.video, rows: currentRows, highlights: buildVideoHighlights(currentRows, locale) },
     popularChecks: buildPopularChecks(locale, currentRows, imageRows,
-      base.otherSurfaces.audioRows, base.otherSurfaces.toolRows),
-    otherSurfaces: { ...base.otherSurfaces, imageRows } };
+      otherSurfaces.audioRows, otherSurfaces.toolRows),
+    otherSurfaces };
 }

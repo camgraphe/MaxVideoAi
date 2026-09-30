@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { buildPricingSandboxEnvironment } from '../frontend/scripts/_lib/pricing-sandbox.ts';
+
+test('sandbox binds the advertised localhost origin so localized rewrites stay internal', () => {
+  const runner = readFileSync('frontend/scripts/run-pricing-sandbox.ts', 'utf8');
+  assert.match(runner, /'dev', '-p', String\(port\), '-H', 'localhost'/);
+});
 
 test('pricing sandbox cannot inherit remote credentials or remote database configuration', () => {
   const environment = buildPricingSandboxEnvironment({

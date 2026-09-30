@@ -21,6 +21,7 @@ type Props = {
   disabled: boolean;
   onInspect: (row: ProviderCostComparisonRowView) => void;
   onSaved?: () => void | Promise<void>;
+  fixedMediaType?: 'video' | 'image';
 };
 
 const BRAND_LABELS: Record<string, string> = { bytedance: 'ByteDance' };
@@ -89,8 +90,8 @@ function ComparisonRow({ row, disabled, onInspect, onSaved }: { row: ProviderCos
   </details>;
 }
 
-export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onSaved }: Props) {
-  const [filters, setFilters] = useState<ProviderComparisonFilters>({ brandId: 'all', executionProvider: 'all', mediaType: 'all', query: '' });
+export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onSaved, fixedMediaType }: Props) {
+  const [filters, setFilters] = useState<ProviderComparisonFilters>({ brandId: 'all', executionProvider: 'all', mediaType: fixedMediaType ?? 'all', query: '' });
   const visible = useMemo(() => filterProviderComparisonRows(rows, filters), [rows, filters]);
   const groups = useMemo(() => groupByFamily(visible), [visible]);
   const pairs = useMemo(() => summarizeProviderDraftFinalPairs(visible), [visible]);
@@ -111,7 +112,7 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onSave
           ))}
         </div>
         <div className="mt-3 grid gap-2 border-t border-hairline pt-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center">
-          <div className="inline-flex w-fit rounded-lg border border-border bg-bg p-1" role="group" aria-label="Media type">
+          {!fixedMediaType ? <div className="inline-flex w-fit rounded-lg border border-border bg-bg p-1" role="group" aria-label="Media type">
             {([['all', 'All'], ['video', 'Video'], ['image', 'Image']] as const).map(([value, label]) => (
               <button key={value} type="button" disabled={disabled} aria-pressed={filters.mediaType === value}
                 onClick={() => setFilters({ ...filters, mediaType: value })}
@@ -119,7 +120,7 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onSave
                 {value === 'video' ? <Video className="h-4 w-4" aria-hidden="true" /> : value === 'image' ? <ImageIcon className="h-4 w-4" aria-hidden="true" /> : null}{label}
               </button>
             ))}
-          </div>
+          </div> : null}
           <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
             <label className="relative w-full sm:max-w-sm">
               <span className="sr-only">Search models or scenarios</span>

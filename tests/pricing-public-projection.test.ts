@@ -353,7 +353,7 @@ test('model price rows and Product Offer JSON-LD use canonical public owners', (
     'utf8'
   );
   assert.match(modelPricing, /server\/pricing\/quote-public/);
-  assert.match(modelPricing, /computeCanonicalPublicSnapshot/);
+  assert.match(modelPricing, /computeCurrentPublicSnapshot/);
   assert.doesNotMatch(modelPricing, /from '@\/lib\/pricing'/);
   assert.match(modelSchema, /pricing-public-facts/);
   assert.match(modelSchema, /pricing-public-quote/);

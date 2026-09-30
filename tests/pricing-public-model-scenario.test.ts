@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { getRuntimeModelById } from '../frontend/config/model-runtime.ts';
+import { computeCurrentPublicSnapshot } from '../frontend/server/pricing/quote-public.ts';
 import { quotePublicModelScenario, quoteWithVerifiedPolicy, resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario.ts';
 
 test('public scenario resolution uses supported video and image selectors only', () => {
@@ -41,4 +42,21 @@ test('a pricing-rule outage cannot show a versioned fallback as the current cust
   assert.ok(scenario);
   await assert.rejects(quoteWithVerifiedPolicy(scenario, async () => ({ status: 'unavailable',
     rules: [], errorCode: 'pricing_rules_query_failed' })), /CURRENT_PRICING_POLICY_UNAVAILABLE/);
+  await assert.rejects(computeCurrentPublicSnapshot(scenario.context, { pricingPolicy: { loadOverrides: async () => ({
+    status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed',
+  }) } }), /CURRENT_PRICING_POLICY_UNAVAILABLE/);
+});
+
+test('strict current public projection uses the captured effective database policy', async () => {
+  const scenario = resolvePublicModelScenario({ modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' });
+  assert.ok(scenario);
+  let reads = 0;
+  const pricing = await computeCurrentPublicSnapshot(scenario.context, { pricingPolicy: { loadOverrides: async () => {
+    reads += 1;
+    return { status: 'loaded', rules: [{ id: 'effective-pika', engineId: 'pika-text-to-video',
+      marginPercent: 1, marginFlatCents: 7, currency: 'USD' }] };
+  } } });
+  assert.equal(reads, 1);
+  assert.equal(pricing.totalCents, 47);
+  assert.equal((pricing.meta?.pricingPolicy as { sourceRuleId: string }).sourceRuleId, 'effective-pika');
 });
