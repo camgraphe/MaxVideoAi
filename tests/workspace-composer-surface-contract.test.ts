@@ -11,7 +11,6 @@ import { hasMissingRequiredComposerAsset } from '../frontend/components/composer
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const readyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
 const composerSurfacePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx';
-const workspaceCopyPath = 'frontend/app/(core)/(workspace)/app/_lib/workspace-copy.ts';
 
 test('workspace composer and settings surface is owned by a route-local component', () => {
   assert.equal(existsSync(readyViewPath), true);
@@ -59,22 +58,16 @@ test('workspace composer and settings surface is owned by a route-local componen
   );
 });
 
-test('workspace video composer shows in-progress render banner from pending groups', () => {
-  assert.equal(existsSync(readyViewPath), true);
-  assert.equal(existsSync(composerSurfacePath), true);
-  assert.equal(existsSync(workspaceCopyPath), true);
-
+test('workspace composer derives job activity outside the orchestrator and passes it to the shared control', () => {
+  const appSource = readFileSync(appClientPath, 'utf8');
   const readyViewSource = readFileSync(readyViewPath, 'utf8');
   const surfaceSource = readFileSync(composerSurfacePath, 'utf8');
-  const copySource = readFileSync(workspaceCopyPath, 'utf8');
-
-  assert.match(copySource, /generatingInProgress:/);
-  assert.match(readyViewSource, /buildWorkspaceInProgressMessage\(pendingGroups\.length, workspaceCopy\)/);
-  assert.match(readyViewSource, /inProgressMessage=\{inProgressMessage\}/);
-  assert.match(surfaceSource, /inProgressMessage: string \| null;/);
-  assert.match(surfaceSource, /role="status"/);
-  assert.match(surfaceSource, /aria-live="polite"/);
-  assert.match(surfaceSource, /bg-success-bg/);
+  assert.doesNotMatch(appSource, /buildPendingGenerations/);
+  assert.match(readyViewSource, /buildPendingGenerations\(pendingGroups\)/);
+  assert.match(readyViewSource, /pendingGenerations=\{pendingGenerations\}/);
+  assert.match(surfaceSource, /pendingGenerations=\{pendingGenerations\}/);
+  assert.match(surfaceSource, /isLoading=\{isSubmitting\}/);
+  assert.match(surfaceSource, /isPricing=\{isPricing\}/);
 });
 
 test('workspace Seedance composer explains recognizable-person reference limits near upload placeholders', () => {

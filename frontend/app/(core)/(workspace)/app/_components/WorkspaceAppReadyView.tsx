@@ -30,8 +30,8 @@ import type { useWorkspacePreviewState } from '../_hooks/useWorkspacePreviewStat
 import type { useWorkspacePricingGate } from '../_hooks/useWorkspacePricingGate';
 import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState';
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
-import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
 import { formatWorkspaceTopupPaymentAmount } from '../_lib/workspace-topup';
+import { buildPendingGenerations } from '@/lib/pending-generations';
 
 const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
@@ -112,7 +112,7 @@ export function WorkspaceAppReadyView({
     renderGroups,
     setViewMode,
   } = renderState;
-  const inProgressMessage = buildWorkspaceInProgressMessage(pendingGroups.length, workspaceCopy);
+  const pendingGenerations = buildPendingGenerations(pendingGroups);
   const { displayCompositeGroup, setViewerTarget, viewerGroup } = previewState;
   const {
     form,
@@ -345,7 +345,7 @@ export function WorkspaceAppReadyView({
             activeManualMode={activeManualMode}
             handleComposerModeToggle={handleComposerModeToggle}
             composerWorkflowNotice={composerWorkflowNotice}
-            inProgressMessage={inProgressMessage}
+            pendingGenerations={pendingGenerations}
             handleAssetAdd={handleAssetAdd}
             handleAssetRemove={handleAssetRemove}
             handleOpenAssetLibrary={handleOpenAssetLibrary}

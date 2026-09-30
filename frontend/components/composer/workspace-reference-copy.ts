@@ -3,12 +3,15 @@ import type { EngineInputField } from '@/types/engines';
 
 export function workspaceReferenceCopy(locale: string) {
   return locale === 'fr' ? {
+    sending: 'Envoi…',
     calculating: 'Calcul…', priceUnavailable: 'Prix indisponible', kinds: { image: 'Images', video: 'Vidéos', audio: 'Audio' },
     start: 'Image de début', end: 'Image de fin', title: 'Références', add: 'Ajouter des références', manage: 'Gérer', close: 'Fermer', replace: 'Remplacer', remove: 'Retirer', upload: 'Importer', library: 'Choisir dans Médias', required: 'Requis', unavailable: 'Indisponible pour ce modèle', details: 'Formats et conseils', options: 'Options', placeholder: 'Décrivez votre création…',
   } : locale === 'es' ? {
+    sending: 'Enviando…',
     calculating: 'Calculando…', priceUnavailable: 'Precio no disponible', kinds: { image: 'Imágenes', video: 'Vídeos', audio: 'Audio' },
     start: 'Imagen inicial', end: 'Imagen final', title: 'Referencias', add: 'Añadir referencias', manage: 'Gestionar', close: 'Cerrar', replace: 'Reemplazar', remove: 'Quitar', upload: 'Subir', library: 'Elegir en Medios', required: 'Obligatorio', unavailable: 'No disponible para este modelo', details: 'Formatos y consejos', options: 'Opciones', placeholder: 'Describe tu creación…',
   } : {
+    sending: 'Sending…',
     calculating: 'Calculating…', priceUnavailable: 'Price unavailable', kinds: { image: 'Images', video: 'Videos', audio: 'Audio' },
     start: 'Start frame', end: 'End frame', title: 'References', add: 'Add references', manage: 'Manage', close: 'Close', replace: 'Replace', remove: 'Remove', upload: 'Upload', library: 'Choose from Media', required: 'Required', unavailable: 'Unavailable for this model', details: 'Formats and guidance', options: 'Options', placeholder: 'Describe your creation…',
   };

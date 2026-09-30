@@ -644,3 +644,24 @@
 .app-experience .app-media-panel-cover.is-video { height: auto; min-height: 0; aspect-ratio: 16 / 9; max-height: 60dvh; }
 .app-experience .app-media-destinations summary::after { content: '+'; margin-left: auto; font-size: 18px; }
 .app-experience .app-media-destinations details[open] summary::after { content: '−'; }
+
+/* Generation submission and activity share one compact action. */
+.app-experience .app-generation-cluster { position: relative; display: flex; align-items: stretch; max-width: 100%; border-radius: 8px; background: var(--app-accent); color: var(--on-brand); }
+.app-experience .app-generation-cluster .app-generation-action { min-height: 48px !important; border-radius: 8px 0 0 8px !important; }
+.app-experience .app-generation-action[aria-busy="true"] { background: var(--app-accent); color: var(--on-brand); opacity: .9; }
+.app-experience .app-generation-cluster .app-generation-count { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px !important; min-width: 56px; padding: 0 10px; border: 0; border-radius: 0 8px 8px 0; box-shadow: inset 1px 0 0 color-mix(in srgb, var(--on-brand) 20%, transparent); background: transparent; color: inherit; font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.app-experience .app-generation-count:hover, .app-experience .app-generation-count[aria-expanded="true"] { background: var(--surface-on-media-10); }
+.app-experience .app-generation-count:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 3px; }
+.app-generation-spinner { width: 14px; height: 14px; flex-shrink: 0; animation: app-generation-spin 1.5s linear infinite; }
+@keyframes app-generation-spin { to { transform: rotate(360deg); } }
+.app-experience .app-generation-popover { position: absolute; right: 0; bottom: calc(100% + 12px); z-index: 80; width: 300px; max-width: calc(100vw - 40px); padding: 6px 12px 10px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--app-panel); color: var(--app-ink); box-shadow: var(--shadow-float); }
+.app-experience .app-generation-popover header { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--app-muted); font-size: 12px; }
+.app-experience .app-generation-popover header button { min-width: 44px; min-height: 44px; color: var(--app-muted); font-size: 22px; }
+.app-experience .app-generation-list { max-height: min(320px, 55vh); overflow-y: auto; overscroll-behavior: contain; }
+.app-experience .app-generation-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--app-line); }
+.app-experience .app-generation-number { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border: 1px solid var(--app-line); border-radius: 6px; color: var(--app-muted); font-size: 11px; }
+.app-experience .app-generation-info { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 3px; }
+.app-experience .app-generation-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
+.app-experience .app-generation-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--app-muted); font-size: 11px; }
+.app-experience .app-generation-row > .app-generation-spinner { color: var(--app-accent); }
+@media (prefers-reduced-motion: reduce) { .app-generation-spinner { animation: none; } }
