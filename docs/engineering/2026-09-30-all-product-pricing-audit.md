@@ -169,5 +169,31 @@ and Tool quote consumers6 tests. A disposable Unix-only PostgreSQL integration
 checks persistence, supplier independence, stale preview, old client acceptance,
 rollback, unchanged paid job snapshot and unavailable current database. TypeScript,
 frontend lint, exposure lint and unchanged178-row billing baseline pass. The
-previous committed candidate passed6,420 tests (3 skips) and optimized local build;
-fresh integrated validation of this continuation is pending.
+committed Tools candidate `168d6c679` passed 6,412 standard tests (3 skips) and
+11 isolated Studio tests, followed by an optimized local build (916 static pages).
+The sanitized local environment was restored.
+
+Actual browser acceptance then exposed a missing transport field: the minimum
+reached the server, but both HTTP proposal allowlists dropped the coefficient.
+The two adapters now forward only the additional `dynamicPriceMultiplier` field;
+arbitrary metadata and client actor IDs remain excluded. Executing the real POST
+adapters first reproduced both omissions, then passed. The focused HTTP, service,
+real PostgreSQL, rounding and route-architecture group passes 42 tests; TypeScript,
+frontend lint and exposure checks pass. Independent review finds no actionable
+issue and passes seven focused tests including HTTP and PostgreSQL.
+
+Browser acceptance on `/admin/pricing`: Tools → Topaz → video → Edit pricing.
+Minimum 80 → 60 cents and coefficient 4 → 3 preview 1/10-second 1080p clips
+80 → 60 cents, 30 seconds 240 → 180, 60 seconds 480 → 360, and 10-second 2160p
+320 → 240. The editor updates its indicative gross margin 75.0% → 66.7%.
+The preview was cancelled and fields restored to stored defaults, with no
+confirmation. The visible tab is retained as the actual local deliverable.
+Screenshots: `/tmp/maxvideoai-pricing-tools-editor.jpg` and
+`/tmp/maxvideoai-pricing-tools-preview.jpg`.
+
+Final read-only sandbox verification: manual tariffs inactive, revision 3,
+66,549 staged cells, 13 billing products, zero coefficient overrides and Topaz
+minimum 80 cents. Three unbounded model domains and 24 reference-settlement
+refusals still prevent a complete manual-price activation certificate and removal
+of the legacy model markup. Production parity, activation and release are not
+claimed; no provider, payment, storage, email, support or deployment action occurred.

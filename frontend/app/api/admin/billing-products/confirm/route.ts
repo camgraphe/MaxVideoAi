@@ -22,6 +22,7 @@ function pickProposal(value: unknown): BillingProductChangeProposal {
     label: proposal.label,
     currency: proposal.currency,
     unitPriceCents: proposal.unitPriceCents,
+    dynamicPriceMultiplier: proposal.dynamicPriceMultiplier,
     active: proposal.active,
     eventId: proposal.eventId,
   } as BillingProductChangeProposal;
