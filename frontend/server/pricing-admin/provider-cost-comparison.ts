@@ -123,7 +123,7 @@ export function providerComparisonInputFromScenario(input: {
   const seedream = scenario.engineId === 'seedream' || scenario.engineId === 'seedream-5-0-pro';
   const quantity = Number(scenario.input.quantity ?? input.context?.durationSec ?? 1);
   const inputImages = input.context
-    ? (input.context.inputImageCount ?? 0) + (input.context.referenceImageCount ?? 0)
+    ? (input.context.inputImageCount ?? (mode === 'i2i' ? 1 : 0)) + (input.context.referenceImageCount ?? 0)
     : typeof scenario.input.referenceImageCount === 'number' ? scenario.input.referenceImageCount
       : mode === 't2i' ? 0 : undefined;
   const size = seedream ? resolveSeedreamProviderSize(scenario.resolution ?? '', aspectRatio) : '';

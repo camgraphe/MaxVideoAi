@@ -3,6 +3,10 @@ import { listRuntimeModels } from '@/config/model-runtime';
 import type { PricingContext } from '@/lib/pricing-context';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
+import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
+import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
+import { isGptImageFamilyEngineId, parseGptImage2SizeKey } from '@/lib/image/gptImage2';
+import { manualTariffImageOutputCounts, manualTariffLoopValues, manualTariffReferenceCounts } from './manual-tariff-dimensions';
 
 export type ManualTariffCoverageScenario = {
   id: string;
@@ -53,7 +57,6 @@ function selectorId(selector: ManualTariffSelector): string {
 }
 
 type PricingDimension = {
-  selector: ManualTariffSelector;
   context: Partial<PricingContext>;
 };
 
@@ -61,29 +64,27 @@ function mediaDimensions(modelId: string, mode: string, durationSec: number): Pr
   if ((modelId === 'wan-3' || modelId === 'wan-3-prime') && (mode === 'v2v' || mode === 'extend')) {
     return Array.from({ length: Math.max(0, Math.min(15, 30 - durationSec)) }, (_, index) => {
       const inputVideoDurationSec = index + 1;
-      return { selector: { inputVideoDurationSec: String(inputVideoDurationSec) }, context: { inputVideoDurationSec } };
+      return { context: { inputVideoDurationSec } };
     });
   }
   if (modelId === 'gemini-omni-flash' && ['v2v', 'extend', 'retake'].includes(mode)) {
     return [3, 10].map((inputVideoDurationSec) => ({
-      selector: { inputVideoDurationSec: String(inputVideoDurationSec),
-        ...(['v2v', 'retake'].includes(mode) ? { inheritedDurationSec: String(durationSec) } : {}) },
       context: { inputVideoDurationSec,
         ...(['v2v', 'retake'].includes(mode) ? { inheritedDurationSec: durationSec } : {}) },
     }));
   }
   if (modelId === 'minimax-h3-max' && mode === 'ref2v') {
     return [4096, 4097].map((referenceTokenBudget) => ({
-      selector: { referenceTokenBudget: String(referenceTokenBudget) }, context: { referenceTokenBudget },
+      context: { referenceTokenBudget },
     }));
   }
   if ((modelId === 'ltx-2-5-fast' || modelId === 'ltx-2-5-pro') && mode === 'a2v') {
-    return [{ selector: { inputAudioDurationSec: '9' }, context: { inputAudioDurationSec: 9 } }];
+    return [{ context: { inputAudioDurationSec: 9 } }];
   }
-  return [{ selector: {}, context: {} }];
+  return [{ context: {} }];
 }
 
-/** Every finite catalog combination is captured; unresolved controls remain explicit gaps. */
+/** Reviewed finite catalog combinations are captured; unresolved controls remain explicit gaps. */
 export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
   const scenarios: ManualTariffCoverageScenario[] = [];
   const gaps: ManualTariffCoverage['gaps'] = [];
@@ -96,8 +97,9 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
       const isImage = entry.category === 'image';
+      const outputs = isImage ? manualTariffImageOutputCounts(entry, mode) : null;
       const durations = isImage
-        ? { values: [1], incomplete: false }
+        ? { values: outputs ?? [1], incomplete: !outputs }
         : finiteDurations(modeConfig.ui.duration, entry.engine.maxDurationSec, entry.pricingHint?.durationSeconds);
       if (durations.incomplete) gaps.push({ modelId: model.id, reason: `${mode}: nonnumeric auto or open duration requires a reviewed mapping` });
       const rawResolutions = modeConfig.ui.resolution?.length ? modeConfig.ui.resolution : entry.engine.resolutions;
@@ -118,8 +120,12 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
       if ((model.id === 'ltx-2-5-fast' || model.id === 'ltx-2-5-pro') && mode === 'a2v') {
         gaps.push({ modelId: model.id, reason: `${mode}: open input audio duration needs a continuous unit tariff` });
       }
-      if (mode === 'ref2v' || mode === 'r2v') {
+      const references = manualTariffReferenceCounts(entry, mode);
+      if (!references.complete) {
         gaps.push({ modelId: model.id, reason: `${mode}: reference image count and metadata need a reviewed bound` });
+      }
+      if (model.id === 'luma-ray-3-2' && ['t2v', 'i2v', 'v2v'].includes(mode)) {
+        gaps.push({ modelId: model.id, reason: `${mode}: HDR/EXR controls require reviewed generation-to-pricing projection` });
       }
       const audioOptions: Array<boolean | null> = modeConfig.ui.audioToggle ? [false, true] : [null];
       const qualityField = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])]
@@ -128,26 +134,26 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
       if (qualityField && !qualityField.values?.length) gaps.push({ modelId: model.id, reason: `${mode}: freeform quality requires a reviewed mapping` });
       for (const durationSec of durations.values) for (const resolution of resolutions) for (const aspectRatio of aspects)
         for (const audio of audioOptions) for (const quality of qualities)
+          for (const referenceImageCount of references.values) for (const loop of manualTariffLoopValues(entry, mode))
           for (const media of mediaDimensions(model.id, mode, durationSec)) {
-          const selector: ManualTariffSelector = {
-            engineId: entry.id, mode, resolution, durationSec: String(durationSec), aspectRatio,
-            ...(audio == null ? {} : { audio: String(audio) }),
-            ...(quality == null ? {} : { quality }),
-            ...(mode === 'fl2v' ? { inputImageCount: '2' } : {}),
-            ...media.selector,
-          };
           const context: PricingContext = {
             engine: entry.engine, mode: mode as Mode, durationSec, resolution,
             aspectRatio: aspectRatio === 'default' ? null : aspectRatio,
             ...(quality == null ? {} : { quality }),
             ...(audio == null ? {} : { addons: { audio, ...(!audio ? { audio_off: true } : {}) } }),
             hasVideoInput: ['v2v', 'extend', 'retake', 'reframe'].includes(mode),
-            ...(mode === 'ref2v' || mode === 'r2v' ? { referenceImageCount: 1 } : {}),
-            ...(mode === 'i2v' || mode === 'i2i' ? { inputImageCount: 1 } : {}),
+            ...(referenceImageCount === undefined ? {} : { referenceImageCount }),
+            ...(loop === undefined ? {} : { loop }),
+            ...(mode === 'i2v' ? { inputImageCount: 1 } : {}),
             ...(mode === 'fl2v' ? { inputImageCount: 2 } : {}),
+            ...(mode === 'ref2v' ? { inputImageCount: referenceImageCount } : {}),
+            ...(isImage && isGptImageFamilyEngineId(model.id)
+              ? { customImageSize: parseGptImage2SizeKey(resolution) } : {}),
             ...media.context,
           };
-          scenarios.push({ id: selectorId(selector), modelId: model.id, selector, quantities: {}, context,
+          const facts = buildBillingPricingFacts(context, entry.engine.pricingDetails, 'USD').facts;
+          const { selector, quantities } = buildManualTariffScenario(context, facts);
+          scenarios.push({ id: selectorId(selector), modelId: model.id, selector, quantities, context,
             capabilityKey: `${entry.id}:${mode}:${resolution}` });
         }
     }

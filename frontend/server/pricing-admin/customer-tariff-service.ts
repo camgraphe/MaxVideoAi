@@ -15,15 +15,14 @@ import { loadPricingPolicyInventory } from './policy-read-model';
 import { revalidateCustomerTariffChangeSurfaces } from './revalidation';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
-import { expandAdminTariffReferenceOptions } from './customer-tariff-options';
 import { buildProviderCostComparisonRows, type ProviderCostComparisonInput } from './provider-cost-comparison';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
 
 const SCENARIO_DIMENSIONS = ['mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
-  'inputImageCount', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
-  'referenceTokenBudget', 'referenceImageCount'] as const;
+  'referenceImageCount', 'inputImageCount', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
+  'referenceTokenBudget', 'loop'] as const;
 
 /** Resolve one supported exact selector while narrowing each subsequent control to valid options. */
 export function chooseCustomerTariffScenario(
@@ -51,7 +50,7 @@ export async function loadCustomerTariffScenarioDetail(
   modelId: string, requested: Record<string, string>,
 ): Promise<CustomerTariffScenarioDetail> {
   const coverage = collectSellableManualTariffCoverage();
-  const options = expandAdminTariffReferenceOptions(coverage.scenarios.filter((scenario) => scenario.modelId === modelId));
+  const options = coverage.scenarios.filter((scenario) => scenario.modelId === modelId);
   const { scenario, choices } = chooseCustomerTariffScenario(options, requested);
   const [state, policy] = await Promise.all([loadEffectiveCustomerTariffState(), loadPricingPolicyOverrides()]);
   let currentCents: number | null = null;
@@ -87,8 +86,7 @@ function currentDatabaseCell(state: EffectiveCustomerTariffState, id: string): M
 function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = collectSellableManualTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
-  const scenario = expandAdminTariffReferenceOptions(coverage.filter(candidate => candidate.modelId === modelId))
-    .find(candidate => candidate.id === id) ?? coverage.find(candidate => candidate.id === id);
+  const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }

@@ -11,11 +11,12 @@ const baseline = { at: '2026-09-29T12:00:00.000Z', registryHash: 'reviewed-regis
     currency: 'USD', policySource: 'database', ruleId: 'default' })) };
 
 test('initial explicit tariffs copy the recorded customer cents without recalculating a margin', () => {
-  const seed = buildCustomerTariffSeed({ baseline, scenarios, registryHash: baseline.registryHash, coverageGaps: coverage.gaps });
+  const gaps = [{ modelId: 'fixture-model', reason: 'unresolved trusted input duration' }];
+  const seed = buildCustomerTariffSeed({ baseline, scenarios, registryHash: baseline.registryHash, coverageGaps: gaps });
   assert.deepEqual(seed.cells.map((cell) => cell.price), [95, 96, 97].map((customerCents) => ({ kind: 'fixed', customerCents })));
   assert.deepEqual(seed.cells.map((cell) => cell.selector), scenarios.map((scenario) => scenario.selector));
   assert.equal(seed.activationReady, false);
-  assert.equal(seed.coverageGapCount, 122);
+  assert.equal(seed.coverageGapCount, 1);
 });
 
 test('stale registry, missing quotes, duplicates and invalid amounts reject the entire seed', () => {

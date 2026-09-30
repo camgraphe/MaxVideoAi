@@ -7,6 +7,7 @@ import { getRuntimeModelById } from '@/config/model-runtime';
 import { loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -49,11 +50,17 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       !(model.publication.pricing.published || model.publication.model.published) ||
       !Number.isInteger(input.durationSec) || input.durationSec < 1 || input.durationSec > 120 ||
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
-  if (input.referenceImageCount !== undefined && input.referenceImageCount !== 1) return null;
+  if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
+    || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
+  const defaultReferences = isLumaAgentsImageEngineId(model.id) ? 0 : 1;
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === input.resolution.toLowerCase() &&
     scenario.selector.durationSec === String(input.durationSec) &&
+    (scenario.context.referenceImageCount === undefined
+      ? input.referenceImageCount === undefined || input.referenceImageCount === 1
+      : scenario.context.referenceImageCount === (input.referenceImageCount ?? defaultReferences)) &&
+    !scenario.context.loop &&
     (input.audio === undefined || scenario.selector.audio === undefined ||
       scenario.selector.audio === String(input.audio)) &&
     (input.aspectRatio === undefined || scenario.selector.aspectRatio === input.aspectRatio) &&
@@ -93,8 +100,10 @@ export async function quotePublicModelScenario(
       amountCents: snapshot.totalCents, currency: snapshot.currency,
       tariffRevision: snapshot.meta?.customerTariffRevision ?? null,
       policy: snapshot.meta?.pricingPolicy ?? null })).digest('hex').slice(0, 20);
+    const quantityLabel = getFalEngineById(input.modelId)?.category === 'image'
+      ? `${input.durationSec} image${input.durationSec === 1 ? '' : 's'}` : `${input.durationSec}s`;
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,
-      revision, scenarioLabel: `${input.mode} · ${input.durationSec}s · ${input.resolution}` };
+      revision, scenarioLabel: `${input.mode} · ${quantityLabel} · ${input.resolution}` };
   } catch {
     return { status: 'unavailable' };
   }

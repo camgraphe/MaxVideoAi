@@ -148,7 +148,7 @@ The [local acceptance record](../../engineering/2026-09-29-pricing-local-accepta
 
 | Task | Implemented locally | Remaining gate |
 | --- | --- | --- |
-| 1 | 48 models/15 families; 66,549 effective baseline quotes; zero sampled missing cells or cent differences | 122 unresolved capability boundaries; exhaustive supported coverage |
+| 1 | 48 models/15 families; 66,549 historical baseline quotes; 118,007 current local quotes; all 66,549 reconcile with zero missing cells or cent differences ([bounded coverage](../../engineering/2026-09-30-bounded-tariff-coverage.md)) | 119 unresolved capability boundaries; exhaustive supported coverage and fresh effective production-state parity |
 | 2 | Inactive DB seed; transactional state; migration 55 immutable closed versions; active update/rollback and first fixed versioned-only override/rollback tests | Complete reviewed versioned seed and temporal quote acceptance for that initial override |
 | 3 | Inactive canonical resolver; displayed revision propagation; atomic new-wallet charge guard; immutable paid wallet/direct recovery; original direct settlement/refund/retry contract; card/wallet funding separation; MCP stale protocol | Actual supplier settlement provenance; legacy unbound direct PaymentIntent reconciliation (new immutable quote contract accepted locally on 2026-09-30) |
 | 4 | All-family inventory; exact-selector customer and supplier scenarios; dated LIST/catalogue evidence; unified compact editor/simulator; preview/confirm/history/rollback; local API cycle, preview-race and desktop/mobile acceptance | Real account/invoice evidence and globally active legacy-rule retirement |

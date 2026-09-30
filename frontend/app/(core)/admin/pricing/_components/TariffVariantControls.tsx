@@ -6,22 +6,27 @@ const LABELS: Record<string, string> = {
   aspectRatio: 'Aspect ratio', audio: 'Audio', quality: 'Quality', inputImageCount: 'Input images',
   inputVideoDurationSec: 'Input video (seconds)', inheritedDurationSec: 'Inherited video (seconds)',
   inputAudioDurationSec: 'Input audio (seconds)', referenceTokenBudget: 'Reference tokens',
-  referenceImageCount: 'Reference images',
+  referenceImageCount: 'Reference images', loop: 'Loop',
 };
 function valueLabel(key: string, value: string) {
+  if (key === 'loop') return value === 'true' ? 'On' : 'Off';
   return key === 'audio' ? value === 'true' ? 'With audio' : 'Silent' : value || 'Default';
 }
 
 export function TariffVariantControls({ editor, disabled }: { editor: CustomerTariffEditor; disabled: boolean }) {
   const exact = editor.displayed;
   if (!exact) return null;
-  const extras = exact.choices.filter(choice => !['mode', 'resolution', 'durationSec', 'aspectRatio', 'audio'].includes(choice.key));
+  const choiceLabel = (key: string) => key === 'durationSec' && exact.supplierComparison.mediaType === 'image'
+    ? 'Images per request' : LABELS[key] ?? key;
+  const visibleChoices = exact.choices.filter(choice => choice.key !== 'inputImageCount'
+    || exact.selector.mode !== 'ref2v');
+  const extras = visibleChoices.filter(choice => !['mode', 'resolution', 'durationSec', 'aspectRatio', 'audio'].includes(choice.key));
   return <details className="mb-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs">
     <summary className="cursor-pointer font-semibold text-text-secondary">Tariff variants & extras <span className="ml-1 font-normal text-text-muted">{formatProviderComparisonScenario(exact.supplierComparison)}{extras.map(choice => ` · ${LABELS[choice.key] ?? choice.key}: ${valueLabel(choice.key, choice.value)}`).join('')}</span></summary>
     <p className="mt-2 text-[10px] text-text-muted">Prices include the selected options. Each supported combination has its own tariff; changing an option reloads its exact price and supplier evidence.</p>
     {exact.choices.some(choice => choice.key === 'referenceImageCount') ? <p className="mt-1 text-[10px] text-text-muted">{exact.modelId.startsWith('luma-uni-') && exact.selector.mode === 'i2i' ? 'Reference images excludes the main edit source.' : 'Reference images counts the submitted sources and references.'}</p> : null}
-    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{exact.choices.map(choice => <label key={choice.key} className="text-[10px] text-text-secondary">{LABELS[choice.key] ?? choice.key}
-      <select aria-label={LABELS[choice.key] ?? choice.key} value={choice.value} disabled={disabled || editor.busy || editor.loading || !editor.exact || choice.options.length < 2}
+    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{visibleChoices.map(choice => <label key={choice.key} className="text-[10px] text-text-secondary">{choiceLabel(choice.key)}
+      <select aria-label={choiceLabel(choice.key)} value={choice.value} disabled={disabled || editor.busy || editor.loading || !editor.exact || choice.options.length < 2}
         onChange={event => editor.changeOption(choice.key, event.target.value)} className="mt-1 h-8 w-full rounded-md border border-border bg-bg px-2 text-xs text-text-primary">
         {choice.options.map(value => <option key={value} value={value}>{valueLabel(choice.key, value)}</option>)}
       </select>

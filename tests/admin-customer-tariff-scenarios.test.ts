@@ -3,10 +3,16 @@ import test from 'node:test';
 
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage.ts';
 import { chooseCustomerTariffScenario } from '../frontend/server/pricing-admin/customer-tariff-service.ts';
-import { expandAdminTariffReferenceOptions } from '../frontend/server/pricing-admin/customer-tariff-options.ts';
 import { catalogSupplierReference } from '../frontend/server/pricing-admin/catalog-supplier-reference.ts';
 import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario.ts';
 import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts.ts';
+
+test('the admin resolves one exact Luma loop variant and keeps its control distinct', () => {
+  const scenarios = collectSellableManualTariffCoverage().scenarios.filter(row => row.modelId === 'lumaRay2');
+  const selected = chooseCustomerTariffScenario(scenarios, { mode: 't2v', resolution: '720p', durationSec: '5', aspectRatio: '16:9', loop: 'true' });
+  assert.equal(selected.scenario.context.loop, true);
+  assert.deepEqual(selected.choices.find(choice => choice.key === 'loop')?.options, ['', 'true']);
+});
 
 test('tariff scenario controls resolve exact options without shipping the full price matrix to the browser', () => {
   const scenarios = collectSellableManualTariffCoverage().scenarios.filter((row) => row.modelId === 'seedance-2-0-mini');
@@ -31,7 +37,7 @@ test('bounded priced references retain model-specific counts and exact provider 
   ] as const) {
     const base = coverage.filter(row => row.modelId === modelId);
     const captured = JSON.stringify(base);
-    const expanded = expandAdminTariffReferenceOptions(base);
+    const expanded = base;
     const initial = chooseCustomerTariffScenario(expanded, { mode, referenceImageCount: firstCount });
     const changed = chooseCustomerTariffScenario(expanded, { ...initial.scenario.selector, referenceImageCount: nextCount });
     assert.equal(changed.scenario.selector.referenceImageCount, nextCount);
