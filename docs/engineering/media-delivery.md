@@ -368,8 +368,15 @@ hero. Update root LCP guidance accordingly when changing this surface again.
 Every card retains its real standalone watch link. An ordinary click dynamically
 loads `ExampleReader.client.tsx`. `useGalleryReader` preserves gallery page/filter
 and scroll, uses one history entry, and fetches adjacent 24-card windows only at a
-reader boundary. Back closes and Forward can reopen the last selection. Source
-playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
+reader boundary. Back closes and Forward can reopen the last selection.
+
+The server `ExamplesGalleryGrid` boundary sends card summaries without the unused
+`promptFull` field. Prompt excerpts, accessible labels, sources and links stay the
+same; opening the reader or continuing in the app still loads the full approved
+prompt from the existing detail endpoint. Do not duplicate every complete prompt
+in the initial gallery's RSC client props.
+
+Source playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
 The existing standalone watch page remains the authority for canonical, metadata,
 VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.
 

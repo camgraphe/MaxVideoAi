@@ -96,3 +96,25 @@ test('opening sides and continuation portraits request their actual desktop widt
     assert.equal(dom.window.document.querySelector('a[href="/video/v4"] img')?.getAttribute('sizes'),'(max-width: 767px) 100vw, 33vw');
   } finally { dom.window.close(); }
 });
+
+test('the server gallery sends card summaries while full prompts stay in the on-demand detail reader', async () => {
+  const require = createRequire(import.meta.url);
+  const previous = require.extensions['.css'];
+  require.extensions['.css'] = () => {};
+  try {
+    const { ExamplesGalleryGrid } = await import('../frontend/components/examples/ExamplesGalleryGrid');
+    const props = {
+      initialExamples: videos.map(video => ({ ...video, promptFull: 'FULL_PROMPT_LOADED_ON_OPEN ' + 'Long public prompt. '.repeat(100) })),
+      sort: 'playlist' as const, initialOffset: 24, pageOffsetEnd: 24, locale: 'en',
+    };
+    const view = ExamplesGalleryGrid(props);
+    assert.deepEqual(view.props.initialExamples, videos, 'preserve each summary, media source, watch link, identity and app handoff');
+    assert.equal(view.props.sort, props.sort);
+    assert.equal(view.props.initialOffset, 24);
+    assert.ok(!JSON.stringify(view.props).includes('FULL_PROMPT_LOADED_ON_OPEN'), 'the unused full prompt must not enter RSC client props');
+    assert.ok(props.initialExamples.every(video => video.promptFull), 'do not mutate server-owned source records');
+  } finally {
+    if (previous) require.extensions['.css'] = previous;
+    else delete require.extensions['.css'];
+  }
+});
