@@ -24,6 +24,7 @@ export type RequestedPricingSurcharge = {
 
 export type AdminCanonicalScenarioQuote = CanonicalPricingQuote & {
   status: 'quoted';
+  scenarioLabel?: string;
   surface: PricingAuditSurface;
   equivalenceKey?: string;
   surcharge?: 'audio' | 'upscale';
@@ -34,7 +35,7 @@ export type AdminUnsupportedScenarioOutcome = {
   scenarioId: string;
   engineId: string;
   surface: PricingAuditSurface;
-  reason: 'canonical_facts_unavailable' | 'surcharge_policy_not_authoritative';
+  reason: 'canonical_facts_unavailable' | 'surcharge_policy_not_authoritative' | 'product_policy_not_authoritative';
   warning: string;
   policyProvenance: CanonicalPricingQuote['policyProvenance'];
   surcharge?: 'audio' | 'upscale';
@@ -44,6 +45,7 @@ export type AdminCanonicalScenarioOutcome = AdminCanonicalScenarioQuote | AdminU
 
 export type PricingChangePreviewRow = {
   scenarioId: string;
+  scenarioLabel?: string;
   engineId: string;
   surface: PricingAuditSurface;
   currentTotalCents: number;
@@ -200,6 +202,11 @@ function quoteCanonicalScenarios(
         );
       }
       const surcharge = resolveScenarioSurcharge(scenario);
+      if (projection === 'live' && scenario.input.adminProduct === 'finishing' && policy.rule.engineId !== 'toolbox-finishing') {
+        return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
+          reason: 'product_policy_not_authoritative', warning: 'Finishing tools require an effective tool-specific pricing policy.',
+          policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };
+      }
       const requestedSurcharge =
         scenario.input.requestedSurcharge === 'audio' || scenario.input.requestedSurcharge === 'upscale'
           ? scenario.input.requestedSurcharge
@@ -288,6 +295,7 @@ function quoteCanonicalScenarios(
         ...quote,
         status: 'quoted',
         surface: scenario.surface,
+        ...(typeof scenario.input.scenarioLabel === 'string' ? { scenarioLabel: scenario.input.scenarioLabel } : {}),
         ...(scenario.equivalenceKey ? { equivalenceKey: scenario.equivalenceKey } : {}),
         ...(surcharge ? { surcharge } : {}),
       };
@@ -356,6 +364,7 @@ export function compareCanonicalAdminScenarios(
     return [
       {
         scenarioId,
+        ...(proposedQuote.scenarioLabel ? { scenarioLabel: proposedQuote.scenarioLabel } : {}),
         engineId: proposedQuote.engineId,
         surface: proposedQuote.surface,
         currentTotalCents: currentQuote.customerTotalCents,

@@ -46,6 +46,8 @@ All collected selectors and quantities reuse `buildManualTariffScenario`. For pr
 
 `catalog-supplier-reference.ts` projects the existing provider-fact owners without calling the customer quote or applying a margin. Its `catalog_reference_estimate` status is distinct from a verified published LIST estimate. It keeps sub-cent precision, source label, reference provider, rate breakdown and the catalogue model version. That version is **not** a supplier verification date. Cross-provider references, including Luma's Fal reference and Alibaba rates shown beside a Fal route, are labeled explicitly. Seedance's padded historical retail basis is excluded entirely.
 
+The H3 Max documented rate concerns its Fal endpoint; MiniMax is the model author, not a distinct execution route in this projection. Its admin catalogue reference retains the Fal endpoint URL without claiming fresh LIST or account verification. Wan 3/Prime retain their Alibaba supplier basis when the local routing configuration selects Fal. `generationDisabledReason=local_sandbox` explicitly identifies deliberate local isolation; an unavailable configured route has a separate reason. Neither establishes production availability.
+
 GPT edit sources are normalized from coverage's input count into the factual owner's total reference count, without double-counting aliases or changing Luma's different reference semantics. Its output/reference itemization uses exact factual components, never rounded presentation addons. Other catalogue totals remain one all-in exact reference when no exact component split is available. Standard/Fast/Lite Veo catalogue facts retain Google Vertex provenance, independently from the reviewed Fal LIST records. Known Seedance reference contexts use `hasVideoInput`; unknown reference inputs stay unavailable. BytePlus readiness reuses allowed modes, model selectors and the selected Ark/LAS transport guards.
 
 `frontend/config/published-supplier-rates.json` owns the independently reviewed published rates for exact provider/mode/options. Its initial Fal records cover Veo 3.1 and Fast text-to-video, Kling 2.6 Pro text-to-video and Ray 2 text-to-video; each record links its primary source and UTC verification instant. Unreviewed modes stay catalogue references. These data feed admin comparison only: neither updated supplier rates nor public promotions reprice customer quotes, historical charges or settlement. BytePlus LIST remains owned by `byteplus-list-tariff.ts`. Account contracts and invoices remain unknown until evidence is supplied.
@@ -63,6 +65,11 @@ Seedance 1.5 comparison uses its published output dimensions and schema defaults
 An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` stages exact customer cents from the reviewed read-only baseline. Registry mismatch, duplicate/missing scenarios, invalid amounts or unknown database provenance reject the entire seed. The current local acceptance run stages all 66,549 sampled scenarios across 48 sellable models, with 122 unresolved capability boundaries and activation still false. This data is not a complete versioned production tariff seed.
 
 Migration 55 preserves closed customer cell versions. Active update/rollback behavior is tested on disposable databases, and billing reads only the requested exact selector rather than the whole grid. A separate code gate enables this path for an isolated development sandbox only; the versioned production flag remains false. No production schema, tariff or deployment is changed by local continuation.
+
+The sandbox migration list also includes migration 42 for the existing qualified
+finishing rule. Its conflict handling preserves configured customer prices.
+Restoring this omitted local fixture changes the effective policy hash; any older
+release preparation artifact requires a fresh capture and approval-binding check.
 
 The first active database override of a fixed versioned-only cell records its original versioned cell in immutable event history. Rolling it back appends a new database version at the original price, preserving continuous live coverage and the prior closed version. It does not delete the active cell or rewrite its event provenance. This case is accepted on disposable PostgreSQL with an in-memory versioned fixture; the authored production seed remains empty and inactive.
 
@@ -377,8 +384,12 @@ are not negotiated contracts or invoices. Song uses a per-song unit, MiniMax a
 1,000-character scenario, and other per-second amounts explicitly normalize a
 reference scenario. Dynamic video tools show their fixed minimum and current
 source-dependent quote; changing that minimum does not change their authored
-multiplier. Finishing candidates stay unavailable without released profiles and
-qualified tool-specific rules.
+multiplier. The seven released finishing quality profiles reuse their canonical
+tool-specific billing snapshot with the same captured policy read as the other
+admin products. Their inline editor scopes a change to one tool/quality and
+previews actual budgets across priced options and 300-frame block boundaries.
+A missing qualified rule keeps the current quote unavailable; a global default
+cannot silently replace it in either billing or the preview.
 
 Character Builder reference rows use the same quality-to-model and standard-format
 resolution mapping as its runner, then read the underlying Nano Banana supplier

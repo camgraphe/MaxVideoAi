@@ -44,6 +44,7 @@ export type ProviderCostComparisonInput = {
   engineId: string;
   executionProvider: string;
   routeConfigured?: boolean | null;
+  generationDisabledReason?: 'local_sandbox' | 'route_unavailable' | null;
   mediaType?: 'video' | 'image';
   workflowPairId?: string;
   mode: string;
@@ -174,6 +175,7 @@ export type ProviderCostComparisonRow = {
   engineId: string;
   executionProvider: string;
   routeConfigured: boolean | null;
+  generationDisabledReason?: 'local_sandbox' | 'route_unavailable' | null;
   mediaType: 'video' | 'image';
   workflowPairId: string | null;
   mode: string;
@@ -357,6 +359,7 @@ export function buildProviderCostComparisonRows(
       engineId: input.engineId,
       executionProvider: input.executionProvider,
       routeConfigured: input.routeConfigured ?? null,
+      generationDisabledReason: input.generationDisabledReason ?? null,
       mediaType: input.mediaType ?? 'video',
       workflowPairId: input.workflowPairId ?? null,
       mode: input.mode,

@@ -154,12 +154,15 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
     const seconds = Math.min(durationSec, 60);
     const budgetUsd = estimateFinishingVendorBudget(toolId, settings, { width: 1280, height: 720, durationSec: seconds, fps: 30 });
     await capture({ id: `${toolId}:${quality}`, category: 'tools', label: `${toolId.replaceAll('-', ' ')} · ${quality}`,
-      scenario: `${seconds} s · 720p · 30 fps`, currency: 'USD', totalCents: null, supplierCents: budgetUsd * 100,
-      supplierBasis: 'budget', quantity: seconds, unit: 's', policySelector: { engineId: 'toolbox-finishing' },
+      scenario: `${seconds} s · 720p · 30 fps${toolId === 'restore-video' ? ' → 1080p' : toolId === 'smooth-motion' ? ' → 60 fps' : ''}`, currency: 'USD', totalCents: null, supplierCents: budgetUsd * 100,
+      supplierBasis: 'budget', quantity: seconds, unit: 's', policySelector: { engineId: 'toolbox-finishing', mode: `${toolId}:${quality}`, resolution: 'video' },
       notes: ['Conservative provider budget; not a verified per-frame rate or invoice.',
+        toolId === 'restore-video' ? 'Budget depends on output resolution, source frame rate and quality.'
+          : 'Budget rounds up to complete 300-frame blocks; source dimensions, frame rate and quality affect the quote.',
+        'This editor changes only the selected tool and quality. Preview includes other source sizes, durations and priced output options.',
         isFinishingProfileReleased(profile, quality) ? 'Released profile.' : 'Profile not released for generation.'] },
       () => computeCanonicalFinishingBillingSnapshot({ toolId, quality, vendorBudgetUsd: budgetUsd, durationSec: seconds,
-        profileId: profile.id, pricingSource: profile.pricingSource }));
+        profileId: profile.id, pricingSource: profile.pricingSource }, { pricingPolicy }));
   }
   if (policy.status !== 'loaded') warnings.push('Effective pricing policy unavailable; affected current prices are hidden.');
   return { rows, warnings };

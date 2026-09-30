@@ -182,6 +182,34 @@ test('direct Luma execution never relabels a Fal pricing reference as its accoun
   assert.equal(row.supplierEffective.amountUsd, null);
 });
 
+test('H3 Max documented Fal costs match its execution route without claiming a verified account price', () => {
+  const [row] = buildProviderCostComparisonRows([
+    exactInput('minimax-h3-max', { mode: 't2v', resolution: '768P', durationSec: '5' }, 'fal'),
+  ], '2026-10-01T00:00:00Z');
+  assert.equal(row.supplierList.amountUsd, 0.4);
+  assert.equal(row.supplierList.referenceProvider, 'fal');
+  assert.equal(row.supplierList.routeMatches, true);
+  assert.equal(row.supplierList.status, 'catalog_reference_estimate');
+  assert.equal(row.supplierList.sourceUrl, 'https://fal.ai/models/minimax/h3-max/text-to-video');
+  assert.equal(row.supplierEffective.amountUsd, null);
+});
+
+test('local generation isolation remains explicit and does not erase Wan cross-provider provenance', () => {
+  const previous = process.env.PRICING_SANDBOX;
+  process.env.PRICING_SANDBOX = '1';
+  try {
+    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'wan-3' && row.context.mode === 't2v')!;
+    const input = providerComparisonForTariffScenario(scenario);
+    const [row] = buildProviderCostComparisonRows([input], '2026-10-01T00:00:00Z');
+    assert.equal(row.routeConfigured, false);
+    assert.equal(row.generationDisabledReason, 'local_sandbox');
+    assert.equal(row.supplierList.referenceProvider, 'alibaba_model_studio');
+    assert.equal(row.supplierList.routeMatches, row.executionProvider === 'alibaba_model_studio');
+  } finally {
+    if (previous === undefined) delete process.env.PRICING_SANDBOX; else process.env.PRICING_SANDBOX = previous;
+  }
+});
+
 test('Seedream exact options project output dimensions and references into published supplier cost', () => {
   const [lite, pro2k, proEdit] = buildProviderCostComparisonRows([
     exactInput('seedream', { mode: 't2i', resolution: '2K' }, 'byteplus_modelark', '1:1'),

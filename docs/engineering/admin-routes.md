@@ -79,6 +79,15 @@ The approved 2026-09-30 workspace adds Video, Image, Audio, Tools and Storyboard
 
 Membership remains read-only and outside Pricing. Do not add direct-save commercial routes. Pricing and billing products use authorized inventory/history reads and a server-owned `preview → explicit confirmation → immediate apply` mutation protocol. Confirmation recomputes the preview fingerprint inside the transaction boundary before persistence. Membership is retired for mutation: inventory/history remain readable and preview, confirmation, and rollback fail with `410 membership_retired`.
 
+The 2026-10-01 finishing correction scopes each of the seven released quality
+profiles by `engineId=toolbox-finishing`, `mode=toolId:quality` and
+`resolution=video`. Their previews reuse the billed conservative supplier budget
+for 720p/1080p/4K sources, 30/60 fps, duration block boundaries and priced output
+options (1080p/4K or 60/120 fps). These are representative scenarios, not exhaustive
+continuous coverage. Missing qualified policy keeps the current quote and editing
+unavailable; the global default is rejected. Sandbox migration 42 restores the
+existing tool-specific rule without overwriting a configured price.
+
 The server rejects a stale preview fingerprint without persistence or cache invalidation. Every successful mutation and its immutable event commit in one transaction. Rollback is a new mutation: callbacks send only `targetId` and `eventId`, historical state is resolved server-side, and restoration enters the same fresh preview and confirmation flow. History is never updated or deleted.
 
 The customer-tariff service lives in `frontend/server/pricing-admin/customer-tariff-service.ts`; its API routes under `/api/admin/pricing/tariffs/` require `requireAdmin` before reading inventory, scenarios, preview, confirmation or history. The scenario endpoint returns only the selected model's valid cascading options and exact current quote. An inactive cell edit increments the tariff revision and writes an immutable pricing event in one transaction. Migration 55 adds immutable closed cell versions: an active edit uses a server-owned effective instant, preserves the stable selector/currency, appends the previous version and increments the revision atomically. Rollback creates another version. Active deletion is forbidden. Confirmation revalidates public Pricing, model, home, examples and watch pages; refresh failure is reported after commit. Active-edit behavior is tested only on disposable local databases; global activation remains off pending complete coverage, revision binding and settlement provenance.

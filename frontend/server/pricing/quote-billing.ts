@@ -31,10 +31,11 @@ import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
 
 /** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
-export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string }): Promise<PricingSnapshot> {
+export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string },
+  dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {}): Promise<PricingSnapshot> {
   if (!Number.isFinite(input.vendorBudgetUsd) || input.vendorBudgetUsd <= 0) throw new Error('Invalid tool vendor budget.');
   const engineId = 'toolbox-finishing';
-  const { policy, vendorAccountId } = await resolveServerBillingPolicy({ engineId, mode: `${input.toolId}:${input.quality}`, resolution: 'video' });
+  const { policy, vendorAccountId } = await resolveServerBillingPolicy({ engineId, mode: `${input.toolId}:${input.quality}`, resolution: 'video' }, undefined, dependencies.pricingPolicy);
   // A database-wide legacy default must not silently replace this product's policy.
   if (policy.rule.engineId !== engineId) throw new Error('TOOL_PRICING_UNAVAILABLE');
   if (policy.rule.currency !== 'USD') throw new Error('Tool pricing currency is unsupported.');

@@ -40,7 +40,8 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
       routeConfigured = false;
     }
   }
-  if (process.env.PRICING_SANDBOX === '1') routeConfigured = false;
+  const sandbox = process.env.PRICING_SANDBOX === '1';
+  if (sandbox) routeConfigured = false;
   return { ...providerComparisonInputFromScenario({
     scenario: { id: scenario.id, engineId: scenario.modelId, mode: context.mode,
       resolution: context.resolution, durationSec: Number(scenario.selector.durationSec), surface: 'billing', membershipTier: 'member',
@@ -48,5 +49,5 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
         ...(typeof context.addons?.audio === 'boolean' ? { audio: context.addons.audio } : {}) } },
     context, quote: null, engine: entry.engine, brandId: entry.brandId, familyId: entry.family,
     executionProvider, mediaType: entry.category === 'image' ? 'image' : 'video',
-  }), routeConfigured };
+  }), routeConfigured, generationDisabledReason: sandbox ? 'local_sandbox' : routeConfigured === false ? 'route_unavailable' : null };
 }

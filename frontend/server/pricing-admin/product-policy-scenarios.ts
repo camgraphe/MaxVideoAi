@@ -2,6 +2,28 @@ import { AUDIO_PACK_VALUES, AUDIO_LYRIA3_PRO_DURATION_OPTIONS_SEC, getAudioPackC
 import { getFalEngineById } from '@/config/falEngines';
 import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
+import { FINISHING_TOOL_IDS, FINISHING_QUALITY_CHOICES, defaultFinishingSettings, finishingSettingsSchemas, isFinishingToolId } from '@/lib/toolbox/finishing';
+import { estimateFinishingVendorBudget } from '@/server/tools/finishing-providers';
+
+/** Representative prices, including block boundaries. This is not a continuous coverage certificate. */
+function buildFinishingPolicyScenarios(): PricingAuditScenario[] {
+  const scenarios: PricingAuditScenario[] = [];
+  for (const toolId of FINISHING_TOOL_IDS) for (const quality of FINISHING_QUALITY_CHOICES[toolId]) {
+    const options = toolId === 'restore-video' ? [{ outputResolution: '1080p' }, { outputResolution: '4k' }]
+      : toolId === 'smooth-motion' ? [{ targetFps: 60 }, { targetFps: 120 }] : [{}];
+    for (const [width, height] of [[1280, 720], [1920, 1080], [3840, 2160]]) for (const fps of [30, 60]) {
+      for (const durationSec of [5, 10, 10.01, 30, 60]) for (const option of options) {
+        if ('targetFps' in option && Number(option.targetFps) <= fps) continue;
+        scenarios.push({ id: `admin-finishing:${toolId}:${quality}:${width}x${height}:${fps}:${durationSec}:${Object.values(option).join('')}`,
+          surface: 'tool', engineId: 'toolbox-finishing', mode: `${toolId}:${quality}`, resolution: 'video',
+          durationSec, membershipTier: 'member', compatibilityProfile: 'standard',
+          input: { adminProduct: 'finishing', toolId, quality, width, height, fps, ...option,
+            scenarioLabel: `${toolId.replaceAll('-', ' ')} · ${quality} · ${durationSec} s · ${width} × ${height} · ${fps} fps${'outputResolution' in option ? ` → ${option.outputResolution}` : 'targetFps' in option ? ` → ${option.targetFps} fps` : ''}` } });
+      }
+    }
+  }
+  return scenarios;
+}
 
 /** Authored comparison inputs only; commercial amounts stay in the canonical quote. */
 export function buildAdminAudioReferenceInputs(durationSec: number) {
@@ -33,10 +55,20 @@ export function buildLiveProductPolicyScenarios(): PricingAuditScenario[] {
   const boards: PricingAuditScenario[] = (['storyboard', 'storyboard_edit'] as const).flatMap((mode) =>
     (['hd', '4k', 'ultra'] as const).map((resolution) => ({ id: `admin-storyboard:${mode}:${resolution}`, surface: 'tool',
       engineId: 'storyboarder', mode, resolution, durationSec: 1, membershipTier: 'member', input: { adminProduct: 'storyboard' } })));
-  return [...audio.values(), ...boards];
+  return [...audio.values(), ...boards, ...buildFinishingPolicyScenarios()];
 }
 
 export function buildLiveProductPolicyFacts(scenario: PricingAuditScenario) {
+  if (scenario.input.adminProduct === 'finishing') {
+    const toolId = String(scenario.input.toolId);
+    if (!isFinishingToolId(toolId)) throw new Error('Unknown finishing pricing scenario.');
+    const settings = finishingSettingsSchemas[toolId].parse({ ...defaultFinishingSettings(toolId), quality: scenario.input.quality,
+      ...(toolId === 'restore-video' ? { resolution: scenario.input.outputResolution } : {}),
+      ...(toolId === 'smooth-motion' ? { fps: scenario.input.targetFps } : {}) });
+    const budgetUsd = estimateFinishingVendorBudget(toolId, settings, { width: Number(scenario.input.width),
+      height: Number(scenario.input.height), fps: Number(scenario.input.fps), durationSec: scenario.durationSec! });
+    return { engineId: scenario.engineId, currency: 'USD', vendorSubtotalExactCents: budgetUsd * 100, unit: 'video', quantity: 1 };
+  }
   if (scenario.input.adminProduct === 'audio') {
     const input = { ...scenario.input, pack: scenario.mode, durationSec: scenario.durationSec } as AudioPricingInput;
     const facts = buildAudioPricingPresentation(input);

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { getDb } from '../frontend/src/lib/db';
@@ -59,6 +60,28 @@ test('central admin and public rows read changed product/audio prices without an
     assert.equal(before.rows.find((row) => row.id === 'audio:song:0')?.unit, 'song');
     assert.deepEqual(before.rows.find((row) => row.id === 'audio:voice_only:0')?.policySelector,
       { engineId: 'audio-generation', mode: 'voice_only', resolution: 'audio' });
+    const missingTool = before.rows.find(row => row.id === 'denoise:standard')!;
+    assert.equal(missingTool.totalCents, null, 'the global rule cannot replace the required finishing policy');
+    assert.equal(missingTool.supplierCents, 10, 'known budgets survive a missing customer policy');
+    // Use the shipped migration, preserving already configured prices on subsequent sandbox starts.
+    await database.pool.query(readFileSync('neon/migrations/42_toolbox_finishing_pricing.sql', 'utf8'));
+    const finishing = await loadAdminProductPricing(10);
+    for (const [id, cents] of [['restore-video:standard', 18], ['restore-video:pro', 180],
+      ['denoise:standard', 25], ['denoise:pro', 25], ['fix-blur:standard', 25],
+      ['smooth-motion:standard', 75], ['smooth-motion:pro', 125]] as const) {
+      const row = finishing.rows.find(item => item.id === id)!;
+      assert.equal(row.totalCents, cents, id);
+      assert.deepEqual(row.policySelector, { engineId: 'toolbox-finishing', mode: id, resolution: 'video' });
+    }
+    await database.pool.query("UPDATE app_pricing_rules SET margin_flat_cents=9 WHERE id='toolbox-finishing'");
+    await database.pool.query(readFileSync('neon/migrations/42_toolbox_finishing_pricing.sql', 'utf8'));
+    const preservedTool = (await loadAdminProductPricing(10)).rows.find(row => row.id === 'denoise:standard')!;
+    assert.equal(preservedTool.totalCents, 34, 'bootstrap never resets a configured finishing price');
+    await database.pool.query(`INSERT INTO app_pricing_rules (id,engine_id,mode,resolution,margin_percent,margin_flat_cents,currency)
+      VALUES ('denoise-standard-only','toolbox-finishing','denoise:standard','video',2,0,'USD')`);
+    const scopedTools = await loadAdminProductPricing(10);
+    assert.equal(scopedTools.rows.find(row => row.id === 'denoise:standard')?.totalCents, 30);
+    assert.equal(scopedTools.rows.find(row => row.id === 'fix-blur:standard')?.totalCents, 34);
     // Fixture changes are confined to this disposable socket-only database.
     await database.pool.query(`UPDATE app_billing_products SET unit_price_cents=48 WHERE product_key='character-draft';
       INSERT INTO app_pricing_rules (id,engine_id,mode,margin_percent,margin_flat_cents,currency)

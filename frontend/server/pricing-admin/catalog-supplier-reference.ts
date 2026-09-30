@@ -55,8 +55,8 @@ export function catalogSupplierReference(context: PricingContext): CatalogSuppli
     referenceProvider = 'alibaba_model_studio';
     sourceUrl = 'https://help.aliyun.com/en/model-studio/model-pricing';
   } else if (engine.id === 'minimax-h3-max') {
-    referenceProvider = 'minimax';
-    sourceUrl = null; // Documented local rate; no verified public endpoint URL in this projection.
+    // MiniMax is the model author; these documented rates concern the Fal endpoint.
+    referenceProvider = 'fal';
   } else if (engine.providerMeta?.provider === 'luma_agents_direct') {
     referenceProvider = 'fal';
     sourceUrl = null; // Fal reference/interpolation, not a Luma account price.

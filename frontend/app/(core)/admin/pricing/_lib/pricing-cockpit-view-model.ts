@@ -59,6 +59,7 @@ export type ProviderCostComparisonRowView = {
   engineId: string;
   executionProvider: string;
   routeConfigured: boolean | null;
+  generationDisabledReason?: 'local_sandbox' | 'route_unavailable' | null;
   mediaType: 'video' | 'image';
   workflowPairId: string | null;
   mode: string;

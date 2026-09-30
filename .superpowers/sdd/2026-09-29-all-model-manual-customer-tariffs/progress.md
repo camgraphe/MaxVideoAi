@@ -405,3 +405,18 @@ Browser reads existing actual admin with supplier/customer per-second rates and
 margin/simulator; tab2 marked deliverable, no edits/confirmation or new auth.
 Following documentation commit requires a fresh candidate to bind final HEAD;
 no complete-plan/final-review/activation claim, workspace remains for continuation.
+
+2026-10-01 finishing follow-up: current user asks missing Restore/Denoise/Fix Blur/
+Smooth Motion prices and Wan 3/H3 Max provider/disabled labels. Four RED regression
+failures reproduced missing finishing scenarios, H3's wrong provider and absent
+local isolation reason; PostgreSQL RED reproduced shared unscoped tool editor.
+Restored existing migration42 only to verified private Unix sandbox; state3/off,
+66549 cells/13 products unchanged. Future sandbox startup includes42, preserves
+configured rule. Seven tool/quality scoped editors, budget/factual parity and
+representative priced extras/block boundaries implemented; global fallback refused
+in billing and preview. H3 Max provenance is Fal catalogue; Wan retains Alibaba
+cross-provider basis. Local isolation reason explicitly projected to UI.
+Focused69/69 and real PostgreSQL preview/stale/confirm/rollback pass. Browser actual
+seven prices and scoped30-scenario +5c preview verified, preview cancelled. Older
+release artifact now has stale effective policy hash; recapture/binding gates stay
+strict. Full validation/build and final commit follow; plan/global gates unchanged.

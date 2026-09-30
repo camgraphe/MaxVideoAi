@@ -75,7 +75,9 @@ function ComparisonRow({ row, disabled, onInspect, onSaved }: { row: ProviderCos
       <span className="col-span-3 min-w-0 min-[900px]:col-span-1">
         <span className="block text-sm font-bold text-text-primary">{displayName(row.engineId, MODEL_LABELS)}</span>
         <span className="mt-0.5 block text-[11px] leading-relaxed text-text-secondary">{formatProviderComparisonScenario(displayedRow)}</span>
-        <span className={`mt-0.5 block text-[10px] ${uncertain ? 'text-amber-800' : 'text-text-muted'}`}>{decisionBasisLabel(metrics.costBasis)}{displayedRow.routeConfigured === false ? ' · generation disabled' : ''}</span>
+        <span className={`mt-0.5 block text-[10px] ${uncertain ? 'text-amber-800' : 'text-text-muted'}`}>{decisionBasisLabel(metrics.costBasis)}{displayedRow.routeConfigured === false
+          ? displayedRow.generationDisabledReason === 'local_sandbox' ? ' · generation disabled locally' : ' · execution route unavailable'
+          : ''}</span>
       </span>
       <PriceTile label={`Supplier ${suffix}`} amount={decisionUsd(metrics.supplierUnitUsd)} caption={`${decisionUsd(metrics.supplierTotalUsd)} total`} tone="supplier" />
       <PriceTile label={`Customer ${suffix}`} amount={decisionUsd(metrics.customerUnitUsd)} caption={`${decisionUsd(metrics.customerTotalUsd)} total`} tone="customer" />

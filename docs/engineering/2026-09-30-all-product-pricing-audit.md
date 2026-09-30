@@ -360,3 +360,29 @@ atomic local activation/event acceptance, and separately authorized fresh
 effective production parity. Source account/invoice evidence and legacy direct
 payment reconciliation retain their preceding operational gates. Current local
 preparation reports must not be accepted as production or activation tokens.
+
+## Finishing tools and provider-label correction — 2026-10-01
+
+Restore Video, Denoise, Fix Blur and Smooth Motion were present as seven released
+quality profiles. Their missing current local prices came from the sandbox's
+omitted migration 42: the database global 30% rule took precedence, while the
+qualified finishing quote correctly refused it. The existing migration was
+applied only to the verified private socket database, preserving configured rows.
+It is now part of future sandbox initialization. Model revision 3/inactive,
+66,549 staged cells, 13 fixed products and existing minima are unchanged.
+
+Each tool/quality has an inline scoped editor and canonical reference previews,
+including source sizes/cadences, priced output options and 300-frame boundaries.
+Budget evidence remains an estimate, separate from contract/invoice evidence.
+At 10s/720p/30fps: Restore standard/pro $0.18/$1.80; Denoise standard/pro and
+Fix Blur $0.25; Smooth Motion standard/pro $0.75/$1.25. Actual source/options
+determine the billed quote. PostgreSQL confirmation/stale-preview/rollback and
+non-overwrite behavior are verified; no browser test price was applied.
+
+H3 Max's documented Fal cost is correctly attributed to Fal and stays a catalogue
+estimate. Wan 3/Prime's Alibaba reference retains the cross-provider label beside
+the sandbox's Fal route. Local disabled generation is explicitly labeled locally;
+it does not certify production routing. The prior release artifact's policy hash
+predates the restored finishing row and needs fresh evidence before use. The
+three model-domain gates and global inactive state remain open. No production,
+provider request, support message, push or deployment occurred.

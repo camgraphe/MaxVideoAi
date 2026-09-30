@@ -168,3 +168,14 @@ captured baseline is immutable. The read-only candidate binds the exact capture,
 database identity, effective rules, registry and old/new amounts; it does not
 write the original staged database or authorize activation. Catalogue estimates
 remain distinct from account contracts and invoices.
+
+### Local finishing follow-up — 2026-10-01
+
+The four finishing tools' seven released quality profiles now expose qualified
+current quotes and scoped inline editors. Existing migration 42 was restored in
+the private sandbox and future initialization; it never overwrites a configured
+rule. Previews use the actual budget owner and representative priced variants,
+including block boundaries. H3 Max supplier identity and local disabled-generation
+labels were corrected without changing model prices or provider routing. Previous
+release reports need recapture after this local effective-policy change. This
+does not complete Tasks 1/6 or enable the global manual-tariff switch.
