@@ -21,6 +21,7 @@ import type { EngineCaps, PreflightRequest, PreflightResponse, PricingSnapshot }
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import {
   isGptImageFamilyEngineId,
+  isGptImage25EngineId,
   resolveGptImage2AutoInputImageSize,
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
@@ -424,7 +425,9 @@ export async function priceCanonicalGenerationInExecutor(
       ? request.mode === 'i2i'
         ? Math.max(0, imageReferences.length - 1)
         : imageReferences.length
-      : undefined;
+      : isGptImage25EngineId(engine.id) && request.mode === 'i2i'
+        ? imageReferences.length
+        : undefined;
     snapshot = await computeBillingSnapshot({
       engine,
       durationSec: request.outputCount,

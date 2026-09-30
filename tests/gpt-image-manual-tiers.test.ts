@@ -7,6 +7,8 @@ import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-sc
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { chooseCustomerTariffScenario } from '../frontend/server/pricing-admin/customer-tariff-service';
+import { buildAllModelComparisonScenarios, selectRepresentativeTariffScenario } from '../frontend/server/pricing-admin/policy-read-model';
+import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 import type { PricingContext } from '../frontend/src/lib/pricing-context';
 
 const models = ['gpt-image-2', 'gpt-image-2-5-flare', 'gpt-image-2-5-sunburst'];
@@ -74,4 +76,53 @@ test('an authored tier prices custom and automatic GPT requests identically and 
     loadCustomerTariffState: async () => ({ ...state, versionedCells: [{ ...cell,
       selector: { ...selector, aspectRatio: 'default', customImageSize: JSON.stringify({ width: 1920, height: 1080 }) } }] }) }),
   /No active manual tariff/);
+});
+
+test('omitted GPT quality reaches the same manual cell as the factual high default', async () => {
+  const rows = collectSellableManualTariffCoverage().scenarios;
+  for (const modelId of models) for (const mode of ['t2i', 'i2i'] as const) {
+    const engine = getFalEngineById(modelId)!.engine;
+    const base: PricingContext = { engine, mode, resolution: '1024x768', durationSec: 1, quality: 'high',
+      ...(modelId !== 'gpt-image-2' && mode === 'i2i' ? { referenceImageCount: 3 } : {}) };
+    const selector = manual(base).selector;
+    const selected = rows.find(row => JSON.stringify(row.selector) === JSON.stringify(selector));
+    assert.ok(selected);
+    for (const quality of [undefined, null, ' HIGH ']) {
+      const context = { ...base, quality };
+      assert.deepEqual(manual(context).selector, selector);
+      const pricing = await computeCanonicalBillingSnapshot(context, { pricingPolicy: policy,
+        loadCustomerTariffState: async () => ({ status: 'loaded', active: true, revision: 23,
+          versionedCells: [{ id: 'default-quality', source: 'versioned', version: 1, selector,
+            currency: 'USD', effectiveFrom: '2026-09-28T00:00:00.000Z', price: { kind: 'fixed', customerCents: 123 } }], databaseCells: [] }) });
+      assert.equal(pricing.totalCents, 123);
+      assert.equal(pricing.meta?.quality, 'high');
+    }
+  }
+});
+
+test('GPT inventory and default tier detail retain the preset-specific effective policy', async () => {
+  const coverage = collectSellableManualTariffCoverage().scenarios;
+  for (const modelId of models) {
+    const representative = buildAllModelComparisonScenarios().find(row => row.entry.id === modelId)!;
+    const rows = coverage.filter(row => row.modelId === modelId);
+    const selected = selectRepresentativeTariffScenario(representative.entry, representative.scenario, rows)!;
+    assert.equal(selected.selector.resolution, '1024x768');
+    assert.equal(selected.context.resolution, 'landscape_4_3');
+    const detail = chooseCustomerTariffScenario(rows, selected.selector).scenario;
+    assert.equal(detail.context.resolution, 'landscape_4_3');
+    const publicAlias = resolvePublicModelScenario({ modelId, mode: 't2i', durationSec: 1,
+      resolution: 'landscape_4_3', quality: 'high' })!;
+    const publicFixed = resolvePublicModelScenario({ modelId, mode: 't2i', durationSec: 1,
+      resolution: '1024x768', quality: 'high' })!;
+    const scopedPolicy = { loadOverrides: async () => ({ status: 'loaded' as const, rules: [{
+      id: 'preset-rule', engineId: modelId, mode: 't2i', resolution: 'landscape_4_3', marginPercent: 1, currency: 'USD' }] }) };
+    const alias = await computeCanonicalBillingSnapshot(publicAlias.context, { pricingPolicy: scopedPolicy });
+    const fixed = await computeCanonicalBillingSnapshot(publicFixed.context, { pricingPolicy: scopedPolicy });
+    for (const scenario of [selected, detail]) {
+      const admin = await computeCanonicalBillingSnapshot(scenario.context, { pricingPolicy: scopedPolicy });
+      assert.equal(admin.totalCents, alias.totalCents);
+      assert.equal((admin.meta?.pricingPolicy as { sourceRuleId: string }).sourceRuleId, 'preset-rule');
+    }
+    assert.notEqual(alias.totalCents, fixed.totalCents, 'a conflicting legacy alias remains visible to the activation parity gate');
+  }
 });

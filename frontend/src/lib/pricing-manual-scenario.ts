@@ -1,7 +1,7 @@
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
-import { isGptImage25EngineId, isGptImageFamilyEngineId, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
+import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQuality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 
@@ -29,7 +29,8 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
     durationSec: String(context.durationSec),
     ...(!gptImage ? { aspectRatio: context.aspectRatio ?? 'default' } : {}),
     ...(option(context.addons?.audio) !== undefined ? { audio: option(context.addons?.audio)! } : {}),
-    ...(context.quality ? { quality: context.quality } : {}),
+    ...(gptImage ? { quality: normalizeGptImageQuality(context.quality, facts.engineId) }
+      : context.quality ? { quality: context.quality } : {}),
     ...(option(context.inputVideoDurationSec) ? { inputVideoDurationSec: option(context.inputVideoDurationSec)! } : {}),
     ...(option(context.inputAudioDurationSec) ? { inputAudioDurationSec: option(context.inputAudioDurationSec)! } : {}),
     ...(option(context.inheritedDurationSec) ? { inheritedDurationSec: option(context.inheritedDurationSec)! } : {}),

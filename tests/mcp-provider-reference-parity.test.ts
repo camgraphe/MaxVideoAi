@@ -15,6 +15,8 @@ import type { ResolvedReference } from '../frontend/src/server/agent-api/referen
 import { prepareGenerationInputSchema } from '../frontend/src/server/mcp/tools/prepare-generation';
 import { priceCanonicalGeneration, priceCanonicalGenerationInExecutor } from '../frontend/src/server/agent-api/generation-pricing';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
+import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
+import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 
 function candidate(engineId: string): AgentPublicGenerationEngine {
   const entry = listFalEngines().find((entry) => entry.id === engineId);
@@ -69,6 +71,42 @@ function paidBody(canonical: CanonicalGenerationRequest, resolvedReferences: Res
     canonicalPricing: { membershipTier: 'member' },
   });
 }
+
+test('GPT 2.5 prepare and transaction confirmation use identical source costs and the same active tariff cell', async () => {
+  for (const engineId of ['gpt-image-2-5-flare', 'gpt-image-2-5-sunburst']) {
+    const imageCandidate = { ...candidate(engineId), surface: 'image' as const };
+    for (const resolution of ['1024x768', '3840x2160']) for (const count of [1, 3, 16]) {
+      const references = Array.from({ length: count }, (_, index) => ({ kind: 'asset' as const,
+        assetId: `image-${index}`, role: index === 0 ? 'source' as const : 'reference' as const }));
+      const canonical = normalizeGenerationRequest({ schemaVersion: 1, surface: 'image', engineId, mode: 'i2i',
+        prompt: 'Edit these images', outputCount: 4, references, settings: { resolution, quality: 'high' } });
+      const prepared = await priceCanonicalGeneration(canonical, 'member');
+      const confirmed = await priceCanonicalGenerationInExecutor(canonical, 'member', {
+        executor: { query: async () => [] } as TransactionQueryExecutor, candidate: imageCandidate,
+      });
+      assert.equal(confirmed.priceCents, prepared.priceCents, `${engineId}/${resolution}/${count}`);
+      const preparedMeta = prepared.pricingSnapshot.meta as Record<string, unknown>;
+      const confirmedMeta = confirmed.pricingSnapshot.meta as Record<string, unknown>;
+      assert.equal(confirmedMeta.reference_image_count, count);
+      assert.equal(confirmedMeta.providerSubtotalExactCents, preparedMeta.providerSubtotalExactCents);
+      assert.equal(confirmedMeta.reference_image_subtotal_exact_cents, preparedMeta.reference_image_subtotal_exact_cents);
+      const scenario = resolvePublicModelScenario({ modelId: engineId, mode: 'i2i', durationSec: 4,
+        resolution, quality: 'high', referenceImageCount: count });
+      assert.ok(scenario);
+      const state = { status: 'loaded' as const, active: true, revision: 25,
+        versionedCells: [{ id: `gpt-edit-${count}`, source: 'versioned' as const, version: 1,
+          selector: scenario.selector, currency: 'USD', effectiveFrom: '2026-09-28T00:00:00.000Z',
+          price: { kind: 'fixed' as const, customerCents: 999 } }], databaseCells: [] };
+      const confirmedManual = await priceCanonicalGenerationInExecutor(canonical, 'member', {
+        executor: { query: async () => [] } as TransactionQueryExecutor, candidate: imageCandidate,
+        computeBillingSnapshot: (context, dependencies) => computeCanonicalBillingSnapshot(context,
+          { ...dependencies, loadCustomerTariffState: async () => state }),
+      });
+      assert.equal(confirmedManual.priceCents, 999);
+      assert.equal((confirmedManual.pricingSnapshot.meta as Record<string, unknown>).customerTariffRevision, 25);
+    }
+  }
+});
 
 test('Wan document and webpage references are discoverable, validated and projected into paid requests', async () => {
   for (const engineId of ['wan-3', 'wan-3-prime']) {

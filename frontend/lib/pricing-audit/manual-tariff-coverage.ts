@@ -5,7 +5,7 @@ import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
-import { GPT_IMAGE_2_CANONICAL_SIZE_VALUES, isGptImageFamilyEngineId, parseGptImage2SizeKey } from '@/lib/image/gptImage2';
+import { GPT_IMAGE_2_CANONICAL_SIZE_VALUES, isGptImageFamilyEngineId, parseGptImage2SizeKey, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { manualTariffImageOutputCounts, manualTariffLoopValues, manualTariffReferenceCounts } from './manual-tariff-dimensions';
 
 export type ManualTariffCoverageScenario = {
@@ -130,7 +130,13 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
         gaps.push({ modelId: model.id, reason: `${mode}: HDR/EXR controls require reviewed generation-to-pricing projection` });
       }
       const audioOptions: Array<boolean | null> = modeConfig.ui.audioToggle ? [false, true] : [null];
-      const qualityField = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])]
+      const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
+      const resolutionField = fields.find(field => field.id === 'resolution' && (!field.modes || field.modes.includes(mode)));
+      const defaultResolution = gptImage && typeof resolutionField?.default === 'string'
+        && !['auto', 'custom'].includes(resolutionField.default) && rawResolutions.includes(resolutionField.default)
+        ? resolutionField.default : null;
+      const defaultSizeTier = defaultResolution ? resolveGptImage2PricingTier(defaultResolution).billingKey : null;
+      const qualityField = fields
         .find((field) => field.id === 'quality' && (!field.modes || field.modes.includes(mode)));
       const qualities = qualityField?.values?.length ? qualityField.values : [null];
       if (qualityField && !qualityField.values?.length) gaps.push({ modelId: model.id, reason: `${mode}: freeform quality requires a reviewed mapping` });
@@ -138,8 +144,10 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
         for (const audio of audioOptions) for (const quality of qualities)
           for (const referenceImageCount of references.values) for (const loop of manualTariffLoopValues(entry, mode))
           for (const media of mediaDimensions(model.id, mode, durationSec)) {
+          // A canonical identity must not erase the preset's current legacy policy.
+          const requestedResolution = defaultSizeTier === resolution ? defaultResolution! : resolution;
           const context: PricingContext = {
-            engine: entry.engine, mode: mode as Mode, durationSec, resolution,
+            engine: entry.engine, mode: mode as Mode, durationSec, resolution: requestedResolution,
             aspectRatio: aspectRatio === 'default' ? null : aspectRatio,
             ...(quality == null ? {} : { quality }),
             ...(audio == null ? {} : { addons: { audio, ...(!audio ? { audio_off: true } : {}) } }),
@@ -150,7 +158,7 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
             ...(mode === 'fl2v' ? { inputImageCount: 2 } : {}),
             ...(mode === 'ref2v' ? { inputImageCount: referenceImageCount } : {}),
             ...(isImage && isGptImageFamilyEngineId(model.id)
-              ? { customImageSize: parseGptImage2SizeKey(resolution) } : {}),
+              ? { customImageSize: parseGptImage2SizeKey(requestedResolution) } : {}),
             ...media.context,
           };
           const facts = buildBillingPricingFacts(context, entry.engine.pricingDetails, 'USD').facts;
