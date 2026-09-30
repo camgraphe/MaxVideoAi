@@ -81,7 +81,7 @@ def ready(base, process):
     raise RuntimeError(f"Next did not become ready: {base}")
 
 
-def source_probe(versions, output):
+def source_probe(versions, output, projections):
     snapshot = json.loads((ROOT / "fixture/public-examples.json").read_text())
     rows = []
     for variant, item in versions.items():
@@ -95,13 +95,14 @@ def source_probe(versions, output):
             unknown = [id for id in ids if id not in snapshot["cards"]]
             if unknown or not ids:
                 raise RuntimeError(f"Public API outside fixture: {variant} {family}: {unknown}")
-            expected = snapshot["feeds"]["" if family == "hub" else "wan"]["playlist"]
+            expected = projections[variant][family]
             row = {"variant": variant, "family": family, "url": url, "total": data["total"],
                    "returned": len(ids), "hasMore": data["hasMore"], "first24": ids[:24],
-                   "expectedFirst24": expected[:24], "first24Match": ids[:24] == expected[:24]}
+                   "expectedTotal": len(expected), "expectedFirst24": expected[:24], "first24Match": ids[:24] == expected[:24],
+                   "returnedOrderMatch": ids == expected[:120]}
             rows.append(row)
             (output / "source-probe.json").write_text(json.dumps(rows, indent=2) + "\n")
-            if data["total"] != len(expected) or not row["first24Match"]:
+            if data["total"] != len(expected) or not row["returnedOrderMatch"] or data["hasMore"] != (len(ids) < len(expected)):
                 raise RuntimeError(f"{variant} API did not serve expected curated fixture: {family}: {row}")
 
 
@@ -155,6 +156,12 @@ def main():
         if actual != item["commit"]:
             raise RuntimeError(f"Checkout ref mismatch: {item['checkout']}: {actual} != {item['commit']}")
         item["buildId"] = (item["checkout"] / "frontend/.next/BUILD_ID").read_text().strip()
+    projection = json.loads((output / "api-projections.json").read_text())
+    if projection["snapshotSha256"] != fixture["snapshotSha256"]:
+        raise RuntimeError("API projection used a different snapshot")
+    for variant, item in versions.items():
+        if projection["versions"][variant]["commit"] != item["commit"]:
+            raise RuntimeError(f"API projection used a different {variant} checkout")
     metadata = {"status": "incomplete", "fixture": fixture, "versions": {v: {k: str(value) for k, value in d.items()} for v, d in versions.items()},
                 "chrome": chrome, "lighthouse": "12.6.1", "cells": CELLS,
                 "design": "3 cold visits per version; separate persistent warm profiles, seed discarded then 2 retained; alternating version order",
@@ -175,7 +182,7 @@ def main():
                     with urllib.request.urlopen(item["url"] + route, timeout=45) as response:
                         if response.status != 200:
                             raise RuntimeError(f"Route smoke failed: {variant} {device} {route}: {response.status}")
-        source_probe(versions, output)
+        source_probe(versions, output, projection["versions"])
         command(["node", str(ROOT / "browser-check.mjs"), "prewarm", versions["baseline"]["url"], versions["candidate"]["url"], str(output / "prewarm.json")],
                 output / "prewarm.log", timeout=300)
         # Catch playback regressions before the long Lighthouse matrix. This probe uses

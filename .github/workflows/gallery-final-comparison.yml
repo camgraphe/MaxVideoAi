@@ -104,6 +104,10 @@ jobs:
         working-directory: candidate
         run: pnpm exec tsx --tsconfig frontend/tsconfig.json performance/gallery-final/seed-fixture.ts | tee ../gallery-results/seed.log
 
+      - name: Derive exact API projections from both pinned source trees
+        working-directory: candidate
+        run: pnpm exec tsx --tsconfig frontend/tsconfig.json performance/gallery-final/project-fixture.ts ../baseline . ../gallery-results/api-projections.json | tee ../gallery-results/api-projections.log
+
       - name: Build pinned baseline
         working-directory: baseline
         run: pnpm --dir frontend exec next build > ../gallery-results/baseline-build.log 2>&1 || { cat ../gallery-results/baseline-build.log; exit 1; }
