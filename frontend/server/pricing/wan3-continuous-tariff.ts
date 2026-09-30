@@ -10,7 +10,7 @@ export function compileWan3ContinuousTariffPrice(input: {
   compatibilityProfile: PricingCompatibilityProfile;
 }): ManualTariffPrice {
   const { context, policy, compatibilityProfile: profile } = input;
-  if (!isWan3EngineId(context.engine.id) || !['v2v', 'extend'].includes(context.mode ?? '') ||
+  if (!isWan3EngineId(context.engine.id) || !['ref2v', 'v2v', 'extend'].includes(context.mode ?? '') ||
       policy.rule.currency !== 'USD' || profile.vendorSubtotalRounding !== 'preserve' || profile.subtotalRounding ||
       (profile.discountPercentOverride ?? 0) !== 0 || profile.vendorShareMode === 'zero' ||
       !['up', 'nearest'].includes(profile.marginRounding) || !['up', 'nearest'].includes(profile.totalRounding)) {

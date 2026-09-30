@@ -9,9 +9,10 @@ import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing'
 
 /** A reviewed quantity-priced class; all other options still match exactly. */
 export function continuousWan3TariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
-  if (!isWan3EngineId(selector.engineId) || !['v2v', 'extend'].includes(selector.mode)) return null;
+  if (!isWan3EngineId(selector.engineId) || !['ref2v', 'v2v', 'extend'].includes(selector.mode)) return null;
+  const seconds = Number(selector.inputVideoDurationSec ?? 0);
   validateWan3PricingDuration({ mode: selector.mode, durationSec: Number(selector.durationSec),
-    inputVideoDurationSec: Number(selector.inputVideoDurationSec), hasVideoInput: true });
+    inputVideoDurationSec: seconds, hasVideoInput: selector.mode !== 'ref2v' || seconds > 0 });
   return { ...selector, inputVideoDurationSec: 'continuous' };
 }
 
@@ -72,7 +73,8 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
     output_units: facts.quantity,
-    ...(media.inputVideoDurationSec !== undefined ? { input_video_seconds: media.inputVideoDurationSec } : {}),
+    ...(media.inputVideoDurationSec !== undefined || (isWan3EngineId(facts.engineId) && context.mode === 'ref2v')
+      ? { input_video_seconds: media.inputVideoDurationSec ?? 0 } : {}),
     ...(media.inputAudioDurationSec !== undefined ? { input_audio_seconds: media.inputAudioDurationSec } : {}),
     ...(media.referenceTokenBudget !== undefined ? { reference_tokens: media.referenceTokenBudget } : {}),
     ...(media.referenceImageCount !== undefined ? { reference_images: media.referenceImageCount } : {}),

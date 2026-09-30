@@ -40,15 +40,16 @@ export function chooseCustomerTariffScenario(
     if (options.length === 1 && options[0] === '') continue;
     if (key === 'inputVideoDurationSec' && candidates.every(candidate =>
       supportsWan3TariffInputDuration(candidate.modelId, candidate.selector.mode))) {
-      const requestedValue = requested[key] ?? options[0];
+      const requestedValue = requested[key] ?? (candidates[0].context.mode === 'ref2v' ? '0' : options[0]);
       try {
         if (!requestedValue?.trim()) throw new Error('Input-video duration is required');
         decimalInputDuration = Number(requestedValue);
         withWan3TariffInputDuration(candidates[0], decimalInputDuration);
       } catch { throw new PricingAdminError('unsupported_scenario', 'Input-video duration must be positive, at most 15 seconds, with input plus output at most 30 seconds'); }
       choices.push({ key, value: String(decimalInputDuration), options: [],
-        range: { minExclusive: 0, max: Math.min(15, 30 - candidates[0].context.durationSec) } });
-      candidates = candidates.filter(candidate => candidate.selector[key] === options[0]);
+        range: { ...(candidates[0].context.mode === 'ref2v' ? { minInclusive: 0 } : { minExclusive: 0 }),
+          max: Math.min(15, 30 - candidates[0].context.durationSec) } });
+      candidates = candidates.filter(candidate => (candidate.selector[key] ?? '') === options[0]);
       continue;
     }
     const value = options.includes(requested[key] ?? '') ? (requested[key] ?? '') : options[0];

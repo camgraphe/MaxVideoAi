@@ -50,10 +50,11 @@ function mediaDimensions(modelId: string, mode: string, durationSec: number): Pr
   if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(modelId) && mode === 'ref2v') {
     return [false, true].map(hasVideoInput => ({ context: { hasVideoInput } }));
   }
-  if ((modelId === 'wan-3' || modelId === 'wan-3-prime') && (mode === 'v2v' || mode === 'extend')) {
-    return Array.from({ length: Math.max(0, Math.min(15, 30 - durationSec)) }, (_, index) => {
-      const inputVideoDurationSec = index + 1;
-      return { context: { inputVideoDurationSec } };
+  if ((modelId === 'wan-3' || modelId === 'wan-3-prime') && ['ref2v', 'v2v', 'extend'].includes(mode)) {
+    const first = mode === 'ref2v' ? 0 : 1;
+    return Array.from({ length: Math.max(0, Math.min(15, 30 - durationSec) - first + 1) }, (_, index) => {
+      const inputVideoDurationSec = index + first;
+      return { context: { inputVideoDurationSec, hasVideoInput: inputVideoDurationSec > 0 } };
     });
   }
   if (modelId === 'gemini-omni-flash' && ['v2v', 'extend', 'retake'].includes(mode)) {
@@ -98,7 +99,7 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
       if (!gptImage && resolutions.length !== rawResolutions.length) gaps.push({ modelId: model.id, reason: `${mode}: auto/custom resolution requires a reviewed mapping` });
       const aspectRatios = modeConfig.ui.aspectRatio?.length ? modeConfig.ui.aspectRatio : entry.engine.aspectRatios;
       const aspects = gptImage ? ['default'] : aspectRatios.length ? [...aspectRatios] : ['default'];
-      if ((model.id === 'wan-3' || model.id === 'wan-3-prime') && ['v2v', 'extend'].includes(mode)) {
+      if ((model.id === 'wan-3' || model.id === 'wan-3-prime') && ['ref2v', 'v2v', 'extend'].includes(mode)) {
         gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
       }
       if (model.id === 'gemini-omni-flash' && ['v2v', 'extend', 'retake'].includes(mode)) {

@@ -57,6 +57,6 @@ test('decimal source controls enforce factual source/output limits and reject in
   }
   assert.equal(resolvePublicModelScenario({ ...input, modelId: 'gemini-omni-flash', inputVideoDurationSec: 0.75 }), null,
     'this reviewed decimal mapping must not loosen other models');
-  assert.equal(coverage.gaps.filter(g => /fractional input video/.test(g.reason)).length, 4,
+  assert.equal(coverage.gaps.filter(g => /fractional input video/.test(g.reason)).length, 6,
     'editable exact samples do not establish continuous manual tariff coverage');
 });

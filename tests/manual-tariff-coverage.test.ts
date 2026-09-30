@@ -75,7 +75,7 @@ test('reference bounds retain priced counts and group unpriced counts; unreviewe
   assert.ok(!coverage.gaps.some(gap => gap.modelId === 'seedance-2-5' && gap.reason.startsWith('ref2v: reference')));
   assert.ok(!coverage.gaps.some(gap => gap.modelId === 'minimax-h3' && gap.reason.startsWith('ref2v: reference')));
   assert.ok(!coverage.gaps.some(gap => gap.modelId === 'wan-2-6' && gap.reason.startsWith('r2v: reference')));
-  assert.ok(coverage.gaps.some(gap => gap.modelId === 'wan-3' && gap.reason.startsWith('ref2v: reference')));
+  assert.ok(coverage.gaps.some(gap => gap.modelId === 'wan-3' && gap.reason.startsWith('ref2v: fractional')));
 });
 
 test('legacy Luma loop selectors are covered without inventing loop for edit modes', () => {

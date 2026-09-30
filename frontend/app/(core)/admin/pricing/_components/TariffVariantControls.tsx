@@ -38,7 +38,7 @@ export function TariffVariantControls({ editor, disabled }: { editor: CustomerTa
       : 'Preparing an exact price applies only to this duration.'}</p> : null}
     {exact.choices.some(choice => choice.key === 'referenceImageCount') ? <p className="mt-1 text-[10px] text-text-muted">{exact.modelId.startsWith('luma-uni-') && exact.selector.mode === 'i2i' ? 'Reference images excludes the main edit source.' : 'Reference images counts the submitted sources and references.'}</p> : null}
     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{visibleChoices.map(choice => <label key={choice.key} className="text-[10px] text-text-secondary">{choiceLabel(choice.key)}
-      {choice.range ? <input aria-label={choiceLabel(choice.key)} type="number" min={choice.range.minExclusive} max={choice.range.max} step="any"
+      {choice.range ? <input aria-label={choiceLabel(choice.key)} type="number" min={choice.range.minInclusive ?? choice.range.minExclusive} max={choice.range.max} step="any"
         value={editor.requestedOptions[choice.key] ?? choice.value} disabled={disabled || editor.busy}
         onChange={event => editor.changeOption(choice.key, event.target.value)}
         className="mt-1 h-8 w-full rounded-md border border-border bg-bg px-2 text-xs text-text-primary" />

@@ -26,10 +26,14 @@ export function validateWan3ContinuousTariffDomain(input: { context: PricingCont
   }
   const at = '2026-09-30T00:00:00.000Z';
   const maxInputSeconds = Math.min(15, 30 - input.context.durationSec);
-  if (!Number.isFinite(maxInputSeconds) || maxInputSeconds <= 0) throw new Error('Unsupported continuous Wan duration range.');
-  const factsAt = (seconds: number) => buildBillingPricingFacts({ ...input.context, inputVideoDurationSec: seconds }, input.context.engine.pricingDetails, 'USD').facts;
-  const initialFacts = factsAt(Number.MIN_VALUE);
-  const selector = continuousWan3TariffSelector(buildManualTariffScenario({ ...input.context, inputVideoDurationSec: Number.MIN_VALUE }, initialFacts).selector);
+  if (!Number.isFinite(maxInputSeconds) || maxInputSeconds < 0 || (maxInputSeconds === 0 && input.context.mode !== 'ref2v')) {
+    throw new Error('Unsupported continuous Wan duration range.');
+  }
+  const minimum = input.context.mode === 'ref2v' ? 0 : Number.MIN_VALUE;
+  const factsAt = (seconds: number) => buildBillingPricingFacts({ ...input.context, inputVideoDurationSec: seconds,
+    hasVideoInput: seconds > 0 }, input.context.engine.pricingDetails, 'USD').facts;
+  const initialFacts = factsAt(minimum);
+  const selector = continuousWan3TariffSelector(buildManualTariffScenario({ ...input.context, inputVideoDurationSec: minimum }, initialFacts).selector);
   if (!selector) throw new Error('Unsupported continuous Wan duration.');
   const supplierCents = (seconds: number) => Math.ceil(factsAt(seconds).vendorSubtotalExactCents - 1e-9);
   let checkedBoundaries = 0;
@@ -42,13 +46,13 @@ export function validateWan3ContinuousTariffDomain(input: { context: PricingCont
     minimumGrossCents = Math.min(minimumGrossCents, quote.platformFeeCents);
     checkedBoundaries++;
   };
-  check(Number.MIN_VALUE);
+  check(minimum);
   check(maxInputSeconds);
   const last = supplierCents(maxInputSeconds);
-  const first = supplierCents(Number.MIN_VALUE);
+  const first = supplierCents(minimum);
   if (last - first > 10_000) throw new Error('Unsupported continuous Wan cost range.');
   for (let cents = first + 1; cents <= last; cents++) {
-    let lower = Number.MIN_VALUE;
+    let lower = minimum;
     let upper = maxInputSeconds;
     while (nextPositive(lower) < upper) {
       const middle = lower + (upper - lower) / 2;

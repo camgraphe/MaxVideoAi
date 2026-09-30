@@ -108,7 +108,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const resolution = size?.billingKey ?? input.resolution;
   const wanInputDuration = supportsWan3TariffInputDuration(model.id, input.mode);
   if (wanInputDuration && (typeof input.inputVideoDurationSec !== 'number'
-    || !Number.isFinite(input.inputVideoDurationSec) || input.inputVideoDurationSec <= 0)) return null;
+    || !Number.isFinite(input.inputVideoDurationSec) || input.inputVideoDurationSec < 0
+    || (input.mode !== 'ref2v' && input.inputVideoDurationSec === 0))) {
+    if (!(input.mode === 'ref2v' && input.inputVideoDurationSec === undefined)) return null;
+  }
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
@@ -131,7 +134,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   );
   if (!candidates.length) return null;
   if (candidates.some((scenario) =>
-    (scenario.selector.inputVideoDurationSec && input.inputVideoDurationSec === undefined) ||
+    (scenario.selector.inputVideoDurationSec && input.inputVideoDurationSec === undefined && !(wanInputDuration && input.mode === 'ref2v')) ||
     (scenario.selector.inputAudioDurationSec && input.inputAudioDurationSec === undefined) ||
     (scenario.selector.referenceTokenBudget && input.referenceTokenBudget === undefined))) return null;
   const defaultAspect = tokenPricing?.tokenPricing.defaultAspectRatio ?? catalogDefault(model.id, input.mode, 'aspect_ratio') ?? '16:9';
@@ -157,7 +160,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       ...(input.mode === 'ref2v' ? { inputImageCount: input.referenceImageCount } : {}) } : {}),
     ...(tokenPricing ? { hasVideoInput, ...(input.inputVideoDurationSec !== undefined ? { inputVideoDurationSec: input.inputVideoDurationSec } : {}) } : {}) } };
   if (selected && wanInputDuration) {
-    try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec!); }
+    try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec ?? 0); }
     catch { return null; }
   }
   if (!selected || !size) return selected;

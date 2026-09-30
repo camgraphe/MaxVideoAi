@@ -37,7 +37,7 @@ export function manualTariffReferenceCounts(entry: FalEngineEntry, mode: Mode): 
   const imageOnly = field && (field.minCount ?? 0) >= 1
     && applicable.filter(field => ['image', 'video', 'audio'].includes(field.type)).length === 1;
   const reviewedMixedOwner = ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
-    'kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k', 'wan-2-6', 'minimax-h3-max'].includes(entry.id);
+    'kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k', 'wan-2-6', 'wan-3', 'wan-3-prime', 'minimax-h3-max'].includes(entry.id);
   if (entry.id === 'wan-2-6' && mode === 'r2v' && !field) return { values: [undefined], complete: true };
   const complete = Boolean(values && (luma || gpt || h3 || imageOnly || reviewedMixedOwner));
   return { values: values ?? [referenceMode ? 1 : undefined], complete };

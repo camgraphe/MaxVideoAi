@@ -30,7 +30,7 @@ export function ContinuousInputTariffEditor({ editor, disabled, inputSeconds, ou
     <div className="mt-2 rounded-md border border-[#cbb9ff] bg-surface p-2 text-xs">
       <p className="text-[10px] text-text-muted">Draft total · {outputSeconds} s output + {inputSeconds} s source</p>
       <strong className="tabular-nums">{decisionUsd(valid ? Math.round(outputCents + inputCentsPerSecond * inputSeconds) / 100 : null)}</strong>
-      <p className="mt-1 text-[10px] text-text-secondary">Output price + source seconds × source rate. Applies to source durations above 0 and up to {tariff.maxInputSeconds} s for these output options.</p>
+      <p className="mt-1 text-[10px] text-text-secondary">Output price + source seconds × source rate. Applies to source durations {tariff.minInputSeconds === 0 ? 'from 0' : 'above 0'} and up to {tariff.maxInputSeconds} s for these output options.</p>
     </div>
     <p className="mt-2 text-[10px] text-text-secondary">Preserve keeps the current rounding. Unit prices replace it with the displayed formula; review any cent differences before confirming.</p>
     <div className="mt-2 flex flex-wrap gap-2">

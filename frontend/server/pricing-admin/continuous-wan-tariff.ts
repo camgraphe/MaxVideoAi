@@ -16,7 +16,7 @@ import type { CustomerTariffChangeProposal, CustomerTariffScenarioDetail } from 
 
 export function continuousWanTariffIdentity(scenario: ManualTariffCoverageScenario) {
   const selector = continuousWan3TariffSelector(scenario.selector);
-  if (!selector) throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing is available for Wan 3 video-to-video and extend.');
+  if (!selector) throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing is unavailable for these Wan options.');
   const key = Object.entries(selector).map(([name, value]) => `${name}=${encodeURIComponent(value)}`).join('|');
   return { selector, id: customerTariffCellId(key) };
 }
@@ -37,7 +37,7 @@ async function compiledCurrentPrice(scenario: ManualTariffCoverageScenario, rule
   return compileWan3ContinuousTariffPrice({ context: scenario.context, policy, compatibilityProfile: profile });
 }
 
-export function quoteContinuousWanPrice(scenario: ManualTariffCoverageScenario, price: ManualTariffCell['price'], seconds = scenario.context.inputVideoDurationSec!) {
+export function quoteContinuousWanPrice(scenario: ManualTariffCoverageScenario, price: ManualTariffCell['price'], seconds = scenario.context.inputVideoDurationSec ?? 0) {
   const { selector, id } = continuousWanTariffIdentity(scenario);
   const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
   return quoteCanonicalManualTariff({ facts: { ...facts, vendorSubtotalExactCents: 0 }, scenarioId: scenario.id, selector,
@@ -55,6 +55,7 @@ export async function continuousWanTariffDetail(scenario: ManualTariffCoverageSc
   if (price.kind === 'fixed') throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing requires unit amounts');
   const terms = price.kind === 'unit_terms' ? price.terms : price.components.flatMap(c => c.terms);
   return { tariffCellId: identity.id, prepared: cell?.source === 'database', price,
+    minInputSeconds: scenario.context.mode === 'ref2v' ? 0 : null,
     outputCents: quoteContinuousWanPrice(scenario, price, 0),
     inputCentsPerSecond: terms.filter(t => t.unit === 'input_video_seconds').reduce((sum, t) => sum + t.centsPerUnit, 0),
     maxInputSeconds: Math.min(15, 30 - scenario.context.durationSec) };
