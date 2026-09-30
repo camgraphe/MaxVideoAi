@@ -269,4 +269,26 @@ minimum/stale-price/architecture group passes18 tests. TypeScript/lint pass.
 
 Before this correction, candidate`a0f41e49b` passed6,421 standard tests/3 skips and
 11 isolated Studio tests (6,432 total passes), followed by a successful optimized
-local build. Fresh final verification of the factor correction follows.
+local build.
+
+Final committed code candidate `e0283ab37` passes the fresh full validator:
+6,425 standard passes (1,097 files), zero failures, two skips; 11 additional
+isolated Studio passes, zero failures. The optimized local build succeeds with
+916 static pages. Logs are in the private temporary directory
+`/var/folders/y_/v1ytsmzd3295fcx7b_m6_n6c0000gn/T/mva-pricing-validation-NJ0Ypn`.
+Frontend lint, TypeScript, exposure and diff checks also pass.
+
+Actual browser acceptance verified the six FlashVSR references (five changed
+prices) for coefficient 4 → 5: 10s/2× current $2.22 → proposed $2.77;
+10s/4× $8.85 → $11.06. The simulation was cancelled; reopening restored stored
+minimum 18c/coefficient 4. Screenshot:
+`/tmp/maxvideoai-pricing-factor-preview.jpg`. Independent code review found no
+remaining issue and passed 11 focused tests including disposable PostgreSQL.
+
+A final read-only check of the original private sandbox confirms revision 3,
+global inactive, 66,549 staged cells, 13 products and zero coefficient overrides;
+FlashVSR minimum 18c and Topaz minimum 80c are unchanged. The sanitized local
+environment was restored and the admin restarted on localhost:3106. No
+production/provider/payment/storage/email/support/push/merge/deployment action.
+The three unbounded model domains, complete versioned seed/certificate and
+fresh effective production parity remain open; the global switch is off.

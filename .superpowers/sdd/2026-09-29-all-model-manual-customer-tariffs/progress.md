@@ -227,3 +227,20 @@ Coefficient4→5 preview shows222→277c and4x885→1106c, six scenarios/five ch
 cancelled and reopened storedminimum18/coefficient4, no original write. Screenshot
 /tmp/maxvideoai-pricing-factor-preview.jpg; admin tab retained. Exposure/diff pass.
 Fresh full committed validation follows this factor correction.
+
+## Final factor candidate verification — 2026-09-30
+
+Code candidate e0283ab37: fresh standard validator 6,425 passes/0 fail/2 skip
+(1,097 files), plus 11 isolated Studio passes/0 fail; total 6,436 passes. Optimized
+local build succeeds with 916 static pages. TypeScript, frontend lint, exposure
+and diff pass. Full logs:
+/var/folders/y_/v1ytsmzd3295fcx7b_m6_n6c0000gn/T/mva-pricing-validation-NJ0Ypn.
+Private sanitized environment restored; Next restarted detached on localhost3106.
+Read-only original sandbox: revision3/activefalse/codeActivefalse; staged66,549,
+products13, dynamic coefficient overrides0, Flashminimum18/Topazminimum80.
+Browser cancelled coefficient4→5, reopened4, current10sFlash2x222c. No production,
+provider, payment, storage, email, support, push, merge or deployment action.
+Manual model cutover still needs three unbounded domains, complete reviewed
+versioned seed/certificate and fresh effective production parity. No global
+activation. This closes the compact confirmation, historical first override,
+approved24-cent candidate preparation and actual factor pricing continuation.
