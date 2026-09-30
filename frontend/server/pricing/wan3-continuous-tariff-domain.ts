@@ -1,8 +1,10 @@
 import type { ManualTariffPrice } from '@maxvideoai/pricing';
+import { maximumWan3TariffSourceDuration } from './wan3-continuous-tariff-bounds';
 import { validateMonotoneContinuousTariffDomain } from './continuous-tariff-domain';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario, continuousWan3TariffSelector } from '@/lib/pricing-manual-scenario';
 import type { PricingContext } from '@/lib/pricing-context';
+import { validateWan3PricingDuration } from '@/lib/wan3-pricing';
 
 /**
  * Both authored nonnegative components and Wan supplier facts are monotone in input seconds.
@@ -12,7 +14,8 @@ import type { PricingContext } from '@/lib/pricing-context';
 export function validateWan3ContinuousTariffDomain(input: { context: PricingContext; price: ManualTariffPrice }): {
   maxInputSeconds: number; checkedBoundaries: number; minimumGrossCents: number;
 } {
-  const maxInputSeconds = Math.min(15, 30 - input.context.durationSec);
+  validateWan3PricingDuration(input.context);
+  const maxInputSeconds = maximumWan3TariffSourceDuration(input.context.durationSec);
   if (!Number.isFinite(maxInputSeconds) || maxInputSeconds < 0 || (maxInputSeconds === 0 && input.context.mode !== 'ref2v')) {
     throw new Error('Unsupported continuous Wan duration range.');
   }

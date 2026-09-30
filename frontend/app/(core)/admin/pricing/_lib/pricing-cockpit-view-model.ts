@@ -149,7 +149,7 @@ export function formatProviderComparisonScenario(row: ProviderCostComparisonRowV
       : row.durationSec != null ? `${row.durationSec} s` : null,
     row.resolution,
     row.aspectRatio,
-    row.inputVideoDurationSec != null ? `${row.inputVideoDurationSec} s input`
+    (row.inputVideoDurationSec ?? 0) > 0 ? `${row.inputVideoDurationSec} s input`
       : row.billingInputType === 'video_input' ? 'video input' : null,
     row.audio === true ? 'with audio' : row.audio === false ? 'silent' : null,
   ].filter(Boolean).join(' · ');

@@ -7,6 +7,8 @@ import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-fa
 import { continuousWan3TariffSelector, buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { compileWan3ContinuousTariffPrice } from '../frontend/server/pricing/wan3-continuous-tariff';
+import { evaluateManualTariffPrice } from '../packages/pricing/src/manual-tariff-price';
+import { adjacentNonnegativeDouble } from '../frontend/server/pricing/pricing-number-boundaries';
 
 const document = getVersionedPricingPolicy();
 const profile = document.compatibilityProfiles.find(p => p.id === 'standard')!;
@@ -20,7 +22,7 @@ test('offline compilation freezes current absolute unit terms with cent parity a
       const policy = resolvePricingPolicy({ scenario: { engineId: modelId, mode, resolution }, databaseRules: [rule], versionedRules: document.rules });
       const price = compileWan3ContinuousTariffPrice({ context, policy, compatibilityProfile: profile });
       const selector = continuousWan3TariffSelector(buildManualTariffScenario(context, buildBillingPricingFacts(context, engine.pricingDetails, 'USD').facts).selector)!;
-      assert.equal(price.kind, 'unit_components');
+      assert.equal(price.kind, 'unit_bands');
       assert.ok(!JSON.stringify(price).includes('marginPercent'));
       const max = Math.min(15, 30 - durationSec);
       for (const seconds of [Number.MIN_VALUE, 0.000016, 0.00005, 0.333333, 0.75, max - 0.00001, max]) {
@@ -43,4 +45,29 @@ test('offline compiler refuses an unreviewed compatibility profile or unsupporte
     assert.throws(() => compileWan3ContinuousTariffPrice({ context, policy, compatibilityProfile }), /unsupported|reviewed/i);
   }
   assert.throws(() => compileWan3ContinuousTariffPrice({ context: { ...context, engine: getFalEngineById('pika-text-to-video')!.engine }, policy, compatibilityProfile: profile }), /unsupported|Wan/i);
+});
+
+test('preservation retains actual Wan source rounding at adjacent decimal boundaries', async () => {
+  const engine = getFalEngineById('wan-3')!.engine;
+  const context = { engine, mode: 'ref2v' as const, resolution: '480p', durationSec: 5, inputVideoDurationSec: 3.4999 };
+  const rule = { ...document.rules[0], id: 'effective', marginPercent: 0.3 };
+  const policy = resolvePricingPolicy({ scenario: { engineId: engine.id, mode: 'ref2v', resolution: '480p' }, databaseRules: [rule], versionedRules: document.rules });
+  const price = compileWan3ContinuousTariffPrice({ context, policy, compatibilityProfile: profile });
+  assert.equal(price.kind, 'unit_bands');
+  if (price.kind !== 'unit_bands') throw new Error('Expected frozen source-second bands');
+  const at = '2026-09-30T00:00:00Z';
+  for (const seconds of [0.8998999999999999, 3.4999, 5.0001]) {
+    const selected = { ...context, inputVideoDurationSec: seconds };
+    const facts = buildBillingPricingFacts(selected, engine.pricingDetails, 'USD').facts;
+    const selector = continuousWan3TariffSelector(buildManualTariffScenario(selected, facts).selector)!;
+    const frozen = quoteCanonicalManualTariff({ facts, selector, scenarioId: 'boundary', quantities: { input_video_seconds: seconds }, at,
+      databaseCells: [], versionedCells: [{ id: 'frozen', selector, price, source: 'versioned', version: 1, currency: 'USD', effectiveFrom: at }] });
+    const current = await computeCanonicalBillingSnapshot(selected, { pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [rule] }) } });
+    assert.equal(frozen.customerTotalCents, current.totalCents, `source=${seconds}`);
+  }
+  for (const band of price.bands.slice(1)) for (const seconds of [adjacentNonnegativeDouble(band.minUnits, 'previous'), band.minUnits]) {
+    const current = await computeCanonicalBillingSnapshot({ ...context, inputVideoDurationSec: seconds },
+      { pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [rule] }) } });
+    assert.equal(evaluateManualTariffPrice(price, { input_video_seconds: seconds }).customerTotalCents, current.totalCents);
+  }
 });

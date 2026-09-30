@@ -19,7 +19,9 @@ test('domain validation catches a loss between safe-looking endpoints instead of
 test('the range validator permits lower unit rates when the output price covers every source length', () => {
   assert.ok(validateWan3ContinuousTariffDomain({ context, price: price(250, 0) }).minimumGrossCents >= 50);
   assert.throws(() => validateWan3ContinuousTariffDomain({ context, price: price(190, 0) }), /below.cost/i);
-  assert.equal(validateWan3ContinuousTariffDomain({ context: { ...context, durationSec: 29, inputVideoDurationSec: 0.75 }, price: price(310, 0) }).maxInputSeconds, 1);
+  const maximum = validateWan3ContinuousTariffDomain({ context: { ...context, durationSec: 29, inputVideoDurationSec: 0.75 }, price: price(310, 0) }).maxInputSeconds;
+  assert.ok(maximum >= 1 && maximum < 1.00000000000001);
+  assert.equal(29 + maximum, 30, 'the guard includes the existing validator’s representable end point');
 });
 
 test('a constant or malformed price cannot claim continuous source coverage', () => {

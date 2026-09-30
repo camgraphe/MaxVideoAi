@@ -1,17 +1,12 @@
+import { compileCurrentContinuousTariffPrice, validateCurrentContinuousTariffDomain } from '@/server/pricing/compile-current-continuous-tariff';
 import { ManualTariffError, manualTariffUnitNames, quoteCanonicalManualTariff, resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { ltx25AudioTariffBounds } from '@/lib/ltx25-audio-tariff';
-import { compileLtx25AudioContinuousTariffPrice, validateLtx25AudioContinuousTariffDomain } from '@/server/pricing/ltx25-audio-continuous-tariff';
-import { compileOmniContinuousTariffPrice, validateOmniContinuousTariffDomain } from '@/server/pricing/omni-continuous-tariff';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import type { TransactionQueryExecutor } from '@/lib/db';
-import { resolveServerBillingPolicy } from '@/server/pricing/resolve-pricing-policy';
-import { compileWan3ContinuousTariffPrice } from '@/server/pricing/wan3-continuous-tariff';
-import { validateWan3ContinuousTariffDomain } from '@/server/pricing/wan3-continuous-tariff-domain';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { validateCustomerTariffCell, type EffectiveCustomerTariffState } from '@/server/pricing/customer-tariff-store';
 import { getPricingChangeEventById } from './event-store';
@@ -31,17 +26,6 @@ function currentCell(scenario: ManualTariffCoverageScenario, state: Extract<Effe
   catch (error) { if (error instanceof ManualTariffError && error.code === 'missing_cell') return null; throw error; }
 }
 
-async function compiledCurrentPrice(scenario: ManualTariffCoverageScenario, rules: PricingPolicyOverrideLoadResult) {
-  if (rules.status !== 'loaded') throw new PricingAdminError('database_unavailable', 'Effective pricing rules are unavailable');
-  const { policy } = await resolveServerBillingPolicy({ engineId: scenario.modelId, mode: scenario.context.mode, resolution: scenario.context.resolution },
-    null, { loadOverrides: async () => rules });
-  const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD');
-  const profile = getVersionedPricingPolicy().compatibilityProfiles.find(p => p.id === (policy.rule.compatibilityProfile ?? facts.compatibilityProfileId));
-  if (!profile) throw new PricingAdminError('unsupported_scenario', 'Current price rounding is unavailable');
-  const compile = scenario.modelId === 'gemini-omni-flash' ? compileOmniContinuousTariffPrice
-    : ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) ? compileLtx25AudioContinuousTariffPrice : compileWan3ContinuousTariffPrice;
-  return compile({ context: scenario.context, policy, compatibilityProfile: profile });
-}
 
 export function quoteContinuousInputPrice(scenario: ManualTariffCoverageScenario, price: ManualTariffCell['price'], seconds = scenario.context.inputAudioDurationSec ?? scenario.context.inputVideoDurationSec ?? 0) {
   const { selector, id } = continuousInputTariffIdentity(scenario);
@@ -63,7 +47,7 @@ export async function continuousInputTariffDetail(scenario: ManualTariffCoverage
   if (state.status !== 'loaded') return undefined;
   const identity = continuousInputTariffIdentity(scenario);
   const cell = currentCell(scenario, state);
-  const price = cell?.price ?? await compiledCurrentPrice(scenario, rules);
+  const price = cell?.price ?? await compileCurrentContinuousTariffPrice(scenario, rules);
   if (price.kind === 'fixed') throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing requires unit amounts');
   const terms = price.kind === 'unit_terms' || price.kind === 'unit_bands' ? price.terms : price.components.flatMap(c => c.terms);
   const audioBounds = ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode);
@@ -74,7 +58,10 @@ export async function continuousInputTariffDetail(scenario: ManualTariffCoverage
     outputVaries: omni && scenario.selector.mode !== 'extend',
     minInputSeconds: audioBounds?.min ?? (['ref2v', 'retake'].includes(scenario.context.mode ?? '') ? 0 : null),
     outputCents: audioBounds ? 0 : quoteContinuousInputPrice(scenario, price, 0),
-    inputCentsPerSecond: retake ? 0 : omni ? (quoteContinuousInputPrice(scenario, price, 10) - quoteContinuousInputPrice(scenario, price, 0)) / 10
+    inputCentsPerSecond: retake ? 0 : omni || price.kind === 'unit_bands' ? (() => {
+      const maximum = omni ? 10 : Math.min(15, 30 - scenario.context.durationSec);
+      return maximum > 0 ? (quoteContinuousInputPrice(scenario, price, maximum) - quoteContinuousInputPrice(scenario, price, 0)) / maximum : 0;
+    })()
       : terms.filter(t => t.unit === unit).reduce((sum, t) => sum + t.centsPerUnit, 0),
     maxInputSeconds: retake ? 0 : omni ? 10 : audioBounds?.max ?? Math.min(15, 30 - scenario.context.durationSec) };
 }
@@ -101,7 +88,7 @@ export async function prepareContinuousInputTariffChange(input: {
     }
     if (proposal.price?.kind === 'preserve_current') {
       if (state.active && !current) throw new PricingAdminError('unsupported_scenario', 'No current continuous tariff');
-      price = state.active ? current!.price : await compiledCurrentPrice(scenario, input.policy);
+      price = state.active ? current!.price : await compileCurrentContinuousTariffPrice(scenario, input.policy);
     } else if (proposal.price?.kind === 'linear_input') {
       if (scenario.modelId === 'gemini-omni-flash') throw new PricingAdminError('invalid_payload', 'Omni requires separate output/source unit prices');
       const { outputCents, inputCentsPerSecond } = proposal.price;
@@ -139,9 +126,7 @@ export async function prepareContinuousInputTariffChange(input: {
   if (!price && state.active) throw new PricingAdminError('unsupported_scenario', 'Active customer tariffs cannot be deleted');
   if (!price && !previousCell) throw new PricingAdminError('invalid_payload', 'No continuous prepared price to remove');
   let domain;
-  try { if (price) domain = (scenario.modelId === 'gemini-omni-flash' ? validateOmniContinuousTariffDomain
-    : ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode)
-    ? validateLtx25AudioContinuousTariffDomain : validateWan3ContinuousTariffDomain)({ context: scenario.context, price }); }
+  try { if (price) domain = validateCurrentContinuousTariffDomain({ context: scenario.context, price }); }
   catch (error) { throw new PricingAdminError('unsupported_scenario', error instanceof Error ? error.message : 'Invalid continuous price'); }
   const proposedCell: ManualTariffCell | null = price ? { id, selector, source: 'database', version: state.revision + 1, currency: 'USD',
     effectiveFrom: previousCell?.effectiveFrom ?? '2026-09-29T00:00:00.000Z', price } : null;

@@ -67,7 +67,7 @@ function PricingDecisionContent({ row, disabled, onInspect, editor }: Pick<Props
           <div><p className="text-[10px] text-text-muted">Price / cost</p><p className="text-base font-semibold tabular-nums">{current.resaleMultiple == null ? 'Unavailable' : `×${current.resaleMultiple.toFixed(2)}`}</p></div>
         </div>
         <p className="mt-2 text-[10px] leading-relaxed text-text-secondary">Margin = (price − cost) / price. Markup = (price − cost) / cost. Payment fees, retries and operating costs are excluded unless entered in the simulator.</p>
-        {row.inputVideoDurationSec != null ? <p className="mt-1 text-[10px] text-text-secondary">Totals include {row.inputVideoDurationSec} s of source video and {row.durationSec} s of output. The comparable /s rate divides that total by output seconds.</p> : null}
+        {(row.inputVideoDurationSec ?? 0) > 0 ? <p className="mt-1 text-[10px] text-text-secondary">Totals include {row.inputVideoDurationSec} s of source video and {row.durationSec} s of output. The comparable /s rate divides that total by output seconds.</p> : null}
         {current.costBasis === 'other_provider' ? <p className="mt-1 text-[10px] text-amber-900">This cost belongs to another provider; it does not establish profitability on the execution route.</p> : null}
         <div className="mt-2 flex flex-wrap gap-2 border-t border-hairline pt-2">
           <AdminActionButton type="button" size="sm" disabled={disabled || !row.customerQuote} onClick={() => onInspect(row)}>Inspect policy</AdminActionButton>
