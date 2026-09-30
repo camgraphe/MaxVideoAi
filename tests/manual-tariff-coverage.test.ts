@@ -104,7 +104,7 @@ test('finite price-changing duration, resolution and audio boundaries are distin
   assert.ok(!coverage.scenarios.some((row) => row.modelId === 'seedance-2-0-mini' && row.selector.resolution === '1080p'));
   assert.ok(!coverage.gaps.some((gap) => gap.modelId === 'gpt-image-2' && gap.reason.includes('custom')));
   assert.ok(!coverage.scenarios.some((row) => row.selector.aspectRatio === 'auto'));
-  assert.ok(coverage.gaps.some((gap) => gap.modelId === 'wan-3' && gap.reason.includes('auto aspect')));
+  assert.ok(!coverage.gaps.some((gap) => gap.reason.includes('auto aspect')));
   const wanVideo = coverage.scenarios.filter((row) => row.modelId === 'wan-3' && row.selector.mode === 'v2v');
   assert.ok(wanVideo.some((row) => row.selector.inputVideoDurationSec === '1'));
   assert.ok(wanVideo.some((row) => row.selector.inputVideoDurationSec === '15'));

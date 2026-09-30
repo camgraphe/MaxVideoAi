@@ -115,8 +115,7 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
         : rawResolutions.filter((resolution) => resolution !== 'auto' && resolution !== 'custom');
       if (!gptImage && resolutions.length !== rawResolutions.length) gaps.push({ modelId: model.id, reason: `${mode}: auto/custom resolution requires a reviewed mapping` });
       const aspectRatios = modeConfig.ui.aspectRatio?.length ? modeConfig.ui.aspectRatio : entry.engine.aspectRatios;
-      const aspects = gptImage ? ['default'] : aspectRatios.length ? aspectRatios.filter((aspect) => aspect !== 'auto') : ['default'];
-      if (!gptImage && aspects.length !== aspectRatios.length) gaps.push({ modelId: model.id, reason: `${mode}: auto aspect ratio depends on verified media metadata` });
+      const aspects = gptImage ? ['default'] : aspectRatios.length ? [...aspectRatios] : ['default'];
       if ((model.id === 'wan-3' || model.id === 'wan-3-prime') && ['v2v', 'extend'].includes(mode)) {
         gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
       }
@@ -172,7 +171,13 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
         }
     }
   }
-  return { scenarios, gaps };
+  // Requested orientations are retained in quote context; only factual price dimensions author cells.
+  const unique = new Map<string, ManualTariffCoverageScenario>();
+  for (const scenario of scenarios) {
+    const previous = unique.get(scenario.id);
+    if (!previous || (previous.context.aspectRatio === 'auto' && scenario.context.aspectRatio !== 'auto')) unique.set(scenario.id, scenario);
+  }
+  return { scenarios: [...unique.values()], gaps };
 }
 
 export function collectSellableManualTariffScenarios(): ManualTariffCoverageScenario[] {

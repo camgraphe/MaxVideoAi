@@ -11,6 +11,7 @@ import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/lib/pricing-audit/wan3-tariff-scenario';
+import { isSeedance2TokenPricing, resolveSeedance2TariffAspectRatio } from '@/lib/seedance-2-pricing';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -60,6 +61,13 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const entry = getFalEngineById(model.id);
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
   if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
+  const aspects = mode.ui.aspectRatio?.length ? mode.ui.aspectRatio : entry!.engine.aspectRatios;
+  if (input.aspectRatio !== undefined && !aspects.includes(input.aspectRatio)) return null;
+  const tokenPricing = isSeedance2TokenPricing(entry!.engine.pricingDetails) ? entry!.engine.pricingDetails : null;
+  let requestedAspect = input.aspectRatio;
+  try {
+    if (tokenPricing && requestedAspect !== undefined) requestedAspect = resolveSeedance2TariffAspectRatio(tokenPricing, input.resolution, requestedAspect);
+  } catch { return null; }
   const size = gptImage ? resolvePublicGptImageQuoteSize(input.resolution, input.customImageSize) : null;
   if (gptImage && (!size || !(mode.ui.resolution ?? entry!.engine.resolutions)
       .some(value => value.toLowerCase() === input.resolution.toLowerCase()) ||
@@ -78,7 +86,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     !scenario.context.loop &&
     (input.audio === undefined || scenario.selector.audio === undefined ||
       scenario.selector.audio === String(input.audio)) &&
-    (gptImage || input.aspectRatio === undefined || scenario.selector.aspectRatio === input.aspectRatio) &&
+    (gptImage || scenario.selector.aspectRatio === undefined || input.aspectRatio === undefined || scenario.selector.aspectRatio === requestedAspect) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
     (wanInputDuration || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
@@ -89,15 +97,16 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     (scenario.selector.inputVideoDurationSec && input.inputVideoDurationSec === undefined) ||
     (scenario.selector.inputAudioDurationSec && input.inputAudioDurationSec === undefined) ||
     (scenario.selector.referenceTokenBudget && input.referenceTokenBudget === undefined))) return null;
-  const defaultAspect = catalogDefault(model.id, input.mode, 'aspect_ratio') ?? '16:9';
+  const defaultAspect = tokenPricing?.tokenPricing.defaultAspectRatio ?? catalogDefault(model.id, input.mode, 'aspect_ratio') ?? '16:9';
   const defaultQuality = catalogDefault(model.id, input.mode, 'quality');
-  const selected = candidates.sort((left, right) => {
+  let selected = candidates.sort((left, right) => {
     const score = (scenario: ManualTariffCoverageScenario) =>
       (input.aspectRatio === undefined && scenario.selector.aspectRatio !== defaultAspect ? 4 : 0) +
       (input.quality === undefined && defaultQuality && scenario.selector.quality !== defaultQuality ? 2 : 0) +
       (input.audio === undefined && scenario.selector.audio === 'true' ? 1 : 0);
     return score(left) - score(right) || left.id.localeCompare(right.id);
   })[0] ?? null;
+  if (selected && input.aspectRatio !== undefined) selected = { ...selected, context: { ...selected.context, aspectRatio: input.aspectRatio } };
   if (selected && wanInputDuration) {
     try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec!); }
     catch { return null; }

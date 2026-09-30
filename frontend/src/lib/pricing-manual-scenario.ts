@@ -27,6 +27,9 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);
+  const factualAspect = facts.metadata?.manualTariffAspectRatio;
+  const pricedAspect = factualAspect === null ? null
+    : typeof factualAspect === 'string' ? factualAspect : context.aspectRatio ?? 'default';
   // These factual owners price 0/1 references differently; neither count can alias a default cell.
   const pricedReferences = (isGptImage25EngineId(facts.engineId) && context.mode === 'i2i')
     || isLumaAgentsImageEngineId(facts.engineId)
@@ -36,7 +39,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
     mode: context.mode ?? 't2v',
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(context.durationSec),
-    ...(!gptImage ? { aspectRatio: context.aspectRatio ?? 'default' } : {}),
+    ...(!gptImage && pricedAspect !== null ? { aspectRatio: pricedAspect } : {}),
     ...(option(context.addons?.audio) !== undefined ? { audio: option(context.addons?.audio)! } : {}),
     ...(gptImage ? { quality: normalizeGptImageQuality(context.quality, facts.engineId) }
       : context.quality ? { quality: context.quality } : {}),

@@ -18,9 +18,11 @@ export function tariffEditorSelection(row: { engineId: string; scenarioId: strin
       selector[key] = decodeURIComponent(part.slice(index + 1));
     }
   } catch { return null; }
-  if (selector.engineId !== row.engineId || !selector.mode || !selector.resolution
-    || !selector.durationSec || (!selector.aspectRatio && !isGptImageFamilyEngineId(row.engineId))) return null;
+  const entry = getFalEngineById(row.engineId);
+  if (!entry || selector.engineId !== row.engineId || !selector.mode || !selector.resolution
+    || !selector.durationSec || (!selector.aspectRatio && isSeedance2TokenPricing(entry.engine.pricingDetails))) return null;
   return { modelId: row.engineId, scenarioId: row.scenarioId, selector,
     ...(customerCents === undefined ? {} : { customerCents }) };
 }
-import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
+import { getFalEngineById } from '@/config/falEngines';
+import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';

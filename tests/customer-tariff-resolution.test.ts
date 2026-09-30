@@ -69,7 +69,7 @@ test('active exact cell uses authored cents and exposes its revision', () => {
 
 test('canonical billing uses the active exact tariff and never a neighboring percentage rule', async () => {
   const pricedContext = { ...context, mode: 't2v' as const, inputVideoDurationSec: undefined, hasVideoInput: false };
-  const liveFacts = { ...facts, quantity: 5 };
+  const liveFacts = buildBillingPricingFacts(pricedContext, engine.pricingDetails, 'USD').facts;
   const selector = buildManualTariffScenario(pricedContext, liveFacts).selector;
   const snapshot = await computeCanonicalBillingSnapshot(pricedContext, {
     pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [] }) },

@@ -35,6 +35,7 @@ import {
   computeSeedance2TokenQuote,
   isSeedance2TokenPricing,
   roundUsdUpToCents,
+  resolveSeedance2TariffAspectRatio,
 } from '@/lib/seedance-2-pricing';
 import type { EnginePricingDetails } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
@@ -88,7 +89,7 @@ function resultFromFacts(params: {
   };
 }
 
-export function buildBillingPricingFacts(
+function buildBillingPricingFactsInternal(
   context: PricingContext,
   pricingDetails: EnginePricingDetails | undefined,
   currency: string
@@ -505,4 +506,14 @@ export function buildBillingPricingFacts(
     addons: definitionFacts.addons,
     meta: definitionFacts.meta,
   });
+}
+
+/** The factual owner identifies whether requested orientation changes the billing amount. */
+export function buildBillingPricingFacts(context: PricingContext, pricingDetails: EnginePricingDetails | undefined, currency: string): BillingPricingFacts {
+  const result = buildBillingPricingFactsInternal(context, pricingDetails, currency);
+  const billedAspect = isSeedance2TokenPricing(pricingDetails)
+    ? resolveSeedance2TariffAspectRatio(pricingDetails, context.resolution, context.aspectRatio) : null;
+  if (billedAspect !== null && typeof billedAspect !== 'string') throw new Error('Priced aspect dimensions are unavailable');
+  result.facts.metadata = { ...result.facts.metadata, manualTariffAspectRatio: billedAspect };
+  return result;
 }

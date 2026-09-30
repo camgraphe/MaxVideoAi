@@ -431,3 +431,9 @@ Billing-product reads require migrated schema and do not perform global bootstra
 or seeding. The complete local audit, verification evidence and outstanding model
 activation/dynamic-rate/provider-evidence gates are recorded in
 [the all-product pricing acceptance](2026-09-30-all-product-pricing-audit.md).
+
+### Priced aspect projection (2026-09-30)
+
+Billing facts explicitly identify whether orientation changes the retail basis. Standard/image/per-second owners omit orientation from manual selectors; the quote retains the requested orientation for generation and supplier comparison. Seedance token dimensions remain distinct. An automatic Seedance aspect aliases its configured default only when both factual pixel dimensions match; inherited 2.5 i2v timing/aspect retains the current factual default. The public route validates requested catalog aspects before resolving their price class. Synthetic facts without the projection retain their previous exact-selector behavior.
+
+The private read-only capture has 28,144 unique cells and 54 unresolved capability boundaries. All 79,991 preceding local rows map with identical cents, currency and policy provenance; 53 automatic-aspect boundaries close. Existing prepared data and global activation remain unchanged. This capture is local evidence, not fresh production parity or a complete seed.

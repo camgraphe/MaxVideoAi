@@ -109,6 +109,19 @@ export function resolveSeedance2UnitPriceUsdPer1kTokens(params: {
   return params.tokenPricing.unitPriceUsdPer1kTokens;
 }
 
+/** Canonical retail aspect for a reviewed automatic dimensions alias; the factual quote stays unchanged. */
+export function resolveSeedance2TariffAspectRatio(
+  details: EnginePricingDetails & { tokenPricing: NonNullable<EnginePricingDetails['tokenPricing']> },
+  resolution: string,
+  aspectRatio?: string | null,
+): string {
+  const resolved = resolveSeedance2Dimensions(details, resolution, aspectRatio);
+  const defaultAspect = details.tokenPricing.defaultAspectRatio ?? DEFAULT_ASPECT_RATIO;
+  const defaultDimensions = details.tokenPricing.dimensions[resolved.resolution]?.[defaultAspect];
+  return resolved.aspectRatio === 'auto' && defaultDimensions?.width === resolved.width && defaultDimensions.height === resolved.height
+    ? defaultAspect : resolved.aspectRatio;
+}
+
 export function computeSeedance2TokenQuote(params: {
   details: EnginePricingDetails & { tokenPricing: NonNullable<EnginePricingDetails['tokenPricing']> };
   durationSec: number;

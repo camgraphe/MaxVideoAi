@@ -42,7 +42,7 @@ test('decimal Wan tariff preview, immutable confirmation and active billing use 
     assert.equal(preview.currentCents, 108);
     assert.equal(preview.proposedCents, 129);
     for (const scenarioId of [selected.scenarioId + '|untrusted=1', selected.scenarioId + '|inputVideoDurationSec=3.25',
-      selected.scenarioId.replace('3.25', '15.1'), selected.scenarioId.replace('16%3A9', 'bogus'),
+      selected.scenarioId.replace('3.25', '15.1'), selected.scenarioId + '|aspectRatio=bogus',
       selected.scenarioId.replace('3.25', '03.25'), selected.scenarioId.replace('v2v', 'ref2v')]) {
       await assert.rejects(previewCustomerTariffChange({ ...proposal, scenarioId }), /unsupported|Unknown/i);
     }
