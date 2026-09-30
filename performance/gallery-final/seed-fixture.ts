@@ -51,8 +51,12 @@ created_at timestamptz,updated_at timestamptz DEFAULT now(),duration_sec int,asp
 featured boolean,featured_order int,final_price_cents int,currency text,pricing_snapshot jsonb,settings_snapshot jsonb);
 CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
 CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
+CREATE TABLE app_pricing_rules(id text PRIMARY KEY,engine_id text,mode text,resolution text,
+margin_percent numeric DEFAULT 0,margin_flat_cents integer DEFAULT 0,surcharge_audio_percent numeric DEFAULT 0,
+surcharge_upscale_percent numeric DEFAULT 0,currency text DEFAULT 'USD',compatibility_profile text,vendor_account_id text,
+effective_from timestamptz DEFAULT now(),created_at timestamptz DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now(),updated_by uuid);
 `);
-    for (const migration of ['12_app_settings.sql', '23_video_seo_pages.sql', '24_video_seo_canonical_slug.sql',
+    for (const migration of ['08_admin_controls.sql', '09_engine_settings.sql', '12_app_settings.sql', '23_video_seo_pages.sql', '24_video_seo_canonical_slug.sql',
       '25_video_seo_visual_context.sql', '40_video_seo_rollout_exclusions.sql', '52_playlist_curations.sql']) {
       await pool.query(readFileSync(resolve(root, 'neon/migrations', migration), 'utf8'));
     }

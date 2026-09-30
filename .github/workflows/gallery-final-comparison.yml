@@ -85,6 +85,7 @@ jobs:
           test "$(git -C candidate rev-parse HEAD)" = "$GITHUB_SHA"
           git -C candidate diff --quiet 6d406f497aa4db6b42153e33139554915d95f48d HEAD -- frontend neon/migrations scripts package.json pnpm-lock.yaml
           python3 candidate/performance/gallery-final/run.py --verify-only
+          python3 -m unittest discover -s candidate/performance/gallery-final -p test_runner.py
           node --version > gallery-results/tool-versions.txt
           pnpm --version >> gallery-results/tool-versions.txt
           "$CHROME_PATH" --version >> gallery-results/tool-versions.txt

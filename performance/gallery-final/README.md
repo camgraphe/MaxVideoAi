@@ -14,5 +14,7 @@ Local fixture sanity checks (no browser measurement):
 
 ```bash
 python3 performance/gallery-final/run.py --verify-only
+python3 -m unittest discover -s performance/gallery-final -p test_runner.py
 pnpm exec tsx --tsconfig frontend/tsconfig.json performance/gallery-final/seed-fixture.ts --verify-only
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/gallery-cwv-fixture-postgres.test.ts
 ```

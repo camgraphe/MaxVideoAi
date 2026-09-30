@@ -101,8 +101,8 @@ def source_probe(versions, output):
                    "expectedFirst24": expected[:24], "first24Match": ids[:24] == expected[:24]}
             rows.append(row)
             (output / "source-probe.json").write_text(json.dumps(rows, indent=2) + "\n")
-            if variant == "candidate" and (data["total"] != len(expected) or not row["first24Match"]):
-                raise RuntimeError(f"Candidate API did not serve expected curated fixture: {family}: {row}")
+            if data["total"] != len(expected) or not row["first24Match"]:
+                raise RuntimeError(f"{variant} API did not serve expected curated fixture: {family}: {row}")
 
 
 def cache_proof(path):
