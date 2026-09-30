@@ -19,7 +19,8 @@ export function tariffEditorSelection(row: { engineId: string; scenarioId: strin
     }
   } catch { return null; }
   if (selector.engineId !== row.engineId || !selector.mode || !selector.resolution
-    || !selector.durationSec || !selector.aspectRatio) return null;
+    || !selector.durationSec || (!selector.aspectRatio && !isGptImageFamilyEngineId(row.engineId))) return null;
   return { modelId: row.engineId, scenarioId: row.scenarioId, selector,
     ...(customerCents === undefined ? {} : { customerCents }) };
 }
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';

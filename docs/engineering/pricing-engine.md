@@ -397,6 +397,18 @@ fixtures retain the offline adapter. Public Pricing Audio uses
 with actual quantity/format normalization. Unsupported source-backed Audio
 reference durations omit prices. No paid-history amount is recalculated.
 
+GPT Image manual identity projects requested pixels through the existing six-size
+factual tier owner and normalizes omitted quality to its `high` default. Quality,
+output count and priced edit sources remain distinct; orientation and raw pixels
+do not create another authored tariff. The collector retains a supported
+mode-scoped fixed preset as its quote context for the matching default tier,
+preserving precise legacy policy resolution. Public quotes retain the caller's
+validated size context; automatic estimates without known pixels omit the price.
+Delegated GPT 2.5 confirmation uses the same source count as preparation and web
+execution. Before any no-change cutover, re-quote equivalent aliases under the
+current effective policy and reject conflicting totals; a past default-rule
+capture cannot certify a newly added alias override. See [coverage evidence](2026-09-30-bounded-tariff-coverage.md#gpt-size-tier-continuation).
+
 Studio Audio obtains a server quote from the same normalized request used for
 submission. Its debounced hook binds responses to that request, drops superseded
 responses and submits the expected quote key, currency, total and expiry.
