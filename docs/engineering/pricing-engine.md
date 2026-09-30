@@ -354,6 +354,17 @@ source-dependent quote; changing that minimum does not change their authored
 multiplier. Finishing candidates stay unavailable without released profiles and
 qualified tool-specific rules.
 
+Character Builder reference rows use the same quality-to-model and standard-format
+resolution mapping as its runner, then read the underlying Nano Banana supplier
+facts independently of fixed retail billing. Angle rows use the authored Fal
+megapixel estimate at an explicit 1 MP source and the runner's one/four provider
+calls; retail remains fixed per run. These are repository catalogue estimates,
+not newly verified LIST or account prices. Storyboard supplier rows project the
+underlying GPT Image 2 base used by its canonical bundle owner, even when current
+commercial policy cannot be loaded. Notes identify the model, provider, dimensions
+and quality. Non-USD fixed prices do not reuse USD costs as converted evidence.
+No supplier comparison is reverse-engineered from customer totals or markup.
+
 Audio rows select a pack-specific `audio-generation` policy with resolution
 `audio`; inherited global rules produce a new scoped draft. This policy covers
 variants within that pack. Active previews use `product-policy-scenarios.ts`,

@@ -47,6 +47,22 @@ Builder and Angle fixed retail amounts are not reused as supplier costs. Song is
 shown per song, MiniMax per 1,000 characters; other /s rates are normalized
 comparisons, not assertions about a provider's billing unit.
 
+The supplier follow-up connects the six previously missing Character Builder and
+Angle estimates to their existing app configuration. Character uses standard
+Draft 1K / Final 2K model facts, while Angle uses a labeled 1 MP source and one or
+four provider calls per run. Storyboard retains its six existing supplier amounts
+and now identifies Fal, GPT Image 2, dimensions, quality and source count. Supplier
+facts remain readable during a commercial-policy outage; incompatible currencies
+never imply conversion. Contracts and invoices remain unconfirmed.
+
+Local acceptance: all 26 Tools/Storyboard rows have catalogue or budget estimates,
+and every customer total matches the pre-change API response. Character standard
+format shows zero estimated gross margin before fees at the sandbox's existing
+8/15-cent prices. The focused 89-test run, TypeScript, frontend lint, exposure lint
+and diff check pass. Regression coverage checks multi-call cost, independent retail
+edits, currency separation, policy outage and read-only schema ownership. No tariff
+mutation, provider job or production write was performed.
+
 Audio/Storyboard policy editing stays inline under the selected product, with
 commercial fields visible and scope/extras collapsed. Audio editing creates a scoped rule for the selected pack and resolution
 `audio` when the current row inherits a global rule; it cannot silently edit or

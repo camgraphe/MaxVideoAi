@@ -2,6 +2,12 @@ import { getAudioPackConfig, buildAudioPricingPresentation } from '@/lib/audio-g
 import { listBillingProducts, computeBillingProductSnapshot } from '@/lib/billing-products';
 import { loadPricingPolicyOverrides } from '@/lib/pricing-rule-store';
 import { getFalEngineById } from '@/config/falEngines';
+import { ANGLE_TOOL_ENGINES } from '@/config/tools-angle-engines';
+import { ANGLE_MULTI_OUTPUT_COUNT, estimateAngleCostUsd, getAngleBillingProductKeyForEngine } from '@/lib/tools-angle';
+import { getCharacterFormatResolution, getQualityEngineId } from '@/lib/character-builder';
+import { getBillingProductKey } from '@/server/tools/character-builder/utils';
+import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
+import type { PricingContext } from '@/lib/pricing-context';
 import { UPSCALE_TOOL_ENGINES } from '@/config/tools-upscale-engines';
 import { getBackgroundRemovalToolEngine } from '@/config/tools-background-removal-engines';
 import { estimateImageUpscaleCostUsd } from '@/lib/tools-upscale';
@@ -14,6 +20,7 @@ import { computeCanonicalAudioBillingSnapshot, computeCanonicalBillingSnapshot, 
 import type { ProductPricingInventory, ProductPricingRow } from '@/lib/admin/product-pricing-contract';
 import { listReferencedBillingProductKeys } from './billing-product-service';
 import { buildAdminAudioReferenceInputs } from './product-policy-scenarios';
+import { catalogSupplierReference } from './catalog-supplier-reference';
 
 /** Bounded comparison scenarios only. No media reads, submissions, charges or schema writes. */
 export async function loadAdminProductPricing(durationSec = 10): Promise<ProductPricingInventory> {
@@ -68,6 +75,31 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
         billingProductKey: product.productKey, notes: [`Fixed ${engine?.mediaType === 'video' || background ? 'minimum' : 'unit price'}: ${product.unitPriceCents} cents.`,
           ...(product.active ? [] : ['Inactive product.']),
           ...(engine?.mediaType === 'video' || background ? ['Final video price also depends on duration, dimensions and processing. Editing the minimum does not edit the authored dynamic multiplier.'] : [])] };
+      const characterQuality = (['draft', 'final'] as const).find((quality) => getBillingProductKey(quality) === product.productKey);
+      const angle = ANGLE_TOOL_ENGINES.find((item) => [false, true].some((multi) => getAngleBillingProductKeyForEngine(item.id, multi) === product.productKey));
+      if (characterQuality) {
+        const character = getFalEngineById(getQualityEngineId(characterQuality));
+        const resolution = getCharacterFormatResolution('standard', characterQuality);
+        row.scenario = `1 image · ${resolution.toUpperCase()} · ${character?.marketingName ?? 'Character Builder'} · standard format`;
+        const reference = character && catalogSupplierReference({ engine: character.engine, durationSec: 1, mode: 't2i', resolution });
+        if (reference && product.currency === 'USD') {
+          row.supplierCents = reference.amountUsd * 100;
+          row.supplierBasis = 'catalogue';
+        }
+        row.notes.push(`Supplier reference: ${character?.marketingName ?? 'underlying image model'} · Google Vertex catalogue · ${resolution.toUpperCase()} output.`,
+          'Catalogue estimate; contract and invoice unconfirmed. Standard format, one output; higher formats change provider resolution and customer billing quantity.');
+      } else if (angle) {
+        const count = product.productKey === getAngleBillingProductKeyForEngine(angle.id, true) ? ANGLE_MULTI_OUTPUT_COUNT : 1;
+        row.scenario = `${count} image${count === 1 ? '' : 's'} · 1 MP source · 1 run`;
+        if (product.currency === 'USD') {
+          row.supplierCents = Number((estimateAngleCostUsd(angle.id, 1000, 1000) * count * 100).toFixed(6));
+          row.supplierBasis = 'catalogue';
+        }
+        row.notes.push(`Supplier reference: ${angle.label} · Fal catalogue · ${count} provider call${count === 1 ? '' : 's'} at 1 MP each.`,
+          'Catalogue estimate; contract and invoice unconfirmed. Actual cost depends on source dimensions; the customer price is fixed per run.',
+          ...(angle.id === 'flux-multiple-angles' ? ['Negative tilt uses Qwen and its corresponding billing product in the app.'] : []));
+      }
+      if (product.currency !== 'USD') row.notes.push('Supplier reference is in USD; currency conversion is not assumed.');
       await capture(row, async () => {
         if (engine?.mediaType === 'video') {
           const result = await resolveUpscalePricingContext({ billingProductKey: product.productKey, engine,
@@ -96,15 +128,19 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
   const image = getFalEngineById('gpt-image-2');
   if (image) for (const operation of ['storyboard', 'storyboard_edit'] as const) for (const tier of ['hd', '4k', 'ultra'] as const) {
     const resolution = tier === 'hd' ? '1920x1080' : '3840x2160';
+    const context: PricingContext = { engine: image.engine, durationSec: 1, mode: operation === 'storyboard_edit' ? 'i2i' : 't2i',
+      resolution, quality: tier === 'ultra' ? 'high' : 'medium', referenceImageCount: operation === 'storyboard_edit' ? 1 : 0,
+      membershipTier: 'member' };
+    const facts = buildBillingPricingFacts(context, image.engine.pricingDetails, 'USD');
     const row: ProductPricingRow = { id: `${operation}:${tier}`, category: 'storyboard', label: operation === 'storyboard' ? 'Generate storyboard' : 'Edit storyboard',
       scenario: `${tier.toUpperCase()} · GPT Image 2 · 1 board · landscape`, currency: 'USD', totalCents: null,
-      supplierCents: null, supplierBasis: 'catalogue', quantity: 1, unit: 'board',
-      policySelector: { engineId: 'storyboarder', mode: operation }, notes: ['Reference scenario; image dimensions, quality and sources affect the final quote.'] };
+      supplierCents: facts.base.amountCents, supplierBasis: 'catalogue', quantity: 1, unit: 'board',
+      policySelector: { engineId: 'storyboarder', mode: operation }, notes: [
+        `Supplier reference: GPT Image 2 · Fal catalogue · ${resolution} · ${context.quality} quality · ${operation === 'storyboard_edit' ? 'one source image' : 'no source images'}.`,
+        'Catalogue estimate; contract and invoice unconfirmed. The storyboard quote uses the underlying image base cost and its own effective commercial policy.',
+        'Reference scenario; image dimensions, quality and sources affect the final quote. Kling first-frame bundles have a separate combined quote.'] };
     await capture(row, async () => {
-      const base = await computeCanonicalBillingSnapshot({ engine: image.engine, durationSec: 1, mode: operation === 'storyboard_edit' ? 'i2i' : 't2i',
-        resolution, quality: tier === 'ultra' ? 'high' : 'medium', referenceImageCount: operation === 'storyboard_edit' ? 1 : 0,
-        membershipTier: 'member' }, { pricingPolicy });
-      row.supplierCents = base.base.amountCents;
+      const base = await computeCanonicalBillingSnapshot(context, { pricingPolicy });
       return computeCanonicalStoryboardBillingSnapshot({ snapshot: base, operation, tier }, { pricingPolicy });
     });
   }
