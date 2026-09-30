@@ -2,7 +2,7 @@
 
 This is a reproducible **lab** comparison for the gallery release gate. It does not read production database credentials, write to production, or replace CrUX/GSC field data.
 
-The workflow compares integrated `main` at `0c6572d8ff43803b7a7024f6c4c854b96d932953` with the PR candidate. The application files in that candidate must still match `6d406f497aa4db6b42153e33139554915d95f48d`; later test/documentation commits are permitted. Both checkouts use the same frozen 316-card public snapshot (SHA-256 in `manifest.json`) and a disposable local PostgreSQL service. The app connections are read-only. No production API or Neon credential is used. The public media origin is still fetched by Chrome and the Next image optimizer, as on real pages.
+The workflow compares integrated `main` at `0c6572d8ff43803b7a7024f6c4c854b96d932953` with the PR candidate. The application files in that candidate must match `e9b6bde34708e1731f6d0c68c109f1c4bbd3f907`; later test/documentation commits are permitted. This reviewed application commit requests opening posters immediately at low secondary priority and overlaps read-only quote preparation with watch-data lookup, while preserving independent route guards. Both checkouts use the same frozen 316-card public snapshot (SHA-256 in `manifest.json`) and a disposable local PostgreSQL service. The app connections are read-only. No production API or Neon credential is used. The public media origin is still fetched by Chrome and the Next image optimizer, as on real pages.
 
 The workflow runs on a scoped push to `codex/video-discovery` when this directory or the workflow changes. `workflow_dispatch` also exists for later manual runs after the workflow reaches the default branch. The raw report artifact is kept for seven days.
 
