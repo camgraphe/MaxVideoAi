@@ -1,6 +1,6 @@
 {
   "baselineCommit": "0c6572d8ff43803b7a7024f6c4c854b96d932953",
-  "candidateApplicationCommit": "e9b6bde34708e1731f6d0c68c109f1c4bbd3f907",
+  "candidateApplicationCommit": "3d3b79073865ab34695914ca57e1bd57d7a5e619",
   "snapshotSha256": "c84a0c37a3d91325952f91f3ecc40315edabc80a1fe6c2babf2ed9f586e35dcb",
   "editorialSqlSha256": "5c4e21a94f78960f913cb93c1167cbd1306a5580e41edb9165700ae1dc716818",
   "migration53Sha256": "6c097cb6e6760d46d8efb05a1ba9b975b909e3be951f4d600b415b8a6de4b26d",
