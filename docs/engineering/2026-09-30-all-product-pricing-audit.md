@@ -386,3 +386,12 @@ it does not certify production routing. The prior release artifact's policy hash
 predates the restored finishing row and needs fresh evidence before use. The
 three model-domain gates and global inactive state remain open. No production,
 provider request, support message, push or deployment occurred.
+
+Acceptance at code `8019c89da16ab9c34d398f70fcba2900f5f7e0c2`: the complete
+validation passes 6,592 standard tests (three skips) and 11 Studio integration
+tests, zero failures. The optimized build successfully generates 920 static
+pages. TypeScript, app/server/script lint, public exposure and diff checks pass.
+Validation ran with the sanitized sandbox configuration held privately and a
+clean test/build environment; that same local configuration was restored before
+restarting the admin. The private model state remains revision 3/inactive,
+66,549 staged cells and 13 fixed products; global manual activation stays off.
