@@ -21,3 +21,7 @@ If the movement does not reproduce, the causal question remains unresolved.
 
 The dedicated workflow's path trigger avoids repeating the 96-visit final matrix.
 Local verification is limited to parsing, fixture hashes and process guard tests.
+
+Run 36671633994 retained event observers but an early null HTML element interrupted
+the periodic sampler. It is partial diagnostic evidence, not acceptance. The startup
+contract test reproduces that error and the sampler now tolerates pre-parser startup.

@@ -56,7 +56,7 @@ jobs:
           echo "CHROME_PATH=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
           git diff --quiet 27825f70f278d5beb811effbf18a9dcc130b8b61 HEAD -- frontend neon/migrations scripts package.json pnpm-lock.yaml
           python3 performance/gallery-final/run.py --verify-only
-          node --test performance/gallery-layout-diagnostic/safety.test.mjs
+          node --test performance/gallery-layout-diagnostic/*.test.mjs
           node --version > layout-results/tool-versions.txt
           pnpm --version >> layout-results/tool-versions.txt
           "${{ steps.chrome.outputs.chrome-path }}" --version >> layout-results/tool-versions.txt
