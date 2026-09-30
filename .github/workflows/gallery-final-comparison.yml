@@ -83,7 +83,7 @@ jobs:
           mkdir -p gallery-results
           test "$(git -C baseline rev-parse HEAD)" = 0c6572d8ff43803b7a7024f6c4c854b96d932953
           test "$(git -C candidate rev-parse HEAD)" = "$GITHUB_SHA"
-          git -C candidate diff --quiet 3d3b79073865ab34695914ca57e1bd57d7a5e619 HEAD -- frontend neon/migrations scripts package.json pnpm-lock.yaml
+          git -C candidate diff --quiet 27825f70f278d5beb811effbf18a9dcc130b8b61 HEAD -- frontend neon/migrations scripts package.json pnpm-lock.yaml
           python3 candidate/performance/gallery-final/run.py --verify-only
           python3 -m unittest discover -s candidate/performance/gallery-final -p test_runner.py
           node --version > gallery-results/tool-versions.txt
