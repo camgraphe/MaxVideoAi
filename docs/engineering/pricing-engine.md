@@ -513,3 +513,38 @@ mismatch and has explicit cent-impact evidence in the dated all-product audit;
 it does not change product minima/coefficients or activate staged model tariffs.
 
 Independent review found that decomposing Wan source rounding into multiplied unit components can move a cent at a valid decimal boundary. Wan preservation therefore uses authored source-second bands captured from the original operation order, including each first representable transition. For the default 5s/480p ref2v quote, source 3.4999 retains 56 cents and 5.0001 retains 65 cents. The full-domain guard uses the same floating-point input+output endpoint as the existing duration validator. New linear unit prices remain a distinct, explicitly confirmed price decision.
+
+### Reproducible inactive local release artifacts (2026-10-01)
+
+`pnpm pricing:release:local` prepares a new private artifact directory from the
+existing sandbox. Set `PRICING_RELEASE_OUTPUT` to a new ignored path; optionally
+set `PRICING_RELEASE_APPROVED_FLOORS` to the recorded, approved GPT Image 2.5
+proposal. It accepts only `.env.local` with `PRICING_SANDBOX=1` and one local Unix
+socket, verifies a repeatable-read/read-only transaction and requires committed
+code. It never installs the candidate, edits the database or activates a switch.
+
+Artifacts include the fresh effective baseline, an **inactive** versioned seed,
+the full preparation report and the approval-source manifest. Hashes bind every
+candidate amount, scenario/context, baseline, registry, effective policy, source
+tariff state/revision, factual environment and code revision. The integrity and
+local-readiness helper refuses changed evidence, unresolved coverage or rejected
+settlement quotes. This is preparation evidence, **not** a trusted activation API
+or production certificate; `activationReady` is always false.
+
+The approved 24 one-cent floors can be carried across the main rebase into a
+fresh local capture only when the database/policy hashes and the exact original
+amounts still agree. The existing reviewed-seed owner then checks IDs, model/mode,
+uniqueness, exact +1 cent and the current supplier ceiling again. Other prices
+must retain exact parity. The original approval remains unchanged and its source
+hash is saved in the manifest.
+
+Three domains remain unreviewed: Ray 2 and Flash Modify round source timing to
+billed integer seconds but have no authored generation duration cap; their 9s
+generation hint is not an input-video limit. H3 Max reference pricing includes
+4,096 tokens and adds priced excess tokens from trusted media; 4,097 is a boundary
+sample, not the entire budget domain. The bounded source-band compiler cannot
+certify either open domain. An independent retail-unit representation with exact
+legacy rounding and full-domain evidence is still required. Do not copy sampled
+fixed amounts across those domains or impose new generation limits to certify
+them. A complete seed, fresh effective production parity and a locked atomic
+activation/event path remain release gates.

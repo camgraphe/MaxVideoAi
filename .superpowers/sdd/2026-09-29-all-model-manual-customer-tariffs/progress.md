@@ -360,3 +360,32 @@ No push, merge, deployment, production write, provider job, payment, external
 storage write, email or support communication. The three unbounded model domains,
 complete versioned seed/certificate and fresh production parity remain open;
 manual activation and full-plan completion are not claimed.
+
+## Reproducible local release preparation — 2026-10-01
+
+Base4a7bdc17e. Continue authorized local work after the completed main rebase.
+Inspected actual Ray2 Modify integer-second factual pricing and H3 Max's included
+4096/excess-token owner. Their domains remain open; no invented cap, universal
+linear substitution, disguised live percentage or coverage completion claim.
+
+Task1/6: Ruling: prepare a fingerprinted **inactive local** versioned candidate
+and report before a complete activation certificate — binds exact full amounts,
+baseline, scenarios/contexts, code, registry, policy, factual environment and
+original tariff state/revision; current integrity/coverage/settlement failures
+reject readiness. Cost if wrong: local evidence could be mistaken for production
+parity or activation authorization; report hardcodes activationReady=false and
+the helper is explicitly not an activation API.
+
+Task1/6: Ruling: carry the already approved24 exact +1cent floor amounts across
+the registry rebase/fresh capture only if the same database, policy hash and
+original cents still match, then revalidate exact IDs/model/mode/current supplier
+ceilings in the existing reviewed seed owner. Cost if wrong: an unrelated price
+could inherit approval; stale policy/database/amounts reject, no change IDs or
+amounts are recalculated, original approval remains immutable in its manifest.
+
+RED missing evidence/input owners → GREEN6 new tests; integrated seed/compiler
+focused24/24. Command is sandbox-file-only, verifies actual Unix socket and
+repeatable-read/read-only transaction, requires clean committed code, refuses
+overwrite and leaves original staged data/history/global switch unchanged.
+Fresh full private matrix preparation and final types/lint checks follow commit.
+Task1 and6 remain partial; no support/provider/payment/storage/push/deployment.
