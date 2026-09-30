@@ -197,3 +197,44 @@ minimum 80 cents. Three unbounded model domains and 24 reference-settlement
 refusals still prevent a complete manual-price activation certificate and removal
 of the legacy model markup. Production parity, activation and release are not
 claimed; no provider, payment, storage, email, support or deployment action occurred.
+
+## Compact confirmation and approved reference floors
+
+The confirmation dialog now shows the readable product name and a four-column
+Scenario / Current / Proposed / Delta table. Duration and resolution labels come
+from the server reference quote. The changed-price count excludes zero deltas;
+stable IDs, surfaces and full before/after provenance remain collapsed under
+Sources and audit details. Actual browser acceptance showed the six Topaz
+reference scenarios with only two changed prices for a minimum 80 → 60 cents
+draft at coefficient 4. It was cancelled; reopening restored stored 80/4. Actual
+screenshot: `/tmp/maxvideoai-pricing-compact-preview.jpg`.
+
+Real PostgreSQL acceptance now checks the first versioned-only override and its
+rollback with actual manual quotes immediately before and at each effective
+instant. The quoted amounts are 26 → 31 → 26 cents; the earlier versioned quote
+and intervening database version remain readable at their original instants.
+The focused admin/HTTP/temporal group passes 64 tests.
+
+The user approved upward rounding for the 24 GPT Image 2.5 Flare/Sunburst
+reference cases. A separate read-only candidate changes only these totals by one
+cent to the supplier-reference ceiling. Captured database identity, date,
+registry/rules hashes and explicit old/new cents must match; a broader price
+change or stale evidence is rejected. All 20,113 sampled quotes now pass the
+actual manual settlement guard: 24 approved increases, 20,089 unchanged. The
+original capture and sandbox staged data remain intact and inactive. This is not
+a zero-change cutover claim or production approval. Supplier references remain
+estimates, not confirmed account costs. Three unbounded domains, the complete
+versioned seed/certificate and fresh production parity still remain.
+
+The complete bounded list of proposed old/new amounts is saved in
+[`2026-09-30-gpt-image-25-reference-floor-proposal.json`](2026-09-30-gpt-image-25-reference-floor-proposal.json).
+It is a review artifact, not a runtime configuration or an activation command.
+
+Investigation also found an existing FlashVSR reference mismatch: its provider
+request uses a factor (default 2×), while current customer estimation normalizes
+a target to 1080p even in factor mode. Its preview now names 2× correctly and
+comparison/confirmation warn about this mismatch. For 10 seconds of 720p/30fps,
+the factor-based provider estimate is $0.5530 vs the current billing reference
+of $0.3110. No FlashVSR charge was changed in this continuation. Supplier
+comparison and factor-mode quote normalization need explicit alignment and
+cent-impact evidence before release.

@@ -22,6 +22,7 @@ import { listReferencedBillingProductKeys } from './billing-product-service';
 import { buildAdminAudioReferenceInputs } from './product-policy-scenarios';
 import { catalogSupplierReference } from './catalog-supplier-reference';
 import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
+import { FLASHVSR_BILLING_REFERENCE_NOTE } from './billing-product-dynamic-preview';
 
 /** Bounded comparison scenarios only. No media reads, submissions, charges or schema writes. */
 export async function loadAdminProductPricing(durationSec = 10): Promise<ProductPricingInventory> {
@@ -75,6 +76,7 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
         unit: engine?.mediaType === 'video' || background ? 's' : product.unitKind,
         billingProductKey: product.productKey, notes: [`Fixed ${engine?.mediaType === 'video' || background ? 'minimum' : 'unit price'}: ${product.unitPriceCents} cents.`,
           ...(product.active ? [] : ['Inactive product.']),
+          ...(engine?.id === 'flashvsr-video' ? [FLASHVSR_BILLING_REFERENCE_NOTE] : []),
           ...(engine?.mediaType === 'video' || background ? [
             `Customer coefficient: ×${resolveDynamicToolPriceMultiplier(product.productKey, product.metadata)} on the processing estimate, subject to the fixed minimum.`,
             'Minimum and coefficient are editable together. Actual duration, dimensions and processing determine the final price; supplier contract and invoice remain unconfirmed.',

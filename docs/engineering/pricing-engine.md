@@ -481,4 +481,23 @@ Admin changes reuse billing-products preview, locked confirmation, immutable eve
 
 The remaining unsupported domains are H3 Max's unbounded reference-token budget and legacy Ray 2/Flash Modify's unbounded output timing. No new generation limit was invented to conceal them. The local candidate remains incomplete and `activationReady: false`; the original staged database is unchanged.
 
+The user subsequently approved raising exactly those 24 GPT Image 2.5 fixed
+amounts by one cent to the supplier-reference ceiling. The optional
+`approvedGptImage25ReferenceFloor` audit input binds the original capture,
+database identity, policy/registry hashes and explicit before/after amounts. It
+accepts only those models' reference edits, an exact one-cent increase and the
+current reference ceiling; duplicates, stale evidence and unrelated scenarios
+fail. The settlement guard remains intact. The separate local candidate now
+accepts all 20,113 sampled quotes, with 24 disclosed changes and 20,089 unchanged
+quotes. It remains read-only and globally inactive; three open domains and the
+complete versioned seed/certificate and fresh production evidence remain gates.
+
+Billing-product confirmation previews lead with readable product/scenario names,
+current/proposed totals and deltas. Only nonzero deltas count as changed prices.
+Stable scenario IDs and full quote provenance remain available in collapsed
+audit details and in the server fingerprint. First versioned-only active
+overrides and rollback also have real PostgreSQL historical quote checks at both
+effective instants and immediately before them; historical paid snapshots are
+unchanged.
+
 Independent review found that decomposing Wan source rounding into multiplied unit components can move a cent at a valid decimal boundary. Wan preservation therefore uses authored source-second bands captured from the original operation order, including each first representable transition. For the default 5s/480p ref2v quote, source 3.4999 retains 56 cents and 5.0001 retains 65 cents. The full-domain guard uses the same floating-point input+output endpoint as the existing duration validator. New linear unit prices remain a distinct, explicitly confirmed price decision.

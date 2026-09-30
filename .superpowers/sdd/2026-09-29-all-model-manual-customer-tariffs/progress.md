@@ -157,3 +157,39 @@ Actual browser uncovered coefficient input3 still previewing4→4. Root cause: b
 RED: both POST adapters reproduce undefined!==3 (unauthorized test passes). GREEN: focused HTTP/service/real PostgreSQL/rounding/architecture42/42; TypeScript, frontend lint, exposure and diff checks pass. Independent follow-up finds no actionable issue;7 focused tests pass including HTTP and PG. Whole suite/build evidence precedes the two-field transport correction; focused verification covers the final correction.
 Browser: Tools→Topaz video→Edit pricing, minimum80→60 and coefficient4→3. Indicative margin75.0→66.7%; server preview1/10s1080p80→60,30s240→180,60s480→360,10s2160p320→240. Cancelled, selected stored product again, inputs80/4 restored. Actual screenshots/tmp/maxvideoai-pricing-tools-editor.jpg and/tmp/maxvideoai-pricing-tools-preview.jpg; visible admin tab retained, Next detached localhost3106 listener persists.
 Read-only original sandbox verification after acceptance: revision3/global-inactive,66,549 staged cells,13 products,0 dynamic coefficient overrides,Topaz minimum80. No original seed/product/history mutation, provider/payment/storage/email/support/push/merge/deployment. Manual-cutover gates remain three unbounded domains,24 reference settlement refusals, complete certificate and fresh production parity. Plan is not complete or globally activated; no further per-task permission needed for authorized local work.
+
+## Compact review, temporal acceptance and approved reference floor — 2026-09-30
+
+Base:58bcd0e35. The first versioned-only active override/rollback now checks real
+historical quote resolution immediately before and at both effective instants:
+26c versioned →31c database →26c database, with earlier periods preserved.
+Focused admin/product/HTTP/temporal/architecture group64/64 passes.
+
+Ruling: keep readable product/scenario names, current/proposed amounts and deltas
+in the primary four-column confirmation table; retain stable IDs and provenance
+in collapsed audit details and the fingerprint. Cost if wrong: users could
+misunderstand which prices change; RED→GREEN actual dialog rendering and dynamic
+server labels check readable rows and nonzero-delta count. Browser verified six
+scenarios/two changed prices; cancelled minimum80→60 draft at coefficient4 and
+reopened stored80/4. Screenshot/tmp/maxvideoai-pricing-compact-preview.jpg.
+
+Human chose upward rounding over a subsidy exception for24 GPT2.5 reference
+scenarios. Ruling: only an explicit capture/registry/rules/database-bound list of
+old/new cents can raise these fixed cells by exactly1c to the current supplier
+ceiling. Cost if wrong: blanket repricing could bypass parity; stale/duplicate/
+unrelated/broader approvals reject, normal audit still preserves original cents
+and settlement guard stays intact. RED2fail/4pass →GREEN8/8 with dialog tests.
+Read-only full candidate accepts20113/20113,24 approved increases,20089 unchanged,
+14691 cells/552 continuous classes, three open domains,activationReadyfalse.
+Original private state revision3/global-inactive remains unchanged. Original
+baseline and earlier reports retained; separate approved candidate report saved.
+
+Existing FlashVSR provider2×/billing1080p normalization discrepancy discovered
+and documented; no charge changed. Independent review flagged the new target
+label for this factor-only engine: RED then corrected to source720p/2×/30fps,
+with a warning about the existing billing basis in comparison/confirmation.
+Real source costing and customer reference need aligned proposal/evidence before
+release. Focused compiler/domain/seed/dialog21/21; final floor/label9/9 pass.
+Independent review also passes11 focused tests including disposable PostgreSQL;
+no other issue. Full integrated verification follows. No production/provider/
+payment/storage/email/support/push/merge/deployment action.

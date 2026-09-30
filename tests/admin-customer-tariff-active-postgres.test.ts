@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import type { ManualTariffCell } from '@maxvideoai/pricing';
+import { resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 import versionedDocument from '../frontend/config/customer-tariffs.json';
 
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage.ts';
 import { confirmCustomerTariffChange, loadCustomerTariffScenarioDetail,
   previewCustomerTariffChange } from '../frontend/server/pricing-admin/customer-tariff-service.ts';
 import { getDb } from '../frontend/src/lib/db.ts';
+import { loadCustomerTariffQuoteState } from '../frontend/server/pricing/customer-tariff-store';
+import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
+import { resolveCustomerTariffQuote } from '../frontend/server/pricing/resolve-customer-tariff';
 import { startDisposablePostgres } from './helpers/disposable-postgres.ts';
 
 test('first override of a versioned-only active tariff rolls back to its original price without deleting live coverage', async () => {
@@ -53,6 +56,26 @@ test('first override of a versioned-only active tariff rolls back to its origina
     assert.deepEqual(stored.map((row) => row.price_json), [{ kind: 'fixed', customerCents: 26 }]);
     assert.equal((await db.pool.query('SELECT count(*) FROM app_customer_tariff_cell_versions')).rows[0].count, '1');
     assert.equal((await db.pool.query('SELECT previous_state FROM app_pricing_change_events WHERE operation = $1', ['create'])).rows[0].previous_state.source, 'versioned');
+    const state = await loadCustomerTariffQuoteState(scenario.selector);
+    assert.equal(state.status, 'loaded');
+    if (state.status !== 'loaded') throw new Error('Historical quote state unavailable');
+    const override = state.databaseCells.find(cell => cell.price.kind === 'fixed' && cell.price.customerCents === 31)!;
+    const returned = state.databaseCells.find(cell => !cell.effectiveUntil)!;
+    assert.equal(override.effectiveUntil, returned.effectiveFrom);
+    const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
+    for (const [at, expected, source] of [
+      [new Date(Date.parse(override.effectiveFrom) - 1).toISOString(), 26, 'versioned'],
+      [override.effectiveFrom, 31, 'database'],
+      [new Date(Date.parse(returned.effectiveFrom) - 1).toISOString(), 31, 'database'],
+      [returned.effectiveFrom, 26, 'database'],
+    ] as const) {
+      const selected = resolveManualTariffCell({ selector: scenario.selector, at,
+        databaseCells: state.databaseCells, versionedCells: state.versionedCells });
+      assert.equal(selected.source, source);
+      const quote = resolveCustomerTariffQuote({ context: scenario.context, facts, at, state })!.quote;
+      assert.equal(quote.customerTotalCents, expected, `Effective price at ${at}`);
+      assert.equal(quote.pricingMode, 'manual_tariff');
+    }
   } finally {
     cells.splice(0, cells.length, ...originalCells);
     await getDb().end().catch(() => undefined);

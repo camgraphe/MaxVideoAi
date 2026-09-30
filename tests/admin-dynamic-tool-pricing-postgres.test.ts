@@ -53,6 +53,8 @@ test('dynamic tool edits persist through preview, stale rejection and rollback w
     assert.ok(sample, 'preview must show actual processing totals as well as its unchanged minimum');
     assert.equal(sample.currentTotalCents, 80);
     assert.equal(sample.proposedTotalCents, 50);
+    assert.equal(sample.scenarioLabel, '10 s · 720p → 1080p · 30 fps');
+    assert.equal(preview.rows[0].scenarioLabel, 'Minimum per run');
     assert.equal((await upscale()).pricing.totalCents, 80, 'preview never mutates a price');
     const committed = await confirmBillingProductChange(proposal, preview.previewFingerprint, actor, dependencies);
     const current = (await upscale()).pricing;

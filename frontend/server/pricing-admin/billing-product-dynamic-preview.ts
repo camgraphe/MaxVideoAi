@@ -5,7 +5,7 @@ import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 import type { BillingProductRecord } from '@/types/billing';
 
 /** Read-only, illustrative scenarios reuse the calculators consumed by real tool execution. */
-export function buildDynamicToolProductPreviews(product: BillingProductRecord): Array<{ scenarioId: string; totalCents: number }> {
+export function buildDynamicToolProductPreviews(product: BillingProductRecord): Array<{ scenarioId: string; scenarioLabel: string; totalCents: number }> {
   const multiplier = resolveDynamicToolPriceMultiplier(product.productKey, product.metadata);
   if (multiplier == null) return [];
   const engine = UPSCALE_TOOL_ENGINES.find(row => row.billingProductKey === product.productKey && row.mediaType === 'video');
@@ -21,6 +21,11 @@ export function buildDynamicToolProductPreviews(product: BillingProductRecord): 
         durationSec, outputCodec: 'webm_vp9', priceMultiplier: multiplier });
     if (!result.ready || !Number.isSafeInteger(result.totalCents)) throw new Error('Dynamic product reference quote unavailable');
     return { scenarioId: `billing-product:${product.productKey}:${durationSec}s:${engine ? `${resolution}:720p-source:30fps` : 'webm-vp9'}`,
+      scenarioLabel: engine ? engine.defaultMode === 'factor'
+        ? `${durationSec} s · 720p source · ${engine.defaultUpscaleFactor}× · 30 fps`
+        : `${durationSec} s · 720p → ${resolution} · 30 fps` : `${durationSec} s · WebM VP9`,
       totalCents: result.totalCents! };
   });
 }
+
+export const FLASHVSR_BILLING_REFERENCE_NOTE = 'FlashVSR runs by a factor (default 2×), while the current customer quote uses a 1080p processing estimate. Actual factor-based supplier cost and billing alignment still need review. Minimum/coefficient edits use this existing calculation basis.';

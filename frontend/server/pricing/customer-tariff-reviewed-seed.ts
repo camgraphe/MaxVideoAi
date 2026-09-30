@@ -8,6 +8,14 @@ import { buildCustomerTariffSeed, customerTariffCellId } from './customer-tariff
 import { compileCurrentContinuousTariffPrice, validateCurrentContinuousTariffDomain } from './compile-current-continuous-tariff';
 import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
 
+export type ApprovedGptImage25ReferenceFloor = {
+  capturedAt: string;
+  registryHash: string;
+  databaseRulesHash: string;
+  databaseIdentity: string;
+  changes: readonly { scenarioId: string; currentCustomerCents: number; proposedCustomerCents: number }[];
+};
+
 function reviewedGap(modelId: string, mode: string): string | null {
   if (['wan-3', 'wan-3-prime'].includes(modelId) && ['ref2v', 'v2v', 'extend'].includes(mode)) {
     return `${mode}: fractional input video duration needs a continuous unit tariff`;
@@ -28,6 +36,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
   registryHash: string;
   coverageGaps: readonly { modelId: string; reason: string }[];
   policy: PricingPolicyOverrideLoadResult;
+  approvedGptImage25ReferenceFloor?: ApprovedGptImage25ReferenceFloor;
 }) {
   if (input.policy.status !== 'loaded') throw new Error('Effective policy unavailable');
   const rulesHash = createHash('sha256').update(JSON.stringify([...input.policy.rules]
@@ -60,6 +69,37 @@ export async function auditReviewedCustomerTariffSeed(input: {
   const selectorKey = (selector: ManualTariffCell['selector']) => JSON.stringify(Object.entries(selector).sort(([a], [b]) => a.localeCompare(b)));
   const cellsBySelector = new Map(candidateCells.map(cell => [selectorKey(cell.selector), cell]));
   const rows = new Map(input.baseline.rows.map(row => [row.scenarioId, row]));
+  const approvedPriceChanges: Array<{ scenarioId: string; currentCustomerCents: number;
+    proposedCustomerCents: number; referenceCeilCents: number }> = [];
+  const approval = input.approvedGptImage25ReferenceFloor;
+  if (approval) {
+    function rejectApproval(): never { throw new Error('Approved GPT Image 2.5 reference floor does not match captured evidence'); }
+    if (approval.capturedAt !== input.baseline.at || approval.registryHash !== input.registryHash
+      || approval.databaseRulesHash !== rulesHash || approval.databaseIdentity !== input.baseline.databaseIdentity
+      || !approval.changes.length) rejectApproval();
+    const scenariosById = new Map(input.scenarios.map(scenario => [scenario.id, scenario]));
+    const seen = new Set<string>();
+    for (const change of approval.changes) {
+      const scenario = scenariosById.get(change.scenarioId);
+      const row = rows.get(change.scenarioId);
+      if (!scenario || !row || seen.has(change.scenarioId)) rejectApproval();
+      seen.add(change.scenarioId);
+      if (!['gpt-image-2-5-flare', 'gpt-image-2-5-sunburst'].includes(scenario.modelId)
+        || scenario.selector.mode !== 'i2i' || !((scenario.context.referenceImageCount ?? 0) > 0)
+        || row.currency !== 'USD' || change.currentCustomerCents !== row.customerCents
+        || !Number.isSafeInteger(change.currentCustomerCents) || !Number.isSafeInteger(change.proposedCustomerCents)
+        || change.proposedCustomerCents - change.currentCustomerCents !== 1) rejectApproval();
+      const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
+      const referenceCeilCents = Math.ceil(facts.vendorSubtotalExactCents - 1e-9);
+      const key = selectorKey(scenario.selector);
+      const cell = cellsBySelector.get(key);
+      if (referenceCeilCents !== change.proposedCustomerCents || cell?.price.kind !== 'fixed'
+        || cell.price.customerCents !== change.currentCustomerCents) rejectApproval();
+      cellsBySelector.set(key, { ...cell, price: { kind: 'fixed', customerCents: change.proposedCustomerCents } });
+      approvedPriceChanges.push({ ...change, referenceCeilCents });
+    }
+  }
+  const approvedAmounts = new Map(approvedPriceChanges.map(change => [change.scenarioId, change.proposedCustomerCents]));
   const settlementGuardFailures: Array<{ scenarioId: string; customerCents: number; referenceCeilCents: number }> = [];
   for (const scenario of input.scenarios) {
     const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
@@ -80,13 +120,14 @@ export async function auditReviewedCustomerTariffSeed(input: {
       }
       throw new Error(`Candidate quote failed: ${scenario.id}: ${error instanceof Error ? error.message : 'unavailable'}`);
     }
-    if (current.customerTotalCents !== row.customerCents || current.currency !== row.currency) {
+    if (current.customerTotalCents !== (approvedAmounts.get(scenario.id) ?? row.customerCents) || current.currency !== row.currency) {
       throw new Error(`Candidate cent parity failed: ${scenario.id}`);
     }
   }
   const remainingCoverageGaps = input.coverageGaps.filter(gap => !certifiedGaps.has(`${gap.modelId}|${gap.reason}`));
-  return { cells: candidateCells, reviewedContinuousClasses, checkedScenarios: input.scenarios.length,
+  return { cells: [...cellsBySelector.values()], reviewedContinuousClasses, checkedScenarios: input.scenarios.length,
     quotedScenarios: input.scenarios.length - settlementGuardFailures.length, settlementGuardFailures,
+    approvedPriceChanges,
     remainingCoverageGaps, registryHash: input.registryHash, databaseRulesHash: rulesHash,
     capturedAt: input.baseline.at, databaseIdentity: input.baseline.databaseIdentity, activationReady: false as const };
 }

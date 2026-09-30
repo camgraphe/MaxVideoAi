@@ -148,11 +148,23 @@ The [local acceptance record](../../engineering/2026-09-29-pricing-local-accepta
 
 | Task | Implemented locally | Remaining gate |
 | --- | --- | --- |
-| 1 | 48 models/15 families; current private read-only capture 20,113 quotes; reviewed candidate 14,691 cells/552 continuous classes; eleven bounded source domains verified | Three unbounded domains; 24 current fixed quotes blocked by reference settlement guard; complete activation certificate and fresh effective production parity |
-| 2 | Inactive DB seed; transactional state; migration 55 immutable closed versions; active update/rollback and first fixed versioned-only override/rollback tests | Complete reviewed versioned seed and temporal quote acceptance for that initial override |
+| 1 | 48 models/15 families; current private read-only capture 20,113 quotes; reviewed candidate 14,691 cells/552 continuous classes; eleven bounded source domains verified; 24 separately approved GPT Image 2.5 one-cent reference-floor increases pass the manual quote | Three unbounded domains; complete activation certificate and fresh effective production parity, with exactly the 24 approved changes reported separately |
+| 2 | Inactive DB seed; transactional state; migration 55 immutable closed versions; active update/rollback and first fixed versioned-only override/rollback; actual historical quotes before/at both initial override and rollback verified | Complete reviewed versioned seed |
 | 3 | Inactive canonical resolver; displayed revision propagation; atomic new-wallet charge guard; immutable paid wallet/direct recovery; original direct settlement/refund/retry contract; card/wallet funding separation; MCP stale protocol | Actual supplier settlement provenance; legacy unbound direct PaymentIntent reconciliation (new immutable quote contract accepted locally on 2026-09-30) |
 | 4 | All-family inventory; exact-selector customer and supplier scenarios; dated LIST/catalogue evidence; unified compact editor/simulator; preview/confirm/history/rollback; local API cycle, preview-race and desktop/mobile acceptance | Real account/invoice evidence and globally active legacy-rule retirement |
 | 5 | Current server quotes across public matrix/model offers/examples/home and browser consumers; Studio/Storyboard snapshot propagation and refresh | Remaining consumer/bundle inventory, localized/browser acceptance |
 | 6 | Global switch remains off; local parity evidence recorded | Complete activation implementation and isolated local acceptance after every preceding gate |
 
 No production write, deployment or support message is part of this continuation. The 30% legacy rule remains live until a complete approved cutover.
+
+### Approved pricing decision — 2026-09-30
+
+The user chose upward rounding for the 24 existing GPT Image 2.5 Flare/Sunburst
+reference scenarios whose recorded retail total was one cent below the rounded
+supplier estimate. Prepare only these 24 one-cent increases to that reference
+ceiling, rather than a subsidy exception. This is a separate, disclosed commercial
+change: initial parity remains mandatory for every other scenario. The original
+captured baseline is immutable. The read-only candidate binds the exact capture,
+database identity, effective rules, registry and old/new amounts; it does not
+write the original staged database or authorize activation. Catalogue estimates
+remain distinct from account contracts and invoices.

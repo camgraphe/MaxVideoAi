@@ -72,3 +72,49 @@ test('an existing below-reference fixed price remains explicit and blocks settle
   assert.ok(audit.settlementGuardFailures[0].referenceCeilCents > audit.settlementGuardFailures[0].customerCents);
   assert.equal(audit.activationReady, false);
 });
+
+async function referenceFloorInput() {
+  const floorScenarios = [
+    ...['gpt-image-2-5-flare', 'gpt-image-2-5-sunburst'].map(id =>
+      buildManualTariffCoverageScenario({ engine: getFalEngineById(id)!.engine, mode: 'i2i',
+        resolution: '1024x1024', durationSec: 1, quality: 'medium', referenceImageCount: 1 }, 'approved-floor')),
+    buildManualTariffCoverageScenario({ engine: getFalEngineById('gpt-image-2-5-flare')!.engine, mode: 't2i',
+      resolution: '1024x1024', durationSec: 1, quality: 'medium' }, 'unchanged'),
+  ];
+  const baseline = await collectEffectiveCustomerTariffBaseline({ at: '2026-09-30T12:00:00Z', registryHash: 'reviewed-registry',
+    databaseIdentity: 'private-test', scenarios: floorScenarios, quote: row => computeCanonicalBillingSnapshot(row.context,
+      { pricingPolicy: { loadOverrides: async () => policy } }) });
+  return { baseline: { ...baseline, databaseRulesHash: rulesHash }, scenarios: floorScenarios,
+    registryHash: baseline.registryHash, coverageGaps: [], policy,
+    approvedGptImage25ReferenceFloor: { capturedAt: baseline.at, registryHash: baseline.registryHash, databaseRulesHash: rulesHash,
+      databaseIdentity: baseline.databaseIdentity!,
+      changes: floorScenarios.slice(0, 2).map(row => ({ scenarioId: row.id, currentCustomerCents: 2, proposedCustomerCents: 3 })) } };
+}
+
+test('explicit approved reference floors quote at the supplier ceiling without repricing other cells or mutating the baseline', async () => {
+  const request = await referenceFloorInput();
+  const original = JSON.stringify(request.baseline);
+  const audit = await auditReviewedCustomerTariffSeed(request);
+  assert.equal(audit.settlementGuardFailures.length, 0);
+  assert.equal(audit.quotedScenarios, 3);
+  const result = audit as typeof audit & { approvedPriceChanges: Array<{ currentCustomerCents: number; proposedCustomerCents: number }> };
+  assert.deepEqual(result.approvedPriceChanges.map(row => [row.currentCustomerCents, row.proposedCustomerCents]), [[2, 3], [2, 3]]);
+  assert.deepEqual(audit.cells.map(cell => cell.price.kind === 'fixed' ? cell.price.customerCents : null), [3, 3, 2]);
+  assert.equal(JSON.stringify(request.baseline), original);
+  assert.equal(audit.activationReady, false);
+});
+
+test('reference-floor approval is bound to captured prices and rejects stale evidence, duplicate changes or increases beyond the approved cent', async () => {
+  const original = await referenceFloorInput();
+  const approval = original.approvedGptImage25ReferenceFloor;
+  for (const changed of [
+    { ...approval, capturedAt: '2026-09-29T12:00:00Z' },
+    { ...approval, registryHash: 'changed' },
+    { ...approval, databaseRulesHash: 'changed' },
+    { ...approval, databaseIdentity: 'another-database' },
+    { ...approval, changes: [...approval.changes, approval.changes[0]] },
+    { ...approval, changes: approval.changes.map(row => ({ ...row, currentCustomerCents: 1 })) },
+    { ...approval, changes: approval.changes.map(row => ({ ...row, proposedCustomerCents: 4 })) },
+    { ...approval, changes: [{ scenarioId: original.scenarios[2].id, currentCustomerCents: 2, proposedCustomerCents: 3 }] },
+  ]) await assert.rejects(auditReviewedCustomerTariffSeed({ ...original, approvedGptImage25ReferenceFloor: changed }), /approved.*reference.*floor/i);
+});

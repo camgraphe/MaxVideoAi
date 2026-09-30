@@ -53,6 +53,7 @@ export type PricingChangePreviewProvenance = {
 
 export type PricingChangePreviewRow = {
   scenarioId: string;
+  scenarioLabel?: string;
   engineId: string;
   surface: string;
   currentTotalCents: number;
