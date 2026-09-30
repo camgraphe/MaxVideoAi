@@ -118,7 +118,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     summary: "Kling 3.0 Omni Pro y Standard admiten imágenes de referencia, storyboards y edición de un video original. Kling 3 Pro y Standard animan una imagen inicial. Kling 3.0 Omni 4K ofrece video en 4K nativo guiado por referencias.",
     promptPatterns: "Decide si una imagen debe guiar el video como referencia o aparecer como primer fotograma. Usa @Image1 y @Video1 para identificar las fuentes en los modos Omni compatibles. Para imagen a video con Kling 3, describe el movimiento desde la imagen inicial.",
     strengthsLimits: "Kling 3.0 Omni usa referencias para guiar la identidad, el estilo, el storyboard o la edición de video. Una referencia no necesariamente será el primer fotograma. Kling 3 en imagen a video anima la imagen que subes. Revisa el modelo y el modo antes de reutilizar las fuentes.",
-    pricingNotes: "Compara duraciones, formatos, opciones de audio y resoluciones equivalentes en los modos disponibles. La ficha conserva el costo del ejemplo; el estudio muestra la cotización actual para el modelo y los ajustes elegidos. Revísala antes de generar.",
+    pricingNotes: "Compara duraciones, formatos, opciones de audio y resoluciones equivalentes en los modos disponibles. La ficha muestra una estimación actual para los ajustes indicados; el estudio muestra la cotización actual para el modelo y los ajustes elegidos. Revísala antes de generar.",
     faq: [
       {
         question: '¿Cuánto pueden durar los videos de Kling AI?',
@@ -247,7 +247,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     summary: "Cada ejemplo de MiniMax o Hailuo conserva el nombre del modelo que lo generó. Compara el movimiento, la continuidad y el audio, si lo tiene, en todo el video. Las fichas de H3 y H3 Max detallan las fuentes y los ajustes disponibles para tu proyecto.",
     promptPatterns: "Empieza por el sujeto, una acción clara y la dirección de cámara. Añade indicaciones de escena o sonido pertinentes para el modelo elegido. Si utilizas referencias, asigna una función clara a cada fuente autorizada y comprueba que el modelo admite esa entrada.",
     strengthsLimits: "Evalúa el resultado completo: identidad del sujeto, movimiento, encuadre y cualquier audio generado. H3 Max, H3 y los Hailuo anteriores tienen modos y opciones de salida diferentes. Un ejemplo muestra un resultado, sin garantizar coherencia perfecta ni controles idénticos en toda la familia.",
-    pricingNotes: "Compara H3 y H3 Max con la misma idea y objetivo de salida. La ficha conserva el costo del ejemplo; el espacio de trabajo ofrece el precio actual para tu siguiente render. Valida un plano corto y amplía las versiones que cumplan tus criterios visuales.",
+    pricingNotes: "Compara H3 y H3 Max con la misma idea y objetivo de salida. La ficha muestra una estimación actual para los ajustes indicados; el espacio de trabajo ofrece el precio actual para tu siguiente render. Valida un plano corto y amplía las versiones que cumplan tus criterios visuales.",
     faq: [
       {
         question: "¿Por qué MiniMax H3 y H3 Max aparecen en la galería Hailuo?",

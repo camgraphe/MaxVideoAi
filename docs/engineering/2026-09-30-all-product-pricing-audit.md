@@ -311,3 +311,24 @@ not used as a public current-price fallback. Localized family guidance was updat
 accordingly. Focused price/reader/gallery tests pass 14/14; related architecture,
 editorial, route and current-price tests pass 64/64. A fresh full rebased validation
 and build are required before treating this integration as accepted.
+
+
+Rebased acceptance: code `5bd8d857b` passes 6,581 standard tests and 11 isolated
+Studio integrations (6,592 total; three standard skips), and the optimized build
+produces 920 static pages. Independent review findings on Luma duration suffixes,
+mode-specific exact prices and cold-path audit enumeration are fixed and tested.
+Single-example validation is bounded to the target model and shared workspace
+handoff constraints. These timings concern an isolated injected quote, not site
+loading measurements.
+
+The fresh local admin tab displays price units, supplier/customer/margin panels
+and an enabled Seedance Mini editor; no proposed tariff was saved. Public Pricing
+and the French model page show the same selected customer totals as admin. Their
+canonicals, hreflang and JSON-LD output were checked, along with localized gallery
+navigation. The private gallery is empty; browser video playback is not certified
+by this smoke. A final six-phrase EN/FR/ES current-estimate copy correction passes
+29 focused tests after the full code gate. The original sandbox remains revision
+3/inactive, 66,549 staged cells, 13 products and zero coefficient overrides.
+Full manual activation still requires the previously documented unbounded-domain,
+versioned seed/certificate and fresh production parity gates. No production change
+or publication occurred.

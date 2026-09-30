@@ -24,14 +24,14 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   veo: {
     metaTitle: 'Veo 3.1 Examples, Prompts, Settings & Image-to-Video | MaxVideoAI',
     metaDescription:
-      'Browse Veo 3.1 examples, prompts, settings, and image-to-video patterns, then open a video detail page to see its recorded render cost on MaxVideoAI.',
+      'Browse Veo 3.1 examples, prompts, settings, and image-to-video patterns, then open a video detail page to see its current price estimate for the settings shown on MaxVideoAI.',
     heroTitle: 'Veo 3.1 examples, prompts, settings and image-to-video patterns',
     subtitle: "Veo 3.1 and Gemini Omni Flash 1.1 examples, with prompts, inputs and settings to inspect.",
     intro: "Compare Google video examples from Veo 3.1, Fast and Lite alongside Gemini Omni Flash 1.1. Open a result to inspect its prompt and settings, then adapt the example in your workspace.",
     summary: "Veo and Gemini Omni are distinct Google models grouped in this gallery. Keep the model shown on each example as your reference. Use the linked model pages and comparisons to choose a workflow, then check the current quote before generating.",
     promptPatterns: "Describe the subject, action and camera move first. With an opening image, specify what should move and what should remain. Keep the same brief when comparing models, and change one instruction at a time.",
     strengthsLimits: "Compare motion, framing and subject continuity across the whole clip. Veo and Omni do not share every input or editing option: check the selected model and mode before supplying images, references or a source video. One successful example does not guarantee the same result from a new prompt.",
-    pricingNotes: "The example detail page shows the recorded render cost. Your next render uses the current quote for its model, inputs, duration and resolution. Reuse the available settings, add your own sources where needed, and review the quote before submitting.",
+    pricingNotes: "The example detail page shows the current price estimate for the settings shown. Your next render uses the current quote for its model, inputs, duration and resolution. Reuse the available settings, add your own sources where needed, and review the quote before submitting.",
     faq: [
       {
         question: "Why are Gemini Omni examples shown in this Veo gallery?",

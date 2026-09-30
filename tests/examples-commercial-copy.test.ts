@@ -106,7 +106,7 @@ test('Examples source does not promise a price for every clip when quotes may be
 });
 
 test('localized family guidance describes current estimates instead of stored render costs', () => {
-  assert.doesNotMatch(modelLandingSources, /recorded costs?|coûts? enregistrés?|cost(?:e|o)s? registrados?/i);
+  assert.doesNotMatch(modelLandingSources, /recorded (?:render )?costs?|coûts? enregistrés?|cost(?:e|o)s? registrados?|conserve le coût de l.exemple|conserva el costo del ejemplo/i);
   assert.match(modelLandingSources, /current price estimate/i);
   assert.match(modelLandingSources, /tarif actuel estimé/i);
   assert.match(modelLandingSources, /precio actual estimado/i);

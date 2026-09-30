@@ -320,3 +320,43 @@ shared-handoff tests and real cold CPU gate cover it. Final focused32/32 GREEN,
 TypeScript/frontend lint pass. Existing global mode/frame/audio constraints,
 commercial quote owner and no-reference basis remain intact. Prior validator
 choice recorded above is superseded by this bounded validator.
+
+
+## Rebased candidate acceptance — 2026-10-01
+
+Code5bd8d857b: fresh full standard suite6581pass/0fail/3skip across1129files,
+plus11 isolated Studio integrations/0fail; total6592pass. Optimized local build
+succeeds,920static pages. Logs:
+/var/folders/y_/v1ytsmzd3295fcx7b_m6_n6c0000gn/T/mva-pricing-validation-A4WGJ0.
+Sanitized private environment restored. Final independent fix review: no remaining
+actionable finding;16 focused tests pass; isolated injected-quote first-call timing
+falls2.206sec→1.14ms, not a claim about browser Core Web Vitals.
+
+Next restarted detached localhost3106,parent21192,listener21195; log
+/var/folders/y_/v1ytsmzd3295fcx7b_m6_n6c0000gn/T/mva-pricing-next-cqm_s1ms/next.log.
+Old IAB tab1 failed CDP interaction; fresh visible admin tab2 displays all five
+categories. Seedance Mini details show supplier0.0756/s/customer0.19/s,total0.95,
+estimate margin60.2%; actual customer-rate input and preview are enabled. No draft
+was applied. Real screenshot/tmp/maxvideoai-pricing-rebased-admin.jpg. Retained
+fresh admin tab; temporary public smoke tab closed.
+
+Browser public Pricing confirms Mini5s720p0.95. French Kling2.5 model page shows
+5s1080p0.46 and10s1080p0.91, matching admin. Canonical, EN/FR/ES/x-default
+alternates and JSON-LD scripts present on Pricing/model/family routes; French
+model→gallery navigation lands at/fr/galerie/kling. Gallery is empty in the
+private DB, so no browser first-Play claim is made. Actual reader DOM, batching,
+media-loading boundaries and comparison/current-price behavior are covered by
+focused/full tests. No media URLs, loading controllers or paid records changed.
+
+Browser found six remaining localized promises of recorded-render costs outside
+the earlier phrase regex. Copy-only final correction: Veo EN and Kling/H3 FR/ES
+now describe current estimates for the settings shown. Strengthened existing
+commercial copy contract RED; related localized/editorial/family/route29/29 GREEN.
+This text correction follows the full code5bd gate; it changes no quote arithmetic
+or route/media behavior. Original private state rechecked after browser: revision3
+inactive,66549cells,13products,0coefficient overrides,Flashmin18/Topazmin80,
+codeActivefalse. Fresh ls-remote remainsmain10589cc6b; localmain/origin-main0/0.
+No push, merge, deployment, production write, provider job, payment, external
+storage write, email or support communication. The three unbounded model domains,
+complete versioned seed/certificate and fresh production parity remain open;
+manual activation and full-plan completion are not claimed.
