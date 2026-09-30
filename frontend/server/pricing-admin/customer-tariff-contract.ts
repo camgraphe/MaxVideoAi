@@ -30,6 +30,7 @@ export type CustomerTariffScenarioChoice = {
   key: string;
   value: string;
   options: string[];
+  range?: { minExclusive: number; max: number };
 };
 
 export type CustomerTariffScenarioDetail = {

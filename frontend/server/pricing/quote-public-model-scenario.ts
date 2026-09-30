@@ -10,6 +10,7 @@ import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-publ
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size';
+import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/lib/pricing-audit/wan3-tariff-scenario';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -64,6 +65,9 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       .some(value => value.toLowerCase() === input.resolution.toLowerCase()) ||
       (input.aspectRatio !== undefined && !(mode.ui.aspectRatio ?? entry!.engine.aspectRatios).includes(input.aspectRatio)))) return null;
   const resolution = size?.billingKey ?? input.resolution;
+  const wanInputDuration = supportsWan3TariffInputDuration(model.id, input.mode);
+  if (wanInputDuration && (typeof input.inputVideoDurationSec !== 'number'
+    || !Number.isFinite(input.inputVideoDurationSec) || input.inputVideoDurationSec <= 0)) return null;
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
@@ -76,7 +80,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       scenario.selector.audio === String(input.audio)) &&
     (gptImage || input.aspectRatio === undefined || scenario.selector.aspectRatio === input.aspectRatio) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
-    (input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
+    (wanInputDuration || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
     (input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
   );
@@ -94,6 +98,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       (input.audio === undefined && scenario.selector.audio === 'true' ? 1 : 0);
     return score(left) - score(right) || left.id.localeCompare(right.id);
   })[0] ?? null;
+  if (selected && wanInputDuration) {
+    try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec!); }
+    catch { return null; }
+  }
   if (!selected || !size) return selected;
   return { ...selected, context: { ...selected.context, resolution: input.resolution,
     customImageSize: size.customImageSize, ...(input.aspectRatio !== undefined ? { aspectRatio: input.aspectRatio } : {}) } };
@@ -116,8 +124,10 @@ export async function quotePublicModelScenario(
       policy: snapshot.meta?.pricingPolicy ?? null })).digest('hex').slice(0, 20);
     const quantityLabel = getFalEngineById(input.modelId)?.category === 'image'
       ? `${input.durationSec} image${input.durationSec === 1 ? '' : 's'}` : `${input.durationSec}s`;
+    const sourceLabel = supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+      ? ` output + ${scenario.context.inputVideoDurationSec}s input` : '';
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,
-      revision, scenarioLabel: `${input.mode} · ${quantityLabel} · ${input.resolution}` };
+      revision, scenarioLabel: `${input.mode} · ${quantityLabel}${sourceLabel} · ${input.resolution}` };
   } catch {
     return { status: 'unavailable' };
   }

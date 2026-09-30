@@ -56,6 +56,13 @@ function selectorId(selector: ManualTariffSelector): string {
   return Object.entries(selector).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('|');
 }
 
+/** Uses the same facts and exact dimensions as charging, including validated decimal media durations. */
+export function buildManualTariffCoverageScenario(context: PricingContext, capabilityKey: string): ManualTariffCoverageScenario {
+  const facts = buildBillingPricingFacts(context, context.engine.pricingDetails, 'USD').facts;
+  const { selector, quantities } = buildManualTariffScenario(context, facts);
+  return { id: selectorId(selector), modelId: context.engine.id, selector, quantities, context, capabilityKey };
+}
+
 type PricingDimension = {
   context: Partial<PricingContext>;
 };
@@ -161,10 +168,7 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
               ? { customImageSize: parseGptImage2SizeKey(requestedResolution) } : {}),
             ...media.context,
           };
-          const facts = buildBillingPricingFacts(context, entry.engine.pricingDetails, 'USD').facts;
-          const { selector, quantities } = buildManualTariffScenario(context, facts);
-          scenarios.push({ id: selectorId(selector), modelId: model.id, selector, quantities, context,
-            capabilityKey: `${entry.id}:${mode}:${resolution}` });
+          scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${resolution}`));
         }
     }
   }

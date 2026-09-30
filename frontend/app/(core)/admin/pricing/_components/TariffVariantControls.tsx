@@ -28,12 +28,17 @@ export function TariffVariantControls({ editor, disabled }: { editor: CustomerTa
     <summary className="cursor-pointer font-semibold text-text-secondary">Tariff variants & extras <span className="ml-1 font-normal text-text-muted">{formatProviderComparisonScenario(exact.supplierComparison)}{extras.map(choice => ` · ${LABELS[choice.key] ?? choice.key}: ${valueLabel(choice.key, choice.value)}`).join('')}</span></summary>
     <p className="mt-2 text-[10px] text-text-muted">Prices include the selected options. Each supported combination has its own tariff; changing an option reloads its exact price and supplier evidence.</p>
     {gptImage ? <p className="mt-1 text-[10px] text-text-muted">Custom and automatic sizes use these six billing tiers. A tier price applies to every size mapped to it; orientation does not add a charge.</p> : null}
+    {visibleChoices.some(choice => choice.range) ? <p className="mt-1 text-[10px] text-amber-900">Source duration accepts decimals. Totals include input + output video. Preparing a price applies only to this exact duration; it does not set a universal rate.</p> : null}
     {exact.choices.some(choice => choice.key === 'referenceImageCount') ? <p className="mt-1 text-[10px] text-text-muted">{exact.modelId.startsWith('luma-uni-') && exact.selector.mode === 'i2i' ? 'Reference images excludes the main edit source.' : 'Reference images counts the submitted sources and references.'}</p> : null}
     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{visibleChoices.map(choice => <label key={choice.key} className="text-[10px] text-text-secondary">{choiceLabel(choice.key)}
-      <select aria-label={choiceLabel(choice.key)} value={choice.value} disabled={disabled || editor.busy || editor.loading || !editor.exact || choice.options.length < 2}
+      {choice.range ? <input aria-label={choiceLabel(choice.key)} type="number" min={choice.range.minExclusive} max={choice.range.max} step="any"
+        value={editor.requestedOptions[choice.key] ?? choice.value} disabled={disabled || editor.busy}
+        onChange={event => editor.changeOption(choice.key, event.target.value)}
+        className="mt-1 h-8 w-full rounded-md border border-border bg-bg px-2 text-xs text-text-primary" />
+      : <select aria-label={choiceLabel(choice.key)} value={choice.value} disabled={disabled || editor.busy || editor.loading || !editor.exact || choice.options.length < 2}
         onChange={event => editor.changeOption(choice.key, event.target.value)} className="mt-1 h-8 w-full rounded-md border border-border bg-bg px-2 text-xs text-text-primary">
         {choice.options.map(value => <option key={value} value={value}>{valueLabel(choice.key, value)}</option>)}
-      </select>
+      </select>}
     </label>)}</div>
   </details>;
 }

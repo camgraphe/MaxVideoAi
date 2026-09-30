@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
+import { supportsWan3TariffInputDuration, withWan3TariffInputDuration, resolveWan3TariffScenarioId } from '@/lib/pricing-audit/wan3-tariff-scenario';
 import { loadPricingPolicyOverridesWithExecutor, loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
@@ -31,10 +32,24 @@ export function chooseCustomerTariffScenario(
   if (!scenarios.length) throw new PricingAdminError('unsupported_scenario', 'This model has no supported tariff scenarios');
   let candidates = [...scenarios];
   const choices: CustomerTariffScenarioChoice[] = [];
+  let decimalInputDuration: number | undefined;
   for (const key of SCENARIO_DIMENSIONS) {
     const options = [...new Set(candidates.map((scenario) => scenario.selector[key] ?? ''))]
       .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
     if (options.length === 1 && options[0] === '') continue;
+    if (key === 'inputVideoDurationSec' && candidates.every(candidate =>
+      supportsWan3TariffInputDuration(candidate.modelId, candidate.selector.mode))) {
+      const requestedValue = requested[key] ?? options[0];
+      try {
+        if (!requestedValue?.trim()) throw new Error('Input-video duration is required');
+        decimalInputDuration = Number(requestedValue);
+        withWan3TariffInputDuration(candidates[0], decimalInputDuration);
+      } catch { throw new PricingAdminError('unsupported_scenario', 'Input-video duration must be positive, at most 15 seconds, with input plus output at most 30 seconds'); }
+      choices.push({ key, value: String(decimalInputDuration), options: [],
+        range: { minExclusive: 0, max: Math.min(15, 30 - candidates[0].context.durationSec) } });
+      candidates = candidates.filter(candidate => candidate.selector[key] === options[0]);
+      continue;
+    }
     const value = options.includes(requested[key] ?? '') ? (requested[key] ?? '') : options[0];
     if (value === undefined) throw new PricingAdminError('unsupported_scenario', 'No supported tariff selector');
     choices.push({ key, value, options });
@@ -43,7 +58,8 @@ export function chooseCustomerTariffScenario(
   if (candidates.length !== 1 || !candidates[0]) {
     throw new PricingAdminError('ambiguous_selector', 'Tariff selector does not resolve to one supported scenario');
   }
-  return { scenario: candidates[0], choices };
+  return { scenario: decimalInputDuration === undefined ? candidates[0]
+    : withWan3TariffInputDuration(candidates[0], decimalInputDuration), choices };
 }
 
 export async function loadCustomerTariffScenarioDetail(
@@ -86,7 +102,8 @@ function currentDatabaseCell(state: EffectiveCustomerTariffState, id: string): M
 function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = collectSellableManualTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
-  const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id);
+  const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
+    ?? resolveWan3TariffScenarioId(coverage, id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }

@@ -71,8 +71,8 @@ export function useCustomerTariffEditor(selection: TariffEditorSelection | null,
     previewEpoch.current++; setPreview(null); setPendingProposal(null);
   }, [exact?.scenarioId, exact?.currentCents, exact?.stagedCents, inventory?.revision]);
   const changeOption = (key: string, value: string) => {
-    if (inFlight.current || !exact) return;
-    setRequested({ ...exact.selector, [key]: value });
+    if (inFlight.current || !displayed) return;
+    setRequested({ ...displayed.selector, ...requested, [key]: value });
     cancelPreview(); setError(null); setNotice(null);
   };
   const requestPreview = async (customerCents?: number, proposalOverride?: CustomerTariffChangeProposal) => {
@@ -115,7 +115,7 @@ export function useCustomerTariffEditor(selection: TariffEditorSelection | null,
     } catch (caught) { if (mounted.current) setError(caught instanceof Error ? caught.message : 'Confirmation failed.'); }
     finally { inFlight.current = false; if (mounted.current) setBusy(false); }
   };
-  return { inventory, exact, displayed, preview, history, historyError, busy, editable, notice,
+  return { inventory, exact, displayed, requestedOptions: requested, preview, history, historyError, busy, editable, notice,
     loading: Boolean(enabled && selection && (inventoryLoading || scenarioLoading)),
     error: error ?? (scenarioError ?? inventoryError)?.message ?? null,
     changeOption, cancelPreview, requestPreview, confirm };
