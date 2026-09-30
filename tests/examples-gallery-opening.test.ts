@@ -62,14 +62,14 @@ test('later pages keep the complete page without repeating the editorial opening
  finally{dom.window.close();}
 });
 
-test('the opening posters are discoverable immediately without competing with the lead image', async () => {
+test('the opening posters are eager without demoting visible images behind lazy continuation', async () => {
   const dom = await renderGallery(true);
   try {
     const doc = dom.window.document;
     const openingImages = [...doc.querySelectorAll('[data-gallery-opening] img')];
     assert.equal(openingImages.length, 4);
     assert.deepEqual(openingImages.map(image => image.getAttribute('loading')), ['eager', 'eager', 'eager', 'eager']);
-    assert.deepEqual(openingImages.map(image => image.getAttribute('fetchpriority')), ['high', 'low', 'low', 'low']);
+    assert.deepEqual(openingImages.map(image => image.getAttribute('fetchpriority')), ['high', 'auto', 'auto', 'auto']);
     const continuationImages = [...doc.querySelectorAll('img')].slice(4);
     assert.equal(continuationImages.length, 20);
     assert.ok(continuationImages.every(image => image.getAttribute('loading') === 'lazy'));

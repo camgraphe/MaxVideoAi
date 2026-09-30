@@ -360,9 +360,11 @@ and later pages use native-ratio rows. Incomplete opening sets fall back to thos
 one on mobile, with hover/focus priority, a global pause and suspension while the
 reader is open. Cards still delegate reduced-motion, data-saver, hidden-document,
 autoplay rejection and source fallback to `useExampleCardPlayback`. Only the first
-visible poster is prioritized; the other three opening posters are eager with low
-fetch priority, so the browser discovers the complete opening without another
-high-priority hint. The continuation remains lazy. There is no competing separate
+visible poster is prioritized; the other three opening posters are eager with
+normal (`auto`) fetch priority. Do not demote these visible posters to `low`:
+Chrome can promote nearby lazy continuation images ahead of them, leaving opening
+cards blank after the lead has painted. They add no preload or explicit high-priority
+hint. The continuation remains lazy. There is no competing separate
 hero. Update root LCP guidance accordingly when changing this surface again.
 
 Every card retains its real standalone watch link. An ordinary click dynamically

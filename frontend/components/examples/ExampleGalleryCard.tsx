@@ -46,7 +46,7 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
         className={frame==='side'?styles.crop:styles.native} sizes={posterSizes}
         quality={52} priority={prioritizePoster}
         loading={prioritizePoster || frame ? 'eager' : 'lazy'}
-        fetchPriority={prioritizePoster ? 'high' : frame ? 'low' : undefined} />
+        fetchPriority={prioritizePoster ? 'high' : frame ? 'auto' : undefined} />
         : <span className={styles.empty}>{noPreviewLabel}</span>}
       {playbackAttempt ? <video key={playbackAttempt.id} ref={videoRef} src={playbackAttempt.rendition.src}
         muted loop playsInline preload="none" aria-hidden="true" data-examples-card {...events}

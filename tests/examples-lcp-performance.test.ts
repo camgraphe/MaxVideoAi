@@ -58,7 +58,7 @@ test('examples gallery owns the single prioritized opening poster', () => {
   assert.match(gridSource, /<ExamplesGalleryGridClient \{\.\.\.props\}/);
   assert.match(clientSource, /prioritizePoster=\{prioritizeFirstPoster && video\.id === firstVisibleId\}/);
   assert.match(cardSource, /priority=\{prioritizePoster\}/);
-  assert.match(cardSource, /fetchPriority=\{prioritizePoster \? 'high' : frame \? 'low' : undefined\}/);
+  assert.match(cardSource, /fetchPriority=\{prioritizePoster \? 'high' : frame \? 'auto' : undefined\}/);
   assert.doesNotMatch(cardSource, /priority=\{isFirst\}/);
 });
 
