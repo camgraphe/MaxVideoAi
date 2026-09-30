@@ -8,6 +8,8 @@ export type ManualTariffComponent = {
   terms: readonly (ManualTariffUnitTerm & { quantityRounding?: { scale: number; precision: number } })[];
 };
 export type ManualTariffPrice =
+  | { kind: 'unit_bands'; divisor: number; maxUnits: number; terms: readonly ManualTariffUnitTerm[];
+      bands: readonly { minUnits: number; customerCents: number }[] }
   | { kind: 'unit_terms'; rounding: 'up' | 'nearest'; terms: readonly ManualTariffUnitTerm[] }
   | { kind: 'unit_components'; rounding: 'up' | 'nearest'; components: readonly ManualTariffComponent[] }
   | { kind: 'fixed'; customerCents: number };
@@ -34,6 +36,20 @@ function terms(value: unknown, allowEmpty: boolean, allowNormalization: boolean)
 export function isValidManualTariffPrice(value: unknown): value is ManualTariffPrice {
   if (!record(value)) return false;
   if (value.kind === 'fixed') return Number.isSafeInteger(value.customerCents) && Number(value.customerCents) >= 0;
+  if (value.kind === 'unit_bands') {
+    if (!amount(value.divisor) || value.divisor <= 0 || !amount(value.maxUnits) || value.maxUnits <= 0
+      || !terms(value.terms, false, false) || !Array.isArray(value.bands) || !value.bands.length) return false;
+    let previous = -1;
+    let previousCents = -1;
+    return value.bands.every((band, index) => {
+      if (!record(band) || !amount(band.minUnits) || (index === 0 && band.minUnits !== 0)
+        || band.minUnits <= previous || band.minUnits > Number(value.maxUnits)
+        || !Number.isSafeInteger(band.customerCents) || Number(band.customerCents) < previousCents || Number(band.customerCents) < 0) return false;
+      previous = band.minUnits;
+      previousCents = Number(band.customerCents);
+      return true;
+    });
+  }
   if (value.rounding !== 'up' && value.rounding !== 'nearest') return false;
   if (value.kind === 'unit_terms') return terms(value.terms, false, false);
   if (value.kind !== 'unit_components' || !Array.isArray(value.components) || !value.components.length) return false;
@@ -49,7 +65,7 @@ export function isValidManualTariffPrice(value: unknown): value is ManualTariffP
 
 export function manualTariffUnitNames(price: ManualTariffPrice): string[] {
   if (price.kind === 'fixed') return [];
-  const allTerms = price.kind === 'unit_terms' ? price.terms : price.components.flatMap((component) => component.terms);
+  const allTerms = price.kind === 'unit_terms' || price.kind === 'unit_bands' ? price.terms : price.components.flatMap((component) => component.terms);
   return [...new Set(allTerms.map((term) => term.unit))];
 }
 
@@ -60,6 +76,22 @@ export function roundManualTariffAmount(value: number, rounding: 'none' | 'up' |
 export function evaluateManualTariffPrice(price: ManualTariffPrice, quantities: Readonly<Record<string, number>>) {
   if (price.kind === 'fixed') return { exactCustomerCents: price.customerCents, customerTotalCents: price.customerCents, units: [] };
   const units: { unit: string; quantity: number; centsPerUnit: number; componentId?: string; billedQuantity?: number }[] = [];
+  if (price.kind === 'unit_bands') {
+    units.push(...price.terms.map(term => ({ ...term, quantity: quantities[term.unit] })));
+    const weightedUnits = units.reduce((sum, term) => sum + term.centsPerUnit * term.quantity, 0) / price.divisor;
+    if (!Number.isFinite(weightedUnits) || weightedUnits < 0 || weightedUnits > price.maxUnits) {
+      throw new RangeError('Authored unit-band quantities are outside their reviewed range.');
+    }
+    let lower = 0;
+    let upper = price.bands.length;
+    while (lower + 1 < upper) {
+      const middle = Math.floor((lower + upper) / 2);
+      if (price.bands[middle].minUnits <= weightedUnits) lower = middle;
+      else upper = middle;
+    }
+    const customerTotalCents = price.bands[lower].customerCents;
+    return { exactCustomerCents: customerTotalCents, customerTotalCents, units };
+  }
   let exactCustomerCents: number;
   if (price.kind === 'unit_terms') {
     units.push(...price.terms.map((term) => ({ ...term, quantity: quantities[term.unit] })));

@@ -125,7 +125,13 @@ export function quoteCanonicalManualTariff(input: {
       termNames.some((unit) => !Number.isFinite(quantities[unit]) || quantities[unit] < 0)) {
     throw new ManualTariffError('invalid_quantity', 'Manual tariff quantities must match every authored unit exactly.');
   }
-  const { customerTotalCents, exactCustomerCents, units } = evaluateManualTariffPrice(cell.price, quantities);
+  let evaluated;
+  try { evaluated = evaluateManualTariffPrice(cell.price, quantities); }
+  catch (error) {
+    if (error instanceof RangeError) throw new ManualTariffError('invalid_quantity', error.message);
+    throw error;
+  }
+  const { customerTotalCents, exactCustomerCents, units } = evaluated;
   if (!Number.isSafeInteger(customerTotalCents) || customerTotalCents < 0) {
     throw new ManualTariffError('invalid_cell', 'Manual customer total is outside the supported cent range.');
   }

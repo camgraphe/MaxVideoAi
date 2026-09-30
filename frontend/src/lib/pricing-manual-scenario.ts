@@ -19,6 +19,19 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (selector.engineId === 'gemini-omni-flash' && ['v2v', 'retake', 'extend'].includes(selector.mode)) {
+    const output = Number(selector.durationSec);
+    const source = Number(selector.inputVideoDurationSec ?? 0);
+    const inherits = selector.mode !== 'extend';
+    if (!Number.isFinite(source) || source < 0 || source > 10 || (selector.mode !== 'retake' && source <= 0)
+      || (selector.mode === 'retake' && source !== 0) || (selector.mode === 'v2v' && source !== output)
+      || !Number.isFinite(output) || output < 3 || output > 10
+      || (inherits ? selector.inheritedDurationSec !== String(output) : !Number.isInteger(output))) {
+      throw new Error('Unsupported Omni source or inherited duration.');
+    }
+    return { ...selector, inputVideoDurationSec: 'continuous',
+      ...(inherits ? { durationSec: 'continuous', inheritedDurationSec: 'continuous' } : {}) };
+  }
   if (ltx25AudioTariffBounds(selector.engineId, selector.mode)) {
     const seconds = Number(selector.inputAudioDurationSec);
     validateLtx25AudioTariffDuration(selector.engineId, selector.mode, seconds);
@@ -91,6 +104,10 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
     ...(media.referenceTokenBudget !== undefined ? { reference_tokens: media.referenceTokenBudget } : {}),
     ...(media.referenceImageCount !== undefined ? { reference_images: media.referenceImageCount } : {}),
     ...(media.inputImageCount !== undefined ? { input_images: media.inputImageCount } : {}),
+    ...(facts.engineId === 'gemini-omni-flash' ? {
+      input_video_seconds: media.inputVideoDurationSec ?? 0,
+      output_tokens: Number(facts.metadata?.manualTariffOutputTokens), input_tokens: Number(facts.metadata?.manualTariffInputTokens),
+    } : {}),
   };
   return { selector, quantities };
 }

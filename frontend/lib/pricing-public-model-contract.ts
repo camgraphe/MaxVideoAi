@@ -14,6 +14,7 @@ export type PublicModelQuoteInput = {
   referenceImageCount?: number;
   hasVideoInput?: boolean;
   inputVideoDurationSec?: number;
+  inheritedDurationSec?: number;
   inputAudioDurationSec?: number;
   referenceTokenBudget?: number;
   customImageSize?: { width: number; height: number };

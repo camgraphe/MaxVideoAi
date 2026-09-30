@@ -47,6 +47,22 @@ test('continuous editor submits absolute base/source prices only through preview
     await act(async () => button('Preview unit prices').click());
     assert.deepEqual(proposals.pop(), { operation: 'create', scenarioId: 'exact-source', scope: 'continuous_input',
       price: { kind: 'linear_input', outputCents: 0, inputCentsPerSecond: 22.1 } });
+    Object.assign(editor.exact, { modelId: 'gemini-omni-flash' });
+    Object.assign(editor.exact.continuousInputTariff, { kind: 'video', outputVaries: true, outputCents: 49,
+      inputCentsPerSecond: 2, maxInputSeconds: 10 });
+    await act(async () => root.render(React.createElement(ContinuousInputTariffEditor, { key: 'omni',
+      editor: editor as never, disabled: false, inputSeconds: 3.25, outputSeconds: 3.25 })));
+    await act(async () => button('Preview unit prices').click());
+    const omni = proposals.pop() as { price: { kind: string; outputCentsPerSecond: number; inputCentsPerSecond: number } };
+    assert.equal(omni.price.kind, 'linear_video');
+    assert.ok(Math.abs(omni.price.outputCentsPerSecond - 49 / 3.25) < 1e-7);
+    assert.equal(omni.price.inputCentsPerSecond, 2);
+    Object.assign(editor.exact.continuousInputTariff, { maxInputSeconds: 0, inputCentsPerSecond: 0 });
+    await act(async () => root.render(React.createElement(ContinuousInputTariffEditor, { key: 'omni-retake',
+      editor: editor as never, disabled: false, inputSeconds: 0, outputSeconds: 3.25 })));
+    assert.ok(!dom.window.document.querySelector('[aria-label="Source video price per second (USD)"]'));
+    await act(async () => button('Preview unit prices').click());
+    assert.equal((proposals.pop() as { price: { inputCentsPerSecond: number } }).price.inputCentsPerSecond, 0);
   } finally {
     await act(async () => root.unmount()); dom.window.close();
     for (const [key, descriptor] of previous) if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);

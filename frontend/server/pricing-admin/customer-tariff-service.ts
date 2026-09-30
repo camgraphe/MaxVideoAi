@@ -6,6 +6,7 @@ import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario 
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration, resolveWan3TariffScenarioId } from '@/lib/pricing-audit/wan3-tariff-scenario';
 import { ltx25AudioTariffBounds } from '@/lib/ltx25-audio-tariff';
 import { withLtx25AudioTariffDuration, resolveLtx25AudioTariffScenarioId } from '@/lib/pricing-audit/ltx25-audio-tariff-scenario';
+import { supportsOmniTariffMedia, withOmniTariffMedia, resolveOmniTariffScenarioId } from '@/lib/pricing-audit/omni-tariff-scenario';
 import { loadPricingPolicyOverridesWithExecutor, loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
@@ -37,12 +38,30 @@ export function chooseCustomerTariffScenario(
   const choices: CustomerTariffScenarioChoice[] = [];
   let decimalInputDuration: number | undefined;
   let decimalAudioDuration: number | undefined;
+  let omniSource: number | undefined;
+  let omniInherited: number | undefined;
   for (const key of SCENARIO_DIMENSIONS) {
     const audioBounds = ltx25AudioTariffBounds(candidates[0].modelId, candidates[0].selector.mode);
-    if (key === 'durationSec' && audioBounds) continue;
+    const omni = supportsOmniTariffMedia(candidates[0].modelId, candidates[0].selector.mode);
+    if (key === 'durationSec' && (audioBounds || (omni && candidates[0].selector.mode !== 'extend'))) continue;
+    if (omni && ((key === 'inheritedDurationSec' && candidates[0].selector.mode === 'v2v')
+      || (key === 'inputVideoDurationSec' && candidates[0].selector.mode === 'retake'))) continue;
     const options = [...new Set(candidates.map((scenario) => scenario.selector[key] ?? ''))]
       .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
     if (options.length === 1 && options[0] === '') continue;
+    if (omni && (key === 'inputVideoDurationSec' || key === 'inheritedDurationSec')) {
+      const value = requested[key] ?? (key === 'inputVideoDurationSec' && candidates[0].selector.mode === 'retake' ? '0' : options[0]);
+      const seconds = value?.trim() ? Number(value) : NaN;
+      const minimum = key === 'inheritedDurationSec' || candidates[0].selector.mode === 'v2v' ? 3 : Number.MIN_VALUE;
+      if (!Number.isFinite(seconds) || seconds < minimum || seconds > 10) {
+        throw new PricingAdminError('unsupported_scenario', 'Invalid Omni source/inherited duration');
+      }
+      if (key === 'inputVideoDurationSec') omniSource = seconds; else omniInherited = seconds;
+      choices.push({ key, value: String(seconds), options: [], range: {
+        ...(minimum === Number.MIN_VALUE ? { minExclusive: 0 } : { minInclusive: minimum }), max: 10 } });
+      candidates = candidates.filter(candidate => (candidate.selector[key] ?? '') === options[0]);
+      continue;
+    }
     if (key === 'inputAudioDurationSec' && audioBounds) {
       try {
         const value = requested[key] ?? options[0];
@@ -76,7 +95,9 @@ export function chooseCustomerTariffScenario(
   if (candidates.length !== 1 || !candidates[0]) {
     throw new PricingAdminError('ambiguous_selector', 'Tariff selector does not resolve to one supported scenario');
   }
-  return { scenario: decimalAudioDuration !== undefined ? withLtx25AudioTariffDuration(candidates[0], decimalAudioDuration)
+  return { scenario: omniSource !== undefined || omniInherited !== undefined ? withOmniTariffMedia(candidates[0], {
+    inputVideoDurationSec: omniSource ?? 0, ...(omniInherited === undefined ? {} : { inheritedDurationSec: omniInherited }) })
+    : decimalAudioDuration !== undefined ? withLtx25AudioTariffDuration(candidates[0], decimalAudioDuration)
     : decimalInputDuration === undefined ? candidates[0] : withWan3TariffInputDuration(candidates[0], decimalInputDuration), choices };
 }
 
@@ -102,7 +123,7 @@ export async function loadCustomerTariffScenarioDetail(
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
   const continuousInputTariff = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
-    || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode))
+    || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) || supportsOmniTariffMedia(scenario.modelId, scenario.selector.mode))
     ? await continuousInputTariffDetail(scenario, state, policy).catch(() => undefined) : undefined;
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
     currentCents, stagedCents: staged?.price.kind === 'fixed' ? staged.price.customerCents : null,
@@ -124,7 +145,7 @@ function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = collectSellableManualTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
   const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
-    ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id);
+    ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }

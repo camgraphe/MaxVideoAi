@@ -524,10 +524,14 @@ export function buildBillingPricingFacts(context: PricingContext, pricingDetails
   const details = engine === context.engine ? pricingDetails : engine.pricingDetails;
   const result = buildBillingPricingFactsInternal(effectiveContext, details, currency);
   const identityFacts = { ...result.meta, ...result.facts.metadata };
+  const tokenBreakdown = engine.id === 'gemini-omni-flash'
+    ? result.meta.cost_breakdown_usd as { outputTokens: number; inputImageTokens: number; inputVideoTokens: number } : undefined;
   const billedAspect = isSeedance2TokenPricing(details)
     ? resolveSeedance2TariffAspectRatio(details, context.resolution, context.aspectRatio) : null;
   if (billedAspect !== null && typeof billedAspect !== 'string') throw new Error('Priced aspect dimensions are unavailable');
   result.facts.metadata = { ...result.facts.metadata, manualTariffAspectRatio: billedAspect,
+    ...(tokenBreakdown ? { manualTariffOutputTokens: tokenBreakdown.outputTokens,
+      manualTariffInputTokens: tokenBreakdown.inputImageTokens + tokenBreakdown.inputVideoTokens } : {}),
     manualTariffDurationSec: result.facts.unit === 'sec' ? result.facts.quantity : context.durationSec,
     manualTariffAudio: projectManualTariffAudio(effectiveContext, identityFacts),
     manualTariffVoiceControl: result.addons.some(addon => addon.type === 'voice_control'),

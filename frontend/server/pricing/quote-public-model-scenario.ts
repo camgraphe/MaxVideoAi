@@ -13,6 +13,7 @@ import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/lib/pricing-audit/wan3-tariff-scenario';
 import { ltx25AudioTariffBounds, validateLtx25AudioTariffDuration } from '@/lib/ltx25-audio-tariff';
 import { withLtx25AudioTariffDuration } from '@/lib/pricing-audit/ltx25-audio-tariff-scenario';
+import { supportsOmniTariffMedia, withOmniTariffMedia } from '@/lib/pricing-audit/omni-tariff-scenario';
 import { isSeedance2TokenPricing, resolveSeedance2TariffAspectRatio } from '@/lib/seedance-2-pricing';
 import { manualTariffReferenceCounts } from '@/lib/pricing-audit/manual-tariff-dimensions';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
@@ -58,7 +59,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const model = getRuntimeModelById(input.modelId);
   if (!model || !model.publication.app.published ||
       !(model.publication.pricing.published || model.publication.model.published) ||
-      !Number.isFinite(input.durationSec) || (!ltx25AudioTariffBounds(input.modelId, input.mode) && !Number.isInteger(input.durationSec))
+      !Number.isFinite(input.durationSec) || (!ltx25AudioTariffBounds(input.modelId, input.mode)
+        && !(supportsOmniTariffMedia(input.modelId, input.mode) && input.mode !== 'extend') && !Number.isInteger(input.durationSec))
       || input.durationSec < 1 || input.durationSec > 120 ||
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
@@ -111,6 +113,16 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const resolution = size?.billingKey ?? input.resolution;
   const wanInputDuration = supportsWan3TariffInputDuration(model.id, input.mode);
   const ltxAudioDuration = Boolean(ltx25AudioTariffBounds(model.id, input.mode));
+  const omniMedia = supportsOmniTariffMedia(model.id, input.mode);
+  const omniInherits = omniMedia && input.mode !== 'extend';
+  const omniInherited = input.inheritedDurationSec ?? (input.mode === 'v2v' ? input.inputVideoDurationSec : undefined);
+  if (input.inheritedDurationSec !== undefined && !omniInherits) return null;
+  if (omniMedia && ((input.mode !== 'retake' && input.inputVideoDurationSec === undefined)
+    || !Number.isFinite(input.inputVideoDurationSec ?? 0) || (input.inputVideoDurationSec ?? 0) < 0 || (input.inputVideoDurationSec ?? 0) > 10
+    || (input.mode !== 'retake' && (input.inputVideoDurationSec ?? 0) <= 0)
+    || (input.mode === 'retake' && (input.inputVideoDurationSec ?? 0) !== 0)
+    || (input.mode === 'v2v' && omniInherited !== input.inputVideoDurationSec)
+    || (omniInherits && (!Number.isFinite(omniInherited) || omniInherited! < 3 || omniInherited! > 10)))) return null;
   if (ltxAudioDuration) {
     try { validateLtx25AudioTariffDuration(model.id, input.mode, input.inputAudioDurationSec ?? NaN); }
     catch { return null; }
@@ -123,7 +135,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
-    (ltxAudioDuration || scenario.selector.durationSec === String(billedDuration)) &&
+    (ltxAudioDuration || omniInherits || scenario.selector.durationSec === String(billedDuration)) &&
     (scenario.selector.referenceImageCount === undefined
       ? scenario.selector.inputImageCount === undefined || input.mode !== 'ref2v'
         || scenario.selector.inputImageCount === String(input.referenceImageCount ?? defaultReferences)
@@ -136,13 +148,13 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     (scenario.selector.exrExport === 'true') === Boolean(input.exrExport) &&
     (gptImage || scenario.selector.aspectRatio === undefined || input.aspectRatio === undefined || scenario.selector.aspectRatio === requestedAspect) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
-    (wanInputDuration || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
+    (wanInputDuration || omniMedia || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (ltxAudioDuration || input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
     (input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
   );
   if (!candidates.length) return null;
   if (candidates.some((scenario) =>
-    (scenario.selector.inputVideoDurationSec && input.inputVideoDurationSec === undefined && !(wanInputDuration && input.mode === 'ref2v')) ||
+    (scenario.selector.inputVideoDurationSec && input.inputVideoDurationSec === undefined && !((wanInputDuration && input.mode === 'ref2v') || (omniMedia && input.mode === 'retake'))) ||
     (scenario.selector.inputAudioDurationSec && input.inputAudioDurationSec === undefined) ||
     (scenario.selector.referenceTokenBudget && input.referenceTokenBudget === undefined))) return null;
   const defaultAspect = tokenPricing?.tokenPricing.defaultAspectRatio ?? catalogDefault(model.id, input.mode, 'aspect_ratio') ?? '16:9';
@@ -173,6 +185,11 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   }
   if (selected && ltxAudioDuration) {
     try { return withLtx25AudioTariffDuration(selected, input.inputAudioDurationSec!); }
+    catch { return null; }
+  }
+  if (selected && omniMedia) {
+    try { return withOmniTariffMedia(selected, { inputVideoDurationSec: input.inputVideoDurationSec ?? 0,
+      ...(omniInherits ? { inheritedDurationSec: omniInherited } : {}) }); }
     catch { return null; }
   }
   if (!selected || !size) return selected;

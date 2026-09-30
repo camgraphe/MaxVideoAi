@@ -58,8 +58,8 @@ function mediaDimensions(modelId: string, mode: string, durationSec: number): Pr
     });
   }
   if (modelId === 'gemini-omni-flash' && ['v2v', 'extend', 'retake'].includes(mode)) {
-    return [3, 10].map((inputVideoDurationSec) => ({
-      context: { inputVideoDurationSec,
+    return (mode === 'v2v' ? [durationSec] : mode === 'retake' ? [0] : [3, 10]).map((inputVideoDurationSec) => ({
+      context: { inputVideoDurationSec, hasVideoInput: inputVideoDurationSec > 0,
         ...(['v2v', 'retake'].includes(mode) ? { inheritedDurationSec: durationSec } : {}) },
     }));
   }

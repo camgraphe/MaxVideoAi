@@ -36,8 +36,12 @@ export function resolveCustomerTariffQuote(input: {
     if (!continuous) throw error;
     selector = continuous;
     cell = resolve(selector);
+    const units = manualTariffUnitNames(cell.price);
     const unit = continuous.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds';
-    if (cell.price.kind === 'fixed' || !manualTariffUnitNames(cell.price).includes(unit)) {
+    const omni = continuous.engineId === 'gemini-omni-flash';
+    const requiredInput = units.includes(unit) || (omni && units.includes('input_tokens'));
+    const requiredOutput = !omni || units.includes('output_tokens') || units.includes('output_seconds');
+    if (cell.price.kind === 'fixed' || !requiredInput || !requiredOutput) {
       throw new ManualTariffError('invalid_cell', 'Continuous source pricing requires an authored input-second rate.');
     }
   }
