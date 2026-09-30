@@ -1,6 +1,7 @@
-import type { ManualTariffCell, ManualTariffSelector } from '@maxvideoai/pricing';
+import { isValidManualTariffPrice, type ManualTariffCell, type ManualTariffSelector } from '@maxvideoai/pricing';
 
 import versionedDocument from '@/config/customer-tariffs.json';
+import { continuousWan3TariffSelector } from '@/lib/pricing-manual-scenario';
 import { createQueryExecutor, getDb, isTransactionQueryExecutor, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 
 type RawState = { revision: number | string; active: boolean };
@@ -61,17 +62,7 @@ export function validateCustomerTariffCell(cell: ManualTariffCell): ManualTariff
   }
   dateIso(cell.effectiveFrom);
   if (cell.effectiveUntil) dateIso(cell.effectiveUntil);
-  if (cell.price.kind === 'fixed') {
-    if (!Number.isSafeInteger(cell.price.customerCents) || cell.price.customerCents < 0) throw new Error('Invalid customer cents');
-  } else if (cell.price.kind === 'unit_terms') {
-    const units = cell.price.terms.map((term) => term.unit);
-    if (!['up', 'nearest'].includes(cell.price.rounding) || !units.length || new Set(units).size !== units.length ||
-        cell.price.terms.some((term) => !term.unit.trim() || !Number.isFinite(term.centsPerUnit) || term.centsPerUnit < 0)) {
-      throw new Error('Invalid customer tariff units');
-    }
-  } else {
-    throw new Error('Unknown customer tariff price kind');
-  }
+  if (!isValidManualTariffPrice(cell.price)) throw new Error('Invalid customer tariff price');
   return cell;
 }
 
@@ -90,23 +81,25 @@ function mapCell(row: RawCell): ManualTariffCell {
 }
 
 async function readState(executor: QueryExecutor, selector?: ManualTariffSelector): Promise<EffectiveCustomerTariffState> {
+  const continuous = selector ? continuousWan3TariffSelector(selector) : null;
+  const selectors = selector ? [selector, ...(continuous ? [continuous] : [])] : null;
+  const where = selectors ? (selectors.length > 1 ? 'WHERE selector_key = ANY($1::text[])' : 'WHERE selector_key = $1') : '';
+  const args = selectors ? [selectors.length > 1 ? selectors.map(selectorKey) : selectorKey(selectors[0])] : [];
   const [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
   if (!state) return { status: 'unavailable' };
   const rows = await executor.query<RawCell>(
     `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
-     FROM app_customer_tariff_cells ${selector ? 'WHERE selector_key = $1' : ''} ORDER BY id`,
-    selector ? [selectorKey(selector)] : []
+     FROM app_customer_tariff_cells ${where} ORDER BY id`, args
   );
   const versions = state.active ? await executor.query<RawCell>(
     `SELECT tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
-     FROM app_customer_tariff_cell_versions ${selector ? 'WHERE selector_key = $1' : ''} ORDER BY tariff_id, revision`,
-    selector ? [selectorKey(selector)] : []
+     FROM app_customer_tariff_cell_versions ${where} ORDER BY tariff_id, revision`, args
   ) : [];
   if (versionedDocument.schemaVersion !== 1 || !Array.isArray(versionedDocument.cells)) return { status: 'unavailable' };
   return {
     status: 'loaded', revision: integer(state.revision), active: state.active && customerTariffsEnabledByCode(),
     versionedCells: (versionedDocument.cells as ManualTariffCell[])
-      .filter((cell) => !selector || selectorKey(cell.selector) === selectorKey(selector)),
+      .filter((cell) => !selectors || selectors.some(candidate => selectorKey(cell.selector) === selectorKey(candidate))),
     databaseCells: [...versions, ...rows].map(mapCell),
   };
 }

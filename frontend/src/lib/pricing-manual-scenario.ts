@@ -4,6 +4,15 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQuality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
+import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
+
+/** A reviewed quantity-priced class; all other options still match exactly. */
+export function continuousWan3TariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (!isWan3EngineId(selector.engineId) || !['v2v', 'extend'].includes(selector.mode)) return null;
+  validateWan3PricingDuration({ mode: selector.mode, durationSec: Number(selector.durationSec),
+    inputVideoDurationSec: Number(selector.inputVideoDurationSec), hasVideoInput: true });
+  return { ...selector, inputVideoDurationSec: 'continuous' };
+}
 
 function option(value: number | string | boolean | null | undefined): string | undefined {
   return value == null ? undefined : String(value);

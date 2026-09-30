@@ -62,14 +62,14 @@ export function useCustomerTariffEditor(selection: TariffEditorSelection | null,
     && inventory?.databaseStatus === 'loaded' && exact?.supplierComparison.customerQuote != null
     && exact?.currentCents != null && exact.currency === 'USD');
   const historyUrl = enabled && inventory?.databaseStatus === 'loaded' && exact
-    ? `/api/admin/pricing/tariffs/history?targetId=${encodeURIComponent(exact.tariffCellId)}` : null;
+    ? `/api/admin/pricing/tariffs/history?targetId=${encodeURIComponent(exact.continuousInputTariff?.tariffCellId ?? exact.tariffCellId)}` : null;
   const { data: history, error: historyError, mutate: mutateHistory } = useSWR(historyUrl, readHistory);
 
   const cancelPreview = () => { previewEpoch.current++; setPreview(null); setPendingProposal(null); };
   useEffect(() => { if (!enabled) { previewEpoch.current++; setPreview(null); setPendingProposal(null); } }, [enabled]);
   useEffect(() => {
     previewEpoch.current++; setPreview(null); setPendingProposal(null);
-  }, [exact?.scenarioId, exact?.currentCents, exact?.stagedCents, inventory?.revision]);
+  }, [exact?.scenarioId, exact?.currentCents, exact?.stagedCents, exact?.continuousInputTariff?.price, inventory?.revision]);
   const changeOption = (key: string, value: string) => {
     if (inFlight.current || !displayed) return;
     setRequested({ ...displayed.selector, ...requested, [key]: value });

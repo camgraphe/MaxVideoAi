@@ -67,7 +67,7 @@ Use shared admin-system components for shell and surfaces:
 
 ## Commercial Pricing Domains
 
-Wan 3/Prime video-to-video and extend variants expose a numeric source-duration control accepting decimals. Its range comes from the factual duration validator (positive input, at most 15 seconds, input plus output at most 30 seconds). Changing it reloads the exact canonical quote and supplier evidence and invalidates approval; invalid input stays correctable but cannot be confirmed. Prepared prices apply only to the selected exact duration, with source/output totals explained beside comparable unit rates. This is not a continuous tariff or an activation certificate.
+Wan 3/Prime video-to-video and extend variants expose a numeric source-duration control accepting decimals. Its range comes from the factual duration validator (positive input, at most 15 seconds, input plus output at most 30 seconds). Changing it reloads the exact canonical quote and supplier evidence and invalidates approval; invalid input stays correctable but cannot be confirmed. The inline editor separates output USD/s and source USD/s, with a current-rounding preservation action and a linear-unit preview. Continuous changes apply to every valid source duration for the selected output options; exact point exceptions keep precedence. The server validates the entire range before preparation, retains immutable versions/history, and permits rollback from any source duration in that class. Original sampled cells and global activation remain unchanged pending complete seed/parity evidence.
 
 Commercial services retain three domain owners behind a shared category-based Pricing workspace:
 

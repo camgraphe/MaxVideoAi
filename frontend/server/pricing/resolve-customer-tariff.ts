@@ -2,12 +2,13 @@ import {
   ManualTariffError,
   quoteCanonicalManualTariff,
   resolveManualTariffCell,
+  manualTariffUnitNames,
   type ManualTariffQuote,
   type PricingFacts,
 } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
-import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
+import { buildManualTariffScenario, continuousWan3TariffSelector } from '@/lib/pricing-manual-scenario';
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
 
 export class CustomerTariffUnavailableError extends Error {
@@ -22,21 +23,33 @@ export function resolveCustomerTariffQuote(input: {
 }): { quote: ManualTariffQuote; revision: number } | null {
   if (input.state.status === 'unavailable') throw new CustomerTariffUnavailableError('Customer tariff database unavailable');
   if (!input.state.active) return null;
+  const state = input.state;
   const scenario = buildManualTariffScenario(input.context, input.facts);
-  const cell = resolveManualTariffCell({ selector: scenario.selector, at: input.at,
-    versionedCells: input.state.versionedCells, databaseCells: input.state.databaseCells });
-  const quantities: Record<string, number> = {};
-  if (cell.price.kind === 'unit_terms') {
-    for (const term of cell.price.terms) {
-      const quantity = scenario.quantities[term.unit];
-      if (quantity === undefined) throw new ManualTariffError('invalid_quantity', `Unresolved manual tariff unit: ${term.unit}`);
-      quantities[term.unit] = quantity;
+  const resolve = (selector: typeof scenario.selector) => resolveManualTariffCell({ selector, at: input.at,
+    versionedCells: state.versionedCells, databaseCells: state.databaseCells });
+  let selector = scenario.selector;
+  let cell;
+  try { cell = resolve(selector); }
+  catch (error) {
+    if (!(error instanceof ManualTariffError) || error.code !== 'missing_cell') throw error;
+    const continuous = continuousWan3TariffSelector(selector);
+    if (!continuous) throw error;
+    selector = continuous;
+    cell = resolve(selector);
+    if (cell.price.kind === 'fixed' || !manualTariffUnitNames(cell.price).includes('input_video_seconds')) {
+      throw new ManualTariffError('invalid_cell', 'Continuous source pricing requires an authored input-second rate.');
     }
+  }
+  const quantities: Record<string, number> = {};
+  for (const unit of manualTariffUnitNames(cell.price)) {
+    const quantity = scenario.quantities[unit];
+    if (quantity === undefined) throw new ManualTariffError('invalid_quantity', `Unresolved manual tariff unit: ${unit}`);
+    quantities[unit] = quantity;
   }
   const quote = quoteCanonicalManualTariff({
     facts: input.facts,
     scenarioId: `billing:${input.context.engine.id}:${input.context.mode ?? 't2v'}:${input.context.resolution}`,
-    selector: scenario.selector,
+    selector,
     quantities,
     at: input.at,
     versionedCells: input.state.versionedCells,

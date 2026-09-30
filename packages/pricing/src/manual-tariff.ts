@@ -1,4 +1,7 @@
 import type { CanonicalPricingQuote, PricingFacts } from './canonical';
+import { evaluateManualTariffPrice, isValidManualTariffPrice, manualTariffUnitNames, type ManualTariffPrice } from './manual-tariff-price';
+export { isValidManualTariffPrice, manualTariffUnitNames } from './manual-tariff-price';
+export type { ManualTariffPrice, ManualTariffComponent } from './manual-tariff-price';
 
 export type ManualTariffSelector = Readonly<Record<string, string>>;
 export type ManualTariffCell = {
@@ -9,9 +12,7 @@ export type ManualTariffCell = {
   currency: string;
   effectiveFrom: string;
   effectiveUntil?: string;
-  price:
-    | { kind: 'unit_terms'; rounding: 'up' | 'nearest'; terms: readonly { unit: string; centsPerUnit: number }[] }
-    | { kind: 'fixed'; customerCents: number };
+  price: ManualTariffPrice;
 };
 
 export type ManualTariffQuote = CanonicalPricingQuote & {
@@ -20,7 +21,7 @@ export type ManualTariffQuote = CanonicalPricingQuote & {
     cellId: string;
     kind: ManualTariffCell['price']['kind'];
     exactCustomerCents: number;
-    units: readonly { unit: string; quantity: number; centsPerUnit: number }[];
+    units: readonly { unit: string; quantity: number; centsPerUnit: number; componentId?: string; billedQuantity?: number }[];
   };
 };
 
@@ -117,29 +118,14 @@ export function quoteCanonicalManualTariff(input: {
       !Number.isFinite(facts.quantity) || facts.quantity <= 0 || !facts.unit.trim()) {
     throw new ManualTariffError('invalid_cell', 'Manual tariff facts, scenario and currency must agree.');
   }
-  let customerTotalCents: number;
-  let exactCustomerCents: number;
-  let units: ManualTariffQuote['manualTariff']['units'] = [];
-  if (cell.price.kind === 'fixed') {
-    if (Object.keys(quantities).length || !Number.isSafeInteger(cell.price.customerCents) || cell.price.customerCents < 0) {
-      throw new ManualTariffError('invalid_quantity', 'Fixed tariff takes no quantities and needs integer cents.');
-    }
-    customerTotalCents = cell.price.customerCents;
-    exactCustomerCents = customerTotalCents;
-  } else {
-    const termNames = cell.price.terms.map((term) => term.unit);
-    if (!['up', 'nearest'].includes(cell.price.rounding) ||
-        !termNames.length || new Set(termNames).size !== termNames.length ||
-        Object.keys(quantities).length !== termNames.length ||
-        Object.keys(quantities).some((unit) => !termNames.includes(unit)) ||
-        cell.price.terms.some((term) => !term.unit.trim() || !Number.isFinite(term.centsPerUnit) || term.centsPerUnit < 0 ||
-          !Number.isFinite(quantities[term.unit]) || quantities[term.unit] < 0)) {
-      throw new ManualTariffError('invalid_quantity', 'Manual tariff quantities must match every authored unit exactly.');
-    }
-    units = cell.price.terms.map((term) => ({ ...term, quantity: quantities[term.unit] }));
-    exactCustomerCents = units.reduce((sum, term) => sum + term.centsPerUnit * term.quantity, 0);
-    customerTotalCents = cell.price.rounding === 'up' ? Math.ceil(exactCustomerCents - 1e-9) : Math.round(exactCustomerCents);
+  if (!isValidManualTariffPrice(cell.price)) throw new ManualTariffError('invalid_cell', 'Invalid authored customer tariff.');
+  const termNames = manualTariffUnitNames(cell.price);
+  if (Object.keys(quantities).length !== termNames.length ||
+      Object.keys(quantities).some((unit) => !termNames.includes(unit)) ||
+      termNames.some((unit) => !Number.isFinite(quantities[unit]) || quantities[unit] < 0)) {
+    throw new ManualTariffError('invalid_quantity', 'Manual tariff quantities must match every authored unit exactly.');
   }
+  const { customerTotalCents, exactCustomerCents, units } = evaluateManualTariffPrice(cell.price, quantities);
   if (!Number.isSafeInteger(customerTotalCents) || customerTotalCents < 0) {
     throw new ManualTariffError('invalid_cell', 'Manual customer total is outside the supported cent range.');
   }

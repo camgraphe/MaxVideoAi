@@ -17,6 +17,7 @@ import { revalidateCustomerTariffChangeSurfaces } from './revalidation';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
 import { buildProviderCostComparisonRows, type ProviderCostComparisonInput } from './provider-cost-comparison';
+import { continuousWanTariffDetail, continuousWanTariffIdentity, prepareContinuousWanTariffChange } from './continuous-wan-tariff';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
@@ -83,9 +84,11 @@ export async function loadCustomerTariffScenarioDetail(
   } catch { /* No numeric fallback for an unavailable live quote. */ }
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
+  const continuousInputTariff = supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+    ? await continuousWanTariffDetail(scenario, state, policy).catch(() => undefined) : undefined;
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
     currentCents, stagedCents: staged?.price.kind === 'fixed' ? staged.price.customerCents : null,
-    currency: 'USD', supplierComparison };
+    currency: 'USD', supplierComparison, ...(continuousInputTariff ? { continuousInputTariff } : {}) };
 }
 
 function cellId(scenario: ManualTariffCoverageScenario): string {
@@ -126,6 +129,7 @@ function fingerprint(preview: Omit<CustomerTariffChangePreview, 'fingerprint'>, 
     previousCell: preview.previousCell, proposedCell: preview.proposedCell,
     rollbackEventId: preview.rollbackEventId, selector: preview.selector,
     rules: rules.status === 'loaded' ? rules.rules : [],
+    continuousInputRange: preview.continuousInputRange,
   })).digest('hex');
 }
 
@@ -197,6 +201,7 @@ async function buildPreview(
   if (!proposal || !['create', 'update', 'delete', 'rollback'].includes(proposal.operation)) {
     throw new PricingAdminError('invalid_payload', 'Unsupported tariff operation');
   }
+  if ('scope' in proposal && proposal.scope !== 'continuous_input') throw new PricingAdminError('invalid_payload', 'Unknown tariff scope');
   if ('customerCents' in proposal && (!Number.isSafeInteger(proposal.customerCents) || proposal.customerCents < 0)) {
     throw new PricingAdminError('invalid_number', 'Customer price must be a non-negative amount in cents');
   }
@@ -209,6 +214,20 @@ async function buildPreview(
   }
   const scenario = scenarioById(proposal.scenarioId);
   const currentCents = await quoteCurrent(scenario, policy, state);
+  if ('scope' in proposal && proposal.scope === 'continuous_input') {
+    const prepared = await prepareContinuousWanTariffChange({ proposal, scenario, state, policy, executor });
+    const previewBase = { ...prepared, operation: proposal.operation, scenarioId: scenario.id, modelId: scenario.modelId,
+      currentCents, currency: 'USD', revision: state.revision, active: state.active,
+      ...(proposal.operation === 'rollback' ? { rollbackEventId: proposal.eventId } : {}),
+      warnings: [state.active ? 'Applies to all valid source durations for these output options. Exact exceptions retain precedence.'
+        : 'Continuous source price prepared; live prices stay unchanged until the global parity gate passes.'],
+    };
+    if (state.active && prepared.proposedCell) {
+      previewBase.proposedCents = await quoteCurrent(scenario, policy, { ...state,
+        databaseCells: [...state.databaseCells.filter(cell => cell.id !== prepared.proposedCell!.id), prepared.proposedCell] });
+    }
+    return { ...previewBase, fingerprint: fingerprint(previewBase, policy) };
+  }
   const id = cellId(scenario);
   const previousDatabaseCell = currentDatabaseCell(state, id);
   if (proposal.operation === 'create' && previousDatabaseCell ||
@@ -291,10 +310,12 @@ export async function confirmCustomerTariffChange(
     }
     const persistedCell = preview.proposedCell
       ? await upsertCustomerTariffCell(executor, preview.proposedCell, actorId) : null;
-    const revision = persistedCell?.version ?? await deleteStagedCustomerTariffCell(executor, cellId(scenarioById(preview.scenarioId)));
+    const targetId = 'scope' in proposal && proposal.scope === 'continuous_input'
+      ? continuousWanTariffIdentity(scenarioById(preview.scenarioId)).id : cellId(scenarioById(preview.scenarioId));
+    const revision = persistedCell?.version ?? await deleteStagedCustomerTariffCell(executor, targetId);
     const event = await insertPricingChangeEvent(executor, {
       domain: 'customer_tariff', operation: proposal.operation,
-      targetId: cellId(scenarioById(preview.scenarioId)), actorId,
+      targetId, actorId,
       previousState: preview.previousCell as unknown as null | Record<string, string | number | boolean | null>,
       nextState: persistedCell as unknown as null | Record<string, string | number | boolean | null>,
       previewSummary: { fingerprint: preview.fingerprint, currentCents: preview.currentCents,

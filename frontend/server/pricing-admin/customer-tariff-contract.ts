@@ -43,12 +43,22 @@ export type CustomerTariffScenarioDetail = {
   stagedCents: number | null;
   currency: string;
   supplierComparison: ProviderCostComparisonRow;
+  continuousInputTariff?: {
+    tariffCellId: string;
+    prepared: boolean;
+    price: ManualTariffCell['price'];
+    outputCents: number;
+    inputCentsPerSecond: number;
+    maxInputSeconds: number;
+  };
 };
 
 export type CustomerTariffChangeProposal =
   | { operation: 'create' | 'update'; scenarioId: string; customerCents: number }
-  | { operation: 'delete'; scenarioId: string }
-  | { operation: 'rollback'; scenarioId: string; eventId: string };
+  | { operation: 'create' | 'update'; scenarioId: string; scope: 'continuous_input'; price:
+      { kind: 'preserve_current' } | { kind: 'linear_input'; outputCents: number; inputCentsPerSecond: number } }
+  | { operation: 'delete'; scenarioId: string; scope?: 'continuous_input' }
+  | { operation: 'rollback'; scenarioId: string; eventId: string; scope?: 'continuous_input' };
 
 export type CustomerTariffChangePreview = {
   fingerprint: string;
@@ -65,6 +75,7 @@ export type CustomerTariffChangePreview = {
   proposedCell: ManualTariffCell | null;
   rollbackEventId?: string;
   warnings: string[];
+  continuousInputRange?: { maxInputSeconds: number; checkedBoundaries: number; minimumGrossCents: number };
 };
 
 export type CustomerTariffChangeConfirmation = {

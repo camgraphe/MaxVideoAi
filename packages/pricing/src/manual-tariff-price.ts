@@ -1,0 +1,83 @@
+/** Authored customer amounts. No component reads supplier facts or a commercial percentage. */
+export type ManualTariffUnitTerm = { unit: string; centsPerUnit: number };
+export type ManualTariffComponent = {
+  id: string;
+  flatCents: number;
+  precision?: number;
+  rounding: 'none' | 'up' | 'nearest';
+  terms: readonly (ManualTariffUnitTerm & { quantityRounding?: { scale: number; precision: number } })[];
+};
+export type ManualTariffPrice =
+  | { kind: 'unit_terms'; rounding: 'up' | 'nearest'; terms: readonly ManualTariffUnitTerm[] }
+  | { kind: 'unit_components'; rounding: 'up' | 'nearest'; components: readonly ManualTariffComponent[] }
+  | { kind: 'fixed'; customerCents: number };
+
+function record(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+function amount(value: unknown): value is number { return typeof value === 'number' && Number.isFinite(value) && value >= 0; }
+function precision(value: unknown): value is number { return Number.isInteger(value) && Number(value) >= 0 && Number(value) <= 6; }
+function terms(value: unknown, allowEmpty: boolean, allowNormalization: boolean): boolean {
+  if (!Array.isArray(value) || (!allowEmpty && !value.length)) return false;
+  const names = new Set<string>();
+  return value.every((term) => {
+    if (!record(term) || typeof term.unit !== 'string' || !term.unit.trim() || names.has(term.unit) || !amount(term.centsPerUnit)) return false;
+    names.add(term.unit);
+    if (term.quantityRounding !== undefined) {
+      const rule = term.quantityRounding;
+      if (!allowNormalization || !record(rule) || !amount(rule.scale) || rule.scale === 0 || !precision(rule.precision)) return false;
+    }
+    return true;
+  });
+}
+
+export function isValidManualTariffPrice(value: unknown): value is ManualTariffPrice {
+  if (!record(value)) return false;
+  if (value.kind === 'fixed') return Number.isSafeInteger(value.customerCents) && Number(value.customerCents) >= 0;
+  if (value.rounding !== 'up' && value.rounding !== 'nearest') return false;
+  if (value.kind === 'unit_terms') return terms(value.terms, false, false);
+  if (value.kind !== 'unit_components' || !Array.isArray(value.components) || !value.components.length) return false;
+  const ids = new Set<string>();
+  return value.components.every((component) => {
+    if (!record(component) || typeof component.id !== 'string' || !component.id.trim() || ids.has(component.id) ||
+        !amount(component.flatCents) || !['none', 'up', 'nearest'].includes(String(component.rounding)) ||
+        (component.precision !== undefined && !precision(component.precision)) || !terms(component.terms, true, true)) return false;
+    ids.add(component.id);
+    return true;
+  });
+}
+
+export function manualTariffUnitNames(price: ManualTariffPrice): string[] {
+  if (price.kind === 'fixed') return [];
+  const allTerms = price.kind === 'unit_terms' ? price.terms : price.components.flatMap((component) => component.terms);
+  return [...new Set(allTerms.map((term) => term.unit))];
+}
+
+export function roundManualTariffAmount(value: number, rounding: 'none' | 'up' | 'nearest'): number {
+  return rounding === 'none' ? value : rounding === 'up' ? Math.ceil(value - 1e-9) : Math.round(value);
+}
+
+export function evaluateManualTariffPrice(price: ManualTariffPrice, quantities: Readonly<Record<string, number>>) {
+  if (price.kind === 'fixed') return { exactCustomerCents: price.customerCents, customerTotalCents: price.customerCents, units: [] };
+  const units: { unit: string; quantity: number; centsPerUnit: number; componentId?: string; billedQuantity?: number }[] = [];
+  let exactCustomerCents: number;
+  if (price.kind === 'unit_terms') {
+    units.push(...price.terms.map((term) => ({ ...term, quantity: quantities[term.unit] })));
+    exactCustomerCents = units.reduce((sum, term) => sum + term.centsPerUnit * term.quantity, 0);
+  } else {
+    exactCustomerCents = price.components.reduce((total, component) => {
+      let componentAmount = component.flatCents;
+      for (const term of component.terms) {
+        const quantity = quantities[term.unit];
+        const rule = term.quantityRounding;
+        const billedQuantity = rule ? Math.round(quantity * rule.scale * 10 ** rule.precision) / 10 ** rule.precision / rule.scale : quantity;
+        componentAmount += term.centsPerUnit * billedQuantity;
+        units.push({ unit: term.unit, centsPerUnit: term.centsPerUnit, quantity, componentId: component.id,
+          ...(rule ? { billedQuantity } : {}) });
+      }
+      if (component.precision !== undefined) componentAmount = Math.round(componentAmount * 10 ** component.precision) / 10 ** component.precision;
+      return total + roundManualTariffAmount(componentAmount, component.rounding);
+    }, 0);
+  }
+  return { exactCustomerCents, customerTotalCents: roundManualTariffAmount(exactCustomerCents, price.rounding), units };
+}
