@@ -384,6 +384,7 @@ export function WorkspaceAppReadyView({
         currency="USD"
         topUpAmount={topUpAmount}
         paymentAmountLabel={topUpPaymentAmountLabel}
+        chargeCurrency={topUpChargeCurrency}
         quoteLoading={topUpQuoteLoading}
         quoteError={topUpQuoteError}
         isTopUpLoading={isTopUpLoading}

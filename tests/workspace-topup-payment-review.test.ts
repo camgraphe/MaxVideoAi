@@ -25,6 +25,7 @@ test('workspace top-up reviews credits and the local payment quote before checko
     modal: { message: 'Add credits to continue.' },
     copy: DEFAULT_WORKSPACE_COPY.topUp,
     currency: 'USD',
+    chargeCurrency: 'EUR',
     topUpAmount: 2500,
     isTopUpLoading: false,
     topUpError: null,
@@ -94,6 +95,7 @@ test('workspace top-up uses the preferred charge currency and a fresh quote for 
     React,
     IS_REACT_ACT_ENVIRONMENT: true,
     fetch: async (url: string, options?: RequestInit) => {
+      if (url === '/api/checkout-events') return Response.json({ ok: true });
       if (url === '/api/me/currency') {
         return Response.json({ ok: true, currency: 'EUR', enabled: ['EUR', 'USD'] });
       }

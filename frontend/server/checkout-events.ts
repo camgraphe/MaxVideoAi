@@ -3,6 +3,11 @@ import { query } from '@/lib/db';
 export type CheckoutInteractionMode = 'hosted' | 'express_checkout';
 
 export type CheckoutInteractionEventName =
+  | 'topup_review_opened'
+  | 'topup_currency_resolved'
+  | 'topup_quote_resolved'
+  | 'topup_quote_displayed'
+  | 'topup_quote_fallback_displayed'
   | 'hosted_checkout_requested'
   | 'hosted_checkout_captcha_required'
   | 'hosted_checkout_rate_limited'
@@ -21,6 +26,11 @@ export type CheckoutInteractionEventName =
   | 'express_checkout_confirm_succeeded';
 
 const CHECKOUT_EVENT_NAMES = new Set<string>([
+  'topup_review_opened',
+  'topup_currency_resolved',
+  'topup_quote_resolved',
+  'topup_quote_displayed',
+  'topup_quote_fallback_displayed',
   'hosted_checkout_requested',
   'hosted_checkout_captcha_required',
   'hosted_checkout_rate_limited',
