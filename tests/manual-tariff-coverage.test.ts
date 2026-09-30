@@ -96,13 +96,13 @@ test('coverage follows all 48 app-published models in 15 families, including pri
   assert.equal(new Set(coverage.scenarios.map((scenario) => scenario.id)).size, coverage.scenarios.length);
 });
 
-test('finite price-changing duration, resolution and audio boundaries are distinct; unsupported custom options are gaps', () => {
+test('finite price-changing duration, resolution and audio boundaries are distinct; continuous options remain gaps', () => {
   const coverage = collectSellableManualTariffCoverage();
   const seedance = coverage.scenarios.filter((row) => row.modelId === 'seedance-2-5' && row.selector.mode === 't2v');
   assert.ok(seedance.some((row) => row.selector.durationSec === '4' && row.selector.resolution === '480p'));
   assert.ok(seedance.some((row) => row.selector.durationSec === '30' && row.selector.resolution === '1080p'));
   assert.ok(!coverage.scenarios.some((row) => row.modelId === 'seedance-2-0-mini' && row.selector.resolution === '1080p'));
-  assert.ok(coverage.gaps.some((gap) => gap.modelId === 'gpt-image-2' && gap.reason.includes('custom')));
+  assert.ok(!coverage.gaps.some((gap) => gap.modelId === 'gpt-image-2' && gap.reason.includes('custom')));
   assert.ok(!coverage.scenarios.some((row) => row.selector.aspectRatio === 'auto'));
   assert.ok(coverage.gaps.some((gap) => gap.modelId === 'wan-3' && gap.reason.includes('auto aspect')));
   const wanVideo = coverage.scenarios.filter((row) => row.modelId === 'wan-3' && row.selector.mode === 'v2v');

@@ -4,6 +4,49 @@ import test from 'node:test';
 import { getRuntimeModelById } from '../frontend/config/model-runtime.ts';
 import { computeCurrentPublicSnapshot } from '../frontend/server/pricing/quote-public.ts';
 import { quotePublicModelScenario, quoteWithVerifiedPolicy, resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario.ts';
+import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
+import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
+
+test('public GPT size quotes require valid dimensions and preserve the requested billing context', () => {
+  for (const modelId of ['gpt-image-2', 'gpt-image-2-5-flare', 'gpt-image-2-5-sunburst']) {
+    const input = { modelId, mode: 'i2i', durationSec: 1, quality: 'high' };
+    const fixed = resolvePublicModelScenario({ ...input, resolution: '1920x1080' });
+    assert.ok(fixed);
+    for (const resolution of ['custom', 'auto']) {
+      const scenario = resolvePublicModelScenario({ ...input, resolution, customImageSize: { width: 1920, height: 1088 } });
+      assert.ok(scenario);
+      assert.equal(scenario.id, fixed.id);
+      assert.equal(scenario.context.resolution, resolution);
+      assert.deepEqual(scenario.context.customImageSize, { width: 1920, height: 1088 });
+      const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
+      assert.deepEqual(buildManualTariffScenario(scenario.context, facts).selector, fixed.selector);
+      assert.equal(resolvePublicModelScenario({ ...input, resolution }), null);
+      assert.equal(resolvePublicModelScenario({ ...input, resolution, customImageSize: { width: 0, height: 1088 } }), null);
+    }
+    assert.ok(resolvePublicModelScenario({ ...input, resolution: 'auto', customImageSize: { width: 512, height: 512 } }),
+      'verified automatic source dimensions follow existing charging bounds');
+    for (const customImageSize of [{ width: 512, height: 512 }, { width: 1920, height: 1080 }, { width: 4096, height: 2160 }]) {
+      assert.equal(resolvePublicModelScenario({ ...input, resolution: 'custom', customImageSize }), null);
+    }
+    assert.equal(resolvePublicModelScenario({ ...input, resolution: 'not-a-size' }), null);
+    assert.equal(resolvePublicModelScenario({ ...input, resolution: '9999x9999' }), null);
+    assert.equal(resolvePublicModelScenario({ ...input, resolution: '1024x1024', customImageSize: { width: 3840, height: 2160 } }), null);
+    assert.equal(resolvePublicModelScenario({ ...input, resolution: '1024x1024', aspectRatio: 'bogus' }), null);
+  }
+  assert.equal(resolvePublicModelScenario({ modelId: 'nano-banana', mode: 't2i', durationSec: 1,
+    resolution: '1024', customImageSize: { width: 1024, height: 1024 } }), null);
+});
+
+test('malformed public image dimensions return unavailable without coercing JSON objects or strings', () => {
+  for (const resolution of ['auto', 'custom', '1024x1024']) {
+    for (const customImageSize of [null, [], { width: '1024', height: 1024 },
+      { width: { toString: {} }, height: 1024 }, { width: true, height: 1024 },
+      { width: Infinity, height: 1024 }, { width: 1024 }]) {
+      assert.equal(resolvePublicModelScenario({ modelId: 'gpt-image-2', mode: 't2i', durationSec: 1,
+        resolution, customImageSize: customImageSize as never }), null);
+    }
+  }
+});
 
 test('public quotes select exact bounded references and preserve the default Luma reference count', async () => {
   const gpt = { modelId: 'gpt-image-2-5-flare', mode: 'i2i', durationSec: 4, resolution: '1024x1024', quality: 'high' };

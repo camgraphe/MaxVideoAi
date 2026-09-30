@@ -33,6 +33,7 @@ import {
   buildProviderCostComparisonRows,
 } from './provider-cost-comparison';
 import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
+import { isGptImageFamilyEngineId, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import {
   canonicalRule,
   scenarioSelectorKey,
@@ -78,12 +79,14 @@ export function selectRepresentativeTariffScenario(
     ?? (typeof scenario.input.aspectRatio === 'string' && scenario.input.aspectRatio !== 'auto' ? scenario.input.aspectRatio : undefined)
     ?? (entry.engine.aspectRatios.includes('16:9') ? '16:9' : entry.engine.aspectRatios.includes('1:1') ? '1:1' : undefined);
   const defaultQuality = fields.find((field) => field.id === 'quality' && typeof field.default === 'string')?.default;
+  const resolution = isGptImageFamilyEngineId(entry.id)
+    ? resolveGptImage2PricingTier(scenario.resolution).billingKey : scenario.resolution;
   let chosen: ManualTariffCoverageScenario | null = null;
   let best = Infinity;
   for (const candidate of options) {
     const selector = candidate.selector;
     const score = (selector.mode === scenario.mode ? 0 : 10_000)
-      + (selector.resolution.toLowerCase() === scenario.resolution?.toLowerCase() ? 0 : 1_000)
+      + (selector.resolution.toLowerCase() === resolution?.toLowerCase() ? 0 : 1_000)
       + Math.abs(Number(selector.durationSec) - (scenario.durationSec ?? 1)) * 10
       + (defaultAspect && selector.aspectRatio !== defaultAspect ? 4 : 0)
       + (defaultQuality && selector.quality !== defaultQuality ? 3 : 0)

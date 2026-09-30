@@ -49,7 +49,7 @@ test('admin tariff preview, stale rejection and confirmation are atomic on dispo
     assert.equal(longer.supplierComparison.customerQuote?.ruleId, 'default');
     assert.equal(longer.supplierComparison.customerQuote?.source, 'database');
     const firstReference = await loadCustomerTariffScenarioDetail('gpt-image-2-5-flare', {
-      mode: 'i2i', quality: 'low', resolution: 'landscape_4_3', referenceImageCount: '1',
+      mode: 'i2i', quality: 'low', resolution: '1024x768', referenceImageCount: '1',
     });
     const secondReference = await loadCustomerTariffScenarioDetail('gpt-image-2-5-flare', {
       ...firstReference.selector, referenceImageCount: '2',

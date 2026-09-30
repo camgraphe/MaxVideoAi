@@ -8,6 +8,8 @@ import { loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
+import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -53,9 +55,18 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
   const defaultReferences = isLumaAgentsImageEngineId(model.id) ? 0 : 1;
+  const gptImage = isGptImageFamilyEngineId(model.id);
+  const entry = getFalEngineById(model.id);
+  const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
+  if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
+  const size = gptImage ? resolvePublicGptImageQuoteSize(input.resolution, input.customImageSize) : null;
+  if (gptImage && (!size || !(mode.ui.resolution ?? entry!.engine.resolutions)
+      .some(value => value.toLowerCase() === input.resolution.toLowerCase()) ||
+      (input.aspectRatio !== undefined && !(mode.ui.aspectRatio ?? entry!.engine.aspectRatios).includes(input.aspectRatio)))) return null;
+  const resolution = size?.billingKey ?? input.resolution;
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
-    scenario.selector.resolution.toLowerCase() === input.resolution.toLowerCase() &&
+    scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
     scenario.selector.durationSec === String(input.durationSec) &&
     (scenario.context.referenceImageCount === undefined
       ? input.referenceImageCount === undefined || input.referenceImageCount === 1
@@ -63,7 +74,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     !scenario.context.loop &&
     (input.audio === undefined || scenario.selector.audio === undefined ||
       scenario.selector.audio === String(input.audio)) &&
-    (input.aspectRatio === undefined || scenario.selector.aspectRatio === input.aspectRatio) &&
+    (gptImage || input.aspectRatio === undefined || scenario.selector.aspectRatio === input.aspectRatio) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
     (input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
@@ -76,13 +87,16 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     (scenario.selector.referenceTokenBudget && input.referenceTokenBudget === undefined))) return null;
   const defaultAspect = catalogDefault(model.id, input.mode, 'aspect_ratio') ?? '16:9';
   const defaultQuality = catalogDefault(model.id, input.mode, 'quality');
-  return candidates.sort((left, right) => {
+  const selected = candidates.sort((left, right) => {
     const score = (scenario: ManualTariffCoverageScenario) =>
       (input.aspectRatio === undefined && scenario.selector.aspectRatio !== defaultAspect ? 4 : 0) +
       (input.quality === undefined && defaultQuality && scenario.selector.quality !== defaultQuality ? 2 : 0) +
       (input.audio === undefined && scenario.selector.audio === 'true' ? 1 : 0);
     return score(left) - score(right) || left.id.localeCompare(right.id);
   })[0] ?? null;
+  if (!selected || !size) return selected;
+  return { ...selected, context: { ...selected.context, resolution: input.resolution,
+    customImageSize: size.customImageSize, ...(input.aspectRatio !== undefined ? { aspectRatio: input.aspectRatio } : {}) } };
 }
 
 export async function quotePublicModelScenario(

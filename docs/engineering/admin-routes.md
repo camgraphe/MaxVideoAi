@@ -87,6 +87,8 @@ The retained commercial views share `AdminPricingHistory`; the membership view l
 
 ## What Belongs Where
 
+GPT Image tariffs use six **Billing size tier** choices from the actual billing owner. Preset aliases, automatic dimensions and custom sizes share their mapped tier; aspect ratio is not a separate priced control. Quality, output count and priced edit references remain distinct. Public estimates require valid known dimensions for auto/custom sizes. Requested pixels remain quote metadata. See [dated coverage evidence](2026-09-30-bounded-tariff-coverage.md#gpt-size-tier-continuation); manual activation stays off.
+
 Keep in `page.tsx`:
 
 - route params

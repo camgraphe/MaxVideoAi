@@ -5,7 +5,7 @@ import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
-import { isGptImageFamilyEngineId, parseGptImage2SizeKey } from '@/lib/image/gptImage2';
+import { GPT_IMAGE_2_CANONICAL_SIZE_VALUES, isGptImageFamilyEngineId, parseGptImage2SizeKey } from '@/lib/image/gptImage2';
 import { manualTariffImageOutputCounts, manualTariffLoopValues, manualTariffReferenceCounts } from './manual-tariff-dimensions';
 
 export type ManualTariffCoverageScenario = {
@@ -97,17 +97,19 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
       const isImage = entry.category === 'image';
+      const gptImage = isImage && isGptImageFamilyEngineId(model.id);
       const outputs = isImage ? manualTariffImageOutputCounts(entry, mode) : null;
       const durations = isImage
         ? { values: outputs ?? [1], incomplete: !outputs }
         : finiteDurations(modeConfig.ui.duration, entry.engine.maxDurationSec, entry.pricingHint?.durationSeconds);
       if (durations.incomplete) gaps.push({ modelId: model.id, reason: `${mode}: nonnumeric auto or open duration requires a reviewed mapping` });
       const rawResolutions = modeConfig.ui.resolution?.length ? modeConfig.ui.resolution : entry.engine.resolutions;
-      const resolutions = rawResolutions.filter((resolution) => resolution !== 'auto' && resolution !== 'custom');
-      if (resolutions.length !== rawResolutions.length) gaps.push({ modelId: model.id, reason: `${mode}: auto/custom resolution requires a reviewed mapping` });
+      const resolutions = gptImage ? [...GPT_IMAGE_2_CANONICAL_SIZE_VALUES]
+        : rawResolutions.filter((resolution) => resolution !== 'auto' && resolution !== 'custom');
+      if (!gptImage && resolutions.length !== rawResolutions.length) gaps.push({ modelId: model.id, reason: `${mode}: auto/custom resolution requires a reviewed mapping` });
       const aspectRatios = modeConfig.ui.aspectRatio?.length ? modeConfig.ui.aspectRatio : entry.engine.aspectRatios;
-      const aspects = aspectRatios.length ? aspectRatios.filter((aspect) => aspect !== 'auto') : ['default'];
-      if (aspects.length !== aspectRatios.length) gaps.push({ modelId: model.id, reason: `${mode}: auto aspect ratio depends on verified media metadata` });
+      const aspects = gptImage ? ['default'] : aspectRatios.length ? aspectRatios.filter((aspect) => aspect !== 'auto') : ['default'];
+      if (!gptImage && aspects.length !== aspectRatios.length) gaps.push({ modelId: model.id, reason: `${mode}: auto aspect ratio depends on verified media metadata` });
       if ((model.id === 'wan-3' || model.id === 'wan-3-prime') && ['v2v', 'extend'].includes(mode)) {
         gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
       }

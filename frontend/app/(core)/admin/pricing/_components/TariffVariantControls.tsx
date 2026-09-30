@@ -1,5 +1,6 @@
 import type { CustomerTariffEditor } from '../_hooks/useCustomerTariffEditor';
 import { formatProviderComparisonScenario } from '../_lib/pricing-cockpit-view-model';
+import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 
 const LABELS: Record<string, string> = {
   mode: 'Generation mode', resolution: 'Resolution', durationSec: 'Duration (seconds)',
@@ -16,7 +17,9 @@ function valueLabel(key: string, value: string) {
 export function TariffVariantControls({ editor, disabled }: { editor: CustomerTariffEditor; disabled: boolean }) {
   const exact = editor.displayed;
   if (!exact) return null;
-  const choiceLabel = (key: string) => key === 'durationSec' && exact.supplierComparison.mediaType === 'image'
+  const gptImage = isGptImageFamilyEngineId(exact.modelId);
+  const choiceLabel = (key: string) => key === 'resolution' && gptImage ? 'Billing size tier'
+    : key === 'durationSec' && exact.supplierComparison.mediaType === 'image'
     ? 'Images per request' : LABELS[key] ?? key;
   const visibleChoices = exact.choices.filter(choice => choice.key !== 'inputImageCount'
     || exact.selector.mode !== 'ref2v');
@@ -24,6 +27,7 @@ export function TariffVariantControls({ editor, disabled }: { editor: CustomerTa
   return <details className="mb-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs">
     <summary className="cursor-pointer font-semibold text-text-secondary">Tariff variants & extras <span className="ml-1 font-normal text-text-muted">{formatProviderComparisonScenario(exact.supplierComparison)}{extras.map(choice => ` · ${LABELS[choice.key] ?? choice.key}: ${valueLabel(choice.key, choice.value)}`).join('')}</span></summary>
     <p className="mt-2 text-[10px] text-text-muted">Prices include the selected options. Each supported combination has its own tariff; changing an option reloads its exact price and supplier evidence.</p>
+    {gptImage ? <p className="mt-1 text-[10px] text-text-muted">Custom and automatic sizes use these six billing tiers. A tier price applies to every size mapped to it; orientation does not add a charge.</p> : null}
     {exact.choices.some(choice => choice.key === 'referenceImageCount') ? <p className="mt-1 text-[10px] text-text-muted">{exact.modelId.startsWith('luma-uni-') && exact.selector.mode === 'i2i' ? 'Reference images excludes the main edit source.' : 'Reference images counts the submitted sources and references.'}</p> : null}
     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{visibleChoices.map(choice => <label key={choice.key} className="text-[10px] text-text-secondary">{choiceLabel(choice.key)}
       <select aria-label={choiceLabel(choice.key)} value={choice.value} disabled={disabled || editor.busy || editor.loading || !editor.exact || choice.options.length < 2}

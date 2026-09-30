@@ -98,8 +98,8 @@ test('Veo catalogue references retain Google provenance on direct and Fal execut
 
 test('supplier image reference keeps sub-cent precision and selected quality', () => {
   const [low, high] = buildProviderCostComparisonRows([
-    exactInput('gpt-image-2-5-flare', { mode: 't2i', resolution: 'landscape_4_3', quality: 'low' }, 'fal'),
-    exactInput('gpt-image-2-5-flare', { mode: 't2i', resolution: 'landscape_4_3', quality: 'high' }, 'fal'),
+    exactInput('gpt-image-2-5-flare', { mode: 't2i', resolution: '1024x768', quality: 'low' }, 'fal'),
+    exactInput('gpt-image-2-5-flare', { mode: 't2i', resolution: '1024x768', quality: 'high' }, 'fal'),
   ], '2026-09-30T12:00:00Z');
   assert.equal(low.supplierList.amountUsd, 0.00402);
   assert.ok(high.supplierList.amountUsd! > low.supplierList.amountUsd!);
@@ -108,7 +108,7 @@ test('supplier image reference keeps sub-cent precision and selected quality', (
 
 test('GPT edit supplier reference includes the source once and preserves exact component costs', () => {
   const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'gpt-image-2-5-flare'
-    && row.selector.mode === 'i2i' && row.selector.resolution === 'landscape_4_3' && row.selector.quality === 'low');
+    && row.selector.mode === 'i2i' && row.selector.resolution === '1024x768' && row.selector.quality === 'low');
   assert.ok(scenario);
   const reference = catalogSupplierReference(scenario.context);
   assert.equal(reference?.amountUsd, 0.01202);
@@ -119,7 +119,7 @@ test('GPT edit supplier reference includes the source once and preserves exact c
 
 test('GPT exact reference itemization never subtracts rounded display addons', () => {
   const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'gpt-image-2-5-flare'
-    && row.selector.mode === 'i2i' && row.selector.resolution === 'landscape_4_3' && row.selector.quality === 'low');
+    && row.selector.mode === 'i2i' && row.selector.resolution === '1024x768' && row.selector.quality === 'low');
   assert.ok(scenario);
   const reference = catalogSupplierReference({ ...scenario.context, referenceImageCount: 1 });
   assert.deepEqual(reference?.rateBreakdown.map(({ amountUsd }) => amountUsd), [0.00402, 0.008]);

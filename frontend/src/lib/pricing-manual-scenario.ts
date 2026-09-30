@@ -1,7 +1,7 @@
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
-import { isGptImage25EngineId } from '@/lib/image/gptImage2';
+import { isGptImage25EngineId, isGptImageFamilyEngineId, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 
@@ -15,6 +15,9 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   quantities: Record<string, number>;
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
+  // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
+  // Keep the requested pixels in the quote context, never as separately authored prices.
+  const gptImage = isGptImageFamilyEngineId(facts.engineId);
   // These factual owners price 0/1 references differently; neither count can alias a default cell.
   const pricedReferences = (isGptImage25EngineId(facts.engineId) && context.mode === 'i2i')
     || isLumaAgentsImageEngineId(facts.engineId)
@@ -22,9 +25,9 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
-    resolution: context.resolution,
+    resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(context.durationSec),
-    aspectRatio: context.aspectRatio ?? 'default',
+    ...(!gptImage ? { aspectRatio: context.aspectRatio ?? 'default' } : {}),
     ...(option(context.addons?.audio) !== undefined ? { audio: option(context.addons?.audio)! } : {}),
     ...(context.quality ? { quality: context.quality } : {}),
     ...(option(context.inputVideoDurationSec) ? { inputVideoDurationSec: option(context.inputVideoDurationSec)! } : {}),
@@ -37,7 +40,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
       ? { referenceImageCount: String(context.referenceImageCount) } : {}),
     ...(context.inputImageCount && context.inputImageCount !== 1
       ? { inputImageCount: String(context.inputImageCount) } : {}),
-    ...(context.customImageSize ? { customImageSize: JSON.stringify(context.customImageSize) } : {}),
+    ...(!gptImage && context.customImageSize ? { customImageSize: JSON.stringify(context.customImageSize) } : {}),
     ...(context.loop ? { loop: 'true' } : {}),
     ...(option(context.addons?.hdr) ? { hdr: option(context.addons?.hdr)! } : {}),
     ...(option(context.addons?.exr_export) ? { exrExport: option(context.addons?.exr_export)! } : {}),
