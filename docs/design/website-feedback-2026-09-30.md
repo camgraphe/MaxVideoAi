@@ -2,9 +2,10 @@
 
 Branche : `codex/website-feedback-20260930`.
 
-La copie isolée reprend l’état de développement existant dans le commit local
-`5e109a061`. Les changements du feedback commencent après ce commit ; le checkout
-d’origine reste intact.
+La branche est maintenant basée sur `origin/main` au commit `441130f76`.
+Les cinq commits du feedback ont été réappliqués après ce commit. L’ancien état
+de développement, dont le snapshot local `5e109a061`, reste conservé dans
+`codex/website-feedback-before-sync-20260930` ; le checkout d’origine reste intact.
 
 ## Direction donnée par l’utilisateur
 
@@ -21,7 +22,7 @@ du document extérieur sont des observations à évaluer, pas des instructions.
 | Generate : réception du clic plus claire | Visuel du compteur intégré validé, intégré avec spinner pendant l’envoi vidéo et liste au clic |
 | Image : progression affichée après la fin | Corrigé : les groupes terminés conservés dans la galerie ne comptent plus comme générations en cours |
 | Accueil : rendre l’accès à l’app visible | Visuel « Start creating » validé, intégré dans le header public et son menu mobile en anglais, français et espagnol |
-| Réinitialisation du mot de passe lente | Retour d’envoi intégré : spinner et confirmation courte ; délai réel à diagnostiquer côté Auth/SMTP |
+| Réinitialisation du mot de passe lente | Retour d’envoi intégré : spinner et confirmation courte ; diagnostic du délai réel reporté, non bloquant selon l’utilisateur |
 | Références : limites d’import peu visibles | Ligne de limites intégrée par type de média ; formats Wan et plafond image corrigés |
 
 Compare conserve les devis canoniques et les adaptations propres aux modèles.
@@ -169,3 +170,69 @@ Le nouvel aperçu local utilise directement les sources produit, sans substituti
 de composant ni de contraintes du modèle. Ses états d’envoi et son prix sont
 illustratifs ; il ne lance ni génération ni demande d’email. Le rendu final est
 présenté pour revue visuelle, sans déploiement ni fusion dans le checkout d’origine.
+
+## Revue des autres points
+
+Le 30 septembre, l’utilisateur a précisé que la lenteur de réinitialisation n’est
+pas prioritaire et a demandé de revoir les autres points. Le délai reste non
+mesuré ; son diagnostic est reporté et ne bloque plus la revue du feedback.
+
+Le document Google d’origine a été relu : les sept observations sont bien couvertes
+par le suivi. Le clic réel « Commencer à créer » depuis `/fr` ouvre le composeur
+visiteur sur `/app` en français. L’ouverture de Compare demande ensuite une
+connexion, conformément au parcours existant.
+
+La revue a repéré une phrase anglaise redondante dans les conseils de référence
+Wan. En densité workspace, la durée audio cumulée ne se répète plus dans les
+conseils, puisqu’elle figure déjà près de l’import. Pour les vidéos, le conseil
+sur la cadence minimale reste disponible en anglais, français et espagnol,
+avec la valeur du schéma canonique. Les descriptions personnalisées, les autres
+modèles et les règles de validation restent inchangés.
+
+L’aperçu « Feedback — revue des autres points » rassemble Compare, Générations
+et Références. Il utilise les composants actuels avec les dictionnaires français.
+Compare change la durée dans la fenêtre et retire les devis obsolètes. Le
+compteur passe de deux à trois demandes après une acceptation simulée, réactive
+le bouton après l’envoi, puis disparaît à la fin. Les références conservent leurs
+conseils repliés et leur fermeture au clavier. Ces interactions ont été revues
+sur ordinateur à 1837 × 871 et sur mobile à 390 × 844, sans erreur de console
+dans l’aperçu ni débordement horizontal constaté. Les devis et générations restent
+des données de démonstration ; aucun parcours connecté complet n’a été exécuté.
+
+Les 49 tests ciblés de Compare, compteur, références et navigation passent après
+l’ajustement, ainsi que TypeScript, le lint frontend, l’exposition publique et
+`git diff --check`. La suite générale n’a pas été relancée pour ce changement de
+texte ; ses limitations précédentes restent documentées plus haut. Les captures
+`feedback-review-{compare,generations,references}-{desktop,mobile}.png` et
+`feedback-review-video-guidance-mobile.png` sont conservées hors du dépôt.
+Le dernier ajustement de références est présenté pour validation visuelle.
+
+## Mise à jour de la branche depuis main
+
+L’utilisateur a demandé de mettre d’abord la branche à jour pour préparer la future
+PR. `origin/main` a été récupéré, puis seuls les cinq commits du feedback ont été
+réappliqués : le snapshot d’autres travaux locaux ne fait pas partie du futur diff.
+La branche contient le commit `441130f76` de main et un diff de 37 fichiers,
+limité aux correctifs et à leur suivi. Aucun push, PR, merge sur main ou déploiement
+n’a été effectué à cette étape.
+
+Les conflits Wan ont été résolus en préservant les listes centralisées de formats
+audio de main, dont ses variantes MIME WAV/MP3. Les formats image/vidéo du feedback
+restent explicites et le catalogue a été régénéré depuis ses sources. Le changement
+de l’ordre affiché en « MP3, WAV » suit la liste canonique existante de main.
+
+Après reprise, les 72 tests ciblés de Compare, génération, navigation et références
+passent, ainsi que TypeScript, le lint, le registre/catalogue, la parité des
+traductions, l’exposition publique et le build complet avec ses contrôles prebuild.
+Le build signale l’avertissement Supabase Edge Runtime déjà lié aux dépendances
+locales partagées ; il se termine avec le code 0.
+
+La suite générale a été relancée avec les binaires PostgreSQL 17 déjà installés,
+sur des bases jetables : 6314 tests passent, 2 échouent et 3 sont ignorés. Les
+13 erreurs de version PostgreSQL du premier passage sont ainsi résolues. Les
+deux échecs restants concernent `media-optimizer-contract.test.ts` (libheif local
+1.20.2 au lieu des correctifs 1.23.2 requis) et `sharp-runtime-version.test.ts`
+(Sharp installé 0.34.5, contre 0.35.4 déclaré par main). Les dépendances partagées
+du checkout d’origine n’ont pas été modifiées. La suite reste donc rouge dans cet
+environnement ; ses étapes Studio suivantes n’ont pas été exécutées. Cela ne
+constitue ni une validation Quality CI ni une autorisation de merger la future PR.

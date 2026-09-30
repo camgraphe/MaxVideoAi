@@ -1,5 +1,5 @@
 import type { AssetFieldRole } from '@/components/asset-dropzone/asset-dropzone-types';
-import type { EngineInputField } from '@/types/engines';
+import type { EngineCaps, EngineInputField } from '@/types/engines';
 
 export function workspaceReferenceCopy(locale: string) {
   return locale === 'fr' ? {
@@ -48,4 +48,26 @@ export function resolveWorkspaceReferenceFieldTitle(
     return locale === 'fr' ? `Clips audio de référence${suffix}` : `Clips de audio de referencia${suffix}`;
   }
   return field.label;
+}
+
+export function resolveWorkspaceReferenceFieldDescription(
+  field: EngineInputField,
+  engine: EngineCaps,
+  locale: string
+): string | undefined {
+  if (!engine.id.startsWith('wan-3')) return field.description;
+  const constraints = engine.inputSchema?.constraints;
+  if (field.id === 'reference_audio_urls' && constraints?.maxCombinedAudioDurationSec
+    && field.description === `Combined audio duration <=${constraints.maxCombinedAudioDurationSec} seconds.`) {
+    // The cumulative limit is already shown beside the import action.
+    return undefined;
+  }
+  const fps = constraints?.minimumReferenceVideoFps;
+  if (field.id === 'reference_video_urls' && fps && constraints?.maxCombinedVideoDurationSec
+    && field.description === `Combined video duration <=${constraints.maxCombinedVideoDurationSec} seconds; each video must be >=${fps} fps.`) {
+    return locale === 'fr' ? `Chaque vidéo doit être à au moins ${fps} images/s.`
+      : locale === 'es' ? `Cada vídeo debe tener al menos ${fps} fotogramas/s.`
+      : `Each video must be at least ${fps} fps.`;
+  }
+  return field.description;
 }
