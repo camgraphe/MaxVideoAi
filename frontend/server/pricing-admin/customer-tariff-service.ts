@@ -15,14 +15,15 @@ import { loadPricingPolicyInventory } from './policy-read-model';
 import { revalidateCustomerTariffChangeSurfaces } from './revalidation';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
-import { buildProviderCostComparisonRows } from './provider-cost-comparison';
+import { expandAdminTariffReferenceOptions } from './customer-tariff-options';
+import { buildProviderCostComparisonRows, type ProviderCostComparisonInput } from './provider-cost-comparison';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
 
 const SCENARIO_DIMENSIONS = ['mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
   'inputImageCount', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
-  'referenceTokenBudget'] as const;
+  'referenceTokenBudget', 'referenceImageCount'] as const;
 
 /** Resolve one supported exact selector while narrowing each subsequent control to valid options. */
 export function chooseCustomerTariffScenario(
@@ -50,13 +51,23 @@ export async function loadCustomerTariffScenarioDetail(
   modelId: string, requested: Record<string, string>,
 ): Promise<CustomerTariffScenarioDetail> {
   const coverage = collectSellableManualTariffCoverage();
-  const options = coverage.scenarios.filter((scenario) => scenario.modelId === modelId);
+  const options = expandAdminTariffReferenceOptions(coverage.scenarios.filter((scenario) => scenario.modelId === modelId));
   const { scenario, choices } = chooseCustomerTariffScenario(options, requested);
   const [state, policy] = await Promise.all([loadEffectiveCustomerTariffState(), loadPricingPolicyOverrides()]);
   let currentCents: number | null = null;
-  try { currentCents = await quoteCurrent(scenario, policy, state); } catch { /* No numeric fallback for an unavailable live quote. */ }
+  let customerQuote: ProviderCostComparisonInput['customerQuote'] = null;
+  try {
+    const snapshot = await quoteCurrentSnapshot(scenario, policy, state);
+    currentCents = snapshot.totalCents;
+    const provenance = snapshot.meta?.pricingPolicy as { source?: unknown; sourceRuleId?: unknown } | undefined;
+    if ((provenance?.source === 'database' || provenance?.source === 'versioned') && typeof provenance.sourceRuleId === 'string') {
+      customerQuote = { totalCents: snapshot.totalCents, currency: snapshot.currency,
+        source: provenance.source, ruleId: provenance.sourceRuleId,
+        pricingMode: snapshot.meta?.pricingMode === 'manual_tariff' ? 'manual_tariff' : 'legacy_margin_rule' };
+    }
+  } catch { /* No numeric fallback for an unavailable live quote. */ }
   const staged = currentDatabaseCell(state, cellId(scenario));
-  const [supplierComparison] = buildProviderCostComparisonRows([providerComparisonForTariffScenario(scenario)], new Date().toISOString());
+  const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
     currentCents, stagedCents: staged?.price.kind === 'fixed' ? staged.price.customerCents : null,
     currency: 'USD', supplierComparison };
@@ -74,7 +85,10 @@ function currentDatabaseCell(state: EffectiveCustomerTariffState, id: string): M
 }
 
 function scenarioById(id: string): ManualTariffCoverageScenario {
-  const scenario = collectSellableManualTariffCoverage().scenarios.find((candidate) => candidate.id === id);
+  const coverage = collectSellableManualTariffCoverage().scenarios;
+  const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
+  const scenario = expandAdminTariffReferenceOptions(coverage.filter(candidate => candidate.modelId === modelId))
+    .find(candidate => candidate.id === id) ?? coverage.find(candidate => candidate.id === id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }
@@ -100,8 +114,8 @@ function fingerprint(preview: Omit<CustomerTariffChangePreview, 'fingerprint'>, 
   })).digest('hex');
 }
 
-async function quoteCurrent(scenario: ManualTariffCoverageScenario, policy: PricingPolicyOverrideLoadResult,
-  state: EffectiveCustomerTariffState): Promise<number> {
+async function quoteCurrentSnapshot(scenario: ManualTariffCoverageScenario, policy: PricingPolicyOverrideLoadResult,
+  state: EffectiveCustomerTariffState) {
   const loaded = loadedPolicy(policy);
   const snapshot = await computeCanonicalBillingSnapshot(scenario.context, {
     pricingPolicy: { loadOverrides: async () => loaded },
@@ -111,7 +125,12 @@ async function quoteCurrent(scenario: ManualTariffCoverageScenario, policy: Pric
   if (!Number.isSafeInteger(snapshot.totalCents) || snapshot.totalCents < 0) {
     throw new PricingAdminError('unsupported_scenario', 'The current scenario has no exact customer price');
   }
-  return snapshot.totalCents;
+  return snapshot;
+}
+
+async function quoteCurrent(scenario: ManualTariffCoverageScenario, policy: PricingPolicyOverrideLoadResult,
+  state: EffectiveCustomerTariffState): Promise<number> {
+  return (await quoteCurrentSnapshot(scenario, policy, state)).totalCents;
 }
 
 export async function loadCustomerTariffInventory(): Promise<CustomerTariffInventory> {

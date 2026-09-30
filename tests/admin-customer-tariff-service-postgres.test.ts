@@ -44,6 +44,23 @@ test('admin tariff preview, stale rejection and confirmation are atomic on dispo
     assert.equal(longer.supplierComparison.supplierList.amountUsd, 0.756);
     assert.equal(longer.supplierComparison.scenarioId, longer.scenarioId);
     assert.ok(longer.currentCents! > selected.currentCents!);
+    assert.equal(longer.supplierComparison.customerQuote?.totalCents, longer.currentCents,
+      'the selected variant carries its own canonical customer quote');
+    assert.equal(longer.supplierComparison.customerQuote?.ruleId, 'default');
+    assert.equal(longer.supplierComparison.customerQuote?.source, 'database');
+    const firstReference = await loadCustomerTariffScenarioDetail('gpt-image-2-5-flare', {
+      mode: 'i2i', quality: 'low', resolution: 'landscape_4_3', referenceImageCount: '1',
+    });
+    const secondReference = await loadCustomerTariffScenarioDetail('gpt-image-2-5-flare', {
+      ...firstReference.selector, referenceImageCount: '2',
+    });
+    assert.equal(secondReference.selector.referenceImageCount, '2');
+    assert.ok(secondReference.currentCents! > firstReference.currentCents!);
+    assert.ok(secondReference.supplierComparison.supplierList.amountUsd! > firstReference.supplierComparison.supplierList.amountUsd!);
+    const extraPreview = await previewCustomerTariffChange({ operation: 'create', scenarioId: secondReference.scenarioId,
+      customerCents: secondReference.currentCents! });
+    assert.equal(extraPreview.currentCents, secondReference.currentCents);
+    assert.equal(extraPreview.selector.referenceImageCount, '2');
     const proposal = { operation: 'create' as const, scenarioId: scenario.id, customerCents: 95 };
     const preview = await previewCustomerTariffChange(proposal);
     assert.equal(preview.proposedCents, 95);

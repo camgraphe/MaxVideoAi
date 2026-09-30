@@ -99,11 +99,11 @@ test.describe('admin critical flows', () => {
     await openAdminRoute(page, '/admin/pricing');
     await expect(page.getByRole('heading', { level: 1, name: 'Model pricing' })).toBeVisible();
     await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
-    await page.getByRole('tab', { name: 'Price comparison' }).focus();
+    await page.getByRole('tab', { name: 'Pricing', exact: true }).focus();
     await page.keyboard.press('End');
     await expect(page.getByRole('tab', { name: 'History' })).toHaveAttribute('aria-selected', 'true');
     await page.keyboard.press('Home');
-    await expect(page.getByRole('tab', { name: 'Price comparison' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: 'Pricing', exact: true })).toHaveAttribute('aria-selected', 'true');
     await page.getByRole('button', { name: 'Image', exact: true }).click();
     await expect(page.locator('summary').filter({ hasText: 'Seedream 5.0 Lite' })).toBeVisible();
     await page.getByRole('tab', { name: 'Pricing rules' }).click();

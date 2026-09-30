@@ -1,6 +1,9 @@
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
+import { isGptImage25EngineId } from '@/lib/image/gptImage2';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
+import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 
 function option(value: number | string | boolean | null | undefined): string | undefined {
   return value == null ? undefined : String(value);
@@ -12,6 +15,10 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   quantities: Record<string, number>;
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
+  // These factual owners price 0/1 references differently; neither count can alias a default cell.
+  const pricedReferences = (isGptImage25EngineId(facts.engineId) && context.mode === 'i2i')
+    || isLumaAgentsImageEngineId(facts.engineId)
+    || (isMinimaxH3EngineId(facts.engineId) && context.mode === 'ref2v');
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
@@ -25,7 +32,8 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
     ...(option(context.inheritedDurationSec) ? { inheritedDurationSec: option(context.inheritedDurationSec)! } : {}),
     ...(option(context.referenceTokenBudget) ? { referenceTokenBudget: option(context.referenceTokenBudget)! } : {}),
     ...(option(context.verifiedReferenceTokenCount) ? { verifiedReferenceTokenCount: option(context.verifiedReferenceTokenCount)! } : {}),
-    ...(context.referenceImageCount && context.referenceImageCount !== 1
+    ...(pricedReferences ? { referenceImageCount: String(context.referenceImageCount ?? 0) }
+      : context.referenceImageCount && context.referenceImageCount !== 1
       ? { referenceImageCount: String(context.referenceImageCount) } : {}),
     ...(context.inputImageCount && context.inputImageCount !== 1
       ? { inputImageCount: String(context.inputImageCount) } : {}),

@@ -1,34 +1,56 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import type { ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view-model';
 import { customerCentsForTargetMargin, decisionBasisLabel, decisionPercent, decisionUsd,
   pricingDecisionMetrics, simulateCustomerUnitPrice } from '../_lib/pricing-decision';
 import { tariffEditorSelection } from '../_lib/tariff-editor-selection';
 import { SupplierPriceDetails } from './SupplierPriceDetails';
+import { useCustomerTariffEditor, type CustomerTariffEditor } from '../_hooks/useCustomerTariffEditor';
+import { TariffVariantControls } from './TariffVariantControls';
+import { InlineTariffReview } from './InlineTariffReview';
 
 type Props = {
   row: ProviderCostComparisonRowView;
   disabled: boolean;
   onInspect: (row: ProviderCostComparisonRowView) => void;
-  onEdit?: (row: ProviderCostComparisonRowView, customerCents?: number) => void;
+  enabled?: boolean;
+  onScenarioRow?: (row: ProviderCostComparisonRowView) => void;
+  onSaved?: () => void | Promise<void>;
 };
 
-export function PricingDecisionPanel({ row, disabled, onInspect, onEdit }: Props) {
+export function PricingDecisionPanel({ row, disabled, onInspect, enabled = false, onScenarioRow, onSaved }: Props) {
+  const selection = useMemo(() => tariffEditorSelection(row), [row]);
+  const editor = useCustomerTariffEditor(selection, enabled, onSaved);
+  const displayedRow = editor.displayed?.supplierComparison ?? row;
+  useEffect(() => { onScenarioRow?.(displayedRow); }, [displayedRow, onScenarioRow]);
+  return <div className="border-t border-hairline bg-bg/50 p-3">
+    <TariffVariantControls editor={editor} disabled={disabled} />
+    <PricingDecisionContent key={displayedRow.scenarioId} row={displayedRow} disabled={disabled}
+      onInspect={onInspect} editor={editor} />
+  </div>;
+}
+
+function PricingDecisionContent({ row, disabled, onInspect, editor }: Pick<Props, 'row' | 'disabled' | 'onInspect'> & { editor: CustomerTariffEditor }) {
   const current = pricingDecisionMetrics(row);
   const [price, setPrice] = useState(current.customerUnitUsd == null ? '' : String(current.customerUnitUsd));
+  const [priceEdited, setPriceEdited] = useState(false);
+  useEffect(() => {
+    if (!priceEdited) setPrice(current.customerUnitUsd == null ? '' : String(current.customerUnitUsd));
+  }, [current.customerUnitUsd, priceEdited]);
   const [fees, setFees] = useState('');
   const suffix = current.unit === 'second' ? '/s' : '/image';
   const extraCostPerUnit = current.quantity ? Number(fees || 0) / current.quantity : Number.NaN;
   const simulation = price.trim() ? simulateCustomerUnitPrice(row, Number(price), extraCostPerUnit, 100) : null;
-  const canEdit = Boolean(onEdit && row.customerQuote?.currency === 'USD' && tariffEditorSelection(row));
+  const locked = disabled || editor.busy || editor.loading;
+  const canEdit = editor.editable && editor.exact?.scenarioId === row.scenarioId;
   const selectTarget = (percent: number) => {
     const cents = customerCentsForTargetMargin(row, percent, extraCostPerUnit);
-    if (cents != null && current.quantity) setPrice(String(Number((cents / 100 / current.quantity).toFixed(9))));
+    if (cents != null && current.quantity) { setPriceEdited(true); setPrice(String(Number((cents / 100 / current.quantity).toFixed(9)))); editor.cancelPreview(); }
   };
-  return <div className="border-t border-hairline bg-bg/50 p-3">
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.95fr)]">
+  return <div>
+    <div className="grid gap-3 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(280px,.95fr)]">
       <section className="min-w-0 rounded-lg border border-border bg-surface p-3" aria-label="Current profitability">
         <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-xs font-bold text-text-primary">Current profitability</h4>
           <span className={`rounded border px-1.5 py-0.5 text-[10px] ${current.costBasis === 'contract' ? 'border-info-border bg-info-bg text-info' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{decisionBasisLabel(current.costBasis)}</span></div>
@@ -46,31 +68,31 @@ export function PricingDecisionPanel({ row, disabled, onInspect, onEdit }: Props
         <p className="mt-2 text-[10px] leading-relaxed text-text-secondary">Margin = (price − cost) / price. Markup = (price − cost) / cost. Payment fees, retries and operating costs are excluded unless entered in the simulator.</p>
         {current.costBasis === 'other_provider' ? <p className="mt-1 text-[10px] text-amber-900">This cost belongs to another provider; it does not establish profitability on the execution route.</p> : null}
         <div className="mt-2 flex flex-wrap gap-2 border-t border-hairline pt-2">
-          <AdminActionButton type="button" size="sm" disabled={disabled || !canEdit} onClick={() => onEdit?.(row)}>Edit customer price</AdminActionButton>
           <AdminActionButton type="button" size="sm" disabled={disabled || !row.customerQuote} onClick={() => onInspect(row)}>Inspect policy</AdminActionButton>
         </div>
       </section>
       <section className="min-w-0 rounded-lg border border-[#cbb9ff] bg-[#f7f3ff] p-3" aria-label="Price simulator">
-        <h4 className="text-xs font-bold text-[#5937b8]">Price simulator · selected scenario only</h4>
+        <h4 className="text-xs font-bold text-[#5937b8]">Customer price · selected tariff</h4>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <label className="text-[10px] text-text-secondary">Customer price {suffix} · USD<input aria-label={`Proposed customer price / ${current.unit} (USD)`} type="number" min="0" step="0.0001" value={price} disabled={disabled}
-            onChange={(event) => setPrice(event.target.value)} className="mt-1 h-8 w-full rounded-md border border-[#cbb9ff] bg-surface px-2 text-sm tabular-nums text-text-primary" /></label>
-          <label className="text-[10px] text-text-secondary">Extra cost / generation · USD<input aria-label="Extra cost per generation (USD)" type="number" min="0" step="0.01" value={fees} placeholder="Not entered" disabled={disabled}
-            onChange={(event) => setFees(event.target.value)} className="mt-1 h-8 w-full rounded-md border border-border bg-surface px-2 text-sm tabular-nums text-text-primary" /></label>
+          <label className="text-[10px] text-text-secondary">Customer price {suffix} · USD<input aria-label={`Proposed customer price / ${current.unit} (USD)`} type="number" min="0" step="any" value={price} disabled={locked}
+            onChange={(event) => { setPriceEdited(true); setPrice(event.target.value); editor.cancelPreview(); }} className="mt-1 h-8 w-full rounded-md border border-[#cbb9ff] bg-surface px-2 text-sm tabular-nums text-text-primary" /></label>
+          <label className="text-[10px] text-text-secondary">Extra cost / generation · USD<input aria-label="Extra cost per generation (USD)" type="number" min="0" step="0.01" value={fees} placeholder="Not entered" disabled={locked}
+            onChange={(event) => { setFees(event.target.value); editor.cancelPreview(); }} className="mt-1 h-8 w-full rounded-md border border-border bg-surface px-2 text-sm tabular-nums text-text-primary" /></label>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label="Target margin presets"><span className="mr-1 text-[10px] text-text-secondary">Target margin</span>{[30, 50, 60].map((value) =>
-          <button key={value} type="button" disabled={disabled || customerCentsForTargetMargin(row, value, extraCostPerUnit) == null} onClick={() => selectTarget(value)}
+          <button key={value} type="button" disabled={locked || customerCentsForTargetMargin(row, value, extraCostPerUnit) == null} onClick={() => selectTarget(value)}
             className="min-h-7 rounded-md border border-[#cbb9ff] bg-surface px-2 text-xs font-semibold text-[#5937b8] disabled:opacity-40">{value}%</button>)}
-          <button type="button" disabled={disabled || current.customerUnitUsd == null} onClick={() => setPrice(String(current.customerUnitUsd))} className="min-h-7 rounded-md border border-border bg-surface px-2 text-xs">Current</button></div>
+          <button type="button" disabled={locked || current.customerUnitUsd == null} onClick={() => { setPriceEdited(false); setPrice(String(current.customerUnitUsd)); editor.cancelPreview(); }} className="min-h-7 rounded-md border border-border bg-surface px-2 text-xs">Current</button></div>
         <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-md border border-[#cbb9ff] bg-surface p-2 text-xs" aria-live="polite">
           <div><p className="text-[10px] text-text-muted">Rounded scenario price</p><strong className="tabular-nums">{decisionUsd(simulation?.metrics.customerTotalUsd ?? null)}</strong><span className="ml-1 text-[10px] text-text-muted">{decisionUsd(simulation?.metrics.customerUnitUsd ?? null)}{suffix}</span></div>
           <div><p className="text-[10px] text-text-muted">Margin after entered costs</p><strong className={`tabular-nums ${simulation?.contributionTotalUsd != null && simulation.contributionTotalUsd < 0 ? 'text-red-700' : 'text-text-primary'}`}>{decisionPercent(simulation?.contributionPercent ?? null)}</strong></div>
           <div><p className="text-[10px] text-text-muted">Break-even price {suffix}</p><strong className="tabular-nums">{decisionUsd(simulation?.breakEvenUnitUsd ?? null)}</strong></div>
           <div><p className="text-[10px] text-text-muted">Difference for 100 generations</p><strong className="tabular-nums">{decisionUsd(simulation?.volumeContributionUsd ?? null)}</strong></div>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2"><AdminActionButton type="button" variant="primary" size="sm" disabled={disabled || !canEdit || !simulation}
-          onClick={() => { if (simulation) onEdit?.(row, simulation.customerCents); }}>Prepare this price</AdminActionButton>
-          <span className="text-[10px] text-text-secondary">Preview → confirm in Customer prices.</span></div>
+        <div className="mt-2 flex flex-wrap items-center gap-2"><AdminActionButton type="button" variant="primary" size="sm" disabled={locked || !canEdit || !simulation}
+          onClick={() => { if (simulation) void editor.requestPreview(simulation.customerCents); }}>Preview price change</AdminActionButton>
+          <span className="text-[10px] text-text-secondary">{editor.loading ? 'Loading tariff…' : editor.inventory?.active ? 'Preview → confirm to apply.' : 'Preview → confirm a prepared price.'}</span></div>
+        <InlineTariffReview editor={editor} disabled={disabled} />
       </section>
     </div>
     <details className="mt-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs"><summary className="cursor-pointer font-semibold text-text-secondary">Supplier data, sources and quote history</summary>

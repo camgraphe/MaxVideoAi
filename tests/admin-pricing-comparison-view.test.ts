@@ -104,7 +104,7 @@ test('comparison summary puts exact per-second prices and indicative margin besi
       source: 'database', ruleId: 'current', pricingMode: 'legacy_margin_rule' },
   }], '2026-09-30T12:00:00Z');
   const dom = new JSDOM(renderToStaticMarkup(createElement(ProviderPriceComparisonTable, {
-    rows, disabled: false, onInspect: () => {}, onEdit: () => {},
+    rows, disabled: false, onInspect: () => {},
   })));
   const summary = dom.window.document.querySelector('section details > summary')!;
   assert.match(summary.textContent!, /Supplier \/s/);
@@ -114,7 +114,7 @@ test('comparison summary puts exact per-second prices and indicative margin besi
   assert.match(summary.textContent!, /60\.2%/);
   assert.match(summary.textContent!, /\$0\.1144\/s/);
   assert.match(summary.textContent!, /\$0\.95 total/);
-  assert.match(dom.window.document.body.textContent!, /Edit customer price/);
-  assert.match(dom.window.document.body.textContent!, /Prepare this price/);
+  assert.match(dom.window.document.body.textContent!, /Preview price change/);
+  assert.doesNotMatch(dom.window.document.body.textContent!, /Edit customer price|Prepare this price/);
   dom.window.close();
 });

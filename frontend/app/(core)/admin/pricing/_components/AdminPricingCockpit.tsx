@@ -1,7 +1,8 @@
 'use client';
 
-import { CircleDollarSign, History, RefreshCw, Scale, SlidersHorizontal } from 'lucide-react';
+import { History, RefreshCw, Scale, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useSWRConfig } from 'swr';
 
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
@@ -14,17 +15,21 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useAdminPricingCockpitController } from '../_hooks/useAdminPricingCockpitController';
 import { providerComparisonPolicySelectorKey, type ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view-model';
-import { tariffEditorSelection, type TariffEditorSelection } from '../_lib/tariff-editor-selection';
 import { PricingPolicyInspector } from './PricingPolicyInspector';
 import { PricingPolicyTable } from './PricingPolicyTable';
 import { ProviderPriceComparisonTable } from './ProviderPriceComparisonTable';
-import { CustomerTariffPanel } from './CustomerTariffPanel.client';
 
 export function AdminPricingCockpit() {
   const controller = useAdminPricingCockpitController();
-  const [activeTab, setActiveTab] = useState<'comparison' | 'tariffs' | 'rules' | 'history'>('comparison');
+  const { mutate } = useSWRConfig();
+  const refresh = async () => {
+    await Promise.all([controller.refresh(), mutate(
+      (key) => typeof key === 'string' && key.startsWith('/api/admin/pricing/tariffs/'),
+      undefined, { revalidate: true },
+    )]);
+  };
+  const [activeTab, setActiveTab] = useState<'comparison' | 'rules' | 'history'>('comparison');
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [tariffSelection, setTariffSelection] = useState<TariffEditorSelection | null>(null);
   const inspectorRef = useRef<HTMLDivElement>(null);
   const inventoryRows = controller.inventory?.rows ?? [];
   const databaseOverrideCount = inventoryRows.filter((row) => row.databaseOverride).length;
@@ -38,17 +43,6 @@ export function AdminPricingCockpit() {
     controller.selectRow(key);
     setInspectorOpen(true);
   };
-  const editComparison = (row: ProviderCostComparisonRowView, customerCents?: number) => {
-    const selection = tariffEditorSelection(row, customerCents);
-    if (!selection) return;
-    setTariffSelection(selection);
-    setActiveTab('tariffs');
-  };
-  const selectTab = (tab: typeof activeTab) => {
-    if (tab === 'tariffs' && activeTab !== 'tariffs') setTariffSelection(null);
-    setActiveTab(tab);
-  };
-
   useEffect(() => {
     if (activeTab === 'rules' && inspectorOpen) inspectorRef.current?.scrollIntoView({ block: 'start' });
   }, [activeTab, inspectorOpen, controller.selectedKey]);
@@ -59,33 +53,32 @@ export function AdminPricingCockpit() {
         title="Model pricing"
         description="See the customer price beside supplier evidence for each model."
         actions={
-          <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.refreshLocked}>
+          <AdminActionButton type="button" onClick={() => void refresh()} disabled={controller.refreshing || controller.refreshLocked}>
             <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </AdminActionButton>
         }
       />
 
-      <div className="grid grid-cols-4 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Model pricing sections">
+      <div className="grid grid-cols-3 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Model pricing sections">
         {([
-          { id: 'comparison', label: 'Price comparison', icon: Scale },
-          { id: 'tariffs', label: 'Customer prices', icon: CircleDollarSign },
+          { id: 'comparison', label: 'Pricing', icon: Scale },
           { id: 'rules', label: 'Pricing rules', icon: SlidersHorizontal },
           { id: 'history', label: 'History', icon: History },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} id={`pricing-tab-${id}`} type="button" role="tab"
             aria-selected={activeTab === id} aria-controls={`pricing-panel-${id}`}
             tabIndex={activeTab === id ? 0 : -1}
-            onClick={() => selectTab(id)}
+            onClick={() => setActiveTab(id)}
             onKeyDown={(event) => {
-              const tabs = ['comparison', 'tariffs', 'rules', 'history'] as const;
+              const tabs = ['comparison', 'rules', 'history'] as const;
               const index = tabs.indexOf(id);
               const nextIndex = event.key === 'ArrowRight' ? (index + 1) % tabs.length
                 : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
                   : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
               if (nextIndex < 0) return;
               event.preventDefault();
-              selectTab(tabs[nextIndex]);
+              setActiveTab(tabs[nextIndex]);
               document.getElementById(`pricing-tab-${tabs[nextIndex]}`)?.focus();
             }}
             className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-2 border-b-2 px-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:shrink-0 sm:px-4 sm:text-sm ${activeTab === id ? 'border-brand text-brand' : 'border-transparent text-text-secondary hover:text-text-primary'}`}>
@@ -113,15 +106,11 @@ export function AdminPricingCockpit() {
           <div id="pricing-panel-comparison" role="tabpanel" aria-labelledby="pricing-tab-comparison" hidden={activeTab !== 'comparison'}>
             {activeTab === 'comparison' ? <AdminSection
               title="Supplier cost and customer price"
-              description="Compare prices per second or image, then simulate a customer price. Margins are estimates unless the supplier contract is confirmed."
+              description="Compare prices per second or image, preview and confirm a customer price. Margins are estimates unless the supplier contract is confirmed."
             >
               <ProviderPriceComparisonTable rows={controller.inventory.providerComparisons}
-                disabled={controller.interactionLocked} onInspect={inspectComparison} onEdit={editComparison} />
+                disabled={controller.interactionLocked} onInspect={inspectComparison} onSaved={controller.refresh} />
             </AdminSection> : null}
-          </div>
-
-          <div id="pricing-panel-tariffs" role="tabpanel" aria-labelledby="pricing-tab-tariffs" hidden={activeTab !== 'tariffs'}>
-            {activeTab === 'tariffs' ? <CustomerTariffPanel initialSelection={tariffSelection} /> : null}
           </div>
 
           <div id="pricing-panel-rules" role="tabpanel" aria-labelledby="pricing-tab-rules" hidden={activeTab !== 'rules'}>

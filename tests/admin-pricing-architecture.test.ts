@@ -127,8 +127,10 @@ test('local decision analysis cannot resolve or persist commercial tariffs', () 
   const cockpit = readOrEmpty(cockpitPath);
   assert.doesNotMatch(decision, /quoteCanonicalPricing|quote-billing|@\/lib\/db|\bfetch\(|server-only/);
   assert.doesNotMatch(panel, /\bfetch\(|\/api\/admin|customer-tariff-service/);
-  assert.match(cockpit, /tariffEditorSelection/);
-  assert.match(cockpit, /initialSelection=\{tariffSelection\}/);
+  const editor = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_hooks/useCustomerTariffEditor.ts'));
+  assert.match(panel, /useCustomerTariffEditor/);
+  assert.match(editor, /previewFingerprint/);
+  assert.doesNotMatch(cockpit, /CustomerTariffPanel|pricing-panel-tariffs|label: 'Customer prices'/);
 });
 
 test('navigation exposes model pricing and billing products while membership remains historical', () => {

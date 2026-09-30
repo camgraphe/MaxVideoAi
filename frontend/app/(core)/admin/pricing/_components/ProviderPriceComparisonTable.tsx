@@ -20,7 +20,7 @@ type Props = {
   rows: ProviderCostComparisonRowView[];
   disabled: boolean;
   onInspect: (row: ProviderCostComparisonRowView) => void;
-  onEdit?: (row: ProviderCostComparisonRowView, customerCents?: number) => void;
+  onSaved?: () => void | Promise<void>;
 };
 
 const BRAND_LABELS: Record<string, string> = { bytedance: 'ByteDance' };
@@ -60,18 +60,21 @@ function PriceTile({ label, amount, caption, tone }: {
   </span>;
 }
 
-function ComparisonRow({ row, disabled, onInspect, onEdit }: { row: ProviderCostComparisonRowView } & Omit<Props, 'rows'>) {
-  const metrics = pricingDecisionMetrics(row);
+function ComparisonRow({ row, disabled, onInspect, onSaved }: { row: ProviderCostComparisonRowView } & Omit<Props, 'rows'>) {
+  const [open, setOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<ProviderCostComparisonRowView | null>(null);
+  const displayedRow = selectedRow ?? row;
+  const metrics = pricingDecisionMetrics(displayedRow);
   const suffix = metrics.unit === 'second' ? '/s' : '/image';
   const estimated = metrics.costBasis !== 'contract';
   const loss = metrics.grossTotalUsd != null && metrics.grossTotalUsd < 0;
   const uncertain = metrics.costBasis === 'other_provider' || metrics.costBasis === 'unknown' || metrics.marginPercent == null;
-  return <details className="group overflow-hidden rounded-xl border border-border bg-surface open:border-brand/40">
-    <summary className="grid cursor-pointer list-none grid-cols-3 items-center gap-2 p-3 transition hover:bg-bg/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden lg:grid-cols-[minmax(170px,1.5fr)_minmax(100px,.9fr)_minmax(100px,.9fr)_minmax(100px,.9fr)_76px]">
-      <span className="col-span-3 min-w-0 lg:col-span-1">
+  return <details onToggle={event => { if (event.target === event.currentTarget) setOpen(event.currentTarget.open); }} className="group overflow-hidden rounded-xl border border-border bg-surface open:border-brand/40">
+    <summary className="grid cursor-pointer list-none grid-cols-3 items-center gap-2 p-3 transition hover:bg-bg/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden min-[900px]:grid-cols-[minmax(150px,1.5fr)_minmax(100px,.9fr)_minmax(100px,.9fr)_minmax(100px,.9fr)_76px]">
+      <span className="col-span-3 min-w-0 min-[900px]:col-span-1">
         <span className="block text-sm font-bold text-text-primary">{displayName(row.engineId, MODEL_LABELS)}</span>
-        <span className="mt-0.5 block text-[11px] leading-relaxed text-text-secondary">{formatProviderComparisonScenario(row)}</span>
-        <span className={`mt-0.5 block text-[10px] ${uncertain ? 'text-amber-800' : 'text-text-muted'}`}>{decisionBasisLabel(metrics.costBasis)}{row.routeConfigured === false ? ' · generation disabled' : ''}</span>
+        <span className="mt-0.5 block text-[11px] leading-relaxed text-text-secondary">{formatProviderComparisonScenario(displayedRow)}</span>
+        <span className={`mt-0.5 block text-[10px] ${uncertain ? 'text-amber-800' : 'text-text-muted'}`}>{decisionBasisLabel(metrics.costBasis)}{displayedRow.routeConfigured === false ? ' · generation disabled' : ''}</span>
       </span>
       <PriceTile label={`Supplier ${suffix}`} amount={decisionUsd(metrics.supplierUnitUsd)} caption={`${decisionUsd(metrics.supplierTotalUsd)} total`} tone="supplier" />
       <PriceTile label={`Customer ${suffix}`} amount={decisionUsd(metrics.customerUnitUsd)} caption={`${decisionUsd(metrics.customerTotalUsd)} total`} tone="customer" />
@@ -80,13 +83,13 @@ function ComparisonRow({ row, disabled, onInspect, onEdit }: { row: ProviderCost
         <span className="mt-0.5 text-base font-bold leading-tight tabular-nums">{decisionPercent(metrics.marginPercent)}</span>
         <span className="mt-0.5 break-words text-[10px] tabular-nums">{decisionUsd(metrics.grossUnitUsd)}{metrics.grossUnitUsd == null ? '' : suffix}</span>
       </span>
-      <span className="col-span-3 inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-brand/30 bg-brand/10 px-2 text-xs font-semibold text-brand group-open:bg-brand group-open:text-white lg:col-span-1">Details<ChevronDown className="h-3 w-3 transition group-open:rotate-180" aria-hidden="true" /></span>
+      <span className="col-span-3 inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-brand/30 bg-brand/10 px-2 text-xs font-semibold text-brand group-open:bg-brand group-open:text-white min-[900px]:col-span-1">Details<ChevronDown className="h-3 w-3 transition group-open:rotate-180" aria-hidden="true" /></span>
     </summary>
-    <PricingDecisionPanel row={row} disabled={disabled} onInspect={onInspect} onEdit={onEdit} />
+    <PricingDecisionPanel row={row} disabled={disabled} onInspect={onInspect} enabled={open} onScenarioRow={setSelectedRow} onSaved={onSaved} />
   </details>;
 }
 
-export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onEdit }: Props) {
+export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onSaved }: Props) {
   const [filters, setFilters] = useState<ProviderComparisonFilters>({ brandId: 'all', executionProvider: 'all', mediaType: 'all', query: '' });
   const visible = useMemo(() => filterProviderComparisonRows(rows, filters), [rows, filters]);
   const groups = useMemo(() => groupByFamily(visible), [visible]);
@@ -147,7 +150,7 @@ export function ProviderPriceComparisonTable({ rows, disabled, onInspect, onEdit
         <section key={familyId} aria-label={`${displayName(familyId, BRAND_LABELS)} price comparison`} className="space-y-2">
           <div className="flex items-baseline justify-between gap-3"><h3 className="text-lg font-semibold text-text-primary">{displayName(familyId, BRAND_LABELS)}</h3><span className="text-xs text-text-muted">{entries.length} {entries.length === 1 ? 'scenario' : 'scenarios'}</span></div>
           <div className="grid gap-2">
-            {entries.map((row) => <ComparisonRow key={row.scenarioId} row={row} disabled={disabled} onInspect={onInspect} onEdit={onEdit} />)}
+            {entries.map((row) => <ComparisonRow key={row.scenarioId} row={row} disabled={disabled} onInspect={onInspect} onSaved={onSaved} />)}
           </div>
         </section>
       )) : <AdminEmptyState>No comparison scenarios match these filters.</AdminEmptyState>}

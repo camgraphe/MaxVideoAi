@@ -6,7 +6,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { buildProviderCostComparisonRows } from '../frontend/server/pricing-admin/provider-cost-comparison';
 
-test('the compact decision panel simulates a margin target and hands off exact total cents without saving', async () => {
+test('a closed decision panel simulates exact cents without reads or writes and cannot confirm', async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/admin/pricing' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   let writes = 0;
@@ -24,18 +24,17 @@ test('the compact decision panel simulates a margin target and hands off exact t
     tokenEvidence: 'scenario_estimate', customerQuote: { totalCents: 95, currency: 'USD', source: 'database',
       ruleId: 'live', pricingMode: 'legacy_margin_rule' } }], '2026-09-30T12:00:00Z');
   row.supplierList.amountUsd = 0.378;
-  let proposalCents: number | undefined;
   try {
     const { PricingDecisionPanel } = await import('../frontend/app/(core)/admin/pricing/_components/PricingDecisionPanel.client');
     await act(async () => root.render(React.createElement(PricingDecisionPanel, { row, disabled: false,
-      onInspect: () => {}, onEdit: (_row: unknown, cents?: number) => { proposalCents = cents; } })));
+      onInspect: () => {}, enabled: false })));
     assert.match(dom.window.document.body.textContent!, /60\.2%/);
     const target = [...dom.window.document.querySelectorAll('button')].find((el) => el.textContent === '50%')!;
     await act(async () => target.click());
     assert.match(dom.window.document.body.textContent!, /\$0\.76/);
-    const prepare = [...dom.window.document.querySelectorAll('button')].find((el) => el.textContent === 'Prepare this price')!;
-    await act(async () => prepare.click());
-    assert.equal(proposalCents, 76, 'only the selected five-second scenario total is proposed');
+    const preview = [...dom.window.document.querySelectorAll('button')].find((el) => el.textContent === 'Preview price change')!;
+    assert.equal(preview.disabled, true, 'a server-authoritative exact scenario is required before preview');
+    assert.equal([...dom.window.document.querySelectorAll('button')].some((el) => el.textContent === 'Confirm'), false);
     assert.equal(writes, 0);
   } finally {
     await act(async () => root.unmount()); dom.window.close();
