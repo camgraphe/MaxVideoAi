@@ -3381,6 +3381,11 @@
         "presetsLabel": "Ajouter des crédits",
         "otherAmountLabel": "Autre montant",
         "minLabel": "Min {amount}",
+        "creditsReceived": "Crédits reçus",
+        "paymentAmount": "Montant hors taxes",
+        "quoteLoading": "Calcul en cours…",
+        "quoteUnavailable": "Affiché par Stripe avant paiement",
+        "taxNote": "Des taxes peuvent s’ajouter. Stripe affiche le total final avant le paiement.",
         "captchaPrompt": "Vérification de sécurité requise avant le Checkout.",
         "captchaComplete": "Vérification terminée. Continuez vers le paiement.",
         "captchaError": "Vérification de sécurité indisponible. Réessayez.",
@@ -3388,7 +3393,7 @@
         "startError": "Impossible de démarrer le paiement. Réessayez.",
         "close": "Fermer",
         "maybeLater": "Plus tard",
-        "submit": "Ajouter des fonds",
+        "submit": "Vérifier le paiement",
         "submitting": "Top-up en cours…"
       },
       "authGate": {

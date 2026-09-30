@@ -3353,6 +3353,11 @@
         "presetsLabel": "Add credits",
         "otherAmountLabel": "Other amount",
         "minLabel": "Min {amount}",
+        "creditsReceived": "Credits received",
+        "paymentAmount": "Amount before tax",
+        "quoteLoading": "Calculating…",
+        "quoteUnavailable": "Shown by Stripe before payment",
+        "taxNote": "Tax may be added. Stripe shows the final total before payment.",
         "captchaPrompt": "Security check required before Checkout.",
         "captchaComplete": "Security check complete. Continue to payment.",
         "captchaError": "Security check unavailable. Try again.",
@@ -3360,7 +3365,7 @@
         "startError": "Unable to start payment. Try again.",
         "close": "Close",
         "maybeLater": "Maybe later",
-        "submit": "Add funds",
+        "submit": "Review payment",
         "submitting": "Starting top-up…"
       },
       "authGate": {

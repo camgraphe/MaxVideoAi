@@ -25,6 +25,7 @@ import type { useWorkspacePricingGate } from '../_hooks/useWorkspacePricingGate'
 import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState';
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
 import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
+import { formatWorkspaceTopupPaymentAmount } from '../_lib/workspace-topup';
 
 const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
@@ -192,9 +193,17 @@ export function WorkspaceAppReadyView({
     price,
     setAuthModalOpen,
     topUpAmount,
+    topUpChargeCurrency,
     topUpError,
     topUpModal,
+    topUpPaymentAmountMinor,
+    topUpQuoteError,
+    topUpQuoteLoading,
   } = pricing;
+  const topUpPaymentAmountLabel = topUpModal && typeof topUpPaymentAmountMinor === 'number'
+    && Number.isFinite(topUpPaymentAmountMinor) && topUpChargeCurrency
+      ? formatWorkspaceTopupPaymentAmount(topUpPaymentAmountMinor, topUpChargeCurrency, uiLocale)
+      : null;
   const {
     guidedNavigation,
     handleActiveGroupAction,
@@ -374,6 +383,9 @@ export function WorkspaceAppReadyView({
         topUpCopy={workspaceCopy.topUp}
         currency="USD"
         topUpAmount={topUpAmount}
+        paymentAmountLabel={topUpPaymentAmountLabel}
+        quoteLoading={topUpQuoteLoading}
+        quoteError={topUpQuoteError}
         isTopUpLoading={isTopUpLoading}
         topUpError={topUpError}
         checkoutCaptchaError={checkoutCaptchaError}

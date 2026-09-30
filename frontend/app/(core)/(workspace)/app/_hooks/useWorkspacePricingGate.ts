@@ -11,6 +11,7 @@ import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
 import { buildWorkspacePreflightRequest } from '../_lib/workspace-preflight-request';
 import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
+import { useWorkspaceTopupPaymentQuote } from './useWorkspaceTopupPaymentQuote';
 import {
   buildWorkspaceTopupAnalyticsPayload,
   getSufficientTopUpAmountCents,
@@ -48,6 +49,10 @@ type UseWorkspacePricingGateResult = {
   currency: string;
   topUpModal: TopUpModalState;
   topUpAmount: number;
+  topUpChargeCurrency: string;
+  topUpPaymentAmountMinor: number | null;
+  topUpQuoteLoading: boolean;
+  topUpQuoteError: boolean;
   isTopUpLoading: boolean;
   topUpError: string | null;
   checkoutCaptchaError: boolean;
@@ -96,19 +101,30 @@ export function useWorkspacePricingGate({
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);
   const [topUpError, setTopUpError] = useState<string | null>(null);
+  const {
+    chargeCurrency: topUpChargeCurrency,
+    paymentAmountMinor: topUpPaymentAmountMinor,
+    quoteLoading: topUpQuoteLoading,
+    quoteError: topUpQuoteError,
+  } = useWorkspaceTopupPaymentQuote({
+    accessToken,
+    amountCents: topUpAmount,
+    enabled: Boolean(topUpModal),
+  });
 
   const showComposerError = useCallback((message: string) => {
     setPreflightError(message);
   }, [setPreflightError]);
 
-  const handleHostedTopupStarted = useCallback(({ amountCents }: { amountCents: number; currency: string }) => {
-    const payload = buildWorkspaceTopupAnalyticsPayload(amountCents);
+  const handleHostedTopupStarted = useCallback(({ amountCents, currency }: { amountCents: number; currency: string }) => {
+    const payload = buildWorkspaceTopupAnalyticsPayload(amountCents, currency);
     void dispatchGaEvent('topup_started', payload);
     void dispatchGaEvent('topup_checkout_opened', payload);
   }, []);
 
   const handleHostedTopupFailed = useCallback(({
     amountCents,
+    currency,
     reason,
   }: {
     amountCents: number;
@@ -116,7 +132,7 @@ export function useWorkspacePricingGate({
     reason: string;
   }) => {
     void dispatchGaEvent('topup_failed', {
-      ...buildWorkspaceTopupAnalyticsPayload(amountCents),
+      ...buildWorkspaceTopupAnalyticsPayload(amountCents, currency),
       failure_category: classifyTopupFailure(reason),
     });
     setTopUpError(topUpCopy.startError);
@@ -139,7 +155,7 @@ export function useWorkspacePricingGate({
   } = useHostedWalletCheckout({
     accessToken,
     amountCents: topUpAmount,
-    currency: 'USD',
+    currency: topUpChargeCurrency,
     locale,
     source: 'workspace',
     returnTarget: '/app',
@@ -178,10 +194,10 @@ export function useWorkspacePricingGate({
   }, []);
 
   const handleConfirmTopUp = useCallback(() => {
-    if (!topUpModal) return;
+    if (!topUpModal || topUpQuoteLoading) return;
     setTopUpError(null);
     void startCheckout();
-  }, [startCheckout, topUpModal]);
+  }, [startCheckout, topUpModal, topUpQuoteLoading]);
 
   const handleTopUpSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
@@ -204,6 +220,10 @@ export function useWorkspacePricingGate({
       currency,
       topUpModal,
       topUpAmount,
+      topUpChargeCurrency,
+      topUpPaymentAmountMinor,
+      topUpQuoteLoading,
+      topUpQuoteError,
       isTopUpLoading,
       topUpError,
       checkoutCaptchaError,
@@ -243,6 +263,10 @@ export function useWorkspacePricingGate({
       showComposerError,
       setPreflightError,
       topUpAmount,
+      topUpChargeCurrency,
+      topUpPaymentAmountMinor,
+      topUpQuoteLoading,
+      topUpQuoteError,
       topUpError,
       topUpModal,
     ]

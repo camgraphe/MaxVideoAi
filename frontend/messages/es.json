@@ -3373,6 +3373,11 @@
         "presetsLabel": "Añadir créditos",
         "otherAmountLabel": "Otro importe",
         "minLabel": "Mín. {amount}",
+        "creditsReceived": "Créditos recibidos",
+        "paymentAmount": "Importe sin impuestos",
+        "quoteLoading": "Calculando…",
+        "quoteUnavailable": "Stripe lo muestra antes del pago",
+        "taxNote": "Pueden añadirse impuestos. Stripe muestra el total final antes del pago.",
         "captchaPrompt": "Verificación de seguridad requerida antes del Checkout.",
         "captchaComplete": "Verificación completada. Continúa al pago.",
         "captchaError": "Verificación de seguridad no disponible. Inténtalo de nuevo.",
@@ -3380,7 +3385,7 @@
         "startError": "No se pudo iniciar el pago. Inténtalo de nuevo.",
         "close": "Cerrar",
         "maybeLater": "Más tarde",
-        "submit": "Añadir fondos",
+        "submit": "Revisar el pago",
         "submitting": "Iniciando recarga…"
       },
       "authGate": {
