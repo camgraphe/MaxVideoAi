@@ -30,10 +30,11 @@ export async function persistRefundReceipt(params: {
        stripe_charge_id,
        stripe_refund_id,
        platform_revenue_cents,
-       destination_acct
+       destination_acct,
+       metadata
      )
      VALUES (
-       $1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13
+       $1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13,$14::jsonb
      )
      ON CONFLICT DO NOTHING`,
     [
@@ -45,11 +46,14 @@ export async function persistRefundReceipt(params: {
       JSON.stringify(receipt.snapshot),
       priceOnly ? null : 0,
       priceOnly ? null : receipt.vendorAccountId,
-      receipt.stripePaymentIntentId ?? null,
-      receipt.stripeChargeId ?? null,
+      // Charge columns are globally unique; refunds retain their original payment links in metadata.
+      null,
+      null,
       stripeRefundId ?? null,
       priceOnly ? null : 0,
       priceOnly ? null : receipt.vendorAccountId,
+      JSON.stringify({ original_stripe_payment_intent_id: receipt.stripePaymentIntentId ?? null,
+        original_stripe_charge_id: receipt.stripeChargeId ?? null }),
     ]
   );
 

@@ -11,13 +11,14 @@ export function resolveWalletDirectGenerationMode(
 export function getWalletDirectPricingRefusal(
   engine: EngineCaps,
   mode: Mode,
-): 'validated_reference_count_required' | 'trusted_input_audio_duration_required' | null {
+): 'validated_reference_count_required' | 'trusted_input_audio_duration_required' | 'trusted_media_pricing_required' | null {
   if (engine.pricingDetails?.referenceImages?.modes.includes(mode)) {
     return 'validated_reference_count_required';
   }
   if (engine.pricingDetails?.byMode?.[mode]?.durationBasis === 'input_audio') {
     return 'trusted_input_audio_duration_required';
   }
+  if (mode !== 't2v') return 'trusted_media_pricing_required';
   return null;
 }
 

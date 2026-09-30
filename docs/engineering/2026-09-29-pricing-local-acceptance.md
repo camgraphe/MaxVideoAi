@@ -74,3 +74,12 @@ The two validator stages together verify **6,308 passing tests** with two skips.
 6. Implement and exercise the full activation gate on an isolated local database only: complete coverage, zero cent delta, matching registry hash and effective DB revision, stale-confirmation rejection, and no active-model fallback to the global 30% rule.
 
 The global 30% rule is still the live legacy authority while manual tariffs are inactive. Removing it globally and activating production prices are separate release operations after these gates; this continuation does neither.
+
+
+## Original direct quote continuation — 2026-09-30
+
+The new direct checkout persists an immutable complete quote before exposing its Stripe client secret. Paid preflight and initial job creation preserve the original retail cents, revision and settlement currency/FX after a tariff edit. The shared generation normalizer binds duration/resolution/aspect/loop and the three audio states. The legacy direct endpoint refuses input-media modes that it cannot quote from trusted facts; wallet generation is unchanged.
+
+Disposable PostgreSQL tests cover revision 7 → current revision 8 without repricing; original EUR settlement under a later USD profile; immutable records; stale new quote rejection; different user/job/scenario or refunded payment refusal; original charge/refund cents and snapshots under actual global Stripe receipt indexes; and failed Stripe creation retries with identical original quote, payment parameters and idempotency key. Thirty-seven focused tests pass with zero failures; TypeScript, focused server ESLint, app lint and diff check pass. A fresh review drove additional corrections to job creation and refund paths. Full validator results are recorded below after this continuation's final run.
+
+Migration 56 is authored and included in the isolated sandbox launcher only. Global model tariff activation remains false. No deployment, push, production write, real Stripe call, supplier generation or support message took place. Existing captured PaymentIntents without an immutable quote ID remain a separate release/reconciliation gate and fail closed; this acceptance does not claim their migration.

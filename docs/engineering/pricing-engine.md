@@ -64,7 +64,21 @@ Browser consumers invalidate their displayed estimates on the refresh response. 
 
 An existing owned paid job or recovered charge keeps its stored snapshot and amount. Image execution resolves an owned persisted image/storyboard job before current-price validation, reference access or provider submission. Included Kling first frames use the separately validated owned paid parent bundle and do not create another charge. Tests exercise a paid revision-7 image recovery while the current tariff state is revision 8, and new video/image reservations that reject stale revisions without changing the wallet or inserting a job.
 
-This is an inactive integration. Global activation still requires complete capability coverage, a reviewed versioned seed, real supplier/settlement provenance and the direct-payment contract. In particular, a captured Stripe PaymentIntent must be bound to its original paid quote through recovery and refunds before manual tariffs can be enabled for direct generation. Recording its revision in metadata alone does not satisfy that gate.
+This is an inactive integration. Global activation still requires complete capability coverage, a reviewed versioned seed and real supplier/settlement provenance. The new direct-payment quote contract is implemented and tested locally; pre-existing unbound PaymentIntents still require inventory/reconciliation before any production cutover.
+
+### Captured direct payments and immutable original quotes (2026-09-30)
+
+Migration 56 adds `app_direct_payment_quotes`. The complete server-owned customer snapshot, exact normalized generation scenario, owner/job and original settlement cents/currency/FX are inserted before exposing a Stripe client secret. Update and delete are rejected in PostgreSQL. Creation holds the shared job reservation lock and tariff revision lock; the current tariff must match when a new quote is persisted.
+
+`wallet-direct-checkout.ts` reuses the generation options normalizer and the canonical billing owner. It currently accepts text-to-video only: image/reference/video/audio-input modes require trusted media facts from generation preflight, so the legacy direct checkout refuses them before payment creation. Audio retains three states (unspecified, off, on); provider-default audio cannot alias a paid audio-off scenario. The normalized loop is bound for all engines.
+
+A retry of an unconsumed quote within 23 hours reuses the original quote and the stable Stripe idempotency key, including its original settlement parameters. A different owner/scenario, expired creation attempt, existing paid job or receipt is refused. This time bound applies to new intent creation retries only; an already captured payment continues from its stored quote without expiry or a current-price/FX read.
+
+Paid preflight verifies Stripe `kind`, owner, job, immutable quote ID, exact scenario, captured amount and currency. The expanded latest charge must not report a partial/full refund. Those refund fields follow the [Stripe Charge object contract](https://docs.stripe.com/api/charges/object). Current tariff, membership, geo currency and FX changes do not reprice the paid request. The initial job transaction validates the original quote/receipt and rejects previously refunded jobs; an existing job tied to a different captured intent returns a conflict for the incoming payment rollback.
+
+Refund snapshots and USD ledger cents retain the original paid quote. Receipt charge/payment-intent columns are globally unique in the application schema, so refund rows retain the original Stripe references in `metadata.original_stripe_payment_intent_id` and `metadata.original_stripe_charge_id`; the dedicated `stripe_refund_id` remains on the refund row. This permits both charged and refunded receipts without weakening existing payment uniqueness constraints. Disposable PostgreSQL acceptance includes those real uniqueness indexes.
+
+This work does not migrate production or activate model tariffs. Existing captured intents without `direct_quote_id` fail closed with `DIRECT_PAYMENT_QUOTE_UNAVAILABLE`; no price is reconstructed from today's tariff. Deployment requires migration 56 and an explicit reconciliation decision for such legacy payments.
 
 See the [local acceptance record](2026-09-29-pricing-local-acceptance.md) for the tested scope and remaining work.
 

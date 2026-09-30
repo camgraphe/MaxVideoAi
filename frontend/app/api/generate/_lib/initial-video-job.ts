@@ -5,6 +5,8 @@ import { lockInitialJobReservation, runInitialJobTransaction, type WalletReserva
 import { validateInitialVideoFunding } from './initial-video-job-funding';
 import { lockQuotedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
 
+import { validateCapturedDirectJobQuote, DirectPaymentQuoteError } from '@/server/pricing/direct-payment-quotes';
+
 const DISPLAY_CURRENCY = 'USD';
 
 export type PaymentMode = 'wallet' | 'direct' | 'platform' | 'mcp_trial';
@@ -69,6 +71,7 @@ export type ExistingVideoJobRow = {
   iteration_count: number | null;
   render_ids: unknown;
   hero_render_id: string | null;
+  stripe_payment_intent_id?: string | null;
 };
 
 type ExistingVideoChargeRow = {
@@ -307,7 +310,8 @@ export async function createInitialVideoJobInExecutor(
        iteration_index,
        iteration_count,
        render_ids,
-       hero_render_id
+       hero_render_id,
+       stripe_payment_intent_id
      FROM app_jobs
      WHERE job_id = $1
      LIMIT 1`,
@@ -323,6 +327,10 @@ export async function createInitialVideoJobInExecutor(
         metricKind: 'rejected',
         metricCode: 'JOB_ID_CONFLICT',
       });
+    }
+    if (params.paymentMode === 'direct' && existingJob.stripe_payment_intent_id !== params.pendingReceipt?.stripePaymentIntentId) {
+      throw new VideoInitialJobError('This job belongs to another payment.', { status: 409,
+        body: { ok: false, error: 'PAYMENT_JOB_CONFLICT' }, metricKind: 'rejected', metricCode: 'PAYMENT_JOB_CONFLICT' });
     }
     return { kind: 'existing_job', job: existingJob };
   }
@@ -464,7 +472,16 @@ export async function createInitialVideoJobInExecutor(
     }
   }
 
-  if (includedTrialFunding || params.paymentMode !== 'wallet') await validateInitialVideoTariffRevision(executor, params);
+  if (params.paymentMode === 'direct') {
+    try {
+      await validateCapturedDirectJobQuote(executor, { userId: params.userId, jobId: params.jobId, engineId: params.jobInsert.engineId,
+        amountCents: params.jobInsert.finalPriceCents, receipt: params.pendingReceipt });
+    } catch (error) {
+      if (!(error instanceof DirectPaymentQuoteError)) throw error;
+      throw new VideoInitialJobError(error.code === 'JOB_ALREADY_REFUNDED' ? 'This request was already refunded.' : error.message,
+        { status: error.status, body: { ok: false, error: error.code }, metricKind: 'rejected', metricCode: error.code });
+    }
+  } else if (includedTrialFunding || params.paymentMode !== 'wallet') await validateInitialVideoTariffRevision(executor, params);
   await insertProvisionalVideoJob(executor, params.jobInsert);
 
   if (includedTrialFunding) {

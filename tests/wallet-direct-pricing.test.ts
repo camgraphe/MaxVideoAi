@@ -28,3 +28,15 @@ test('legacy wallet direct pricing fails closed when validated media facts are r
   assert.equal(getWalletDirectPricingRefusal(grok, 'ref2v'), 'validated_reference_count_required');
   assert.equal(getWalletDirectPricingRefusal(ltx, 'a2v'), 'trusted_input_audio_duration_required');
 });
+
+
+test('direct checkout refuses modes whose price needs validated media instead of guessing their quantities', () => {
+  assert.equal(getWalletDirectPricingRefusal(engine('wan-3'), 'extend'), 'trusted_media_pricing_required');
+  assert.equal(getWalletDirectPricingRefusal(engine('minimax-h3-max'), 'ref2v'), 'trusted_media_pricing_required');
+  assert.equal(getWalletDirectPricingRefusal(engine('seedance-2-0'), 'ref2v'), 'trusted_media_pricing_required');
+});
+
+
+test('direct checkout refuses image modes whose verified source dimensions are only known in generation preflight', () => {
+  assert.equal(getWalletDirectPricingRefusal(engine('seedance-2-5'), 'i2v'), 'trusted_media_pricing_required');
+});

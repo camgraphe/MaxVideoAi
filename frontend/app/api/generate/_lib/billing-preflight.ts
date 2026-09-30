@@ -21,18 +21,12 @@ import type { PaymentMode, PendingReceipt } from './initial-video-job';
 import { CUSTOMER_TARIFF_REVISION_HEADER } from '@/lib/customer-tariff-revision';
 import { assertDisplayedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
 
+import { loadDirectPaymentQuote, resolveCapturedDirectPaymentQuote, DirectPaymentQuoteError, type DirectPaymentQuote, type DirectPaymentIntent } from '@/server/pricing/direct-payment-quotes';
+
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
 
-type PaymentIntentLike = {
-  id: string;
-  status: string;
-  amount?: number | null;
-  amount_received?: number | null;
-  currency?: string | null;
-  latest_charge?: string | { id?: string | null } | null;
-  metadata?: Record<string, string | undefined>;
-};
+type PaymentIntentLike = DirectPaymentIntent;
 
 type BillingPreflightDeps = {
   getUserPreferredCurrencyFn?: typeof getUserPreferredCurrency;
@@ -44,6 +38,7 @@ type BillingPreflightDeps = {
   receiptsPriceOnlyEnabledFn?: typeof receiptsPriceOnlyEnabled;
   buildReceiptSnapshotFn?: typeof buildReceiptSnapshot;
   getPlatformFeeCentsFn?: typeof getPlatformFeeCents;
+  loadDirectPaymentQuoteFn?: typeof loadDirectPaymentQuote;
   retrievePaymentIntentFn?: (paymentIntentId: string) => Promise<PaymentIntentLike>;
   ensureUserPreferredCurrencyFn?: typeof ensureUserPreferredCurrency;
 };
@@ -113,7 +108,7 @@ export async function resolveGenerateBillingPreflight(params: {
   voiceControl: boolean;
   deps?: BillingPreflightDeps;
 }): Promise<GenerateBillingPreflightResult> {
-  if (requiresMembershipPricingRefresh(params.membershipTier)) {
+  if (params.payment.mode !== 'direct' && requiresMembershipPricingRefresh(params.membershipTier)) {
     return { ok: false, status: 409, body: { ok: false, error: 'PRICING_REFRESH_REQUIRED', message: MEMBERSHIP_PRICING_REFRESH_MESSAGE } };
   }
   const deps = params.deps ?? {};
@@ -156,15 +151,35 @@ export async function resolveGenerateBillingPreflight(params: {
     params.req,
     preferredCurrency ? { preferred_currency: preferredCurrency } : undefined
   );
-  const resolvedCurrencyLower = currencyResolution.currency;
-  const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
+  let resolvedCurrencyLower = currencyResolution.currency;
+  let resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
+
+  let capturedQuote: DirectPaymentQuote | null = null;
+  let capturedIntent: PaymentIntentLike | null = null;
+  if (params.payment.mode === 'direct') {
+    if (!params.userId) return { ok: false, status: 401, body: { ok: false, error: 'Direct payment requires authentication' } };
+    if (!ENV.STRIPE_SECRET_KEY && !deps.retrievePaymentIntentFn) return { ok: false, status: 501, body: { ok: false, error: 'Stripe not configured' } };
+    if (!params.payment.paymentIntentId) return { ok: false, status: 400, body: { ok: false, error: 'PaymentIntent required for direct mode' } };
+    capturedIntent = await retrievePaymentIntent(params.payment.paymentIntentId, deps.retrievePaymentIntentFn);
+    try {
+      capturedQuote = await resolveCapturedDirectPaymentQuote({ intent: capturedIntent, userId: params.userId, jobId: params.jobId,
+        scenario: { engineId: params.engine.id, mode: params.mode, durationSec: params.durationSec, resolution: params.pricingResolution,
+          aspectRatio: params.aspectRatio, loop: params.loop, audioEnabled: params.audioEnabled ?? null, voiceControl: params.voiceControl },
+        loadQuote: deps.loadDirectPaymentQuoteFn });
+      resolvedCurrencyLower = capturedQuote.settlement.currency.toLowerCase() as Currency;
+      resolvedCurrencyUpper = capturedQuote.settlement.currency;
+    } catch (error) {
+      if (!(error instanceof DirectPaymentQuoteError)) throw error;
+      return { ok: false, status: error.status, body: { ok: false, error: error.code }, metric: { errorCode: error.code, meta: { paymentIntentId: capturedIntent.id } } };
+    }
+  }
 
   const pricingEngine = applyEngineVariantPricingFn(params.engine, params.mode);
   const pricingAddons = buildEngineAddonInputFn(pricingEngine, {
     audioEnabled: params.audioEnabled,
     voiceControl: params.voiceControl,
   });
-  const pricing = await computePricingSnapshotFn({
+  const pricing = capturedQuote ? structuredClone(capturedQuote.pricing) : await computePricingSnapshotFn({
     engine: pricingEngine,
     durationSec: params.durationSec,
     resolution: params.pricingResolution,
@@ -187,12 +202,12 @@ export async function resolveGenerateBillingPreflight(params: {
     currency: DISPLAY_CURRENCY,
     addons: pricingAddons,
   });
-  try { assertDisplayedCustomerTariffRevision(params.req.headers.get(CUSTOMER_TARIFF_REVISION_HEADER), pricing); }
+  try { if (!capturedQuote) assertDisplayedCustomerTariffRevision(params.req.headers.get(CUSTOMER_TARIFF_REVISION_HEADER), pricing); }
   catch (error) {
     if (!(error instanceof CustomerTariffRevisionError)) throw error;
     return { ok: false, status: 409, body: { ok: false, error: error.code, message: error.message } };
   }
-  const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = await convertCentsFn(
+  const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = capturedQuote ? { cents: capturedQuote.settlement.amountCents, rate: capturedQuote.settlement.fxRate, source: capturedQuote.settlement.fxSource } : await convertCentsFn(
     pricing.totalCents,
     DISPLAY_CURRENCY_LOWER,
     resolvedCurrencyLower
@@ -240,10 +255,11 @@ export async function resolveGenerateBillingPreflight(params: {
   pricing.meta = {
     ...(pricing.meta ?? {}),
     request: requestMeta,
-    currency_source: currencyResolution.source,
-    currency_country: currencyResolution.country ?? null,
+    ...(capturedQuote ? { directPaymentQuoteId: capturedQuote.id } : {}),
+    currency_source: capturedQuote ? (pricing.meta?.currency_source ?? 'paid_quote') : currencyResolution.source,
+    currency_country: capturedQuote ? (pricing.meta?.currency_country ?? null) : currencyResolution.country ?? null,
     display_currency: DISPLAY_CURRENCY,
-    settlement_currency: resolvedCurrencyUpper,
+    settlement_currency: capturedQuote?.settlement.currency ?? resolvedCurrencyUpper,
     settlement_amount_cents: settlementAmountCents,
     settlement_fx_rate: settlementFxRate,
     settlement_fx_source: settlementFxSource,
@@ -290,49 +306,7 @@ export async function resolveGenerateBillingPreflight(params: {
     };
     paymentStatus = 'paid_wallet';
   } else if (paymentMode === 'direct') {
-    if (!ENV.STRIPE_SECRET_KEY && !deps.retrievePaymentIntentFn) {
-      return {
-        ok: false,
-        status: 501,
-        body: { ok: false, error: 'Stripe not configured' },
-        metric: { errorCode: 'STRIPE_NOT_CONFIGURED', meta: { paymentMode } },
-      };
-    }
-    if (!params.userId) {
-      return {
-        ok: false,
-        status: 401,
-        body: { ok: false, error: 'Direct payment requires authentication' },
-        metric: { errorCode: 'DIRECT_AUTH_REQUIRED', meta: { paymentMode } },
-      };
-    }
-    if (!params.payment.paymentIntentId) {
-      return {
-        ok: false,
-        status: 400,
-        body: { ok: false, error: 'PaymentIntent required for direct mode' },
-        metric: { errorCode: 'PAYMENT_INTENT_MISSING', meta: { paymentMode } },
-      };
-    }
-
-    const intent = await retrievePaymentIntent(params.payment.paymentIntentId, deps.retrievePaymentIntentFn);
-    const receivedSettlementCents = intent.amount_received ?? intent.amount ?? 0;
-    const metadataSettlementCents = intent.metadata?.settlement_amount_cents
-      ? Number(intent.metadata.settlement_amount_cents)
-      : null;
-    const expectedSettlementCents =
-      metadataSettlementCents && metadataSettlementCents > 0
-        ? metadataSettlementCents
-        : (await convertCentsFn(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower)).cents;
-    if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
-      return {
-        ok: false,
-        status: 402,
-        body: { ok: false, error: 'Payment not captured yet' },
-        metric: { errorCode: 'PAYMENT_NOT_CAPTURED', meta: { paymentIntentId: intent.id } },
-      };
-    }
-
+    const intent = capturedIntent!;
     const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
     if (intentCurrency !== resolvedCurrencyUpper) {
       console.warn('[payments] payment intent currency mismatch', {
@@ -372,13 +346,9 @@ export async function resolveGenerateBillingPreflight(params: {
       };
     }
 
-    const metadataWalletAmountCents = intent.metadata?.wallet_amount_cents
-      ? Number(intent.metadata.wallet_amount_cents)
-      : pricing.totalCents;
-
     pendingReceipt = {
       userId: String(params.userId),
-      amountCents: metadataWalletAmountCents,
+      amountCents: pricing.totalCents,
       currency: DISPLAY_CURRENCY,
       description: `Run ${params.engine.label} - ${params.durationSec}s`,
       jobId: params.jobId,
