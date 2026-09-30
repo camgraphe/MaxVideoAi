@@ -6877,7 +6877,7 @@
       "accountRedirecting": "Compte créé. Redirection…",
       "confirmEmail": "Si votre compte nécessite une confirmation, consultez vos e-mails. Vous avez déjà un compte ? Connectez-vous ou choisissez « Mot de passe oublié ? » sur le formulaire de connexion pour récupérer votre accès.",
       "sendingReset": "Envoi du lien…",
-      "resetSent": "Si un compte existe pour cette adresse e-mail, vous recevrez un lien de réinitialisation. Vérifiez votre boîte de réception et vos courriers indésirables.",
+      "resetSent": "Si un compte existe pour cette adresse, vous recevrez un lien par email. Vérifiez aussi les indésirables.",
       "resetUnavailable": "Impossible d’envoyer le lien de réinitialisation. Réessayez plus tard. Si le problème persiste, contactez l’assistance.",
       "resetRateLimited": "Trop de demandes. Patientez quelques minutes avant de demander un nouveau lien.",
       "googleUnavailable": "La connexion Google est indisponible car l’URL de redirection n’a pas pu être déterminée.",

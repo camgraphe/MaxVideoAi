@@ -147,6 +147,7 @@
 .app-experience .app-reference-field { min-width: 0; border-top: 1px solid var(--app-line); padding: 6px 0; }
 .app-experience .app-reference-field-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
 .app-experience .app-reference-field-heading strong { font-weight: 550; }
+.app-experience .app-reference-limits { margin: 5px 0 8px; color: var(--app-muted); font-size: 11px; line-height: 1.6; }
 .app-experience .app-reference-field-heading small, .app-experience .app-reference-slot-label small { color: var(--app-muted); font-size: 11px; }
 .app-experience .app-reference-slots { display: flex; flex-wrap: wrap; gap: 8px; }
 .app-experience .app-workspace-asset-slot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; width: 100%; padding-top: 5px; }

@@ -6869,7 +6869,7 @@
       "accountRedirecting": "Cuenta creada. Redirigiendo…",
       "confirmEmail": "Si tu cuenta necesita confirmación, revisa tu correo. ¿Ya tienes una cuenta? Inicia sesión o elige «¿Olvidaste tu contraseña?» en el formulario de acceso para recuperarla.",
       "sendingReset": "Enviando enlace…",
-      "resetSent": "Si existe una cuenta con este correo electrónico, recibirás un enlace de restablecimiento. Revisa tu bandeja de entrada y la carpeta de spam.",
+      "resetSent": "Si existe una cuenta con este correo, recibirás un enlace para restablecer la contraseña. Revisa también la carpeta de spam.",
       "resetUnavailable": "No pudimos enviar el enlace de restablecimiento. Inténtalo más tarde. Si el problema persiste, contacta con soporte.",
       "resetRateLimited": "Demasiadas solicitudes. Espera unos minutos antes de solicitar otro enlace.",
       "googleUnavailable": "El acceso con Google no está disponible porque no se pudo resolver la URL de redirección.",

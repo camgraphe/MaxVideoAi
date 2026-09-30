@@ -6849,7 +6849,7 @@
       "accountRedirecting": "Account created. Redirecting…",
       "confirmEmail": "If your account needs confirmation, check your inbox. Already have an account? Log in, or choose “Forgot password?” on the login form to recover access.",
       "sendingReset": "Sending reset link…",
-      "resetSent": "If an account exists for this email address, you will receive a reset link. Check your inbox and spam folder.",
+      "resetSent": "If an account exists for this email, you’ll receive a reset link. Check your inbox and spam.",
       "resetUnavailable": "We couldn't send the reset link. Please try again later. If the problem persists, contact support.",
       "resetRateLimited": "Too many requests. Please wait a few minutes before requesting another link.",
       "googleUnavailable": "Google sign-in is unavailable because the auth redirect URL could not be resolved.",

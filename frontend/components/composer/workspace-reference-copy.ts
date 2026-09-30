@@ -22,6 +22,11 @@ export function resolveWorkspaceReferenceFieldTitle(
   role: AssetFieldRole,
   locale: string
 ): string {
+  if (role === 'reference' && ['reference_image_urls', 'reference_video_urls', 'reference_audio_urls'].includes(field.id)
+    && /^reference (images|videos|audio)$/i.test(field.label.trim())) {
+    const kind = field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image';
+    return workspaceReferenceCopy(locale).kinds[kind];
+  }
   if (locale !== 'fr' && locale !== 'es') return field.label;
   const label = field.label.trim();
   const capacity = typeof field.maxCount === 'number' && Number.isFinite(field.maxCount) && field.maxCount > 1

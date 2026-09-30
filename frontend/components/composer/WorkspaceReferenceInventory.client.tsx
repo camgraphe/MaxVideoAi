@@ -23,7 +23,7 @@ export function WorkspaceReferenceInventory({ fields, assets, locale, renderFiel
       {fields.map(entry => {
         const kind = entry.field.type === 'audio' ? 'audio' : entry.field.type === 'video' ? 'video' : 'image';
         const isSourceVideo = kind === 'video' && entry.field.id === 'video_url';
-        const isKnownCollection = ['image_urls', 'video_urls', 'audio_urls'].includes(entry.field.id);
+        const isKnownCollection = ['image_urls', 'video_urls', 'audio_urls', 'reference_image_urls', 'reference_video_urls', 'reference_audio_urls'].includes(entry.field.id);
         const label = isSourceVideo ? locale === 'fr' ? 'Vidéo source' : locale === 'es' ? 'Video fuente' : 'Source video'
           : isKnownCollection ? copy.kinds[kind]
           : resolveWorkspaceReferenceFieldTitle(entry.field, entry.role ?? 'generic', locale);

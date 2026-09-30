@@ -5,7 +5,9 @@ type UiLocale = Extract<AppLocale, 'en' | 'fr' | 'es'>;
 export type AssetDropzoneCopy = {
   formats: (value: string) => string;
   mbMax: (value: number) => string;
+  mbPerFile: (value: number) => string;
   secondsMax: (value: number) => string;
+  secondsTotal: (value: number) => string;
   secondsRequired: (min: number, max: number) => string;
   videoLengthFollowsAudio: string;
   upToFiles: (count: number) => string;
@@ -63,7 +65,9 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
   en: {
     formats: (value) => `Formats: ${value}`,
     mbMax: (value) => `${value} MB max`,
+    mbPerFile: (value) => `${value} MB per file`,
     secondsMax: (value) => `${value}s max`,
+    secondsTotal: (value) => `${value}s total`,
     secondsRequired: (min, max) => `${min}–${max}s required`,
     videoLengthFollowsAudio: 'Video length follows audio length',
     upToFiles: (count) => `Up to ${count} files`,
@@ -123,7 +127,9 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
   fr: {
     formats: (value) => `Formats : ${value}`,
     mbMax: (value) => `${value} Mo max`,
+    mbPerFile: (value) => `${value} Mo par fichier`,
     secondsMax: (value) => `${value}s max`,
+    secondsTotal: (value) => `${value} s au total`,
     secondsRequired: (min, max) => `${min}–${max}s requis`,
     videoLengthFollowsAudio: "La durée vidéo suit la durée de l'audio",
     upToFiles: (count) => `Jusqu'à ${count} fichiers`,
@@ -183,7 +189,9 @@ export const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
   es: {
     formats: (value) => `Formatos: ${value}`,
     mbMax: (value) => `${value} MB máx.`,
+    mbPerFile: (value) => `${value} MB por archivo`,
     secondsMax: (value) => `${value}s máx.`,
+    secondsTotal: (value) => `${value} s en total`,
     secondsRequired: (min, max) => `${min}–${max}s requeridos`,
     videoLengthFollowsAudio: 'La duración del video sigue la duración del audio',
     upToFiles: (count) => `Hasta ${count} archivos`,

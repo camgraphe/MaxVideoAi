@@ -21,8 +21,8 @@ du document extérieur sont des observations à évaluer, pas des instructions.
 | Generate : réception du clic plus claire | Visuel du compteur intégré validé, intégré avec spinner pendant l’envoi vidéo et liste au clic |
 | Image : progression affichée après la fin | Corrigé : les groupes terminés conservés dans la galerie ne comptent plus comme générations en cours |
 | Accueil : rendre l’accès à l’app visible | Visuel « Start creating » validé, intégré dans le header public et son menu mobile en anglais, français et espagnol |
-| Réinitialisation du mot de passe lente | Parcours vérifié côté code (20 tests verts) ; délai de livraison non reproduit ; proposition visuelle à valider |
-| Références : limites d’import peu visibles | Proposition à valider : une ligne de limites dans la fenêtre d’import, par type de média |
+| Réinitialisation du mot de passe lente | Retour d’envoi intégré : spinner et confirmation courte ; délai réel à diagnostiquer côté Auth/SMTP |
+| Références : limites d’import peu visibles | Ligne de limites intégrée par type de média ; formats Wan et plafond image corrigés |
 
 Compare conserve les devis canoniques et les adaptations propres aux modèles.
 Les modifications de réglages restent dans la fenêtre ; les devis obsolètes
@@ -117,33 +117,55 @@ Audio, avec Login et Sign up séparés.
 sa navigation. Ces observations guident une proposition éditoriale, pas une
 mesure de conversion.
 
-## Propositions restantes — non intégrées
+## Références et réinitialisation intégrées dans la branche
 
-La maquette des références utilise les contrôles existants avec une seule ligne
-visible de formats, taille par fichier et durée totale. Les conseils supplémentaires
-restent repliés. Les formats audio de la fixture Wan sont WAV et MP3, conformément
-à la [documentation Alibaba du 28 septembre 2026](https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-api-reference).
-Elle confirme cinq clips au maximum, 15 secondes cumulées et 15 Mo par fichier.
-L’affirmation « WAV uniquement » du feedback ne correspond pas à cette source.
-Avant intégration, dériver les indications des contraintes du champ et du mode :
-le fallback actuel annonce M4A pour Wan et l’aide image peut reprendre le plafond
-vidéo du mode (100 Mo) au lieu du plafond image du champ (20 Mo). Les valeurs
-vérifiées sont explicites dans la fixture ; elles ne sont pas encore des changements
-de catalogue ou de validation. Le prix de la fixture de références est illustratif,
-et aucun bouton de cette fixture ne lance de génération.
+Le « ok go » du 30 septembre suit les deux propositions déjà affichées. Les
+contrôles existants affichent maintenant une ligne de formats, taille par fichier
+et, pour les collections, durée totale. Les conseils restent repliés et le compteur
+reste dans l’onglet. Les onglets des champs de référence Wan/H3 utilisent les noms
+courts traduits. L’aide image donne la priorité au plafond du champ (20 Mo pour
+Wan), avant celui du mode vidéo (100 Mo). Les champs sans contrainte spécifique
+conservent la limite du mode. Les audios imposés et vidéos sources ne reprennent
+pas le plafond cumulé des collections de références.
+
+Les formats Wan proviennent désormais du schéma partagé `wan-3-shared.ts` :
+JPG/JPEG, PNG, WebP et BMP pour les images de référence ; MP4 et MOV pour les
+vidéos ; WAV et MP3 pour l’audio. L’aide, le sélecteur image/audio et la validation
+des métadonnées consomment ces contraintes. Le catalogue a été régénéré, sans
+édition de sa projection. La [documentation officielle Alibaba, revérifiée le
+30 septembre 2026](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-api-reference)
+confirme cinq audios, 15 secondes cumulées et 15 Mo par fichier. Le feedback
+« WAV uniquement » ne correspond donc pas au contrat actuel ; M4A ne fait plus
+partie de l’aide ni des formats acceptés pour Wan.
 
 La demande de réinitialisation attend la réponse de Supabase, sans timer de délai
-volontaire. Les tests existants de demande, de récupération et de continuité de
-langue passent (20 tests). Le délai de livraison d’email reste non diagnostiqué
+volontaire. Le délai de livraison d’email reste non diagnostiqué
 sans logs Auth/SMTP ; aucun email ni changement de mot de passe n’a été effectué.
-La proposition visuelle supprime les onglets de connexion/inscription en mode reset,
-affiche un spinner dans le bouton pendant l’envoi et une confirmation courte avec
-le statut accessible après acceptation. Les états sont simulés, pas une preuve de
-livraison réelle.
+Le formulaire masque les onglets connexion/inscription en mode reset, affiche un
+spinner dans le bouton pendant l’envoi et évite le second bloc « Envoi… ». Après
+acceptation, une confirmation courte est annoncée avec `role="status"`. Elle
+conserve la formulation conditionnelle sur l’existence du compte. L’indicateur
+respecte la préférence de réduction des animations. Les contrôleurs Auth et les
+requêtes restent identiques.
 
-L’aperçu local contient trois onglets : Accueil (anglais), Références et Mot de passe.
-Les nouveaux fichiers de maquette sont hors du dépôt. Le header anglais a été
-vérifié à 390 × 844 (deux actions de 44 px, pas de débordement horizontal). Les états
-d’envoi et de confirmation, ainsi que la fenêtre audio, ont aussi été inspectés sur
-mobile. Ces deux propositions restent hors des sources produit, en attente de
-validation de leur visuel.
+Validation : les 277 tests ciblés passent (192 app/Auth et 85 contrats de référence
+et MCP), dont cinq nouveaux cas ayant reproduit
+les erreurs de plafond, de formats et de durée avant correction. TypeScript, le
+lint, la parité des traductions, l’exposition publique et les projections du registre
+passent aussi. La suite générale conserve les limitations déjà décrites plus haut.
+
+Le formulaire réel a été vérifié à 390 × 844 : validation d’une adresse invalide
+sans envoi et retour à la connexion. L’aperçu des composants intégrés expose les
+références et les états prêt/envoi/confirmation/erreur, à 1000 × 800 et 390 × 844.
+La fermeture clavier et le retour du focus, les conseils repliables, une seule
+ligne visible et l’absence de débordement horizontal ont été contrôlés. Le bouton
+de fermeture mesure 44 px. Les captures `references-integrated-desktop.png`,
+`references-integrated-audio-mobile.png`, `reset-integrated-real-mobile.png` et
+`reset-integrated-{sending,confirmation}-mobile.png`, ainsi que les vues rapprochées
+`references-integrated-audio-detail.png` et `reset-integrated-sending-detail.png`, restent hors du dépôt, dans
+le dossier de visualisations `website-feedback`.
+
+Le nouvel aperçu local utilise directement les sources produit, sans substitution
+de composant ni de contraintes du modèle. Ses états d’envoi et son prix sont
+illustratifs ; il ne lance ni génération ni demande d’email. Le rendu final est
+présenté pour revue visuelle, sans déploiement ni fusion dans le checkout d’origine.
