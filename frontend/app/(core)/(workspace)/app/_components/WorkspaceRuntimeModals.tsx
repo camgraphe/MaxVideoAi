@@ -43,6 +43,9 @@ export function WorkspaceRuntimeModals({
   topUpCopy,
   currency,
   topUpAmount,
+  paymentAmountLabel,
+  quoteLoading,
+  quoteError,
   isTopUpLoading,
   topUpError,
   checkoutCaptchaError,
@@ -84,6 +87,9 @@ export function WorkspaceRuntimeModals({
   topUpCopy: WorkspaceTopUpModalProps['copy'];
   currency: string;
   topUpAmount: number;
+  paymentAmountLabel: string | null;
+  quoteLoading: boolean;
+  quoteError: boolean;
   isTopUpLoading: boolean;
   topUpError: string | null;
   checkoutCaptchaError: boolean;
@@ -133,6 +139,9 @@ export function WorkspaceRuntimeModals({
           copy={topUpCopy}
           currency={currency}
           topUpAmount={topUpAmount}
+          paymentAmountLabel={paymentAmountLabel}
+          quoteLoading={quoteLoading}
+          quoteError={quoteError}
           isTopUpLoading={isTopUpLoading}
           topUpError={topUpError}
           checkoutCaptchaError={checkoutCaptchaError}
