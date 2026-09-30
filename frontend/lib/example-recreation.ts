@@ -12,6 +12,12 @@ export function normalizeExampleResolution(value: string): string {
   return normalized === '2160p' ? '4k' : normalized;
 }
 
+export function publicExampleRequestedResolution(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const resolution = normalizeExampleResolution(value);
+  return /^(480p|512p|540p|720p|768p|1080p|1440p|4k)$/.test(resolution) ? resolution : null;
+}
+
 export function publicExampleResolution(width?: number, height?: number): string | null {
   if (!width || !height || !Number.isFinite(width) || !Number.isFinite(height)) return null;
   const shortSide = Math.min(width, height);

@@ -26,7 +26,8 @@ export const BASE_SELECT = `
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
          has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
-         final_price_cents, currency, pricing_snapshot
+         final_price_cents, currency, pricing_snapshot,
+         (to_jsonb(app_jobs)->'settings_snapshot') #>> '{core,resolution}' AS requested_resolution
   FROM app_jobs
 `;
 
@@ -41,4 +42,3 @@ export const BASE_SELECT_WITH_SETTINGS = `
          final_price_cents, currency, settings_snapshot
   FROM app_jobs
 `;
-

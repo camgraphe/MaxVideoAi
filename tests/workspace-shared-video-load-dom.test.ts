@@ -38,12 +38,14 @@ async function mount(locale = 'en') {
       'setKlingElements', 'setSelectedPreview', 'setCompositeOverride', 'setCompositeOverrideSummary',
       'setSharedPrompt', 'setSharedVideoSettings'].map((key) => [key, (value: unknown) => writes.push(value)])),
   } as Options;
-  function Fixture() { useWorkspaceVideoSettings(options); return null; }
+  let pending = false;
+  function Fixture() { pending = useWorkspaceVideoSettings(options).sharedVideoImportPending; return null; }
   const root = createRoot(dom.window.document.getElementById('root')!);
   await act(async () => root.render(React.createElement(Fixture)));
   writes.length = 0;
   return {
     notices, replacements, writes,
+    get pending() { return pending; },
     async respond(status: number, body: unknown = { ok: false }) {
       await act(async () => requests[0].resolve(new Response(JSON.stringify(body), { status })));
     },
@@ -70,6 +72,7 @@ test('shared example failures are visible in each locale and keep the draft and 
       assert.ok(fixture.notices[0].includes(expected));
       assert.deepEqual(fixture.replacements, []);
       assert.deepEqual(fixture.writes, []);
+      assert.equal(fixture.pending, false, 'failure returns access to the existing draft');
     } finally { await fixture.dispose(); }
   }
 });
@@ -86,8 +89,8 @@ test('unusable responses and network failures also show a notice', async () => {
   }
 });
 
-test('a late example error cannot interrupt a newer draft or another account', async () => {
-  for (const patch of [{ draftRevision: 'edited' }, { accountScope: 'another-account' }]) {
+test('a late example error cannot interrupt another account', async () => {
+  for (const patch of [{ accountScope: 'another-account' }]) {
     const fixture = await mount();
     try {
       await fixture.change(patch);
@@ -96,4 +99,29 @@ test('a late example error cannot interrupt a newer draft or another account', a
       assert.deepEqual(fixture.writes, []);
     } finally { await fixture.dispose(); }
   }
+});
+
+test('an import failure remains visible after automatic draft reconciliation', async () => {
+  const fixture = await mount();
+  try {
+    assert.equal(fixture.pending, true);
+    await fixture.change({ draftRevision: 'reconciled' });
+    await fixture.respond(503);
+    assert.equal(fixture.notices.length, 1);
+    assert.equal(fixture.pending, false);
+    assert.deepEqual(fixture.replacements, []);
+    assert.deepEqual(fixture.writes, []);
+  } finally { await fixture.dispose(); }
+});
+
+test('a successful response for the previous account cannot import or redirect', async () => {
+  const fixture = await mount();
+  try {
+    await fixture.change({ accountScope: 'another-account' });
+    await fixture.respond(200, { ok: true, video: { id: 'example', engineId: 'seedance-2-5', prompt: 'Previous account example', createdAt: '' } });
+    assert.deepEqual(fixture.notices, []);
+    assert.deepEqual(fixture.replacements, []);
+    assert.deepEqual(fixture.writes, []);
+    assert.equal(fixture.pending, true, 'the new account still owns its separate pending request');
+  } finally { await fixture.dispose(); }
 });
