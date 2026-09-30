@@ -12,6 +12,8 @@ For each of four routes (hub, Wan family, landscape watch, portrait watch) on mo
 
 `metadata.json` must say `complete`. A missing route, warning, failed playback, unverified warm image/CSS disk cache, or over 20% within-group CPU benchmark drift marks the run incomplete. Compare medians in `summary.json`; inspect `runs.json` and LHRs for outliers and the actual LCP element before deciding. An incomplete run is not evidence of improvement or regression. Even a complete lab improvement cannot establish field INP or a green GSC outcome, which require post-deployment real-user data over Google's rolling window.
 
+An early dev-server fixture/First Play smoke runs before the expensive builds; it is functional evidence only. The production-build smoke and complete Lighthouse matrix still run afterward. First Play contexts click the real **Reject all** consent button before Play; their choice is isolated from the Lighthouse profiles, whose initial banner is untouched. Failures preserve the original error and a viewport screenshot.
+
 Local fixture sanity checks (no browser measurement):
 
 ```bash

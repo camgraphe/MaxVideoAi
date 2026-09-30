@@ -108,6 +108,9 @@ jobs:
         working-directory: candidate
         run: pnpm exec tsx --tsconfig frontend/tsconfig.json performance/gallery-final/project-fixture.ts ../baseline . ../gallery-results/api-projections.json | tee ../gallery-results/api-projections.log
 
+      - name: Validate fixture and First Play before expensive production builds
+        run: python3 candidate/performance/gallery-final/preflight.py baseline candidate gallery-results
+
       - name: Build pinned baseline
         working-directory: baseline
         run: pnpm --dir frontend exec next build > ../gallery-results/baseline-build.log 2>&1 || { cat ../gallery-results/baseline-build.log; exit 1; }

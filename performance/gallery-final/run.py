@@ -57,12 +57,12 @@ def command(argv, log, timeout=180):
         raise RuntimeError(f"Exit {code}: {argv[0]} (see {log})")
 
 
-def server(checkout, port, log, db_url):
+def server(checkout, port, log, db_url, mode="start"):
     env = os.environ.copy()
     env.update(DATABASE_URL=db_url, NEXT_PUBLIC_SUPABASE_URL="https://fixture.invalid",
                NEXT_PUBLIC_SUPABASE_ANON_KEY="fixture-anon-key")
     stream = log.open("w")
-    process = subprocess.Popen(["node", "node_modules/next/dist/bin/next", "start", "-H", "127.0.0.1", "-p", str(port)],
+    process = subprocess.Popen(["node", "node_modules/next/dist/bin/next", mode, "-H", "127.0.0.1", "-p", str(port)],
                                cwd=checkout / "frontend", env=env, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
     return process, stream
 
