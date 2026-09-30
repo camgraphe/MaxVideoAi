@@ -1,0 +1,82 @@
+name: Gallery layout causal diagnostic
+on:
+  push:
+    branches: [codex/video-discovery]
+    paths:
+      - .github/workflows/gallery-layout-diagnostic.yml
+      - performance/gallery-layout-diagnostic/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gallery-layout-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  layout-diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: fixture
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      CI: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+      FIXTURE_DATABASE_URL: postgresql://postgres:fixture@127.0.0.1:5432/postgres
+      DATABASE_URL: postgresql://postgres:fixture@127.0.0.1:5432/postgres?options=-c%20default_transaction_read_only%3Don
+      NEXT_PUBLIC_SUPABASE_URL: https://fixture.invalid
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-anon-key
+      EXAMPLES_PLAYLIST_SLUG: examples
+      INDEXABLE_PLAYLIST_SLUGS: examples
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.2 --activate
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+      - name: Verify frozen source and guards
+        run: |
+          mkdir -p layout-results
+          echo "CHROME_PATH=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
+          git diff --quiet 27825f70f278d5beb811effbf18a9dcc130b8b61 HEAD -- frontend neon/migrations scripts package.json pnpm-lock.yaml
+          python3 performance/gallery-final/run.py --verify-only
+          node --test performance/gallery-layout-diagnostic/safety.test.mjs
+          node --version > layout-results/tool-versions.txt
+          pnpm --version >> layout-results/tool-versions.txt
+          "${{ steps.chrome.outputs.chrome-path }}" --version >> layout-results/tool-versions.txt
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Seed disposable fixture
+        run: pnpm exec tsx --tsconfig frontend/tsconfig.json performance/gallery-final/seed-fixture.ts | tee layout-results/seed.log
+      - name: Build pinned application
+        run: pnpm --dir frontend exec next build > layout-results/build.log 2>&1 || { cat layout-results/build.log; exit 1; }
+      - name: Diagnose warm desktop geometry
+        run: python3 performance/gallery-layout-diagnostic/run.py layout-results
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: gallery-layout-diagnostic-${{ github.run_id }}
+          path: |
+            layout-results/*.json
+            layout-results/*.png
+            layout-results/*.log
+            layout-results/*.txt
+          retention-days: 7
+          if-no-files-found: warn
