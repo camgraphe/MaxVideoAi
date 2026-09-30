@@ -11,6 +11,8 @@ import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/lib/pricing-audit/wan3-tariff-scenario';
+import { ltx25AudioTariffBounds, validateLtx25AudioTariffDuration } from '@/lib/ltx25-audio-tariff';
+import { withLtx25AudioTariffDuration } from '@/lib/pricing-audit/ltx25-audio-tariff-scenario';
 import { isSeedance2TokenPricing, resolveSeedance2TariffAspectRatio } from '@/lib/seedance-2-pricing';
 import { manualTariffReferenceCounts } from '@/lib/pricing-audit/manual-tariff-dimensions';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
@@ -56,7 +58,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const model = getRuntimeModelById(input.modelId);
   if (!model || !model.publication.app.published ||
       !(model.publication.pricing.published || model.publication.model.published) ||
-      !Number.isInteger(input.durationSec) || input.durationSec < 1 || input.durationSec > 120 ||
+      !Number.isFinite(input.durationSec) || (!ltx25AudioTariffBounds(input.modelId, input.mode) && !Number.isInteger(input.durationSec))
+      || input.durationSec < 1 || input.durationSec > 120 ||
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
@@ -107,6 +110,11 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       (input.aspectRatio !== undefined && !(mode.ui.aspectRatio ?? entry!.engine.aspectRatios).includes(input.aspectRatio)))) return null;
   const resolution = size?.billingKey ?? input.resolution;
   const wanInputDuration = supportsWan3TariffInputDuration(model.id, input.mode);
+  const ltxAudioDuration = Boolean(ltx25AudioTariffBounds(model.id, input.mode));
+  if (ltxAudioDuration) {
+    try { validateLtx25AudioTariffDuration(model.id, input.mode, input.inputAudioDurationSec ?? NaN); }
+    catch { return null; }
+  }
   if (wanInputDuration && (typeof input.inputVideoDurationSec !== 'number'
     || !Number.isFinite(input.inputVideoDurationSec) || input.inputVideoDurationSec < 0
     || (input.mode !== 'ref2v' && input.inputVideoDurationSec === 0))) {
@@ -115,7 +123,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
-    scenario.selector.durationSec === String(billedDuration) &&
+    (ltxAudioDuration || scenario.selector.durationSec === String(billedDuration)) &&
     (scenario.selector.referenceImageCount === undefined
       ? scenario.selector.inputImageCount === undefined || input.mode !== 'ref2v'
         || scenario.selector.inputImageCount === String(input.referenceImageCount ?? defaultReferences)
@@ -129,7 +137,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     (gptImage || scenario.selector.aspectRatio === undefined || input.aspectRatio === undefined || scenario.selector.aspectRatio === requestedAspect) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
     (wanInputDuration || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
-    (input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
+    (ltxAudioDuration || input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
     (input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
   );
   if (!candidates.length) return null;
@@ -163,6 +171,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec ?? 0); }
     catch { return null; }
   }
+  if (selected && ltxAudioDuration) {
+    try { return withLtx25AudioTariffDuration(selected, input.inputAudioDurationSec!); }
+    catch { return null; }
+  }
   if (!selected || !size) return selected;
   return { ...selected, context: { ...selected.context, resolution: input.resolution,
     customImageSize: size.customImageSize, ...(input.aspectRatio !== undefined ? { aspectRatio: input.aspectRatio } : {}) } };
@@ -183,8 +195,9 @@ export async function quotePublicModelScenario(
       amountCents: snapshot.totalCents, currency: snapshot.currency,
       tariffRevision: snapshot.meta?.customerTariffRevision ?? null,
       policy: snapshot.meta?.pricingPolicy ?? null })).digest('hex').slice(0, 20);
+    const seconds = Number(scenario.selector.durationSec);
     const quantityLabel = getFalEngineById(input.modelId)?.category === 'image'
-      ? `${input.durationSec} image${input.durationSec === 1 ? '' : 's'}` : `${input.durationSec}s`;
+      ? `${seconds} image${seconds === 1 ? '' : 's'}` : `${seconds}s${ltx25AudioTariffBounds(input.modelId, input.mode) ? ' source audio' : ''}`;
     const sourceLabel = supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
       ? ` output + ${scenario.context.inputVideoDurationSec}s input` : '';
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,

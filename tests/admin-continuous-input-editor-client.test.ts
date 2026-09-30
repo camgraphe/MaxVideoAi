@@ -37,6 +37,16 @@ test('continuous editor submits absolute base/source prices only through preview
     await act(async () => button('Preview unit prices').click());
     assert.deepEqual(proposals.pop(), { operation: 'create', scenarioId: 'exact-source', scope: 'continuous_input', price: { kind: 'linear_input', outputCents: 80, inputCentsPerSecond: 13 } });
     assert.equal(dom.window.document.querySelectorAll('button').length, 2, 'confirmation belongs to the shared server review');
+    Object.assign(editor.exact.continuousInputTariff, { kind: 'audio', outputCents: 0, inputCentsPerSecond: 22.1,
+      minInputSeconds: 2, maxInputSeconds: 10 });
+    await act(async () => root.render(React.createElement(ContinuousInputTariffEditor, { key: 'audio',
+      editor: editor as never, disabled: false, inputSeconds: 3.25, outputSeconds: 3.25 })));
+    assert.ok(!dom.window.document.querySelector('[aria-label="Output video price per second (USD)"]'));
+    assert.ok(dom.window.document.querySelector('[aria-label="Source audio price per second (USD)"]'));
+    assert.match(dom.window.document.body.textContent!, /\$0\.72/);
+    await act(async () => button('Preview unit prices').click());
+    assert.deepEqual(proposals.pop(), { operation: 'create', scenarioId: 'exact-source', scope: 'continuous_input',
+      price: { kind: 'linear_input', outputCents: 0, inputCentsPerSecond: 22.1 } });
   } finally {
     await act(async () => root.unmount()); dom.window.close();
     for (const [key, descriptor] of previous) if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);

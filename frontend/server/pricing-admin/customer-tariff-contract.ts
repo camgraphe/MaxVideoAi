@@ -44,6 +44,7 @@ export type CustomerTariffScenarioDetail = {
   currency: string;
   supplierComparison: ProviderCostComparisonRow;
   continuousInputTariff?: {
+    kind?: 'video' | 'audio';
     tariffCellId: string;
     prepared: boolean;
     price: ManualTariffCell['price'];

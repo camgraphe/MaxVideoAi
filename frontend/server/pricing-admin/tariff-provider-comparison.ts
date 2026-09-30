@@ -43,7 +43,7 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
   if (process.env.PRICING_SANDBOX === '1') routeConfigured = false;
   return { ...providerComparisonInputFromScenario({
     scenario: { id: scenario.id, engineId: scenario.modelId, mode: context.mode,
-      resolution: context.resolution, durationSec: context.durationSec, surface: 'billing', membershipTier: 'member',
+      resolution: context.resolution, durationSec: Number(scenario.selector.durationSec), surface: 'billing', membershipTier: 'member',
       input: { ...scenario.selector, ...(typeof context.aspectRatio === 'string' ? { aspectRatio: context.aspectRatio } : {}),
         ...(typeof context.addons?.audio === 'boolean' ? { audio: context.addons.audio } : {}) } },
     context, quote: null, engine: entry.engine, brandId: entry.brandId, familyId: entry.family,

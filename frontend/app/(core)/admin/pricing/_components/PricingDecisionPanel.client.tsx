@@ -77,7 +77,9 @@ function PricingDecisionContent({ row, disabled, onInspect, editor }: Pick<Props
         <h4 className="text-xs font-bold text-[#5937b8]">Customer price · selected tariff</h4>
         {editor.exact?.continuousInputTariff ? <ContinuousInputTariffEditor
           key={JSON.stringify(editor.exact.continuousInputTariff.price)} editor={editor} disabled={disabled}
-          inputSeconds={row.inputVideoDurationSec ?? 0} outputSeconds={Number(editor.exact.selector.durationSec)} /> : <>
+          inputSeconds={editor.exact.continuousInputTariff.kind === 'audio'
+            ? Number(editor.exact.selector.inputAudioDurationSec) : row.inputVideoDurationSec ?? 0}
+          outputSeconds={Number(editor.exact.selector.durationSec)} /> : <>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <label className="text-[10px] text-text-secondary">Customer price {suffix} · USD<input aria-label={`Proposed customer price / ${current.unit} (USD)`} type="number" min="0" step="any" value={price} disabled={locked}
             onChange={(event) => { setPriceEdited(true); setPrice(event.target.value); editor.cancelPreview(); }} className="mt-1 h-8 w-full rounded-md border border-[#cbb9ff] bg-surface px-2 text-sm tabular-nums text-text-primary" /></label>

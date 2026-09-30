@@ -8,7 +8,7 @@ import {
 } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
-import { buildManualTariffScenario, continuousWan3TariffSelector } from '@/lib/pricing-manual-scenario';
+import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
 
 export class CustomerTariffUnavailableError extends Error {
@@ -32,11 +32,12 @@ export function resolveCustomerTariffQuote(input: {
   try { cell = resolve(selector); }
   catch (error) {
     if (!(error instanceof ManualTariffError) || error.code !== 'missing_cell') throw error;
-    const continuous = continuousWan3TariffSelector(selector);
+    const continuous = continuousInputTariffSelector(selector);
     if (!continuous) throw error;
     selector = continuous;
     cell = resolve(selector);
-    if (cell.price.kind === 'fixed' || !manualTariffUnitNames(cell.price).includes('input_video_seconds')) {
+    const unit = continuous.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds';
+    if (cell.price.kind === 'fixed' || !manualTariffUnitNames(cell.price).includes(unit)) {
       throw new ManualTariffError('invalid_cell', 'Continuous source pricing requires an authored input-second rate.');
     }
   }

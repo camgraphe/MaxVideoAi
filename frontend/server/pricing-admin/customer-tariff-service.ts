@@ -4,6 +4,8 @@ import { resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pric
 
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration, resolveWan3TariffScenarioId } from '@/lib/pricing-audit/wan3-tariff-scenario';
+import { ltx25AudioTariffBounds } from '@/lib/ltx25-audio-tariff';
+import { withLtx25AudioTariffDuration, resolveLtx25AudioTariffScenarioId } from '@/lib/pricing-audit/ltx25-audio-tariff-scenario';
 import { loadPricingPolicyOverridesWithExecutor, loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
@@ -17,7 +19,7 @@ import { revalidateCustomerTariffChangeSurfaces } from './revalidation';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
 import { buildProviderCostComparisonRows, type ProviderCostComparisonInput } from './provider-cost-comparison';
-import { continuousWanTariffDetail, continuousWanTariffIdentity, prepareContinuousWanTariffChange } from './continuous-wan-tariff';
+import { continuousInputTariffDetail, continuousInputTariffIdentity, prepareContinuousInputTariffChange } from './continuous-input-tariff';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
@@ -34,10 +36,24 @@ export function chooseCustomerTariffScenario(
   let candidates = [...scenarios];
   const choices: CustomerTariffScenarioChoice[] = [];
   let decimalInputDuration: number | undefined;
+  let decimalAudioDuration: number | undefined;
   for (const key of SCENARIO_DIMENSIONS) {
+    const audioBounds = ltx25AudioTariffBounds(candidates[0].modelId, candidates[0].selector.mode);
+    if (key === 'durationSec' && audioBounds) continue;
     const options = [...new Set(candidates.map((scenario) => scenario.selector[key] ?? ''))]
       .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
     if (options.length === 1 && options[0] === '') continue;
+    if (key === 'inputAudioDurationSec' && audioBounds) {
+      try {
+        const value = requested[key] ?? options[0];
+        if (!value?.trim()) throw new Error('Audio duration required');
+        decimalAudioDuration = Number(value);
+        withLtx25AudioTariffDuration(candidates[0], decimalAudioDuration);
+      } catch { throw new PricingAdminError('unsupported_scenario', 'Invalid source-audio duration'); }
+      choices.push({ key, value: String(decimalAudioDuration), options: [], range: { minInclusive: audioBounds.min, max: audioBounds.max } });
+      candidates = candidates.filter(candidate => candidate.selector[key] === options[0]);
+      continue;
+    }
     if (key === 'inputVideoDurationSec' && candidates.every(candidate =>
       supportsWan3TariffInputDuration(candidate.modelId, candidate.selector.mode))) {
       const requestedValue = requested[key] ?? (candidates[0].context.mode === 'ref2v' ? '0' : options[0]);
@@ -60,8 +76,8 @@ export function chooseCustomerTariffScenario(
   if (candidates.length !== 1 || !candidates[0]) {
     throw new PricingAdminError('ambiguous_selector', 'Tariff selector does not resolve to one supported scenario');
   }
-  return { scenario: decimalInputDuration === undefined ? candidates[0]
-    : withWan3TariffInputDuration(candidates[0], decimalInputDuration), choices };
+  return { scenario: decimalAudioDuration !== undefined ? withLtx25AudioTariffDuration(candidates[0], decimalAudioDuration)
+    : decimalInputDuration === undefined ? candidates[0] : withWan3TariffInputDuration(candidates[0], decimalInputDuration), choices };
 }
 
 export async function loadCustomerTariffScenarioDetail(
@@ -85,8 +101,9 @@ export async function loadCustomerTariffScenarioDetail(
   } catch { /* No numeric fallback for an unavailable live quote. */ }
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
-  const continuousInputTariff = supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
-    ? await continuousWanTariffDetail(scenario, state, policy).catch(() => undefined) : undefined;
+  const continuousInputTariff = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+    || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode))
+    ? await continuousInputTariffDetail(scenario, state, policy).catch(() => undefined) : undefined;
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
     currentCents, stagedCents: staged?.price.kind === 'fixed' ? staged.price.customerCents : null,
     currency: 'USD', supplierComparison, ...(continuousInputTariff ? { continuousInputTariff } : {}) };
@@ -107,7 +124,7 @@ function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = collectSellableManualTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
   const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
-    ?? resolveWan3TariffScenarioId(coverage, id);
+    ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }
@@ -216,7 +233,7 @@ async function buildPreview(
   const scenario = scenarioById(proposal.scenarioId);
   const currentCents = await quoteCurrent(scenario, policy, state);
   if ('scope' in proposal && proposal.scope === 'continuous_input') {
-    const prepared = await prepareContinuousWanTariffChange({ proposal, scenario, state, policy, executor });
+    const prepared = await prepareContinuousInputTariffChange({ proposal, scenario, state, policy, executor });
     const previewBase = { ...prepared, operation: proposal.operation, scenarioId: scenario.id, modelId: scenario.modelId,
       currentCents, currency: 'USD', revision: state.revision, active: state.active,
       ...(proposal.operation === 'rollback' ? { rollbackEventId: proposal.eventId } : {}),
@@ -312,7 +329,7 @@ export async function confirmCustomerTariffChange(
     const persistedCell = preview.proposedCell
       ? await upsertCustomerTariffCell(executor, preview.proposedCell, actorId) : null;
     const targetId = 'scope' in proposal && proposal.scope === 'continuous_input'
-      ? continuousWanTariffIdentity(scenarioById(preview.scenarioId)).id : cellId(scenarioById(preview.scenarioId));
+      ? continuousInputTariffIdentity(scenarioById(preview.scenarioId)).id : cellId(scenarioById(preview.scenarioId));
     const revision = persistedCell?.version ?? await deleteStagedCustomerTariffCell(executor, targetId);
     const event = await insertPricingChangeEvent(executor, {
       domain: 'customer_tariff', operation: proposal.operation,

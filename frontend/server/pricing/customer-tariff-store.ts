@@ -1,7 +1,7 @@
 import { isValidManualTariffPrice, type ManualTariffCell, type ManualTariffSelector } from '@maxvideoai/pricing';
 
 import versionedDocument from '@/config/customer-tariffs.json';
-import { continuousWan3TariffSelector } from '@/lib/pricing-manual-scenario';
+import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { createQueryExecutor, getDb, isTransactionQueryExecutor, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 
 type RawState = { revision: number | string; active: boolean };
@@ -81,7 +81,7 @@ function mapCell(row: RawCell): ManualTariffCell {
 }
 
 async function readState(executor: QueryExecutor, selector?: ManualTariffSelector): Promise<EffectiveCustomerTariffState> {
-  const continuous = selector ? continuousWan3TariffSelector(selector) : null;
+  const continuous = selector ? continuousInputTariffSelector(selector) : null;
   const selectors = selector ? [selector, ...(continuous ? [continuous] : [])] : null;
   const where = selectors ? (selectors.length > 1 ? 'WHERE selector_key = ANY($1::text[])' : 'WHERE selector_key = $1') : '';
   const args = selectors ? [selectors.length > 1 ? selectors.map(selectorKey) : selectorKey(selectors[0])] : [];

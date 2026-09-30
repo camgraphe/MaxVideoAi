@@ -6,6 +6,7 @@ import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQualit
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
+import { ltx25AudioTariffBounds, validateLtx25AudioTariffDuration } from '@/lib/ltx25-audio-tariff';
 
 /** A reviewed quantity-priced class; all other options still match exactly. */
 export function continuousWan3TariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
@@ -14,6 +15,17 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
   validateWan3PricingDuration({ mode: selector.mode, durationSec: Number(selector.durationSec),
     inputVideoDurationSec: seconds, hasVideoInput: selector.mode !== 'ref2v' || seconds > 0 });
   return { ...selector, inputVideoDurationSec: 'continuous' };
+}
+
+/** Reviewed continuous classes only; every other model keeps exact matching. */
+export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (ltx25AudioTariffBounds(selector.engineId, selector.mode)) {
+    const seconds = Number(selector.inputAudioDurationSec);
+    validateLtx25AudioTariffDuration(selector.engineId, selector.mode, seconds);
+    if (selector.durationSec !== String(seconds)) throw new Error('Audio and billed duration disagree.');
+    return { ...selector, durationSec: 'continuous', inputAudioDurationSec: 'continuous' };
+  }
+  return continuousWan3TariffSelector(selector);
 }
 
 function option(value: number | string | boolean | null | undefined): string | undefined {
