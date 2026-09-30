@@ -43,9 +43,13 @@ test('decimal Wan tariff preview, immutable confirmation and active billing use 
     assert.equal(preview.proposedCents, 129);
     for (const scenarioId of [selected.scenarioId + '|untrusted=1', selected.scenarioId + '|inputVideoDurationSec=3.25',
       selected.scenarioId.replace('3.25', '15.1'), selected.scenarioId + '|aspectRatio=bogus',
-      selected.scenarioId.replace('3.25', '03.25'), selected.scenarioId.replace('v2v', 'ref2v')]) {
+      selected.scenarioId.replace('3.25', '03.25'), selected.scenarioId.replace('v2v', 'i2v')]) {
       await assert.rejects(previewCustomerTariffChange({ ...proposal, scenarioId }), /unsupported|Unknown/i);
     }
+    const referencePreview = await previewCustomerTariffChange({ ...proposal,
+      scenarioId: selected.scenarioId.replace('v2v', 'ref2v') });
+    assert.equal(referencePreview.currentCents, 108, 'mixed references charge the same verified source seconds');
+    assert.equal(referencePreview.selector.inputVideoDurationSec, '3.25');
     await assert.rejects(confirmCustomerTariffChange({ ...proposal, scenarioId: selected.scenarioId.replace('3.25', '3.5') },
       preview.fingerprint, actor), /preview changed/i);
     assert.equal((await loadCustomerTariffHistory()).length, 0);

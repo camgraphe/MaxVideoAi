@@ -55,7 +55,10 @@ test('Wan pricing retains fractional source seconds, input/output itemization, a
   const context = { engine, mode: 'ref2v' as const, durationSec: 5, resolution: '720p', inputVideoDurationSec: 3.25 };
   const billing = buildBillingPricingFacts(context, pricingDetails, 'USD');
   const publicFacts = buildPublicPricingFacts({ ...context, useStandardDefinitionFacts: true });
-  assert.deepEqual(billing, publicFacts);
+  const { metadata, ...priceFacts } = billing.facts;
+  assert.deepEqual({ ...billing, facts: priceFacts }, publicFacts);
+  assert.deepEqual(metadata?.manualTariffMedia, { inputVideoDurationSec: 3.25 });
+  assert.equal(metadata?.manualTariffDurationSec, 5);
   assert.equal(billing.facts.vendorSubtotalExactCents, 99);
   assert.equal(billing.base.amountCents, 60);
   assert.deepEqual(billing.addons, [{ type: 'input_video_duration', amountCents: 39 }]);
@@ -71,7 +74,10 @@ test('Wan modes without input video retain their existing output-only rate', () 
       assert.equal(billing.facts.vendorSubtotalExactCents, expectedCents);
       assert.equal(billing.base.seconds, 5);
       assert.deepEqual(billing.addons, []);
-      assert.deepEqual(billing, buildPublicPricingFacts(context));
+      const { metadata, ...priceFacts } = billing.facts;
+      assert.deepEqual({ ...billing, facts: priceFacts }, buildPublicPricingFacts(context));
+      assert.deepEqual(metadata?.manualTariffMedia, {});
+      assert.equal(metadata?.manualTariffDurationSec, 5);
     }
   }
 });

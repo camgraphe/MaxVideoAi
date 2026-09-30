@@ -29,17 +29,19 @@ const customerQuote = {
   pricingMode: 'legacy_margin_rule' as const,
 };
 
-function exactInput(modelId: string, selector: Record<string, string>, executionProvider: string) {
+function exactInput(modelId: string, selector: Record<string, string>, executionProvider: string, requestedAspectRatio?: string) {
   const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === modelId
     && Object.entries(selector).every(([key, value]) => row.selector[key] === value));
   assert.ok(scenario, `Missing supported scenario for ${modelId}`);
   const entry = getFalEngineById(modelId);
   assert.ok(entry);
+  const context = requestedAspectRatio ? { ...scenario.context, aspectRatio: requestedAspectRatio } : scenario.context;
   return providerComparisonInputFromScenario({
-    scenario: { id: scenario.id, engineId: modelId, mode: scenario.context.mode,
-      resolution: scenario.context.resolution, durationSec: scenario.context.durationSec,
-      surface: 'billing', membershipTier: 'member', input: { ...scenario.selector } },
-    context: scenario.context, quote: null, engine: entry.engine, brandId: entry.brandId,
+    scenario: { id: scenario.id, engineId: modelId, mode: context.mode,
+      resolution: context.resolution, durationSec: context.durationSec,
+      surface: 'billing', membershipTier: 'member', input: { ...scenario.selector,
+        ...(typeof context.aspectRatio === 'string' ? { aspectRatio: context.aspectRatio } : {}) } },
+    context, quote: null, engine: entry.engine, brandId: entry.brandId,
     familyId: entry.family, executionProvider, mediaType: entry.category === 'image' ? 'image' : 'video',
   });
 }
@@ -182,9 +184,9 @@ test('direct Luma execution never relabels a Fal pricing reference as its accoun
 
 test('Seedream exact options project output dimensions and references into published supplier cost', () => {
   const [lite, pro2k, proEdit] = buildProviderCostComparisonRows([
-    exactInput('seedream', { mode: 't2i', resolution: '2K', aspectRatio: '1:1' }, 'byteplus_modelark'),
-    exactInput('seedream-5-0-pro', { mode: 't2i', resolution: '2K', aspectRatio: '1:1' }, 'byteplus_modelark'),
-    exactInput('seedream-5-0-pro', { mode: 'i2i', resolution: '2K', aspectRatio: '1:1' }, 'byteplus_modelark'),
+    exactInput('seedream', { mode: 't2i', resolution: '2K' }, 'byteplus_modelark', '1:1'),
+    exactInput('seedream-5-0-pro', { mode: 't2i', resolution: '2K' }, 'byteplus_modelark', '1:1'),
+    exactInput('seedream-5-0-pro', { mode: 'i2i', resolution: '2K' }, 'byteplus_modelark', '1:1'),
   ], '2026-09-30T12:00:00Z');
   assert.equal(lite.supplierList.amountUsd, 0.035);
   assert.equal(pro2k.supplierList.amountUsd, 0.09);
