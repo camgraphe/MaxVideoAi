@@ -1,6 +1,7 @@
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
+import type { ManualTariffMedia } from '@/lib/pricing-manual-media';
 import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQuality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
@@ -34,25 +35,33 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const pricedReferences = (isGptImage25EngineId(facts.engineId) && context.mode === 'i2i')
     || isLumaAgentsImageEngineId(facts.engineId)
     || (isMinimaxH3EngineId(facts.engineId) && context.mode === 'ref2v');
+  const projectedMedia = facts.metadata?.manualTariffMedia as ManualTariffMedia | undefined;
+  const media = projectedMedia ?? context;
+  const factualAudio = facts.metadata?.manualTariffAudio;
+  const audio = factualAudio === null ? undefined : typeof factualAudio === 'boolean' ? factualAudio : context.addons?.audio;
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(context.durationSec),
     ...(!gptImage && pricedAspect !== null ? { aspectRatio: pricedAspect } : {}),
-    ...(option(context.addons?.audio) !== undefined ? { audio: option(context.addons?.audio)! } : {}),
+    ...(option(audio) !== undefined ? { audio: option(audio)! } : {}),
     ...(gptImage ? { quality: normalizeGptImageQuality(context.quality, facts.engineId) }
       : context.quality ? { quality: context.quality } : {}),
-    ...(option(context.inputVideoDurationSec) ? { inputVideoDurationSec: option(context.inputVideoDurationSec)! } : {}),
-    ...(option(context.inputAudioDurationSec) ? { inputAudioDurationSec: option(context.inputAudioDurationSec)! } : {}),
-    ...(option(context.inheritedDurationSec) ? { inheritedDurationSec: option(context.inheritedDurationSec)! } : {}),
-    ...(option(context.referenceTokenBudget) ? { referenceTokenBudget: option(context.referenceTokenBudget)! } : {}),
-    ...(option(context.verifiedReferenceTokenCount) ? { verifiedReferenceTokenCount: option(context.verifiedReferenceTokenCount)! } : {}),
-    ...(pricedReferences ? { referenceImageCount: String(context.referenceImageCount ?? 0) }
+    ...(option(media.inputVideoDurationSec) ? { inputVideoDurationSec: option(media.inputVideoDurationSec)! } : {}),
+    ...(option(media.inputAudioDurationSec) ? { inputAudioDurationSec: option(media.inputAudioDurationSec)! } : {}),
+    ...(option(media.inheritedDurationSec) ? { inheritedDurationSec: option(media.inheritedDurationSec)! } : {}),
+    ...(option(media.referenceTokenBudget) ? { referenceTokenBudget: option(media.referenceTokenBudget)! } : {}),
+    ...(option(media.verifiedReferenceTokenCount) ? { verifiedReferenceTokenCount: option(media.verifiedReferenceTokenCount)! } : {}),
+    ...(projectedMedia ? media.referenceImageCount !== undefined ? { referenceImageCount: String(media.referenceImageCount) } : {}
+      : pricedReferences ? { referenceImageCount: String(context.referenceImageCount ?? 0) }
       : context.referenceImageCount && context.referenceImageCount !== 1
       ? { referenceImageCount: String(context.referenceImageCount) } : {}),
-    ...(context.inputImageCount && context.inputImageCount !== 1
+    ...(projectedMedia ? media.inputImageCount !== undefined ? { inputImageCount: String(media.inputImageCount) } : {}
+      : context.inputImageCount && context.inputImageCount !== 1
       ? { inputImageCount: String(context.inputImageCount) } : {}),
+    ...(projectedMedia?.billingInputType ? { billingInputType: projectedMedia.billingInputType } : {}),
+    ...(facts.metadata?.manualTariffVoiceControl === true ? { voiceControl: 'true' } : {}),
     ...(!gptImage && context.customImageSize ? { customImageSize: JSON.stringify(context.customImageSize) } : {}),
     ...(context.loop ? { loop: 'true' } : {}),
     ...(option(context.addons?.hdr) ? { hdr: option(context.addons?.hdr)! } : {}),
@@ -61,11 +70,11 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const quantities: Record<string, number> = {
     output_seconds: context.durationSec,
     output_units: facts.quantity,
-    ...(context.inputVideoDurationSec !== undefined ? { input_video_seconds: context.inputVideoDurationSec } : {}),
-    ...(context.inputAudioDurationSec !== undefined ? { input_audio_seconds: context.inputAudioDurationSec } : {}),
-    ...(context.referenceTokenBudget !== undefined ? { reference_tokens: context.referenceTokenBudget } : {}),
-    ...(context.referenceImageCount !== undefined ? { reference_images: context.referenceImageCount } : {}),
-    ...(context.inputImageCount !== undefined ? { input_images: context.inputImageCount } : {}),
+    ...(media.inputVideoDurationSec !== undefined ? { input_video_seconds: media.inputVideoDurationSec } : {}),
+    ...(media.inputAudioDurationSec !== undefined ? { input_audio_seconds: media.inputAudioDurationSec } : {}),
+    ...(media.referenceTokenBudget !== undefined ? { reference_tokens: media.referenceTokenBudget } : {}),
+    ...(media.referenceImageCount !== undefined ? { reference_images: media.referenceImageCount } : {}),
+    ...(media.inputImageCount !== undefined ? { input_images: media.inputImageCount } : {}),
   };
   return { selector, quantities };
 }

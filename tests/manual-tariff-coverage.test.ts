@@ -62,17 +62,20 @@ test('coverage captures priced image references, image batches and the exact bil
   assert.ok(!scenarios.some(row => row.modelId === 'gpt-image-2-5-flare' && (row.context.referenceImageCount ?? 0) > 16));
 });
 
-test('image-only reference modes use reviewed schema bounds while mixed media remain unresolved', () => {
+test('reference bounds retain priced counts and group unpriced counts; unreviewed Wan sources remain unresolved', () => {
   const coverage = collectSellableManualTariffCoverage();
   for (const [modelId, max] of [['gemini-omni-flash', 10], ['happy-horse-1-0', 9],
     ['veo-3-1', 3], ['grok-imagine-video-1-5', 7]] as const) {
     const rows = coverage.scenarios.filter(row => row.modelId === modelId && row.context.mode === 'ref2v');
+    const priced = rows.some(row => row.selector.referenceImageCount !== undefined || row.selector.inputImageCount !== undefined);
     assert.deepEqual([...new Set(rows.map(row => row.context.referenceImageCount))].sort((a, b) => a! - b!),
-      Array.from({ length: max }, (_, i) => i + 1));
+      priced ? Array.from({ length: max }, (_, i) => i + 1) : [1]);
     assert.ok(!coverage.gaps.some(gap => gap.modelId === modelId && gap.reason.startsWith('ref2v: reference')));
   }
-  assert.ok(coverage.gaps.some(gap => gap.modelId === 'seedance-2-5' && gap.reason.startsWith('ref2v: reference')));
-  assert.ok(coverage.gaps.some(gap => gap.modelId === 'minimax-h3' && gap.reason.startsWith('ref2v: reference')));
+  assert.ok(!coverage.gaps.some(gap => gap.modelId === 'seedance-2-5' && gap.reason.startsWith('ref2v: reference')));
+  assert.ok(!coverage.gaps.some(gap => gap.modelId === 'minimax-h3' && gap.reason.startsWith('ref2v: reference')));
+  assert.ok(!coverage.gaps.some(gap => gap.modelId === 'wan-2-6' && gap.reason.startsWith('r2v: reference')));
+  assert.ok(coverage.gaps.some(gap => gap.modelId === 'wan-3' && gap.reason.startsWith('ref2v: reference')));
 });
 
 test('legacy Luma loop selectors are covered without inventing loop for edit modes', () => {

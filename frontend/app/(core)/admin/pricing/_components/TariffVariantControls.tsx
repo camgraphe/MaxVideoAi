@@ -8,9 +8,13 @@ const LABELS: Record<string, string> = {
   inputVideoDurationSec: 'Input video (seconds)', inheritedDurationSec: 'Inherited video (seconds)',
   inputAudioDurationSec: 'Input audio (seconds)', referenceTokenBudget: 'Reference tokens',
   referenceImageCount: 'Reference images', loop: 'Loop',
+  billingInputType: 'Reference video pricing',
+  voiceControl: 'Voice control',
 };
 function valueLabel(key: string, value: string) {
-  if (key === 'loop') return value === 'true' ? 'On' : 'Off';
+  if (key === 'billingInputType') return value === 'video_input' ? 'With video input'
+    : value === 'no_video_input' ? 'Without video input' : 'Legacy default';
+  if (key === 'loop' || key === 'voiceControl') return value === 'true' ? 'On' : 'Off';
   return key === 'audio' ? value === 'true' ? 'With audio' : 'Silent' : value || 'Default';
 }
 

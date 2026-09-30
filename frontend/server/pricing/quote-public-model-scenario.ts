@@ -12,6 +12,8 @@ import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/lib/pricing-audit/wan3-tariff-scenario';
 import { isSeedance2TokenPricing, resolveSeedance2TariffAspectRatio } from '@/lib/seedance-2-pricing';
+import { manualTariffReferenceCounts } from '@/lib/pricing-audit/manual-tariff-dimensions';
+import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -64,6 +66,21 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const aspects = mode.ui.aspectRatio?.length ? mode.ui.aspectRatio : entry!.engine.aspectRatios;
   if (input.aspectRatio !== undefined && !aspects.includes(input.aspectRatio)) return null;
   const tokenPricing = isSeedance2TokenPricing(entry!.engine.pricingDetails) ? entry!.engine.pricingDetails : null;
+  if (input.voiceControl !== undefined && typeof input.voiceControl !== 'boolean') return null;
+  const pricingEngine = applyEngineVariantPricing(entry!.engine, mode.mode);
+  if (input.voiceControl && !pricingEngine.pricingDetails?.addons?.voice_control) return null;
+  const audio = input.voiceControl ? true : input.audio;
+  const references = manualTariffReferenceCounts(entry!, mode.mode);
+  if (input.referenceImageCount !== undefined && !references.values.includes(input.referenceImageCount)
+    && !(references.values.includes(undefined) && input.referenceImageCount === 1)) return null;
+  if (input.hasVideoInput !== undefined && typeof input.hasVideoInput !== 'boolean') return null;
+  const hasVideoInput = input.hasVideoInput ?? (['v2v', 'extend'].includes(input.mode) || (input.inputVideoDurationSec ?? 0) > 0);
+  const videoAllowed = [...(entry!.engine.inputSchema?.required ?? []), ...(entry!.engine.inputSchema?.optional ?? [])]
+    .some(field => field.type === 'video' && (!field.modes || field.modes.includes(mode.mode)));
+  if (tokenPricing && hasVideoInput && !videoAllowed && !['v2v', 'extend'].includes(input.mode)) return null;
+  if (tokenPricing && input.inputVideoDurationSec !== undefined && (!hasVideoInput
+    || !Number.isFinite(input.inputVideoDurationSec) || input.inputVideoDurationSec <= 0
+    || input.inputVideoDurationSec > 15)) return null;
   let requestedAspect = input.aspectRatio;
   try {
     if (tokenPricing && requestedAspect !== undefined) requestedAspect = resolveSeedance2TariffAspectRatio(tokenPricing, input.resolution, requestedAspect);
@@ -80,15 +97,17 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
     scenario.selector.durationSec === String(input.durationSec) &&
-    (scenario.context.referenceImageCount === undefined
-      ? input.referenceImageCount === undefined || input.referenceImageCount === 1
-      : scenario.context.referenceImageCount === (input.referenceImageCount ?? defaultReferences)) &&
+    (scenario.selector.referenceImageCount === undefined
+      ? scenario.selector.inputImageCount === undefined || input.mode !== 'ref2v'
+        || scenario.selector.inputImageCount === String(input.referenceImageCount ?? defaultReferences)
+      : scenario.selector.referenceImageCount === String(input.referenceImageCount ?? defaultReferences)) &&
+    (!tokenPricing || scenario.selector.billingInputType === (hasVideoInput ? 'video_input' : 'no_video_input')) &&
     !scenario.context.loop &&
-    (input.audio === undefined || scenario.selector.audio === undefined ||
-      scenario.selector.audio === String(input.audio)) &&
+    (audio === undefined || scenario.selector.audio === undefined || scenario.selector.audio === String(audio)) &&
+    (scenario.selector.voiceControl === 'true') === Boolean(input.voiceControl) &&
     (gptImage || scenario.selector.aspectRatio === undefined || input.aspectRatio === undefined || scenario.selector.aspectRatio === requestedAspect) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
-    (wanInputDuration || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
+    (wanInputDuration || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
     (input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
   );
@@ -107,6 +126,16 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     return score(left) - score(right) || left.id.localeCompare(right.id);
   })[0] ?? null;
   if (selected && input.aspectRatio !== undefined) selected = { ...selected, context: { ...selected.context, aspectRatio: input.aspectRatio } };
+  if (selected && audio !== undefined) {
+    const addons = Object.fromEntries(Object.entries(selected.context.addons ?? {})
+      .filter(([key]) => !['audio', 'audio_off', 'voice_control'].includes(key)));
+    selected = { ...selected, context: { ...selected.context, addons: { ...addons, audio,
+      ...buildEngineAddonInput(pricingEngine, { audioEnabled: audio, voiceControl: input.voiceControl }) } } };
+  }
+  if (selected && (input.referenceImageCount !== undefined || tokenPricing)) selected = { ...selected, context: { ...selected.context,
+    ...(input.referenceImageCount !== undefined ? { referenceImageCount: input.referenceImageCount,
+      ...(input.mode === 'ref2v' ? { inputImageCount: input.referenceImageCount } : {}) } : {}),
+    ...(tokenPricing ? { hasVideoInput, ...(input.inputVideoDurationSec !== undefined ? { inputVideoDurationSec: input.inputVideoDurationSec } : {}) } : {}) } };
   if (selected && wanInputDuration) {
     try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec!); }
     catch { return null; }

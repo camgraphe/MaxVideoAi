@@ -19,6 +19,8 @@ function parseInput(payload: unknown): PublicModelQuoteInput | null {
       typeof body.resolution !== 'string' || !/^[a-zA-Z0-9_]{1,30}$/.test(body.resolution) ||
       !Number.isInteger(body.durationSec) || Number(body.durationSec) < 1 || Number(body.durationSec) > 120 ||
       (body.audio !== undefined && typeof body.audio !== 'boolean') ||
+      (body.hasVideoInput !== undefined && typeof body.hasVideoInput !== 'boolean') ||
+      (body.voiceControl !== undefined && typeof body.voiceControl !== 'boolean') ||
       OPTIONAL_TEXT.some((key) => body[key] !== undefined &&
         (typeof body[key] !== 'string' || (body[key] as string).length > 40)) ||
       OPTIONAL_NUMBER.some((key) => body[key] !== undefined &&

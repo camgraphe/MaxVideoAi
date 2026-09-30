@@ -68,6 +68,9 @@ type PricingDimension = {
 };
 
 function mediaDimensions(modelId: string, mode: string, durationSec: number): PricingDimension[] {
+  if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(modelId) && mode === 'ref2v') {
+    return [false, true].map(hasVideoInput => ({ context: { hasVideoInput } }));
+  }
   if ((modelId === 'wan-3' || modelId === 'wan-3-prime') && (mode === 'v2v' || mode === 'extend')) {
     return Array.from({ length: Math.max(0, Math.min(15, 30 - durationSec)) }, (_, index) => {
       const inputVideoDurationSec = index + 1;
@@ -145,18 +148,23 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
       const qualityField = fields
         .find((field) => field.id === 'quality' && (!field.modes || field.modes.includes(mode)));
       const qualities = qualityField?.values?.length ? qualityField.values : [null];
+      const voiceOptions = entry.engine.pricingDetails?.addons?.voice_control ? [false, true] : [false];
       if (qualityField && !qualityField.values?.length) gaps.push({ modelId: model.id, reason: `${mode}: freeform quality requires a reviewed mapping` });
       for (const durationSec of durations.values) for (const resolution of resolutions) for (const aspectRatio of aspects)
-        for (const audio of audioOptions) for (const quality of qualities)
+        for (const audio of audioOptions) for (const quality of qualities) for (const voiceControl of voiceOptions)
           for (const referenceImageCount of references.values) for (const loop of manualTariffLoopValues(entry, mode))
           for (const media of mediaDimensions(model.id, mode, durationSec)) {
+          if (voiceControl && audio === false) continue; // Generation forces audio on when voices are selected.
           // A canonical identity must not erase the preset's current legacy policy.
           const requestedResolution = defaultSizeTier === resolution ? defaultResolution! : resolution;
           const context: PricingContext = {
             engine: entry.engine, mode: mode as Mode, durationSec, resolution: requestedResolution,
             aspectRatio: aspectRatio === 'default' ? null : aspectRatio,
             ...(quality == null ? {} : { quality }),
-            ...(audio == null ? {} : { addons: { audio, ...(!audio ? { audio_off: true } : {}) } }),
+            ...(audio == null && !voiceControl ? {} : { addons: {
+              ...(audio == null ? {} : { audio, ...(!audio ? { audio_off: true } : {}) }),
+              ...(voiceControl ? { voice_control: true } : {}),
+            } }),
             hasVideoInput: ['v2v', 'extend', 'retake', 'reframe'].includes(mode),
             ...(referenceImageCount === undefined ? {} : { referenceImageCount }),
             ...(loop === undefined ? {} : { loop }),

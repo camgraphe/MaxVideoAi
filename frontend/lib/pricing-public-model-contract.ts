@@ -4,10 +4,12 @@ export type PublicModelQuoteInput = {
   durationSec: number;
   resolution: string;
   audio?: boolean;
+  voiceControl?: boolean;
   aspectRatio?: string;
   quality?: string;
   quantity?: number;
   referenceImageCount?: number;
+  hasVideoInput?: boolean;
   inputVideoDurationSec?: number;
   inputAudioDurationSec?: number;
   referenceTokenBudget?: number;

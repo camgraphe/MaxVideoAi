@@ -24,7 +24,7 @@ import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
 
 const SCENARIO_DIMENSIONS = ['mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
   'referenceImageCount', 'inputImageCount', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
-  'referenceTokenBudget', 'loop'] as const;
+  'referenceTokenBudget', 'billingInputType', 'voiceControl', 'loop'] as const;
 
 /** Resolve one supported exact selector while narrowing each subsequent control to valid options. */
 export function chooseCustomerTariffScenario(
