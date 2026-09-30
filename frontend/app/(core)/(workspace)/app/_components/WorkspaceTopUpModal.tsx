@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { TopUpModalState } from '../_hooks/useWorkspacePricingGate';
+import { useWorkspaceTopupReviewAnalytics } from '../_hooks/useWorkspaceTopupReviewAnalytics';
 
 type WorkspaceTopUpCopy = {
   title: string;
@@ -35,6 +36,7 @@ export type WorkspaceTopUpModalProps = {
   modal: NonNullable<TopUpModalState>;
   copy: WorkspaceTopUpCopy;
   currency: string;
+  chargeCurrency: string;
   topUpAmount: number;
   paymentAmountLabel: string | null;
   quoteLoading: boolean;
@@ -59,6 +61,7 @@ export function WorkspaceTopUpModal({
   modal,
   copy,
   currency,
+  chargeCurrency,
   topUpAmount,
   paymentAmountLabel,
   quoteLoading,
@@ -76,6 +79,7 @@ export function WorkspaceTopUpModal({
   onSelectPresetAmount,
   onCustomAmountChange,
 }: WorkspaceTopUpModalProps) {
+  useWorkspaceTopupReviewAnalytics({ amountCents: topUpAmount, chargeCurrency, paymentAmountLabel, quoteLoading, quoteError });
   const { dialogRef, onDialogKeyDown } = useAccessibleModal<HTMLFormElement>({
     onClose,
     closeDisabled: isTopUpLoading,

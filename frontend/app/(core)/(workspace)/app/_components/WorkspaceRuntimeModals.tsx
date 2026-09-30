@@ -42,6 +42,7 @@ export function WorkspaceRuntimeModals({
   topUpModal,
   topUpCopy,
   currency,
+  chargeCurrency,
   topUpAmount,
   paymentAmountLabel,
   quoteLoading,
@@ -86,6 +87,7 @@ export function WorkspaceRuntimeModals({
   topUpModal: TopUpModalState;
   topUpCopy: WorkspaceTopUpModalProps['copy'];
   currency: string;
+  chargeCurrency: string;
   topUpAmount: number;
   paymentAmountLabel: string | null;
   quoteLoading: boolean;
@@ -138,6 +140,7 @@ export function WorkspaceRuntimeModals({
           modal={topUpModal}
           copy={topUpCopy}
           currency={currency}
+          chargeCurrency={chargeCurrency}
           topUpAmount={topUpAmount}
           paymentAmountLabel={paymentAmountLabel}
           quoteLoading={quoteLoading}
