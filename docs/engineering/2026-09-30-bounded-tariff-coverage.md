@@ -53,3 +53,5 @@ Continuous unit terms, verified metadata projections, a complete reviewed curren
 Independent code review identified missing video input counts and fixed GPT pixel sizes; both were reproduced as failing charging-context tests and corrected. The focused pricing/admin/public/PostgreSQL group passes 102 tests. TypeScript, app lint, exposure and owner lint pass. The frozen billing/public baselines and pricing audit remain unchanged.
 
 Authenticated HTTP reads verify the admin page, model tariff inventory and policy inventory return 200. There are 48 models in 15 families, no missing representative customer amount, and no representative cent change versus the pre-continuation local inventory. Manual activation remains false at revision 3. The Codex panel opener returned `queued`; this is not browser visual acceptance.
+
+Complete committed-snapshot validation at `70eb58797`: 6,346 standard tests and 11 isolated Studio tests pass, zero failures, three standard skips. The standard validator covers 1,069 test files. The sanitized local environment was held outside the checkout during validation and restored in `finally`; no external credentials were loaded.
