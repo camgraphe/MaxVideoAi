@@ -10,11 +10,12 @@ const LABELS: Record<string, string> = {
   referenceImageCount: 'Reference images', loop: 'Loop',
   billingInputType: 'Reference video pricing',
   voiceControl: 'Voice control',
+  hdr: 'HDR', exrExport: 'EXR export',
 };
 function valueLabel(key: string, value: string) {
   if (key === 'billingInputType') return value === 'video_input' ? 'With video input'
     : value === 'no_video_input' ? 'Without video input' : 'Legacy default';
-  if (key === 'loop' || key === 'voiceControl') return value === 'true' ? 'On' : 'Off';
+  if (['loop', 'voiceControl', 'hdr', 'exrExport'].includes(key)) return value === 'true' ? 'On' : 'Off';
   return key === 'audio' ? value === 'true' ? 'With audio' : 'Silent' : value || 'Default';
 }
 

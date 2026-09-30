@@ -14,6 +14,8 @@ import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/
 import { isSeedance2TokenPricing, resolveSeedance2TariffAspectRatio } from '@/lib/seedance-2-pricing';
 import { manualTariffReferenceCounts } from '@/lib/pricing-audit/manual-tariff-dimensions';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { numericTariffDuration } from '@/lib/pricing-audit/manual-tariff-durations';
+import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -63,6 +65,20 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const entry = getFalEngineById(model.id);
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
   if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
+  const automaticDuration = mode.ui.duration && 'options' in mode.ui.duration && mode.ui.duration.options.includes('auto');
+  if ([input.hdr, input.exrExport].some(value => value !== undefined && typeof value !== 'boolean')
+    || (input.exrExport && !input.hdr)
+    || ((input.hdr || input.exrExport) && (entry!.id !== 'luma-ray-3-2' || !['t2v', 'i2v', 'v2v'].includes(input.mode)))) return null;
+  if (input.durationOption !== undefined && (input.durationOption !== 'auto' || !automaticDuration)) return null;
+  if (automaticDuration && input.durationOption !== 'auto' && mode.ui.duration && 'options' in mode.ui.duration
+    && !mode.ui.duration.options.some(value => numericTariffDuration(value) === input.durationSec)) return null;
+  let billedDuration = input.durationSec;
+  if (input.durationOption === 'auto') {
+    try { billedDuration = buildBillingPricingFacts({ engine: entry!.engine, mode: mode.mode, durationSec: input.durationSec,
+      resolution: input.resolution, aspectRatio: input.aspectRatio, hasVideoInput: input.hasVideoInput,
+      durationOption: 'auto' }, entry!.engine.pricingDetails, 'USD').facts.quantity; }
+    catch { return null; }
+  }
   const aspects = mode.ui.aspectRatio?.length ? mode.ui.aspectRatio : entry!.engine.aspectRatios;
   if (input.aspectRatio !== undefined && !aspects.includes(input.aspectRatio)) return null;
   const tokenPricing = isSeedance2TokenPricing(entry!.engine.pricingDetails) ? entry!.engine.pricingDetails : null;
@@ -96,7 +112,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
-    scenario.selector.durationSec === String(input.durationSec) &&
+    scenario.selector.durationSec === String(billedDuration) &&
     (scenario.selector.referenceImageCount === undefined
       ? scenario.selector.inputImageCount === undefined || input.mode !== 'ref2v'
         || scenario.selector.inputImageCount === String(input.referenceImageCount ?? defaultReferences)
@@ -105,6 +121,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     !scenario.context.loop &&
     (audio === undefined || scenario.selector.audio === undefined || scenario.selector.audio === String(audio)) &&
     (scenario.selector.voiceControl === 'true') === Boolean(input.voiceControl) &&
+    (scenario.selector.hdr === 'true') === Boolean(input.hdr) &&
+    (scenario.selector.exrExport === 'true') === Boolean(input.exrExport) &&
     (gptImage || scenario.selector.aspectRatio === undefined || input.aspectRatio === undefined || scenario.selector.aspectRatio === requestedAspect) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
     (wanInputDuration || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
@@ -125,6 +143,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       (input.audio === undefined && scenario.selector.audio === 'true' ? 1 : 0);
     return score(left) - score(right) || left.id.localeCompare(right.id);
   })[0] ?? null;
+  if (selected && input.durationOption === 'auto') selected = { ...selected, context: { ...selected.context,
+    durationSec: input.durationSec, durationOption: 'auto' } };
   if (selected && input.aspectRatio !== undefined) selected = { ...selected, context: { ...selected.context, aspectRatio: input.aspectRatio } };
   if (selected && audio !== undefined) {
     const addons = Object.fromEntries(Object.entries(selected.context.addons ?? {})

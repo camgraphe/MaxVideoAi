@@ -7,6 +7,7 @@ import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { convertCents } from '@/lib/exchange';
 import { buildEngineAddonInput, applyEngineVariantPricing } from '@/lib/pricing-addons';
+import { videoPricingExtras } from '@/lib/pricing-video-extras';
 import {
   ensureUserPreferredCurrency,
   getUserPreferredCurrency,
@@ -106,6 +107,7 @@ export async function resolveGenerateBillingPreflight(params: {
   lumaDurationLabel: string | null;
   audioEnabled: boolean | undefined;
   voiceControl: boolean;
+  validatedExtraInputValues?: Readonly<Record<string, unknown>>;
   deps?: BillingPreflightDeps;
 }): Promise<GenerateBillingPreflightResult> {
   if (params.payment?.mode !== 'direct' && requiresMembershipPricingRefresh(params.membershipTier)) {
@@ -156,6 +158,7 @@ export async function resolveGenerateBillingPreflight(params: {
 
   let capturedQuote: DirectPaymentQuote | null = null;
   let capturedIntent: PaymentIntentLike | null = null;
+  const pricedExtras = videoPricingExtras(params.engine.id, params.mode, params.validatedExtraInputValues);
   if (params.payment.mode === 'direct') {
     if (!params.userId) return { ok: false, status: 401, body: { ok: false, error: 'Direct payment requires authentication' } };
     if (!ENV.STRIPE_SECRET_KEY && !deps.retrievePaymentIntentFn) return { ok: false, status: 501, body: { ok: false, error: 'Stripe not configured' } };
@@ -164,7 +167,8 @@ export async function resolveGenerateBillingPreflight(params: {
     try {
       capturedQuote = await resolveCapturedDirectPaymentQuote({ intent: capturedIntent, userId: params.userId, jobId: params.jobId,
         scenario: { engineId: params.engine.id, mode: params.mode, durationSec: params.durationSec, resolution: params.pricingResolution,
-          aspectRatio: params.aspectRatio, loop: params.loop, audioEnabled: params.audioEnabled ?? null, voiceControl: params.voiceControl },
+          aspectRatio: params.aspectRatio, loop: params.loop, audioEnabled: params.audioEnabled ?? null, voiceControl: params.voiceControl,
+          hdr: Boolean(pricedExtras.hdr), exrExport: Boolean(pricedExtras.exr_export) },
         loadQuote: deps.loadDirectPaymentQuoteFn });
       resolvedCurrencyLower = capturedQuote.settlement.currency.toLowerCase() as Currency;
       resolvedCurrencyUpper = capturedQuote.settlement.currency;
@@ -200,7 +204,7 @@ export async function resolveGenerateBillingPreflight(params: {
     verifiedReferenceTokenCount,
     durationOption: params.lumaDurationLabel ?? params.rawDurationOption ?? null,
     currency: DISPLAY_CURRENCY,
-    addons: pricingAddons,
+    addons: { ...pricingAddons, ...pricedExtras },
   });
   try { if (!capturedQuote) assertDisplayedCustomerTariffRevision(params.req.headers.get(CUSTOMER_TARIFF_REVISION_HEADER), pricing); }
   catch (error) {

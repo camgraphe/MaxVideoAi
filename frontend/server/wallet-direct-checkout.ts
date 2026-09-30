@@ -7,6 +7,8 @@ import { buildGenerateRequestOptions } from '@/app/api/generate/_lib/request-opt
 import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { videoPricingExtras } from '@/lib/pricing-video-extras';
+import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { convertCents } from '@/lib/exchange';
 import { resolveWalletDirectPricingGate } from '@/lib/wallet-direct-pricing';
@@ -35,12 +37,15 @@ export async function createWalletDirectPaymentIntent(input: {
   const { durationSec, pricingResolution: resolution, aspectRatio, loop, voiceControl, soraRequest,
     rawDurationOption, lumaDurationInfo, audioEnabled: selectedAudio } = normalized.options;
   const audioEnabled = selectedAudio;
+  const extras = validateExtraInputValues({ engine, mode, rawExtraInputValues: normalized.options.rawExtraInputValues });
+  if (!extras.ok) return NextResponse.json(extras.body, { status: extras.status });
+  const pricedExtras = videoPricingExtras(engine.id, mode, extras.values);
   const pricingEngine = applyEngineVariantPricing(engine, mode);
   let pricing = await (input.deps?.computePricingSnapshotFn ?? computeCanonicalBillingSnapshot)({
     engine: pricingEngine,
     durationSec,
     resolution,
-    mode, aspectRatio, loop, addons: buildEngineAddonInput(pricingEngine, { audioEnabled, voiceControl }),
+    mode, aspectRatio, loop, addons: { ...buildEngineAddonInput(pricingEngine, { audioEnabled, voiceControl }), ...pricedExtras },
     membershipTier: typeof body.membershipTier === 'string' ? body.membershipTier : null,
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
     ...(mode === 'i2v' ? { inputImageCount: 1 } : {}),
@@ -60,7 +65,8 @@ export async function createWalletDirectPaymentIntent(input: {
 
   try {
     const savedQuote = await saveDirectPaymentQuote({ id: directQuoteId, userId, jobId,
-      scenario: { engineId: engine.id, mode, durationSec, resolution, aspectRatio, loop, audioEnabled: audioEnabled ?? null, voiceControl },
+      scenario: { engineId: engine.id, mode, durationSec, resolution, aspectRatio, loop, audioEnabled: audioEnabled ?? null, voiceControl,
+        hdr: Boolean(pricedExtras.hdr), exrExport: Boolean(pricedExtras.exr_export) },
       pricing, settlement: { currency: settlementCurrencyUpper, amountCents: settlementAmountCents, fxRate, fxSource } });
     directQuoteId = savedQuote.id;
     pricing = savedQuote.pricing;

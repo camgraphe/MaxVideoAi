@@ -528,8 +528,11 @@ export function buildBillingPricingFacts(context: PricingContext, pricingDetails
     ? resolveSeedance2TariffAspectRatio(details, context.resolution, context.aspectRatio) : null;
   if (billedAspect !== null && typeof billedAspect !== 'string') throw new Error('Priced aspect dimensions are unavailable');
   result.facts.metadata = { ...result.facts.metadata, manualTariffAspectRatio: billedAspect,
+    manualTariffDurationSec: result.facts.unit === 'sec' ? result.facts.quantity : context.durationSec,
     manualTariffAudio: projectManualTariffAudio(effectiveContext, identityFacts),
     manualTariffVoiceControl: result.addons.some(addon => addon.type === 'voice_control'),
+    manualTariffDynamicRange: isLumaRay32EngineId(engine.id)
+      ? (result.meta.cost_breakdown_usd as { dynamic_range?: unknown } | undefined)?.dynamic_range ?? 'sdr' : null,
     manualTariffMedia: projectManualTariffMedia(effectiveContext, details, identityFacts) };
   return result;
 }

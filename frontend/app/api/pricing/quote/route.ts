@@ -17,10 +17,13 @@ function parseInput(payload: unknown): PublicModelQuoteInput | null {
   if (typeof body.modelId !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(body.modelId) ||
       typeof body.mode !== 'string' || !/^[a-z0-9-]{1,30}$/.test(body.mode) ||
       typeof body.resolution !== 'string' || !/^[a-zA-Z0-9_]{1,30}$/.test(body.resolution) ||
+      (body.durationOption !== undefined && body.durationOption !== 'auto') ||
       !Number.isInteger(body.durationSec) || Number(body.durationSec) < 1 || Number(body.durationSec) > 120 ||
       (body.audio !== undefined && typeof body.audio !== 'boolean') ||
       (body.hasVideoInput !== undefined && typeof body.hasVideoInput !== 'boolean') ||
       (body.voiceControl !== undefined && typeof body.voiceControl !== 'boolean') ||
+      (body.hdr !== undefined && typeof body.hdr !== 'boolean') ||
+      (body.exrExport !== undefined && typeof body.exrExport !== 'boolean') ||
       OPTIONAL_TEXT.some((key) => body[key] !== undefined &&
         (typeof body[key] !== 'string' || (body[key] as string).length > 40)) ||
       OPTIONAL_NUMBER.some((key) => body[key] !== undefined &&

@@ -343,6 +343,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       : undefined,
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
+    validatedExtraInputValues,
     audioEnabled,
     voiceControl,
       });

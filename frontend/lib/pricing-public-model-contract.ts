@@ -2,9 +2,12 @@ export type PublicModelQuoteInput = {
   modelId: string;
   mode: string;
   durationSec: number;
+  durationOption?: 'auto';
   resolution: string;
   audio?: boolean;
   voiceControl?: boolean;
+  hdr?: boolean;
+  exrExport?: boolean;
   aspectRatio?: string;
   quality?: string;
   quantity?: number;

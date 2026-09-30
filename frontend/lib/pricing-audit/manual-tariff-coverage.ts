@@ -7,6 +7,7 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
 import { GPT_IMAGE_2_CANONICAL_SIZE_VALUES, isGptImageFamilyEngineId, parseGptImage2SizeKey, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { manualTariffImageOutputCounts, manualTariffLoopValues, manualTariffReferenceCounts } from './manual-tariff-dimensions';
+import { manualTariffDurations } from './manual-tariff-durations';
 
 export type ManualTariffCoverageScenario = {
   id: string;
@@ -29,28 +30,6 @@ export type EffectiveCustomerTariffBaseline = {
   rows: Array<{ scenarioId: string; customerCents: number; currency: string; policySource: string; ruleId: string }>;
   gaps: string[];
 };
-
-function numericDuration(value: number | string): number | null {
-  const parsed = typeof value === 'number' ? value : Number(value.replace(/s$/i, ''));
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-}
-
-function finiteDurations(
-  duration: { options: Array<number | string>; default?: number | string } | { min: number; default: number } | undefined,
-  maxDuration: number,
-  fallback: number | undefined,
-): { values: number[]; incomplete: boolean } {
-  if (duration && 'options' in duration) {
-    const values = [...new Set(duration.options.map(numericDuration).filter((value): value is number => value != null))];
-    return { values, incomplete: values.length !== duration.options.length };
-  }
-  if (duration && 'min' in duration && Number.isInteger(duration.min) && Number.isInteger(maxDuration)
-      && maxDuration >= duration.min && maxDuration - duration.min <= 60) {
-    return { values: Array.from({ length: maxDuration - duration.min + 1 }, (_, index) => duration.min + index), incomplete: false };
-  }
-  const selected = numericDuration(fallback ?? maxDuration);
-  return { values: selected ? [selected] : [], incomplete: true };
-}
 
 function selectorId(selector: ManualTariffSelector): string {
   return Object.entries(selector).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('|');
@@ -110,8 +89,8 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
       const gptImage = isImage && isGptImageFamilyEngineId(model.id);
       const outputs = isImage ? manualTariffImageOutputCounts(entry, mode) : null;
       const durations = isImage
-        ? { values: outputs ?? [1], incomplete: !outputs }
-        : finiteDurations(modeConfig.ui.duration, entry.engine.maxDurationSec, entry.pricingHint?.durationSeconds);
+        ? { values: (outputs ?? [1]).map(durationSec => ({ durationSec, durationOption: undefined })), incomplete: !outputs }
+        : manualTariffDurations(entry, mode, modeConfig.ui.duration);
       if (durations.incomplete) gaps.push({ modelId: model.id, reason: `${mode}: nonnumeric auto or open duration requires a reviewed mapping` });
       const rawResolutions = modeConfig.ui.resolution?.length ? modeConfig.ui.resolution : entry.engine.resolutions;
       const resolutions = gptImage ? [...GPT_IMAGE_2_CANONICAL_SIZE_VALUES]
@@ -135,9 +114,6 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
       if (!references.complete) {
         gaps.push({ modelId: model.id, reason: `${mode}: reference image count and metadata need a reviewed bound` });
       }
-      if (model.id === 'luma-ray-3-2' && ['t2v', 'i2v', 'v2v'].includes(mode)) {
-        gaps.push({ modelId: model.id, reason: `${mode}: HDR/EXR controls require reviewed generation-to-pricing projection` });
-      }
       const audioOptions: Array<boolean | null> = modeConfig.ui.audioToggle ? [false, true] : [null];
       const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
       const resolutionField = fields.find(field => field.id === 'resolution' && (!field.modes || field.modes.includes(mode)));
@@ -149,16 +125,19 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
         .find((field) => field.id === 'quality' && (!field.modes || field.modes.includes(mode)));
       const qualities = qualityField?.values?.length ? qualityField.values : [null];
       const voiceOptions = entry.engine.pricingDetails?.addons?.voice_control ? [false, true] : [false];
+      const dynamicRanges = model.id === 'luma-ray-3-2' && ['t2v', 'i2v', 'v2v'].includes(mode)
+        ? ['sdr', 'hdr', 'hdr_exr'] : ['sdr'];
       if (qualityField && !qualityField.values?.length) gaps.push({ modelId: model.id, reason: `${mode}: freeform quality requires a reviewed mapping` });
-      for (const durationSec of durations.values) for (const resolution of resolutions) for (const aspectRatio of aspects)
-        for (const audio of audioOptions) for (const quality of qualities) for (const voiceControl of voiceOptions)
+      for (const duration of durations.values) for (const resolution of resolutions) for (const aspectRatio of aspects)
+        for (const audio of audioOptions) for (const quality of qualities) for (const voiceControl of voiceOptions) for (const dynamicRange of dynamicRanges)
           for (const referenceImageCount of references.values) for (const loop of manualTariffLoopValues(entry, mode))
-          for (const media of mediaDimensions(model.id, mode, durationSec)) {
+          for (const media of mediaDimensions(model.id, mode, duration.durationSec)) {
           if (voiceControl && audio === false) continue; // Generation forces audio on when voices are selected.
+          if (dynamicRange !== 'sdr' && (duration.durationSec !== 5 || resolution === '540p')) continue;
           // A canonical identity must not erase the preset's current legacy policy.
           const requestedResolution = defaultSizeTier === resolution ? defaultResolution! : resolution;
           const context: PricingContext = {
-            engine: entry.engine, mode: mode as Mode, durationSec, resolution: requestedResolution,
+            engine: entry.engine, mode: mode as Mode, ...duration, resolution: requestedResolution,
             aspectRatio: aspectRatio === 'default' ? null : aspectRatio,
             ...(quality == null ? {} : { quality }),
             ...(audio == null && !voiceControl ? {} : { addons: {
@@ -175,6 +154,8 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
               ? { customImageSize: parseGptImage2SizeKey(requestedResolution) } : {}),
             ...media.context,
           };
+          if (dynamicRange !== 'sdr') context.addons = { ...context.addons, hdr: true,
+            ...(dynamicRange === 'hdr_exr' ? { exr_export: true } : {}) };
           scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${resolution}`));
         }
     }

@@ -39,11 +39,13 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const media = projectedMedia ?? context;
   const factualAudio = facts.metadata?.manualTariffAudio;
   const audio = factualAudio === null ? undefined : typeof factualAudio === 'boolean' ? factualAudio : context.addons?.audio;
+  const billedDuration = typeof facts.metadata?.manualTariffDurationSec === 'number'
+    ? facts.metadata.manualTariffDurationSec : context.durationSec;
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
-    durationSec: String(context.durationSec),
+    durationSec: String(billedDuration),
     ...(!gptImage && pricedAspect !== null ? { aspectRatio: pricedAspect } : {}),
     ...(option(audio) !== undefined ? { audio: option(audio)! } : {}),
     ...(gptImage ? { quality: normalizeGptImageQuality(context.quality, facts.engineId) }
@@ -64,11 +66,11 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
     ...(facts.metadata?.manualTariffVoiceControl === true ? { voiceControl: 'true' } : {}),
     ...(!gptImage && context.customImageSize ? { customImageSize: JSON.stringify(context.customImageSize) } : {}),
     ...(context.loop ? { loop: 'true' } : {}),
-    ...(option(context.addons?.hdr) ? { hdr: option(context.addons?.hdr)! } : {}),
-    ...(option(context.addons?.exr_export) ? { exrExport: option(context.addons?.exr_export)! } : {}),
+    ...(facts.metadata?.manualTariffDynamicRange === 'hdr' || facts.metadata?.manualTariffDynamicRange === 'hdr_exr' ? { hdr: 'true' } : {}),
+    ...(facts.metadata?.manualTariffDynamicRange === 'hdr_exr' ? { exrExport: 'true' } : {}),
   };
   const quantities: Record<string, number> = {
-    output_seconds: context.durationSec,
+    output_seconds: billedDuration,
     output_units: facts.quantity,
     ...(media.inputVideoDurationSec !== undefined ? { input_video_seconds: media.inputVideoDurationSec } : {}),
     ...(media.inputAudioDurationSec !== undefined ? { input_audio_seconds: media.inputAudioDurationSec } : {}),
