@@ -52,4 +52,6 @@ test('public reuse preserves recorded resolution without exposing the private sn
     assert.equal(result.video.requestedResolution, undefined);
     assert.equal(result.snapshot.core.resolution, null, 'invalid or absent settings are not invented');
   }
+  await database.pool.query('ALTER TABLE app_jobs DROP COLUMN settings_snapshot');
+  assert.equal((await read()).snapshot.core.resolution, null, 'older read schemas remain usable without bootstrap writes');
 });
