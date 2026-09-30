@@ -500,4 +500,16 @@ overrides and rollback also have real PostgreSQL historical quote checks at both
 effective instants and immediately before them; historical paid snapshots are
 unchanged.
 
+### Upscale mode parity correction (2026-09-30)
+
+Provider and price estimation share supported target/factor normalization.
+Explicit `factor` is honored for SeedVR2 as well as FlashVSR; a target is ignored
+for factor processing. The server context forwards the requested mode, and the
+pure/admin previews use the same calculator. Target-mode Topaz/SeedVR2 quotes
+retain their preceding totals. FlashVSR factor scenario IDs carry `2x`/`4x` and
+preview both variants. Paid snapshots retain their captured prices; stale
+accepted amounts must refresh. This corrects a preceding source-estimation
+mismatch and has explicit cent-impact evidence in the dated all-product audit;
+it does not change product minima/coefficients or activate staged model tariffs.
+
 Independent review found that decomposing Wan source rounding into multiplied unit components can move a cent at a valid decimal boundary. Wan preservation therefore uses authored source-second bands captured from the original operation order, including each first representable transition. For the default 5s/480p ref2v quote, source 3.4999 retains 56 cents and 5.0001 retains 65 cents. The full-domain guard uses the same floating-point input+output endpoint as the existing duration validator. New linear unit prices remain a distinct, explicitly confirmed price decision.

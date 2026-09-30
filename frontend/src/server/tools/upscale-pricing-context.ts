@@ -21,7 +21,7 @@ export type UpscalePricingEstimate = {
 type ResolveUpscalePricingContextInput = {
   billingProductKey: string;
   engine: UpscaleToolEngineDefinition;
-  input: Pick<UpscaleToolRequest, 'imageHeight' | 'imageWidth' | 'mediaType'>;
+  input: Pick<UpscaleToolRequest, 'imageHeight' | 'imageWidth' | 'mediaType' | 'mode'>;
   targetResolution: UpscaleToolRequest['targetResolution'];
   upscaleFactor: number;
   videoMetadata: VideoMetadata | null;
@@ -52,6 +52,7 @@ export async function resolveUpscalePricingContext({
         height: videoMetadata.height,
         durationSec: videoMetadata.durationSec,
         fps: videoMetadata.fps,
+        mode: input.mode,
         targetResolution,
         factor: upscaleFactor,
       });

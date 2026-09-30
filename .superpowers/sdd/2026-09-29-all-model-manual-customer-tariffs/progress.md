@@ -193,3 +193,37 @@ release. Focused compiler/domain/seed/dialog21/21; final floor/label9/9 pass.
 Independent review also passes11 focused tests including disposable PostgreSQL;
 no other issue. Full integrated verification follows. No production/provider/
 payment/storage/email/support/push/merge/deployment action.
+
+## Factor pricing continuation and full preceding verification — 2026-09-30
+
+Candidatea0f41e49b: fresh whole validator6421 standard passes/3 skips plus11
+isolated Studio passes; optimized local build succeeds. Private environment
+restored. Independent reviewer confirms floor/history and factor label; its
+warning wording finding was corrected before that candidate.
+
+Continue authorized local work: Ruling: current source pricing must normalize
+supported mode/target/factor exactly as provider submission. Cost if wrong:
+factor jobs can be billed against an unrelated target. RED actual/pure Flash
+125≠222 and invalidfactor498≠222. Initial correction left SeedVR249≠443; traced
+resolveUpscaleMode ignoring an explicit supportedfactor when defaulttarget.
+Fix both normalizers, propagateinput.mode to actual pricing, use2x/4x audit
+identities and include a4x admin reference. Obsolete mismatch warning removed.
+
+Literal10s720p30fps coefficient4/min80: Flash2x supplier55.3c/customer222c,
+Flash4x885c, SeedVR2x443c, unchangedSeedVR1080target249c/Topaz80c. Product
+records were not edited; these are disclosed current source-estimation changes,
+separate from the24 model-floor proposal. Actual paid125c snapshot preserved and
+old125c acceptance rejected against222c. Focused pure/provider-input/realPG/
+admin/minimum/architecture18/18 passes; TS/lint pass. Fresh final full validation
+and independent review follow. Global model switch remains off; three unbounded
+domains and complete seed/certificate remain open. No production/provider/
+payment/storage/email/support/push/merge/deployment action.
+
+Independent factor review: no actionable finding; normalizers, source cost and
+provider payload align; stale acceptance rejects and paid snapshots retain stored
+amounts. Reviewer11/11 focused tests including disposable PG. Actual browser
+FlashVSR reference10s/720p30fps2x: supplier0.553/current2.22/margin75.1%.
+Coefficient4→5 preview shows222→277c and4x885→1106c, six scenarios/five changed;
+cancelled and reopened storedminimum18/coefficient4, no original write. Screenshot
+/tmp/maxvideoai-pricing-factor-preview.jpg; admin tab retained. Exposure/diff pass.
+Fresh full committed validation follows this factor correction.

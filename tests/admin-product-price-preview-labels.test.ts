@@ -24,13 +24,16 @@ test('dynamic processing references carry readable duration and resolution label
   assert.equal(tenSeconds.totalCents, 80);
 });
 
-test('factor-only FlashVSR references name the actual processing factor while preserving the current billing amount', () => {
+test('factor-only FlashVSR references name and price the actual provider processing factor', () => {
   const rows = buildDynamicToolProductPreviews({ productKey: 'upscale-video-flashvsr', surface: 'upscale',
     label: 'FlashVSR Video Upscale', currency: 'USD', unitKind: 'run', unitPriceCents: 80,
     active: true, metadata: null });
-  const tenSeconds = rows.find(row => row.scenarioId.endsWith(':10s:1080p:720p-source:30fps'))!;
+  const tenSeconds = rows.find(row => row.scenarioId.endsWith(':10s:2x:720p-source:30fps'))!;
   assert.equal(tenSeconds.scenarioLabel, '10 s · 720p source · 2× · 30 fps');
-  assert.equal(tenSeconds.totalCents, 125, 'labels must not silently change the current quote calculation');
+  assert.equal(tenSeconds.totalCents, 222);
+  const fourTimes = rows.find(row => row.scenarioId.endsWith(':10s:4x:720p-source:30fps'))!;
+  assert.equal(fourTimes.totalCents, 885);
+  assert.match(fourTimes.scenarioLabel, /4×/);
 });
 
 test('price review leads with readable scenarios and accurate changed count while audit details stay collapsed', () => {

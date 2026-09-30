@@ -230,11 +230,43 @@ The complete bounded list of proposed old/new amounts is saved in
 [`2026-09-30-gpt-image-25-reference-floor-proposal.json`](2026-09-30-gpt-image-25-reference-floor-proposal.json).
 It is a review artifact, not a runtime configuration or an activation command.
 
-Investigation also found an existing FlashVSR reference mismatch: its provider
-request uses a factor (default 2×), while current customer estimation normalizes
-a target to 1080p even in factor mode. Its preview now names 2× correctly and
-comparison/confirmation warn about this mismatch. For 10 seconds of 720p/30fps,
-the factor-based provider estimate is $0.5530 vs the current billing reference
-of $0.3110. No FlashVSR charge was changed in this continuation. Supplier
-comparison and factor-mode quote normalization need explicit alignment and
-cent-impact evidence before release.
+At checkpoint `a0f41e49b`, investigation found an existing FlashVSR mismatch:
+the provider request used a factor (default 2×), while customer estimation used
+a 1080p target even in factor mode. That checkpoint named 2× in the preview and
+added a warning without changing the quote. The next section records its
+subsequent correction and exact cent impact.
+
+## Factor-mode normalization correction
+
+The following local continuation resolves the preceding mismatch. The shared
+upscale estimator now uses the same supported mode, target resolution and
+factor normalization as provider submission. Explicit factor mode also works
+for SeedVR2: the preceding mode normalizer accepted only an explicit target,
+silently falling back to SeedVR2's default target for a requested factor. The
+server pricing context carries that requested mode, so Tool/Studio preparation,
+actual execution and admin reference previews agree. FlashVSR preview IDs now
+name 2× or 4×, with an extra 4× reference; the obsolete warning is removed.
+
+These are disclosed source-processing corrections, separate from the 24 model
+tariff proposals. For 10s/1280×720/30fps, minimum80c and coefficient4:
+
+| Processing | Catalogue estimate | Previous customer quote | Corrected local quote |
+| --- | --- | --- | --- |
+| FlashVSR 2× | $0.5530 | $1.25 | $2.22 |
+| FlashVSR 4× | $2.2118 | $1.25 | $8.85 |
+| SeedVR2 2× | $1.1059 | $2.49 (target was used) | $4.43 |
+| SeedVR2 1080p target | $0.6221 | $2.49 | $2.49 |
+| Topaz 1080p target | $0.2000 | $0.80 | $0.80 |
+
+The actual supplier contract remains unconfirmed. Fixed minima, customer
+coefficients and product persistence were not rewritten. Old paid snapshots
+remain unchanged; old accepted125c quotes no longer match the corrected222c
+FlashVSR quote and must refresh before execution. RED reproduced125≠222 for
+real and pure quotes, and498≠222 for an unsupported factor/unused2160p target.
+An additional SeedVR2 failure249≠443 exposed its separate mode normalizer issue.
+After both source fixes, the focused actual PostgreSQL/preview/provider-input/
+minimum/stale-price/architecture group passes18 tests. TypeScript/lint pass.
+
+Before this correction, candidate`a0f41e49b` passed6,421 standard tests/3 skips and
+11 isolated Studio tests (6,432 total passes), followed by a successful optimized
+local build. Fresh final verification of the factor correction follows.

@@ -13,6 +13,7 @@ import { resolveUpscalePricingContext } from '../frontend/src/server/tools/upsca
 import { resolveBackgroundRemovalPricingContext } from '../frontend/src/server/tools/background-removal-pricing-context';
 import { matchesAcceptedToolQuote } from '../frontend/src/lib/toolbox/quote';
 import { createBillingProductDraft, buildBillingProductProposal } from '../frontend/app/(core)/admin/billing-products/_lib/billing-products-admin-view-model';
+import { loadAdminProductPricing } from '../frontend/server/pricing-admin/product-pricing-inventory';
 
 test('dynamic tool edits persist through preview, stale rejection and rollback while paid quotes retain original totals', async () => {
   const db = await startDisposablePostgres('dynamic-tools');
@@ -98,5 +99,58 @@ test('dynamic tool edits persist through preview, stale rejection and rollback w
     if (previousUrl === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previousUrl;
     invalidateBillingProductsCache();
     await db.cleanup();
+  }
+});
+
+test('actual factor-mode quotes and admin previews agree on supplier cost while old paid totals remain unchanged', async () => {
+  const db = await startDisposablePostgres('factor-tools');
+  const previousUrl = process.env.DATABASE_URL;
+  try {
+    await db.pool.query(`CREATE TABLE app_billing_products(product_key text PRIMARY KEY, surface text, label text,
+      currency text, unit_kind text, unit_price_cents int, active boolean, metadata jsonb, updated_at timestamptz);
+      INSERT INTO app_billing_products VALUES
+        ('upscale-video-flashvsr','upscale','FlashVSR video','USD','run',80,true,NULL,NOW()),
+        ('upscale-video-seedvr','upscale','SeedVR2 video','USD','run',80,true,NULL,NOW());
+      CREATE TABLE app_pricing_rules(id text PRIMARY KEY,engine_id text,mode text,resolution text,margin_percent numeric,
+        margin_flat_cents int,surcharge_audio_percent numeric,surcharge_upscale_percent numeric,currency text,
+        compatibility_profile text,vendor_account_id text,effective_from timestamptz);
+      INSERT INTO app_pricing_rules(id,margin_percent,margin_flat_cents,currency) VALUES('default',0.3,0,'USD');
+      CREATE TABLE app_jobs(id text PRIMARY KEY,pricing_snapshot jsonb);
+      INSERT INTO app_jobs VALUES('paid-flash','{"totalCents":125,"currency":"USD"}');`);
+    process.env.DATABASE_URL = db.databaseUrl;
+    invalidateBillingProductsCache();
+    for (const [engineId, mode, factor, wantedCents, wantedCost] of [
+      ['flashvsr-video', 'factor', 2, 222, 0.553], ['flashvsr-video', 'factor', 4, 885, 2.2118],
+      ['seedvr-video', 'factor', 2, 443, 1.1059], ['seedvr-video', 'target', 2, 249, 0.6221],
+    ] as const) {
+      const engine = getUpscaleToolEngine(engineId, 'video');
+      const quote = await resolveUpscalePricingContext({ billingProductKey: engine.billingProductKey, engine,
+        input: { mediaType: 'video', mode }, targetResolution: '1080p', upscaleFactor: factor,
+        videoMetadata: { width: 1280, height: 720, durationSec: 10, fps: 30 } });
+      assert.equal(quote.pricing.totalCents, wantedCents);
+      assert.equal(quote.pricing.meta?.providerEstimateUsd, wantedCost);
+    }
+    const inventory = await loadAdminProductPricing(10);
+    const flash = inventory.rows.find(row => row.billingProductKey === 'upscale-video-flashvsr')!;
+    assert.equal(flash.totalCents, 222);
+    assert.ok(Math.abs(flash.supplierCents! - 55.3) < 1e-9);
+    const dependencies: BillingProductPricingServiceDependencies = {
+      loadProducts: async executor => ({ status: 'loaded', products: await loadBillingProductsWithExecutor(executor ?? { query }) }),
+      getEvent: getPricingChangeEventById, listEvents: listPricingChangeEvents, withTransaction: withDbTransaction,
+      updateProduct: updateBillingProductWithExecutor, insertEvent: insertPricingChangeEvent,
+      invalidateCache: invalidateBillingProductsCache, revalidate: () => {},
+    };
+    const preview = await previewBillingProductChange({ operation: 'update', productKey: 'upscale-video-flashvsr', dynamicPriceMultiplier: 5 }, dependencies);
+    const sample = preview.rows.find(row => row.scenarioLabel?.startsWith('10 s'))!;
+    assert.equal(sample.currentTotalCents, 222);
+    assert.equal(sample.proposedTotalCents, 277);
+    assert.match(sample.scenarioLabel!, /2×/);
+    assert.equal(matchesAcceptedToolQuote({ totalCents: 125, currency: 'USD' }, { totalCents: flash.totalCents!, currency: 'USD' }), false);
+    assert.deepEqual((await db.pool.query("SELECT pricing_snapshot FROM app_jobs WHERE id='paid-flash'")).rows[0].pricing_snapshot,
+      { totalCents: 125, currency: 'USD' });
+  } finally {
+    if (process.env.DATABASE_URL === db.databaseUrl) await getDb().end();
+    if (previousUrl === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previousUrl;
+    invalidateBillingProductsCache(); await db.cleanup();
   }
 });

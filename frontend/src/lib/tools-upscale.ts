@@ -31,7 +31,7 @@ export function clampUpscaleFactor(engine: UpscaleToolEngineDefinition, value?: 
 }
 
 export function resolveUpscaleMode(engine: UpscaleToolEngineDefinition, value?: string | null): UpscaleMode {
-  return value === 'target' && engine.supportedModes.includes('target') ? 'target' : engine.defaultMode;
+  return (value === 'target' || value === 'factor') && engine.supportedModes.includes(value) ? value : engine.defaultMode;
 }
 
 export function resolveUpscaleTargetResolution(
@@ -82,19 +82,22 @@ export function estimateVideoUpscaleCostUsd(params: {
   height: number;
   durationSec: number;
   fps?: number | null;
+  mode?: UpscaleMode | null;
   targetResolution?: UpscaleTargetResolution | null;
   factor?: number | null;
 }): { costUsd: number; frames: number; outputMegapixels: number } {
   const engine = getUpscaleToolEngine(params.engineId, 'video');
+  const mode = resolveUpscaleMode(engine, params.mode);
+  const targetResolution = mode === 'target' ? resolveUpscaleTargetResolution(engine, params.targetResolution) : null;
   const durationSec = Math.max(1, Math.ceil(params.durationSec));
   const fps = Math.max(1, Math.round(params.fps ?? UPSCALE_VIDEO_DEFAULT_FPS));
   const frames = durationSec * fps;
   const sourcePixels = Math.max(1, params.width * params.height);
-  const targetHeight = params.targetResolution ? getTargetResolutionHeight(params.targetResolution) : null;
+  const targetHeight = targetResolution ? getTargetResolutionHeight(targetResolution) : null;
   const targetScale = targetHeight ? Math.max(1, targetHeight / Math.min(params.width, params.height)) : null;
   const factor = targetScale ?? clampUpscaleFactor(engine, params.factor);
   const outputMegapixels = (sourcePixels * factor * factor * frames) / 1_000_000;
-  const perSecond = params.targetResolution ? engine.providerPriceUsd.perSecondByResolution?.[params.targetResolution] : null;
+  const perSecond = targetResolution ? engine.providerPriceUsd.perSecondByResolution?.[targetResolution] : null;
   const costUsd =
     typeof perSecond === 'number'
       ? perSecond * durationSec
@@ -132,6 +135,7 @@ export function buildUpscalePricingPreview(params: {
   imageWidth?: number | null;
   imageHeight?: number | null;
   videoMetadata?: UpscaleVideoPricingMetadata | null;
+  mode?: UpscaleMode | null;
   targetResolution?: UpscaleTargetResolution | null;
   upscaleFactor?: number | null;
   priceMultiplier?: number;
@@ -173,6 +177,7 @@ export function buildUpscalePricingPreview(params: {
     height: metadata.height,
     durationSec: metadata.durationSec,
     fps: metadata.fps,
+    mode: params.mode,
     targetResolution: params.targetResolution,
     factor: params.upscaleFactor,
   });

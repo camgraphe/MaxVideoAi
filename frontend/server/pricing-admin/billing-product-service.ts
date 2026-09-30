@@ -25,7 +25,7 @@ import { getAngleBillingProductKeyForEngine } from '@/server/tools/angle-request
 import { getBillingProductKey } from '@/server/tools/character-builder/utils';
 import type { BillingProductRecord } from '@/types/billing';
 import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
-import { buildDynamicToolProductPreviews, FLASHVSR_BILLING_REFERENCE_NOTE } from './billing-product-dynamic-preview';
+import { buildDynamicToolProductPreviews } from './billing-product-dynamic-preview';
 
 import { PricingAdminError } from './errors';
 import {
@@ -362,7 +362,6 @@ async function previewBillingProductChangeWithExecutor(
     const after = resolveDynamicToolPriceMultiplier(context.proposed.productKey, context.proposed.metadata);
     warnings.push(`Video price is the greater of the product minimum and the source processing estimate × coefficient (${before} → ${after}).`);
     warnings.push('Processing rows are reference examples, not exhaustive costs. Actual duration, dimensions and target resolution determine the quote. Existing paid snapshots are unchanged.');
-    if (context.current.productKey === 'upscale-video-flashvsr') warnings.push(FLASHVSR_BILLING_REFERENCE_NOTE);
   }
   const projectionState: PricingChangeJsonValue = {
     current: {
