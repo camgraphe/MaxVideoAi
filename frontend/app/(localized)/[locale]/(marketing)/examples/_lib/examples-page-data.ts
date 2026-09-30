@@ -1,5 +1,7 @@
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
+import type { CurrentExamplePrice } from '@/server/current-example-price';
+import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 
 import { buildExamplePosterProjection } from '@/lib/media-helpers';
 import { getExampleFamilyDescriptor, getExampleNavFamilyIds } from '@/lib/model-families';
@@ -141,10 +143,12 @@ export function buildExamplesGalleryData({
   allVideos,
   locale,
   selectedEngine,
+  currentPrices,
 }: {
   allVideos: ExampleRouteVideo[];
   locale: AppLocale;
   selectedEngine: string | null;
+  currentPrices?: ReadonlyMap<string, CurrentExamplePrice>;
 }): {
   videos: ExampleRouteVideo[];
   clientVideos: ExampleGalleryVideo[];
@@ -165,7 +169,7 @@ export function buildExamplesGalleryData({
 
   return {
     videos: filteredEntries.map((entry) => entry.video),
-    clientVideos: filteredEntries.map(({ video, index }) => buildClientVideo({ video, index, locale })),
+    clientVideos: filteredEntries.map(({ video, index }) => buildClientVideo({ video, index, locale, currentPrice: currentPrices?.get(video.id) })),
   };
 }
 
@@ -258,10 +262,12 @@ function buildClientVideo({
   index,
   locale,
   video,
+  currentPrice,
 }: {
   index: number;
   locale: AppLocale;
   video: ExampleRouteVideo;
+  currentPrice?: CurrentExamplePrice;
 }): ExampleGalleryVideo {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
   const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
@@ -285,7 +291,7 @@ function buildClientVideo({
     engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
     engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
     engineBrandId: engineMeta?.brandId,
-    priceLabel: null,
+    priceLabel: formatCurrentExamplePrice(currentPrice, locale),
     prompt: promptDisplay,
     promptFull: locale === 'en' ? video.prompt ?? null : null,
     aspectRatio: video.aspectRatio ?? null,

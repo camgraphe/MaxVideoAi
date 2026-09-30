@@ -292,3 +292,22 @@ environment was restored and the admin restarted on localhost:3106. No
 production/provider/payment/storage/email/support/push/merge/deployment action.
 The three unbounded model domains, complete versioned seed/certificate and
 fresh effective production parity remain open; the global switch is off.
+
+
+## Rebase integration — 2026-10-01
+
+The local `main` ref and fetched/server `main` agree at
+`10589cc6b368bae3647ec9d00fba1b73c8b20128`; the pricing branch's 78 commits were
+rebased onto that commit. A local `codex/pricing-before-main-rebase-20260930` backup
+preserves the original branch. The original Desktop checkout's files were not
+changed. Nothing was pushed or deployed.
+
+Main's new shared watch reader and paginated discovery gallery remain the UI/media
+owners. Their pricing consumers were adapted to the branch's canonical current
+quotes: gallery cards receive qualified exact/reference labels; reader estimates
+identify the priced text-to-video/no-reference proposal and any adapted settings.
+Missing effective policy hides the price. Stored charges remain immutable and are
+not used as a public current-price fallback. Localized family guidance was updated
+accordingly. Focused price/reader/gallery tests pass 14/14; related architecture,
+editorial, route and current-price tests pass 64/64. A fresh full rebased validation
+and build are required before treating this integration as accepted.

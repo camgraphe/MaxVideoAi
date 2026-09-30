@@ -10,7 +10,7 @@ import type { ExampleGalleryVideo } from '../frontend/components/examples/exampl
 
 const videos: ExampleGalleryVideo[] = Array.from({length:24},(_,i)=>i%4===1?'9:16':'16:9').map((aspectRatio, i) => ({
   id: `v${i}`, href: `/video/v${i}`, engineLabel: 'Example', engineIconId: 'example',
-  priceLabel: null, prompt: 'A cinematic public example', aspectRatio, durationSec: 10,
+  priceLabel: i === 0 ? 'Current price $1.41' : null, prompt: 'A cinematic public example', aspectRatio, durationSec: 10,
   hasAudio: false, rawPosterUrl: `/test-${i}.jpg`,
   ...(i === 0 ? { recreateHref: '/app?from=v0' } : {}),
 }));
@@ -47,7 +47,9 @@ test('all24 watch links render once before hydration, with one critical poster a
     assert.match(guide.textContent ?? '', /Open any video/i);
     assert.match(guide.textContent ?? '', /Prompt/);
     assert.match(guide.textContent ?? '', /Settings/);
-    assert.match(guide.textContent ?? '', /Recorded cost/);
+    assert.match(guide.textContent ?? '', /Current price/);
+    assert.match(doc.querySelector('a[href="/video/v0"]')?.textContent ?? '', /Current price \$1\.41/);
+    assert.doesNotMatch(doc.querySelector('a[href="/video/v1"]')?.textContent ?? '', /Current price|\$/);
     assert.doesNotMatch(guide.textContent ?? '', /A cinematic public example|Featured video/);
     assert.equal(guide.querySelector('a[href="/app"]')?.textContent?.trim(), 'Create in the app');
     assert.equal(doc.querySelector('video'),null);

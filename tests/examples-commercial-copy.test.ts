@@ -78,7 +78,7 @@ test('localized Examples copy sends visitors to the detail page for current mode
   }
 });
 
-test('Examples source no longer claims gallery cards display price per clip', () => {
+test('Examples source does not promise a price for every clip when quotes may be unavailable', () => {
   const falseClaim =
     /(?:visible\s+)?per[-\s]+clip\s+(?:price|prices|pricing)|(?:price|prices|pricing)\s+(?:shown\s+)?per[-\s]+clip|prix\s+par\s+clip|precios?\s+por\s+clip/i;
   for (const unsupportedClaim of [
@@ -103,4 +103,11 @@ test('Examples source no longer claims gallery cards display price per clip', ()
     assert.doesNotMatch(messages.gallery.meta.description, falseClaim);
     assert.doesNotMatch(messages.gallery.meta.description_engine, falseClaim);
   }
+});
+
+test('localized family guidance describes current estimates instead of stored render costs', () => {
+  assert.doesNotMatch(modelLandingSources, /recorded costs?|coûts? enregistrés?|cost(?:e|o)s? registrados?/i);
+  assert.match(modelLandingSources, /current price estimate/i);
+  assert.match(modelLandingSources, /tarif actuel estimé/i);
+  assert.match(modelLandingSources, /precio actual estimado/i);
 });

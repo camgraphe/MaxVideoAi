@@ -36,11 +36,11 @@ import {
 } from './_lib/examples-page-copy';
 import {
   buildExamplesEngineFilterState,
-  buildExamplesGalleryData,
   buildExamplesGalleryPresentation,
   buildExamplesMainVideoFeatureData,
   buildExamplesModelLinks,
 } from './_lib/examples-page-data';
+import { buildCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
 import {
   buildExamplesEngineFilterHref,
   buildExamplesNormalizedRedirectTarget,
@@ -277,7 +277,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     pricingPath,
   });
 
-  const { videos, clientVideos } = buildExamplesGalleryData({
+  const { videos, clientVideos } = await buildCurrentExamplesGalleryData({
     allVideos,
     locale: appLocale,
     selectedEngine,

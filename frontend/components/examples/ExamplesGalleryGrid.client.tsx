@@ -38,7 +38,7 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
     : locale==='fr'?'Encore des vidéos':locale==='es'?'Más vídeos':'More videos';
   const pageCountLabel=locale==='fr'?'sur cette page':locale==='es'?'en esta página':'on this page';
   const guideLabel=locale==='fr'?'Ouvrez une vidéo pour voir comment elle a été créée.':locale==='es'?'Abre un vídeo para ver cómo se creó.':'Open any video to see how it was made.';
-  const guidePills=locale==='fr'?['Prompt','Réglages','Coût enregistré']:locale==='es'?['Prompt','Ajustes','Coste registrado']:['Prompt','Settings','Recorded cost'];
+  const guidePills=locale==='fr'?['Prompt','Réglages','Prix actuel']:locale==='es'?['Prompt','Ajustes','Precio actual']:['Prompt','Settings','Current price'];
   const createLabel=locale==='fr'?'Créer dans l’app':locale==='es'?'Crear en la app':'Create in the app';
   return <div>
     {reader.selected && <ExampleReader id={reader.selected} locale={locale} onClose={reader.close} navigationError={reader.navigationError} navigation={{previous:()=>void reader.step(-1),next:()=>void reader.step(1),canPrevious:reader.canPrevious,canNext:reader.canNext,busy:reader.busy}}/>}

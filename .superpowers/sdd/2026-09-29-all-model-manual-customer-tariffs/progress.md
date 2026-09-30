@@ -244,3 +244,42 @@ Manual model cutover still needs three unbounded domains, complete reviewed
 versioned seed/certificate and fresh effective production parity. No global
 activation. This closes the compact confirmation, historical first override,
 approved24-cent candidate preparation and actual factor pricing continuation.
+
+
+## Main synchronization and rebased public price consumers — 2026-10-01
+
+Fresh fetch/ls-remote main10589cc6b368bae3647ec9d00fba1b73c8b20128. Local main
+was24 commits behind/0 ahead; no main checkout was active. Advanced only its ref
+with compare-and-swap, preserving the original Desktop working files. Backup
+codex/pricing-before-main-rebase-20260930 retains original branch1a15cca48.
+Replayed78 local commits onto main; rebased HEAD5eeca3696, main/origin-main0/0,
+branch/origin-main78/0. No push or production action. Next stopped during rebase.
+
+Ruling: retain main's shared watch reader, gallery validation and new media layout;
+port the approved current-price semantics into those owners — copying obsolete
+watch markup would discard main's media and architecture fixes. Cost if wrong:
+public prices could diverge or media behavior regress; source/DOM/route tests and
+fresh full validation cover the integration. Main's localized family hero titles
+remain; Fast/Mini positioning and1.5 retirement copy are retained.
+Ruling: standardize quote-public dependencies to the wrapped pricingPolicy interface
+and migrate main's new loader/test callers — inconsistent raw dependencies would
+read the wrong effective policy. Use computeCurrentPublicSnapshot for a public
+current estimate: unavailable policy removes the quote, without default/history
+fallback. Comparison proposals remain executable, explicitly text-only and
+no-reference, with their priced settings/adaptations shown beside the headline.
+Ruling: current gallery prices are read in a route-local async data owner; the pure
+builder only receives/formats a quote map — route stays below400 lines and no
+server DB work migrates into client data helpers. Paid historical amounts stay
+unchanged; unknown/archived prices remain unavailable. EN/FR/ES guidance follows
+current estimates rather than promising historic render costs.
+
+TDD evidence: reader/policy/gallery/commercial integration RED4fail/6pass;
+paginated current-price projection RED1fail/3pass; family/route RED3fail/12pass;
+headline priced-scenario basis RED1/1fail. Final focused consumer14/14 and related
+architecture/editorial/watch/current-price64/64 pass. TypeScript passes; full
+rebased validation/build will be recorded separately. Read-only original private
+sandbox remains revision3/inactive,66549 staged cells,13 products,0 coefficient
+overrides,Flash minimum18/Topaz minimum80; code manual switch remains false.
+No provider/payment/storage/email/support/push/merge/deployment action. Three
+unbounded domains, complete versioned seed/certificate and fresh production parity
+still prevent global activation; the full plan is not complete.

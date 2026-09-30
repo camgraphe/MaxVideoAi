@@ -9,7 +9,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     "intro": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca.",
     "promptPatterns": "Estos vídeos se crearon con Sora. Las nuevas generaciones con Sora están cerradas. Explora Seedance 2.5, MiniMax H3 y Wan 3 para tu próximo vídeo.",
     "strengthsLimits": "Estos vídeos se crearon con Sora. Las nuevas generaciones con Sora están cerradas. Explora Seedance 2.5, MiniMax H3 y Wan 3 para tu próximo vídeo.",
-    "pricingNotes": "Los costes registrados son históricos. Elige un modelo disponible y revisa un nuevo presupuesto antes de generar.",
+    "pricingNotes": "Los modelos archivados no tienen un precio de generación actual. Elige un modelo disponible y revisa un nuevo presupuesto antes de generar.",
     "faq": [
         {
             "question": "¿Se puede seguir generando con Sora?",
@@ -17,20 +17,20 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
         },
         {
             "question": "Archivo de Sora y alternativas",
-            "answer": "Los costes registrados son históricos. Elige un modelo disponible y revisa un nuevo presupuesto antes de generar."
+            "answer": "Los modelos archivados no tienen un precio de generación actual. Elige un modelo disponible y revisa un nuevo presupuesto antes de generar."
         }
     ]
 },
   veo: {
     metaTitle: "Ejemplos de Veo 3.1, prompts y ajustes de video | MaxVideoAI",
-    metaDescription: "Mira ejemplos de Veo 3.1 con prompts, ajustes y costos registrados. Explora cómo crear videos a partir de texto o imágenes y adapta un ejemplo.",
+    metaDescription: "Mira ejemplos de Veo 3.1 con prompts, ajustes y precios actuales estimados. Explora cómo crear videos a partir de texto o imágenes y adapta un ejemplo.",
     heroTitle: "Ejemplos de Veo 3.1, prompts y ajustes de video",
     subtitle: "Ejemplos de Veo 3.1 y Gemini Omni Flash 1.1: prompts, fuentes y ajustes para revisar.",
     intro: "Compara ejemplos de video de Google: Veo 3.1, Fast y Lite junto a Gemini Omni Flash 1.1. Abre un resultado para revisar su prompt y ajustes y adaptarlo en tu espacio de trabajo.",
     summary: "Veo y Gemini Omni son modelos distintos de Google reunidos en esta galería. Toma como referencia el nombre indicado en cada ejemplo. Las fichas y comparativas ayudan a elegir el flujo adecuado; revisa después el precio actual antes de generar.",
     promptPatterns: "Describe primero el sujeto, la acción y el movimiento de cámara. Con una imagen inicial, indica qué cambia y qué se conserva. Mantén la misma idea al comparar modelos y cambia una sola instrucción cada vez.",
     strengthsLimits: "Compara movimiento, encuadre y continuidad del sujeto en todo el clip. Veo y Omni no comparten todas las entradas ni opciones de edición: comprueba el modelo y el modo antes de añadir imágenes, referencias o un video fuente. Un ejemplo logrado no garantiza el mismo resultado con otro prompt.",
-    pricingNotes: "La ficha del ejemplo muestra el costo registrado del render. Tu siguiente generación utiliza el precio actual según el modelo, las fuentes, la duración y la resolución. Reutiliza los ajustes disponibles, añade tus propias fuentes cuando sea necesario y revisa el precio antes de enviar.",
+    pricingNotes: "La ficha del ejemplo muestra el precio actual estimado del render. Tu siguiente generación utiliza el precio actual según el modelo, las fuentes, la duración y la resolución. Reutiliza los ajustes disponibles, añade tus propias fuentes cuando sea necesario y revisa el precio antes de enviar.",
     faq: [
       {
         question: "¿Por qué hay ejemplos de Gemini Omni en esta galería de Veo?",
@@ -38,7 +38,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       },
       {
         question: "¿Cómo recreo un ejemplo de Veo u Omni?",
-        answer: "Abre su ficha para revisar el prompt, los ajustes y el costo registrado y utiliza la acción de recrear. Comprueba el modelo seleccionado, añade los medios fuente necesarios y revisa el nuevo precio en el espacio de trabajo antes de generar.",
+        answer: "Abre su ficha para revisar el prompt, los ajustes y el precio actual estimado y utiliza la acción de recrear. Comprueba el modelo seleccionado, añade los medios fuente necesarios y revisa el nuevo precio en el espacio de trabajo antes de generar.",
       },
       {
         question: "¿Cómo comparo Veo 3.1, Fast, Lite y Omni?",
@@ -54,7 +54,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     intro: "Explora ejemplos de Luma Ray 3.2 Modify y Reframe. Abre un video para ver el prompt y los ajustes utilizados. Los ejemplos de Ray 2 y Ray 2 Flash conservan el nombre del modelo que los generó.",
     promptPatterns: "Para Modify, indica qué quieres conservar del video original y después qué quieres cambiar. Para Reframe, señala qué sujeto debe seguir visible y cómo completar el nuevo encuadre. Las imágenes guía y los fotogramas clave dependen del modo elegido.",
     strengthsLimits: "Evalúa cuánto se conserva del video original, si se cumple el cambio solicitado y si el sujeto se mantiene consistente. Ray 3.2 no genera audio en MaxVideoAI. Las fuentes y los ajustes admitidos difieren de Ray 2 y Ray 2 Flash: revisa el modelo de cada ejemplo.",
-    pricingNotes: "La ficha muestra el costo registrado del ejemplo. Tu nuevo video tiene una cotización según el modo y los ajustes elegidos. Revisa el precio antes de generar y empieza con una prueba corta antes de editar un video más largo.",
+    pricingNotes: "La ficha muestra el precio actual estimado del ejemplo. Tu nuevo video tiene una cotización según el modo y los ajustes elegidos. Revisa el precio antes de generar y empieza con una prueba corta antes de editar un video más largo.",
     faq: [
       {
         question: "¿Cómo reutilizo una edición de video Luma?",
@@ -72,15 +72,15 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   },
   wan: {
     metaTitle: 'Ejemplos de Wan 3 y Wan 3 Prime: prompts y ajustes | MaxVideoAI',
-    metaDescription: 'Mira ejemplos de video Wan 3 y Wan 3 Prime. Abre cada resultado para ver su prompt, ajustes y costo registrado; las versiones anteriores conservan su etiqueta.',
+    metaDescription: 'Mira ejemplos de video Wan 3 y Wan 3 Prime. Abre cada resultado para ver su prompt, ajustes y precio actual estimado; las versiones anteriores conservan su etiqueta.',
     heroTitle: 'Ejemplos Wan 3 y Wan 3 Prime',
-    subtitle: 'Compara videos Wan 3 y Wan 3 Prime. Abre un clip para ver su prompt, ajustes y costo registrado.',
+    subtitle: 'Compara videos Wan 3 y Wan 3 Prime. Abre un clip para ver su prompt, ajustes y precio actual estimado.',
     guideTitle: 'Wan 3, Wan 3 Prime y resultados anteriores',
-    intro: 'Esta galería reúne Wan 3 y Wan 3 Prime junto con resultados de versiones Wan anteriores. Cada video identifica el modelo utilizado. Mira el clip completo para comparar movimiento, encuadre y continuidad; ábrelo para consultar el prompt, los ajustes y el costo registrado. Revisa el presupuesto actual antes de generar otro video.',
-    sectionTitles: ['Escribir un prompt de video Wan', 'Evaluar los resultados de Wan 3 y Prime', 'Costo registrado y presupuesto Wan actual'],
+    intro: 'Esta galería reúne Wan 3 y Wan 3 Prime junto con resultados de versiones Wan anteriores. Cada video identifica el modelo utilizado. Mira el clip completo para comparar movimiento, encuadre y continuidad; ábrelo para consultar el prompt, los ajustes y el precio actual estimado. Revisa el presupuesto actual antes de generar otro video.',
+    sectionTitles: ['Escribir un prompt de video Wan', 'Evaluar los resultados de Wan 3 y Prime', 'Precio actual estimado y presupuesto Wan actual'],
     promptPatterns: "Describe un sujeto, una acción principal y un movimiento de cámara. Si la toma tiene varias etapas, indica su orden y mantén una secuencia fácil de seguir. Cambia una sola instrucción a la vez durante las pruebas.",
     strengthsLimits: "Revisa todo el video para detectar cambios en el sujeto, cortes inesperados o movimientos que no siguen el prompt. Las fuentes, duraciones y opciones de salida varían según el modelo Wan y el modo elegido.",
-    pricingNotes: "La ficha del ejemplo muestra su costo registrado. El modelo, la duración y los demás ajustes determinan una nueva cotización en el estudio. Revisa el precio antes de generar y empieza con una prueba corta para evaluar el resultado.",
+    pricingNotes: "La ficha del ejemplo muestra su precio actual estimado. El modelo, la duración y los demás ajustes determinan una nueva cotización en el estudio. Revisa el precio antes de generar y empieza con una prueba corta para evaluar el resultado.",
     faq: [
       {
         question: "¿Puedo partir de un ejemplo Wan para crear mi video?",
@@ -98,11 +98,11 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   },
   'happy-horse': {
     heroTitle: 'Ejemplos de video Happy Horse 1.1 y 1.0',
-    subtitle: 'Mira videos Happy Horse 1.1 y 1.0 y abre cada uno para ver su prompt, ajustes y costo registrado.',
+    subtitle: 'Mira videos Happy Horse 1.1 y 1.0 y abre cada uno para ver su prompt, ajustes y precio actual estimado.',
     intro: 'Compara los ejemplos Happy Horse 1.1 y 1.0 viendo el clip completo. Cada video conserva la etiqueta de su modelo original. Ábrelo para revisar el prompt, la duración y los ajustes, y consulta el presupuesto actual antes de crear el tuyo.',
     promptPatterns: 'Describe el sujeto, una acción visible y la dirección de cámara. Si partes de una imagen, indica qué debe moverse sin perder la composición original.',
     strengthsLimits: 'Revisa la estabilidad del sujeto, el movimiento y el encuadre hasta el final. Un ejemplo no garantiza el mismo resultado ni controles idénticos en las versiones 1.1 y 1.0.',
-    pricingNotes: 'La ficha muestra el costo registrado del ejemplo. El estudio calcula un presupuesto nuevo según el modelo, la duración y los ajustes elegidos.',
+    pricingNotes: 'La ficha muestra el precio actual estimado del ejemplo. El estudio calcula un presupuesto nuevo según el modelo, la duración y los ajustes elegidos.',
     faq: [
       { question: '¿Todos los videos usan Happy Horse 1.1?', answer: 'No. La galería también contiene resultados Happy Horse 1.0. Revisa el modelo indicado en cada video.' },
       { question: '¿Puedo partir de un ejemplo Happy Horse?', answer: 'Abre su ficha para ver el prompt y los ajustes, y adáptalos en el estudio. Agrega tus propios archivos si hacen falta y revisa el nuevo presupuesto.' },
@@ -111,7 +111,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   },
   kling: {
     metaTitle: 'Ejemplos de video IA Kling, prompts y ajustes | MaxVideoAI',
-    metaDescription: "Mira ejemplos de video de Kling 3 y Kling 3.0 Omni: prompts, animación de imágenes, referencias, ajustes y costos registrados.",
+    metaDescription: "Mira ejemplos de video de Kling 3 y Kling 3.0 Omni: prompts, animación de imágenes, referencias, ajustes y precios actuales estimados.",
     heroTitle: 'Ejemplos de video IA Kling, prompts y ajustes',
     subtitle: "Ejemplos de Kling 3 y Kling 3.0 Omni: descubre cómo una imagen inicial o las referencias guían una toma.",
     intro: "Mira ejemplos de video Kling y abre un resultado para ver su prompt y sus ajustes. Compara la animación de una imagen con Kling 3 y los usos de referencias y edición de video con Kling 3.0 Omni. Cada ejemplo indica el modelo utilizado.",
@@ -150,13 +150,13 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription: "Mira ejemplos de video Seedance 2.5 con prompts y ajustes. Compara resultados de otras versiones y usa un ejemplo como punto de partida.",
     heroTitle: 'Ejemplos de video Seedance 2.5, 2.0, Fast y Mini',
     subtitle: "Seedance 2.5 y versiones anteriores: mira los resultados y encuentra un prompt para tu idea.",
-    intro: "Explora ejemplos de Seedance 2.5 junto a Seedance 2.0, Fast y Mini. Abre un video para ver su prompt, sus ajustes y su costo registrado. Cada resultado conserva el nombre del modelo que lo generó.",
+    intro: "Explora ejemplos de Seedance 2.5 junto a Seedance 2.0, Fast y Mini. Abre un video para ver su prompt, sus ajustes y su precio actual estimado. Cada resultado conserva el nombre del modelo que lo generó.",
     summary: "Seedance 2.5 permite crear videos de 4 a 30 segundos hasta 1080p, con audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para 4K; Fast ofrece renders normales de iteración y Mini se centra en series orientadas al coste. Los vídeos 1.5 Pro conservan su nombre, pero las nuevas generaciones 1.5 están cerradas.",
     promptPatterns:
       'Para Seedance 2.5, define una acción principal, la dirección de cámara y el papel de cada referencia antes de añadir detalles de escena. Mantén la misma estructura de prompt al comparar 2.5 con Seedance 2.0, Fast o Mini.',
     strengthsLimits:
       'Usa Seedance 2.5 cuando importen una mayor duración, el audio generado, las referencias mixtas, la edición o la extensión. En MaxVideoAI, este modelo admite salida horizontal, cuadrada y vertical en 480p, 720p o 1080p; conserva Seedance 2.0 cuando necesites 4K.',
-    pricingNotes: "La duración, el audio y los archivos fuente pueden influir en el precio. La ficha muestra el costo registrado del ejemplo; el generador indica la cotización actual para tus ajustes antes de iniciar.",
+    pricingNotes: "La duración, el audio y los archivos fuente pueden influir en el precio. La ficha muestra el precio actual estimado del ejemplo; el generador indica la cotización actual para tus ajustes antes de iniciar.",
     faq: [
       {
         question: '¿Todos los ejemplos de Seedance de esta página se generaron con Seedance 2.5?',
@@ -180,12 +180,12 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription: "Mira ejemplos de video LTX 2.5 Pro y Fast, con prompts y ajustes. Compara también resultados de LTX 2.3 y LTX 2, identificados por modelo.",
     heroTitle: "Ejemplos de video LTX, prompts y ajustes",
     subtitle: "Ejemplos de LTX 2.5 Pro y Fast, con las versiones anteriores claramente identificadas.",
-    intro: "Mira ejemplos de LTX 2.5 Pro y Fast y abre un video para ver su prompt, sus ajustes y su costo registrado. Los resultados de LTX 2.3 y LTX 2 conservan el nombre del modelo que los generó.",
+    intro: "Mira ejemplos de LTX 2.5 Pro y Fast y abre un video para ver su prompt, sus ajustes y su precio actual estimado. Los resultados de LTX 2.3 y LTX 2 conservan el nombre del modelo que los generó.",
     summary:
       "LTX 2.5 Pro y Fast encabezan esta página. Los ejemplos de LTX 2.3 y LTX 2 conservan sus etiquetas originales para comparar generaciones sin confundir sus capacidades.",
     promptPatterns: "Describe el sujeto, la acción, el movimiento de cámara y el estilo visual. Para imagen a video, explica cómo debe moverse la escena desde la imagen inicial. Mantén ese punto de partida y cambia una sola instrucción a la vez.",
     strengthsLimits: "Compara todo el video entre Pro y Fast: ¿el movimiento sigue el prompt y el sujeto se mantiene consistente? Usa la misma imagen para las pruebas de imagen a video. Un ejemplo logrado es un punto de partida, no una garantía de resultados idénticos.",
-    pricingNotes: "Especifica el modelo, el modo, la duración, la resolución y las opciones de audio disponibles al comparar costos. La ficha conserva el costo registrado del ejemplo; revisa la cotización actual en el estudio antes de generar tu versión.",
+    pricingNotes: "Especifica el modelo, el modo, la duración, la resolución y las opciones de audio disponibles al comparar costos. La ficha conserva el precio actual estimado del ejemplo; revisa la cotización actual en el estudio antes de generar tu versión.",
     faq: [
       {
         question: '¿Cuáles son los mejores ejemplos de prompts de LTX 2.5 para empezar?',
@@ -216,7 +216,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   },
   pika: {
     heroTitle: 'Ejemplos de video Pika 2.2',
-    subtitle: 'Mira resultados Pika 2.2 y consulta el prompt, los ajustes y el costo registrado de cada video.',
+    subtitle: 'Mira resultados Pika 2.2 y consulta el prompt, los ajustes y el precio actual estimado de cada video.',
     intro:
       'Explora los resultados Pika 2.2 viendo cada clip completo. Abre un video para consultar su prompt y sus ajustes, y adapta la idea en el estudio. Un ejemplo es un punto de partida: revisa el nuevo resultado y su presupuesto antes de usarlo.',
     promptPatterns:
@@ -224,7 +224,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     strengthsLimits:
       'Mira el clip completo para comprobar la coherencia del sujeto, la claridad del movimiento y el final. Una miniatura no muestra cómo funciona una transición.',
     pricingNotes:
-      'La ficha muestra el costo registrado. La duración y los ajustes de salida afectan al nuevo presupuesto en el estudio; revísalo antes de generar variantes.',
+      'La ficha muestra el precio actual estimado. La duración y los ajustes de salida afectan al nuevo presupuesto en el estudio; revísalo antes de generar variantes.',
     faq: [
       {
         question: '¿Cómo reutilizo bien un ejemplo de Pika?',
@@ -243,7 +243,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   hailuo: {
     heroTitle: 'Ejemplos de video MiniMax H3 y H3 Max',
     subtitle: "Ejemplos de video MiniMax H3 Max, H3 y versiones anteriores de Hailuo, con prompts y ajustes.",
-    intro: "Mira MiniMax H3 Max y H3 junto a ejemplos anteriores de Hailuo. Abre un video para consultar su prompt, sus ajustes y su costo registrado, y úsalo como punto de partida para tu propia escena.",
+    intro: "Mira MiniMax H3 Max y H3 junto a ejemplos anteriores de Hailuo. Abre un video para consultar su prompt, sus ajustes y su precio actual estimado, y úsalo como punto de partida para tu propia escena.",
     summary: "Cada ejemplo de MiniMax o Hailuo conserva el nombre del modelo que lo generó. Compara el movimiento, la continuidad y el audio, si lo tiene, en todo el video. Las fichas de H3 y H3 Max detallan las fuentes y los ajustes disponibles para tu proyecto.",
     promptPatterns: "Empieza por el sujeto, una acción clara y la dirección de cámara. Añade indicaciones de escena o sonido pertinentes para el modelo elegido. Si utilizas referencias, asigna una función clara a cada fuente autorizada y comprueba que el modelo admite esa entrada.",
     strengthsLimits: "Evalúa el resultado completo: identidad del sujeto, movimiento, encuadre y cualquier audio generado. H3 Max, H3 y los Hailuo anteriores tienen modos y opciones de salida diferentes. Un ejemplo muestra un resultado, sin garantizar coherencia perfecta ni controles idénticos en toda la familia.",

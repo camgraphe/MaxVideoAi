@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { formatCurrentExamplePrice } from '../frontend/lib/current-example-price-display.ts';
 import { toGalleryCard } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
+import { buildExamplesGalleryData } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-data.ts';
 import type { GalleryVideo } from '../frontend/server/videos.ts';
 import React from 'react';
 import enMessages from '../frontend/messages/en.json' with { type: 'json' };
@@ -31,6 +32,17 @@ test('model example card uses the current quote and never the paid historical am
   assert.equal(card.priceLabel, 'From $1.41 · Text to video · 5s · 1080p');
   assert.doesNotMatch(card.priceLabel ?? '', /2\.88/);
   assert.equal(toGalleryCard(video).priceLabel, null);
+});
+
+test('paginated server galleries project current quotes into cards and omit unavailable prices', () => {
+  const current = { kind: 'reference', amountCents: 141, currency: 'USD', modelId: 'kling-3-pro', scenarioLabel: 'Text to video · 5s · 1080p' } as const;
+  const result = buildExamplesGalleryData({ allVideos: [video], locale: 'en', selectedEngine: null,
+    currentPrices: new Map([[video.id, current]]) });
+  assert.equal(result.clientVideos[0].priceLabel, 'From $1.41 · Text to video · 5s · 1080p');
+  assert.equal(video.finalPriceCents, 288, 'stored payment history is unchanged');
+  const unavailable = buildExamplesGalleryData({ allVideos: [video], locale: 'en', selectedEngine: null,
+    currentPrices: new Map([[video.id, { kind: 'unavailable', modelId: 'kling-3-pro' }]]) });
+  assert.equal(unavailable.clientVideos[0].priceLabel, null);
 });
 
 test('homepage hero replaces authored prices with current reference quotes', () => {

@@ -56,6 +56,11 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.match(pageSource, /from '\.\/_lib\/examples-route-utils'/, 'route should import examples helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-copy'/, 'route should import examples copy helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-data'/, 'route should import examples data builders');
+  assert.match(pageSource, /await buildCurrentExamplesGalleryData\(/, 'server gallery pricing should use its route-local data owner');
+  const currentGallerySource = readFileSync(join(dirname(pagePath), '_lib/current-examples-gallery-data.ts'), 'utf8');
+  assert.match(currentGallerySource, /from '@\/server\/current-example-price'/);
+  assert.match(currentGallerySource, /await quoteCurrentExamplePrices\(input\.allVideos\)/);
+  assert.doesNotMatch(pageDataSource, /import \{[^}]*quoteCurrentExamplePrices|\bgetDb\(|\bsql`/);
   assert.match(pageSource, /from '\.\/_lib\/examples-page-hrefs'/, 'route should import href builders');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-jsonld'/, 'route should import JSON-LD builders');
   assert.match(pageSource, /export async function generateMetadata/, 'route should keep metadata orchestration');
@@ -120,7 +125,7 @@ test('examples hub metadata sends visitors to detail pages for current prices', 
 test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
   const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
   const description =
-    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and recorded costs.';
+    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and current price estimates.';
   const landing = getExampleModelLanding('en', 'kling');
 
   assert.ok(landing);
