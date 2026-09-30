@@ -4,6 +4,10 @@ import type { PricingContext } from '@/lib/pricing-context';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { GalleryVideo } from '@/server/videos';
 import { computeCurrentPublicSnapshot } from '@/server/pricing/quote-public';
+import { numericTariffDuration, manualTariffDurations } from '@/lib/pricing-audit/manual-tariff-durations';
+import { buildExampleRecreationHref } from '@/lib/example-recreation';
+import { buildEngineAddonInput } from '@/lib/pricing-addons';
+import { buildExampleRecreationSnapshot } from '@/app/(core)/(workspace)/app/_lib/workspace-example-recreation';
 
 export type CurrentExamplePrice =
   | { kind: 'exact' | 'reference'; amountCents: number; currency: string; modelId: string; scenarioLabel: string; revision?: string }
@@ -26,17 +30,17 @@ function positiveNumber(value: unknown): number | null {
 function supportedDuration(entry: FalEngineEntry, mode: Mode, seconds: number): boolean {
   const duration = entry.modes.find((candidate) => candidate.mode === mode)?.ui.duration;
   if (!duration) return seconds <= entry.engine.maxDurationSec;
-  if ('options' in duration) return duration.options.some((value) => Number(value) === seconds);
+  if ('options' in duration) return duration.options.some((value) => numericTariffDuration(value) === seconds);
   return seconds >= duration.min && seconds <= entry.engine.maxDurationSec;
 }
 
 function defaultDuration(entry: FalEngineEntry): number | null {
   const duration = entry.modes.find((candidate) => candidate.mode === 't2v')?.ui.duration;
-  const proposed = duration && 'default' in duration ? Number(duration.default) : NaN;
-  if (Number.isFinite(proposed) && proposed > 0 && supportedDuration(entry, 't2v', proposed)) return proposed;
+  const proposed = duration && 'default' in duration && duration.default !== undefined ? numericTariffDuration(duration.default) : null;
+  if (proposed != null && supportedDuration(entry, 't2v', proposed)) return proposed;
   if (duration && 'options' in duration) {
-    const first = Number(duration.options[0]);
-    if (Number.isFinite(first) && first > 0) return first;
+    const first = numericTariffDuration(duration.options[0]);
+    if (first != null) return first;
   }
   const hinted = entry.pricingHint?.durationSeconds;
   return hinted && supportedDuration(entry, 't2v', hinted) ? hinted : null;
@@ -55,6 +59,18 @@ function hasUnpricedPrivateInputs(settings: Record<string, unknown>): boolean {
   )) return true;
   return ['inputVideoDurationSec', 'referenceTokenBudget', 'verifiedReferenceTokenCount', 'inputImageCount', 'referenceImageCount']
     .some((key) => positiveNumber(settings[key]) != null);
+}
+
+/** Validate only this model with the same form/coupled constraints as the public handoff. */
+function executableContext(video: GalleryVideo, entry: FalEngineEntry, durationSec: number, resolution: string, aspectRatio: string, audio: boolean): PricingContext | null {
+  const mode = entry.modes.find(candidate => candidate.mode === 't2v');
+  if (!mode || !(mode.ui.resolution ?? entry.engine.resolutions).includes(resolution)
+    || !(mode.ui.aspectRatio ?? entry.engine.aspectRatios).includes(aspectRatio)) return null;
+  const href = buildExampleRecreationHref(video.id, entry.id, { mode: 't2v', durationSec, resolution, aspectRatio, audio });
+  const shared = { ...video, outputWidth: video.outputWidth ?? undefined, outputHeight: video.outputHeight ?? undefined };
+  if (!buildExampleRecreationSnapshot(shared, href.split('?')[1], [entry.engine])) return null;
+  return { engine: entry.engine, mode: 't2v', durationSec, resolution, aspectRatio,
+    referenceImageCount: 0, inputImageCount: 0, addons: buildEngineAddonInput(entry.engine, { audioEnabled: audio }) };
 }
 
 function exactContext(video: GalleryVideo, entry: FalEngineEntry): PricingContext | null {
@@ -78,35 +94,24 @@ function exactContext(video: GalleryVideo, entry: FalEngineEntry): PricingContex
       (entry.engine.audio && typeof core.audio !== 'boolean') ||
       hasUnpricedPrivateInputs(settings)) return null;
 
-  return {
-    engine: entry.engine,
-    durationSec,
-    resolution,
-    aspectRatio,
-    mode: mode as Mode,
-    referenceImageCount: 0,
-    inputImageCount: 0,
-    ...(entry.engine.audio && core.audio === false ? { addons: { audio_off: true } } : {}),
-  };
+  return executableContext(video, entry, durationSec, resolution, aspectRatio, entry.engine.audio ? core.audio as boolean : false);
 }
 
-function referenceContext(entry: FalEngineEntry): PricingContext | null {
-  if (!entry.engine.modes.includes('t2v')) return null;
-  const durationSec = defaultDuration(entry);
+function referenceContext(video: GalleryVideo, entry: FalEngineEntry): PricingContext | null {
+  const mode = entry.modes.find(candidate => candidate.mode === 't2v');
+  if (!mode) return null;
+  const defaultSeconds = defaultDuration(entry);
+  const durations = [...new Set([defaultSeconds, ...manualTariffDurations(entry, 't2v', mode.ui.duration).values.map(value => value.durationSec)])]
+    .filter((seconds): seconds is number => seconds != null);
+  const resolutions = mode.ui.resolution?.length ? mode.ui.resolution : entry.engine.resolutions;
   const hintedResolution = entry.pricingHint?.resolution;
-  const resolution = hintedResolution && entry.engine.resolutions.some((supported) => supported === hintedResolution)
-    ? hintedResolution
-    : entry.engine.resolutions[0];
-  if (durationSec == null || !resolution) return null;
-  return {
-    engine: entry.engine,
-    durationSec,
-    resolution,
-    mode: 't2v',
-    aspectRatio: entry.engine.aspectRatios[0] ?? null,
-    referenceImageCount: 0,
-    inputImageCount: 0,
-  };
+  const orderedResolutions = [...new Set([...(hintedResolution && resolutions.includes(hintedResolution) ? [hintedResolution] : []), ...resolutions])];
+  const aspects = mode.ui.aspectRatio?.length ? mode.ui.aspectRatio : entry.engine.aspectRatios;
+  for (const durationSec of durations) for (const resolution of orderedResolutions) for (const aspectRatio of aspects) {
+    const context = executableContext(video, entry, durationSec, resolution, aspectRatio, Boolean(entry.engine.audio));
+    if (context) return context;
+  }
+  return null;
 }
 
 function priceFromSnapshot(snapshot: PricingSnapshot, kind: 'exact' | 'reference', entry: FalEngineEntry, context: PricingContext): CurrentExamplePrice {
@@ -134,7 +139,7 @@ export async function quoteCurrentExamplePrice(
   const entry = getFalEngineById(model.id);
   if (!entry || entry.category === 'image') return { kind: 'unavailable', modelId };
   const exact = exactContext(video, entry);
-  const context = exact ?? referenceContext(entry);
+  const context = exact ?? referenceContext(video, entry);
   if (!context) return { kind: 'unavailable', modelId };
   try {
     const snapshot = await (dependencies.quote ?? computeCurrentPublicSnapshot)(context);

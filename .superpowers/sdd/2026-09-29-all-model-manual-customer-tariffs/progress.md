@@ -283,3 +283,40 @@ overrides,Flash minimum18/Topaz minimum80; code manual switch remains false.
 No provider/payment/storage/email/support/push/merge/deployment action. Three
 unbounded domains, complete versioned seed/certificate and fresh production parity
 still prevent global activation; the full plan is not complete.
+
+
+Rebased review/fix pass: fresh independent reviewer inspected the whole local
+candidate and rebase resolutions;26 sanitized focused tests pass. Two P2 findings
+stand: legacy Luma catalog5s/9s were parsed with Number(), and global resolutions
+could label an unsupported mode combination exact. RED2fail/7pass; fix uses the
+existing suffix-aware numeric duration parser and resolvePublicModelScenario's
+reviewed mode/coupled scenario contract. Reference candidates use the actual
+mode's supported dimensions and remain labelled reference, never a successor.
+No-reference t2v counts remain zero; unsupported scenarios are never quoted exact.
+Focused current-price/public-model/display/actual reader/architecture25/25 GREEN.
+Ruling: reuse the existing public scenario validator rather than duplicate mode
+and coupled capability checks — cost if wrong: unsupported or cheaper scenarios
+could masquerade as exact; explicit Kling2.5 t2v720p→1080p reference and both Luma
+exact/reference regressions cover the findings. Publication remains unchanged.
+
+First full rebased candidate8ab2c283f: standard6578pass/1fail/3skip. Failure is the
+watch-page-signals architecture test's obsolete direct-watch formatter assertion,
+which rebase kept while main moved watch presentation into the shared reader.
+Ruling: migrate that contract to wrapper→sharedreader/currentquote/nohistoric and
+visible price basis, preserving signal-module separation — no stale old markup
+restored. This failure prevents claiming a passing whole-candidate gate; fresh
+full validation/build follows the committed review fixes.
+
+
+Final review fix-batch adjustment: the initial reuse of resolvePublicModelScenario
+was correct but first-call initialization enumerated every sellable scenario and
+added2.2 seconds synchronous CPU to a public single-example read. Reviewer
+reproduced it without DB/network. Cold-process regression RED(~2.1sec CPU exceeds
+500ms per-process budget). Ruling: check only the target mode's catalog dimensions
+and reuse the workspace example recreation/form-coercion owner for coupled
+constraints; never initialize audit-wide coverage on this display read. Cost if
+wrong: incorrect capability matching or public latency; Luma/Kling regressions,
+shared-handoff tests and real cold CPU gate cover it. Final focused32/32 GREEN,
+TypeScript/frontend lint pass. Existing global mode/frame/audio constraints,
+commercial quote owner and no-reference basis remain intact. Prior validator
+choice recorded above is superseded by this bounded validator.

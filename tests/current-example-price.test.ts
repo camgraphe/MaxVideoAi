@@ -51,7 +51,10 @@ function currentQuote(calls: PricingContext[], cents = 141) {
 
 test('a complete old Kling render shows its current exact quote, not the old paid amount', async () => {
   const calls: PricingContext[] = [];
+  const cpuStart = process.cpuUsage();
   const result = await quoteCurrentExamplePrice(video(), { quote: currentQuote(calls) });
+  const cpu = process.cpuUsage(cpuStart);
+  assert.ok(cpu.user + cpu.system < 500_000, 'a cold single-example quote must not enumerate the entire sellable audit matrix');
 
   assert.deepEqual(result, {
     kind: 'exact', modelId: 'kling-3-pro', amountCents: 141,
@@ -127,4 +130,30 @@ test('repeated model settings share one current quote across gallery cards', asy
   assert.equal(prices.get(first.id)?.kind, 'exact');
   assert.equal(prices.get(second.id)?.kind, 'exact');
   assert.equal(calls.length, 1);
+});
+
+test('legacy Luma catalog durations with a seconds suffix retain exact and reference current quotes', async () => {
+  for (const engineId of ['lumaRay2', 'lumaRay2_flash']) {
+    const calls: PricingContext[] = [];
+    const complete = video({ engineId, hasAudio: false, settingsSnapshot: {
+      inputMode: 't2v', core: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' }, refs: {},
+    } });
+    const exact = await quoteCurrentExamplePrice(complete, { quote: currentQuote(calls) });
+    assert.equal(exact.kind, 'exact', `${engineId}: 5s is supported by the executable catalog`);
+    const reference = await quoteCurrentExamplePrice({ ...complete, settingsSnapshot: null }, { quote: currentQuote(calls) });
+    assert.equal(reference.kind, 'reference');
+    assert.equal(calls.length, 2);
+    assert.ok(calls.every(context => context.durationSec === 5));
+  }
+});
+
+test('a globally listed resolution unsupported by the saved mode uses a valid current reference', async () => {
+  const calls: PricingContext[] = [];
+  const result = await quoteCurrentExamplePrice(video({ engineId: 'kling-2-5-turbo', hasAudio: false,
+    settingsSnapshot: { inputMode: 't2v', core: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' }, refs: {} },
+  }), { quote: currentQuote(calls) });
+  assert.equal(result.kind, 'reference');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].resolution, '1080p', 'Kling 2.5 text-to-video requires 1080p');
+  if (result.kind === 'reference') assert.match(result.scenarioLabel, /1080p/);
 });
