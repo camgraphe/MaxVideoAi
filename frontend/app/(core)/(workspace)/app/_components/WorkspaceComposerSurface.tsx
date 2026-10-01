@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
 import type { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
+import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
@@ -469,9 +470,10 @@ export function WorkspaceComposerSurface({
         </p>
       ) : null}
       {localDraftPreview ? (
-        <p className="px-1 text-[11px] text-text-muted">
-          Aperçu Draft local · actions simulées, aucun débit. Le prix affiché est la référence classique du registre ; le tarif Draft reste à valider.
-        </p>
+        <>
+          <p className="mb-2 px-1 text-[11px] text-text-muted">Maquette interactive · aucun débit · prix de référence, tarifs essai et final à valider.</p>
+          <SeedanceDraftLocalPreviewMode preview={localDraftPreview} />
+        </>
       ) : null}
       <Composer
         density="workspace"
@@ -488,7 +490,7 @@ export function WorkspaceComposerSurface({
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
         onGenerate={startRender}
-        generateLabel={localDraftPreview ? localDraftPreview.selected ? 'Aperçu Draft' : 'Aperçu Standard' : undefined}
+        generateLabel={localDraftPreview ? localDraftPreview.selected ? 'Générer l’essai 480p' : 'Générer la vidéo' : undefined}
         preflight={preflight}
         promptField={inputSchemaSummary.promptField}
         promptRequired={inputSchemaSummary.promptRequired}
@@ -498,14 +500,7 @@ export function WorkspaceComposerSurface({
         activeManualMode={activeManualMode}
         onModeToggle={handleComposerModeToggle}
         workflowNotice={resolvedWorkflowNotice}
-        promotedActions={localDraftPreview?.available ? [...composerPromotedActions, {
-          id: 'seedance-draft-local-preview',
-          label: localDraftPreview.selected ? 'Draft 480p · Activé' : 'Draft 480p · Nouveau',
-          icon: 'sparkles',
-          active: localDraftPreview.selected,
-          tooltip: 'Tester en Draft 480p, puis finaliser en 1080p avec un prix séparé.',
-          onToggle: localDraftPreview.toggle,
-        }] : composerPromotedActions}
+        promotedActions={composerPromotedActions}
         assetFields={composerAssetFields}
         assets={composerAssets}
         onAssetAdd={handleAssetAdd}

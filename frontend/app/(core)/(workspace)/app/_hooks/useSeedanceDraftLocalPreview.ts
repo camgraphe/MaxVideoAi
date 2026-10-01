@@ -24,6 +24,7 @@ export function useSeedanceDraftLocalPreview(options: Options) {
   const [phase, setPhase] = useState<'setup' | 'draft' | 'confirm' | 'final'>('setup');
   const [snapshot, setSnapshot] = useState<PublicModelQuoteInput | null>(null);
   const [finalQuote, setFinalQuote] = useState<PublicModelQuote | null>(null);
+  const [trialQuote, setTrialQuote] = useState<PublicModelQuote | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sequence = useRef(0);
@@ -31,14 +32,18 @@ export function useSeedanceDraftLocalPreview(options: Options) {
 
   useEffect(() => {
     sequence.current += 1;
-    setSelected(false);
     setPhase('setup');
     setSnapshot(null);
     setFinalQuote(null);
+    setTrialQuote(null);
     setPending(false);
     setError(null);
     return () => { sequence.current += 1; };
   }, [contextKey]);
+
+  useEffect(() => {
+    if (!available) setSelected(false);
+  }, [available]);
 
   function toggle() {
     if (!available || !form) return;
@@ -53,6 +58,7 @@ export function useSeedanceDraftLocalPreview(options: Options) {
     setPhase('setup');
     setSnapshot(null);
     setFinalQuote(null);
+    setTrialQuote(null);
     setPending(false);
     setError(null);
   }
@@ -60,7 +66,7 @@ export function useSeedanceDraftLocalPreview(options: Options) {
   function generate() {
     // This hook deliberately has no generation-runner or billing callback.
     if (!available || !selected || !form) {
-      showNotice('Aperçu local : aucune génération ni facturation. Activez Draft pour voir le parcours simulé.');
+      showNotice('Maquette locale : aucune génération ni facturation. Choisissez « Essayer d’abord » pour parcourir les étapes.');
       return;
     }
     sequence.current += 1;
@@ -70,6 +76,7 @@ export function useSeedanceDraftLocalPreview(options: Options) {
     });
     setPhase('draft');
     setFinalQuote(null);
+    setTrialQuote(null);
     setPending(false);
     setError(null);
   }
@@ -80,21 +87,30 @@ export function useSeedanceDraftLocalPreview(options: Options) {
     setPhase('confirm');
     setPending(true);
     setFinalQuote(null);
+    setTrialQuote(null);
     setError(null);
     try {
-      const response = await fetch('/api/pricing/quote', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(snapshot), cache: 'no-store',
-      });
-      const quote = await response.json() as PublicModelQuote;
+      const readReference = async (resolution: string) => {
+        const response = await fetch('/api/pricing/quote', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...snapshot, resolution }), cache: 'no-store',
+        });
+        const quote = await response.json() as PublicModelQuote;
+        if (!response.ok || quote.status !== 'exact' || !Number.isSafeInteger(quote.amountCents)
+          || quote.amountCents < 0 || typeof quote.currency !== 'string') {
+          throw new Error('Quote unavailable');
+        }
+        return quote;
+      };
+      const [trial, final] = await Promise.all([readReference('480p'), readReference('1080p')]);
       if (request !== sequence.current) return;
-      if (!response.ok || quote.status !== 'exact' || !Number.isSafeInteger(quote.amountCents)
-        || quote.amountCents < 0 || typeof quote.currency !== 'string') {
-        throw new Error('Quote unavailable');
+      if (trial.currency !== final.currency || !Number.isSafeInteger(trial.amountCents + final.amountCents)) {
+        throw new Error('Incompatible references');
       }
-      setFinalQuote(quote);
+      setTrialQuote(trial);
+      setFinalQuote(final);
     } catch {
-      if (request === sequence.current) setError('La référence tarifaire 1080p est indisponible.');
+      if (request === sequence.current) setError('Les prix de référence sont indisponibles. Aucun rendu final ne peut être confirmé.');
     } finally {
       if (request === sequence.current) setPending(false);
     }
@@ -104,18 +120,21 @@ export function useSeedanceDraftLocalPreview(options: Options) {
     sequence.current += 1;
     setPhase(snapshot ? 'draft' : 'setup');
     setFinalQuote(null);
+    setTrialQuote(null);
     setPending(false);
     setError(null);
   }
 
   function confirmSimulation() {
-    if (available && selected && phase === 'confirm' && !pending && finalQuote?.status === 'exact') {
+    if (available && selected && phase === 'confirm' && !pending && finalQuote?.status === 'exact' && trialQuote?.status === 'exact') {
       setPhase('final');
     }
   }
 
   return {
-    available, selected: available && selected, phase, snapshot, finalQuote, pending, error,
+    available, selected: available && selected, phase, snapshot, finalQuote, trialQuote, pending, error,
+    combinedReferenceCents: trialQuote?.status === 'exact' && finalQuote?.status === 'exact'
+      ? trialQuote.amountCents + finalQuote.amountCents : null,
     toggle, generate, requestFinal, confirmSimulation, cancel,
   };
 }
