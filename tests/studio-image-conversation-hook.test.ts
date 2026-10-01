@@ -6,7 +6,11 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { useImageConversation } from "../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_hooks/useImageConversation";
 
-async function mount(turns: unknown[] = []) {
+async function mount(
+  turns: unknown[] = [],
+  initialRead?: () => Promise<{ ok: boolean; payload: unknown }>,
+  restorePending = false,
+) {
   const dom = new JSDOM('<div id="root"></div>', { url: "http://localhost/" });
   const old = new Map<string, PropertyDescriptor | undefined>();
   const input = {
@@ -14,11 +18,15 @@ async function mount(turns: unknown[] = []) {
     message: "Une image bleue",
     references: [],
   };
-  dom.window.sessionStorage.setItem(
-    "studio-image-pending:owner:project-a",
-    JSON.stringify(input),
-  );
+  if (restorePending)
+    dom.window.sessionStorage.setItem(
+      "studio-image-pending:owner:project-a",
+      JSON.stringify(input),
+    );
   const requests: { method: string; body?: string }[] = [];
+  const queuedReads: (() => Promise<{ ok: boolean; payload: unknown }>)[] = [];
+  const queuedPosts: (() => Promise<{ ok: boolean; payload: unknown }>)[] = [];
+  if (initialRead) queuedReads.push(initialRead);
   for (const [key, value] of Object.entries({
     window: dom.window,
     document: dom.window.document,
@@ -30,6 +38,19 @@ async function mount(turns: unknown[] = []) {
         method: options?.method ?? "GET",
         body: options?.body as string | undefined,
       });
+      if (options?.method === "POST") {
+        const queued = queuedPosts.shift();
+        if (queued) {
+          const response = await queued();
+          return { ok: response.ok, json: async () => response.payload };
+        }
+      } else {
+        const queued = queuedReads.shift();
+        if (queued) {
+          const response = await queued();
+          return { ok: response.ok, json: async () => response.payload };
+        }
+      }
       return {
         ok: true,
         json: async () => ({
@@ -73,6 +94,20 @@ async function mount(turns: unknown[] = []) {
     },
     input,
     requests,
+    queueRead(
+      response:
+        | { ok?: boolean; payload: unknown }
+        | (() => Promise<{ ok: boolean; payload: unknown }>),
+    ) {
+      queuedReads.push(
+        typeof response === "function"
+          ? response
+          : () => Promise.resolve({ ok: response.ok ?? true, payload: response.payload }),
+      );
+    },
+    queuePost(response: { ok: boolean; payload: unknown }) {
+      queuedPosts.push(() => Promise.resolve(response));
+    },
     async close() {
       await act(async () => root.unmount());
       dom.window.close();
@@ -83,8 +118,168 @@ async function mount(turns: unknown[] = []) {
     },
   };
 }
-test("reload of a POST never committed exposes recovery and retries the same immutable input", async () => {
+
+test("manual refresh failures stay recoverable and a later successful refresh clears them", async () => {
+  const originalTurn = {
+    requestId: "a2899f64-2203-4771-9836-ec6abb8f9bdd",
+    message: "Une image bleue",
+    references: [],
+    reply: "La direction est prête.",
+    state: "ready",
+    retryable: false,
+    quote: null,
+    generation: null,
+    createdAt: "2026-10-01T10:00:00.000Z",
+  };
+  for (const failure of [
+    () => Promise.reject(new Error("Connexion interrompue")),
+    () =>
+      Promise.resolve({
+        ok: false,
+        payload: { ok: false, message: "Session expirée" },
+      }),
+  ]) {
+    const view = await mount([originalTurn]);
+    try {
+      assert.equal(view.state.error, null);
+      assert.deepEqual(view.state.conversation.turns, [originalTurn]);
+      view.queueRead(failure);
+      await assert.doesNotReject(async () => {
+        await act(async () => view.state.refresh());
+      });
+      assert.ok(
+        view.state.error,
+        "failed refresh should be visible to the customer",
+      );
+      assert.deepEqual(view.state.conversation.turns, [originalTurn]);
+
+      const refreshedTurn = { ...originalTurn, message: "Nouvelle direction" };
+      view.queueRead({
+        payload: {
+          ok: true,
+          result: {
+            projectId: "project-a",
+            projectName: "Test",
+            turns: [refreshedTurn],
+          },
+        },
+      });
+      await act(async () => view.state.refresh());
+      assert.equal(view.state.error, null);
+      assert.deepEqual(
+        view.state.conversation.turns,
+        [refreshedTurn],
+      );
+    } finally {
+      await view.close();
+    }
+  }
+});
+
+test("an initial conversation read failure is cleared by successful manual recovery", async () => {
+  const staleTurn = {
+    requestId: "a2899f64-2203-4771-9836-ec6abb8f9bdd",
+    message: "Ancienne direction",
+    references: [],
+    reply: "La direction est prête.",
+    state: "ready",
+    retryable: false,
+    quote: null,
+    generation: null,
+    createdAt: "2026-10-01T10:00:00.000Z",
+  };
+  const recoveredTurn = { ...staleTurn, message: "Direction récupérée" };
+  const view = await mount([staleTurn], () =>
+    Promise.resolve({
+      ok: false,
+      payload: { ok: false, message: "Service temporairement indisponible" },
+    }),
+  );
+  try {
+    assert.equal(
+      view.state.error,
+      "La conversation est momentanément indisponible.",
+    );
+    view.queueRead({
+      payload: {
+        ok: true,
+        result: {
+          projectId: "project-a",
+          projectName: "Test",
+          turns: [recoveredTurn],
+        },
+      },
+    });
+    await act(async () => view.state.refresh());
+    assert.equal(view.state.error, null);
+    assert.deepEqual(view.state.conversation.turns, [recoveredTurn]);
+  } finally {
+    await view.close();
+  }
+});
+
+test("a successful new POST clears an earlier manual read error", async () => {
   const view = await mount();
+  try {
+    view.queueRead(() => Promise.reject(new Error("Connexion interrompue")));
+    await act(async () => view.state.refresh());
+    assert.equal(view.state.error, "Connexion interrompue");
+    view.queueRead({
+      payload: {
+        ok: true,
+        result: {
+          projectId: "project-a",
+          projectName: "Test",
+          turns: [
+            {
+              ...view.input,
+              reply: "La direction est prête.",
+              state: "ready",
+              retryable: false,
+              quote: null,
+              generation: null,
+              createdAt: "2026-10-01T10:00:00.000Z",
+            },
+          ],
+        },
+      },
+    });
+    await act(async () => view.state.submit(view.input));
+    assert.equal(view.state.error, null);
+    assert.equal(view.state.pending, null);
+  } finally {
+    await view.close();
+  }
+});
+
+test("the background read after a failed confirmation does not clear its visible error", async () => {
+  const view = await mount();
+  try {
+    view.queuePost({
+      ok: false,
+      payload: {
+        ok: false,
+        message: "The confirmation could not be verified.",
+      },
+    });
+    view.queueRead({
+      payload: {
+        ok: true,
+        result: { projectId: "project-a", projectName: "Test", turns: [] },
+      },
+    });
+    await act(async () => view.state.confirm("request-id", "quote-id"));
+    assert.equal(
+      view.state.error,
+      "The confirmation could not be verified.",
+    );
+  } finally {
+    await view.close();
+  }
+});
+
+test("reload of a POST never committed exposes recovery and retries the same immutable input", async () => {
+  const view = await mount([], undefined, true);
   try {
     assert.equal(view.state.busy, false);
     assert.equal(view.state.error, null);
@@ -106,13 +301,13 @@ test("an active saved turn waits while a failed turn exposes recovery", async ()
     message: "Une image bleue",
     references: [],
   };
-  const active = await mount([{ ...input, state: "thinking" }]);
+  const active = await mount([{ ...input, state: "thinking" }], undefined, true);
   try {
     assert.equal(active.state.canResumePending, false);
   } finally {
     await active.close();
   }
-  const failed = await mount([{ ...input, state: "failed" }]);
+  const failed = await mount([{ ...input, state: "failed" }], undefined, true);
   try {
     assert.equal(failed.state.canResumePending, true);
     await act(async () => failed.state.discardPending());

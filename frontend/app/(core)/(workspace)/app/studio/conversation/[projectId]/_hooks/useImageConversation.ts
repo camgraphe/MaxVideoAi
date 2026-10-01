@@ -32,6 +32,7 @@ export function useImageConversation(
   const [pending, setPending] = useState<ImageTurnInput | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [readError, setReadError] = useState<string | null>(null);
   const inFlight = useRef(false);
   const readVersion = useRef(0);
   const queuedRead = useRef(false);
@@ -92,10 +93,10 @@ export function useImageConversation(
   }, [storageKey]);
   useEffect(() => {
     void load().catch(() => {
-      if (mounted.current)
-        setError("La conversation est momentanément indisponible.");
+      if (mounted.current && active.current === scope)
+        setReadError("La conversation est momentanément indisponible.");
     });
-  }, [load]);
+  }, [load, scope]);
   const needsPolling =
     busy ||
     conversation.turns.some(
@@ -114,10 +115,25 @@ export function useImageConversation(
     }, 3000);
     return () => clearInterval(timer);
   }, [needsPolling, load]);
+  const refresh = useCallback(async () => {
+    if (!mounted.current || active.current !== scope) return;
+    try {
+      await load();
+      if (mounted.current && active.current === scope) setReadError(null);
+    } catch (failure) {
+      if (mounted.current && active.current === scope)
+        setReadError(
+          failure instanceof Error
+            ? failure.message
+            : "La conversation est momentanément indisponible.",
+        );
+    }
+  }, [load, scope]);
   async function submit(input: ImageTurnInput) {
     if (busy) return;
     setBusy(true);
     setError(null);
+    setReadError(null);
     setPending(input);
     readVersion.current++;
     try {
@@ -169,6 +185,7 @@ export function useImageConversation(
     if (busy) return;
     setBusy(true);
     setError(null);
+    setReadError(null);
     readVersion.current++;
     try {
       const response = await fetch(`${endpoint}/confirm`, {
@@ -216,6 +233,7 @@ export function useImageConversation(
   function discardPending() {
     setPending(null);
     setError(null);
+    setReadError(null);
     try {
       sessionStorage.removeItem(storageKey);
     } catch {}
@@ -228,12 +246,12 @@ export function useImageConversation(
   return {
     conversation,
     busy,
-    error,
+    error: readError ?? error,
     pending,
     canResumePending,
     submit,
     confirm,
-    refresh: load,
+    refresh,
     discardPending,
   };
 }

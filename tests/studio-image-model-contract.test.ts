@@ -76,3 +76,30 @@ test("neither model output nor client input can authorize a payment or supply an
     }),
   );
 });
+
+test("turn input schema rejects blank/oversized messages, excess or malformed refs, and identity fields", () => {
+  const valid = {
+    requestId: "123e4567-e89b-42d3-a456-426614174000",
+    message: "A valid image request",
+    references: [] as string[],
+  };
+
+  assert.throws(() => imageTurnInputSchema.parse({ ...valid, message: "   " }));
+  assert.throws(() =>
+    imageTurnInputSchema.parse({ ...valid, message: "x".repeat(4001) }),
+  );
+  assert.throws(() =>
+    imageTurnInputSchema.parse({
+      ...valid,
+      references: Array.from({ length: 9 }, (_, index) =>
+        `ma_${String(index).padStart(32, "a")}`,
+      ),
+    }),
+  );
+  assert.throws(() =>
+    imageTurnInputSchema.parse({ ...valid, references: ["ma_not-an-asset"] }),
+  );
+  assert.throws(() =>
+    imageTurnInputSchema.parse({ ...valid, userId: "foreign-account" }),
+  );
+});
