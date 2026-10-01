@@ -46,3 +46,57 @@ test("director starts an explicit demo film, remembers references and never inve
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("chat trims and positions the selected narration through the shared editing service", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "studio-audio-director-"));
+  try {
+    const store = new ProjectStore(dir),
+      service = new CommandService(store),
+      p = await store.create(),
+      director = new Director(service);
+    await store.update(p.id, (p) => {
+      p.assets = [
+        {
+          id: "voice",
+          name: "Narration",
+          kind: "audio",
+          file: "voice.mp3",
+          duration: 8,
+          width: 0,
+          height: 0,
+          hasAudio: true,
+          origin: "local",
+        },
+      ];
+      return p;
+    });
+    const inserted = await service.execute(p.id, {
+      requestId: "insert",
+      expectedRevision: 0,
+      command: { type: "insert", assetId: "voice", track: "voice" },
+    });
+    const clipId = inserted.project.clips[0].id;
+    const cut = await director.respond(p.id, {
+      requestId: "cut",
+      text: "Coupe la voix à 4 secondes",
+      context: { clipId, revision: 1 },
+    });
+    const moved = await director.respond(p.id, {
+      requestId: "move",
+      text: "Déplace la voix à 5 secondes",
+      context: { clipId, revision: 2 },
+    });
+    assert.deepEqual(
+      [
+        cut.project.clips[0].outFrame,
+        moved.project.clips[0].startFrame,
+        moved.project.clips.length,
+        moved.project.revision,
+        moved.project.jobs.length,
+      ],
+      [96, 120, 1, 3, 0],
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

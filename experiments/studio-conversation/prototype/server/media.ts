@@ -36,9 +36,20 @@ export async function probeMedia(path: string): Promise<Metadata> {
           !Number(info.format?.duration)));
   if (!video && !audio)
     throw new StudioError("Ce fichier ne contient pas de média utilisable.");
+  const stream = video ?? audio;
+  const timeBase = String(stream?.time_base ?? "0/1")
+    .split("/")
+    .map(Number);
+  const streamDuration =
+    Number(stream?.duration) ||
+    (Number(stream?.duration_ts) * timeBase[0]) / timeBase[1];
+  // A video's playable source is its video stream, even when its audio
+  // container continues longer. The original remains available unchanged.
   const duration = image
     ? 0
-    : Number(info.format?.duration ?? video?.duration ?? audio?.duration);
+    : Number.isFinite(streamDuration) && streamDuration > 0
+      ? streamDuration
+      : Number(info.format?.duration);
   if (!image && (!Number.isFinite(duration) || duration < 1 || duration > 600))
     throw new StudioError(
       "Les sources audio/vidéo doivent durer entre 1 seconde et 10 minutes.",
@@ -154,6 +165,8 @@ export async function importMedia(
           "aac",
           "-movflags",
           "+faststart",
+          "-t",
+          String(metadata.duration),
           output,
         ],
         metadata.duration,

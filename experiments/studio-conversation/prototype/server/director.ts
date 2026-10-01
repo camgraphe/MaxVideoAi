@@ -76,6 +76,43 @@ export class Director {
     if (/export|rendu|render/.test(lower)) commands.push({ type: "export" });
     else if (/annul|undo/.test(lower)) commands.push({ type: "undo" });
     else if (/retabli|redo/.test(lower)) commands.push({ type: "redo" });
+    else if (/coupe|trim|raccour|garde/.test(lower) && clip) {
+      if (seconds)
+        commands.push({
+          type: "trim",
+          clipId: clip.id,
+          inFrame: clip.inFrame,
+          outFrame: clip.inFrame + Math.round(seconds * p.settings.fps),
+        });
+      else
+        reply =
+          "Sélectionnez un plan et dites la durée à garder, par exemple : Garde 4 secondes.";
+    } else if (/deplace|premier|position|dernier/.test(lower) && clip) {
+      if (clip.track !== "video") {
+        if (Number.isFinite(seconds))
+          commands.push({
+            type: "move",
+            clipId: clip.id,
+            startFrame: Math.round(seconds * p.settings.fps),
+          });
+        else
+          reply =
+            "Indiquez une position audio, par exemple : Déplace la voix à 5 secondes.";
+      } else
+        commands.push({
+          type: "move",
+          clipId: clip.id,
+          index: /fin|dernier/.test(lower)
+            ? p.clips.filter((c) => c.track === "video").length - 1
+            : /premier|debut/.test(lower)
+              ? 0
+              : Math.max(
+                  0,
+                  Number(lower.match(/position\s*(\d+)/)?.[1] ?? 1) - 1,
+                ),
+        });
+    } else if (/supprim|retire/.test(lower) && clip)
+      commands.push({ type: "remove", clipId: clip.id });
     else if (
       /voix|voice|narration/.test(lower) &&
       !/ajout|place|montage/.test(lower)
@@ -111,33 +148,7 @@ export class Director {
       else
         reply =
           "Importez un son ou demandez une voix/ambiance ; je pourrai ensuite le placer dans le montage.";
-    } else if (/coupe|trim|raccour|garde/.test(lower) && clip) {
-      if (seconds)
-        commands.push({
-          type: "trim",
-          clipId: clip.id,
-          inFrame: clip.inFrame,
-          outFrame: clip.inFrame + Math.round(seconds * p.settings.fps),
-        });
-      else
-        reply =
-          "Sélectionnez un plan et dites la durée à garder, par exemple : Garde 4 secondes.";
-    } else if (/deplace|premier|position|dernier/.test(lower) && clip) {
-      commands.push({
-        type: "move",
-        clipId: clip.id,
-        index: /fin|dernier/.test(lower)
-          ? p.clips.filter((c) => c.track === "video").length - 1
-          : /premier|debut/.test(lower)
-            ? 0
-            : Math.max(
-                0,
-                Number(lower.match(/position\s*(\d+)/)?.[1] ?? 1) - 1,
-              ),
-      });
-    } else if (/supprim|retire/.test(lower) && clip)
-      commands.push({ type: "remove", clipId: clip.id });
-    else if (
+    } else if (
       /9:16|16:9|1:1|vertical|carre|horizontal|1080|720|fps|duree cible/.test(
         lower,
       )

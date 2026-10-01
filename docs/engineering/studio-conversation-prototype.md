@@ -13,9 +13,10 @@ Expérience isolée sur `codex/studio-conversation-exploration-20261001`, dans `
 - `server/director.ts` conserve la conversation et traduit des intentions explicitement supportées. Il ne fabrique pas de résultat et indique les limites du jeu de démonstration.
 - `server/jobs.ts` possède la queue persistante, reprise des jobs `running`, états, progression, annulation et fusion des résultats. La construction automatique refuse d’écraser une révision modifiée pendant son travail.
 - `server/local-work.ts` exécute les tâches, conserve des IDs stables, reconnaît les fichiers terminés et publie les médias prêts au fur et à mesure. Les fichiers partiels ne sont pas annoncés prêts. Une annulation conserve les médias déjà terminés, sans insérer un montage incomplet.
-- `server/media.ts` mesure les références et conserve original/aperçu ; `server/render.ts` normalise la vidéo et assemble le son directement depuis les sources coupées. La concaténation vidéo reste sans audio pour éviter le décalage des amorces AAC. Un son dépassant le dernier plan prolonge sa dernière image. L’export reçoit un snapshot immuable.
+- `server/media.ts` mesure les références et conserve original/aperçu ; `server/render.ts` normalise la vidéo et assemble le son directement depuis les sources coupées. La concaténation vidéo reste sans audio pour éviter le décalage des amorces AAC. Un son dépassant le dernier plan prolonge sa dernière image. Chaque plan est normalisé à son nombre de frames demandé, y compris une source sauvegardée dont la vidéo finit avant la durée déclarée. La durée d’import d’une vidéo suit son flux vidéo, son aperçu audio étant borné à cette durée ; l’original reste intact. L’export reçoit un snapshot immuable.
 - `server/http.ts` possède corps limités, routes, imports et livraison Range. `server/index.ts` écoute en loopback et refuse Host/Origin étrangers ou malformés. Les programmes se lancent en tableaux d’arguments, sans shell.
 - `server/mcp.ts` ne possède aucune autre implémentation de montage. Il expose une projection HTTP JSON-RPC des mêmes commandes.
+- `client/mediaPlayback.ts` synchronise les pistes audio avec le temps, la coupe et l’état de buffering vidéo ; les pistes restent en pause lorsque l’horloge attend.
 - `client/App.client.tsx` compose le shell, le chat, le canevas, le moniteur et la timeline. Les lecteurs de sortie sont dans les messages. Sélection, références en attente et pins sont des préférences de présentation ; le projet serveur reste canonique.
 
 ## Projection vers le produit
@@ -26,6 +27,21 @@ Avant de remplacer Studio : adapter les commandes au dépôt canonique de projet
 
 ## Validation
 
-Les tests `prototype/tests` couvrent le montage et les adaptateurs, les médias réels, le MP4/MP3, les références image/vidéo/audio, l’immuabilité de l’export et la livraison partielle. Les captures IAB à 1672×941, 390×844 et 320×740 sont dans `experiments/studio-conversation/design/qa/` ; le relevé compare la référence acceptée à ces états de l’app. Chrome a bloqué le localhost lors de cet essai ; l’aperçu Codex a fonctionné, sans modifier cette protection.
+Les 22 tests `prototype/tests` couvrent le montage et les adaptateurs, les médias réels, le MP4/MP3, les références image/vidéo/audio, l’immuabilité de l’export et la livraison partielle. Les captures IAB à 1672×941, 390×844 et 320×740 sont dans `experiments/studio-conversation/design/qa/` ; le relevé compare la référence acceptée à ces états de l’app. Chrome a bloqué le localhost lors de cet essai ; l’aperçu Codex a fonctionné, sans modifier cette protection.
 
 Sources de protocole/runtime : [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports), [Vite middleware](https://vite.dev/guide/ssr.html), [FFmpeg protocols](https://ffmpeg.org/ffmpeg-protocols.html).
+
+## Revue finale et décisions conservées
+
+Revue indépendante en contexte neuf du commit `db880d8f0`. Trois problèmes matériels reproduits puis corrigés dans une passe : changement de fps à la limite d’une source et contiguïté audio ; import vidéo dont le son dépasse l’image et longueur exacte de chaque plan ; pause du son pendant le buffering vidéo. Les régressions ont échoué avant la correction puis passé. La coupe/position audio du directeur a aussi été corrigée, et une construction réelle de film pendant des edits ainsi que le signal audio décodé ont renforcé la validation.
+
+Décisions, dans l’ordre :
+
+1. Reprendre localement les conversions de frames avec test de parité, car l’import direct ramène les types React Flow/pricing dans le build autonome. Coût si incorrect : dérive des conversions, détectée par le test de parité.
+2. Garder LLM, fournisseurs et génération conditionnée simulés pour tester l’interaction locale. Coût : qualité créative/fournisseur non validée.
+3. Garder auth, facturation et intégration canonique hors du prototype isolé demandé. Coût : adaptation documentée nécessaire avant remplacement de Studio.
+4. Un runtime par dossier de données, conformément au README. Coût : risque de concurrence si deux runtimes partagent le dossier.
+5. Voix Thomas macOS déjà installée, tâche réessayable si absente. Coût : fournisseur ou adaptateur nécessaire ailleurs.
+6. MCP HTTP JSON-RPC local prévu, sans sessions/auth/SSE de production. Coût : transport supplémentaire pour les hôtes qui les requièrent.
+
+Deux finitions reportées : schémas JSON spécifiques à chaque payload dans la découverte `studio_command` ; conservation d’un brouillon du dialogue Paramètres lors d’une modification externe ou d’un assemblage en arrière-plan. Le second peut réinitialiser un formulaire non enregistré ; enregistrer avant une autre édition pour cet essai local.

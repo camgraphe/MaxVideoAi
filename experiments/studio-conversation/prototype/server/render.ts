@@ -169,7 +169,7 @@ export async function renderSequence(
             join(dir, a.file),
             "-an",
             "-vf",
-            `${fitFilter(snapshot.settings)},fps=${fps},setsar=1`,
+            `${fitFilter(snapshot.settings)},fps=${fps},setsar=1,tpad=stop_mode=clone:stop_duration=${len}`,
             "-frames:v",
             String(c.outFrame - c.inFrame),
             ...encoding,

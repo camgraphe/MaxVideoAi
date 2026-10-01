@@ -90,5 +90,5 @@
 - [x] Tester le parcours HTTP complet, export/probe, restart/reprise, import invalide, édition pendant génération et export immuable.
 - [x] Inspecter desktop 1672×941 et mobile 390/320 ; comparer la référence et la capture courante avec view_image, consigner ≥5 points de fidélité et les écarts intentionnels.
 - [x] Exécuter `npm test`, `npm run build`, `npm run lint:exposure` depuis la racine et `git diff --check` ; résultats attendus verts, sinon réparer/report explicite.
-- [ ] Faire une revue indépendante du prototype selon le spec, les tests et Review Focus, traiter ses problèmes matériels puis relancer les vérifications concernées.
-- [ ] Ouvrir le prototype local dans Codex, laisser le serveur prêt pour l'utilisateur et fournir l'URL, les limites du bot simulé et les fichiers utiles. Aucune fusion/push/déploiement.
+- [x] Faire une revue indépendante du prototype selon le spec, les tests et Review Focus, traiter ses problèmes matériels puis relancer les vérifications concernées.
+- [x] Ouvrir le prototype local dans Codex, laisser le serveur prêt pour l'utilisateur et fournir l'URL, les limites du bot simulé et les fichiers utiles. Aucune fusion/push/déploiement.

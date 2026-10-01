@@ -85,3 +85,45 @@ test("audio shares the timebase and cannot overlap its own lane", () => {
     editSequence(p, { type: "insert", assetId: "b", track: "video" }),
   );
 });
+
+test("fps changes keep complete short sources bounded", () => {
+  const source = fixture();
+  source.settings.fps = 30;
+  source.assets[0].duration = 31 / 30;
+  const inserted = editSequence(source, { type: "insert", assetId: "a" });
+  const converted = editSequence(inserted, {
+    type: "settings",
+    settings: { fps: 24 },
+  });
+  assert.equal(converted.clips[0].outFrame, 24);
+  assert.equal(converted.clips[0].inFrame, 0);
+  assert.equal(inserted.clips[0].outFrame, 31);
+});
+test("fps changes preserve contiguous audio lanes", () => {
+  let audio = editSequence(fixture(), {
+    type: "insert",
+    assetId: "b",
+    track: "voice",
+  });
+  audio = editSequence(audio, {
+    type: "trim",
+    clipId: audio.clips[0].id,
+    inFrame: 1,
+    outFrame: 26,
+  });
+  audio = editSequence(audio, {
+    type: "insert",
+    assetId: "b",
+    track: "voice",
+    startFrame: 25,
+  });
+  const changed = editSequence(audio, {
+    type: "settings",
+    settings: { fps: 30 },
+  });
+  assert.equal(
+    changed.clips[1].startFrame,
+    changed.clips[0].outFrame - changed.clips[0].inFrame,
+  );
+  assert.equal(changed.settings.fps, 30);
+});

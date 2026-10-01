@@ -150,10 +150,38 @@ export function editSequence(input: Project, command: Command): Project {
     case "settings": {
       const old = p.settings.fps;
       p.settings = { ...p.settings, ...command.settings };
-      if (old !== p.settings.fps)
-        for (const c of p.clips)
-          for (const key of ["inFrame", "outFrame", "startFrame"] as const)
-            c[key] = secondsToTimelineFrame(c[key] / old, p.settings.fps);
+      if (old !== p.settings.fps) {
+        const fps = p.settings.fps;
+        for (const c of p.clips) {
+          const asset = p.assets.find((a) => a.id === c.assetId)!;
+          const limit = Math.floor(asset.duration * fps + 0.001);
+          const length = Math.min(
+            limit,
+            Math.max(
+              fps * MIN_CLIP_DURATION_SEC,
+              secondsToTimelineFrame((c.outFrame - c.inFrame) / old, fps),
+            ),
+          );
+          // Convert the duration once: independent endpoint rounding can lose
+          // a frame at the source boundary or overlap adjacent audio clips.
+          c.inFrame = Math.min(
+            limit - length,
+            secondsToTimelineFrame(c.inFrame / old, fps),
+          );
+          c.outFrame = c.inFrame + length;
+          c.startFrame = secondsToTimelineFrame(c.startFrame / old, fps);
+        }
+        for (const track of ["voice", "music"]) {
+          const lane = p.clips
+            .filter((c) => c.track === track)
+            .sort((a, b) => a.startFrame - b.startFrame);
+          let end = 0;
+          for (const c of lane) {
+            c.startFrame = Math.max(end, c.startFrame);
+            end = c.startFrame + c.outFrame - c.inFrame;
+          }
+        }
+      }
       if (command.title !== undefined) {
         if (!command.title.trim() || command.title.length > 120)
           throw new StudioError("Le titre doit contenir 1 à 120 caractères.");

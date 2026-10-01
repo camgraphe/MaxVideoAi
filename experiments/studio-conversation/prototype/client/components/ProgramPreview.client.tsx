@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { X, Play, Pause, Clapperboard, AudioLines } from "lucide-react";
 import type { Asset, Clip, Project } from "../../shared/types";
+import { synchronizeTimelineAudio } from "../mediaPlayback";
 import type { Playback } from "../hooks/usePlayback";
 import { mediaUrl } from "../hooks/useStudio";
 import { videoStart, sequenceDuration } from "../../shared/timeline";
@@ -84,18 +85,14 @@ function AudioTrack({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const source = clip.inFrame / project.settings.fps + Math.max(0, local);
-    if (el.readyState >= 1 && Math.abs(el.currentTime - source) > 0.18)
-      el.currentTime = source;
-    el.volume = clip.volume;
-    if (playback.playing && active) void el.play().catch(() => {});
-    else el.pause();
+    synchronizeTimelineAudio(el, project, clip, playback);
   }, [
     active,
     local,
     clip.inFrame,
     clip.volume,
     playback.playing,
+    playback.buffering,
     project.settings.fps,
   ]);
   return (
