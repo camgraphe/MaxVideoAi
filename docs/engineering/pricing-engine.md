@@ -2,6 +2,17 @@
 
 ## Signed BytePlus contract in the local pricing admin (2026-10-01)
 
+`server/seedance25-output-dimensions.ts` owns the published Seedance 2.5 output
+rasters for supplier accounting, manual supplier facts and admin comparisons.
+The resolution names are provider tiers: square 480p is 640×640 and square 1080p
+is 1440×1440; 16:9 is 854×480 and 1920×1080. Do not infer a fixed short side
+or reuse the historical retail dimension table as factual supplier usage.
+Duration estimates use 24 fps; provider-reported tokens take precedence at
+completion. The minimum 4s square Draft/final canary reported 97 frames, so its
+actual LIST-based estimate slightly exceeds the 96-frame preflight estimate.
+The correction preserves authored customer cents and historical receipts.
+See [the dated canary evidence](2026-10-01-seedance-draft-lifecycle.md#minimum-cost-provider-canary).
+
 Adrien accepted order form `CT20260925128931` and explicitly requested using its
 commercial terms now, with console activation checked immediately before push.
 `server/byteplus-account-contract.ts` applies the signed discount to

@@ -77,6 +77,15 @@
 
 ### Task 4: Image and supplier-fact verification
 
+**2026-10-01 checkpoint:** The explicitly approved minimum-cost provider pair
+(4s, square, silent T2V) completed both Draft and final for $2.7133325 at LIST.
+It exposed and corrected the 2.5 supplier raster estimate in accounting, manual
+supplier facts and admin comparisons, preserving customer cents. All 205 focused
+BytePlus/Seedance tests and both existing price baselines pass. This closes only
+the provider happy path and its dimension correction; Seedream face trust,
+app-owned storage, cancellation/failure/refund and authenticated creator browser
+gates remain open. See the [dated evidence](../../engineering/2026-10-01-seedance-draft-lifecycle.md#minimum-cost-provider-canary).
+
 **Files:**
 - Inspect/modify only if the canary proves a gap: `frontend/src/server/images/byteplus-seedream-execution.ts`, `frontend/src/server/images/image-output-storage.ts`, and the BytePlus media input adapter.
 - Modify: `frontend/server/byteplus-accounting.ts` and matching factual price definitions after confirming the official 1080p rate; do not alter commercial policy.

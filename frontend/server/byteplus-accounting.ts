@@ -6,6 +6,7 @@ import {
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
+import { seedance25OutputDimensions } from './seedance25-output-dimensions';
 
 const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '480p': {
@@ -72,6 +73,7 @@ const SEEDANCE_1_5_TOKEN_DIMENSIONS: typeof BYTEPLUS_TOKEN_DIMENSIONS = {
 };
 
 function tokenDimensions(engineId: string, resolution: string, aspectRatio: string) {
+  if (engineId === 'seedance-2-5') return seedance25OutputDimensions(resolution, aspectRatio);
   return (engineId === 'seedance-1-5-pro'
     ? SEEDANCE_1_5_TOKEN_DIMENSIONS
     : BYTEPLUS_TOKEN_DIMENSIONS)[resolution]?.[aspectRatio];

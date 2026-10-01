@@ -60,15 +60,17 @@ use the existing admin preview/confirmation path.
   retained outputs and expiry. The current local admin cookie is not a creator
   session and does not authorize workflow quotes. Keep deliberate MCP exclusion
   until separately supported.
-- Bounded paid account canaries for Draft, final, cancellation, storage and
-  failure/refund after a successful Draft, with an approved budget.
+- The minimum paid Draft/final provider happy path passed (see below). App-owned
+  storage, cancellation and failure/refund after a successful Draft still require
+  bounded canaries with a separately approved budget.
 - Verify the contract's console activation immediately before any push, as
   requested by Adrien; no extra pending-contract UI is introduced.
 - Production migrations/manual activation/payment reconciliation, marketing
   claims and direct-provider retirement remain their explicit release gates.
 
-No production write, provider job, email, push or deployment is performed by
-this local implementation.
+The local implementation does not write production application data or send
+email, push or deploy. The separately authorized provider canary below created
+exactly one paid Draft and one paid final.
 
 ## Creator ownership
 
@@ -104,3 +106,42 @@ schema. A normal 480p generation remains distinct from a Draft task.
 - PostgreSQL 17 lifecycle/submission/poll/charge and workflow pricing/seed checks: 43 passed, zero skipped. Definitive submission rejection unlocks final retry only after its exact refund receipt; uncertain acknowledgement keeps the reservation.
 - Latest standard validation suite after the review fix pass: 6,651 passed, zero failed, 3 skipped. Focused creator, terminal recovery, auth and Studio contracts: 90 passed, zero skipped. Isolated committed checkout Studio HTTP suites: 4 passed, zero skipped. Browser integration is separate and has not been run for this checkpoint.
 - TypeScript, frontend lint (zero warnings), exposure lint and diff whitespace checks passed. The existing 178 immutable billing and 577 public scenario baselines are unchanged. Fresh fetch confirms local main and origin/main both at 10589cc6b, already included in the branch. Optimized Next.js build passes from the isolated environment-free committed checkout; the compiler reports a Supabase process.version/Edge warning. No deployment is performed.
+
+## Minimum-cost provider canary
+
+Adrien authorized a $5 maximum pair and requested the shortest, cheapest test.
+The existing application payload builders and ModelArk client submitted one
+4-second, 1:1, silent text-to-video Draft and one final, using
+`dreamina-seedance-2-5-260628` on the configured Singapore API. Both completed.
+No retry or additional paid task was submitted.
+
+| Step | Requested tier | Measured output | Provider tokens | LIST-based cost (USD) |
+| --- | --- | --- | ---: | ---: |
+| Draft | 480p | 640×640, H.264, 24 fps, 97 frames | 38,800 | 0.415160 |
+| Final | 1080p | 1440×1440, HEVC, 24 fps, 97 frames | 196,425 | 2.2981725 |
+
+Both files measure 4.041667 seconds, contain no audio, and retain the same square
+framing. Combined LIST cost is **$2.7133325**, excluding taxes; this is calculated
+from reported usage and the published rates, not an observed invoice. Raw private
+responses, signed media URLs and downloaded evidence remain outside Git. The
+running local pricing sandbox keeps blank provider credentials and execution off.
+
+The canary exposed a factual estimator bug: historical short-side dimensions
+underestimated square provider usage. The correction shares the [published 2.5
+raster table](https://docs.byteplus.com/zh-TW/docs/modelark/seedance-2-5) between
+accounting, manual supplier cost and admin comparison. It covers all eighteen
+published resolution/ratio pairs and retains existing customer prices. Corrected
+4-second estimates are $0.410880 for square Draft and $2.274480 for square final;
+the provider's extra frame explains the slight difference in completed usage.
+In 16:9, Draft is 854×480 and final is 1920×1080. A 640×480 file would be 4:3.
+
+This provider happy path does not certify authenticated browser orchestration,
+app-owned storage, failure/refund, cancellation, Studio browser integration or
+production readiness. No production application DB, environment or storage was
+changed. The pre-push console contract check remains required.
+
+Fresh checks for the dimension correction: 205 focused BytePlus/Seedance tests
+passed with no failures or skips. TypeScript, frontend lint, exposure and
+whitespace checks passed. The 178 immutable billing and 577 public scenario
+baselines remain unchanged. The full-suite/build results above belong to the
+preceding implementation checkpoint and were not rerun for this focused fix.

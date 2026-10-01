@@ -17,6 +17,7 @@ import { catalogSupplierReference, type CatalogSupplierReference, type SupplierR
 import { publishedSupplierEstimate, type PublishedSupplierEstimate } from './published-supplier-tariffs';
 import { signedBytePlusContractCost, type BytePlusContractTerms } from '@/server/byteplus-account-contract';
 import { bytePlusNormalListCost } from '@/server/byteplus-normal-cost';
+import { estimateSeedance25OutputTokens } from '@/server/seedance25-output-dimensions';
 
 type CostEvidence = { amountUsd: number; source: string; confirmedAt: string; contract?: BytePlusContractTerms };
 type CustomerQuoteSummary = {
@@ -99,10 +100,13 @@ export function providerComparisonInputFromScenario(input: {
   const seedance15AudioDefault = scenario.engineId === 'seedance-1-5-pro'
     ? engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio')?.default
     : undefined;
-  let tokenEstimate: ReturnType<typeof computeSeedance2TokenQuote> | null = null;
+  let tokenEstimate: Pick<ReturnType<typeof computeSeedance2TokenQuote>, 'aspectRatio' | 'tokenCount'>
+    | ReturnType<typeof estimateSeedance25OutputTokens> = null;
   if (billingInputType && isSeedance2TokenPricing(engine.pricingDetails) && scenario.durationSec && scenario.resolution) {
     try {
-      tokenEstimate = computeSeedance2TokenQuote({
+      tokenEstimate = scenario.engineId === 'seedance-2-5'
+        ? estimateSeedance25OutputTokens({ resolution: scenario.resolution, durationSec: scenario.durationSec, aspectRatio })
+        : computeSeedance2TokenQuote({
         details: engine.pricingDetails,
         durationSec: scenario.durationSec,
         resolution: scenario.resolution,

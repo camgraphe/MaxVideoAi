@@ -90,3 +90,19 @@ test('a Fal route retains its own factual subtotal and cannot inherit the BytePl
   assert.equal(resolved.supplierCost, null);
   assert.equal(resolved.quote.breakdown.vendorSubtotalExactCents, billing.facts.vendorSubtotalExactCents);
 });
+
+test('square Draft and final keep authored customer cents with corrected supplier rasters', () => {
+  for (const [workflowStep, resolution, customerCents, costCents] of [
+    ['draft', '480p', 58, 41.088], ['final', '1080p', 294, 227.448],
+  ] as const) {
+    const ctx = context('seedance-2-5', { workflowStep, resolution, aspectRatio: '1:1', durationSec: 4 });
+    const { billing, state } = selected(ctx, customerCents);
+    const resolved = resolveCustomerTariffQuote({ context: ctx, facts: billing.facts, state, at })!;
+    assert.equal(resolved.quote.customerTotalCents, customerCents);
+    assert.equal(resolved.quote.breakdown.vendorSubtotalExactCents, costCents);
+    assert.equal(resolved.supplierCost?.kind, 'published_list_estimate');
+    const below = selected(ctx, Math.floor(costCents));
+    assert.throws(() => resolveCustomerTariffQuote({ context: ctx, facts: below.billing.facts, state: below.state, at }),
+      error => error instanceof ManualTariffError && error.code === 'below_cost');
+  }
+});
