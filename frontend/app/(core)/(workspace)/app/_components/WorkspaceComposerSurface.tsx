@@ -5,7 +5,7 @@ import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
-import type { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
+import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
@@ -71,7 +71,7 @@ type WorkflowCopy = {
 };
 
 type WorkspaceComposerSurfaceProps = {
-  localDraftPreview?: ReturnType<typeof useSeedanceDraftLocalPreview>;
+  localDraftPreview?: SeedanceDraftControls;
   selectedEngine: EngineCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
@@ -642,7 +642,7 @@ export function WorkspaceComposerSurface({
                   : 'Draft : première version en 480p. Si elle vous convient, finalisez-la en 1080p avec un supplément. Deux générations distinctes.'
                 : 'Activez Draft pour préparer une version 480p à finaliser ensuite en 1080p. Une vidéo 480p classique ne permet pas cette finalisation.'}
             </p>
-            <p className="mt-1 text-[10px] text-text-muted">Prototype local · aucune génération ni facturation · prix classiques de référence, tarifs Draft et final à valider.</p>
+            <p className="mt-1 text-[10px] text-text-muted">{localDraftPreview.live ? 'Parcours local · tarifs Draft et final séparés dans l’admin.' : 'Prototype local · aucune génération ni facturation · prix classiques de référence, tarifs Draft et final à valider.'}</p>
           </div>
         ) : undefined}
         settingsBar={

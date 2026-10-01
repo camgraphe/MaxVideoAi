@@ -24,9 +24,11 @@ import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 export default function AppClientPage({
   initialPreviewGroup = null,
   localSeedanceDraftPreview = false,
+  localSeedanceDraftWorkflow = false,
 }: {
   initialPreviewGroup?: VideoGroup | null;
   localSeedanceDraftPreview?: boolean;
+  localSeedanceDraftWorkflow?: boolean;
 }) {
   const app = useWorkspaceAppBootstrap();
   const confirmedAccount =
@@ -300,6 +302,7 @@ export default function AppClientPage({
     <>
       {loadState}
       <WorkspaceAppReadyView
+        localSeedanceDraftWorkflow={localSeedanceDraftWorkflow}
         localSeedanceDraftPreview={localSeedanceDraftPreview}
         suspended={Boolean(loadState)}
         activeDraft={activeDraft}

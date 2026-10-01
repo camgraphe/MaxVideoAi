@@ -1,5 +1,6 @@
 'use client';
 
+import { SeedanceDraftFinalAction } from '@/components/library/SeedanceDraftFinalAction.client';
 import { ArrowLeft, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, Layers3, MoreHorizontal, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
@@ -797,6 +798,7 @@ export function TimelineProjectSidebar({
                 thumbnailUrl={thumbnailUrl}
                 title={node.data.title}
               />
+              {process.env.NODE_ENV === 'development' && node.data.output?.jobId ? <SeedanceDraftFinalAction jobId={node.data.output.jobId} /> : null}
             </div>
           );
         })}

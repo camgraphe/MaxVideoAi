@@ -1,8 +1,8 @@
 'use client';
 
-import type { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
+import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 
-type Props = { preview: ReturnType<typeof useSeedanceDraftLocalPreview> };
+type Props = { preview: SeedanceDraftControls };
 
 export function SeedanceDraftLocalPreviewMode({ preview }: Props) {
   if (!preview.available) return null;

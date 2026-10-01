@@ -4,9 +4,9 @@
 
 This continuation implements real server orchestration for one text-to-video
 Draft 480p and a separately paid final 1080p, retaining the previously approved
-workspace checkbox. The existing preview remains a simulation until creator
-controls are connected and the local workflow is explicitly enabled. Production
-execution is unavailable through the local gate.
+workspace checkbox. Creator controls are wired behind the explicit local gate;
+`draftPreview=1` continues to show the approved simulation. Production execution
+is unavailable through that gate.
 
 `seedance-workflow-request.ts` resolves an owned MaxVideoAI Draft job before a
 final quote, rejects unsupported/client provider identifiers and inherits its
@@ -55,8 +55,11 @@ use the existing admin preview/confirmation path.
 
 ## Remaining release gates
 
-- Connect the approved workspace UI, owned library and Studio actions to the real
-  quote/job path; retain deliberate MCP exclusion until separately supported.
+- Authenticated browser smoke of the real quote/job path in workspace, library
+  and Studio. The shared action has DOM coverage for separate price confirmation,
+  retained outputs and expiry. The current local admin cookie is not a creator
+  session and does not authorize workflow quotes. Keep deliberate MCP exclusion
+  until separately supported.
 - Bounded paid account canaries for Draft, final, cancellation, storage and
   failure/refund after a successful Draft, with an approved budget.
 - Verify the contract's console activation immediately before any push, as
@@ -66,6 +69,25 @@ use the existing admin preview/confirmation path.
 
 No production write, provider job, email, push or deployment is performed by
 this local implementation.
+
+## Creator ownership
+
+The workspace hook obtains a separate canonical Draft quote, locks 480p and
+persists the application job ID before dispatch in an account-scoped storage key.
+An ambiguous response or reload recovers that same attempt; neither starts a new
+paid task automatically. An explicit new Draft action is available only after a
+known terminal state.
+
+The shared library/Studio action receives only an owned application job ID. Its
+read-only route returns settings, historical paid amounts, expiry and linked
+output eligibility. A final quote uses the original settings server-side and a
+fresh tariff revision. The user confirms the additional charge after seeing the
+already paid Draft, final surcharge and combined total. Both application job
+links remain accessible. Status tracking polls both owned jobs through the
+existing job route. Late session reads cannot revive a logged-out account.
+
+MCP intentionally excludes both workflow steps from its public preparation
+schema. A normal 480p generation remains distinct from a Draft task.
 
 ## Local verification checkpoint
 

@@ -1,5 +1,8 @@
 'use client';
 
+import { useSeedanceDraftWorkflow } from '../_hooks/useSeedanceDraftWorkflow';
+import { SeedanceDraftFinalAction } from '@/components/library/SeedanceDraftFinalAction.client';
+import { Button } from '@/components/ui/Button';
 import { useMemo } from 'react';
 import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
 import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
@@ -33,6 +36,7 @@ const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client
 
 type WorkspaceAppReadyViewProps = {
   localSeedanceDraftPreview?: boolean;
+  localSeedanceDraftWorkflow?: boolean;
   suspended: boolean;
   activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -52,6 +56,7 @@ type WorkspaceAppReadyViewProps = {
 
 export function WorkspaceAppReadyView({
   localSeedanceDraftPreview = false,
+  localSeedanceDraftWorkflow = false,
   suspended,
   activeDraft,
   app,
@@ -242,6 +247,12 @@ export function WorkspaceAppReadyView({
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt,
     onResolutionChange: handleResolutionChange, showNotice,
   });
+  const workflowAccount = app.authStatus === 'authed' && app.user?.id && app.session?.access_token
+    ? { userId: app.user.id, token: app.session.access_token } : null;
+  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: localSeedanceDraftWorkflow && !localSeedanceDraftPreview,
+    form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
+    onResolutionChange: handleResolutionChange, showNotice });
+  const draftControls = localSeedanceDraftPreview ? draftPreview : localSeedanceDraftWorkflow ? draftWorkflow : undefined;
   if (suspended || !selectedEngine || !form) return null;
 
   return (
@@ -288,7 +299,7 @@ export function WorkspaceAppReadyView({
         handleEngineChange={modelReview.switchModel}
         modelReviewCommands={
           <>
-            {draftPreview.selected ? (
+            {draftControls?.selected ? (
               <div className="relative">
                 <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-[var(--app-accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--app-accent)]">Mode Draft</span>
                 <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
@@ -305,7 +316,7 @@ export function WorkspaceAppReadyView({
         setViewerTarget={setViewerTarget}
         composerSurface={
           <WorkspaceComposerSurface
-            localDraftPreview={localSeedanceDraftPreview ? draftPreview : undefined}
+            localDraftPreview={draftControls}
             selectedEngine={selectedEngine}
             form={form}
             setForm={setForm}
@@ -313,14 +324,14 @@ export function WorkspaceAppReadyView({
             setPrompt={setPrompt}
             negativePrompt={negativePrompt}
             setNegativePrompt={setNegativePrompt}
-            price={price}
-            currency={currency}
-            isPricing={isPricing}
-            isSubmitting={generation.isSubmitting}
-            preflightError={preflightError}
-            preflight={preflight}
+            price={draftWorkflow.selected ? draftWorkflow.price : price}
+            currency={draftWorkflow.selected ? draftWorkflow.currency : currency}
+            isPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
+            isSubmitting={generation.isSubmitting || draftWorkflow.pending}
+            preflightError={draftWorkflow.selected ? draftWorkflow.error ?? undefined : preflightError}
+            preflight={draftWorkflow.selected ? draftWorkflow.preflight : preflight}
             composerRef={composerRef}
-            startRender={localSeedanceDraftPreview ? draftPreview.generate : generation.startRender}
+            startRender={localSeedanceDraftPreview ? draftPreview.generate : draftWorkflow.selected ? draftWorkflow.generate : generation.startRender}
             inputSchemaSummary={inputSchemaSummary}
             inputAssets={inputAssets}
             isUnifiedSeedance={isUnifiedSeedance}
@@ -386,7 +397,10 @@ export function WorkspaceAppReadyView({
             setViewMode={setViewMode}
           />
         }
-        previewSupplement={<SeedanceDraftLocalPreviewResult preview={draftPreview} />}
+        previewSupplement={draftWorkflow.selected && draftWorkflow.draftId ? <div>
+          <SeedanceDraftFinalAction jobId={draftWorkflow.draftId} locale={uiLocale} account={workflowAccount} />
+          <Button size="sm" variant="outline" disabled={draftWorkflow.pending || !draftWorkflow.view || ['pending', 'finalizing', 'unavailable'].includes(draftWorkflow.view.eligibility)} onClick={draftWorkflow.restart}>Nouveau Draft</Button>
+        </div> : <SeedanceDraftLocalPreviewResult preview={draftPreview} />}
       />}
       </WorkspaceRecentReferences>
       {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}

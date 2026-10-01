@@ -19,6 +19,8 @@ import { customerTariffRequestHeaders, notifyCustomerPricingRefresh } from '@/li
 type PrimitiveValue = string | number | boolean | null | undefined;
 
 type GeneratePayload = {
+  jobId?: string;
+  seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engineId: string;
   prompt: string;
   durationSec?: number;
