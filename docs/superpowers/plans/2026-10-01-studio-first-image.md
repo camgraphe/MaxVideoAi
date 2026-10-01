@@ -61,7 +61,7 @@
 - [x] Run tests; expected the new client contract fails.
 - [x] Implement the pilot chat with the accepted charcoal/olive direction and app shell; keep the existing local timeline prototype available.
 - [x] Run TypeScript, lint, relevant contract suites and browser desktop/mobile verification.
-- [ ] Final handoff: prepare a bounded live image quote; provider execution requires its explicit approval.
+- [x] Final handoff: prepare a bounded live image quote; provider execution requires its explicit approval. One approved 0.06 USD Flare text-to-image completed via the existing MCP and recovered the same saved job. Native real-client-session rollout remains gated.
 - [x] Update the guide with exact gates, migration and remaining limits; perform a fresh branch review, fix material findings and commit.
 
 Self-review: Task 1 scopes are consumed by Task 2; Task 2 public results are consumed by Task 3. Later video/audio/orchestration/editor replacement lots remain outside this plan. The user already approved execution; proceed inline without another planning gate.
