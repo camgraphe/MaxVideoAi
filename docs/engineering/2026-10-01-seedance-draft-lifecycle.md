@@ -175,3 +175,19 @@ refunded, the paid Draft remains ready, and a terminal poll repeats no copy.
 These storage checks simulate the external copy boundary; they are not a live
 storage canary. Broad validation of this continuation is recorded separately
 after completion.
+
+The later supplier audit also corrected normal video-input estimates to include
+verified source duration and the published minimums (all 531 table rows checked).
+Mini's current trial funding is 18 cents for wide/portrait and 17 cents square;
+accepted historical 17/10-cent quotes remain readable without changing old funding.
+Migrations 53/59/60 and the normal manual cutover remain explicitly owned operations,
+never request-time read bootstrap.
+
+At `875adb83b`, the fresh environment-free optimized build, TypeScript/lint,
+registry and unchanged 178 billing/577 public baselines pass; isolated Studio HTTP
+tests pass 4/4. Standard tests ran 6,710: 6,703 pass, four obsolete source-fact
+assertions fail, three skip. Those assertions are corrected and the focused media
+and supplier-minimum checks pass 10/10; a complete rerun after fixture-only fixes
+is not claimed. Fresh main alignment/rebase is now `d10ad458743aef68e6e9be12cad9c611f06077b8`.
+The normal video-input retail supplement, authenticated browser/storage acceptance
+and pre-push contract activation check remain open release gates.

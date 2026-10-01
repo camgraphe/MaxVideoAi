@@ -43,7 +43,7 @@ Continuous tariffs cover their explicitly displayed quantity domain. “Preserve
 keeps the captured original rounding; entering new unit rates replaces it across
 that domain with the documented upward rounding.
 
-## Actual persistent local cutover
+## Initial persistent local cutover
 
 Activation code: `24ad70c3f5e0c1e6c3a1521ad48620e271cd4b10`.
 Base `main`, local `main`, `origin/main`, and fresh remote `main` query:
@@ -150,11 +150,41 @@ verification above supplies the local functional gates only.
   separate production authorization and verify public/admin/client surfaces.
 - The approved local admin session is used for review; the separate localhost
   Google OAuth callback problem is not resolved by this pricing work.
-- Seedance Draft remains an unpublished 480p → optional 1080p final foundation.
-  The [local visual preview](2026-10-01-seedance-draft-local-ui-preview.md) now
-  places the option and simulated final confirmation in the real `/app` workspace.
-  Connecting quotes, charging, polling, refunds and creator controls, plus direct
-  provider canaries and post-release SEO/GEO monitoring, remain separate gates.
+- Seedance Draft's independent quotes, charging, polling, atomic refunds and
+  creator controls are implemented locally. One explicitly authorized minimum
+  provider Draft/final pair succeeded. Authenticated creator/library/Studio
+  browser smoke, app-owned live storage, cancellation and production publication
+  remain separate gates. See the [dated lifecycle evidence](2026-10-01-seedance-draft-lifecycle.md).
+- Seedance normal video-input tariffs still need an explicit duration-dependent
+  customer supplement. The [supplier audit](2026-10-01-supplier-estimate-audit.md)
+  found 1,596 rejected below-cost stress cases; corrected supplier accounting
+  alone does not reconcile retail prices or certify these modes for release.
 
-No production database write, provider job, payment, storage/email/support action,
-push, merge or deployment was performed. The review worktree and branch are kept.
+No production application database write, push, merge or deployment was performed.
+The initial cutover above made no provider job, payment or email/support action;
+the later explicitly authorized provider pair is recorded in the lifecycle guide.
+The review worktree and branch are kept.
+
+## Later October 1 checkpoint
+
+The branch was rebased onto `d10ad458743aef68e6e9be12cad9c611f06077b8`;
+local `main` and freshly fetched `origin/main` matched that commit. The private
+sandbox now has 14,982 cells (324 separate workflow cells), revision 328. Its
+20,437 supported quotes resolve through manual tariffs without legacy fallback.
+These numbers supersede the earlier inventory, not its historical activation event.
+
+The factual supplier audit counts verified input plus output duration and video
+minimums for Seedance; Wan's missing/partial-usage poll fallback now preserves its
+immutable verified input duration and never labels LIST as account-effective cost.
+Historical receipts and authored customer cents remain unchanged.
+
+Environment-free snapshot `875adb83b` builds successfully (920 static pages),
+passes TypeScript, frontend/exposure lint, registry and both unchanged billing/public
+baselines, and passes all four isolated Studio HTTP tests. Its standard suite
+ran 6,710 tests: 6,703 passed, four failed, three skipped. All four failures were
+outdated assertions for newly required source-duration facts; the missing-token
+fixture was corrected separately and the three media response contracts now
+assert the server-resolved references. The focused source-fact/minimum regression
+group passes 10 tests, zero failures or skips. The complete standard suite has not
+been rerun after these fixture-only corrections. Browser integration and actual
+account invoice reconciliation are not certified by these checks.

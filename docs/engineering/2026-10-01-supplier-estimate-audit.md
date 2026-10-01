@@ -67,6 +67,18 @@ allowance. Seedance 2.0, 4-second 16:9 480p output with a 15-second source, is
 **$0.68** retail against **$0.820595** cost; its corresponding floor is **$0.83**.
 These proposed floors have not been applied.
 
+The earlier high apparent margin omitted source-video consumption. For the same
+Seedance 2.0 reference-to-video 4s/480p/16:9 variant, the stored $0.68 customer
+price has $0.302324 estimated cost with 2s input (55.5% estimated gross margin),
+but $0.820595 with 15s input (-$0.140595). It does not mean a customer actually
+paid that insufficient price: the local canonical guard rejects that second case.
+The signed terms give no discount for Standard/2.5; Mini/Fast's 60%/50% discounts
+remain independent. On the same 15s-input/4s-output scenario, Mini's $0.34 retail
+against $0.160302 contract estimate and Fast's $0.54 against $0.314879 remain
+positive. Costs here exclude payment/operating fees and taxes, and are estimates.
+Adrien selected preserving each variant's positive margin for the subsequent
+local input-supplement correction; no new tariff has yet been applied by this audit.
+
 Release work: author an explicit input-video tariff/supplement per model and
 variant, expose its real source duration in the admin, preserve separate LIST and
 contract evidence, and verify the complete continuous input domain. A single fixed
