@@ -1,8 +1,116 @@
-import type {ReactNode} from 'react';import {Clapperboard,Grid2X2,Images,WandSparkles,ListChecks,UserRound,Menu,Plus,Settings2,ChevronDown} from 'lucide-react';import type {Project} from '../../shared/types';
-export type Panel='projects'|'library'|'tools'|'activity'|'settings'|'about'|null;
-export function Shell({children,project,panel,onPanel,onNew}:{children:ReactNode;project?:Project;panel:Panel;onPanel:(p:Panel)=>void;onNew:()=>void}){
- const links=[['Créer',Grid2X2,'new'],['Médias',Images,'library'],['Outils',WandSparkles,'tools'],['Studio',Clapperboard,null],['Activité',ListChecks,'activity']] as const;
- return <div className="app-shell"><header className="app-top"><a className="brand" href="/" aria-label="MaxVideoAI Studio"><span className="brand-mark">M</span><span>MaxVideoAI</span></a><button className="icon-button shell-menu" onClick={()=>onPanel('projects')} aria-label="Ouvrir mes projets"><Menu size={18}/></button><span className="local-indicator"><span/> Local · Démonstration</span><button className="icon-button" onClick={()=>onPanel('about')} aria-label="À propos du prototype"><UserRound size={20}/></button></header>
- <nav className="sidebar" aria-label="Navigation de l’application">{links.map(([label,Icon,p])=><button key={label} className={p===panel?'nav-item active':'nav-item'} onClick={()=>p==='new'?onNew():onPanel(p)} aria-label={label}><Icon size={21}/><span>{label}</span></button>)}<button className="nav-item account" onClick={()=>onPanel('about')}><UserRound size={20}/><span>Compte</span></button></nav>
- <main className="studio-main"><div className="studio-heading"><h1>Studio</h1><button className="project-name" onClick={()=>onPanel('projects')}>{project?.title??'Votre prochain film'}<ChevronDown size={13}/></button><div className="heading-actions"><span className="saved">{project?'Sauvegardé en local':''}</span><button className="icon-button" onClick={onNew} aria-label="Nouveau projet"><Plus size={18}/></button><button className="icon-button" onClick={()=>onPanel('settings')} aria-label="Paramètres du projet"><Settings2 size={18}/></button></div></div>{children}</main></div>;
+import type { ReactNode } from "react";
+import {
+  Clapperboard,
+  Grid2X2,
+  Images,
+  WandSparkles,
+  ListChecks,
+  UserRound,
+  Menu,
+  Plus,
+  Settings2,
+  ChevronDown,
+} from "lucide-react";
+import type { Project } from "../../shared/types";
+export type Panel =
+  | "projects"
+  | "library"
+  | "tools"
+  | "activity"
+  | "settings"
+  | "about"
+  | null;
+export function Shell({
+  children,
+  project,
+  panel,
+  onPanel,
+  onNew,
+}: {
+  children: ReactNode;
+  project?: Project;
+  panel: Panel;
+  onPanel: (p: Panel) => void;
+  onNew: () => void;
+}) {
+  const links = [
+    ["Créer", Grid2X2, "new"],
+    ["Médias", Images, "library"],
+    ["Outils", WandSparkles, "tools"],
+    ["Studio", Clapperboard, null],
+    ["Activité", ListChecks, "activity"],
+  ] as const;
+  return (
+    <div className="app-shell">
+      <header className="app-top">
+        <a className="brand" href="/" aria-label="MaxVideoAI Studio">
+          <span className="brand-mark">M</span>
+          <span>MaxVideoAI</span>
+        </a>
+        <button
+          className="icon-button shell-menu"
+          onClick={() => onPanel("projects")}
+          aria-label="Ouvrir mes projets"
+        >
+          <Menu size={18} />
+        </button>
+        <span className="local-indicator">
+          <span /> Local · Démonstration
+        </span>
+        <button
+          className="icon-button"
+          onClick={() => onPanel("about")}
+          aria-label="À propos du prototype"
+        >
+          <UserRound size={20} />
+        </button>
+      </header>
+      <nav className="sidebar" aria-label="Navigation de l’application">
+        {links.map(([label, Icon, p]) => (
+          <button
+            key={label}
+            className={p === panel ? "nav-item active" : "nav-item"}
+            onClick={() => (p === "new" ? onNew() : onPanel(p))}
+            aria-label={label}
+          >
+            <Icon size={21} />
+            <span>{label}</span>
+          </button>
+        ))}
+        <button className="nav-item account" onClick={() => onPanel("about")}>
+          <UserRound size={20} />
+          <span>Compte</span>
+        </button>
+      </nav>
+      <main className="studio-main">
+        <div className="studio-heading">
+          <h1>Studio</h1>
+          <button className="project-name" onClick={() => onPanel("projects")}>
+            {project?.title ?? "Votre prochain film"}
+            <ChevronDown size={13} />
+          </button>
+          <div className="heading-actions">
+            <span className="saved">
+              {project ? "Sauvegardé en local" : ""}
+            </span>
+            <button
+              className="icon-button"
+              onClick={onNew}
+              aria-label="Nouveau projet"
+            >
+              <Plus size={18} />
+            </button>
+            <button
+              className="icon-button"
+              onClick={() => onPanel("settings")}
+              aria-label="Paramètres du projet"
+            >
+              <Settings2 size={18} />
+            </button>
+          </div>
+        </div>
+        {children}
+      </main>
+    </div>
+  );
 }

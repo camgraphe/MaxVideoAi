@@ -1,6 +1,6 @@
 # Studio Local Prototype Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Livrer un prototype local utilisable du Studio conversationnel, depuis le brief jusqu'au MP4, avec un tronc commun d'editing pour UI, chat et MCP.
 
@@ -37,10 +37,10 @@
 - Produces `Project`, `Asset`, `Clip`, `Job`, `CommandRequest`, `CommandResult`.
 - Produces `sequenceDuration(project): number`, `editSequence(project, command): Project`, `ProjectStore.create/get/update/list` and `CommandService.execute(projectId, request): Promise<CommandResult>`.
 
-- [ ] Écrire les contrats de coupe bornée, ordre et changement de fps, undo/redo et refus des entrées invalides ; constater leur échec avant implémentation.
-- [ ] Implémenter les règles avec les conversions de frames de Studio et verrouiller 1 s minimum, 24/30 fps, sources mesurées.
-- [ ] Tester persistance, mutation concurrente, request ID rejoué et payload changé, révision stale ; implémenter stockage atomique et commandes communes.
-- [ ] Exécuter `npm test -- tests/domain.test.ts tests/commands.test.ts` : tous les cas passent ; commit sur la branche isolée.
+- [x] Écrire les contrats de coupe bornée, ordre et changement de fps, undo/redo et refus des entrées invalides ; constater leur échec avant implémentation.
+- [x] Implémenter les règles avec les conversions de frames de Studio et verrouiller 1 s minimum, 24/30 fps, sources mesurées.
+- [x] Tester persistance, mutation concurrente, request ID rejoué et payload changé, révision stale ; implémenter stockage atomique et commandes communes.
+- [x] Exécuter `npm test -- tests/domain.test.ts tests/commands.test.ts` : tous les cas passent ; commit sur la branche isolée.
 
 ### Task 2: Real Media and Resumable Jobs
 
@@ -51,10 +51,10 @@
 - Produces `probeMedia(path)`, `renderAnimation(input, output, options, signal, progress)`, `renderSequence(snapshot, output, signal, progress)` et `JobRunner.start/stop`.
 - HTTP produit `/api/projects`, `/api/projects/:id`, `/commands`, `/import`, `/media` et `/health` ; aucun chemin arbitraire ou média distant.
 
-- [ ] Tester reprise d'une tâche, annulation et identité des sorties ; implémenter queue persistante et merge protégé par révision.
-- [ ] Tester MP4 réel de deux sources avec coupe : durée à une frame près, dimensions et audio mixé attendus, plus un rendu audio seul ; implémenter FFmpeg asynchrone et progression mesurée.
-- [ ] Implémenter import avec métadonnées réelles, original et aperçu ; livrer les médias avec Range et les erreurs explicites.
-- [ ] Exécuter `npm test -- tests/jobs.test.ts tests/render.test.ts` : tous les cas passent ; commit.
+- [x] Tester reprise d'une tâche, annulation et identité des sorties ; implémenter queue persistante et merge protégé par révision.
+- [x] Tester MP4 réel de deux sources avec coupe : durée à une frame près, dimensions et audio mixé attendus, plus un rendu audio seul ; implémenter FFmpeg asynchrone et progression mesurée.
+- [x] Implémenter import avec métadonnées réelles, original et aperçu ; livrer les médias avec Range et les erreurs explicites.
+- [x] Exécuter `npm test -- tests/jobs.test.ts tests/render.test.ts` : tous les cas passent ; commit.
 
 ### Task 3: Director and MCP Editing
 
@@ -64,9 +64,9 @@
 - Consumes `CommandService.execute` ; aucune logique d'édition alternative dans les adaptateurs.
 - Produces `respond(projectId, text, context): Promise<CommandResult>` et `handleMcp(request): Promise<JSONRPCResponse>` sur `/mcp`.
 
-- [ ] Tester demandes en français, contexte sélectionné, intention inconnue et absence de succès inventé ; implémenter le directeur simulé.
-- [ ] Tester découverte, lecture, coupe et déplacement par MCP ; comparer leur état à la même commande UI/chat, notamment stale revision et request ID répété.
-- [ ] Exécuter `npm test -- tests/director.test.ts tests/mcp.test.ts` : tous les cas passent ; commit.
+- [x] Tester demandes en français, contexte sélectionné, intention inconnue et absence de succès inventé ; implémenter le directeur simulé.
+- [x] Tester découverte, lecture, coupe et déplacement par MCP ; comparer leur état à la même commande UI/chat, notamment stale revision et request ID répété.
+- [x] Exécuter `npm test -- tests/director.test.ts tests/mcp.test.ts` : tous les cas passent ; commit.
 
 ### Task 4: Usable Conversation, Media and Timeline
 
@@ -76,10 +76,10 @@
 - Consumes HTTP Project snapshots et commandes typées.
 - Produces UI sauvegardée/reprise, références/pins locaux, brouillons de geste suivis d'une commande versionnée, lecture réelle cohérente avec les clips.
 
-- [ ] Construire les surfaces depuis les références et tokens : empty, conversation, génération, prêt, reprise, erreur, bibliothèque, paramètres, export.
-- [ ] Relier chaque contrôle à une fonction locale concrète ; supporter import image/vidéo/audio, voix/ambiance locale et lecteurs dans le chat, moniteur compact, référence/variation/animation, insertion/remplacement, ordre/coupe, undo/redo, paramètres et export.
-- [ ] Vérifier dans le navigateur la fin des gestes, la lecture aux coupes, l'historique et le champ stable, les états pending/failed et les contrôles accessibles sur mobile.
-- [ ] Exécuter `npm run build` et `npm test` : TS/build et tous les contrats passent ; commit.
+- [x] Construire les surfaces depuis les références et tokens : empty, conversation, génération, prêt, reprise, erreur, bibliothèque, paramètres, export.
+- [x] Relier chaque contrôle à une fonction locale concrète ; supporter import image/vidéo/audio, voix/ambiance locale et lecteurs dans le chat, moniteur compact, référence/variation/animation, insertion/remplacement, ordre/coupe, undo/redo, paramètres et export.
+- [x] Vérifier dans le navigateur la fin des gestes, la lecture aux coupes, l'historique et le champ stable, les états pending/failed et les contrôles accessibles sur mobile.
+- [x] Exécuter `npm run build` et `npm test` : TS/build et tous les contrats passent ; commit.
 
 ### Task 5: End-to-End Handoff and Review
 
@@ -87,8 +87,8 @@
 
 **Interfaces:** Consumes l'app complète ; produit commandes de lancement, preuve de MP4/persistance/parité MCP et limites précises de promotion vers Studio.
 
-- [ ] Tester le parcours HTTP complet, export/probe, restart/reprise, import invalide, édition pendant génération et export immuable.
-- [ ] Inspecter desktop 1672×941 et mobile 390/320 ; comparer la référence et la capture courante avec view_image, consigner ≥5 points de fidélité et les écarts intentionnels.
-- [ ] Exécuter `npm test`, `npm run build`, `npm run lint:exposure` depuis la racine et `git diff --check` ; résultats attendus verts, sinon réparer/report explicite.
+- [x] Tester le parcours HTTP complet, export/probe, restart/reprise, import invalide, édition pendant génération et export immuable.
+- [x] Inspecter desktop 1672×941 et mobile 390/320 ; comparer la référence et la capture courante avec view_image, consigner ≥5 points de fidélité et les écarts intentionnels.
+- [x] Exécuter `npm test`, `npm run build`, `npm run lint:exposure` depuis la racine et `git diff --check` ; résultats attendus verts, sinon réparer/report explicite.
 - [ ] Faire une revue indépendante du prototype selon le spec, les tests et Review Focus, traiter ses problèmes matériels puis relancer les vérifications concernées.
 - [ ] Ouvrir le prototype local dans Codex, laisser le serveur prêt pour l'utilisateur et fournir l'URL, les limites du bot simulé et les fichiers utiles. Aucune fusion/push/déploiement.

@@ -1,7 +1,174 @@
-import {useState} from 'react';import {Search,Plus,Pin,Clapperboard,Replace,Image as ImageIcon,AudioLines,Download} from 'lucide-react';import type {Asset,Project,Command} from '../../shared/types';import {AssetResult} from './AssetResult.client';import {mediaUrl} from '../hooks/useStudio';
-export function MediaLibrary({project,onSelect,onAdd,onReference,onCommand,selectedClip,onUpload}:{project:Project;onSelect:(a:Asset)=>void;onAdd:(a:Asset,track?:'voice'|'music')=>void;onReference:(a:Asset)=>void;onCommand:(c:Command)=>void;selectedClip?:string;onUpload:()=>void}){
- const [query,setQuery]=useState(''),[kind,setKind]=useState('all'),[duration,setDuration]=useState(8),[motion,setMotion]=useState<'gentle'|'pan'|'still'>('gentle');
- const assets=project.assets.filter(a=>(kind==='all'||a.kind===kind)&&a.name.toLowerCase().includes(query.toLowerCase()));
- return <><div className="library-search"><Search size={17}/><input placeholder="Rechercher un média…" aria-label="Rechercher dans les médias" value={query} onChange={e=>setQuery(e.target.value)}/><button className="secondary-button" onClick={onUpload}><Plus size={15}/> Importer</button></div><div className="library-tabs">{[['all','Tout'],['image','Images'],['video','Vidéos'],['audio','Audios']].map(([id,name])=><button key={id} className={kind===id?'chosen':''} onClick={()=>setKind(id)}>{name}</button>)}</div><div className="animation-options"><span>Animation locale</span><select aria-label="Mouvement d’animation" value={motion} onChange={e=>setMotion(e.target.value as typeof motion)}><option value="gentle">Mouvement doux</option><option value="pan">Panoramique</option><option value="still">Plan fixe</option></select><label><input aria-label="Durée d’animation" type="number" min="1" max="30" value={duration} onChange={e=>setDuration(Number(e.target.value))}/> s</label></div>
- {!assets.length?<div className="panel-empty"><ImageIcon size={32}/><p>Vos références et vos créations se retrouveront ici.</p><button className="secondary-button" onClick={onUpload}>Ajouter une référence</button></div>:<div className="library-grid">{assets.toReversed().map(a=><article key={a.id} className="library-item"><AssetResult asset={a} project={project} onSelect={onSelect} onAdd={a=>onAdd(a)}/><div className="asset-metadata">{a.kind==='image'?`${a.width} × ${a.height}`:a.duration.toFixed(2)+' s'} · {a.origin==='demo'?'Démo':a.origin==='import'?'Référence':'Local'}</div><div className="library-actions"><button onClick={()=>onReference(a)}><Plus size={13}/> Référence</button>{a.kind==='image'?<button onClick={()=>onCommand({type:'animate',assetId:a.id,duration,motion})}><Clapperboard size={13}/> Animer</button>:<button onClick={()=>onAdd(a)}><Plus size={13}/> {a.kind==='audio'?'Voix':'Montage'}</button>}{a.kind==='audio'&&<button onClick={()=>onAdd(a,'music')}>Ambiance</button>}{a.kind==='video'&&selectedClip&&<button onClick={()=>onCommand({type:'replace',clipId:selectedClip,assetId:a.id})}><Replace size={13}/> Remplacer</button>}<a href={mediaUrl(project.id,a.id,'original')+'&download=1'} download><Download size={13}/> Original</a></div></article>)}</div>}</>;
+import { useState } from "react";
+import {
+  Search,
+  Plus,
+  Pin,
+  Clapperboard,
+  Replace,
+  Image as ImageIcon,
+  AudioLines,
+  Download,
+} from "lucide-react";
+import type { Asset, Project, Command } from "../../shared/types";
+import { AssetResult } from "./AssetResult.client";
+import { mediaUrl } from "../hooks/useStudio";
+export function MediaLibrary({
+  project,
+  onSelect,
+  onAdd,
+  onReference,
+  onCommand,
+  selectedClip,
+  onUpload,
+}: {
+  project: Project;
+  onSelect: (a: Asset) => void;
+  onAdd: (a: Asset, track?: "voice" | "music") => void;
+  onReference: (a: Asset) => void;
+  onCommand: (c: Command) => void;
+  selectedClip?: string;
+  onUpload: () => void;
+}) {
+  const [query, setQuery] = useState(""),
+    [kind, setKind] = useState("all"),
+    [duration, setDuration] = useState(8),
+    [motion, setMotion] = useState<"gentle" | "pan" | "still">("gentle");
+  const assets = project.assets.filter(
+    (a) =>
+      (kind === "all" || a.kind === kind) &&
+      a.name.toLowerCase().includes(query.toLowerCase()),
+  );
+  return (
+    <>
+      <div className="library-search">
+        <Search size={17} />
+        <input
+          placeholder="Rechercher un média…"
+          aria-label="Rechercher dans les médias"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button className="secondary-button" onClick={onUpload}>
+          <Plus size={15} /> Importer
+        </button>
+      </div>
+      <div className="library-tabs">
+        {[
+          ["all", "Tout"],
+          ["image", "Images"],
+          ["video", "Vidéos"],
+          ["audio", "Audios"],
+        ].map(([id, name]) => (
+          <button
+            key={id}
+            className={kind === id ? "chosen" : ""}
+            onClick={() => setKind(id)}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      <div className="animation-options">
+        <span>Animation locale</span>
+        <select
+          aria-label="Mouvement d’animation"
+          value={motion}
+          onChange={(e) => setMotion(e.target.value as typeof motion)}
+        >
+          <option value="gentle">Mouvement doux</option>
+          <option value="pan">Panoramique</option>
+          <option value="still">Plan fixe</option>
+        </select>
+        <label>
+          <input
+            aria-label="Durée d’animation"
+            type="number"
+            min="1"
+            max="30"
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+          />{" "}
+          s
+        </label>
+      </div>
+      {!assets.length ? (
+        <div className="panel-empty">
+          <ImageIcon size={32} />
+          <p>Vos références et vos créations se retrouveront ici.</p>
+          <button className="secondary-button" onClick={onUpload}>
+            Ajouter une référence
+          </button>
+        </div>
+      ) : (
+        <div className="library-grid">
+          {assets.toReversed().map((a) => (
+            <article key={a.id} className="library-item">
+              <AssetResult
+                asset={a}
+                project={project}
+                onSelect={onSelect}
+                onAdd={(a) => onAdd(a)}
+              />
+              <div className="asset-metadata">
+                {a.kind === "image"
+                  ? `${a.width} × ${a.height}`
+                  : a.duration.toFixed(2) + " s"}{" "}
+                ·{" "}
+                {a.origin === "demo"
+                  ? "Démo"
+                  : a.origin === "import"
+                    ? "Référence"
+                    : "Local"}
+              </div>
+              <div className="library-actions">
+                <button onClick={() => onReference(a)}>
+                  <Plus size={13} /> Référence
+                </button>
+                {a.kind === "image" ? (
+                  <button
+                    onClick={() =>
+                      onCommand({
+                        type: "animate",
+                        assetId: a.id,
+                        duration,
+                        motion,
+                      })
+                    }
+                  >
+                    <Clapperboard size={13} /> Animer
+                  </button>
+                ) : (
+                  <button onClick={() => onAdd(a)}>
+                    <Plus size={13} /> {a.kind === "audio" ? "Voix" : "Montage"}
+                  </button>
+                )}
+                {a.kind === "audio" && (
+                  <button onClick={() => onAdd(a, "music")}>Ambiance</button>
+                )}
+                {a.kind === "video" && selectedClip && (
+                  <button
+                    onClick={() =>
+                      onCommand({
+                        type: "replace",
+                        clipId: selectedClip,
+                        assetId: a.id,
+                      })
+                    }
+                  >
+                    <Replace size={13} /> Remplacer
+                  </button>
+                )}
+                <a
+                  href={mediaUrl(project.id, a.id, "original") + "&download=1"}
+                  download
+                >
+                  <Download size={13} /> Original
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </>
+  );
 }

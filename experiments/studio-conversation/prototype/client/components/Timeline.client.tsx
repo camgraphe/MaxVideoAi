@@ -1,17 +1,489 @@
-import {useState} from 'react';import {Play,Pause,Undo2,Redo2,Download,ChevronLeft,ChevronRight,Trash2,GripVertical,Scissors,Volume2,Plus,AudioLines,X} from 'lucide-react';import type {Clip,Command,Project} from '../../shared/types';import {sequenceDuration,videoStart} from '../../shared/timeline';import {mediaUrl} from '../hooks/useStudio';import type {Playback} from '../hooks/usePlayback';
-const stamp=(t:number)=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-export function Timeline({project,playback,selected,onSelect,onCommand,onPlay,onLibrary,onDeselect,busy}:{project:Project;playback:Playback;selected?:string;onSelect:(c:Clip)=>void;onCommand:(c:Command)=>void;onPlay:()=>void;onLibrary:()=>void;onDeselect:()=>void;busy:boolean}){
- const [zoom,setZoom]=useState(14),[open,setOpen]=useState(true),[draft,setDraft]=useState<{id:string;inFrame:number;outFrame:number}|null>(null),[drag,setDrag]=useState<string>();
- const duration=sequenceDuration(project),clip=project.clips.find(c=>c.id===selected),a=project.assets.find(a=>a.id===clip?.assetId),videos=project.clips.filter(c=>c.track==='video');const width=Math.max(300,duration*zoom),fps=project.settings.fps;
- const bounds=clip&&draft?.id===clip.id?draft:clip;
- const commit=()=>{if(draft){onCommand({type:'trim',clipId:draft.id,inFrame:draft.inFrame,outFrame:draft.outFrame});setDraft(null);}};
- const trim=(edge:'inFrame'|'outFrame',value:number)=>{if(!clip||!a)return;const d={id:clip.id,inFrame:bounds!.inFrame,outFrame:bounds!.outFrame};d[edge]=Math.round(value);if(d.outFrame-d.inFrame>=fps&&d.inFrame>=0&&d.outFrame<=Math.floor(a.duration*fps))setDraft(d);};
- return <section className={'timeline '+(open?'':'collapsed')} aria-label="Montage"><div className="timeline-toolbar"><button className="timeline-title" onClick={()=>setOpen(!open)}><Scissors size={14}/> Montage <span>{project.clips.length?stamp(duration):'Votre film se construit ici'}</span></button><div className="timeline-tools"><button className="icon-button" disabled={!project.undo.length||busy} onClick={()=>onCommand({type:'undo'})} aria-label="Annuler"><Undo2 size={16}/></button><button className="icon-button" disabled={!project.redo.length||busy} onClick={()=>onCommand({type:'redo'})} aria-label="Rétablir"><Redo2 size={16}/></button><label className="zoom-control">Zoom<input aria-label="Zoom de la timeline" type="range" min="6" max="40" value={zoom} onChange={e=>setZoom(Number(e.target.value))}/></label><button className="export-button" disabled={!project.clips.length||busy} onClick={()=>onCommand({type:'export'})}><Download size={14}/> Exporter</button></div></div>
- {open&&<><div className="timeline-body"><button className="timeline-play" disabled={!duration} onClick={onPlay} aria-label={playback.playing?'Pause du montage':'Lire le film'}>{playback.playing?<Pause size={20}/>:<Play size={20} fill="currentColor"/>}</button><div className="tracks-scroll"><div className="tracks" style={{width}}><div className="ruler" onClick={e=>{const r=e.currentTarget.getBoundingClientRect();playback.seek((e.clientX-r.left)/zoom);}}>{Array.from({length:Math.ceil(Math.max(20,duration)/10)+1},(_,i)=><span key={i} style={{left:i*10*zoom}}>{stamp(i*10)}</span>)}</div>
- <div className="video-lane">{videos.map(c=>{const asset=project.assets.find(a=>a.id===c.assetId)!;return <button key={c.id} className={'timeline-clip '+(selected===c.id?'selected':'')} style={{width:(c.outFrame-c.inFrame)/fps*zoom}} draggable={!busy} onDragStart={()=>setDrag(c.id)} onDragEnd={()=>setDrag(undefined)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(drag&&drag!==c.id)onCommand({type:'move',clipId:drag,index:videos.indexOf(c)});setDrag(undefined);}} onClick={()=>{setDraft(null);onSelect(c);}} aria-label={'Sélectionner le plan '+asset.name}><img src={mediaUrl(project.id,asset.id,'poster')} alt=""/><span className="clip-label"><GripVertical size={12}/>{asset.name}</span><span className="clip-duration">{((c.outFrame-c.inFrame)/fps).toFixed(1)} s</span></button>;})}{!videos.length&&<button className="empty-lane" onClick={onLibrary}><Plus size={15}/> Ajoutez un plan animé ou une vidéo</button>}</div>
- {(['voice','music'] as const).map(track=>{const clips=project.clips.filter(c=>c.track===track);return clips.length?<div className={'audio-lane '+track} key={track}>{clips.map(c=>{const asset=project.assets.find(a=>a.id===c.assetId)!;return <button key={c.id} className={'audio-clip '+(selected===c.id?'selected':'')} style={{left:c.startFrame/fps*zoom,width:(c.outFrame-c.inFrame)/fps*zoom}} onClick={()=>{setDraft(null);onSelect(c);}} aria-label={'Sélectionner '+asset.name}><svg viewBox="0 0 256 24" preserveAspectRatio="none" aria-hidden="true">{asset.peaks?.map((n,i)=><line key={i} x1={i*2} x2={i*2} y1={12-n*11} y2={12+n*11}/>)}</svg><span><AudioLines size={12}/>{track==='voice'?'Voix':'Ambiance'}</span></button>;})}</div>:null;})}
- <div className="playhead" style={{left:playback.time*zoom}}><span/></div></div></div><div className="timeline-end">{stamp(duration)}</div></div>
- {clip&&a&&bounds&&<div className="clip-editor" key={clip.id}><div className="clip-editor-name"><Scissors size={13}/><span>{a.name}</span><small>{((bounds.outFrame-bounds.inFrame)/fps).toFixed(2)} s gardées</small></div><label>Début <input type="range" aria-label="Couper le début" min="0" max={Math.floor(a.duration*fps)-fps} step="1" value={bounds.inFrame} onChange={e=>trim('inFrame',Number(e.target.value))} onPointerUp={commit} onKeyUp={commit}/><output>{(bounds.inFrame/fps).toFixed(2)} s</output></label><label>Fin <input type="range" aria-label="Couper la fin" min={fps} max={Math.floor(a.duration*fps)} step="1" value={bounds.outFrame} onChange={e=>trim('outFrame',Number(e.target.value))} onPointerUp={commit} onKeyUp={commit}/><output>{(bounds.outFrame/fps).toFixed(2)} s</output></label><div className="clip-editor-buttons"><button className="icon-button" onClick={onDeselect} aria-label="Fermer les réglages du plan"><X size={15}/></button>{clip.track==='video'?<><button className="icon-button" disabled={videos.indexOf(clip)===0||busy} onClick={()=>onCommand({type:'move',clipId:clip.id,index:videos.indexOf(clip)-1})} aria-label="Déplacer avant"><ChevronLeft size={18}/></button><button className="icon-button" disabled={videos.indexOf(clip)===videos.length-1||busy} onClick={()=>onCommand({type:'move',clipId:clip.id,index:videos.indexOf(clip)+1})} aria-label="Déplacer après"><ChevronRight size={18}/></button></>:<label className="audio-position">Position <input type="number" min="0" max="600" step={1/fps} defaultValue={clip.startFrame/fps} onBlur={e=>{const startFrame=Math.round(Number(e.target.value)*fps);if(startFrame!==clip.startFrame)onCommand({type:'move',clipId:clip.id,startFrame});}}/></label>}<button className="icon-button" disabled={busy} onClick={()=>onCommand({type:'remove',clipId:clip.id})} aria-label="Supprimer du montage"><Trash2 size={16}/></button></div>{clip.track!=='video'&&<label className="volume-control"><Volume2 size={14}/><input aria-label="Volume du son" type="range" min="0" max="1" step="0.01" defaultValue={clip.volume} onPointerUp={e=>onCommand({type:'volume',clipId:clip.id,volume:Number(e.currentTarget.value)})} onKeyUp={e=>onCommand({type:'volume',clipId:clip.id,volume:Number(e.currentTarget.value)})}/></label>}</div>}
- </>}
- </section>;
+import { useState } from "react";
+import {
+  Play,
+  Pause,
+  Undo2,
+  Redo2,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  GripVertical,
+  Scissors,
+  Volume2,
+  Plus,
+  AudioLines,
+  X,
+} from "lucide-react";
+import { ClipTrimHandles } from "./ClipTrimHandles.client";
+import type { Clip, Command, Project } from "../../shared/types";
+import { sequenceDuration, videoStart } from "../../shared/timeline";
+import { mediaUrl } from "../hooks/useStudio";
+import type { Playback } from "../hooks/usePlayback";
+const stamp = (t: number) =>
+  `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+export function Timeline({
+  project,
+  playback,
+  selected,
+  onSelect,
+  onCommand,
+  onPlay,
+  onLibrary,
+  onDeselect,
+  onPreview,
+  busy,
+}: {
+  project: Project;
+  playback: Playback;
+  selected?: string;
+  onSelect: (c: Clip) => void;
+  onCommand: (c: Command, revision?: number) => void;
+  onPlay: () => void;
+  onLibrary: () => void;
+  onDeselect: () => void;
+  onPreview: (c?: Clip, edge?: "inFrame" | "outFrame") => void;
+  busy: boolean;
+}) {
+  const [zoom, setZoom] = useState(14),
+    [open, setOpen] = useState(true),
+    [draft, setDraft] = useState<{
+      id: string;
+      revision: number;
+      inFrame: number;
+      outFrame: number;
+    } | null>(null),
+    [drag, setDrag] = useState<string>();
+  const duration = sequenceDuration(project),
+    clip = project.clips.find((c) => c.id === selected),
+    a = project.assets.find((a) => a.id === clip?.assetId),
+    videos = project.clips.filter((c) => c.track === "video");
+  const width = Math.max(300, duration * zoom),
+    fps = project.settings.fps;
+  const bounds = clip && draft?.id === clip.id ? draft : clip;
+  const commit = () => {
+    if (draft) {
+      onCommand(
+        {
+          type: "trim",
+          clipId: draft.id,
+          inFrame: draft.inFrame,
+          outFrame: draft.outFrame,
+        },
+        draft.revision,
+      );
+      onPreview();
+      setDraft(null);
+    }
+  };
+  const trim = (edge: "inFrame" | "outFrame", value: number) => {
+    if (!clip || !a) return;
+    const d = {
+      id: clip.id,
+      revision: draft?.id === clip.id ? draft.revision : project.revision,
+      inFrame: bounds!.inFrame,
+      outFrame: bounds!.outFrame,
+    };
+    d[edge] = Math.round(value);
+    if (
+      d.outFrame - d.inFrame >= fps &&
+      d.inFrame >= 0 &&
+      d.outFrame <= Math.floor(a.duration * fps)
+    ) {
+      setDraft(d);
+      onPreview({ ...clip, ...d }, edge);
+    }
+  };
+  return (
+    <section
+      className={"timeline " + (open ? "" : "collapsed")}
+      aria-label="Montage"
+    >
+      <div className="timeline-toolbar">
+        <button className="timeline-title" onClick={() => setOpen(!open)}>
+          <Scissors size={14} /> Montage{" "}
+          <span>
+            {project.clips.length
+              ? stamp(duration)
+              : "Votre film se construit ici"}
+          </span>
+        </button>
+        <div className="timeline-tools">
+          <button
+            className="icon-button"
+            disabled={!project.undo.length || busy}
+            onClick={() => onCommand({ type: "undo" })}
+            aria-label="Annuler"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            className="icon-button"
+            disabled={!project.redo.length || busy}
+            onClick={() => onCommand({ type: "redo" })}
+            aria-label="Rétablir"
+          >
+            <Redo2 size={16} />
+          </button>
+          <label className="zoom-control">
+            Zoom
+            <input
+              aria-label="Zoom de la timeline"
+              type="range"
+              min="6"
+              max="40"
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+            />
+          </label>
+          <button
+            className="export-button"
+            disabled={!project.clips.length || busy}
+            onClick={() => onCommand({ type: "export" })}
+          >
+            <Download size={14} /> Exporter
+          </button>
+        </div>
+      </div>
+      {open && (
+        <>
+          <div className="timeline-body">
+            <button
+              className="timeline-play"
+              disabled={!duration}
+              onClick={onPlay}
+              aria-label={
+                playback.playing ? "Pause du montage" : "Lire le film"
+              }
+            >
+              {playback.playing ? (
+                <Pause size={20} />
+              ) : (
+                <Play size={20} fill="currentColor" />
+              )}
+            </button>
+            <div className="tracks-scroll">
+              <div className="tracks" style={{ width }}>
+                <div
+                  className="ruler"
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    playback.seek((e.clientX - r.left) / zoom);
+                  }}
+                >
+                  {Array.from(
+                    { length: Math.ceil(Math.max(20, duration) / 10) + 1 },
+                    (_, i) => (
+                      <span key={i} style={{ left: i * 10 * zoom }}>
+                        {stamp(i * 10)}
+                      </span>
+                    ),
+                  )}
+                </div>
+                <div className="video-lane">
+                  {videos.map((c) => {
+                    const asset = project.assets.find(
+                      (a) => a.id === c.assetId,
+                    )!;
+                    return (
+                      <button
+                        key={c.id}
+                        className={
+                          "timeline-clip " +
+                          (selected === c.id ? "selected" : "")
+                        }
+                        style={{
+                          width:
+                            ((draft?.id === c.id
+                              ? draft.outFrame - draft.inFrame
+                              : c.outFrame - c.inFrame) /
+                              fps) *
+                            zoom,
+                        }}
+                        draggable={!busy}
+                        onDragStart={() => setDrag(c.id)}
+                        onDragEnd={() => setDrag(undefined)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (drag && drag !== c.id)
+                            onCommand({
+                              type: "move",
+                              clipId: drag,
+                              index: videos.indexOf(c),
+                            });
+                          setDrag(undefined);
+                        }}
+                        onClick={() => {
+                          setDraft(null);
+                          onSelect(c);
+                        }}
+                        aria-label={"Sélectionner le plan " + asset.name}
+                      >
+                        <img
+                          src={mediaUrl(project.id, asset.id, "poster")}
+                          alt=""
+                        />
+                        {selected === c.id && (
+                          <ClipTrimHandles
+                            clip={c}
+                            sourceFrames={Math.floor(asset.duration * fps)}
+                            fps={fps}
+                            zoom={zoom}
+                            revision={project.revision}
+                            onDraft={(next, r, edge) => {
+                              setDraft({
+                                id: next.id,
+                                inFrame: next.inFrame,
+                                outFrame: next.outFrame,
+                                revision: r,
+                              });
+                              onPreview(next, edge);
+                            }}
+                            onCommit={(next, r) => {
+                              setDraft(null);
+                              onPreview();
+                              onCommand(
+                                {
+                                  type: "trim",
+                                  clipId: next.id,
+                                  inFrame: next.inFrame,
+                                  outFrame: next.outFrame,
+                                },
+                                r,
+                              );
+                            }}
+                            onCancel={() => {
+                              setDraft(null);
+                              onPreview();
+                            }}
+                          />
+                        )}
+                        <span className="clip-label">
+                          <GripVertical size={12} />
+                          {asset.name}
+                        </span>
+                        <span className="clip-duration">
+                          {((c.outFrame - c.inFrame) / fps).toFixed(1)} s
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {!videos.length && (
+                    <button className="empty-lane" onClick={onLibrary}>
+                      <Plus size={15} /> Ajoutez un plan animé ou une vidéo
+                    </button>
+                  )}
+                </div>
+                {(["voice", "music"] as const).map((track) => {
+                  const clips = project.clips.filter((c) => c.track === track);
+                  return clips.length ? (
+                    <div className={"audio-lane " + track} key={track}>
+                      {clips.map((c) => {
+                        const asset = project.assets.find(
+                          (a) => a.id === c.assetId,
+                        )!;
+                        return (
+                          <button
+                            key={c.id}
+                            className={
+                              "audio-clip " +
+                              (selected === c.id ? "selected" : "")
+                            }
+                            style={{
+                              left: (c.startFrame / fps) * zoom,
+                              width:
+                                ((draft?.id === c.id
+                                  ? draft.outFrame - draft.inFrame
+                                  : c.outFrame - c.inFrame) /
+                                  fps) *
+                                zoom,
+                            }}
+                            onClick={() => {
+                              setDraft(null);
+                              onSelect(c);
+                            }}
+                            aria-label={"Sélectionner " + asset.name}
+                          >
+                            <svg
+                              viewBox="0 0 256 24"
+                              preserveAspectRatio="none"
+                              aria-hidden="true"
+                            >
+                              {asset.peaks?.map((n, i) => (
+                                <line
+                                  key={i}
+                                  x1={i * 2}
+                                  x2={i * 2}
+                                  y1={12 - n * 11}
+                                  y2={12 + n * 11}
+                                />
+                              ))}
+                            </svg>
+                            <span>
+                              <AudioLines size={12} />
+                              {track === "voice" ? "Voix" : "Ambiance"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null;
+                })}
+                <div
+                  className="playhead"
+                  style={{ left: playback.time * zoom }}
+                >
+                  <span />
+                </div>
+              </div>
+            </div>
+            <div className="timeline-end">{stamp(duration)}</div>
+          </div>
+          {clip && a && bounds && (
+            <div className="clip-editor" key={clip.id}>
+              <div className="clip-editor-name">
+                <Scissors size={13} />
+                <span>{a.name}</span>
+                <small>
+                  {((bounds.outFrame - bounds.inFrame) / fps).toFixed(2)} s
+                  gardées
+                </small>
+              </div>
+              <label>
+                Début{" "}
+                <input
+                  type="range"
+                  aria-label="Couper le début"
+                  min="0"
+                  max={Math.floor(a.duration * fps) - fps}
+                  step="1"
+                  value={bounds.inFrame}
+                  onChange={(e) => trim("inFrame", Number(e.target.value))}
+                  onPointerUp={commit}
+                  onKeyUp={commit}
+                />
+                <output>{(bounds.inFrame / fps).toFixed(2)} s</output>
+              </label>
+              <label>
+                Fin{" "}
+                <input
+                  type="range"
+                  aria-label="Couper la fin"
+                  min={fps}
+                  max={Math.floor(a.duration * fps)}
+                  step="1"
+                  value={bounds.outFrame}
+                  onChange={(e) => trim("outFrame", Number(e.target.value))}
+                  onPointerUp={commit}
+                  onKeyUp={commit}
+                />
+                <output>{(bounds.outFrame / fps).toFixed(2)} s</output>
+              </label>
+              <div className="clip-editor-buttons">
+                <button
+                  className="icon-button"
+                  onClick={onDeselect}
+                  aria-label="Fermer les réglages du plan"
+                >
+                  <X size={15} />
+                </button>
+                {clip.track === "video" ? (
+                  <>
+                    <button
+                      className="icon-button"
+                      disabled={videos.indexOf(clip) === 0 || busy}
+                      onClick={() =>
+                        onCommand({
+                          type: "move",
+                          clipId: clip.id,
+                          index: videos.indexOf(clip) - 1,
+                        })
+                      }
+                      aria-label="Déplacer avant"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <button
+                      className="icon-button"
+                      disabled={
+                        videos.indexOf(clip) === videos.length - 1 || busy
+                      }
+                      onClick={() =>
+                        onCommand({
+                          type: "move",
+                          clipId: clip.id,
+                          index: videos.indexOf(clip) + 1,
+                        })
+                      }
+                      aria-label="Déplacer après"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </>
+                ) : (
+                  <label className="audio-position">
+                    Position{" "}
+                    <input
+                      type="number"
+                      min="0"
+                      max="600"
+                      step={1 / fps}
+                      defaultValue={clip.startFrame / fps}
+                      onBlur={(e) => {
+                        const startFrame = Math.round(
+                          Number(e.target.value) * fps,
+                        );
+                        if (startFrame !== clip.startFrame)
+                          onCommand({
+                            type: "move",
+                            clipId: clip.id,
+                            startFrame,
+                          });
+                      }}
+                    />
+                  </label>
+                )}
+                <button
+                  className="icon-button"
+                  disabled={busy}
+                  onClick={() => onCommand({ type: "remove", clipId: clip.id })}
+                  aria-label="Supprimer du montage"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              {clip.track !== "video" && (
+                <label className="volume-control">
+                  <Volume2 size={14} />
+                  <input
+                    aria-label="Volume du son"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    defaultValue={clip.volume}
+                    onPointerUp={(e) =>
+                      onCommand({
+                        type: "volume",
+                        clipId: clip.id,
+                        volume: Number(e.currentTarget.value),
+                      })
+                    }
+                    onKeyUp={(e) =>
+                      onCommand({
+                        type: "volume",
+                        clipId: clip.id,
+                        volume: Number(e.currentTarget.value),
+                      })
+                    }
+                  />
+                </label>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  );
 }
