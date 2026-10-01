@@ -45,7 +45,9 @@ canonical cost guard.
 for 2.0 Standard/Mini/Fast and normal 2.5 video-input variants. Existing positive
 minimum prices remain unchanged. An unprofitable minimum instead uses the positive
 margin of the same options without video as its anchor, rounding the new minimum
-up to a cent. This is a one-time reviewed authoring operation, not a global markup.
+up to a cent. Edit/extend variants without a no-video counterpart use the same
+text-generation output options; the preparation report records this anchor mode.
+This is a one-time reviewed authoring operation, not a global markup.
 
 The persisted literal price is `rate × max(minimumBillableSeconds, outputSeconds +
 inputSeconds)`, rounded up once at the end. Its equivalent authored component has

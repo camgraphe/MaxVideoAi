@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { resolveManualTariffCell, type ManualTariffCell, type ManualTariffSelector } from '@maxvideoai/pricing';
+import { ManualTariffError, resolveManualTariffCell, type ManualTariffCell, type ManualTariffSelector } from '@maxvideoai/pricing';
 import { evaluateManualTariffPrice } from '@maxvideoai/pricing/src/manual-tariff-price';
 import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
@@ -47,7 +47,17 @@ export async function prepareSeedanceInputTariffSeed(input: {
     const minimumCost = normalBytePlusSupplierCost({ ...scenario.context, inputVideoDurationSec: Number.MIN_VALUE },input.at);
     if (!minimumCost) throw new Error('The selected execution provider has no current BytePlus supplier reference.');
     const needsAnchor = currentCustomerCents <= minimumCost.amountUsd * 100;
-    const noVideoCustomerCents = needsAnchor ? amount({ ...oldSelector, billingInputType: 'no_video_input' },scenario.quantities) : undefined;
+    let noVideoCustomerCents: number | undefined, anchorMode: string | undefined;
+    if (needsAnchor) {
+      anchorMode=scenario.selector.mode;
+      try { noVideoCustomerCents=amount({ ...oldSelector,billingInputType:'no_video_input' },scenario.quantities); }
+      catch(error) {
+        if (!(error instanceof ManualTariffError) || error.code!=='missing_cell'
+          || !['v2v','extend'].includes(scenario.selector.mode)) throw error;
+        anchorMode='t2v';
+        noVideoCustomerCents=amount({ ...oldSelector,mode:'t2v',billingInputType:'no_video_input' },scenario.quantities);
+      }
+    }
     const prepared = prepareSeedanceInputTariffPrice({ context: scenario.context, currentCustomerCents, noVideoCustomerCents, at: input.at });
     const maximumCost = normalBytePlusSupplierCost({ ...scenario.context, inputVideoDurationSec: prepared.maximum },input.at);
     const validationKey = JSON.stringify({ modelId: scenario.modelId, mode: scenario.selector.mode,
@@ -60,7 +70,7 @@ export async function prepareSeedanceInputTariffSeed(input: {
     cells.push({ id: customerTariffCellId(Object.entries(selector).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('|')),
       selector, source: 'database', version: 1, currency: 'USD', effectiveFrom: input.at, price: prepared.price });
     rows.push({ scenarioId: scenario.id, currentCustomerCents, minimumCustomerCents: prepared.minimumCustomerCents,
-      marginSource: prepared.marginSource, marginPercent: prepared.marginPercent,
+      marginSource: prepared.marginSource, anchorMode, marginPercent: prepared.marginPercent,
       minimumSupplierUsd: minimumCost.amountUsd, maximumSupplierUsd: maximumCost?.amountUsd,
       minimumBillableSeconds: prepared.minimumBillableSeconds });
   }
