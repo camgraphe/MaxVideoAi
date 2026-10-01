@@ -50,8 +50,8 @@ export function requireOAuthGenerationActor(actor: AgentPrincipal): void {
   }
 }
 
-export function quoteMatchesActor(
-  quote: McpGenerationQuote,
+export function quoteMatchesActor<Request>(
+  quote: McpGenerationQuote<Request>,
   actor: GenerationActor,
 ): boolean {
   return (
@@ -63,6 +63,13 @@ export function quoteMatchesActor(
         quote.studioProjectId === actor.projectId &&
         quote.fundingMode === "wallet")
   );
+}
+
+/** Audio OAuth clients remain mandatory; a server-authorized Studio session has its own scope. */
+export function requireAudioGenerationActor(actor: GenerationActor): void {
+  requireGenerationActor(actor);
+  if (actor.authMethod === 'oauth' && actor.clientId === null)
+    throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI before using Audio.');
 }
 
 export function studioReferenceFingerprint(

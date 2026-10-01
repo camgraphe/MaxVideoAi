@@ -1,6 +1,7 @@
 import { createQuoteRepository, generationQuoteCodec } from './quote-repository';
 import { hashCanonicalAudioRequest, normalizeAudioGenerationRequest, type CanonicalAudioRequest } from './audio-normalization';
 import type { CanonicalGenerationRequest, GenerationFundingMode } from './generation-types';
+import type { GenerationActor } from './generation-actor';
 
 const audioQuoteCodec = {
   surfaces: ['audio'] as const,
@@ -14,6 +15,10 @@ const audioQuoteCodec = {
 };
 
 export const audioQuoteRepository = createQuoteRepository(audioQuoteCodec);
+export function audioQuoteRepositoryForActor(actor: GenerationActor) {
+  return createQuoteRepository(audioQuoteCodec, actor.authMethod === 'studio-session'
+    ? {origin: 'studio-session', projectId: actor.projectId} : undefined);
+}
 export type CanonicalAnyGenerationRequest = CanonicalGenerationRequest | CanonicalAudioRequest;
 
 /** Mixed-surface readers share strict codecs; paid execution always uses its own repository. */
