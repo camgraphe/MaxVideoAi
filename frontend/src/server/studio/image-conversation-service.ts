@@ -20,6 +20,8 @@ import {
   type ImageDirector,
 } from "./image-conversation-director";
 import { runMeteredImageDirector } from "./image-model-usage";
+import { runStudioImageActions, resumeStudioImageAction } from "./conversation-image-run";
+import type { StudioResponseCreator } from "./conversation-director";
 import {
   claimImageTurn,
   persistImageDraft,
@@ -102,6 +104,8 @@ export function createImageConversationService(
     enabled: boolean;
     director?: ImageDirector;
     generationFactory?: ImageGenerationFactory;
+    actionsEnabled?: boolean;
+    createActionResponse?: StudioResponseCreator;
   },
 ) {
   const factory =
@@ -224,9 +228,14 @@ export function createImageConversationService(
               saved.request_id !== turn.request_id && saved.state === "ready",
           )
           .reverse();
+        const useActions = !turn.draft_json && dependencies.actionsEnabled === true;
         const draft =
           turn.draft_json ??
-          (await runMeteredImageDirector(
+          (useActions ? await runStudioImageActions({
+            actor, turn, input, references: refs, referenceFingerprint,
+            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null})),
+            enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,
+          }) : await runMeteredImageDirector(
             actor,
             turn,
             dependencies.director ?? draftStudioImage,
@@ -237,9 +246,12 @@ export function createImageConversationService(
             })),
             refs,
           ));
-        if (!turn.draft_json)
+        if (!turn.draft_json && !useActions)
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
-        if (draft.image) {
+        if (draft.image && !useActions) {
+          if (dependencies.actionsEnabled) {
+            await resumeStudioImageAction({actor, turn, input, referenceFingerprint, enabled: dependencies.enabled, factory});
+          } else {
           const request = imageRequestFromDraft(
             draft,
             input,
@@ -251,6 +263,7 @@ export function createImageConversationService(
             onQuotePrepared: (quote, executor) =>
               attachImageQuote(actor, turn, quote.quoteId, executor),
           }).prepare(request);
+          }
         }
         const saved = (await listImageTurns(actor)).find(
           (saved) => saved.request_id === turn.request_id,
