@@ -246,4 +246,113 @@ test("image chat persists its intent and exact quote, resumes safely and leaves 
     )?.quote?.state,
     "expired",
   );
+  await t.test(
+    "draft references cannot drift while Sol is working or on retry",
+    async () => {
+      const delayed = createImageConversationService(actor, {
+        enabled: true,
+        generationFactory: factory,
+        director: async (_input, _history, refs) => {
+          assert.equal(
+            refs[0].storageUrl,
+            "https://cdn.maxvideoai.com/changed-reference.png",
+          );
+          await pg.pool.query(
+            "UPDATE media_assets SET url = 'https://cdn.maxvideoai.com/during-director.png' WHERE public_id = $1",
+            [assetId],
+          );
+          return director();
+        },
+      });
+      const driftInput = {
+        ...input,
+        requestId: randomUUID(),
+        references: [assetId],
+      };
+      await assert.rejects(delayed.submit(driftInput), {
+        code: "REFERENCE_INVALID",
+      });
+      await assert.rejects(delayed.submit(driftInput), {
+        code: "REFERENCE_INVALID",
+      });
+      const saved = (await service.read()).turns.find(
+        (turn) => turn.requestId === driftInput.requestId,
+      );
+      assert.equal(saved?.quote, null);
+      assert.equal(provider.captures.length, 1);
+    },
+  );
+  await t.test(
+    "resuming an older intent supersedes newer prepared approval",
+    async () => {
+      let failOnce = true;
+      const broken: ImageGenerationFactory = (current, options) => {
+        const base = factory(current, options);
+        return {
+          ...base,
+          prepare: async (request) => {
+            if (failOnce) {
+              failOnce = false;
+              throw new Error("before quote");
+            }
+            return base.prepare(request);
+          },
+        };
+      };
+      const old = createImageConversationService(actor, {
+        enabled: true,
+        director,
+        generationFactory: broken,
+      });
+      const oldInput = { ...input, requestId: randomUUID() };
+      await assert.rejects(old.submit(oldInput), /before quote/);
+      const newer = await service.submit({ ...input, requestId: randomUUID() });
+      assert.equal(newer.quote?.state, "prepared");
+      await old.submit(oldInput);
+      assert.equal(
+        (await service.read()).turns.find(
+          (turn) => turn.requestId === newer.requestId,
+        )?.quote?.state,
+        "expired",
+      );
+      await assert.rejects(
+        service.confirm({
+          requestId: newer.requestId,
+          quoteId: newer.quote!.quoteId,
+          confirmed: true,
+        }),
+        { code: "QUOTE_EXPIRED" },
+      );
+      assert.equal(provider.captures.length, 1);
+    },
+  );
+  await t.test(
+    "hiding a reference expires its unusable approval without spending",
+    async () => {
+      const hidden = await service.submit({
+        ...input,
+        requestId: randomUUID(),
+        references: [assetId],
+      });
+      await pg.pool.query(
+        "UPDATE media_assets SET deleted_at = now() WHERE public_id = $1",
+        [assetId],
+      );
+      await assert.rejects(
+        service.confirm({
+          requestId: hidden.requestId,
+          quoteId: hidden.quote!.quoteId,
+          confirmed: true,
+        }),
+        { code: "REFERENCE_INVALID" },
+      );
+      assert.equal(
+        (await service.read()).turns.find(
+          (turn) => turn.requestId === hidden.requestId,
+        )?.quote?.state,
+        "expired",
+      );
+      assert.equal(provider.captures.length, 1);
+    },
+  );
 });

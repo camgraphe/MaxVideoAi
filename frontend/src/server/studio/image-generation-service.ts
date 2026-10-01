@@ -1,6 +1,7 @@
 import { isWorkspaceModelCertifiedForBlock } from "@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification";
 import {
   requireGenerationActor,
+  studioReferenceFingerprint,
   type StudioGenerationActor,
 } from "@/server/agent-api/generation-actor";
 import { AgentApiError } from "@/server/agent-api/errors";
@@ -51,6 +52,7 @@ function certified(catalog: AgentPublicGenerationEngine[]) {
 
 export type StudioImageGenerationOptions = {
   enabled: boolean;
+  expectedReferenceFingerprint?: string;
   prepareDependencies?: Partial<
     Omit<PrepareGenerationDependencies, "trialRiskContext">
   >;
@@ -115,6 +117,15 @@ export function createStudioImageGenerationService(
         );
       }
     }
+    if (
+      options.expectedReferenceFingerprint !== undefined &&
+      studioReferenceFingerprint(references) !==
+        options.expectedReferenceFingerprint
+    )
+      throw new AgentApiError(
+        "REFERENCE_INVALID",
+        "The references changed after Studio reviewed them. Send a new message to review them again.",
+      );
     return references;
   }
   const prepare = createPrepareGenerationForActorService(
@@ -178,7 +189,10 @@ export function createStudioImageGenerationService(
       try {
         return await confirm(input, actor);
       } catch (error) {
-        if (error instanceof AgentApiError && error.code === "QUOTE_EXPIRED")
+        if (
+          error instanceof AgentApiError &&
+          ["QUOTE_EXPIRED", "REFERENCE_INVALID"].includes(error.code)
+        )
           await withDbTransaction((executor) =>
             quotes.invalidatePreparedQuote(
               {

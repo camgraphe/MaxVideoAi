@@ -60,12 +60,19 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
   const specialRoutes = new Set([
     'frontend/app/api/studio/chat/route.ts',
     'frontend/app/api/studio/marketing-entry/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/image-conversation/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/image-conversation/confirm/route.ts',
   ]);
   const routes = routeFiles('frontend/app/api/studio');
   assert.ok(routes.length >= 13, 'every current and future Studio route should be included by discovery');
   for (const path of routes.filter((candidate) => !specialRoutes.has(candidate))) {
     assert.match(read(path), /resolveStudioRouteContext\(req\)/);
   }
+  const imageHandler = read('frontend/app/api/studio/_lib/studio-image-conversation-handler.ts');
+  assert.match(imageHandler, /resolveStudioApiAccess/);
+  assert.match(imageHandler, /if \(!access.ok\)/);
+  assert.match(read('frontend/app/api/studio/projects/[projectId]/image-conversation/route.ts'), /handleStudioImageConversation/);
+  assert.match(read('frontend/app/api/studio/projects/[projectId]/image-conversation/confirm/route.ts'), /handleStudioImageConversation/);
   assert.match(read('frontend/app/api/studio/_lib/studio-chat-handler.ts'), /resolveStudioApiAccess/);
   assert.match(read('frontend/app/api/studio/marketing-entry/route.ts'), /handleStudioMarketingEntry/);
   assert.match(read('frontend/app/api/studio/marketing-entry/_lib/handle-studio-marketing-entry.ts'), /resolveStudioApiAccess/);

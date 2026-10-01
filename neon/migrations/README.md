@@ -77,3 +77,14 @@ recovers available historical completion evidence. Apply before deploying the ad
 `app_jobs`, `fal_queue_log` and `provider_attempts`. Test on a production branch copy
 before promotion; see `docs/engineering/generation-observations.md` for semantics and
 rollback. The migration does not repair or update source jobs.
+
+## Studio image conversation pilot
+
+`49_studio_generation_scope.sql` separates session image quotes from historical OAuth
+quotes with immutable origin/project scope. `50_studio_image_conversation.sql` stores
+owned immutable message input, draft and reference fingerprint, lease and quote binding.
+Apply them explicitly after initialized Studio schema and migration 39. They were
+qualified only on disposable PostgreSQL 17. Keep `STUDIO_IMAGE_CONVERSATION_ENABLED`
+closed until migration completion and **all** quote reader instances use origin predicates;
+legacy null-OAuth-client readers must not read Studio session approvals.
+See `docs/engineering/studio-conversation-integration.md` for access, rollout and rollback.

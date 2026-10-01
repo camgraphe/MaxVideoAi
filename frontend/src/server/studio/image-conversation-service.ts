@@ -1,3 +1,4 @@
+import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
 import {
   imageTurnInputSchema,
@@ -6,7 +7,10 @@ import {
   type ImageTurnInput,
   type ImageDraft,
 } from "@/lib/studio/image-conversation-contract";
-import type { StudioGenerationActor } from "@/server/agent-api/generation-actor";
+import {
+  studioReferenceFingerprint,
+  type StudioGenerationActor,
+} from "@/server/agent-api/generation-actor";
 import { AgentApiError } from "@/server/agent-api/errors";
 import type { CanonicalGenerationRequest } from "@/server/agent-api/generation-types";
 import type { AgentPublicGenerationEngine } from "@/server/agent-api/model-catalog";
@@ -124,7 +128,6 @@ export function createImageConversationService(
         "INTERNAL_ERROR",
         "The saved image quote is unavailable.",
       );
-    const catalog = quote ? await generation.catalog() : [];
     return {
       requestId: turn.request_id,
       message: turn.input_json.message,
@@ -147,9 +150,8 @@ export function createImageConversationService(
                 ? "expired"
                 : quote.state,
             modelLabel:
-              catalog.find(
-                (entry) => entry.engine.id === quote.request.engineId,
-              )?.engine.label ?? quote.request.engineId,
+              getBaseEngineIncludingHidden(quote.request.engineId)?.label ??
+              quote.request.engineId,
           }
         : null,
       generation: quote?.jobId ? await generation.recover(quote.quoteId) : null,
@@ -186,6 +188,15 @@ export function createImageConversationService(
           })),
           outputCount: 1,
         });
+        const referenceFingerprint = studioReferenceFingerprint(refs);
+        if (
+          turn.draft_json &&
+          turn.draft_reference_fingerprint !== referenceFingerprint
+        )
+          throw new AgentApiError(
+            "REFERENCE_INVALID",
+            "The references changed. Send a new message so Studio can review them again.",
+          );
         const history = (await listImageTurns(actor))
           .filter(
             (saved) =>
@@ -202,7 +213,8 @@ export function createImageConversationService(
             })),
             refs,
           ));
-        if (!turn.draft_json) await persistImageDraft(actor, turn, draft);
+        if (!turn.draft_json)
+          await persistImageDraft(actor, turn, draft, referenceFingerprint);
         if (draft.image) {
           const request = imageRequestFromDraft(
             draft,
@@ -211,6 +223,7 @@ export function createImageConversationService(
           );
           await factory(actor, {
             enabled: dependencies.enabled,
+            expectedReferenceFingerprint: referenceFingerprint,
             onQuotePrepared: (quote, executor) =>
               attachImageQuote(actor, turn, quote.quoteId, executor),
           }).prepare(request);

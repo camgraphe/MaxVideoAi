@@ -19,6 +19,7 @@ export type StoredImageTurn = {
   request_hash: string;
   input_json: ImageTurnInput;
   draft_json: ImageDraft | null;
+  draft_reference_fingerprint: string | null;
   quote_id: string | null;
   state: "thinking" | "ready" | "failed";
   model_attempts: number;
@@ -27,7 +28,7 @@ export type StoredImageTurn = {
   created_at: Date;
 };
 export const IMAGE_TURN_COLUMNS =
-  "request_id, request_hash, input_json, draft_json, quote_id, state, model_attempts, lease_id, lease_expires_at, created_at";
+  "request_id, request_hash, input_json, draft_json, draft_reference_fingerprint, quote_id, state, model_attempts, lease_id, lease_expires_at, created_at";
 export async function readImageConversationProject(
   userId: string,
   projectId: string,
@@ -109,11 +110,10 @@ export async function claimImageTurn(
         "The image pilot conversation limit has been reached. Try later.",
         true,
       );
-    if (!existing)
-      await executor.query(
-        "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",
-        [actor.userId, actor.projectId],
-      );
+    await executor.query(
+      "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",
+      [actor.userId, actor.projectId],
+    );
     const lease = randomUUID();
     const rows = existing
       ? await executor.query<StoredImageTurn>(
@@ -138,10 +138,11 @@ export async function persistImageDraft(
   actor: StudioGenerationActor,
   turn: StoredImageTurn,
   draft: ImageDraft,
+  referenceFingerprint: string,
 ) {
   const parsed = imageDraftSchema.parse(draft);
   const rows = await query(
-    `UPDATE studio_image_turns SET draft_json = $5::jsonb, state = $6, updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 AND lease_id = $4 AND state = 'thinking' RETURNING request_id`,
+    `UPDATE studio_image_turns SET draft_json = $5::jsonb, state = $6, draft_reference_fingerprint = $7, updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 AND lease_id = $4 AND state = 'thinking' RETURNING request_id`,
     [
       actor.userId,
       actor.projectId,
@@ -149,6 +150,7 @@ export async function persistImageDraft(
       turn.lease_id,
       JSON.stringify(parsed),
       parsed.image ? "thinking" : "ready",
+      referenceFingerprint,
     ],
   );
   if (!rows.length)

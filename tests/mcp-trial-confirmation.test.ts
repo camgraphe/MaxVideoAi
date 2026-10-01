@@ -299,7 +299,7 @@ test('trial confirmation rejects stale gates, principals, risk, and entitlement 
   for (const [label, identity, overrides, code] of [
     ['feature', principal, { trialGenerationEnabled: () => false }, 'TRIAL_NOT_ELIGIBLE'],
     ['email', { ...principal, emailVerified: false }, {}, 'TRIAL_NOT_ELIGIBLE'],
-    ['client', { ...principal, clientId: null }, {}, 'TRIAL_NOT_ELIGIBLE'],
+    ['client', { ...principal, clientId: null }, {}, 'QUOTE_EXPIRED'],
     ['risk', principal, { acceptTrialRisk: async () => ({ allowed: false, code: 'RATE_LIMITED', nextAction: { type: 'retry_later' } }) }, 'RATE_LIMITED'],
     ['entitlement', principal, { lockReservableEntitlement: async () => null }, 'TRIAL_NOT_ELIGIBLE'],
   ] as const) {

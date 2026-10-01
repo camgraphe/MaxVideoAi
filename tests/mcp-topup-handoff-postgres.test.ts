@@ -111,6 +111,8 @@ test('top-up handoff invalidation and ledger non-mutation execute atomically in 
     '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', quoteLifetimeMigrationPath,
   );
   assert.equal(quoteLifetimeMigration.status, 0, failure(quoteLifetimeMigration));
+  const scopeMigration = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(process.cwd(), 'neon/migrations/49_studio_generation_scope.sql'));
+  assert.equal(scopeMigration.status, 0, failure(scopeMigration));
   const schema = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     CREATE TABLE app_receipts (
       id bigserial PRIMARY KEY,

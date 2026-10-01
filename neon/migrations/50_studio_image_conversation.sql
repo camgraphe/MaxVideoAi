@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS studio_image_turns (
   request_hash TEXT NOT NULL CHECK (request_hash ~ '^[a-f0-9]{64}$'),
   input_json JSONB NOT NULL CHECK (jsonb_typeof(input_json) = 'object'),
   draft_json JSONB,
+  draft_reference_fingerprint TEXT CHECK (draft_reference_fingerprint ~ '^[a-f0-9]{64}$'),
   quote_id UUID UNIQUE REFERENCES mcp_generation_quotes(quote_id),
   state TEXT NOT NULL DEFAULT 'thinking' CHECK (state IN ('thinking','ready','failed')),
   model_attempts SMALLINT NOT NULL DEFAULT 1 CHECK (model_attempts BETWEEN 1 AND 2),
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS studio_image_turns (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY (user_id, project_id, request_id),
   CHECK (draft_json IS NULL OR jsonb_typeof(draft_json) = 'object'),
+  CHECK ((draft_json IS NULL) = (draft_reference_fingerprint IS NULL)),
   CHECK (quote_id IS NULL OR (state = 'ready' AND draft_json IS NOT NULL))
 );
 CREATE INDEX IF NOT EXISTS studio_image_turns_account_created ON studio_image_turns (user_id, created_at DESC);
@@ -24,7 +26,7 @@ BEGIN
     OR NEW.request_id IS DISTINCT FROM OLD.request_id OR NEW.request_hash IS DISTINCT FROM OLD.request_hash
     OR NEW.input_json IS DISTINCT FROM OLD.input_json OR NEW.created_at IS DISTINCT FROM OLD.created_at
     OR (OLD.quote_id IS NOT NULL AND NEW.quote_id IS DISTINCT FROM OLD.quote_id)
-    OR (OLD.draft_json IS NOT NULL AND NEW.draft_json IS DISTINCT FROM OLD.draft_json) THEN
+    OR (OLD.draft_json IS NOT NULL AND (NEW.draft_json IS DISTINCT FROM OLD.draft_json OR NEW.draft_reference_fingerprint IS DISTINCT FROM OLD.draft_reference_fingerprint)) THEN
     RAISE EXCEPTION 'Studio image turn identity, intent and attached quote are immutable';
   END IF;
   IF NEW.quote_id IS NOT NULL AND NOT EXISTS (

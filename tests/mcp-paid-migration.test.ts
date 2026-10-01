@@ -307,6 +307,8 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
            'prepared', created_at + INTERVAL '10 minutes', created_at, created_at
       FROM quote_time
   `, [JSON.stringify(lockRequest), lockRequestHash]);
+  // Repository qualification uses current scope columns after testing historical migration 30 above.
+  await clientA.query(readFileSync("neon/migrations/49_studio_generation_scope.sql", "utf8"));
   const executorA: QueryExecutor = {
     async query<TRecord>(text, params) {
       return (await clientA.query<TRecord>(text, params as unknown[] | undefined)).rows;

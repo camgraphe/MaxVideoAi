@@ -171,12 +171,6 @@ const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext
   now: () => new Date(),
 };
 
-function isSafeIdentifier(value: unknown, maxLength: number): value is string {
-  return typeof value === 'string'
-    && value.length > 0
-    && value.length <= maxLength
-    && value === value.trim();
-}
 
 function requireTrialRiskRequestContext(value: unknown): TrialRiskRequestContext {
   if (!value
