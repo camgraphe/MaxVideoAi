@@ -15,7 +15,7 @@ export function Chat({
   busy,
   references,
   onSend,
-  onUpload,
+  onLibrary,
   onSelect,
   onAdd,
   onCommand,
@@ -26,7 +26,7 @@ export function Chat({
   busy: boolean;
   references: Asset[];
   onSend: (s: string) => void;
-  onUpload: () => void;
+  onLibrary: () => void;
   onSelect: (a: Asset) => void;
   onAdd: (a: Asset) => void;
   onCommand: (c: Command) => void;
@@ -116,7 +116,7 @@ export function Chat({
             >
               Commençons par une direction visuelle <ArrowUp size={14} />
             </button>
-            <button onClick={onUpload}>
+            <button onClick={onLibrary}>
               J’ai déjà des images, vidéos ou audios <Plus size={14} />
             </button>
           </div>
@@ -264,9 +264,11 @@ export function Chat({
           <button
             type="button"
             className="attach-button"
-            onClick={onUpload}
+            onClick={onLibrary}
             disabled={busy}
-            aria-label="Ajouter des références"
+            aria-label="Ouvrir la bibliothèque"
+            aria-haspopup="dialog"
+            title="Bibliothèque et import"
           >
             <Plus size={21} />
           </button>

@@ -14,12 +14,14 @@ export function AssetResult({
   exported,
   onSelect,
   onAdd,
+  disabled,
 }: {
   asset: Asset;
-  project: Project;
+  project: Pick<Project, "id">;
   exported?: boolean;
   onSelect: (a: Asset) => void;
   onAdd: (a: Asset) => void;
+  disabled?: boolean;
 }) {
   return (
     <div
@@ -73,6 +75,7 @@ export function AssetResult({
           <button
             className="icon-button"
             onClick={() => onAdd(asset)}
+            disabled={disabled}
             aria-label={"Ajouter " + asset.name + " au montage"}
           >
             <Plus size={16} />

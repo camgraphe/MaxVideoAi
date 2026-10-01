@@ -180,6 +180,22 @@ export function useStudio() {
       }),
     [perform, accept],
   );
+  const useLibraryAsset = useCallback(
+    (sourceProjectId: string, assetId: string) =>
+      perform(async (id) => {
+        const result = await request<{ project: Project; asset: Asset }>(
+          `/api/projects/${id}/library`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sourceProjectId, assetId }),
+          },
+        );
+        accept(result.project);
+        return active.current === id ? result.asset : undefined;
+      }),
+    [perform, accept],
+  );
   return {
     project,
     projects,
@@ -193,6 +209,7 @@ export function useStudio() {
     command,
     chat,
     upload,
+    useLibraryAsset,
   };
 }
 export type Studio = ReturnType<typeof useStudio>;

@@ -6,6 +6,7 @@ import { ProjectStore } from "./store";
 import { CommandService } from "./commands";
 import { importMedia, mediaDir } from "./media";
 import { StudioError } from "../shared/timeline";
+import { MediaLibraryService } from "./library";
 export function json(res: ServerResponse, status: number, value: unknown) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -37,6 +38,7 @@ export function api(
   root: string,
   adapters: Adapters = {},
 ) {
+  const library = new MediaLibraryService(store, root);
   return async (
     req: IncomingMessage,
     res: ServerResponse,
@@ -48,6 +50,10 @@ export function api(
     try {
       if (path === "/api/health") {
         json(res, 200, { status: "ready", mode: "local-demo" });
+        return true;
+      }
+      if (path === "/api/library" && method === "GET") {
+        json(res, 200, await library.list());
         return true;
       }
       if (path === "/mcp" && method === "POST" && adapters.mcp) {
@@ -81,7 +87,7 @@ export function api(
         return true;
       }
       const match = path.match(
-        /^\/api\/projects\/([a-f0-9-]{36})(?:\/(commands|chat|import|media|backup)(?:\/([a-f0-9-]{36}))?)?$/,
+        /^\/api\/projects\/([a-f0-9-]{36})(?:\/(commands|chat|import|media|backup|library)(?:\/([a-f0-9-]{36}))?)?$/,
       );
       if (!match) throw new StudioError("Route introuvable.", 404);
       const [, id, action, assetId] = match;
@@ -95,6 +101,15 @@ export function api(
           res,
           200,
           await service.execute(id, JSON.parse((await body(req)).toString())),
+        );
+        return true;
+      }
+      if (action === "library" && method === "POST") {
+        const data = JSON.parse((await body(req)).toString());
+        json(
+          res,
+          200,
+          await library.use(id, data.sourceProjectId, data.assetId),
         );
         return true;
       }

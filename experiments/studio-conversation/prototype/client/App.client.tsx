@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Images,
-  X,
-  LoaderCircle,
-  Plus,
-  Clapperboard,
-  Replace,
-} from "lucide-react";
+import { X, LoaderCircle, Plus, Clapperboard, Replace } from "lucide-react";
 import { Shell, type Panel } from "./components/Shell.client";
 import { Chat } from "./components/Chat.client";
 import { MediaCanvas } from "./components/MediaCanvas.client";
@@ -199,7 +192,7 @@ export function App() {
                 });
                 setReferences([]);
               }}
-              onUpload={upload}
+              onLibrary={() => setPanel("library")}
               onFocusComposer={closeMonitor}
               onSelect={select}
               onAdd={add}
@@ -208,15 +201,6 @@ export function App() {
                 setReferences((ids) => ids.filter((i) => i !== id))
               }
             />
-            <button
-              className="library-peek"
-              onClick={() => setPanel("library")}
-            >
-              <Images size={14} />
-              {p.assets.length
-                ? "Tous les médias · " + p.assets.length
-                : "Vos références"}
-            </button>
           </div>
           <div className="studio-editing">
             {preview}

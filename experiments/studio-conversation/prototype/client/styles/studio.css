@@ -675,19 +675,6 @@ input[type="checkbox"] {
   color: var(--accent);
   margin-top: 3px;
 }
-.library-peek {
-  position: absolute;
-  bottom: 5px;
-  right: 34px;
-  font-size: 9px;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  color: var(--dim);
-}
-.library-peek:hover {
-  color: var(--accent);
-}
 .audio-program {
   display: flex;
   flex-direction: column;
@@ -1236,6 +1223,87 @@ input[type="checkbox"] {
   align-items: center;
   gap: 10px;
 }
+.studio-dialog.library[open] {
+  display: flex;
+  flex-direction: column;
+}
+.studio-dialog.library .dialog-heading {
+  flex-shrink: 0;
+}
+.studio-dialog.library .dialog-body {
+  min-height: 0;
+}
+.library-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 17px;
+  color: var(--muted);
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+.library-context select {
+  font-size: 11px;
+  padding: 6px 9px;
+}
+.library-count {
+  margin-left: auto;
+  align-self: center;
+  color: var(--dim);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.library-animation {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.library-animation summary {
+  cursor: pointer;
+}
+.library-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--error);
+  font-size: 12px;
+  margin: 16px 0;
+}
+.library-preview {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px;
+  margin-bottom: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+.library-preview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.library-preview-heading strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.library-preview > img,
+.library-preview > video {
+  width: 100%;
+  height: min(28dvh, 240px);
+  object-fit: contain;
+  background: var(--player-bg);
+}
+.library-preview > .secondary-button {
+  align-self: flex-end;
+}
 .library-search > input {
   flex: 1;
   min-width: 0;
@@ -1249,6 +1317,7 @@ input[type="checkbox"] {
 }
 .library-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 5px;
   margin: 20px 0 12px;
 }
@@ -1292,13 +1361,24 @@ input[type="checkbox"] {
 .library-grid .asset-result {
   margin-top: 0;
 }
+.library-item {
+  min-width: 0;
+}
 .library-grid .result-thumb {
   height: 155px;
 }
 .asset-metadata {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 9px;
   color: var(--dim);
   margin: 8px 0;
+}
+.asset-metadata > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .library-actions {
   display: flex;
@@ -1761,11 +1841,6 @@ input[type="checkbox"] {
   .ambient-note {
     display: none;
   }
-  .library-peek {
-    right: 21px;
-    bottom: 0;
-    font-size: 8px;
-  }
   .timeline {
     padding: 9px 15px 13px;
   }
@@ -1913,7 +1988,8 @@ input[type="checkbox"] {
   }
   .library-actions button,
   .library-actions a {
-    font-size: 8px;
+    font-size: 10px;
+    min-height: 32px;
   }
   .asset-metadata {
     font-size: 8px;
@@ -2005,7 +2081,7 @@ input[type="checkbox"] {
     display: none;
   }
   .library-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .clip-editor-name > span {
     max-width: 60px;

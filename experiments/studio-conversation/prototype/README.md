@@ -20,7 +20,7 @@ Ouvrir **http://127.0.0.1:4318** dans l’aperçu Codex ou un navigateur autoris
 1. Dans le chat, cliquer « Un film parfum, lumineux et sensoriel ». Trois images et trois animations locales arrivent, puis le montage se construit si vous ne l’avez pas modifié entre-temps.
 2. Cliquer un plan pour ouvrir le petit moniteur. Régler sa coupe début/fin, le déplacer avec les flèches ou le glisser sur un autre plan. Les audios ont une position et un volume.
 3. Demander `Crée une voix : « La lumière a un parfum. »` ou `Crée une ambiance sonore de 60 secondes`. Le lecteur apparaît dans le chat ; le bouton + ajoute le son au montage.
-4. Importer vos images, vidéos et audios avec +. La bibliothèque offre référence, animation, insertion/remplacement et téléchargement de l’original.
+4. Ouvrir la bibliothèque avec le + de la conversation : images, vidéos et audios de tous vos projets locaux, recherche et filtres. Choisir Référence pour joindre un média au message, ou Importer pour choisir des fichiers. La bibliothèque offre aussi aperçu, animation, insertion/remplacement et téléchargement de l’original. La réutilisation conserve les médias et montages du projet d’origine ; la bibliothèque du compte MaxVideoAI reste à brancher lors de l’intégration dans l’app.
 5. Exporter depuis le montage. Une tâche réelle produit le MP4, ou un MP3 pour une création sonore sans vidéo, avec son lecteur et téléchargement dans la conversation.
 6. Recharger ou redémarrer : les projets, conversations, médias, montages et tâches restent sauvegardés. Une exportation déjà lancée conserve son snapshot même si les paramètres changent ensuite.
 
@@ -57,6 +57,6 @@ npm test
 npm run build
 ```
 
-Les 27 tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeur et MCP, isolation entre projets, imports réels, Range, rendus FFmpeg et contraste des deux modes. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
+Les 31 tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeur et MCP, isolation entre projets, bibliothèque globale et réutilisation, imports réels, Range, rendus FFmpeg et contraste des deux modes. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
 
 Pour la vérification dans un navigateur, utiliser un projet distinct : état vide → paramètres → brief → import image/vidéo/audio → coupe et déplacement → remplacement → voix/ambiance → volume/position avec annulation → arrêt/reprise d’une tâche → export vidéo et audio seul → recharge. Vérifier aussi le repli du moniteur, le défilement du montage et les palettes au clavier et à 320/390 px. Ces gestes complètent les tests serveur ; ils ne sont pas automatisés par la commande `npm test`.

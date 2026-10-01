@@ -46,9 +46,13 @@ export function Dialogs({
     if (panel && !d?.open) d?.showModal();
     if (!panel && d?.open) d?.close();
   }, [panel]);
+  const close = () => {
+    ref.current?.close();
+    onClose();
+  };
   const titles = {
     projects: "Vos projets",
-    library: "Médias",
+    library: "Bibliothèque MaxVideoAI",
     settings: "Le cadre de votre création",
     tools: "Les gestes de Studio",
     activity: "En cours & rendus",
@@ -58,15 +62,19 @@ export function Dialogs({
   return (
     <dialog
       className={"studio-dialog " + panel}
+      aria-labelledby="studio-dialog-title"
       ref={ref}
-      onCancel={onClose}
+      onCancel={(e) => {
+        e.preventDefault();
+        close();
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) close();
       }}
     >
       <div className="dialog-heading">
-        <h2>{titles[panel]}</h2>
-        <button className="icon-button" onClick={onClose} aria-label="Fermer">
+        <h2 id="studio-dialog-title">{titles[panel]}</h2>
+        <button className="icon-button" onClick={close} aria-label="Fermer">
           <X size={20} />
         </button>
       </div>
@@ -79,7 +87,7 @@ export function Dialogs({
                 e.preventDefault();
                 void studio.create(name || "Sans titre").then(() => {
                   setName("");
-                  onClose();
+                  close();
                 });
               }}
             >
@@ -99,7 +107,7 @@ export function Dialogs({
                 <button
                   key={pr.id}
                   className={pr.id === p.id ? "current" : ""}
-                  onClick={() => void studio.open(pr.id).then(onClose)}
+                  onClick={() => void studio.open(pr.id).then(close)}
                 >
                   <Clapperboard size={20} />
                   <span>{pr.title}</span>
@@ -112,16 +120,16 @@ export function Dialogs({
         {panel === "library" && (
           <MediaLibrary
             project={p}
-            onSelect={(a) => {
-              onSelect(a);
-              onClose();
-            }}
             onAdd={onAdd}
             onReference={(a) => {
               onReference(a);
-              onClose();
+              close();
             }}
-            onCommand={(c) => void studio.command(c)}
+            onCommand={(c) => studio.command(c)}
+            onUse={studio.useLibraryAsset}
+            busy={studio.busy}
+            notice={studio.notice}
+            onDismissNotice={() => studio.setNotice("")}
             selectedClip={selectedClip}
             onUpload={onUpload}
           />
@@ -134,7 +142,7 @@ export function Dialogs({
               void studio.command(c).then((result) => {
                 if (result) {
                   void studio.list();
-                  onClose();
+                  close();
                 }
               })
             }
@@ -150,7 +158,7 @@ export function Dialogs({
               <button
                 onClick={() => {
                   void studio.chat("Crée les visuels du parfum", {});
-                  onClose();
+                  close();
                 }}
               >
                 <Sparkles size={21} />
@@ -163,7 +171,7 @@ export function Dialogs({
                 disabled={!p.assets.some((a) => a.kind === "image")}
                 onClick={() => {
                   void studio.chat("Anime les images", {});
-                  onClose();
+                  close();
                 }}
               >
                 <Clapperboard size={21} />
@@ -178,7 +186,7 @@ export function Dialogs({
                     type: "music",
                     duration: p.settings.targetDuration,
                   });
-                  onClose();
+                  close();
                 }}
               >
                 <AudioLines size={21} />
@@ -193,7 +201,7 @@ export function Dialogs({
               onSubmit={(e) => {
                 e.preventDefault();
                 void studio.command({ type: "voice", text: voice });
-                onClose();
+                close();
               }}
             >
               <label htmlFor="voice-text">Le texte de votre voix</label>

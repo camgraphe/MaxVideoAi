@@ -13,6 +13,12 @@ export interface Asset {
   hasAudio: boolean;
   peaks?: number[];
   origin: "import" | "demo" | "local";
+  librarySource?: { projectId: string; assetId: string };
+}
+export interface LibraryAsset {
+  asset: Asset;
+  projectId: string;
+  projectTitle: string;
 }
 export interface Clip {
   id: string;
