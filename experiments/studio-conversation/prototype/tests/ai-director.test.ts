@@ -7,6 +7,7 @@ import { ProjectStore } from "../server/store";
 import { CommandService } from "../server/commands";
 import { MediaLibraryService } from "../server/library";
 import { mediaDir } from "../server/media";
+import { JobRunner } from "../server/jobs";
 
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), "studio-ai-"));
@@ -290,6 +291,192 @@ test("Owned images are sent and foreign references are rejected before saving a 
       (await f.store.get(f.id)).messages.filter((m) => m.role === "user")
         .length,
       1,
+    );
+  } finally {
+    await rm(f.root, { recursive: true, force: true });
+  }
+});
+
+test("All eight accepted references reach the model in order", async () => {
+  const f = await fixture();
+  try {
+    await mkdir(mediaDir(f.root, f.id), { recursive: true });
+    const ids: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      const id = crypto.randomUUID();
+      ids.push(id);
+      await writeFile(join(mediaDir(f.root, f.id), id + ".jpg"), `image-${i}`);
+      await f.store.update(f.id, (p) => {
+        p.assets.push({
+          id,
+          name: `Référence ${i + 1}`,
+          kind: "image",
+          file: id + ".jpg",
+          duration: 0,
+          width: 200,
+          height: 200,
+          hasAudio: false,
+          origin: "import",
+        });
+        return p;
+      });
+    }
+    await f
+      .make({
+        create: async (request: any) => {
+          const images = request.input
+            .at(-1)
+            .content.filter((c: any) => c.type === "input_image");
+          assert.equal(images.length, 8);
+          assert.equal(
+            images[5].image_url,
+            "data:image/jpeg;base64," +
+              Buffer.from("image-5").toString("base64"),
+          );
+          return final("La sixième référence est bien visible.");
+        },
+      })
+      .respond(f.id, {
+        requestId: "eight-references",
+        text: "Décris la sixième référence.",
+        context: { assetIds: ids },
+      });
+  } finally {
+    await rm(f.root, { recursive: true, force: true });
+  }
+});
+
+test("Usage is durably recorded once and remains private when a turn replays", async () => {
+  const f = await fixture();
+  try {
+    let calls = 0;
+    const director = f.make({
+      create: async () => {
+        calls++;
+        return {
+          ...final("Bonjour"),
+          usage: {
+            inputTokens: 42,
+            cachedInputTokens: 10,
+            outputTokens: 12,
+            reasoningTokens: 3,
+            totalTokens: 54,
+          },
+        };
+      },
+    });
+    const input = { requestId: "metered", text: "Bonjour" };
+    await director.respond(f.id, input);
+    const journal = JSON.parse(
+      await readFile(join(f.root, "assistant", f.id + ".json"), "utf8"),
+    );
+    assert.equal(journal.metrics.length, 1);
+    assert.equal(journal.metrics[0].usage.totalTokens, 54);
+    assert.equal(journal.metrics[0].responseId, "resp-final");
+    assert.ok(journal.metrics[0].durationMs >= 0);
+    await director.respond(f.id, input);
+    assert.equal(calls, 1);
+    assert.ok(!JSON.stringify(await f.store.get(f.id)).includes("inputTokens"));
+  } finally {
+    await rm(f.root, { recursive: true, force: true });
+  }
+});
+
+test("Manual editing during job waiting blocks automatic editing even with a fresh revision", async () => {
+  const f = await fixture();
+  try {
+    const queued = await f.service.execute(f.id, {
+      requestId: "voice",
+      command: { type: "voice", text: "Bonjour" },
+    });
+    let worker: Promise<boolean> | undefined;
+    const runner = new JobRunner(f.store, async () => {
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      await f.service.execute(f.id, {
+        requestId: "manual-while-waiting",
+        expectedRevision: 1,
+        command: { type: "volume", clipId: f.clipId, volume: 0.5 },
+      });
+      return [];
+    });
+    let rounds = 0;
+    await f
+      .make({
+        create: async (request: any) => {
+          if (++rounds === 1) {
+            worker = runner.runOnce();
+            return {
+              id: "waiting",
+              status: "completed",
+              output: [
+                {
+                  type: "function_call",
+                  id: "wait-fc",
+                  call_id: "wait-call",
+                  status: "completed",
+                  name: "studio_wait",
+                  arguments: JSON.stringify({ jobId: queued.jobId }),
+                },
+              ],
+            };
+          }
+          if (rounds === 2) {
+            const response = edit(f.clipId);
+            response.output[2].arguments = JSON.stringify({
+              expectedRevision: 2,
+              command: {
+                type: "trim",
+                clipId: f.clipId,
+                inFrame: 24,
+                outFrame: 96,
+              },
+            });
+            return response;
+          }
+          const last = request.input
+            .filter((i: any) => i.type === "function_call_output")
+            .at(-1);
+          assert.equal(JSON.parse(last.output).error.status, 409);
+          if (rounds === 3)
+            return {
+              id: "build-after-manual",
+              status: "completed",
+              output: [
+                {
+                  type: "function_call",
+                  id: "build-fc",
+                  call_id: "build-call",
+                  status: "completed",
+                  name: "studio_generate",
+                  arguments: JSON.stringify({
+                    command: {
+                      type: "images",
+                      count: 1,
+                      prompt: "Film",
+                      buildFilm: true,
+                    },
+                  }),
+                },
+              ],
+            };
+          return final(
+            "Votre geste a été conservé. La voix est prête, où souhaitez-vous l’ajouter ?",
+          );
+        },
+      })
+      .respond(f.id, {
+        requestId: "wait-manual",
+        text: "Quand la voix est prête, raccourcis le plan.",
+      });
+    await worker;
+    const p = await f.store.get(f.id);
+    assert.equal(p.revision, 2);
+    assert.equal(p.clips[0].inFrame, 0);
+    assert.equal(p.clips[0].volume, 0.5);
+    assert.equal(
+      p.jobs.length,
+      1,
+      "Une nouvelle construction ne doit pas contourner l’arrêt après un geste manuel",
     );
   } finally {
     await rm(f.root, { recursive: true, force: true });

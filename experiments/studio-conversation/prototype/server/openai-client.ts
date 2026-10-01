@@ -44,6 +44,19 @@ export class OpenAIResponses implements ModelClient {
         id: reply.id,
         status: reply.status ?? "failed",
         output: reply.output,
+        ...(reply.usage
+          ? {
+              usage: {
+                inputTokens: reply.usage.input_tokens,
+                cachedInputTokens:
+                  reply.usage.input_tokens_details?.cached_tokens ?? 0,
+                outputTokens: reply.usage.output_tokens,
+                reasoningTokens:
+                  reply.usage.output_tokens_details?.reasoning_tokens ?? 0,
+                totalTokens: reply.usage.total_tokens,
+              },
+            }
+          : {}),
       };
     } catch (e) {
       // Never return provider messages: an authentication error may quote its key.

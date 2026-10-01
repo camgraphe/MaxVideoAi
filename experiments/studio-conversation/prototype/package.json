@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "tsx server/index.ts",
     "test": "tsx --test",
-    "build": "tsc --noEmit && vite build"
+    "build": "tsc --noEmit && vite build",
+    "eval:live": "tsx evaluation/run-live.ts"
   },
   "dependencies": {
     "lucide-react": "0.553.0",

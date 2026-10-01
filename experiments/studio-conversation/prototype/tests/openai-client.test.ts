@@ -25,10 +25,17 @@ test("The API adapter binds Sol, strict tools and bounded calls without exposing
       );
     },
   );
-  await client.create({
+  const reply = await client.create({
     input: [{ role: "user", content: "Bonjour" }],
     instructions: "Studio",
     tool_choice: "auto",
+  });
+  assert.deepEqual(reply.usage, {
+    inputTokens: 2,
+    cachedInputTokens: 0,
+    outputTokens: 3,
+    reasoningTokens: 0,
+    totalTokens: 5,
   });
   assert.equal(body.model, "gpt-6.1-sol");
   assert.equal(body.store, false);

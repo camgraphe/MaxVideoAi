@@ -2,6 +2,7 @@ import type { Command, Project } from "../shared/types";
 import { StudioError, videoStart } from "../shared/timeline";
 import { CommandService } from "./commands";
 import { MediaLibraryService } from "./library";
+import { waitForJob } from "./job-wait";
 
 const object = (properties: Record<string, unknown>) => ({
   type: "object",
@@ -103,15 +104,21 @@ export const actionTools = [
   ),
   tool(
     "studio_generate",
-    "Queue LOCAL tasks only. Images use the fixed perfume demo set regardless of prompt (say this explicitly). buildFilm creates demo animations and auto-assembly. Animate uses FFmpeg on an owned image; voice uses French macOS speech; music is synthetic ambience. These are NOT paid AI media models. Return job IDs, do not wait or claim completion until ready.",
+    "Queue LOCAL tasks only. Images use the fixed perfume demo set regardless of prompt (say this explicitly). buildFilm creates demo animations and auto-assembly. Animate uses FFmpeg on an owned image; voice uses French macOS speech; music is synthetic ambience. These are NOT paid AI media models. When the user's request includes dependent editing/rendering, use studio_wait on the returned job ID before continuing. Never claim completion until ready.",
     object({ command: { anyOf: generations } }),
     "Préparation des médias…",
   ),
   tool(
     "studio_render",
-    "Queue a real MP4 or audio-only MP3 render from an immutable snapshot. Read the job later to see ready/failed. No publishing.",
+    "Queue a real MP4 or audio-only MP3 render from an immutable snapshot. Use studio_wait for its result when the user requests a completed film. No publishing.",
     object({}),
     "Lancement du rendu…",
+  ),
+  tool(
+    "studio_wait",
+    "Wait for an owned local job before dependent editing or rendering. Returns canonical outputs and ready/failed/cancelled, or timedOut after at most 60 seconds. This waits on worker state without model polling or resubmission. If timedOut, explain pending work and finish this exchange; do not wait repeatedly. If revisionChanged, preserve manual edits and ask for a new instruction before editing/rendering.",
+    object({ jobId: string }),
+    "Création en cours…",
   ),
   tool(
     "studio_job",
@@ -224,6 +231,15 @@ export class StudioActions {
     if (!definition || !validate(definition.parameters, args))
       throw new StudioError("Outil ou arguments invalides.");
     const a = withoutNulls(args);
+    if (name === "studio_wait") {
+      const result = await waitForJob(this.service.store, projectId, a.jobId);
+      return {
+        project: projectView(result.project),
+        job: projectView(result.project).jobs.find((j) => j.id === a.jobId),
+        timedOut: result.timedOut,
+        revisionChanged: result.revisionChanged,
+      };
+    }
     if (name === "studio_project")
       return { project: projectView(await this.service.store.get(projectId)) };
     if (name === "studio_library") {
@@ -237,17 +253,15 @@ export class StudioActions {
       );
       const offset = a.page * 30;
       return {
-        media: all
-          .slice(offset, offset + 30)
-          .map((r) => ({
-            sourceProjectId: r.projectId,
-            projectTitle: r.projectTitle,
-            ...projectView({
-              assets: [r.asset],
-              clips: [],
-              jobs: [],
-            } as unknown as Project).assets[0],
-          })),
+        media: all.slice(offset, offset + 30).map((r) => ({
+          sourceProjectId: r.projectId,
+          projectTitle: r.projectTitle,
+          ...projectView({
+            assets: [r.asset],
+            clips: [],
+            jobs: [],
+          } as unknown as Project).assets[0],
+        })),
         nextPage: offset + 30 < all.length ? a.page + 1 : null,
       };
     }

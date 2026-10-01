@@ -27,7 +27,9 @@ Studio utilise l’API Responses avec `gpt-6.1-sol`, raisonnement `medium`, sch�
 
 Le vrai directeur peut proposer une direction, régler le projet, rechercher/adopter les médias de la bibliothèque locale, couper/réordonner/assembler, gérer le son et lancer les tâches locales ou le rendu. Par exemple : « Cherche linen.jpg · animé dans la bibliothèque, ajoute-la au montage et garde ses dix premières secondes. » Joindre une image ou une vidéo avec le + lui transmet l’aperçu image ou le poster, avec les métadonnées du projet. Les audios sont des métadonnées : cette étape ne comprend pas de transcription ni d’analyse du flux vidéo.
 
-Les messages, propositions avant action et résultats sont sauvegardés. Le serveur relit l’état canonique à chaque appel ; un geste manuel intervenu entre-temps provoque un conflit de révision, sans être écrasé. Un journal serveur distinct conserve les appels d’outils et leurs résultats pour reprendre après interruption, sans répéter les actions. Il n’est pas livré par l’API projet ni par Vite. Un échange continue si l’onglet ferme ; après redémarrage du serveur, sa reprise se fait par bouton, sans appels API automatiques.
+Les messages, propositions avant action et résultats sont sauvegardés. Le serveur relit l’état canonique à chaque appel ; un geste manuel intervenu entre-temps provoque un conflit de révision, sans être écrasé. Un journal serveur distinct conserve les appels d’outils, résultats et consommation API du tour courant pour reprendre après interruption, sans répéter les actions. Il n’est pas livré par l’API projet ni par Vite. Un échange continue si l’onglet ferme ; après redémarrage du serveur, sa reprise se fait par bouton, sans appels API automatiques.
+
+Une demande complète peut enchaîner création locale → attente de la sortie → insertion → rendu dans le même échange. L’attente observe le worker sans polling du modèle et reste bornée à 60 secondes par tâche. Au-delà, le bot indique le travail en cours ; une demande ultérieure peut utiliser sa sortie. Un geste manuel pendant l’attente bloque la suite automatique d’édition/rendu du tour. Les huit références acceptées sont toutes transmises, avec un plafond de 8 Mo par aperçu et 24 Mo au total.
 
 ## Essayer
 
@@ -55,7 +57,7 @@ Endpoint JSON-RPC **http://127.0.0.1:4318/mcp**, HTTP POST avec réponses JSON. 
 - `studio_list_projects`, `studio_create_project`, `studio_get_project`
 - `studio_trim_clip`, `studio_move_clip`
 - `studio_command` pour les autres commandes partagées : paramètres, insertion, remplacement, suppression, assemblage, volume, undo/redo, images, animation, voix, ambiance, export, annulation/reprise de tâche.
-- `studio_project`, `studio_library`, `studio_use_media`, `studio_edit`, `studio_generate`, `studio_render`, `studio_job` exposent le même catalogue strict que Sol. Ajouter `projectId` et `requestId` aux arguments présentés par la découverte ; `studio_edit` exige aussi `expectedRevision`.
+- `studio_project`, `studio_library`, `studio_use_media`, `studio_edit`, `studio_generate`, `studio_render`, `studio_wait`, `studio_job` exposent le même catalogue strict que Sol. Ajouter `projectId` et `requestId` aux arguments présentés par la découverte ; `studio_edit` exige aussi `expectedRevision`. `studio_wait` reçoit un `jobId` possédé et ne relance aucun traitement.
 
 Lire le projet avant une édition. `inFrame`, `outFrame` (exclusif) et `startFrame` sont des entiers au fps du projet ; coupe minimale 1 seconde. Toute édition nécessite `expectedRevision`. `requestId` reste identique sur une reprise ; changer le contenu exige un nouvel ID. Une tâche reste asynchrone : consulter le projet jusqu’à son état `ready`, `failed` ou `cancelled`.
 
@@ -71,6 +73,14 @@ Ce MCP est propre à l’expérience locale. Le MCP MaxVideoAI publié et les ro
 npm test
 npm run build
 ```
+
+Pour une évaluation **réelle et payante de Sol**, séparée des projets du serveur :
+
+```sh
+STUDIO_ENV_FILE="/chemin/vers/.env.local" npm run eval:live -- --live
+```
+
+Le runner refuse de démarrer sans `--live`. Il exécute huit scénarios, conserve les rapports/projets dans `.data/evaluations/`, et borne les appels à 45 avec arrêt avant un nouvel appel si le total observé atteint 250 000 tokens. Ce dernier seuil n’est pas un plafond monétaire strict : un appel peut le dépasser. Il n’utilise aucun fournisseur média payant ni compte/base de production. Lire `../design/sol-evaluation-2026-10-01.md` pour les résultats, limites et mesures ; le plan de raccord au produit se trouve dans `docs/engineering/studio-conversation-integration.md` à la racine.
 
 Les tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeurs et MCP, isolation entre projets, bibliothèque globale et réutilisation, imports réels, Range, rendus FFmpeg et contraste des deux modes. Les nouveaux tests IA remplacent uniquement l’API externe par des réponses contrôlées : ils vérifient les vraies mutations, la reprise après une coupe enregistrée, les propositions publiques, un redémarrage au milieu d’une écriture, les conflits, les références possédées, les réponses incomplètes et la confidentialité des fichiers serveur. Ils ne mesurent pas la qualité créative de Sol ; elle demande des briefs réels dans le navigateur. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
 

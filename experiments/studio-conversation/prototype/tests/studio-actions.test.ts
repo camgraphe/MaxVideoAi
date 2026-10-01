@@ -9,6 +9,7 @@ import { MediaLibraryService } from "../server/library";
 import { StudioActions } from "../server/studio-actions";
 import { mcp } from "../server/mcp";
 import { mediaDir } from "../server/media";
+import { JobRunner } from "../server/jobs";
 test("MCP and the director share library adoption, typed editing and ownership checks", async () => {
   const root = await mkdtemp(join(tmpdir(), "studio-actions-"));
   try {
@@ -92,6 +93,80 @@ test("MCP and the director share library adoption, typed editing and ownership c
       /arguments/i,
     );
     assert.deepEqual(await store.get(source.id), sourceBefore);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("A shared wait returns a slow job's canonical output without running it twice", async () => {
+  const root = await mkdtemp(join(tmpdir(), "studio-wait-"));
+  const store = new ProjectStore(join(root, "projects"));
+  const service = new CommandService(store);
+  const actions = new StudioActions(
+    service,
+    new MediaLibraryService(store, root),
+  );
+  try {
+    const p = await store.create("Voix"),
+      other = await store.create("Autre");
+    const result = await service.execute(p.id, {
+      requestId: "voice",
+      command: { type: "voice", text: "Bonjour" },
+    });
+    let processed = 0;
+    const runner = new JobRunner(store, async (_p, job) => {
+      processed++;
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      return [
+        {
+          id: job.outputIds[0],
+          name: "Bonjour",
+          kind: "audio",
+          file: job.outputIds[0] + ".mp3",
+          duration: 2,
+          width: 0,
+          height: 0,
+          hasAudio: true,
+          origin: "local",
+        },
+      ];
+    });
+    const [output] = (await Promise.all([
+      actions.execute(p.id, "wait", "studio_wait", { jobId: result.jobId }),
+      runner.runOnce(),
+    ])) as any[];
+    assert.equal(output.job.state, "ready");
+    assert.equal(
+      output.project.assets[0].id,
+      result.project.jobs[0].outputIds[0],
+    );
+    assert.equal(processed, 1);
+    await actions.execute(p.id, "wait-again", "studio_wait", {
+      jobId: result.jobId,
+    });
+    assert.equal(processed, 1);
+    await assert.rejects(
+      actions.execute(other.id, "foreign", "studio_wait", {
+        jobId: result.jobId,
+      }),
+      /introuvable/i,
+    );
+    const cancelled = await service.execute(p.id, {
+      requestId: "another",
+      command: { type: "voice", text: "Bonsoir" },
+    });
+    await service.execute(p.id, {
+      requestId: "cancel",
+      command: { type: "cancel", jobId: cancelled.jobId! },
+    });
+    const terminal = (await actions.execute(
+      p.id,
+      "wait-cancelled",
+      "studio_wait",
+      { jobId: cancelled.jobId },
+    )) as any;
+    assert.equal(terminal.job.state, "cancelled");
+    assert.equal(processed, 1);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
