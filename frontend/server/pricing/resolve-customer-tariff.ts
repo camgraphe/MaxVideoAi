@@ -10,6 +10,7 @@ import {
 import type { PricingContext } from '@/lib/pricing-context';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
+import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -20,7 +21,7 @@ export function resolveCustomerTariffQuote(input: {
   facts: PricingFacts;
   at: string;
   state: EffectiveCustomerTariffState;
-}): { quote: ManualTariffQuote; revision: number } | null {
+}): { quote: ManualTariffQuote; revision: number; supplierCost: ReturnType<typeof normalBytePlusSupplierCost> } | null {
   if (input.state.status === 'unavailable') throw new CustomerTariffUnavailableError('Customer tariff database unavailable');
   if (!input.state.active) return null;
   const state = input.state;
@@ -53,8 +54,10 @@ export function resolveCustomerTariffQuote(input: {
     if (quantity === undefined) throw new ManualTariffError('invalid_quantity', `Unresolved manual tariff unit: ${unit}`);
     quantities[unit] = quantity;
   }
+  const supplierCost = input.facts.currency.toUpperCase() === 'USD'
+    ? normalBytePlusSupplierCost(input.context, input.at) : null;
   const quote = quoteCanonicalManualTariff({
-    facts: input.facts,
+    facts: supplierCost ? { ...input.facts, vendorSubtotalExactCents: Number((supplierCost.amountUsd * 100).toFixed(6)) } : input.facts,
     scenarioId: `billing:${input.context.engine.id}:${input.context.mode ?? 't2v'}:${input.context.resolution}`,
     selector,
     quantities,
@@ -62,5 +65,5 @@ export function resolveCustomerTariffQuote(input: {
     versionedCells: input.state.versionedCells,
     databaseCells: input.state.databaseCells,
   });
-  return { quote, revision: input.state.revision };
+  return { quote, revision: input.state.revision, supplierCost };
 }

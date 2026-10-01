@@ -25,6 +25,21 @@ export function supplierEvidenceLabel(list: ProviderCostComparisonRowView['suppl
     : list.status === 'unavailable' ? 'Data missing' : 'Published LIST estimate';
 }
 
+export function SupplierContractDetails({ row }: { row: ProviderCostComparisonRowView }) {
+  const contract = row.supplierEffective.contract;
+  if (!contract) return null;
+  const validThrough = new Date(Date.parse(contract.endsAt) - 1).toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+  return <div className="mt-1 space-y-1 rounded-md border border-info-border bg-info-bg p-2">
+    <p className="font-semibold text-info">{contract.discountPercent}% off LIST · {contract.id}</p>
+    <p>Valid {contract.startsAt.slice(0, 10)} → {validThrough} · Johor · USD before tax and credits</p>
+    {contract.unitPriceUsdPer1kTokens != null ? <p>Contract rate: <strong>{supplierAmount(contract.unitPriceUsdPer1kTokens)} / 1,000 tokens</strong></p> : null}
+    <details><summary className="cursor-pointer font-semibold text-info">Contract source and billing units</summary>
+      <div className="mt-1 space-y-1"><a href={contract.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-info">Open BytePlus contract <ExternalLink className="h-3 w-3" aria-hidden="true" /></a>
+        {contract.billingUnits.map(unit => <p key={unit} className="break-all font-mono text-[10px]">{unit}</p>)}</div>
+    </details>
+  </div>;
+}
+
 /** Formats server evidence only; neither supplier nor customer prices are calculated in this view. */
 export function SupplierPriceDetails({ row, showSettlement = true }: { row: ProviderCostComparisonRowView; showSettlement?: boolean }) {
   const list = row.supplierList;
@@ -52,7 +67,7 @@ export function SupplierPriceDetails({ row, showSettlement = true }: { row: Prov
     </>}
     {row.publicPromotion ? <p className="rounded-lg border border-info-border p-2">Public promotion: <strong>{supplierAmount(row.publicPromotion.amountUsd)}</strong> until {row.publicPromotion.endsAt.slice(0, 10)}. Account eligibility unconfirmed.</p> : null}
     {showSettlement ? <div className="grid gap-2 border-t border-info-border pt-3 sm:grid-cols-2">
-      <div className="rounded-lg border border-border bg-surface p-2"><p>Account contract</p><strong className="text-text-primary">{row.supplierEffective.amountUsd == null ? 'Not confirmed' : supplierAmount(row.supplierEffective.amountUsd)}</strong></div>
+      <div className="rounded-lg border border-border bg-surface p-2"><p>Account contract</p><strong className="text-text-primary">{row.supplierEffective.amountUsd == null ? 'Not confirmed' : supplierAmount(row.supplierEffective.amountUsd)}</strong><SupplierContractDetails row={row} /></div>
       <div className="rounded-lg border border-border bg-surface p-2"><p>Observed invoice</p><strong className="text-text-primary">{row.supplierObserved.amountUsd == null ? 'No invoice evidence' : supplierAmount(row.supplierObserved.amountUsd)}</strong></div>
     </div> : null}
   </div>;

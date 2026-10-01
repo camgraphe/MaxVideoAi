@@ -67,7 +67,7 @@ function ComparisonRow({ row, disabled, onInspect, onSaved }: { row: ProviderCos
   const displayedRow = selectedRow ?? row;
   const metrics = pricingDecisionMetrics(displayedRow);
   const suffix = metrics.unit === 'second' ? '/s' : '/image';
-  const estimated = metrics.costBasis !== 'contract';
+  const estimated = metrics.costBasis !== 'contract' || displayedRow.tokenEvidence === 'scenario_estimate' || displayedRow.mediaType === 'image';
   const loss = metrics.grossTotalUsd != null && metrics.grossTotalUsd < 0;
   const uncertain = metrics.costBasis === 'other_provider' || metrics.costBasis === 'unknown' || metrics.marginPercent == null;
   return <details onToggle={event => { if (event.target === event.currentTarget) setOpen(event.currentTarget.open); }} className="group overflow-hidden rounded-xl border border-border bg-surface open:border-brand/40">
@@ -75,7 +75,7 @@ function ComparisonRow({ row, disabled, onInspect, onSaved }: { row: ProviderCos
       <span className="col-span-3 min-w-0 min-[900px]:col-span-1">
         <span className="block text-sm font-bold text-text-primary">{displayName(row.engineId, MODEL_LABELS)}</span>
         <span className="mt-0.5 block text-[11px] leading-relaxed text-text-secondary">{formatProviderComparisonScenario(displayedRow)}</span>
-        <span className={`mt-0.5 block text-[10px] ${uncertain ? 'text-amber-800' : 'text-text-muted'}`}>{decisionBasisLabel(metrics.costBasis)}{displayedRow.routeConfigured === false
+        <span className={`mt-0.5 block text-[10px] ${uncertain ? 'text-amber-800' : 'text-text-muted'}`}>{decisionBasisLabel(metrics.costBasis)}{displayedRow.supplierEffective.contract ? ` · ${displayedRow.supplierEffective.contract.discountPercent}% off LIST` : ''}{displayedRow.routeConfigured === false
           ? displayedRow.generationDisabledReason === 'local_sandbox' ? ' · generation disabled locally' : ' · execution route unavailable'
           : ''}</span>
       </span>

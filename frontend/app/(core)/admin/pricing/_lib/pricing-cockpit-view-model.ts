@@ -101,6 +101,8 @@ export type ProviderCostComparisonRowView = {
     amountUsd: number | null;
     source: string | null;
     confirmedAt: string | null;
+    contract?: { id: string; sourceUrl: string; startsAt: string; endsAt: string; region: string;
+      discountPercent: number; billingUnits: string[]; unitPriceUsdPer1kTokens: number | null };
   };
   supplierObserved: {
     status: 'invoice_observed' | 'unavailable';

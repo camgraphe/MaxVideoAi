@@ -702,7 +702,8 @@ test('inventory scenario rows inherit the effective database override routing an
 });
 
 test('inventory compares ByteDance billing scenarios with their actual execution route and independent supplier evidence', async () => {
-  const inventory = await loadPricingPolicyInventory(createMemoryHarness().deps);
+  const inventory = await loadPricingPolicyInventory({ ...createMemoryHarness().deps,
+    now: () => new Date('2026-10-01T12:00:00Z') });
   const rows = inventory.providerComparisons;
   assert.equal(inventory.rows.some((row) => row.selector.engineId === 'seedance-1-5-pro'), false);
   const seedance25 = rows.find((row) => row.engineId === 'seedance-2-5' && row.mode === 't2v');
@@ -713,7 +714,8 @@ test('inventory compares ByteDance billing scenarios with their actual execution
   assert.equal(seedance25.executionProvider, 'byteplus_modelark');
   assert.equal(seedance25.supplierList.status, 'published_list_estimate');
   assert.ok((seedance25.supplierList.amountUsd ?? 0) > 0);
-  assert.equal(seedance25.supplierEffective.amountUsd, null);
+  assert.equal(seedance25.supplierEffective.amountUsd, seedance25.supplierList.amountUsd);
+  assert.equal(seedance25.supplierEffective.contract?.discountPercent, 0);
   assert.equal(seedance25.supplierObserved.amountUsd, null);
   assert.equal(seedance25.customerQuote?.source, 'versioned');
   assert.ok((seedance25.customerQuote?.totalCents ?? 0) > 0);

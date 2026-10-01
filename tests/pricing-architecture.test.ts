@@ -101,3 +101,15 @@ test('canonical quote is the sole commercial formula owner', () => {
   assert.match(imageEstimateSource, /computeCanonicalPublicStoryboardSnapshot/);
   assert.doesNotMatch(enginesSource, /export async function computePreflight/);
 });
+
+test('manual BytePlus cost is a shared factual server owner independent of the admin and legacy retail', () => {
+  const manual = readFileSync('frontend/server/pricing/resolve-customer-tariff.ts', 'utf8');
+  const supplier = readFileSync('frontend/server/byteplus-normal-cost.ts', 'utf8');
+  const contract = readFileSync('frontend/server/byteplus-account-contract.ts', 'utf8');
+  const comparison = readFileSync('frontend/server/pricing-admin/provider-cost-comparison.ts', 'utf8');
+  assert.match(manual, /normalBytePlusSupplierCost/);
+  assert.match(comparison, /bytePlusNormalListCost/);
+  assert.match(comparison, /@\/server\/byteplus-account-contract/);
+  for (const source of [supplier, contract]) assert.doesNotMatch(source, /pricing-admin|components\/|quoteCanonical|customerCents/);
+  assert.doesNotMatch(readFileSync('frontend/src/lib/pricing-billing-facts.ts', 'utf8'), /byteplus-account-contract|normalBytePlusSupplierCost/);
+});

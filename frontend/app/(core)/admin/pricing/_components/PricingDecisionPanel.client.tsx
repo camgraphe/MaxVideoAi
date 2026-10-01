@@ -6,7 +6,7 @@ import type { ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view
 import { customerCentsForTargetMargin, decisionBasisLabel, decisionPercent, decisionUsd,
   pricingDecisionMetrics, simulateCustomerUnitPrice } from '../_lib/pricing-decision';
 import { tariffEditorSelection } from '../_lib/tariff-editor-selection';
-import { SupplierPriceDetails } from './SupplierPriceDetails';
+import { SupplierPriceDetails, SupplierContractDetails } from './SupplierPriceDetails';
 import { useCustomerTariffEditor, type CustomerTariffEditor } from '../_hooks/useCustomerTariffEditor';
 import { TariffVariantControls } from './TariffVariantControls';
 import { InlineTariffReview } from './InlineTariffReview';
@@ -54,10 +54,11 @@ function PricingDecisionContent({ row, disabled, onInspect, editor }: Pick<Props
     <div className="grid gap-3 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(280px,.95fr)]">
       <section className="min-w-0 rounded-lg border border-border bg-surface p-3" aria-label="Current profitability">
         <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-xs font-bold text-text-primary">Current profitability</h4>
-          <span className={`rounded border px-1.5 py-0.5 text-[10px] ${current.costBasis === 'contract' ? 'border-info-border bg-info-bg text-info' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{decisionBasisLabel(current.costBasis)}</span></div>
+          <span className={`rounded border px-1.5 py-0.5 text-[10px] ${current.costBasis === 'contract' ? 'border-info-border bg-info-bg text-info' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{decisionBasisLabel(current.costBasis)}{row.supplierEffective.contract ? ` · ${row.supplierEffective.contract.discountPercent}% off LIST` : ''}</span></div>
         <table className="mt-2 w-full text-xs"><thead className="text-[10px] text-text-muted"><tr><th className="py-1 text-left font-medium">USD</th><th className="text-right font-medium">{suffix}</th><th className="text-right font-medium">Total · {current.quantity ?? '?'} {current.unit === 'second' ? 's' : 'images'}</th></tr></thead>
           <tbody className="divide-y divide-hairline">
             <tr><th className="py-1.5 text-left font-medium text-info">Supplier cost</th><td className="text-right tabular-nums">{decisionUsd(current.supplierUnitUsd)}</td><td className="text-right tabular-nums">{decisionUsd(current.supplierTotalUsd)}</td></tr>
+            {row.supplierEffective.contract ? <tr className="text-text-muted"><th className="py-1 text-left font-normal">Supplier LIST</th><td className="text-right tabular-nums">{decisionUsd(current.quantity && row.supplierList.amountUsd != null ? row.supplierList.amountUsd / current.quantity : null)}</td><td className="text-right tabular-nums">{decisionUsd(row.supplierList.amountUsd)}</td></tr> : null}
             <tr><th className="py-1.5 text-left font-medium text-[#5937b8]">Customer price</th><td className="text-right tabular-nums">{decisionUsd(current.customerUnitUsd)}</td><td className="text-right tabular-nums">{decisionUsd(current.customerTotalUsd)}</td></tr>
             <tr><th className="py-1.5 text-left font-semibold">Gross difference</th><td className="text-right font-semibold tabular-nums">{decisionUsd(current.grossUnitUsd)}</td><td className="text-right font-semibold tabular-nums">{decisionUsd(current.grossTotalUsd)}</td></tr>
           </tbody></table>
@@ -108,7 +109,7 @@ function PricingDecisionContent({ row, disabled, onInspect, editor }: Pick<Props
         <dl className="space-y-2 break-words text-[11px] text-text-secondary">
           <div><dt className="font-semibold">Customer total · current policy</dt><dd>{row.customerQuote ? `${row.customerQuote.ruleId} · ${row.customerQuote.source} · ${row.customerQuote.pricingMode}` : 'Customer quote unavailable'}</dd></div>
           <div><dt className="font-semibold">Observed invoice</dt><dd>{row.supplierObserved.amountUsd == null ? 'Observed unavailable' : decisionUsd(row.supplierObserved.amountUsd)}{row.supplierObserved.source ? ` · ${row.supplierObserved.source}` : ''}{row.supplierObserved.observedAt ? ` · Observed ${row.supplierObserved.observedAt.slice(0, 10)}` : ''}</dd></div>
-          <div><dt className="font-semibold">Contract price</dt><dd>{row.supplierEffective.amountUsd == null ? 'Contract unconfirmed' : decisionUsd(row.supplierEffective.amountUsd)}{row.supplierEffective.source ? ` · ${row.supplierEffective.source}` : ''}{row.supplierEffective.confirmedAt ? ` · Confirmed ${row.supplierEffective.confirmedAt.slice(0, 10)}` : ''}</dd></div>
+          <div><dt className="font-semibold">Contract price</dt><dd>{row.supplierEffective.amountUsd == null ? 'Contract unconfirmed' : decisionUsd(row.supplierEffective.amountUsd)}{row.supplierEffective.source ? ` · ${row.supplierEffective.source}` : ''}{row.supplierEffective.confirmedAt ? ` · Confirmed ${row.supplierEffective.confirmedAt.slice(0, 10)}` : ''}<SupplierContractDetails row={row} /></dd></div>
           <div><dt className="font-semibold">Exact scenario</dt><dd className="break-all font-mono text-[10px]">{row.scenarioId}</dd></div>
         </dl></div>
     </details>

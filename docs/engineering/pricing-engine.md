@@ -1,5 +1,32 @@
 # Pricing Engine
 
+## Signed BytePlus contract in the local pricing admin (2026-10-01)
+
+Adrien accepted order form `CT20260925128931` and explicitly requested using its
+commercial terms now, with console activation checked immediately before push.
+`server/byteplus-account-contract.ts` applies the signed discount to
+the independent LIST estimate for the same Johor route, billing SKU and validity
+period. Mini pays 40% of LIST, Fast 50%, and Seedream Lite/Pro 90%. Standard 2.0
+and normal 2.5 480p/720p have no discount. This is a contract-based cost estimate;
+it is not proof of console activation or an observed invoice.
+
+Both summary inventory and selected variants use the same server projection.
+The admin compares the contract cost with the unchanged canonical customer price,
+keeps LIST visible, and derives unit cost, gross margin and price simulations from
+that contract cost. Dates use the console's UTC+8 calendar (Oct 1 through Aug 26,
+2027, inclusive). Public promotions do not stack or determine this account rate.
+Other providers/regions, ordinary 2.5 1080p, Draft/final, 2.0 4K and disabled 1.5
+do not inherit a signed rate. Observed invoice evidence remains independent.
+`server/byteplus-normal-cost.ts` shares normal-task LIST facts between the admin
+and the active manual quote. The latter replaces Seedance's padded legacy retail
+basis with factual LIST/contract cost for its below-cost guard, vendor share and
+gross difference. Its snapshot base and source metadata use that same estimate,
+including image references. This does not change authored customer cents. The
+inactive legacy quote and stored historical snapshots remain intact. Expired or
+unmatched contract SKUs use LIST without inventing a discount; another execution
+provider keeps its existing facts. The production manual code flag remains off.
+See [the contract checkpoint](2026-10-01-byteplus-contract-pricing.md).
+
 ## ByteDance supplier facts migration (2026-09-28)
 
 `frontend/server/byteplus-list-tariff.ts` owns a dated, published ModelArk list-rate projection for Seedance 2.0/2.5, Seedance 1.5 audio and Draft, and Seedream 5.0 Lite/Pro. It records Fast and Mini's time-limited public promotion separately. The promotion is not an account-specific effective rate. Until the BytePlus contract and invoice are confirmed, effective and observed costs stay `null`; the BytePlus poller records a list-price estimate from reported tokens (or dimensions when tokens are missing), with its provenance. Draft and final are separate paid provider tasks.

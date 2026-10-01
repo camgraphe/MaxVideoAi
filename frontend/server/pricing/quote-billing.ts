@@ -81,11 +81,17 @@ export async function computeCanonicalBillingSnapshot(
     if (manual) {
       return projectCanonicalQuoteToSnapshot({
         quote: manual.quote,
-        base: billingFacts.base,
-        addons: billingFacts.addons,
+        base: manual.supplierCost ? { ...billingFacts.base, rate: manual.supplierCost.amountUsd / billingFacts.base.seconds,
+          amountCents: manual.quote.breakdown.vendorSubtotalExactCents } : billingFacts.base,
+        // This all-in factual estimate includes image references; legacy addons must not be counted again.
+        addons: manual.supplierCost ? [] : billingFacts.addons,
         vendorAccountId,
         meta: {
           ...billingFacts.meta,
+          ...(manual.supplierCost ? { providerCostKind: manual.supplierCost.kind,
+            providerCostSource: manual.supplierCost.source, providerCostSourceUrl: manual.supplierCost.sourceUrl,
+            providerCostCheckedAt: manual.supplierCost.checkedAt, providerCostListUsd: manual.supplierCost.listAmountUsd,
+            providerCostContract: manual.supplierCost.contract, providerCostUsage: manual.supplierCost.usage } : {}),
           pricingMode: 'manual_tariff',
           customerTariffRevision: manual.revision,
           customerTariffCellId: manual.quote.manualTariff.cellId,

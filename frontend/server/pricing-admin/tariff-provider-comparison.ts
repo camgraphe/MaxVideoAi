@@ -6,6 +6,7 @@ import { getBytePlusSeedanceAllowedModes, isBytePlusSeedanceSubmissionEnabled,
 import { assertBytePlusTransportConfigured, getBytePlusArkConfig, isBytePlusModelArkEnabled } from '@/server/video-providers/byteplus-modelark';
 import { lumaAgentsImageDirectEnabled } from '@/server/images/luma-agents-execution';
 import { providerComparisonInputFromScenario, type ProviderCostComparisonInput } from './provider-cost-comparison';
+import { ENV } from '@/lib/env';
 
 /** Uses the same route policy as generation. A disabled direct route never silently becomes Fal. */
 export function providerComparisonForTariffScenario(scenario: ManualTariffCoverageScenario): ProviderCostComparisonInput {
@@ -49,5 +50,6 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
         ...(typeof context.addons?.audio === 'boolean' ? { audio: context.addons.audio } : {}) } },
     context, quote: null, engine: entry.engine, brandId: entry.brandId, familyId: entry.family,
     executionProvider, mediaType: entry.category === 'image' ? 'image' : 'video',
-  }), routeConfigured, generationDisabledReason: sandbox ? 'local_sandbox' : routeConfigured === false ? 'route_unavailable' : null };
+  }), ...(executionProvider === 'byteplus_modelark' ? { accountContractRegion: ENV.BYTEPLUS_ARK_REGION } : {}),
+    routeConfigured, generationDisabledReason: sandbox ? 'local_sandbox' : routeConfigured === false ? 'route_unavailable' : null };
 }

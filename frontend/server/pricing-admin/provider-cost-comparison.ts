@@ -15,8 +15,10 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
 import { catalogSupplierReference, type CatalogSupplierReference, type SupplierRateLine } from './catalog-supplier-reference';
 import { publishedSupplierEstimate, type PublishedSupplierEstimate } from './published-supplier-tariffs';
+import { signedBytePlusContractCost, type BytePlusContractTerms } from '@/server/byteplus-account-contract';
+import { bytePlusNormalListCost } from '@/server/byteplus-normal-cost';
 
-type CostEvidence = { amountUsd: number; source: string; confirmedAt: string };
+type CostEvidence = { amountUsd: number; source: string; confirmedAt: string; contract?: BytePlusContractTerms };
 type CustomerQuoteSummary = {
   totalCents: number;
   currency: string;
@@ -43,6 +45,7 @@ export type ProviderCostComparisonInput = {
   familyId?: string;
   engineId: string;
   executionProvider: string;
+  accountContractRegion?: string;
   routeConfigured?: boolean | null;
   generationDisabledReason?: 'local_sandbox' | 'route_unavailable' | null;
   mediaType?: 'video' | 'image';
@@ -210,7 +213,7 @@ export type ProviderCostComparisonRow = {
     startsAt: string;
     endsAt: string;
   } | null;
-  supplierEffective: { status: 'confirmed' | 'account_contract_unconfirmed' | 'unavailable'; amountUsd: number | null; source: string | null; confirmedAt: string | null };
+  supplierEffective: { status: 'confirmed' | 'account_contract_unconfirmed' | 'unavailable'; amountUsd: number | null; source: string | null; confirmedAt: string | null; contract?: BytePlusContractTerms };
   supplierObserved: { status: 'invoice_observed' | 'unavailable'; amountUsd: number | null; source: string | null; observedAt: string | null };
   customerQuote: ProviderCostComparisonInput['customerQuote'];
   indicativeDifferenceVsListCents: number | null;
@@ -254,6 +257,21 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
     return { supplierList: { status: 'catalog_reference_estimate', ...reference,
       unitPriceUsdPer1kTokens: null, checkedAt: null, reason: null,
       routeMatches: input.executionProvider === reference.referenceProvider }, publicPromotion: null };
+  }
+
+  if (input.step === 'normal' && input.engineId !== 'seedance-1-5-pro') {
+    const image = input.engineId === 'seedream' || input.engineId === 'seedream-5-0-pro';
+    const estimate = image || input.tokenEvidence ? bytePlusNormalListCost(input) : null;
+    if (estimate) {
+      const rate = VIDEO_PROFILES[input.engineId as keyof typeof VIDEO_PROFILES];
+      const promotion = rate && input.billingInputType ? getPublishedPromotionAt(getBytePlusVideoListRate({
+        profile: rate, resolution: input.resolution, billingInputType: input.billingInputType,
+      }), at) : null;
+      return { supplierList: { status: input.tokenEvidence === 'provider_reported'
+        ? 'published_list_from_usage' : 'published_list_estimate', ...estimate, reason: null },
+      publicPromotion: promotion && input.videoTokens ? { amountUsd: amountUsd(input.videoTokens, promotion.unitPriceUsdPer1kTokens),
+        unitPriceUsdPer1kTokens: promotion.unitPriceUsdPer1kTokens, startsAt: promotion.startsAt, endsAt: promotion.endsAt } : null };
+    }
   }
 
   if (input.engineId === 'seedream' || input.engineId === 'seedream-5-0-pro') {
@@ -349,7 +367,8 @@ export function buildProviderCostComparisonRows(
           quantity: 1, unitPriceUsd: estimate.totalUsd, amountUsd: estimate.totalUsd }];
       }
     }
-    const effective = validEvidence(input.confirmedEffectiveCost, at) ? input.confirmedEffectiveCost : null;
+    const effective = validEvidence(input.confirmedEffectiveCost, at) ? input.confirmedEffectiveCost
+      : signedBytePlusContractCost(input, supplierList, at);
     const observed = validEvidence(input.observedInvoiceCost, at) ? input.observedInvoiceCost : null;
     const sameCurrency = input.customerQuote?.currency.toUpperCase() === 'USD';
     return {
@@ -378,7 +397,8 @@ export function buildProviderCostComparisonRows(
       supplierList,
       publicPromotion,
       supplierEffective: effective
-        ? { status: 'confirmed', amountUsd: effective.amountUsd, source: effective.source, confirmedAt: effective.confirmedAt }
+        ? { status: 'confirmed', amountUsd: effective.amountUsd, source: effective.source, confirmedAt: effective.confirmedAt,
+          ...(effective.contract ? { contract: effective.contract } : {}) }
         : { status: input.executionProvider === 'byteplus_modelark' ? 'account_contract_unconfirmed' : 'unavailable',
           amountUsd: null, source: null, confirmedAt: null },
       supplierObserved: observed
