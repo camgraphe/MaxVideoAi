@@ -106,6 +106,18 @@ export function createImageConversationService(
   const factory =
     dependencies.generationFactory ?? createStudioImageGenerationService;
   const generation = factory(actor, { enabled: dependencies.enabled });
+  async function wallet() {
+    try {
+      const summary = await generation.walletSummary();
+      return Number.isSafeInteger(summary.balanceCents) &&
+        summary.balanceCents >= 0
+        ? { amountCents: summary.balanceCents, currency: summary.currency }
+        : null;
+    } catch {
+      // A wallet read failure must not hide the saved conversation or enable a charge.
+      return null;
+    }
+  }
   async function project() {
     if (!dependencies.enabled)
       throw new AgentApiError(
@@ -116,6 +128,7 @@ export function createImageConversationService(
   }
   async function projectTurn(
     turn: StoredImageTurn,
+    readWallet: typeof wallet = wallet,
   ): Promise<ImageConversationTurn> {
     const expiredLease =
       turn.state === "thinking" &&
@@ -128,6 +141,7 @@ export function createImageConversationService(
         "INTERNAL_ERROR",
         "The saved image quote is unavailable.",
       );
+    const balance = quote ? await readWallet() : null;
     return {
       requestId: turn.request_id,
       message: turn.input_json.message,
@@ -144,6 +158,7 @@ export function createImageConversationService(
             price: { amountCents: quote.priceCents, currency: quote.currency },
             fundingMode: "wallet",
             confirmationRequired: true,
+            wallet: balance?.currency === quote.currency ? balance : null,
             state:
               quote.state === "prepared" &&
               quote.expiresAt.getTime() <= Date.now()
@@ -162,10 +177,15 @@ export function createImageConversationService(
     async read(): Promise<ImageConversation> {
       const owned = await project();
       const turns = await listImageTurns(actor);
+      // Share this read across the returned turns, never across requests or refreshes.
+      let balance: ReturnType<typeof wallet> | undefined;
+      const readWallet = () => (balance ??= wallet());
       return {
         projectId: actor.projectId,
         projectName: owned.name,
-        turns: await Promise.all(turns.reverse().map(projectTurn)),
+        turns: await Promise.all(
+          turns.reverse().map((turn) => projectTurn(turn, readWallet)),
+        ),
       };
     },
     async submit(value: unknown) {

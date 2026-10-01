@@ -31,6 +31,7 @@ import type { CanonicalGenerationRequest } from "@/server/agent-api/generation-t
 import type { ResolvedReference } from "@/server/agent-api/reference-types";
 import { withDbTransaction, type TransactionQueryExecutor } from "@/lib/db";
 import { resolveStudioMedia } from "./media-resolver";
+import { getWalletSummary } from "@/server/wallet-summary";
 
 function certified(catalog: AgentPublicGenerationEngine[]) {
   return catalog
@@ -177,6 +178,8 @@ export function createStudioImageGenerationService(
     },
   );
   return {
+    walletSummary: () =>
+      (prepareDeps.getWalletSummary ?? getWalletSummary)(actor.userId),
     catalog: async () =>
       certified(
         await (

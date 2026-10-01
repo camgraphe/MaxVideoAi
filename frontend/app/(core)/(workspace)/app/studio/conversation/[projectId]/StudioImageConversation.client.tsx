@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowUp, Plus, Sparkles, Sun, Moon } from "lucide-react";
+import { Plus, Sparkles, Sun, Moon } from "lucide-react";
 import { useImageConversation } from "./_hooks/useImageConversation";
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
+import { ImageConversationComposer } from "./_components/ImageConversationComposer.client";
 import {
   ImageReferenceLibrary,
   type ImageLibraryAsset,
@@ -13,10 +14,12 @@ export default function StudioImageConversation({
   projectId,
   accountKey,
   projectName,
+  localQa = false,
 }: {
   projectId: string;
   accountKey: string;
   projectName: string;
+  localQa?: boolean;
 }) {
   const studio = useImageConversation(projectId, accountKey, projectName);
   const [text, setText] = useState("");
@@ -177,6 +180,8 @@ export default function StudioImageConversation({
                 <ImageQuoteCard
                   turn={turn}
                   busy={studio.busy}
+                  localQa={localQa}
+                  onRefresh={() => void studio.refresh()}
                   onConfirm={() =>
                     void studio.confirm(turn.requestId, turn.quote!.quoteId)
                   }
@@ -268,7 +273,7 @@ export default function StudioImageConversation({
                   disabled={studio.busy}
                   onClick={() => void studio.refresh()}
                 >
-                  Vérifier le résultat
+                  {studio.needsFunds ? "Actualiser le solde" : "Vérifier le résultat"}
                 </button>
               )}
             </div>
@@ -295,45 +300,14 @@ export default function StudioImageConversation({
               ))}
             </div>
           )}
-          <form
-            className={styles.composer}
-            onSubmit={(event) => {
-              event.preventDefault();
-              void send();
-            }}
-          >
-            <button
-              type="button"
-              disabled={studio.busy || !!studio.pending}
-              ref={libraryTrigger}
-              aria-label="Ouvrir la bibliothèque"
-              onClick={() => setLibrary(true)}
-            >
-              <Plus size={21} />
-            </button>
-            <textarea
-              rows={1}
-              aria-label="Message à Studio"
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              placeholder="Décrivez votre idée…"
-              maxLength={4000}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  void send();
-                }
-              }}
-            />
-            <button
-              className={styles.send}
-              type="submit"
-              disabled={!text.trim() || studio.busy || !!studio.pending}
-              aria-label="Envoyer à Studio"
-            >
-              <ArrowUp size={20} />
-            </button>
-          </form>
+          <ImageConversationComposer
+            text={text}
+            onTextChange={setText}
+            onSend={() => void send()}
+            blocked={studio.busy || !!studio.pending}
+            libraryTrigger={libraryTrigger}
+            onOpenLibrary={() => setLibrary(true)}
+          />
           <p className={styles.footnote}>
             Un devis avant chaque création. Vous gardez la main.
           </p>

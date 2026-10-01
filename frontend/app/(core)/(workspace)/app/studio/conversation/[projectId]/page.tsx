@@ -42,6 +42,7 @@ export default async function StudioConversationPage({
               projectId={projectId}
               accountKey={access.userId}
               projectName={project.name}
+              localQa={localQa}
             />
           ) : (
             <StudioPreviewAccess

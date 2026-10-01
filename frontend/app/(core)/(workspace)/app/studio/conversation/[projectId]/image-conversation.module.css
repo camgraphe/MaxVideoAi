@@ -238,6 +238,20 @@
   text-align: center;
   line-height: 1.5;
 }
+.walletActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  font-size: 12px;
+}
+.walletActions a { color: var(--studio-accent); }
+.walletActions button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--studio-line);
+  border-radius: 10px;
+}
 .results {
   margin: 16px 0 0 28px;
   display: grid;
@@ -314,13 +328,17 @@
   flex: 1;
   resize: none;
   min-width: 0;
+  box-sizing: border-box;
+  height: 45px;
+  min-height: 45px;
+  max-height: max(45px, min(160px, 22dvh));
+  overflow-y: auto;
   color: inherit;
   background: transparent;
   border: 0;
   padding: 12px 0;
   line-height: 1.5;
   font-size: 14px;
-  max-height: 110px;
   outline: none;
 }
 .composer textarea::placeholder {

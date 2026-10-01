@@ -278,6 +278,66 @@ test("the background read after a failed confirmation does not clear its visible
   }
 });
 
+test("an insufficient wallet explains the refusal instead of exposing the English backend message", async () => {
+  const view = await mount();
+  try {
+    view.queuePost({
+      ok: false,
+      payload: { ok: false, error: "INSUFFICIENT_FUNDS", message: "Add funds before confirming this generation." },
+    });
+    await act(async () => view.state.confirm("request-id", "quote-id"));
+    assert.match(view.state.error ?? "", /solde.*insuffisant/i);
+    assert.doesNotMatch(view.state.error ?? "", /Add funds/);
+  } finally {
+    await view.close();
+  }
+});
+
+test("only an explicit refresh with sufficient current funds clears a wallet refusal", async () => {
+  const quotedTurn = {
+    requestId: "request-id", state: "ready", quote: {
+      quoteId: "quote-id", state: "prepared", expiresAt: new Date(Date.now() + 60000).toISOString(),
+      price: { amountCents: 6, currency: "USD" }, wallet: { amountCents: 6, currency: "USD" },
+    },
+  };
+  const view = await mount([quotedTurn]);
+  try {
+    view.queuePost({ ok: false, payload: { ok: false, error: "INSUFFICIENT_FUNDS" } });
+    await act(async () => view.state.confirm("request-id", "quote-id"));
+    assert.match(view.state.error ?? "", /solde.*insuffisant/i, "automatic read must preserve the refusal");
+    view.queueRead({ payload: { ok: true, result: { projectId: "project-a", projectName: "Test", turns: [{ ...quotedTurn, quote: { ...quotedTurn.quote, wallet: { amountCents: 0, currency: "USD" } } }] } } });
+    await act(async () => view.state.refresh());
+    assert.match(view.state.error ?? "", /solde.*insuffisant/i);
+    view.queueRead({ payload: { ok: true, result: { projectId: "project-a", projectName: "Test", turns: [quotedTurn] } } });
+    await act(async () => view.state.refresh());
+    assert.equal(view.state.error, null);
+    assert.equal(view.requests.filter((r) => r.method === "POST").length, 1, "refresh must never repeat confirmation");
+  } finally { await view.close(); }
+});
+
+test("a wallet refresh queued behind another read waits for its own fresh balance", async () => {
+  const quotedTurn = { requestId: "request-id", state: "ready", quote: {
+    quoteId: "quote-id", state: "prepared", expiresAt: new Date(Date.now() + 60000).toISOString(),
+    price: { amountCents: 6, currency: "USD" }, wallet: { amountCents: 0, currency: "USD" },
+  }};
+  const view = await mount([quotedTurn]);
+  try {
+    view.queuePost({ ok: false, payload: { ok: false, error: "INSUFFICIENT_FUNDS" } });
+    await act(async () => view.state.confirm("request-id", "quote-id"));
+    let release!: (value: {ok: boolean; payload: unknown}) => void;
+    view.queueRead(() => new Promise((resolve) => { release = resolve; }));
+    view.queueRead({ payload: { ok: true, result: { projectId: "project-a", projectName: "Test", turns: [{...quotedTurn, quote: {...quotedTurn.quote, wallet: {amountCents: 6, currency: "USD"}}}] } } });
+    await act(async () => {
+      const first = view.state.refresh();
+      const queued = view.state.refresh();
+      release({ok: true, payload: {ok: true, result: {projectId: "project-a", projectName: "Test", turns: [quotedTurn]}}});
+      await Promise.all([first, queued]);
+    });
+    assert.equal(view.state.error, null);
+    assert.equal(view.requests.filter((r) => r.method === "POST").length, 1);
+  } finally { await view.close(); }
+});
+
 test("reload of a POST never committed exposes recovery and retries the same immutable input", async () => {
   const view = await mount([], undefined, true);
   try {

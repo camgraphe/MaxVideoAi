@@ -34,6 +34,7 @@ export type ImageConversationTurn = {
     | (Omit<PreparedGeneration, "balance" | "topupRequired"> & {
         state: "prepared" | "claimed" | "accepted" | "failed" | "expired";
         modelLabel: string;
+        wallet: { amountCents: number; currency: string } | null;
       })
     | null;
   generation: AgentGenerationStatus | null;
