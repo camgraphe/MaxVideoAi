@@ -60,6 +60,31 @@ BEGIN
 END;
 $$;
 
+-- Migration replay must preserve the raster correction installed by migration 60.
+-- These are the only two owned definitions; an unfamiliar function fails closed.
+DO $trial_cost$
+DECLARE
+  existing pg_proc%ROWTYPE;
+BEGIN
+  SELECT * INTO existing FROM pg_proc
+   WHERE oid = to_regprocedure('public.mcp_trial_provider_cost_matches_snapshot(text,numeric)');
+  IF FOUND AND (
+    existing.prosrc NOT IN ('SELECT provider_cost = CASE aspect_ratio WHEN ''1:1'' THEN 10 WHEN ''16:9'' THEN 17 WHEN ''9:16'' THEN 17 ELSE NULL END', 'SELECT provider_cost = CASE aspect_ratio WHEN ''1:1'' THEN 10 WHEN ''16:9'' THEN 17 WHEN ''9:16'' THEN 17 ELSE NULL END OR provider_cost = CASE aspect_ratio WHEN ''1:1'' THEN 17 WHEN ''16:9'' THEN 18 WHEN ''9:16'' THEN 18 ELSE NULL END')
+    OR existing.provolatile <> 'i' OR NOT existing.proisstrict
+    OR existing.proparallel <> 's' OR existing.prokind <> 'f'
+    OR existing.prolang <> (SELECT oid FROM pg_language WHERE lanname = 'sql')
+    OR existing.prorettype <> 'boolean'::regtype
+  ) THEN
+    RAISE EXCEPTION 'Unexpected MCP trial provider-cost function; manual review required';
+  END IF;
+  IF NOT FOUND THEN
+    EXECUTE $definition$CREATE FUNCTION public.mcp_trial_provider_cost_matches_snapshot(aspect_ratio TEXT, provider_cost NUMERIC)
+      RETURNS BOOLEAN LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE SET search_path = pg_catalog
+      AS $body$SELECT provider_cost = CASE aspect_ratio WHEN '1:1' THEN 10 WHEN '16:9' THEN 17 WHEN '9:16' THEN 17 ELSE NULL END$body$ $definition$;
+  END IF;
+END
+$trial_cost$;
+
 ALTER TABLE mcp_generation_quotes
   DROP CONSTRAINT IF EXISTS mcp_generation_quotes_funding_wallet;
 ALTER TABLE mcp_generation_quotes
@@ -138,13 +163,10 @@ ALTER TABLE mcp_generation_quotes
         AND jsonb_typeof(pricing_snapshot #> '{funding,providerCostCents}') = 'number'
         AND (pricing_snapshot #>> '{funding,providerCostCents}') ~ '^[1-9][0-9]*$'
         AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric <= 100
-        AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric = CASE
-          request_json #>> '{settings,aspectRatio}'
-          WHEN '1:1' THEN 10
-          WHEN '16:9' THEN 17
-          WHEN '9:16' THEN 17
-          ELSE NULL
-        END
+        AND public.mcp_trial_provider_cost_matches_snapshot(
+          request_json #>> '{settings,aspectRatio}',
+          (pricing_snapshot #>> '{funding,providerCostCents}')::numeric
+        )
         AND pricing_snapshot #> '{canonicalPricing,totalCents}'
           = pricing_snapshot #> '{funding,normalPriceCents}'
         AND pricing_snapshot #>> '{canonicalPricing,currency}' = currency

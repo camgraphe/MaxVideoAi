@@ -202,6 +202,7 @@ function parseTrialFunding(
   currency: string,
   fundingMode: GenerationFundingMode,
   request: CanonicalGenerationRequest,
+  persistedRead = false,
 ): IncludedTrialFundingSnapshot | null {
   const hasFunding = Object.prototype.hasOwnProperty.call(pricingSnapshot, 'funding');
   if (fundingMode === 'wallet') {
@@ -213,6 +214,12 @@ function parseTrialFunding(
     ? pricingSnapshot.canonicalPricing
     : null;
   const authoritativeProviderCostCents = getAuthoritativeTrialProviderCostCents(request);
+  // Before the 2026-10-01 raster correction, persisted Mini trial costs were
+  // 10c square / 17c wide or portrait. Read those immutable snapshots only;
+  // inserts and fresh confirmation still require the current authoritative cost.
+  const historicalProviderCostCents = request.settings.aspectRatio === '1:1' ? 10 : 17;
+  const matchingProviderCost = funding?.providerCostCents === authoritativeProviderCostCents
+    || (persistedRead && funding?.providerCostCents === historicalProviderCostCents);
   if (priceCents !== 0
     || !hasExactKeys(pricingSnapshot, TRIAL_PRICING_SNAPSHOT_KEYS)
     || hasForbiddenTrialFundingSemantics(pricingSnapshot, new Set(), true)
@@ -224,7 +231,7 @@ function parseTrialFunding(
     || (funding.normalPriceCents as number) <= 0
     || !Number.isSafeInteger(funding.providerCostCents)
     || (funding.providerCostCents as number) <= 0
-    || funding.providerCostCents !== authoritativeProviderCostCents
+    || !matchingProviderCost
     || !canonicalPricing
     || canonicalPricing.totalCents !== funding.normalPriceCents
     || canonicalPricing.currency !== currency
@@ -252,7 +259,7 @@ export function createQuoteRepository<Request>(codec: {
   surfaces: readonly ('video' | 'image' | 'audio')[];
   normalize(value: unknown): Request;
   hash(value: Request): string;
-  parseFunding(snapshot: Record<string, unknown>, priceCents: number, currency: string, mode: GenerationFundingMode, request: Request): IncludedTrialFundingSnapshot | null;
+  parseFunding(snapshot: Record<string, unknown>, priceCents: number, currency: string, mode: GenerationFundingMode, request: Request, persistedRead?: boolean): IncludedTrialFundingSnapshot | null;
 }) {
   if (!codec.surfaces.length || codec.surfaces.some(surface => !['video', 'image', 'audio'].includes(surface))) throw new Error('Invalid quote surface codec.');
   // Internal allowlisted literals; request values never enter SQL text.
@@ -377,6 +384,7 @@ export function createQuoteRepository<Request>(codec: {
         row.currency,
         fundingMode,
         request,
+        true,
       );
     } catch {
       throw new Error('Invalid quote row.');

@@ -697,3 +697,14 @@ Preparation and locked reproduction share the same baseline provenance serialize
 The public HTTP parser uses the same open-quantity classifier as the canonical
 owner; it does not impose the former 120-second/10,000-token transport limits on
 Luma Modify/H3 reference quotes. Safe-integer and unrelated input limits remain.
+
+### Included MCP trial funding after the raster correction
+
+The Mini 5s 480p trial still charges the customer zero. Its private supplier LIST
+budget now uses the published 2.0 dimensions: 18 cents wide/portrait and 17 cents
+square, rounded upward. `quote-repository.ts` permits the known earlier 17/10-cent
+snapshots only when reading persisted quotes. New insertion and fresh confirmation
+require the current authoritative estimate. Accepted quote recovery preserves its
+stored funding; old prepared quotes must be prepared again. Migration 60 expands
+the database CHECK for historical/current tuples and migration 31 preserves that
+upgrade on replay. Do not substitute padded retail cents for this supplier budget.

@@ -81,3 +81,18 @@ rollback. The migration does not repair or update source jobs.
 ## Gallery opening slots
 
 `53_playlist_opening.sql` follows migration52 and adds optional four-video opening IDs. It is additive and replayable; it does not change any destination or media. Before applying it, test on a database branch. Runtime readers and ordinary curation retain compatibility without the column; the new admin selector appears only after migration. Do not apply migrations from a public request.
+
+## MCP Mini supplier raster correction (migration 60)
+
+Apply `60_mcp_trial_provider_rasters.sql` after migration 31 and before deploying
+the corrected Mini trial estimator. New 5s 480p estimates are 18 cents for 16:9
+and 9:16, and 17 cents for 1:1. New quote insertion and confirmation use the
+current estimator; an older prepared quote must be prepared again. Accepted
+historical trial quotes retain their original 17/10-cent funding snapshots.
+
+Migration 31's replay now preserves the two known definitions of the cost CHECK
+helper. Migration 60 upgrades an existing installation as well as a fresh one,
+and preserves all canonical request, zero-customer-charge, private funding and
+audit constraints. Replaying 31/60 does not rewrite quote or audit rows. Both
+refuse an unfamiliar helper definition. This change has only been applied to
+disposable local PostgreSQL fixtures, not a hosted database.
