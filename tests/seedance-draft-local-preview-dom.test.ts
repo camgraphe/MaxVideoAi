@@ -88,6 +88,29 @@ test('editing the idea keeps the trial mode selected while discarding the previo
   } finally { await f.dispose(); }
 });
 
+test('starting a new Draft unlocks setup without leaving Draft mode or accepting old final quotes', async () => {
+  const f = await mount();
+  try {
+    await act(async () => f.preview.toggle());
+    await act(async () => f.preview.generate());
+    let pending: Promise<void>;
+    await act(async () => { pending = f.preview.requestFinal(); });
+    await act(async () => f.preview.restart());
+    assert.equal(f.preview.selected, true);
+    assert.equal(f.preview.phase, 'setup');
+    assert.equal(f.preview.snapshot, null);
+    assert.equal(f.preview.pending, false);
+    assert.deepEqual(f.resolutions, ['480p'], 'starting over must keep the Draft resolution');
+    await f.respond({ status: 'exact', amountCents: 129, currency: 'USD' });
+    await f.respond({ status: 'exact', amountCents: 651, currency: 'USD' }, 1);
+    await pending!;
+    assert.equal(f.preview.finalQuote, null);
+    assert.equal(f.preview.trialQuote, null);
+    await act(async () => f.preview.confirmSimulation());
+    assert.equal(f.preview.phase, 'setup');
+  } finally { await f.dispose(); }
+});
+
 test('the preview does not expose Draft for another model or a disabled page', async () => {
   for (const [enabled, engine] of [[false, 'seedance-2-5'], [true, 'seedance-2-0-mini']] as const) {
     const f = await mount(enabled, engine);

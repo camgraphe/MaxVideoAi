@@ -288,7 +288,12 @@ export function WorkspaceAppReadyView({
         handleEngineChange={modelReview.switchModel}
         modelReviewCommands={
           <>
-            <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+            {draftPreview.selected ? (
+              <div className="relative">
+                <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-[var(--app-accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--app-accent)]">Mode Draft</span>
+                <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+              </div>
+            ) : <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />}
             <WorkspaceActiveDraftStatus draft={activeDraft} locale={uiLocale} openRecovery={() => modelReview.open('saved')} />
           </>
         }

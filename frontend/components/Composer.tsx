@@ -58,6 +58,7 @@ export function Composer({
   onOpenLibrary,
   onAssetUrlSelect,
   settingsBar,
+  settingsNotice,
   generateControl,
   optionsControl,
   isPricing = false,
@@ -287,6 +288,7 @@ export function Composer({
                     </div>
                   ) : null}
                 </div>
+                {settingsNotice}
               </div>
             ) : null;
 

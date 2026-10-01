@@ -66,7 +66,7 @@ export function useSeedanceDraftLocalPreview(options: Options) {
   function generate() {
     // This hook deliberately has no generation-runner or billing callback.
     if (!available || !selected || !form) {
-      showNotice('Maquette locale : aucune génération ni facturation. Choisissez « Essayer d’abord » pour parcourir les étapes.');
+      showNotice('Maquette locale : aucune génération ni facturation. Activez « Draft 480p → final 1080p » pour parcourir les étapes.');
       return;
     }
     sequence.current += 1;
@@ -131,10 +131,20 @@ export function useSeedanceDraftLocalPreview(options: Options) {
     }
   }
 
+  function restart() {
+    sequence.current += 1;
+    setPhase('setup');
+    setSnapshot(null);
+    setFinalQuote(null);
+    setTrialQuote(null);
+    setPending(false);
+    setError(null);
+  }
+
   return {
     available, selected: available && selected, phase, snapshot, finalQuote, trialQuote, pending, error,
     combinedReferenceCents: trialQuote?.status === 'exact' && finalQuote?.status === 'exact'
       ? trialQuote.amountCents + finalQuote.amountCents : null,
-    toggle, generate, requestFinal, confirmSimulation, cancel,
+    toggle, generate, requestFinal, confirmSimulation, cancel, restart,
   };
 }
