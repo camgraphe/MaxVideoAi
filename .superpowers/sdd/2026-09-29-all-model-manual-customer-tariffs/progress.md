@@ -583,3 +583,37 @@ No deferred minor from the final review; earlier admin whole-grid performance
 acceptance remains deferred. The final completion report links every earlier
 ruling, review limitation and remaining release gate. Keep the existing worktree/
 ledger for the production continuation; no push/merge/deploy/external action.
+
+2026-10-02 proportional Seedance input pricing accepted locally. User approved
+preserving each positive variant gross margin as supplier input consumption rises.
+Literal unit components store one billable-second rate, the published minimum,
+included input threshold and final upward cent rounding. Quotes use trusted actual
+source duration; unresolved references do not establish a numeric current tariff.
+Negative minima use the matching positive no-video margin, or matching t2v output
+options for v2v/extend lacking a no-video counterpart. Cost if wrong: an unpriced
+source can exhaust a formerly profitable margin; all-domain guards and explicit
+initialization scope are required. No blanket percentage rule is restored.
+
+Local append d41f7269f/27282c8db preserved all prior cells/history and wrote3186
+continuous classes, correcting273 minima. Private sandbox328→3514,18168cells.
+Actual read-only audit20437 accepted normal/workflow quotes,0errors/legacy/negative
+margins,6372 source stress cases accepted/0belowcost. Unaffected17251 quotes and38
+product records unchanged. Private prewriteSQL backup and fingerprinted apply
+receipts retained. These counts certify local estimates, not actual invoices/prod.
+
+Environment-free optimized d41f7269f build succeeds920pages. Fullstandard6715pass,
+1fail,3skip exposed old all-model initialization dispatching Seedance as Wan.
+9d42fd2cf fixes this with the approved margin policy bound to the report/fingerprint,
+reproduced under locks; alternate Fal route keeps its own captured facts/amounts.
+Shared factual-env allowlist binds route/region/modes and Luma rates without secrets.
+Full-matrix atomic PostgreSQL regression now passes;14 focused release tests pass.
+Earlier74 admin/provider/media/MCP parity tests pass; currentTS/app/exposure lint
+anddiffcheckpass. No full-suite rerun is claimed after the initialization patch.
+
+Actual browser Standard4s480p16:9ref2v shows source2s→68c/55.5% and15s→185c/55.6%,
+minimum7billable seconds and customer0.09714285714285714USD/billable second editor.
+Existing approved localadmin session refreshed unchangedscope. Real screenshot
+/tmp/maxvideoai-seedance-proportional-pricing.jpg; existingadmin tab retained.
+Datedtrackedreport docs/engineering/2026-10-02-seedance-proportional-pricing.md
+records verification scope and pending contract/production capture/CI/release gates.
+No paidprovider test, support/email, prodwrite, push, merge or deploy this correction.
