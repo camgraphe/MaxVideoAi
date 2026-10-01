@@ -19,7 +19,7 @@ export type Command =
  | {type:'remove'; clipId:string}
  | {type:'assemble'; assetIds:string[]}
  | {type:'undo'|'redo'}
- | {type:'images'; count?:number; prompt?:string}
+ | {type:'images'; count?:number; prompt?:string; buildFilm?:boolean}
  | {type:'animate'; assetId:string; duration:number; motion:'gentle'|'pan'|'still'}
  | {type:'voice'; text:string}
  | {type:'music'; duration:number}
