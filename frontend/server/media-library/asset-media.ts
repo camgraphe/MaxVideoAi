@@ -1,3 +1,5 @@
+import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
+import { measureGeneratedVideoBuffer } from '@/server/media/generated-video-facts';
 import { uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 import { inferMimeFromUrl, type MediaKind } from '../media-library-records';
@@ -8,7 +10,8 @@ export async function copyRemoteMedia(params: {
   kind: MediaKind;
   mimeType?: string | null;
   fileName?: string | null;
-}): Promise<{ url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
+  ownedGeneratedVideo?: { mediaFacts: GeneratedVideoFacts | null };
+}): Promise<{ mediaFacts?: GeneratedVideoFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
   const parsed = new URL(params.url);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
@@ -44,6 +47,8 @@ export async function copyRemoteMedia(params: {
     prefix: 'media-assets',
     fileName: params.fileName,
   });
+  const mediaFacts = params.kind === 'video' && params.ownedGeneratedVideo
+    ? await measureGeneratedVideoBuffer(buffer, upload.url, params.ownedGeneratedVideo.mediaFacts).catch(() => null) : null;
   const thumbUrl =
     params.kind === 'video'
       ? await createUploadVideoThumbnail({
@@ -59,6 +64,7 @@ export async function copyRemoteMedia(params: {
     width: null,
     height: null,
     sizeBytes: buffer.length,
+    mediaFacts,
   };
 }
 

@@ -1,6 +1,6 @@
-import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
+import { getKnownGenerationFailureMessage, getMinimaxReferenceValidationMessage } from '@/lib/generation-failure-messages';
 import { SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED } from '@/lib/video-failure-codes';
-import { appendConfirmedWalletRefund, getSeedanceFailureMessage, getSeedanceReferenceValidationMessage } from '@/lib/seedance-failure-messages';
+import { appendConfirmedWalletRefund, getSeedanceReferenceValidationMessage } from '@/lib/seedance-failure-messages';
 
 export type WorkspaceFailureCopy = {
   messages: {
@@ -21,7 +21,7 @@ export function getWorkspaceGenerationFailureMessage(
   options: { locale?: string } = {}
 ): string | null {
   if (status.failureCode !== SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED) {
-    const message = getSeedanceFailureMessage({ ...status, locale: options.locale });
+    const message = getKnownGenerationFailureMessage({ ...status, locale: options.locale });
     return message ? appendConfirmedWalletRefund(message, {
       paymentStatus: status.paymentStatus,
       amountCents: status.finalPriceCents,
@@ -29,7 +29,7 @@ export function getWorkspaceGenerationFailureMessage(
       locale: options.locale,
     }) : status.message ?? null;
   }
-  return isRefundedPaymentStatus(status.paymentStatus)
+  return status.paymentStatus === 'refunded_wallet'
     ? copy.messages.seedanceCopyrightBlockedRefunded
     : copy.messages.seedanceCopyrightBlocked;
 }
@@ -40,7 +40,8 @@ export function getWorkspaceGenerationRequestFailureMessage(
   copy: WorkspaceFailureCopy,
   options: { locale: string; engineId: string }
 ): string {
-  const validationMessage = getSeedanceReferenceValidationMessage({ ...error, ...options });
+  const validationMessage = getSeedanceReferenceValidationMessage({ ...error, ...options })
+    ?? getMinimaxReferenceValidationMessage({ ...error, ...options });
   if (validationMessage) return validationMessage;
   return getWorkspaceGenerationFailureMessage({
     message: fallback,

@@ -212,3 +212,14 @@ test('MiniMax H3 maps end-only frames, soundtracks, seed, and expansion without 
   assert.equal(reference.prompt_expansion_mode, 'fast');
   assert.equal('target_audio_url' in reference, false);
 });
+
+test('MiniMax output durations 10 and 15 preserve the same reference original without trimming', () => {
+  const reference = { name: 'original.mp4', type: 'video/mp4', size: 1, kind: 'video' as const,
+    slotId: 'reference_video_urls', url: 'https://media.maxvideoai.com/original.mp4', durationSec: 15 };
+  for (const durationSec of [10, 15]) {
+    const { requestBody } = buildFalGenerationRequest(payload({ mode: 'ref2v', durationSec, inputs: [reference] }), 'ignored');
+    assert.equal(requestBody.duration, durationSec);
+    assert.deepEqual(requestBody.reference_video_urls, [reference.url]);
+    assert.equal('trim' in requestBody, false);
+  }
+});

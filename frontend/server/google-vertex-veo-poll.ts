@@ -1,3 +1,5 @@
+import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
+import { measureGeneratedVideoBuffer } from '@/server/media/generated-video-facts';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
@@ -63,6 +65,7 @@ type GoogleVertexVeoPollDeps = {
   getGoogleVertexVeoClientFn?: typeof getGoogleVertexVeoClient;
   isStorageConfiguredFn?: typeof isStorageConfigured;
   uploadFileBufferFn?: typeof uploadFileBuffer;
+  measureVideoFn?: typeof measureGeneratedVideoBuffer;
   ensureJobThumbnailFn?: typeof ensureJobThumbnail;
   upsertLegacyJobOutputsFn?: typeof upsertLegacyJobOutputs;
   generateAndPersistJobPreviewVideoFn?: typeof generateAndPersistJobPreviewVideo;
@@ -271,6 +274,8 @@ async function copyGoogleVeoOutputToStorage(params: {
   job: GoogleVertexVeoPendingJob;
   isStorageConfiguredFn: typeof isStorageConfigured;
   uploadFileBufferFn: typeof uploadFileBuffer;
+  onVideoMediaFacts: (facts: GeneratedVideoFacts) => void;
+  measureVideoFn: typeof measureGeneratedVideoBuffer;
 }): Promise<string | null> {
   if (!params.isStorageConfiguredFn()) return null;
   const source = params.output.bytesBase64Encoded
@@ -291,6 +296,10 @@ async function copyGoogleVeoOutputToStorage(params: {
     fileName: `${params.job.job_id}-google-veo.mp4`,
     cacheControl: 'public, max-age=5184000, immutable',
   });
+  if (params.job.user_id) {
+    const facts = await params.measureVideoFn(source.data, upload.url).catch(() => null);
+    if (facts) params.onVideoMediaFacts(facts);
+  }
   return upload.url;
 }
 
@@ -415,12 +424,15 @@ export async function runGoogleVertexVeoPoll(options: { jobId?: string; deps?: G
         continue;
       }
 
+      let videoMediaFacts: GeneratedVideoFacts | undefined;
       const copiedVideoUrl = await copyGoogleVeoOutputToStorage({
         output,
         client,
         job,
         isStorageConfiguredFn,
         uploadFileBufferFn,
+        measureVideoFn: deps.measureVideoFn ?? measureGeneratedVideoBuffer,
+        onVideoMediaFacts: (facts) => { videoMediaFacts = facts; },
       }).catch((error) => {
         console.warn('[google-vertex-veo-poll] output copy failed', { jobId: job.job_id, error });
         return null;
@@ -470,6 +482,7 @@ export async function runGoogleVertexVeoPoll(options: { jobId?: string; deps?: G
         user_id: job.user_id,
         surface: 'video',
         video_url: copiedVideoUrl,
+        video_media_facts: videoMediaFacts,
         audio_url: null,
         thumb_url: thumb,
         preview_frame: thumb,

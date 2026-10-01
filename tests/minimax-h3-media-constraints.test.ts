@@ -1,3 +1,4 @@
+import { factsFromProbe } from '../frontend/lib/generated-video-media-facts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -217,4 +218,15 @@ test('trusted audio duration probing reads an uploaded WAV buffer', async () => 
     await detectMediaBufferDuration(wav, { fileName: 'reference.wav', mimeType: 'audio/wav' }),
     durationSec
   );
+});
+
+test('MiniMax H3 validates measured original precision rather than nominal generation duration', async () => {
+  for (const duration of [15, 15.001]) {
+    const fixture = mediaFixture({ kind: 'video', sizeMB: 1, durationSec: 10 });
+    fixture.row.media_metadata = { mediaFacts: factsFromProbe({ streams: [{ codec_type: 'video', duration: String(duration) }] },
+      { url: fixture.row.url, sha256: 'a'.repeat(64), sizeBytes: MB }) };
+    const result = await validate([fixture]);
+    assert.equal(result.ok, duration === 15);
+    if (!result.ok) assert.equal(result.body.error, 'MEDIA_DURATION_UNSUPPORTED');
+  }
 });

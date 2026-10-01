@@ -1,3 +1,4 @@
+import { videoDuration } from '@/lib/generated-video-media-facts';
 import { query, type QueryExecutor } from '@/lib/db';
 import { isAllowedAssetHost } from '@/server/storage';
 
@@ -97,6 +98,7 @@ export function validReferenceMediaUrl(value: unknown): value is string {
 function durationMetadata(
   kind: ResolvedReference['mediaKind'],
   value: unknown,
+  originalUrl: string,
 ): { valid: boolean; durationSec: number | null } {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return normalizeSupportedReferenceDuration(kind, null);
@@ -104,7 +106,9 @@ function durationMetadata(
   const durationSec = Object.hasOwn(value, 'durationSec')
     ? (value as Record<string, unknown>).durationSec
     : null;
-  return normalizeSupportedReferenceDuration(kind, durationSec);
+  return normalizeSupportedReferenceDuration(kind, kind === 'video'
+    ? videoDuration(value as Record<string, unknown>, originalUrl, typeof durationSec === 'number' ? durationSec : null)
+    : durationSec);
 }
 
 function invalidReference(): never {
@@ -136,7 +140,7 @@ export async function resolveOwnedReferenceAsset(
   }
 
   const media = resolveSupportedReferenceMedia(row.kind, row.mime_type);
-  const duration = media ? durationMetadata(media.kind, row.metadata) : null;
+  const duration = media ? durationMetadata(media.kind, row.metadata, row.url) : null;
   if (
     row.public_id !== normalizedAssetId
     || row.status?.trim().toLowerCase() !== 'ready'

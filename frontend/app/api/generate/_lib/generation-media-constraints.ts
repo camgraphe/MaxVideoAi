@@ -1,3 +1,4 @@
+import { videoDuration } from '@/lib/generated-video-media-facts';
 import type { MinimaxH3MaxPricingReference } from '@/lib/minimax-h3-max-pricing';
 import { query } from '@/lib/db';
 import {
@@ -27,6 +28,7 @@ export type StoredMediaMetadataRow = {
   mime_type: string | null;
   size_bytes: string | number | null;
   duration_sec?: string | number | null;
+  media_metadata?: Record<string, unknown>;
   width?: string | number | null;
   height?: string | number | null;
 };
@@ -254,6 +256,7 @@ export async function validateGenerationMediaConstraints(params: {
               mime_type,
               size_bytes,
               metadata->>'durationSec' AS duration_sec,
+              metadata AS media_metadata,
               width,
               height
          FROM user_assets
@@ -271,6 +274,7 @@ export async function validateGenerationMediaConstraints(params: {
               mime_type,
               size_bytes,
               metadata->>'durationSec' AS duration_sec,
+              metadata AS media_metadata,
               width,
               height
          FROM media_assets
@@ -341,7 +345,7 @@ export async function validateGenerationMediaConstraints(params: {
 
     const trustedWidth = normalizeDimension(stored.width);
     const trustedHeight = normalizeDimension(stored.height);
-    trustedMediaReferences.push({ kind: candidate.kind, url: candidate.url, width: trustedWidth, height: trustedHeight, durationSec: normalizeDurationSec(stored.duration_sec) });
+    trustedMediaReferences.push({ kind: candidate.kind, url: candidate.url, width: trustedWidth, height: trustedHeight, durationSec: (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec)) });
     const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
     if (imageRatio !== 'valid') {
       return failure({
@@ -439,7 +443,7 @@ export async function validateGenerationMediaConstraints(params: {
         typeof field.maxDurationSec === 'number' ||
         typeof combinedDurationLimit === 'number');
     if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
-      let durationSec = normalizeDurationSec(stored.duration_sec);
+      let durationSec = (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec));
       // Older web uploads have no measured duration. Only probe an owned storage
       // original, never an arbitrary browser URL or a claimed client duration.
       if (durationSec == null && params.engineId === 'seedance-2-5' && field.type === 'video') {

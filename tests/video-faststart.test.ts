@@ -242,3 +242,26 @@ test('a body exceeding the 120 second budget is aborted before upload', { concur
     restore();
   }
 });
+
+test('measures the remuxed uploaded original and probe failure keeps the durable URL', async () => {
+  const ensureFastStartVideo = await loadEnsureFastStartVideo();
+  for (const fails of [false, true]) {
+    let captured: { durationSec: number } | null = null;
+    const remuxed = Buffer.from('remuxed output');
+    const result = await ensureFastStartVideo({ jobId: 'measured-job', userId: 'owner', videoUrl: SOURCE_URL,
+      onVideoMediaFacts: (facts) => { captured = facts; } }, {
+      fetchFn: async () => new Response(BODY_BYTES, { headers: { 'content-length': String(BODY_BYTES.length), 'content-type': 'video/mp4' } }),
+      isStorageConfiguredFn: () => true, isStorageUrlFn: () => false, getFfmpegPathFn: () => '/fixture/ffmpeg',
+      ensureExecutableFfmpegPathFn: async (file) => file,
+      runFastStartFn: async (_binary, _input, output) => { await writeFile(output, remuxed); },
+      uploadFileBufferFn: async ({ data }) => { assert.deepEqual(data, remuxed); return { url: DURABLE_URL, key: 'key' }; },
+      probeVideoFileFn: async (file) => {
+        assert.deepEqual(await readFile(file), remuxed);
+        if (fails) throw new Error('Unavailable');
+        return { streams: [{ codec_type: 'video', duration: '15.001' }] };
+      },
+    });
+    assert.equal(result, DURABLE_URL);
+    assert.equal(captured?.durationSec ?? null, fails ? null : 15.001);
+  }
+});

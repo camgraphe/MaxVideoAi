@@ -44,7 +44,9 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
          height = COALESCE(EXCLUDED.height, job_outputs.height),
          duration_sec = COALESCE(EXCLUDED.duration_sec, job_outputs.duration_sec),
          status = EXCLUDED.status,
-         metadata = COALESCE(job_outputs.metadata, '{}'::jsonb) || EXCLUDED.metadata,
+         metadata = (CASE WHEN COALESCE(job_outputs.storage_url, job_outputs.url) IS NOT DISTINCT FROM COALESCE(EXCLUDED.storage_url, EXCLUDED.url)
+                          THEN COALESCE(job_outputs.metadata, '{}'::jsonb)
+                          ELSE COALESCE(job_outputs.metadata, '{}'::jsonb) - 'mediaFacts' END) || EXCLUDED.metadata,
          updated_at = NOW()
        WHERE job_outputs.user_id IS NOT DISTINCT FROM EXCLUDED.user_id
        RETURNING id`,
