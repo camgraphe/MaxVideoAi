@@ -176,6 +176,7 @@ test('confirmation pricing distinguishes ref2v video, image, and DB-verified vid
         width: 1920,
         height: 1080,
         mimeType: 'video/mp4',
+        durationSec: 4,
       }],
       expected: 'video_input',
     },

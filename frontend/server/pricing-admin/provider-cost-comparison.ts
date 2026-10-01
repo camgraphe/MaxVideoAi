@@ -9,7 +9,7 @@ import {
 import type { CanonicalPricingQuote, ManualTariffQuote } from '@maxvideoai/pricing';
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
-import { expectedBytePlusTokens, estimateBytePlusOutputTokens } from '@/server/byteplus-accounting';
+import { expectedBytePlusTokens, estimateBytePlusOutputTokens, estimateBytePlusBillableTokens } from '@/server/byteplus-accounting';
 import type { EngineCaps } from '@/types/engines';
 import type { PricingContext } from '@/lib/pricing-context';
 import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
@@ -104,8 +104,9 @@ export function providerComparisonInputFromScenario(input: {
   if (billingInputType && isSeedance2TokenPricing(engine.pricingDetails) && scenario.durationSec && scenario.resolution) {
     try {
       tokenEstimate = input.executionProvider === 'byteplus_modelark'
-        ? estimateBytePlusOutputTokens({ engineId: scenario.engineId,
-          resolution: scenario.resolution, durationSec: scenario.durationSec, aspectRatio })
+        ? estimateBytePlusBillableTokens({ engineId: scenario.engineId,
+          resolution: scenario.resolution, durationSec: scenario.durationSec, aspectRatio,
+          billingInputType, inputVideoDurationSec: input.context?.inputVideoDurationSec })
         : computeSeedance2TokenQuote({
         details: engine.pricingDetails,
         durationSec: scenario.durationSec,
@@ -172,6 +173,7 @@ export function providerComparisonInputFromScenario(input: {
 type UnavailableReason =
   | 'supplier_rate_unverified_for_route'
   | 'billable_tokens_unavailable'
+  | 'input_video_duration_unavailable'
   | 'image_usage_unavailable'
   | 'unsupported_model_options';
 
@@ -297,6 +299,11 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
     } catch {
       return unavailable('image_usage_unavailable');
     }
+  }
+
+  if (input.billingInputType === 'video_input' && input.tokenEvidence !== 'provider_reported'
+    && (!Number.isFinite(input.inputVideoDurationSec) || !input.inputVideoDurationSec || input.inputVideoDurationSec <= 0)) {
+    return unavailable('input_video_duration_unavailable');
   }
 
   if (!Number.isFinite(input.videoTokens) || !input.videoTokens || input.videoTokens < 0 ||

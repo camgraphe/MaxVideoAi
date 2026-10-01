@@ -3,6 +3,7 @@ import type { ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view
 
 const REASONS: Record<string, string> = {
   supplier_rate_unverified_for_route: 'No supplier rate is recorded for this execution route.',
+  input_video_duration_unavailable: 'Add verified input-video duration: BytePlus bills input plus output and applies a minimum. Margin is unavailable without this cost.',
   billable_tokens_unavailable: 'The billable video tokens cannot be determined from these inputs.',
   image_usage_unavailable: 'Exact output dimensions or the number of input images are missing.',
   unsupported_model_options: 'No supplier rate is recorded for these model options.',

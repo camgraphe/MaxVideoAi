@@ -413,3 +413,19 @@ test('archived Seedance 1.5 preflight never quotes, even with direct execution e
     ENV.BYTEPLUS_ARK_ENABLED = original.arkEnabled;
   }
 });
+
+
+test('Seedance video preflight derives input seconds from owned records instead of the client duration flag', async () => {
+  const engine = engineFor('seedance-2-5');
+  const url = 'https://media.maxvideoai.com/user-assets/pricing-user/reference.mp4';
+  let observed: unknown;
+  const response = await resolveMediaAwarePreflight({ userId: 'pricing-user',
+    request: { ...requestFor(engine, 'ref2v'), hasVideoInput: false,
+      inputs: [{ assetId: 'video-duration', slotId: 'video_urls', kind: 'video', url }] } }, {
+    getConfiguredEngineFn: async () => engine,
+    computeConfiguredPreflightFn: async (request, options) => { observed = { hasVideoInput: request.hasVideoInput, duration: options?.trustedMediaPricingFacts?.inputVideoDurationSec }; return { ok: true } as never; },
+    mediaConstraintDeps: { queryFn: async () => [{ asset_id: 'video-duration', url, origin_url: null, original_name: 'reference.mp4', mime_type: 'video/mp4', size_bytes: 1000, duration_sec: 4.25, width: 1280, height: 720 }] as never[] },
+  });
+  assert.equal(response.ok, true, JSON.stringify(response.error));
+  assert.deepEqual(observed, { hasVideoInput: true, duration: 4.25 });
+});

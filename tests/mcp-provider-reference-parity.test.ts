@@ -358,3 +358,22 @@ test('Wan reference pricing includes unique persisted video durations in prepare
   assert.equal(imagePrice.priceCents, 65);
   assert.throws(() => request('wan-3', 'ref2v', { settings: { ...canonical.settings, inputVideoDurationSec: 0 } }));
 });
+
+
+test('Seedance MCP confirmation prices the sum of owned video durations and refuses unknown source duration', async () => {
+  const canonical = request('seedance-2-5', 'ref2v', { references: [
+    { kind: 'asset', assetId: 'video-a', role: 'reference' },
+    { kind: 'asset', assetId: 'video-b', role: 'reference' },
+  ] });
+  const records = [resolved('video-a', 'video'), resolved('video-b', 'video')].map(record => ({ ...record }));
+  let observed: unknown;
+  await priceCanonicalGenerationInExecutor(canonical, 'member', {
+    executor: { query: async () => [] } as TransactionQueryExecutor, candidate: candidate('seedance-2-5'), resolvedReferences: records,
+    computeBillingSnapshot: async (context, dependencies) => { observed = { hasVideoInput: context.hasVideoInput, duration: context.inputVideoDurationSec }; return computeCanonicalBillingSnapshot(context, dependencies); },
+  });
+  assert.deepEqual(observed, { hasVideoInput: true, duration: 8 });
+  await assert.rejects(priceCanonicalGenerationInExecutor(canonical, 'member', {
+    executor: { query: async () => [] } as TransactionQueryExecutor, candidate: candidate('seedance-2-5'),
+    resolvedReferences: records.map(record => ({ ...record, durationSec: null })),
+  }), /verified input-video duration/i);
+});

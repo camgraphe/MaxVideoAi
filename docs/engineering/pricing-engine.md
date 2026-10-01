@@ -21,6 +21,25 @@ Direct BytePlus accounting, manual supplier guards and admin comparisons use
 these dimensions. They do not rewrite historical retail calculations or authored
 customer prices. Another execution provider retains its own reference facts.
 
+For 2.0/2.5 video-input tasks, supplier tokens include **input plus output video
+duration** and the published minimum consumption. `estimateBytePlusBillableTokens`
+owns this estimate. The minimum expression
+`round((outputSeconds + ceil(2 × outputSeconds / 3)) × width × height × 24 / 1024)`
+is inferred from and matches all 531 rows of the [supplier's linked minimum
+tables](https://bytedance.larkoffice.com/wiki/H0fUwHPxtiHayOk6CVpcZzKqnHJ), captured
+on October 1, 2026. The provider does not publish that expression as its billing
+algorithm. Keep estimation within those published duration/resolution domains;
+reported completion/total tokens remain authoritative for completed usage.
+
+Preflight and generation derive source duration from server-resolved owned media;
+MCP uses resolved reference records. Generation persists that duration for the
+poller's fallback. Missing input duration means unavailable supplier cost/margin,
+not output-only cost. A declared MCP HTTPS reference can still expose the stored
+retail tariff before media resolution; that quote does not establish supplier
+profitability. The generation path rechecks actual media and the canonical cost
+guard. See the [whole-grid supplier audit](2026-10-01-supplier-estimate-audit.md)
+for the remaining video-input tariff issues.
+
 Adrien accepted order form `CT20260925128931` and explicitly requested using its
 commercial terms now, with console activation checked immediately before push.
 `server/byteplus-account-contract.ts` applies the signed discount to

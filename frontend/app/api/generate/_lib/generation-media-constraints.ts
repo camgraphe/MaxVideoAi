@@ -1,4 +1,5 @@
 import { videoDuration } from '@/lib/generated-video-media-facts';
+import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import type { MinimaxH3MaxPricingReference } from '@/lib/minimax-h3-max-pricing';
 import { query } from '@/lib/db';
 import {
@@ -518,6 +519,7 @@ export async function validateGenerationMediaConstraints(params: {
     ok: true,
     ...(Object.keys(trustedDurationSecByField).length ? { trustedDurationSecByField } : {}),
     ...(params.engineId === 'minimax-h3-max'
+      || isSeedance2TokenPricing(engine.pricingDetails)
       || typeof params.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
       ? { trustedMediaReferences } : {}),
   };

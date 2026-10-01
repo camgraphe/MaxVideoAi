@@ -1,3 +1,4 @@
+import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
 import { getGenerationModelIdentity, isArchivedGenerationModel } from '@/lib/model-generation-policy';
@@ -189,7 +190,7 @@ export async function resolveMediaAwarePreflight(
   const needsReferenceImageCount = requiresReferenceImageCount(engine, request);
   const needsInputAudioDuration = requiresInputAudioDuration(engine, request);
   const needsTrustedOwnedMedia = requiresTrustedOwnedMedia(engine, request) && Boolean(request.inputs?.length || request.mode !== 't2v');
-  const needsSeedanceReferenceDuration = engine.id === 'seedance-2-5'
+  const needsSeedanceReferenceDuration = isBytePlusInputVideoPricingModel(engine.id)
     && ['ref2v', 'v2v', 'extend'].includes(request.mode)
     && request.inputs?.some((reference) => reference.kind === 'video') === true;
   if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration) {
@@ -235,9 +236,11 @@ export async function resolveMediaAwarePreflight(
 
   let referenceTokenBudget: number | undefined;
   let inputVideoDurationSec: number | undefined;
-  if (needsWanVideoDuration) {
+  if (needsWanVideoDuration || needsSeedanceReferenceDuration) {
     try {
-      inputVideoDurationSec = getWan3InputVideoDurationSec(processed.trustedMediaReferences ?? []);
+      inputVideoDurationSec = needsSeedanceReferenceDuration
+        ? bytePlusInputVideoDurationSec(engine.id, processed.trustedMediaReferences ?? [])
+        : getWan3InputVideoDurationSec(processed.trustedMediaReferences ?? []);
       if (inputVideoDurationSec <= 0) throw new Error('Missing owned video metadata.');
     } catch {
       return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Verified video duration is required to calculate this price.');
@@ -272,7 +275,7 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
-  return computeConfiguredPreflightFn(request, {
+  return computeConfiguredPreflightFn(needsSeedanceReferenceDuration ? { ...request, hasVideoInput: true } : request, {
     seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
     resolvedEngine: engine,
     trustedMediaPricingFacts,

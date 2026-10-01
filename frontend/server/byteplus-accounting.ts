@@ -68,6 +68,49 @@ export function estimateBytePlusOutputTokens(input: {
     * Math.max(1, Math.round(input.durationSec)) * profile.framesPerSecond / 1024 };
 }
 
+/** Formula inferred from all 531 rows of the published minimum tables (2026-10-01).
+ * Matches their integer token floor across every published duration/raster/ratio;
+ * do not extrapolate outside those domains. Provider usage overrides the estimate.
+ */
+export function estimateBytePlusBillableTokens(input: Parameters<typeof estimateBytePlusOutputTokens>[0] & {
+  billingInputType: 'no_video_input' | 'video_input'; inputVideoDurationSec?: number;
+}) {
+  const output = estimateBytePlusOutputTokens(input);
+  if (!output) return null;
+  if (input.billingInputType === 'no_video_input') return { ...output, minimumTokens: 0, inputVideoDurationSec: 0 };
+  const maximumOutput = input.engineId === 'seedance-2-5' ? 30 : 15;
+  if (!isBytePlusInputVideoPricingModel(input.engineId) || !Number.isInteger(input.durationSec)
+    || input.durationSec < 4 || input.durationSec > maximumOutput
+    || !Number.isFinite(input.inputVideoDurationSec) || !input.inputVideoDurationSec
+    || input.inputVideoDurationSec < 0 || input.inputVideoDurationSec > maximumOutput) return null;
+  const tokensPerSecond = output.tokenCount / input.durationSec;
+  const minimumTokens = Math.round((input.durationSec + Math.ceil(input.durationSec * 2 / 3)) * tokensPerSecond);
+  return { ...output, inputVideoDurationSec: input.inputVideoDurationSec, minimumTokens,
+    tokenCount: Math.max(minimumTokens, (input.durationSec + input.inputVideoDurationSec) * tokensPerSecond) };
+}
+
+export function isBytePlusInputVideoPricingModel(engineId: string) {
+  return ['seedance-2-0', 'seedance-2-0-mini', 'seedance-2-0-fast', 'seedance-2-5'].includes(engineId);
+}
+
+/** Accept only server-resolved media records, never client-declared durations. */
+export function bytePlusInputVideoDurationSec(engineId: string, references: readonly {
+  kind: string; durationSec?: number | null;
+}[]) {
+  if (!isBytePlusInputVideoPricingModel(engineId)) throw new Error('Unsupported BytePlus input-video model');
+  const videos = references.filter(reference => reference.kind === 'video');
+  const maximum = engineId === 'seedance-2-5' ? 30 : 15;
+  let seconds = 0;
+  for (const reference of videos) {
+    if (typeof reference.durationSec !== 'number' || !Number.isFinite(reference.durationSec) || reference.durationSec <= 0) {
+      throw new Error('Verified input-video duration is required for BytePlus pricing.');
+    }
+    seconds += reference.durationSec;
+  }
+  if (seconds > maximum) throw new Error('BytePlus input-video duration exceeds the supported maximum.');
+  return seconds;
+}
+
 export function expectedBytePlusTokens(
   job: Pick<BytePlusPendingJob, 'engine_id' | 'duration_sec' | 'settings_snapshot'>
 ): number {
@@ -172,11 +215,12 @@ export function estimateBytePlusProviderCostCents(input: {
   aspectRatio: string;
   billingInputType: 'video_input' | 'no_video_input';
   generateAudio?: boolean;
+  inputVideoDurationSec?: number;
 }): number {
   if (!Number.isSafeInteger(input.durationSec) || input.durationSec < 1) {
     throw new Error('Invalid BytePlus provider-cost duration.');
   }
-  const estimate = estimateBytePlusOutputTokens(input);
+  const estimate = estimateBytePlusBillableTokens(input);
   if (!estimate) throw new Error('Invalid BytePlus provider-cost dimensions.');
   const totalTokens = estimate.tokenCount;
   const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
@@ -202,18 +246,25 @@ export function buildBytePlusListCostBreakdown(input: {
   usage: { totalTokens: number | null; completionTokens: number | null } | null;
 }) {
   const { job, usage } = input;
-  const totalTokens = usage?.totalTokens ?? expectedBytePlusTokens(job);
   const accounting = getBytePlusAccounting(job);
+  const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  const estimate = estimateBytePlusBillableTokens({ engineId: job.engine_id, durationSec: job.duration_sec,
+    resolution: input.resolution, aspectRatio: input.aspectRatio,
+    billingInputType: accounting.byteplusBillingInputType as 'video_input' | 'no_video_input',
+    inputVideoDurationSec: typeof settings.byteplusInputVideoDurationSec === 'number'
+      ? settings.byteplusInputVideoDurationSec : undefined });
+  const reportedTokens = usage?.totalTokens ?? usage?.completionTokens;
+  const totalTokens = reportedTokens ?? estimate?.tokenCount ?? null;
   const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
     job.engine_id, accounting.byteplusBillingInputType, input.resolution, accounting.generateAudio,
   );
-  const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
+  const providerCostUsd = totalTokens == null ? null : Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
   return {
     provider: BYTEPLUS_MODELARK_PROVIDER,
     provider_cost_source: 'byteplus_published_list_rate',
-    provider_cost_status: usage?.totalTokens == null
-      ? 'list_estimate_from_dimensions'
-      : 'list_estimate_from_provider_usage',
+    provider_cost_status: reportedTokens != null ? 'list_estimate_from_provider_usage'
+      : totalTokens == null ? 'list_estimate_unavailable' : 'list_estimate_from_dimensions',
+    provider_cost_unavailable_reason: totalTokens == null ? 'input_video_duration_unavailable' : null,
     provider_list_rate_source: BYTEPLUS_MODELARK_LIST_PRICE_SOURCE.url,
     model: input.model,
     mode: accounting.mode,

@@ -1,3 +1,4 @@
+import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import {
   computeConfiguredPreflight,
   type ComputeConfiguredPreflightOptions,
@@ -173,22 +174,29 @@ function canonicalInputVideoDurationSec(
   request: CanonicalGenerationRequest,
   context: GenerationPricingReferenceContext,
 ): number | undefined {
-  if (!isWan3EngineId(request.engineId)) return undefined;
-  if (request.mode !== 'ref2v' && request.mode !== 'v2v' && request.mode !== 'extend') return 0;
+  const bytePlus = isBytePlusInputVideoPricingModel(request.engineId);
+  if (!isWan3EngineId(request.engineId) && !bytePlus) return undefined;
+  if (request.mode !== 'ref2v' && request.mode !== 'v2v' && request.mode !== 'extend') return bytePlus ? undefined : 0;
+  // Declared HTTPS references/budgets retain their customer tariff, but do not
+  // establish a factual BytePlus supplier estimate without resolved metadata.
+  if (bytePlus && (request.references.some(reference => reference.kind === 'https' && reference.mediaKind === 'video')
+    || request.references.some(reference => reference.kind === 'asset' && !context.resolvedReferences?.some(resolved =>
+      resolved.assetId === reference.assetId && resolved.role === reference.role && resolved.slot === reference.slot)))) return undefined;
   const references = request.references.flatMap((reference) => {
     if (reference.kind === 'https') {
-      if (reference.mediaKind === 'video') throw new Error('Owned video metadata is required for Wan reference pricing.');
+      if (reference.mediaKind === 'video') throw new Error('Owned video metadata is required for reference pricing.');
       return [];
     }
     const matches = context.resolvedReferences?.filter((resolved) =>
       resolved.assetId === reference.assetId && resolved.role === reference.role && resolved.slot === reference.slot);
-    if (matches?.length !== 1) throw new Error('Each Wan reference must have one verified metadata record.');
+    if (matches?.length !== 1) throw new Error('Each reference must have one verified metadata record.');
     const resolved = matches[0]!;
     return [{ kind: resolved.mediaKind, url: resolved.storageUrl, durationSec: resolved.durationSec }];
   });
-  const inputVideoDurationSec = getWan3InputVideoDurationSec(references);
+  const inputVideoDurationSec = bytePlus ? bytePlusInputVideoDurationSec(request.engineId, references)
+    : getWan3InputVideoDurationSec(references);
   if ((request.mode === 'v2v' || request.mode === 'extend') && inputVideoDurationSec <= 0) {
-    throw new Error('A trusted source video duration is required for Wan pricing.');
+    throw new Error('A trusted source video duration is required for reference pricing.');
   }
   return inputVideoDurationSec;
 }

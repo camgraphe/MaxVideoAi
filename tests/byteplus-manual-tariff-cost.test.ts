@@ -52,7 +52,7 @@ test('contract cost does not reprice current customer cents and expires back to 
 test('Fast, video-input and Seedream quantities use their own factual supplier costs', () => {
   for (const [ctx, customerCents, costCents] of [
     [context('seedance-2-0-fast'), 61, 30.24],
-    [context('seedance-2-0-mini', { mode: 'v2v', hasVideoInput: true, inputVideoDurationSec: 3 }), 19, 9.072],
+    [context('seedance-2-0-mini', { mode: 'v2v', hasVideoInput: true, inputVideoDurationSec: 3 }), 19, 16.3296],
     [context('seedream', { mode: 't2i', resolution: '2K', durationSec: 2 }), 8, 6.3],
     [context('seedream-5-0-pro', { mode: 'i2i', resolution: '2K', durationSec: 2,
       inputImageCount: 1, referenceImageCount: 2 }), 20, 16.74],

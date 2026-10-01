@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
-import { expectedBytePlusTokens, estimateBytePlusProviderCostCents } from '../frontend/server/byteplus-accounting';
+import { expectedBytePlusTokens, estimateBytePlusProviderCostCents, estimateBytePlusBillableTokens } from '../frontend/server/byteplus-accounting';
 import { normalBytePlusSupplierCost } from '../frontend/server/byteplus-normal-cost';
 import { buildProviderCostComparisonRows, providerComparisonInputFromScenario } from '../frontend/server/pricing-admin/provider-cost-comparison';
 
@@ -29,16 +29,18 @@ for (const modelId of ['seedance-2-0', 'seedance-2-0-mini', 'seedance-2-0-fast']
       assert.equal(expectedBytePlusTokens({ engine_id: modelId, duration_sec: 4,
         settings_snapshot: { core: { resolution, aspectRatio } } }), tokens, label);
       for (const hasVideoInput of [false, true]) {
-        const context = { engine, mode: 't2v' as const, durationSec: 4, resolution, aspectRatio, hasVideoInput };
+        const billableTokens = estimateBytePlusBillableTokens({ engineId: modelId, durationSec: 4, resolution, aspectRatio,
+          billingInputType: hasVideoInput ? 'video_input' : 'no_video_input', inputVideoDurationSec: 2 })!.tokenCount;
+        const context = { engine, mode: 't2v' as const, durationSec: 4, resolution, aspectRatio, hasVideoInput, inputVideoDurationSec: 2 };
         const cost = normalBytePlusSupplierCost(context, at)!;
         const input = providerComparisonInputFromScenario({ engine, context, executionProvider: 'byteplus_modelark',
           quote: null, brandId: entry.brandId, scenario: { id: label, engineId: modelId, mode: 't2v',
             resolution, durationSec: 4, surface: 'billing', input: { aspectRatio } } });
-        assert.equal(input.videoTokens, tokens, label);
-        assert.equal(cost.usage.videoTokens, tokens, label);
+        assert.equal(input.videoTokens, billableTokens, label);
+        assert.equal(cost.usage.videoTokens, billableTokens, label);
         assert.equal(buildProviderCostComparisonRows([input], at)[0].supplierList.amountUsd, cost.listAmountUsd, label);
         assert.equal(estimateBytePlusProviderCostCents({ engineId: modelId, durationSec: 4, resolution,
-          aspectRatio, billingInputType: hasVideoInput ? 'video_input' : 'no_video_input' }),
+          aspectRatio, inputVideoDurationSec: 2, billingInputType: hasVideoInput ? 'video_input' : 'no_video_input' }),
           Math.ceil(cost.listAmountUsd * 100), label);
       }
     }
