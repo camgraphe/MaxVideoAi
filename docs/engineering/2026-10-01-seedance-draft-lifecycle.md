@@ -102,5 +102,5 @@ schema. A normal 480p generation remains distinct from a Draft task.
 ## Local verification checkpoint
 
 - PostgreSQL 17 lifecycle/submission/poll/charge and workflow pricing/seed checks: 43 passed, zero skipped. Definitive submission rejection unlocks final retry only after its exact refund receipt; uncertain acknowledgement keeps the reservation.
-- Standard validation suite: 6,639 passed, 3 skipped. Studio HTTP tests deliberately refuse a checkout containing environment files and must run from an isolated committed checkout.
-- TypeScript, frontend lint, exposure lint and diff whitespace checks passed. The existing 178 immutable billing and 577 public scenario baselines are unchanged.
+- Latest standard validation suite after the review fix pass: 6,651 passed, zero failed, 3 skipped. Focused creator, terminal recovery, auth and Studio contracts: 90 passed, zero skipped. Isolated committed checkout Studio HTTP suites: 4 passed, zero skipped. Browser integration is separate and has not been run for this checkpoint.
+- TypeScript, frontend lint (zero warnings), exposure lint and diff whitespace checks passed. The existing 178 immutable billing and 577 public scenario baselines are unchanged. Fresh fetch confirms local main and origin/main both at 10589cc6b, already included in the branch. Optimized Next.js build passes from the isolated environment-free committed checkout; the compiler reports a Supabase process.version/Edge warning. No deployment is performed.
