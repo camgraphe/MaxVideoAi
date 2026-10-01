@@ -617,3 +617,49 @@ Existing approved localadmin session refreshed unchangedscope. Real screenshot
 Datedtrackedreport docs/engineering/2026-10-02-seedance-proportional-pricing.md
 records verification scope and pending contract/production capture/CI/release gates.
 No paidprovider test, support/email, prodwrite, push, merge or deploy this correction.
+
+2026-10-02 final local preproduction acceptance. Fresh whole-branch review
+main d10ad4587..dd5a133e6 found no confirmed Critical and two Important findings.
+Seedream Pro source counts now cross actual image billing, estimates, MCP and
+supplier comparison consistently; nine additional variants preserve 16c retail.
+RED coverage 1!=10 and PostgreSQL billing/admin regressions pass. Private locked
+append revision3514->3523,18177 cells,20446 scenarios across48 models,0quote gaps/
+legacy fallbacks/negative estimated margins.6372source stress cases all guarded;
+38products with0warnings/missing customer or supplier-reference/negative margins.
+These are contract/LIST estimates, not invoices or a production certificate.
+
+Read-only live Stripe inventory855intents,0legacy kind=run intents/unreconciled
+captured/open old checkouts at2026-10-01T23:02:58Z. Keep old unbound payments
+fail-closed and repeat immediately before publication; no financial write.
+Fresh Git/domain mainalignment d10ad4587, same READY deployment bothdomains.
+BytePlus CT20260925128931 still In contract generation, accountdiscount list empty;
+user-adopted signed cost estimates retained, actualactivation not certified.
+Read-only remote schema inventory confirms new53-59pricing/Draft tables absent,
+trial/poll prerequisites present; explicit migration review/order documented,
+including distinct53_playlist_opening vs53_seedance_draft_links and transactional60.
+No DDL/schema bootstrap or environment/storage write to that remote database.
+
+Environment-free5e8710078 validation PostgreSQL17:6721standard pass,0fail,3skip;
+all11isolatedStudio tests pass. Optimizedbuild passes920pages. First wrongPATH
+PG14run failed13version qualification tests and is explicitly not the green gate.
+Authenticated browser uses isolated signed loopback Auth and disposablePG/media;
+no actual Supabase permission change, no terms acceptance, no paid provider call.
+Actual adminSeedream10sources showsLIST$.117/cost$.1053/customer$.16/margin34.2%.
+
+Browser caught preflight's media-free shortcut discarding trusted workflow step:
+final got an ordinary tariff without workflowStep and was refused by the UI.
+35dda2840 forwards the server-resolved step. Real PG HTTP regression RED undefined
+vsdraft -> GREEN distinct77/777workflow vs9999ordinary, inactive/unowned rejection,
+zero charges.32focused tests,TS/lint/diffpass; optimizedfinalbuild920pages passes.
+No full6721suite rerun is claimed after this small transport fix. Browserfinal
+confirmation now shows historical52c Draft +current$5.21final =$5.73; cancelkeeps
+Draft ready,finalnone,wallet$100,onlyonefixturetopup/nocharge. Real checkboxlocks
+480p/1output,retains16:9,compactDraftbutton. Studio authenticatedchooser opens.
+S3is intentionally unconfigured: Media save/live owned storage and StudioDraft
+import not certified by the local fixture. Real providerpair previously passed;
+new app-owned live canary, currentprodparity/activationmanifest/CI/deploy remain
+bounded release gates. Ordinary localhostGoogleOAuth remains separate.
+Testaccount signedout through actual appmenu (publichomepage/Login visible),
+owned runtime/PG stopped, useradmin/session/database/worktree retained.
+Dated report docs/engineering/2026-10-02-pricing-preproduction.md owns latest
+counts and limitations. No prodwrite, push, merge, deploy, email/support action.

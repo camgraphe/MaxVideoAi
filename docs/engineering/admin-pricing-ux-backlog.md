@@ -21,13 +21,16 @@ The `/admin/pricing` cockpit is the single admin entry point for supplier eviden
 - [x] Provide inline customer tariff editing, including continuous unit rates, affected-scenario preview, explicit confirmation, immutable history and rollback. Model percentage rules are historical/read-only in the active local sandbox.
 - [x] Project all 15 families through supported scenarios, intended execution provider, qualified supplier references and canonical customer quotes. Account costs/invoices remain unknown unless confirmed.
 
-The [2026-10-01 local completion record](2026-10-01-pricing-local-completion.md)
-owns the final active-grid evidence and remaining release gates. The usable review
+The [2026-10-02 preproduction acceptance](2026-10-02-pricing-preproduction.md)
+owns the current active-grid evidence, workflow correction and remaining release gates.
+It supersedes earlier inventory counts and the negative Seedance-input checkpoint.
+The usable review
 page is [localhost:3106/admin/pricing](http://localhost:3106/admin/pricing), with
 Video, Image, Audio, Tools and Storyboard sections.
 
 ## Related release gates on this branch
 
-- [ ] Connect Seedance 2.5 Draft 480p → optional final 1080p to independent quotes, charges, polling, refunds and creator controls; keep it unpublished until tested.
+- [x] Connect Seedance 2.5 Draft 480p → optional final 1080p locally to independent quotes, charges, polling, refunds and creator controls. PostgreSQL and signed-auth browser acceptance distinguish workflow tariffs from ordinary 480p/1080p.
+- [ ] Complete the bounded real app-owned storage/Studio Draft acceptance and reviewed publication gate. The preceding minimum provider pair proves provider execution only; the signed-auth browser uses disposable media and makes no paid submission.
 - [ ] Run remaining direct-provider and original-image trust canaries, then retire only proven-unused ByteDance new-job Fal choices. Preserve historical provider-specific readers.
 - [ ] Deploy through the reviewed GitHub/Vercel path, check the authenticated admin route, historical Seedance 1.5 first Play, and post-release Search Console/AI-search signals. Do not send support messages without the user's approval.

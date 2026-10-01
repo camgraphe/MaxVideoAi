@@ -4,6 +4,12 @@ Branch: `codex/bytedance-pricing-grid`. This record supersedes the earlier local
 coverage and inactive-cutover checkpoints. It certifies the isolated review
 sandbox, not current production prices or production activation readiness.
 
+The [October 2 preproduction acceptance](2026-10-02-pricing-preproduction.md)
+supersedes the validation, grid and browser counts below. It records the Seedream
+source-count correction, resolved local workflow preflight and fresh read-only
+payment/schema evidence. The remaining-work lists below are dated checkpoints;
+the proportional Seedance source tariff is now implemented and accepted locally.
+
 The [October 2 Seedance acceptance](2026-10-02-seedance-proportional-pricing.md)
 extends this record with proportional video-input rates, 273 corrected minima,
 3,186 appended continuous cells and the current private sandbox audit. Its

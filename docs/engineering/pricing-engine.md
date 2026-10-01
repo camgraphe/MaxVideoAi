@@ -1,5 +1,23 @@
 # Pricing Engine
 
+## Current local preproduction checkpoint (2026-10-02)
+
+The [preproduction acceptance](2026-10-02-pricing-preproduction.md) owns the latest
+validation, active-grid and browser evidence. Production remains inactive and
+requires its own current capture, reviewed activation path and deployment decision.
+
+Seedream's factual source count is shared by actual image charging, image
+estimates, MCP settlement and provider comparison. `lib/image/seedream.ts` includes
+the main edit source and every additional reference; Pro's ten allowed totals
+have distinct guarded tariff selectors while retaining the original one-source
+identity and customer amount. Admin labels the count **Total source images**.
+
+Both media-aware and media-free preflight paths must forward the server-resolved
+`seedanceWorkflowStep` into the canonical quote. Ordinary 480p/1080p never implies
+a Draft/final step; client-declared workflow requests first resolve authorization,
+the local gate and owned Draft facts. `seedance-workflow-preflight-postgres.test.ts`
+locks this boundary using intentionally different normal and workflow amounts.
+
 ## Signed BytePlus contract in the local pricing admin (2026-10-01)
 
 `server/seedance25-output-dimensions.ts` owns the published Seedance 2.5 output

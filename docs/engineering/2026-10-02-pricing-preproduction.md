@@ -65,6 +65,14 @@ empty. Keep the signed terms in cost estimates as the user requested; effective
 account rates/invoice discounts are not certified. Recheck activation before
 publication; do not silently relabel a LIST estimate as an observed invoice.
 
+A separate read-only remote schema inventory at `2026-10-01T23:36:57.180Z`
+finds the six new Draft/tariff/direct-quote/activation tables absent; the MCP trial
+prerequisites and generation poll table exist. Private schema fingerprint:
+`85cfef81e0ad3968caabdaf5c066a5466552e8930bc394f7b92a2d317512a572`.
+The configured remote database is inspected without schema bootstrap or any DDL.
+This inventory is a migration prerequisite check, not a deployment-environment
+or production-price parity certificate.
+
 ## Release sequence to execute only after the production decision
 
 1. Freeze the candidate and repeat Git/main/domain alignment, live legacy-payment
@@ -79,6 +87,14 @@ publication; do not silently relabel a LIST estimate as an observed invoice.
    Review migrations 53–60 against the deployed schema, including Draft lineage,
    immutable tariff/quote history, interval locks and historical trial snapshots.
    Migrations must be applied by the explicit deployment owner, never by read paths.
+   The pricing paths, in order, are `53_seedance_draft_links.sql`,
+   `54_customer_tariff_cells.sql`, `55_customer_tariff_versions.sql`,
+   `56_direct_payment_quotes.sql`, `57_customer_tariff_local_activation_events.sql`,
+   `58_customer_tariff_bulk_interval_lock.sql`, `59_seedance_draft_final_state.sql`
+   and `60_mcp_trial_provider_rasters.sql`. Do not select by numeric prefix alone:
+   `53_playlist_opening.sql` is a different main-branch migration. Verify the full
+   migration-31 trial prerequisites before 60, preserve historical trial rows and
+   use an explicit transaction for its function/constraint replacement.
 4. Prepare a production-specific, locked reproduction and atomic activation of
    the reviewed grid/revision/event. The existing `pricing:activate:local` command
    intentionally refuses production and must not be repurposed by substituting a
@@ -103,7 +119,71 @@ capture/activation and that operational canary remain explicitly bounded release
 steps. Draft generation is deliberately local-only, text-to-video and one iteration
 until a reviewed publication decision changes that gate.
 
-Full candidate validation, optimized build and actual browser acceptance results
-are added below when complete. The first full validation used PostgreSQL 14 from
+The first full validation used PostgreSQL 14 from
 PATH: 6,705 pass, 13 fail, 3 skip; all 13 failures concern tests requiring PostgreSQL
 17. It is not accepted as a green gate; final qualification explicitly selects 17.
+
+## Final local acceptance
+
+| Gate | Result and boundary |
+| --- | --- |
+| Committed whole-candidate validation, `5e8710078` | PostgreSQL 17: 6,721 standard tests passed, zero failures, three skips; all 11 isolated Studio HTTP/browser integration tests passed. |
+| Optimized build, `5e8710078` | Passed; all 920 static pages generated, registry/media prebuild, type/lint and sitemap gates included. A Supabase Edge runtime warning was emitted. |
+| Private active tariff grid | Revision 3,523; 18,177 cells; 20,446 normal/workflow scenarios across 48 models. Zero quote errors, legacy fallbacks or negative estimated margins. |
+| Source-duration stress audit | 6,372 scenarios; zero rejected or below estimated supplier cost. |
+| Audio/Tools/Storyboard products | 38 products; zero warnings, missing customer/supplier-reference values or negative estimated margins. |
+| Seedream Pro append | Nine source-count variants added at the unchanged 16-cent customer amount; immutable events and private prewrite SQL backup retained. |
+| Actual admin browser | Image → Seedream Pro → ten total source images shows $0.117 LIST, $0.1053 contract estimate, $0.16 customer and 34.2% gross margin. Existing authorized local admin session retained. |
+
+Private full audit: `/tmp/mva-current-supplier-audit-preproduction-20261002.json`.
+Validation/build logs: `/tmp/mva-preproduction-20261002-validation-final.log` and
+`/tmp/mva-preproduction-20261002-build.log`. Actual admin screenshot:
+`/tmp/maxvideoai-pricing-preproduction-20261002.jpg`.
+
+### Browser-discovered workflow preflight correction
+
+Actual authenticated browser acceptance found that the media-free preflight
+shortcut discarded the server-resolved Draft/final step. A valid final request
+returned an ordinary 1080p cell without `meta.workflowStep`, so the creator refused
+that quote. The shortcut now carries the trusted step into the existing canonical
+quote owner. Client-declared steps still require the server's owned-parent
+resolution; neither the local publication gate nor charge validation is relaxed.
+
+Commit `35dda2840` adds a real PostgreSQL HTTP-handler regression with deliberately
+different standard, Draft and final prices. RED reproduces the missing Draft
+metadata; GREEN selects 77/777-cent workflow cells rather than the 9,999-cent
+ordinary offer, preserves normal 480p, rejects an unowned parent and refuses an
+inactive workflow tariff. Preflight creates no receipt. All 32 focused preflight,
+request and finalization tests pass; TypeScript, frontend lint and whitespace
+checks pass. Its environment-free optimized build also passes with 920 static
+pages, type/lint and sitemap gates; log:
+`/tmp/mva-preproduction-20261002-final-build.log`.
+The complete 6,721-test run above belongs to the preceding snapshot;
+it is not relabeled as a full rerun of this small transport fix.
+
+The disposable signed-auth browser session verifies the real local workflow
+without `draftPreview=1`: the checkbox retains 16:9, locks 480p and one output,
+and displays the compact Draft button with its separate current quote. The Media
+panel reads an owned ready Draft, requests the current final quote and shows its
+historical 52-cent payment plus $5.21 final and $5.73 combined. Canceling keeps the
+Draft; wallet remains $100 with no charge receipt or final reservation. Studio's
+authenticated project chooser also opens. No provider submission was made.
+
+The session uses an isolated PostgreSQL 17 database, the repository's signed
+loopback Auth fixture and a local 320×180 video fixture, not provider output or
+real account media. Its exported snapshot receives the same preflight correction.
+Missing fixture `job_outputs` data and migration 47 are initialized explicitly,
+without changing product read paths. Saving to Media cannot exercise real storage
+with unconfigured S3 credentials; app-owned storage and the Studio Draft import
+remain live acceptance boundaries. The ordinary localhost Google OAuth problem
+is separate from this fixture-backed verification. No legal terms were accepted
+through the browser.
+
+The disposable account is signed out through the actual application menu and the
+browser visibly returns to the public homepage with **Log in**. Its tab, owned
+application/Auth controller and PostgreSQL cluster are closed. The user's existing
+admin server, session, worktree and pricing database are retained.
+
+Screenshots: `/tmp/maxvideoai-draft-preproduction-20261002.jpg` and
+`/tmp/maxvideoai-draft-final-quote-preproduction-20261002.jpg`. These illustrate
+the real interface with disposable test data; they do not certify live storage.
