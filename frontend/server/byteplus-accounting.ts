@@ -8,31 +8,7 @@ import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
 import { seedance25OutputDimensions } from './seedance25-output-dimensions';
 
-const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
-  '480p': {
-    '21:9': { width: 1120, height: 480 },
-    '16:9': { width: 854, height: 480 },
-    '4:3': { width: 640, height: 480 },
-    '1:1': { width: 480, height: 480 },
-    '3:4': { width: 480, height: 640 },
-    '9:16': { width: 480, height: 854 },
-  },
-  '720p': {
-    '21:9': { width: 1680, height: 720 },
-    '16:9': { width: 1280, height: 720 },
-    '4:3': { width: 960, height: 720 },
-    '1:1': { width: 720, height: 720 },
-    '3:4': { width: 720, height: 960 },
-    '9:16': { width: 720, height: 1280 },
-  },
-  '1080p': {
-    '21:9': { width: 2520, height: 1080 },
-    '16:9': { width: 1920, height: 1080 },
-    '4:3': { width: 1440, height: 1080 },
-    '1:1': { width: 1080, height: 1080 },
-    '3:4': { width: 1080, height: 1440 },
-    '9:16': { width: 1080, height: 1920 },
-  },
+const SEEDANCE_2_0_4K_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '4k': {
     '21:9': { width: 4398, height: 1886 },
     '16:9': { width: 3840, height: 2160 },
@@ -43,9 +19,9 @@ const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; 
   },
 };
 
-// Seedance 1.5 has a different 480p raster from Seedance 2.5. These are
-// published output dimensions, used only when provider token usage is absent.
-const SEEDANCE_1_5_TOKEN_DIMENSIONS: typeof BYTEPLUS_TOKEN_DIMENSIONS = {
+// Published 1.5/2.0 series rasters; 2.5 differs at 480p. Provider usage overrides estimates.
+// https://docs.byteplus.com/pt/docs/modelark/create-video-generation-task-api (2026-10-01).
+const SEEDANCE_1_5_AND_2_0_DIMENSIONS: typeof SEEDANCE_2_0_4K_DIMENSIONS = {
   '480p': {
     '21:9': { width: 992, height: 432 },
     '16:9': { width: 864, height: 496 },
@@ -74,9 +50,22 @@ const SEEDANCE_1_5_TOKEN_DIMENSIONS: typeof BYTEPLUS_TOKEN_DIMENSIONS = {
 
 function tokenDimensions(engineId: string, resolution: string, aspectRatio: string) {
   if (engineId === 'seedance-2-5') return seedance25OutputDimensions(resolution, aspectRatio);
-  return (engineId === 'seedance-1-5-pro'
-    ? SEEDANCE_1_5_TOKEN_DIMENSIONS
-    : BYTEPLUS_TOKEN_DIMENSIONS)[resolution]?.[aspectRatio];
+  return (resolution === '4k' ? SEEDANCE_2_0_4K_DIMENSIONS : SEEDANCE_1_5_AND_2_0_DIMENSIONS)[resolution]?.[aspectRatio];
+}
+
+/** Exact supported supplier dimensions; never the padded historical retail basis. */
+export function estimateBytePlusOutputTokens(input: {
+  engineId: string; durationSec: number; resolution: string; aspectRatio?: string | null;
+}) {
+  const profile = requireBytePlusSeedanceProfile(input.engineId);
+  const aspectRatio = input.aspectRatio ?? profile.defaultAspectRatio;
+  if (!Number.isFinite(input.durationSec) || input.durationSec <= 0
+    || !profile.resolutions.includes(input.resolution as never)
+    || !profile.aspectRatios.includes(aspectRatio as never)) return null;
+  const dimensions = tokenDimensions(input.engineId, input.resolution, aspectRatio);
+  if (!dimensions) return null;
+  return { ...dimensions, aspectRatio, tokenCount: dimensions.width * dimensions.height
+    * Math.max(1, Math.round(input.durationSec)) * profile.framesPerSecond / 1024 };
 }
 
 export function expectedBytePlusTokens(
@@ -187,11 +176,9 @@ export function estimateBytePlusProviderCostCents(input: {
   if (!Number.isSafeInteger(input.durationSec) || input.durationSec < 1) {
     throw new Error('Invalid BytePlus provider-cost duration.');
   }
-  const dimensions = tokenDimensions(input.engineId, input.resolution, input.aspectRatio);
-  if (!dimensions) throw new Error('Invalid BytePlus provider-cost dimensions.');
-  const totalTokens = (
-    dimensions.width * dimensions.height * input.durationSec * 24
-  ) / 1024;
+  const estimate = estimateBytePlusOutputTokens(input);
+  if (!estimate) throw new Error('Invalid BytePlus provider-cost dimensions.');
+  const totalTokens = estimate.tokenCount;
   const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
     input.engineId,
     input.billingInputType,

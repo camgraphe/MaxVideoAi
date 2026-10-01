@@ -1,11 +1,11 @@
 import type { PricingContext } from '@/lib/pricing-context';
-import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
+import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
 import { ENV } from '@/lib/env';
 import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark-profile-policy';
 import { getBytePlusVideoListRate, quoteSeedreamListCost } from './byteplus-list-tariff';
 import { signedBytePlusContractCost } from './byteplus-account-contract';
-import { estimateSeedance25OutputTokens } from './seedance25-output-dimensions';
+import { estimateBytePlusOutputTokens } from './byteplus-accounting';
 
 type NormalUsage = {
   engineId: string;
@@ -56,10 +56,8 @@ export function normalBytePlusSupplierCost(context: PricingContext, at: string) 
       : mode === 'v2v' || mode === 'extend' ? 'video_input'
       : mode === 't2v' || mode === 'i2v' ? 'no_video_input' : undefined;
     if (!usage.billingInputType) return null;
-    usage.videoTokens = engine.id === 'seedance-2-5'
-      ? estimateSeedance25OutputTokens({ resolution, durationSec: context.durationSec, aspectRatio: context.aspectRatio })?.tokenCount
-      : computeSeedance2TokenQuote({ details: engine.pricingDetails, resolution,
-        durationSec: context.durationSec, aspectRatio: context.aspectRatio, billingInputType: usage.billingInputType }).tokenCount;
+    usage.videoTokens = estimateBytePlusOutputTokens({ engineId: engine.id, resolution,
+      durationSec: context.durationSec, aspectRatio: context.aspectRatio })?.tokenCount;
   }
   const list = bytePlusNormalListCost(usage);
   if (!list) return null;

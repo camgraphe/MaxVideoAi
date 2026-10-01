@@ -36,6 +36,14 @@ from the former attempt cannot alter that link. The original paid Draft remains
 completed and downloadable. Partial refunds and ambiguous provider outcomes
 never unlock a retry.
 
+The BytePlus poll failure owner commits terminal failure, the wallet refund
+receipt and refunded payment status in one database transaction. An interrupted
+refund rolls back the terminal transition, so the next poll can retry. The locked
+persisted job supplies the refund owner, amount, currency and snapshot; a stale
+poll object cannot change them. Concurrent callbacks can commit only one refund.
+Workflow reconciliation follows the committed transaction and keeps its existing
+owned terminal recovery path.
+
 Admin scenario controls expose Standard generation, Draft 480p and Final 1080p
 with the supported step resolution locked. The normal public catalogue matrix
 does not silently expand into unlaunched workflow capabilities.
@@ -52,6 +60,13 @@ actual Unix-socket PostgreSQL connection. The apply service reproduces the
 quotes under tariff/policy locks, inserts only missing workflow cells and records
 an immutable pricing event. Existing normal prices are preserved. Later edits
 use the existing admin preview/confirmation path.
+
+The pricing sandbox startup applies migrations 53 and 59 along with the pricing
+migrations. Its operational migration helper verifies the actual database
+connection is a Unix socket before any DDL. It never initializes schema from a
+read route. The current sandbox was updated in place with unchanged fingerprints
+for its 14,982 tariff cells, tariff revision, versions, receipts and pricing rules;
+provider credentials remain blank and execution remains off.
 
 ## Remaining release gates
 
@@ -145,3 +160,18 @@ passed with no failures or skips. TypeScript, frontend lint, exposure and
 whitespace checks passed. The 178 immutable billing and 577 public scenario
 baselines remain unchanged. The full-suite/build results above belong to the
 preceding implementation checkpoint and were not rerun for this focused fix.
+
+## Local continuation checks
+
+The same factual raster correction now covers Standard 2.0, Mini and Fast. The
+published 2.0 rasters differ from 2.5 at 480p and use their own capability limits.
+Accounting, manual supplier facts and admin share the corrected estimator;
+customer tariffs remain unchanged. Provider/Seedance/sandbox checks passed 214
+tests without skips. A subsequent PostgreSQL fault injection reproduced a job
+committing `failed` before its refund, then passed after the transaction fix.
+The focused refund/provider regression group passed 32 tests without skips.
+It also exercises exhausted final-output copy retries: only the final is
+refunded, the paid Draft remains ready, and a terminal poll repeats no copy.
+These storage checks simulate the external copy boundary; they are not a live
+storage canary. Broad validation of this continuation is recorded separately
+after completion.

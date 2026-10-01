@@ -13,6 +13,14 @@ actual LIST-based estimate slightly exceeds the 96-frame preflight estimate.
 The correction preserves authored customer cents and historical receipts.
 See [the dated canary evidence](2026-10-01-seedance-draft-lifecycle.md#minimum-cost-provider-canary).
 
+`server/byteplus-accounting.ts` also owns the published Seedance 1.5/2.0
+rasters and the shared supported-output token estimator. Mini and Fast use the
+2.0 rasters at their supported 480p/720p tiers; Standard also permits 1080p/4K.
+For example, 2.0 480p 16:9 is 864×496 and 720p square is 960×960.
+Direct BytePlus accounting, manual supplier guards and admin comparisons use
+these dimensions. They do not rewrite historical retail calculations or authored
+customer prices. Another execution provider retains its own reference facts.
+
 Adrien accepted order form `CT20260925128931` and explicitly requested using its
 commercial terms now, with console activation checked immediately before push.
 `server/byteplus-account-contract.ts` applies the signed discount to

@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import {
   buildUserFacingRefundDescription,
   toUserFacingFailureMessage,
@@ -42,10 +42,10 @@ export async function recordBytePlusPollEvent(
   }
 }
 
-async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string) {
+async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string, executor: TransactionQueryExecutor) {
   if (job.payment_status !== 'paid_wallet' || !job.user_id || !job.final_price_cents) return false;
 
-  const inserted = await query<{ id: string }>(
+  const inserted = await executor.query<{ id: string }>(
     `INSERT INTO app_receipts (
        user_id,
        type,
@@ -79,17 +79,7 @@ async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string) {
       JSON.stringify(job.pricing_snapshot ?? {}),
     ]
   );
-  if (!inserted.length) return false;
-
-  await query(
-    `UPDATE app_jobs
-        SET payment_status = 'refunded_wallet',
-            updated_at = NOW()
-      WHERE job_id = $1
-        AND payment_status = 'paid_wallet'`,
-    [job.job_id]
-  );
-  return true;
+  return inserted.length > 0;
 }
 
 export async function markBytePlusJobFailed(
@@ -107,35 +97,50 @@ export async function markBytePlusJobFailed(
         failureCode: providerFailure.failureCode,
       })
     : null;
-  const claimed = await query<{ job_id: string }>(
-    `UPDATE app_jobs
-        SET status = 'failed',
-            progress = 0,
-            message = $2,
-            provisional = FALSE,
-            settings_snapshot = CASE
-              WHEN $4::jsonb IS NULL THEN settings_snapshot
-              ELSE jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerFailure}', $4::jsonb, true)
-            END,
-            mcp_trial_outcome_disposition = CASE
-              WHEN payment_status <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
-              WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
-                THEN mcp_trial_outcome_disposition
-              ELSE $5
-            END,
-            updated_at = NOW()
-      WHERE job_id = $1
-        AND status = ANY($3::text[])
-      RETURNING job_id`,
-    [
-      job.job_id,
-      userMessage,
-      ACTIVE_JOB_STATUSES,
-      providerFailureJson,
-      trialOutcome === 'failed' ? 'definitive_failure' : trialOutcome,
-    ]
-  );
-  if (!claimed.length) {
+  // Keep a failed paid job recoverable if its refund cannot be committed.
+  // RETURNING uses the locked persisted charge, never a stale poll snapshot.
+  const result = await withDbTransaction(async (executor) => {
+    const claimed = await executor.query<BytePlusPendingJob>(
+      `UPDATE app_jobs
+          SET status = 'failed',
+              progress = 0,
+              message = $2,
+              provisional = FALSE,
+              settings_snapshot = CASE
+                WHEN $4::jsonb IS NULL THEN settings_snapshot
+                ELSE jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerFailure}', $4::jsonb, true)
+              END,
+              mcp_trial_outcome_disposition = CASE
+                WHEN payment_status <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
+                WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
+                  THEN mcp_trial_outcome_disposition
+                ELSE $5
+              END,
+              updated_at = NOW()
+        WHERE job_id = $1
+          AND status = ANY($3::text[])
+        RETURNING *`,
+      [
+        job.job_id,
+        userMessage,
+        ACTIVE_JOB_STATUSES,
+        providerFailureJson,
+        trialOutcome === 'failed' ? 'definitive_failure' : trialOutcome,
+      ]
+    );
+    if (!claimed.length) return null;
+    const failedJob = claimed[0];
+    const refunded = await recordWalletRefundOnce(failedJob, userMessage, executor);
+    if (refunded) {
+      await executor.query(
+        `UPDATE app_jobs SET payment_status = 'refunded_wallet', updated_at = NOW()
+          WHERE job_id = $1 AND payment_status = 'paid_wallet'`,
+        [failedJob.job_id],
+      );
+    }
+    return { job: failedJob, refunded };
+  });
+  if (!result) {
     await recordBytePlusPollEvent(job, 'poll:failed:skipped', {
       providerStatus: providerStatus ?? null,
       providerErrorCode: providerFailure?.providerErrorCode ?? null,
@@ -145,22 +150,14 @@ export async function markBytePlusJobFailed(
     return;
   }
 
-  const refunded = await recordWalletRefundOnce(job, userMessage);
-  await query(
-    `UPDATE app_jobs
-        SET payment_status = CASE WHEN $2 THEN 'refunded_wallet' ELSE payment_status END,
-            updated_at = NOW()
-      WHERE job_id = $1`,
-    [job.job_id, refunded]
-  );
-  await applyBytePlusTrialOutcomeSafely(job, { kind: trialOutcome });
-  await reconcileSeedanceWorkflowOutcome(job, 'failed').catch(() => {
-    console.warn('[byteplus-poll] failed workflow reconciliation deferred', { jobId: job.job_id });
+  await applyBytePlusTrialOutcomeSafely(result.job, { kind: trialOutcome });
+  await reconcileSeedanceWorkflowOutcome(result.job, 'failed').catch(() => {
+    console.warn('[byteplus-poll] failed workflow reconciliation deferred', { jobId: result.job.job_id });
   });
   await recordBytePlusPollEvent(job, 'poll:failed', {
     providerStatus: providerStatus ?? null,
     providerErrorCode: providerFailure?.providerErrorCode ?? null,
     failureCode: providerFailure?.failureCode ?? null,
-    refunded,
+    refunded: result.refunded,
   });
 }

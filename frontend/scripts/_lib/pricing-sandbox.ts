@@ -1,3 +1,7 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { Pool } from 'pg';
+
 /** The sandbox never inherits commercial credentials, including future env-file keys. */
 export function buildPricingSandboxEnvironment(input: {
   parent: NodeJS.ProcessEnv;
@@ -44,4 +48,22 @@ export function buildPricingSandboxEnvironment(input: {
     ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'false',
     ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: 'false',
   };
+}
+
+/** Operational setup only; read routes never create the workflow tables. */
+export async function migratePricingSandbox(pool: Pool, root: string): Promise<void> {
+  const connection = (await pool.query<{ server_address: string | null; client_address: string | null }>(
+    'SELECT inet_server_addr()::text AS server_address, inet_client_addr()::text AS client_address',
+  )).rows[0];
+  if (!connection || connection.server_address !== null || connection.client_address !== null) {
+    throw new Error('Pricing sandbox migrations require an actual local Unix-socket connection.');
+  }
+  for (const migration of [
+    '12_app_settings.sql', '27_pricing_admin_cockpit.sql', '42_toolbox_finishing_pricing.sql',
+    '53_seedance_draft_links.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql',
+    '56_direct_payment_quotes.sql', '57_customer_tariff_local_activation_events.sql',
+    '58_customer_tariff_bulk_interval_lock.sql', '59_seedance_draft_final_state.sql',
+  ]) {
+    await pool.query(await readFile(join(root, 'neon/migrations', migration), 'utf8'));
+  }
 }
