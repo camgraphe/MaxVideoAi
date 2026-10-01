@@ -4,7 +4,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'dotenv';
-import { localTariffReleaseConnection, refreshLocalReferenceFloorApproval } from './_lib/local-tariff-release-input';
+import { LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS, localTariffFactualEnvironment,
+  localTariffReleaseConnection, refreshLocalReferenceFloorApproval } from './_lib/local-tariff-release-input';
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 
@@ -21,11 +22,9 @@ async function main() {
   };
   if (git(['status', '--porcelain'])) throw new Error('Commit reviewed pricing changes before preparing release evidence');
   const codeRevision = git(['rev-parse', 'HEAD']);
-  // Next reads these six factual configuration keys from .env.local. Import the
+  // Next reads these factual configuration keys from .env.local. Import the
   // quote owners only after matching that local configuration, ignoring ambient overrides.
-  for (const key of ['LUMARAY2_BASE_5S_540P_USD', 'LUMARAY2_FLASH_BASE_5S_540P_USD',
-    'LUMARAY2_MODIFY_PER_SECOND_USD', 'LUMARAY2_FLASH_MODIFY_PER_SECOND_USD',
-    'LUMARAY2_REFRAME_PER_SECOND_USD', 'LUMARAY2_FLASH_REFRAME_PER_SECOND_USD']) {
+  for (const key of LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS) {
     if (env[key]?.trim()) process.env[key] = env[key]; else delete process.env[key];
   }
   const { Pool } = await import('pg');
@@ -65,7 +64,9 @@ async function main() {
     const sourceTariffStateHash = localTariffSourceStateHash(state, staged, databaseUrl);
     const release = await prepareLocalCustomerTariffRelease({ baseline: captured, scenarios: coverage.scenarios,
       registryHash, coverageGaps: coverage.gaps, policy, sourceTariffRevision: Number(state.revision), sourceTariffStateHash,
-      codeRevision, factualEnvironmentHash: hash(JSON.stringify(Object.entries(env).filter(([key]) => key.startsWith('LUMARAY2_')).sort())),
+      codeRevision, factualEnvironmentHash: hash(JSON.stringify(Object.entries(localTariffFactualEnvironment(env)).sort())),
+      ...(process.env.PRICING_RELEASE_SEEDANCE_MARGIN_POLICY === 'preserve_positive_variant_margin'
+        ? { approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin' as const } : {}),
       ...(approval ? { approvedGptImage25ReferenceFloor: approval } : {}) });
     if (git(['status', '--porcelain']) || git(['rev-parse', 'HEAD']) !== codeRevision
       || await readFile(resolve('frontend/.env.local'), 'utf8') !== environmentSource) {
@@ -80,7 +81,7 @@ async function main() {
     }
     console.log(JSON.stringify({ output: directory, checkedScenarios: release.report.checkedScenarios,
       quotedScenarios: release.report.quotedScenarios, unchangedScenarios: release.report.unchangedScenarios,
-      approvedPriceChanges: release.report.approvedPriceChanges.length, candidateCells: release.report.candidateCellCount,
+      approvedPriceChanges: release.report.approvedPriceChanges.length + release.report.seedancePriceChanges.length, candidateCells: release.report.candidateCellCount,
       remainingCoverageGaps: release.report.remainingCoverageGaps, activationReady: false }));
   } finally {
     if (client) {

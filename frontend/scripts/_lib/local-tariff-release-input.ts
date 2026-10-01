@@ -1,6 +1,26 @@
 import type { EffectiveCustomerTariffBaseline } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { ApprovedGptImage25ReferenceFloor } from '@/server/pricing/customer-tariff-reviewed-seed';
 
+/** Public routing/rate facts only: credentials never enter release bindings. */
+export const LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS = [
+  'LUMARAY2_BASE_5S_540P_USD', 'LUMARAY2_FLASH_BASE_5S_540P_USD',
+  'LUMARAY2_MODIFY_PER_SECOND_USD', 'LUMARAY2_FLASH_MODIFY_PER_SECOND_USD',
+  'LUMARAY2_REFRAME_PER_SECOND_USD', 'LUMARAY2_FLASH_REFRAME_PER_SECOND_USD',
+  'BYTEPLUS_ARK_REGION',
+  'SEEDANCE_1_5_PROVIDER', 'SEEDANCE_1_5_BYTEPLUS_ENABLED',
+  'SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY', 'SEEDANCE_1_5_BYTEPLUS_MODES',
+  'SEEDANCE_2_PROVIDER', 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY', 'SEEDANCE_2_BYTEPLUS_MODES',
+  'SEEDANCE_FAST_PROVIDER', 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY', 'SEEDANCE_FAST_BYTEPLUS_MODES',
+  'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY', 'SEEDANCE_MINI_BYTEPLUS_MODES',
+  'SEEDANCE_2_5_PROVIDER', 'SEEDANCE_2_5_BYTEPLUS_ENABLED',
+  'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY', 'SEEDANCE_2_5_BYTEPLUS_MODES', 'SEEDANCE_2_5_LAS_ENABLED',
+] as const;
+
+export function localTariffFactualEnvironment(env: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS
+    .filter(key => Boolean(env[key]?.trim())).map(key => [key, env[key]]));
+}
+
 /** Validate before creating a client. Only the sandbox file's Unix socket is accepted. */
 export function localTariffReleaseConnection(env: Record<string, string>): string {
   try {

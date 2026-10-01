@@ -12,6 +12,7 @@ import { activateLocalCustomerTariffs } from '../frontend/server/pricing/activat
 import { loadEffectiveCustomerTariffState, customerTariffsEnabledByCode } from '../frontend/server/pricing/customer-tariff-store';
 import { continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
 import { previewPricingPolicyChange } from '../frontend/server/pricing-admin/policy-service';
+import { ENV } from '../frontend/src/lib/env';
 
 const actor = '11111111-1111-4111-8111-111111111111';
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -20,6 +21,10 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
   const db = await startDisposablePostgres('tariff-cutover');
   const before = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV, PRICING_SANDBOX: process.env.PRICING_SANDBOX };
   Object.assign(process.env, { DATABASE_URL: db.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });
+  const routing = { SEEDANCE_2_PROVIDER: ENV.SEEDANCE_2_PROVIDER, SEEDANCE_FAST_PROVIDER: ENV.SEEDANCE_FAST_PROVIDER,
+    SEEDANCE_2_5_PROVIDER: ENV.SEEDANCE_2_5_PROVIDER, SEEDANCE_2_5_BYTEPLUS_ENABLED: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED };
+  Object.assign(ENV, { SEEDANCE_2_PROVIDER:'byteplus_modelark',SEEDANCE_FAST_PROVIDER:'byteplus_modelark',
+    SEEDANCE_2_5_PROVIDER:'byteplus_modelark',SEEDANCE_2_5_BYTEPLUS_ENABLED:'true' });
   try {
     await db.pool.query(`CREATE TABLE app_pricing_rules (id TEXT PRIMARY KEY, engine_id TEXT, mode TEXT, resolution TEXT,
       margin_percent NUMERIC, margin_flat_cents INTEGER, surcharge_audio_percent NUMERIC, surcharge_upscale_percent NUMERIC,
@@ -50,11 +55,13 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     // Mirror the actual preparation CLI, including its serialized provenance.
     const capture = { ...baseline, databaseRulesHash, source: 'isolated_local_repeatable_read_only', coverageGaps: coverage.gaps };
     const first = await prepareLocalCustomerTariffRelease({ baseline: capture, scenarios: coverage.scenarios, registryHash, coverageGaps: coverage.gaps,
+      approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin',
       policy, sourceTariffRevision: 0, sourceTariffStateHash, codeRevision: 'test-code', factualEnvironmentHash: 'test-env' });
     assert.equal(first.report.settlementGuardFailures.length, 24);
     const approvedGptImage25ReferenceFloor = { capturedAt: baseline.at, registryHash, databaseRulesHash, databaseIdentity,
       changes: first.report.settlementGuardFailures.map(row => ({ scenarioId: row.scenarioId, currentCustomerCents: row.customerCents, proposedCustomerCents: row.referenceCeilCents })) };
     const release = await prepareLocalCustomerTariffRelease({ baseline: capture, scenarios: coverage.scenarios, registryHash, coverageGaps: coverage.gaps,
+      approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin',
       policy, sourceTariffRevision: 0, sourceTariffStateHash, codeRevision: 'test-code', factualEnvironmentHash: 'test-env', approvedGptImage25ReferenceFloor });
     assert.equal(release.report.remainingCoverageGaps.length, 0);
     const run = (candidate = release, fingerprint = release.report.fingerprint, bindings = release.report.bindings) => withDbTransaction(e =>
@@ -87,6 +94,7 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     const cells = new Map(active.databaseCells.map(cell => [key(cell.selector), cell]));
     const expected = new Map(baseline.rows.map(row => [row.scenarioId, row.customerCents]));
     for (const change of approvedGptImage25ReferenceFloor.changes) expected.set(change.scenarioId, change.proposedCustomerCents);
+    for (const change of release.report.seedancePriceChanges) expected.set(change.scenarioId, change.proposedCustomerCents);
     for (const scenario of coverage.scenarios) {
       const continuous = continuousInputTariffSelector(scenario.selector);
       const cell = cells.get(key(scenario.selector)) ?? (continuous ? cells.get(key(continuous)) : undefined);
@@ -103,5 +111,6 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     await getDb().end().catch(() => undefined);
     await db.cleanup();
     for (const [key,value] of Object.entries(before)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
+    Object.assign(ENV,routing);
   }
 });

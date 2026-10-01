@@ -3,7 +3,8 @@ import { spawnSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parse } from 'dotenv';
-import { localTariffReleaseConnection } from './_lib/local-tariff-release-input';
+import { LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS, localTariffFactualEnvironment,
+  localTariffReleaseConnection } from './_lib/local-tariff-release-input';
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 async function main() {
@@ -27,10 +28,9 @@ async function main() {
   const address = new URL(databaseUrl);
   const currentBindings = { ...release.report.bindings, codeRevision, registryHash: hash(registrySource),
     databaseIdentity: hash(`${address.hostname}|${address.pathname}|${address.username}`),
-    factualEnvironmentHash: hash(JSON.stringify(Object.entries(env).filter(([key]) => key.startsWith('LUMARAY2_')).sort())) };
+    factualEnvironmentHash: hash(JSON.stringify(Object.entries(localTariffFactualEnvironment(env)).sort())) };
   Object.assign(process.env, { DATABASE_URL: databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });
-  for (const key of ['LUMARAY2_BASE_5S_540P_USD', 'LUMARAY2_FLASH_BASE_5S_540P_USD', 'LUMARAY2_MODIFY_PER_SECOND_USD',
-    'LUMARAY2_FLASH_MODIFY_PER_SECOND_USD', 'LUMARAY2_REFRAME_PER_SECOND_USD', 'LUMARAY2_FLASH_REFRAME_PER_SECOND_USD']) {
+  for (const key of LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS) {
     if (env[key]?.trim()) process.env[key] = env[key]; else delete process.env[key];
   }
   const { getDb, withDbTransaction } = await import('@/lib/db');

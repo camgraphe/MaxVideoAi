@@ -52,7 +52,8 @@ export async function continuousInputTariffDetail(scenario: ManualTariffCoverage
   if (state.status !== 'loaded') return undefined;
   const identity = continuousInputTariffIdentity(scenario);
   const cell = currentCell(scenario, state);
-  const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
+  const seedance = scenario.context.engine.providerMeta?.provider !== 'fal'
+    && supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
   if (seedance && !cell) return undefined;
   const price = cell?.price ?? await compileCurrentContinuousTariffPrice(scenario, rules);
   if (price.kind === 'fixed') throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing requires unit amounts');
@@ -110,7 +111,8 @@ export async function prepareContinuousInputTariffChange(input: {
     if (!('scope' in proposal) || proposal.scope !== 'continuous_input' || !('price' in proposal) || 'customerCents' in proposal) {
       throw new PricingAdminError('invalid_payload', 'Continuous source pricing requires unit amounts');
     }
-    const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
+    const seedance = scenario.context.engine.providerMeta?.provider !== 'fal'
+      && supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
     if (seedance && !['seedance_billable', 'preserve_current'].includes(proposal.price?.kind)) {
       throw new PricingAdminError('invalid_payload', 'Seedance requires proportional billable-second pricing.');
     }

@@ -75,6 +75,20 @@ reproduces the reviewed state before appending new continuous cells and a batch
 audit event. It preserves all existing cells. Production activation remains a
 separate release decision.
 
+Fresh all-model preparation also requires the explicit
+`PRICING_RELEASE_SEEDANCE_MARGIN_POLICY=preserve_positive_variant_margin` policy.
+It authors the same literal rates from the captured customer cents, records any
+minimum increases separately from the approved GPT cent floors, and binds both
+to the release fingerprint. Locked local activation reproduces that policy and
+all candidate quotes before writing. Another declared provider retains its own
+captured customer amounts and factual cost guard. Preparation and activation
+share an explicit factual environment allowlist for Luma rates and Seedance
+route, region, mode and availability settings; credentials are excluded.
+
+The [October 2 local acceptance](2026-10-02-seedance-proportional-pricing.md)
+records 3,186 new continuous cells, 273 corrected minima and the actual private
+sandbox quote audit. This does not certify production state or observed invoices.
+
 Adrien accepted order form `CT20260925128931` and explicitly requested using its
 commercial terms now, with console activation checked immediately before push.
 `server/byteplus-account-contract.ts` applies the signed discount to

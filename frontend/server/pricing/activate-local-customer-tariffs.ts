@@ -48,6 +48,7 @@ export async function activateLocalCustomerTariffs(executor: TransactionQueryExe
         active: false, revision: Number(state.revision), databaseCells: [], versionedCells: [] }) }) });
   const reproduced = await prepareLocalCustomerTariffRelease({ baseline: localCustomerTariffBaseline(baseline, input.currentBindings.databaseRulesHash, coverage.gaps),
     scenarios: coverage.scenarios, coverageGaps: coverage.gaps, policy,
+    approvedSeedanceMarginPolicy: input.release.report.approvedSeedanceMarginPolicy,
     ...input.currentBindings, ...(input.release.report.approvedPriceChanges.length ? { approvedGptImage25ReferenceFloor: { capturedAt: baseline.at, registryHash: baseline.registryHash,
       databaseRulesHash: input.currentBindings.databaseRulesHash, databaseIdentity: input.currentBindings.databaseIdentity,
       changes: input.release.report.approvedPriceChanges } } : {}) });
@@ -78,7 +79,7 @@ export async function activateLocalCustomerTariffs(executor: TransactionQueryExe
   await insertPricingChangeEvent(executor, { domain: 'customer_tariff', operation: 'update', targetId: 'local-all-model-cutover', actorId: input.actorId,
     previousState: { active: false, revision: Number(state.revision), archiveEventId: event.id },
     nextState: { active: true, revision, archiveEventId: event.id, candidateHash: input.release.report.candidateHash },
-    previewSummary: { fingerprint: input.fingerprint, environment: 'isolated_local_sandbox', approvedPriceChangeCount: input.release.report.approvedPriceChanges.length,
+    previewSummary: { fingerprint: input.fingerprint, environment: 'isolated_local_sandbox', approvedPriceChangeCount: input.release.report.approvedPriceChanges.length + input.release.report.seedancePriceChanges.length,
       checkedScenarios: coverage.scenarios.length, candidateCells: cells.length }, affectedScenarioIds: coverage.scenarios.map(row => row.id) });
   return { revision, eventId: event.id, effectiveFrom, candidateCells: cells.length };
 }

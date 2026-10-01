@@ -7,6 +7,8 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildCustomerTariffSeed, customerTariffCellId } from './customer-tariff-seed';
 import { compileCurrentContinuousTariffPrice, validateCurrentContinuousTariffDomain } from './compile-current-continuous-tariff';
 import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
+import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
+import { prepareReviewedSeedanceMigrationPrice } from './seedance-reviewed-migration';
 
 export type ApprovedGptImage25ReferenceFloor = {
   capturedAt: string;
@@ -39,6 +41,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
   coverageGaps: readonly { modelId: string; reason: string }[];
   policy: PricingPolicyOverrideLoadResult;
   approvedGptImage25ReferenceFloor?: ApprovedGptImage25ReferenceFloor;
+  approvedSeedanceMarginPolicy?: 'preserve_positive_variant_margin';
 }) {
   if (input.policy.status !== 'loaded') throw new Error('Effective policy unavailable');
   const rulesHash = createHash('sha256').update(JSON.stringify([...input.policy.rules]
@@ -46,10 +49,15 @@ export async function auditReviewedCustomerTariffSeed(input: {
   if (rulesHash !== input.baseline.databaseRulesHash) throw new Error('Captured policy changed');
   const original = buildCustomerTariffSeed(input);
   const pointCells = new Map(original.cells.map(cell => [cell.id, cell]));
+  const selectorKey = (selector: ManualTariffCell['selector']) => JSON.stringify(Object.entries(selector).sort(([a], [b]) => a.localeCompare(b)));
+  const pointsBySelector = new Map(original.cells.map(cell => [selectorKey(cell.selector), cell]));
+  const capturedRows = new Map(input.baseline.rows.map(row => [row.scenarioId, row]));
+  const seedancePriceChanges: Array<{ scenarioId: string; currentCustomerCents: number; proposedCustomerCents: number }> = [];
   const cells = new Map<string, ManualTariffCell>();
   const reviewedContinuousClasses: Array<{ id: string; modelId: string; mode: string;
     domain: ReturnType<typeof validateCurrentContinuousTariffDomain> }> = [];
   const certifiedGaps = new Set<string>();
+  const seedanceDomains = new Map<string, ReturnType<typeof validateCurrentContinuousTariffDomain>>();
   for (const scenario of input.scenarios) {
     const selector = continuousInputTariffSelector(scenario.selector);
     if (!selector) {
@@ -60,15 +68,29 @@ export async function auditReviewedCustomerTariffSeed(input: {
     const key = Object.entries(selector).map(([name, value]) => `${name}=${encodeURIComponent(value)}`).join('|');
     const id = customerTariffCellId(key);
     if (cells.has(id)) continue;
-    const price = await compileCurrentContinuousTariffPrice(scenario, input.policy);
-    const domain = validateCurrentContinuousTariffDomain({ context: scenario.context, price });
+    const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
+    if (seedance && input.approvedSeedanceMarginPolicy !== 'preserve_positive_variant_margin') {
+      throw new Error('Explicit approval of the proportional Seedance margin policy is required.');
+    }
+    const capturedCents = capturedRows.get(scenario.id)!.customerCents;
+    const prepared = seedance ? prepareReviewedSeedanceMigrationPrice(scenario, capturedCents, selector => {
+      const cell = pointsBySelector.get(selectorKey(selector)); return cell?.price.kind === 'fixed' ? cell.price.customerCents : undefined;
+    }, input.baseline.at) : undefined;
+    const price = prepared?.price ?? await compileCurrentContinuousTariffPrice(scenario, input.policy);
+    if (prepared && prepared.minimumCustomerCents !== capturedCents) seedancePriceChanges.push({ scenarioId: scenario.id,
+      currentCustomerCents: capturedCents, proposedCustomerCents: prepared.minimumCustomerCents });
+    const domainKey = seedance ? JSON.stringify({ modelId: scenario.modelId, provider: scenario.context.engine.providerMeta?.provider,
+      duration: scenario.context.durationSec, resolution: scenario.context.resolution, aspect: scenario.context.aspectRatio,
+      factualCents: buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts.vendorSubtotalExactCents, price }) : undefined;
+    const domain = (domainKey ? seedanceDomains.get(domainKey) : undefined)
+      ?? validateCurrentContinuousTariffDomain({ context: scenario.context, price });
+    if (domainKey) seedanceDomains.set(domainKey, domain);
     cells.set(id, { id, selector, source: 'database', version: 1, currency: 'USD', effectiveFrom: input.baseline.at, price });
     reviewedContinuousClasses.push({ id, modelId: scenario.modelId, mode: scenario.selector.mode, domain });
     const gap = reviewedCustomerTariffCoverageGap(scenario.modelId, scenario.selector.mode);
     if (gap) certifiedGaps.add(`${scenario.modelId}|${gap}`);
   }
   const candidateCells = [...cells.values()];
-  const selectorKey = (selector: ManualTariffCell['selector']) => JSON.stringify(Object.entries(selector).sort(([a], [b]) => a.localeCompare(b)));
   const cellsBySelector = new Map(candidateCells.map(cell => [selectorKey(cell.selector), cell]));
   const rows = new Map(input.baseline.rows.map(row => [row.scenarioId, row]));
   const approvedPriceChanges: Array<{ scenarioId: string; currentCustomerCents: number;
@@ -102,6 +124,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
     }
   }
   const approvedAmounts = new Map(approvedPriceChanges.map(change => [change.scenarioId, change.proposedCustomerCents]));
+  for (const change of seedancePriceChanges) approvedAmounts.set(change.scenarioId, change.proposedCustomerCents);
   const settlementGuardFailures: Array<{ scenarioId: string; customerCents: number; referenceCeilCents: number }> = [];
   for (const scenario of input.scenarios) {
     const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
@@ -129,7 +152,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
   const remainingCoverageGaps = input.coverageGaps.filter(gap => !certifiedGaps.has(`${gap.modelId}|${gap.reason}`));
   return { cells: [...cellsBySelector.values()], reviewedContinuousClasses, checkedScenarios: input.scenarios.length,
     quotedScenarios: input.scenarios.length - settlementGuardFailures.length, settlementGuardFailures,
-    approvedPriceChanges,
+    approvedPriceChanges, seedancePriceChanges, approvedSeedanceMarginPolicy: input.approvedSeedanceMarginPolicy,
     remainingCoverageGaps, registryHash: input.registryHash, databaseRulesHash: rulesHash,
     capturedAt: input.baseline.at, databaseIdentity: input.baseline.databaseIdentity, activationReady: false as const };
 }

@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { localTariffReleaseConnection, refreshLocalReferenceFloorApproval } from '../frontend/scripts/_lib/local-tariff-release-input';
+import { localTariffReleaseConnection, refreshLocalReferenceFloorApproval, localTariffFactualEnvironment } from '../frontend/scripts/_lib/local-tariff-release-input';
+
+test('release factual bindings include BytePlus route and region without credentials', () => {
+  const env={ SEEDANCE_2_PROVIDER:'byteplus_modelark',BYTEPLUS_ARK_REGION:'ap-southeast-1',
+    BYTEPLUS_ARK_API_KEY:'private',LUMARAY2_MODIFY_PER_SECOND_USD:'0.04' };
+  const facts=localTariffFactualEnvironment(env);
+  assert.deepEqual(facts,{ SEEDANCE_2_PROVIDER:'byteplus_modelark',BYTEPLUS_ARK_REGION:'ap-southeast-1',
+    LUMARAY2_MODIFY_PER_SECOND_USD:'0.04' });
+  assert.notDeepEqual(localTariffFactualEnvironment({ ...env,BYTEPLUS_ARK_REGION:'other' }),facts);
+});
 
 test('local release refuses remote, TCP-only and multiple-host connections before a database client is created', () => {
   const good = { PRICING_SANDBOX: '1', DATABASE_URL: 'postgresql://postgres@localhost/postgres?host=%2Ftmp%2Fmva%2Fsocket' };

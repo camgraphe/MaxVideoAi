@@ -4,6 +4,12 @@ Branch: `codex/bytedance-pricing-grid`. This record supersedes the earlier local
 coverage and inactive-cutover checkpoints. It certifies the isolated review
 sandbox, not current production prices or production activation readiness.
 
+The [October 2 Seedance acceptance](2026-10-02-seedance-proportional-pricing.md)
+extends this record with proportional video-input rates, 273 corrected minima,
+3,186 appended continuous cells and the current private sandbox audit. Its
+reviewed Seedance policy and explicit deltas must also be considered in a future
+production capture; the original 24 GPT cent floors are separate.
+
 ## Result
 
 - One compact `/admin/pricing` workspace: Video, Image, Audio, Tools, Storyboard.
