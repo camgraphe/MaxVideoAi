@@ -32,9 +32,10 @@ test("The API adapter binds Sol, strict tools and bounded calls without exposing
   });
   assert.deepEqual(reply.usage, {
     inputTokens: 2,
-    cachedInputTokens: 0,
+    cachedInputTokens: null,
+    cacheWriteTokens: null,
     outputTokens: 3,
-    reasoningTokens: 0,
+    reasoningTokens: null,
     totalTokens: 5,
   });
   assert.equal(body.model, "gpt-6.1-sol");
@@ -68,4 +69,20 @@ test("The API adapter binds Sol, strict tools and bounded calls without exposing
       !e.message.includes("secret-test-key") &&
       /clé/i.test(e.message),
   );
+});
+
+test("metering retains the returned model, tier, cache writes and incomplete response usage", async () => {
+  const { OpenAIResponses } = await import("../server/openai-client");
+  const client = new OpenAIResponses("test-key", async () => new Response(JSON.stringify({
+    id: "response-incomplete", object: "response", status: "incomplete", output: [],
+    model: "gpt-6.1-sol", service_tier: "priority",
+    usage: { input_tokens: 100, input_tokens_details: { cached_tokens: 20, cache_write_tokens: 30 },
+      output_tokens: 40, output_tokens_details: { reasoning_tokens: 10 }, total_tokens: 140 },
+  }), { status: 200, headers: { "content-type": "application/json" } }));
+  const reply = await client.create({ input: [], instructions: "Studio", tool_choice: "auto" });
+  assert.equal(reply.model, "gpt-6.1-sol");
+  assert.equal(reply.serviceTier, "priority");
+  assert.equal(reply.status, "incomplete");
+  assert.deepEqual(reply.usage, { inputTokens: 100, cachedInputTokens: 20, cacheWriteTokens: 30,
+    outputTokens: 40, reasoningTokens: 10, totalTokens: 140 });
 });

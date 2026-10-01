@@ -13,6 +13,7 @@ const scenarios: EnglishScenario[] = [
   { id: "opt-in", message: "Create one square image of the attached logo.", expectedRatio: "1:1", history: [], reference: true },
 ];
 const event = {
+  responseId: "qa-response",
   model: "gpt-6.1-sol", status: "completed" as const, serviceTier: "default" as const, elapsedMs: 5,
   usage: { input_tokens: 100, input_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
     output_tokens: 20, output_tokens_details: { reasoning_tokens: 10 }, total_tokens: 120 },

@@ -37,6 +37,7 @@ test("image chat persists its intent and exact quote, resumes safely and leaves 
     readFileSync("neon/migrations/50_studio_image_conversation.sql", "utf8"),
   );
   await addTopup(pg.pool, "owner", 10000);
+  await pg.pool.query(readFileSync("neon/migrations/51_studio_image_model_usage.sql", "utf8"));
   const entry = getFalEngineById("gpt-image-2");
   assert.ok(entry);
   const catalog: AgentPublicGenerationEngine[] = [

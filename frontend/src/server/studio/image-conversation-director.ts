@@ -15,6 +15,7 @@ export type ImageDirector = (
   input: ImageTurnInput,
   history: { message: string; reply: string | null }[],
   references: ResolvedReference[],
+  observeResponse?: (event: ImageDirectorTelemetry) => void,
 ) => Promise<ImageDraft>;
 const format = {
   type: "json_schema" as const,
@@ -48,6 +49,7 @@ export type ImageDirectorResponse = Pick<
   "id" | "model" | "status" | "service_tier" | "usage" | "output_text"
 >;
 export type ImageDirectorTelemetry = {
+  responseId: string;
   model: string;
   status: Response["status"];
   serviceTier: Response["service_tier"] | null;
@@ -55,7 +57,7 @@ export type ImageDirectorTelemetry = {
   elapsedMs: number;
 };
 
-/** Server-only observer for QA. It never changes the draft or billing contract. */
+/** Server-only usage observation. It never changes the draft or billing contract. */
 export function createStudioImageDirector(
   options: {
     createResponse?: (
@@ -64,7 +66,7 @@ export function createStudioImageDirector(
     onResponse?: (event: ImageDirectorTelemetry) => void;
   } = {},
 ): ImageDirector {
-  return async (input, history, references) => {
+  return async (input, history, references, observeResponse) => {
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError(
         "ENGINE_UNAVAILABLE",
@@ -119,16 +121,20 @@ Si le brief suffit et demande de créer, image contient un prompt précis et un 
       });
       // Incomplete responses also consume tokens. Keep raw provider counters,
       // including fields newer than the installed SDK. Never log prompts or keys.
-      try {
-        options.onResponse?.({
-          model: response.model,
-          status: response.status,
-          serviceTier: response.service_tier ?? null,
-          usage: response.usage ?? null,
-          elapsedMs: Math.round(performance.now() - startedAt),
-        });
-      } catch {
-        // Reporting must not invalidate a successful reply or cause another call.
+      const event: ImageDirectorTelemetry = {
+        responseId: response.id,
+        model: response.model,
+        status: response.status,
+        serviceTier: response.service_tier ?? null,
+        usage: response.usage ?? null,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      };
+      for (const observer of [observeResponse, options.onResponse]) {
+        try {
+          await observer?.(event);
+        } catch {
+          // A missing checkpoint stays unknown; never repeat a model call for it.
+        }
       }
       if (response.status !== "completed" || !response.output_text)
         throw new Error("INCOMPLETE");

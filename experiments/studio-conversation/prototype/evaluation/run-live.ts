@@ -51,6 +51,8 @@ const api = new OpenAIResponses(key);
 const calls: {
   durationMs: number;
   responseId: string;
+  model: string | null;
+  serviceTier: string | null;
   usage?: ModelReply["usage"];
   tools: string[];
 }[] = [];
@@ -64,6 +66,8 @@ const client: ModelClient = {
     calls.push({
       durationMs: Math.round(performance.now() - start),
       responseId: reply.id,
+      model: reply.model ?? null,
+      serviceTier: reply.serviceTier ?? null,
       usage: reply.usage,
       tools: reply.output
         .filter((i) => i.type === "function_call")
@@ -81,7 +85,7 @@ const rows: {
   replies: string[];
   calls: number;
   durationMs: number;
-  usage: Record<string, number>;
+  usage: Record<string, number | null>;
   error?: string;
 }[] = [];
 let active: (typeof rows)[number];
@@ -194,7 +198,9 @@ async function scenario(name: string, work: () => Promise<void>) {
   active.durationMs = Math.round(performance.now() - start);
   for (const c of subset)
     for (const [k, v] of Object.entries(c.usage ?? {}))
-      active.usage[k] = (active.usage[k] ?? 0) + v;
+      active.usage[k] = v === null || active.usage[k] === null
+        ? null
+        : (active.usage[k] ?? 0) + v;
   await writeFile(
     join(root, "report.json"),
     JSON.stringify({ runId, model: "gpt-6.1-sol", rows, calls }, null, 2),

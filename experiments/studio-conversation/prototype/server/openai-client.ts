@@ -43,16 +43,20 @@ export class OpenAIResponses implements ModelClient {
       return {
         id: reply.id,
         status: reply.status ?? "failed",
+        model: reply.model ?? null,
+        serviceTier: reply.service_tier ?? null,
         output: reply.output,
         ...(reply.usage
           ? {
               usage: {
                 inputTokens: reply.usage.input_tokens,
                 cachedInputTokens:
-                  reply.usage.input_tokens_details?.cached_tokens ?? 0,
+                  reply.usage.input_tokens_details?.cached_tokens ?? null,
+                cacheWriteTokens:
+                  (reply.usage.input_tokens_details as { cache_write_tokens?: number } | undefined)?.cache_write_tokens ?? null,
                 outputTokens: reply.usage.output_tokens,
                 reasoningTokens:
-                  reply.usage.output_tokens_details?.reasoning_tokens ?? 0,
+                  reply.usage.output_tokens_details?.reasoning_tokens ?? null,
                 totalTokens: reply.usage.total_tokens,
               },
             }

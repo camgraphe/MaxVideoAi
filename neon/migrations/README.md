@@ -88,3 +88,5 @@ qualified only on disposable PostgreSQL 17. Keep `STUDIO_IMAGE_CONVERSATION_ENAB
 closed until migration completion and **all** quote reader instances use origin predicates;
 legacy null-OAuth-client readers must not read Studio session approvals.
 See `docs/engineering/studio-conversation-integration.md` for access, rollout and rollback.
+
+`51_studio_image_model_usage.sql` suit 50 et installe les preuves de consommation du modèle texte par compte/projet/tour/tentative. Appliquer avant le runtime image conversation instrumenté. Cette table ne réserve et ne débite aucun crédit média. Les réponses incomplètes restent mesurées ; les tentatives sans compteurs restent explicitement inconnues. Qualification sur PostgreSQL 17 jetable et preview QA local uniquement.

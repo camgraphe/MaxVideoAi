@@ -382,6 +382,35 @@ test("Usage is durably recorded once and remains private when a turn replays", a
   }
 });
 
+test("project usage retains all model rounds and earlier turns while unknown attempts stay visible", async () => {
+  const f = await fixture();
+  try {
+    let calls = 0;
+    const director = f.make({ create: async () => {
+      calls++;
+      if (calls === 4) throw new Error("transport failed");
+      return { ...(calls === 1 ? edit(f.clipId) : final("Done")), id: "response-" + calls,
+        model: "gpt-6.1-sol", serviceTier: "default",
+        usage: { inputTokens: 100, cachedInputTokens: 20, cacheWriteTokens: 30,
+          outputTokens: 40, reasoningTokens: 10, totalTokens: 140 } };
+    } });
+    await director.respond(f.id, { requestId: "first", text: "Shorten the shot" });
+    await director.respond(f.id, { requestId: "second", text: "What next?" });
+    await assert.rejects(director.respond(f.id, { requestId: "failed", text: "Continue" }));
+    const file = join(f.root, "assistant", f.id + ".usage.json");
+    const ledger = JSON.parse(await readFile(file, "utf8"));
+    assert.equal(ledger.length, 4);
+    assert.deepEqual(ledger.map((entry: any) => entry.responseId), ["response-1", "response-2", "response-3", null]);
+    assert.deepEqual(ledger.map((entry: any) => entry.requestId), ["first", "first", "second", "failed"]);
+    assert.equal(ledger[0].serviceTier, "default");
+    assert.equal(ledger[0].usage.cacheWriteTokens, 30);
+    assert.equal(ledger[3].status, "unknown");
+    assert.equal(ledger[3].usage, null);
+    assert.ok(!JSON.stringify(ledger).includes("Shorten the shot"));
+    assert.ok(!JSON.stringify(ledger).includes("transport failed"));
+  } finally { await rm(f.root, { recursive: true, force: true }); }
+});
+
 test("Manual editing during job waiting blocks automatic editing even with a fresh revision", async () => {
   const f = await fixture();
   try {

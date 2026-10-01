@@ -13,16 +13,20 @@ import { CommandService } from "./commands";
 import { MediaLibraryService } from "./library";
 import { mediaDir } from "./media";
 import { actionTools, projectView, StudioActions } from "./studio-actions";
+import { checkpointModelUsage, type ModelUsageMetric } from "./model-usage";
 
 export interface ModelReply {
   id: string;
   status: string;
+  model?: string | null;
+  serviceTier?: string | null;
   output: Record<string, any>[];
   usage?: {
     inputTokens: number;
-    cachedInputTokens: number;
+    cachedInputTokens: number | null;
+    cacheWriteTokens?: number | null;
     outputTokens: number;
-    reasoningTokens: number;
+    reasoningTokens: number | null;
     totalTokens: number;
   };
 }
@@ -42,11 +46,7 @@ interface Turn {
   rounds: number;
   finalText?: string;
   state: "running" | "failed" | "ready";
-  metrics?: {
-    responseId: string;
-    durationMs: number;
-    usage?: ModelReply["usage"];
-  }[];
+  metrics?: ModelUsageMetric[];
   preserveManualEdits?: boolean;
 }
 const hash = (value: unknown) =>
@@ -81,6 +81,7 @@ export class AiDirector {
   }
   private async save(id: string, turn: Turn) {
     await mkdir(join(this.root, "assistant"), { recursive: true });
+    await checkpointModelUsage(this.root, id, turn.input.requestId, turn.metrics ?? []);
     const temp = this.path(id) + "." + crypto.randomUUID() + ".tmp";
     await writeFile(temp, JSON.stringify(turn), { mode: 0o600 });
     await rename(temp, this.path(id));
@@ -398,6 +399,12 @@ export class AiDirector {
         await this.status(id, current, "thinking", "Studio réfléchit…");
         p = await this.service.store.get(id);
         const started = performance.now();
+        const metric: ModelUsageMetric = {
+          attemptId: crypto.randomUUID(), responseId: null, status: "unknown",
+          model: null, serviceTier: null, durationMs: 0, usage: null,
+        };
+        (current.metrics ??= []).push(metric);
+        await this.save(id, current);
         const reply = await this.client.create({
           input: current.items,
           instructions:
@@ -408,10 +415,13 @@ export class AiDirector {
             JSON.stringify(input.context ?? {}),
           tool_choice: current.rounds >= 10 ? "none" : "auto",
         });
-        (current.metrics ??= []).push({
+        Object.assign(metric, {
           responseId: reply.id,
+          status: reply.status,
+          model: reply.model ?? null,
+          serviceTier: reply.serviceTier ?? null,
           durationMs: Math.round(performance.now() - started),
-          ...(reply.usage ? { usage: reply.usage } : {}),
+          usage: reply.usage ?? null,
         });
         await this.save(id, current);
         if (reply.status !== "completed" || !Array.isArray(reply.output))

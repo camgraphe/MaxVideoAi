@@ -38,6 +38,7 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   await pg.pool.query(
     readFileSync("neon/migrations/50_studio_image_conversation.sql", "utf8"),
   );
+  await pg.pool.query(readFileSync("neon/migrations/51_studio_image_model_usage.sql", "utf8"));
 
   const entry = getFalEngineById("gpt-image-2");
   assert.ok(entry);

@@ -19,6 +19,7 @@ import {
   draftStudioImage,
   type ImageDirector,
 } from "./image-conversation-director";
+import { runMeteredImageDirector } from "./image-model-usage";
 import {
   claimImageTurn,
   persistImageDraft,
@@ -225,7 +226,10 @@ export function createImageConversationService(
           .reverse();
         const draft =
           turn.draft_json ??
-          (await (dependencies.director ?? draftStudioImage)(
+          (await runMeteredImageDirector(
+            actor,
+            turn,
+            dependencies.director ?? draftStudioImage,
             input,
             history.map((saved) => ({
               message: saved.input_json.message,

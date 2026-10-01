@@ -38,9 +38,26 @@ test("reports actual response usage without changing the draft or model request"
   assert.ok(event);
   assert.deepEqual(event.usage, usage);
   assert.equal(event.model, response.model);
+  assert.equal(event.responseId, "response-qa");
   assert.equal(event.serviceTier, "default");
   assert.ok(event.elapsedMs >= 0);
   assert.equal("message" in event, false);
+});
+
+test("waits for an asynchronous per-call usage checkpoint without losing the QA observer", async () => {
+  let saved = false;
+  let observed = 0;
+  const director = createStudioImageDirector({
+    createResponse: async () => response,
+    onResponse: () => { observed++; },
+  });
+  await director(input, [], [], async (event) => {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    assert.equal(event.responseId, "response-qa");
+    saved = true;
+  });
+  assert.equal(saved, true);
+  assert.equal(observed, 1);
 });
 
 test("captures billable incomplete responses before returning a retryable failure", async () => {
