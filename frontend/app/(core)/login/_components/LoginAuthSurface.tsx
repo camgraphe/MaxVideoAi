@@ -21,6 +21,7 @@ type LoginAuthSurfaceProps = {
   password: string;
   confirm: string;
   continuation: LoginContinuation | null;
+  isMcpStaging: boolean;
   status: string | null;
   statusTone: 'info' | 'success';
   error: string | null;
@@ -80,6 +81,7 @@ export function LoginAuthSurface({
   password,
   confirm,
   continuation,
+  isMcpStaging,
   status,
   statusTone,
   error,
@@ -149,14 +151,18 @@ export function LoginAuthSurface({
         <header className="space-y-3">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
-              {mode === 'signup'
+              {mode === 'signin' && continuation?.kind === 'mcp'
+                ? continuation.title
+                : mode === 'signup'
                 ? authCopy.modes.signup.title
                 : mode === 'reset'
                   ? authCopy.modes.reset.title
                   : authCopy.modes.signin.title}
             </h1>
             <p className="text-sm text-text-secondary">
-              {mode === 'signup'
+              {mode === 'signin' && continuation?.kind === 'mcp'
+                ? continuation.body
+                : mode === 'signup'
                 ? authCopy.modes.signup.description
                 : mode === 'reset'
                   ? authCopy.modes.reset.description
@@ -164,7 +170,15 @@ export function LoginAuthSurface({
             </p>
           </div>
 
-          {mode !== 'reset' && continuation ? (
+          {isMcpStaging && continuation?.kind === 'mcp' ? (
+            <div role="alert" className="rounded-input border border-border bg-bg px-3 py-2.5 text-sm text-text-primary">
+              <p className="font-medium">{authCopy.mcpStaging.title}</p>
+              <p className="mt-1 text-text-secondary">{authCopy.mcpStaging.body}</p>
+              <a href="https://maxvideoai.com/mcp" className="mt-2 inline-block underline underline-offset-4">{authCopy.mcpStaging.action}</a>
+            </div>
+          ) : null}
+
+          {mode !== 'reset' && continuation && !(mode === 'signin' && continuation.kind === 'mcp') ? (
             <div className="flex items-start gap-2.5 rounded-input border border-border bg-bg px-3 py-2.5">
               <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} />
               <div>

@@ -441,6 +441,41 @@ The current blockers are all release-critical:
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.
 - written OpenAI clarification or a policy change has not resolved the commerce eligibility inference.
 
+### 2026-10-01 policy and production-onboarding review
+
+The [current OpenAI plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines#commerce-and-monetization)
+still prohibit selling digital services or credits and linking to transactional
+checkout. They now explicitly allow users to sign in to existing paid accounts
+and access already-included subscription features. This exception must be
+considered in the eligibility review; it is not an OpenAI approval of
+MaxVideoAI's metered, credit-funded generation workflow. The production MCP
+still exposes `create_topup_link`, so the full intended submission cannot be
+represented as already compliant. Store state remains `policy_blocked`; no
+submission or listing occurred.
+
+A concrete production custom-MCP installation was completed in ChatGPT web on
+2026-10-01, including browser sign-in/consent, return to ChatGPT and read-only
+account/model discovery. That resolves the earlier lack of graphical onboarding
+evidence for that limited path. It does not resolve paid-generation, private
+reference, refresh or revocation review requirements. The public directory
+returned no MaxVideoAI result in the tested anonymous and signed-in searches.
+See [the onboarding investigation](../operations/mcp-onboarding-2026-10-01.md).
+
+Review target: product name **MaxVideoAI**, production server
+`https://api.maxvideoai.com/mcp`, OAuth account login on `maxvideoai.com`, and
+first-run read-only account/model verification. Any proposed published package
+must describe its exact tools and intended generation/payment behavior. Do not
+hide a checkout tool or paid workflow from review. Resolve the existing-account
+exception against prepaid credits and confirmation before creating a portal
+submission. This review requires a platform determination or a Legal-approved
+policy interpretation; the direct MCP setup improvements can ship independently.
+
+The [current Anthropic Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
+was also rechecked on 2026-10-01. Section 4.B still excludes AI image/video/audio
+generation except limited design workflows. Claude custom remote connectors
+and Claude Code configuration therefore remain the documented direct paths;
+there is no new Anthropic directory eligibility or submission claim.
+
 ChatGPT plugin approval is not a Codex host decision test. A future approval must not be described as “listed in
 Codex” unless the exact Codex distribution surface and behavior are separately verified.
 

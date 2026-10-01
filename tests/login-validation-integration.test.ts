@@ -52,3 +52,15 @@ test('local validation failures occur before signup analytics', () => {
   const validation = controller.indexOf("validateCurrentForm('signup')");
   assert.ok(validation >= 0 && validation < signupStart);
 });
+
+test('MCP sign-in failures retain sign-in and offer recovery instead of suggesting a new account', () => {
+  const start = controller.indexOf("if (continuation?.kind === 'mcp')");
+  const end = controller.indexOf('} else if (error.status === 400)', start);
+  assert.ok(start > controller.indexOf('supabase.auth.signInWithPassword'));
+  assert.ok(end > start);
+  const failure = controller.slice(start, end);
+  assert.match(failure, /error\.code === 'invalid_credentials'/);
+  assert.match(failure, /authCopy\.feedback\.mcpSigninFailed : error\.message/);
+  assert.match(failure, /setStatus\(null\)/);
+  assert.doesNotMatch(failure, /setSignupSuggestion|setMode/);
+});

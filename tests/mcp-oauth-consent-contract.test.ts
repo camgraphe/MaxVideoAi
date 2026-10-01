@@ -21,10 +21,10 @@ test('OAuth authorization ids are bounded and safe for the consent flow', () => 
   assert.equal(isValidAuthorizationId('x'.repeat(513)), false);
 });
 
-test('OAuth login return preserves only the authorization id', () => {
+test('OAuth login opens sign-in and preserves the authorization id', () => {
   assert.equal(
     buildConsentLoginPath('authz_1234567890'),
-    '/login?next=%2Foauth%2Fconsent%3Fauthorization_id%3Dauthz_1234567890'
+    '/login?mode=signin&next=%2Foauth%2Fconsent%3Fauthorization_id%3Dauthz_1234567890'
   );
   assert.equal(
     sanitizeNextPath('/oauth/consent?authorization_id=authz_1234567890'),

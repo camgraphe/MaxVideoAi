@@ -6769,6 +6769,11 @@
       "signin": "Connexion",
       "signup": "Créer un compte"
     },
+    "mcpStaging": {
+      "title": "MaxVideoAI Staging — environnement de test",
+      "body": "Les comptes et crédits du site sont distincts de cet environnement de test. Pour retrouver votre compte MaxVideoAI existant, ajoutez la connexion de production dans votre assistant.",
+      "action": "Configurer MaxVideoAI en production"
+    },
     "modes": {
       "signup": {
         "title": "Créez votre compte studio",
@@ -6784,6 +6789,10 @@
       }
     },
     "continuation": {
+      "mcp": {
+        "title": "Connectez votre compte MaxVideoAI",
+        "body": "Connectez-vous avec le même compte MaxVideoAI que sur le site. Vous pourrez vérifier les accès demandés, puis revenir dans votre assistant."
+      },
       "billing": {
         "title": "Votre recharge de {amount} est conservée",
         "body": "Créez un compte ou connectez-vous, puis vous reviendrez à la facturation avec ce montant toujours sélectionné."
@@ -6872,6 +6881,7 @@
       "signingIn": "Connexion…",
       "signinRedirecting": "Connexion réussie. Redirection…",
       "signinSuggestion": "Ces informations ne permettent pas de vous connecter. Si vous êtes nouveau, créez votre compte sans tout ressaisir.",
+      "mcpSigninFailed": "La connexion a échoué. Vérifiez votre e-mail et votre mot de passe, utilisez « Mot de passe oublié ? », ou continuez avec Google si vous avez créé votre compte MaxVideoAI ainsi.",
       "signupSuggestionReady": "Parfait, créons votre compte.",
       "creatingAccount": "Création du compte…",
       "accountRedirecting": "Compte créé. Redirection…",

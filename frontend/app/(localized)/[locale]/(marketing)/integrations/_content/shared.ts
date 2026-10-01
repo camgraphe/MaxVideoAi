@@ -41,13 +41,36 @@ export function getIntegrationInstallInstruction(locale: AppLocale, hostId: McpC
     n8nMcpClientTool: 'n8n MCP Client Tool',
   };
   const host = hostLabels[hostId] ?? getMcpIntegrationLabel(getMcpHost(hostId).integration);
+  const integration = getMcpHost(hostId).integration;
+  const guidePath = locale === 'es' ? `/es/integraciones/${integration}` : localizedIntegrationPath(locale, `integrations/${integration}`);
+  const setup = {
+    en: {
+      chatgptWeb: 'Guide me through creating a custom MCP app named MaxVideoAI with OAuth in ChatGPT. If you cannot access these settings, explain the steps; do not claim it is installed.',
+      claudeDesktop: 'Guide me through Customize → Connectors → Add custom connector in Claude, then Connect. In Team or Enterprise, an organization owner must add it first.',
+      claudeCode: `Configure Claude Code with: claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}. Then guide me through /mcp to authorize my account.`,
+      openclawGateway: 'Configure the remote server maxvideoai with Streamable HTTP and OAuth in OpenClaw, then run openclaw mcp login maxvideoai. Check shared versus per-requester identity first.',
+    },
+    fr: {
+      chatgptWeb: 'Guide-moi pour créer une application MCP personnalisée nommée MaxVideoAI avec OAuth dans ChatGPT. Si tu ne peux pas accéder à ces réglages, explique les étapes sans annoncer que l’installation est terminée.',
+      claudeDesktop: 'Guide-moi dans Customize → Connectors → Add custom connector dans Claude, puis Connect. En Team ou Enterprise, un propriétaire de l’organisation doit d’abord ajouter le connecteur.',
+      claudeCode: `Configure Claude Code avec : claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}. Guide-moi ensuite dans /mcp pour autoriser mon compte.`,
+      openclawGateway: 'Configure le serveur distant maxvideoai avec Streamable HTTP et OAuth dans OpenClaw, puis lance openclaw mcp login maxvideoai. Vérifie d’abord le choix entre identité partagée et identité par demandeur.',
+    },
+    es: {
+      chatgptWeb: 'Guíame para crear una app MCP personalizada llamada MaxVideoAI con OAuth en ChatGPT. Si no puedes acceder a estos ajustes, explica los pasos sin afirmar que está instalada.',
+      claudeDesktop: 'Guíame por Customize → Connectors → Add custom connector en Claude y después Connect. En Team o Enterprise, un propietario de la organización debe añadir primero el conector.',
+      claudeCode: `Configura Claude Code con: claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}. Después guíame por /mcp para autorizar mi cuenta.`,
+      openclawGateway: 'Configura el servidor remoto maxvideoai con Streamable HTTP y OAuth en OpenClaw y ejecuta openclaw mcp login maxvideoai. Comprueba primero la identidad compartida o por solicitante.',
+    },
+  };
+  const instruction = setup[locale][hostId as keyof typeof setup.en];
   if (locale === 'fr') {
-    return `Connecte MaxVideoAI dans ${host} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
+    return `${instruction ?? `Guide-moi pour connecter MaxVideoAI dans ${host}.`}\nUtilise uniquement la production : ${MCP_PRODUCTION_RESOURCE_URL}. Guide : https://maxvideoai.com${guidePath}\nSi une entrée MaxVideoAI Staging apparaît, n’utilise pas cette entrée : ses comptes sont distincts. Je me connecterai moi-même avec mon compte MaxVideoAI existant et validerai les accès dans le navigateur. Ne demande jamais mon mot de passe dans le chat. Après le retour, vérifie get_account_status et list_models uniquement, sans devis, génération ni paiement.`;
   }
   if (locale === 'es') {
-    return `Conecta MaxVideoAI en ${host} con este servidor MCP y guíame hasta completar la conexión: ${MCP_PRODUCTION_RESOURCE_URL}`;
+    return `${instruction ?? `Guíame para conectar MaxVideoAI en ${host}.`}\nUsa solo producción: ${MCP_PRODUCTION_RESOURCE_URL}. Guía: https://maxvideoai.com${guidePath}\nSi aparece MaxVideoAI Staging, no uses esa entrada: sus cuentas son distintas. Iniciaré sesión con mi cuenta MaxVideoAI existente y aprobaré los permisos en el navegador. No pidas nunca mi contraseña en el chat. Después del regreso, comprueba solo get_account_status y list_models, sin precios, generación ni pagos.`;
   }
-  return `Connect MaxVideoAI in ${host} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
+  return `${instruction ?? `Guide me through connecting MaxVideoAI in ${host}.`}\nUse production only: ${MCP_PRODUCTION_RESOURCE_URL}. Guide: https://maxvideoai.com${guidePath}\nIf MaxVideoAI Staging appears, do not use that entry: its accounts are separate. I will sign in with my existing MaxVideoAI account and approve access in the browser. Never ask for my password in chat. After returning, check get_account_status and list_models only, without quoting, generating or making a payment.`;
 }
 
 export function buildIntegrationCopy({

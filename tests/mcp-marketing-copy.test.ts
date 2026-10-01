@@ -10,6 +10,7 @@ import { getMcpCompatibilityEvidence } from '../frontend/app/(localized)/[locale
 import { McpPageView } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPageView';
 import { IntegrationPageView } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationPageView';
 import { getMcpHostProof } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof';
+import { getIntegrationInstallInstruction } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_content/shared';
 (globalThis as typeof globalThis & {React:typeof React}).React=React;
 const locales=['en','fr','es'] as const;
 const live={renderPublicPage:true,connectionAvailable:true,indexable:true,showTrialClaim:false,showPaidGenerationClaim:true,showReferenceClaim:true};
@@ -83,5 +84,28 @@ test('localized host setup titles and introductions do not inherit the English g
         }
       }
     }
+  }
+});
+
+test('installation requests name the production server and the correct setup mechanism for each host', () => {
+  for (const locale of locales) {
+    const chatgpt = getIntegrationInstallInstruction(locale, 'chatgptWeb');
+    const claude = getIntegrationInstallInstruction(locale, 'claudeDesktop');
+    const code = getIntegrationInstallInstruction(locale, 'claudeCode');
+    const openclaw = getIntegrationInstallInstruction(locale, 'openclawGateway');
+    for (const instruction of [chatgpt, claude, code, openclaw]) {
+      assert.match(instruction, /https:\/\/api\.maxvideoai\.com\/mcp/);
+      assert.match(instruction, /https:\/\/maxvideoai\.com\//);
+      assert.match(instruction, /get_account_status.*list_models/s);
+      assert.match(instruction, /Staging/);
+    }
+    assert.match(chatgpt, /OAuth/);
+    assert.doesNotMatch(chatgpt, /claude mcp|openclaw mcp|codex plugin/);
+    assert.match(claude, /Customize.*Connectors/);
+    assert.match(code, /claude mcp add --transport http maxvideoai/);
+    assert.match(code, /\/mcp/);
+    assert.match(openclaw, /openclaw mcp login maxvideoai/);
+    assert.match(getIntegrationInstallInstruction(locale, 'codexCli'), /codex plugin marketplace add/);
+    assert.match(getIntegrationInstallInstruction(locale, 'n8nMcpClient'), /OAuth2/);
   }
 });
