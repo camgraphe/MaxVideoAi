@@ -431,3 +431,23 @@ Topaz80/Flash18. UI tab5 actual Tools prices and cancelled scoped preview verifi
 prior tab2 became stale. Admin reloaded after gate; no generation/payment/provider
 or production action. Three unbounded model domains and fresh release recapture
 after local finishing rule remain open; this is not full-plan completion.
+
+2026-10-01 Wan routing correction: user confirms Wan3/Prime must use Alibaba,
+MiniMax Fal. Credential isolation cleared Alibaba's master/public switches and
+the real router therefore selected its default Fal route on compatible modes.
+Sandbox now authors/persists Alibaba master/public=true, admin-only/fallback=false;
+credentials remain blank and result providers mock. Production router untouched.
+RED actual Wan t2v Fal vs Alibaba -> GREEN50 focused sandbox/comparison/Alibaba
+provider/architecture tests. All five Wan/Prime modes cover admin/public selection;
+actual comparison rows for both Wan and all three MiniMax models retain matching
+supplier provenance and local-disabled generation, with unknown account costs.
+Updated four flags only in existing guarded private .env.local; database unchanged
+3/off/66549/13/0 coefficient overrides, Topaz80/Flash18. Restart pid56782,
+log/var/folders/y_/v1ytsmzd3295fcx7b_m6_n6c0000gn/T/mva-finishing-admin-JUdkWN/next.log.
+Actual tab5 shows Alibaba filter with Wan3/Prime rows; marked deliverable,
+screenshot/tmp/maxvideoai-wan-alibaba-routing-20261001.png. No tariff confirmation,
+provider submission, support message, production action, push or deployment.
+Fresh TypeScript, app/script lint, public exposure and diff checks pass. The first
+TypeScript attempt overlapped Next type regeneration during restart; the subsequent
+complete typecheck passes after runtime compilation settles. Full-suite/build
+evidence remains the preceding8019 gate; this correction uses the focused50 gate.

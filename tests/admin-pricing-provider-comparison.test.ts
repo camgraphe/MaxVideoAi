@@ -14,6 +14,7 @@ import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-aud
 import { catalogSupplierReference } from '../frontend/server/pricing-admin/catalog-supplier-reference';
 import { providerComparisonForTariffScenario } from '../frontend/server/pricing-admin/tariff-provider-comparison';
 import { ENV } from '../frontend/src/lib/env';
+import { buildPricingSandboxEnvironment } from '../frontend/scripts/_lib/pricing-sandbox';
 import {
   filterProviderComparisonRows,
   formatProviderComparisonScenario,
@@ -194,19 +195,33 @@ test('H3 Max documented Fal costs match its execution route without claiming a v
   assert.equal(row.supplierEffective.amountUsd, null);
 });
 
-test('local generation isolation remains explicit and does not erase Wan cross-provider provenance', () => {
-  const previous = process.env.PRICING_SANDBOX;
-  process.env.PRICING_SANDBOX = '1';
+test('sandbox comparison uses Alibaba for Wan and Fal for MiniMax while generation stays disabled locally', () => {
+  const environment = buildPricingSandboxEnvironment({
+    parent: {}, fileVariables: {},
+    databaseUrl: 'postgresql://postgres@localhost/postgres?host=%2Ftmp%2Fpricing-sandbox%2Fsocket', port: 3106,
+  });
+  const keys = ['PRICING_SANDBOX', 'ALIBABA_MODEL_STUDIO_ENABLED', 'ALIBABA_MODEL_STUDIO_ADMIN_ONLY',
+    'ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED', 'ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED'];
+  const previous = new Map(keys.map(key => [key, process.env[key]]));
+  for (const key of keys) process.env[key] = environment[key];
   try {
-    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'wan-3' && row.context.mode === 't2v')!;
-    const input = providerComparisonForTariffScenario(scenario);
-    const [row] = buildProviderCostComparisonRows([input], '2026-10-01T00:00:00Z');
-    assert.equal(row.routeConfigured, false);
-    assert.equal(row.generationDisabledReason, 'local_sandbox');
-    assert.equal(row.supplierList.referenceProvider, 'alibaba_model_studio');
-    assert.equal(row.supplierList.routeMatches, row.executionProvider === 'alibaba_model_studio');
+    const scenarios = collectSellableManualTariffCoverage().scenarios;
+    for (const [modelId, provider] of [['wan-3', 'alibaba_model_studio'], ['wan-3-prime', 'alibaba_model_studio'],
+      ['minimax-h3', 'fal'], ['minimax-h3-max', 'fal'], ['minimax-hailuo-02-text', 'fal']]) {
+      const scenario = scenarios.find(row => row.modelId === modelId && row.context.mode === 't2v');
+      assert.ok(scenario, `Missing supported scenario for ${modelId}`);
+      const [row] = buildProviderCostComparisonRows([providerComparisonForTariffScenario(scenario)], '2026-10-01T00:00:00Z');
+      assert.equal(row.executionProvider, provider, modelId);
+      assert.equal(row.routeConfigured, false);
+      assert.equal(row.generationDisabledReason, 'local_sandbox');
+      assert.equal(row.supplierList.referenceProvider, provider);
+      assert.equal(row.supplierList.routeMatches, true);
+      assert.equal(row.supplierEffective.amountUsd, null);
+    }
   } finally {
-    if (previous === undefined) delete process.env.PRICING_SANDBOX; else process.env.PRICING_SANDBOX = previous;
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
   }
 });
 

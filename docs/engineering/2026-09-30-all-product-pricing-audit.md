@@ -380,8 +380,9 @@ determine the billed quote. PostgreSQL confirmation/stale-preview/rollback and
 non-overwrite behavior are verified; no browser test price was applied.
 
 H3 Max's documented Fal cost is correctly attributed to Fal and stays a catalogue
-estimate. Wan 3/Prime's Alibaba reference retains the cross-provider label beside
-the sandbox's Fal route. Local disabled generation is explicitly labeled locally;
+estimate. The initial acceptance exposed Wan 3/Prime's Alibaba reference beside
+the sandbox's Fal route; the subsequent sandbox correction below resolves it.
+Local disabled generation is explicitly labeled locally;
 it does not certify production routing. The prior release artifact's policy hash
 predates the restored finishing row and needs fresh evidence before use. The
 three model-domain gates and global inactive state remain open. No production,
@@ -395,3 +396,14 @@ Validation ran with the sanitized sandbox configuration held privately and a
 clean test/build environment; that same local configuration was restored before
 restarting the admin. The private model state remains revision 3/inactive,
 66,549 staged cells and 13 fixed products; global manual activation stays off.
+
+### Sandbox routing correction — 2026-10-01
+
+Credential isolation also cleared the Alibaba routing switches, causing the
+router's default Fal selection on compatible Wan modes. The fixture now explicitly
+selects Alibaba for Wan 3 and Prime across all five supported modes, both admin
+and public, with Fal fallback disabled. MiniMax H3, H3 Max and Hailuo 02 keep Fal.
+The same generation router supplies admin comparison provenance; Alibaba
+catalogue references now match the selected Wan route. External credentials stay
+blank, result providers remain mock, and generation remains disabled locally.
+Production router defaults, customer tariffs and database state are unchanged.

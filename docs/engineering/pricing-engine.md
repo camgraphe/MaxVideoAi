@@ -46,7 +46,7 @@ All collected selectors and quantities reuse `buildManualTariffScenario`. For pr
 
 `catalog-supplier-reference.ts` projects the existing provider-fact owners without calling the customer quote or applying a margin. Its `catalog_reference_estimate` status is distinct from a verified published LIST estimate. It keeps sub-cent precision, source label, reference provider, rate breakdown and the catalogue model version. That version is **not** a supplier verification date. Cross-provider references, including Luma's Fal reference and Alibaba rates shown beside a Fal route, are labeled explicitly. Seedance's padded historical retail basis is excluded entirely.
 
-The H3 Max documented rate concerns its Fal endpoint; MiniMax is the model author, not a distinct execution route in this projection. Its admin catalogue reference retains the Fal endpoint URL without claiming fresh LIST or account verification. Wan 3/Prime retain their Alibaba supplier basis when the local routing configuration selects Fal. `generationDisabledReason=local_sandbox` explicitly identifies deliberate local isolation; an unavailable configured route has a separate reason. Neither establishes production availability.
+The H3 Max documented rate concerns its Fal endpoint; MiniMax is the model author, not a distinct execution route in this projection. Its admin catalogue reference retains the Fal endpoint URL without claiming fresh LIST or account verification. The sandbox explicitly selects Alibaba for Wan 3/Prime in admin and public routing, with Fal fallback off; MiniMax retains Fal. Clearing credentials must not erase this intended provider selection. `generationDisabledReason=local_sandbox` explicitly identifies deliberate local isolation; an unavailable configured route has a separate reason. Neither establishes production availability.
 
 GPT edit sources are normalized from coverage's input count into the factual owner's total reference count, without double-counting aliases or changing Luma's different reference semantics. Its output/reference itemization uses exact factual components, never rounded presentation addons. Other catalogue totals remain one all-in exact reference when no exact component split is available. Standard/Fast/Lite Veo catalogue facts retain Google Vertex provenance, independently from the reviewed Fal LIST records. Known Seedance reference contexts use `hasVideoInput`; unknown reference inputs stay unavailable. BytePlus readiness reuses allowed modes, model selectors and the selected Ark/LAS transport guards.
 
@@ -61,6 +61,12 @@ Seedance 1.5 comparison uses its published output dimensions and schema defaults
 ## Isolated local continuation (2026-09-29)
 
 `pnpm pricing:sandbox` starts PostgreSQL on a private Unix socket and the branch's Next.js app on `localhost:3106`. It clears all inherited/env-file credentials, points Auth and API configuration at loopback, and disables analytics. It never connects to the configured production database or calls a provider, payment, storage or email service. It also writes the sanitized configuration to the ignored `frontend/.env.local` so subsequent direct local starts and builds keep the same isolation. The previous file is retained as `original.env.local` with mode 0600 inside the printed temporary runtime directory; stopping the sandbox does not restore production credentials. The database stops with the sandbox; its files remain available for inspection.
+
+The fixture preserves intended provider selection independently of access:
+Alibaba master/public routing are on, admin-only and Fal fallback are off, while
+Alibaba/Fal credentials stay blank and the result provider remains `mock`.
+These routing flags are persisted for subsequent local restarts. The production
+router's fail-closed defaults remain unchanged.
 
 An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` stages exact customer cents from the reviewed read-only baseline. Registry mismatch, duplicate/missing scenarios, invalid amounts or unknown database provenance reject the entire seed. The current local acceptance run stages all 66,549 sampled scenarios across 48 sellable models, with 122 unresolved capability boundaries and activation still false. This data is not a complete versioned production tariff seed.
 

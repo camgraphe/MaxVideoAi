@@ -59,7 +59,9 @@ async function main() {
       'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_ENABLE_CLARITY',
       'NEXT_PUBLIC_RESULT_PROVIDER', 'RESULT_PROVIDER', 'PAYMENT_MODE', 'LOCAL_ADMIN_BYPASS',
       'LOCAL_ADMIN_BYPASS_USER_ID', 'PRICING_SANDBOX', 'SEEDANCE_2_PROVIDER', 'SEEDANCE_FAST_PROVIDER',
-      'SEEDANCE_2_5_PROVIDER', 'SEEDANCE_1_5_BYTEPLUS_ENABLED', 'SEEDANCE_2_5_BYTEPLUS_ENABLED']);
+      'SEEDANCE_2_5_PROVIDER', 'SEEDANCE_1_5_BYTEPLUS_ENABLED', 'SEEDANCE_2_5_BYTEPLUS_ENABLED',
+      'ALIBABA_MODEL_STUDIO_ENABLED', 'ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED',
+      'ALIBABA_MODEL_STUDIO_ADMIN_ONLY', 'ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED']);
     const stagedEnvironment = join(frontend, '.env.pricing-sandbox.tmp');
     await writeFile(stagedEnvironment, '# Isolated local pricing sandbox; external credentials disabled.\n' +
       [...persistedKeys].map((key) => `${key}=${JSON.stringify(environment[key] ?? '')}`).join('\n') + '\n', { mode: 0o600 });

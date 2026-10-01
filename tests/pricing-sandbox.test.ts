@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { buildPricingSandboxEnvironment } from '../frontend/scripts/_lib/pricing-sandbox.ts';
+import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 
 test('sandbox binds the advertised localhost origin so localized rewrites stay internal', () => {
   const runner = readFileSync('frontend/scripts/run-pricing-sandbox.ts', 'utf8');
@@ -39,4 +40,33 @@ test('sandbox rejects remote database hosts and ambiguous socket overrides', () 
     'postgresql://postgres@production.invalid/postgres?host=%2Ftmp%2Fsocket',
     'postgresql://postgres@localhost/postgres?host=%2Ftmp%2Fsocket&host=production.invalid',
   ]) assert.throws(() => buildPricingSandboxEnvironment({ parent: {}, fileVariables: {}, databaseUrl, port: 3106 }), /local socket/i);
+});
+
+test('sandbox selects Alibaba for Wan 3 and Prime without credentials or Fal fallback', () => {
+  const environment = buildPricingSandboxEnvironment({
+    parent: { ALIBABA_MODEL_STUDIO_ENABLED: 'false', ALIBABA_MODEL_STUDIO_API_KEY: 'production',
+      ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: 'true' },
+    fileVariables: { ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'true',
+      ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'false', FAL_KEY: 'production' },
+    databaseUrl: 'postgresql://postgres@localhost/postgres?host=%2Ftmp%2Fpricing-sandbox%2Fsocket', port: 3106,
+  });
+  for (const engineId of ['wan-3', 'wan-3-prime']) {
+    for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']) {
+      for (const isAdmin of [true, false]) {
+        assert.deepEqual(resolveVideoProviderRoutingPlan({ engineId, mode, isAdmin, env: environment }), {
+          kind: 'alibaba_model_studio_primary', primaryProvider: 'alibaba_model_studio',
+          fallbackProvider: 'fal', fallbackEnabled: false,
+        }, `${engineId}/${mode}/admin=${isAdmin}`);
+      }
+    }
+  }
+  for (const engineId of ['minimax-h3', 'minimax-h3-max', 'minimax-hailuo-02-text']) {
+    assert.deepEqual(resolveVideoProviderRoutingPlan({ engineId, mode: 't2v', isAdmin: true, env: environment }), {
+      kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false,
+    });
+  }
+  assert.equal(environment.ALIBABA_MODEL_STUDIO_API_KEY, '');
+  assert.equal(environment.FAL_KEY, '');
+  assert.equal(environment.RESULT_PROVIDER, 'mock');
+  assert.equal(environment.NEXT_PUBLIC_RESULT_PROVIDER, 'mock');
 });

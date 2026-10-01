@@ -39,5 +39,9 @@ export function buildPricingSandboxEnvironment(input: {
     SEEDANCE_2_5_PROVIDER: 'byteplus_modelark',
     SEEDANCE_1_5_BYTEPLUS_ENABLED: 'false',
     SEEDANCE_2_5_BYTEPLUS_ENABLED: 'false',
+    ALIBABA_MODEL_STUDIO_ENABLED: 'true',
+    ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: 'true',
+    ALIBABA_MODEL_STUDIO_ADMIN_ONLY: 'false',
+    ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: 'false',
   };
 }
