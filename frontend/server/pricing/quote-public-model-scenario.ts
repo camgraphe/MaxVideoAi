@@ -69,7 +69,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
-  const defaultReferences = isLumaAgentsImageEngineId(model.id) ? 0 : 1;
+  const defaultReferences = isLumaAgentsImageEngineId(model.id) || model.id === 'seedream-5-0-pro' ? 0 : 1;
   const gptImage = isGptImageFamilyEngineId(model.id);
   const entry = getFalEngineById(model.id);
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);

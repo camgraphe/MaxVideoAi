@@ -11,6 +11,7 @@ import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { getLumaRay2DurationInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
+import { isSeedreamEngineId } from '@/lib/image/seedream';
 import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec, isWan3EngineId } from '@/lib/wan3-pricing';
@@ -448,6 +449,7 @@ export async function priceCanonicalGenerationInExecutor(
         ? { enable_web_search: true }
         : undefined,
       referenceImageCount,
+      ...(isSeedreamEngineId(engine.id) ? { inputImageCount: request.mode === 'i2i' ? imageReferences.length : 0 } : {}),
       membershipTier,
       currency: engine.pricing?.currency ?? 'USD',
     }, { pricingPolicy });

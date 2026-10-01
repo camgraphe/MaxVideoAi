@@ -22,24 +22,25 @@ export function manualTariffReferenceCounts(entry: FalEngineEntry, mode: Mode): 
   const applicable = fields(entry, mode);
   const luma = isLumaAgentsImageEngineId(entry.id) && ['t2i', 'i2i'].includes(mode);
   const gpt = isGptImage25EngineId(entry.id) && mode === 'i2i';
+  const seedreamPro = entry.id === 'seedream-5-0-pro' && mode === 'i2i';
   const h3 = isMinimaxH3EngineId(entry.id) && mode === 'ref2v';
   const referenceMode = mode === 'ref2v' || mode === 'r2v';
-  if (!luma && !gpt && !referenceMode) return { values: [undefined], complete: true };
+  if (!luma && !gpt && !seedreamPro && !referenceMode) return { values: [undefined], complete: true };
   const field = applicable.find(field => field.type === 'image'
     && ['image_urls', 'reference_image_urls', 'reference_images'].includes(field.id));
   const constraints = entry.engine.inputSchema?.constraints;
   const max = luma
     ? Number(constraints?.[mode === 'i2i' ? 'maxReferenceImagesEdit' : 'maxReferenceImagesTextToImage'])
-    : field?.maxCount;
+    : seedreamPro ? (field?.maxCount ?? 1) - 1 : field?.maxCount;
   const mixedMedia = referenceMode && applicable.some(field => ['video', 'audio'].includes(field.type));
-  const min = luma ? 0 : Math.max(mixedMedia ? 0 : 1, field?.minCount ?? 1);
+  const min = luma || seedreamPro ? 0 : Math.max(mixedMedia ? 0 : 1, field?.minCount ?? 1);
   const values = boundedIntegers(min, max);
   const imageOnly = field && (field.minCount ?? 0) >= 1
     && applicable.filter(field => ['image', 'video', 'audio'].includes(field.type)).length === 1;
   const reviewedMixedOwner = ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
     'kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k', 'wan-2-6', 'wan-3', 'wan-3-prime', 'minimax-h3-max'].includes(entry.id);
   if (entry.id === 'wan-2-6' && mode === 'r2v' && !field) return { values: [undefined], complete: true };
-  const complete = Boolean(values && (luma || gpt || h3 || imageOnly || reviewedMixedOwner));
+  const complete = Boolean(values && (luma || gpt || seedreamPro || h3 || imageOnly || reviewedMixedOwner));
   return { values: values ?? [referenceMode ? 1 : undefined], complete };
 }
 

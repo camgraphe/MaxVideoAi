@@ -2,6 +2,7 @@ import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isGptImage25EngineId } from '@/lib/image/gptImage2';
+import { isSeedreamEngineId } from '@/lib/image/seedream';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import type { TrustedQuotedBilling } from '@/server/generations/initial-job-reservation';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
@@ -60,6 +61,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
         customImageSize: params.customImageSize,
         quality: params.quality,
         referenceImageCount,
+        ...(isSeedreamEngineId(params.engine.id) ? { inputImageCount: params.mode === 'i2i' ? params.combinedImageCount : 0 } : {}),
         membershipTier,
         currency: DISPLAY_CURRENCY,
         addons: params.enableWebSearch ? { enable_web_search: true } : undefined,

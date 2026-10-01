@@ -12,7 +12,7 @@ import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seeda
 import { expectedBytePlusTokens, estimateBytePlusOutputTokens, estimateBytePlusBillableTokens } from '@/server/byteplus-accounting';
 import type { EngineCaps } from '@/types/engines';
 import type { PricingContext } from '@/lib/pricing-context';
-import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
+import { resolveSeedreamProviderSize, seedreamPricingInputCount } from '@/lib/image/seedream';
 import { catalogSupplierReference, type CatalogSupplierReference, type SupplierRateLine } from './catalog-supplier-reference';
 import { publishedSupplierEstimate, type PublishedSupplierEstimate } from './published-supplier-tariffs';
 import { signedBytePlusContractCost, type BytePlusContractTerms } from '@/server/byteplus-account-contract';
@@ -133,7 +133,8 @@ export function providerComparisonInputFromScenario(input: {
   const seedream = scenario.engineId === 'seedream' || scenario.engineId === 'seedream-5-0-pro';
   const quantity = Number(scenario.input.quantity ?? input.context?.durationSec ?? 1);
   const inputImages = input.context
-    ? (input.context.inputImageCount ?? (mode === 'i2i' ? 1 : 0)) + (input.context.referenceImageCount ?? 0)
+    ? seedream ? seedreamPricingInputCount(input.context)
+      : (input.context.inputImageCount ?? (mode === 'i2i' ? 1 : 0)) + (input.context.referenceImageCount ?? 0)
     : typeof scenario.input.referenceImageCount === 'number' ? scenario.input.referenceImageCount
       : mode === 't2i' ? 0 : undefined;
   const size = seedream ? resolveSeedreamProviderSize(scenario.resolution ?? '', aspectRatio) : '';

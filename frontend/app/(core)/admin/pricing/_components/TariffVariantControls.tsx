@@ -25,7 +25,9 @@ export function TariffVariantControls({ editor, disabled }: { editor: CustomerTa
   const exact = editor.displayed;
   if (!exact) return null;
   const gptImage = isGptImageFamilyEngineId(exact.modelId);
+  const seedreamEdit = exact.modelId === 'seedream-5-0-pro' && exact.selector.mode === 'i2i';
   const choiceLabel = (key: string) => key === 'resolution' && gptImage ? 'Billing size tier'
+    : key === 'referenceImageCount' && seedreamEdit ? 'Total source images'
     : key === 'durationSec' && exact.supplierComparison.mediaType === 'image'
     ? 'Images per request' : LABELS[key] ?? key;
   const visibleChoices = exact.choices.filter(choice => choice.key !== 'inputImageCount'
@@ -43,7 +45,7 @@ export function TariffVariantControls({ editor, disabled }: { editor: CustomerTa
       && exact.selector.mode === 'retake' ? 'Output-rate edits cover inherited durations from 3 to 10 seconds.' : exact.continuousInputTariff
       ? 'Source-rate edits cover the whole valid source range for these output options.'
       : 'Preparing an exact price applies only to this duration.'}</p> : null}
-    {exact.choices.some(choice => choice.key === 'referenceImageCount') ? <p className="mt-1 text-[10px] text-text-muted">{exact.modelId.startsWith('luma-uni-') && exact.selector.mode === 'i2i' ? 'Reference images excludes the main edit source.' : 'Reference images counts the submitted sources and references.'}</p> : null}
+    {exact.choices.some(choice => choice.key === 'referenceImageCount') ? <p className="mt-1 text-[10px] text-text-muted">{seedreamEdit ? 'Total source images includes the main edit source. Supplier cost includes every submitted image.' : exact.modelId.startsWith('luma-uni-') && exact.selector.mode === 'i2i' ? 'Reference images excludes the main edit source.' : 'Reference images counts the submitted sources and references.'}</p> : null}
     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{visibleChoices.map(choice => <label key={choice.key} className="text-[10px] text-text-secondary">{choiceLabel(choice.key)}
       {choice.range ? <input aria-label={choiceLabel(choice.key)} type="number" min={choice.range.minInclusive ?? choice.range.minExclusive} max={choice.range.max} step={exact.continuousInputTariff?.unbounded ? '1' : 'any'}
         value={editor.requestedOptions[choice.key] ?? choice.value} disabled={disabled || editor.busy}
@@ -51,7 +53,7 @@ export function TariffVariantControls({ editor, disabled }: { editor: CustomerTa
         className="mt-1 h-8 w-full rounded-md border border-border bg-bg px-2 text-xs text-text-primary" />
       : <select aria-label={choiceLabel(choice.key)} value={choice.value} disabled={disabled || editor.busy || editor.loading || !editor.exact || choice.options.length < 2}
         onChange={event => editor.changeOption(choice.key, event.target.value)} className="mt-1 h-8 w-full rounded-md border border-border bg-bg px-2 text-xs text-text-primary">
-        {choice.options.map(value => <option key={value} value={value}>{valueLabel(choice.key, value)}</option>)}
+        {choice.options.map(value => <option key={value} value={value}>{seedreamEdit && choice.key === 'referenceImageCount' ? Number(value || 0) + 1 : valueLabel(choice.key, value)}</option>)}
       </select>}
     </label>)}</div>
   </details>;

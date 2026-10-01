@@ -1,6 +1,6 @@
 import type { PricingContext } from '@/lib/pricing-context';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
-import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
+import { resolveSeedreamProviderSize, seedreamPricingInputCount } from '@/lib/image/seedream';
 import { ENV } from '@/lib/env';
 import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/byteplus-modelark-profile-policy';
 import { getBytePlusVideoListRate, quoteSeedreamListCost } from './byteplus-list-tariff';
@@ -48,7 +48,7 @@ export function normalBytePlusSupplierCost(context: PricingContext, at: string) 
     const dimensions = /^(\d+)x(\d+)$/.exec(resolveSeedreamProviderSize(resolution, context.aspectRatio));
     if (!dimensions || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 15) return null;
     usage.outputPixels = Array.from({ length: quantity }, () => Number(dimensions[1]) * Number(dimensions[2]));
-    usage.inputImages = (context.inputImageCount ?? (mode === 'i2i' ? 1 : 0)) + (context.referenceImageCount ?? 0);
+    usage.inputImages = seedreamPricingInputCount(context);
   } else {
     if (!isSeedance2TokenPricing(engine.pricingDetails)) return null;
     usage.billingInputType = typeof context.hasVideoInput === 'boolean'

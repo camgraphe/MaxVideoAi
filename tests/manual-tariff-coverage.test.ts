@@ -62,6 +62,17 @@ test('coverage captures priced image references, image batches and the exact bil
   assert.ok(!scenarios.some(row => row.modelId === 'gpt-image-2-5-flare' && (row.context.referenceImageCount ?? 0) > 16));
 });
 
+test('Seedream Pro covers all ten submitted sources without changing the original single-source identity', () => {
+  const rows = collectSellableManualTariffCoverage().scenarios.filter(row => row.modelId === 'seedream-5-0-pro'
+    && row.context.mode === 'i2i');
+  assert.equal(rows.length, 10);
+  assert.deepEqual(rows.map(row => row.context.referenceImageCount).sort((a, b) => a! - b!), [0,1,2,3,4,5,6,7,8,9]);
+  assert.equal(rows.find(row => row.context.referenceImageCount === 0)!.selector.referenceImageCount, undefined);
+  assert.equal(rows.find(row => row.context.referenceImageCount === 9)!.selector.referenceImageCount, '9');
+  const engine = getFalEngineById('seedream-5-0-pro')!.engine;
+  assertChargingCell({engine, mode:'i2i', durationSec:1, resolution:'2K', aspectRatio:'16:9', inputImageCount:10});
+});
+
 test('reference bounds retain priced counts and group unpriced counts; unreviewed Wan sources remain unresolved', () => {
   const coverage = collectSellableManualTariffCoverage();
   for (const [modelId, max] of [['gemini-omni-flash', 10], ['happy-horse-1-0', 9],

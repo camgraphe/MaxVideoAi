@@ -5,6 +5,7 @@ import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
+import { seedreamPricingInputCount } from '@/lib/image/seedream';
 import { isSeedance2TokenPricing, resolveSeedance2UnitPriceUsdPer1kTokens } from '@/lib/seedance-2-pricing';
 
 export type ManualTariffMedia = Pick<PricingContext, 'inputVideoDurationSec' | 'inputAudioDurationSec'
@@ -32,6 +33,11 @@ export function projectManualTariffMedia(context: PricingContext, details: Engin
   else if (isGptImage25EngineId(id) && context.mode === 'i2i') media.referenceImageCount = Number(meta.provider_reference_image_count);
   else if (isLumaAgentsImageEngineId(id)) media.referenceImageCount = Number(meta.source_or_reference_image_count)
     - (context.mode === 'i2i' ? 1 : 0);
+  else if (id === 'seedream-5-0-pro' && context.mode === 'i2i') {
+    const additional = seedreamPricingInputCount(context) - 1;
+    // Preserve the authored single-source selector; additional inputs need their own guarded cells.
+    if (additional > 0) media.referenceImageCount = additional;
+  }
   else if (meta.manualTariffReferenceImageCount !== undefined) {
     media.referenceImageCount = Number(meta.manualTariffReferenceImageCount);
   }
