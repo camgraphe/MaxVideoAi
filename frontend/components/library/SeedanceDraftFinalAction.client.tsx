@@ -4,8 +4,8 @@ import { useSeedanceWorkflowAccount, type SeedanceWorkflowAccount } from '@/hook
 import { useSeedanceWorkflowView } from '@/hooks/useSeedanceWorkflowView';
 import { useSeedanceFinalization } from '@/hooks/useSeedanceFinalization';
 
-export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppliedAccount }: {
-  jobId: string; locale?: string; account?: SeedanceWorkflowAccount | null;
+export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppliedAccount, onNavigate }: {
+  jobId: string; locale?: string; account?: SeedanceWorkflowAccount | null; onNavigate?: (href: string) => void;
 }) {
   const session = useSeedanceWorkflowAccount();
   const account = suppliedAccount === undefined ? session : suppliedAccount;
@@ -13,6 +13,10 @@ export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppli
   const action = useSeedanceFinalization({ view: view ?? null, account, onAccepted: () => { void mutate(); } });
   if (!view) return readError ? <p role="status" className="text-xs text-text-muted">{locale.startsWith('fr') ? 'Statut Draft indisponible.' : 'Draft status unavailable.'}</p> : null;
   const fr = locale.startsWith('fr');
+  const navigate: React.MouseEventHandler<HTMLAnchorElement> = event => {
+    if (!onNavigate || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault(); onNavigate(event.currentTarget.getAttribute('href')!);
+  };
   const format = (cents: number | null, currency = 'USD') => cents === null ? '—' : new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
   const finalCents = action.quote?.pricing?.totalCents ?? null;
   const total = finalCents !== null && view.draft.amountCents !== null ? finalCents + view.draft.amountCents : null;
@@ -39,8 +43,8 @@ export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppli
     {action.error ? <p role="alert">{action.error}</p> : null}
     {action.uncertain ? <p role="status">{fr ? 'Envoi en vérification. Consultez le rendu avant tout nouvel essai.' : 'Submission under review. Check the render before trying again.'}</p> : null}
     <div className="flex flex-wrap gap-3">
-      <a href={`/app?job=${encodeURIComponent(view.draft.jobId)}`}>{fr ? 'Revoir le Draft 480p' : 'View Draft 480p'}</a>
-      {view.final ? <a href={`/app?job=${encodeURIComponent(view.final.jobId)}`}>{fr ? 'Voir le final 1080p' : 'View final 1080p'}</a> : null}
+      <a onClick={navigate} href={`/app?job=${encodeURIComponent(view.draft.jobId)}`}>{fr ? 'Revoir le Draft 480p' : 'View Draft 480p'}</a>
+      {view.final ? <a onClick={navigate} href={`/app?job=${encodeURIComponent(view.final.jobId)}`}>{fr ? 'Voir le final 1080p' : 'View final 1080p'}</a> : null}
     </div>
   </section>;
 }

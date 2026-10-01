@@ -76,3 +76,16 @@ test('expiry and account changes invalidate final quotes; an uncertain submissio
     assert.equal(f.submissions.length, 1);
   } finally { await f.dispose(); }
 });
+
+test('a definitive provider rejection with its exact confirmed refund allows a fresh quote without remounting', async () => {
+  const f = await mount();
+  try {
+    await act(async () => { void f.action.requestFinal(); }); await f.quote();
+    await act(async () => { void f.action.confirm(); });
+    await act(async () => f.submissions[0].reject(Object.assign(new Error('provider rejected'), { status: 502, jobId: 'rejected-final', paymentStatus: 'refunded_wallet', refundedAmountCents: 651, currency: 'USD' })));
+    assert.equal(f.action.uncertain, false);
+    await act(async () => { void f.action.requestFinal(); });
+    assert.equal(f.quotes.length, 2, 'retry always obtains a new price and requires another confirmation');
+    assert.equal(f.submissions.length, 1);
+  } finally { await f.dispose(); }
+});

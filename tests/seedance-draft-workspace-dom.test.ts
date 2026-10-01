@@ -26,7 +26,7 @@ test('creator Draft uses its own quote, locks 480p, and recovers one persisted j
       account: { userId: 'owner', token: 'fixture-token' }, showNotice: () => {}, onResolutionChange: (resolution: string) => setValue(current => ({ ...current, resolution })) });
     return null;
   }
-  const root = createRoot(dom.window.document.getElementById('root')!);
+  let root = createRoot(dom.window.document.getElementById('root')!);
   try {
     await act(async () => root.render(React.createElement(Fixture)));
     await act(async () => result!.toggle());
@@ -45,11 +45,18 @@ test('creator Draft uses its own quote, locks 480p, and recovers one persisted j
     await act(async () => result!.generate());
     assert.equal(submissions.length, 1, 'uncertain jobs must be recovered, never charged again');
     await act(async () => root.unmount());
-    const otherRoot = createRoot(dom.window.document.getElementById('root')!);
-    await act(async () => otherRoot.render(React.createElement(Fixture)));
+    root = createRoot(dom.window.document.getElementById('root')!);
+    await act(async () => root.render(React.createElement(Fixture)));
     assert.equal(result!.draftId, id, 'refresh restores the accepted/uncertain MaxVideoAI job');
-    await act(async () => otherRoot.unmount());
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 50)); });
+    assert.equal(result!.canResume, true, 'an authoritative absent job offers explicit same-attempt recovery');
+    await act(async () => result!.resume());
+    assert.equal(submissions.length, 2);
+    assert.deepEqual(submissions[1].body, submissions[0].body, 'same ID and original facts, even after reload');
+    assert.equal(submissions[1].headers.get('x-maxvideoai-customer-tariff'), '328');
+    assert.equal(JSON.stringify([...Array.from({length: dom.window.localStorage.length}, (_, index) => dom.window.localStorage.getItem(dom.window.localStorage.key(index)!))]).includes('fixture-token'), false);
   } finally {
+    await act(async () => root.unmount());
     dom.window.close(); for (const [key, descriptor] of previous) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); }
   }
 });

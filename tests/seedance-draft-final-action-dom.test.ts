@@ -14,6 +14,7 @@ test('shared library/Studio action shows a fresh separate charge, retains the Dr
   let view: SeedanceWorkflowView = { draft: { jobId: 'draft', status: 'completed', amountCents: 129, currency: 'USD', paymentStatus: 'paid_wallet', videoUrl: '/draft.mp4', thumbUrl: null },
     final: null, eligibility: 'ready', expiresAt: '2026-10-08T00:00:00Z', settings: { durationSec: 5, aspectRatio: '16:9', audio: false, resolution: '480p' } };
   let submissions = 0;
+  const navigation: string[] = [];
   for (const [key, value] of Object.entries({ React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator, IS_REACT_ACT_ENVIRONMENT: true,
     fetch: async (url: string) => {
       if (url === '/api/preflight') return new Response(JSON.stringify({ ok: true, total: 651, currency: 'USD', pricing: { totalCents: 651, currency: 'USD', meta: { workflowStep: 'final', pricingMode: 'manual_tariff', customerTariffRevision: 328 } } }));
@@ -24,10 +25,14 @@ test('shared library/Studio action shows a fresh separate charge, retains the Dr
   const key = unstable_serialize(['seedance-workflow', 'owner', 'draft']);
   let root = createRoot(dom.window.document.getElementById('root')!);
   const mount = async () => act(async () => root.render(React.createElement(SWRConfig, { value: { provider: () => new Map(), fallback: { [key]: view }, revalidateOnMount: false } },
-    React.createElement(SeedanceDraftFinalAction, { jobId: 'draft', locale: 'fr', account: { userId: 'owner', token: 'confirmed' } }))));
+    React.createElement(SeedanceDraftFinalAction, { jobId: 'draft', locale: 'fr', account: { userId: 'owner', token: 'confirmed' }, onNavigate: (href: string) => navigation.push(href) }))));
   const click = async (prefix: string) => act(async () => { const button = [...dom.window.document.querySelectorAll('button')].find(node => node.textContent?.startsWith(prefix)); assert.ok(button); button.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); });
   try {
     await mount(); assert.match(dom.window.document.body.textContent!, /Draft 480p prêt/);
+    const navigationEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true });
+    await act(async () => dom.window.document.querySelector('a[href="/app?job=draft"]')!.dispatchEvent(navigationEvent));
+    assert.equal(navigationEvent.defaultPrevented, true, 'Studio must await its save/ACK owner before navigation');
+    assert.deepEqual(navigation, ['/app?job=draft']);
     await click('Finaliser en 1080p');
     assert.match(dom.window.document.body.textContent!, /Draft déjà payé/);
     assert.match(dom.window.document.body.textContent!, /1,29/);

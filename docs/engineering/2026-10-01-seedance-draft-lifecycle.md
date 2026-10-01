@@ -75,8 +75,11 @@ this local implementation.
 The workspace hook obtains a separate canonical Draft quote, locks 480p and
 persists the application job ID before dispatch in an account-scoped storage key.
 An ambiguous response or reload recovers that same attempt; neither starts a new
-paid task automatically. An explicit new Draft action is available only after a
-known terminal state.
+paid task automatically. The account-scoped sidecar stores original request facts
+and the quote revision, never a session token, and is removed when owned history
+confirms the job. After an authoritative owned 404, an explicit resend uses the
+exact original job ID, payload and quote. An explicit new Draft action is available
+only after a known terminal state.
 
 The shared library/Studio action receives only an owned application job ID. Its
 read-only route returns settings, historical paid amounts, expiry and linked
@@ -84,7 +87,14 @@ output eligibility. A final quote uses the original settings server-side and a
 fresh tariff revision. The user confirms the additional charge after seeing the
 already paid Draft, final surcharge and combined total. Both application job
 links remain accessible. Status tracking polls both owned jobs through the
-existing job route. Late session reads cannot revive a logged-out account.
+existing job route, including terminal linked finals. That route may repair the
+lineage of its one owned durable terminal BytePlus 2.5 job after a transient
+persistence outage; the workflow DTO route remains read-only. Repair never makes
+a provider call, initializes schema or changes receipts. A lineage outage cannot
+skip completed media output projection. An exact server-confirmed final refund
+permits a fresh quote and confirmation; ambiguous or partial refunds remain held.
+Studio output links pass through its existing save/ACK navigation owner. Late
+session reads cannot revive a logged-out account.
 
 MCP intentionally excludes both workflow steps from its public preparation
 schema. A normal 480p generation remains distinct from a Draft task.

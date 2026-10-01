@@ -19,7 +19,7 @@ export async function readSeedanceWorkflowStatus(jobId: string, token: string, f
   };
   if (!await poll(path)) return null;
   const view = await read();
-  if (view?.final && !['completed', 'failed'].includes(view.final.status)) {
+  if (view?.final) {
     if (!await poll(`/api/jobs/${encodeURIComponent(view.final.jobId)}`)) throw new Error('Final status unavailable.');
     return read();
   }

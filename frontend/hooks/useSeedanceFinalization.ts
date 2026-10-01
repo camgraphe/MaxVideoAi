@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { customerTariffRevision } from '@/lib/customer-tariff-revision';
-import { runGenerate, runPreflight } from '@/lib/api';
+import { runGenerate, runPreflight } from '@/lib/api-generation';
 import type { PreflightResponse } from '@/types/engines';
 import type { SeedanceWorkflowView } from '@/lib/seedance-workflow-contract';
 import type { SeedanceWorkflowAccount } from './useSeedanceWorkflowAccount';
@@ -50,10 +50,12 @@ export function useSeedanceFinalization(options: { view: SeedanceWorkflowView | 
       setConfirming(false); setQuote(null); options.onAccepted(result.jobId);
     } catch (failure) {
       if (scope.current !== started) return;
-      const details = failure as Error & { status?: number; jobId?: string };
+      const details = failure as Error & { status?: number; jobId?: string; paymentStatus?: string; refundedAmountCents?: number; currency?: string };
       setError(details.message);
       // A lost acknowledgement never authorizes a second paid attempt.
-      if (!details.status || details.status >= 500) setUncertain(true);
+      const confirmedRefund = Boolean(details.jobId && details.paymentStatus === 'refunded_wallet'
+        && details.refundedAmountCents === quote.pricing.totalCents && details.currency === quote.pricing.currency);
+      if ((!details.status || details.status >= 500) && !confirmedRefund) setUncertain(true);
       setQuote(null); setConfirming(false);
       if (details.jobId) options.onAccepted(details.jobId);
     } finally { guard.current = false; if (scope.current === started) setPending(false); }

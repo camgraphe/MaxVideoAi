@@ -398,6 +398,7 @@ export function WorkspaceAppReadyView({
           />
         }
         previewSupplement={draftWorkflow.selected && draftWorkflow.draftId ? <div>
+          {draftWorkflow.canResume ? <Button size="sm" variant="outline" onClick={() => void draftWorkflow.resume()}>Réessayer l’envoi du même Draft</Button> : null}
           <SeedanceDraftFinalAction jobId={draftWorkflow.draftId} locale={uiLocale} account={workflowAccount} />
           <Button size="sm" variant="outline" disabled={draftWorkflow.pending || !draftWorkflow.view || ['pending', 'finalizing', 'unavailable'].includes(draftWorkflow.view.eligibility)} onClick={draftWorkflow.restart}>Nouveau Draft</Button>
         </div> : <SeedanceDraftLocalPreviewResult preview={draftPreview} />}

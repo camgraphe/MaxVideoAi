@@ -335,7 +335,10 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         await recordBytePlusPollEventFn(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
       }
-      await reconcileSeedanceWorkflowOutcome(job, 'completed', (sql, params) => queryFn(sql, params ? [...params] : undefined));
+      await reconcileSeedanceWorkflowOutcome(job, 'completed', (sql, params) => queryFn(sql, params ? [...params] : undefined)).catch(() => {
+        // The owned status route retries this durable terminal job without another provider task.
+        console.warn('[byteplus-poll] completed workflow reconciliation deferred', { jobId: job.job_id });
+      });
       await applyBytePlusTrialOutcomeSafelyFn(job, { kind: 'completed' });
       await upsertLegacyJobOutputsFn({
         job_id: job.job_id,

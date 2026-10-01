@@ -154,7 +154,9 @@ export async function markBytePlusJobFailed(
     [job.job_id, refunded]
   );
   await applyBytePlusTrialOutcomeSafely(job, { kind: trialOutcome });
-  await reconcileSeedanceWorkflowOutcome(job, 'failed');
+  await reconcileSeedanceWorkflowOutcome(job, 'failed').catch(() => {
+    console.warn('[byteplus-poll] failed workflow reconciliation deferred', { jobId: job.job_id });
+  });
   await recordBytePlusPollEvent(job, 'poll:failed', {
     providerStatus: providerStatus ?? null,
     providerErrorCode: providerFailure?.providerErrorCode ?? null,
