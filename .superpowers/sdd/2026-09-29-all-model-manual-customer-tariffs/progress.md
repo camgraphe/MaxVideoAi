@@ -541,3 +541,31 @@ state identities and the exact24 unchanged supplier ceilings. The generic approv
 refresh helper stays strict; its policy-hash check is not weakened. Cost if wrong:
 an unrelated change could inherit approval; any mismatch stops the operation.
 Old certificate/approval stay immutable, new record retains their hashes and reason.
+
+Actual private preparation24ad70c3f:14658 cells/591 continuous classes,20113
+accepted quotes,20089 unchanged/24 approved exact +1c floors,0 remaining gaps.
+Certificate e951591b0e36467b845fb59c22d320d2440ff371987bd44b4157a2a84c2b44d3;
+locked activation2026-10-01T01:48:18.424Z,revision3→4,event
+ea47034b-b958-4119-ba7c-4484adb256db,archives66549 old staged cells. Actual
+post-activation read-only audit20113/20113 expected cents/manual_tariff, no legacy
+model fallback. Products13/coefficients0/Topaz80/Flash18 unchanged/codeActivefalse.
+Fresh complete24ad70c3f validator6606 standard+11 Studio pass,0fail/3standard
+skips,optimized920-page build succeeds. Privateenv restored, localhost3106 started.
+HTTP unauthorized401; approved local session inventory200:48models/15families,
+active4,coverageGapCount0,no missing representative customer/supplier amounts.
+Policy inventory modelTariffsActivetrue; actual UI percentage rules historical/
+read-only. Ten EN/FR/ES pages200 with canonical/hreflang/JSON-LD, currentPika0.052/s
+andcomparisonSeedanceunit amounts. Actual Mini preview95→100 then cancelled/reset.
+Actual H3ref2v editor4096→20000tokens quotes94c, output0.104USD/s and0.026USD/1ktokens;
+390×844mobile has equal document/client widths378px and readable unit editor.
+
+Ruling: the public HTTP parser must share the already reviewed open quantity
+classification; its prior generic120s/10000token transport limits reject valid
+Luma Modify/H3 reference quotes even though the canonical owner accepts them.
+Scope the exception to those model/modes and safe nonnegative integer units; keep
+all other transport/coupled validation. Cost if wrong: browser and admin disagree
+or malformed amounts reach quoting. HTTP RED400vs200; focused13/13 GREEN including
+negative/fractional/unsafe/wrong-model rejection. Actual public HTTP quotesLuma131s
+2044c,H3budget20000=94c,approvedFlaremedium1ref=3c, all no-store and exact. TS/app
+lint pass. Final optimized build of this small transport correction follows;
+full24ad core acceptance above is not relabeled as a full rerun of this patch.
