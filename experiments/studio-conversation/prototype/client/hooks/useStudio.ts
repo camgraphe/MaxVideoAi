@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Asset, Command, Project } from "../../shared/types";
+import type {
+  Asset,
+  AssistantInfo,
+  Command,
+  Project,
+} from "../../shared/types";
 import { isEdit } from "../../shared/timeline";
 export const mediaUrl = (
   p: string,
@@ -19,6 +24,8 @@ export function useStudio() {
   const [project, setProject] = useState<Project>(),
     [projects, setProjects] = useState<{ id: string; title: string }[]>([]),
     [busy, setBusy] = useState(false),
+    [chatBusy, setChatBusy] = useState(false),
+    [assistant, setAssistant] = useState<AssistantInfo>(),
     [notice, setNotice] = useState(""),
     [loading, setLoading] = useState(true);
   const current = useRef<Project | undefined>(undefined),
@@ -71,6 +78,10 @@ export function useStudio() {
     let stopped = false;
     void (async () => {
       try {
+        const health = await request<{ assistant: AssistantInfo }>(
+          "/api/health",
+        );
+        if (!stopped) setAssistant(health.assistant);
         const all = await list();
         if (stopped) return;
         const saved = localStorage.getItem("studio-local-project"),
@@ -101,10 +112,11 @@ export function useStudio() {
     return () => clearInterval(timer);
   }, [accept]);
   const perform = useCallback(
-    async <T>(work: (id: string, p: Project) => Promise<T>) => {
+    async <T>(work: (id: string, p: Project) => Promise<T>, isChat = false) => {
       const p = current.current;
       if (!p) return;
-      setBusy(true);
+      const setWorking = isChat ? setChatBusy : setBusy;
+      setWorking(true);
       setNotice("");
       try {
         return await work(p.id, p);
@@ -117,7 +129,7 @@ export function useStudio() {
           } catch {}
         return undefined;
       } finally {
-        if (mounted.current) setBusy(false);
+        if (mounted.current) setWorking(false);
       }
     },
     [accept],
@@ -144,6 +156,23 @@ export function useStudio() {
       }),
     [perform, accept],
   );
+  const retryChat = useCallback(
+    () =>
+      perform(async (id, p) => {
+        if (!p.assistantRun) return;
+        const result = await request<{ project: Project }>(
+          `/api/projects/${id}/retry-chat`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ requestId: p.assistantRun.requestId }),
+          },
+        );
+        accept(result.project);
+        return result.project;
+      }, true),
+    [perform, accept],
+  );
   const chat = useCallback(
     (text: string, context: { clipId?: string; assetIds?: string[] }) =>
       perform(async (id, p) => {
@@ -161,7 +190,7 @@ export function useStudio() {
         );
         accept(result.project);
         return result.project;
-      }),
+      }, true),
     [perform, accept],
   );
   const upload = useCallback(
@@ -200,6 +229,9 @@ export function useStudio() {
     project,
     projects,
     busy,
+    chatBusy,
+    assistant,
+    retryChat,
     notice,
     setNotice,
     loading,

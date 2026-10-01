@@ -7,6 +7,7 @@ import { CommandService } from "./commands";
 import { importMedia, mediaDir } from "./media";
 import { StudioError } from "../shared/timeline";
 import { MediaLibraryService } from "./library";
+import type { AssistantInfo } from "../shared/types";
 export function json(res: ServerResponse, status: number, value: unknown) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -31,6 +32,8 @@ export async function body(
 export interface Adapters {
   chat?: (id: string, data: any) => Promise<unknown>;
   mcp?: (data: any) => Promise<unknown>;
+  retryChat?: (id: string, requestId: string) => Promise<unknown>;
+  assistant?: AssistantInfo;
 }
 export function api(
   store: ProjectStore,
@@ -49,7 +52,15 @@ export function api(
     if (!path.startsWith("/api/") && path !== "/mcp") return false;
     try {
       if (path === "/api/health") {
-        json(res, 200, { status: "ready", mode: "local-demo" });
+        const assistant = adapters.assistant ?? {
+          mode: "demo",
+          configured: true,
+        };
+        json(res, 200, {
+          status: "ready",
+          mode: assistant.mode === "openai" ? "local-ai" : "local-demo",
+          assistant,
+        });
         return true;
       }
       if (path === "/api/library" && method === "GET") {
@@ -87,7 +98,7 @@ export function api(
         return true;
       }
       const match = path.match(
-        /^\/api\/projects\/([a-f0-9-]{36})(?:\/(commands|chat|import|media|backup|library)(?:\/([a-f0-9-]{36}))?)?$/,
+        /^\/api\/projects\/([a-f0-9-]{36})(?:\/(commands|chat|retry-chat|import|media|backup|library)(?:\/([a-f0-9-]{36}))?)?$/,
       );
       if (!match) throw new StudioError("Route introuvable.", 404);
       const [, id, action, assetId] = match;
@@ -119,6 +130,11 @@ export function api(
           200,
           await adapters.chat(id, JSON.parse((await body(req)).toString())),
         );
+        return true;
+      }
+      if (action === "retry-chat" && method === "POST" && adapters.retryChat) {
+        const data = JSON.parse((await body(req)).toString());
+        json(res, 200, await adapters.retryChat(id, data.requestId));
         return true;
       }
       if (action === "import" && method === "POST") {

@@ -148,6 +148,7 @@ export function App() {
   return (
     <Shell
       project={p}
+      assistant={studio.assistant}
       panel={panel}
       onPanel={setPanel}
       onNew={() => {
@@ -183,7 +184,13 @@ export function App() {
             />
             <Chat
               project={p}
-              busy={studio.busy}
+              busy={
+                studio.busy ||
+                studio.chatBusy ||
+                (!!p.assistantRun && p.assistantRun.state !== "failed")
+              }
+              assistant={studio.assistant}
+              onRetry={() => void studio.retryChat()}
               references={p.assets.filter((a) => references.includes(a.id))}
               onSend={(text) => {
                 void studio.chat(text, {

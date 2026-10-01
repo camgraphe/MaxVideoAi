@@ -8,11 +8,18 @@ import {
   LoaderCircle,
   RotateCcw,
 } from "lucide-react";
-import type { Asset, Project, Command } from "../../shared/types";
+import type {
+  Asset,
+  Project,
+  Command,
+  AssistantInfo,
+} from "../../shared/types";
 import { AssetResult } from "./AssetResult.client";
 export function Chat({
   project,
   busy,
+  assistant,
+  onRetry,
   references,
   onSend,
   onLibrary,
@@ -24,6 +31,8 @@ export function Chat({
 }: {
   project: Project;
   busy: boolean;
+  assistant?: AssistantInfo;
+  onRetry: () => void;
   references: Asset[];
   onSend: (s: string) => void;
   onLibrary: () => void;
@@ -37,6 +46,7 @@ export function Chat({
     [unread, setUnread] = useState(false),
     scroll = useRef<HTMLDivElement>(null),
     follow = useRef(true),
+    userScrolling = useRef(false),
     input = useRef<HTMLTextAreaElement>(null);
   const latest = project.messages.at(-1),
     results = project.jobs.filter((j) => j.state === "ready").length;
@@ -48,21 +58,29 @@ export function Chat({
       });
       setUnread(false);
     } else setUnread(true);
-  }, [latest?.id, latest?.text, results]);
+  }, [
+    latest?.id,
+    latest?.text,
+    results,
+    project.assistantRun?.label,
+    project.assistantRun?.state,
+  ]);
   useEffect(() => {
     const el = scroll.current;
     if (!el) return;
     const observer = new ResizeObserver(() => {
       if (follow.current) el.scrollTop = el.scrollHeight;
     });
+    observer.observe(el);
     for (const child of el.children) observer.observe(child);
     return () => observer.disconnect();
   }, [project.messages.length]);
   function send(s = text) {
-    if (!s.trim() || busy) return;
+    if (!s.trim() || busy || project.assistantRun) return;
     onSend(s.trim());
     setText("");
     follow.current = true;
+    userScrolling.current = false;
     input.current?.focus();
   }
   const empty = !project.messages.length;
@@ -74,11 +92,41 @@ export function Chat({
       <div
         className="conversation-scroll"
         ref={scroll}
+        tabIndex={0}
+        aria-label="Messages de la conversation"
+        onWheel={() => {
+          userScrolling.current = true;
+        }}
+        onTouchMove={() => {
+          userScrolling.current = true;
+        }}
+        onPointerDown={(e) => {
+          if (e.target === e.currentTarget) userScrolling.current = true;
+        }}
+        onKeyDown={(e) => {
+          if (
+            [
+              "PageUp",
+              "PageDown",
+              "Home",
+              "End",
+              "ArrowUp",
+              "ArrowDown",
+            ].includes(e.key) &&
+            !(e.target as Element).closest(
+              "button,input,textarea,video,audio,a",
+            )
+          )
+            userScrolling.current = true;
+        }}
         onScroll={() => {
           const el = scroll.current;
-          if (el)
-            follow.current =
-              el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+          if (!el) return;
+          const atEnd = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+          if (atEnd) {
+            follow.current = true;
+            userScrolling.current = false;
+          } else if (userScrolling.current) follow.current = false;
         }}
       >
         <div className="chat-intro">
@@ -219,6 +267,31 @@ export function Chat({
                 </article>
               );
             })}
+            {project.assistantRun && (
+              <article className="message assistant" aria-live="polite">
+                <div className="message-body">
+                  <span className="assistant-mark">
+                    <Sparkles size={16} />
+                  </span>
+                  <div className="message-copy">
+                    <p>
+                      {project.assistantRun.state === "failed"
+                        ? project.assistantRun.error
+                        : project.assistantRun.label}
+                    </p>
+                    <div className={"job-state " + project.assistantRun.state}>
+                      {project.assistantRun.state === "failed" ? (
+                        <button onClick={onRetry} disabled={busy}>
+                          <RotateCcw size={13} /> Reprendre l’échange
+                        </button>
+                      ) : (
+                        <LoaderCircle size={13} className="spin" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            )}
           </div>
         )}
       </div>
@@ -227,6 +300,7 @@ export function Chat({
           className="new-message"
           onClick={() => {
             follow.current = true;
+            userScrolling.current = false;
             scroll.current?.scrollTo({
               top: scroll.current.scrollHeight,
               behavior: "auto",
@@ -276,7 +350,13 @@ export function Chat({
             ref={input}
             rows={1}
             aria-label="Message à Studio"
-            placeholder={busy ? "Studio travaille…" : "Décrivez votre idée…"}
+            placeholder={
+              project.assistantRun?.state === "failed"
+                ? "Reprenez l’échange ci-dessus…"
+                : busy
+                  ? "Studio travaille…"
+                  : "Décrivez votre idée…"
+            }
             value={text}
             onFocus={onFocusComposer}
             onChange={(e) => setText(e.target.value)}
@@ -290,7 +370,7 @@ export function Chat({
           <button
             className="send-button"
             type="submit"
-            disabled={busy || !text.trim()}
+            disabled={busy || !!project.assistantRun || !text.trim()}
             aria-label="Envoyer à Studio"
           >
             <ArrowUp size={22} />
@@ -298,7 +378,15 @@ export function Chat({
         </div>
         <div className="composer-caption">
           Images, vidéos, sons. Une conversation.
-          <span>Assistant simulé · Actions réelles</span>
+          <span>
+            {!assistant
+              ? "Connexion au Studio…"
+              : assistant.mode === "openai"
+                ? assistant.configured
+                  ? "GPT‑6.1 Sol · Médias de démo"
+                  : "IA à connecter"
+                : "Assistant simulé · Actions réelles"}
+          </span>
         </div>
       </form>
     </section>

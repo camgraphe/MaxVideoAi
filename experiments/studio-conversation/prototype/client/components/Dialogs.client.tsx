@@ -294,9 +294,12 @@ export function Dialogs({
               MaxVideoAI.
             </p>
             <p>
-              Le dialogue est simulé. Les imports, voix, animations, coupes,
-              sauvegardes et rendus sont réels, sur cet ordinateur. Les visuels
-              créés utilisent le jeu parfum de démonstration.
+              {studio.assistant?.mode === "openai"
+                ? "Le dialogue est piloté par GPT‑6.1 Sol via l’API OpenAI."
+                : "Le dialogue est simulé."}{" "}
+              Les imports, voix, animations, coupes, sauvegardes et rendus sont
+              réels, sur cet ordinateur. Les visuels créés utilisent le jeu
+              parfum de démonstration.
             </p>
             <div className="about-mcp">
               <h3>Le même montage depuis un assistant externe</h3>

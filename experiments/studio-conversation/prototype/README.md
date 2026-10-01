@@ -15,6 +15,20 @@ Ouvrir **http://127.0.0.1:4318** dans l’aperçu Codex ou un navigateur autoris
 
 `STUDIO_LOCAL_PORT` change le port ; `STUDIO_LOCAL_DATA` change le dossier de données. Ne pas lancer deux serveurs sur le même dossier. Par défaut, `.data/` contient les projets et leurs médias, est ignoré par Git et doit être conservé pour retrouver les créations. Arrêter le serveur avec Ctrl+C.
 
+### Connecter GPT‑6.1 Sol
+
+Copier `.env.example` vers `.env.local`, puis renseigner `STUDIO_OPENAI_API_KEY` **côté serveur**. Le fichier est ignoré par Git ; ne jamais préfixer une clé par `VITE_`. Une clé `OPENAI_API_KEY` existante convient également. Pour utiliser un fichier déjà configuré, lancer :
+
+```sh
+STUDIO_ENV_FILE="/chemin/vers/.env.local" STUDIO_ASSISTANT=openai npm run dev
+```
+
+Studio utilise l’API Responses avec `gpt-6.1-sol`, raisonnement `medium`, schémas stricts, une action à la fois, 6 000 tokens de sortie maximum par appel et jusqu’à dix tours avec outils, puis un dernier appel sans outil. Ces appels utilisent la facturation API OpenAI du compte configuré. Le client voit le chat Studio et ne fournit aucune clé. Sans clé, le mode par défaut reste la démonstration hors ligne ; `STUDIO_ASSISTANT=demo` l’impose explicitement. En mode `openai`, une panne ou un refus de clé affiche une erreur et un bouton de reprise, sans basculer vers un dialogue simulé.
+
+Le vrai directeur peut proposer une direction, régler le projet, rechercher/adopter les médias de la bibliothèque locale, couper/réordonner/assembler, gérer le son et lancer les tâches locales ou le rendu. Par exemple : « Cherche linen.jpg · animé dans la bibliothèque, ajoute-la au montage et garde ses dix premières secondes. » Joindre une image ou une vidéo avec le + lui transmet l’aperçu image ou le poster, avec les métadonnées du projet. Les audios sont des métadonnées : cette étape ne comprend pas de transcription ni d’analyse du flux vidéo.
+
+Les messages, propositions avant action et résultats sont sauvegardés. Le serveur relit l’état canonique à chaque appel ; un geste manuel intervenu entre-temps provoque un conflit de révision, sans être écrasé. Un journal serveur distinct conserve les appels d’outils et leurs résultats pour reprendre après interruption, sans répéter les actions. Il n’est pas livré par l’API projet ni par Vite. Un échange continue si l’onglet ferme ; après redémarrage du serveur, sa reprise se fait par bouton, sans appels API automatiques.
+
 ## Essayer
 
 1. Dans le chat, cliquer « Un film parfum, lumineux et sensoriel ». Trois images et trois animations locales arrivent, puis le montage se construit si vous ne l’avez pas modifié entre-temps.
@@ -30,7 +44,7 @@ Si un son continue après le dernier plan, la dernière image est tenue jusqu’
 
 ## Ce qui est simulé
 
-Le directeur est un interpréteur d’intentions français/anglais, pas un LLM connecté. La création d’images reprend les trois visuels parfum de démonstration ; les références sont stockées et attachées au brief, mais ne conditionnent pas une génération payante. Les animations sont des mouvements de caméra FFmpeg sur ces images. La voix, l’ambiance synthétique, les imports, la coupe, l’assemblage et les exports sont réels. Aucun appel provider payant, aucune clé, aucun compte, aucune base de production.
+En mode `demo`, le directeur est un interpréteur d’intentions français/anglais. En mode `openai`, le dialogue et le choix des outils sont réellement pilotés par Sol. Dans les deux modes, la création d’images reprend les trois visuels parfum de démonstration ; le prompt et les références ne conditionnent pas une nouvelle génération. Les animations sont des mouvements de caméra FFmpeg sur les images. La voix, l’ambiance synthétique, les imports, la coupe, l’assemblage et les exports sont réels. Aucun fournisseur de génération média payante ni compte/base de production n’est connecté.
 
 Les images, vidéos et audios acceptés par le Studio actuel sont pris en charge. SVG, HTML, PDF/documents, médias distants et sources de plus de 100 Mo sont exclus de ce prototype. Sources temporelles : 1 seconde à 10 minutes ; animation locale : 1–30 secondes ; 12 plans vidéo et 36 éléments au total.
 
@@ -41,6 +55,7 @@ Endpoint JSON-RPC **http://127.0.0.1:4318/mcp**, HTTP POST avec réponses JSON. 
 - `studio_list_projects`, `studio_create_project`, `studio_get_project`
 - `studio_trim_clip`, `studio_move_clip`
 - `studio_command` pour les autres commandes partagées : paramètres, insertion, remplacement, suppression, assemblage, volume, undo/redo, images, animation, voix, ambiance, export, annulation/reprise de tâche.
+- `studio_project`, `studio_library`, `studio_use_media`, `studio_edit`, `studio_generate`, `studio_render`, `studio_job` exposent le même catalogue strict que Sol. Ajouter `projectId` et `requestId` aux arguments présentés par la découverte ; `studio_edit` exige aussi `expectedRevision`.
 
 Lire le projet avant une édition. `inFrame`, `outFrame` (exclusif) et `startFrame` sont des entiers au fps du projet ; coupe minimale 1 seconde. Toute édition nécessite `expectedRevision`. `requestId` reste identique sur une reprise ; changer le contenu exige un nouvel ID. Une tâche reste asynchrone : consulter le projet jusqu’à son état `ready`, `failed` ou `cancelled`.
 
@@ -57,6 +72,6 @@ npm test
 npm run build
 ```
 
-Les 31 tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeur et MCP, isolation entre projets, bibliothèque globale et réutilisation, imports réels, Range, rendus FFmpeg et contraste des deux modes. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
+Les tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeurs et MCP, isolation entre projets, bibliothèque globale et réutilisation, imports réels, Range, rendus FFmpeg et contraste des deux modes. Les nouveaux tests IA remplacent uniquement l’API externe par des réponses contrôlées : ils vérifient les vraies mutations, la reprise après une coupe enregistrée, les propositions publiques, un redémarrage au milieu d’une écriture, les conflits, les références possédées, les réponses incomplètes et la confidentialité des fichiers serveur. Ils ne mesurent pas la qualité créative de Sol ; elle demande des briefs réels dans le navigateur. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
 
 Pour la vérification dans un navigateur, utiliser un projet distinct : état vide → paramètres → brief → import image/vidéo/audio → coupe et déplacement → remplacement → voix/ambiance → volume/position avec annulation → arrêt/reprise d’une tâche → export vidéo et audio seul → recharge. Vérifier aussi le repli du moniteur, le défilement du montage et les palettes au clavier et à 320/390 px. Ces gestes complètent les tests serveur ; ils ne sont pas automatisés par la commande `npm test`.

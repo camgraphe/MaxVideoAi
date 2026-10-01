@@ -85,6 +85,17 @@ export interface Project {
   undo: Sequence[];
   redo: Sequence[];
   receipts: Record<string, Receipt>;
+  assistantRun?: {
+    requestId: string;
+    state: "thinking" | "acting" | "failed";
+    label: string;
+    error?: string;
+  };
+}
+export interface AssistantInfo {
+  mode: "demo" | "openai";
+  model?: string;
+  configured: boolean;
 }
 export type Command =
   | { type: "settings"; settings: Partial<Settings>; title?: string }

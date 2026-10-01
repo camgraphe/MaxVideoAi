@@ -11,19 +11,21 @@ import {
   Settings2,
   ChevronDown,
 } from "lucide-react";
-import type { Project } from "../../shared/types";
+import type { Project, AssistantInfo } from "../../shared/types";
 import { PalettePicker } from "./PalettePicker.client";
 export type Panel =
   "projects" | "library" | "tools" | "activity" | "settings" | "about" | null;
 export function Shell({
   children,
   project,
+  assistant,
   panel,
   onPanel,
   onNew,
 }: {
   children: ReactNode;
   project?: Project;
+  assistant?: AssistantInfo;
   panel: Panel;
   onPanel: (p: Panel) => void;
   onNew: () => void;
@@ -50,7 +52,12 @@ export function Shell({
           <Menu size={18} />
         </button>
         <span className="local-indicator">
-          <span /> Local · Démonstration
+          <span /> Local ·{" "}
+          {assistant?.mode === "openai"
+            ? assistant.configured
+              ? "GPT‑6.1 Sol"
+              : "IA à connecter"
+            : "Démonstration"}
         </span>
         <button
           className="icon-button"

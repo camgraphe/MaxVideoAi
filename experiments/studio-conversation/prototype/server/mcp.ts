@@ -1,6 +1,7 @@
 import { CommandService } from "./commands";
 import { StudioError } from "../shared/timeline";
 import type { Command } from "../shared/types";
+import { actionTools, StudioActions } from "./studio-actions";
 const fields = {
   projectId: { type: "string" },
   requestId: {
@@ -116,7 +117,7 @@ const tools = [
     ),
   },
 ];
-export function mcp(service: CommandService) {
+export function mcp(service: CommandService, actions?: StudioActions) {
   return async (request: any): Promise<any> => {
     const ok = (result: unknown) => ({
         jsonrpc: "2.0",
@@ -144,13 +145,36 @@ export function mcp(service: CommandService) {
           "Local prototype. Read revision before editing; keep requestId stable on retry. Jobs run asynchronously and results are saved in the project.",
       });
     if (request.method === "ping") return ok({});
-    if (request.method === "tools/list") return ok({ tools });
+    if (request.method === "tools/list")
+      return ok({
+        tools: [
+          ...tools,
+          ...(actions
+            ? actionTools.map(({ name, description, parameters }) => ({
+                name,
+                description,
+                inputSchema: {
+                  ...parameters,
+                  properties: {
+                    ...parameters.properties,
+                    projectId: fields.projectId,
+                    requestId: fields.requestId,
+                  },
+                  required: [...parameters.required, "projectId", "requestId"],
+                },
+              }))
+            : []),
+        ],
+      });
     if (request.method !== "tools/call")
       return error(-32601, "Method not found");
     try {
       const { name, arguments: a = {} } = request.params ?? {};
       let result: unknown;
-      if (name === "studio_list_projects")
+      if (actions && actionTools.some((t) => t.name === name)) {
+        const { projectId, requestId, ...args } = a;
+        result = await actions.execute(projectId, requestId, name, args);
+      } else if (name === "studio_list_projects")
         result = (await service.store.list()).map((p) => ({
           id: p.id,
           title: p.title,
