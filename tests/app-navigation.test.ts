@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
 import { HeaderWalletStatus } from '../frontend/components/header/HeaderWalletStatus';
 import {
   NAV_ITEMS,
@@ -110,5 +111,33 @@ test('wallet retains its real billing destination and distinguishes zero from mi
   for (const [walletLoading, expected] of [[true, 'Loading…'], [false, 'Unavailable']] as const) {
     const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, { walletLoading, wallet: null, t: () => undefined, promptId: 'wallet', walletPromptOpen: false, onOpenPrompt() {}, onSchedulePromptClose() {} }));
     assert.ok(markup.includes(`aria-label="Wallet: ${expected}"`));
+  }
+});
+
+test('an isolated QA wallet cannot be mistaken for the signed-in account balance or a top-up prompt', () => {
+  Object.assign(globalThis, { React });
+  for (const wallet of [null, { balance: 0 }, { balance: 12.3 }]) {
+    const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, {
+      localQa: true, walletLoading: !wallet, wallet, t: (_key, fallback) => fallback,
+      promptId: 'wallet', walletPromptOpen: true, onOpenPrompt() {}, onSchedulePromptClose() {},
+    }));
+    const dom = new JSDOM(markup);
+    try {
+      const trigger = dom.window.document.querySelector('a')!;
+      assert.match(trigger.textContent ?? '', /QA local/);
+      assert.match(trigger.getAttribute('aria-label') ?? '', /QA local/);
+      assert.doesNotMatch(trigger.textContent ?? '', /\$\d/);
+      assert.equal(trigger.getAttribute('href'), 'https://maxvideoai.com/billing');
+      assert.equal(trigger.getAttribute('target'), '_blank');
+      assert.match(trigger.getAttribute('rel') ?? '', /noopener/);
+      const prompt = dom.window.document.querySelector('[role="status"]')!;
+      assert.match(prompt.textContent ?? '', /données de test/);
+      assert.doesNotMatch(prompt.textContent ?? '', /Top up|Documents/);
+      assert.equal(prompt.querySelectorAll('a').length, 1);
+      assert.equal(prompt.querySelector('a')?.getAttribute('href'), 'https://maxvideoai.com/billing');
+      assert.equal(prompt.querySelector('a')?.getAttribute('target'), '_blank');
+    } finally {
+      dom.window.close();
+    }
   }
 });

@@ -9,6 +9,7 @@ import { ButtonLink } from '@/components/ui/Button';
 type HeaderTranslate = (key: string, fallback: string) => string | undefined;
 
 type HeaderWalletStatusProps = {
+  localQa?: boolean;
   promptId: string;
   t: HeaderTranslate;
   wallet: { balance: number } | null;
@@ -19,6 +20,7 @@ type HeaderWalletStatusProps = {
 };
 
 export function HeaderWalletStatus({
+  localQa = false,
   promptId,
   t,
   wallet,
@@ -27,17 +29,20 @@ export function HeaderWalletStatus({
   onOpenPrompt,
   onSchedulePromptClose,
 }: HeaderWalletStatusProps) {
-  const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : walletLoading ? '...' : '--';
+  const walletAmount = localQa ? 'QA local' : wallet ? `$${wallet.balance.toFixed(2)}` : walletLoading ? '...' : '--';
   const walletBaseLabel = t('workspace.header.wallet.label', 'Wallet') ?? 'Wallet';
   const missingLabel = walletLoading
     ? t('workspace.header.wallet.loading', 'Loading…') ?? 'Loading…'
     : t('workspace.header.wallet.unavailable', 'Unavailable') ?? 'Unavailable';
-  const walletLabel = `${walletBaseLabel}: ${wallet ? walletAmount : missingLabel}`;
+  const walletLabel = localQa ? 'Wallet QA local — données de test' : `${walletBaseLabel}: ${wallet ? walletAmount : missingLabel}`;
+  const billingHref = localQa ? 'https://maxvideoai.com/billing' : '/billing';
 
   return (
     <div className="relative shrink-0" onMouseEnter={onOpenPrompt} onMouseLeave={onSchedulePromptClose}>
       <Link
-        href="/billing"
+        href={billingHref}
+        target={localQa ? '_blank' : undefined}
+        rel={localQa ? 'noopener noreferrer' : undefined}
         prefetch={false}
         className="app-wallet-trigger flex !min-h-11 w-[72px] items-center justify-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:w-24 lg:gap-2 lg:px-3"
         aria-label={walletLabel}
@@ -49,7 +54,7 @@ export function HeaderWalletStatus({
         <span hidden className="app-wallet-glyph"><AppGlyph name="wallet" /></span>
         <span className="app-wallet-copy"><span hidden className="app-wallet-label">{walletBaseLabel}</span>
         <span className="max-w-[5rem] truncate text-xs font-semibold tracking-normal text-text-primary sm:max-w-none sm:text-sm">
-          {wallet ? walletAmount : <><span className="app-wallet-fallback">{walletAmount}</span><span hidden className="app-wallet-state">{missingLabel}</span></>}
+          {localQa || wallet ? walletAmount : <><span className="app-wallet-fallback">{walletAmount}</span><span hidden className="app-wallet-state">{missingLabel}</span></>}
         </span></span>
       </Link>
       {walletPromptOpen ? (
@@ -61,23 +66,25 @@ export function HeaderWalletStatus({
           onMouseLeave={onSchedulePromptClose}
         >
           <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-            {t('workspace.header.walletTopUp.label', 'Top up available')}
+            {localQa ? 'Session Google réelle' : t('workspace.header.walletTopUp.label', 'Top up available')}
           </p>
           <p className="mt-1 text-sm text-text-primary">
-            {t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}
+            {localQa ? 'Wallet et bibliothèque : données de test locales. Le solde de votre compte MaxVideoAI n’est pas affiché ici.' : t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}
           </p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className={`mt-3 grid ${localQa ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
             <ButtonLink
-              href="/billing"
+              href={billingHref}
+              target={localQa ? '_blank' : undefined}
+              rel={localQa ? 'noopener noreferrer' : undefined}
               prefetch={false}
               size="sm"
               className="shadow-card"
               onFocus={onOpenPrompt}
               onBlur={onSchedulePromptClose}
             >
-              {t('workspace.header.walletTopUp.cta', 'Top up')}
+              {localQa ? 'Voir mon vrai wallet ↗' : t('workspace.header.walletTopUp.cta', 'Top up')}
             </ButtonLink>
-            <ButtonLink
+            {!localQa ? <ButtonLink
               href="/billing#billing-history-title"
               prefetch={false}
               size="sm"
@@ -86,7 +93,7 @@ export function HeaderWalletStatus({
               onBlur={onSchedulePromptClose}
             >
               {t('workspace.header.walletTopUp.documentsCta', 'Documents')}
-            </ButtonLink>
+            </ButtonLink> : null}
           </div>
         </div>
       ) : null}

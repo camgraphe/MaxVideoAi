@@ -27,9 +27,12 @@ export default async function StudioConversationPage({
       )
     : null;
   if (access.ok && !project) notFound();
+  const localQa =
+    process.env.NODE_ENV !== "production" &&
+    process.env.STUDIO_INTEGRATION_RUNTIME === "1";
   return (
     <div className="flex h-[calc(100dvh-var(--app-bottom-nav-height,0px))] flex-col overflow-hidden bg-bg">
-      <HeaderBar />
+      <HeaderBar localQa={localQa} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col md:flex-row">
         <AppSidebar />
         <main className="min-h-0 min-w-0 flex-1 overflow-hidden">

@@ -32,7 +32,7 @@ import { useHeaderAccountState } from '@/components/header/useHeaderAccountState
 import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import { canShowStudioNavigation } from '@/components/app/app-navigation';
 
-export function HeaderBar() {
+export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
   const { locale, t } = useI18n();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -228,7 +228,7 @@ export function HeaderBar() {
       {isAppExperiencePath(pathname) ? (
         <header className="app-connected-header">
           <AppSiteMenu email={email} authResolved={authResolved} isAdmin={isAdmin} signinHref={signinHref} signupHref={signupHref} themeToggleLabel={themeToggleLabel} onToggleTheme={toggleTheme} onSignOut={handleSignOut}>
-            <HeaderWalletStatus walletLoading={walletLoading} promptId={walletPromptId} t={t} wallet={wallet} walletPromptOpen={walletPromptOpen} onOpenPrompt={openWalletPrompt} onSchedulePromptClose={scheduleWalletPromptClose} />
+            <HeaderWalletStatus localQa={localQa} walletLoading={walletLoading} promptId={walletPromptId} t={t} wallet={wallet} walletPromptOpen={walletPromptOpen} onOpenPrompt={openWalletPrompt} onSchedulePromptClose={scheduleWalletPromptClose} />
           </AppSiteMenu>
         </header>
       ) : <header
@@ -397,6 +397,7 @@ export function HeaderBar() {
 
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 text-xs text-text-muted sm:gap-3">
           <HeaderWalletStatus
+            localQa={localQa}
             walletLoading={walletLoading}
             promptId={walletPromptId}
             t={t}
