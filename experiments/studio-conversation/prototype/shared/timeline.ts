@@ -1,7 +1,5 @@
 import type { Project, Command, Clip, Sequence } from './types';
-import * as canonicalFrames from '../../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames';
-const frames = ('default' in canonicalFrames ? canonicalFrames.default : canonicalFrames) as typeof canonicalFrames;
-const {secondsToTimelineFrame, timelineFrameToSeconds, MIN_CLIP_DURATION_SEC}=frames;
+import {secondsToTimelineFrame,timelineFrameToSeconds,MIN_CLIP_DURATION_SEC} from './frames';
 export {secondsToTimelineFrame, timelineFrameToSeconds};
 export class StudioError extends Error { constructor(message:string, public status=400) {super(message);} }
 export function videoStart(clips:Clip[],id:string):number {

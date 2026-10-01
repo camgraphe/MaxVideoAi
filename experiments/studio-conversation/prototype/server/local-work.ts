@@ -1,15 +1,17 @@
 import {copyFile,mkdir,rename,access,writeFile,rm} from 'node:fs/promises';import {join,resolve} from 'node:path';import {fileURLToPath} from 'node:url';
+import {ProjectStore} from './store';
 import type {Asset,Project,Job} from '../shared/types';import type {Work} from './jobs';import {mediaDir,probeMedia,waveform} from './media';import {renderAnimation,renderSequence,ffmpeg,runProcess} from './render';
 const demoDir=resolve(fileURLToPath(new URL('../../assets/motion/',import.meta.url)));
 const photos=[['perfume-linen.jpg','Lumière & lin'],['perfume-hand.jpg','Le geste'],['perfume-caustic.jpg','Reflets de verre']];
-export function localWork(root:string):Work{return async(p,job,signal,progress)=>{
+export function localWork(root:string,store?:ProjectStore):Work{return async(p,job,signal,progress)=>{
  const dir=mediaDir(root,p.id);await mkdir(dir,{recursive:true});
  const asset=async(id:string,name:string,ext:string,make:(temp:string)=>Promise<void>,origin:Asset['origin']='local'):Promise<Asset>=>{
   const file=id+ext,path=join(dir,file);let ready=false;try{await access(path);await probeMedia(path);ready=true;}catch{}
   if(!ready){const temp=join(dir,id+'.partial'+ext);await make(temp);if(signal.aborted)throw new Error('Traitement annulé.');await rename(temp,path);}
   const a:Asset={id,name,file,...await probeMedia(path),origin};
   if(a.kind==='video'){a.poster=id+'.jpg';try{await access(join(dir,a.poster));}catch{await ffmpeg(['-i',path,'-frames:v','1','-vf','scale=640:-2',join(dir,a.poster)],1,signal);}}
-  if(a.kind==='audio')a.peaks=await waveform(path);return a;
+  if(a.kind==='audio')a.peaks=await waveform(path);
+  if(store&&job.kind!=='export')await store.update(p.id,p=>{const j=p.jobs.find(j=>j.id===job.id);if(j?.state==='running'&&!signal.aborted){if(!p.assets.some(asset=>asset.id===a.id))p.assets.push(a);const message=p.messages.find(m=>m.jobId===job.id);if(message)message.assets=[...new Set([...(message.assets??[]),a.id])];}return p;});return a;
  };
  const params=job.params,results:Asset[]=[];
  if(job.kind==='images'){
