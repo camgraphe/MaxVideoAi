@@ -5,35 +5,23 @@ const palettes = [
   {
     id: "charcoal",
     name: "Charbon",
-    description: "Neutre · champagne",
+    description: "Sombre · champagne",
     background: "#19191c",
     accent: "#e5c994",
   },
   {
-    id: "midnight",
-    name: "Minuit",
-    description: "Bleu nuit · glacier",
-    background: "#151b27",
-    accent: "#a7c7fa",
-  },
-  {
-    id: "porcelain",
-    name: "Porcelaine",
-    description: "Ivoire · terre cuite",
-    background: "#f5f2ed",
-    accent: "#93553a",
-  },
-  {
     id: "olive",
     name: "Olive",
-    description: "Vert profond · or",
-    background: "#191c1a",
-    accent: "#e0bc77",
+    description: "Clair · ivoire et olive",
+    background: "#f4f3ec",
+    accent: "#596440",
   },
 ] as const;
 type PaletteId = (typeof palettes)[number]["id"];
 const validPalette = (value: string | null): PaletteId =>
-  palettes.find((p) => p.id === value)?.id ?? "charcoal";
+  value === "porcelain"
+    ? "olive"
+    : (palettes.find((p) => p.id === value)?.id ?? "charcoal");
 
 export function PalettePicker() {
   const [palette, setPalette] = useState<PaletteId>(() => {
@@ -75,7 +63,7 @@ export function PalettePicker() {
       <button
         ref={button}
         className="icon-button"
-        aria-label="Changer la palette"
+        aria-label="Choisir l’apparence"
         title={`Palette : ${palettes.find((p) => p.id === palette)!.name}`}
         aria-expanded={open}
         aria-controls="studio-palettes"
@@ -85,7 +73,7 @@ export function PalettePicker() {
       </button>
       {open && (
         <fieldset id="studio-palettes" className="palette-menu">
-          <legend>Palette du Studio</legend>
+          <legend>Apparence du Studio</legend>
           {palettes.map((p) => (
             <label key={p.id} className={palette === p.id ? "chosen" : ""}>
               <input
