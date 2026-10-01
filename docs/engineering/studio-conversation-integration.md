@@ -186,7 +186,7 @@ The read-only readiness check found the configured application database has neit
 
 ### Tool-using director and durable brief — 2 October 2026
 
-`STUDIO_CONVERSATION_ACTIONS_ENABLED=true` selects the new native Responses director behind the existing admin/project/session gate. Apply **52_studio_conversation_runs.sql** explicitly after 49–51 before enabling it. Default-off keeps the image pilot compatible with databases that have only 49–51. No public MCP publication flag changes.
+`STUDIO_CONVERSATION_ACTIONS_ENABLED=true` selects the new native Responses director behind the existing admin/project/session gate. Apply **52_studio_conversation_runs.sql** explicitly after **42** (canonical project revision/connected commands) and 49–51 before enabling it. Migration 52 rejects a missing 42 before creating its tables. It does not change existing projects from legacy to connected. Default-off keeps the image pilot compatible with databases that have only 49–51. No public MCP publication flag changes.
 
 The browser-safe `frontend/lib/studio/conversation-action-contract.ts` owns strict actions/results. `conversation-director.ts` uses GPT‑6.1 Sol, medium reasoning, sequential tools and at most four Responses calls per turn. The model can read the owned project and certified executable image catalog, update its durable brief with a memory revision, prepare one image quote, or recover a generation by its owned quote. No confirmation, shell, arbitrary URL or identity tool is supplied. Successful quote preparation ends the turn; advice remains a normal reply. Video/audio/editing remain unavailable until their adapters are wired.
 

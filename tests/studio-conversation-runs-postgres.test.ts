@@ -18,10 +18,15 @@ test('native tool runs preserve brief, every response, exact quote and accepted 
   process.env.DATABASE_URL = pg.databaseUrl;
   t.after(async () => {await getDb().end(); if (previous === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previous; await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  await pg.pool.query(`CREATE TABLE studio_projects (id text PRIMARY KEY, user_id text NOT NULL, name text NOT NULL, revision integer NOT NULL DEFAULT 0, deleted_at timestamptz);
+  await pg.pool.query(`CREATE TABLE studio_projects (id text PRIMARY KEY, user_id text NOT NULL, name text NOT NULL, deleted_at timestamptz);
+    CREATE TABLE studio_sequences (id text PRIMARY KEY);
     INSERT INTO studio_projects (id,user_id,name) VALUES ('film','owner','Promo'), ('other','owner','Other'), ('private','foreign','Private');`);
-  for (const name of ['50_studio_image_conversation.sql', '51_studio_image_model_usage.sql', '52_studio_conversation_runs.sql'])
+  for (const name of ['50_studio_image_conversation.sql', '51_studio_image_model_usage.sql'])
     await pg.pool.query(readFileSync('neon/migrations/' + name, 'utf8'));
+  await assert.rejects(pg.pool.query(readFileSync('neon/migrations/52_studio_conversation_runs.sql', 'utf8')), /migration 42/,
+    'Action runs must not initialize against an unmigrated legacy Studio schema');
+  await pg.pool.query(readFileSync('neon/migrations/42_studio_connected_montages.sql', 'utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/52_studio_conversation_runs.sql', 'utf8'));
   await addTopup(pg.pool, 'owner', 1000);
   const actor = {authMethod: 'studio-session' as const, userId: 'owner', projectId: 'film', clientId: null};
   const engine = getFalEngineById('gpt-image-2')!;

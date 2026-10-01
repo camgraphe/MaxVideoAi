@@ -1,5 +1,18 @@
--- Explicit migration after 49-51. Enable STUDIO_CONVERSATION_ACTIONS_ENABLED only after deployment.
+-- Explicit migration after 42 and 49-51. Enable STUDIO_CONVERSATION_ACTIONS_ENABLED only after deployment.
 -- Project memory is an editable summary; runs preserve immutable tool identity and results.
+DO $$
+BEGIN
+  IF to_regclass('public.studio_project_commands') IS NULL OR NOT EXISTS (
+    SELECT 1 FROM pg_attribute WHERE attrelid = 'public.studio_projects'::regclass
+      AND attname = 'revision' AND NOT attisdropped
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_attribute WHERE attrelid = 'public.studio_projects'::regclass
+      AND attname = 'persistence_mode' AND NOT attisdropped
+  ) THEN
+    RAISE EXCEPTION 'Apply Studio migration 42 before conversation runs';
+  END IF;
+END;
+$$;
 CREATE TABLE IF NOT EXISTS studio_conversation_memory (
   user_id TEXT NOT NULL,
   project_id TEXT NOT NULL REFERENCES studio_projects(id) ON DELETE CASCADE,
