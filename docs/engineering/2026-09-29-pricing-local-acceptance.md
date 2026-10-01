@@ -1,5 +1,10 @@
 # Pricing branch local acceptance — 2026-09-29
 
+The [October 1 local completion](2026-10-01-pricing-local-completion.md) supersedes
+the inactive/open-domain status in the earlier checkpoints retained below. The
+complete pricing implementation is active in the private review sandbox only;
+production release evidence remains a separate gate.
+
 ## Environment and scope
 
 Branch: `codex/bytedance-pricing-grid`, in its managed worktree. The local admin is served at `http://localhost:3106/admin/pricing`. This continuation performs no push, merge, deployment, production migration, remote database write, provider generation or support communication.

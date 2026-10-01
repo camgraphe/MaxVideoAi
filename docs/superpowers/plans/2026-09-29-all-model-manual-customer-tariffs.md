@@ -179,3 +179,21 @@ including block boundaries. H3 Max supplier identity and local disabled-generati
 labels were corrected without changing model prices or provider routing. Previous
 release reports need recapture after this local effective-policy change. This
 does not complete Tasks 1/6 or enable the global manual-tariff switch.
+
+### Completed isolated local phase — 2026-10-01
+
+The [final local completion record](../../engineering/2026-10-01-pricing-local-completion.md)
+supersedes the earlier inactive/open-domain checkpoints above.
+
+| Task | Final local state | Remaining release evidence |
+| --- | --- | --- |
+| 1 | All 48 models / 15 families; 20,113 current quotes; 14,658 retail cells / 591 continuous classes; 0 supported-domain gaps; exactly 24 approved +1c floors | Fresh effective production capture and parity at the reviewed release revision |
+| 2 | Complete explicit private seed, revision 4, immutable staged-grid archive and preserved temporal versions | Production migration/activation review; authored production switch remains false |
+| 3 | Every reconstructed local model quote uses manual_tariff; generic model percentage fallback retired locally; paid history preserved | Real supplier/settlement provenance and historical unbound PaymentIntent reconciliation |
+| 4 | Unified compact five-category admin, unit rates/margins, preview/confirmation/history/rollback; model percentage controls read-only locally | Account/invoice evidence; separate localhost OAuth callback issue |
+| 5 | Shared current quotes across live/public/MCP/Studio surfaces; EN/FR/ES HTTP/SEO checks and desktop/mobile acceptance | Production-state client/public smoke after separately authorized release |
+| 6 | Actual locked private cutover and 20,113-scenario post-activation audit; old 66,549 cells archived; reviewed cent deltas only | Fresh production certificate and separately authorized production delivery |
+
+The local implementation and review are complete. The full production release
+gates in the original task checkboxes remain unresolved; local acceptance does not
+complete those broader gates. Keep this plan's execution ledger for that continuation.

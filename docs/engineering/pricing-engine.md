@@ -68,7 +68,7 @@ Alibaba/Fal credentials stay blank and the result provider remains `mock`.
 These routing flags are persisted for subsequent local restarts. The production
 router's fail-closed defaults remain unchanged.
 
-An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` stages exact customer cents from the reviewed read-only baseline. Registry mismatch, duplicate/missing scenarios, invalid amounts or unknown database provenance reject the entire seed. The current local acceptance run stages all 66,549 sampled scenarios across 48 sellable models, with 122 unresolved capability boundaries and activation still false. This data is not a complete versioned production tariff seed.
+An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` stages exact customer cents from the reviewed read-only baseline. Registry mismatch, duplicate/missing scenarios, invalid amounts or unknown database provenance reject the entire seed. The earlier September 29 local acceptance staged all 66,549 sampled scenarios across 48 sellable models, with 122 unresolved capability boundaries and activation false. The [October 1 local completion](2026-10-01-pricing-local-completion.md) supersedes this inactive checkpoint. Neither capture is a production activation authorization.
 
 Migration 55 preserves closed customer cell versions. Active update/rollback behavior is tested on disposable databases, and billing reads only the requested exact selector rather than the whole grid. A separate code gate enables this path for an isolated development sandbox only; the versioned production flag remains false. No production schema, tariff or deployment is changed by local continuation.
 
@@ -108,6 +108,11 @@ This work does not migrate production or activate model tariffs. Existing captur
 See the [local acceptance record](2026-09-29-pricing-local-acceptance.md) for the tested scope and remaining work.
 
 ## Current status
+
+The current five-category admin and complete private model cutover are documented
+in the [October 1 local completion](2026-10-01-pricing-local-completion.md).
+Production activation remains off. The foundation audit figures below describe
+the preserved compatibility fixtures, rather than the complete retail-cell grid.
 
 The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
 
@@ -635,3 +640,14 @@ effective production capture and review. After local activation, model/global
 percentage edits are rejected by preview and confirmation; Pricing Rules describes
 the former formula and remains readable. Product policies remain scoped to Audio,
 Tools and Storyboard. Historical payments keep their original stored quotes.
+
+The actual persistent private sandbox cutover is recorded in the
+[local completion report](2026-10-01-pricing-local-completion.md): revision 4,
+14,658 active cells, 591 reviewed continuous classes, 20,113 exact manual quotes,
+0 remaining supported-domain gaps, 20,089 unchanged amounts and 24 separately
+approved one-cent GPT reference floors. The previous 66,549 staged cells are archived
+in the immutable activation event. Production code activation remains false.
+Preparation and locked reproduction share the same baseline provenance serializer.
+The public HTTP parser uses the same open-quantity classifier as the canonical
+owner; it does not impose the former 120-second/10,000-token transport limits on
+Luma Modify/H3 reference quotes. Safe-integer and unrelated input limits remain.

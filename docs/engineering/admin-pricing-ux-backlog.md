@@ -17,9 +17,14 @@ The `/admin/pricing` cockpit is the single admin entry point for supplier eviden
 ## Next: complete commercial control
 
 - [ ] Verify production-effective customer quotes and BytePlus contract/invoice costs for all sellable ByteDance scenarios. Keep list, temporary promotion, contract and observed cost distinct.
-- [ ] Complete exact manual customer tariff coverage in the canonical pricing engine, preserving current customer totals to the cent at the initial cutover. Reject missing or overlapping cells before charging.
-- [ ] Add an admin editor for an explicit customer tariff cell, with affected-scenario preview, explicit confirmation, immutable history and rollback. The current editor changes margin rules, not direct price cells.
-- [ ] Add provider-family projections to the same comparison contract one family at a time. Each family must bring a supported scenario, true execution provider, supplier provenance and canonical customer quote.
+- [x] Complete exact manual customer tariff coverage and isolated local cutover for all 48 models, preserving every amount except the 24 separately approved +1-cent GPT reference floors. Reject missing or overlapping cells before charging. Production parity and activation remain separate.
+- [x] Provide inline customer tariff editing, including continuous unit rates, affected-scenario preview, explicit confirmation, immutable history and rollback. Model percentage rules are historical/read-only in the active local sandbox.
+- [x] Project all 15 families through supported scenarios, intended execution provider, qualified supplier references and canonical customer quotes. Account costs/invoices remain unknown unless confirmed.
+
+The [2026-10-01 local completion record](2026-10-01-pricing-local-completion.md)
+owns the final active-grid evidence and remaining release gates. The usable review
+page is [localhost:3106/admin/pricing](http://localhost:3106/admin/pricing), with
+Video, Image, Audio, Tools and Storyboard sections.
 
 ## Related release gates on this branch
 
