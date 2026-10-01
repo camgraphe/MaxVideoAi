@@ -212,7 +212,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     fallbackDurationLabel: durationLabel,
     maxDurationSec: engine.inputLimits?.videoMaxDurationSec ?? engine.maxDurationSec ?? null,
     maxSourcePlusOutputDurationSec: engine.inputSchema?.constraints?.maxSourcePlusOutputDurationSec,
-    inputVideoDurationSec: wanInputVideoDurationSec,
+    inputVideoDurationSec,
     engineLabel: engine.label,
   });
   if (!sourceVideoContext.ok) {

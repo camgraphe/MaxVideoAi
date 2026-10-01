@@ -98,3 +98,13 @@ page](https://help.aliyun.com/en/model-studio/model-pricing). GPT's token-based
 actual charge varies with input size and prompt; a fixed catalogue matrix is an
 estimate. These checks do not turn every catalogue entry into confirmed account
 pricing. Contract console activation and observed invoices remain release gates.
+
+The exact [international Alibaba pricing
+page](https://www.alibabacloud.com/help/en/model-studio/model-pricing) was also
+checked for the selected Singapore route: Wan/Prime rates and input-plus-output
+billing match the existing quote owner across 6,192 normal scenarios. Polling's
+missing-usage fallback was corrected to retain the immutable quote's verified
+source duration, use partial reported output when available, and expose unknown
+full cost rather than invent an output-only total. An estimated LIST cost is no
+longer labeled account-effective. Provider consumption and account invoices still
+need reconciliation before a discount is treated as actual cost.

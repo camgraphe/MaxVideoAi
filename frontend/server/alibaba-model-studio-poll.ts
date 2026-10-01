@@ -20,7 +20,7 @@ import {
   toUserFacingFailureMessage,
 } from '@/server/user-facing-failure-messages';
 import { getAlibabaModelStudioClient } from '@/server/video-providers/alibaba-model-studio/client';
-import { estimateAlibabaProviderCost } from '@/server/video-providers/alibaba-model-studio/cost';
+import { estimateAlibabaJobCost } from '@/server/alibaba-job-accounting';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
 import {
   ALIBABA_MODEL_STUDIO_PROVIDER,
@@ -33,7 +33,7 @@ import {
   markProviderAttemptFinished,
   type ProviderAttemptRef,
 } from '@/server/video-providers/provider-attempts';
-import type { NormalizedVideoProviderTask, ProviderCostEstimate } from '@/server/video-providers/types';
+import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
 type AlibabaPollClient = { getTask(id: string): Promise<unknown> };
@@ -111,23 +111,7 @@ function resolutionForJob(job: AlibabaPendingJob): string {
   return cleanString(nestedValue(job.settings_snapshot, 'resolution')) ?? '720p';
 }
 
-function costForJob(
-  job: AlibabaPendingJob,
-  task?: NormalizedVideoProviderTask
-): ProviderCostEstimate {
-  const actualUnits = task?.providerCostUnits;
-  const inputVideoDurationSec =
-    typeof actualUnits === 'number'
-      ? Math.max(0, actualUnits - job.duration_sec)
-      : undefined;
-  return estimateAlibabaProviderCost({
-    engineId: job.engine_id,
-    mode: modeForJob(job),
-    durationSec: job.duration_sec,
-    inputVideoDurationSec,
-    resolution: resolutionForJob(job),
-  });
-}
+const costForJob = estimateAlibabaJobCost;
 
 function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask) {
   const estimate = costForJob(job, task);
@@ -140,9 +124,12 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
     duration_sec: job.duration_sec,
     has_audio: job.has_audio === true,
     resolution: resolutionForJob(job),
-    provider_cost_units: task.providerCostUnits ?? estimate.providerCostUnits,
+    provider_cost_units: estimate.providerCostUnits,
+    provider_cost_status: estimate.status,
+    input_video_duration_sec: estimate.inputVideoDurationSec,
+    output_video_duration_sec: estimate.outputVideoDurationSec,
     provider_cost_usd: estimate.providerCostUsd,
-    provider_cost_usd_effective: estimate.providerCostUsd,
+    provider_cost_usd_effective: null,
     vendor_cost_usd: estimate.providerCostUsd,
   };
 }
@@ -381,7 +368,7 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?
             attemptId: attempt.id,
             status: 'polling',
             responseSnapshot: task.raw,
-            providerCostUnits: task.providerCostUnits ?? estimate.providerCostUnits,
+            providerCostUnits: estimate.providerCostUnits,
             providerCostUsd: estimate.providerCostUsd,
             queryFn,
           });
@@ -492,7 +479,7 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?
           attemptId: attempt.id,
           status: 'completed',
           responseSnapshot: task.raw,
-          providerCostUnits: task.providerCostUnits ?? estimate.providerCostUnits,
+          providerCostUnits: estimate.providerCostUnits,
           providerCostUsd: estimate.providerCostUsd,
           queryFn,
         });

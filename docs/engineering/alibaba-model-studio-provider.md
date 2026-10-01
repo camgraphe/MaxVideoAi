@@ -92,6 +92,26 @@ The attempt ledger separately stores a catalog-rate provider-cost estimate for m
 
 This estimate uses the dated Singapore catalog rates encoded in the adapter. It does not know the Alibaba account's remaining free quota, temporary promotions, negotiated discounts, credits, taxes, or final invoice adjustments. Alibaba billing is therefore authoritative for cash cost and reconciliation; do not present `provider_cost_usd` as an invoiced amount when one of those account-level adjustments applies.
 
+October 1 verification: Singapore LIST remains $0.05/$0.10/$0.20 per second for
+Wan 3 at 480p/720p/1080p, and $0.068/$0.14/$0.28 for Prime. Both input and output
+consume seconds. The private active manual grid quotes a 10-second source plus a
+5-second 720p output at $1.95/$2.73 customer, against $1.50/$2.10 LIST estimates.
+This is a price/quote check, not a new paid generation or invoice reconciliation.
+
+`server/alibaba-job-accounting.ts` owns polling cost projection. A complete
+provider-reported duration replaces the forecast. If provider usage is partial,
+it combines reported output duration (or requested output) with the source
+duration stored in the server's immutable pricing snapshot. Unknown source
+duration leaves full cost unavailable. The poller stores input/output seconds,
+the aggregate units and estimate status; it never marks the dated LIST rate as
+account-effective cost. Customer receipts are not repriced at completion.
+
+The [savings-plan guide](https://www.alibabacloud.com/help/en/model-studio/savings-plan-and-resource-package)
+distinguishes eligible video usage under the AI General-purpose plan from the
+LLM-only plan, which does not cover Wan. Plan coverage, remaining quota and
+settlement must be confirmed for the actual account before applying a discount.
+No assumed plan discount is included in these LIST estimates.
+
 Admin metrics group the shared attempt ledger by provider and report only aggregate attempts, acceptances, completions, failures, fallbacks, stalled polls, cost coverage, and latency. They never select raw request/response snapshots, task IDs, URLs, prompts, or user identities.
 
 Snapshots written by the common helper redact credential-like keys, workspace identifiers, signed URLs, oversized strings, and inline binary data. Provider errors shown to customers must stay provider-neutral.
