@@ -45,7 +45,7 @@ import {
 } from './paid-generation-execution';
 import { buildGenerationPricingSnapshot, type TrialRiskRequestContext } from './prepare-generation';
 import type { AgentPrincipal } from './principal';
-import { requireGenerationActor, requireOAuthGenerationActor, quoteMatchesActor, type GenerationActor } from './generation-actor';
+import { requireGenerationActor, requireOAuthGenerationActor, quoteMatchesActor, bindStudioReferenceSnapshot, type GenerationActor } from './generation-actor';
 import {
   claimPreparedQuote,
   lockOwnedQuote,
@@ -423,12 +423,12 @@ async function confirmationTransaction(
     }
     let pricingSnapshot: Record<string, unknown>;
     try {
-      pricingSnapshot = buildGenerationPricingSnapshot(
+      pricingSnapshot = bindStudioReferenceSnapshot(buildGenerationPricingSnapshot(
         pricing,
         quote.request,
         catalogRevision,
         membership,
-      );
+      ), principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();
       staleQuote();

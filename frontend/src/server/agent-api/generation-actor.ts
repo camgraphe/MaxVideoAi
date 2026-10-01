@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { stableJson } from './generation-normalization';
+import type { ResolvedReference } from './reference-types';
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
 import type { McpGenerationQuote } from './quote-repository';
@@ -36,4 +39,8 @@ export function quoteMatchesActor(quote: McpGenerationQuote, actor: GenerationAc
     && (actor.authMethod === 'oauth'
       ? (quote.authOrigin ?? 'oauth') === 'oauth' && !quote.studioProjectId
       : quote.authOrigin === 'studio-session' && quote.studioProjectId === actor.projectId && quote.fundingMode === 'wallet');
+}
+
+export function bindStudioReferenceSnapshot(snapshot: Record<string, unknown>, actor: GenerationActor, references: readonly ResolvedReference[]): Record<string, unknown> {
+  return actor.authMethod === "studio-session" ? { ...snapshot, studioReferenceFingerprint: createHash("sha256").update(stableJson(references)).digest("hex") } : snapshot;
 }

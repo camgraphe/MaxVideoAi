@@ -33,7 +33,7 @@ import {
   type AgentPublicGenerationEngine,
 } from './model-catalog';
 import type { AgentPrincipal } from './principal';
-import { requireGenerationActor, requireOAuthGenerationActor, quoteMatchesActor, type GenerationActor } from './generation-actor';
+import { requireGenerationActor, requireOAuthGenerationActor, quoteMatchesActor, bindStudioReferenceSnapshot, type GenerationActor } from './generation-actor';
 import {
   insertPreparedQuote,
   type InsertPreparedQuoteInput,
@@ -485,7 +485,7 @@ export async function prepareGenerationForActor(
       'The selected settings cannot be priced for this model.',
     );
   }
-  const pricingSnapshot = buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership);
+  const pricingSnapshot = bindStudioReferenceSnapshot(buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership), principal, resolvedReferences);
   const requestHash = hashCanonicalGenerationRequest(request);
   const clock = dependencies.now;
 
