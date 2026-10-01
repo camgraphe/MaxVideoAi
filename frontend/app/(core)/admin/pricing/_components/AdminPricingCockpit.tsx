@@ -141,18 +141,18 @@ export function AdminPricingCockpit() {
             {activeTab === 'rules' ? <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-bg p-4 text-sm text-text-secondary">
                 <p><strong className="text-text-primary">{inventoryRows.length} rules</strong> · {databaseOverrideCount} database overrides · policy version {controller.inventory.versionedPolicyVersion}</p>
-                <p>Preview and confirm every change. Exact customer tariff cells are not active yet.</p>
+                <p>{controller.inventory.modelTariffsActive ? 'Model percentage rules are historical and read-only. Edit prices in Video or Image.' : 'Preview and confirm every change. Exact customer tariff cells are not active yet.'}</p>
               </div>
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.8fr)]">
                 <div className="order-1 min-w-0 xl:order-1"><AdminSection title="Policy inventory" description="Search a rule, then inspect its effective price and source.">
                   {controller.rows.length ? <PricingPolicyTable rows={controller.rows} filters={controller.filters}
                     onFiltersChange={controller.setFilters} selectedKey={inspectorOpen ? controller.selectedKey : null}
-                    onSelect={selectPolicyRow} disabled={controller.interactionLocked} />
+                    onSelect={selectPolicyRow} disabled={controller.interactionLocked} historical={controller.inventory.modelTariffsActive} />
                     : <AdminEmptyState>No pricing policy rows match the current filters.</AdminEmptyState>}
                 </AdminSection></div>
                 <div ref={inspectorRef} className={`min-w-0 scroll-mt-4 xl:order-2 ${inspectorOpen ? 'order-first' : 'order-2'}`}>{inspectorOpen && controller.selectedRow && controller.draft ? (
-                  <PricingPolicyInspector row={controller.selectedRow} draft={controller.draft}
-                    busy={controller.previewing || controller.confirming} locked={controller.interactionLocked}
+                  <PricingPolicyInspector row={controller.selectedRow} draft={controller.draft} historical={controller.inventory.modelTariffsActive}
+                    busy={controller.previewing || controller.confirming} locked={controller.interactionLocked || controller.inventory.modelTariffsActive === true}
                     onChange={controller.updateDraft} onPreview={() => void controller.openPreview('save')}
                     onPreviewDelete={() => void controller.openPreview('delete')} />
                 ) : <AdminEmptyState>Select a pricing policy row to inspect it.</AdminEmptyState>}</div>
@@ -165,7 +165,7 @@ export function AdminPricingCockpit() {
               title="Immutable pricing policy history"
               description="Rollback opens a fresh impact preview before any change is applied."
               emptyLabel="No pricing policy change has been recorded yet."
-              loading={controller.historyLoading} locked={controller.interactionLocked}
+              loading={controller.historyLoading} locked={controller.interactionLocked || controller.inventory.modelTariffsActive === true}
               onPreviewRollback={controller.previewRollback} /> : null}
           </div>
         </>

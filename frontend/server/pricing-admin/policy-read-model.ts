@@ -294,6 +294,7 @@ export async function loadPricingPolicyInventory(
 
   return {
     versionedPolicyVersion: policy.version,
+    modelTariffsActive: await dependencies.loadManualTariffsActive?.() ?? false,
     databaseStatus: loaded.status,
     warnings: loaded.status === 'unavailable'
       ? ['Pricing policy database is unavailable; showing versioned policy only; effective customer quotes unavailable.']

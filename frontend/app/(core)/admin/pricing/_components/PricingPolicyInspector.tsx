@@ -10,6 +10,7 @@ import type {
 import { formatAdminTimestamp, formatUsdCents } from '../_lib/pricing-cockpit-view-model';
 
 type PricingPolicyInspectorProps = {
+  historical?: boolean;
   row: PricingPolicyInventoryRow;
   draft: PricingPolicyDraft;
   busy: boolean;
@@ -44,6 +45,7 @@ export function PricingPolicyInspector({
   onChange,
   onPreview,
   onPreviewDelete,
+  historical,
 }: PricingPolicyInspectorProps) {
   const vendorAccount = row.routingContext?.vendorAccountId ?? 'No routing override';
   const canDelete = Boolean(row.databaseOverride && row.databaseOverride.id !== 'default' && draft.id === row.databaseOverride.id);
@@ -51,7 +53,7 @@ export function PricingPolicyInspector({
   return (
     <AdminInspectorPanel
       title="Policy inspector"
-      description="Edit an existing pricing rule. One rule may affect many customer quotes; review every scenario in the server preview."
+      description={historical ? 'Historical model formula. Current model prices are edited in Video and Image.' : 'Edit an existing pricing rule. One rule may affect many customer quotes; review every scenario in the server preview.'}
     >
       <div className="space-y-4">
         <label className="block space-y-1 text-xs text-text-secondary">
@@ -131,7 +133,7 @@ export function PricingPolicyInspector({
                   <span className="mt-1 block break-all font-mono text-[11px] text-text-muted">{quote.scenarioId}</span>
                   <span className="mt-2 block">{quote.scenarioId.startsWith('admin-') ? 'Supplier reference' : 'Legacy pricing basis'}: {formatUsdCents(quote.vendorSubtotalCents)}</span>
                   <span className="block">{quote.scenarioId.startsWith('admin-') ? 'Catalogue estimate; contract and invoice unconfirmed.' : 'This historical input may include commercial padding; it is not a verified supplier cost.'}</span>
-                  <span className="block">Billing/public total: {formatUsdCents(quote.customerTotalCents)}</span>
+                  <span className="block">{historical ? 'Former formula total' : 'Billing/public total'}: {formatUsdCents(quote.customerTotalCents)}</span>
                 </li>
               ))}
             </ul>

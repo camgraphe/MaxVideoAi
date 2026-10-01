@@ -44,7 +44,9 @@ export type CustomerTariffScenarioDetail = {
   currency: string;
   supplierComparison: ProviderCostComparisonRow;
   continuousInputTariff?: {
-    kind?: 'video' | 'audio';
+    kind?: 'video' | 'audio' | 'tokens' | 'output';
+    unbounded?: boolean;
+    includedUnits?: number;
     outputVaries?: boolean;
     tariffCellId: string;
     prepared: boolean;
@@ -60,6 +62,7 @@ export type CustomerTariffChangeProposal =
   | { operation: 'create' | 'update'; scenarioId: string; customerCents: number }
   | { operation: 'create' | 'update'; scenarioId: string; scope: 'continuous_input'; price:
       { kind: 'preserve_current' } | { kind: 'linear_input'; outputCents: number; inputCentsPerSecond: number }
+      | { kind: 'linear_open'; outputCents: number; unitCents: number }
       | { kind: 'linear_video'; outputCentsPerSecond: number; inputCentsPerSecond: number } }
   | { operation: 'delete'; scenarioId: string; scope?: 'continuous_input' }
   | { operation: 'rollback'; scenarioId: string; eventId: string; scope?: 'continuous_input' };
@@ -79,7 +82,7 @@ export type CustomerTariffChangePreview = {
   proposedCell: ManualTariffCell | null;
   rollbackEventId?: string;
   warnings: string[];
-  continuousInputRange?: { maxInputSeconds: number; checkedBoundaries: number; minimumGrossCents: number };
+  continuousInputRange?: { maxInputSeconds: number; checkedBoundaries: number; minimumGrossCents: number; unbounded?: boolean; quantityUnit?: string };
 };
 
 export type CustomerTariffChangeConfirmation = {

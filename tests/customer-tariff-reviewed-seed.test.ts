@@ -34,10 +34,10 @@ async function input() {
 test('read-only candidate collapses reviewed continuous classes with full-domain guards and zero captured cent deltas', async () => {
   const audit = await auditReviewedCustomerTariffSeed(await input());
   assert.equal(audit.cells.length, 4);
-  assert.equal(audit.reviewedContinuousClasses.length, 3);
+  assert.equal(audit.reviewedContinuousClasses.length, 4);
   assert.ok(audit.reviewedContinuousClasses.every(item => item.domain.minimumGrossCents >= 0));
   assert.equal(audit.checkedScenarios, 5);
-  assert.deepEqual(audit.remainingCoverageGaps, gaps.slice(3));
+  assert.deepEqual(audit.remainingCoverageGaps, gaps.slice(4));
   assert.equal(audit.activationReady, false, 'a partial read-only certificate cannot authorize activation');
   assert.ok(audit.cells.some(cell => cell.price.kind === 'unit_bands'));
 });

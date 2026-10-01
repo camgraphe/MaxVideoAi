@@ -478,3 +478,27 @@ Global manual activation is still off: three unbounded model domains, complete
 fresh seed, release binding and production parity remain open. No provider job,
 payment, production mutation, support message, push or deployment. Admin HTML is
 an editor of persisted inputs; canonical effective quotes remain the price owner.
+
+2026-10-01 authorized local completion continuation (base0d35201e7).
+Ruling: open Luma Modify and H3 Max reference cells capture literal customer unit
+components with frozen native quantity normalization, rather than imposing a
+generation limit or extrapolating sampled fixed prices. Cost if wrong: rounding
+could drift at an unseen quantity; native operation order, large safe-integer
+regressions and structural whole-domain guards must pass before cutover.
+Ruling: local activation reproduces the complete effective baseline/candidate
+under tariff revision and policy/cell locks. The entire previous staged grid is
+archived immutably in the activation transaction. Cost if wrong: a local review
+grid becomes stale; hash/revision/registry/code/environment checks reject it.
+Ruling: use one interval advisory lock for atomic bulk seed writes; the existing
+per-selector lock exhausts default PostgreSQL shared lock memory at full scale.
+Cost if wrong: independent retail edits serialize; the singleton revision already
+serializes these writes. No reduced interval/overlap protection.
+Task1/2/3/4/6 remaining local implementation: RED open quantity cases, unseen admin/
+public selections, old percentage retirement, absent cutover owner; GREEN native
+curves/edit guards/selectors, locked local owner and historical rule controls.
+Full disposable PostgreSQL matrix20113 passes after migration58: initial capture
+plus24 explicitly approved floors, no coverage gaps, every persisted candidate
+quotes with manual_tariff, stale confirmations/state/candidate rejection, atomic
+event and immutable activation history. Local source sandbox remains inactive
+until fresh committed release preparation and review. Production release gate
+remains distinct; no provider/support/payment/storage/push/deployment.

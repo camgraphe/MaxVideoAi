@@ -21,6 +21,10 @@ import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
 import { buildProviderCostComparisonRows, type ProviderCostComparisonInput } from './provider-cost-comparison';
 import { continuousInputTariffDetail, continuousInputTariffIdentity, prepareContinuousInputTariffChange } from './continuous-input-tariff';
+import { isOpenQuantityTariff } from '@/server/pricing/open-quantity-tariff';
+import { openTariffQuantityKey, withOpenTariffQuantity, resolveOpenTariffScenarioId } from '@/lib/pricing-audit/open-quantity-tariff-scenario';
+import { reviewedCustomerTariffCoverageGap } from '@/server/pricing/customer-tariff-reviewed-seed';
+import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
@@ -40,6 +44,7 @@ export function chooseCustomerTariffScenario(
   let decimalAudioDuration: number | undefined;
   let omniSource: number | undefined;
   let omniInherited: number | undefined;
+  let openQuantity: number | undefined;
   for (const key of SCENARIO_DIMENSIONS) {
     const audioBounds = ltx25AudioTariffBounds(candidates[0].modelId, candidates[0].selector.mode);
     const omni = supportsOmniTariffMedia(candidates[0].modelId, candidates[0].selector.mode);
@@ -49,6 +54,15 @@ export function chooseCustomerTariffScenario(
     const options = [...new Set(candidates.map((scenario) => scenario.selector[key] ?? ''))]
       .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
     if (options.length === 1 && options[0] === '') continue;
+    if (key === openTariffQuantityKey(candidates[0].modelId, candidates[0].selector.mode)) {
+      const value = requested[key] ?? options[0];
+      openQuantity = value?.trim() ? Number(value) : NaN;
+      try { withOpenTariffQuantity(candidates[0], openQuantity); }
+      catch { throw new PricingAdminError('unsupported_scenario', 'Invalid supported integer tariff quantity.'); }
+      choices.push({ key, value: String(openQuantity), options: [], range: { minInclusive: key === 'durationSec' ? 1 : 0, max: Number.MAX_SAFE_INTEGER } });
+      candidates = candidates.filter(row => row.selector[key] === options[0]);
+      continue;
+    }
     if (omni && (key === 'inputVideoDurationSec' || key === 'inheritedDurationSec')) {
       const value = requested[key] ?? (key === 'inputVideoDurationSec' && candidates[0].selector.mode === 'retake' ? '0' : options[0]);
       const seconds = value?.trim() ? Number(value) : NaN;
@@ -95,7 +109,8 @@ export function chooseCustomerTariffScenario(
   if (candidates.length !== 1 || !candidates[0]) {
     throw new PricingAdminError('ambiguous_selector', 'Tariff selector does not resolve to one supported scenario');
   }
-  return { scenario: omniSource !== undefined || omniInherited !== undefined ? withOmniTariffMedia(candidates[0], {
+  return { scenario: openQuantity !== undefined ? withOpenTariffQuantity(candidates[0], openQuantity)
+    : omniSource !== undefined || omniInherited !== undefined ? withOmniTariffMedia(candidates[0], {
     inputVideoDurationSec: omniSource ?? 0, ...(omniInherited === undefined ? {} : { inheritedDurationSec: omniInherited }) })
     : decimalAudioDuration !== undefined ? withLtx25AudioTariffDuration(candidates[0], decimalAudioDuration)
     : decimalInputDuration === undefined ? candidates[0] : withWan3TariffInputDuration(candidates[0], decimalInputDuration), choices };
@@ -123,6 +138,7 @@ export async function loadCustomerTariffScenarioDetail(
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
   const continuousInputTariff = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+    || isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)
     || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) || supportsOmniTariffMedia(scenario.modelId, scenario.selector.mode))
     ? await continuousInputTariffDetail(scenario, state, policy).catch(() => undefined) : undefined;
   return { modelId, scenarioId: scenario.id, tariffCellId: cellId(scenario), selector: scenario.selector, choices,
@@ -145,7 +161,7 @@ function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = collectSellableManualTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
   const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
-    ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id);
+    ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id) ?? resolveOpenTariffScenarioId(coverage, id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }
@@ -226,7 +242,16 @@ export async function loadCustomerTariffInventory(): Promise<CustomerTariffInven
     active: state.status === 'loaded' && state.active,
     revision: state.status === 'loaded' ? state.revision : null,
     databaseStatus: state.status,
-    coverageGapCount: coverage.gaps.length,
+    coverageGapCount: state.status === 'loaded' && state.active ? (() => {
+      const key = (selector: object) => JSON.stringify(Object.entries(selector).sort(([a],[b]) => a.localeCompare(b)));
+      const selectors = new Set([...state.versionedCells, ...state.databaseCells].filter(cell => !cell.effectiveUntil).map(cell => key(cell.selector)));
+      return coverage.gaps.filter(gap => {
+        const mode = gap.reason.split(':')[0];
+        if (reviewedCustomerTariffCoverageGap(gap.modelId, mode) !== gap.reason) return true;
+        const scenarios = coverage.scenarios.filter(s => s.modelId === gap.modelId && s.selector.mode === mode);
+        return !scenarios.length || scenarios.some(s => { const selector = continuousInputTariffSelector(s.selector); return !selector || !selectors.has(key(selector)); });
+      }).length;
+    })() : coverage.gaps.length,
     rows,
   };
 }
@@ -258,8 +283,8 @@ async function buildPreview(
     const previewBase = { ...prepared, operation: proposal.operation, scenarioId: scenario.id, modelId: scenario.modelId,
       currentCents, currency: 'USD', revision: state.revision, active: state.active,
       ...(proposal.operation === 'rollback' ? { rollbackEventId: proposal.eventId } : {}),
-      warnings: [state.active ? 'Applies to all valid source durations for these output options. Exact exceptions retain precedence.'
-        : 'Continuous source price prepared; live prices stay unchanged until the global parity gate passes.'],
+      warnings: [state.active ? 'Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence.'
+        : 'Variable quantity price prepared; live prices stay unchanged until the global parity gate passes.'],
     };
     if (state.active && prepared.proposedCell) {
       previewBase.proposedCents = await quoteCurrent(scenario, policy, { ...state,

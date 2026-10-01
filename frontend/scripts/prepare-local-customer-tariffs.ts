@@ -32,7 +32,7 @@ async function main() {
   const { loadPricingPolicyOverridesWithExecutor } = await import('@/lib/pricing-rule-store');
   const { collectSellableManualTariffCoverage, collectEffectiveCustomerTariffBaseline } = await import('@/lib/pricing-audit/manual-tariff-coverage');
   const { computeCanonicalBillingSnapshot } = await import('@/server/pricing/quote-billing');
-  const { prepareLocalCustomerTariffRelease } = await import('@/server/pricing/customer-tariff-release-evidence');
+  const { prepareLocalCustomerTariffRelease, localTariffSourceStateHash } = await import('@/server/pricing/customer-tariff-release-evidence');
   const registryHash = hash(await readFile(resolve('frontend/config/model-registry.json'), 'utf8'));
   const coverage = collectSellableManualTariffCoverage();
   const address = new URL(databaseUrl);
@@ -62,8 +62,7 @@ async function main() {
     const approvedPath = process.env.PRICING_RELEASE_APPROVED_FLOORS?.trim();
     const approvedSource = approvedPath ? await readFile(resolve(approvedPath), 'utf8') : null;
     const approval = approvedSource ? refreshLocalReferenceFloorApproval(JSON.parse(approvedSource).approval, captured) : undefined;
-    const sourceTariffStateHash = hash(JSON.stringify({ state, staged,
-      socketIdentity: hash(`${address.hostname}|${address.pathname}|${address.username}|${address.searchParams.get('host')}`) }));
+    const sourceTariffStateHash = localTariffSourceStateHash(state, staged, databaseUrl);
     const release = await prepareLocalCustomerTariffRelease({ baseline: captured, scenarios: coverage.scenarios,
       registryHash, coverageGaps: coverage.gaps, policy, sourceTariffRevision: Number(state.revision), sourceTariffStateHash,
       codeRevision, factualEnvironmentHash: hash(JSON.stringify(Object.entries(env).filter(([key]) => key.startsWith('LUMARAY2_')).sort())),

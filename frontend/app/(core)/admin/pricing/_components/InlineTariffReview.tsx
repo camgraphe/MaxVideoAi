@@ -15,7 +15,9 @@ export function InlineTariffReview({ editor, disabled }: { editor: CustomerTarif
       <p className="mt-1">{decisionUsd(editor.preview.currentCents / 100)} → <strong>{editor.preview.proposedCents == null ? 'Remove prepared price' : decisionUsd(editor.preview.proposedCents / 100)}</strong></p>
       <p className="mt-1 text-[10px] text-text-secondary">{editor.displayed ? formatProviderComparisonScenario(editor.displayed.supplierComparison) : ''}</p>
       {editor.preview.warnings.map(warning => <p key={warning} className="mt-1 text-[10px] text-amber-900">{warning}</p>)}
-      {editor.preview.continuousInputRange ? <p className="mt-1 text-[10px] text-text-secondary">All source durations up to {editor.preview.continuousInputRange.maxInputSeconds} s verified · minimum difference against cost reference: {decisionUsd(editor.preview.continuousInputRange.minimumGrossCents / 100)}.</p> : null}
+      {editor.preview.continuousInputRange ? <p className="mt-1 text-[10px] text-text-secondary">{editor.preview.continuousInputRange.unbounded
+        ? `All supported integer ${editor.preview.continuousInputRange.quantityUnit === 'reference_tokens' ? 'reference token budgets' : 'billed output seconds'} verified without an artificial cap`
+        : `All source durations up to ${editor.preview.continuousInputRange.maxInputSeconds} s verified`} · minimum difference against cost reference: {decisionUsd(editor.preview.continuousInputRange.minimumGrossCents / 100)}.</p> : null}
       <div className="mt-2 flex gap-2"><AdminActionButton type="button" variant="primary" size="sm" disabled={locked} onClick={() => void editor.confirm()}>Confirm</AdminActionButton>
         <AdminActionButton type="button" size="sm" disabled={editor.busy} onClick={editor.cancelPreview}>Cancel</AdminActionButton></div>
     </div> : null}

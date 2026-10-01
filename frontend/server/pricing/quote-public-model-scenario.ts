@@ -19,6 +19,7 @@ import { manualTariffReferenceCounts } from '@/lib/pricing-audit/manual-tariff-d
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { numericTariffDuration } from '@/lib/pricing-audit/manual-tariff-durations';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
+import { openTariffQuantityKey, withOpenTariffQuantity } from '@/lib/pricing-audit/open-quantity-tariff-scenario';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -61,7 +62,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       !(model.publication.pricing.published || model.publication.model.published) ||
       !Number.isFinite(input.durationSec) || (!ltx25AudioTariffBounds(input.modelId, input.mode)
         && !(supportsOmniTariffMedia(input.modelId, input.mode) && input.mode !== 'extend') && !Number.isInteger(input.durationSec))
-      || input.durationSec < 1 || input.durationSec > 120 ||
+      || input.durationSec < 1 || (openTariffQuantityKey(input.modelId, input.mode) === 'durationSec'
+        ? !Number.isSafeInteger(input.durationSec) : input.durationSec > 120) ||
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
@@ -112,6 +114,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       (input.aspectRatio !== undefined && !(mode.ui.aspectRatio ?? entry!.engine.aspectRatios).includes(input.aspectRatio)))) return null;
   const resolution = size?.billingKey ?? input.resolution;
   const wanInputDuration = supportsWan3TariffInputDuration(model.id, input.mode);
+  const openKey = openTariffQuantityKey(model.id, input.mode);
+  if (openKey === 'referenceTokenBudget' && (!Number.isSafeInteger(input.referenceTokenBudget) || input.referenceTokenBudget! < 0)) return null;
   const ltxAudioDuration = Boolean(ltx25AudioTariffBounds(model.id, input.mode));
   const omniMedia = supportsOmniTariffMedia(model.id, input.mode);
   const omniInherits = omniMedia && input.mode !== 'extend';
@@ -135,7 +139,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const candidates = supportedScenarios(model.id).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
-    (ltxAudioDuration || omniInherits || scenario.selector.durationSec === String(billedDuration)) &&
+    (openKey === 'durationSec' || ltxAudioDuration || omniInherits || scenario.selector.durationSec === String(billedDuration)) &&
     (scenario.selector.referenceImageCount === undefined
       ? scenario.selector.inputImageCount === undefined || input.mode !== 'ref2v'
         || scenario.selector.inputImageCount === String(input.referenceImageCount ?? defaultReferences)
@@ -150,7 +154,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
     (wanInputDuration || omniMedia || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (ltxAudioDuration || input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
-    (input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
+    (openKey === 'referenceTokenBudget' || input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
   );
   if (!candidates.length) return null;
   if (candidates.some((scenario) =>
@@ -181,6 +185,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     ...(tokenPricing ? { hasVideoInput, ...(input.inputVideoDurationSec !== undefined ? { inputVideoDurationSec: input.inputVideoDurationSec } : {}) } : {}) } };
   if (selected && wanInputDuration) {
     try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec ?? 0); }
+    catch { return null; }
+  }
+  if (selected && openKey) {
+    try { return withOpenTariffQuantity(selected, openKey === 'durationSec' ? input.durationSec : input.referenceTokenBudget!); }
     catch { return null; }
   }
   if (selected && ltxAudioDuration) {

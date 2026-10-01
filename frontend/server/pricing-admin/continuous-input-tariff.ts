@@ -12,6 +12,7 @@ import { validateCustomerTariffCell, type EffectiveCustomerTariffState } from '@
 import { getPricingChangeEventById } from './event-store';
 import { PricingAdminError } from './errors';
 import type { CustomerTariffChangeProposal, CustomerTariffScenarioDetail } from './customer-tariff-contract';
+import { isOpenQuantityTariff } from '@/server/pricing/open-quantity-tariff';
 
 export function continuousInputTariffIdentity(scenario: ManualTariffCoverageScenario) {
   const selector = continuousInputTariffSelector(scenario.selector);
@@ -27,14 +28,16 @@ function currentCell(scenario: ManualTariffCoverageScenario, state: Extract<Effe
 }
 
 
-export function quoteContinuousInputPrice(scenario: ManualTariffCoverageScenario, price: ManualTariffCell['price'], seconds = scenario.context.inputAudioDurationSec ?? scenario.context.inputVideoDurationSec ?? 0) {
+export function quoteContinuousInputPrice(scenario: ManualTariffCoverageScenario, price: ManualTariffCell['price'], seconds = isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)
+  ? scenario.context.referenceTokenBudget ?? scenario.context.durationSec : scenario.context.inputAudioDurationSec ?? scenario.context.inputVideoDurationSec ?? 0) {
   const { selector, id } = continuousInputTariffIdentity(scenario);
   const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
   const omni = scenario.modelId === 'gemini-omni-flash';
   const quotedContext = omni ? { ...scenario.context, inputVideoDurationSec: seconds } : scenario.context;
   const quotedFacts = omni ? buildBillingPricingFacts(quotedContext, quotedContext.engine.pricingDetails, 'USD').facts : facts;
   const available = { ...buildManualTariffScenario(quotedContext, quotedFacts).quantities,
-    [selector.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds']: seconds };
+    [selector.referenceTokenBudget === 'continuous' ? 'reference_tokens' : isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)
+      ? 'output_seconds' : selector.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds']: seconds };
   const quantities = Object.fromEntries(manualTariffUnitNames(price).map(unit => [unit, available[unit]]));
   return quoteCanonicalManualTariff({ facts: { ...facts, vendorSubtotalExactCents: 0 }, scenarioId: scenario.id, selector,
     quantities, at: '2026-09-30T00:00:00Z', databaseCells: [], versionedCells: [{
@@ -53,6 +56,15 @@ export async function continuousInputTariffDetail(scenario: ManualTariffCoverage
   const audioBounds = ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode);
   const omni = scenario.modelId === 'gemini-omni-flash';
   const retake = omni && scenario.selector.mode === 'retake';
+  if (isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)) {
+    const tokens = scenario.modelId === 'minimax-h3-max';
+    const unit = tokens ? 'reference_tokens' : 'output_seconds';
+    return { kind: tokens ? 'tokens' : 'output', tariffCellId: identity.id, prepared: cell?.source === 'database', price,
+      unbounded: true, ...(tokens ? { includedUnits: 4096 } : {}), minInputSeconds: tokens ? 0 : 1,
+      outputCents: tokens ? quoteContinuousInputPrice(scenario, price, 0) : 0,
+      inputCentsPerSecond: terms.filter(t => t.unit === unit).reduce((sum, t) => sum + t.centsPerUnit, 0),
+      maxInputSeconds: Number.MAX_SAFE_INTEGER };
+  }
   const unit = audioBounds ? 'input_audio_seconds' : 'input_video_seconds';
   return { kind: audioBounds ? 'audio' : 'video', tariffCellId: identity.id, prepared: cell?.source === 'database', price,
     outputVaries: omni && scenario.selector.mode !== 'extend',
@@ -89,6 +101,15 @@ export async function prepareContinuousInputTariffChange(input: {
     if (proposal.price?.kind === 'preserve_current') {
       if (state.active && !current) throw new PricingAdminError('unsupported_scenario', 'No current continuous tariff');
       price = state.active ? current!.price : await compileCurrentContinuousTariffPrice(scenario, input.policy);
+    } else if (proposal.price?.kind === 'linear_open') {
+      if (!isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)) throw new PricingAdminError('invalid_payload', 'Unsupported open unit pricing.');
+      const { outputCents, unitCents } = proposal.price;
+      if (!Number.isSafeInteger(outputCents) || outputCents < 0 || !Number.isFinite(unitCents) || unitCents < 0) throw new PricingAdminError('invalid_number', 'Invalid open unit amounts.');
+      const tokens = scenario.modelId === 'minimax-h3-max';
+      if (!tokens && outputCents !== 0) throw new PricingAdminError('invalid_number', 'Luma output seconds have no flat output price.');
+      price = { kind: 'unit_components', rounding: 'up', components: [{ id: 'retail', flatCents: outputCents, rounding: 'none', terms: [
+        { unit: tokens ? 'reference_tokens' : 'output_seconds', centsPerUnit: unitCents, ...(tokens ? { includedUnits: 4096 } : {}) },
+      ] }] };
     } else if (proposal.price?.kind === 'linear_input') {
       if (scenario.modelId === 'gemini-omni-flash') throw new PricingAdminError('invalid_payload', 'Omni requires separate output/source unit prices');
       const { outputCents, inputCentsPerSecond } = proposal.price;

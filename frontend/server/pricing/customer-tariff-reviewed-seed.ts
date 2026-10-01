@@ -16,7 +16,9 @@ export type ApprovedGptImage25ReferenceFloor = {
   changes: readonly { scenarioId: string; currentCustomerCents: number; proposedCustomerCents: number }[];
 };
 
-function reviewedGap(modelId: string, mode: string): string | null {
+export function reviewedCustomerTariffCoverageGap(modelId: string, mode: string): string | null {
+  if (['lumaRay2', 'lumaRay2_flash'].includes(modelId) && mode === 'v2v') return `${mode}: nonnumeric auto or open duration requires a reviewed mapping`;
+  if (modelId === 'minimax-h3-max' && mode === 'ref2v') return `${mode}: unbounded reference token budget needs a continuous unit tariff`;
   if (['wan-3', 'wan-3-prime'].includes(modelId) && ['ref2v', 'v2v', 'extend'].includes(mode)) {
     return `${mode}: fractional input video duration needs a continuous unit tariff`;
   }
@@ -62,7 +64,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
     const domain = validateCurrentContinuousTariffDomain({ context: scenario.context, price });
     cells.set(id, { id, selector, source: 'database', version: 1, currency: 'USD', effectiveFrom: input.baseline.at, price });
     reviewedContinuousClasses.push({ id, modelId: scenario.modelId, mode: scenario.selector.mode, domain });
-    const gap = reviewedGap(scenario.modelId, scenario.selector.mode);
+    const gap = reviewedCustomerTariffCoverageGap(scenario.modelId, scenario.selector.mode);
     if (gap) certifiedGaps.add(`${scenario.modelId}|${gap}`);
   }
   const candidateCells = [...cells.values()];

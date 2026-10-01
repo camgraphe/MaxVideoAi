@@ -36,7 +36,7 @@ async function main() {
       '--tsconfig', 'frontend/tsconfig.json', 'scripts/bootstrap-application-schema.ts', '--allow-local-postgres-test',
     ], { cwd: root, env: { ...environment, NODE_ENV: 'test', APPLICATION_DATABASE_URL: databaseUrl }, encoding: 'utf8' });
     if (bootstrap.status !== 0) throw new Error(`Local schema bootstrap failed: ${bootstrap.stderr}`);
-    for (const migration of ['12_app_settings.sql', '27_pricing_admin_cockpit.sql', '42_toolbox_finishing_pricing.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql', '56_direct_payment_quotes.sql']) {
+    for (const migration of ['12_app_settings.sql', '27_pricing_admin_cockpit.sql', '42_toolbox_finishing_pricing.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql', '56_direct_payment_quotes.sql', '57_customer_tariff_local_activation_events.sql', '58_customer_tariff_bulk_interval_lock.sql']) {
       await pool.query(await readFile(join(root, 'neon/migrations', migration), 'utf8'));
     }
     await pool.query(`CREATE TABLE IF NOT EXISTS user_roles (user_id TEXT NOT NULL, role TEXT NOT NULL);

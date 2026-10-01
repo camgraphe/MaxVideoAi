@@ -66,6 +66,7 @@ export type PricingPolicyInventoryRow = {
 };
 
 export type PricingPolicyInventoryResponse = {
+  modelTariffsActive?: boolean;
   versionedPolicyVersion: number;
   databaseStatus: PricingPolicyOverrideLoadResult['status'];
   warnings: string[];
@@ -74,6 +75,7 @@ export type PricingPolicyInventoryResponse = {
 };
 
 export type PricingPolicyServiceDependencies = {
+  loadManualTariffsActive?(executor?: QueryExecutor): Promise<boolean>;
   loadOverrides(executor?: QueryExecutor): Promise<PricingPolicyOverrideLoadResult>;
   getEvent(
     id: string,

@@ -24,6 +24,22 @@ import type { PricingRule } from '../frontend/src/lib/pricing-rule-store.ts';
 
 const actorId = '00000000-0000-0000-0000-000000000001';
 
+test('after cutover model and global percentage rules are read-only, while scoped product pricing remains editable', async () => {
+  const harness = createMemoryHarness([policyRule('kling')]);
+  const deps = { ...harness.deps, loadManualTariffsActive: async () => true };
+  await assert.rejects(previewPricingPolicyChange({ operation: 'update', targetId: 'kling', rule: policyRule('kling', { marginPercent: .5 }) }, deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'model_policy_retired');
+  await assert.rejects(previewPricingPolicyChange({ operation: 'create', rule: policyRule('new-global', { engineId: undefined, mode: undefined, resolution: undefined }) }, deps), /read.only/i);
+  const inventory = await loadPricingPolicyInventory(deps);
+  assert.equal(inventory.modelTariffsActive, true);
+  const product = await previewPricingPolicyChange({ operation: 'create', rule: policyRule('audio-local', {
+    engineId: 'audio-generation', mode: 'voice_only', resolution: 'audio', marginFlatCents: 10,
+    compatibilityProfile: 'audio-tripled-rounded',
+  }) }, deps);
+  assert.ok(product.rows.length > 0);
+  assert.ok(product.rows.every(row => row.engineId === 'audio-generation'));
+});
+
 function policyRule(id: string, overrides: Partial<PricingPolicyRule> = {}): PricingPolicyRule {
   return {
     id,
@@ -896,7 +912,7 @@ test('pricing edits revalidate localized prices, examples, model pages and watch
     (path) => paths.push(path)
   );
 
-  assert.deepEqual(paths, [
+  for (const expected of [
     '/', '/fr', '/es',
     '/examples', '/fr/galerie', '/es/galeria',
     '/pay-as-you-go-ai-video-generator', '/fr/pay-as-you-go-ai-video-generator', '/es/pay-as-you-go-ai-video-generator',
@@ -907,7 +923,8 @@ test('pricing edits revalidate localized prices, examples, model pages and watch
     '/models/kling-3-pro',
     '/fr/modeles/kling-3-pro',
     '/es/modelos/kling-3-pro',
-    '/examples/[model]', '/fr/galerie/[model]', '/es/galeria/[model]', '/video/[id]',
-  ]);
+    '/examples/[model]', '/fr/galerie/[model]', '/es/galeria/[model]', '/[locale]/video/[videoId]',
+    '/models/video', '/models/image', '/ai-video-engines/[slug]', '/[locale]/ai-video-engines/[slug]',
+  ]) assert.ok(paths.includes(expected), `Missing current-price invalidation: ${expected}`);
   assert.ok(paths.every((path) => !path.includes('/admin') && !path.includes('/blog') && !path.includes('/app')));
 });

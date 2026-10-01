@@ -22,6 +22,18 @@ function canonical(value: unknown): string {
   return JSON.stringify(value);
 }
 function digest(value: unknown): string { return createHash('sha256').update(canonical(value)).digest('hex'); }
+export function customerTariffScenarioHash(scenarios: ReviewedInput['scenarios']): string {
+  return digest(scenarios.map(row => {
+    const { engine, ...context } = row.context;
+    return { id: row.id, selector: row.selector, quantities: row.quantities, context: { ...context, engineId: engine.id } };
+  }).sort((a, b) => a.id.localeCompare(b.id)));
+}
+
+export function localTariffSourceStateHash(state: { revision: number | string; active: boolean }, staged: unknown[], databaseUrl: string): string {
+  const address = new URL(databaseUrl);
+  const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+  return hash(JSON.stringify({ state, staged, socketIdentity: hash(`${address.hostname}|${address.pathname}|${address.username}|${address.searchParams.get('host')}`) }));
+}
 
 /** Local preparation only. No writes, switches, or proof of effective production parity. */
 export async function prepareLocalCustomerTariffRelease(input: ReviewedInput & {
@@ -45,12 +57,7 @@ export async function prepareLocalCustomerTariffRelease(input: ReviewedInput & {
     activationReady: false as const,
     localCoverageReady: !audit.remainingCoverageGaps.length && !audit.settlementGuardFailures.length,
     capturedAt: audit.capturedAt, bindings, candidateHash: digest(seed), baselineHash: digest(input.baseline),
-    scenarioHash: digest(input.scenarios.map(row => {
-      const { engine, ...context } = row.context;
-      // Catalog implementation is bound by codeRevision. Do not duplicate each
-      // entire engine schema for every scenario in a large matrix hash.
-      return { id: row.id, selector: row.selector, quantities: row.quantities, context: { ...context, engineId: engine.id } };
-    }).sort((a, b) => a.id.localeCompare(b.id))),
+    scenarioHash: customerTariffScenarioHash(input.scenarios),
     candidateCellCount: cells.length, checkedScenarios: audit.checkedScenarios,
     quotedScenarios: audit.quotedScenarios,
     unchangedScenarios: audit.quotedScenarios - audit.approvedPriceChanges.length,
@@ -73,4 +80,5 @@ export function assertLocalCustomerTariffReleaseReady(release: LocalCustomerTari
   if (body.remainingCoverageGaps.length) throw new Error('Supported tariff coverage is incomplete');
   if (body.settlementGuardFailures.length || body.quotedScenarios !== body.checkedScenarios) throw new Error('Settlement quote acceptance is incomplete');
   if (!body.localCoverageReady || !body.checkedScenarios) throw new Error('Local tariff release is incomplete');
+  if (release.seed.cells.length !== body.candidateCellCount || !release.seed.cells.length) throw new Error('Local candidate cells are incomplete');
 }

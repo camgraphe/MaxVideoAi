@@ -38,6 +38,7 @@
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
     "pricing:sandbox": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/run-pricing-sandbox.ts",
     "pricing:release:local": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/prepare-local-customer-tariffs.ts",
+    "pricing:activate:local": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/activate-local-customer-tariffs.ts",
     "pricing:bytedance-effective-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-effective-bytedance-baseline.ts",
     "pricing:public-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts",
     "pricing:public-baseline:generate": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts --write",

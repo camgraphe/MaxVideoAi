@@ -10,6 +10,7 @@ import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import { resolveServerBillingPolicy } from '@/server/pricing/resolve-pricing-policy';
 import { compileWan3ContinuousTariffPrice } from '@/server/pricing/wan3-continuous-tariff';
 import { validateWan3ContinuousTariffDomain } from '@/server/pricing/wan3-continuous-tariff-domain';
+import { isOpenQuantityTariff, compileOpenQuantityTariffPrice, validateOpenQuantityTariffDomain } from './open-quantity-tariff';
 
 export async function compileCurrentContinuousTariffPrice(scenario: ManualTariffCoverageScenario, rules: PricingPolicyOverrideLoadResult) {
   if (rules.status !== 'loaded') throw new Error('Effective pricing rules are unavailable');
@@ -18,7 +19,8 @@ export async function compileCurrentContinuousTariffPrice(scenario: ManualTariff
   const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD');
   const profile = getVersionedPricingPolicy().compatibilityProfiles.find(p => p.id === (policy.rule.compatibilityProfile ?? facts.compatibilityProfileId));
   if (!profile) throw new Error('Current price rounding is unavailable');
-  const compile = scenario.modelId === 'gemini-omni-flash' ? compileOmniContinuousTariffPrice
+  const compile = isOpenQuantityTariff(scenario.modelId, scenario.selector.mode) ? compileOpenQuantityTariffPrice
+    : scenario.modelId === 'gemini-omni-flash' ? compileOmniContinuousTariffPrice
     : ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) ? compileLtx25AudioContinuousTariffPrice : compileWan3ContinuousTariffPrice;
   return compile({ context: scenario.context, policy, compatibilityProfile: profile });
 }
@@ -26,7 +28,8 @@ export async function compileCurrentContinuousTariffPrice(scenario: ManualTariff
 
 /** Migration and admin authoring share the same reviewed whole-domain guard. */
 export function validateCurrentContinuousTariffDomain(input: { context: PricingContext; price: ManualTariffPrice }) {
-  return (input.context.engine.id === 'gemini-omni-flash' ? validateOmniContinuousTariffDomain
+  return (isOpenQuantityTariff(input.context.engine.id, input.context.mode ?? '') ? validateOpenQuantityTariffDomain
+    : input.context.engine.id === 'gemini-omni-flash' ? validateOmniContinuousTariffDomain
     : ltx25AudioTariffBounds(input.context.engine.id, input.context.mode ?? '')
     ? validateLtx25AudioContinuousTariffDomain : validateWan3ContinuousTariffDomain)(input);
 }

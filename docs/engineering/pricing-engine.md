@@ -608,3 +608,30 @@ before/after totals, unit labels, price revisions, offers, specs, examples and
 homepage steps while preserving an original paid amount. Global model tariff
 activation still requires the separately documented complete-domain and release
 gates.
+
+### Complete local model cutover (2026-10-01)
+
+The open Ray 2/Flash Modify and MiniMax H3 Max reference domains now use authored
+unit components. Their normalization records preserve the original decimal and
+cent operation order, with literal customer rates captured independently in each
+cell. Quote evaluation reads trusted quantities and the cell only; it never reads
+a supplier tariff or a commercial percentage. Normalization is price data until
+an explicit admin preview replaces it. Simple linear edits use literal USD/second
+or USD/1k excess tokens, retain 4,096 included reference tokens, and round the final
+total upward. Structural domain guards reject below-reference rates across the
+entire trusted integer domain. No generation cap is introduced.
+
+`pricing:activate:local` accepts only a committed, clean code revision and the
+fingerprint of a complete prepared local release. It verifies the actual Unix
+socket, locks the tariff revision/cells/policies, reproduces every effective quote
+and candidate, and then archives the complete previous staged grid, inserts the
+new grid and records immutable activation evidence in one transaction. Migration
+58 uses one interval lock for the grid; one lock per selector exhausted default
+PostgreSQL lock memory during the real full-matrix acceptance test.
+
+The production code switch remains false. Neither the command nor its artifacts
+can authorize production activation. A later production release requires a fresh
+effective production capture and review. After local activation, model/global
+percentage edits are rejected by preview and confirmation; Pricing Rules describes
+the former formula and remains readable. Product policies remain scoped to Audio,
+Tools and Storyboard. Historical payments keep their original stored quotes.

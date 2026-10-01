@@ -19,6 +19,14 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (['lumaRay2', 'lumaRay2_flash'].includes(selector.engineId) && selector.mode === 'v2v') {
+    if (!Number.isSafeInteger(Number(selector.durationSec)) || Number(selector.durationSec) < 1) throw new Error('Invalid billed Luma duration.');
+    return { ...selector, durationSec: 'continuous' };
+  }
+  if (selector.engineId === 'minimax-h3-max' && selector.mode === 'ref2v') {
+    if (!Number.isSafeInteger(Number(selector.referenceTokenBudget)) || Number(selector.referenceTokenBudget) < 0) throw new Error('Invalid trusted reference token budget.');
+    return { ...selector, referenceTokenBudget: 'continuous' };
+  }
   if (selector.engineId === 'gemini-omni-flash' && ['v2v', 'retake', 'extend'].includes(selector.mode)) {
     const output = Number(selector.durationSec);
     const source = Number(selector.inputVideoDurationSec ?? 0);

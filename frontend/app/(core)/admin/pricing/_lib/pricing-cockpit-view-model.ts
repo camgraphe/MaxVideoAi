@@ -45,6 +45,7 @@ export type PricingPolicyInventoryRow = {
 };
 
 export type PricingPolicyInventory = {
+  modelTariffsActive?: boolean;
   versionedPolicyVersion: number;
   databaseStatus: 'loaded' | 'unavailable';
   warnings: string[];
