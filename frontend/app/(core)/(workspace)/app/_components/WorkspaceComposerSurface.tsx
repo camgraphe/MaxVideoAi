@@ -5,6 +5,7 @@ import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
+import type { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
@@ -69,6 +70,7 @@ type WorkflowCopy = {
 };
 
 type WorkspaceComposerSurfaceProps = {
+  localDraftPreview?: ReturnType<typeof useSeedanceDraftLocalPreview>;
   selectedEngine: EngineCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
@@ -195,6 +197,7 @@ function isTruthyExtraInputValue(value: unknown): boolean {
 }
 
 export function WorkspaceComposerSurface({
+  localDraftPreview,
   selectedEngine,
   form,
   setForm,
@@ -306,6 +309,9 @@ export function WorkspaceComposerSurface({
     klingO3VideoToVideoSupported, klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason,
     workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, uiLocale, form.extraInputValues.previous_interaction_id]);
 
+  const settingsCaps = localDraftPreview?.selected
+    ? { ...capability, modes: capability?.modes ?? [submissionMode], resolution: ['480p'], resolutionLocked: true }
+    : capability;
   const omniExtraFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
     [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
@@ -462,6 +468,11 @@ export function WorkspaceComposerSurface({
           {inProgressMessage}
         </p>
       ) : null}
+      {localDraftPreview ? (
+        <p className="px-1 text-[11px] text-text-muted">
+          Aperçu Draft local · actions simulées, aucun débit. Le prix affiché est la référence classique du registre ; le tarif Draft reste à valider.
+        </p>
+      ) : null}
       <Composer
         density="workspace"
         engine={selectedEngine}
@@ -477,6 +488,7 @@ export function WorkspaceComposerSurface({
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
         onGenerate={startRender}
+        generateLabel={localDraftPreview ? localDraftPreview.selected ? 'Aperçu Draft' : 'Aperçu Standard' : undefined}
         preflight={preflight}
         promptField={inputSchemaSummary.promptField}
         promptRequired={inputSchemaSummary.promptRequired}
@@ -486,7 +498,14 @@ export function WorkspaceComposerSurface({
         activeManualMode={activeManualMode}
         onModeToggle={handleComposerModeToggle}
         workflowNotice={resolvedWorkflowNotice}
-        promotedActions={composerPromotedActions}
+        promotedActions={localDraftPreview?.available ? [...composerPromotedActions, {
+          id: 'seedance-draft-local-preview',
+          label: localDraftPreview.selected ? 'Draft 480p · Activé' : 'Draft 480p · Nouveau',
+          icon: 'sparkles',
+          active: localDraftPreview.selected,
+          tooltip: 'Tester en Draft 480p, puis finaliser en 1080p avec un prix séparé.',
+          onToggle: localDraftPreview.toggle,
+        }] : composerPromotedActions}
         assetFields={composerAssetFields}
         assets={composerAssets}
         onAssetAdd={handleAssetAdd}
@@ -570,7 +589,7 @@ export function WorkspaceComposerSurface({
             <SettingsControls
               advancedOpen={showOptionsControl && optionsOpen}
               engine={selectedEngine}
-              caps={capability}
+              caps={settingsCaps}
               durationSec={durationSec}
               durationOption={form.durationOption ?? null}
               onDurationChange={handleDurationChange}
@@ -626,7 +645,7 @@ export function WorkspaceComposerSurface({
             density="workspace"
             engine={selectedEngine}
             mode={submissionMode}
-            caps={capability}
+            caps={settingsCaps}
             durationSec={durationSec}
             durationOption={form.durationOption ?? null}
             onDurationChange={handleDurationChange}

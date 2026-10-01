@@ -151,6 +151,8 @@ verification above supplies the local functional gates only.
 - The approved local admin session is used for review; the separate localhost
   Google OAuth callback problem is not resolved by this pricing work.
 - Seedance Draft remains an unpublished 480p → optional 1080p final foundation.
+  The [local visual preview](2026-10-01-seedance-draft-local-ui-preview.md) now
+  places the option and simulated final confirmation in the real `/app` workspace.
   Connecting quotes, charging, polling, refunds and creator controls, plus direct
   provider canaries and post-release SEO/GEO monitoring, remain separate gates.
 

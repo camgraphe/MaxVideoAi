@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
+import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
 import dynamic from 'next/dynamic';
 import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
@@ -30,6 +32,7 @@ import { formatWorkspaceTopupPaymentAmount } from '../_lib/workspace-topup';
 const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
 type WorkspaceAppReadyViewProps = {
+  localSeedanceDraftPreview?: boolean;
   suspended: boolean;
   activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -48,6 +51,7 @@ type WorkspaceAppReadyViewProps = {
 };
 
 export function WorkspaceAppReadyView({
+  localSeedanceDraftPreview = false,
   suspended,
   activeDraft,
   app,
@@ -233,6 +237,11 @@ export function WorkspaceAppReadyView({
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
+  const draftPreview = useSeedanceDraftLocalPreview({
+    enabled: localSeedanceDraftPreview,
+    form, engineId: selectedEngine?.id, mode: submissionMode, prompt,
+    onResolutionChange: handleResolutionChange, showNotice,
+  });
   if (suspended || !selectedEngine || !form) return null;
 
   return (
@@ -291,6 +300,7 @@ export function WorkspaceAppReadyView({
         setViewerTarget={setViewerTarget}
         composerSurface={
           <WorkspaceComposerSurface
+            localDraftPreview={localSeedanceDraftPreview ? draftPreview : undefined}
             selectedEngine={selectedEngine}
             form={form}
             setForm={setForm}
@@ -305,7 +315,7 @@ export function WorkspaceAppReadyView({
             preflightError={preflightError}
             preflight={preflight}
             composerRef={composerRef}
-            startRender={generation.startRender}
+            startRender={localSeedanceDraftPreview ? draftPreview.generate : generation.startRender}
             inputSchemaSummary={inputSchemaSummary}
             inputAssets={inputAssets}
             isUnifiedSeedance={isUnifiedSeedance}
@@ -371,6 +381,7 @@ export function WorkspaceAppReadyView({
             setViewMode={setViewMode}
           />
         }
+        previewSupplement={<SeedanceDraftLocalPreviewResult preview={draftPreview} />}
       />}
       </WorkspaceRecentReferences>
       {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
