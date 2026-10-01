@@ -11,7 +11,7 @@ Référence acceptée : `studio-premiers-echanges.png`, 1672×941, et l’étude
 | Médias autour | Deux visuels à gauche, un principal et un secondaire à droite | Conservé ; composition déterministe, maximum quatre, sélection/pins et bibliothèque pour le reste |
 | Photographies | Même famille cobalt/verre/mer/lin | Vrais assets séparés issus de l’étude précédente ; variation geste et cadrages propres aux sources, aucun screenshot de UI utilisé comme média |
 | Montage | Bande inférieure, vignettes, lecture, curseur or et temps | Conservé ; ajout de vraie coupe, ordre, zoom, undo/redo et export, voix/ambiance mesurées plutôt qu’une waveform décorative |
-| Moniteur | Aucun lecteur envahissant permanent dans le mockup | Petite surface au clic, à la place du principal sur desktop ; dock réduit sur mobile |
+| Moniteur | Aucun lecteur envahissant permanent dans le mockup ; nouvelle demande de repli au-dessus du montage | Bande repliable entre canevas/chat et timeline ; les quatre visuels desktop restent présents, la saisie mobile reste au-dessus |
 | Audio et rendus | Absent de la référence initiale | Extension explicitement demandée : lecteurs dans les messages, MP4/MP3 et téléchargement |
 | Mobile | Pas de référence raster mobile | Chat seul, résultats inline, montage horizontal, coupe dans des contrôles larges, moniteur fermable |
 
@@ -22,3 +22,5 @@ Contrôles vérifiés dans IAB : brief → trois animations → sélection monit
 Écarts intentionnels : démo signalée, H1/controls plus compacts, paramètres dans un dialogue, pas de bascule permanent complet/par étapes, pas d’auth/connexions décoratives, pistes audio nécessaires et rendu dans le chat. La fidélité porte sur le vocabulaire, la composition et les interactions acceptées, pas sur une reproduction pixel à pixel d’un unique état raster.
 
 Validation finale après corrections de revue : 22 tests et build passés, serveur redémarré avec reprise du projet puis nouveau MP4 réel prêt. Captures 1672×941, 390×844 et 320×740 renouvelées ; largeur du document égale à 390/320, composer visible. `qa/studio-desktop-chat-audio.png` montre le dialogue et la voix relue dans son message (durée réelle 3.992608 s, readyState 4) ; l’autre capture desktop montre les rendus. Référence et preuve chat/audio ouvertes ensemble. Override viewport réinitialisé, onglet gardé comme résultat.
+
+Retouche du 1er octobre après le retour sur la hiérarchie : le moniteur appartient désormais à la zone de montage et libère entièrement sa place au repli. Il ne remplace plus le principal et ne flotte plus sur le chat. Sur téléphone, sa petite bande précède immédiatement la timeline ; toucher la saisie le replie. Repli, réouverture, lecture native interrompue, coupe d’une frame et glissement tactile vérifiés dans IAB ; document à 390/320 px sans débordement. Les captures initiales `qa/` documentent l’état précédent ; les preuves de cette retouche sont dans les visualisations Codex hors dépôt.

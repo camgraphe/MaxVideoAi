@@ -11,6 +11,7 @@ import { Shell, type Panel } from "./components/Shell.client";
 import { Chat } from "./components/Chat.client";
 import { MediaCanvas } from "./components/MediaCanvas.client";
 import { Timeline } from "./components/Timeline.client";
+import { PreviewTray } from "./components/PreviewTray.client";
 import { ProgramPreview } from "./components/ProgramPreview.client";
 import { Dialogs } from "./components/Dialogs.client";
 import { useStudio } from "./hooks/useStudio";
@@ -89,8 +90,8 @@ export function App() {
     playback.setPlaying(false);
   };
   const preview =
-    p && monitor ? (
-      <div className="monitor-dock">
+    p && (mode === "asset" ? asset : p.clips.length) ? (
+      <PreviewTray open={monitor}>
         <ProgramPreview
           project={
             trimPreview
@@ -106,46 +107,50 @@ export function App() {
           mode={mode}
           playback={playback}
           onClose={closeMonitor}
+          visible={monitor}
+          actions={
+            mode === "asset" &&
+            asset && (
+              <div className="monitor-actions">
+                <button onClick={() => reference(asset)}>
+                  <Plus size={14} /> Référence
+                </button>
+                {asset.kind === "image" ? (
+                  <button
+                    onClick={() =>
+                      void studio.command({
+                        type: "animate",
+                        assetId: asset.id,
+                        duration: 8,
+                        motion: "gentle",
+                      })
+                    }
+                  >
+                    <Clapperboard size={14} /> Animer
+                  </button>
+                ) : (
+                  <button onClick={() => add(asset)}>
+                    <Plus size={14} /> Montage
+                  </button>
+                )}
+                {asset.kind === "video" && selectedClip && (
+                  <button
+                    onClick={() =>
+                      void studio.command({
+                        type: "replace",
+                        clipId: selectedClip,
+                        assetId: asset.id,
+                      })
+                    }
+                  >
+                    <Replace size={14} /> Remplacer
+                  </button>
+                )}
+              </div>
+            )
+          }
         />
-        {mode === "asset" && asset && (
-          <div className="monitor-actions">
-            <button onClick={() => reference(asset)}>
-              <Plus size={14} /> Référence
-            </button>
-            {asset.kind === "image" ? (
-              <button
-                onClick={() =>
-                  void studio.command({
-                    type: "animate",
-                    assetId: asset.id,
-                    duration: 8,
-                    motion: "gentle",
-                  })
-                }
-              >
-                <Clapperboard size={14} /> Animer
-              </button>
-            ) : (
-              <button onClick={() => add(asset)}>
-                <Plus size={14} /> Montage
-              </button>
-            )}
-            {asset.kind === "video" && selectedClip && (
-              <button
-                onClick={() =>
-                  void studio.command({
-                    type: "replace",
-                    clipId: selectedClip,
-                    assetId: asset.id,
-                  })
-                }
-              >
-                <Replace size={14} /> Remplacer
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      </PreviewTray>
     ) : undefined;
   return (
     <Shell
@@ -182,7 +187,6 @@ export function App() {
                 )
               }
               onReference={reference}
-              monitor={preview}
             />
             <Chat
               project={p}
@@ -196,6 +200,7 @@ export function App() {
                 setReferences([]);
               }}
               onUpload={upload}
+              onFocusComposer={closeMonitor}
               onSelect={select}
               onAdd={add}
               onCommand={(c) => void studio.command(c)}
@@ -213,37 +218,55 @@ export function App() {
                 : "Vos références"}
             </button>
           </div>
-          <Timeline
-            project={p}
-            playback={playback}
-            selected={selectedClip}
-            onSelect={selectClip}
-            onCommand={(c, r) => void studio.command(c, r)}
-            onPlay={() => {
-              setMode("program");
-              setMonitor(true);
-              playback.toggle();
-            }}
-            onLibrary={() => setPanel("library")}
-            onDeselect={() => {
-              setSelectedClip(undefined);
-              setTrimPreview(undefined);
-            }}
-            onPreview={(c, edge) => {
-              setTrimPreview(c);
-              if (c && c.track === "video") {
+          <div className="studio-editing">
+            {preview}
+            <Timeline
+              project={p}
+              playback={playback}
+              selected={selectedClip}
+              onSelect={selectClip}
+              onCommand={(c, r) => studio.command(c, r)}
+              monitorOpen={monitor}
+              onToggleMonitor={() => {
+                if (monitor) closeMonitor();
+                else {
+                  setMode("program");
+                  setMonitor(true);
+                }
+              }}
+              onSeek={(time) => {
                 setMode("program");
                 setMonitor(true);
                 playback.setPlaying(false);
-                playback.seek(
-                  (videoStart(p.clips, c.id) +
-                    (edge === "outFrame" ? c.outFrame - c.inFrame - 1 : 0)) /
-                    p.settings.fps,
-                );
-              }
-            }}
-            busy={studio.busy}
-          />
+                playback.seek(time);
+              }}
+              onPlay={() => {
+                setMode("program");
+                setMonitor(true);
+                playback.toggle();
+              }}
+              onLibrary={() => setPanel("library")}
+              onDeselect={() => {
+                setSelectedClip(undefined);
+                setTrimPreview(undefined);
+                closeMonitor();
+              }}
+              onPreview={(c, edge) => {
+                setTrimPreview(c);
+                if (c && c.track === "video") {
+                  setMode("program");
+                  setMonitor(true);
+                  playback.setPlaying(false);
+                  playback.seek(
+                    (videoStart(p.clips, c.id) +
+                      (edge === "outFrame" ? c.outFrame - c.inFrame - 1 : 0)) /
+                      p.settings.fps,
+                  );
+                }
+              }}
+              busy={studio.busy}
+            />
+          </div>
         </>
       ) : (
         <div className="boot-state">

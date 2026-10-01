@@ -1,7 +1,17 @@
-import { useEffect, useRef } from "react";
-import { X, Play, Pause, Clapperboard, AudioLines } from "lucide-react";
+import { useEffect, useRef, type ReactNode } from "react";
+import {
+  ChevronDown,
+  Play,
+  Pause,
+  Clapperboard,
+  AudioLines,
+} from "lucide-react";
 import type { Asset, Clip, Project } from "../../shared/types";
-import { synchronizeTimelineAudio } from "../mediaPlayback";
+import {
+  synchronizeTimelineAudio,
+  synchronizeTimelineVideo,
+  timelineVideoPosition,
+} from "../mediaPlayback";
 import type { Playback } from "../hooks/usePlayback";
 import { mediaUrl } from "../hooks/useStudio";
 import { videoStart, sequenceDuration } from "../../shared/timeline";
@@ -20,25 +30,14 @@ function ProgramVideo({
 }) {
   const video = useRef<HTMLVideoElement>(null),
     a = project.assets.find((a) => a.id === clip.assetId)!;
-  const end = clip.outFrame / project.settings.fps - 1 / project.settings.fps,
-    local = Math.min(
-      end,
-      clip.inFrame / project.settings.fps +
-        time -
-        videoStart(project.clips, clip.id) / project.settings.fps,
-    );
-  const advancing =
-    time <
-    (videoStart(project.clips, clip.id) + clip.outFrame - clip.inFrame) /
-      project.settings.fps;
+  const { source: local, advancing } = timelineVideoPosition(
+    project,
+    clip,
+    time,
+  );
   useEffect(() => {
     const v = video.current;
-    if (!v) return;
-    if (v.readyState >= 1 && Math.abs(v.currentTime - local) > 0.18)
-      v.currentTime = Math.min(a.duration - 0.001, Math.max(0, local));
-    v.volume = project.settings.sourceAudio ? clip.volume : 0;
-    if (playing && advancing) void v.play().catch(() => {});
-    else v.pause();
+    if (v) synchronizeTimelineVideo(v, project, clip, time, playing);
   }, [
     local,
     playing,
@@ -114,13 +113,24 @@ export function ProgramPreview({
   mode,
   playback,
   onClose,
+  actions,
+  visible,
 }: {
   project: Project;
   asset?: Asset;
   mode: "program" | "asset";
   playback: Playback;
   onClose: () => void;
+  actions?: ReactNode;
+  visible: boolean;
 }) {
+  const container = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!visible)
+      container.current
+        ?.querySelectorAll<HTMLMediaElement>("video,audio")
+        .forEach((media) => media.pause());
+  }, [visible]);
   const videoClips = project.clips.filter((c) => c.track === "video");
   const active =
       project.clips.find(
@@ -134,16 +144,16 @@ export function ProgramPreview({
       ) ?? videoClips.at(-1),
     duration = sequenceDuration(project);
   return (
-    <section className="monitor" aria-label="Petit moniteur">
+    <section ref={container} className="monitor" aria-label="Petit moniteur">
       <div className="monitor-heading">
         <Clapperboard size={14} />
         <span>{mode === "program" ? "Votre montage" : asset?.name}</span>
         <button
           className="icon-button"
-          aria-label="Fermer le moniteur"
+          aria-label="Replier le moniteur"
           onClick={onClose}
         >
-          <X size={15} />
+          <ChevronDown size={15} />
         </button>
       </div>
       <div
@@ -151,20 +161,14 @@ export function ProgramPreview({
           "monitor-screen " +
           (mode === "asset" && asset?.kind === "audio" ? "audio-screen" : "")
         }
-        style={
-          mode === "program"
-            ? {
-                aspectRatio: project.settings.ratio.replace(":", " / "),
-                width:
-                  project.settings.ratio === "9:16"
-                    ? "min(100%, 20vh)"
-                    : project.settings.ratio === "1:1"
-                      ? "min(100%, 32vh)"
-                      : undefined,
-                marginInline: "auto",
-              }
-            : undefined
-        }
+        style={{
+          aspectRatio:
+            mode === "program"
+              ? project.settings.ratio.replace(":", " / ")
+              : asset?.width && asset?.height
+                ? `${asset.width} / ${asset.height}`
+                : "16 / 9",
+        }}
       >
         {mode === "program" ? (
           active ? (
@@ -232,7 +236,7 @@ export function ProgramPreview({
               aria-label="Position de lecture"
             />
             <span>
-              {playback.time.toFixed(1)} / {duration.toFixed(1)} s
+              {playback.time.toFixed(2)} / {duration.toFixed(1)} s
             </span>
           </div>
           {project.clips
@@ -247,6 +251,7 @@ export function ProgramPreview({
             ))}
         </>
       )}
+      {actions}
     </section>
   );
 }

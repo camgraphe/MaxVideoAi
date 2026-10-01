@@ -20,6 +20,7 @@ export function Chat({
   onAdd,
   onCommand,
   onRemoveReference,
+  onFocusComposer,
 }: {
   project: Project;
   busy: boolean;
@@ -30,6 +31,7 @@ export function Chat({
   onAdd: (a: Asset) => void;
   onCommand: (c: Command) => void;
   onRemoveReference: (id: string) => void;
+  onFocusComposer: () => void;
 }) {
   const [text, setText] = useState(""),
     [unread, setUnread] = useState(false),
@@ -274,6 +276,7 @@ export function Chat({
             aria-label="Message à Studio"
             placeholder={busy ? "Studio travaille…" : "Décrivez votre idée…"}
             value={text}
+            onFocus={onFocusComposer}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

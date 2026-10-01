@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
   Pin,
   Image as ImageIcon,
@@ -15,7 +14,6 @@ export function MediaCanvas({
   onSelect,
   onPin,
   onReference,
-  monitor,
 }: {
   project: Project;
   selected?: string;
@@ -23,7 +21,6 @@ export function MediaCanvas({
   onSelect: (a: Asset) => void;
   onPin: (id: string) => void;
   onReference: (a: Asset) => void;
-  monitor?: ReactNode;
 }) {
   const assets = project.assets.filter(
     (a) =>
@@ -39,7 +36,7 @@ export function MediaCanvas({
   ];
   const visible = pool
     .filter((a, i) => pool.findIndex((b) => b.id === a.id) === i)
-    .slice(0, monitor ? 3 : 4);
+    .slice(0, 4);
   const card = (a: Asset, i: number) => (
     <div
       className={
@@ -112,7 +109,6 @@ export function MediaCanvas({
               Tout commence avec vos mots.
             </span>
           </div>
-          {monitor}
         </aside>
       </>
     );
@@ -126,7 +122,7 @@ export function MediaCanvas({
       </aside>
       <aside className={"media-right count-" + visible.length}>
         {visible[3] && card(visible[3], 3)}
-        {monitor ?? (visible[0] && card(visible[0], 2))}
+        {visible[0] && card(visible[0], 2)}
       </aside>
     </>
   );

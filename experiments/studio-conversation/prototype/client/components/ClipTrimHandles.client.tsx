@@ -17,7 +17,7 @@ export function ClipTrimHandles({
   zoom: number;
   revision: number;
   onDraft: (c: Clip, r: number, edge: "inFrame" | "outFrame") => void;
-  onCommit: (c: Clip, r: number) => void;
+  onCommit: (c: Clip, r: number, edge: "inFrame" | "outFrame") => void;
   onCancel: () => void;
 }) {
   const gesture = useRef<
@@ -77,7 +77,7 @@ export function ClipTrimHandles({
             e.stopPropagation();
             const g = gesture.current;
             if (g) {
-              onCommit(g.next, g.revision);
+              onCommit(g.next, g.revision, g.edge);
               gesture.current = undefined;
             }
             e.currentTarget.releasePointerCapture(e.pointerId);
@@ -97,7 +97,7 @@ export function ClipTrimHandles({
                 sourceFrames,
                 fps,
               );
-              onCommit(next, revision);
+              onCommit(next, revision, edge);
             }
           }}
         />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Play,
   Pause,
@@ -14,6 +14,7 @@ import {
   Plus,
   AudioLines,
   X,
+  PanelBottomOpen,
 } from "lucide-react";
 import { ClipTrimHandles } from "./ClipTrimHandles.client";
 import type { Clip, Command, Project } from "../../shared/types";
@@ -32,17 +33,23 @@ export function Timeline({
   onLibrary,
   onDeselect,
   onPreview,
+  monitorOpen,
+  onToggleMonitor,
+  onSeek,
   busy,
 }: {
   project: Project;
   playback: Playback;
   selected?: string;
   onSelect: (c: Clip) => void;
-  onCommand: (c: Command, revision?: number) => void;
+  onCommand: (c: Command, revision?: number) => Promise<unknown>;
   onPlay: () => void;
   onLibrary: () => void;
   onDeselect: () => void;
   onPreview: (c?: Clip, edge?: "inFrame" | "outFrame") => void;
+  monitorOpen: boolean;
+  onToggleMonitor: () => void;
+  onSeek: (time: number) => void;
   busy: boolean;
 }) {
   const [zoom, setZoom] = useState(14),
@@ -52,8 +59,10 @@ export function Timeline({
       revision: number;
       inFrame: number;
       outFrame: number;
+      edge: "inFrame" | "outFrame";
     } | null>(null),
     [drag, setDrag] = useState<string>();
+  const submission = useRef(0);
   const duration = sequenceDuration(project),
     clip = project.clips.find((c) => c.id === selected),
     a = project.assets.find((a) => a.id === clip?.assetId),
@@ -61,20 +70,37 @@ export function Timeline({
   const width = Math.max(300, duration * zoom),
     fps = project.settings.fps;
   const bounds = clip && draft?.id === clip.id ? draft : clip;
-  const commit = () => {
-    if (draft) {
-      onCommand(
-        {
-          type: "trim",
-          clipId: draft.id,
-          inFrame: draft.inFrame,
-          outFrame: draft.outFrame,
-        },
-        draft.revision,
-      );
-      onPreview();
+  const persistTrim = async (
+    next: Clip,
+    revision: number,
+    edge: "inFrame" | "outFrame",
+  ) => {
+    const token = ++submission.current;
+    setDraft({
+      id: next.id,
+      revision,
+      inFrame: next.inFrame,
+      outFrame: next.outFrame,
+      edge,
+    });
+    onPreview(next, edge);
+    await onCommand(
+      {
+        type: "trim",
+        clipId: next.id,
+        inFrame: next.inFrame,
+        outFrame: next.outFrame,
+      },
+      revision,
+    );
+    if (submission.current === token) {
       setDraft(null);
+      onPreview();
     }
+  };
+  const commit = () => {
+    if (draft && clip)
+      void persistTrim({ ...clip, ...draft }, draft.revision, draft.edge);
   };
   const trim = (edge: "inFrame" | "outFrame", value: number) => {
     if (!clip || !a) return;
@@ -83,6 +109,7 @@ export function Timeline({
       revision: draft?.id === clip.id ? draft.revision : project.revision,
       inFrame: bounds!.inFrame,
       outFrame: bounds!.outFrame,
+      edge,
     };
     d[edge] = Math.round(value);
     if (
@@ -100,7 +127,14 @@ export function Timeline({
       aria-label="Montage"
     >
       <div className="timeline-toolbar">
-        <button className="timeline-title" onClick={() => setOpen(!open)}>
+        <button
+          className="timeline-title"
+          aria-expanded={open}
+          onClick={() => {
+            if (open) onDeselect();
+            setOpen(!open);
+          }}
+        >
           <Scissors size={14} /> Montage{" "}
           <span>
             {project.clips.length
@@ -109,6 +143,20 @@ export function Timeline({
           </span>
         </button>
         <div className="timeline-tools">
+          <button
+            className={
+              "icon-button monitor-toggle" + (monitorOpen ? " active" : "")
+            }
+            aria-label={
+              monitorOpen ? "Replier le moniteur" : "Afficher le moniteur"
+            }
+            aria-expanded={monitorOpen}
+            aria-controls="studio-monitor"
+            disabled={!duration}
+            onClick={onToggleMonitor}
+          >
+            <PanelBottomOpen size={16} />
+          </button>
           <button
             className="icon-button"
             disabled={!project.undo.length || busy}
@@ -168,7 +216,7 @@ export function Timeline({
                   className="ruler"
                   onClick={(e) => {
                     const r = e.currentTarget.getBoundingClientRect();
-                    playback.seek((e.clientX - r.left) / zoom);
+                    onSeek((e.clientX - r.left) / zoom);
                   }}
                 >
                   {Array.from(
@@ -215,7 +263,9 @@ export function Timeline({
                           setDrag(undefined);
                         }}
                         onClick={() => {
+                          submission.current++;
                           setDraft(null);
+                          onPreview();
                           onSelect(c);
                         }}
                         aria-label={"Sélectionner le plan " + asset.name}
@@ -237,21 +287,12 @@ export function Timeline({
                                 inFrame: next.inFrame,
                                 outFrame: next.outFrame,
                                 revision: r,
+                                edge,
                               });
                               onPreview(next, edge);
                             }}
-                            onCommit={(next, r) => {
-                              setDraft(null);
-                              onPreview();
-                              onCommand(
-                                {
-                                  type: "trim",
-                                  clipId: next.id,
-                                  inFrame: next.inFrame,
-                                  outFrame: next.outFrame,
-                                },
-                                r,
-                              );
+                            onCommit={(next, r, edge) => {
+                              void persistTrim(next, r, edge);
                             }}
                             onCancel={() => {
                               setDraft(null);
@@ -300,7 +341,9 @@ export function Timeline({
                                 zoom,
                             }}
                             onClick={() => {
+                              submission.current++;
                               setDraft(null);
+                              onPreview();
                               onSelect(c);
                             }}
                             aria-label={"Sélectionner " + asset.name}
@@ -383,7 +426,12 @@ export function Timeline({
               <div className="clip-editor-buttons">
                 <button
                   className="icon-button"
-                  onClick={onDeselect}
+                  onClick={() => {
+                    submission.current++;
+                    setDraft(null);
+                    onPreview();
+                    onDeselect();
+                  }}
                   aria-label="Fermer les réglages du plan"
                 >
                   <X size={15} />
