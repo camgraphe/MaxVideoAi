@@ -451,3 +451,30 @@ Fresh TypeScript, app/script lint, public exposure and diff checks pass. The fir
 TypeScript attempt overlapped Next type regeneration during restart; the subsequent
 complete typecheck passes after runtime compilation settles. Full-suite/build
 evidence remains the preceding8019 gate; this correction uses the focused50 gate.
+
+2026-10-01 effective-price propagation audit: user requests one customer price
+across live generators/MCP/Studio, Pricing, model/catalogue cards, model specs,
+comparisons/specs, examples and homepage. RED tests expose authored-price priority
+in model specs, catalogue-margin comparison fallback without a pricing engine,
+missing comparison/category/localized cache invalidation, and whole-cent unit
+rounding (26c/5s displayed0.05/s instead of0.052/s). Current labels are now strict,
+normalized rates preserve the total/quantity, and actual localized route patterns
+are refreshed alongside translated URLs. Shared format-only helper remains pure.
+
+Fresh consolidated126/126 pass with no skips/failures; disposable Unix-socket PG
+admin preview/confirmation26->31 propagates to billing/public/model/cards/specs/
+comparisons/examples/Pricing and price-sensitive revisions. The later fixture
+extension additionally exercises actual live preflight and MCP pricing, then
+passes again. Wan homepage+5c updates only the affected guided-demo step; immutable
+original paid999c retained. Fixture-only activation; source sandbox state remains
+3/off/66549cells/13products/0coefficientoverrides, Topaz80/Flash18/codeActivefalse.
+Frozen178-row billing and577-row public baselines pass;266 billing scenarios have
+zero mismatches/four reviewed changes. Ten local EN/FR/ES routes return200 with
+canonical/hreflang/JSON-LD; HTTP quote and visible English unit amounts match.
+TS/app lint/exposure/diff gates pass. Logs/tmp/mva-current-price-{final,live-mcp,
+smoke,doc-contracts}-20261001.log. No broad-suite/build rerun claim for this patch.
+
+Global manual activation is still off: three unbounded model domains, complete
+fresh seed, release binding and production parity remain open. No provider job,
+payment, production mutation, support message, push or deployment. Admin HTML is
+an editor of persisted inputs; canonical effective quotes remain the price owner.

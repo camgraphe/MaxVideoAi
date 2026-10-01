@@ -75,7 +75,7 @@ export async function computeMarketingPricePoints(
             ? snapshot.base.seconds
             : durationSec;
         if (!units) continue;
-        const unitCents = Math.round(snapshot.totalCents / units);
+        const unitCents = snapshot.totalCents / units;
         points.push({
           resolution,
           quality,

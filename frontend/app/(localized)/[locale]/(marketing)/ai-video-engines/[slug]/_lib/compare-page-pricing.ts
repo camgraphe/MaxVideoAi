@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 import { computeMarketingPricePoints, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 import type { EngineCaps } from '@/types/engines';
 import type { ComparePricingDisplay, EngineCatalogEntry } from './compare-page-types';
 
@@ -57,13 +58,13 @@ export function formatPriceLabel(label: string) {
   return label;
 }
 
-export function formatPriceLine(label: string | null, cents: number) {
-  const value = `$${(cents / 100).toFixed(2)}/s`;
+export function formatPriceLine(label: string | null, cents: number, locale: AppLocale = 'en', currency = 'USD') {
+  const value = `${formatPricePerUnit(locale, currency, cents / 100)}/s`;
   return label ? `${formatPriceLabel(label)}: ${value}` : value;
 }
 
 function toPriceValue(cents: number) {
-  return Math.round(cents) / 100;
+  return cents / 100;
 }
 
 function sortPricePoints(points: MarketingPricePoint[]) {
@@ -84,10 +85,10 @@ function pickComparablePricePoint(points: MarketingPricePoint[]) {
   return sortPricePoints(points)[0] ?? null;
 }
 
-function buildPricingDisplayFromPoints(points: MarketingPricePoint[]): ComparePricingDisplay | null {
+function buildPricingDisplayFromPoints(points: MarketingPricePoint[], locale: AppLocale): ComparePricingDisplay | null {
   if (!points.length) return null;
   const sorted = sortPricePoints(points);
-  const lines = sorted.map((point) => formatPriceLine(point.resolution, point.cents));
+  const lines = sorted.map((point) => formatPriceLine(point.resolution, point.cents, locale, point.currency));
   const comparablePoint = pickComparablePricePoint(points);
 
   return {
@@ -95,7 +96,7 @@ function buildPricingDisplayFromPoints(points: MarketingPricePoint[]): ComparePr
     subline: lines[1] ?? null,
     secondaryLines: lines.slice(1),
     prices: sorted.map((point) => toPriceValue(point.cents)),
-    scoreLine: comparablePoint ? formatPriceLine(comparablePoint.resolution, comparablePoint.cents) : undefined,
+    scoreLine: comparablePoint ? formatPriceLine(comparablePoint.resolution, comparablePoint.cents, locale, comparablePoint.currency) : undefined,
     scorePrices: comparablePoint ? [toPriceValue(comparablePoint.cents)] : undefined,
   };
 }
@@ -158,64 +159,13 @@ export async function resolvePricingDisplay(
 
   if (pricingEngine) {
     const display = buildPricingDisplayFromPoints(
-      await quotePoints(pricingEngine)
+      await quotePoints(pricingEngine), locale
     );
     if (display) {
       return display;
     }
     return { headline: 'Data pending', subline: null, prices: [], scorePrices: [] };
   }
-  const perSecond = entry.engine?.pricingDetails?.perSecondCents;
-  const byResolution = perSecond?.byResolution ?? {};
-  const resolutionEntries = Object.entries(byResolution)
-    .map(([label, cents]) => ({
-      label,
-      cents: typeof cents === 'number' ? applyDisplayedPriceMarginCents(cents) : null,
-      order: parseResolutionLabel(label),
-    }))
-    .filter((entry): entry is { label: string; cents: number; order: number | null } => entry.cents != null);
-  const distinctValues = Array.from(new Set(resolutionEntries.map((entry) => entry.cents)));
-
-  if (resolutionEntries.length && distinctValues.length > 1) {
-    const sorted = [...resolutionEntries].sort((a, b) => {
-      const aKey = a.order ?? a.cents;
-      const bKey = b.order ?? b.cents;
-      return aKey - bKey;
-    });
-    const minEntry = sorted[0];
-    const maxEntry = sorted[sorted.length - 1];
-    const headline = formatPriceLine(minEntry.label, minEntry.cents);
-    const subline = formatPriceLine(maxEntry.label, maxEntry.cents);
-    return {
-      headline,
-      subline,
-      prices: [minEntry.cents / 100, maxEntry.cents / 100],
-      scoreLine: formatPriceLine(minEntry.label, minEntry.cents),
-      scorePrices: [minEntry.cents / 100],
-    };
-  }
-
-  const baseCents = getPricePerSecondCents(entry);
-  if (typeof baseCents === 'number') {
-    const audioOff = resolveAudioOffPrice(entry);
-    const audioOffDelta = entry.engine?.pricingDetails?.addons?.audio_off?.perSecondCents;
-    const audioOffCents =
-      typeof audioOffDelta === 'number' && typeof perSecond?.default === 'number'
-        ? applyDisplayedPriceMarginCents(perSecond.default + audioOffDelta)
-        : null;
-    const prices = [baseCents / 100];
-    if (typeof audioOffCents === 'number') {
-      prices.push(audioOffCents / 100);
-    }
-    return {
-      headline: formatPriceLine(null, baseCents),
-      subline: audioOff,
-      prices,
-      scoreLine: formatPriceLine(null, baseCents),
-      scorePrices: [baseCents / 100],
-    };
-  }
-
   return {
     headline: 'Data pending',
     subline: null,

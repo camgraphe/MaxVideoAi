@@ -2,6 +2,7 @@ import { localeRegions, type AppLocale } from '@/i18n/locales';
 import { computeCurrentPublicSnapshot } from '@/server/pricing/quote-public';
 import { computeMarketingPricePoints, computeMarketingPriceRange, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 import type { EngineCaps } from '@/types/engines';
 
 type PriceSpecRow = {
@@ -18,13 +19,7 @@ type AudioPriceLabels = {
 };
 
 function formatPerSecond(locale: AppLocale, currency: string, amount: number) {
-  const region = localeRegions[locale] ?? 'en-US';
-  return new Intl.NumberFormat(region, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  return formatPricePerUnit(locale, currency, amount);
 }
 
 function formatCurrency(locale: AppLocale, currency: string, amount: number) {

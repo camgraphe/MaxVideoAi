@@ -10,6 +10,7 @@ import {
   selectCurrentModelCatalogSlugs,
 } from '@/lib/models/catalog';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 import type { ModelGalleryCard, ModelsGalleryCopy } from '@/components/marketing/ModelsGallery';
 
 import {
@@ -232,7 +233,7 @@ export async function buildModelsCatalogCards({
     const priceFrom = hasConfirmedPricing
       ? isImageOnly
         ? `$${(priceFromCents / 100).toFixed(2)}`
-        : `$${(priceFromCents / 100).toFixed(2)}/s`
+        : `${formatPricePerUnit(activeLocale, pricingRange!.currency, priceFromCents / 100)}/s`
       : showPrelaunchPricePlaceholder
         ? getPrelaunchPricingLabel(activeLocale)
         : 'Data pending';

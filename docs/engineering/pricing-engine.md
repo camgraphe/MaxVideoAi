@@ -144,6 +144,16 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/src/lib/pricing-public-facts.ts` | Browser-safe provider and fixed-product facts | Canonical public input | Stable factual adapter layer |
 | `frontend/src/lib/pricing-public-quote.ts` | Browser-safe policy selection, canonical quote, and projection | Canonical-authoritative for deterministic public projections | Stable public quote owner |
 | `frontend/server/pricing/quote-public.ts` | DB-aware public and live-preview orchestration | Canonical-authoritative | Stable server public quote owner |
+| `frontend/server/pricing/quote-public-model-scenario.ts` | Supported exact public scenarios and price-sensitive revisions | Current canonical public consumer | Public HTTP and marketing quote input |
+| `frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData.ts` | Effective video/image/audio/tool rows and featured cards | Current canonical public consumer | Server-rendered Pricing projection |
+| `frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-cards.ts` | Catalogue and recommendation card prices | Current canonical public consumer | Quoted range and unit display only |
+| `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/current-model-public-offer.ts` | One current offer for visible model pricing and Product JSON-LD | Current canonical public consumer | No authored-price fallback |
+| `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-spec-values.ts` | Capability specs plus supplied current quote labels | Presentation only | Authored capabilities cannot override customer prices |
+| `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts` | Comparison price display, comparable pricing score and specs input | Current canonical public consumer | Unavailable if no current pricing engine/quote |
+| `frontend/server/current-example-price.ts` | Current recreation/reference quote for public examples and home | Current canonical public consumer | Original paid snapshot remains immutable |
+| `frontend/src/server/agent-api/generation-pricing.ts` | MCP preparation and executor-bound confirmation pricing | Shared live preflight/canonical billing consumer | Same effective customer quote |
+| `frontend/server/pricing-admin/revalidation.ts` | Confirmed price-change invalidation across actual English/localized routes | Refresh only | No commercial arithmetic |
+| `frontend/lib/pricing-unit-display.ts` | Currency formatting of a quoted total divided by quantity | Presentation only | Shared admin/public unit precision |
 | `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, routing metadata, and cache | Canonical override input | One resolver and admin-service input |
 | `frontend/src/lib/audio-generation.ts` | Audio provider facts and presentation metadata | Factual only | Stable factual adapter |
 | `frontend/src/lib/storyboard-pricing.ts` | Storyboard facts, metadata, and composition of already-canonical bundle/included projections | No commercial formulas | Stable storyboard adapter |
@@ -565,3 +575,36 @@ legacy rounding and full-domain evidence is still required. Do not copy sampled
 fixed amounts across those domains or impose new generation limits to certify
 them. A complete seed, fresh effective production parity and a locked atomic
 activation/event path remain release gates.
+
+### Current price propagation audit (2026-10-01)
+
+For an identical supported scenario, the effective server quote is the retail
+authority. Admin confirmation changes its persisted inputs; the rendered admin
+page is not a calculator or an independent source. Live generation, MCP, Studio
+and marketing retain their domain adapters around that same effective quote.
+Prepared inactive model cells are explicitly distinct from active retail prices.
+
+Model specs accept only current server price labels. Authored historical prices
+and catalogue-plus-margin amounts cannot fill an unavailable commercial value.
+Comparison pricing also requires a current pricing engine and a successful
+current-policy quote; its spec row and price score reuse that result.
+
+Video marketing rates divide the actual quoted scenario total by billed seconds
+without first rounding to whole cents. Admin, Pricing, catalogue cards, model
+specs and comparisons share `formatPricePerUnit` (two to six decimal places).
+For example, a 26-cent five-second quote displays $0.052/s, not $0.05/s. This is
+display normalization and does not alter billed totals or provider facts.
+
+Both manual and policy confirmation invalidate comparisons, model details,
+category catalogue cards, Pricing, home and current examples. Include the actual
+`/[locale]/...` route patterns behind translated external URLs, and use the real
+localized watch parameter `[videoId]`. Representative preview rows cannot be
+treated as an exhaustive cache invalidation inventory.
+
+`tests/current-price-consumer-parity-postgres.test.ts` uses real canonical owners
+and admin preview/confirmation against disposable Unix-socket PostgreSQL. Its
+temporary activation cannot touch the review sandbox or production. It checks
+before/after totals, unit labels, price revisions, offers, specs, examples and
+homepage steps while preserving an original paid amount. Global model tariff
+activation still requires the separately documented complete-domain and release
+gates.

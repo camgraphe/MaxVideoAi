@@ -1,4 +1,5 @@
 import type { ProviderCostComparisonRowView } from './pricing-cockpit-view-model';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 
 const precise = (value: number) => Number(value.toFixed(9));
 const amount = (value: number | null) => value != null && Number.isFinite(value) && value >= 0 ? value : null;
@@ -80,9 +81,7 @@ export function customerCentsForTargetMargin(row: ProviderCostComparisonRowView,
 }
 
 export function decisionUsd(value: number | null) {
-  return value == null || !Number.isFinite(value) ? 'Unavailable' : new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 6,
-  }).format(value);
+  return value == null || !Number.isFinite(value) ? 'Unavailable' : formatPricePerUnit('en', 'USD', value);
 }
 
 export function decisionPercent(value: number | null) {

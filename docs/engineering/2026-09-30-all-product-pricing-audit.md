@@ -407,3 +407,43 @@ The same generation router supplies admin comparison provenance; Alibaba
 catalogue references now match the selected Wan route. External credentials stay
 blank, result providers remain mock, and generation remains disabled locally.
 Production router defaults, customer tariffs and database state are unchanged.
+
+### Effective price propagation follow-up — 2026-10-01
+
+The consumer audit found and corrected stale-price fallbacks in model specs and
+comparisons. Authored spec amounts cannot override current server labels, and a
+missing comparison pricing engine cannot reconstruct a retail amount from a
+catalogue rate plus a default margin. Unavailable current prices stay unavailable.
+
+Per-second amounts now retain the quoted total divided by its billed quantity:
+26 cents for five seconds is $0.052/s. Admin, Pricing, catalogue/recommendation
+cards, model pages and comparisons share the currency/unit formatter. Comparison
+pricing scores retain that normalized rate. Billed totals and provider rates did
+not change.
+
+Confirmed model/policy changes also refresh comparison pages, the Video/Image
+catalogues and actual localized route patterns behind translated URLs, including
+localized watch pages. Invalidation cannot rely only on sampled preview rows.
+
+Acceptance: 126 focused tests pass, with no skips or failures. A real disposable
+Unix-socket PostgreSQL fixture performs admin preview/confirmation from 26 to
+31 cents and checks live web preflight, MCP generation pricing, canonical billing,
+public quotes/revisions, Pricing, catalogue/decision cards, current Product offer,
+model/comparison specs and example prices. A separate Wan homepage scenario edit
+updates its corresponding guided-demo step. An original 999-cent paid example
+remains unchanged. Manual activation occurs only inside this disposable fixture.
+The live/MCP extension was rerun successfully after the consolidated suite.
+
+The immutable billing baseline retains 178 rows, the public baseline 577 rows,
+and the billing audit reports 266 scenarios with zero mismatches (four reviewed
+changes). Ten live local public routes across English, French and Spanish return
+200 with canonical/hreflang/JSON-LD; the public quote and English Pricing/model/
+comparison HTML expose the exact current normalized rates. TypeScript, frontend
+lint, public exposure and diff checks pass.
+
+The review sandbox remains revision 3/inactive, with 66,549 staged cells, 13
+products and no dynamic coefficient overrides. A single effective quote authority
+is verified; full activation of the prepared model tariffs remains incomplete.
+The three unbounded domains and fresh complete seed/release evidence remain
+required. No production mutation, generation, payment, support message, push or
+deployment occurred.

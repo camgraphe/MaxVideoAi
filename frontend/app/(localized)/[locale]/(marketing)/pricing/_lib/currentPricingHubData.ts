@@ -2,6 +2,7 @@ import { listFalEngines } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 
 import { formatCurrencyForLocale } from './pricingPageContent';
 import { getPricingHubCopy } from './pricingHubCopy';
@@ -36,7 +37,7 @@ export async function buildCurrentPricingHubData(
         row.quotes[preset.id] = result.status === 'exact'
           ? { ...old, amountCents: result.amountCents,
               display: formatCurrencyForLocale(locale, result.currency, result.amountCents / 100),
-              rateDisplay: copy.quote.perSecond(formatCurrencyForLocale(locale, result.currency,
+              rateDisplay: copy.quote.perSecond(formatPricePerUnit(locale, result.currency,
                 result.amountCents / input!.durationSec / 100)),
               sortValue: result.amountCents, isCheapest: false }
           : { status: 'live_quote', display: copy.liveQuote, note: old.note,
