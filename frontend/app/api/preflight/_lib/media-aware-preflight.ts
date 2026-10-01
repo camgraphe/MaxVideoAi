@@ -194,7 +194,11 @@ export async function resolveMediaAwarePreflight(
     && ['ref2v', 'v2v', 'extend'].includes(request.mode)
     && request.inputs?.some((reference) => reference.kind === 'video') === true;
   if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration) {
-    return computeConfiguredPreflightFn(request, { resolvedEngine: engine, bootstrap: false });
+    return computeConfiguredPreflightFn(request, {
+      seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
+      resolvedEngine: engine,
+      bootstrap: false,
+    });
   }
   const userId = input.userId === undefined
     ? await input.resolveUserId?.() ?? null
