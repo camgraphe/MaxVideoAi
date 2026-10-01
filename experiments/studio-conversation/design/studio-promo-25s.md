@@ -1,6 +1,6 @@
 # Studio — Create in conversation
 
-Creative production brief and connected QA project, 1 October 2026. Proposed direction; no media generation, quote confirmation or publication has been performed for this film.
+Creative production brief and connected QA project, 1 October 2026. Approved direction; the first reference image has been generated through the real-account MCP after explicit quote approval. The native complete film loop and publication remain unqualified.
 
 ## Intent
 
@@ -115,7 +115,7 @@ Live MaxVideoAI read-only discovery on 1 October 2026 returned all three economi
 
 The previously considered Seedance 2.5/1080p proposal was estimated at 19.53 USD. The mixed 480p proposal reduces estimated video spend by 18.44 USD (about 94%). Three clips all on Wan 3 or H3 cost 0.10 USD less than the mix. The mix is useful specifically because this project is also testing three provider routes; it is not evidence that mixing models improves creative quality.
 
-These are connected-environment estimates, not reserved prices or permission to spend. Reference images, the image edit, narration, music, optional SFX, text-model tokens and rendering remain additional lines. No generation, debit or paid retry has been executed for this film. Exact quotes must be obtained when the chosen requests and required references are ready. The full live response is preserved in `studio-promo-480p-budget.json`.
+These are connected-environment estimates, not reserved prices or permission to spend. Reference images, the image edit, narration, music, optional SFX, text-model tokens and rendering remain additional lines. The first reference image has since been generated for 0.06 USD after exact quote approval; no video or paid retry has been executed. Exact quotes must be obtained for each next request when references are ready. The full live response is preserved in `studio-promo-480p-budget.json`.
 
 Reviewed prompt sources returned by the catalogue:
 
@@ -155,8 +155,29 @@ The local native conversation `qa-studio-promo-25s` is open for live viewing. Tw
 
 The local provider-free session retained the image draft but could not prepare a media quote because no executable image provider is configured. It did not debit a wallet or generate media. The real-account MCP is the next quote owner, using exactly this saved Sol prompt without another text-model call. Its account wallet was read as 40.14 USD; the local QA wallet remains separate. Do not portray the MCP quote or future output as a native session quote/result. Video/audio/native editing execution still requires qualification.
 
-The MCP subsequently prepared the exact first-reference quote: one GPT Image 2.5 Flare text-to-image output, `landscape_16_9`, quality high, PNG, 0.06 USD. This is awaiting explicit human approval; no media job or debit was created. Keep the quote and future receipts in the private run evidence, outside the repository. The native conversation remains the visible real Sol dialogue; its failed local quote is not this MCP approval.
+The MCP prepared the exact first-reference quote: one GPT Image 2.5 Flare text-to-image output, `landscape_16_9`, quality high, PNG, 0.06 USD. The user explicitly approved this quote. One confirmed job completed and was presented; payment is `paid_wallet`, the image is saved to the real library and the wallet read fell from 40.14 to 40.08 USD. Browser inspection measured 1088×608 and verified the glass-loop/dunes visual. The native conversation remains the visible real Sol dialogue; its failed local quote is not this MCP approval or output. Keep job identity, originals and receipts in the private run evidence outside Git.
 
 Validation: 594 editor tests and 11 isolated connected Studio integration tests passed. The broader standard suite reported 5,730 passes, one skip and the previously observed `tests/github-assets.test.ts` failure on stale visual review dates. Frontend typecheck/lint/exposure checks passed (six existing image warnings). Local prototype tests and build were checked separately; run evidence remains outside Git.
 
 The prototype's 49 tests and production build passed. Its evaluation reporter now preserves missing cache counters as null, and every project usage record survives a later turn or stale recovery checkpoint.
+
+The user explicitly approved the next three quotes for 0.45 USD. Wan 3 accepted one 5-second dunes animation (480p, 16:9, 30 fps, no audio) at 0.33 USD; the job completed, was presented and is saved to the real library. Both 0.06 USD Flare image-to-image confirmations returned `QUOTE_EXPIRED` with the message that the quote was no longer current; neither returned a media job or debit. Their confirmations occurred before the returned expiry timestamps, so elapsed expiry is not an established explanation. No automatic replacement was submitted. Further attempts require diagnosis, a fresh exact quote and new approval. Measured media charges are 0.39 USD; with the two initial Sol exchanges the known subtotal is 0.399413 USD. The wallet was last read as 39.75 USD. This is partial technical production, not a full-film cost.
+
+## Natural first-time-user test — 1 October 2026
+
+The user identified a bias in the initial live conversation: the test operator supplied the visual motif, composition and generation instructions. That run qualifies technical execution only; it does not establish that Studio can guide a novice to a film. Preserve its paid outputs and receipts, without forcing that artistic direction into a new user's conversation.
+
+A fresh local project, `qa-studio-newcomer-film`, received four actual browser-submitted English messages with no prior history:
+
+1. “Hi, I'm new here. I'd like to make a little video but I don't really know where to start. Can you help?”
+2. “It's for Studio, to show that you can make a film just by chatting. Something short and nice, but cheap. I don't have any images.”
+3. “What would it look like? I'd like something elegant, not too techy. You can choose, I'm not sure.”
+4. “Yes, let's try it.”
+
+Sol chose the concept “From conversation to cinema,” suggested one scene, chose a cream paper card on a walnut desk with warm light and a blurred cinema screen, selected 16:9, and authored the full image prompt itself. No operator supplied a subject, shot list, media model, resolution or hidden generation prompt. Three advice turns returned no image action; the fourth saved the model-authored draft. Its quote preparation failed because the local QA runtime has no executable image provider. No wallet was debited and no new media generation was confirmed.
+
+All four responses were measured: 3,653 tokens, including 56 reasoning tokens already counted in output, estimated public-rate API cost 0.011722 USD. This newcomer QA cost is reported separately from the earlier directed production and English scenario salve. Evidence, response counters and a browser screenshot remain outside Git.
+
+The creative handoff works in this limited case, but the full-film journey remains unqualified. The director explicitly supports only images and repeats this limit; it cannot choose or execute the video, Audio, montage and export stages here. Its cost advice is also limited to the fact that a future quote will show the image price. The failed quote leaves the user at a technical dead end. Connecting the shared action owners, capability and price reads is necessary before a novice can reach a finished film through this native chat.
+
+For future user-journey tests, the operator plays only the customer: short, imperfect messages, ordinary reactions to actual replies/results, and simple requests such as “Can it move?”, “Add some music” or “Make it shorter.” Do not dictate internal prompts, tools, model selection, exact shot construction or preparation order. Studio must supply these decisions and collect the few useful choices, while the existing quote confirmation remains the paid-action authority. Record task completion, questions asked, confusing replies, recovery, actual model usage and media receipts; judge whether the customer reached a usable film, not whether a prescribed sequence was obeyed.
