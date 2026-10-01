@@ -313,7 +313,7 @@ test('Fal execution cannot inherit a BytePlus supplier cost', () => {
 });
 
 test('missing token evidence never becomes an invented supplier estimate', () => {
-  const [row] = buildProviderCostComparisonRows([video({ videoTokens: null, tokenEvidence: null })], '2026-09-28T12:00:00Z');
+  const [row] = buildProviderCostComparisonRows([video({ inputVideoDurationSec: 2, videoTokens: null, tokenEvidence: null })], '2026-09-28T12:00:00Z');
   assert.equal(row.supplierList.amountUsd, null);
   assert.equal(row.supplierList.reason, 'billable_tokens_unavailable');
   assert.equal(row.indicativeDifferenceVsListCents, null);
