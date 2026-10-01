@@ -13,15 +13,16 @@ Référence visuelle : `experiments/studio-conversation/design/studio-premiers-e
 - Un chat central dont la saisie reste stable. Historique conservé, nouvelle réponse signalée sans interrompre la relecture. Messages du bot associés aux résultats et aux actions possibles.
 - Sur desktop, un aperçu principal et trois médias secondaires maximum. Composition déterministe dans les zones latérales, sans empiéter sur le chat ; ratios natifs respectés. Anciennes créations accessibles dans la bibliothèque. Sélection, épinglage, agrandissement, référence pour le chat, variation et animation possibles ; les vidéos prêtes peuvent être insérées ou remplacer un plan.
 - Sur mobile, un chat avec les médias dans les réponses. Bibliothèque et paramètres restent disponibles. Montage ouvrable en bas, timeline horizontale et coupe dans des contrôles larges.
-- Montage vidéo à une piste : insertion, ordre par poignée/flèches, coupe début/fin, suppression d'un plan, annulation/rétablissement, zoom, curseur et lecture de la séquence. Pas d'effets ni de pistes multiples. Les gestes sont des brouillons locaux et se valident à la fin.
+- Montage vidéo à une piste : insertion, ordre par poignée/flèches, coupe début/fin, suppression d'un plan, annulation/rétablissement, zoom, curseur et lecture de la séquence. Une piste voix et une piste ambiance complètent la vidéo ; placement, coupe et volume uniquement. Pas d’effets ni de multipiste professionnel. Les gestes sont des brouillons locaux et se valident à la fin.
 - Aperçu vidéo réel, avec les mêmes sources, points de coupe et ordre que l'export. Une image sans animation ne possède pas de faux bouton Play.
 - Paramètres : titre, format 16:9 / 9:16 / 1:1, sortie 720p / 1080p, fps 24 / 30, ajustement recadrer / contenir, conservation du son des rushes, durée cible 10–120 s. Les contrôles de génération locale choisissent un mouvement doux, un panoramique ou un plan fixe et une durée bornée par les sources/contrats.
-- Import d'images et vidéos locales jusqu'à 100 MiB ; métadonnées mesurées par ffprobe, original conservé et aperçu compatible. Images SVG et références réseau exclues.
-- Export MP4 véritable avec FFmpeg dans une tâche serveur locale. Progression issue du rendu ; téléchargement seulement après disponibilité de l'artefact. Export JSON du projet pour inspecter ou conserver une copie.
+- Import d’images, vidéos et audios locaux jusqu'à 100 MiB ; métadonnées mesurées par ffprobe, original conservé et aperçu compatible. Images SVG et références réseau exclues.
+- Moniteur compact à la sélection d’un média ou d’un plan : intégré à la composition desktop, ouvrable sans envahir le chat sur mobile. Audio importé ou généré (voix locale et ambiance synthétique) écoutable dans son message, puis insérable et coupable. Les rendus apparaissent avec lecteur et téléchargement dans le chat.
+- Export MP4 véritable, ou MP3 pour un montage audio seul, avec FFmpeg dans une tâche serveur locale. Progression issue du rendu ; téléchargement seulement après disponibilité de l'artefact. Export JSON du projet pour inspecter ou conserver une copie.
 
 ## Assistant et tronc commun
 
-Le directeur simulé reconnaît les principales intentions françaises/anglaises et utilise le contexte réel : brief, paramètres, références, médias prêts, sélection et montage. Il sait proposer/créer des visuels de démonstration, animer, assembler, couper, déplacer, modifier le format et exporter. Une intention non reconnue donne une aide contextualisée, sans fabriquer une opération réussie. L'app indique « Local · Démonstration ». Aucune clé, génération payante ou connexion à la base de production.
+Le directeur simulé reconnaît les principales intentions françaises/anglaises et utilise le contexte réel : brief, paramètres, références, médias prêts, sélection et montage. Il sait proposer/créer des visuels de démonstration, animer, assembler, générer une voix ou une ambiance locale, couper, déplacer, modifier le format et exporter. Une intention non reconnue donne une aide contextualisée, sans fabriquer une opération réussie. L'app indique « Local · Démonstration ». Aucune clé, génération payante ou connexion à la base de production.
 
 `CommandService.execute(projectId, request)` est le propriétaire unique des actions et validations. Le chat, l'API utilisée par les gestes et l'adaptateur MCP local l'appellent. Les améliorations de validation, idempotence, reprise, coupe et export sont donc communes. Le dialogue et la présentation restent propres à leur client.
 
@@ -29,7 +30,7 @@ Les commandes couvrent les paramètres, la génération locale, l'animation, l'a
 
 ## État et fiabilité
 
-Entités séparées : Project, Asset, Sequence/Clip, Message, Job, Export. Le montage utilise des frames entières au fps de séquence, via les helpers `timeline-frames.ts` de Studio. Coupe minimale 1 s, aucune extension au-delà de la source et aucune superposition sur la piste. L'export utilise un snapshot immuable de la séquence.
+Entités séparées : Project, Asset, Sequence/Clip, Message, Job, Export. Le montage utilise des frames entières au fps de séquence, via les helpers `timeline-frames.ts` de Studio. Coupe minimale 1 s, aucune extension au-delà de la source et aucune superposition sur une même piste. Voix et ambiance peuvent être mélangées ; leurs positions sont exprimées dans les mêmes frames que la vidéo. L'export utilise un snapshot immuable de la séquence.
 
 Le stockage JSON local écrit atomiquement. Les mutations d'un projet sont sérialisées. Les request IDs ont une empreinte de payload ; une répétition identique rejoue le résultat et un payload différent est refusé. Les éditions requièrent la révision de séquence ; un conflit ne remplace pas silencieusement le travail de l'utilisateur. Une tâche d'assemblage ne remplace pas un montage modifié pendant son exécution.
 

@@ -15,9 +15,9 @@
 - Worktree `codex/studio-conversation-exploration-20261001` ; aucune mutation des routes ou services de production.
 - Charbon #191c1a, surface #242725, texte #f0f0ec, secondaire #b4b8b3, bord #343833, or #e0bc77. Typographie système Inter/Apple/Segoe, pictogrammes Lucide cohérents.
 - H1 Studio discret, chat central stable, maximum quatre médias latéraux ; médias dans les messages sur mobile.
-- Une piste vidéo, frames entières, coupe minimale 1 s et limitée à la source, export conforme au snapshot.
+- Une piste vidéo, une voix et une ambiance, frames entières, coupe minimale 1 s et limitée à la source, export conforme au snapshot.
 - Formats 16:9 / 9:16 / 1:1 ; 720p / 1080p ; fps 24 / 30 ; corps import ≤100 MiB ; serveur 127.0.0.1 seulement.
-- Aucun provider payant, aucune clé, aucune base production ; simulation déclarée et MP4 rendu réellement.
+- Aucun provider payant, aucune clé, aucune base production ; simulation déclarée et MP4/MP3 rendus réellement, audio et rendus lisibles dans le chat, moniteur compact à la sélection.
 
 ## Review Focus
 
@@ -52,7 +52,7 @@
 - HTTP produit `/api/projects`, `/api/projects/:id`, `/commands`, `/import`, `/media` et `/health` ; aucun chemin arbitraire ou média distant.
 
 - [ ] Tester reprise d'une tâche, annulation et identité des sorties ; implémenter queue persistante et merge protégé par révision.
-- [ ] Tester MP4 réel de deux sources avec coupe : durée à une frame près, dimensions et audio attendus ; implémenter FFmpeg asynchrone et progression mesurée.
+- [ ] Tester MP4 réel de deux sources avec coupe : durée à une frame près, dimensions et audio mixé attendus, plus un rendu audio seul ; implémenter FFmpeg asynchrone et progression mesurée.
 - [ ] Implémenter import avec métadonnées réelles, original et aperçu ; livrer les médias avec Range et les erreurs explicites.
 - [ ] Exécuter `npm test -- tests/jobs.test.ts tests/render.test.ts` : tous les cas passent ; commit.
 
@@ -77,7 +77,7 @@
 - Produces UI sauvegardée/reprise, références/pins locaux, brouillons de geste suivis d'une commande versionnée, lecture réelle cohérente avec les clips.
 
 - [ ] Construire les surfaces depuis les références et tokens : empty, conversation, génération, prêt, reprise, erreur, bibliothèque, paramètres, export.
-- [ ] Relier chaque contrôle à une fonction locale concrète ; supporter import, référence/variation/animation, insertion/remplacement, ordre/coupe, undo/redo, paramètres et export.
+- [ ] Relier chaque contrôle à une fonction locale concrète ; supporter import image/vidéo/audio, voix/ambiance locale et lecteurs dans le chat, moniteur compact, référence/variation/animation, insertion/remplacement, ordre/coupe, undo/redo, paramètres et export.
 - [ ] Vérifier dans le navigateur la fin des gestes, la lecture aux coupes, l'historique et le champ stable, les états pending/failed et les contrôles accessibles sur mobile.
 - [ ] Exécuter `npm run build` et `npm test` : TS/build et tous les contrats passent ; commit.
 
