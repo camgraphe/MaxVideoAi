@@ -62,8 +62,37 @@ both maxvideoai.com and api.maxvideoai.com serve the same READY Git-main deploym
 Read-only BytePlus Finance evidence still shows contract `CT20260925128931` as
 **In contract generation**, completion time absent, and the account discount list
 empty. Keep the signed terms in cost estimates as the user requested; effective
-account rates/invoice discounts are not certified. Recheck activation before
-publication; do not silently relabel a LIST estimate as an observed invoice.
+account rates/invoice discounts are not certified. Do not silently relabel a LIST
+or contract estimate as an observed invoice.
+
+### Contract activation is not a release blocker for the current customer grid
+
+On October 2, the user clarified that waiting for account activation should not
+block release when customer prices remain unchanged. Customer amounts come from
+authored tariff cells; the signed discount does not recalculate them. Supplier
+estimates also feed internal cost snapshots, vendor share and the below-cost
+guard, so they are more than display-only margin figures.
+
+A read-only recheck of the private audit captured at
+`2026-10-01T23:13:42.379Z`, revision 3,523, compares the discounted Mini/Fast and
+Seedream Lite/Pro cases with undiscounted LIST: 1,829 normal/workflow cases and
+1,728 source-duration stress cases, **3,557 examined and zero below LIST**.
+Their minimum estimated gross margin at LIST is 24.4%, before payment and
+operating fees. These are examined cases, not 3,557 unique tariff selectors or
+observed invoice amounts. They certify the audited local candidate, not fresh
+production tariffs.
+
+For Mini, 5s/720p/16:9 without video input, the customer stays at $0.95:
+undiscounted LIST is $0.378 (60.2% estimated gross margin), while the signed cost
+estimate is $0.1512 (84.1%). Contract activation therefore changes expected
+internal cost and margin, not this customer amount.
+
+Account activation and effective invoice discounts become a non-blocking cost
+reconciliation follow-up for this unchanged, LIST-validated grid. Keep the signed
+estimates and LIST evidence; add no temporary activation workflow. A future
+customer-price reduction that needs the discount to stay above cost must be
+checked against the effective supplier rate before approval. Production capture,
+parity, migrations, activation and operational acceptance gates remain required.
 
 A separate read-only remote schema inventory at `2026-10-01T23:36:57.180Z`
 finds the six new Draft/tariff/direct-quote/activation tables absent; the MCP trial
@@ -75,10 +104,13 @@ or production-price parity certificate.
 
 ## Release sequence to execute only after the production decision
 
-1. Freeze the candidate and repeat Git/main/domain alignment, live legacy-payment
-   inventory and BytePlus contract activation checks. Capture current production
+1. Freeze the candidate and repeat Git/main/domain alignment and live legacy-payment
+   inventory. Capture current production
    pricing rules, factual environment and effective scenario amounts read-only,
    binding database identity, registry/policy hashes, candidate SHA and timestamp.
+   Record BytePlus account status as cost-provenance evidence; pending signed
+   discount activation alone does not block the unchanged LIST-validated grid.
+   Reconcile effective discounts and invoices when account activation completes.
 2. Compare the complete candidate with that fresh capture. Disclose exactly the
    approved GPT one-cent floors and proportional Seedance source-duration changes;
    preserve all other customer amounts, including Seedream reference variants.

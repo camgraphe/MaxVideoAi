@@ -663,3 +663,21 @@ Testaccount signedout through actual appmenu (publichomepage/Login visible),
 owned runtime/PG stopped, useradmin/session/database/worktree retained.
 Dated report docs/engineering/2026-10-02-pricing-preproduction.md owns latest
 counts and limitations. No prodwrite, push, merge, deploy, email/support action.
+
+2026-10-02 user correction: BytePlus contract activation must not delay release
+when customer amounts are unchanged and remain viable without the discount.
+Read-only recheck of private audit 2026-10-01T23:13:42.379Z, revision3523:
+discounted Mini/Fast and Seedream Lite/Pro cover1829 normal/workflow cases plus
+1728 source-duration stress cases =3557 examined,0below undiscounted LIST,
+minimum estimated gross margin24.4% before payment/operating fees. These are
+local examined cases, not distinct selectors or observed invoices/prod evidence.
+Customer cells do not recompute from contract rates. Supplier estimate still
+feeds internal snapshots/vendor share/below-cost guards; not just admin display.
+Mini5s720p16:9/no input stays95c,LIST37.8c/gross60.2%,contract15.12c/gross84.1%.
+Latest acceptance and pricing guide now make activation non-blocking for this
+unchanged LIST-validated grid, retaining signed cost estimates, visible LIST and
+post-activation effective-discount/invoice reconciliation. Future retail cuts
+that rely on the discount require effective-cost verification. No temporary
+activation code, customer tariff edit or new paid provider call. Other production
+capture/parity/migration/activation/operational gates remain. Documentation-only
+correction; no external message, production write, push, merge or deployment.

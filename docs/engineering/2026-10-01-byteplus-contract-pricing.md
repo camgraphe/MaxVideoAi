@@ -1,5 +1,11 @@
 # BytePlus contract pricing checkpoint — 2026-10-01
 
+The [October 2 preproduction decision](2026-10-02-pricing-preproduction.md#contract-activation-is-not-a-release-blocker-for-the-current-customer-grid)
+supersedes this checkpoint's activation-wait release condition. Account activation
+does not block the unchanged customer grid verified above undiscounted LIST;
+effective discounts and invoices remain a cost-reconciliation follow-up. The
+historical evidence and signed estimates below retain their original boundaries.
+
 Branch: `codex/bytedance-pricing-grid`. The user personally accepted order form
 `CT20260925128931` for the account associated with this application. The authorized
 acknowledgment to Zen was sent in the existing email conversation. No further

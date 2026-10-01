@@ -5,6 +5,11 @@
 The [preproduction acceptance](2026-10-02-pricing-preproduction.md) owns the latest
 validation, active-grid and browser evidence. Production remains inactive and
 requires its own current capture, reviewed activation path and deployment decision.
+BytePlus account discount activation is non-blocking for the unchanged customer
+grid verified above undiscounted LIST. Customer tariff cells remain independent
+of signed supplier discounts; effective cost/invoice reconciliation follows
+activation. Any later price reduction that relies on a discount needs effective
+supplier-cost verification before approval.
 
 Seedream's factual source count is shared by actual image charging, image
 estimates, MCP settlement and provider comparison. `lib/image/seedream.ts` includes
@@ -108,7 +113,8 @@ records 3,186 new continuous cells, 273 corrected minima and the actual private
 sandbox quote audit. This does not certify production state or observed invoices.
 
 Adrien accepted order form `CT20260925128931` and explicitly requested using its
-commercial terms now, with console activation checked immediately before push.
+commercial terms now. The October 2 decision makes account activation a
+non-blocking cost follow-up for the unchanged, LIST-validated customer grid.
 `server/byteplus-account-contract.ts` applies the signed discount to
 the independent LIST estimate for the same Johor route, billing SKU and validity
 period. Mini pays 40% of LIST, Fast 50%, and Seedream Lite/Pro 90%. Standard 2.0
