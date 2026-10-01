@@ -60,6 +60,24 @@ simulator's preview is exercised locally without confirming a customer edit.
 Baseline checks retain 178 immutable and 577 public scenarios; the audit has
 266 scenarios, 262 matches, four existing approved differences and no mismatch.
 
+- Thirteen new contract/manual-cost regressions pass; the focused pricing/admin
+  architecture and comparison gate passes 45 tests.
+- TypeScript, frontend lint, public-exposure lint and `git diff --check` pass.
+- PostgreSQL 17 standard validation: 6,627 passed, three skipped, zero failures
+  (6,630 total). Log: `/tmp/mva-byteplus-contract-validation.log`.
+- The five initial Studio failures were its explicit refusal of the sandbox env
+  file. Its four integration files were rerun against committed code `d86c43a46`
+  in a temporary environment-free detached checkout: **11 passed**, zero failures.
+  Log: `/tmp/mva-byteplus-contract-studio.log`. The temporary checkout was removed.
+- Live admin: Mini 50% preset previews $0.95 → $0.31 successfully, showing 51.2%
+  estimated gross margin after upward cent rounding. The preview was canceled and
+  Current restored; no tariff was confirmed. The user-facing local admin stays open.
+
+This is local functional verification, not production deployment or observed
+supplier billing. The one fresh code review's padded-floor finding was fixed and
+covered with RED → GREEN regressions. No optimized-build result is claimed for
+this supplier slice.
+
 ## Release checks retained
 
 1. Verify contract completion and the account's effective discount rows immediately
