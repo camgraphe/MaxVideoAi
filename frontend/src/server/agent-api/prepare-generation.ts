@@ -33,12 +33,13 @@ import {
   type AgentPublicGenerationEngine,
 } from './model-catalog';
 import type { AgentPrincipal } from './principal';
+import { requireGenerationActor, requireOAuthGenerationActor, quoteMatchesActor, type GenerationActor } from './generation-actor';
 import {
   insertPreparedQuote,
   type InsertPreparedQuoteInput,
   type McpGenerationQuote,
 } from './quote-repository';
-import { resolveGenerationReferences } from './resolve-generation-references';
+import { resolveGenerationReferencesForActor } from './resolve-generation-references';
 import type { ResolvedReference } from './reference-types';
 import {
   checkMcpSpendingLimits,
@@ -126,7 +127,7 @@ export type PrepareGenerationDependencies = {
   ): Promise<boolean>;
   resolveGenerationReferences?(
     request: CanonicalGenerationRequest,
-    principal: AgentPrincipal,
+    principal: GenerationActor,
   ): Promise<ResolvedReference[]>;
   resolveRequestExecutability?(
     request: CanonicalGenerationRequest,
@@ -159,7 +160,7 @@ const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext
   getTrialEligibility: (principal) => getTrialEligibility(principal),
   checkTrialRisk: (input) => checkTrialRisk(input),
   recordTrialQuotePreparedAudit,
-  resolveGenerationReferences: (request, principal) => resolveGenerationReferences(request, principal),
+  resolveGenerationReferences: (request, principal) => resolveGenerationReferencesForActor(request, principal),
   resolveRequestExecutability: (request, candidate, resolvedReferences) =>
     resolveAgentGenerationRequestExecutability(
       request,
@@ -215,16 +216,6 @@ function requireTrialRiskRequestContext(value: unknown): TrialRiskRequestContext
   }) as TrialRiskRequestContext;
 }
 
-function requirePrincipal(principal: AgentPrincipal): void {
-  if (
-    !principal
-    || principal.authMethod !== 'oauth'
-    || !isSafeIdentifier(principal.userId, 128)
-    || (principal.clientId !== null && !isSafeIdentifier(principal.clientId, 256))
-  ) {
-    throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI before preparing a generation.');
-  }
-}
 
 function invalidParameter(): never {
   throw new AgentApiError(
@@ -391,13 +382,19 @@ function spendingLimitError(dependencies: PrepareGenerationDependencies): AgentA
   );
 }
 
-export async function prepareGeneration(
+export async function prepareGenerationForActor(
   input: PrepareGenerationInput,
-  principal: AgentPrincipal,
+  principal: GenerationActor,
   dependencies: PrepareGenerationDependencies,
 ): Promise<PreparedGeneration> {
-  requirePrincipal(principal);
-  const originalTrialCandidate = trialCandidateFromOriginal(input);
+  requireGenerationActor(principal);
+  if (principal.authMethod === 'studio-session') {
+    let pilotRequest: CanonicalGenerationRequest;
+    try { pilotRequest = normalizeGenerationRequest(input); } catch { invalidParameter(); }
+    if (pilotRequest.surface !== 'image' || !['t2i', 'i2i'].includes(pilotRequest.mode)
+      || pilotRequest.outputCount !== 1 || pilotRequest.references.some(ref => ref.kind !== 'asset')) invalidParameter();
+  }
+  const originalTrialCandidate = principal.authMethod === 'oauth' ? trialCandidateFromOriginal(input) : null;
   if (!originalTrialCandidate) requirePaidGeneration(dependencies);
   if (await dependencies.getAccountRestriction(principal.userId)) {
     throw new AgentApiError(
@@ -416,7 +413,7 @@ export async function prepareGeneration(
   }
 
   let prospectiveTrial = false;
-  if (originalTrialCandidate && principal.clientId !== null) {
+  if (originalTrialCandidate && principal.authMethod === 'oauth' && principal.clientId !== null) {
     try {
       prospectiveTrial = (await dependencies.getTrialEligibility(principal)).status === 'available';
     } catch {
@@ -440,7 +437,7 @@ export async function prepareGeneration(
     try {
       const resolveReferences = dependencies.resolveGenerationReferences
         ?? ((currentRequest, currentPrincipal) =>
-          resolveGenerationReferences(currentRequest, currentPrincipal));
+          resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
       validateCapabilities(request, candidate, resolvedReferences);
     } catch (error) {
@@ -565,6 +562,9 @@ export async function prepareGeneration(
       },
       { executor, now: clock },
     );
+    if (!quoteMatchesActor(inserted, principal)) {
+      throw new AgentApiError('INTERNAL_ERROR', 'The generation quote scope is inconsistent.');
+    }
     if (fundingMode === 'trial') {
       const aspectRatio = request.settings.aspectRatio;
       const audio = request.settings.audio;
@@ -604,11 +604,11 @@ export async function prepareGeneration(
   };
 }
 
-export function createPrepareGenerationService(
+export function createPrepareGenerationForActorService(
   accountUrl: string,
   trialRiskContext: TrialRiskRequestContext,
   dependencies: Partial<Omit<PrepareGenerationDependencies, 'trialRiskContext'>> = {},
-): (input: PrepareGenerationInput, principal: AgentPrincipal) => Promise<PreparedGeneration> {
+): (input: PrepareGenerationInput, principal: GenerationActor) => Promise<PreparedGeneration> {
   const requestContext = requireTrialRiskRequestContext(trialRiskContext);
   const resolved: PrepareGenerationDependencies = {
     ...defaultDependencies,
@@ -616,5 +616,15 @@ export function createPrepareGenerationService(
     trialRiskContext: requestContext,
     accountUrl,
   };
-  return (input, principal) => prepareGeneration(input, principal, resolved);
+  return (input, principal) => prepareGenerationForActor(input, principal, resolved);
+}
+
+export async function prepareGeneration(input: PrepareGenerationInput, principal: AgentPrincipal, dependencies: PrepareGenerationDependencies): Promise<PreparedGeneration> {
+  requireOAuthGenerationActor(principal);
+  return prepareGenerationForActor(input, principal, dependencies);
+}
+
+export function createPrepareGenerationService(accountUrl: string, trialRiskContext: TrialRiskRequestContext, dependencies: Partial<Omit<PrepareGenerationDependencies, "trialRiskContext">> = {}): (input: PrepareGenerationInput, principal: AgentPrincipal) => Promise<PreparedGeneration> {
+  const service = createPrepareGenerationForActorService(accountUrl, trialRiskContext, dependencies);
+  return async (input, principal) => { requireOAuthGenerationActor(principal); return service(input, principal); };
 }

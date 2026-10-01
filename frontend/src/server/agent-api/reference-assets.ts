@@ -3,6 +3,7 @@ import { isAllowedAssetHost } from '@/server/storage';
 
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
+import { requireGenerationActor, requireOAuthGenerationActor, type GenerationActor } from './generation-actor';
 import {
   normalizeSupportedReferenceDuration,
   resolveSupportedReferenceMedia,
@@ -34,18 +35,6 @@ export type ResolveOwnedReferenceAssetDependencies = {
 
 const defaultExecutor: QueryExecutor = { query };
 
-function requirePrincipal(principal: AgentPrincipal): void {
-  const userId = principal?.userId;
-  if (
-    principal?.authMethod !== 'oauth'
-    || typeof userId !== 'string'
-    || userId.length < 1
-    || userId.length > 128
-    || userId !== userId.trim()
-  ) {
-    throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI before using reference media.');
-  }
-}
 
 function normalizeAssetId(value: unknown): string {
   if (
@@ -111,12 +100,12 @@ function invalidReference(): never {
   throw new AgentApiError('REFERENCE_INVALID', 'Reference media is not usable.');
 }
 
-export async function resolveOwnedReferenceAsset(
-  principal: AgentPrincipal,
+export async function resolveOwnedReferenceAssetForActor(
+  principal: GenerationActor,
   assetId: string,
   dependencies: Partial<ResolveOwnedReferenceAssetDependencies> = {},
 ): Promise<OwnedReferenceAsset> {
-  requirePrincipal(principal);
+  requireGenerationActor(principal);
   const normalizedAssetId = normalizeAssetId(assetId);
   const executor = dependencies.executor ?? defaultExecutor;
   const rows = await executor.query<ReferenceAssetRow>(
@@ -162,4 +151,9 @@ export async function resolveOwnedReferenceAsset(
     ...(sizeBytes === null ? {} : { sizeBytes }),
     ...(originalName === null ? {} : { originalName }),
   };
+}
+
+export function resolveOwnedReferenceAsset(principal: AgentPrincipal, assetId: string, dependencies: Partial<ResolveOwnedReferenceAssetDependencies> = {}): Promise<OwnedReferenceAsset> {
+  requireOAuthGenerationActor(principal);
+  return resolveOwnedReferenceAssetForActor(principal, assetId, dependencies);
 }
