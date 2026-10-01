@@ -33,18 +33,18 @@ import { withDbTransaction, type TransactionQueryExecutor } from "@/lib/db";
 import { resolveStudioMedia } from "./media-resolver";
 import { getWalletSummary } from "@/server/wallet-summary";
 
-function certified(catalog: AgentPublicGenerationEngine[]) {
+function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'video') {
   return catalog
-    .filter((candidate) => candidate.surface === "image")
+    .filter((candidate) => candidate.surface === surface)
     .map((candidate) => ({
       ...candidate,
       publicModes: candidate.publicModes
-        .filter((mode) => mode === "t2i" || mode === "i2i")
+        .filter((mode) => surface === 'image' ? mode === "t2i" || mode === "i2i" : mode === 't2v' || mode === 'i2v')
         .filter((mode) =>
           isWorkspaceModelCertifiedForBlock({
             modelId: candidate.engine.id,
-            presetId: mode === "t2i" ? "generate-image" : "modify-image",
-            workflowType: mode === "t2i" ? "text_to_image" : "image_to_image",
+            presetId: surface === 'video' ? 'generate-video' : mode === "t2i" ? "generate-image" : "modify-image",
+            workflowType: mode === 't2v' ? 'text_to_video' : mode === 'i2v' ? 'image_to_video' : mode === "t2i" ? "text_to_image" : "image_to_image",
           }),
         ),
     }))
@@ -71,10 +71,25 @@ export function createStudioImageGenerationService(
   actor: StudioGenerationActor,
   options: StudioImageGenerationOptions,
 ) {
+  return createStudioVisualGenerationService(actor, options, 'image');
+}
+
+export function createStudioVideoGenerationService(
+  actor: StudioGenerationActor,
+  options: StudioImageGenerationOptions,
+) {
+  return createStudioVisualGenerationService(actor, options, 'video');
+}
+
+function createStudioVisualGenerationService(
+  actor: StudioGenerationActor,
+  options: StudioImageGenerationOptions,
+  surface: 'image' | 'video',
+) {
   requireGenerationActor(actor);
   if (actor.authMethod !== "studio-session")
     throw new AgentApiError("AUTH_REQUIRED", "Studio session required.");
-  const quotes = createQuoteRepository(generationQuoteCodec, {
+  const quotes = createQuoteRepository({...generationQuoteCodec, surfaces: [surface]}, {
     origin: "studio-session",
     projectId: actor.projectId,
   });
@@ -140,6 +155,7 @@ export function createStudioImageGenerationService(
           await (
             prepareDeps.listPublicEngines ?? listPublicAgentGenerationEngines
           )(),
+          surface,
         ),
       resolveGenerationReferences: (request) => resolveReferences(request),
       insertPreparedQuote: async (input, dependencies) => {
@@ -167,6 +183,7 @@ export function createStudioImageGenerationService(
             ((deps) =>
               listPublicAgentGenerationEnginesInExecutor(deps.executor))
           )(dependencies),
+          surface,
         ),
       resolveGenerationReferences: (request, _actor, { executor }) =>
         resolveReferences(request, executor),
@@ -185,6 +202,7 @@ export function createStudioImageGenerationService(
         await (
           prepareDeps.listPublicEngines ?? listPublicAgentGenerationEngines
         )(),
+        surface,
       ),
     resolveReferences,
     prepare: (input: PrepareGenerationInput) => prepare(input, actor),

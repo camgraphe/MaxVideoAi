@@ -385,7 +385,8 @@ export async function prepareGenerationForActor(
   if (principal.authMethod === 'studio-session') {
     let pilotRequest: CanonicalGenerationRequest;
     try { pilotRequest = normalizeGenerationRequest(input); } catch { invalidParameter(); }
-    if (pilotRequest.surface !== 'image' || !['t2i', 'i2i'].includes(pilotRequest.mode)
+    const modes = pilotRequest.surface === 'image' ? ['t2i', 'i2i'] : ['t2v', 'i2v'];
+    if (!modes.includes(pilotRequest.mode)
       || pilotRequest.outputCount !== 1 || pilotRequest.references.some(ref => ref.kind !== 'asset')) invalidParameter();
   }
   const originalTrialCandidate = principal.authMethod === 'oauth' ? trialCandidateFromOriginal(input) : null;

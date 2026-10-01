@@ -10,9 +10,9 @@ test('public OAuth adapters reject a Studio actor before any dependency work', a
   await assert.rejects(prepareGeneration(image, actor as never, {} as never), { code: 'AUTH_REQUIRED' });
   await assert.rejects(confirmGeneration({ quoteId: '123e4567-e89b-42d3-a456-426614174000', confirmed: true }, actor as never, {} as never), { code: 'AUTH_REQUIRED' });
 });
-test('session core is image-only, one output, owned references and wallet only', async () => {
+test('session core bounds visual workflows, one output, owned references and wallet only', async () => {
   for (const input of [
-    { ...image, surface: 'video', mode: 't2v' },
+    { ...image, surface: 'video', mode: 'ref2v' },
     { ...image, outputCount: 2 },
     { ...image, mode: 'i2i', references: [{ kind: 'https', url: 'https://cdn.example.com/unowned.png', role: 'reference', mediaKind: 'image' }] },
   ]) {
