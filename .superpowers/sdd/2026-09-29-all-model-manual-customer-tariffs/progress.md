@@ -502,3 +502,24 @@ quotes with manual_tariff, stale confirmations/state/candidate rejection, atomic
 event and immutable activation history. Local source sandbox remains inactive
 until fresh committed release preparation and review. Production release gate
 remains distinct; no provider/support/payment/storage/push/deployment.
+
+Final fresh whole-branch review10589cc6b..fbbe4cd28: no verified Critical or
+Important blocker. Reviewer classified H3 reference-token billedQuantity as Minor.
+Ruling: treat the false billed-token count as an audit correctness fix for the
+requested pricing decision tool: native normalized arithmetic includes the output
+base and must not be presented as reference tokens billed. Customer totals remain
+unchanged; normalizedQuantity is separate and billedQuantity subtracts the4096
+included tokens. RED4096tokens→20000 billed instead of0; GREEN31/31 open-quantity
+and model-page tests. No deferred minor from this review remains.
+Full suite6604pass/2fail/3skip exposed two older display assertions expecting
+two-decimal per-second approximations. Ruling: preserve canonical current amounts
+and update those expectations to exact current quoted rates, rather than restore
+stale public approximations. Fresh complete validation/build follows the commit.
+Review declined production parity/activation/migration behavior, actual supplier
+contracts/invoices/availability/profitability, external operations, persistent
+sandbox activation, independent full-suite/build/matrix/concurrency reruns,
+browser/accessibility/performance, exhaustive safe-integer enumeration, and a
+fresh exhaustive audit of all older subsystems. Parent owns the local gates;
+production evidence and external actions remain outside this authorization.
+Private sandbox backup created before migrations57/58; actual Unix connection,
+inactive revision3 unchanged. Local activation and final acceptance remain pending.

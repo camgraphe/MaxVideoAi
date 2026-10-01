@@ -320,8 +320,8 @@ test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
       id: 'pricePerSecond',
       key: 'pricePerSecond',
       label: 'Price per second',
-      value: '1080p: $0.05 per second',
-      valueLines: ['1080p: $0.05 per second', '1440p: $0.11 per second', '4k: $0.21 per second'],
+      value: '1080p: $0.053333 per second',
+      valueLines: ['1080p: $0.053333 per second', '1440p: $0.105 per second', '4k: $0.208333 per second'],
     },
   ]);
   assert.match(modelPageSource, /ltx-2-3-fast/);
@@ -486,8 +486,8 @@ test('Pika price rows keep per-second context visible for Google snippets', asyn
       id: 'pricePerSecond',
       key: 'pricePerSecond',
       label: 'Pika 2.2 price per second',
-      value: '720p: $0.05 per second',
-      valueLines: ['720p: $0.05 per second', '1080p: $0.12 per second'],
+      value: '720p: $0.052 per second',
+      valueLines: ['720p: $0.052 per second', '1080p: $0.118 per second'],
     },
   ]);
 });

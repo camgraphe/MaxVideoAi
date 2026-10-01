@@ -90,7 +90,9 @@ test('MiniMax includes 4096 tokens and preserves native rounding beyond sampled 
   assert.equal(selector.referenceTokenBudget, 'continuous');
   const values = [[0,52], [4096,52], [4097,53], [9096,65], [2251799813685250,5854679515623]];
   for (const [tokens, cents] of values) {
-    assert.equal(evaluateManualTariffPrice(price, { reference_tokens: tokens }).customerTotalCents, cents);
+    const evaluated = evaluateManualTariffPrice(price, { reference_tokens: tokens });
+    assert.equal(evaluated.customerTotalCents, cents);
+    assert.equal(evaluated.units[0].billedQuantity, Math.max(0, tokens - 4096));
     const selected = { ...context, referenceTokenBudget: tokens };
     const facts = buildBillingPricingFacts(selected, context.engine.pricingDetails, 'USD').facts;
     assert.equal(buildManualTariffScenario(selected, facts).quantities.reference_tokens, tokens);

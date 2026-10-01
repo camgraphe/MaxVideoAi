@@ -108,7 +108,7 @@ export function normalizeManualTariffUnits(quantity: number, rule: ManualTariffU
 
 export function evaluateManualTariffPrice(price: ManualTariffPrice, quantities: Readonly<Record<string, number>>) {
   if (price.kind === 'fixed') return { exactCustomerCents: price.customerCents, customerTotalCents: price.customerCents, units: [] };
-  const units: { unit: string; quantity: number; centsPerUnit: number; componentId?: string; billedQuantity?: number }[] = [];
+  const units: { unit: string; quantity: number; centsPerUnit: number; componentId?: string; billedQuantity?: number; normalizedQuantity?: number }[] = [];
   if (price.kind === 'unit_bands') {
     units.push(...price.terms.map(term => ({ ...term, quantity: quantities[term.unit] })));
     const weightedUnits = units.reduce((sum, term) => sum + term.centsPerUnit * term.quantity, 0) / price.divisor;
@@ -134,9 +134,9 @@ export function evaluateManualTariffPrice(price: ManualTariffPrice, quantities: 
       let componentAmount = component.flatCents;
       for (const term of component.terms) {
         const quantity = quantities[term.unit];
-        const chargeableQuantity = Math.max(0, quantity - (term.includedUnits ?? 0));
         const rule = term.quantityRounding;
         const native = term.quantityNormalization;
+        const chargeableQuantity = Math.max(0, quantity - (native?.includedUnits ?? term.includedUnits ?? 0));
         const normalized = native ? normalizeManualTariffUnits(quantity, native) : undefined;
         const billedQuantity = native ? normalized! / native.denominator
           : rule ? Math.round(chargeableQuantity * rule.scale * 10 ** rule.precision) / 10 ** rule.precision / rule.scale : chargeableQuantity;
@@ -144,7 +144,8 @@ export function evaluateManualTariffPrice(price: ManualTariffPrice, quantities: 
         // operations changes cents for large, still valid trusted quantities.
         componentAmount += native ? (term.centsPerUnit / native.denominator) * normalized! : term.centsPerUnit * billedQuantity;
         units.push({ unit: term.unit, centsPerUnit: term.centsPerUnit, quantity, componentId: component.id,
-          ...(rule || native || term.includedUnits !== undefined ? { billedQuantity } : {}) });
+          ...(native ? { billedQuantity: chargeableQuantity, normalizedQuantity: billedQuantity }
+            : rule || term.includedUnits !== undefined ? { billedQuantity } : {}) });
       }
       if (component.precision !== undefined) componentAmount = Math.round(componentAmount * 10 ** component.precision) / 10 ** component.precision;
       return total + roundManualTariffAmount(componentAmount, component.rounding);
