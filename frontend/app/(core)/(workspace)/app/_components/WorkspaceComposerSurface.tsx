@@ -485,7 +485,7 @@ export function WorkspaceComposerSurface({
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
         onGenerate={startRender}
-        generateLabel={localDraftPreview ? localDraftPreview.selected ? draftSettingsLocked ? 'Draft généré' : 'Générer le Draft 480p' : 'Générer la vidéo' : undefined}
+        generateLabel={localDraftPreview ? localDraftPreview.selected ? draftSettingsLocked ? 'Draft généré' : 'Draft 480p' : 'Générer la vidéo' : undefined}
         preflight={preflight}
         promptField={inputSchemaSummary.promptField}
         promptRequired={inputSchemaSummary.promptRequired}

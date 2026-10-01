@@ -15,7 +15,8 @@ settings toolbar and workspace shell. Open:
   changes the resolution label to `Draft 480p 🔒`. The existing resolution is
   locked to 480p and the output count to one. Unchecking restores the prior
   resolution and normal action label.
-- The action reads `Générer le Draft 480p`. A short note distinguishes a Draft
+- The action reads `Draft 480p`, keeping the generation button compact.
+  A short note distinguishes a Draft
   eligible for linked finalization from an ordinary 480p video, and explains the
   optional, separately paid 1080p final.
 - Prompt, duration, aspect ratio and audio remain editable before the Draft.
