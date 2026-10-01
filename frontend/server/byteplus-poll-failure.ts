@@ -7,6 +7,7 @@ import { BYTEPLUS_MODELARK_PROVIDER } from '@/server/video-providers/byteplus-mo
 import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
 import type { BytePlusTerminalTrialOutcome } from './byteplus-trial-job-persistence';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
+import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
 
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 
@@ -153,6 +154,7 @@ export async function markBytePlusJobFailed(
     [job.job_id, refunded]
   );
   await applyBytePlusTrialOutcomeSafely(job, { kind: trialOutcome });
+  await reconcileSeedanceWorkflowOutcome(job, 'failed');
   await recordBytePlusPollEvent(job, 'poll:failed', {
     providerStatus: providerStatus ?? null,
     providerErrorCode: providerFailure?.providerErrorCode ?? null,

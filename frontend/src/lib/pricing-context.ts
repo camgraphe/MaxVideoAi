@@ -2,6 +2,7 @@ import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import type { EngineCaps, Mode } from '@/types/engines';
 
 export type PricingContext = {
+  workflowStep?: 'draft' | 'final';
   engine: EngineCaps;
   durationSec: number;
   resolution: string;

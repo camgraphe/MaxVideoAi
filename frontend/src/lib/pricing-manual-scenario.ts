@@ -1,6 +1,7 @@
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
+import { assertSeedanceWorkflowPricing } from '@/lib/seedance-workflow-pricing';
 import type { ManualTariffMedia } from '@/lib/pricing-manual-media';
 import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQuality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
@@ -59,6 +60,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   quantities: Record<string, number>;
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
+  assertSeedanceWorkflowPricing(context);
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);
@@ -80,6 +82,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
     mode: context.mode ?? 't2v',
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(billedDuration),
+    ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),
     ...(!gptImage && pricedAspect !== null ? { aspectRatio: pricedAspect } : {}),
     ...(option(audio) !== undefined ? { audio: option(audio)! } : {}),
     ...(gptImage ? { quality: normalizeGptImageQuality(context.quality, facts.engineId) }

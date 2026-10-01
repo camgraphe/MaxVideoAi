@@ -29,6 +29,8 @@ import {
 } from './customer-tariff-store';
 import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
+import { assertSeedanceWorkflowPricing } from '@/lib/seedance-workflow-pricing';
+import { CustomerTariffUnavailableError } from './resolve-customer-tariff';
 
 /** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
 export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string },
@@ -58,6 +60,7 @@ export async function computeCanonicalBillingSnapshot(
     loadCustomerTariffState?: () => Promise<EffectiveCustomerTariffState>;
   } = {}
 ): Promise<PricingSnapshot> {
+  assertSeedanceWorkflowPricing(context);
   const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
     {
@@ -73,7 +76,7 @@ export async function computeCanonicalBillingSnapshot(
   const memberTierDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
-  if (dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
+  if (context.workflowStep || dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState ?? (() => loadCustomerTariffQuoteState(selector)))();
     const manual = resolveCustomerTariffQuote({ context, facts: billingFacts.facts,
@@ -88,6 +91,7 @@ export async function computeCanonicalBillingSnapshot(
         vendorAccountId,
         meta: {
           ...billingFacts.meta,
+          ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),
           ...(manual.supplierCost ? { providerCostKind: manual.supplierCost.kind,
             providerCostSource: manual.supplierCost.source, providerCostSourceUrl: manual.supplierCost.sourceUrl,
             providerCostCheckedAt: manual.supplierCost.checkedAt, providerCostListUsd: manual.supplierCost.listAmountUsd,
@@ -101,6 +105,7 @@ export async function computeCanonicalBillingSnapshot(
       });
     }
   }
+  if (context.workflowStep) throw new CustomerTariffUnavailableError('A separate active Draft workflow tariff is required.');
   const policyDocument = getVersionedPricingPolicy();
   const profileId = policy.rule.compatibilityProfile ?? billingFacts.compatibilityProfileId;
   const compatibilityProfile: PricingCompatibilityProfile | undefined = policyDocument.compatibilityProfiles.find(

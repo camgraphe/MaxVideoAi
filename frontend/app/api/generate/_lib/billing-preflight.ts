@@ -81,6 +81,7 @@ export type GenerateBillingPreflightResult =
     };
 
 export async function resolveGenerateBillingPreflight(params: {
+  workflowStep?: 'draft' | 'final';
   req: NextRequest;
   engine: EngineCaps;
   mode: Mode;
@@ -184,6 +185,7 @@ export async function resolveGenerateBillingPreflight(params: {
     voiceControl: params.voiceControl,
   });
   const pricing = capturedQuote ? structuredClone(capturedQuote.pricing) : await computePricingSnapshotFn({
+    workflowStep: params.workflowStep,
     engine: pricingEngine,
     durationSec: params.durationSec,
     resolution: params.pricingResolution,

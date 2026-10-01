@@ -3,6 +3,7 @@ import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
 import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
 import { validateInitialVideoFunding } from './initial-video-job-funding';
+import { reserveInitialSeedanceFinal, type SeedanceFinalReservation } from './initial-seedance-final';
 import { lockQuotedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
 
 import { validateCapturedDirectJobQuote, DirectPaymentQuoteError } from '@/server/pricing/direct-payment-quotes';
@@ -120,6 +121,7 @@ export type ProvisionalVideoJobInsert = {
 };
 
 type CreateVideoInitialJobBaseParams = {
+  seedanceFinal?: SeedanceFinalReservation;
   auditPricingSnapshot?: unknown;
   jobId: string;
   userId: string;
@@ -336,6 +338,15 @@ export async function createInitialVideoJobInExecutor(
   }
 
   let walletChargeReserved = false;
+
+  try {
+    await reserveInitialSeedanceFinal(executor, params);
+  } catch (error) {
+    throw new VideoInitialJobError(error instanceof Error ? error.message : 'This Draft is unavailable.', {
+      status: 409, body: { ok: false, error: 'SEEDANCE_DRAFT_UNAVAILABLE' },
+      metricKind: 'rejected', metricCode: 'SEEDANCE_DRAFT_UNAVAILABLE',
+    });
+  }
 
 
   if (!includedTrialFunding && params.paymentMode === 'wallet') {

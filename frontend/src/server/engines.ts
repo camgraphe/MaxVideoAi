@@ -143,6 +143,7 @@ export type TrustedPreflightMediaPricingFacts = Readonly<{
 }>;
 
 export type ComputeConfiguredPreflightOptions = Readonly<{
+  seedanceWorkflowStep?: 'draft' | 'final';
   resolvedEngine?: EngineCaps;
   trustedMediaPricingFacts?: TrustedPreflightMediaPricingFacts;
   bootstrap?: boolean;
@@ -299,6 +300,7 @@ export async function computeConfiguredPreflight(
   let snapshot: PricingSnapshot;
   try {
     snapshot = await computeCanonicalPublicSnapshot({
+      workflowStep: options.seedanceWorkflowStep,
       engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,

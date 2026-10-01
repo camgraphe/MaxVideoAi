@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+export { markSeedanceFinalState, releaseRefundedSeedanceFinal } from './seedance-draft-final-state';
 
 type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promise<T[]>;
 

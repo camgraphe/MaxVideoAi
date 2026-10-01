@@ -61,7 +61,7 @@ export function normalBytePlusSupplierCost(context: PricingContext, at: string) 
   const list = bytePlusNormalListCost(usage);
   if (!list) return null;
   const contract = signedBytePlusContractCost({ ...usage, executionProvider: 'byteplus_modelark',
-    accountContractRegion: ENV.BYTEPLUS_ARK_REGION, step: 'normal' }, { ...list, status: 'published_list_estimate' }, at);
+    accountContractRegion: ENV.BYTEPLUS_ARK_REGION, step: context.workflowStep ?? 'normal' }, { ...list, status: 'published_list_estimate' }, at);
   return { amountUsd: contract?.amountUsd ?? list.amountUsd, listAmountUsd: list.amountUsd,
     kind: contract ? 'signed_contract_estimate' as const : 'published_list_estimate' as const,
     source: contract?.source ?? 'BytePlus ModelArk published LIST', sourceUrl: list.sourceUrl,

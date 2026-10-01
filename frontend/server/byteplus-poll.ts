@@ -29,6 +29,7 @@ import {
 import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
+import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
 import {
   buildNextBytePlusStorageCopyState,
   getBytePlusStorageCopyState,
@@ -334,6 +335,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         await recordBytePlusPollEventFn(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
       }
+      await reconcileSeedanceWorkflowOutcome(job, 'completed', (sql, params) => queryFn(sql, params ? [...params] : undefined));
       await applyBytePlusTrialOutcomeSafelyFn(job, { kind: 'completed' });
       await upsertLegacyJobOutputsFn({
         job_id: job.job_id,

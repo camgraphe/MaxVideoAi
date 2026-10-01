@@ -31,6 +31,7 @@ import {
 } from './trusted-video-billing';
 import { resolveGoogleOmniInheritedDurationSec } from '@/server/video-providers/google-vertex-omni/pricing-context';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 
 export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -64,6 +65,7 @@ type VideoGenerationReservationOptions =
     };
 
 export type ExecuteVideoGenerationOptions = {
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
   req: NextRequest;
   body: Record<string, unknown>;
   routeContext: GenerateRouteContext;
@@ -299,6 +301,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
         durationSec: effectiveDurationSec,
       })
     : await resolveGenerateBillingPreflight({
+    workflowStep: params.seedanceWorkflow?.workflow.step,
     req,
     engine,
     mode,
@@ -443,6 +446,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     elements,
     falInputs,
   });
+  if (params.seedanceWorkflow) settingsSnapshot.seedanceWorkflow = params.seedanceWorkflow.workflow;
 
   return executePreparedVideoGeneration({
     body,
@@ -472,5 +476,6 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     falPayload,
     falInputSummary,
     settingsSnapshot,
+    seedanceWorkflow: params.seedanceWorkflow,
   });
 }

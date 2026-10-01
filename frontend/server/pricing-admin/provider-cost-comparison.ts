@@ -151,7 +151,7 @@ export function providerComparisonInputFromScenario(input: {
     ...(input.context?.inputVideoDurationSec !== undefined ? { inputVideoDurationSec: input.context.inputVideoDurationSec } : {}),
     outputQuantity: input.mediaType === 'image' ? quantity : undefined,
     aspectRatio: tokenEstimate?.aspectRatio ?? seedance15AspectRatio ?? aspectRatio,
-    step: 'normal',
+    step: input.context?.workflowStep ?? 'normal',
     billingInputType,
     audio: typeof scenario.input.audio === 'boolean'
       ? scenario.input.audio

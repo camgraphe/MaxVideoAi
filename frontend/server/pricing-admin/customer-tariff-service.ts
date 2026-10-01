@@ -25,11 +25,17 @@ import { isOpenQuantityTariff } from '@/server/pricing/open-quantity-tariff';
 import { openTariffQuantityKey, withOpenTariffQuantity, resolveOpenTariffScenarioId } from '@/lib/pricing-audit/open-quantity-tariff-scenario';
 import { reviewedCustomerTariffCoverageGap } from '@/server/pricing/customer-tariff-reviewed-seed';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
+import { seedanceWorkflowScenarios } from '@/lib/pricing-audit/seedance-workflow-scenarios';
 import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
   CustomerTariffChangeProposal, CustomerTariffInventory, CustomerTariffScenarioDetail,
   CustomerTariffScenarioChoice } from './customer-tariff-contract';
 
-const SCENARIO_DIMENSIONS = ['mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
+function adminTariffCoverage() {
+  const coverage = collectSellableManualTariffCoverage();
+  return { ...coverage, scenarios: [...coverage.scenarios, ...seedanceWorkflowScenarios(coverage.scenarios)] };
+}
+
+const SCENARIO_DIMENSIONS = ['workflowStep', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
   'referenceImageCount', 'inputImageCount', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
   'referenceTokenBudget', 'billingInputType', 'voiceControl', 'loop', 'hdr', 'exrExport'] as const;
 
@@ -119,7 +125,7 @@ export function chooseCustomerTariffScenario(
 export async function loadCustomerTariffScenarioDetail(
   modelId: string, requested: Record<string, string>,
 ): Promise<CustomerTariffScenarioDetail> {
-  const coverage = collectSellableManualTariffCoverage();
+  const coverage = adminTariffCoverage();
   const options = coverage.scenarios.filter((scenario) => scenario.modelId === modelId);
   const { scenario, choices } = chooseCustomerTariffScenario(options, requested);
   const [state, policy] = await Promise.all([loadEffectiveCustomerTariffState(), loadPricingPolicyOverrides()]);
@@ -158,7 +164,7 @@ function currentDatabaseCell(state: EffectiveCustomerTariffState, id: string): M
 }
 
 function scenarioById(id: string): ManualTariffCoverageScenario {
-  const coverage = collectSellableManualTariffCoverage().scenarios;
+  const coverage = adminTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
   const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
     ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id) ?? resolveOpenTariffScenarioId(coverage, id);
@@ -211,7 +217,7 @@ export async function loadCustomerTariffInventory(): Promise<CustomerTariffInven
   const [policyInventory, state] = await Promise.all([
     loadPricingPolicyInventory(), loadEffectiveCustomerTariffState(),
   ]);
-  const coverage = collectSellableManualTariffCoverage();
+  const coverage = adminTariffCoverage();
   const byModel = new Map<string, ManualTariffCoverageScenario[]>();
   for (const scenario of coverage.scenarios) {
     const bucket = byModel.get(scenario.modelId) ?? [];

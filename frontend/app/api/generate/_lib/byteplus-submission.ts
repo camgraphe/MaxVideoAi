@@ -27,6 +27,9 @@ import {
   toUserFacingFailureMessage,
 } from '@/server/user-facing-failure-messages';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
+import { prepareSeedanceWorkflowSubmission, type SeedanceSubmissionWorkflow } from '@/server/seedance-workflow-submission';
+import { reconcileSeedanceWorkflowOutcome } from '@/server/seedance-workflow-outcome';
+import type { BytePlusPendingJob } from '@/server/byteplus-poll-types';
 
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
 type LogMetricFn = (
@@ -62,6 +65,7 @@ export type BytePlusSubmissionResult =
     };
 
 export async function submitBytePlusGenerateTask(params: {
+  seedanceWorkflow?: SeedanceSubmissionWorkflow;
   jobId: string;
   userId: string;
   engineId: string;
@@ -114,6 +118,8 @@ export async function submitBytePlusGenerateTask(params: {
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
   const persistProviderJobIdFn = deps.persistProviderJobIdFn;
   const logMetricFn = deps.logMetricFn;
+  let providerAttempted = false;
+  let acceptedProviderJobId: string | null = null;
 
   try {
     assertBytePlusSeedanceSubmissionEnabled(params.engineId);
@@ -133,7 +139,7 @@ export async function submitBytePlusGenerateTask(params: {
             params.referenceValuesByField ?? {}
           )
         : undefined;
-    const payload = buildBytePlusSeedancePayloadFn({
+    const payloadInput: Parameters<typeof buildBytePlusSeedancePayload>[0] = {
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
       durationSec: params.durationSec,
@@ -162,10 +168,17 @@ export async function submitBytePlusGenerateTask(params: {
       ...(referenceBudget
         ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
         : {}),
-    });
-    const transport = resolveBytePlusTransport(params.engineId, params.mode);
+    };
+    const workflow = params.seedanceWorkflow ? await prepareSeedanceWorkflowSubmission({
+      workflow: params.seedanceWorkflow, jobId: params.jobId, userId: params.userId,
+      engineId: params.engineId, iterationCount: params.iterationCount, paymentMode: params.paymentMode, payloadInput,
+    }, queryFn) : null;
+    const payload = workflow?.payload ?? buildBytePlusSeedancePayloadFn(payloadInput);
+    const transport = workflow ? 'modelark' : resolveBytePlusTransport(params.engineId, params.mode);
+    providerAttempted = true;
     const providerTask = await getBytePlusModelArkClientFn(transport).createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
+    acceptedProviderJobId = providerJobId;
     await persistProviderJobIdFn?.(providerJobId);
     const status = providerTask.status === 'running' ? 'running' : 'queued';
     const progress = providerTask.status === 'running' ? 30 : 10;
@@ -193,6 +206,7 @@ export async function submitBytePlusGenerateTask(params: {
        WHERE job_id = $1`,
       [params.jobId, status, progress, 'Render submitted.', BYTEPLUS_MODELARK_PROVIDER, providerJobId, transport]
     );
+    await workflow?.recordAccepted(providerJobId);
     logMetricFn?.('accepted', {
       jobId: params.jobId,
       meta: {
@@ -243,6 +257,15 @@ export async function submitBytePlusGenerateTask(params: {
   } catch (error) {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
+    if (params.seedanceWorkflow && providerAttempted && (acceptedProviderJobId || !providerStatus || providerStatus < 400 || providerStatus >= 500)) {
+      await queryFn(`UPDATE app_jobs SET status = CASE WHEN $3::text IS NULL THEN 'provider_polling_stalled' ELSE 'queued' END,
+        provider_job_id = COALESCE(provider_job_id, $3), message = $4, provisional = FALSE, updated_at = now()
+        WHERE job_id = $1 AND user_id = $2 AND status IN ('pending', 'queued', 'running')`,
+        [params.jobId, params.userId, acceptedProviderJobId, 'This render needs review before retrying or refunding.'])
+        .catch(() => undefined);
+      return { ok: false, status: 503, body: { ok: false, error: 'SEEDANCE_WORKFLOW_SUBMISSION_UNCERTAIN',
+        jobId: params.jobId, paymentStatus: params.paymentStatus, message: 'Submission is being checked. Do not submit again.' } };
+    }
     const providerErrorCode =
       error instanceof BytePlusModelArkError && error.code
         ? error.code
@@ -362,6 +385,21 @@ export async function submitBytePlusGenerateTask(params: {
         }
       } catch (refundError) {
         console.warn('[byteplus] could not confirm refund state', { jobId: params.jobId }, refundError);
+      }
+    }
+    if (params.seedanceWorkflow) {
+      try {
+        const jobs = await queryFn(
+          `SELECT job_id, user_id, engine_id, provider_job_id, settings_snapshot FROM app_jobs
+           WHERE job_id = $1 AND user_id = $2 AND provider = $3 AND status = 'failed'`,
+          [params.jobId, params.userId, BYTEPLUS_MODELARK_PROVIDER]
+        );
+        if (Array.isArray(jobs) && jobs.length === 1) {
+          await reconcileSeedanceWorkflowOutcome(jobs[0] as BytePlusPendingJob, 'failed',
+            async <T,>(sql: string, values?: readonly unknown[]) => await queryFn(sql, values ? [...values] : undefined) as T[]);
+        }
+      } catch (outcomeError) {
+        console.warn('[byteplus] could not reconcile Draft workflow failure', { jobId: params.jobId }, outcomeError);
       }
     }
     logMetricFn?.('failed', {

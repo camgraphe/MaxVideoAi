@@ -24,6 +24,7 @@ import type { LaunchCanaryRequestContext } from '@/server/model-launch-canary-re
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 import { validateRuntimeRequestSettings } from '@/app/api/generate/_lib/runtime-schema-options';
 import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 
 type MediaConstraintDependencies = Parameters<
   typeof validateNormalizedGenerationAttachments
@@ -99,6 +100,7 @@ function hasValidPersistedReferenceRoles(engine: EngineCaps, request: PreflightR
 export async function resolveMediaAwarePreflight(
   input: {
     request: PreflightRequest;
+    trustedSeedanceWorkflow?: PreparedSeedanceWorkflow;
     userId?: string | null;
     resolveUserId?: () => Promise<string | null>;
     launchCanaryContext?: LaunchCanaryRequestContext | null;
@@ -108,6 +110,9 @@ export async function resolveMediaAwarePreflight(
   const parsedRequest = parsePreflightRequestPayload(input.request);
   if (!parsedRequest.ok) return parsedRequest.response;
   const request = parsedRequest.request;
+  if (request.seedanceWorkflow && !input.trustedSeedanceWorkflow) {
+    return mediaPricingFailure('SEEDANCE_DRAFT_UNAVAILABLE', 'An owned Draft workflow is required.');
+  }
   if (isArchivedGenerationModel(request.engine)) {
     return { ok: false, messages: ['This model is no longer available. Choose another model.'], error: { code: 'ENGINE_RETIRED', message: 'This model is no longer available.' } };
   }
@@ -268,6 +273,7 @@ export async function resolveMediaAwarePreflight(
   }
 
   return computeConfiguredPreflightFn(request, {
+    seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
     resolvedEngine: engine,
     trustedMediaPricingFacts,
     bootstrap: false,

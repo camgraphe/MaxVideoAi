@@ -3,6 +3,7 @@ import { formatProviderComparisonScenario } from '../_lib/pricing-cockpit-view-m
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 
 const LABELS: Record<string, string> = {
+  workflowStep: 'Generation workflow',
   mode: 'Generation mode', resolution: 'Resolution', durationSec: 'Duration (seconds)',
   aspectRatio: 'Aspect ratio', audio: 'Audio', quality: 'Quality', inputImageCount: 'Input images',
   inputVideoDurationSec: 'Input video (seconds)', inheritedDurationSec: 'Inherited video (seconds)',
@@ -13,6 +14,7 @@ const LABELS: Record<string, string> = {
   hdr: 'HDR', exrExport: 'EXR export',
 };
 function valueLabel(key: string, value: string) {
+  if (key === 'workflowStep') return value === 'draft' ? 'Draft 480p' : value === 'final' ? 'Final 1080p (second charge)' : 'Standard generation';
   if (key === 'billingInputType') return value === 'video_input' ? 'With video input'
     : value === 'no_video_input' ? 'Without video input' : 'Legacy default';
   if (['loop', 'voiceControl', 'hdr', 'exrExport'].includes(key)) return value === 'true' ? 'On' : 'Off';

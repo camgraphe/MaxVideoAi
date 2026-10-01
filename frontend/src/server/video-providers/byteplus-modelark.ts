@@ -12,6 +12,7 @@ import {
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
 import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
+import type { Seedance25FinalRequest } from './byteplus-modelark-draft';
 import {
   firstString,
   normalizeBytePlusTask,
@@ -172,7 +173,7 @@ export class BytePlusModelArkClient {
     this.baseUrl = trimTrailingSlash(params.baseUrl);
   }
 
-  async createSeedanceFastTask(payload: BytePlusSeedanceFastPayload): Promise<NormalizedVideoProviderTask> {
+  async createSeedanceFastTask(payload: BytePlusSeedanceFastPayload | Seedance25FinalRequest): Promise<NormalizedVideoProviderTask> {
     const response = await fetch(`${this.baseUrl}/contents/generations/tasks`, {
       method: 'POST',
       headers: {
