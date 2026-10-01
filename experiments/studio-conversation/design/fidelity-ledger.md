@@ -11,7 +11,7 @@ Référence acceptée : `studio-premiers-echanges.png`, 1672×941, et l’étude
 | Médias autour | Deux visuels à gauche, un principal et un secondaire à droite | Conservé ; composition déterministe, maximum quatre, sélection/pins et bibliothèque pour le reste |
 | Photographies | Même famille cobalt/verre/mer/lin | Vrais assets séparés issus de l’étude précédente ; variation geste et cadrages propres aux sources, aucun screenshot de UI utilisé comme média |
 | Montage | Bande inférieure, vignettes, lecture, curseur or et temps | Conservé ; ajout de vraie coupe, ordre, zoom, undo/redo et export, voix/ambiance mesurées plutôt qu’une waveform décorative |
-| Moniteur | Aucun lecteur envahissant permanent dans le mockup ; nouvelle demande de repli au-dessus du montage | Bande repliable entre canevas/chat et timeline ; les quatre visuels desktop restent présents, la saisie mobile reste au-dessus |
+| Moniteur | Aucun lecteur envahissant permanent dans le mockup ; repli au-dessus du montage et retrait des commandes dupliquées | Aperçu centré avec repli dans son coin ; la timeline pilote la lecture, les quatre visuels desktop restent présents et la saisie mobile reste au-dessus |
 | Audio et rendus | Absent de la référence initiale | Extension explicitement demandée : lecteurs dans les messages, MP4/MP3 et téléchargement |
 | Mobile | Pas de référence raster mobile | Chat seul, résultats inline, montage horizontal, coupe dans des contrôles larges, moniteur fermable |
 

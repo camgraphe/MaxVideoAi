@@ -2137,38 +2137,26 @@ input[type="checkbox"] {
   background: color-mix(in srgb, var(--panel) 45%, transparent);
 }
 .monitor {
-  width: min(100%, 560px);
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto;
-  gap: 4px 18px;
-  align-items: center;
-  min-width: 0;
-}
-.monitor-heading {
-  grid-column: 2;
-  grid-row: 1;
+  width: fit-content;
+  max-width: 100%;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
   align-items: center;
-  gap: 7px;
   min-width: 0;
-  height: 28px;
-  color: var(--soft);
-  font-size: 10px;
 }
-.monitor-heading > span {
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.monitor-heading .icon-button {
+.monitor-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
   width: 28px;
   height: 28px;
+  background: #101014b8;
+  color: var(--media-text);
+  border-radius: 50%;
 }
 .monitor-screen {
-  grid-column: 1;
-  grid-row: 1 / 4;
   height: 124px;
   width: auto;
   max-width: 220px;
@@ -2218,28 +2206,9 @@ input[type="checkbox"] {
   width: 24px;
   height: 24px;
 }
-.monitor-controls {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-width: 0;
-}
-.monitor-controls input {
-  flex: 1;
-  min-width: 30px;
-}
-.monitor-controls span {
-  font-size: 9px;
-  color: var(--muted);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
 .monitor-actions {
-  grid-column: 2;
-  grid-row: 3;
   display: flex;
+  justify-content: center;
   gap: 7px;
   flex-wrap: wrap;
 }
@@ -2264,11 +2233,6 @@ input[type="checkbox"] {
   .monitor-dock {
     padding: 8px 17px;
   }
-  .monitor {
-    width: 100%;
-    grid-template-columns: 146px minmax(0, 1fr);
-    gap: 2px 12px;
-  }
   .monitor-screen {
     height: 82px;
     max-width: 146px;
@@ -2282,40 +2246,6 @@ input[type="checkbox"] {
   }
   .monitor-screen audio {
     height: 30px;
-  }
-  .monitor-heading {
-    height: 27px;
-    font-size: 9px;
-    gap: 5px;
-  }
-  .monitor-heading > svg {
-    display: none;
-  }
-  .monitor-heading .icon-button {
-    width: 28px;
-    height: 28px;
-  }
-  .monitor-controls {
-    display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: 5px 3px;
-  }
-  .monitor-controls .icon-button {
-    width: 28px;
-    height: 28px;
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .monitor-controls span {
-    font-size: 8px;
-    grid-column: 2;
-    grid-row: 1;
-  }
-  .monitor-controls input {
-    width: 100%;
-    grid-column: 1 / -1;
-    grid-row: 2;
-    min-height: 18px;
   }
   .monitor-actions {
     gap: 4px;
@@ -2336,9 +2266,6 @@ input[type="checkbox"] {
   .monitor-screen {
     height: 62px;
     max-width: 111px;
-  }
-  .monitor {
-    grid-template-columns: 111px minmax(0, 1fr);
   }
   .monitor-dock {
     padding-block: 5px;

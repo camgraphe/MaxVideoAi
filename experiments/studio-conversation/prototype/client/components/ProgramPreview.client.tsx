@@ -1,11 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import {
-  ChevronDown,
-  Play,
-  Pause,
-  Clapperboard,
-  AudioLines,
-} from "lucide-react";
+import { ChevronDown, AudioLines } from "lucide-react";
 import type { Asset, Clip, Project } from "../../shared/types";
 import {
   synchronizeTimelineAudio,
@@ -14,7 +8,7 @@ import {
 } from "../mediaPlayback";
 import type { Playback } from "../hooks/usePlayback";
 import { mediaUrl } from "../hooks/useStudio";
-import { videoStart, sequenceDuration } from "../../shared/timeline";
+import { videoStart } from "../../shared/timeline";
 function ProgramVideo({
   project,
   clip,
@@ -133,29 +127,17 @@ export function ProgramPreview({
   }, [visible]);
   const videoClips = project.clips.filter((c) => c.track === "video");
   const active =
-      project.clips.find(
-        (c) =>
-          c.track === "video" &&
-          playback.time >=
-            videoStart(project.clips, c.id) / project.settings.fps &&
-          playback.time <
-            (videoStart(project.clips, c.id) + c.outFrame - c.inFrame) /
-              project.settings.fps,
-      ) ?? videoClips.at(-1),
-    duration = sequenceDuration(project);
+    project.clips.find(
+      (c) =>
+        c.track === "video" &&
+        playback.time >=
+          videoStart(project.clips, c.id) / project.settings.fps &&
+        playback.time <
+          (videoStart(project.clips, c.id) + c.outFrame - c.inFrame) /
+            project.settings.fps,
+    ) ?? videoClips.at(-1);
   return (
     <section ref={container} className="monitor" aria-label="Petit moniteur">
-      <div className="monitor-heading">
-        <Clapperboard size={14} />
-        <span>{mode === "program" ? "Votre montage" : asset?.name}</span>
-        <button
-          className="icon-button"
-          aria-label="Replier le moniteur"
-          onClick={onClose}
-        >
-          <ChevronDown size={15} />
-        </button>
-      </div>
       <div
         className={
           "monitor-screen " +
@@ -170,6 +152,13 @@ export function ProgramPreview({
                 : "16 / 9",
         }}
       >
+        <button
+          className="icon-button monitor-close"
+          aria-label="Replier le moniteur"
+          onClick={onClose}
+        >
+          <ChevronDown size={15} />
+        </button>
         {mode === "program" ? (
           active ? (
             <ProgramVideo
@@ -194,6 +183,7 @@ export function ProgramPreview({
           <img src={mediaUrl(project.id, asset.id)} alt={asset.name} />
         ) : asset?.kind === "video" ? (
           <video
+            aria-label={asset.name}
             controls
             playsInline
             preload="metadata"
@@ -205,6 +195,7 @@ export function ProgramPreview({
             <>
               <AudioLines size={36} />
               <audio
+                aria-label={asset.name}
                 controls
                 src={mediaUrl(project.id, asset.id)}
                 preload="metadata"
@@ -213,44 +204,17 @@ export function ProgramPreview({
           )
         )}
       </div>
-      {mode === "program" && (
-        <>
-          <div className="monitor-controls">
-            <button
-              className="icon-button"
-              disabled={!duration}
-              onClick={playback.toggle}
-              aria-label={
-                playback.playing ? "Mettre en pause" : "Lire le montage"
-              }
-            >
-              {playback.playing ? <Pause size={16} /> : <Play size={16} />}
-            </button>
-            <input
-              type="range"
-              min="0"
-              max={duration || 1}
-              step={1 / project.settings.fps}
-              value={playback.time}
-              onChange={(e) => playback.seek(Number(e.target.value))}
-              aria-label="Position de lecture"
+      {mode === "program" &&
+        project.clips
+          .filter((c) => c.track !== "video")
+          .map((c) => (
+            <AudioTrack
+              key={c.id}
+              project={project}
+              clip={c}
+              playback={playback}
             />
-            <span>
-              {playback.time.toFixed(2)} / {duration.toFixed(1)} s
-            </span>
-          </div>
-          {project.clips
-            .filter((c) => c.track !== "video")
-            .map((c) => (
-              <AudioTrack
-                key={c.id}
-                project={project}
-                clip={c}
-                playback={playback}
-              />
-            ))}
-        </>
-      )}
+          ))}
       {actions}
     </section>
   );
