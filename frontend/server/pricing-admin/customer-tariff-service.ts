@@ -4,6 +4,8 @@ import { resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pric
 
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration, resolveWan3TariffScenarioId } from '@/lib/pricing-audit/wan3-tariff-scenario';
+import { supportsSeedanceInputTariff, seedanceInputTariffMaximum } from '@/lib/seedance-input-tariff';
+import { withSeedanceTariffInputDuration, resolveSeedanceTariffScenarioId } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
 import { ltx25AudioTariffBounds } from '@/lib/ltx25-audio-tariff';
 import { withLtx25AudioTariffDuration, resolveLtx25AudioTariffScenarioId } from '@/lib/pricing-audit/ltx25-audio-tariff-scenario';
 import { supportsOmniTariffMedia, withOmniTariffMedia, resolveOmniTariffScenarioId } from '@/lib/pricing-audit/omni-tariff-scenario';
@@ -36,8 +38,8 @@ function adminTariffCoverage() {
 }
 
 const SCENARIO_DIMENSIONS = ['workflowStep', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
-  'referenceImageCount', 'inputImageCount', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
-  'referenceTokenBudget', 'billingInputType', 'voiceControl', 'loop', 'hdr', 'exrExport'] as const;
+  'referenceImageCount', 'inputImageCount', 'billingInputType', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
+  'referenceTokenBudget', 'voiceControl', 'loop', 'hdr', 'exrExport'] as const;
 
 /** Resolve one supported exact selector while narrowing each subsequent control to valid options. */
 export function chooseCustomerTariffScenario(
@@ -47,6 +49,7 @@ export function chooseCustomerTariffScenario(
   let candidates = [...scenarios];
   const choices: CustomerTariffScenarioChoice[] = [];
   let decimalInputDuration: number | undefined;
+  let seedanceInputDuration: number | undefined;
   let decimalAudioDuration: number | undefined;
   let omniSource: number | undefined;
   let omniInherited: number | undefined;
@@ -94,6 +97,19 @@ export function chooseCustomerTariffScenario(
       continue;
     }
     if (key === 'inputVideoDurationSec' && candidates.every(candidate =>
+      supportsSeedanceInputTariff(candidate.modelId, candidate.selector.mode, candidate.selector.billingInputType))) {
+      try {
+        const value = requested[key] ?? options[0];
+        if (!value?.trim()) throw new Error('Source duration required.');
+        seedanceInputDuration = Number(value);
+        withSeedanceTariffInputDuration(candidates[0], seedanceInputDuration);
+      } catch { throw new PricingAdminError('unsupported_scenario', 'Enter a positive supported Seedance source-video duration.'); }
+      choices.push({ key, value: String(seedanceInputDuration), options: [],
+        range: { minExclusive: 0, max: seedanceInputTariffMaximum(candidates[0].modelId)! } });
+      candidates = candidates.filter(candidate => candidate.selector[key] === options[0]);
+      continue;
+    }
+    if (key === 'inputVideoDurationSec' && candidates.every(candidate =>
       supportsWan3TariffInputDuration(candidate.modelId, candidate.selector.mode))) {
       const requestedValue = requested[key] ?? (candidates[0].context.mode === 'ref2v' ? '0' : options[0]);
       try {
@@ -115,7 +131,8 @@ export function chooseCustomerTariffScenario(
   if (candidates.length !== 1 || !candidates[0]) {
     throw new PricingAdminError('ambiguous_selector', 'Tariff selector does not resolve to one supported scenario');
   }
-  return { scenario: openQuantity !== undefined ? withOpenTariffQuantity(candidates[0], openQuantity)
+  return { scenario: seedanceInputDuration !== undefined ? withSeedanceTariffInputDuration(candidates[0], seedanceInputDuration)
+    : openQuantity !== undefined ? withOpenTariffQuantity(candidates[0], openQuantity)
     : omniSource !== undefined || omniInherited !== undefined ? withOmniTariffMedia(candidates[0], {
     inputVideoDurationSec: omniSource ?? 0, ...(omniInherited === undefined ? {} : { inheritedDurationSec: omniInherited }) })
     : decimalAudioDuration !== undefined ? withLtx25AudioTariffDuration(candidates[0], decimalAudioDuration)
@@ -144,6 +161,7 @@ export async function loadCustomerTariffScenarioDetail(
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
   const continuousInputTariff = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+    || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType)
     || isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)
     || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) || supportsOmniTariffMedia(scenario.modelId, scenario.selector.mode))
     ? await continuousInputTariffDetail(scenario, state, policy).catch(() => undefined) : undefined;
@@ -167,7 +185,7 @@ function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = adminTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
   const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
-    ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id) ?? resolveOpenTariffScenarioId(coverage, id);
+    ?? resolveSeedanceTariffScenarioId(coverage, id) ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id) ?? resolveOpenTariffScenarioId(coverage, id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }

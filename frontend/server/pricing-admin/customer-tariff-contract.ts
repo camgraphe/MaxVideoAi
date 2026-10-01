@@ -55,6 +55,7 @@ export type CustomerTariffScenarioDetail = {
     inputCentsPerSecond: number;
     maxInputSeconds: number;
     minInputSeconds?: number | null;
+    seedanceMinimum?: { includedInputSeconds: number; minimumBillableSeconds: number };
   };
 };
 
@@ -62,6 +63,7 @@ export type CustomerTariffChangeProposal =
   | { operation: 'create' | 'update'; scenarioId: string; customerCents: number }
   | { operation: 'create' | 'update'; scenarioId: string; scope: 'continuous_input'; price:
       { kind: 'preserve_current' } | { kind: 'linear_input'; outputCents: number; inputCentsPerSecond: number }
+      | { kind: 'seedance_billable'; customerCentsPerBillableSecond: number }
       | { kind: 'linear_open'; outputCents: number; unitCents: number }
       | { kind: 'linear_video'; outputCentsPerSecond: number; inputCentsPerSecond: number } }
   | { operation: 'delete'; scenarioId: string; scope?: 'continuous_input' }

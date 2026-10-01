@@ -8,6 +8,7 @@ import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
 import { ltx25AudioTariffBounds, validateLtx25AudioTariffDuration } from '@/lib/ltx25-audio-tariff';
+import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
 
 /** A reviewed quantity-priced class; all other options still match exactly. */
 export function continuousWan3TariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
@@ -20,6 +21,11 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (!selector.workflowStep && supportsSeedanceInputTariff(selector.engineId, selector.mode, selector.billingInputType)) {
+    if (selector.inputVideoDurationSec === undefined) return null;
+    validateSeedanceInputTariffDuration(selector.engineId, Number(selector.inputVideoDurationSec));
+    return { ...selector, inputVideoDurationSec: 'continuous' };
+  }
   if (['lumaRay2', 'lumaRay2_flash'].includes(selector.engineId) && selector.mode === 'v2v') {
     if (!Number.isSafeInteger(Number(selector.durationSec)) || Number(selector.durationSec) < 1) throw new Error('Invalid billed Luma duration.');
     return { ...selector, durationSec: 'continuous' };

@@ -177,8 +177,8 @@ function canonicalInputVideoDurationSec(
   const bytePlus = isBytePlusInputVideoPricingModel(request.engineId);
   if (!isWan3EngineId(request.engineId) && !bytePlus) return undefined;
   if (request.mode !== 'ref2v' && request.mode !== 'v2v' && request.mode !== 'extend') return bytePlus ? undefined : 0;
-  // Declared HTTPS references/budgets retain their customer tariff, but do not
-  // establish a factual BytePlus supplier estimate without resolved metadata.
+  // Unresolved media cannot establish supplier usage. Active proportional
+  // tariffs require trusted source duration; caller declarations cannot supply it.
   if (bytePlus && (request.references.some(reference => reference.kind === 'https' && reference.mediaKind === 'video')
     || request.references.some(reference => reference.kind === 'asset' && !context.resolvedReferences?.some(resolved =>
       resolved.assetId === reference.assetId && resolved.role === reference.role && resolved.slot === reference.slot)))) return undefined;

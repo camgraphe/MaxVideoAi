@@ -48,7 +48,11 @@ type PricingDimension = {
 
 function mediaDimensions(modelId: string, mode: string, durationSec: number): PricingDimension[] {
   if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(modelId) && mode === 'ref2v') {
-    return [false, true].map(hasVideoInput => ({ context: { hasVideoInput } }));
+    return [false, true].map(hasVideoInput => ({ context: { hasVideoInput,
+      ...(hasVideoInput ? { inputVideoDurationSec: 2 } : {}) } }));
+  }
+  if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(modelId) && ['v2v', 'extend'].includes(mode)) {
+    return [{ context: { hasVideoInput: true, inputVideoDurationSec: 2 } }];
   }
   if ((modelId === 'wan-3' || modelId === 'wan-3-prime') && ['ref2v', 'v2v', 'extend'].includes(mode)) {
     const first = mode === 'ref2v' ? 0 : 1;

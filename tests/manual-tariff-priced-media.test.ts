@@ -3,7 +3,8 @@ import test from 'node:test';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
-import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
+import { buildManualTariffScenario, continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
+import { supportsSeedanceInputTariff } from '../frontend/lib/seedance-input-tariff';
 import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 import { buildEngineAddonInput, applyEngineVariantPricing } from '../frontend/src/lib/pricing-addons';
 
@@ -17,7 +18,8 @@ test('real generation zero media counts and unused source metadata resolve the c
     const context = { ...scenario.context, referenceImageCount: scenario.context.referenceImageCount ?? 0,
       inputImageCount: scenario.context.inputImageCount ?? 0, inputVideoDurationSec: scenario.context.inputVideoDurationSec ?? 0 };
     assert.deepEqual(project(context).selector, scenario.selector, scenario.id);
-    if (!['gemini-omni-flash', 'wan-3', 'wan-3-prime'].includes(scenario.modelId)) {
+    if (!['gemini-omni-flash', 'wan-3', 'wan-3-prime'].includes(scenario.modelId)
+      && !supportsSeedanceInputTariff(scenario.modelId,scenario.selector.mode,scenario.selector.billingInputType)) {
       const extra = { ...context, inputVideoDurationSec: 3.25 };
       assert.equal(project(extra).facts.vendorSubtotalExactCents, project(context).facts.vendorSubtotalExactCents);
       assert.deepEqual(project(extra).selector, scenario.selector, `${scenario.id}/unused source metadata`);
@@ -62,7 +64,9 @@ test('Seedance mixed-reference image counts share their billed input tier; video
     assert.equal(video.selector.billingInputType, 'video_input');
     assert.notDeepEqual(video.selector, image.selector);
     const coverage = collectSellableManualTariffCoverage().scenarios;
-    for (const selected of [image, video]) assert.ok(coverage.some(s => JSON.stringify(s.selector) === JSON.stringify(selected.selector)), JSON.stringify(selected.selector));
+    assert.ok(coverage.some(s => JSON.stringify(s.selector) === JSON.stringify(image.selector)));
+    assert.ok(coverage.some(s => JSON.stringify(continuousInputTariffSelector(s.selector))
+      === JSON.stringify(continuousInputTariffSelector(video.selector))),JSON.stringify(video.selector));
   }
 });
 
@@ -70,7 +74,8 @@ test('public reference quotes retain media counts and select the same Seedance v
   const input = { modelId: 'seedance-2-0-mini', mode: 'ref2v', resolution: '720p', durationSec: 5, aspectRatio: '16:9', audio: false };
   for (const hasVideoInput of [false, true]) {
     for (const referenceImageCount of [1, 3, 9]) {
-      const publicScenario = resolvePublicModelScenario({ ...input, hasVideoInput, referenceImageCount });
+      const publicScenario = resolvePublicModelScenario({ ...input, hasVideoInput, referenceImageCount,
+        ...(hasVideoInput ? { inputVideoDurationSec:3.25 } : {}) });
       assert.ok(publicScenario);
       assert.equal(publicScenario.context.hasVideoInput, hasVideoInput);
       assert.equal(publicScenario.context.referenceImageCount, referenceImageCount);

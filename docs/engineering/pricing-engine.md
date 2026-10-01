@@ -34,11 +34,44 @@ reported completion/total tokens remain authoritative for completed usage.
 Preflight and generation derive source duration from server-resolved owned media;
 MCP uses resolved reference records. Generation persists that duration for the
 poller's fallback. Missing input duration means unavailable supplier cost/margin,
-not output-only cost. A declared MCP HTTPS reference can still expose the stored
-retail tariff before media resolution; that quote does not establish supplier
-profitability. The generation path rechecks actual media and the canonical cost
-guard. See the [whole-grid supplier audit](2026-10-01-supplier-estimate-audit.md)
-for the remaining video-input tariff issues.
+not output-only cost. Active proportional tariffs require trusted source duration;
+an unresolved MCP HTTPS reference cannot expose a numeric current tariff by using
+caller-declared metadata. The generation path rechecks actual media and the
+canonical cost guard.
+
+### Proportional normal Seedance video-input tariffs (2026-10-02)
+
+`server/pricing/seedance-input-tariff.ts` owns authoring and whole-domain validation
+for 2.0 Standard/Mini/Fast and normal 2.5 video-input variants. Existing positive
+minimum prices remain unchanged. An unprofitable minimum instead uses the positive
+margin of the same options without video as its anchor, rounding the new minimum
+up to a cent. This is a one-time reviewed authoring operation, not a global markup.
+
+The persisted literal price is `rate × max(minimumBillableSeconds, outputSeconds +
+inputSeconds)`, rounded up once at the end. Its equivalent authored component has
+the minimum flat amount and one source-second term above the included input
+threshold. The same proportional shape is required for edits and rollback.
+Quotes never recalculate retail amounts from a future supplier rate or discount.
+
+For example, Standard 480p/16:9/4s output has a seven-second minimum: $0.68 for up
+to three source seconds, then $1.85 for fifteen source seconds. Estimated gross
+margin is approximately 55.5% in both cases, excluding payment and operating fees.
+Admin exposes one customer rate per billable second, the minimum, actual source
+and output seconds, and the proposed total. Preview, stale-review checks,
+confirmation and immutable history reuse the shared admin mutation path.
+
+Coverage uses a two-second input representative and a continuous selector; it is
+not an exact-price exception for that duration. Billing, MCP confirmation and
+public scenario quotes resolve the same authored cell for fractional input lengths,
+up to fifteen seconds for 2.0 and thirty for 2.5. Draft/final workflow tariffs and
+all variants without video input remain independent.
+
+`seed-local-seedance-input-tariffs.ts` previews a fingerprint-bound initialization.
+`apply-local-seedance-input-tariffs.ts` requires a branded transaction, development
+sandbox code flags and an actual matching Unix-socket connection. It locks and
+reproduces the reviewed state before appending new continuous cells and a batch
+audit event. It preserves all existing cells. Production activation remains a
+separate release decision.
 
 Adrien accepted order form `CT20260925128931` and explicitly requested using its
 commercial terms now, with console activation checked immediately before push.

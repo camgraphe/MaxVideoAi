@@ -41,6 +41,9 @@ export function projectManualTariffMedia(context: PricingContext, details: Engin
       resolution: context.resolution as Resolution, billingInputType: 'no_video_input' });
     media.billingInputType = context.hasVideoInput === true ? 'video_input'
       : context.hasVideoInput === false || actualRate === noVideoRate ? 'no_video_input' : 'legacy_default';
+    if (media.billingInputType === 'video_input' && context.inputVideoDurationSec !== undefined) {
+      media.inputVideoDurationSec = context.inputVideoDurationSec;
+    }
   }
   return media;
 }

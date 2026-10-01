@@ -13,6 +13,8 @@ import { getPricingChangeEventById } from './event-store';
 import { PricingAdminError } from './errors';
 import type { CustomerTariffChangeProposal, CustomerTariffScenarioDetail } from './customer-tariff-contract';
 import { isOpenQuantityTariff } from '@/server/pricing/open-quantity-tariff';
+import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
+import { seedanceInputTariffBasis, seedanceInputTariffPriceFromRate, seedanceInputTariffRate } from '@/server/pricing/seedance-input-tariff';
 
 export function continuousInputTariffIdentity(scenario: ManualTariffCoverageScenario) {
   const selector = continuousInputTariffSelector(scenario.selector);
@@ -50,12 +52,22 @@ export async function continuousInputTariffDetail(scenario: ManualTariffCoverage
   if (state.status !== 'loaded') return undefined;
   const identity = continuousInputTariffIdentity(scenario);
   const cell = currentCell(scenario, state);
+  const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
+  if (seedance && !cell) return undefined;
   const price = cell?.price ?? await compileCurrentContinuousTariffPrice(scenario, rules);
   if (price.kind === 'fixed') throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing requires unit amounts');
   const terms = price.kind === 'unit_terms' || price.kind === 'unit_bands' ? price.terms : price.components.flatMap(c => c.terms);
   const audioBounds = ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode);
   const omni = scenario.modelId === 'gemini-omni-flash';
   const retake = omni && scenario.selector.mode === 'retake';
+  if (seedance) {
+    const basis = seedanceInputTariffBasis(scenario.context);
+    return { kind: 'video', tariffCellId: identity.id, prepared: cell?.source === 'database', price,
+      outputCents: quoteContinuousInputPrice(scenario, price, 0),
+      inputCentsPerSecond: seedanceInputTariffRate(scenario.context, price),
+      maxInputSeconds: basis.maximum, minInputSeconds: null,
+      seedanceMinimum: { includedInputSeconds: basis.includedInputSeconds, minimumBillableSeconds: basis.minimumBillableSeconds } };
+  }
   if (isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)) {
     const tokens = scenario.modelId === 'minimax-h3-max';
     const unit = tokens ? 'reference_tokens' : 'output_seconds';
@@ -98,9 +110,17 @@ export async function prepareContinuousInputTariffChange(input: {
     if (!('scope' in proposal) || proposal.scope !== 'continuous_input' || !('price' in proposal) || 'customerCents' in proposal) {
       throw new PricingAdminError('invalid_payload', 'Continuous source pricing requires unit amounts');
     }
+    const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
+    if (seedance && !['seedance_billable', 'preserve_current'].includes(proposal.price?.kind)) {
+      throw new PricingAdminError('invalid_payload', 'Seedance requires proportional billable-second pricing.');
+    }
     if (proposal.price?.kind === 'preserve_current') {
       if (state.active && !current) throw new PricingAdminError('unsupported_scenario', 'No current continuous tariff');
       price = state.active ? current!.price : await compileCurrentContinuousTariffPrice(scenario, input.policy);
+    } else if (proposal.price?.kind === 'seedance_billable') {
+      if (!seedance) throw new PricingAdminError('invalid_payload', 'This model has no Seedance billable-second tariff.');
+      try { price = seedanceInputTariffPriceFromRate(scenario.context, proposal.price.customerCentsPerBillableSecond); }
+      catch { throw new PricingAdminError('invalid_number', 'Enter a positive billable-second customer rate.'); }
     } else if (proposal.price?.kind === 'linear_open') {
       if (!isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)) throw new PricingAdminError('invalid_payload', 'Unsupported open unit pricing.');
       const { outputCents, unitCents } = proposal.price;

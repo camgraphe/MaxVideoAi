@@ -5,6 +5,7 @@ import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLi
 import type { CustomerTariffEditor } from '../_hooks/useCustomerTariffEditor';
 import type { CustomerTariffChangeProposal } from '@/server/pricing-admin/customer-tariff-contract';
 import { decisionUsd } from '../_lib/pricing-decision';
+import { SeedanceInputTariffEditor } from './SeedanceInputTariffEditor.client';
 
 export function ContinuousInputTariffEditor({ editor, disabled, inputSeconds, outputSeconds }: {
   editor: CustomerTariffEditor; disabled: boolean; inputSeconds: number; outputSeconds: number;
@@ -13,6 +14,8 @@ export function ContinuousInputTariffEditor({ editor, disabled, inputSeconds, ou
   const [output, setOutput] = useState(String(Number(((tariff?.outputCents ?? 0) / 100 / outputSeconds).toFixed(9))));
   const [source, setSource] = useState(String(Number(((tariff?.inputCentsPerSecond ?? 0) / 100 * (tariff?.kind === 'tokens' ? 1000 : 1)).toFixed(9))));
   if (!tariff || !editor.exact) return null;
+  if (tariff.seedanceMinimum) return <SeedanceInputTariffEditor editor={editor} disabled={disabled}
+    inputSeconds={inputSeconds} outputSeconds={outputSeconds} />;
   const audio = tariff.kind === 'audio';
   const omni = editor.exact.modelId === 'gemini-omni-flash';
   const sourcePriced = tariff.maxInputSeconds > 0;

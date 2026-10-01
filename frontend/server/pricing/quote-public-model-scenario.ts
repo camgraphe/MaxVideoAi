@@ -20,6 +20,8 @@ import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-
 import { numericTariffDuration } from '@/lib/pricing-audit/manual-tariff-durations';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { openTariffQuantityKey, withOpenTariffQuantity } from '@/lib/pricing-audit/open-quantity-tariff-scenario';
+import { seedanceInputTariffMaximum, supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
+import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
 
 import { computeCanonicalPublicSnapshot } from './quote-public';
 
@@ -103,7 +105,9 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   if (tokenPricing && hasVideoInput && !videoAllowed && !['v2v', 'extend'].includes(input.mode)) return null;
   if (tokenPricing && input.inputVideoDurationSec !== undefined && (!hasVideoInput
     || !Number.isFinite(input.inputVideoDurationSec) || input.inputVideoDurationSec <= 0
-    || input.inputVideoDurationSec > 15)) return null;
+    || input.inputVideoDurationSec > (seedanceInputTariffMaximum(model.id) ?? 15))) return null;
+  const seedanceInput = supportsSeedanceInputTariff(model.id, input.mode, hasVideoInput ? 'video_input' : undefined);
+  if (seedanceInput && input.inputVideoDurationSec === undefined) return null;
   let requestedAspect = input.aspectRatio;
   try {
     if (tokenPricing && requestedAspect !== undefined) requestedAspect = resolveSeedance2TariffAspectRatio(tokenPricing, input.resolution, requestedAspect);
@@ -187,6 +191,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     try { return withWan3TariffInputDuration(selected, input.inputVideoDurationSec ?? 0); }
     catch { return null; }
   }
+  if (selected && seedanceInput) {
+    try { return withSeedanceTariffInputDuration(selected, input.inputVideoDurationSec!); }
+    catch { return null; }
+  }
   if (selected && openKey) {
     try { return withOpenTariffQuantity(selected, openKey === 'durationSec' ? input.durationSec : input.referenceTokenBudget!); }
     catch { return null; }
@@ -223,7 +231,8 @@ export async function quotePublicModelScenario(
     const seconds = Number(scenario.selector.durationSec);
     const quantityLabel = getFalEngineById(input.modelId)?.category === 'image'
       ? `${seconds} image${seconds === 1 ? '' : 's'}` : `${seconds}s${ltx25AudioTariffBounds(input.modelId, input.mode) ? ' source audio' : ''}`;
-    const sourceLabel = supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+    const sourceLabel = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+      || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType))
       ? ` output + ${scenario.context.inputVideoDurationSec}s input` : '';
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,
       revision, scenarioLabel: `${input.mode} · ${quantityLabel}${sourceLabel} · ${input.resolution}` };

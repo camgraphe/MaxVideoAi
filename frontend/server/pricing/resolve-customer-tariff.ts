@@ -11,6 +11,7 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
 import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
+import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -26,6 +27,9 @@ export function resolveCustomerTariffQuote(input: {
   if (!input.state.active) return null;
   const state = input.state;
   const scenario = buildManualTariffScenario(input.context, input.facts);
+  if (supportsSeedanceInputTariff(scenario.selector.engineId, scenario.selector.mode, scenario.selector.billingInputType)) {
+    validateSeedanceInputTariffDuration(input.context.engine.id, input.context.inputVideoDurationSec ?? NaN);
+  }
   const resolve = (selector: typeof scenario.selector) => resolveManualTariffCell({ selector, at: input.at,
     versionedCells: state.versionedCells, databaseCells: state.databaseCells });
   let selector = scenario.selector;
