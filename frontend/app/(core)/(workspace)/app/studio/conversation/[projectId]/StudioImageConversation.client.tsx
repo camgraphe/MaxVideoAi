@@ -190,6 +190,7 @@ export default function StudioImageConversation({
                       requestId: crypto.randomUUID(),
                       message: turn.message,
                       references: turn.references,
+                      renewedFromRequestId: turn.requestId,
                     })
                   }
                 />

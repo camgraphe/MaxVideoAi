@@ -110,6 +110,23 @@ export async function claimImageTurn(
         "The image pilot conversation limit has been reached. Try later.",
         true,
       );
+    let renewal: StoredImageTurn | undefined;
+    if (!existing?.draft_json && parsed.renewedFromRequestId) {
+      renewal = (await executor.query<StoredImageTurn>(
+        `SELECT ${IMAGE_TURN_COLUMNS} FROM studio_image_turns WHERE user_id = $1 AND project_id = $2 AND request_id = $3 FOR UPDATE`,
+        [actor.userId, actor.projectId, parsed.renewedFromRequestId],
+      ))[0];
+      if (!renewal?.draft_json?.image || !renewal.quote_id
+        || renewal.input_json.message !== parsed.message
+        || stableJson(renewal.input_json.references) !== stableJson(parsed.references))
+        throw new AgentApiError("PARAMETER_INVALID", "Renew the saved request without changing its message or references.");
+      const quote = (await executor.query<{ state: string; expires_at: Date; job_id: string | null }>(
+        `SELECT state, expires_at, job_id FROM mcp_generation_quotes WHERE quote_id = $1 AND user_id = $2 AND auth_origin = 'studio-session' AND studio_project_id = $3 FOR UPDATE`,
+        [renewal.quote_id, actor.userId, actor.projectId],
+      ))[0];
+      if (!quote || quote.job_id || !(quote.state === "expired" || (quote.state === "prepared" && quote.expires_at <= clock)))
+        throw new AgentApiError("QUOTE_EXPIRED", "Only an expired, unconfirmed quote can be renewed. Review the existing generation first.");
+    }
     await executor.query(
       "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",
       [actor.userId, actor.projectId],
@@ -121,7 +138,7 @@ export async function claimImageTurn(
           [actor.userId, actor.projectId, parsed.requestId, lease],
         )
       : await executor.query<StoredImageTurn>(
-          `INSERT INTO studio_image_turns (user_id, project_id, request_id, request_hash, input_json, lease_id, lease_expires_at) VALUES ($1,$2,$3,$4,$5::jsonb,$6,clock_timestamp() + INTERVAL '3 minutes') RETURNING ${IMAGE_TURN_COLUMNS}`,
+          `INSERT INTO studio_image_turns (user_id, project_id, request_id, request_hash, input_json, lease_id, lease_expires_at, draft_json, draft_reference_fingerprint) VALUES ($1,$2,$3,$4,$5::jsonb,$6,clock_timestamp() + INTERVAL '3 minutes',$7::jsonb,$8) RETURNING ${IMAGE_TURN_COLUMNS}`,
           [
             actor.userId,
             actor.projectId,
@@ -129,6 +146,8 @@ export async function claimImageTurn(
             hash,
             JSON.stringify(parsed),
             lease,
+            renewal ? JSON.stringify(renewal.draft_json) : null,
+            renewal?.draft_reference_fingerprint ?? null,
           ],
         );
     return { turn: rows[0], claimed: true };

@@ -7,6 +7,7 @@ export const imageTurnInputSchema = z
     requestId: z.string().uuid(),
     message: z.string().trim().min(1).max(4000),
     references: z.array(z.string().regex(/^ma_[a-f0-9]{32}$/)).max(8),
+    renewedFromRequestId: z.string().uuid().optional(),
   })
   .strict();
 export type ImageTurnInput = z.infer<typeof imageTurnInputSchema>;

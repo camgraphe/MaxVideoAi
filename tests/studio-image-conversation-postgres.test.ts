@@ -356,4 +356,31 @@ test("image chat persists its intent and exact quote, resumes safely and leaves 
       assert.equal(provider.captures.length, 1);
     },
   );
+  await t.test("renewing an expired quote preserves the saved direction without another model call", async () => {
+    const original = await service.submit({ ...input, requestId: randomUUID() });
+    assert.ok(original.quote);
+    await pg.pool.query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1", [original.quote.quoteId]);
+    const modelCalls = calls;
+    const submittedJobs = provider.captures.length;
+    const renewal = {
+      requestId: randomUUID(), message: original.message, references: original.references,
+      renewedFromRequestId: original.requestId,
+    };
+    const renewed = await service.submit(renewal);
+    assert.ok(renewed.quote);
+    assert.notEqual(renewed.quote.quoteId, original.quote.quoteId);
+    assert.equal(renewed.quote.summary.prompt, original.quote.summary.prompt);
+    assert.equal(calls, modelCalls);
+    assert.equal(provider.captures.length, submittedJobs);
+    assert.equal((await service.submit(renewal)).quote?.quoteId, renewed.quote.quoteId);
+    assert.equal(calls, modelCalls);
+    await assert.rejects(service.submit({ ...renewal, requestId: randomUUID(), message: "A different subject" }), {code: "PARAMETER_INVALID"});
+    await assert.rejects(service.submit({ ...renewal, requestId: randomUUID(), references: [assetId] }), {code: "PARAMETER_INVALID"});
+    const foreign = createImageConversationService({...actor, projectId: "project-b"}, {enabled: true, director, generationFactory: factory});
+    await assert.rejects(foreign.submit({...renewal, requestId: randomUUID()}), {code: "PARAMETER_INVALID"});
+    await service.confirm({requestId: renewed.requestId, quoteId: renewed.quote.quoteId, confirmed: true});
+    assert.equal(provider.captures.length, submittedJobs + 1);
+    await assert.rejects(service.submit({ ...renewal, requestId: randomUUID(), renewedFromRequestId: renewed.requestId }), {code: "QUOTE_EXPIRED"});
+    assert.equal(calls, modelCalls);
+  });
 });
