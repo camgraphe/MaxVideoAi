@@ -5,7 +5,7 @@ import { collectSellableManualTariffCoverage, collectEffectiveCustomerTariffBase
 import { insertPricingChangeEvent } from '@/server/pricing-admin/event-store';
 import { customerTariffsEnabledByCode, validateCustomerTariffCell } from './customer-tariff-store';
 import { assertLocalCustomerTariffReleaseReady, customerTariffScenarioHash, localTariffSourceStateHash,
-  prepareLocalCustomerTariffRelease, type LocalCustomerTariffRelease, type LocalTariffReleaseBindings } from './customer-tariff-release-evidence';
+  prepareLocalCustomerTariffRelease, localCustomerTariffBaseline, type LocalCustomerTariffRelease, type LocalTariffReleaseBindings } from './customer-tariff-release-evidence';
 import { computeCanonicalBillingSnapshot } from './quote-billing';
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -46,7 +46,7 @@ export async function activateLocalCustomerTariffs(executor: TransactionQueryExe
     scenarios: coverage.scenarios, quote: s => computeCanonicalBillingSnapshot(s.context, {
       pricingPolicy: { loadOverrides: async () => policy }, loadCustomerTariffState: async () => ({ status: 'loaded',
         active: false, revision: Number(state.revision), databaseCells: [], versionedCells: [] }) }) });
-  const reproduced = await prepareLocalCustomerTariffRelease({ baseline: { ...baseline, databaseRulesHash: input.currentBindings.databaseRulesHash },
+  const reproduced = await prepareLocalCustomerTariffRelease({ baseline: localCustomerTariffBaseline(baseline, input.currentBindings.databaseRulesHash, coverage.gaps),
     scenarios: coverage.scenarios, coverageGaps: coverage.gaps, policy,
     ...input.currentBindings, ...(input.release.report.approvedPriceChanges.length ? { approvedGptImage25ReferenceFloor: { capturedAt: baseline.at, registryHash: baseline.registryHash,
       databaseRulesHash: input.currentBindings.databaseRulesHash, databaseIdentity: input.currentBindings.databaseIdentity,

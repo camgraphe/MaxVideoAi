@@ -47,7 +47,8 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     const state = (await db.pool.query('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE')).rows[0];
     const staged = (await db.pool.query('SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision FROM app_customer_tariff_cells ORDER BY id')).rows;
     const sourceTariffStateHash = localTariffSourceStateHash(state, staged, db.databaseUrl);
-    const capture = { ...baseline, databaseRulesHash };
+    // Mirror the actual preparation CLI, including its serialized provenance.
+    const capture = { ...baseline, databaseRulesHash, source: 'isolated_local_repeatable_read_only', coverageGaps: coverage.gaps };
     const first = await prepareLocalCustomerTariffRelease({ baseline: capture, scenarios: coverage.scenarios, registryHash, coverageGaps: coverage.gaps,
       policy, sourceTariffRevision: 0, sourceTariffStateHash, codeRevision: 'test-code', factualEnvironmentHash: 'test-env' });
     assert.equal(first.report.settlementGuardFailures.length, 24);

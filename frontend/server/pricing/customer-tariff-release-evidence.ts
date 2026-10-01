@@ -13,6 +13,12 @@ export type LocalTariffReleaseBindings = {
 };
 type ReviewedInput = Parameters<typeof auditReviewedCustomerTariffSeed>[0];
 
+/** Both preparation and locked reproduction must serialize the same provenance. */
+export function localCustomerTariffBaseline(baseline: Omit<ReviewedInput['baseline'], 'databaseRulesHash'>,
+  databaseRulesHash: string, coverageGaps: ReviewedInput['coverageGaps']) {
+  return { ...baseline, databaseRulesHash, source: 'isolated_local_repeatable_read_only', coverageGaps };
+}
+
 /** Stable hashes bind full authored amounts and audit details, not just counts. */
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;

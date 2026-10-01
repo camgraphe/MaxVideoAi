@@ -523,3 +523,21 @@ fresh exhaustive audit of all older subsystems. Parent owns the local gates;
 production evidence and external actions remain outside this authorization.
 Private sandbox backup created before migrations57/58; actual Unix connection,
 inactive revision3 unchanged. Local activation and final acceptance remain pending.
+
+Committed9eecd4d58 passes full6606 standard/11 isolated Studio tests,0fail and3
+standard skips, plus optimized local build920 pages. Real command-format test then
+exposed a cutover certificate mismatch: preparation included capture provenance
+while locked reproduction omitted it. Ruling: one shared local baseline serializer
+owns those exact fields in both paths; retain full fingerprint validation instead
+of ignoring provenance. RED actual CLI-format certificate rejected under locks;
+GREEN real full20113-scenario PostgreSQL cutover, stale rejection/archival/manual
+parity/immutable history. TypeScript and app lint pass. This fixes an operational
+blocker without changing customer amounts. Final committed whole-candidate gate
+and actual persistent sandbox cutover follow.
+Ruling: rebind the existing24 approved +1cent floors after the unrelated private
+finishing-tool policy restoration only through a one-off record that verifies all
+20113 original model IDs/cents/currencies, original database/registry/factual/staged
+state identities and the exact24 unchanged supplier ceilings. The generic approval
+refresh helper stays strict; its policy-hash check is not weakened. Cost if wrong:
+an unrelated change could inherit approval; any mismatch stops the operation.
+Old certificate/approval stay immutable, new record retains their hashes and reason.

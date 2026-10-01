@@ -32,7 +32,7 @@ async function main() {
   const { loadPricingPolicyOverridesWithExecutor } = await import('@/lib/pricing-rule-store');
   const { collectSellableManualTariffCoverage, collectEffectiveCustomerTariffBaseline } = await import('@/lib/pricing-audit/manual-tariff-coverage');
   const { computeCanonicalBillingSnapshot } = await import('@/server/pricing/quote-billing');
-  const { prepareLocalCustomerTariffRelease, localTariffSourceStateHash } = await import('@/server/pricing/customer-tariff-release-evidence');
+  const { prepareLocalCustomerTariffRelease, localTariffSourceStateHash, localCustomerTariffBaseline } = await import('@/server/pricing/customer-tariff-release-evidence');
   const registryHash = hash(await readFile(resolve('frontend/config/model-registry.json'), 'utf8'));
   const coverage = collectSellableManualTariffCoverage();
   const address = new URL(databaseUrl);
@@ -57,8 +57,8 @@ async function main() {
       scenarios: coverage.scenarios, quote: scenario => computeCanonicalBillingSnapshot(scenario.context,
         { pricingPolicy: { loadOverrides: async () => policy }, loadCustomerTariffState: async () => ({ status: 'loaded',
           active: false, revision: Number(state.revision), databaseCells: [], versionedCells: [] }) }) });
-    const captured = { ...baseline, databaseRulesHash: hash(JSON.stringify([...policy.rules].sort((a, b) => a.id.localeCompare(b.id)))),
-      source: 'isolated_local_repeatable_read_only', coverageGaps: coverage.gaps };
+    const captured = localCustomerTariffBaseline(baseline,
+      hash(JSON.stringify([...policy.rules].sort((a, b) => a.id.localeCompare(b.id)))), coverage.gaps);
     const approvedPath = process.env.PRICING_RELEASE_APPROVED_FLOORS?.trim();
     const approvedSource = approvedPath ? await readFile(resolve(approvedPath), 'utf8') : null;
     const approval = approvedSource ? refreshLocalReferenceFloorApproval(JSON.parse(approvedSource).approval, captured) : undefined;
