@@ -1,3 +1,4 @@
+import { factsFromProbe } from '../frontend/lib/generated-video-media-facts';
 import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
@@ -131,6 +132,7 @@ test('Google Vertex Veo poll copies provider output before marking the job compl
         uploads.push({ data: payload.data, mime: payload.mime, fileName: payload.fileName });
         return { key: 'renders/user_123/job_veo_123.mp4', url: 'https://cdn.maxvideoai.com/renders/job_veo_123.mp4' };
       },
+      measureVideoFn: async (_buffer, url) => factsFromProbe({ streams: [{ codec_type: 'video', duration: '8.001' }] }, { url, sha256: 'a'.repeat(64), sizeBytes: 9 }),
       ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/renders/job_veo_123-thumb.jpg',
       upsertLegacyJobOutputsFn: async (payload) => {
         outputs.push(payload);
@@ -151,6 +153,8 @@ test('Google Vertex Veo poll copies provider output before marking the job compl
   assert.match(String(completedUpdate.params?.[3]), /google_vertex_veo_public_pricing_estimate/);
   assert.match(String(completedUpdate.params?.[3]), /0\.64/);
   assert.match(JSON.stringify(outputs[0]), /cdn\.maxvideoai\.com/);
+  assert.equal((outputs[0] as { video_media_facts: { durationSec: number }; duration_sec: number }).video_media_facts.durationSec, 8.001);
+  assert.equal((outputs[0] as { duration_sec: number }).duration_sec, 8);
 
   const attemptUpdate = queries.find((entry) => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_usd/.test(entry.sql));
   assert.ok(attemptUpdate, 'provider_attempts should store estimated Google provider cost');

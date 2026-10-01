@@ -1,3 +1,5 @@
+import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
+import { appendConfirmedWalletRefund } from '@/lib/seedance-failure-messages';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { isStablePublicMediaUrl, normalizeMediaUrl } from '@/lib/media';
@@ -7,6 +9,10 @@ import {
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
   SEEDANCE_TASK_TYPE_CONSTRAINT,
+  SEEDANCE_REFERENCE_IMAGE_BLOCKED,
+  SEEDANCE_REFERENCE_VIDEO_BLOCKED,
+  SEEDANCE_REFERENCE_MEDIA_BLOCKED,
+  SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED,
 } from '@/lib/video-failure-codes';
 
 import type {
@@ -56,7 +62,7 @@ const AGENT_FAILURE_COPY = {
   default: 'MaxVideoAI could not complete this render.',
   busy: 'The render queue is temporarily busy.',
   noOutput: 'The render finished without a usable output.',
-  safety: 'This request was blocked by safety checks. Rephrase it with safer, more neutral wording before preparing a new request.',
+  safety: 'This request was blocked by safety checks. Review the prompt and any reference images, video, or audio before preparing a new request.',
   start: 'MaxVideoAI could not start this render.',
   storage: 'The render finished, but MaxVideoAI could not prepare the output for download.',
   timeout: 'This render exceeded the expected processing window.',
@@ -74,6 +80,10 @@ const SAFE_AGENT_FAILURE_CODES = new Set([
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
   SEEDANCE_TASK_TYPE_CONSTRAINT,
+  SEEDANCE_REFERENCE_IMAGE_BLOCKED,
+  SEEDANCE_REFERENCE_VIDEO_BLOCKED,
+  SEEDANCE_REFERENCE_MEDIA_BLOCKED,
+  SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED,
 ]);
 
 function safeAgentFailureCode(settingsSnapshot: unknown): string | null {
@@ -276,14 +286,22 @@ function buildAgentMessage(
   status: AgentGenerationStatus['status'],
   rawMessage: string | null,
   rawStatus: string | null,
-  failureCode: string | null
+  failureCode: string | null,
+  paymentStatus: string | null
 ): string | null {
   if (status === 'accepted') return 'Generation accepted.';
   if (status === 'running') return 'Generation in progress.';
   if (status === 'failed') {
     let failureMessage: string;
+    const knownMessage = rawStatus?.trim().toLowerCase() === 'provider_polling_stalled' && !failureCode
+      ? null : getKnownGenerationFailureMessage({ failureCode, message: rawMessage });
     if (failureCode === SEEDANCE_TASK_TYPE_CONSTRAINT) {
       failureMessage = AGENT_FAILURE_COPY.seedanceTaskType;
+    } else if (knownMessage) {
+      failureMessage = knownMessage
+        .replace(/before trying again\./g, 'before preparing a new request.')
+        .replace(/and try again\./g, 'before preparing a new request.')
+        .replace(/then try again\./g, 'then prepare a new request.');
     } else if (rawStatus?.trim().toLowerCase() === 'provider_polling_stalled') {
       failureMessage = AGENT_FAILURE_COPY.pollingStalled;
     } else {
@@ -306,6 +324,8 @@ function buildAgentMessage(
         failureMessage = AGENT_FAILURE_COPY.default;
       }
     }
+    // Only a persisted wallet-refunded state establishes a wallet recredit.
+    if (knownMessage) failureMessage = appendConfirmedWalletRefund(failureMessage, { paymentStatus });
     return `${failureMessage} ${FAILED_ATTEMPT_BOUNDARY}`;
   }
   return null;
@@ -325,7 +345,7 @@ export function mapGenerationStatusRecordToAgent(
     surface,
     status,
     progress: normalizeProgress(record.progress, status),
-    message: buildAgentMessage(status, record.message, record.status, failureCode),
+    message: buildAgentMessage(status, record.message, record.status, failureCode, normalizePaymentStatus(record.payment_status)),
     priceCents:
       typeof record.final_price_cents === 'number' &&
       Number.isSafeInteger(record.final_price_cents) &&

@@ -1,3 +1,4 @@
+import { factsFromProbe } from '../frontend/lib/generated-video-media-facts';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
@@ -240,4 +241,16 @@ test('invalid identity input is rejected before any ownership query', async () =
     (error: unknown) => error instanceof AgentApiError && error.code === 'AUTH_REQUIRED',
   );
   assert.equal(reads, 0);
+});
+
+test('owned reference exposes exact original measurements and leaves stale provenance unknown', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  const original = row({ kind: 'video', mime_type: 'video/mp4', metadata: {} });
+  const mediaFacts = factsFromProbe({ streams: [{ codec_type: 'video', duration: '15.001' }] },
+    { url: original.url, sha256: 'a'.repeat(64), sizeBytes: 42 });
+  original.metadata = { durationSec: 10, mediaFacts };
+  const resolved = await resolveOwnedReferenceAsset(principal, publicAssetId, { executor: executorWithRows([original], []) });
+  assert.equal((resolved as { durationSec: number }).durationSec, 15.001);
+  const replaced = await resolveOwnedReferenceAsset(principal, publicAssetId, { executor: executorWithRows([{ ...original, url: 'https://cdn.maxvideoai.com/new.mp4' }], []) });
+  assert.equal((replaced as { durationSec: number | null }).durationSec, null);
 });

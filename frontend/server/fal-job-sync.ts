@@ -1,3 +1,4 @@
+import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -21,6 +22,7 @@ type FetchOptions = {
 };
 
 type FetchResult = {
+  videoMediaFacts?: GeneratedVideoFacts;
   normalizedResult: Record<string, unknown> | null;
   videoUrl: string | null;
   thumbUrl: string | null;
@@ -92,6 +94,7 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
     normalized.data = { video: normalized.video };
   }
 
+  let videoMediaFacts: GeneratedVideoFacts | undefined;
   let videoUrl = extractVideoUrl(normalized);
   let thumbUrl = extractThumbUrl(normalized);
 
@@ -110,6 +113,7 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
       jobId: options.jobId,
       userId: options.userId ?? undefined,
       videoUrl,
+      onVideoMediaFacts: (facts) => { videoMediaFacts = facts; },
     });
     if (fastStartVideo) {
       videoUrl = fastStartVideo;
@@ -157,5 +161,5 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
     normalized.thumb_url = thumbUrl;
   }
 
-  return { normalizedResult: normalized, videoUrl: videoUrl ?? null, thumbUrl: thumbUrl ?? null };
+  return { normalizedResult: normalized, videoUrl: videoUrl ?? null, thumbUrl: thumbUrl ?? null, videoMediaFacts };
 }

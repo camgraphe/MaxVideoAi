@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
+import { probeGeneratedVideoFile, publishVideoFacts } from './media/generated-video-facts';
 import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -13,9 +16,11 @@ type EnsureFastStartVideoOptions = {
   jobId: string;
   userId?: string | null;
   videoUrl: string;
+  onVideoMediaFacts?: (facts: GeneratedVideoFacts) => void;
 };
 
 export type EnsureFastStartVideoDependencies = {
+  probeVideoFileFn?: typeof probeGeneratedVideoFile;
   fetchFn?: typeof fetch;
   isStorageConfiguredFn?: typeof isStorageConfigured;
   isStorageUrlFn?: typeof isStorageUrl;
@@ -171,7 +176,13 @@ export async function ensureFastStartVideo(
       fileName: `${options.jobId}-faststart.mp4`,
       cacheControl: 'public, max-age=5184000, immutable',
     });
-    return normalizeMediaUrl(upload.url) ?? upload.url;
+    const uploadedUrl = normalizeMediaUrl(upload.url) ?? upload.url;
+    if (options.userId && options.onVideoMediaFacts) {
+      const probe = await (dependencies.probeVideoFileFn ?? probeGeneratedVideoFile)(outputPath).catch(() => null);
+      publishVideoFacts(probe, { url: uploadedUrl, sha256: createHash('sha256').update(optimized).digest('hex'),
+        sizeBytes: optimized.length }, options.onVideoMediaFacts);
+    }
+    return uploadedUrl;
   } catch (error) {
     console.warn('[video-faststart] failed', { jobId: options.jobId, error });
     return null;
