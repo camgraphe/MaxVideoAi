@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Play,
   Pause,
@@ -63,6 +63,8 @@ export function Timeline({
     } | null>(null),
     [drag, setDrag] = useState<string>();
   const submission = useRef(0);
+  const audioPosition = useRef<HTMLInputElement>(null);
+  const audioVolume = useRef<HTMLInputElement>(null);
   const duration = sequenceDuration(project),
     clip = project.clips.find((c) => c.id === selected),
     a = project.assets.find((a) => a.id === clip?.assetId),
@@ -70,6 +72,15 @@ export function Timeline({
   const width = Math.max(300, duration * zoom),
     fps = project.settings.fps;
   const bounds = clip && draft?.id === clip.id ? draft : clip;
+  // Keep native drafts responsive, and refresh them when undo or an external edit changes their source.
+  useEffect(() => {
+    if (audioPosition.current && clip)
+      audioPosition.current.value = String(clip.startFrame / fps);
+  }, [clip?.id, clip?.startFrame, fps]);
+  useEffect(() => {
+    if (audioVolume.current && clip)
+      audioVolume.current.value = String(clip.volume);
+  }, [clip?.id, clip?.volume]);
   const persistTrim = async (
     next: Clip,
     revision: number,
@@ -473,6 +484,7 @@ export function Timeline({
                   <label className="audio-position">
                     Position{" "}
                     <input
+                      ref={audioPosition}
                       type="number"
                       min="0"
                       max="600"
@@ -505,6 +517,7 @@ export function Timeline({
                 <label className="volume-control">
                   <Volume2 size={14} />
                   <input
+                    ref={audioVolume}
                     aria-label="Volume du son"
                     type="range"
                     min="0"

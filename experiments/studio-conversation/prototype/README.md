@@ -24,6 +24,8 @@ Ouvrir **http://127.0.0.1:4318** dans l’aperçu Codex ou un navigateur autoris
 5. Exporter depuis le montage. Une tâche réelle produit le MP4, ou un MP3 pour une création sonore sans vidéo, avec son lecteur et téléchargement dans la conversation.
 6. Recharger ou redémarrer : les projets, conversations, médias, montages et tâches restent sauvegardés. Une exportation déjà lancée conserve son snapshot même si les paramètres changent ensuite.
 
+Le bouton palette près des paramètres propose **Charbon** (neutre/champagne, par défaut), **Minuit** (bleu nuit/glacier), **Porcelaine** (ivoire/terre cuite) et **Olive** (vert/or). Le choix reste mémorisé dans ce navigateur. Il change les surfaces du Studio, pas les images ni les fichiers rendus.
+
 Si un son continue après le dernier plan, la dernière image est tenue jusqu’à la fin, dans l’aperçu et dans le rendu. La durée cible guide la génération de démonstration ; ce sont les éléments du montage qui déterminent la durée finale.
 
 ## Ce qui est simulé
@@ -55,4 +57,6 @@ npm test
 npm run build
 ```
 
-Les tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeur et MCP, imports réels, Range et rendus FFmpeg. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
+Les 29 tests exercent les sources/coupes, undo/redo, fps, pistes audio, persistance, conflits, idempotence, jobs, directeur et MCP, isolation entre projets, imports réels, Range, rendus FFmpeg et contraste des quatre palettes. Le guide d’architecture et le relevé de fidélité se trouvent dans `docs/engineering/studio-conversation-prototype.md` et `../design/fidelity-ledger.md` à la racine du dépôt.
+
+Pour la vérification dans un navigateur, utiliser un projet distinct : état vide → paramètres → brief → import image/vidéo/audio → coupe et déplacement → remplacement → voix/ambiance → volume/position avec annulation → arrêt/reprise d’une tâche → export vidéo et audio seul → recharge. Vérifier aussi le repli du moniteur, le défilement du montage et les palettes au clavier et à 320/390 px. Ces gestes complètent les tests serveur ; ils ne sont pas automatisés par la commande `npm test`.

@@ -12,14 +12,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import type { Project } from "../../shared/types";
+import { PalettePicker } from "./PalettePicker.client";
 export type Panel =
-  | "projects"
-  | "library"
-  | "tools"
-  | "activity"
-  | "settings"
-  | "about"
-  | null;
+  "projects" | "library" | "tools" | "activity" | "settings" | "about" | null;
 export function Shell({
   children,
   project,
@@ -93,6 +88,7 @@ export function Shell({
             <span className="saved">
               {project ? "Sauvegardé en local" : ""}
             </span>
+            <PalettePicker />
             <button
               className="icon-button"
               onClick={onNew}

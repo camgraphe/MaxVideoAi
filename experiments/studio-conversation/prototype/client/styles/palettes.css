@@ -1,0 +1,191 @@
+:root {
+  color-scheme: dark;
+  --bg: #19191c;
+  --surface: #242427;
+  --raised: #2c2c31;
+  --panel: #202024;
+  --top: #17171a;
+  --sidebar: #1c1c20;
+  --glow: #232327;
+  --text: #f2efeb;
+  --soft: #d0ccc7;
+  --muted: #aeaaa6;
+  --dim: #96918d;
+  --border: #3a393e;
+  --border-strong: #5b585e;
+  --accent: #e5c994;
+  --accent-border: #a78d64;
+  --accent-ink: #27221c;
+  --error: #e5a299;
+  --voice-bg: #302d38;
+  --voice-border: #57505f;
+  --voice-wave: #a296b2;
+  --music-bg: #283239;
+  --music-border: #465964;
+  --music-wave: #8caab9;
+  --overlay: #101014bd;
+  --player-bg: #101014;
+  --media-text: #fafaf8;
+  --shadow-soft: #00000033;
+}
+:root[data-palette="midnight"] {
+  --bg: #151b27;
+  --surface: #222b3a;
+  --raised: #2a3546;
+  --panel: #1b2332;
+  --top: #131925;
+  --sidebar: #182030;
+  --glow: #202c40;
+  --text: #edf2fa;
+  --soft: #c8d3e5;
+  --muted: #acbcd3;
+  --dim: #94a4be;
+  --border: #37465c;
+  --border-strong: #536782;
+  --accent: #a7c7fa;
+  --accent-border: #6f96cc;
+  --accent-ink: #1a2c45;
+  --error: #efaaa2;
+  --voice-bg: #302d48;
+  --voice-border: #625979;
+  --voice-wave: #b2a2cf;
+  --music-bg: #203747;
+  --music-border: #416879;
+  --music-wave: #89b6c9;
+  --overlay: #0c1323bd;
+}
+:root[data-palette="porcelain"] {
+  color-scheme: light;
+  --bg: #f5f2ed;
+  --surface: #fffcf7;
+  --raised: #e9e2d9;
+  --panel: #eeebe5;
+  --top: #faf8f4;
+  --sidebar: #ede9e3;
+  --glow: #fffcf8;
+  --text: #302a26;
+  --soft: #554a42;
+  --muted: #6d6057;
+  --dim: #716053;
+  --border: #d3c8ba;
+  --border-strong: #a49688;
+  --accent: #93553a;
+  --accent-border: #a36c50;
+  --accent-ink: #fff9f3;
+  --error: #a43730;
+  --voice-bg: #e5dce8;
+  --voice-border: #b49abe;
+  --voice-wave: #83608e;
+  --music-bg: #dce5ec;
+  --music-border: #98adbd;
+  --music-wave: #527589;
+  --overlay: #30272070;
+  --shadow-soft: #34271616;
+}
+:root[data-palette="olive"] {
+  --bg: #191c1a;
+  --surface: #242725;
+  --raised: #2b302a;
+  --panel: #20281b;
+  --top: #181b19;
+  --sidebar: #1c1f1d;
+  --glow: #20231f;
+  --text: #f0f0ec;
+  --soft: #c2ceb0;
+  --muted: #a3ae95;
+  --dim: #98a488;
+  --border: #3c4533;
+  --border-strong: #5a6449;
+  --accent: #e0bc77;
+  --accent-border: #a79155;
+  --accent-ink: #25291f;
+  --error: #d3a095;
+  --voice-bg: #333a2e;
+  --voice-border: #59644b;
+  --voice-wave: #a9b28e;
+  --music-bg: #273323;
+  --music-border: #465435;
+  --music-wave: #a3b378;
+  --overlay: #0b130bd4;
+}
+.palette-picker {
+  position: relative;
+}
+.palette-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  margin: 0;
+  padding: 10px;
+  width: 240px;
+  max-width: calc(100vw - 28px);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 16px 45px #00000030;
+}
+.palette-menu legend {
+  float: left;
+  width: 100%;
+  padding: 5px 8px 9px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.palette-menu label {
+  clear: both;
+  position: relative;
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 9px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.palette-menu label:hover {
+  background: var(--raised);
+}
+.palette-menu label.chosen {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.palette-menu input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.palette-menu label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.palette-swatch {
+  flex-shrink: 0;
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ffffff20;
+  border-radius: 50%;
+}
+.palette-swatch > span {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  border-radius: 50%;
+}
+.palette-label {
+  flex: 1;
+  font-size: 12px;
+}
+.palette-label small {
+  display: block;
+  font-size: 9px;
+  margin-top: 3px;
+  color: var(--muted);
+}
+.palette-menu label > svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}

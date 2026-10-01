@@ -5,7 +5,7 @@ Référence acceptée : `studio-premiers-echanges.png`, 1672×941, et l’étude
 | Point | Comparaison réelle | Décision |
 |---|---|---|
 | Cadre de l’app | Barre MaxVideoAI, sidebar nommée, Studio sélectionné, compte en bas | Conservé ; logo typographique de prototype et badge local à la place des connexions providers |
-| Couleurs | Fond charbon et accent or ; surfaces discrètes, faible contraste décoratif | Conservé ; pistes audio légèrement teintées pour distinguer voix/ambiance |
+| Couleurs | Fond neutre Charbon/champagne par défaut ; variantes Minuit/glacier, Porcelaine/terre cuite et Olive/or | Variantes demandées après la dominante verte ; choix mémorisé, composition et photographies conservées, pistes voix/ambiance distinctes |
 | Chat central | Colonne centrale stable, composer arrondi en bas, ajout à gauche, envoi or à droite | Conservé ; historique défile sans déplacer le composer |
 | H1 et tagline | H1 Studio visible ; « Une idée. Un film. » sur l’état initial | H1 réduit pour la hiérarchie app ; tagline défile avec la conversation avancée |
 | Médias autour | Deux visuels à gauche, un principal et un secondaire à droite | Conservé ; composition déterministe, maximum quatre, sélection/pins et bibliothèque pour le reste |
