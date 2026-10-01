@@ -7,9 +7,10 @@ settings toolbar and workspace shell. Open:
 
 `http://localhost:3106/app?engine=seedance-2-5&draftPreview=1`
 
-- A single native checkbox, `Draft 480p → final 1080p`, sits beside the existing
-  settings and generation action. The prompt no longer has a separate mode-choice
-  question or two large cards.
+- A single native checkbox, `Activer Draft · 480p → final 1080p`, sits on a
+  dedicated line below the settings/generation toolbar, immediately before its
+  explanation. It does not participate in the toolbar's horizontal layout.
+  The prompt has no separate mode-choice question or two large cards.
 - Checking it adds a compact `Mode Draft` badge to the existing model strip and
   changes the resolution label to `Draft 480p 🔒`. The existing resolution is
   locked to 480p and the output count to one. Unchecking restores the prior
@@ -58,8 +59,8 @@ checkpoint does not complete those release gates or activate new tariffs.
 
 ## Verification
 
-The focused Draft preview, workspace layout and select-menu contracts pass
-(41 tests). The new restart regression was first observed failing, then passing:
+The focused Draft preview, workspace composer and layout contracts pass
+(27 tests). The new restart regression was first observed failing, then passing:
 late quote responses cannot repopulate a new Draft setup. TypeScript, frontend
 lint, public exposure lint and `git diff --check` also pass.
 
@@ -69,3 +70,10 @@ result, final quote confirmation, cancellation and returning to setup. The
 4 s / 21:9 / audio-enabled form uses normal 480p / 1080p references of
 $1.35 / $6.83, totalling $8.18. These are not newly activated Draft tariffs.
 No provider generation or billing action is submitted.
+
+After moving the checkbox below the toolbar, browser review at the current
+1064 px viewport confirms the duration and generation controls share the same
+y-coordinate (515 px); the checkbox begins below them (586 px). No horizontal
+space in the settings row is reserved for the Draft option. Both checked and
+unchecked states remain interactive. A pre-existing local CookieBanner warning
+about an unconfigured cookie policy is unrelated to this layout change.

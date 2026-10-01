@@ -19,7 +19,7 @@ export function SeedanceDraftLocalPreviewMode({ preview }: Props) {
         onChange={preview.toggle}
         className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--app-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       />
-      <span className="whitespace-nowrap">Draft 480p → final 1080p</span>
+      <span className="whitespace-nowrap">Activer Draft · 480p → final 1080p</span>
     </label>
   );
 }

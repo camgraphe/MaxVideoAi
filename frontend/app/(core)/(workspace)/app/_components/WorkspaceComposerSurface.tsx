@@ -634,7 +634,8 @@ export function WorkspaceComposerSurface({
         optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
         settingsNotice={localDraftPreview ? (
           <div className="mt-2 border-t border-hairline pt-2">
-            <p className="text-xs leading-relaxed text-text-secondary">
+            <SeedanceDraftLocalPreviewMode preview={localDraftPreview} />
+            <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
               {localDraftPreview.selected
                 ? draftSettingsLocked
                   ? 'Durée, format et audio conservés pour le final 1080p. « Nouveau Draft » permet de changer ces réglages.'
@@ -676,7 +677,6 @@ export function WorkspaceComposerSurface({
                 durationManagedLabel={durationManagedLabel}
               />
             </fieldset>
-            {localDraftPreview ? <SeedanceDraftLocalPreviewMode preview={localDraftPreview} /> : null}
           </>
         }
         generateControl={
