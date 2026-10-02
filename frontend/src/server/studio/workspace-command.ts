@@ -183,7 +183,7 @@ function stripTransientAccess(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stripTransientAccess);
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(Object.entries(value as WorkspaceRecord)
-    .filter(([key]) => key !== 'mediaAccessUrl' && key !== 'mediaAccessExpiresAt' && key !== 'mediaAccessError')
+    .filter(([key]) => key !== 'mediaAccessUrl' && key !== 'mediaAccessExpiresAt' && key !== 'mediaAccessError' && key !== 'thumbnailAccessUrl')
     .map(([key, nested]) => [key, stripTransientAccess(nested)]));
 }
 
