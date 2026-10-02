@@ -185,6 +185,7 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
 test('timeline export worker has a dedicated Docker image and documented env', () => {
   assert.ok(existsSync(workerDockerfilePath), 'dedicated worker Dockerfile should exist');
   const dockerfile = readFileSync(workerDockerfilePath, 'utf8');
+  assert.equal((dockerfile.match(/FROM node:22-bookworm-slim/g) ?? []).length, 2, 'both worker stages should use the project Node 22 runtime');
   assert.match(dockerfile, /pnpm.*timeline-exports:worker:once/, 'worker image should run one queued export and exit');
   assert.match(dockerfile, /chromium/, 'worker image should install Chromium for Remotion');
   assert.match(dockerfile, /ffmpeg/, 'worker image should install FFmpeg for MP4 rendering');
@@ -194,7 +195,7 @@ test('timeline export worker has a dedicated Docker image and documented env', (
   assert.match(envSource, /TIMELINE_EXPORT_ECS_REGION=us-east-1/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2/);
-  assert.match(envSource, /TIMELINE_EXPORT_ECS_CONTAINER_NAME=timeline-export-worker/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_CONTAINER_NAME=worker/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_SUBNETS=/);
   assert.doesNotMatch(envSource, /videohub-uploader/, 'worker docs should not reuse broad uploader credentials');
