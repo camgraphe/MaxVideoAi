@@ -4,6 +4,10 @@ This continuation remains local. No push, PR publication, merge, deployment,
 production database/environment/storage mutation, payment change or message is
 part of its authorization. `customer-tariffs.json.active` remains false.
 
+The subsequent [initial cutover qualification](2026-10-02-pricing-initial-cutover.md)
+records the prepared activation/recovery owner, ninth exact migration and newer
+complete validation. Earlier evidence below retains its original source and scope.
+
 ## Independent review and resolved findings
 
 One fresh review covered `d10ad4587..dd5a133e6` across canonical quotes, continuous

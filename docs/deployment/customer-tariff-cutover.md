@@ -124,6 +124,10 @@ until the complete grid and its activation sequence are approved together.
 
 ### Prepared initial activation and recovery owner
 
+The [initial-operation qualification](../engineering/2026-10-02-pricing-initial-cutover.md)
+records the committed-source tests, review corrections and retained-grid policy
+compatibility for this separate owner. It does not authorize production execution.
+
 `server/pricing/customer-tariff-cutover.ts` is the separate maintenance writer;
 `pricing:cutover:execute` is its manual entry point. It is never invoked from a
 route, build, deploy hook, or `pricing:activate:local`. The authored inactive flag

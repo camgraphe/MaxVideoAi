@@ -925,3 +925,57 @@ Final: Ruling: production capture authenticity/deployed-source equivalence/relea
 Final: Ruling: actual remote schema/credentials/routing/invoices and deployment recovery remain fresh publication checks — this task authorizes local preparation, no remote writes or provider requests — cost if wrong: the release decision must reject mismatched real evidence.
 Final: Ruling: running execution evidence is not accepted on reviewer's assertion — finish the actual latest-tree full fixture/suite/build before claiming readiness — cost if wrong: an unverified tree cannot qualify.
 Final: Ruling: prior completed review packages remain scoped historical evidence — review this new maintenance owner and qualify all existing contracts, without repeating old reviews — cost if wrong: a previously undiscovered cross-surface issue requires a new concrete regression before publication.
+
+### Completed initial-operation qualification
+
+Qualified implementation baffc07310310389d97c07937ebe4138aa27b84c, tree
+68e8968edb205547eaff4a25dbfcf0f8297e3f83, parent3b1f2900f. The complete
+`PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH pnpm test:validate` ran in a
+disposable local Git clone of that exact commit, no private environment files:
+6738standard pass/0fail/3existing skip and11isolatedStudio pass/0fail/0skip;
+overall exit0. The full initial-operation PostgreSQL test passes after the policy
+fixes: 14991effective cells,26818actual uncommitted transaction-reader quotes per
+complete acceptance, deliberately injected full-activation failure rolls back to
+emptyinactive0, successful activation/recovery retains every cell and both
+immutable events, original synthetic financial snapshot/product unchanged,
+later edit/repeat recovery refused. Its whole-suite duration759528ms is recorded,
+not relabeled from the preceding dedicated pre-policy-fix fixture.
+
+Final: fixed unsampled continuous-price parity — cost-safe Wan fractional-band
+regression RED→GREEN; full curve reproduction now required; suite6738+11passed.
+Final: fixed broad approved-change allowance — GPT unnecessary+1cent and inflated
+nativeSeedance proportional-rate regressions RED→GREEN; actual reference ceiling
+and captured variant margin reproduction required; suite6738+11passed. No deferred
+minor or second review. Prior completed packages are not newly re-reviewed.
+
+Same exact clean-source clone: optimized build exit0/920static pages, registry/media
+prebuild/type/lint/sitemap gates; existing Supabase Edge/Browserslist warnings.
+Frontend lint/exposure exit0. Clone contains only the two dependency symlinks as
+untracked entries; no private frontend env file. Main and origin/main remain equal
+d10ad458743aef68e6e9be12cad9c611f06077b8,0divergence; candidate124ahead/0behind.
+No fresh domain-deployment check is asserted in this phase. Authored flagfalse.
+
+Offline actual-retained-grid compatibility additionally passes the new complete
+policy guard for all20122ordinary scenarios/14991effective cells,3186archivedlegacy
+rows, using immutable production commercial capture2026-10-02T08:16:27.244Z.
+No DB/network access. This is historical guard compatibility, not renewed deployed
+price provenance/freshness, activation or publication authorization.
+
+Private durable16artifact qualification manifestSHA256
+d2fc7bf9d47fef29a4c10f13bc403479c6b8b7e316664ad931fb89fed62fa0ae,
+initial-cutover-review-20261002/; dirs0700/files0600, no connection secrets.
+Dated acceptance: docs/engineering/2026-10-02-pricing-initial-cutover.md.
+Documentation-only final commit retains baffc0731 as qualified implementation.
+Local operation preparation complete; Task6 publication-time evidence/target
+manifest/backup/exact migrations/QualityCI/preview and user release decision remain.
+Real Draft app-storage/polling/Studio import remains separately authorized/local-only.
+No production write, push, merge, deployment, paid provider/payment action or
+external message. Preserve this branch/worktree and original user admin/runtime;
+only the owned qualification clone is removed after durable evidence retention.
+
+Final evidence hashes/modes and all touched documentation links verified;
+git diff/previous implementation commit diff --check pass. Owned qualification
+clone mq5jjws4 removed, symlinked dependencies not followed; private cleanup receipt
+binds the immutable qualification manifest. Original worktree/admin retained.
+Final repeat fetch still finds main=origin/main=d10ad4587,0divergence, no rebase
+needed. Documentation acceptance commit prepared with no implementation changes.
