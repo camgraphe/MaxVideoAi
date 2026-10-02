@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { isValidManualTariffPrice, type ManualTariffComponent, type ManualTariffPrice,
   type PricingCompatibilityProfile, type ResolvedPricingPolicy } from '@maxvideoai/pricing';
 import type { PricingContext } from '@/lib/pricing-context';
@@ -63,7 +64,9 @@ export function validateOpenQuantityTariffDomain(input: { context: PricingContex
   const expected = normalization(context);
   if (!isValidManualTariffPrice(price) || price.kind !== 'unit_components') throw new Error('Open quantity pricing requires authored unit components.');
   const native = price.components.every(c => c.terms.every(t => t.unit === expected.unit
-    && JSON.stringify(t.quantityNormalization) === JSON.stringify(expected.rule)));
+    // JSONB reorders object keys. Values and ordered normalization steps define
+    // the native curve; serialization order does not change its arithmetic.
+    && isDeepStrictEqual(t.quantityNormalization, expected.rule)));
   if (native) {
     const base = price.components[0];
     if (price.components.some(c => c.precision !== undefined || c.terms.length !== 1)) throw new Error('Unsupported open quantity component rounding.');
