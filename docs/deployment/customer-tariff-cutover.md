@@ -212,6 +212,12 @@ mismatch or an unused extra cell abort the entire installation. Code/environment
 are checked again before commit. The immutable evidence and the regular pricing
 history event commit with the activation.
 
+Native open-quantity normalization compares object values independently of JSON
+key order, preserving ordered arithmetic steps. PostgreSQL JSONB changes object
+serialization order; that change must neither reject an unchanged curve nor
+permit changed denominators, step values or step ordering. A real PostgreSQL
+round-trip regression covers both Luma Modify variants and H3 Max reference tokens.
+
 The manual entry point requires explicit `PRICING_CUTOVER_MODE`,
 `PRICING_CUTOVER_OPERATION`, `PRICING_CUTOVER_ENV_FILE`,
 `PRICING_CUTOVER_ACTOR` and `PRICING_CUTOVER_CONFIRM`. Activation additionally
