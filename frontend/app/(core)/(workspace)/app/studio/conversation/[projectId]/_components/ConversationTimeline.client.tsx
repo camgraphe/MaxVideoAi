@@ -8,7 +8,7 @@ import {useConversationTimeline} from '../_hooks/useConversationTimeline';
 import {useWorkspaceTimelinePlayback} from '../../../workspace/_hooks/useWorkspaceTimelinePlayback';
 import {useProgramPlaybackSync} from '../../../workspace/_components/viewer/useProgramPlaybackSync';
 import {ProgramPlaybackLayers} from '../../../workspace/_components/viewer/ProgramPlaybackLayers';
-import {applyConversationTimelineEdit,type ConversationTimelineEdit} from '@/lib/studio/conversation-timeline-editing';
+import {applyConversationTimelineEdit,conversationMonitorTime,type ConversationTimelineEdit} from '@/lib/studio/conversation-timeline-editing';
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
@@ -41,7 +41,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const duration = items.reduce((end,item) => Math.max(end,item.startSec+item.durationSec),0);
   const cuts = useMemo(() => Array.from(new Set(items.flatMap(item => [item.startSec,item.startSec+item.durationSec]))).sort((a,b) => a-b),[items]);
   const playback = useWorkspaceTimelinePlayback({projectFps: fps,studioNotices: copy.notices,timelineDurationSec: duration,timelineCutPoints: cuts,onNotice: setLocalError,onResetExportRangeMode: () => {}});
-  const layers = useProgramPlaybackSync({isPlaying: monitor && playback.isTimelinePlaying,items,playheadSec: playback.playheadSec,projectSettings: settings,selectedItemId: selected,onSelectItem: setSelected,onSendSnapshotToCanvas: () => {}});
+  const layers = useProgramPlaybackSync({isPlaying: monitor && playback.isTimelinePlaying,items,playheadSec: conversationMonitorTime(playback.playheadSec,duration,fps),projectSettings: settings,selectedItemId: selected,onSelectItem: setSelected,onSendSnapshotToCanvas: () => {}});
   const stopPlayback = playback.stopTimelinePlayback;
   const unavailablePlayingClip = items.find(item => item.mediaKind !== 'audio' && item.mediaAccessError && item.startSec <= playback.playheadSec && item.startSec+item.durationSec > playback.playheadSec);
   useEffect(() => {

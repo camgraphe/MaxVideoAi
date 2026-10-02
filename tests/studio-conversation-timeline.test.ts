@@ -6,6 +6,18 @@ const items: WorkspaceTimelineItem[] = [
   {id: 'one', outputNodeId: 'source-one', title: 'Opening', track: 'video', mediaKind: 'video', startSec: 0, durationSec: 5, sourceStartSec: 2, sourceDurationSec: 8, status: 'completed', mediaUrl: 'https://cdn.maxvideoai.com/one.mp4'},
   {id: 'two', outputNodeId: 'source-two', title: 'Ending', track: 'video', mediaKind: 'video', startSec: 5, durationSec: 5, sourceStartSec: 0, sourceDurationSec: 5, status: 'completed', mediaUrl: 'https://cdn.maxvideoai.com/two.mp4'},
 ];
+test('the monitor retains the final decoded frame at the sequence end, including a source start trim', async () => {
+  const module = await import('../frontend/lib/studio/conversation-timeline-editing');
+  assert.ok(module.conversationMonitorTime, 'The sequence endpoint must sample its last frame rather than an empty interval.');
+  const end = module.conversationMonitorTime(10, 10, 30);
+  const visible = items.filter(item => end >= item.startSec && end < item.startSec + item.durationSec);
+  assert.deepEqual(visible.map(item => item.id), ['two']);
+  assert.equal(Math.round(module.conversationSourceTime(visible[0], end) * 30), 149);
+  const cut = {...items[0], startSec: 0, durationSec: 4, sourceStartSec: 1, sourceDurationSec: 5};
+  assert.equal(Math.round(module.conversationSourceTime(cut, module.conversationMonitorTime(4, 4, 30)) * 30), 149);
+  assert.equal(module.conversationMonitorTime(2.5, 10, 30), 2.5, 'Normal scrubbing must retain its requested time.');
+  assert.equal(module.conversationMonitorTime(0, 0, 30), 0);
+});
 test('conversation trim and monitor agree on the source frame at both ends of a cut', async () => {
   const module = await import('../frontend/lib/studio/conversation-timeline-editing').catch(() => null);
   assert.ok(module?.applyConversationTimelineEdit);

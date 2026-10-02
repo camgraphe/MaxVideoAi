@@ -23,6 +23,11 @@ export const conversationTimelineCommandSchema = z.object({
 export type ConversationTimelineCommand = z.infer<typeof conversationTimelineCommandSchema>;
 export {workspaceTimelineSourceTime as conversationSourceTime};
 
+/** The sequence endpoint is exclusive for clips; keep its last frame in the monitor. */
+export function conversationMonitorTime(playheadSec: number, durationSec: number, fps: number): number {
+  return Math.min(Math.max(0, playheadSec), Math.max(0, durationSec - 1 / Math.max(1, fps)));
+}
+
 export function applyConversationTimelineEdit(items: WorkspaceTimelineItem[], rawEdit: ConversationTimelineEdit, fps: number, lockedTracks: WorkspaceTimelineTrack[]): WorkspaceTimelineItem[] {
   const edit = conversationTimelineEditSchema.parse(rawEdit);
   if (!Number.isInteger(fps) || fps < 1 || fps > 60) throw new Error('Invalid timeline frame rate.');
