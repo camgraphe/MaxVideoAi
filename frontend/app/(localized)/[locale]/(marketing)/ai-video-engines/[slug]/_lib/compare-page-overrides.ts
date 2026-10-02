@@ -53,6 +53,9 @@ const faqSchema = z.object({
 const comparePageOverrideSchema: z.ZodType<ComparePageOverride> = z.object({
   meta: metaSchema.optional(),
   heroIntro: nonEmptyString.optional(),
+  pricingCreditLink: primaryLinkSchema.extend({
+    href: z.literal('/pay-as-you-go-ai-video-generator'),
+  }).strict().optional(),
   quickVerdict: quickVerdictSchema.optional(),
   topCards: z.array(topCardSchema).optional(),
   primaryLinksTitle: nonEmptyString.optional(),

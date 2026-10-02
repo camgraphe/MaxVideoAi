@@ -153,6 +153,12 @@ Routes and metadata builders consume document-backed content through:
 getComparePageOverride(locale, canonicalSlug)
 ```
 
+The optional `pricingCreditLink` belongs to each document's three locale
+projections. Its href is restricted to `/pay-as-you-go-ai-video-generator`;
+the renderer localizes it and places it beside the existing pricing link.
+Keep this navigation in the pricing footer instead of adding another explanation
+paragraph or a separate callout.
+
 Comparisons without a content document intentionally use the generic renderer and may keep
 slug-specific SEO fallback metadata in `compareCopy.meta.slugOverrides` in the locale message
 files. A canonical slug must never exist in both a comparison document and `slugOverrides`.

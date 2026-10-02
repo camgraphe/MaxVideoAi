@@ -5,6 +5,10 @@ export type ComparePageOverride = {
     titleBranding?: 'auto' | 'none';
   };
   heroIntro?: string;
+  pricingCreditLink?: {
+    href: '/pay-as-you-go-ai-video-generator';
+    label: string;
+  };
   quickVerdict?: {
     title: string;
     body: string;
