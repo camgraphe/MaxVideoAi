@@ -15,6 +15,8 @@ The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: fal
 
 The local preview uses an isolated socket-only database. Its wallet/library are QA data, even when Google signs in with a real account. It does not establish the production balance. Provider, storage and remote renderer credentials are deliberately absent there. Browser qualification does not establish paid generation availability; verify runtime availability before activating the pilot catalog. Existing conversations/projects are preserved; a fresh film creates a canonical empty Project/Sequence without converting old canvases.
 
+The subsequent authorized cloud preparation and active native preview are recorded in [Isolated native Studio pilot](studio-conversation-pilot-environment.md). The socket-only preview described above is preserved on port 3002; the active localhost pilot uses isolated Neon and real server credentials. Its wallet remains a separate test ledger.
+
 ## Browser qualification
 
 The opt-in native browser journey passes on these locally installed Playwright engines:

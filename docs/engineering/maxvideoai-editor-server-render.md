@@ -50,6 +50,8 @@ When a worker receives `TIMELINE_EXPORT_TARGET_ID` or `--export-id <id>`, it cla
 Vercel must not render MP4s inside route handlers. The create-export API only creates the durable `app_timeline_exports` row, reserves billing, then calls AWS ECS `RunTask` to start one short-lived Fargate worker task.
 
 - Docker image: build from `Dockerfile.timeline-worker`, not the root mock API `Dockerfile`.
+- Both stages use Node 22. Include `packages/pricing` before the frozen install and retain it in the runner for the frontend's file dependency. Copy the shared `COREPACK_HOME` cache and disable Corepack networking in the runner; startup must not download its package manager.
+- Build from committed source without environment files, credentials, dependencies or Next output. Check the actual default entry point with no credentials and `--network none`: it must reach the database-not-configured preflight. This check launches no export and proves no rendering/storage integration. Pin the qualified pilot image digest.
 - Runtime command: `pnpm --prefix frontend run timeline-exports:worker:once`.
 - ECS mode: `RunTask` only; do not run an always-on ECS service.
 - Network mode: Fargate `awsvpc`, public subnets, `assignPublicIp: ENABLED`; no NAT Gateway required.
