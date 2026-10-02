@@ -5,6 +5,7 @@ export function getFalWebhookUrl(): string | null {
     throw new Error('FAL_WEBHOOK_TOKEN_REQUIRED_FOR_PROTECTED_CALLBACK');
   }
   const candidates: Array<{ value: string | undefined | null; normalize?: (raw: string) => string }> = [
+    { value: process.env.FAL_WEBHOOK_BASE_URL },
     { value: process.env.NEXT_PUBLIC_APP_URL },
     { value: process.env.APP_URL },
     { value: process.env.APP_BASE_URL },
