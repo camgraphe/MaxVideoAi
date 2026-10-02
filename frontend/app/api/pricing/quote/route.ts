@@ -23,7 +23,7 @@ function parseInput(payload: unknown): PublicModelQuoteInput | null {
     ? openTariffQuantityKey(body.modelId, body.mode) : null;
   if (typeof body.modelId !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(body.modelId) ||
       typeof body.mode !== 'string' || !/^[a-z0-9-]{1,30}$/.test(body.mode) ||
-      typeof body.resolution !== 'string' || !/^[a-zA-Z0-9_]{1,30}$/.test(body.resolution) ||
+      typeof body.resolution !== 'string' || !/^[a-zA-Z0-9_.]{1,30}$/.test(body.resolution) ||
       (body.durationOption !== undefined && body.durationOption !== 'auto') ||
       !Number.isFinite(body.durationSec) || (!fractionalMedia && !Number.isInteger(body.durationSec))
       || Number(body.durationSec) < 1 || (openQuantity === 'durationSec' ? !Number.isSafeInteger(body.durationSec) : Number(body.durationSec) > 120) ||

@@ -2,6 +2,19 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
 import { POST } from '../frontend/app/api/pricing/quote/route';
+import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
+
+test('public HTTP quotes accept Nano Banana 2 native half-K resolution', async () => {
+  const input = { modelId: 'nano-banana-2', mode: 't2i', durationSec: 1, resolution: '0.5k' };
+  assert.ok(resolvePublicModelScenario(input), 'The catalogue supports this native resolution.');
+  const request = (resolution: string) => POST(new NextRequest('http://localhost/api/pricing/quote', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...input, resolution }),
+  }));
+  assert.equal((await request('0.5k')).status, 200, 'A supported native resolution is valid quote input.');
+  for (const resolution of ['0.5k/path', '0.5k?query', '0.5k|selector', '0.5k\n']) {
+    assert.equal((await request(resolution)).status, 400, 'Resolution input still rejects separators and control characters.');
+  }
+});
 
 test('public price endpoint accepts reviewed fractional media timing and rejects fractional requested fixed-duration timing', async () => {
   const request = async (input: unknown) => POST(new NextRequest('http://localhost/api/pricing/quote', {
