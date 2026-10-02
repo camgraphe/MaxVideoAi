@@ -8,7 +8,7 @@ import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-bro
 import {initializeStudioConnectedFixture,STUDIO_CONNECTED_MONTAGE_INPUT} from './helpers/studio-connected-fixture-data';
 import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-http-fixture';
-import {LIVE_PRICING_POLICY_REVISION,PRICING_POLICY_HEADER} from '../frontend/lib/membership-policy';
+import {LIVE_PRICING_POLICY_REVISION,PRICING_POLICY_HEADER} from '../frontend/src/lib/membership-policy';
 
 const engine=process.env.STUDIO_BROWSER_ENGINE ?? 'chromium';
 assert.ok(engine==='chromium'||engine==='firefox'||engine==='webkit');
