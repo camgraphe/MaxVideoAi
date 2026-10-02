@@ -20,6 +20,8 @@ export type TimelineExportJobStatus = {
 
 export type TimelineExportJobResponse = TimelineExportJobStatus & {
   artifact: TimelineExportArtifact | null;
+  /** Stored reservation price, never an estimate for the next export. */
+  billing?: {amountCents: number;currency: string;billingKind: 'free' | 'paid'};
 };
 /** Submission identity is returned only in authenticated, owned Project recovery. */
 export type StudioProjectTimelineExport = TimelineExportJobResponse & {idempotencyKey: string};

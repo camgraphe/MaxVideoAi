@@ -2302,7 +2302,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportControllerSource, /if \(job\) \{\s*setActiveExportJob\(job\)/, 'export controller should keep known server jobs visible, including terminal failures');
   assert.doesNotMatch(exportControllerSource, /id:\s*idempotencyKey,\s*status:\s*'failed'/, 'a lost acknowledgement must not fabricate a terminal job and rotate the reservation identity');
   assert.match(exportControllerSource, /pendingSubmission: frozen/, 'the immutable pending submission must be saved before posting');
-  assert.match(exportControllerSource, /!activeExportJob \|\| !isTerminalExportJob\(activeExportJob\)/, 'export retries should detect terminal jobs before rotating the export session');
+  assert.match(exportControllerSource, /!activeExportJob \|\| activeExportJob\.status === 'completed' \|\| !isTerminalExportJob\(activeExportJob\)/, 'failed export retries rotate their identity; a completed export keeps its confirmed quote until a new dialog');
+  assert.match(exportControllerSource, /submittedEstimate: submittedExportEstimate/, 'accepted display pricing is restored separately from refreshed retry authorization');
   assert.match(exportControllerSource, /setExportIdempotencyKey\(createClientExportIdempotencyKey\(\)\)/, 'export retries after terminal jobs should use a fresh idempotency key and estimate');
   assert.match(exportDialogSource, /copy\.queuedServerWorker/, 'export dialog should explain queued jobs are claimed by the Fargate worker through localized copy');
   assert.match(exportDialogSource, /exportJobStatusLabel/, 'export dialog should show user-facing server export statuses');

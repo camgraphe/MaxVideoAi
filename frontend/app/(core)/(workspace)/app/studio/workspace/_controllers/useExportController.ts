@@ -12,6 +12,9 @@ import {
 } from '../_lib/workspace-timeline-export';
 import {
   parseWorkspaceTimelineExportSession,
+  normalizeTimelineExportDisplayEstimate,
+  normalizeTimelineExportConfirmedPrice,
+  workspaceTimelineExportJobEstimate,
   workspaceTimelineExportSubmittedManifest,
   type WorkspaceTimelineExportSession,
   type PendingTimelineExportSubmission,
@@ -68,12 +71,14 @@ export function normalizeTimelineExportClientJob(value: unknown): TimelineExport
           ? record.outputUrl
           : null
     : null;
+  const billing = normalizeTimelineExportConfirmedPrice(record.billing);
   return {
     id: record.id,
     status: safeStatus,
     progress: Number.isFinite(progress) ? Math.max(0, Math.min(100, Math.round(progress))) : 0,
     message: typeof record.message === 'string' ? record.message : null,
     outputUrl,
+    ...(billing ? {billing} : {}),
     ...(typeof artifact?.canonicalOriginalUrl === 'string' ? {canonicalOriginalUrl: artifact.canonicalOriginalUrl}
       : typeof record.canonicalOriginalUrl === 'string' ? {canonicalOriginalUrl: record.canonicalOriginalUrl} : {}),
     ...(typeof artifact?.outputAssetId === 'string' ? {outputAssetId: artifact.outputAssetId}
@@ -160,10 +165,14 @@ export function useExportController({
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportVideoFeedback, setExportVideoFeedback] = useState<string | null>(null);
   const [exportEstimate, setExportEstimate] = useState<TimelineExportClientEstimate | null>(null);
+  const [submittedExportEstimate, setSubmittedExportEstimate] = useState<TimelineExportClientEstimate | null>(null);
   const [estimateToken, setEstimateToken] = useState<string | null>(null);
   const [exportEstimateKey, setExportEstimateKey] = useState<string | null>(null);
   const [exportQuota, setExportQuota] = useState<TimelineExportClientQuota | null>(null);
   const [activeExportJob, setActiveExportJob] = useState<TimelineExportClientJob | null>(null);
+  const activeExportJobId = activeExportJob?.id ?? null;
+  const activeExportJobStatus = activeExportJob?.status ?? null;
+  const hasAcceptedExportJob = Boolean(activeExportJob && activeExportJobStatus !== 'failed' && activeExportJobStatus !== 'canceled');
   const [exportIdempotencyKey, setExportIdempotencyKey] = useState<string>(() => createClientExportIdempotencyKey());
   const [submittedExportManifests, setSubmittedExportManifests] = useState<Record<string, WorkspaceTimelineRenderManifest>>({});
   const [pendingSubmission,setPendingSubmission] = useState<PendingTimelineExportSubmission | null>(null);
@@ -174,7 +183,8 @@ export function useExportController({
   const terminalExportJobIdRef = useRef<string | null>(null);
   const submitting = useRef(false);
   const exportSessionStorageKey = `${TIMELINE_EXPORT_SESSION_STORAGE_KEY}.${projectId ?? 'local'}`;
-  const submissionManifest = pendingSubmission?.manifest ?? manifest;
+  const submittedJobManifest = hasAcceptedExportJob && activeExportJob ? submittedExportManifests[activeExportJob.id] : null;
+  const submissionManifest = pendingSubmission?.manifest ?? submittedJobManifest ?? manifest;
   const submissionQualityPreset = pendingSubmission?.qualityPreset ?? qualityPreset;
   const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(manifest, copy), [copy, manifest]);
   const exportEstimateContextKey = useMemo(
@@ -196,6 +206,7 @@ export function useExportController({
     if (pendingSubmission || submitting.current) return;
     setExportVideoFeedback(null);
     setExportEstimate(null);
+    setSubmittedExportEstimate(null);
     setEstimateToken(null);
     setExportEstimateKey(null);
     setExportQuota(null);
@@ -222,6 +233,8 @@ export function useExportController({
       setExportIdempotencyKey(restored.idempotencyKey);
       setSubmittedExportManifests(restored.submittedManifests);
       setPendingSubmission(restored.pendingSubmission ?? null);
+      setExportEstimate(workspaceTimelineExportJobEstimate(restored.activeJob,restored.submittedEstimate ?? null));
+      setSubmittedExportEstimate(workspaceTimelineExportJobEstimate(restored.activeJob,restored.submittedEstimate ?? null));
     }
     setExportSessionHydrated(true);
   }, [exportSessionStorageKey]);
@@ -233,20 +246,27 @@ export function useExportController({
       idempotencyKey: exportIdempotencyKey,
       submittedManifests: submittedExportManifests,
       pendingSubmission,
+      submittedEstimate: submittedExportEstimate,
     };
     window.localStorage.setItem(exportSessionStorageKey, JSON.stringify(session));
-  }, [activeExportJob, exportIdempotencyKey, exportSessionHydrated, exportSessionStorageKey, submittedExportManifests,pendingSubmission]);
+  }, [activeExportJob, submittedExportEstimate, exportIdempotencyKey, exportSessionHydrated, exportSessionStorageKey, submittedExportManifests,pendingSubmission]);
 
   useEffect(() => {
     if (!exportSessionHydrated || !pendingSubmission) return;
     const recovered = recoveredJobs?.find(job => job.idempotencyKey === exportIdempotencyKey);
     if (!recovered) return;
     setActiveExportJob(recovered);
+    setSubmittedExportEstimate(current => workspaceTimelineExportJobEstimate(recovered,current));
     setSubmittedExportManifests(current => ({...current,[recovered.id]: pendingSubmission.manifest}));
     setPendingSubmission(null);
   },[exportSessionHydrated,pendingSubmission,recoveredJobs,exportIdempotencyKey]);
 
   useEffect(() => {
+    if (!exportSessionHydrated) return;
+    if (isExportVideoStarting || (activeExportJobId && activeExportJobStatus !== 'failed' && activeExportJobStatus !== 'canceled')) {
+      setIsExportEstimateLoading(false);
+      return;
+    }
     if (!isExportDialogOpen || !exportIdempotencyKey || !exportEstimateContextKey || submissionManifest.status === 'blocked') {
       setExportEstimate(null);
       setEstimateToken(null);
@@ -302,20 +322,19 @@ export function useExportController({
       });
 
     return () => controller.abort();
-  }, [copy, estimateRefreshVersion, exportEstimateContextKey, exportIdempotencyKey, isExportDialogOpen, submissionManifest, notices, projectId, submissionQualityPreset]);
+  }, [activeExportJobId, activeExportJobStatus, copy, estimateRefreshVersion, exportEstimateContextKey, exportIdempotencyKey, exportSessionHydrated, isExportDialogOpen, isExportVideoStarting, submissionManifest, notices, projectId, submissionQualityPreset]);
 
   useEffect(() => {
-    if (!activeExportJob || !isTerminalExportJob(activeExportJob) || terminalExportJobIdRef.current === activeExportJob.id) return;
+    if (!activeExportJob || activeExportJob.status === 'completed' || !isTerminalExportJob(activeExportJob) || terminalExportJobIdRef.current === activeExportJob.id) return;
     terminalExportJobIdRef.current = activeExportJob.id;
     setExportEstimate(null);
+    setSubmittedExportEstimate(null);
     setEstimateToken(null);
     setExportEstimateKey(null);
     setExportQuota(null);
     setExportIdempotencyKey(createClientExportIdempotencyKey());
   }, [activeExportJob]);
 
-  const activeExportJobId = activeExportJob?.id ?? null;
-  const activeExportJobStatus = activeExportJob?.status ?? null;
   useEffect(() => {
     if (!activeExportJobId || !activeExportJobStatus || isTerminalExportStatus(activeExportJobStatus)) return;
 
@@ -333,6 +352,7 @@ export function useExportController({
         if (!nextJob) return;
         nextStatus = nextJob.status;
         setActiveExportJob(nextJob);
+        setSubmittedExportEstimate(current => workspaceTimelineExportJobEstimate(nextJob,current));
         if (nextJob.status === 'completed') {
           const message = nextJob.outputUrl ? notices.exportReadyDownload : notices.exportCompleted;
           setExportVideoFeedback(message);
@@ -403,13 +423,15 @@ export function useExportController({
     });
     const serializedRequest = serializeWorkspaceTimelineVideoExportRequest(request);
     const frozen: PendingTimelineExportSubmission = {manifest: JSON.parse(JSON.stringify(submissionManifest)),qualityPreset: submissionQualityPreset};
+    const frozenEstimate = submittedExportEstimate ?? exportEstimate;
     // Persist before POST: a lost acknowledgement must never rotate the reservation identity.
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(VIDEO_EXPORT_REQUEST_STORAGE_KEY, serializedRequest);
-      window.localStorage.setItem(exportSessionStorageKey,JSON.stringify({activeJob: activeExportJob,idempotencyKey,submittedManifests: submittedExportManifests,pendingSubmission: frozen}));
+      window.localStorage.setItem(exportSessionStorageKey,JSON.stringify({activeJob: activeExportJob,idempotencyKey,submittedManifests: submittedExportManifests,pendingSubmission: frozen,submittedEstimate: frozenEstimate}));
     }
     submitting.current = true;
     setPendingSubmission(frozen);
+    setSubmittedExportEstimate(frozenEstimate);
     setIsExportVideoStarting(true);
     setExportVideoFeedback(notices.queueingServerExport);
     try {
@@ -422,6 +444,7 @@ export function useExportController({
       const job = normalizeTimelineExportClientJob(payload?.export);
       if (job) {
         setActiveExportJob(job);
+        setSubmittedExportEstimate(workspaceTimelineExportJobEstimate(job,normalizeTimelineExportDisplayEstimate(payload?.billing) ?? (payload?.reused ? frozenEstimate : exportEstimate)));
         setSubmittedExportManifests(current => ({...current,[job.id]: frozen.manifest}));
         setPendingSubmission(null);
       }
@@ -453,7 +476,7 @@ export function useExportController({
       setIsExportVideoStarting(false);
       submitting.current = false;
     }
-  }, [activeExportJob,copy, estimateToken, exportIdempotencyKey, exportSessionStorageKey,hasCurrentExportEstimate, submissionManifest, notices, onNotice, projectId, submissionQualityPreset,submittedExportManifests]);
+  }, [activeExportJob,copy, estimateToken, exportEstimate, exportIdempotencyKey, exportSessionStorageKey,hasCurrentExportEstimate, submissionManifest, notices, onNotice, projectId, submissionQualityPreset,submittedExportEstimate,submittedExportManifests]);
 
   const exportTimelineEdl = useCallback(() => {
     const edl = buildWorkspaceTimelineEdl(manifest);
@@ -471,7 +494,8 @@ export function useExportController({
   return {
     activeExportJob,
     closeExportDialog,
-    exportEstimate,
+    exportEstimate: hasAcceptedExportJob ? workspaceTimelineExportJobEstimate(activeExportJob,submittedExportEstimate ?? exportEstimate) : exportEstimate,
+    submittedExportEstimate: workspaceTimelineExportJobEstimate(activeExportJob,submittedExportEstimate),
     exportQuota,
     exportReadinessLabel,
     exportTimelineEdl,

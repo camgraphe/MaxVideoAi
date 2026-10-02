@@ -13,12 +13,18 @@ function nullableTimelineExportSize(value: string | number | null): number | nul
 
 export function timelineExportJobResponse(job: TimelineExportJobRecord): TimelineExportJobResponse {
   const outputUrl = job.status === 'completed' ? job.output_url : null;
+  const amountCents = Number(job.amount_cents);
+  const billing = Number.isSafeInteger(amountCents) && amountCents >= 0
+    && typeof job.currency === 'string' && /^[A-Z]{3}$/.test(job.currency)
+    && (job.billing_kind === 'free' || job.billing_kind === 'paid')
+    ? {amountCents,currency: job.currency,billingKind: job.billing_kind} : null;
 
   return {
     id: job.id,
     status: job.status,
     progress: job.progress,
     message: job.message,
+    ...(billing ? {billing} : {}),
     artifact: outputUrl
       ? {
         outputUrl,
