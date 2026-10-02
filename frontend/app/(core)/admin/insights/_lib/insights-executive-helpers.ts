@@ -122,7 +122,7 @@ export function buildPrioritySignals(
     {
       label: 'Revenue balance',
       value: formatSignedCurrency(walletFlow.walletBalanceDeltaUsd),
-      helper: `${formatCurrency(walletFlow.topups.amountUsd)} top-ups + ${formatCurrency(walletFlow.refunds.amountUsd)} refunds − ${formatCurrency(walletFlow.grossCharges.amountUsd)} gross charges across ${humanRange}.`,
+      helper: `${formatCurrency(walletFlow.topups.amountUsd)} top-ups + ${formatCurrency(walletFlow.refunds.amountUsd)} refunds − ${formatCurrency(walletFlow.grossCharges.amountUsd)} gross charges${walletFlow.creditReversals.amountUsd > 0 ? ` − ${formatCurrency(walletFlow.creditReversals.amountUsd)} credit reversals` : ''} across ${humanRange}.`,
       href: '/admin/transactions',
       tone: walletFlow.walletBalanceDeltaUsd >= 0 ? 'success' : 'warning',
     },
