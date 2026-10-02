@@ -45,6 +45,12 @@ never an ambient `DATABASE_URL`. It permits a direct Neon connection or a local
 Unix socket; pooled connections and host/options overrides are rejected. Database
 connections default to read-only and the inventory uses a repeatable-read,
 read-only transaction. It reads catalog definitions, not customer/payment rows.
+Duplicate URL parameters are rejected. The effective target hash includes host
+or socket directory, port, database, user and transport. The inventory subprocess
+removes ambient PostgreSQL overrides; explicit driver fields and a password
+callback prevent ambient authentication or `.pgpass` from supplying credentials.
+Connection loss aborts evidence publication and closes the reader through the
+controlled error path. Neon TLS verifies the server certificate.
 
 From the clean repository root:
 
@@ -72,6 +78,9 @@ need explicit migration review. In particular, 60 requires the complete deployed
 migration-31 trial boundaries. An unfamiliar provider-cost function is refused.
 The report always says `activationReady: false` and `schemaReviewRequired: true`.
 It does not certify customer-price parity, grant writes or execute migrations.
+An absent `mcp_trial_provider_cost_matches_snapshot` is an expected pre-60 state:
+60 creates it before replacing the old inline funding check. The report marks
+this as `created_by_migration_60`, separately from mandatory missing functions.
 
 Do not select migrations by their numeric prefix: `53_playlist_opening.sql` is
 an independent main-branch migration. Do not replay every repository migration
@@ -86,6 +95,8 @@ compares historical jobs, receipts and old trial pricing snapshots byte for byte
 Tariff state stays inactive and empty. It also rejects writes from the inventory
 transaction. This qualifies the fixture schema; production still needs its own
 fresh structural review and backup.
+The rehearsal includes the old inline trial-cost constraint observed in the
+deployed schema, with the raster predicate absent before migration 60.
 
 ## Review the activation operation
 

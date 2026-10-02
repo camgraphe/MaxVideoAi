@@ -700,3 +700,19 @@ fixture, current/historical raster function both accepted, invalid cost rejected
 Updated stale contract-only release blockers in the rate reconciliation guide.
 Runbook docs/deployment/customer-tariff-cutover.md records exact capture, migration,
 activation review, live acceptance and immutable compensating rollback boundaries.
+
+Final fresh review e1a2b95e5..9770a3867: no Critical, three Important issues in
+the new inventory (duplicate TLS parameters; ambient PGPORT/PGPASSWORD and
+incomplete endpoint hash; uncaught backend disconnect). One fix pass rejects all
+duplicate URL keys, pins effective host/socket/port/user/database/TLS/password,
+clears ambient PG overrides in the subprocess and aborts lost-connection evidence
+through owned client/pool error handling and cleanup. RED duplicateSSL accepted,
+missing explicit-target/controlled-client owners -> GREEN actual pg parameter
+probes and terminated PG17 backend, no returned report or remaining backend.
+Fresh read-only remote inventory at2026-10-02T00:37:46.807Z additionally found
+the expected older31 inline funding guard (raster predicate absent). Dedicated
+RED incorrectly missing required function -> GREEN marks created_by_migration_60;
+real fixture now preserves all other funding checks and historic rows across
+creation/replacement/replay. Migration60 explicitly accepts this old state.
+No remote DDL or tariff write. The first private report remains immutable and
+binds9770; recheck the corrected committed inventory before claiming its evidence.

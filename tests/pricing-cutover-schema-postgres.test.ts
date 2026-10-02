@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { Pool } from 'pg';
 import { collectPricingCutoverSchema, loadPricingCutoverMigrations,
-  PRICING_CUTOVER_READ_ONLY_OPTIONS } from '../frontend/scripts/_lib/pricing-cutover-schema';
+  PRICING_CUTOVER_READ_ONLY_OPTIONS, pricingCutoverTarget } from '../frontend/scripts/_lib/pricing-cutover-schema';
+import { withPricingCutoverReadOnlyClient } from '../frontend/scripts/_lib/pricing-cutover-client';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
 test('read-only cutover inventory and exact migration replay preserve historical jobs, receipts and trial snapshots', async () => {
@@ -35,6 +36,30 @@ test('read-only cutover inventory and exact migration replay preserve historical
         VALUES ($1,'historical-owner',$2,$3,'historic-catalog',$4,0,'USD','trial','prepared',now()+interval '10 minutes')`,
       [`11111111-1111-4111-8111-${String(index).padStart(12, '0')}`, request, 'a'.repeat(64), snapshot]);
     }
+    // Deployed migration 31 predates the extracted raster predicate. Reproduce
+    // its old inline cost clause while retaining every other funding guard.
+    const funding = (await db.pool.query(`SELECT pg_get_constraintdef(oid) AS definition
+      FROM pg_constraint WHERE conrelid='public.mcp_generation_quotes'::regclass
+      AND conname='mcp_generation_quotes_funding_shape'`)).rows[0].definition as string;
+    const name = 'mcp_trial_provider_cost_matches_snapshot';
+    let start = funding.indexOf(`${name}(`);
+    assert.ok(start >= 0);
+    const opening = start + name.length;
+    let depth = 1, end = opening + 1;
+    while (depth > 0 && end < funding.length) {
+      if (funding[end] === '(') depth++;
+      if (funding[end] === ')') depth--;
+      end++;
+    }
+    assert.equal(depth, 0);
+    if (funding.slice(start - 7, start) === 'public.') start -= 7;
+    const inline = `((pricing_snapshot #>> '{funding,providerCostCents}')::numeric =
+      CASE request_json #>> '{settings,aspectRatio}' WHEN '1:1' THEN 10
+      WHEN '16:9' THEN 17 WHEN '9:16' THEN 17 ELSE NULL END)`;
+    const historicalConstraint = funding.slice(0, start) + inline + funding.slice(end);
+    await db.pool.query(`ALTER TABLE mcp_generation_quotes DROP CONSTRAINT mcp_generation_quotes_funding_shape;
+      DROP FUNCTION public.mcp_trial_provider_cost_matches_snapshot(text,numeric);
+      ALTER TABLE mcp_generation_quotes ADD CONSTRAINT mcp_generation_quotes_funding_shape ${historicalConstraint}`);
     const saved = async () => (await db.pool.query(`SELECT
       (SELECT jsonb_agg(to_jsonb(j) ORDER BY job_id) FROM app_jobs j) AS jobs,
       (SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM app_receipts r) AS receipts,
@@ -54,6 +79,7 @@ test('read-only cutover inventory and exact migration replay preserve historical
     const before = await inventory();
     assert.deepEqual(before.missingPrerequisites, []);
     assert.deepEqual(before.missingTrialFunctions, []);
+    assert.equal(before.trialRasterPredicate, 'created_by_migration_60');
     assert.equal(before.missingCutoverTables.length, 6);
     assert.equal(before.activationReady, false);
     assert.equal(before.schemaReviewRequired, true);
@@ -75,6 +101,7 @@ test('read-only cutover inventory and exact migration replay preserve historical
     }
     const after = await inventory();
     assert.deepEqual(after.missingCutoverTables, []);
+    assert.equal(after.trialRasterPredicate, 'present_requires_definition_review');
     assert.equal(after.activationReady, false, 'migrated schema alone cannot authorize a price cutover');
     assert.notEqual(after.schemaHash, before.schemaHash);
     assert.equal((await db.pool.query("SELECT to_regclass('public.forbidden_inventory_write') AS forbidden")).rows[0].forbidden, null);
@@ -84,5 +111,21 @@ test('read-only cutover inventory and exact migration replay preserve historical
       mcp_trial_provider_cost_matches_snapshot('1:1', 17) AS current,
       mcp_trial_provider_cost_matches_snapshot('1:1', 18) AS invalid`)).rows[0];
     assert.deepEqual(functions, { historic: true, current: true, invalid: false });
+  } finally { await db.cleanup(); }
+});
+
+test('a terminated schema reader rejects controlled work instead of emitting an uncaught backend error or returning a report', async () => {
+  const db = await startDisposablePostgres('pricing-cutover-disconnect');
+  try {
+    const target = pricingCutoverTarget({ DATABASE_URL: db.databaseUrl });
+    let pid = 0;
+    await assert.rejects(withPricingCutoverReadOnlyClient(target.config, async client => {
+      pid = (await client.query<{ pid: number }>('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+      await db.pool.query('SELECT pg_terminate_backend($1)', [pid]);
+      await new Promise(resolve => setTimeout(resolve, 30));
+      return { mustNotPublish: true };
+    }), /connection.*lost/i);
+    assert.ok(pid > 0);
+    assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM pg_stat_activity WHERE pid=$1', [pid])).rows[0].n, 0);
   } finally { await db.cleanup(); }
 });

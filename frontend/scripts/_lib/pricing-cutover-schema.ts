@@ -28,6 +28,8 @@ export function pricingCutoverConnection(env: Record<string, string | undefined>
     if (!connection) throw new Error();
     const url = new URL(connection);
     if (!['postgres:', 'postgresql:'].includes(url.protocol) || !url.username || !url.pathname.slice(1)) throw new Error();
+    const keys = [...url.searchParams.keys()];
+    if (new Set(keys).size !== keys.length || (url.port && Number(url.port) < 1)) throw new Error();
     const hosts = url.searchParams.getAll('host');
     const local = ['localhost', '127.0.0.1'].includes(url.hostname) && hosts.length === 1 && hosts[0].startsWith('/');
     const neon = url.hostname.endsWith('.neon.tech') && !url.hostname.split('.').some(part => part.endsWith('-pooler'))
@@ -37,6 +39,24 @@ export function pricingCutoverConnection(env: Record<string, string | undefined>
     if ([...url.searchParams.keys()].some(key => !allowed.includes(key))) throw new Error();
     return connection;
   } catch { throw new Error('Use an explicit environment file with a direct Neon or local Unix socket connection.'); }
+}
+
+/** Bind exactly the endpoint passed to pg, including its effective port/socket.
+ * Explicit password callback prevents ambient PGPASSWORD and .pgpass fallback. */
+export function pricingCutoverTarget(env: Record<string, string | undefined>) {
+  const url = new URL(pricingCutoverConnection(env));
+  const host = url.searchParams.get('host') || url.hostname;
+  const port = Number(url.port || 5432);
+  const database = decodeURIComponent(url.pathname.slice(1));
+  const user = decodeURIComponent(url.username);
+  const password = decodeURIComponent(url.password);
+  const socket = host.startsWith('/');
+  const config = { host, port, database, user, password: () => password,
+    ssl: socket ? false : { rejectUnauthorized: true },
+    enableChannelBinding: url.searchParams.get('channel_binding') === 'require',
+    options: PRICING_CUTOVER_READ_ONLY_OPTIONS, connectionTimeoutMillis: 10_000 };
+  return { config, databaseIdentity: createHash('sha256').update(JSON.stringify({ host, port, database, user,
+    transport: socket ? 'unix_socket' : 'tls_verified' })).digest('hex') };
 }
 
 const prerequisiteTables = ['app_jobs', 'app_pricing_rules', 'app_pricing_change_events',
@@ -77,11 +97,14 @@ export async function collectPricingCutoverSchema(executor: QueryExecutor) {
     WHERE ns.nspname = 'public' AND p.proname = ANY($1::text[]) ORDER BY p.proname, p.oid`, [functions]);
   const present = new Set(tables.filter(row => row.present).map(row => row.name));
   const missingPrerequisites = prerequisiteTables.filter(name => !present.has(name));
-  const missingTrialFunctions = functions.slice(-2).filter(name => !definitions.some(row => row.name === name));
+  const missingTrialFunctions = ['mcp_trial_snapshot_has_forbidden_funding_semantics']
+    .filter(name => !definitions.some(row => row.name === name));
+  const trialRasterPredicate = definitions.some(row => row.name === 'mcp_trial_provider_cost_matches_snapshot')
+    ? 'present_requires_definition_review' : 'created_by_migration_60';
   const schema = { tables, columns, constraints, triggers, functions: definitions };
   return { schemaVersion: 1, evidenceKind: 'pricing_schema_inventory', readOnly: true,
     at: state.at.toISOString(), remote: state.remote, activationReady: false,
-    schemaReviewRequired: true, missingPrerequisites, missingTrialFunctions,
+    schemaReviewRequired: true, missingPrerequisites, missingTrialFunctions, trialRasterPredicate,
     missingCutoverTables: newTables.filter(name => !present.has(name)),
     ...schema, schemaHash: createHash('sha256').update(JSON.stringify(schema)).digest('hex') };
 }
