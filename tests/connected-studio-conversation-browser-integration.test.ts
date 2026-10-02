@@ -216,7 +216,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     for (const width of [320,768]) {
       await page.setViewportSize({width,height: 844});
       await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
-      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth),width);
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),'The document stays within the viewport, including classic WebKit scrollbars.');
     }
     assert.deepEqual(errors,[]);
     assert.ok(browser.readPrivateRequests().some(request => request.status === 200 || request.status === 206));
