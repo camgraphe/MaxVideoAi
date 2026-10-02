@@ -4,6 +4,9 @@ Prepared October 2, 2026, for `codex/bytedance-pricing-grid`.
 The [local acceptance record](../engineering/2026-10-02-pricing-preproduction.md)
 owns completed checks and their limits. This runbook prepares the production
 decision; it grants no permission to mutate a remote environment or publish.
+The [local PR proposal and complementary checks](2026-10-02-pricing-pr-proposal.md)
+record the latest read-only deployment/commercial/schema observations and the
+prepared next external step. They do not renew the deployed quote certificate.
 
 ## Freeze the release inputs
 

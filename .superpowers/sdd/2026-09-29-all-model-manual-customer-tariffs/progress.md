@@ -979,3 +979,67 @@ clone mq5jjws4 removed, symlinked dependencies not followed; private cleanup rec
 binds the immutable qualification manifest. Original worktree/admin retained.
 Final repeat fetch still finds main=origin/main=d10ad4587,0divergence, no rebase
 needed. Documentation acceptance commit prepared with no implementation changes.
+
+## Complementary prepublication checks — October 2
+
+Resume user “Okay, go” as continued local/read-only preparation under the existing
+local-only boundary. Candidate fb0d66aa0, implementation qualification remains
+baffc0731. No new product implementation or repeat review/full-suite run.
+Ruling: run supplemental CI/SEO/localization/catalogue checks in an owned clone —
+model:check writes docs/model-roster-report.md — cost if wrong: unexpected changes
+are confined to the clone and must be reviewed before qualification.
+I18n,SEO/image-alt/model:check all exit0. FR5779keys/ES5773keys; alt288files;
+SEO/machine/internal-link/media-origin gates pass. Models0critical/1warning for
+seedance-2-0-fast-byteplus, confirmed unpublished on every registry surface.
+Only generated QA report timestamp and two dependency symlinks differ in clone;
+no private env file copied or source feature changed.
+
+Fresh fetch/deployment:check exit0: main=origin/main=d10ad4587; both domains serve
+the same Git deploymentdpl_B1xi8TtrQ1viCBJ3XbEjWG6HCS4y. Candidate contains main.
+Initial strict reader refuses Desktop's pooled URL; no connection or write.
+Authenticated Vercel one-variable GET returns matching metadata without value;
+no secret response exported and no remote env update attempted. Diagnostics kept.
+Ruling: prepare an explicit direct reader file from existing local configuration,
+using Neon's documented pooler-host suffix and requiring the complete previously
+recorded production target identity before connecting — tracked strict parser and
+TLS/read-only reader remain unchanged — cost if wrong: target mismatch refuses;
+cached connection evidence cannot certify the current deployed environment.
+
+Accepted read-only production commercial capture2026-10-02T12:02:25.333Z:
+4rules/53settings/9overrides/16products; productHash unchanged35f5e91b10dc8ee781c30100495d19923b7d6210cade3687cfbbacdd8bcb07cf.
+Rawcommercial hash differs03199bb5676303c9a8d0c92945671d554bde6b0ae03a59bcd6b6b282e64476b8.
+Full field comparison finds exactly36settings updated_at changes and no other
+commercial/product changes; before/after semantic hash matches1e9e223bc4133059cfa81b37fd62d6e55220df997ecb98629932f1957fca4a08.
+Ruling: those settings dates are metadata, not changed commercial values — all
+other fields match and the cutover owner excludes only those timestamps — cost if
+wrong: actual deployed quote reproduction is still required before publication;
+this report never renews quote/effective-environment provenance or readiness.
+
+Accepted schema inventory2026-10-02T12:02:25.327Z bindsfb0d66aa0 and9exactmigration
+files; schemaHash5ba5c332fab4b5d4c7195a66a910b007e0fec19d025b4cf65fb4e2f8dcf6bcf6.
+No missing mandatory table/function prereq; raster predicate created by60; all7new
+pricing/Draft/cutover tables absent as expected before approved DDL. No remote DDL,
+customer/payment/job/receipt row read, pricing write or provider/payment action.
+Preview env metadata6records: no default variable jointly targetsproduction+preview;
+actual distinct database isolation remains unproven and required before any
+preview admin/generation write. No values decrypted/captured by that metadata check.
+
+Two owned temporary reader credential files removed after captures; original
+configuration/worktree/admin preserved. Private27artifact readiness manifestSHA256
+d512aa82a14d75b72fcf5ade682a7ead6bce207c037ef3abcfb7c6f5058937a0;
+prepublication-checks-20261002/, dirs0700/files0600, no retained connection secrets.
+Proposaldocs/deployment/2026-10-02-pricing-pr-proposal.md makes next external action
+reviewable: push branch+draft PR for QualityCI, preview isolation check before use;
+merge/migrations/manual-switch activation await the production decision. User's
+existing local-only instruction requires authorization before this external step.
+No push, PR publication, merge, deployment, external message or remote mutation.
+
+Completion: all27artifact hashes/private modes and touched documentation links
+verified; schema JSON asserts9exactfiles/7expectedabsenttables/0missingprereqs.
+Owned final-gates clone15l5fydv removed after checking that its sole tracked diff
+is the generated roster-report timestamp. Separate private cleanup receipt binds
+readiness manifest; both temporary credential inputs absent. Original worktree,
+source environment and admin runtime preserved. Current lint:exposure and
+git diff --check pass. Prepared documentation-only acceptance commit and openable
+PR proposal; next ask is external push/draftPR/CI/isolated preview, preserving the
+separate production merge/migration/activation and paid operational authorizations.
