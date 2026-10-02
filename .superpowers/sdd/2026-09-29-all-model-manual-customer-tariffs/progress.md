@@ -1043,3 +1043,37 @@ source environment and admin runtime preserved. Current lint:exposure and
 git diff --check pass. Prepared documentation-only acceptance commit and openable
 PR proposal; next ask is external push/draftPR/CI/isolated preview, preserving the
 separate production merge/migration/activation and paid operational authorizations.
+
+## Authorized GitHub/isolated preview preparation — October 2
+
+User approved pushing this branch, a draft PR and isolated preview; no merge or
+production writes approved. Published350fefa06, PR370 attached to current task.
+Fresh main remainsd10ad4587, candidate126ahead0behind. Both production domains
+remain ondpl_B1xi8TtrQ1viCBJ3XbEjWG6HCS4y, deployedmaind10ad4587.
+Default preview DATABASE_URL mapped to main despite the new Neon child branch.
+Created sensitive override restricted to preview+codex/bytedance-pricing-grid,
+using the verified connection tobr-empty-cake-aeht4dif/ep-divine-brook-ae2ldy3k.
+Original default/production variable metadata unchanged. Explicit TLS reader and
+server metadata bindc6decf68a05db79a8bde2c6da0f4c34d321dfa80cceb26f371dfcb86010bf8b4.
+Nine exact migration bytes applied atomically only to this isolated Neon branch;
+postinventory confirms seven new tables and owned trial function/constraints.
+Empty/inactive registryrevision0,0cells/versions/events. Sourceflag remainsfalse.
+Git-backed preview redeploydpl_BcQRtkofu1k2gcEiZwekLUNp1cAP is READY at350fefa06;
+sourcecli retains the original Git SHA/ref, targetpreview, no production alias.
+HTTP home/pricing/Seedance2.5/publicquote200, anonymousadmin401. Runtime binding
+confirmed using temporary preview-onlydefaultflatfee1001c: quote289→1290→289,
+exact original policy SHA/revision restored. No provider or payment call. Three
+private environment files removed; original environment/admin preserved.
+Private receipts: publication-preparation-20261002/, dirs0700/files0600.
+
+QualityCI37006585292 interrupted after35m15s by its35minute limit, not a reported
+assertion failure. Full joblog retained, no not-ok case before cancellation;
+last completed1106 canonicaltransactionreadguard at12:40:12Z precedes initial
+cutover test, unfinished when cancelled13:00:41Z. It validates complete26,818
+quotes through activation, injected late rollback and guarded recovery. Local
+qualified fixture duration759528ms; hosted workload remains incomplete at limit.
+Ruling/hypothesis: give the same hosted assertions a60minute job budget, with no
+other scheduling/test/source changes, then inspect the actual result. Cost if
+wrong: a second timeout/failure disproves this hypothesis and requires further
+root-cause investigation; do not mark release ready on the budget change alone.
+No repeated implementation review/full local suite: app implementation unchanged.

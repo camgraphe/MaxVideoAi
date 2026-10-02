@@ -10,7 +10,9 @@ jobs:
   quality:
     name: Quality CI
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    # The full initial tariff cutover replays all 26,818 canonical quotes and
+    # verifies atomic failure/recovery. Keep its complete coverage on hosted CI.
+    timeout-minutes: 60
     permissions:
       contents: read
     env:

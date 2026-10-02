@@ -1,9 +1,10 @@
 # Proposition de PR — centralisation des tarifs
 
 Préparée localement le 2 octobre 2026 sur `codex/bytedance-pricing-grid`.
-Cette proposition n'est pas publiée. Le passage sur GitHub, la CI et la preview
-constituent la prochaine étape externe à autoriser. La fusion, les migrations et
-l'activation en production feront ensuite l'objet d'une décision de publication.
+Le propriétaire a ensuite autorisé la publication de la branche, une PR en
+brouillon et une preview isolée. La [PR #370](https://github.com/camgraphe/MaxVideoAi/pull/370)
+est ouverte. La fusion, les migrations et l'activation en production restent
+une décision de publication distincte.
 
 ## Ce que contient la branche
 
@@ -79,12 +80,36 @@ Il conserve `activationReady: false` et `productionWriteAuthorized: false`.
    seules dates. Ce contrôle ne renouvelle pas le certificat des devis déployés ;
    leur reproduction reste exigée au moment de la publication.
 
-## Prochaine étape proposée
+## Publication et preview isolée
 
-Pousser la branche et ouvrir une **PR en brouillon** vers `main` pour obtenir la
-Quality CI. Vérifier l'isolation effective de la base de preview avant toute
-utilisation de l'admin ou d'un parcours susceptible d'écrire. Aucun appel fournisseur
-payant n'est nécessaire pour ces vérifications.
+La branche publiée contient `origin/main` à `d10ad4587`. Le contrôle de livraison
+répété confirme que les deux domaines de production servent encore le même
+déploiement Git de main. Aucun merge ni déploiement de production n'a été effectué.
+
+La première preview a révélé que la variable de connexion par défaut de preview
+visait la base de production, malgré la création d'une branche Neon dédiée.
+Un override sensible est maintenant réservé à **cette branche Git et à la cible
+preview**. Les enregistrements d'environnement de production sont inchangés.
+La preview reconstruite depuis le commit publié `350fefa06` est READY :
+[Pricing](https://maxvideoai-m48gfs7je-camgraphes-projects.vercel.app/pricing).
+
+La connexion explicite vérifiée par TLS appartient à la branche Neon dédiée.
+Les neuf migrations exactes y ont été appliquées dans une transaction, puis leurs
+tables, contraintes et définitions vérifiées. Le registre y reste vide et inactif,
+révision zéro. Un aller-retour du calcul dans cette seule base confirme l'isolation
+effective du serveur : devis 289 → 1290 → 289 centimes, règle et révision du devis
+restaurées exactement. Aucun paiement ni appel fournisseur. Les fichiers
+temporaires de connexion et de variables privées sont supprimés.
+
+L'accueil, Pricing, le modèle Seedance 2.5 et le devis public répondent HTTP 200 ;
+l'admin sans session répond HTTP 401 attendu. Le bypass admin local reste limité
+au local. Ces vérifications ne certifient pas une activation des tarifs manuels.
+
+La [première Quality CI](https://github.com/camgraphe/MaxVideoAi/actions/runs/37006585292)
+a atteint sa limite de 35 minutes pendant la suite de tests. Aucun test déclaré
+en échec ne figure avant l'annulation ; le test complet d'activation est encore
+inachevé. Le budget du job passe à 60 minutes, avec les mêmes étapes et assertions.
+Le nouveau résultat reste à obtenir : la branche n'est pas déclarée prête à fusionner.
 
 Avant fusion/activation, suivre le [runbook](customer-tariff-cutover.md) : preuve
 récente des devis et de la configuration déployés, inventaire des paiements,
