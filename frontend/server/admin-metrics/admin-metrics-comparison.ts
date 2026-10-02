@@ -1,4 +1,4 @@
-import { RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
+import { CREDIT_REVERSAL_SQL, RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { manualAdminCreditExclusionClause } from '@/server/admin-metrics/admin-topup-filter';
@@ -19,6 +19,10 @@ import {
 } from '@/server/admin-metrics/admin-metrics-helpers';
 
 type DailyComparisonSeries = AdminMetricsComparison['current'];
+type ComparisonReceiptFlowRow = ReceiptFlowRow & {
+  credit_reversal_count: number | string | null;
+  credit_reversal_cents: number | string | null;
+};
 
 export async function fetchAdminMetricsComparison(
   rangeParam?: string | null,
@@ -44,6 +48,7 @@ export async function fetchAdminMetricsComparison(
       activeAccountsDaily: fillDailySeries([], currentRange),
       topupsDaily: fillAmountSeries([], currentRange),
       chargesDaily: fillAmountSeries([], currentRange),
+      creditReversalsDaily: fillAmountSeries([], currentRange),
       refundsDaily: fillAmountSeries([], currentRange),
     };
     return {
@@ -96,12 +101,14 @@ export async function fetchAdminMetricsComparison(
       `,
       exclusionParams
     ),
-    safeQuery<ReceiptFlowRow>(
+    safeQuery<ComparisonReceiptFlowRow>(
       `
         SELECT
           date_trunc('day', created_at) AS bucket,
           COUNT(*) FILTER (WHERE ${RENDER_CHARGE_SQL})::bigint AS charge_count,
           COALESCE(SUM(amount_cents) FILTER (WHERE ${RENDER_CHARGE_SQL}), 0)::bigint AS charge_cents,
+          COUNT(*) FILTER (WHERE type = 'charge' AND ${CREDIT_REVERSAL_SQL})::bigint AS credit_reversal_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge' AND ${CREDIT_REVERSAL_SQL}), 0)::bigint AS credit_reversal_cents,
           COUNT(*) FILTER (WHERE type = 'refund')::bigint AS refund_count,
           COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::bigint AS refund_cents
         FROM app_receipts
@@ -137,6 +144,11 @@ export async function fetchAdminMetricsComparison(
   const topupSeries = splitAmountSeries(topupDailyRows);
   const receiptFlow = mapReceiptFlowRows(receiptFlowDailyRows);
   const chargeSeries = splitAmountPoints(receiptFlow.charges);
+  const creditReversalSeries = splitAmountSeries(receiptFlowDailyRows.map((row) => ({
+    bucket: row.bucket,
+    count: row.credit_reversal_count,
+    amount_cents: row.credit_reversal_cents,
+  })));
   const refundSeries = splitAmountPoints(receiptFlow.refunds);
 
   return {
@@ -146,6 +158,7 @@ export async function fetchAdminMetricsComparison(
       activeAccountsDaily: activeSeries.current,
       topupsDaily: topupSeries.current,
       chargesDaily: chargeSeries.current,
+      creditReversalsDaily: creditReversalSeries.current,
       refundsDaily: refundSeries.current,
     },
     previous: {
@@ -153,6 +166,7 @@ export async function fetchAdminMetricsComparison(
       activeAccountsDaily: activeSeries.previous,
       topupsDaily: topupSeries.previous,
       chargesDaily: chargeSeries.previous,
+      creditReversalsDaily: creditReversalSeries.previous,
       refundsDaily: refundSeries.previous,
     },
   };

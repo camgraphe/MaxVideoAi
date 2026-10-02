@@ -228,22 +228,26 @@ export function summarizeWalletFlow({
   topups,
   grossCharges,
   refunds,
+  creditReversals = [],
 }: {
   topups: AmountSeriesPoint[];
   grossCharges: AmountSeriesPoint[];
   refunds: AmountSeriesPoint[];
+  creditReversals?: AmountSeriesPoint[];
 }) {
   const topupTotals = sumAmountSeries(topups);
   const grossChargeTotals = sumAmountSeries(grossCharges);
   const refundTotals = sumAmountSeries(refunds);
+  const creditReversalTotals = sumAmountSeries(creditReversals);
   const netSpendUsd = grossChargeTotals.amountUsd - refundTotals.amountUsd;
 
   return {
     topups: topupTotals,
     grossCharges: grossChargeTotals,
     refunds: refundTotals,
+    creditReversals: creditReversalTotals,
     netSpendUsd,
-    walletBalanceDeltaUsd: topupTotals.amountUsd - netSpendUsd,
+    walletBalanceDeltaUsd: topupTotals.amountUsd - netSpendUsd - creditReversalTotals.amountUsd,
   };
 }
 

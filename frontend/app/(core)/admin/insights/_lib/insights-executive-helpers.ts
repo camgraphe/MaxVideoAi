@@ -26,11 +26,13 @@ export function buildExecutiveMetrics(
     topups: comparison.current.topupsDaily,
     grossCharges: comparison.current.chargesDaily,
     refunds: comparison.current.refundsDaily,
+    creditReversals: comparison.current.creditReversalsDaily,
   });
   const previousFlow = summarizeWalletFlow({
     topups: comparison.previous.topupsDaily,
     grossCharges: comparison.previous.chargesDaily,
     refunds: comparison.previous.refundsDaily,
+    creditReversals: comparison.previous.creditReversalsDaily,
   });
   const topupsDelta = compareValues(currentFlow.topups.amountUsd, previousFlow.topups.amountUsd);
   const chargesDelta = compareValues(currentFlow.grossCharges.amountUsd, previousFlow.grossCharges.amountUsd);
@@ -78,7 +80,7 @@ export function buildExecutiveMetrics(
     {
       label: 'Wallet balance delta',
       value: formatSignedCurrency(currentFlow.walletBalanceDeltaUsd),
-      helper: `Top-ups + refunds − gross charges · previous ${formatSignedCurrency(previousFlow.walletBalanceDeltaUsd)}`,
+      helper: `Top-ups − net spend − credit reversals · previous ${formatSignedCurrency(previousFlow.walletBalanceDeltaUsd)}`,
       tone: resolveDeltaTone(balanceDelta),
       icon: TrendingUp,
     },
@@ -110,6 +112,7 @@ export function buildPrioritySignals(
     topups: comparison.current.topupsDaily,
     grossCharges: comparison.current.chargesDaily,
     refunds: comparison.current.refundsDaily,
+    creditReversals: comparison.current.creditReversalsDaily,
   });
   const activationGap = Math.max(0, metrics.funnels.totalTopupUsers - metrics.funnels.convertedWithin30dUsers);
   const flaggedEngines = metrics.health.failedByEngine30d.filter((row) => row.failedCount30d > 0);
@@ -182,13 +185,17 @@ export function buildQuickInsights(metrics: AdminMetrics, comparison: AdminMetri
     topups: comparison.current.topupsDaily,
     grossCharges: comparison.current.chargesDaily,
     refunds: comparison.current.refundsDaily,
+    creditReversals: comparison.current.creditReversalsDaily,
   });
   const topEngine = metrics.engines[0];
   const flaggedEngines = metrics.health.failedByEngine30d.filter((row) => row.failedCount30d > 0);
+  const reversalNote = walletFlow.creditReversals.amountUsd > 0
+    ? `, ${formatCurrency(walletFlow.creditReversals.amountUsd)} credit reversals`
+    : '';
 
   insights.push(`Signups are ${formatNarrativeDelta(signupsDelta)} versus the previous ${humanRange}.`);
   insights.push(
-    `Wallet flow in the current ${humanRange}: ${formatCurrency(walletFlow.topups.amountUsd)} top-ups, ${formatCurrency(walletFlow.grossCharges.amountUsd)} gross charges, ${formatCurrency(walletFlow.refunds.amountUsd)} refunds, and ${formatCurrency(walletFlow.netSpendUsd)} net render spend (${formatSignedCurrency(walletFlow.walletBalanceDeltaUsd)} wallet delta).`
+    `Wallet flow in the current ${humanRange}: ${formatCurrency(walletFlow.topups.amountUsd)} top-ups, ${formatCurrency(walletFlow.grossCharges.amountUsd)} gross charges, ${formatCurrency(walletFlow.refunds.amountUsd)} refunds${reversalNote}, and ${formatCurrency(walletFlow.netSpendUsd)} net render spend (${formatSignedCurrency(walletFlow.walletBalanceDeltaUsd)} wallet delta).`
   );
   insights.push(
     `Funnel today: ${formatPercent(metrics.funnels.signupToTopUpConversion)} signup → top-up, then ${formatPercent(metrics.funnels.topUpToRenderConversion30d)} top-up → first render within 30 days.`
