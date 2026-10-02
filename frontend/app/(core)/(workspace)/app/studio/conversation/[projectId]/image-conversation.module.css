@@ -1,4 +1,5 @@
 .studio {
+  color-scheme: dark;
   --studio-bg: #18191a;
   --studio-panel: #242527;
   --studio-text: #f3f1ea;
@@ -15,6 +16,7 @@
   overflow: hidden;
 }
 .studio[data-tone="olive"] {
+  color-scheme: light;
   --studio-bg: #f2f0e6;
   --studio-panel: #e7e6dc;
   --studio-text: #252c24;

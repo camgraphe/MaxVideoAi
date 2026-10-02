@@ -10,10 +10,13 @@ import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-http-fixture';
 import {STUDIO_PRIVATE_MEDIA_HOST,STUDIO_PRIVATE_MEDIA_KEYS} from './helpers/studio-private-storage-fixture';
 
-test('native chat timeline collapses, trims real source frames and preserves mobile chat access', {timeout: 240000},async () => {
+const browserName = process.env.STUDIO_BROWSER_ENGINE ?? 'chromium';
+assert.ok(browserName === 'chromium' || browserName === 'firefox' || browserName === 'webkit','Use a qualified browser engine.');
+
+test('native chat timeline, persistent app themes and mobile chat access ('+browserName+')', {timeout: 240000},async () => {
   const runtime = await startStudioIntegrationRuntime({mcp: {studioMontageCreation: true},privateStorage: true,conversation: true,initializeDatabase: async database => {
     await initializeStudioConnectedFixture(database);
-    for (const name of ['30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql']) await database.pool.query(await readFile('neon/migrations/'+name,'utf8'));
+    for (const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql']) await database.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await database.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
   }});
   let browser: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
@@ -22,19 +25,60 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     const created = await postStudioMcpRequest(runtime,{jsonrpc: '2.0',id: 1,method: 'tools/call',params: {name: 'create_studio_montage',arguments: STUDIO_CONNECTED_MONTAGE_INPUT}},{token: session.access_token}).then(readStudioMcpResponse);
     assert.notEqual(created.result.isError,true,JSON.stringify(created.result));
     const project = created.result.structuredContent;
-    browser = await startStudioConnectedBrowserFixture({runtime});
+    browser = await startStudioConnectedBrowserFixture({runtime,browserName});
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
     const errors: string[] = [];
     page.on('pageerror',error => errors.push(error.message));
     page.on('console',message => {if (message.type() === 'error' && /hydration|Hydration|Each child|cannot be a descendant|Cannot update/i.test(message.text())) errors.push(message.text());});
-    const auxiliary = new Map([['/api/member-status',{tier: 'Member'}],['/api/wallet',{balance: 0,balanceCents: 0,currency: 'USD'}],['/api/admin/access',{ok: false}],['/api/legal/cookies/version',{ok: true,version: 'native-timeline',publishedAt: null}],['/api/legal/cookies',{ok: true,version: 'native-timeline'}]]);
+    const auxiliary = new Map([['/api/member-status',{tier: 'Member'}],['/api/wallet',{balance: 0,balanceCents: 0,currency: 'USD'}],['/api/admin/access',{ok: false}],['/api/legal/reconsent',{ok: true,needsReconsent: false,documents: []}],['/api/legal/cookies/version',{ok: true,version: 'native-timeline',publishedAt: null}],['/api/legal/cookies',{ok: true,version: 'native-timeline'}]]);
     for (const [path,json] of auxiliary) await page.route(runtime.browserOrigin+path,route => route.fulfill({json}));
     const url = runtime.browserOrigin+'/app/studio/conversation/'+project.projectId;
+    async function proof(name: string) {
+      if (!process.env.STUDIO_PROOF_DIRECTORY) return;
+      await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive: true});
+      await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,browserName+'-'+name+'.png')});
+    }
+    // UI-only library outage/empty state. Media ownership and decoding use the real owned DB below.
+    async function checkLibrary() {
+      const endpoint = runtime.browserOrigin+'/api/media-library/assets?*';
+      await page.route(endpoint,route => route.fulfill({status: 503,json: {ok: false}}));
+      await page.getByRole('button',{name: 'Open library',exact: true}).click();
+      const dialog = page.getByRole('dialog',{name: 'MaxVideoAI library',exact: true});
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole('alert')).toHaveText('The library is unavailable. Check your connection.');
+      await expect(dialog.getByRole('button',{name: 'Import',exact: true})).toBeEnabled();
+      const bounds = await dialog.boundingBox();
+      assert.ok(bounds && bounds.x >= 0 && bounds.x+bounds.width <= page.viewportSize()!.width,'Library fits the viewport.');
+      await page.getByRole('button',{name: 'Close library',exact: true}).click();
+      await expect(page.getByRole('button',{name: 'Open library',exact: true})).toBeFocused();
+      await page.unroute(endpoint);
+      await page.route(endpoint,route => route.fulfill({json: {ok: true,assets: [],nextCursor: null}}));
+      await page.getByRole('button',{name: 'Open library',exact: true}).click();
+      await expect(dialog.getByText('No media here yet. You can import some.',{exact: true})).toBeVisible();
+      await dialog.getByRole('button',{name: 'Audio',exact: true}).click();
+      await expect(dialog.getByRole('button',{name: 'Audio',exact: true})).toHaveAttribute('aria-pressed','true');
+      await expect(dialog.getByRole('alert')).toHaveCount(0);
+      await proof('olive-library-'+page.viewportSize()!.width);
+      await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
+      await expect(page.getByRole('button',{name: 'Open library',exact: true})).toBeFocused();
+      await page.unroute(endpoint);
+    }
     await page.goto(url,{waitUntil: 'domcontentloaded',timeout: 120000});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout: 45000});
     const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
     if (await cookies.isVisible()) await cookies.click();
+    await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
+    await checkLibrary();
+    await proof('olive-desktop');
+    await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
+    await page.getByRole('button',{name: 'Switch to Charcoal',exact: true}).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
     await expect(page.locator('video[data-playback-item-id]')).toHaveCount(0);
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
@@ -58,7 +102,7 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     await page.waitForTimeout(150);
     assert.equal(await video.getAttribute('src'),mountedSource,'ordinary polling preserves the mounted decoder source');
     assert.ok(Math.abs(await video.evaluate(element => (element as HTMLVideoElement).currentTime)-currentSourceTime) < .04);
-    if (process.env.STUDIO_PROOF_DIRECTORY) {await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive: true});await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,'native-conversation-timeline-desktop.png')});}
+    await proof('charcoal-desktop');
     await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
     await expect(page.locator('video[data-playback-item-id]')).toHaveCount(0);
     await page.reload({waitUntil: 'domcontentloaded'});
@@ -78,10 +122,13 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     assert.equal(geometry.width,geometry.viewport,'The mobile document does not overflow horizontally.');
     await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
-    if (process.env.STUDIO_PROOF_DIRECTORY) await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,'native-conversation-timeline-mobile.png')});
+    await proof('olive-mobile');
+    await checkLibrary();
     await page.getByLabel('Audio volume',{exact: true}).press('Home');
     await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','2');
     await page.reload({waitUntil: 'domcontentloaded'});
+    await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
     await expect(page.getByLabel('Audio volume',{exact: true})).toHaveValue('0');

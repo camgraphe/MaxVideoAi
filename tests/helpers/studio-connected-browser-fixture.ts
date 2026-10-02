@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {
   chromium,
+  firefox,
+  webkit,
   type Browser,
   type BrowserContext,
   type BrowserContextOptions,
@@ -88,9 +90,10 @@ async function handleRequest(
   await route.abort('blockedbyclient');
 }
 
-/** Owns one non-persistent Chromium process and every fresh session context it creates. */
+/** Owns one non-persistent browser process and every fresh session context it creates. */
 export async function startStudioConnectedBrowserFixture<Session>(options: {
   runtime: StudioBrowserRuntime<Session>;
+  browserName?: 'chromium' | 'firefox' | 'webkit';
   signatureClock?: () => Date;
   headless?: boolean;
 }) {
@@ -109,12 +112,13 @@ export async function startStudioConnectedBrowserFixture<Session>(options: {
   const allowedOrigins = new Set([app.origin, appIpv4.origin, auth.origin]);
   const privateRequests: StudioPrivateBrowserRequest[] = [];
   const signatureClock = options.signatureClock ?? (() => new Date());
-  const browser = await chromium.launch({
+  const browserName = options.browserName ?? 'chromium';
+  const browser = await ({chromium,firefox,webkit})[browserName].launch({
     headless: options.headless ?? true,
-    args: [
+    args: browserName === 'chromium' ? [
       '--disable-background-networking',
       '--host-resolver-rules=MAP localhost 127.0.0.1',
-    ],
+    ] : [],
   });
   const contexts = new Set<BrowserContext>();
   let closing: Promise<void> | null = null;

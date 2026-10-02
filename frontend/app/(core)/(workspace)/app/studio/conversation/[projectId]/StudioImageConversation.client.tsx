@@ -16,6 +16,7 @@ import {ConversationTimeline} from './_components/ConversationTimeline.client';
 import {useConversationExports} from './_hooks/useConversationExports';
 import {ConversationRenderCards} from './_components/ConversationRenderCards.client';
 import {imageTurnRetryInput} from '@/lib/studio/image-conversation-contract';
+import {useThemePreference} from '@/hooks/useThemePreference';
 export default function StudioImageConversation({
   projectId,
   accountKey,
@@ -45,7 +46,8 @@ export default function StudioImageConversation({
   const [library, setLibrary] = useState(false);
   const [libraryPurpose,setLibraryPurpose] = useState<'reference'|'timeline'>('reference');
   const [timelineInsertion,setTimelineInsertion] = useState<{key: string;asset: ImageLibraryAsset} | null>(null);
-  const [tone, setTone] = useState<"charcoal" | "olive">("charcoal");
+  const {resolvedTheme,toggleTheme} = useThemePreference();
+  const tone = resolvedTheme === 'light' ? 'olive' : 'charcoal';
   const libraryTrigger = useRef<HTMLButtonElement>(null);
   const libraryWasOpen = useRef(false);
   useEffect(() => {
@@ -108,25 +110,21 @@ export default function StudioImageConversation({
             aria-label={
               tone === "charcoal" ? t('Switch to Olive', 'Passer en Olive') : t('Switch to Charcoal', 'Passer en Charbon')
             }
-            onClick={() =>
-              setTone((current) =>
-                current === "charcoal" ? "olive" : "charcoal",
-              )
-            }
+            onClick={toggleTheme}
           >
             {tone === "charcoal" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
         </div>
       </header>
       <div className={styles.canvas}>
-        <aside className={styles.visuals} aria-label="Images du projet">
+        <aside className={styles.visuals} aria-label={t('Project images','Images du projet')}>
           {images
             .filter((_, index) => index % 2 === 0)
             .map((url, index) => (
               <img
                 key={`${url}:${index}`}
                 src={url}
-                alt="Image créée dans cette conversation"
+                alt={t('Image created in this conversation','Image créée dans cette conversation')}
               />
             ))}
         </aside>
