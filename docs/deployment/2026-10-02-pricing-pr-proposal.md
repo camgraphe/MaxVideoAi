@@ -109,7 +109,21 @@ La [première Quality CI](https://github.com/camgraphe/MaxVideoAi/actions/runs/3
 a atteint sa limite de 35 minutes pendant la suite de tests. Aucun test déclaré
 en échec ne figure avant l'annulation ; le test complet d'activation est encore
 inachevé. Le budget du job passe à 60 minutes, avec les mêmes étapes et assertions.
-Le nouveau résultat reste à obtenir : la branche n'est pas déclarée prête à fusionner.
+La [relance](https://github.com/camgraphe/MaxVideoAi/actions/runs/37010986333)
+termine en 41 minutes : 6 740 tests réussis, un échec, quatre exclusions existantes.
+Le scénario d'activation/retour arrière réutilise sa capture synthétique après
+plus de 15 minutes sur le serveur CI. Le refus de fraîcheur attendu bloque donc
+sa seconde activation. Les tests Studio séparés et le smoke admin n'ont pas
+encore été exécutés dans cette relance.
+
+La correction limite l'horloge simulée à `Date` dans ce scénario de test ; les
+délais réels de PostgreSQL restent actifs. Un contrôle ciblé avance l'horloge
+de 16 minutes et vérifie que la capture périmée est toujours refusée. Le code
+de production et sa limite de 15 minutes sont inchangés. Les cinq contrôles
+ciblés passent. Le scénario PostgreSQL 17 complet passe aussi en 11 minutes
+25 secondes : 26 818 devis vérifiés, activation réelle du lecteur, annulation
+après échec injecté et récupération réussies, zéro échec ou exclusion. Une
+nouvelle Quality CI reste à obtenir avant fusion.
 
 Avant fusion/activation, suivre le [runbook](customer-tariff-cutover.md) : preuve
 récente des devis et de la configuration déployés, inventaire des paiements,

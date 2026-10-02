@@ -1077,3 +1077,32 @@ other scheduling/test/source changes, then inspect the actual result. Cost if
 wrong: a second timeout/failure disproves this hypothesis and requires further
 root-cause investigation; do not mark release ready on the budget change alone.
 No repeated implementation review/full local suite: app implementation unchanged.
+
+## Hosted rehearsal clock correction — October 2
+
+QualityCI37010986333 completes in41m19s:6740pass/1fail/4existing skips,
+no cancellation. Full log retained privately asquality-ci-retry.log. Initial
+cutover test1107 fails at its second activation after1686185ms with
+Cutover capture expired; prepare fresh evidence. The earlier injected full
+activation and rollback reused the same synthetic release for more than15min.
+Ruling: freeze only Date in this isolated atomicity fixture, leaving real timers,
+database transport, all26818actual quotes and rollback assertions intact.
+The focused integrity test advances16min and asserts the real unchanged expiry
+guard still refuses. Five focused evidence/CI contracts pass; complete actual
+reader fixture qualification is running before commit/push. Production code,
+15minute capture limit, source flag and original admin are unchanged.
+Cost if wrong: fixture qualification/QualityCI remains red and blocks release;
+synthetic clock evidence never renews an actual production capture.
+Freshfetch finds main/origin main alignedd10ad4587 and candidate127ahead0behind.
+Deployment check correctly refuses the uncommitted test patch; repeat from the
+committed candidate after the fixture completes. No production action performed.
+
+Complete Date-only fixture correction qualification passes PostgreSQL17: one
+test,zero failures/skips,684853ms fixture/685605ms command. All26818prepared
+amounts,14991installed cells, actual canonical reader activation, full late
+failure rollback and compensating recovery assertions pass. Original historical
+paid snapshot/product and immutable evidence preserved. No connection secrets
+loaded; disposable socket database cleanup completed by the owner. Five focused
+contracts and lint:exposure pass, git diff check passes. Publish only this test
+clock/documentation correction and wait for the complete hosted result; no app
+implementation change, no repeated implementation review.

@@ -22,6 +22,9 @@ const key = (value: object) => JSON.stringify(Object.entries(value).sort(([a], [
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 
 test('initial cutover is atomic, validates the actual reader, and rollback preserves all financial history', async t => {
+  // This synthetic rehearsal checks atomicity, not elapsed CI time. Mock only
+  // Date so slow hosts do not expire its fixture; real database timers still run.
+  t.mock.timers.enable({ apis: ['Date'], now: Date.now() });
   const db = await startDisposablePostgres('initial-pricing-cutover');
   const previous = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV, PRICING_SANDBOX: process.env.PRICING_SANDBOX };
   const routes = { SEEDANCE_2_PROVIDER: ENV.SEEDANCE_2_PROVIDER, SEEDANCE_FAST_PROVIDER: ENV.SEEDANCE_FAST_PROVIDER,

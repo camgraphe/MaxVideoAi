@@ -28,7 +28,9 @@ test('initial projection archives obsolete no-duration Seedance staging and refu
   assert.throws(() => projectInitialCustomerTariffCutoverCells([{ ...rows[0],selector: { engineId: 'unknown' } }]), /unknown unused/i);
 });
 
-test('a fingerprint of a reduced inventory, unexplained prices or local provenance cannot certify production', () => {
+test('a fingerprint of a reduced inventory, expired capture or local provenance cannot certify production', t => {
+  const capturedAt = Date.now();
+  t.mock.timers.enable({ apis: ['Date'], now: capturedAt });
   const cases = collectCustomerTariffCutoverCheckpoints();
   const body = { schemaVersion: 1, evidenceKind: 'isolated_operation_rehearsal', activationReady: false,
     capturedAt: new Date().toISOString(), bindings: { databaseIdentity: 'a'.repeat(64), commercialHash: 'b'.repeat(64),
@@ -37,6 +39,10 @@ test('a fingerprint of a reduced inventory, unexplained prices or local provenan
     cells: [], checkpoints: cases.slice(0, 1).map(row => ({ key: row.key, beforeCents: 30, customerCents: 31, currency: 'USD' })),
     approvedChanges: [] };
   const release = { ...body, fingerprint: cutoverDigest(body) } as CustomerTariffCutoverRelease;
+  assert.throws(() => assertCustomerTariffCutoverRelease(release, release.fingerprint, 'rehearsal'), /complete.*coverage/i);
+  t.mock.timers.tick(16 * 60_000);
+  assert.throws(() => assertCustomerTariffCutoverRelease(release, release.fingerprint, 'rehearsal'), /capture expired/i);
+  t.mock.timers.setTime(capturedAt);
   assert.throws(() => assertCustomerTariffCutoverRelease(release, release.fingerprint, 'rehearsal'), /complete.*coverage/i);
   assert.throws(() => assertCustomerTariffCutoverRelease(release, release.fingerprint, 'production'), /production.*provenance/i);
 });
