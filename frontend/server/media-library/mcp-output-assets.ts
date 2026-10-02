@@ -1,4 +1,5 @@
 import { query, type QueryExecutor } from '@/lib/db';
+import { readMediaFacts } from '@/lib/media-identity';
 import {
   mapOutputRow,
   type DbJobOutputRow,
@@ -83,7 +84,9 @@ export async function promoteCompletedMcpJobOutputs(
         durationSec: output.durationSec,
         thumbUrl: output.thumbUrl,
         previewUrl: output.previewUrl,
-        metadata: { mcpGenerated: true },
+        metadata: { mcpGenerated: true,
+          ...(readMediaFacts(output.metadata.mediaFacts) ? { mediaFacts: readMediaFacts(output.metadata.mediaFacts) } : {}),
+        },
       })),
     );
     for (const result of results) {

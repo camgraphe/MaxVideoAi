@@ -45,7 +45,9 @@ test('conversation edits use canonical revisions and receipts, preserving manual
   const originalFit = state.timelineItems.find((item: any) => item.ref.assetId === STUDIO_CONNECTED_ASSET_IDS.a).transform.scale;
   assert.equal(insertedItem.transform?.scale,originalFit,'Inserting the same measured source must fit the same program frame as the existing montage.');
   await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {...insert.edit, ref: {...insert.edit.ref, assetId: STUDIO_CONNECTED_ASSET_IDS.foreign}}}, deps), /MEDIA_NOT_AVAILABLE/);
-  await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {...insert.edit, ref: {...insert.edit.ref, assetId: STUDIO_CONNECTED_ASSET_IDS.unmeasured}}}, deps), /MEDIA_METADATA_REQUIRED/);
+  // An unavailable probe preserves the canonical timeline; this disposable DB
+  // test must not invoke the default app connection or any remote source read.
+  await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {...insert.edit, ref: {...insert.edit.ref, assetId: STUDIO_CONNECTED_ASSET_IDS.unmeasured}}}, {...deps, hydrateVideoFacts: async () => {throw new Error('MEDIA_METADATA_REQUIRED');}}), /MEDIA_METADATA_REQUIRED/);
   await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID()}, {...deps, afterMutation: () => {throw new Error('Lost receipt');}}), /Lost receipt/);
   assert.equal((await readStudioWorkspace(actor, project.projectId, deps)).project.revision, 2);
   const conflicting = await Promise.allSettled([3,4].map(startFrame => module.editStudioConversationTimeline(actor, {...input, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {kind: 'move', clipId: 'montage-clip-01', startFrame: startFrame * 30}}, deps)));

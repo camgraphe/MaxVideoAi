@@ -27,7 +27,8 @@ async function probeFile(file: string) {
 }
 
 /** Resolve public DNS and bound redirects/bytes before inspecting a local file. Original signed URLs remain untouched. */
-export async function inspectSourceVideo(videoUrl: string, dependencies = { download: downloadAudioSourceVideo, probe: probeFile }) {
+export async function inspectSourceVideo(videoUrl: string, overrides: Partial<{ download: typeof downloadAudioSourceVideo; probe: typeof probeFile }> = {}) {
+  const dependencies = { download: downloadAudioSourceVideo, probe: probeFile, ...overrides };
   const file = await dependencies.download({ file_id: 'audio-source-probe', download_url: videoUrl });
   const directory = await mkdtemp(join(tmpdir(), 'audio-source-probe-'));
   try {

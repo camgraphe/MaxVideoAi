@@ -12,11 +12,17 @@ import {readStudioWorkspace, saveStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {resolveStudioMedia} from './media-resolver';
 import {assertStudioConnectedSchemaReady} from './connected-schema';
+import {hydrateOwnedVideoMediaFacts} from '@/server/media-library/owned-video-facts';
+import type {StudioResolvedMedia} from './media-resolver';
 export {createStudioConversationProject} from './conversation-project-command';
 
 type TransactionRunner = <T>(callback: (executor: QueryExecutor) => Promise<T>) => Promise<T>;
 export type ConversationEditResult = {projectId: string; sequenceId: string; revision: number; clipCount: number; totalFrames: number;changed: boolean;clip: {id: string;startFrame: number;durationFrames: number;sourceInFrame: number} | null};
-export type ConversationEditDependencies = {withTransaction?: TransactionRunner; featureEnabled?: boolean; afterMutation?: (executor: QueryExecutor, result: ConversationEditResult) => Promise<void> | void};
+export type ConversationEditDependencies = {withTransaction?: TransactionRunner; featureEnabled?: boolean; hydrateVideoFacts?: typeof hydrateOwnedVideoMediaFacts; afterMutation?: (executor: QueryExecutor, result: ConversationEditResult) => Promise<void> | void};
+
+class VideoFactsPreparationRequired extends Error {
+  constructor(readonly media: StudioResolvedMedia) { super('MEDIA_METADATA_REQUIRED'); }
+}
 
 /** Same typed mutation owner for authenticated gestures and director tools. No provider, billing or request DDL. */
 export async function editStudioConversationTimeline(actor: {userId: string}, rawInput: unknown, dependencies: ConversationEditDependencies = {}): Promise<ConversationEditResult> {
@@ -28,7 +34,7 @@ export async function editStudioConversationTimeline(actor: {userId: string}, ra
   const kind = 'conversation_timeline_edit';
   const requestHash = createHash('sha256').update(JSON.stringify(input)).digest('hex');
   const run = dependencies.withTransaction ?? ((callback) => withDbTransaction(callback));
-  return run(async executor => {
+  const mutate = () => run(async executor => {
     await assertStudioConnectedSchemaReady(executor);
     await executor.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`${actor.userId}:${kind}:${input.idempotencyKey}`]);
     // Exclusive aggregate lock precedes snapshot reads, including receipt replay.
@@ -75,6 +81,14 @@ export async function editStudioConversationTimeline(actor: {userId: string}, ra
     await dependencies.afterMutation?.(executor,result);
     return result;
   });
+  try { return await mutate(); }
+  catch (error) {
+    if (!(error instanceof VideoFactsPreparationRequired)) throw error;
+    // Receipt/revision/ownership validation ran first. Network inspection starts only
+    // after that transaction releases its locks; the retry repeats every guard.
+    await (dependencies.hydrateVideoFacts ?? hydrateOwnedVideoMediaFacts)({userId: actor.userId,ref: error.media.ref,expectedUrl: error.media.url});
+    return mutate();
+  }
 }
 
 async function insertion(actor: {userId: string}, input: ConversationTimelineCommand, settings: WorkspaceProjectSettings, executor: QueryExecutor) {
@@ -87,7 +101,10 @@ async function insertion(actor: {userId: string}, input: ConversationTimelineCom
   const media = await resolveStudioMedia(actor.userId,edit.ref,(sql,values) => executor.query(sql,values),{lockAsset: true});
   const durationSec = timelineFrameToSeconds(edit.durationFrames,settings.fps);
   if (durationSec < 1 || durationSec > 1800) throw new Error('Invalid Studio timeline clip duration.');
-  if (media.kind !== 'image' && (!media.mediaFacts?.durationSec || media.mediaFacts.source !== 'probe')) throw new Error('MEDIA_METADATA_REQUIRED');
+  if (media.kind !== 'image' && (!media.mediaFacts?.durationSec || media.mediaFacts.source !== 'probe')) {
+    if (media.kind === 'video') throw new VideoFactsPreparationRequired(media);
+    throw new Error('MEDIA_METADATA_REQUIRED');
+  }
   if (media.kind !== 'image' && durationSec > media.mediaFacts!.durationSec! + .000001) throw new Error('Invalid Studio timeline clip duration.');
   const id = createHash('sha256').update(input.idempotencyKey).digest('hex').slice(0,24);
   const asset: WorkspaceAssetRecord = {id: `studio-media-${media.id}`,ref: media.ref,kind: media.kind,filename: media.originalName ?? `${media.kind} clip`,subtitle: media.kind,url: media.url,mimeType: media.mime,thumbUrl: media.thumbUrl ?? undefined,mediaFacts: media.mediaFacts,mediaAccessRequired: true,durationSec: media.mediaFacts?.durationSec,width: media.mediaFacts?.width,height: media.mediaFacts?.height,hasAudio: media.mediaFacts?.hasAudio,audioProvenance: media.mediaFacts?.hasAudio ? 'embedded' : 'none'};
