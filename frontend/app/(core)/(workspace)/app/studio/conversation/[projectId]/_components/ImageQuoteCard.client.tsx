@@ -33,6 +33,7 @@ export function ImageQuoteCard({
   if (!quote) return null;
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const presentation = conversationQuotePresentation(quote.summary, locale);
+  const referenceCount = quote.summary.references.length;
   const ready = canConfirmImageQuote(quote, now, busy);
   const walletState = imageQuoteWalletState(quote);
   const expired =
@@ -51,8 +52,8 @@ export function ImageQuoteCard({
       </div>
       <p className={styles.muted}>
         {quote.modelLabel} · {presentation.settings} ·{" "}
-        {turn.references.length
-          ? `${turn.references.length} ${t('reference', 'référence')}${turn.references.length > 1 ? "s" : ""}`
+        {referenceCount
+          ? `${referenceCount} ${t('reference', 'référence')}${referenceCount > 1 ? "s" : ""}`
           : t('Original creation', 'Création originale')}
       </p>
       <details>

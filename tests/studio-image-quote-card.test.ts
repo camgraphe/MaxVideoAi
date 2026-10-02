@@ -184,6 +184,20 @@ test("a failed accepted attempt displays its confirmed wallet refund without reu
   } finally { await view.close(); }
 });
 
+test("a reference selected by Studio is counted from the canonical quote", async () => {
+  const view = await mountCard({
+    locale: "en",
+    turn: makeTurn({ summary: { ...quote.summary, references: [
+      { kind: "asset", assetId: "ma_0123456789abcdef0123456789abcdef", role: "first_frame" },
+    ] } }),
+  });
+  try {
+    const text = view.dom.window.document.body.textContent ?? "";
+    assert.match(text, /1 reference/);
+    assert.doesNotMatch(text, /Original creation/);
+  } finally { await view.close(); }
+});
+
 test("a failed attempt with an unknown payment status does not promise a refund", async () => {
   const turn = makeTurn({ state: "accepted" });
   turn.generation = {
