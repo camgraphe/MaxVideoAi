@@ -48,7 +48,30 @@ test('unknown or malformed model actions cannot execute, and bounded loops retai
   assert.equal(executed, 0);
   const loop = module.createStudioConversationDirector({createResponse: async () => ({id: 'resp', model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', usage: null, output_text: '', output: [{type: 'function_call', name: 'catalog_read', call_id: 'call-' + executed, arguments: '{}'}]})});
   await assert.rejects(loop(context), {code: 'PARAMETER_INVALID'});
-  assert.equal(executed, 3,'Even an invalid tool call in the reply-only final slot cannot perform another action.');
+  assert.equal(executed, 3,'The final slot cannot continue a nonterminal tool loop.');
+});
+
+test('project, catalog and memory reads leave the fourth response available for a terminal quote', async () => {
+  const {createStudioConversationDirector}=await import('../frontend/src/server/studio/conversation-director');
+  const actions: string[]=[];
+  let calls=0;
+  const sequence=[['project_read',{}],['catalog_read',{}],['project_remember',{revision:0,brief:'A cheap Studio film',decisions:['Start with one concept image.']}],['image_prepare',{reply:'A playful paper spark. Review the quote before creation.',prompt:'A tiny glowing spark unfolding into sculptural coloured paper on charcoal',aspectRatio:'16:9'}]] as const;
+  const director=createStudioConversationDirector({createResponse:async params=>{
+    const index=calls++;
+    if(index===3){
+      assert.equal(params.tool_choice,'auto','An exact quote must remain possible in the bounded final response.');
+      const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name);
+      assert.deepEqual(names,['image_prepare'],'The final slot may only finish with a quote or a reply.');
+    }
+    const [name,args]=sequence[index];
+    return {id:'bounded-'+index,model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',output:[{type:'function_call',name,call_id:'bounded-'+index,arguments:JSON.stringify(args)}]};
+  }});
+  const result=await director({message:'Yes, surprise me. Keep it cheap.',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]}},
+    checkpoint:async(_,create)=>create(),execute:async(_,action)=>{actions.push(action.action);return {ok:true,action:action.action,data:{quoteId:'bounded-quote',confirmationRequired:true}} as never;}});
+  assert.equal(calls,4);
+  assert.deepEqual(actions,['project.read','catalog.read','project.remember','image.prepare']);
+  assert.match(result.reply,/Review the quote/);
+  assert.ok(result.image?.prompt);
 });
 
 test('action contracts reject foreign identities, unsupported media and confirmation requests', async () => {
