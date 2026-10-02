@@ -32,8 +32,8 @@ test('the last bounded response explains completed actions instead of leaving a 
     calls++;
     if (calls === 4) {
       assert.equal(params.tool_choice,'auto');
-      assert.deepEqual(params.tools.map((tool: any) => tool.name),['image_prepare'],
-        'The final call may reply or prepare an uncharged quote, never perform another edit.');
+      assert.ok(params.tools.some((tool: any) => tool.name === 'timeline_edit'),
+        'The final call retains supported edits within the same bounded turn.');
     }
     return {id: 'bounded-'+calls,model: 'gpt-6.1-sol',status: 'completed' as const,usage: null,service_tier: 'default' as const,
       output_text: calls === 4 ? '{"reply":"Your changes are saved. We can continue with the next shot."}' : '',

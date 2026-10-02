@@ -35,14 +35,15 @@ test('GET and POST replay return readable owned artifacts without recreating a j
   const utils = 'export const resolveStudioRouteContext = async () => fixture.authorized ? {userId:"owner"} : {response:new Response(null,{status:401})};';
   const route = await load(`export {GET} from './app/api/studio/timeline-exports/[exportId]/route'; export {POST} from './app/api/studio/timeline-exports/route';`,{
     ...common,
+    'server-only':'',
     '@/lib/db':`export const query = async (sql,values) => {if (!sql.startsWith('SELECT') || !sql.includes('FROM media_assets')) throw Error('Unexpected DB operation');return [{id:'asset',public_id:'public-asset',user_id:'owner',kind:'video',status:'ready',url:fixture.job.output_url,mime_type:'video/mp4'}];};`,
     'next/server':'export const NextResponse = {json:(body,init) => new Response(JSON.stringify(body),init)};',
     '../../_lib/studio-route-utils':utils,'../_lib/studio-route-utils':utils,
-    '@/server/timeline-exports/repository':'export const readTimelineExportJob = async input => input.userId === "owner" && input.exportId === fixture.job.id ? fixture.job : null; export const readTimelineExportJobByIdempotencyKey = async () => fixture.job; export const failTimelineExportJob = () => {throw Error("Unexpected failure write");};',
+    '@/server/timeline-exports/repository':'export const readTimelineExportJob = async input => input.userId === "owner" && input.exportId === fixture.job.id ? fixture.job : null; export const readTimelineExportJobByIdempotencyKey = async () => fixture.job; export const countUsedFreeTimelineExports = () => {throw Error("Unexpected quota read");}; export const failTimelineExportJob = () => {throw Error("Unexpected failure write");};',
     '@/server/timeline-exports/billing':'export const createTimelineExportJobWithReservation = async input => {fixture.reservations.push(input); return {job:fixture.job,reused:true,billing:null};}; export const releaseFailedTimelineExportBilling = () => {throw Error("Unexpected refund");};',
     '@/server/timeline-exports/ecs-runner':'export const assertTimelineExportWorkerLauncherConfigured = () => {throw Error("Unexpected launcher");}; export const launchTimelineExportWorkerTask = assertTimelineExportWorkerLauncherConfigured;',
     '@/server/timeline-exports/manifest-resolver':'export const resolveOwnedTimelineExportRequest = async input => input.request;',
-    '@/server/timeline-exports/estimate-token':'export const resolveTimelineExportEstimateSecret = () => "fixture";',
+    '@/server/timeline-exports/estimate-token':'export {createTimelineExportEstimateTokenClaims,signTimelineExportEstimateToken,timelineExportManifestHash} from "./src/server/timeline-exports/estimate-token"; export const resolveTimelineExportEstimateSecret = () => "fixture";',
   },fixture);
   const before = JSON.stringify(fixture.job);
   const result = await route.GET({}, {params:Promise.resolve({exportId:fixture.job.id})});

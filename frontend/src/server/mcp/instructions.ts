@@ -4,6 +4,8 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   montagePreparation?: boolean;
   audioGeneration?: boolean;
   studioMontageCreation?: boolean;
+  studioTimelineEditing?: boolean;
+  studioExports?: boolean;
 };
 
 export function buildMaxVideoAiMcpInstructions(
@@ -64,6 +66,18 @@ export function buildMaxVideoAiMcpInstructions(
   if (capabilities.studioMontageCreation) {
     instructions.push(
       'Use create_studio_montage to save one editable Studio project from a caller-supplied semantic ordering of 2–12 owned ready videos. It validates measured frame-aligned trims, preserves the requested order, and returns the exact Studio destination. Reuse the exact same idempotencyKey only for an exact retry of the same request; changed content requires a new key.',
+    );
+  }
+
+  if (capabilities.studioTimelineEditing) {
+    instructions.push(
+      'Use get_studio_timeline to inspect an owned connected Studio project before editing. Use its exact projectId, sequenceId, frame rate, clip identities and revision with edit_studio_timeline; positions and source-limited durations are integer frames and audio gain is a percentage from 0 to 100. Inserts accept owned ready media assets or account-owned completed job-output references. Audio inserts layer without moving existing voice or visuals. Respect locked tracks. Reuse the exact idempotencyKey only for an exact retry; changed edits need a new key. On a revision conflict, read the current timeline and preserve manual changes before adapting the request. These tools save reversible edits; they do not generate, charge or export media.',
+    );
+  }
+
+  if (capabilities.studioExports) {
+    instructions.push(
+      'Use prepare_studio_export for an owned saved sequence at the revision just read. Its exact price snapshots the saved cut; preparation does not render or charge. Wait for explicit human approval of that exact quote before confirm_studio_export with confirmed=true. A changed or expired quote requires fresh preparation and approval. Accepted retries recover the same job; use get_studio_export for truthful status and recorded billing instead of another render. Completed output read access is temporary and refreshed by get_studio_export; artifactDelivery=unavailable is a delivery problem, not permission to render again. Never supply a caller-authored manifest, private media URL, estimate token or account identity to these tools.',
     );
   }
 

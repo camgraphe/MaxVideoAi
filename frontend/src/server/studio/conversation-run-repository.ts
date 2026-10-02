@@ -1,3 +1,4 @@
+import {studioPreparedExportSchema} from '@/lib/studio/conversation-export-contract';
 import {createHash} from 'node:crypto';
 import {query, withDbTransaction, type TransactionQueryExecutor} from '@/lib/db';
 import {stableJson} from '@/server/agent-api/generation-normalization';
@@ -8,7 +9,7 @@ import type {StoredImageTurn} from './image-conversation-repository';
 import {isReplayableStudioResponse, type StudioDirectorResponse} from './conversation-director';
 import type {ImageModelUsage} from './image-model-usage';
 
-export async function readStudioConversationProject(actor: StudioGenerationActor): Promise<StudioConversationProject> {
+export async function readStudioConversationProject(actor: StudioGenerationActor,options:{exportsEnabled?:boolean}={}): Promise<StudioConversationProject> {
   requireGenerationActor(actor);
   const row = (await query<{name: string; revision: number | string; memory_revision: number | string | null; brief: string | null; decisions: string[] | null}>(`
     SELECT p.name, p.revision, m.revision AS memory_revision, m.brief, m.decisions FROM studio_projects p
@@ -20,7 +21,8 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
     FROM studio_image_turns t JOIN mcp_generation_quotes q ON q.quote_id=t.quote_id AND q.user_id=t.user_id AND q.studio_project_id=t.project_id
     LEFT JOIN app_jobs j ON j.job_id=q.job_id AND j.user_id=q.user_id
     WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId]);
-  return {name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
+  const exports = options.exportsEnabled ? await query<{safe_result: unknown}>(`SELECT safe_result FROM studio_project_commands WHERE user_id=$1 AND project_id=$2 AND command_kind='timeline_export_prepare' AND command_version=1 AND request_payload->'scope'->>'authOrigin'='studio-session' AND request_payload->'scope'->>'clientId' IS NULL ORDER BY created_at DESC LIMIT 8`,[actor.userId,actor.projectId]) : null;
+  return {...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }
 
 export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory, executor?: TransactionQueryExecutor) {
@@ -100,7 +102,7 @@ export async function checkpointStudioResponse(actor: StudioGenerationActor, tur
     const saved = await query(`UPDATE studio_conversation_responses SET state='reported',response_id=$6,response_json=$7::jsonb,elapsed_ms=$8
       WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND lease_id=$4 AND response_index=$5 AND state='started' RETURNING lease_id`,
       [...scope, response.id, JSON.stringify({id: response.id, model: response.model, status: response.status, service_tier: response.service_tier ?? null,
-        usage: response.usage ?? null, output_text: response.output_text, output: response.output}), Math.round(performance.now() - began)]);
+        usage: response.usage ?? null, output_text: response.output_text, output: response.output,incomplete_details: response.incomplete_details ?? null}), Math.round(performance.now() - began)]);
     if (!saved.length) throw new AgentApiError('INTERNAL_ERROR', 'The model response could not be saved. No action was performed.');
     return response;
   } catch (error) {

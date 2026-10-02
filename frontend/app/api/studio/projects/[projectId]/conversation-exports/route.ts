@@ -1,3 +1,4 @@
+import {handleStudioConversationExportConfirmation} from '../../../_lib/studio-conversation-export-handler';
 import type {NextRequest} from 'next/server';
 import {resolveStudioRouteContext,studioJson} from '../../../_lib/studio-route-utils';
 import {studioConversationEditingEnabled} from '../../../_lib/studio-conversation-editing-handler';
@@ -10,4 +11,9 @@ export async function GET(req: NextRequest,context: {params: Promise<{projectId:
   const {projectId} = await context.params;
   try {return studioJson({ok: true,exports: await listStudioProjectTimelineExports({userId: access.userId,projectId})});}
   catch {return studioJson({ok: false,error: 'STUDIO_EXPORTS_UNAVAILABLE'},{status: 503});}
+}
+
+export async function POST(req: NextRequest,context: {params: Promise<{projectId: string}>}) {
+  const {projectId}=await context.params;
+  return handleStudioConversationExportConfirmation(req,projectId);
 }

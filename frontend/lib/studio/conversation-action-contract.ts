@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
+import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
 import type { AgentGenerationStatus } from '@/server/generations/generation-status';
 import type { AgentApiFailure } from '@/server/agent-api/errors';
@@ -24,6 +26,7 @@ export type StudioConversationMemory = z.infer<typeof studioMemorySchema>;
 export type StudioConversationProject = {
   name: string;
   revision: number;
+  exports?: StudioPreparedExport[];
   memory: StudioConversationMemory;
   generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null}[];
 };
@@ -38,6 +41,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('media.read')}).strict(),
   studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,
   studioTimelineReadSchema,studioTimelineEditSchema,
+  studioExportPrepareActionSchema,studioExportReadActionSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
 export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]; bestFor?: readonly string[]};
@@ -51,6 +55,8 @@ export type StudioCapabilityDetails =
   | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: []; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
+  | {ok: true; action: 'export.prepare'; data: StudioPreparedExport}
+  | {ok: true; action: 'export.read'; data: TimelineExportJobResponse | null}
   | {ok: true; action: 'project.read'; data: StudioConversationProject}
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
@@ -80,7 +86,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {
-  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS].find(tool => tool.name === name);
+  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS].find(tool => tool.name === name);
   if (!tool || !value || typeof value !== 'object' || Array.isArray(value) || Object.hasOwn(value, 'action')) throw new Error('UNKNOWN_STUDIO_ACTION');
   // The discriminator is supplied by the server; model identity/scope arguments are rejected.
   return studioActionRequestSchema.parse({...value, action: tool.action});

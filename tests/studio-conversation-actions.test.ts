@@ -37,7 +37,7 @@ test('the director reads real capabilities and writes its own image request with
   assert.match(JSON.stringify(requests[1]), /gpt-image-2-5-flare/);
 });
 
-test('unknown or malformed model actions cannot execute, and bounded loops retain failure', async () => {
+test('unknown or malformed model actions cannot execute, and bounded read loops report pending work', async () => {
   const module = await import('../frontend/src/server/studio/conversation-director').catch(() => null);
   assert.ok(module?.createStudioConversationDirector);
   let executed = 0;
@@ -47,8 +47,9 @@ test('unknown or malformed model actions cannot execute, and bounded loops retai
   await assert.rejects(director(context), {code: 'PARAMETER_INVALID'});
   assert.equal(executed, 0);
   const loop = module.createStudioConversationDirector({createResponse: async () => ({id: 'resp', model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', usage: null, output_text: '', output: [{type: 'function_call', name: 'catalog_read', call_id: 'call-' + executed, arguments: '{}'}]})});
-  await assert.rejects(loop(context), {code: 'PARAMETER_INVALID'});
-  assert.equal(executed, 3,'The final slot cannot continue a nonterminal tool loop.');
+  const pending = await loop(context);
+  assert.equal(executed,4,'The bounded fourth action may complete; no fifth response is dispatched.');
+  assert.deepEqual(pending.continuation,{reason: 'action_limit',completedEdits: 0});
 });
 
 test('project, catalog and memory reads leave the fourth response available for a terminal quote', async () => {
@@ -61,7 +62,7 @@ test('project, catalog and memory reads leave the fourth response available for 
     if(index===3){
       assert.equal(params.tool_choice,'auto','An exact quote must remain possible in the bounded final response.');
       const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name);
-      assert.deepEqual(names,['image_prepare'],'The final slot may only finish with a quote or a reply.');
+      assert.ok(names?.includes('image_prepare'),'The final slot retains terminal quote preparation.');
     }
     const [name,args]=sequence[index];
     return {id:'bounded-'+index,model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',output:[{type:'function_call',name,call_id:'bounded-'+index,arguments:JSON.stringify(args)}]};

@@ -98,23 +98,27 @@ test('timeline export billing reserves free quota before paid wallet charge', ()
   assert.match(source, /surface,\s*billing_product_key/);
 });
 
-test('timeline export creation reserves billing and inserts the job atomically', () => {
+test('shared timeline export creation reserves billing and inserts the job atomically', () => {
   const billingSource = readFileSync(billingPath, 'utf8');
   const createRouteSource = readFileSync(join(root, 'frontend/app/api/studio/timeline-exports/route.ts'), 'utf8');
+  const orchestrationSource = readFileSync(join(root, 'frontend/src/server/timeline-exports/orchestration.ts'), 'utf8');
   assert.match(billingSource, /createTimelineExportJobWithReservation/);
   assert.match(billingSource, /withDbTransaction/);
   assert.match(billingSource, /lockUserWalletInExecutor\(executor, params\.userId\)/);
   assert.match(billingSource, /INSERT INTO app_timeline_exports/);
-  assert.match(createRouteSource, /createTimelineExportJobWithReservation/);
+  assert.match(createRouteSource, /submitOwnedTimelineExport/);
   assert.match(createRouteSource, /export const runtime = 'nodejs'/);
-  assert.match(createRouteSource, /readTimelineExportJobByIdempotencyKey/);
-  assert.match(createRouteSource, /assertTimelineExportWorkerLauncherConfigured/);
-  assert.match(createRouteSource, /TIMELINE_EXPORT_WORKER_NOT_CONFIGURED/);
-  assert.match(createRouteSource, /launchTimelineExportWorkerTask/);
-  assert.match(createRouteSource, /!result\.reused && result\.job\.status === 'queued'/);
-  assert.match(createRouteSource, /releaseFailedTimelineExportBilling/);
-  assert.match(createRouteSource, /failTimelineExportJob/);
+  assert.match(orchestrationSource, /createTimelineExportJobWithReservation/);
+  assert.match(orchestrationSource, /readTimelineExportJobByIdempotencyKey/);
+  assert.match(orchestrationSource, /assertTimelineExportWorkerLauncherConfigured/);
+  assert.match(orchestrationSource, /TIMELINE_EXPORT_WORKER_NOT_CONFIGURED/);
+  assert.match(orchestrationSource, /launchTimelineExportWorkerTask/);
+  assert.match(orchestrationSource, /!result\.reused && result\.job\.status === 'queued'/);
+  assert.match(orchestrationSource, /releaseFailedTimelineExportBilling/);
+  assert.match(orchestrationSource, /failTimelineExportJob/);
   assert.doesNotMatch(createRouteSource, /reserveTimelineExportBilling/, 'route should not reserve billing separately from job creation');
+  assert.doesNotMatch(createRouteSource, /createTimelineExportJobWithReservation|launchTimelineExportWorkerTask|resolveOwnedTimelineExportRequest/, 'route should delegate authorized export orchestration to its shared service');
+  assert.doesNotMatch(orchestrationSource, /INSERT INTO|withDbTransaction|RunTaskCommand|renderMedia/, 'service should preserve billing, repository and worker owners');
 });
 
 test('timeline export ECS runner starts one Fargate task without long route rendering', () => {

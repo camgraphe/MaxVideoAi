@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sparkles, Sun, Moon } from "lucide-react";
 import { useImageConversation } from "./_hooks/useImageConversation";
+import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
 import { ImageConversationComposer } from "./_components/ImageConversationComposer.client";
 import {
@@ -210,6 +211,7 @@ export default function StudioImageConversation({
                     })
                   }
                 />
+                {exportsEnabled && turn.exportQuote && <ConversationExportQuote quote={turn.exportQuote} jobs={exports.jobs} busy={studio.busy} locale={locale} onChange={exports.refresh} onRenew={()=>void studio.submit({requestId:crypto.randomUUID(),message:locale==='fr'?`Prépare un nouveau devis d’export ${turn.exportQuote!.qualityPreset} pour le montage actuel, ${turn.exportQuote!.includeAudio?'avec':'sans'} audio.`:`Prepare a fresh ${turn.exportQuote!.qualityPreset} export quote for the current cut, ${turn.exportQuote!.includeAudio?'with':'without'} audio.`,references:[]})}/>}
                 {turn.generation?.result && <ConversationMedia result={turn.generation.result} locale={locale} />}
                 {turn.generation &&
                   ["accepted", "running"].includes(turn.generation.status) && (

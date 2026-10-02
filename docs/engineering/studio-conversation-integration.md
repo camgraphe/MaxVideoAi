@@ -16,6 +16,18 @@ La voix et la musique décrivent chaque variante disponible avec ses noms de ré
 
 GPT-6.1 Sol choisit direction, prompts, modèles et usage des outils. Les recommandations externes sont des indices ; aucune séquence « image puis animation » n’est imposée. Le serveur conserve identité, validation, devis, confirmation et reprise. Le MCP reste indépendant du modèle du client et peut profiter des futurs modèles sans recopier leur travail créatif dans une recette serveur. Ce lot n’ajoute pas d’outil d’export Sol ni d’édition MCP et ne change aucun gate de publication.
 
+## Montage, export et reprise — deuxième lot du 3 octobre 2026
+
+Les deux adaptateurs partagent maintenant les commandes canoniques d’édition et d’export. Le MCP expose dans la source isolée `get_studio_timeline`, `edit_studio_timeline`, `prepare_studio_export`, `confirm_studio_export` et `get_studio_export`, sous les gates existants fermés par défaut. Le [contrat détaillé](mcp-studio-timeline-tools.md) décrit arguments, résultats, scopes, effets, annotations et reprises. L’OAuth n’usurpe jamais la session Studio ; les sorties réutilisées doivent être possédées, prêtes et visibles.
+
+Sol conserve quatre Responses au maximum, chacune bornée à 2 200 tokens de sortie. La quatrième action prise en charge peut désormais s’exécuter. Une limite atteinte retourne les modifications réellement terminées et le travail restant non évalué, sans inventer l’absence d’un outil. Les réponses incomplètes à la limite de tokens sont sauvegardées sans exécuter leur contenu tronqué ; leur reprise ne rachète pas une réponse modèle.
+
+`export_prepare` prépare le snapshot du montage sauvegardé et son devis exact sans dépense. `export_read` observe son job possédé. Sol ne possède aucun outil de confirmation : le client confirme la carte du chat, avec la révision de politique tarifaire courante. Une réponse perdue ou invalide conserve la même identité à la reprise. Une confirmation acceptée se récupère avec son prix enregistré, même si le montage ou le devis a changé ensuite. Le MCP possède son adaptateur de confirmation après accord humain, avec le scope OAuth/client de préparation.
+
+La source utilise `timeline-exports/orchestration.ts`, les propriétaires existants d’estimation, de réservation, du worker et de livraison. Les pistes vidéo masquées et audio muettes sont appliquées par les mêmes helpers que l’éditeur classique, aussi bien pendant la préparation que la résolution canonique. Le MCP renouvelle un accès GET temporaire aux rendus privés ; une livraison indisponible conserve le statut réel et n’autorise pas un autre rendu.
+
+Ces preuves contractuelles utilisent PostgreSQL jetable et des frontières fournisseur/worker simulées. Aucune nouvelle génération, dépense API Sol, tâche AWS ou publication de production n’est requise pour ce lot. La qualification physique des appareils, les plafonds et prix de conversation, l’ouverture des outils MCP et la réconciliation avec la branche Pricing restent des étapes de livraison distinctes.
+
 ## Parcours client retenu
 
 Le client connecté ouvre Studio, joint ses références depuis le + et décrit sa création. Sol propose une direction et choisit des possibilités réellement disponibles. Une création complète ou par étapes se décide dans la conversation. Aucun sélecteur technique de modèle n’est imposé.

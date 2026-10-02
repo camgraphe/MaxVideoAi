@@ -119,6 +119,14 @@ import { registerCalculateProjectBudgetTool } from '@/server/mcp/tools/calculate
 import { registerListAudioCapabilitiesTool } from '@/server/mcp/tools/list-audio-capabilities';
 import { registerPrepareAudioGenerationTool } from '@/server/mcp/tools/prepare-audio-generation';
 import { registerConfirmAudioGenerationTool } from '@/server/mcp/tools/confirm-audio-generation';
+import {createAgentStudioTimelineService,type GetStudioTimelineInput} from '@/server/agent-api/studio-timeline';
+import type {StudioConversationTimeline} from '@/lib/studio/conversation-editing-contract';
+import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeline-editing';
+import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
+import {registerStudioTimelineTools} from '@/server/mcp/tools/studio-timeline';
+import {createAgentStudioExportService,type PrepareAgentStudioExportInput,type ConfirmAgentStudioExportInput,type GetAgentStudioExportInput,type AgentStudioExportConfirmation,type AgentStudioExportObservation} from '@/server/agent-api/studio-export';
+import type {StudioPreparedExport} from '@/lib/studio/conversation-export-contract';
+import {registerStudioExportTools} from '@/server/mcp/tools/studio-export';
 
 export type MaxVideoAiMcpServices = {
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
@@ -185,6 +193,11 @@ export type MaxVideoAiMcpServices = {
     input: CreateStudioMontageInput,
     principal: AgentPrincipal,
   ): Promise<CreateStudioMontageResult>;
+  readStudioTimeline?(input: GetStudioTimelineInput,principal: AgentPrincipal): Promise<StudioConversationTimeline>;
+  editStudioTimeline?(input: ConversationTimelineCommand,principal: AgentPrincipal): Promise<ConversationEditResult>;
+  prepareStudioExport?(input: PrepareAgentStudioExportInput,principal: AgentPrincipal): Promise<StudioPreparedExport>;
+  confirmStudioExport?(input: ConfirmAgentStudioExportInput,principal: AgentPrincipal): Promise<AgentStudioExportConfirmation>;
+  getStudioExport?(input: GetAgentStudioExportInput,principal: AgentPrincipal): Promise<AgentStudioExportObservation>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
@@ -193,6 +206,8 @@ export type MaxVideoAiMcpServerOptions = {
   montagePreparation?: boolean;
   audioGeneration?: boolean;
   studioMontageCreation?: boolean;
+  studioTimelineEditing?: boolean;
+  studioExports?: boolean;
 };
 
 export function createDefaultMaxVideoAiMcpServices(
@@ -211,6 +226,8 @@ export function createDefaultMaxVideoAiMcpServices(
     const access = resolveMcpPrelaunchModelAccess(principal, config.accountUrl, runtimeEnv);
     return access ? { allowedPrelaunchModelIds: access.allowedModelIds } : undefined;
   };
+  const studioTimeline = createAgentStudioTimelineService({featureEnabled: true});
+  const studioExports = createAgentStudioExportService({enabled:true,requestOrigin:new URL(config.accountUrl).origin});
   return {
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
@@ -295,6 +312,11 @@ export function createDefaultMaxVideoAiMcpServices(
       input,
       { featureEnabled: true },
     ),
+    readStudioTimeline: studioTimeline.read,
+    editStudioTimeline: studioTimeline.edit,
+    prepareStudioExport: studioExports.prepare,
+    confirmStudioExport: studioExports.confirm,
+    getStudioExport: studioExports.read,
   };
 }
 
@@ -308,6 +330,8 @@ export function createMaxVideoAiMcpServer(
   const montagePreparation = options.montagePreparation ?? mcpPublication.montagePreparation;
   const audioGeneration = paidGeneration && (options.audioGeneration ?? mcpPublication.audioGeneration);
   const studioMontageCreation = options.studioMontageCreation ?? mcpPublication.studioMontageCreation;
+  const studioTimelineEditing = options.studioTimelineEditing ?? mcpPublication.studioMontageCreation;
+  const studioExports = options.studioExports ?? mcpPublication.studioMontageCreation;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -321,6 +345,8 @@ export function createMaxVideoAiMcpServer(
         montagePreparation,
         audioGeneration,
         studioMontageCreation,
+        studioTimelineEditing,
+        studioExports,
       }),
       capabilities: { tools: {} },
     }
@@ -343,6 +369,8 @@ export function createMaxVideoAiMcpServer(
   if (studioMontageCreation) {
     registerCreateStudioMontageTool(server, principal, services);
   }
+  if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services);
+  if (studioExports) registerStudioExportTools(server,principal,services);
   if (audioGeneration) {
     registerListAudioCapabilitiesTool(server, principal, services);
     registerPrepareAudioGenerationTool(server, principal, services);

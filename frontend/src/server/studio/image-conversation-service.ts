@@ -1,3 +1,4 @@
+import type {StudioExportDependencies} from './conversation-export-command';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
 import {
@@ -149,6 +150,9 @@ export function createImageConversationService(
     videoGenerationFactory?: StudioMediaFactories['video'];
     audioGenerationFactory?: StudioMediaFactories['audio'];
     editingEnabled?: boolean;
+    exportsEnabled?: boolean;
+    requestOrigin?: string;
+    exportDependencies?: Partial<StudioExportDependencies>;
   },
 ) {
   const factory =
@@ -204,6 +208,8 @@ export function createImageConversationService(
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       reply: turn.draft_json?.reply ?? null,
+      ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
+      ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
       state: expiredLease ? "failed" : turn.state,
       retryable: expiredLease || turn.state === "failed",
       quote: quote
@@ -298,7 +304,7 @@ export function createImageConversationService(
             actor, turn, input, references: refs, referenceFingerprint,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,
-            factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,
+            factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
           }) : await runMeteredImageDirector(
             actor,
             turn,

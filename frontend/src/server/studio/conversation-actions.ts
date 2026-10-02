@@ -1,3 +1,5 @@
+import type {StudioPreparedExport} from '@/lib/studio/conversation-export-contract';
+import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import {studioActionRequestSchema, type StudioActionRequest, type StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import {requireGenerationActor, type StudioGenerationActor} from '@/server/agent-api/generation-actor';
@@ -22,6 +24,9 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   prepareMedia?(request: StudioMediaIntent): Promise<PreparedGeneration | PreparedAudioGeneration>;
   recover?(quoteId: string): Promise<AgentGenerationStatus | null>;
   editingEnabled?: boolean;
+  exportsEnabled?: boolean;
+  prepareExport?(request: Extract<StudioActionRequest,{action: 'export.prepare'}>): Promise<StudioPreparedExport>;
+  readExport?(quoteId: string): Promise<TimelineExportJobResponse | null>;
   editTimeline?(request: Extract<StudioActionRequest,{action: 'timeline.edit'}>): Promise<ConversationEditResult>;
   discardQuote?(quoteId: string): Promise<StudioQuoteDiscardResult>;
 }) {
@@ -32,8 +37,14 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
     const request = studioActionRequestSchema.parse(value);
     try {
       if (!dependencies.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio actions are unavailable.');
-      const project = await readStudioConversationProject(actor);
+      const project = await readStudioConversationProject(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
       switch (request.action) {
+        case 'export.prepare':
+          if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.prepareExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
+          return {ok: true,action: request.action,data: await dependencies.prepareExport(request)};
+        case 'export.read':
+          if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.readExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
+          return {ok: true,action: request.action,data: await dependencies.readExport(request.quoteId)};
         case 'project.read': return {ok: true, action: request.action, data: project};
         case 'timeline.read':
           if (!dependencies.editingEnabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio editing tools are unavailable.');

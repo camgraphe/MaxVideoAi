@@ -1,4 +1,5 @@
 import { z } from "zod";
+import {studioPreparedExportSchema,type StudioPreparedExport} from "@/lib/studio/conversation-export-contract";
 import type { PreparedGeneration } from "@/server/agent-api/prepare-generation";
 import type { AgentGenerationStatus } from "@/server/generations/generation-status";
 import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract';
@@ -19,13 +20,20 @@ export const imageTurnInputSchema = z
     if (ids.length > STUDIO_CONVERSATION_MAX_REFERENCES || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: 'Attach up to eight distinct references.'});
   });
 export type ImageTurnInput = z.infer<typeof imageTurnInputSchema>;
+export const studioContinuationSchema = z.object({
+  reason: z.enum(['action_limit','output_limit']),
+  completedEdits: z.number().int().min(0).max(4),
+  lastError: z.object({code: z.string().min(1).max(80),message: z.string().min(1).max(800)}).strict().optional(),
+}).strict();
 export const imageDraftSchema = z
   .object({
     reply: z.string().min(1).max(2400),
     image: imageSelectionSchema.nullable(),
     media: studioMediaIntentSchema.optional(),
+    continuation: studioContinuationSchema.optional(),
+    exportQuote: studioPreparedExportSchema.optional(),
   })
-  .strict().refine(draft => !(draft.image && draft.media), 'One quote per turn.');
+  .strict().refine(draft => [draft.image,draft.media,draft.exportQuote].filter(Boolean).length <= 1, 'One quote per turn.');
 export type ImageDraft = z.infer<typeof imageDraftSchema>;
 export type ImageConversationTurn = {
   requestId: string;
@@ -34,6 +42,8 @@ export type ImageConversationTurn = {
   attachments?: ImageTurnInput['attachments'];
   renewedFromRequestId?: string;
   reply: string | null;
+  exportQuote?: StudioPreparedExport;
+  continuation?: z.infer<typeof studioContinuationSchema>;
   state: "thinking" | "ready" | "failed";
   retryable: boolean;
   quote:

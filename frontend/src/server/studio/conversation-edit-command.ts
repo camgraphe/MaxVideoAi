@@ -19,15 +19,19 @@ export {createStudioConversationProject} from './conversation-project-command';
 type TransactionRunner = <T>(callback: (executor: QueryExecutor) => Promise<T>) => Promise<T>;
 export type ConversationEditResult = {projectId: string; sequenceId: string; revision: number; clipCount: number; totalFrames: number;changed: boolean;clip: {id: string;startFrame: number;durationFrames: number;sourceInFrame: number} | null};
 export type ConversationEditDependencies = {withTransaction?: TransactionRunner; featureEnabled?: boolean; hydrateVideoFacts?: typeof hydrateOwnedVideoMediaFacts; afterMutation?: (executor: QueryExecutor, result: ConversationEditResult) => Promise<void> | void};
+/** OAuth identity is derived by the agent adapter; browser/session calls retain project-output scope. */
+export type ConversationEditActor = {userId: string; authOrigin?: 'studio-session'; clientId?: null}
+  | {userId: string; authOrigin: 'oauth'; clientId: string};
 
 class VideoFactsPreparationRequired extends Error {
   constructor(readonly media: StudioResolvedMedia) { super('MEDIA_METADATA_REQUIRED'); }
 }
 
 /** Same typed mutation owner for authenticated gestures and director tools. No provider, billing or request DDL. */
-export async function editStudioConversationTimeline(actor: {userId: string}, rawInput: unknown, dependencies: ConversationEditDependencies = {}): Promise<ConversationEditResult> {
+export async function editStudioConversationTimeline(actor: ConversationEditActor, rawInput: unknown, dependencies: ConversationEditDependencies = {}): Promise<ConversationEditResult> {
   if (dependencies.featureEnabled !== true) throw new Error('STUDIO_CONVERSATION_EDITING_DISABLED');
   if (!actor.userId || actor.userId !== actor.userId.trim()) throw new Error('UNAUTHORIZED');
+  if (actor.authOrigin === 'oauth' && (!actor.clientId || actor.clientId !== actor.clientId.trim() || actor.clientId.length > 256)) throw new Error('UNAUTHORIZED');
   const parsed = conversationTimelineCommandSchema.safeParse(rawInput);
   if (!parsed.success) throw new Error('Invalid Studio timeline command.');
   const input = parsed.data;
@@ -93,11 +97,13 @@ export async function editStudioConversationTimeline(actor: {userId: string}, ra
   }
 }
 
-async function insertion(actor: {userId: string}, input: ConversationTimelineCommand, settings: WorkspaceProjectSettings, executor: QueryExecutor) {
+async function insertion(actor: ConversationEditActor, input: ConversationTimelineCommand, settings: WorkspaceProjectSettings, executor: QueryExecutor) {
   if (input.edit.kind !== 'insert') throw new Error('Invalid Studio timeline command.');
   const edit = input.edit;
   if (edit.ref.type === 'job-output') {
-    const rows = await executor.query(`SELECT o.id FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id JOIN mcp_generation_quotes q ON q.job_id=j.job_id AND q.user_id=j.user_id WHERE o.id=$1 AND o.job_id=$2 AND o.user_id=$3 AND q.studio_project_id=$4 AND q.auth_origin='studio-session' AND q.state='accepted' AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready' FOR SHARE OF o,j,q`,[edit.ref.outputId,edit.ref.jobId,actor.userId,input.projectId]);
+    const rows = actor.authOrigin === 'oauth'
+      ? await executor.query(`SELECT o.id FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id WHERE o.id=$1 AND o.job_id=$2 AND o.user_id=$3 AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready' FOR SHARE OF o,j`,[edit.ref.outputId,edit.ref.jobId,actor.userId])
+      : await executor.query(`SELECT o.id FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id JOIN mcp_generation_quotes q ON q.job_id=j.job_id AND q.user_id=j.user_id WHERE o.id=$1 AND o.job_id=$2 AND o.user_id=$3 AND q.studio_project_id=$4 AND q.auth_origin='studio-session' AND q.state='accepted' AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready' FOR SHARE OF o,j,q`,[edit.ref.outputId,edit.ref.jobId,actor.userId,input.projectId]);
     if (!rows[0]) throw new Error('MEDIA_NOT_AVAILABLE');
   }
   const media = await resolveStudioMedia(actor.userId,edit.ref,(sql,values) => executor.query(sql,values),{lockAsset: true});
