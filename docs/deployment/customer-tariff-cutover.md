@@ -78,6 +78,7 @@ definitions and the bytes of these exact migration files, in order:
 6. `neon/migrations/58_customer_tariff_bulk_interval_lock.sql`
 7. `neon/migrations/59_seedance_draft_final_state.sql`
 8. `neon/migrations/60_mcp_trial_provider_rasters.sql`
+9. `neon/migrations/61_customer_tariff_cutover_events.sql`
 
 Inspect columns, constraints, triggers and function definitions; presence alone
 does not establish a compatible schema. Missing prerequisite tables/functions
@@ -97,7 +98,7 @@ direct connection. Preserve 60's atomic function/constraint replacement.
 Some older files include their own transaction boundaries; qualify each exact
 file's failure behavior before use. Never run DDL from a quote/read handler.
 
-The local PostgreSQL rehearsal applies these eight files, replays them, and
+The current PostgreSQL schema test applies these nine files, replays them, and
 compares historical jobs, receipts and old trial pricing snapshots byte for byte.
 Tariff state stays inactive and empty. It also rejects writes from the inventory
 transaction. This qualifies the fixture schema; production still needs its own
@@ -120,6 +121,83 @@ substitute a Neon URL, loosen its guards, or reuse its local certificate.
 The production-specific activation operation and commercial manifest must be
 reviewed at the release decision. The authored production switch remains false
 until the complete grid and its activation sequence are approved together.
+
+### Prepared initial activation and recovery owner
+
+`server/pricing/customer-tariff-cutover.ts` is the separate maintenance writer;
+`pricing:cutover:execute` is its manual entry point. It is never invoked from a
+route, build, deploy hook, or `pricing:activate:local`. The authored inactive flag
+refuses production before opening a database connection. No production command
+has been executed in this preparation.
+
+This operation is deliberately limited to the first installation: inactive
+revision zero, no current cells, no closed versions, and no prior cutover event.
+It refuses to replace a staged or already edited database. Migration 61 adds
+immutable activation/recovery evidence without activating prices. Prior evidence
+of the **eight** earlier files remains dated evidence of those eight files.
+
+The sandbox's retained grid contains 18,177 rows, including 3,186 obsolete
+Seedance fixed selectors without an input-duration dimension. Current generation
+always resolves a duration-specific or continuous selector for those video inputs.
+`projectInitialCustomerTariffCutoverCells` prepares the 14,991 effective rows for
+a fresh installation, returning all 3,186 excluded rows for a separate immutable
+source archive. Unknown unused rows are refused. This projection never edits the
+sandbox or removes its history. Every installed row must be selected by the real
+canonical acceptance; quote parity, rather than a copied staging row count,
+determines equivalence.
+
+The reviewed private JSON release implements `CustomerTariffCutoverRelease`:
+full literal cell components; an ordinary/workflow/input-stress quote inventory;
+actual deployed old cents, proposed cents, and separately approved changes;
+deployed Git/deployment identity; current target/code/registry/factual and
+commercial hashes. Its fingerprint hashes the entire body. Preparation leaves
+`activationReady: false`; sealing an artifact is not deployment permission.
+The capture expires after fifteen minutes. Production provenance must come from
+the deployed source comparison described above; merely changing a fixture's
+`evidenceKind` is not a substitute for that capture or its operator review.
+
+The writer uses an explicitly selected direct TLS Neon or isolated Unix-socket
+pool, independently of the application's ambient database. A branded transaction
+must also belong to this selected connection. Actual transport/database/user and
+the actor's current `user_roles` administrator record are checked. State,
+cell/history and commercial tables are locked together. Hashes include pricing
+rules, settings, availability overrides and billing products. Settings timestamps
+alone are excluded; policy timestamps retain their selection semantics. Secrets
+never enter bindings. Quote contexts use the app's actual read-only configured
+engine projection, including administrator pricing settings.
+
+The operation derives the complete current inventory itself. It reproduces full
+continuous coefficients and band boundaries from the captured customer baseline
+and the reviewed compilation owners. Seedance rates must preserve the approved
+positive variant margin; GPT floors must equal the actual reference ceiling.
+Safe endpoint quotes alone cannot approve an altered fractional curve or an
+additional overcharge. It also validates continuous input domains, inserts fresh
+revision-one cells, and validates all
+canonical quotes through the real selector database reader **inside the same
+transaction**. Missing prices, legacy fallback, below-cost quotes, any cent
+mismatch or an unused extra cell abort the entire installation. Code/environment
+are checked again before commit. The immutable evidence and the regular pricing
+history event commit with the activation.
+
+The manual entry point requires explicit `PRICING_CUTOVER_MODE`,
+`PRICING_CUTOVER_OPERATION`, `PRICING_CUTOVER_ENV_FILE`,
+`PRICING_CUTOVER_ACTOR` and `PRICING_CUTOVER_CONFIRM`. Activation additionally
+requires `PRICING_CUTOVER_RELEASE`; recovery requires `PRICING_CUTOVER_EVENT`.
+An optional new `PRICING_CUTOVER_RECEIPT` file is private and never overwrites an
+existing file. The immutable target event is authoritative after a lost response;
+inspect it and current state before retrying. A successful repeat activation is
+refused. Run only from the clean reviewed repository root.
+
+Recovery appends a compensating event and deactivates the exact initial active
+revision. It preserves every current cell, closed version and financial snapshot.
+It refuses subsequent edits, a changed commercial input, a mismatched event or
+another target. **This is the database component of recovery.** Restore the
+recorded deployed code and matching factual configuration through the normal
+delivery path as a coordinated release action; database deactivation alone does
+not undo separately disclosed tool algorithms or restore a Vercel deployment.
+Recover the database while the selected candidate still supports the maintenance
+operation, then restore code/configuration. A rollback after intervening admin
+edits requires a newly reviewed recovery plan.
 
 The [exact-grid rehearsal](../engineering/2026-10-02-pricing-cutover-rehearsal.md)
 adds a private review package with all 18,177 current cells, exact migration bytes,

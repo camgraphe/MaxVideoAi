@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { QueryExecutor } from '@/lib/db';
 
-export const PRICING_CUTOVER_READ_ONLY_OPTIONS = '-c default_transaction_read_only=on -c statement_timeout=10000 -c lock_timeout=2000';
+export { PRICING_CUTOVER_READ_ONLY_OPTIONS, pricingCutoverConnection, pricingCutoverTarget } from '@/server/pricing/cutover-target';
 
 /** Names are intentional: main also contains an unrelated migration 53. */
 export const PRICING_CUTOVER_MIGRATIONS = [
@@ -11,6 +11,7 @@ export const PRICING_CUTOVER_MIGRATIONS = [
   '55_customer_tariff_versions.sql', '56_direct_payment_quotes.sql',
   '57_customer_tariff_local_activation_events.sql', '58_customer_tariff_bulk_interval_lock.sql',
   '59_seedance_draft_final_state.sql', '60_mcp_trial_provider_rasters.sql',
+  '61_customer_tariff_cutover_events.sql',
 ] as const;
 
 export async function loadPricingCutoverMigrations(root: string) {
@@ -21,52 +22,15 @@ export async function loadPricingCutoverMigrations(root: string) {
   }));
 }
 
-/** No ambient URL fallback, arbitrary host overrides, or PgBouncer target. */
-export function pricingCutoverConnection(env: Record<string, string | undefined>): string {
-  try {
-    const connection = env.DATABASE_URL_UNPOOLED?.trim() || env.DATABASE_URL?.trim();
-    if (!connection) throw new Error();
-    const url = new URL(connection);
-    if (!['postgres:', 'postgresql:'].includes(url.protocol) || !url.username || !url.pathname.slice(1)) throw new Error();
-    const keys = [...url.searchParams.keys()];
-    if (new Set(keys).size !== keys.length || (url.port && Number(url.port) < 1)) throw new Error();
-    const hosts = url.searchParams.getAll('host');
-    const local = ['localhost', '127.0.0.1'].includes(url.hostname) && hosts.length === 1 && hosts[0].startsWith('/');
-    const neon = url.hostname.endsWith('.neon.tech') && !url.hostname.split('.').some(part => part.endsWith('-pooler'))
-      && hosts.length === 0 && url.searchParams.get('sslmode') === 'require';
-    if (!local && !neon) throw new Error();
-    const allowed = local ? ['host'] : ['sslmode', 'channel_binding'];
-    if ([...url.searchParams.keys()].some(key => !allowed.includes(key))) throw new Error();
-    return connection;
-  } catch { throw new Error('Use an explicit environment file with a direct Neon or local Unix socket connection.'); }
-}
-
-/** Bind exactly the endpoint passed to pg, including its effective port/socket.
- * Explicit password callback prevents ambient PGPASSWORD and .pgpass fallback. */
-export function pricingCutoverTarget(env: Record<string, string | undefined>) {
-  const url = new URL(pricingCutoverConnection(env));
-  const host = url.searchParams.get('host') || url.hostname;
-  const port = Number(url.port || 5432);
-  const database = decodeURIComponent(url.pathname.slice(1));
-  const user = decodeURIComponent(url.username);
-  const password = decodeURIComponent(url.password);
-  const socket = host.startsWith('/');
-  const config = { host, port, database, user, password: () => password,
-    ssl: socket ? false : { rejectUnauthorized: true },
-    enableChannelBinding: url.searchParams.get('channel_binding') === 'require',
-    options: PRICING_CUTOVER_READ_ONLY_OPTIONS, connectionTimeoutMillis: 10_000 };
-  return { config, databaseIdentity: createHash('sha256').update(JSON.stringify({ host, port, database, user,
-    transport: socket ? 'unix_socket' : 'tls_verified' })).digest('hex') };
-}
-
 const prerequisiteTables = ['app_jobs', 'app_pricing_rules', 'app_pricing_change_events',
   'mcp_generation_quotes', 'mcp_trial_quote_prepared_audit', 'mcp_trial_entitlements',
   'mcp_trial_support_override_audit', 'mcp_trial_risk_events'] as const;
 const newTables = ['seedance_draft_links', 'app_customer_tariff_state', 'app_customer_tariff_cells',
-  'app_customer_tariff_cell_versions', 'app_direct_payment_quotes', 'app_customer_tariff_local_activation_events'] as const;
+  'app_customer_tariff_cell_versions', 'app_direct_payment_quotes', 'app_customer_tariff_local_activation_events', 'app_customer_tariff_cutover_events'] as const;
 const functions = ['reject_overlapping_customer_tariff_cells', 'preserve_customer_tariff_version',
   'reject_direct_payment_quote_mutation', 'preserve_customer_tariff_local_activation_event',
-  'mcp_trial_provider_cost_matches_snapshot', 'mcp_trial_snapshot_has_forbidden_funding_semantics'];
+  'mcp_trial_provider_cost_matches_snapshot', 'mcp_trial_snapshot_has_forbidden_funding_semantics',
+  'preserve_customer_tariff_cutover_event'];
 
 /** Catalog evidence only. Never runs DDL, reads customer rows, or certifies activation. */
 export async function collectPricingCutoverSchema(executor: QueryExecutor) {

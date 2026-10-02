@@ -17,6 +17,7 @@ test('cutover inventory selects exact reviewed migration names and binds their b
     'neon/migrations/58_customer_tariff_bulk_interval_lock.sql',
     'neon/migrations/59_seedance_draft_final_state.sql',
     'neon/migrations/60_mcp_trial_provider_rasters.sql',
+    'neon/migrations/61_customer_tariff_cutover_events.sql',
   ]);
   for (const row of migrations) {
     assert.equal(row.sha256, createHash('sha256').update(readFileSync(row.path)).digest('hex'));

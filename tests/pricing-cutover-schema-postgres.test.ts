@@ -80,7 +80,7 @@ test('read-only cutover inventory and exact migration replay preserve historical
     assert.deepEqual(before.missingPrerequisites, []);
     assert.deepEqual(before.missingTrialFunctions, []);
     assert.equal(before.trialRasterPredicate, 'created_by_migration_60');
-    assert.equal(before.missingCutoverTables.length, 6);
+    assert.equal(before.missingCutoverTables.length, 7);
     assert.equal(before.activationReady, false);
     assert.equal(before.schemaReviewRequired, true);
     await assert.rejects(collectPricingCutoverSchema({ async query<T>(sql: string, params?: ReadonlyArray<unknown>) {

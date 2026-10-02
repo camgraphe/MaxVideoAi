@@ -11,6 +11,7 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { isGptImage25EngineId } from '@/lib/image/gptImage2';
 import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing-context';
+import type { QueryExecutor } from '@/lib/db';
 import {
   buildStoryboardPricingProjection,
   STORYBOARD_BILLING_ENGINE_ID,
@@ -58,6 +59,8 @@ export async function computeCanonicalBillingSnapshot(
     pricingPolicy?: ResolveServerPricingPolicyDependencies;
     membershipDiscounts?: Record<string, number>;
     loadCustomerTariffState?: () => Promise<EffectiveCustomerTariffState>;
+    /** Operational cutover validates through the same selector reader before commit. */
+    customerTariffExecutor?: QueryExecutor;
   } = {}
 ): Promise<PricingSnapshot> {
   assertSeedanceWorkflowPricing(context);
@@ -78,7 +81,7 @@ export async function computeCanonicalBillingSnapshot(
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
   if (context.workflowStep || dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
-    const tariffState = await (dependencies.loadCustomerTariffState ?? (() => loadCustomerTariffQuoteState(selector)))();
+    const tariffState = await (dependencies.loadCustomerTariffState ?? (() => loadCustomerTariffQuoteState(selector, dependencies.customerTariffExecutor)))();
     const manual = resolveCustomerTariffQuote({ context, facts: billingFacts.facts,
       at: new Date().toISOString(), state: tariffState });
     if (manual) {

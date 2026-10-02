@@ -15,6 +15,18 @@ and recovery. `pricing:cutover:schema` is an explicitly targeted read-only catal
 inventory with exact migration digests; it neither applies DDL nor certifies
 production quote parity or activation readiness.
 
+The separate initial cutover owner, `server/pricing/customer-tariff-cutover.ts`,
+uses an explicitly selected pool and a branded maintenance transaction. Canonical
+quotes can receive `customerTariffExecutor` to use the normal selector database
+reader on that same uncommitted transaction. Default request readers and quote
+algorithms are unchanged. No application route invokes the maintenance writer;
+the authored production flag remains false. Migration 61 adds immutable
+initial-activation/recovery evidence without activating any price.
+The owner requires fresh complete source-bound evidence, empty inactive initial
+state, a current admin actor and locked commercial inputs. Recovery preserves
+cells, versions and paid snapshots; it is one component of a coordinated code,
+configuration and database rollback. See the runbook for exact release guards.
+
 The [October 2 deployed comparison](2026-10-02-pricing-deployed-comparison.md)
 records a fresh read-only commercial snapshot and offline reconstruction using
 the actual deployed Git source, including disclosed model and tool corrections.

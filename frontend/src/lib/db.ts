@@ -87,9 +87,10 @@ export async function query<TRecord = unknown>(text: string, params?: ReadonlyAr
 }
 
 export async function withDbTransaction<TResult>(
-  callback: (executor: TransactionQueryExecutor, client: PoolClient) => Promise<TResult>
+  callback: (executor: TransactionQueryExecutor, client: PoolClient) => Promise<TResult>,
+  options: { pool?: Pick<Pool, 'connect'> } = {},
 ): Promise<TResult> {
-  const client = await getDb().connect();
+  const client = await (options.pool ?? getDb()).connect();
   const executor = createTransactionQueryExecutor(client);
 
   try {
