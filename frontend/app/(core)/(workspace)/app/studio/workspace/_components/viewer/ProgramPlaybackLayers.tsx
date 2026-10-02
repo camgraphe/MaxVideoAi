@@ -43,6 +43,7 @@ export function ProgramPlaybackLayers({
             data-playback-image-item-id={layer.item.id}
             src={layer.url}
             alt=""
+            onError={() => onMediaAccessError?.(layer.item)}
             style={clipVisualStyleFor(layer)}
           />
         ) : (

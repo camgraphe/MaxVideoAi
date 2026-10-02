@@ -41,12 +41,13 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const cuts = useMemo(() => Array.from(new Set(items.flatMap(item => [item.startSec,item.startSec+item.durationSec]))).sort((a,b) => a-b),[items]);
   const playback = useWorkspaceTimelinePlayback({projectFps: fps,studioNotices: copy.notices,timelineDurationSec: duration,timelineCutPoints: cuts,onNotice: setLocalError,onResetExportRangeMode: () => {}});
   const layers = useProgramPlaybackSync({isPlaying: monitor && playback.isTimelinePlaying,items,playheadSec: playback.playheadSec,projectSettings: settings,selectedItemId: selected,onSelectItem: setSelected,onSendSnapshotToCanvas: () => {}});
+  const stopPlayback = playback.stopTimelinePlayback;
   const unavailablePlayingClip = items.find(item => item.mediaKind !== 'audio' && item.mediaAccessError && item.startSec <= playback.playheadSec && item.startSec+item.durationSec > playback.playheadSec);
   useEffect(() => {
     if (!monitor || !unavailablePlayingClip) return;
-    playback.stopTimelinePlayback();setMonitor(false);
+    stopPlayback();setMonitor(false);
     setLocalError(t('Media unavailable. You can remove this clip.','Média indisponible. Vous pouvez retirer ce clip.'));
-  },[monitor,unavailablePlayingClip,playback.stopTimelinePlayback,t]);
+  },[monitor,unavailablePlayingClip,stopPlayback,t]);
   const pixelsPerSecond = 34;
   const width = Math.max(520,duration*pixelsPerSecond+40);
   const chosen = items.find(item => item.id === selected);

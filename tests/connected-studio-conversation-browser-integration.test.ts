@@ -8,7 +8,7 @@ import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-bro
 import {initializeStudioConnectedFixture,STUDIO_CONNECTED_MONTAGE_INPUT,STUDIO_CONNECTED_ASSET_IDS} from './helpers/studio-connected-fixture-data';
 import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-http-fixture';
-import {STUDIO_PRIVATE_MEDIA_HOST} from './helpers/studio-private-storage-fixture';
+import {STUDIO_PRIVATE_MEDIA_HOST,STUDIO_PRIVATE_MEDIA_KEYS} from './helpers/studio-private-storage-fixture';
 
 test('native chat timeline collapses, trims real source frames and preserves mobile chat access', {timeout: 240000},async () => {
   const runtime = await startStudioIntegrationRuntime({mcp: {studioMontageCreation: true},privateStorage: true,conversation: true,initializeDatabase: async database => {
@@ -88,14 +88,15 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     let renewalReads = 0;
     const countRenewal = (request: import('@playwright/test').Request) => {if (request.url().includes('/conversation-timeline?preview=1')) renewalReads++;};
     await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
-    await page.route('https://'+STUDIO_PRIVATE_MEDIA_HOST+'/**',route => route.fulfill({status: 403,body: 'Fixture media unavailable'}));
+    const blockedMedia = 'https://'+STUDIO_PRIVATE_MEDIA_HOST+'/'+STUDIO_PRIVATE_MEDIA_KEYS.b+'?*';
+    await page.route(blockedMedia,route => route.fulfill({status: 403,body: 'Fixture media unavailable'}));
     page.on('request',countRenewal);
     await page.getByRole('button',{name: 'Open monitor',exact: true}).click();
     await expect(page.getByText('This clip could not be played. Reopen the monitor to retry, or remove it from the film.',{exact: true})).toBeVisible();
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
     assert.equal(renewalReads,1,'permanent decoder error triggers one automatic renewal then collapses');
     page.off('request',countRenewal);
-    await page.unroute('https://'+STUDIO_PRIVATE_MEDIA_HOST+'/**');
+    await page.unroute(blockedMedia);
     await runtime.database.pool.query('UPDATE media_assets SET deleted_at=NOW() WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.b]);
     await page.reload({waitUntil: 'domcontentloaded'});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
