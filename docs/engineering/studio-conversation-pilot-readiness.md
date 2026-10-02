@@ -10,10 +10,42 @@ The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: fal
 | Image | Exact request/reference pricing parity, confirmation/recovery and saved-draft renewal on disposable PostgreSQL | One image generated through the native session route with the real account wallet |
 | Video, voice, music | Session-scoped canonical quotes/jobs, explicit confirmation, errors/refunds, inline originals and library/import | One ready output per provider capability through this native route |
 | Editing | Shared manual/Sol commands, owned canonical Sequence, revisions/receipts, measured source facts, trim/order/gain/remove | Real generated outputs inserted in the same client journey |
-| Native UI | Collapsible monitor, timeline playback, desktop/mobile hierarchy, charcoal/olive, source-seek and reload browser proof | Target-device smoke test with provider outputs |
+| Native UI | Chromium/Firefox/WebKit byte-backed playback, trim/move/gain/reload, bounded decoder recovery, responsive layout and persistent app-wide charcoal/olive | Physical Safari/iOS/Android smoke test with provider outputs |
 | Export | Existing exact estimator/reservation/worker adapter, owned recovery reader and local 3 s MP4 proof | Remote worker dispatch, original upload, completed artifact recovery in native chat |
 
-The local preview uses an isolated socket-only database. Its wallet/library are QA data, even when Google signs in with a real account. It does not establish the production balance. Provider, storage and remote renderer credentials are deliberately absent there; an unavailable capability must stay unavailable in the catalog. Existing conversations/projects are preserved; a fresh film creates a canonical empty Project/Sequence without converting old canvases.
+The local preview uses an isolated socket-only database. Its wallet/library are QA data, even when Google signs in with a real account. It does not establish the production balance. Provider, storage and remote renderer credentials are deliberately absent there. Browser qualification does not establish paid generation availability; verify runtime availability before activating the pilot catalog. Existing conversations/projects are preserved; a fresh film creates a canonical empty Project/Sequence without converting old canvases.
+
+## Browser qualification
+
+The opt-in native browser journey passes on these locally installed Playwright engines:
+
+| Engine | Version | Result |
+| --- | --- | --- |
+| Chromium | 147.0.7727.15 | PASS |
+| Firefox | 148.0.2 | PASS |
+| WebKit | 26.4 | PASS |
+
+Each run owns a committed Next snapshot, a fresh socket-only PostgreSQL database, synthetic Auth sessions and exact private-storage interception serving two real MP4 fixtures. Viewports cover desktop 1440×900, phone 390×844 and layout checks at 320/768 px. Mobile dimensions are simulated; this is not certification of physical phones or the installed Safari browser.
+
+The English journey checks source-frame seeking after a start trim, actual playback, stable decoder sources across signed-URL polling, monitor collapse, keyboard gain persistence, pointer movement and reload, unavailable asset removal, and chat access without document overflow. Olive now uses the app's existing theme preference, changes the header/sidebar too, survives reload and sets the native controls' color scheme. The library checks modal sizing, empty/outage states, Import availability, Escape and focus restoration. Its library responses are UI-only doubles; canonical edits, media ownership and private video decoding use the owned DB/byte fixtures.
+
+A rapid access renewal can return the same signed URL. The failed decoder now remounts once after renewal, without disturbing normal polling. Fresh contexts avoid Firefox's already-decoded cache; an actual owned projection is replayed to reproduce same-URL recovery. WebKit's internal Range retries remain distinct from the single app renewal. A permanent refusal collapses the monitor with a stable error. No hydration/page errors were observed in the qualified journeys.
+
+Run `tests/connected-studio-conversation-browser-integration.test.ts` with `STUDIO_BROWSER_ENGINE=chromium|firefox|webkit`; the default remains Chromium. Install the existing dependency's browser binaries with `playwright install chromium firefox webkit`. Use project Node 22, PostgreSQL 17, `NODE_PATH=frontend/node_modules` and `TSX_TSCONFIG_PATH=frontend/tsconfig.json`; run through `node --import tsx --test`. The frontend snapshot comes from committed HEAD. `STUDIO_PROOF_DIRECTORY` optionally writes screenshots outside Git.
+
+## Remote worker audit
+
+Read-only AWS/Vercel inspection on 2 October 2026 established:
+
+- ECS cluster `maxvideoai-timeline-exports` exists in `us-east-1`, ACTIVE, with no running/pending task at inspection. The active worker definition is revision 2, registered 9 June, 2 vCPU / 4 GB.
+- Its actual container name is `worker`, not the launcher's default `timeline-export-worker`. A launcher for this definition needs the explicit container override.
+- It refers to `maxvideoai-timeline-export-worker:latest`. That ECR repository currently contains no images; the referenced image cannot be pulled.
+- SSM secret references exist. A private in-memory comparison confirmed the worker's database host/name match the primary production configuration. No credential values were printed or persisted. This definition must not serve the isolated QA database.
+- Vercel project `maxvideoai-mcp-staging` exists, with provider/storage/reference namespaces and a database configured. Its listed environment lacks the director key, Studio gates and ECS launcher settings. Its DB isolation has not been verified. Main app production/preview also lack ECS launcher settings. Presence of other preview provider keys does not establish native pilot readiness.
+
+Therefore the existing infrastructure is a useful base, not a qualified Studio test renderer. Prepare a separate pilot DB and worker definition/SSM namespace, an immutable image containing the current renderer, and isolated storage (a separate bucket avoids assuming that `VIDEO_RENDER_STORAGE_PREFIX` also scopes `timeline-exports/`). Use a protected branch preview with the coordinated session-aware readers and explicit migrations. Keep the existing production definition and MCP staging publication intact. Verify all pilot targets before any quote confirmation or worker dispatch.
+
+This audit made no cloud configuration change, image push, deployment, production migration or paid media/render request. The next milestone remains the bounded native pilot below.
 
 ## One next milestone
 

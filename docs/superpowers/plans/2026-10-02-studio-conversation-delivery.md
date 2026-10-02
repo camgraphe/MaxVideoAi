@@ -178,6 +178,10 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 
 ## Politique de tests et point d'arrêt
 
+Checkpoint du 2 octobre : qualification locale native validée sur Chromium, Firefox et WebKit, avec vraies vidéos de test, trim/déplacement/gain/reprise et formats desktop/mobile/tablette. Charbon/Olive suivent la préférence persistante de l'app. La bibliothèque et ses erreurs ciblées sont vérifiées en anglais. Les 625 régressions et les checks frontend restent verts.
+
+L'audit demandé confirme l'infrastructure ECS existante, mais son image Docker est absente et ses secrets ciblent la production. Le projet `maxvideoai-mcp-staging` existe ; il manque les paramètres du directeur et du lanceur Studio. Le dossier `docs/engineering/studio-conversation-pilot-readiness.md` donne les résultats et la préparation du pilote isolé. Les cases providers, worker distant et film final restent ouvertes.
+
 La couverture locale existante est le socle. Pendant les lots 1–4, exécuter les tests liés au code modifié et un smoke-test du livrable, puis avancer. Ne pas lancer une nouvelle salve généraliste à chaque message ou chaque changement visuel. Les contrôles larges reviennent à la qualification finale et avant intégration selon les guides.
 
 Le montage sémantique d'interviews/podcasts, la transcription, les effets avancés, l'élargissement du catalogue et une nouvelle refonte graphique ne font pas partie du prochain lot. Ils se décident après preuve du film court ; aucun de ces chantiers ne doit repousser son raccord.

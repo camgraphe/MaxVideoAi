@@ -67,12 +67,14 @@ TIMELINE_EXPORT_RENDER_TIMEOUT_MS=1800000
 TIMELINE_EXPORT_ECS_REGION=us-east-1
 TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports
 TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2
-TIMELINE_EXPORT_ECS_CONTAINER_NAME=timeline-export-worker
+TIMELINE_EXPORT_ECS_CONTAINER_NAME=worker
 TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a
 TIMELINE_EXPORT_ECS_SUBNETS=subnet-056b0e21b43d5f9a0,subnet-052782533ff5c999b,subnet-0259349f2a43a61e9,subnet-02a8f9a8f9705eb93,subnet-08810baae918cd7e8,subnet-050836f43a4a5b96e
 ```
 
 `TIMELINE_EXPORT_ECS_CONTAINER_NAME` defaults to `timeline-export-worker`. Set it only when the task definition uses a different container name.
+
+Read-only inspection on 2 October 2026 found revision 2's actual container name is `worker`, as used in the example above. Its database secret targets production, while its referenced `latest` image is currently absent from ECR. Resource existence is not render readiness. See `studio-conversation-pilot-readiness.md` before using this infrastructure for a Studio pilot; use an isolated definition/database/storage instead of repointing the existing production definition.
 
 Use a dedicated AWS launcher identity for Vercel, not the storage uploader credentials. Its policy should be limited to:
 
