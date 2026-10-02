@@ -55,6 +55,9 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
     const card=page.getByLabel('Film export quote',{exact:true});
     await expect(card).toBeVisible({timeout:45000});
+    // The intercepted quote can precede the real timeline route's first compile.
+    // Wait for the saved cut before an intentional reload can cancel its HMR refresh.
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout:45000});
     await expect(card.getByRole('button',{name:'Confirm export · Free',exact:true})).toBeEnabled();
     assert.equal(confirmations.length,0,'Mounting a quote never starts a render.');
     const cookies=page.getByRole('button',{name:'Reject all',exact:true});
