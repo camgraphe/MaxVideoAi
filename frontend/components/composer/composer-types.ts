@@ -1,5 +1,6 @@
 import type { Ref, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode, PreflightResponse } from '@/types/engines';
+import type { PendingGeneration } from '@/lib/pending-generations';
 import type {
   AssetFieldConfig,
   AssetFieldRole,
@@ -92,4 +93,5 @@ export interface ComposerProps {
   workflowNotice?: string | null;
   generateLabel?: string;
   generateLoadingLabel?: string;
+  pendingGenerations?: readonly PendingGeneration[];
 }

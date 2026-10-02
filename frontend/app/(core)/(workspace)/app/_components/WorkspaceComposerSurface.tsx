@@ -99,7 +99,7 @@ type WorkspaceComposerSurfaceProps = {
   activeManualMode: Mode | null;
   handleComposerModeToggle: (mode: Mode | null) => void;
   composerWorkflowNotice: string | null;
-  inProgressMessage: string | null;
+  pendingGenerations: ComposerProps['pendingGenerations'];
   handleAssetAdd: NonNullable<ComposerProps['onAssetAdd']>;
   handleAssetRemove: NonNullable<ComposerProps['onAssetRemove']>;
   handleOpenAssetLibrary: NonNullable<ComposerProps['onOpenLibrary']>;
@@ -226,7 +226,7 @@ export function WorkspaceComposerSurface({
   activeManualMode,
   handleComposerModeToggle,
   composerWorkflowNotice,
-  inProgressMessage,
+  pendingGenerations,
   handleAssetAdd,
   handleAssetRemove,
   handleOpenAssetLibrary,
@@ -461,15 +461,6 @@ export function WorkspaceComposerSurface({
 
   return (
     <>
-      {inProgressMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
-        >
-          {inProgressMessage}
-        </p>
-      ) : null}
       <Composer
         density="workspace"
         engine={selectedEngine}
@@ -479,8 +470,9 @@ export function WorkspaceComposerSurface({
         onNegativePromptChange={setNegativePrompt}
         price={price}
         currency={currency}
-        isLoading={isPricing || isSubmitting}
+        isLoading={isSubmitting}
         isPricing={isPricing}
+        pendingGenerations={pendingGenerations}
         error={preflightError}
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}

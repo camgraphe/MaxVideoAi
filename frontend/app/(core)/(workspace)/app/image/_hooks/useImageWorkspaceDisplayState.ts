@@ -3,7 +3,7 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 
 import type { ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import type { GroupSummary } from '@/types/groups';
-import { formatTemplate, type ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
+import { buildPendingGenerations } from '@/lib/pending-generations';
 import type { HistoryEntry, ImageEngineOption } from '../_lib/image-workspace-types';
 
 type UseImageWorkspaceDisplayStateArgs = {
@@ -13,7 +13,6 @@ type UseImageWorkspaceDisplayStateArgs = {
   pendingGroups: GroupSummary[];
   pricingErrorMessage: string | null;
   pricingSnapshot: PricingSnapshot | null | undefined;
-  resolvedCopy: ImageWorkspaceCopy;
   selectedEngine: ImageEngineOption | undefined;
   selectedPreviewEntryId: string | null;
   suppressDefaultPreview?: boolean;
@@ -26,7 +25,6 @@ export function useImageWorkspaceDisplayState({
   pendingGroups,
   pricingErrorMessage,
   pricingSnapshot,
-  resolvedCopy,
   selectedEngine,
   selectedPreviewEntryId,
   suppressDefaultPreview = false,
@@ -40,11 +38,7 @@ export function useImageWorkspaceDisplayState({
     return historyEntries[0];
   })();
 
-  const inProgressMessage = useMemo(() => {
-    const count = pendingGroups.length;
-    if (count <= 0) return null;
-    return formatTemplate(resolvedCopy.messages.generatingInProgress, { count });
-  }, [pendingGroups.length, resolvedCopy.messages.generatingInProgress]);
+  const pendingGenerations = useMemo(() => buildPendingGenerations(pendingGroups, 'group'), [pendingGroups]);
 
   const compositePreviewEntry: ImageCompositePreviewEntry | null = previewEntry
     ? {
@@ -71,7 +65,7 @@ export function useImageWorkspaceDisplayState({
     compositePreviewEntry,
     estimatedCostAmount,
     estimatedCostCurrency,
-    inProgressMessage,
+    pendingGenerations,
     previewEntry,
   };
 }

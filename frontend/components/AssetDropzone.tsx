@@ -5,7 +5,7 @@ import { useMemo, useCallback, useRef } from 'react';
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps } from '@/types/engines';
 import { getWorkspaceReferenceSlots } from '@/components/composer/workspace-reference-layout';
-import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
+import { resolveWorkspaceReferenceFieldDescription, resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { getWorkspaceFrameCommand } from '@/components/composer/workspace-reference-commands';
 import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -88,10 +88,12 @@ export function AssetDropzone({
     [engine, field]);
   const minimumImageSidePx = normalizeMinimumImageSide(constraints.minImageSidePx);
   const acceptFormats = useMemo(() => {
-    const configuredFormats = caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
+    const configuredFormats = field.type === 'image' && field.acceptedFileExtensions?.length
+      ? mediaFieldConstraint.acceptedFileExtensions
+      : caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
     const formats = configuredFormats?.map((format) => format.toLowerCase()) ?? [];
     return density === 'workspace' && field.type === 'image' ? formats.filter((format) => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'heif', 'bmp', 'tif', 'tiff'].includes(format.replace(/^\./, ''))) : formats;
-  }, [caps?.acceptsImageFormats, constraints.supportedFormats, field.type, density]);
+  }, [caps?.acceptsImageFormats, constraints.supportedFormats, field.type, field.acceptedFileExtensions, density, mediaFieldConstraint.acceptedFileExtensions]);
   const accept = (() => {
     if (field.type === 'image') {
       return acceptFormats.length
@@ -259,6 +261,9 @@ export function AssetDropzone({
   const helperLines = useMemo(() => buildAssetFieldHelperLines({
     field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy,
   }), [field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy]);
+  const workspaceHelperText = density === 'workspace' ? buildAssetFieldHelperLines({
+    field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy, compact: true,
+  }).join(' · ') : null;
 
   const defaultFieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
   const frameCommand = getWorkspaceFrameCommand({ field, role, required }, engine);
@@ -269,11 +274,11 @@ export function AssetDropzone({
       ? frameTitle ?? workspaceFieldTitle
       : workspaceFieldTitle
     : defaultFieldTitle;
-  const roleDescription = resolveAssetRoleDescription(role, assetCopy);
+  const roleDescription = role === 'reference' && field.type !== 'image' ? null : resolveAssetRoleDescription(role, assetCopy);
   const visibleHelperText = field.type === 'video' && helperLines.length ? helperLines.join(' · ') : null;
   const detailsTooltipLines = buildAssetFieldTooltipLines({
     roleDescription,
-    fieldDescription: field.description,
+    fieldDescription: density === 'workspace' ? resolveWorkspaceReferenceFieldDescription(field, engine, locale) : field.description,
     referenceWarning,
     showReferenceWarning: role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id),
     helperLines,
@@ -353,11 +358,12 @@ export function AssetDropzone({
     const copy = workspaceReferenceCopy(locale);
     return <div className="app-reference-field" data-reference-field={field.id}>
       <div className="app-reference-field-heading"><strong>{fieldTitle}</strong>{required ? <small>{copy.required}</small> : null}{headerAction}</div>
+      {workspaceHelperText ? <p className="app-reference-limits">{workspaceHelperText}</p> : null}
       {disabledReason ? <p className="app-reference-disabled" role="note">{disabledReason}</p> : null}
       <div className="app-reference-slots">
           {renderSlots.map(renderSlot)}
       </div>
-      <details className="app-reference-guidance"><summary>{copy.details}{isCollectionField ? ` · ${filledAssetCount}/${maxCount}` : ''}</summary>
+      <details className="app-reference-guidance"><summary>{copy.details}</summary>
         {guidance ? <p>{guidance.label} {guidance.tooltip}</p> : null}
         {detailsTooltipLines.map((line) => <p key={line}>{line}</p>)}
       </details>

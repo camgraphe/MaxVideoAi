@@ -11,6 +11,7 @@ import { workspaceReferenceCopy } from '@/components/composer/workspace-referenc
 import { ComposerReferenceFields } from '@/components/composer/ComposerReferenceFields';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
+import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
@@ -73,6 +74,7 @@ export function Composer({
   workflowNotice,
   generateLabel,
   generateLoadingLabel,
+  pendingGenerations = [],
 }: ComposerProps) {
   const { t, locale } = useI18n();
   const promptId = useId();
@@ -141,6 +143,7 @@ export function Composer({
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
     isLoading ||
+    isPricing ||
     promptTooLong ||
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue) ||
@@ -217,7 +220,7 @@ export function Composer({
     setIsButtonAnimating(false);
   }, [isLoading]);
   const resolvedGenerateLabel = isLoading
-    ? generateLoadingLabel ?? composerCopy.button.loading
+    ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
     : generateLabel ?? composerCopy.button.idle;
 
   const composerToolbar = (settingsBar || onGenerate) ? (
@@ -244,46 +247,49 @@ export function Composer({
                       {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
                       <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
                         {!workspaceDensity ? generateControl : null}
-                        <Button
-                          type="button"
-                          size="md"
-                          disabled={isGenerateDisabled}
-                          className={clsx(
-                            'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
-                            'transform-gpu transition-transform duration-200 ease-out motion-reduce:transform-none motion-reduce:animate-none motion-reduce:transition-none',
-                            'border border-brand shadow-card',
-                            'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                            workspaceDensity
-                              ? '!min-h-11 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
-                              : 'min-w-[220px] gap-4 px-5 py-3',
-                            isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
-                            isGenerateDisabled ? '' : 'active:scale-[0.97]',
-                            formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
-                          )}
-                          onClick={handleGenerateClick}
-                        >
-                          <span className="app-generation-label relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
-                          {formattedPrice ? (
-                            <span
-                              className={clsx(
-                                'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
-                                workspaceDensity ? 'px-3' : 'px-3.5',
-                                isGenerateDisabled
-                                  ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
-                                  : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
-                              )}
-                            >
-                              {formattedPrice}
-                            </span>
-                          ) : null}
-                          <span
-                            aria-hidden
+                        <ComposerGenerationActivity entries={pendingGenerations} submitting={isLoading}>
+                          <Button
+                            type="button"
+                            size="md"
+                            disabled={isGenerateDisabled}
+                            aria-busy={isLoading || undefined}
                             className={clsx(
-                              'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
-                              isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                              'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
+                              'transform-gpu transition-transform duration-200 ease-out motion-reduce:transform-none motion-reduce:animate-none motion-reduce:transition-none',
+                              'border border-brand shadow-card',
+                              'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
+                              workspaceDensity
+                                ? '!min-h-11 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
+                                : 'min-w-[220px] gap-4 px-5 py-3',
+                              isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
+                              isGenerateDisabled ? '' : 'active:scale-[0.97]',
+                              formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
                             )}
-                          />
-                        </Button>
+                            onClick={handleGenerateClick}
+                          >
+                            <span className="app-generation-label relative z-10 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-micro">{isLoading && workspaceDensity ? <GenerationSpinner /> : null}{resolvedGenerateLabel}</span>
+                            {formattedPrice ? (
+                              <span
+                                className={clsx(
+                                  'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
+                                  workspaceDensity ? 'px-3' : 'px-3.5',
+                                  isGenerateDisabled
+                                    ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
+                                    : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
+                                )}
+                              >
+                                {formattedPrice}
+                              </span>
+                            ) : null}
+                            <span
+                              aria-hidden
+                              className={clsx(
+                                'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
+                                isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                              )}
+                            />
+                          </Button>
+                        </ComposerGenerationActivity>
                       </div>
                     </div>
                   ) : null}

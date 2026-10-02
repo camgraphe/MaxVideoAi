@@ -2,7 +2,7 @@
 
 import type { FormEvent, Ref } from 'react';
 import clsx from 'clsx';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { AuthCopy, AuthMode } from '../_lib/login-copy';
@@ -174,38 +174,40 @@ export function LoginAuthSurface({
             </div>
           ) : null}
 
-          <div
-            role="group"
-            aria-label={authCopy.modeGroup}
-            className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium"
-          >
-            <Button
-              type="button"
-              variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
-              size="sm"
-              aria-pressed={effectiveMode === 'signin'}
-              onClick={() => onModeChange('signin')}
-              className={clsx(
-                'min-h-11 flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-surface'
-              )}
+          {mode !== 'reset' && (
+            <div
+              role="group"
+              aria-label={authCopy.modeGroup}
+              className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium"
             >
-              {authCopy.tabs.signin}
-            </Button>
-            <Button
-              type="button"
-              variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
-              size="sm"
-              aria-pressed={effectiveMode === 'signup'}
-              onClick={() => onModeChange('signup')}
-              className={clsx(
-                'min-h-11 flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-surface'
-              )}
-            >
-              {authCopy.tabs.signup}
-            </Button>
-          </div>
+              <Button
+                type="button"
+                variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
+                size="sm"
+                aria-pressed={effectiveMode === 'signin'}
+                onClick={() => onModeChange('signin')}
+                className={clsx(
+                  'min-h-11 flex-1 rounded-pill px-3 py-2',
+                  effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-surface'
+                )}
+              >
+                {authCopy.tabs.signin}
+              </Button>
+              <Button
+                type="button"
+                variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
+                size="sm"
+                aria-pressed={effectiveMode === 'signup'}
+                onClick={() => onModeChange('signup')}
+                className={clsx(
+                  'min-h-11 flex-1 rounded-pill px-3 py-2',
+                  effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-surface'
+                )}
+              >
+                {authCopy.tabs.signup}
+              </Button>
+            </div>
+          )}
         </header>
 
         {mode !== 'reset' ? (
@@ -406,8 +408,8 @@ export function LoginAuthSurface({
                 {authCopy.links.backToSignIn}
               </Button>
             </div>
-            <Button type="submit" variant="outline" className="w-full" disabled={isResetSending} aria-busy={isResetSending}>
-              {isResetSending ? authCopy.feedback.sendingReset : authCopy.actions.reset}
+            <Button type="submit" variant="outline" className="w-full gap-2" disabled={isResetSending} aria-busy={isResetSending}>
+              {isResetSending ? <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{authCopy.feedback.sendingReset}</> : authCopy.actions.reset}
             </Button>
           </form>
         )}
@@ -416,9 +418,10 @@ export function LoginAuthSurface({
           {formAttention ? authCopy.validation.formAttention : ''}
         </p>
 
-        {status && (
+        {status && !(mode === 'reset' && isResetSending) && (
           <div
-            className={clsx(
+            role="status"
+            className={mode === 'reset' ? 'text-sm leading-6 text-text-secondary' : clsx(
               'rounded-card border px-3 py-3 text-sm font-medium',
               statusTone === 'success'
                 ? 'border-brand bg-surface-2 text-brand'

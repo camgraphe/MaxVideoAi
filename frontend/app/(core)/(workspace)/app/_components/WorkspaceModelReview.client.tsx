@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, type KeyboardEvent } from 'react';
+import { useEffect, useId, type KeyboardEvent, type ReactNode } from 'react';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useAccessibleModal, resolveModalTabTarget } from '@/components/ui/useAccessibleModal';
@@ -25,7 +25,7 @@ type Review = ReturnType<typeof useWorkspaceModelReview>;
 // Escape and selection remain with its existing keyboard handlers.
 function containSelectorPortalTab(event: KeyboardEvent<HTMLDivElement>) {
   const portal = (event.target as HTMLElement).closest<HTMLElement>(
-    '[data-engine-select-portal], [data-engine-browse-portal]',
+    '[data-engine-select-portal], [data-engine-browse-portal], .app-comparison-settings-menu',
   );
   if (!portal || event.key !== 'Tab') return;
   const focusable = Array.from(
@@ -128,6 +128,7 @@ export function WorkspaceModelReview({
   currentCurrency,
   currentPricing,
   currentError,
+  comparisonSettings,
 }: {
   review: Review;
   engines: EngineCaps[];
@@ -136,6 +137,7 @@ export function WorkspaceModelReview({
   currentCurrency: string;
   currentPricing: boolean;
   currentError?: string;
+  comparisonSettings?: ReactNode;
 }) {
   const copy = workspaceModelReviewCopy(locale);
   const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: review.close });
@@ -174,7 +176,7 @@ export function WorkspaceModelReview({
           }
           if (
             event.key === 'Escape' &&
-            dialogRef.current.querySelector('[aria-haspopup="dialog"][aria-expanded="true"]')
+            dialogRef.current.querySelector('[aria-haspopup][aria-expanded="true"]')
           )
             return;
           onDialogKeyDown(event);
@@ -256,6 +258,7 @@ export function WorkspaceModelReview({
                   currentCurrency={currentCurrency}
                   currentPricing={currentPricing}
                   currentError={currentError}
+                  comparisonSettings={comparisonSettings}
                 />
               ) : (
                 <button type="button" className={styles.back} onClick={() => review.open('compare')}>
