@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
 import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
 import dynamic from 'next/dynamic';
-import { CoreSettingsBar } from '@/components/CoreSettingsBar';
+import { WorkspaceComparisonSettings } from './WorkspaceComparisonSettings';
 import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
@@ -407,8 +407,11 @@ export function WorkspaceAppReadyView({
       />}
       </WorkspaceRecentReferences>
       {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
-        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError}
-        comparisonSettings={<CoreSettingsBar
+        currentPrice={draftWorkflow.selected ? draftWorkflow.price : price}
+        currentCurrency={draftWorkflow.selected ? draftWorkflow.currency : currency}
+        currentPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
+        currentError={draftWorkflow.selected ? draftWorkflow.error : preflightError}
+        comparisonSettings={<WorkspaceComparisonSettings draftControls={draftControls}
           density="comparison" engine={selectedEngine} mode={submissionMode} caps={capability}
           durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
           durationOption={form.durationOption ?? null} onDurationChange={handleDurationChange}

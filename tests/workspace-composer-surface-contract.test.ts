@@ -24,6 +24,8 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.doesNotMatch(appSource, /WorkspaceComposerSurface/);
   assert.match(readyViewSource, /import \{ WorkspaceComposerSurface \} from '\.\/WorkspaceComposerSurface';/);
   assert.match(readyViewSource, /<WorkspaceComposerSurface/);
+  assert.match(readyViewSource, /<WorkspaceComparisonSettings draftControls=\{draftControls\}/);
+  assert.doesNotMatch(readyViewSource, /<CoreSettingsBar\b/);
 
   assert.doesNotMatch(appSource, /<Composer\b/);
   assert.doesNotMatch(appSource, /<SettingsControls\b/);

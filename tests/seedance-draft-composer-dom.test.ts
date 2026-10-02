@@ -23,7 +23,7 @@ function composer(engineId: string, controls: SeedanceDraftControls, mode: Mode 
     inputAssets: {}, isUnifiedSeedance: engineId.includes('seedance'), isUnifiedKlingO3: false, klingO3UnsupportedVideoReason: null,
     workflowCopy: { clearReferencesToUseStartEnd: '', clearStartEndToUseReferences: '', removeAudioToUnlock: '' }, guestUploadLockedReason: null,
     uiLocale: 'en', composerModeToggles: undefined, activeManualMode: null, handleComposerModeToggle: noop,
-    composerWorkflowNotice: null, inProgressMessage: null, handleAssetAdd: noop, handleAssetRemove: noop, handleOpenAssetLibrary: noop, showNotice: noop,
+    composerWorkflowNotice: null, pendingGenerations: [], handleAssetAdd: noop, handleAssetRemove: noop, handleOpenAssetLibrary: noop, showNotice: noop,
     supportsKlingV3Controls: false, supportsKlingV3VoiceControl: false, multiPromptEnabled: false, setMultiPromptEnabled: noop,
     multiPromptScenes: [], multiPromptTotalSec: 4, multiPromptActive: false, multiPromptInvalid: false, multiPromptError: null,
     handleMultiPromptAddScene: noop, handleMultiPromptRemoveScene: noop, handleMultiPromptUpdateScene: noop,

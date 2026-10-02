@@ -29,6 +29,8 @@ The server read determines whether the job belongs to an eligible workflow;
 ordinary media does not acquire an empty action sidebar. Composer controls and
 instructions appear only for compatible Draft scenarios, and an unchecked
 Draft option keeps the normal localized generation label.
+The comparison panel retains the same Draft resolution and single-output
+constraints, locks submitted settings, and displays the active workflow quote.
 
 ## Acceptance before activation
 
