@@ -34,6 +34,8 @@ This live test exposed a private-storage presentation defect: the native chat re
 
 After reloading the same Project, the browser displayed and decoded that original and recovered the same completed job; a read-only ledger check found no duplicate output or debit. The screenshot `studio-native-pilot/native-image-after-reload.png` records the native quote and result. Confirmation and recovery added no Sol call: the usage and estimate above remain unchanged. Six new media-access regressions and shared-reader/PostgreSQL tests passed; the full `qa:editor` run passed **632 tests**, typecheck and lint with existing image-element warnings. Run the suite with PostgreSQL 17 first on `PATH`; the default installed version fails the existing version qualification assertions. The editing final-response test was aligned with the already introduced prepare-or-reply terminal slot, still excluding edits and payments.
 
+A later reload returned `503` on the conversation read (and `500` on a legal-document read). The existing Check result control recovered the same completed image with a subsequent `200`; browser decoding passed again and no creation was retried. The underlying transient read failure has not been attributed. Keep it as a pilot reliability finding rather than claiming every reload was error-free.
+
 Only the native image milestone is qualified. Video/audio gates and export remain disabled; the production wallet, provider invoice total and API payment-card state remain unqualified.
 
 ## Callback configuration and lifecycle
