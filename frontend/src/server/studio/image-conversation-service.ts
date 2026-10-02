@@ -167,6 +167,7 @@ export function createImageConversationService(
       message: turn.input_json.message,
       references: turn.input_json.references,
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
+      ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       reply: turn.draft_json?.reply ?? null,
       state: expiredLease ? "failed" : turn.state,
       retryable: expiredLease || turn.state === "failed",

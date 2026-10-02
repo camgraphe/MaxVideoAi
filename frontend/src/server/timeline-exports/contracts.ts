@@ -19,6 +19,8 @@ export type TimelineExportJobStatus = {
 export type TimelineExportJobResponse = TimelineExportJobStatus & {
   artifact: TimelineExportArtifact | null;
 };
+/** Submission identity is returned only in authenticated, owned Project recovery. */
+export type StudioProjectTimelineExport = TimelineExportJobResponse & {idempotencyKey: string};
 
 export type TimelineExportBillingKind = 'free' | 'paid';
 export type TimelineExportBillingStatus =

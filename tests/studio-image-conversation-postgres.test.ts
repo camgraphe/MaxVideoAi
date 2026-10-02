@@ -383,4 +383,22 @@ test("image chat persists its intent and exact quote, resumes safely and leaves 
     await assert.rejects(service.submit({ ...renewal, requestId: randomUUID(), renewedFromRequestId: renewed.requestId }), {code: "QUOTE_EXPIRED"});
     assert.equal(calls, modelCalls);
   });
+  await t.test('a failed renewal resumes from the public saved turn in a fresh tab without another director call',async () => {
+    const original = await service.submit({...input,requestId: randomUUID()});
+    await pg.pool.query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1",[original.quote!.quoteId]);
+    const modelCalls = calls;let failOnce = true;
+    const renewalFactory: ImageGenerationFactory = (current,options) => {const base = factory(current,options);return {...base,prepare: async request => {if (failOnce) {failOnce = false;throw new Error('Lost renewal preparation');}return base.prepare(request);}};};
+    const renewalService = createImageConversationService(actor,{enabled: true,director,generationFactory: renewalFactory});
+    const renewal = {requestId: randomUUID(),message: original.message,references: original.references,renewedFromRequestId: original.requestId};
+    await assert.rejects(renewalService.submit(renewal));
+    const failed = (await renewalService.read()).turns.find(turn => turn.requestId === renewal.requestId)!;
+    const contract = await import('../frontend/src/lib/studio/image-conversation-contract');
+    assert.equal(typeof contract.imageTurnRetryInput,'function');
+    const retry = contract.imageTurnRetryInput(failed);
+    assert.deepEqual(retry,renewal);
+    const resumed = await renewalService.submit(retry);
+    assert.ok(resumed.quote);assert.equal(calls,modelCalls);
+    assert.equal(resumed.quote.summary.prompt,original.quote!.summary.prompt);
+    assert.equal((await renewalService.submit(retry)).quote!.quoteId,resumed.quote.quoteId);
+  });
 });

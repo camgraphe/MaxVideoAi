@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {StudioConversationTimeline} from '@/lib/studio/conversation-editing-contract';
 import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeline-editing';
+import {retainConversationMediaAccess} from '@/lib/studio/conversation-preview-access';
 import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
 
 export type ConversationTimelineView = {data: StudioConversationTimeline;settings: WorkspaceProjectSettings;items: WorkspaceTimelineItem[]};
@@ -15,7 +16,7 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
   const epoch = useRef(0);
   const invalidate = useCallback(() => {epoch.current++;},[]);
   const path = `/api/studio/projects/${encodeURIComponent(projectId)}/conversation-timeline`;
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: {renewMediaId?: string}) => {
     const request = ++epoch.current;
     try {
       const response = await fetch(path+'?preview=1',{cache: 'no-store'});
@@ -23,7 +24,7 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
       if (!active.current || request !== epoch.current) return;
       if (result.error === 'STUDIO_CONNECTED_PROJECT_REQUIRED') {setLegacy(true);return;}
       if (!response.ok || !result.ok) throw new Error(result.error ?? 'TIMELINE_UNAVAILABLE');
-      setLegacy(false);setView(result.result);
+      setLegacy(false);setError(null);setView(previous => ({...result.result,items: retainConversationMediaAccess(previous?.items ?? [],result.result.items,Date.now(),options?.renewMediaId)}));
     } catch (failure) {if (active.current && request === epoch.current) setError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
   },[path]);
   useEffect(() => {active.current = true;void refresh();return () => {active.current = false;invalidate();};},[refresh,refreshKey,invalidate]);

@@ -1,8 +1,8 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
-import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
+import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
 export function useConversationExports(projectId: string,enabled: boolean) {
-  const [jobs,setJobs] = useState<TimelineExportJobResponse[]>([]);
+  const [jobs,setJobs] = useState<StudioProjectTimelineExport[]>([]);
   const [error,setError] = useState<string | null>(null);
   const refresh = useCallback(async (signal?: AbortSignal) => {
     if (!enabled) return;

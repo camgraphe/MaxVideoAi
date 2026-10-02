@@ -13,9 +13,11 @@ import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
 import {ConversationExport} from './ConversationExport.client';
+import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview-access';
+import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
 
 type Drag = {clip: WorkspaceTimelineItem;edge: 'start'|'end'|null;x: number;edit?: ConversationTimelineEdit};
-export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,onExportChange}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: () => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;onExportChange: () => void}) {
+export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: () => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void}) {
   const router = useRouter();
   const {dictionary,locale} = useI18n();
   const t = useCallback((en: string,fr: string) => locale === 'fr' ? fr : en,[locale]);
@@ -31,6 +33,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const drag = useRef<Drag | null>(null);
   const starterKey = useRef<string | null>(null);
   const handledInsertion = useRef<string | null>(null);
+  const renewalAttempts = useRef(new Set<string>());
   const items = useMemo(() => preview ?? view?.items ?? [],[preview,view]);
   const settings = timeline.view?.settings ?? {fps: 30 as const,aspectRatio: '16:9' as const,resolution: '720p' as const};
   const fps = settings.fps;
@@ -38,6 +41,12 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const cuts = useMemo(() => Array.from(new Set(items.flatMap(item => [item.startSec,item.startSec+item.durationSec]))).sort((a,b) => a-b),[items]);
   const playback = useWorkspaceTimelinePlayback({projectFps: fps,studioNotices: copy.notices,timelineDurationSec: duration,timelineCutPoints: cuts,onNotice: setLocalError,onResetExportRangeMode: () => {}});
   const layers = useProgramPlaybackSync({isPlaying: monitor && playback.isTimelinePlaying,items,playheadSec: playback.playheadSec,projectSettings: settings,selectedItemId: selected,onSelectItem: setSelected,onSendSnapshotToCanvas: () => {}});
+  const unavailablePlayingClip = items.find(item => item.mediaKind !== 'audio' && item.mediaAccessError && item.startSec <= playback.playheadSec && item.startSec+item.durationSec > playback.playheadSec);
+  useEffect(() => {
+    if (!monitor || !unavailablePlayingClip) return;
+    playback.stopTimelinePlayback();setMonitor(false);
+    setLocalError(t('Media unavailable. You can remove this clip.','Média indisponible. Vous pouvez retirer ce clip.'));
+  },[monitor,unavailablePlayingClip,playback.stopTimelinePlayback,t]);
   const pixelsPerSecond = 34;
   const width = Math.max(520,duration*pixelsPerSecond+40);
   const chosen = items.find(item => item.id === selected);
@@ -51,8 +60,18 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     if (!seconds || seconds < 1) {setLocalError(t('This media needs measured duration before insertion.','Il faut mesurer la durée de ce média avant de l’insérer.'));return;}
     void edit({kind: 'insert',ref: {type: 'asset',assetId: asset.assetId,kind},startFrame: kind === 'audio' ? 0 : Math.round(duration*fps),durationFrames: Math.round(Math.min(seconds,kind === 'audio' && duration >= 1 ? duration : seconds)*fps)});
   },[insertion,view,edit,duration,fps,t]); // Explicit library selection, never auto-insert a new generation.
-  function seek(second: number) {playback.stopTimelinePlayback();playback.setPlayheadSec(Math.max(0,Math.min(duration,Math.round(second*fps)/fps)));setMonitor(true);}
-  function closeMonitor() {playback.stopTimelinePlayback();setMonitor(false);}
+  function openMonitor() {if (!monitor) {renewalAttempts.current.clear();setLocalError(null);}setMonitor(true);}
+  function seek(second: number) {playback.stopTimelinePlayback();playback.setPlayheadSec(Math.max(0,Math.min(duration,Math.round(second*fps)/fps)));openMonitor();}
+  function closeMonitor() {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
+  function mediaFailure(item: WorkspaceTimelineItem) {
+    playback.stopTimelinePlayback();
+    if (consumeConversationMediaRenewal(item,renewalAttempts.current)) {void timeline.refresh({renewMediaId: item.id});return;}
+    setMonitor(false);
+    setLocalError(t('This clip could not be played. Reopen the monitor to retry, or remove it from the film.','Ce clip ne peut pas être lu. Rouvrez le moniteur pour réessayer, ou retirez-le du film.'));
+  }
+  function saveVolume(input: HTMLInputElement) {
+    if (chosen && Number(input.value) !== (chosen.audioMix?.volume ?? 100)) void timeline.edit({kind: 'gain',clipId: chosen.id,volume: Number(input.value)});
+  }
   function startDrag(event: React.PointerEvent<HTMLButtonElement>,clip: WorkspaceTimelineItem,edge: Drag['edge']) {
     if (timeline.busy) return;
     event.stopPropagation();event.currentTarget.setPointerCapture(event.pointerId);setSelected(clip.id);seek(clip.startSec);drag.current = {clip,edge,x: event.clientX};
@@ -76,17 +95,17 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   return <footer className={styles.footer} data-revision={timeline.view?.data.revision} aria-label={t('Film timeline','Timeline du film')}>
     {monitor && items.length > 0 && <div className={styles.monitorRow}>
       <div className={styles.monitor} style={{aspectRatio: settings.aspectRatio.replace(':','/')}} aria-label={t('Film monitor','Moniteur du film')}>
-        <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} onMediaAccessError={() => {playback.stopTimelinePlayback();void timeline.refresh();}} />
+        <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} onMediaAccessError={mediaFailure} />
       </div>
       <button className={styles.close} aria-label={t('Collapse monitor','Replier le moniteur')} onClick={closeMonitor}><X size={16}/></button>
     </div>}
     <div className={styles.tools}>
-      <button disabled={!items.length} aria-label={playback.isTimelinePlaying ? t('Pause film','Mettre le film en pause') : t('Play film','Lire le film')} onClick={() => {setMonitor(true);playback.handleToggleTimelinePlayback();}}>{playback.isTimelinePlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
+      <button disabled={!items.length} aria-label={playback.isTimelinePlaying ? t('Pause film','Mettre le film en pause') : t('Play film','Lire le film')} onClick={() => {openMonitor();playback.handleToggleTimelinePlayback();}}>{playback.isTimelinePlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
       <span>{playback.playheadSec.toFixed(1)} / {duration.toFixed(1)} s</span>
       <button disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} onClick={onOpenLibrary}><Plus size={17}/></button>
-      {!!items.length && <button aria-label={monitor ? t('Collapse monitor','Replier le moniteur') : t('Open monitor','Ouvrir le moniteur')} onClick={() => monitor ? closeMonitor() : setMonitor(true)}>{monitor ? <ChevronDown size={17}/> : <ChevronUp size={17}/>}</button>}
+      {!!items.length && <button aria-label={monitor ? t('Collapse monitor','Replier le moniteur') : t('Open monitor','Ouvrir le moniteur')} onClick={() => monitor ? closeMonitor() : openMonitor()}>{monitor ? <ChevronDown size={17}/> : <ChevronUp size={17}/>}</button>}
       {timeline.busy && <small role="status">{t('Saving…','Enregistrement…')}</small>}
-      {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} onChange={onExportChange}/>}
+      {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} jobs={exportJobs} onChange={onExportChange}/>}
     </div>
     <div className={styles.scroll}>
       <div className={styles.tracks} style={{width}} onClick={event => {if (items.length) seek((event.clientX-event.currentTarget.getBoundingClientRect().left)/pixelsPerSecond);}}>
@@ -106,7 +125,8 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <button aria-pressed={trimEdge === 'start'} onClick={() => setTrimEdge('start')}>{t('Start','Début')}</button><button aria-pressed={trimEdge === 'end'} onClick={() => setTrimEdge('end')}>{t('End','Fin')}</button>
       <input key={`${chosen.id}:${chosen.durationSec}`} type="number" min="1" step={1/fps} defaultValue={chosen.durationSec} aria-label={t('Clip duration in seconds','Durée du clip en secondes')} disabled={timeline.busy} onBlur={event => {const seconds = Number(event.target.value);if (Number.isFinite(seconds) && seconds >= 1 && seconds !== chosen.durationSec) void timeline.edit({kind: 'trim',clipId: chosen.id,edge: trimEdge,durationFrames: Math.round(seconds*fps)});}}/>
       <small>s</small>
-      {(chosen.mediaKind === 'audio' || chosen.hasEmbeddedAudio) && <input key={`${chosen.id}:${chosen.audioMix?.volume}`} type="range" min="0" max="100" defaultValue={chosen.audioMix?.volume ?? 100} aria-label={t('Audio volume','Volume audio')} disabled={timeline.busy} onPointerUp={event => void timeline.edit({kind: 'gain',clipId: chosen.id,volume: Number(event.currentTarget.value)})} onKeyUp={event => {if (event.key.startsWith('Arrow')) void timeline.edit({kind: 'gain',clipId: chosen.id,volume: Number(event.currentTarget.value)});}}/>}
+      {(chosen.mediaKind === 'audio' || chosen.hasEmbeddedAudio) && <input key={`${chosen.id}:${chosen.audioMix?.volume}`} type="range" min="0" max="100" defaultValue={chosen.audioMix?.volume ?? 100} aria-label={t('Audio volume','Volume audio')} disabled={timeline.busy} onPointerUp={event => saveVolume(event.currentTarget)} onKeyUp={event => {if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(event.key)) saveVolume(event.currentTarget);}} onBlur={event => saveVolume(event.currentTarget)}/>}
+      {chosen.mediaAccessError && <small role="alert">{t('Media unavailable. You can remove this clip.','Média indisponible. Vous pouvez retirer ce clip.')}</small>}
       <button disabled={timeline.busy} aria-label={t('Remove selected clip','Retirer le clip sélectionné')} onClick={() => {void timeline.edit({kind: 'remove',clipId: chosen.id});setSelected(null);}}><Trash2 size={15}/></button>
     </div>}
     {(timeline.error || localError) && <p className={styles.error} role="alert">{timeline.error === 'STUDIO_REVISION_CONFLICT' ? t('The film changed. Your latest edit has been kept; try again on the updated timeline.','Le film a changé. La dernière modification est conservée ; réessayez sur la timeline actualisée.') : timeline.error ?? localError}</p>}

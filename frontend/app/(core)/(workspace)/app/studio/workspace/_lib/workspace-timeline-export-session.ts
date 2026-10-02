@@ -1,10 +1,14 @@
 import type { WorkspaceTimelineRenderManifest } from './workspace-timeline-render';
 import type { TimelineExportClientJob } from '../_state/workspace-state';
+import type { WorkspaceTimelineExportQualityPreset } from './workspace-timeline-export';
+
+export type PendingTimelineExportSubmission = {manifest: WorkspaceTimelineRenderManifest;qualityPreset: WorkspaceTimelineExportQualityPreset};
 
 export type WorkspaceTimelineExportSession = {
   activeJob: TimelineExportClientJob | null;
   idempotencyKey: string;
   submittedManifests: Record<string, WorkspaceTimelineRenderManifest>;
+  pendingSubmission?: PendingTimelineExportSubmission | null;
 };
 
 function cloneManifest(manifest: WorkspaceTimelineRenderManifest): WorkspaceTimelineRenderManifest {
@@ -50,10 +54,14 @@ export function parseWorkspaceTimelineExportSession(serialized: string | null): 
         return normalized ? [[jobId, normalized]] : [];
       })
     );
+    const pendingManifest = normalizeManifest(value.pendingSubmission?.manifest);
+    const pendingQuality = value.pendingSubmission?.qualityPreset;
     return {
       activeJob: normalizeJob(value.activeJob),
       idempotencyKey: value.idempotencyKey,
       submittedManifests,
+      pendingSubmission: pendingManifest && ['draft','standard','high'].includes(String(pendingQuality))
+        ? {manifest: pendingManifest,qualityPreset: pendingQuality!} : null,
     };
   } catch {
     return null;

@@ -15,6 +15,7 @@ import {ConversationMedia} from './_components/ConversationMedia.client';
 import {ConversationTimeline} from './_components/ConversationTimeline.client';
 import {useConversationExports} from './_hooks/useConversationExports';
 import {ConversationRenderCards} from './_components/ConversationRenderCards.client';
+import {imageTurnRetryInput} from '@/lib/studio/image-conversation-contract';
 export default function StudioImageConversation({
   projectId,
   accountKey,
@@ -186,12 +187,7 @@ export default function StudioImageConversation({
                   <button
                     disabled={studio.busy}
                     onClick={() =>
-                      void studio.submit({
-                        requestId: turn.requestId,
-                        message: turn.message,
-                        references: turn.references,
-                        ...(turn.attachments ? {attachments: turn.attachments} : {}),
-                      })
+                      void studio.submit(imageTurnRetryInput(turn))
                     }
                   >
                     {t('Resume this exchange', 'Reprendre cet échange')}
@@ -332,7 +328,7 @@ export default function StudioImageConversation({
             ))}
         </aside>
       </div>
-      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} onExportChange={exports.refresh}/>}
+      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
       {library && (
         <ImageReferenceLibrary
           onClose={() => setLibrary(false)}

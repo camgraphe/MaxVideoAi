@@ -61,7 +61,7 @@ export function timelineExportJobResponse(job: TimelineExportJobRecord): Timelin
 }
 
 /** Read-only recovery across this owned Project's sequences; never initializes export tables. */
-export async function listStudioProjectTimelineExports(params: {userId: string;projectId: string},executor: QueryExecutor = {query}): Promise<TimelineExportJobResponse[]> {
+export async function listStudioProjectTimelineExports(params: {userId: string;projectId: string},executor: QueryExecutor = {query}): Promise<import('./contracts').StudioProjectTimelineExport[]> {
   const table = await executor.query<{name: string | null}>("SELECT to_regclass('public.app_timeline_exports') AS name");
   if (!table[0]?.name) return [];
   const jobs = await executor.query<TimelineExportJobRecord>(`SELECT e.* FROM app_timeline_exports e
@@ -69,7 +69,7 @@ export async function listStudioProjectTimelineExports(params: {userId: string;p
     JOIN studio_projects p ON p.id=s.project_id AND p.user_id=s.user_id
     WHERE p.id=$1 AND p.user_id=$2 AND p.deleted_at IS NULL AND s.deleted_at IS NULL
     ORDER BY e.created_at DESC,e.id LIMIT 8`,[params.projectId,params.userId]);
-  return jobs.map(timelineExportJobResponse);
+  return jobs.map(job => ({...timelineExportJobResponse(job),idempotencyKey: job.idempotency_key}));
 }
 
 export function timelineExportIdFromIdempotencyKey(idempotencyKey: string, userId: string): string {

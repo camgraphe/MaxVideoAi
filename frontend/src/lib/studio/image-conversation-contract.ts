@@ -37,6 +37,7 @@ export type ImageConversationTurn = {
   message: string;
   references: string[];
   attachments?: ImageTurnInput['attachments'];
+  renewedFromRequestId?: string;
   reply: string | null;
   state: "thinking" | "ready" | "failed";
   retryable: boolean;
@@ -57,3 +58,9 @@ export type ImageConversation = {
 };
 export function hasDraftCreation(draft: ImageDraft | null) {return !!(draft?.image || draft?.media);}
 export function draftSurface(draft: ImageDraft | null) {return draft?.media?.action === 'video.prepare' ? 'video' : draft?.media ? 'audio' : 'image';}
+/** Reproduce the saved immutable request, including renewal identity, in a fresh tab. */
+export function imageTurnRetryInput(turn: ImageConversationTurn): ImageTurnInput {
+  return {requestId: turn.requestId,message: turn.message,references: turn.references,
+    ...(turn.attachments ? {attachments: turn.attachments} : {}),
+    ...(turn.renewedFromRequestId ? {renewedFromRequestId: turn.renewedFromRequestId} : {})};
+}

@@ -5,9 +5,10 @@ import {join} from 'node:path';
 import {expect} from '@playwright/test';
 import {startStudioIntegrationRuntime} from './helpers/studio-integration-runtime';
 import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
-import {initializeStudioConnectedFixture,STUDIO_CONNECTED_MONTAGE_INPUT} from './helpers/studio-connected-fixture-data';
+import {initializeStudioConnectedFixture,STUDIO_CONNECTED_MONTAGE_INPUT,STUDIO_CONNECTED_ASSET_IDS} from './helpers/studio-connected-fixture-data';
 import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-http-fixture';
+import {STUDIO_PRIVATE_MEDIA_HOST} from './helpers/studio-private-storage-fixture';
 
 test('native chat timeline collapses, trims real source frames and preserves mobile chat access', {timeout: 240000},async () => {
   const runtime = await startStudioIntegrationRuntime({mcp: {studioMontageCreation: true},privateStorage: true,conversation: true,initializeDatabase: async database => {
@@ -26,6 +27,7 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     const page = owned.page;
     const errors: string[] = [];
     page.on('pageerror',error => errors.push(error.message));
+    page.on('console',message => {if (message.type() === 'error' && /hydration|Hydration|Each child|cannot be a descendant|Cannot update/i.test(message.text())) errors.push(message.text());});
     const auxiliary = new Map([['/api/member-status',{tier: 'Member'}],['/api/wallet',{balance: 0,balanceCents: 0,currency: 'USD'}],['/api/admin/access',{ok: false}],['/api/legal/cookies/version',{ok: true,version: 'native-timeline',publishedAt: null}],['/api/legal/cookies',{ok: true,version: 'native-timeline'}]]);
     for (const [path,json] of auxiliary) await page.route(runtime.browserOrigin+path,route => route.fulfill({json}));
     const url = runtime.browserOrigin+'/app/studio/conversation/'+project.projectId;
@@ -48,6 +50,14 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     await page.getByRole('button',{name: 'Play film',exact: true}).click();
     await expect.poll(() => video.evaluate(element => (element as HTMLVideoElement).currentTime)).toBeGreaterThan(2.1);
     await page.getByRole('button',{name: 'Pause film',exact: true}).click();
+    const mountedSource = await video.getAttribute('src');
+    const currentSourceTime = await video.evaluate(element => (element as HTMLVideoElement).currentTime);
+    const poll = await page.waitForResponse(response => response.url().includes('/conversation-timeline?preview=1') && response.request().method() === 'GET',{timeout: 25000});
+    const freshProjection = await poll.json();
+    assert.notEqual(freshProjection.result.items[0].mediaAccessUrl,mountedSource,'server issues a different private signature');
+    await page.waitForTimeout(150);
+    assert.equal(await video.getAttribute('src'),mountedSource,'ordinary polling preserves the mounted decoder source');
+    assert.ok(Math.abs(await video.evaluate(element => (element as HTMLVideoElement).currentTime)-currentSourceTime) < .04);
     if (process.env.STUDIO_PROOF_DIRECTORY) {await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive: true});await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,'native-conversation-timeline-desktop.png')});}
     await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
     await expect(page.locator('video[data-playback-item-id]')).toHaveCount(0);
@@ -69,6 +79,34 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
     if (process.env.STUDIO_PROOF_DIRECTORY) await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,'native-conversation-timeline-mobile.png')});
+    await page.getByLabel('Audio volume',{exact: true}).press('Home');
+    await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','2');
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
+    await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
+    await expect(page.getByLabel('Audio volume',{exact: true})).toHaveValue('0');
+    let renewalReads = 0;
+    const countRenewal = (request: import('@playwright/test').Request) => {if (request.url().includes('/conversation-timeline?preview=1')) renewalReads++;};
+    await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
+    await page.route('https://'+STUDIO_PRIVATE_MEDIA_HOST+'/**',route => route.fulfill({status: 403,body: 'Fixture media unavailable'}));
+    page.on('request',countRenewal);
+    await page.getByRole('button',{name: 'Open monitor',exact: true}).click();
+    await expect(page.getByText('This clip could not be played. Reopen the monitor to retry, or remove it from the film.',{exact: true})).toBeVisible();
+    await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
+    assert.equal(renewalReads,1,'permanent decoder error triggers one automatic renewal then collapses');
+    page.off('request',countRenewal);
+    await page.unroute('https://'+STUDIO_PRIVATE_MEDIA_HOST+'/**');
+    await runtime.database.pool.query('UPDATE media_assets SET deleted_at=NOW() WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.b]);
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
+    await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
+    await expect(page.getByText('Media unavailable. You can remove this clip.',{exact: true}).first()).toBeVisible();
+    await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
+    await page.getByRole('button',{name: 'Remove selected clip',exact: true}).click();
+    await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','3');
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(1);
+    await page.getByRole('button',{name: 'Select clip Pattern A',exact: true}).click();
+    await expect.poll(() => page.locator('video[data-playback-item-id="montage-clip-02"]').evaluate(element => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
     assert.deepEqual(errors,[]);
     assert.ok(browser.readPrivateRequests().some(request => request.status === 200 || request.status === 206));
     await owned.close();
