@@ -1,10 +1,11 @@
+import {ownedTimelineExportJobResponse} from './media-access';
+export {timelineExportJobResponse} from './media-access';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { createHash } from 'node:crypto';
 import { assertTimelineExportIdempotencyKey } from './idempotency';
 import type {
   TimelineExportBillingKind,
   TimelineExportBillingStatus,
-  TimelineExportJobResponse,
   TimelineExportStatus,
 } from './contracts';
 import { ensureTimelineExportSchema } from './schema';
@@ -35,31 +36,6 @@ export type TimelineExportJobRecord = {
   updated_at: string;
 };
 
-function nullableTimelineExportSize(value: string | number | null): number | null {
-  if (value === null) return null;
-  const size = Number(value);
-  return Number.isFinite(size) ? size : null;
-}
-
-export function timelineExportJobResponse(job: TimelineExportJobRecord): TimelineExportJobResponse {
-  const outputUrl = job.status === 'completed' ? job.output_url : null;
-
-  return {
-    id: job.id,
-    status: job.status,
-    progress: job.progress,
-    message: job.message,
-    artifact: outputUrl
-      ? {
-        outputUrl,
-        outputAssetId: job.output_asset_id,
-        sizeBytes: nullableTimelineExportSize(job.output_size_bytes),
-        mimeType: job.output_mime_type,
-      }
-      : null,
-  };
-}
-
 /** Read-only recovery across this owned Project's sequences; never initializes export tables. */
 export async function listStudioProjectTimelineExports(params: {userId: string;projectId: string},executor: QueryExecutor = {query}): Promise<import('./contracts').StudioProjectTimelineExport[]> {
   const table = await executor.query<{name: string | null}>("SELECT to_regclass('public.app_timeline_exports') AS name");
@@ -69,7 +45,7 @@ export async function listStudioProjectTimelineExports(params: {userId: string;p
     JOIN studio_projects p ON p.id=s.project_id AND p.user_id=s.user_id
     WHERE p.id=$1 AND p.user_id=$2 AND p.deleted_at IS NULL AND s.deleted_at IS NULL
     ORDER BY e.created_at DESC,e.id LIMIT 8`,[params.projectId,params.userId]);
-  return jobs.map(job => ({...timelineExportJobResponse(job),idempotencyKey: job.idempotency_key}));
+  return Promise.all(jobs.map(async job => ({...await ownedTimelineExportJobResponse(job,params.userId),idempotencyKey: job.idempotency_key})));
 }
 
 export function timelineExportIdFromIdempotencyKey(idempotencyKey: string, userId: string): string {

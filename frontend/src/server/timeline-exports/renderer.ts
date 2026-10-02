@@ -22,7 +22,8 @@ import {
 } from './repository';
 import type { TimelineExportRenderProps } from '@/remotion/timeline-export/types';
 import { parseTimelineExportManifest } from './render-request';
-import { validateTimelineExportManifestMediaUrls } from './media-security';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
+import { prepareTimelineExportRenderMedia, validateTimelineExportManifestMediaUrls } from './media-security';
 
 const DEFAULT_RENDER_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_RENDER_TIMEOUT_MS = 45 * 60 * 1000;
@@ -216,12 +217,13 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
     const parsedManifest = parseTimelineExportManifest(job.render_manifest);
     const manifest = await validateTimelineExportManifestMediaUrls({
       manifest: parsedManifest,
+      userId: job.user_id,
       requestOrigin: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://maxvideoai.com',
     });
     const dimensions = renderDimensions(manifest, job.resolution);
     const fps = job.fps ?? manifest.projectSettings?.fps ?? 30;
     const inputProps: TimelineExportRenderProps = {
-      manifest,
+      manifest: await prepareTimelineExportRenderMedia({manifest,userId: job.user_id,requestOrigin: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://maxvideoai.com'}),
       width: dimensions.width,
       height: dimensions.height,
       fps,
@@ -235,6 +237,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
       serveUrl,
       id: 'MaxVideoAITimelineExport',
       inputProps,
+      onBrowserLog: () => {},
     });
     await updateTimelineExportProgress({ exportId: job.id, progress: 35, message: 'Rendering frames.' });
     const { cancel, cancelSignal } = makeCancelSignal();
@@ -250,6 +253,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
         ...TIMELINE_EXPORT_COLOR_SETTINGS,
         outputLocation: outputPath,
         inputProps,
+        onBrowserLog: () => {},
         chromiumOptions: { gl: 'angle' },
         concurrency: MAX_RENDER_CONCURRENCY,
         timeoutInMilliseconds: 60_000,
@@ -296,7 +300,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
     });
     await failTimelineExportJob({
       exportId: job.id,
-      message: error instanceof Error ? error.message : 'RENDER_FAILED',
+      message: String(sanitizeProviderMediaDiagnostics(error instanceof Error ? error.message : 'RENDER_FAILED')),
       billingStatus: nextBillingStatus,
     });
   } finally {

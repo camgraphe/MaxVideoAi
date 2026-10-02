@@ -1,5 +1,6 @@
 export const runtime = 'nodejs';
 
+import { ownedTimelineExportJobResponse } from '@/server/timeline-exports/media-access';
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveStudioRouteContext } from '../_lib/studio-route-utils';
 import { createTimelineExportJobWithReservation, releaseFailedTimelineExportBilling } from '@/server/timeline-exports/billing';
@@ -7,7 +8,6 @@ import { assertTimelineExportWorkerLauncherConfigured, launchTimelineExportWorke
 import {
   failTimelineExportJob,
   readTimelineExportJobByIdempotencyKey,
-  timelineExportJobResponse,
 } from '@/server/timeline-exports/repository';
 import {
   parseTimelineExportRequest,
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     if (!result.reused && result.job.status === 'queued') {
       try {
         const workerLaunch = await launchTimelineExportWorkerTask({ exportId: result.job.id });
-        return json({ ok: true, export: timelineExportJobResponse(result.job), billing: result.billing, reused: false, workerLaunch });
+        return json({ ok: true, export: await ownedTimelineExportJobResponse(result.job,userId), billing: result.billing, reused: false, workerLaunch });
       } catch (workerError) {
         const workerMessage = workerError instanceof Error ? workerError.message : 'TIMELINE_EXPORT_WORKER_LAUNCH_FAILED';
         const billingStatus = await markWorkerLaunchFailed({
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
             ok: false,
             error: 'TIMELINE_EXPORT_WORKER_LAUNCH_FAILED',
             message: workerMessage,
-            export: timelineExportJobResponse({ ...result.job, status: 'failed', message: workerMessage, billing_status: billingStatus }),
+            export: await ownedTimelineExportJobResponse({ ...result.job, status: 'failed', message: workerMessage, billing_status: billingStatus },userId),
             billing: result.billing ? { ...result.billing, billingStatus } : null,
             reused: false,
           },
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-    return json({ ok: true, export: timelineExportJobResponse(result.job), billing: result.billing, reused: result.reused, workerLaunch: { status: 'reused' } });
+    return json({ ok: true, export: await ownedTimelineExportJobResponse(result.job,userId), billing: result.billing, reused: result.reused, workerLaunch: { status: 'reused' } });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'EXPORT_CREATE_FAILED';
     const reestimate = message === 'EXPORT_ESTIMATE_EXPIRED'

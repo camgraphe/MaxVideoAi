@@ -300,6 +300,7 @@ export async function resolveOwnedTimelineExportRequestWithDependencies(params: 
   }
   const validatedManifest = parseTimelineExportManifest(await dependencies.validateManifestMediaUrls({
     manifest: canonicalManifest,
+    userId: params.userId,
     requestOrigin: params.requestOrigin,
     fetchImpl: params.fetchImpl,
   }));

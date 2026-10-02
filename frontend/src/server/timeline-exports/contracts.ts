@@ -3,7 +3,9 @@ import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(
 export type TimelineExportStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
 
 export type TimelineExportArtifact = {
+  /** Stable authenticated delivery endpoint; never a persisted grant. */
   outputUrl: string;
+  canonicalOriginalUrl?: string;
   outputAssetId: string | null;
   sizeBytes: number | null;
   mimeType: string | null;

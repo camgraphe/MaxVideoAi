@@ -787,9 +787,11 @@ export async function createSignedDownloadUrl(
   {
     expiresInSeconds,
     downloadFilename,
+    method = 'GET',
   }: {
     expiresInSeconds: number;
     downloadFilename?: string;
+    method?: 'GET' | 'HEAD';
   },
 ): Promise<string> {
   const client = getS3Client();
@@ -799,7 +801,7 @@ export async function createSignedDownloadUrl(
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 160);
-  const command = new GetObjectCommand({
+  const command = method === 'HEAD' ? new HeadObjectCommand({ Bucket: S3_BUCKET, Key: key }) : new GetObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
     ...(safeDownloadFilename

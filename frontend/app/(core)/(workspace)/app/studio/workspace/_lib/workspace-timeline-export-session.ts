@@ -28,6 +28,8 @@ function normalizeJob(value: unknown): TimelineExportClientJob | null {
       : 0,
     message: typeof job.message === 'string' ? job.message : null,
     outputUrl: typeof job.outputUrl === 'string' ? job.outputUrl : null,
+    ...(typeof job.canonicalOriginalUrl === 'string' ? {canonicalOriginalUrl: job.canonicalOriginalUrl} : {}),
+    ...(typeof job.outputAssetId === 'string' ? {outputAssetId: job.outputAssetId} : {}),
   };
 }
 

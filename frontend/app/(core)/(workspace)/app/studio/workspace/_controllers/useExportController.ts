@@ -74,6 +74,10 @@ export function normalizeTimelineExportClientJob(value: unknown): TimelineExport
     progress: Number.isFinite(progress) ? Math.max(0, Math.min(100, Math.round(progress))) : 0,
     message: typeof record.message === 'string' ? record.message : null,
     outputUrl,
+    ...(typeof artifact?.canonicalOriginalUrl === 'string' ? {canonicalOriginalUrl: artifact.canonicalOriginalUrl}
+      : typeof record.canonicalOriginalUrl === 'string' ? {canonicalOriginalUrl: record.canonicalOriginalUrl} : {}),
+    ...(typeof artifact?.outputAssetId === 'string' ? {outputAssetId: artifact.outputAssetId}
+      : typeof record.outputAssetId === 'string' ? {outputAssetId: record.outputAssetId} : {}),
   };
 }
 

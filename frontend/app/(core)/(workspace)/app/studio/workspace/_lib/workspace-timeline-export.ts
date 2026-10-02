@@ -44,6 +44,8 @@ type CompletedTimelineExportJob = {
   id: string;
   status: 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
   outputUrl: string | null;
+  canonicalOriginalUrl?: string;
+  outputAssetId?: string;
 };
 
 export function workspaceTimelineExportArtifactUrl(job: CompletedTimelineExportJob): string | null {
@@ -297,7 +299,9 @@ export function workspaceProjectAssetFromCompletedTimelineExport(
       projectSettings?.aspectRatio,
       projectSettings?.fps ? `${projectSettings.fps} fps` : null,
     ].filter(Boolean).join(' • '),
-    url: outputUrl,
+    url: job.canonicalOriginalUrl ?? outputUrl,
+    ...(job.outputAssetId ? {ref: {type: 'asset' as const,assetId: job.outputAssetId,kind: 'video' as const}} : {}),
+    ...(job.canonicalOriginalUrl ? {mediaAccessRequired: true,mediaAccessUrl: outputUrl,mediaAccessExpiresAt: null} : {}),
     durationSec: manifest.exportRange.durationSec,
     dimensions: projectSettings ? workspaceProjectDimensionsLabel(projectSettings) : undefined,
   };

@@ -14,7 +14,7 @@
 
 Le directeur réel reste **GPT-6.1 Sol**. Les actions, mémoire/reprise, vidéo/Audio, timeline canonique et UI d’export sont raccordées localement. Les tests utilisent PostgreSQL jetable et des fichiers mesurés ; un rendu MP4 local de 3 s vérifie les coupes et le son. Le [dossier de pilote](../../engineering/studio-conversation-pilot-readiness.md) distingue chaque preuve locale de la qualification externe restante.
 
-Task 2 est complète. Tasks 1/3 attendent les sorties providers dans la route native ; Task 4 attend le worker distant et la récupération de son original ; Task 5 attend le parcours naturel de 25 s et son coût complet. Les migrations/gates production et la politique commerciale des tokens restent des étapes explicites. La seule revue de branche a été réalisée ; ses cas de reprise sont corrigés par une passe ciblée, sans nouvelle salve généraliste.
+Tasks 1/2 sont complètes dans le pilote natif isolé. Task 3 a qualifié image, vidéo et voix ; la musique attend ses credentials renouvelés. Task 4 a un montage natif de 25 s repris après reload, mais attend le worker distant et la récupération de son original. Task 5 attend un film final avec musique, rendu et coût complet. Les migrations/gates production et la politique commerciale des tokens restent des étapes explicites. La seule revue de branche a été réalisée ; ses cas de reprise sont corrigés par une passe ciblée, sans nouvelle salve généraliste.
 
 ## Global Constraints
 
@@ -191,3 +191,18 @@ La couverture locale existante est le socle. Pendant les lots 1–4, exécuter l
 Le montage sémantique d'interviews/podcasts, la transcription, les effets avancés, l'élargissement du catalogue et une nouvelle refonte graphique ne font pas partie du prochain lot. Ils se décident après preuve du film court ; aucun de ces chantiers ne doit repousser son raccord.
 
 Le prochain jalon est le pilote natif borné décrit dans le dossier de qualification. Les cases providers, worker distant et film final restent ouvertes : le raccord local ne remplace pas ces preuves. Le projet promo actuel et ses médias sont conservés ; leur disponibilité ne prouve pas le parcours utilisateur complet.
+
+
+## Checkpoint — devis, pistes audio et ébauche de 25 s
+
+Le commit `80a408152` conserve un devis pendant une clarification, invalide une ancienne proposition seulement quand une nouvelle intention créative est sauvegardée et refuse les réponses tardives dont la lease est périmée. Une annulation explicite passe par `quote.discard`, limitée au devis préparé du projet ; mutation et reçu partagent une transaction. Une génération déjà soumise reste soumise. Les tests PostgreSQL couvrent reprise, contention et absence de double charge.
+
+Les insertions audio du directeur choisissent une piste disponible, non verrouillée et non muette, à l’instant demandé. Elles ne déplacent plus la voix ni les visuels. Une preuve Remotion locale avec deux sons synthétiques vérifie le mix, les trims, le gain, le mute et les pixels de la coupe vidéo. Elle ne qualifie pas une génération musicale ni le worker distant.
+
+La demande client « Can you make a 25-second rough cut with what we already have? » a laissé Sol assembler les médias possédés. Révision 7 : animation 0–5 s, image 5–25 s, voix 0–12,4 s inchangée. Lecture à 25/25 puis reload vérifiés. Aucune nouvelle génération, aucun export ni débit média : cela reste une ébauche avec fin silencieuse, pas le film promotionnel terminé.
+
+Cette action a utilisé quatre Responses, 13 825 tokens et environ 0,0209863 USD estimés. Cumul du projet : 40 Responses, 110 685 tokens et 0,1619952 USD estimés, sans réponse inconnue ou non tarifée. Le média net du wallet pilote reste 0,40 USD ; factures provider et coûts d’infrastructure restent distincts.
+
+L’audit Astra séparé est terminé. Ses recettes, mémoire de continuité, choix natif/montage et corrections artistiques ciblées alimentent le lot suivant. Ils ne remplacent pas la qualification du parcours en cours, et la nouvelle tarification doit rester celle du propriétaire Pricing canonique.
+
+La qualification finale de ce lot passe 679 tests Studio/editor/export, sans échec ni test ignoré, dont le vrai rendu local multi-pistes. Chromium, Firefox et WebKit passent le parcours intégré sur le commit `80a408152`. Les corrections suivantes stabilisent les cartes pendant une nouvelle réponse et la livraison privée des exports ; leurs tests ciblés, TypeScript, lint et contrôle d’exposition passent. La reconstruction du worker isolé et son rendu natif restent à confirmer séparément.

@@ -146,6 +146,8 @@ export type TimelineExportClientJob = {
   progress: number;
   message: string | null;
   outputUrl: string | null;
+  canonicalOriginalUrl?: string;
+  outputAssetId?: string;
 };
 
 export function videoTrackCountForTimelineItems(items: WorkspaceTimelineItem[]): number {

@@ -4,7 +4,7 @@ import {JSDOM} from 'jsdom';
 import * as React from 'react';
 import {act} from 'react';
 import {createRoot} from 'react-dom/client';
-import {useExportController} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController';
+import {useExportController,normalizeTimelineExportClientJob} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController';
 import {resolveStudioCopy} from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
 import type {WorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
 
@@ -57,12 +57,23 @@ test('lost export acknowledgement preserves the immutable submission across reop
     assert.equal(state.activeExportJob?.id,'owned-job');
     await act(async () => root.unmount());
     dom.window.localStorage.setItem(sessionKey,saved);
-    recoveredJobs = [{...jobs.values().next().value,status: 'completed',outputUrl: 'https://media.test/film.mp4'}];
+    const savedJob = jobs.values().next().value;
+    recoveredJobs = [{...normalizeTimelineExportClientJob({...savedJob,status: 'completed',artifact: {outputUrl: '/api/studio/timeline-exports/owned-job/media',canonicalOriginalUrl: 'https://media.test/film.mp4',outputAssetId: 'owned-asset'}}),idempotencyKey:savedJob.idempotencyKey}];
     root = createRoot(dom.window.document.getElementById('root')!);await render();
     assert.equal(state.activeExportJob?.id,'owned-job');
     assert.equal(state.activeExportJob?.status,'completed');
     assert.deepEqual(state.submittedExportManifest,original);
     assert.equal(posts.length,2,'owned history reconciles the lost acknowledgement without a third POST');
     assert.equal(JSON.parse(dom.window.localStorage.getItem(sessionKey)!).pendingSubmission,null);
+    assert.equal(state.activeExportJob?.canonicalOriginalUrl,'https://media.test/film.mp4');
+    assert.equal(state.activeExportJob?.outputAssetId,'owned-asset');
+    await act(async () => root.unmount());
+    recoveredJobs = [];
+    root = createRoot(dom.window.document.getElementById('root')!);await render();
+    assert.equal(state.activeExportJob?.outputUrl,'/api/studio/timeline-exports/owned-job/media');
+    assert.equal(state.activeExportJob?.canonicalOriginalUrl,'https://media.test/film.mp4');
+    assert.equal(state.activeExportJob?.outputAssetId,'owned-asset');
+    assert.equal(posts.length,2,'completed session reload never charges or dispatches again');
+    assert.doesNotMatch(dom.window.localStorage.getItem(sessionKey)!,/X-Amz-/);
   } finally {await act(async () => root.unmount());dom.window.close();for (const [key,value] of old) {if (value) Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}}
 });
