@@ -9,7 +9,6 @@ const loadWorkflowClient = async (): Promise<AuthClient> => (await import('@/lib
 export function useSeedanceWorkflowAccount(loadClient = loadWorkflowClient) {
   const [account, setAccount] = useState<SeedanceWorkflowAccount | null>(null);
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return;
     let canceled = false;
     let unsubscribe: (() => void) | undefined;
     void loadClient().then(async (supabase) => {

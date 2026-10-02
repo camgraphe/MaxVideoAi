@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
 import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
 import dynamic from 'next/dynamic';
-import { CoreSettingsBar } from '@/components/CoreSettingsBar';
+import { WorkspaceComparisonSettings } from './WorkspaceComparisonSettings';
 import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
@@ -37,7 +37,7 @@ const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client
 
 type WorkspaceAppReadyViewProps = {
   localSeedanceDraftPreview?: boolean;
-  localSeedanceDraftWorkflow?: boolean;
+  seedanceDraftWorkflowEnabled?: boolean;
   suspended: boolean;
   activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -57,7 +57,7 @@ type WorkspaceAppReadyViewProps = {
 
 export function WorkspaceAppReadyView({
   localSeedanceDraftPreview = false,
-  localSeedanceDraftWorkflow = false,
+  seedanceDraftWorkflowEnabled = false,
   suspended,
   activeDraft,
   app,
@@ -250,10 +250,11 @@ export function WorkspaceAppReadyView({
   });
   const workflowAccount = app.authStatus === 'authed' && app.user?.id && app.session?.access_token
     ? { userId: app.user.id, token: app.session.access_token } : null;
-  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: localSeedanceDraftWorkflow && !localSeedanceDraftPreview,
+  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
     onResolutionChange: handleResolutionChange, showNotice });
-  const draftControls = localSeedanceDraftPreview ? draftPreview : localSeedanceDraftWorkflow ? draftWorkflow : undefined;
+  const candidateDraftControls = localSeedanceDraftPreview ? draftPreview : seedanceDraftWorkflowEnabled ? draftWorkflow : undefined;
+  const draftControls = candidateDraftControls?.available ? candidateDraftControls : undefined;
   if (suspended || !selectedEngine || !form) return null;
 
   return (
@@ -406,8 +407,11 @@ export function WorkspaceAppReadyView({
       />}
       </WorkspaceRecentReferences>
       {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
-        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError}
-        comparisonSettings={<CoreSettingsBar
+        currentPrice={draftWorkflow.selected ? draftWorkflow.price : price}
+        currentCurrency={draftWorkflow.selected ? draftWorkflow.currency : currency}
+        currentPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
+        currentError={draftWorkflow.selected ? draftWorkflow.error : preflightError}
+        comparisonSettings={<WorkspaceComparisonSettings draftControls={draftControls}
           density="comparison" engine={selectedEngine} mode={submissionMode} caps={capability}
           durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
           durationOption={form.durationOption ?? null} onDurationChange={handleDurationChange}

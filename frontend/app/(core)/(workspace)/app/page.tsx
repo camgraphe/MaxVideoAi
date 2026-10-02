@@ -1,4 +1,4 @@
-import { localSeedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
+import { seedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
 import AppClientPage from './AppClient';
 import { headers } from 'next/headers';
 import { resolveInitialAppPreviewGroup } from '@/server/app-initial-preview';
@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams?: Promise<Se
     sandbox: process.env.PRICING_SANDBOX,
   });
 
-  const localSeedanceDraftWorkflow = localSeedanceWorkflowEnabled(`http://${(await headers()).get('host') ?? 'invalid'}`);
+  const seedanceDraftWorkflowEnabled = seedanceWorkflowEnabled(`http://${(await headers()).get('host') ?? 'invalid'}`);
 
-  return <AppClientPage localSeedanceDraftWorkflow={localSeedanceDraftWorkflow} initialPreviewGroup={initialPreviewGroup} localSeedanceDraftPreview={localSeedanceDraftPreview} />;
+  return <AppClientPage seedanceDraftWorkflowEnabled={seedanceDraftWorkflowEnabled} initialPreviewGroup={initialPreviewGroup} localSeedanceDraftPreview={localSeedanceDraftPreview} />;
 }

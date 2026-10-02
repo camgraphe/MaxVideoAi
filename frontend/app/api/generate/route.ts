@@ -9,7 +9,7 @@ import { resolveGenerateRouteContext } from './_lib/route-context';
 import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
 import { videoGenerationAdapters } from './_lib/video-generation-adapters';
 import { executeVideoGeneration } from '@/server/video-generation/execute-video-generation';
-import { localSeedanceWorkflowEnabled, resolveSeedanceWorkflowRequest, SeedanceWorkflowRequestError } from '@/server/seedance-workflow-request';
+import { seedanceWorkflowEnabled, resolveSeedanceWorkflowRequest, SeedanceWorkflowRequestError } from '@/server/seedance-workflow-request';
 
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   let seedanceWorkflow;
   try {
     seedanceWorkflow = await resolveSeedanceWorkflowRequest({ body, userId: userGate.userId,
-      engineId: engine.id, enabled: localSeedanceWorkflowEnabled(req.url) });
+      engineId: engine.id, enabled: seedanceWorkflowEnabled(req.url) });
     if (seedanceWorkflow) body = seedanceWorkflow.body;
   } catch (error) {
     if (!(error instanceof SeedanceWorkflowRequestError)) throw error;

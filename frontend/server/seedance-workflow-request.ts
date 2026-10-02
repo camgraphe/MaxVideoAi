@@ -12,10 +12,15 @@ export class SeedanceWorkflowRequestError extends Error {
   readonly status = 409;
 }
 
-export function localSeedanceWorkflowEnabled(url: string): boolean {
-  const host = new URL(url).hostname;
-  return process.env.NODE_ENV === 'development' && process.env.PRICING_SANDBOX === '1'
-    && process.env.SEEDANCE_2_5_DRAFT_ENABLED === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(host);
+export function seedanceWorkflowEnabled(url: string): boolean {
+  if (process.env.SEEDANCE_2_5_DRAFT_ENABLED !== '1') return false;
+  if (process.env.NODE_ENV === 'production') return process.env.PRICING_SANDBOX !== '1';
+  if (process.env.NODE_ENV !== 'development' || process.env.PRICING_SANDBOX !== '1') return false;
+  try {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(url).hostname);
+  } catch {
+    return false;
+  }
 }
 
 async function readParent(userId: string, jobId: string): Promise<Parent | null> {
