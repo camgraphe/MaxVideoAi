@@ -5,8 +5,8 @@ import { parse } from 'dotenv';
 import { pricingCutoverTarget } from '@/server/pricing/cutover-target';
 import { LOCAL_TARIFF_FACTUAL_ENVIRONMENT_KEYS } from '@/server/pricing/cutover-factual-environment';
 
-/** Manual maintenance entry point. No deploy/build hook invokes it. The authored
- * inactive flag blocks a production connection before this operation can run. */
+/** Manual maintenance entry point. No deploy/build hook invokes it. Production
+ * requires the authored release flag and selects NODE_ENV before quote imports. */
 async function main() {
   const mode = process.env.PRICING_CUTOVER_MODE;
   const operation = process.env.PRICING_CUTOVER_OPERATION;

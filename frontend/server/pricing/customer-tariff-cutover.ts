@@ -22,8 +22,8 @@ type Target = ReturnType<typeof pricingCutoverTarget>;
 const selectedTransactions = new WeakMap<object, { target: Target; mode: Mode }>();
 const selectorKey = (value: object) => JSON.stringify(Object.entries(value).sort(([a],[b]) => a.localeCompare(b)));
 
-/** Explicit maintenance connection only. There is no route or command that calls
- * this writer in production. The authored flag remains false on this branch. */
+/** Explicit maintenance connection only. No application route or delivery hook
+ * calls this writer. Production requires the authored flag and production runtime. */
 export async function withPricingCutoverTransaction<T>(env: Record<string,string | undefined>,mode: Mode,
   work: (executor: TransactionQueryExecutor) => Promise<T>) {
   const target = pricingCutoverTarget(env);

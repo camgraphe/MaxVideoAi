@@ -1,5 +1,21 @@
 # Pricing Engine
 
+## Approved production reader (2026-10-02)
+
+The approved release sets `config/customer-tariffs.json` to `active: true`.
+This authored switch enables the default database reader only when
+`NODE_ENV=production`, including Vercel production and preview builds. A migrated
+database with inactive tariff state still quotes the existing legacy policy;
+atomic initial activation installs the reviewed grid separately. Missing schema,
+unavailable database, or a missing active cell refuses a quote rather than
+silently falling back. Standalone production quote audits must explicitly select
+`NODE_ENV=production`; older baseline collectors do not select it automatically.
+
+Development still requires `PRICING_SANDBOX=1` and the exact local Unix-socket
+database gate. The production switch does not enable arbitrary development or
+test databases. This code change does not itself apply migrations or activate
+production prices. Follow the [cutover runbook](../deployment/customer-tariff-cutover.md).
+
 ## Current local preproduction checkpoint (2026-10-02)
 
 The [preproduction acceptance](2026-10-02-pricing-preproduction.md) owns the latest
@@ -19,8 +35,8 @@ The separate initial cutover owner, `server/pricing/customer-tariff-cutover.ts`,
 uses an explicitly selected pool and a branded maintenance transaction. Canonical
 quotes can receive `customerTariffExecutor` to use the normal selector database
 reader on that same uncommitted transaction. Default request readers and quote
-algorithms are unchanged. No application route invokes the maintenance writer;
-the authored production flag remains false. Migration 61 adds immutable
+algorithms are unchanged. No application route invokes the maintenance writer.
+The production reader switch is described above. Migration 61 adds immutable
 initial-activation/recovery evidence without activating any price.
 The owner requires fresh complete source-bound evidence, empty inactive initial
 state, a current admin actor and locked commercial inputs. Recovery preserves
@@ -157,7 +173,8 @@ gross difference. Its snapshot base and source metadata use that same estimate,
 including image references. This does not change authored customer cents. The
 inactive legacy quote and stored historical snapshots remain intact. Expired or
 unmatched contract SKUs use LIST without inventing a discount; another execution
-provider keeps its existing facts. The production manual code flag remains off.
+provider keeps its existing facts. The production reader requires its own runtime
+and database activation as described above.
 See [the contract checkpoint](2026-10-01-byteplus-contract-pricing.md).
 
 ## ByteDance supplier facts migration (2026-09-28)
@@ -230,14 +247,14 @@ router's fail-closed defaults remain unchanged.
 
 An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` stages exact customer cents from the reviewed read-only baseline. Registry mismatch, duplicate/missing scenarios, invalid amounts or unknown database provenance reject the entire seed. The earlier September 29 local acceptance staged all 66,549 sampled scenarios across 48 sellable models, with 122 unresolved capability boundaries and activation false. The [October 1 local completion](2026-10-01-pricing-local-completion.md) supersedes this inactive checkpoint. Neither capture is a production activation authorization.
 
-Migration 55 preserves closed customer cell versions. Active update/rollback behavior is tested on disposable databases, and billing reads only the requested exact selector rather than the whole grid. A separate code gate enables this path for an isolated development sandbox only; the versioned production flag remains false. No production schema, tariff or deployment is changed by local continuation.
+Migration 55 preserves closed customer cell versions. Active update/rollback behavior is tested on disposable databases, and billing reads only the requested exact selector rather than the whole grid. A separate development gate enables this path for an isolated sandbox only; the authored production switch requires `NODE_ENV=production`. Local continuation does not change a production schema, tariff or deployment.
 
 The sandbox migration list also includes migration 42 for the existing qualified
 finishing rule. Its conflict handling preserves configured customer prices.
 Restoring this omitted local fixture changes the effective policy hash; any older
 release preparation artifact requires a fresh capture and approval-binding check.
 
-The first active database override of a fixed versioned-only cell records its original versioned cell in immutable event history. Rolling it back appends a new database version at the original price, preserving continuous live coverage and the prior closed version. It does not delete the active cell or rewrite its event provenance. This case is accepted on disposable PostgreSQL with an in-memory versioned fixture; the authored production seed remains empty and inactive.
+The first active database override of a fixed versioned-only cell records its original versioned cell in immutable event history. Rolling it back appends a new database version at the original price, preserving continuous live coverage and the prior closed version. It does not delete the active cell or rewrite its event provenance. This case is accepted on disposable PostgreSQL with an in-memory versioned fixture; authored cells remain empty, with the reviewed production grid installed separately in the database.
 
 ### Displayed revision, new charges and paid recovery
 
@@ -442,7 +459,7 @@ The admin redesign exposes `Model pricing` and `Billing products` under Settings
 
 Routing fields are excluded from commercial proposals: `vendorAccountId` is read-only context, an update preserves the stored routing value, and a new policy rule cannot create a routing override. Rollback creates a new immutable event and is a new mutation, never a history rewrite. Clients send only the target and immutable event identifiers. The server reads the event, derives the historical state, computes a fresh canonical preview, and requires the normal explicit confirmation. Event history renders actor, timestamp, operation, target, and the server-recorded scenario delta range. The former direct membership-tier and raw pricing-rule mutation routes have been removed.
 
-Read-only public quote resolution may fall back to validated versioned policy when the database is unavailable. Admin inventory surfaces must show the outage, while every database-unavailable admin mutation fails explicitly and leaves policy, history, and caches unchanged.
+Legacy rule resolution may fall back to validated versioned policy when its rule database is unavailable. An enabled production customer-tariff reader refuses a quote when its database is unavailable; it never treats that failure as inactive state. Admin inventory surfaces must show the outage, while every database-unavailable admin mutation fails explicitly and leaves policy, history, and caches unchanged.
 
 ## Operational acceptance record
 
@@ -454,7 +471,7 @@ Each domain then completed a controlled `preview → confirmation → history �
 
 Use only the owner for the value being changed:
 
-1. `/admin/pricing` compares representative provider/customer amounts for all app-published models. The **Pricing rules** tab edits the current margin-based rules. The unified **Pricing** view navigates exact supported scenarios and stages fixed customer-tariff cells inline with preview, confirmation, history and rollback after migration 54; those cells are not charged until the separate all-model activation gate passes. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. Migration 55 preserves active-cell history; active editing is exercised on disposable databases while the production code flag remains false. An active cell cannot be deleted or silently fall through to the margin rule.
+1. `/admin/pricing` compares representative provider/customer amounts for all app-published models. The **Pricing rules** tab edits the current margin-based rules. The unified **Pricing** view navigates exact supported scenarios and stages fixed customer-tariff cells inline with preview, confirmation, history and rollback after migration 54; those cells are not charged until the separate all-model activation gate passes. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. Migration 55 preserves active-cell history; production requires both the authored runtime switch and active database state. An active cell cannot be deleted or silently fall through to the margin rule.
 2. `/admin/membership` to inspect historical `member`, `plus`, and `pro` thresholds, discounts, and immutable events. It cannot apply or roll back changes.
 3. `/admin/pricing` → **Tools** (or the retained `/admin/billing-products` view) for active fixed products referenced by production billing consumers. Audio and Storyboard categories show their canonical effective policies and representative quotes in the same workspace.
 
@@ -794,7 +811,7 @@ new grid and records immutable activation evidence in one transaction. Migration
 58 uses one interval lock for the grid; one lock per selector exhausted default
 PostgreSQL lock memory during the real full-matrix acceptance test.
 
-The production code switch remains false. Neither the command nor its artifacts
+At this local checkpoint the production code switch remained false. Neither the command nor its artifacts
 can authorize production activation. A later production release requires a fresh
 effective production capture and review. After local activation, model/global
 percentage edits are rejected by preview and confirmation; Pricing Rules describes

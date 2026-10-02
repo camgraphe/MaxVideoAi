@@ -1,18 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import document from '../frontend/config/customer-tariffs.json';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { withPricingCutoverTransaction } from '../frontend/server/pricing/customer-tariff-cutover';
 
-test('the committed inactive flag prevents production writes before creating any connection', async () => {
+test('an inactive authored flag prevents production writes before creating any connection', async () => {
   const before = process.env.NODE_ENV;
+  const active = document.active;
   process.env.NODE_ENV = 'production';
+  document.active = false;
   try {
     let called = false;
     await assert.rejects(withPricingCutoverTransaction({
       DATABASE_URL_UNPOOLED: 'postgresql://operator:explicit@ep-fixture.eu-central-1.aws.neon.tech/fixture?sslmode=require',
     },'production',async () => { called = true; }), /production.*disabled/i);
     assert.equal(called,false);
-  } finally { if (before === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = before; }
+  } finally {
+    document.active = active;
+    if (before === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = before;
+  }
 });
 
 test('loss of the explicitly selected maintenance connection rejects completion without an uncaught client error', async () => {

@@ -122,8 +122,18 @@ Preserve existing temporal versions and paid snapshots.
 local sandbox activation history; it is not a production activation API. Do not
 substitute a Neon URL, loosen its guards, or reuse its local certificate.
 The production-specific activation operation and commercial manifest must be
-reviewed at the release decision. The authored production switch remains false
-until the complete grid and its activation sequence are approved together.
+reviewed at the release decision. The complete grid and coordinated activation
+sequence were approved on October 2. The authored production switch now enables
+the default reader only for `NODE_ENV=production`, including Vercel previews.
+Development retains the separate explicit Unix-socket sandbox gate. Production
+quote audit scripts must set `NODE_ENV=production`; older baseline collectors
+do not select it automatically.
+
+Apply the reviewed compatibility migrations before the Git deployment. With
+the migrated database still inactive, the deployed reader quotes the existing
+legacy policy. Capture fresh bound evidence and perform the separate atomic
+initial activation afterward. Missing schema or an unavailable database refuses
+production quotes. Enabling the source flag never activates database state.
 
 ### Prepared initial activation and recovery owner
 
@@ -133,9 +143,10 @@ compatibility for this separate owner. It does not authorize production executio
 
 `server/pricing/customer-tariff-cutover.ts` is the separate maintenance writer;
 `pricing:cutover:execute` is its manual entry point. It is never invoked from a
-route, build, deploy hook, or `pricing:activate:local`. The authored inactive flag
-refuses production before opening a database connection. No production command
-has been executed in this preparation.
+route, build, deploy hook, or `pricing:activate:local`. An inactive authored flag
+or a runtime other than production refuses production maintenance before opening
+a database connection. The CLI selects the runtime before importing quote owners.
+No production command has been executed at this release preparation checkpoint.
 
 This operation is deliberately limited to the first installation: inactive
 revision zero, no current cells, no closed versions, and no prior cutover event.

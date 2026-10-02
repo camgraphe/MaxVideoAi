@@ -20,7 +20,9 @@ export type EffectiveCustomerTariffState =
   | { status: 'unavailable' };
 
 export function customerTariffsEnabledByCode(): boolean {
-  if (versionedDocument.active === true) return true;
+  // The authored release switch selects production readers, including Vercel previews.
+  // Local development keeps its separately guarded, explicitly selected socket.
+  if (versionedDocument.active === true && process.env.NODE_ENV === 'production') return true;
   if (process.env.PRICING_SANDBOX !== '1' || process.env.NODE_ENV !== 'development') return false;
   try {
     const address = new URL(process.env.DATABASE_URL ?? '');
