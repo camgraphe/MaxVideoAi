@@ -217,3 +217,6 @@ Après le « Ok continue » validant l’unique devis gratuit affiché, le bouto
 Le fichier original mesure 2 855 569 octets : H.264 1280×720, 750 frames à 30 fps, vidéo de 25 s et audio AAC stéréo 48 kHz (conteneur 25,002667 s). La voix existe, le visuel reste présent jusqu’à la fin et la fin silencieuse correspond à la timeline. Le montage canonique reste en révision 7. C’est l’export d’une ébauche, pas encore le film promotionnel terminé.
 
 Aucun nouvel appel Sol ni nouvelle génération : les cumuls restent 110 685 tokens / 0,1619952 USD d’API estimés et 0,40 USD de média net dans le ledger isolé. Le calcul Fargate CPU/RAM pour 207 secondes est estimé à 0,005677596 USD, hors autres postes AWS et factures. Les preuves natives et le fichier contrôlé sont dans `studio-native-pilot/`, hors Git. Production, pricing et publication MCP restent inchangés.
+
+
+Le writer corrigé est maintenant construit depuis `98345933c` et épinglé dans le worker pilote `:4` ; les contrôles de démarrage hors réseau passent et les accès temporaires de build sont révoqués. Le localhost utilise cette version. Aucun nouveau rendu ou média n’a été soumis. L’export déjà qualifié provient toujours du worker `:3`. Pour la suite musique, Google Cloud attend une reconnexion interactive puis le renouvellement de la clé ; l’ancienne clé reste inutilisée.
