@@ -125,6 +125,19 @@ ciblés passent. Le scénario PostgreSQL 17 complet passe aussi en 11 minutes
 après échec injecté et récupération réussies, zéro échec ou exclusion. Une
 nouvelle Quality CI reste à obtenir avant fusion.
 
+La [troisième exécution](https://github.com/camgraphe/MaxVideoAi/actions/runs/37018261154)
+termine la suite principale : 6 741 tests réussis, zéro échec, quatre exclusions
+existantes. Le test navigateur de Studio passe aussi. Le smoke admin révèle
+ensuite deux attentes de texte anciennes : « Model pricing » et une phrase de
+Settings. Le contrôle navigateur ciblé trouve également l'ancien titre de la
+boîte d'aperçu. Les tests suivent maintenant la page Pricing unifiée et ses
+libellés actuels ; l'aperçu doit aussi provenir d'une réponse serveur réussie,
+contenir des hausses calculées et montrer les colonnes Current/Proposed avant
+annulation sans confirmation. Ces trois parcours passent dans une copie Git
+isolée, sur la base de preview vérifiée, en 56,7 secondes. Aucun calcul, contrôle
+d'accès ou garde de production n'est modifié. La CI complète de cette correction
+reste le dernier contrôle avant la décision de publication.
+
 Avant fusion/activation, suivre le [runbook](customer-tariff-cutover.md) : preuve
 récente des devis et de la configuration déployés, inventaire des paiements,
 sauvegarde, review des neuf migrations exactes, manifeste de la cible finale et

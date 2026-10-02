@@ -97,7 +97,7 @@ test.describe('admin critical flows', () => {
       if (request.url().includes('/api/admin/pricing/confirm')) confirmRequests.push(request.url());
     });
     await openAdminRoute(page, '/admin/pricing');
-    await expect(page.getByRole('heading', { level: 1, name: 'Model pricing' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Pricing', exact: true })).toBeVisible();
     await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Pricing', exact: true }).focus();
     await page.keyboard.press('End');
@@ -116,9 +116,18 @@ test.describe('admin critical flows', () => {
     await expect(page.getByText('Policy inspector', { exact: true })).toBeVisible();
     const margin = page.getByLabel('Margin (%)');
     await margin.fill(String(Number(await margin.inputValue()) + 5));
+    const previewResponse = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/api/admin/pricing/preview' && response.request().method() === 'POST');
     await page.getByRole('button', { name: 'Preview policy change' }).click();
+    const response = await previewResponse;
+    expect(response.status()).toBe(200);
+    const data = await response.json();
+    expect(data.ok).toBe(true);
+    expect(data.preview.rows.some((row: { deltaCents: number }) => row.deltaCents > 0)).toBe(true);
     const preview = page.getByRole('dialog');
-    await expect(preview.getByText('Canonical server preview')).toBeVisible();
+    await expect(preview.getByText('Review price change', { exact: true })).toBeVisible();
+    await expect(preview.getByRole('columnheader', { name: 'Current', exact: true })).toBeVisible();
+    await expect(preview.getByRole('columnheader', { name: 'Proposed', exact: true })).toBeVisible();
     await preview.getByRole('button', { name: 'Cancel' }).click();
     expect(confirmRequests).toEqual([]);
   });

@@ -1106,3 +1106,34 @@ loaded; disposable socket database cleanup completed by the owner. Five focused
 contracts and lint:exposure pass, git diff check passes. Publish only this test
 clock/documentation correction and wait for the complete hosted result; no app
 implementation change, no repeated implementation review.
+
+## Admin browser CI copy correction — October 2
+
+Run37018261154 onb804547c1:6741standardpass/0fail/4existing skips;
+separate Studio browser passes. Jobfails after32m52s in adminsmoke:
+2stale copy assertions (Model pricing heading, old Settings override copy),
+9pass/1skip/15notrun due serial groups. Full logquality-ci-clock-corrected.log
+retained. No application defect or auth regression found in these failures.
+Focused real browser in an owned Git clone on explicitly pinned isolated Neon
+preview finds a third obsolete Canonical server preview text. Replaces that
+static assertion with actual POST response200/ok, positive quote deltas, visible
+Current/Proposed columns, then Cancel and no confirmation request. Current
+Pricing heading is exact; Settings checks current description and Pricing link.
+Three focused corrected browser cases pass56.7s,0fail/skip. Original admin/server
+preserved; clone and owned credential input removed. No provider/payment call,
+production mutation, Auth guard or app source change. Earlier failed run and
+private artifacts remain immutable. Two CI contracts/exposure/diffchecks pass.
+Publish this small test/documentation patch and require a full green hostedCI.
+No repeated implementation review or full local suite: production implementation
+unchanged, hosted initial cutover now independently passes unchanged full scope.
+
+Fresh readonly production at14:29Z:858liveStripeintents/0legacyruns/0captured
+unreconciled/0openlegacycheckouts; structural schema hash unchanged,7newtables
+absent,0mandatorymissing. Commercial4rules/53settings/9overrides/16products;
+36settingtimestampschange only, all other fields/products unchanged. Exact
+semantic before/after hash64cbc66f9e9766ac2293826af04bb5b0c785f37d20e92cae9dbc220795bca7cd
+for this separately defined sorted JSON projection. No fresh production quote
+or writable activation certificate implied. Both owned connection files removed.
+Currentb804Git preview READY on dedicated branch: localized FR/ESpricing/model
+200, own preview canonicals per site-origin contract,JSONLD/4hreflang links;
+publicquote remains289c/revisiond4e9df9667f53e33a305. Sourceflag remainsfalse.

@@ -36,7 +36,7 @@ const smokeRoutes: SmokeRoute[] = [
   {
     path: '/admin/settings',
     heading: 'Settings',
-    section: 'Existing database overrides remain active',
+    section: 'Operational tools, billing products and compliance.',
   },
   {
     path: '/admin/seo',
@@ -95,7 +95,7 @@ test.describe('admin smoke', () => {
 
     await page.goto('/admin/theme');
     await expect(page).toHaveURL(/\/admin\/settings$/);
-    await expect(page.locator('body')).toContainText('Existing database overrides remain active');
+    await expect(page.getByRole('main').getByRole('link', { name: /Pricing/ })).toHaveAttribute('href', '/admin/pricing');
 
     for (const path of [
       '/api/admin/seo/gsc/refresh',
