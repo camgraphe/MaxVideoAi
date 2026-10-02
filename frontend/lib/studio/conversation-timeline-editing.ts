@@ -4,6 +4,7 @@ import type {WorkspaceTimelineItem, WorkspaceTimelineTrack} from '@/app/(core)/(
 import {deleteWorkspaceTimelineItem, positionWorkspaceTimelineItem, resizeWorkspaceTimelineItem, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
 import {MIN_CLIP_DURATION_SEC, timelineFrameToSeconds, workspaceTimelineSourceTime} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames';
 import {maxResizeDurationForTimelineItem} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-trim';
+import {readMediaFacts} from '@/lib/media-identity';
 
 const clipId = z.string().trim().min(1).max(200);
 const frame = z.number().int().min(0).max(5_184_000);
@@ -22,6 +23,18 @@ export const conversationTimelineCommandSchema = z.object({
 }).strict();
 export type ConversationTimelineCommand = z.infer<typeof conversationTimelineCommandSchema>;
 export {workspaceTimelineSourceTime as conversationSourceTime};
+
+/** Source-limited whole frames only; a fractional final frame cannot extend past measured bytes. */
+export function conversationLibraryInsertTiming(input: {kind: 'image'|'video'|'audio';mediaFacts?: unknown;timelineDurationSec: number;fps: number}): {startFrame: number;durationFrames: number} | null {
+  const {kind,timelineDurationSec,fps} = input;
+  if (!Number.isInteger(fps) || fps < 1 || fps > 60 || !Number.isFinite(timelineDurationSec) || timelineDurationSec < 0) return null;
+  const seconds = kind === 'image' ? 5 : readMediaFacts(input.mediaFacts)?.durationSec;
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 1) return null;
+  const limitedSeconds = Math.min(seconds,1800,kind === 'audio' && timelineDurationSec >= 1 ? timelineDurationSec : seconds);
+  const durationFrames = Math.floor(limitedSeconds*fps);
+  const startFrame = kind === 'audio' ? 0 : Math.round(timelineDurationSec*fps);
+  return Number.isSafeInteger(startFrame) && startFrame <= 5_184_000 && durationFrames >= fps ? {startFrame,durationFrames} : null;
+}
 
 /** The sequence endpoint is exclusive for clips; keep its last frame in the monitor. */
 export function conversationMonitorTime(playheadSec: number, durationSec: number, fps: number): number {

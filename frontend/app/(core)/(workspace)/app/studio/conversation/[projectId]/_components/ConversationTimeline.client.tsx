@@ -8,7 +8,7 @@ import {useConversationTimeline} from '../_hooks/useConversationTimeline';
 import {useWorkspaceTimelinePlayback} from '../../../workspace/_hooks/useWorkspaceTimelinePlayback';
 import {useProgramPlaybackSync} from '../../../workspace/_components/viewer/useProgramPlaybackSync';
 import {ProgramPlaybackLayers} from '../../../workspace/_components/viewer/ProgramPlaybackLayers';
-import {applyConversationTimelineEdit,conversationMonitorTime,type ConversationTimelineEdit} from '@/lib/studio/conversation-timeline-editing';
+import {applyConversationTimelineEdit,conversationMonitorTime,conversationLibraryInsertTiming,type ConversationTimelineEdit} from '@/lib/studio/conversation-timeline-editing';
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
@@ -58,9 +58,9 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     handledInsertion.current = insertion.key;
     const asset = insertion.asset;
     const kind = asset.kind ?? 'image';
-    const seconds = kind === 'image' ? 5 : asset.durationSec;
-    if (!seconds || seconds < 1) {setLocalError(t('This media needs measured duration before insertion.','Il faut mesurer la durée de ce média avant de l’insérer.'));return;}
-    void edit({kind: 'insert',ref: {type: 'asset',assetId: asset.assetId,kind},startFrame: kind === 'audio' ? 0 : Math.round(duration*fps),durationFrames: Math.round(Math.min(seconds,kind === 'audio' && duration >= 1 ? duration : seconds)*fps)});
+    const timing = conversationLibraryInsertTiming({kind,mediaFacts: asset.mediaFacts,timelineDurationSec: duration,fps});
+    if (!timing) {setLocalError(t('This media needs measured duration before insertion.','Il faut mesurer la durée de ce média avant de l’insérer.'));return;}
+    void edit({kind: 'insert',ref: {type: 'asset',assetId: asset.assetId,kind},...timing});
   },[insertion,view,edit,duration,fps,t]); // Explicit library selection, never auto-insert a new generation.
   function openMonitor() {if (!monitor) {renewalAttempts.current.clear();setLocalError(null);}setMonitor(true);}
   function seek(second: number) {playback.stopTimelinePlayback();playback.setPlayheadSec(Math.max(0,Math.min(duration,Math.round(second*fps)/fps)));openMonitor();}

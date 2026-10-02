@@ -49,3 +49,28 @@ test('manual and bot edits retain linked audio, frame snapping, locked tracks an
   assert.throws(() => module.applyConversationTimelineEdit(items, {kind: 'trim', clipId: 'missing', edge: 'end', durationFrames: 30}, 30, []), /clip/i);
   assert.throws(() => module.applyConversationTimelineEdit(items, {kind: 'trim', clipId: 'one', edge: 'end', durationFrames: 1}, 30, []), /duration/i);
 });
+
+test('library insertion floors source-limited durations so a fractional final frame never extends audio or video', async () => {
+  const module = await import('../frontend/lib/studio/conversation-timeline-editing');
+  assert.ok(module.conversationLibraryInsertTiming,'Library insertion needs a bounded frame projection.');
+  for (const [kind,sourceDurationSec,timelineDurationSec,fps,want] of [
+    ['audio',12.408,0,30,{startFrame: 0,durationFrames: 372}],
+    ['audio',12.428,0,30,{startFrame: 0,durationFrames: 372}],
+    ['audio',12.428,5.019,30,{startFrame: 0,durationFrames: 150}],
+    ['audio',4.92,10,25,{startFrame: 0,durationFrames: 123}],
+    ['video',5.017,3,30,{startFrame: 90,durationFrames: 150}],
+    ['image',null,3,30,{startFrame: 90,durationFrames: 150}],
+    ['video',2000,0,60,{startFrame: 0,durationFrames: 108000}],
+  ] as const) {
+    const timing = module.conversationLibraryInsertTiming({kind,mediaFacts: {source: 'probe',durationSec: sourceDurationSec},timelineDurationSec,fps});
+    assert.deepEqual(timing,want);
+    if (kind !== 'image') assert.ok(timing!.durationFrames / fps <= sourceDurationSec!);
+  }
+  for (const sourceDurationSec of [null,undefined,NaN,Infinity,0,.999]) {
+    assert.equal(module.conversationLibraryInsertTiming({kind: 'audio',mediaFacts: {source: 'probe',durationSec: sourceDurationSec},timelineDurationSec: 5,fps: 30}),null);
+  }
+  for (const fps of [0,-1,NaN,Infinity,29.97,61]) assert.equal(module.conversationLibraryInsertTiming({kind: 'video',mediaFacts: {source: 'probe',durationSec: 5},timelineDurationSec: 5,fps}),null);
+  for (const mediaFacts of [undefined,{durationSec: 13},{source: 'browser',durationSec: 12.408},{source: 'requested',durationSec: 13}]) {
+    assert.equal(module.conversationLibraryInsertTiming({kind: 'audio',mediaFacts,timelineDurationSec: 5,fps: 30}),null,'Declared duration never becomes source evidence.');
+  }
+});

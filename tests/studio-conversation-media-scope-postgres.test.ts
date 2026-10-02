@@ -49,6 +49,29 @@ test('motion sources are explicit library attachments or exact completed outputs
   const ref = {type: 'asset' as const, kind: 'image' as const, assetId: 'ma_' + '1'.repeat(32)};
   await assert.rejects(studioMotionSource(actor, ref, input), {code: 'REFERENCE_INVALID'});
   assert.equal(await studioMotionSource(actor, ref, {...input, references: [ref.assetId]}), ref.assetId);
+  for (const output of [
+    {id: 'measured-audio',kind: 'audio',duration: 13,metadata: {mediaFacts: {source: 'probe',durationSec: 12.408}}},
+    {id: 'measured-video',kind: 'video',duration: 5,metadata: {mediaFacts: {source: 'probe',durationSec: 4.92}}},
+    {id: 'requested-audio',kind: 'audio',duration: 13,metadata: {durationSec: 13}},
+    {id: 'requested-video',kind: 'video',duration: 5,metadata: {mediaFacts: {source: 'requested',durationSec: 5}}},
+    {id: 'browser-audio',kind: 'audio',duration: 13,metadata: {mediaFacts: {source: 'browser',durationSec: 12.408}}},
+    {id: 'incomplete-video',kind: 'video',duration: 5,metadata: {mediaFacts: {source: 'probe',width: 854,height: 480}}},
+  ]) {
+    await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,url,mime_type,status,duration_sec,metadata)
+      VALUES ($1,$2,'owner',$3,$4,$5,'ready',$6,$7::jsonb)`, [output.id,job.jobId,output.kind,
+      `https://cdn.maxvideoai.com/${output.id}.${output.kind === 'audio' ? 'mp3' : 'mp4'}`,
+      output.kind === 'audio' ? 'audio/mpeg' : 'video/mp4',output.duration,JSON.stringify(output.metadata)]);
+  }
+  const projected = await readStudioProjectMedia(actor);
+  const durationFor = (outputId: string) => projected.find(item => item.ref.type === 'job-output' && item.ref.outputId === outputId)?.durationSec;
+  assert.equal(durationFor('measured-audio'),12.408,'The director must receive actual source duration, never the legacy rounded 13-second request.');
+  assert.equal(durationFor('measured-video'),4.92);
+  const stored = (await pg.pool.query("SELECT duration_sec,metadata FROM job_outputs WHERE id='measured-audio'")).rows[0];
+  assert.equal(stored.duration_sec,13,'Projection remains read-only; legacy request history is preserved.');
+  assert.deepEqual(stored.metadata,{mediaFacts: {source: 'probe',durationSec: 12.408}});
+  for (const id of ['requested-audio','requested-video','browser-audio','incomplete-video']) assert.equal(durationFor(id),null,`${id} is not measured duration evidence.`);
+  assert.deepEqual(await readStudioProjectMedia({...actor,projectId: 'other'}),[]);
+  assert.deepEqual(await readStudioProjectMedia({...actor,userId: 'foreign'}),[]);
   await pg.pool.query("UPDATE app_jobs SET hidden=true WHERE job_id=$1", [job.jobId]);
   assert.deepEqual(await readStudioProjectMedia(actor), []);
 });

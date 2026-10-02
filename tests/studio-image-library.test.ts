@@ -41,6 +41,19 @@ test('recent video/audio selections resolve a reusable identity on the matching 
     assert.equal(selected.assetId, asset.assetId);
   }
 });
+
+test('a selected library voice uses measured fractional duration while preserving its legacy history', async () => {
+  const {saveRecentMediaReference} = await import('../frontend/src/lib/studio/image-library');
+  const {conversationLibraryInsertTiming} = await import('../frontend/lib/studio/conversation-timeline-editing');
+  const asset = {assetId: 'ma_' + 'c'.repeat(32),url: 'https://cdn.maxvideoai.com/voice.mp3',durationSec: 13,
+    mediaFacts: {source: 'probe' as const,durationSec: 12.408}};
+  let calls = 0;
+  const request = (async () => ({ok: true,json: async () => ++calls === 1 ? {ok: true,asset} : {ok: true,assets: [asset]}})) as typeof fetch;
+  const selected = await saveRecentMediaReference({...output,url: asset.url},'audio',request);
+  assert.equal(selected.durationSec,13);
+  assert.deepEqual(conversationLibraryInsertTiming({kind: selected.kind!,mediaFacts: selected.mediaFacts,timelineDurationSec: 0,fps: 30}),{startFrame: 0,durationFrames: 372});
+});
+
 test("a saved internal UUID cannot masquerade as a reusable ma_ reference", async () => {
   let calls = 0;
   const request = (async () => ({

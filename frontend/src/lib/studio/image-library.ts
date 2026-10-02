@@ -1,4 +1,4 @@
-import { canonicalMediaAssetFields } from "@/lib/media-identity";
+import { canonicalMediaAssetFields, type MediaFacts } from "@/lib/media-identity";
 
 export type ImageLibraryAsset = {
   assetId: string;
@@ -7,6 +7,7 @@ export type ImageLibraryAsset = {
   name?: string;
   kind?: 'image' | 'video' | 'audio';
   durationSec?: number | null;
+  mediaFacts?: MediaFacts;
 };
 export type RecentImage = {
   id: string;

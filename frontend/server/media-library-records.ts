@@ -238,6 +238,7 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
 
   const audioUrl = normalizeString(row.audio_url);
   if (audioUrl) {
+    const measuredDurationSec = normalizePositiveNumber(row.measured_duration_sec);
     outputs.push({
       id: outputId(jobId, 'audio', 0),
       jobId,
@@ -256,9 +257,9 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       metadata: {
         legacy: true,
         surface: row.surface ?? null,
-        ...(normalizePositiveNumber(row.measured_duration_sec) === null
+        ...(measuredDurationSec === null
           ? {}
-          : { measuredDurationSec: normalizePositiveNumber(row.measured_duration_sec) }),
+          : { measuredDurationSec, mediaFacts: { source: 'probe', durationSec: measuredDurationSec } }),
       },
     });
   }

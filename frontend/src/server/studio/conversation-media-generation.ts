@@ -1,4 +1,5 @@
 import {query} from '@/lib/db';
+import {readMediaFacts} from '@/lib/media-identity';
 import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import type {ImageTurnInput} from '@/lib/studio/image-conversation-contract';
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
@@ -21,15 +22,16 @@ export const defaultStudioMediaFactories: StudioMediaFactories = {image: createS
 
 /** Exact ready outputs of accepted session jobs. No bootstrap, promotion or provider polling in this read. */
 export async function readStudioProjectMedia(actor: StudioGenerationActor): Promise<StudioProjectMedia> {
-  const rows = await query<{id: string; job_id: string; kind: ToolAssetRef['kind']; duration_sec: number | null}>(`
-    SELECT o.id,o.job_id,o.kind,o.duration_sec FROM job_outputs o
+  const rows = await query<{id: string; job_id: string; kind: ToolAssetRef['kind']; duration_sec: number | null; metadata: Record<string,unknown> | null}>(`
+    SELECT o.id,o.job_id,o.kind,o.duration_sec,o.metadata FROM job_outputs o
     JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id
     JOIN mcp_generation_quotes q ON q.job_id=j.job_id AND q.user_id=j.user_id
     JOIN studio_projects p ON p.id=q.studio_project_id AND p.user_id=q.user_id
     WHERE o.user_id=$1 AND q.studio_project_id=$2 AND q.auth_origin='studio-session' AND q.state='accepted'
       AND p.deleted_at IS NULL AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready'
       AND o.kind IN ('image','video','audio') ORDER BY o.created_at DESC LIMIT 30`, [actor.userId, actor.projectId]);
-  return rows.map(row => ({ref: {type: 'job-output', jobId: row.job_id, outputId: row.id, kind: row.kind}, name: `${row.kind} output`, durationSec: row.duration_sec}));
+  return rows.map(row => ({ref: {type: 'job-output', jobId: row.job_id, outputId: row.id, kind: row.kind}, name: `${row.kind} output`,
+    durationSec: row.kind === 'image' ? row.duration_sec : readMediaFacts(row.metadata?.mediaFacts)?.durationSec ?? null}));
 }
 
 export async function studioMotionSource(actor: StudioGenerationActor, source: ToolAssetRef, input: ImageTurnInput, dependencies: {saveOutput?: typeof saveJobOutputToLibrary} = {}): Promise<string> {
