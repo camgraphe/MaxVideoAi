@@ -129,6 +129,8 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 - [x] Vérifier avec sorties contrôlées échec/remboursement et retour dans le projet sans relance automatique.
 - [ ] Qualifier une sortie réelle de chaque nouvelle capacité après devis approuvé ; conserver coût média et tokens distincts.
 
+Checkpoint natif du 2 octobre : image et animation Wan 3 réelles qualifiées après devis séparément approuvés. Le MP4 de 5 s, 854 × 480 sans audio est jouable, repris et inséré depuis une phrase client ordinaire. Voix et musique restent ouvertes ; la musique nécessite des credentials renouvelés.
+
 **Vérification :** contrats/session/PG, puis contrôles provider bornés. PASS signifie vidéo, voix et musique jouables, même compte/projet, charges exactes et récupérations uniques.
 
 **Commit :** vidéo puis Audio en lots séparément vérifiables. Ne pas publier les outils MCP Audio/édition en modifiant simplement leurs flags.
@@ -152,6 +154,8 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 - [x] Vérifier conflit après coupe manuelle : la réponse IA ne remplace pas silencieusement la modification.
 - [ ] Raccorder estimation/réservation/rendu existants ; le navigateur récupère le même artifact après fermeture/réouverture.
 - [ ] Vérifier desktop et mobile sur vrais médias ; garder résolution du fichier source distincte de celle du rendu final.
+
+Le vrai MP4 généré passe désormais l'insertion autonome avec mesure des octets, la coupe source (1 s → film de 4 s), la restauration à 5 s et la reprise de la révision 3. Le moniteur repliable conserve sa dernière image. Desktop 1440 × 900 et mobile simulé 390 × 844 sont vérifiés ; Audio réel et rendu distant restent à qualifier.
 
 **Vérification :** tests de commandes, conflit, manifeste/export puis navigateur. PASS signifie coupe cohérente, projet repris et fichier lisible à la durée attendue.
 

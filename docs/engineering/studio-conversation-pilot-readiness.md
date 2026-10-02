@@ -8,8 +8,9 @@ The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: fal
 | --- | --- | --- |
 | Persistent director | Actual Sol browser exchanges, durable brief, action journal/checkpoints, usage observation | Long natural film journey and commercial token policy |
 | Image | Native Google session: one real Flare original, private browser access and same-job recovery, one charge in the isolated test ledger; PostgreSQL confirmation/reference parity | Production wallet qualification remains separate |
-| Video, voice, music | Shared canonical quotes/jobs; one native Wan 3 attempt failed on private input access and was refunded; shared transport correction passes owned-storage read proof; voice configured | Fresh approved video attempt and one ready output per capability; renewed music credentials and durable remote audio execution |
-| Editing | Shared manual/Sol commands, owned canonical Sequence, revisions/receipts, measured source facts, trim/order/gain/remove | Real generated outputs inserted in the same client journey |
+| Video | Fresh explicitly approved native Wan 3 attempt completed once after private-reference transport correction; real 5 s, 854 × 480 silent MP4 decoded, inserted, trimmed and recovered with measured source facts; one 30-cent charge | Physical device and further provider variants remain separate qualifications |
+| Voice, music | Shared canonical quotes/jobs; Sol's own English Seed voice script has a native 5-cent prepared quote, without a job/charge | Fresh approval and one ready output per capability; renewed music credentials and durable remote audio execution |
+| Editing | Shared manual/Sol commands; the generated native video autonomously measured/inserted, manually start-trimmed, restored and recovered in the same Project; final frame retained by the collapsible monitor | Real generated Audio inserted in the same client journey |
 | Native UI | Chromium/Firefox/WebKit byte-backed playback, trim/move/gain/reload, bounded decoder recovery, responsive layout and persistent app-wide charcoal/olive | Physical Safari/iOS/Android smoke test with provider outputs |
 | Export | Existing exact estimator/reservation/worker adapter, owned recovery reader and local 3 s MP4 proof | Remote worker dispatch, original upload, completed artifact recovery in native chat |
 
