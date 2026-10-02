@@ -82,26 +82,95 @@ function mapCell(row: RawCell): ManualTariffCell {
   return validateCustomerTariffCell(cell);
 }
 
+type IndexedRawCell = { row: RawCell; order: number };
+type LockedQuoteReadBatch = {
+  keys: Set<string>;
+  state: RawState;
+  rows: Map<string, IndexedRawCell[]>;
+  versions: Map<string, IndexedRawCell[]>;
+};
+// Reserved before the first await, and scoped to one still-active transaction.
+const lockedQuoteReadBatches = new WeakMap<QueryExecutor, LockedQuoteReadBatch | null>();
+
+function quoteSelectors(selector: ManualTariffSelector): ManualTariffSelector[] {
+  const continuous = continuousInputTariffSelector(selector);
+  return [selector, ...(continuous ? [continuous] : [])];
+}
+
+function indexRawCells(rows: (RawCell & { selector_key: string })[]): Map<string, IndexedRawCell[]> {
+  const indexed = new Map<string, IndexedRawCell[]>();
+  rows.forEach((row, order) => {
+    const existing = indexed.get(row.selector_key) ?? [];
+    existing.push({ row, order });
+    indexed.set(row.selector_key, existing);
+  });
+  return indexed;
+}
+
+function selectBatchRows(index: Map<string, IndexedRawCell[]>, keys: string[]): RawCell[] {
+  // Preserve SQL ordering and every historical interval; isolate returned JSON.
+  return structuredClone([...new Set(keys)].flatMap(key => index.get(key) ?? [])
+    .sort((a, b) => a.order - b.order).map(value => value.row));
+}
+
+/** Maintenance acceptance only: read actual SQL rows once under table locks.
+ * Ordinary quote readers keep their exact SQL path. The callback must not write
+ * tariff state; this scope ends before the maintenance operation records events. */
+export async function withLockedCustomerTariffQuoteReadBatch<T>(
+  executor: TransactionQueryExecutor, selectors: ManualTariffSelector[], work: () => Promise<T>,
+): Promise<T> {
+  if (!isTransactionQueryExecutor(executor)) throw new Error('Tariff read batch requires an active transaction');
+  if (lockedQuoteReadBatches.has(executor)) throw new Error('Tariff read batch scope is already active');
+  lockedQuoteReadBatches.set(executor, null);
+  try {
+    const keys = new Set(selectors.flatMap(quoteSelectors).map(selectorKey));
+    await executor.query(`LOCK TABLE app_customer_tariff_state, app_customer_tariff_cells,
+      app_customer_tariff_cell_versions IN SHARE MODE`);
+    const [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
+    if (!state) throw new Error('Customer tariff state is missing');
+    const args = [[...keys]];
+    const rows = await executor.query<RawCell & { selector_key: string }>(
+      `SELECT id, selector_key, selector_json, price_json, currency, effective_from, effective_until, revision
+       FROM app_customer_tariff_cells WHERE selector_key = ANY($1::text[]) ORDER BY id`, args);
+    const versions = state.active ? await executor.query<RawCell & { selector_key: string }>(
+      `SELECT tariff_id AS id, selector_key, selector_json, price_json, currency, effective_from, effective_until, revision
+       FROM app_customer_tariff_cell_versions WHERE selector_key = ANY($1::text[]) ORDER BY tariff_id, revision`, args) : [];
+    lockedQuoteReadBatches.set(executor, { keys, state, rows: indexRawCells(rows), versions: indexRawCells(versions) });
+    return await work();
+  } finally {
+    lockedQuoteReadBatches.delete(executor);
+  }
+}
+
 async function readState(executor: QueryExecutor, selector?: ManualTariffSelector): Promise<EffectiveCustomerTariffState> {
-  const continuous = selector ? continuousInputTariffSelector(selector) : null;
-  const selectors = selector ? [selector, ...(continuous ? [continuous] : [])] : null;
-  const where = selectors ? (selectors.length > 1 ? 'WHERE selector_key = ANY($1::text[])' : 'WHERE selector_key = $1') : '';
-  const args = selectors ? [selectors.length > 1 ? selectors.map(selectorKey) : selectorKey(selectors[0])] : [];
-  const [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
-  if (!state) return { status: 'unavailable' };
-  const rows = await executor.query<RawCell>(
-    `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
-     FROM app_customer_tariff_cells ${where} ORDER BY id`, args
-  );
-  const versions = state.active ? await executor.query<RawCell>(
-    `SELECT tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
-     FROM app_customer_tariff_cell_versions ${where} ORDER BY tariff_id, revision`, args
-  ) : [];
+  const selectors = selector ? quoteSelectors(selector) : null;
+  const keys = selectors?.map(selectorKey);
+  const batch = lockedQuoteReadBatches.get(executor);
+  let state: RawState | undefined;
+  let rows: RawCell[];
+  let versions: RawCell[];
+  if (batch && keys && keys.every(key => batch.keys.has(key))) {
+    if (!isTransactionQueryExecutor(executor)) throw new Error('Tariff read batch transaction is no longer active');
+    state = batch.state;
+    rows = selectBatchRows(batch.rows, keys);
+    versions = selectBatchRows(batch.versions, keys);
+  } else {
+    const where = keys ? (keys.length > 1 ? 'WHERE selector_key = ANY($1::text[])' : 'WHERE selector_key = $1') : '';
+    const args = keys ? [keys.length > 1 ? keys : keys[0]] : [];
+    [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
+    if (!state) return { status: 'unavailable' };
+    rows = await executor.query<RawCell>(
+      `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
+       FROM app_customer_tariff_cells ${where} ORDER BY id`, args);
+    versions = state.active ? await executor.query<RawCell>(
+      `SELECT tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
+       FROM app_customer_tariff_cell_versions ${where} ORDER BY tariff_id, revision`, args) : [];
+  }
   if (versionedDocument.schemaVersion !== 1 || !Array.isArray(versionedDocument.cells)) return { status: 'unavailable' };
   return {
     status: 'loaded', revision: integer(state.revision), active: state.active && customerTariffsEnabledByCode(),
     versionedCells: (versionedDocument.cells as ManualTariffCell[])
-      .filter((cell) => !selectors || selectors.some(candidate => selectorKey(cell.selector) === selectorKey(candidate))),
+      .filter((cell) => !selectors || keys?.includes(selectorKey(cell.selector))),
     databaseCells: [...versions, ...rows].map(mapCell),
   };
 }

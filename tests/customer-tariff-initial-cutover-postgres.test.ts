@@ -122,7 +122,18 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
       throw new Error('FAIL_AFTER_FULL_ACTIVATION'); }), /FAIL_AFTER_FULL_ACTIVATION/);
     assert.deepEqual((await db.pool.query('SELECT revision,active FROM app_customer_tariff_state')).rows,[{ revision: '0',active: false }]);
     assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM app_customer_tariff_cutover_events')).rows[0].n,0);
-    const applied = await run();
+    let tariffReads = 0;
+    const started = performance.now();
+    const applied = await cutover(async executor => {
+      const query = executor.query.bind(executor);
+      executor.query = (sql, params) => {
+        if (/FROM app_customer_tariff_(state|cells|cell_versions)\b/.test(sql)) tariffReads++;
+        return query(sql, params);
+      };
+      return activateInitialCustomerTariffGrid(executor, { release, fingerprint: release.fingerprint, target, actorId: actor, mode: 'rehearsal' });
+    });
+    assert.ok(tariffReads <= 8, `Full canonical acceptance made ${tariffReads} tariff SQL reads`);
+    t.diagnostic(`26,818-checkpoint acceptance: ${tariffReads} tariff SQL reads; ${Math.round(performance.now() - started)} ms.`);
     assert.equal(applied.revision,1);
     assert.equal(applied.checkedQuotes,26818);
     assert.equal(applied.candidateCells,14991);

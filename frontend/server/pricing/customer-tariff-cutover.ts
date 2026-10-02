@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { Pool } from 'pg';
+import { Pool, type PoolClient } from 'pg';
+import { TLSSocket, checkServerIdentity } from 'node:tls';
 import versionedDocument from '@/config/customer-tariffs.json';
 import { isTransactionQueryExecutor, withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store';
@@ -7,7 +8,7 @@ import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { getReadOnlyConfiguredEngineIncludingRuntimePrivate } from '@/server/agent-api/read-only-engine-catalog';
 import { fetchEngineSettingsReadOnlyWithExecutor,fetchEngineOverridesReadOnlyWithExecutor } from '@/server/engine-configuration-read';
 import { insertPricingChangeEvent } from '@/server/pricing-admin/event-store';
-import { customerTariffsEnabledByCode, validateCustomerTariffCell } from './customer-tariff-store';
+import { customerTariffsEnabledByCode, validateCustomerTariffCell, withLockedCustomerTariffQuoteReadBatch } from './customer-tariff-store';
 import { computeCanonicalBillingSnapshot } from './quote-billing';
 import { validateCurrentContinuousTariffDomain } from './compile-current-continuous-tariff';
 import { assertCustomerTariffCutoverRelease, collectCustomerTariffCutoverCheckpoints, cutoverDigest,
@@ -19,8 +20,17 @@ export { captureCustomerTariffCutoverBindings } from './customer-tariff-cutover-
 
 type Mode = 'rehearsal' | 'production';
 type Target = ReturnType<typeof pricingCutoverTarget>;
-const selectedTransactions = new WeakMap<object, { target: Target; mode: Mode }>();
+const selectedTransactions = new WeakMap<object, { target: Target; mode: Mode; stream: unknown }>();
 const selectorKey = (value: object) => JSON.stringify(Object.entries(value).sort(([a],[b]) => a.localeCompare(b)));
+
+/** Neon terminates client TLS at its proxy; pg_stat_ssl describes the backend.
+ * Verify the actual selected client connection, including certificate hostname. */
+export function assertPricingCutoverTlsStream(stream: unknown, hostname: string): void {
+  if (!(stream instanceof TLSSocket) || stream.destroyed || !stream.encrypted || stream.authorized !== true
+    || !stream.getProtocol() || checkServerIdentity(hostname, stream.getPeerCertificate())) {
+    throw new Error('Cutover TLS transport or certificate identity is unverified.');
+  }
+}
 
 /** Explicit maintenance connection only. No application route or delivery hook
  * calls this writer. Production requires the authored flag and production runtime. */
@@ -45,10 +55,13 @@ export async function withPricingCutoverTransaction<T>(env: Record<string,string
   try {
     return await withDbTransaction(async (executor,client) => {
       client.on('error',onError);
-      selectedTransactions.set(executor,{ target,mode });
+      const stream = (client as PoolClient & { connection?: { stream?: unknown } }).connection?.stream;
+      selectedTransactions.set(executor,{ target,mode,stream });
       try {
+        if (mode === 'production') assertPricingCutoverTlsStream(stream,target.config.host);
         const result = await work(executor);
         if (lost) throw new Error('Cutover connection lost; inspect immutable events before retrying.');
+        if (mode === 'production') assertPricingCutoverTlsStream(stream,target.config.host);
         return result;
       } finally { selectedTransactions.delete(executor); }
     },{ pool });
@@ -76,13 +89,13 @@ async function lockCutover(executor: TransactionQueryExecutor,input: { target: T
   if (!isTransactionQueryExecutor(executor) || !selected || selected.mode !== input.mode
     || selected.target.databaseIdentity !== input.target.databaseIdentity) throw new Error('Cutover requires its explicitly selected transaction.');
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.actorId)) throw new Error('Invalid cutover actor.');
-  const [connection] = await executor.query<{ db: string; user: string; remote: boolean; sockets: string; listeners: string; ssl: boolean }>(
+  if (input.mode === 'production') assertPricingCutoverTlsStream(selected.stream,selected.target.config.host);
+  const [connection] = await executor.query<{ db: string; user: string; remote: boolean; sockets: string; listeners: string }>(
     `SELECT current_database() AS db,current_user AS "user",inet_server_addr() IS NOT NULL AS remote,
-      current_setting('unix_socket_directories') AS sockets,current_setting('listen_addresses') AS listeners,
-      COALESCE((SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid()),false) AS ssl`);
+      current_setting('unix_socket_directories') AS sockets,current_setting('listen_addresses') AS listeners`);
   if (!connection || connection.db !== selected.target.config.database || connection.user !== selected.target.config.user
     || (input.mode === 'rehearsal' ? connection.remote || connection.listeners !== ''
-      || !connection.sockets.split(',').map(s => s.trim()).includes(selected.target.config.host) : !connection.remote || !connection.ssl)) {
+      || !connection.sockets.split(',').map(s => s.trim()).includes(selected.target.config.host) : !connection.remote)) {
     throw new Error('Actual database transport or identity changed.');
   }
   await lockPricingCutoverAdministrator(executor,input.actorId);
@@ -148,13 +161,15 @@ export async function activateInitialCustomerTariffGrid(executor: TransactionQue
   await executor.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1,updated_at=NOW() WHERE singleton=TRUE');
   const expected = new Map(input.release.checkpoints.map(row => [row.key,row]));
   const used = new Set<string>();
-  for (const point of cases) {
-    const quote = await computeCanonicalBillingSnapshot(point.scenario.context,{ pricingPolicy: { loadOverrides: async () => policy },customerTariffExecutor: executor });
-    const row = expected.get(point.key)!;
-    if (quote.meta?.pricingMode !== 'manual_tariff' || quote.meta?.customerTariffRevision !== 1
-      || quote.totalCents !== row.customerCents || quote.currency !== row.currency) throw new Error(`Canonical cutover quote changed: ${point.key}`);
-    used.add(String(quote.meta.customerTariffCellId));
-  }
+  await withLockedCustomerTariffQuoteReadBatch(executor,cases.map(point => point.scenario.selector),async () => {
+    for (const point of cases) {
+      const quote = await computeCanonicalBillingSnapshot(point.scenario.context,{ pricingPolicy: { loadOverrides: async () => policy },customerTariffExecutor: executor });
+      const row = expected.get(point.key)!;
+      if (quote.meta?.pricingMode !== 'manual_tariff' || quote.meta?.customerTariffRevision !== 1
+        || quote.totalCents !== row.customerCents || quote.currency !== row.currency) throw new Error(`Canonical cutover quote changed: ${point.key}`);
+      used.add(String(quote.meta.customerTariffCellId));
+    }
+  });
   if (used.size !== cells.length || cells.some(cell => !used.has(cell.id))) throw new Error('Unreviewed extra candidate cell.');
   if (cutoverDigest(await captureCustomerTariffCutoverBindings(executor,input.target.databaseIdentity)) !== cutoverDigest(current)
     || (input.mode === 'production' && execFileSync('git',['status','--porcelain'],{ encoding: 'utf8' }).trim())) {

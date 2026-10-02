@@ -176,7 +176,12 @@ the deployed source comparison described above; merely changing a fixture's
 
 The writer uses an explicitly selected direct TLS Neon or isolated Unix-socket
 pool, independently of the application's ambient database. A branded transaction
-must also belong to this selected connection. Actual transport/database/user and
+must also belong to this selected connection. For remote Neon, actual client transport is verified from the selected live
+`TLSSocket`: encrypted, authorized, certificate matching the selected endpoint,
+and still connected before work, lock acquisition and commit. Neon terminates
+TLS at its proxy, so backend `pg_stat_ssl` is not client TLS evidence. Local
+rehearsal still verifies its exact Unix socket and disabled TCP listeners.
+Actual transport/database/user and
 the actor's current administrator authority are checked with the application's
 precedence: a nonempty `user_roles` admin population is authoritative; otherwise
 the exact actor must be present in `app_admins`. These tables remain locked through
@@ -196,7 +201,13 @@ Safe endpoint quotes alone cannot approve an altered fractional curve or an
 additional overcharge. It also validates continuous input domains, inserts fresh
 revision-one cells, and validates all
 canonical quotes through the real selector database reader **inside the same
-transaction**. Missing prices, legacy fallback, below-cost quotes, any cent
+transaction**. During this maintenance acceptance only, the default reader groups
+its actual state/current/history SQL reads into one locked transaction-scoped
+batch. It indexes the stored SQL selector keys, retains every historical row,
+checks the executor remains active, isolates returned JSON and discards the batch
+in `finally`. Unknown selectors still use ordinary SQL. The full PostgreSQL
+rehearsal bounds tariff SQL reads across all 26,818 canonical checkpoints; normal
+application quotes do not use this batch. Missing prices, legacy fallback, below-cost quotes, any cent
 mismatch or an unused extra cell abort the entire installation. Code/environment
 are checked again before commit. The immutable evidence and the regular pricing
 history event commit with the activation.
