@@ -171,7 +171,7 @@ test("a failed accepted attempt displays its confirmed wallet refund without reu
     priceCents: 600, currency: "USD", paymentStatus: "refunded_wallet",
     result: null, retryAfterSeconds: null,
   };
-  const view = await mountCard({ turn, locale: "en" });
+  const view = await mountCard({ turn, locale: "en", busy: true });
   try {
     const doc = view.dom.window.document;
     assert.match(doc.body.textContent ?? "", /Creation failed/);
@@ -181,6 +181,22 @@ test("a failed accepted attempt displays its confirmed wallet refund without reu
     assert.equal(buttonMatching(doc, /Create|Renew|Retry/i), null);
     assert.equal(view.confirms, 0);
     assert.equal(view.renewals, 0);
+  } finally { await view.close(); }
+});
+
+test("a completed creation stays ready while Studio answers another message", async () => {
+  const turn = makeTurn({ state: "accepted" });
+  turn.generation = {
+    jobId: "completed-job", surface: "image", status: "completed", progress: 100,
+    message: null, priceCents: 600, currency: "USD", paymentStatus: "paid",
+    result: null, retryAfterSeconds: null,
+  };
+  const view = await mountCard({ turn, locale: "en", busy: true });
+  try {
+    const text = view.dom.window.document.body.textContent ?? "";
+    assert.match(text, /Creation ready/);
+    assert.doesNotMatch(text, /Studio is working/);
+    assert.equal(buttonMatching(view.dom.window.document, /Create|Renew|Retry/i), null);
   } finally { await view.close(); }
 });
 

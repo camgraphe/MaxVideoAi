@@ -108,12 +108,12 @@ export function ImageQuoteCard({
         </>
       ) : (
         <span className={styles.muted}>
-          {busy
-            ? t('Studio is working…', 'Studio travaille…')
-            : turn.generation?.status === "completed"
-              ? t('Creation ready', 'Création prête')
-              : turn.generation?.status === "failed"
-                ? conversationFailurePresentation(turn.generation, locale)
+          {turn.generation?.status === "completed"
+            ? t('Creation ready', 'Création prête')
+            : turn.generation?.status === "failed"
+              ? conversationFailurePresentation(turn.generation, locale)
+              : busy
+                ? t('Studio is working…', 'Studio travaille…')
                 : t('Creation started.', 'La création a commencé.')}
         </span>
       )}
