@@ -129,7 +129,7 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 - [x] Vérifier avec sorties contrôlées échec/remboursement et retour dans le projet sans relance automatique.
 - [ ] Qualifier une sortie réelle de chaque nouvelle capacité après devis approuvé ; conserver coût média et tokens distincts.
 
-Checkpoint natif du 2 octobre : image et animation Wan 3 réelles qualifiées après devis séparément approuvés. Le MP4 de 5 s, 854 × 480 sans audio est jouable, repris et inséré depuis une phrase client ordinaire. Voix et musique restent ouvertes ; la musique nécessite des credentials renouvelés.
+Checkpoint natif du 2 octobre : image, animation Wan 3 et voix Seed anglaise réelles qualifiées après devis séparément approuvés. Le MP4 de 5 s, 854 × 480 sans audio et le MP3 mesuré à 12,408 s sont jouables, repris et insérés depuis des phrases client ordinaires. Sol écrit lui-même les prompts et la narration. La musique nécessite des credentials renouvelés ; l'exécution Audio distante durable reste distincte de la preuve localhost.
 
 **Vérification :** contrats/session/PG, puis contrôles provider bornés. PASS signifie vidéo, voix et musique jouables, même compte/projet, charges exactes et récupérations uniques.
 
@@ -153,9 +153,9 @@ Checkpoint natif du 2 octobre : image et animation Wan 3 réelles qualifiées ap
 - [x] Adapter la présentation du prototype : moniteur repliable au-dessus de la timeline, chat accessible sur mobile, absence de lecteur vide permanent.
 - [x] Vérifier conflit après coupe manuelle : la réponse IA ne remplace pas silencieusement la modification.
 - [ ] Raccorder estimation/réservation/rendu existants ; le navigateur récupère le même artifact après fermeture/réouverture.
-- [ ] Vérifier desktop et mobile sur vrais médias ; garder résolution du fichier source distincte de celle du rendu final.
+- [x] Vérifier desktop et mobile simulé sur les vraies sorties vidéo/voix ; garder résolution du fichier source distincte de celle du rendu final. Les appareils physiques restent hors de cette preuve.
 
-Le vrai MP4 généré passe désormais l'insertion autonome avec mesure des octets, la coupe source (1 s → film de 4 s), la restauration à 5 s et la reprise de la révision 3. Le moniteur repliable conserve sa dernière image. Desktop 1440 × 900 et mobile simulé 390 × 844 sont vérifiés ; Audio réel et rendu distant restent à qualifier.
+Le vrai MP4 généré passe l'insertion autonome avec mesure des octets, la coupe source (1 s → film de 4 s) et la restauration à 5 s. La voix réelle est insérée à 0 avec 372 frames à 30 fps, sans dépasser sa source mesurée ; volume 0→100 et révision 6 sont repris après reload. Les décodeurs vidéo/Audio lisent simultanément, la voix atteint sa fin sans erreur et le moniteur reste repliable. Desktop 1440 × 900 et mobile simulé 390 × 844 sont vérifiés. La musique superposée à la voix et le rendu distant restent à qualifier.
 
 **Vérification :** tests de commandes, conflit, manifeste/export puis navigateur. PASS signifie coupe cohérente, projet repris et fichier lisible à la durée attendue.
 
