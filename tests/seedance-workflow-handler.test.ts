@@ -8,7 +8,7 @@ test('workflow route authenticates before owned reads and keeps every response p
   const req = new NextRequest('http://localhost:3106/api/jobs/draft/seedance-workflow', { headers: { Authorization: 'Bearer fixture' } });
   const props = { params: Promise.resolve({ jobId: 'draft' }) };
   const create = (settings: { enabled?: boolean; owner?: string | null; authError?: boolean; readError?: boolean } = {}) => handler.createSeedanceWorkflowGetHandler({
-    localSeedanceWorkflowEnabled: () => settings.enabled ?? true,
+    seedanceWorkflowEnabled: () => settings.enabled ?? true,
     getRouteAuthContext: async (request: NextRequest) => { authCalls++; assert.equal(request.headers.get('authorization'), 'Bearer fixture'); if (settings.authError) throw new Error('auth down'); return { userId: settings.owner ?? null }; },
     readOwnedSeedanceWorkflowView: async (owner: string, jobId: string) => { reads++; assert.equal(owner, 'owner'); assert.equal(jobId, 'draft'); if (settings.readError) throw new Error('DB down'); return null; },
   });

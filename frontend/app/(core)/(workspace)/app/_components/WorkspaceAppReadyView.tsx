@@ -37,7 +37,7 @@ const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client
 
 type WorkspaceAppReadyViewProps = {
   localSeedanceDraftPreview?: boolean;
-  localSeedanceDraftWorkflow?: boolean;
+  seedanceDraftWorkflowEnabled?: boolean;
   suspended: boolean;
   activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -57,7 +57,7 @@ type WorkspaceAppReadyViewProps = {
 
 export function WorkspaceAppReadyView({
   localSeedanceDraftPreview = false,
-  localSeedanceDraftWorkflow = false,
+  seedanceDraftWorkflowEnabled = false,
   suspended,
   activeDraft,
   app,
@@ -250,10 +250,10 @@ export function WorkspaceAppReadyView({
   });
   const workflowAccount = app.authStatus === 'authed' && app.user?.id && app.session?.access_token
     ? { userId: app.user.id, token: app.session.access_token } : null;
-  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: localSeedanceDraftWorkflow && !localSeedanceDraftPreview,
+  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
     onResolutionChange: handleResolutionChange, showNotice });
-  const draftControls = localSeedanceDraftPreview ? draftPreview : localSeedanceDraftWorkflow ? draftWorkflow : undefined;
+  const draftControls = localSeedanceDraftPreview ? draftPreview : seedanceDraftWorkflowEnabled ? draftWorkflow : undefined;
   if (suspended || !selectedEngine || !form) return null;
 
   return (

@@ -1,5 +1,10 @@
 # Seedance 2.5 local Draft lifecycle
 
+This is the historical local implementation checkpoint. The later explicit
+server-switch launch preparation is documented in
+[Seedance Draft launch](../deployment/seedance-draft-launch.md); that preparation
+does not itself certify the application/storage canary or activate production.
+
 ## Scope
 
 This continuation implements real server orchestration for one text-to-video

@@ -5,7 +5,7 @@ import { resolveMediaAwarePreflight } from './media-aware-preflight';
 import { readPreflightRequest } from './preflight-request';
 import { isPrivateRuntimeEngineId } from '@/server/video-generation/private-engine-registry';
 import { resolveLaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
-import { localSeedanceWorkflowEnabled, resolveSeedanceWorkflowRequest, SeedanceWorkflowRequestError } from '@/server/seedance-workflow-request';
+import { seedanceWorkflowEnabled, resolveSeedanceWorkflowRequest, SeedanceWorkflowRequestError } from '@/server/seedance-workflow-request';
 import type { PreflightRequest } from '@/types/engines';
 
 type PreflightPostDependencies = {
@@ -36,7 +36,7 @@ export function createPreflightPostHandler(dependencies: PreflightPostDependenci
       try {
         const userId = (await getRouteAuthContextFn(req)).userId;
         trustedSeedanceWorkflow = await resolveSeedanceWorkflowRequest({ body: { ...request, engineId: request.engine },
-          userId: userId ?? '', engineId: request.engine, enabled: localSeedanceWorkflowEnabled(req.url) });
+          userId: userId ?? '', engineId: request.engine, enabled: seedanceWorkflowEnabled(req.url) });
         const normalized = trustedSeedanceWorkflow!.body;
         request = { ...request, durationSec: normalized.durationSec as number,
           resolution: normalized.resolution as PreflightRequest['resolution'], aspectRatio: normalized.aspectRatio as PreflightRequest['aspectRatio'],

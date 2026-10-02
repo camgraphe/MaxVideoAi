@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { localSeedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
+import { seedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
 import { readOwnedSeedanceWorkflowView } from '@/server/seedance-workflow-view';
 
 type Dependencies = {
-  localSeedanceWorkflowEnabled: typeof localSeedanceWorkflowEnabled;
+  seedanceWorkflowEnabled: typeof seedanceWorkflowEnabled;
   getRouteAuthContext: (req: NextRequest) => Promise<{ userId: string | null }>;
   readOwnedSeedanceWorkflowView: typeof readOwnedSeedanceWorkflowView;
 };
-export function createSeedanceWorkflowGetHandler(deps: Dependencies = { localSeedanceWorkflowEnabled, getRouteAuthContext, readOwnedSeedanceWorkflowView }) {
+export function createSeedanceWorkflowGetHandler(deps: Dependencies = { seedanceWorkflowEnabled, getRouteAuthContext, readOwnedSeedanceWorkflowView }) {
   return async (req: NextRequest, props: { params: Promise<{ jobId: string }> }) => {
     const headers = { 'Cache-Control': 'private, no-store' };
-    if (!deps.localSeedanceWorkflowEnabled(req.url)) return NextResponse.json({ error: 'Unavailable' }, { status: 404, headers });
+    if (!deps.seedanceWorkflowEnabled(req.url)) return NextResponse.json({ error: 'Unavailable' }, { status: 404, headers });
     let userId: string | null;
     try { ({ userId } = await deps.getRouteAuthContext(req)); }
     catch { userId = null; }
