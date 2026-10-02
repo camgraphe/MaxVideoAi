@@ -31,5 +31,11 @@
 .inspector input[type="range"] {width:90px;min-width:90px;accent-color:var(--studio-accent);}
 .inspector small {font-size:10px;color:var(--studio-muted);}
 .error {font-size:11px!important;line-height:1.4;margin:4px 0 0!important;}
+.exportDialog {width:min(420px,calc(100vw - 32px));padding:24px;background:var(--studio-bg);color:var(--studio-text);border:1px solid var(--studio-line);border-radius:18px;}
+.exportDialog::backdrop {background:#0008;backdrop-filter:blur(4px);}
+.exportDialog p,.exportDialog label {font-size:12px;line-height:1.6;color:var(--studio-muted);margin:16px 0;}
+.exportDialog select {background:var(--studio-panel);color:var(--studio-text);border:1px solid var(--studio-line);padding:8px;border-radius:8px;margin-left:12px;}
+.exportHeading {display:flex;justify-content:space-between;align-items:center;}
+.exportDialog > button {width:100%;background:var(--studio-accent);color:var(--studio-ink);}
 @media (max-width:767px) {.footer {padding:4px 12px 6px;}.monitorRow {height:108px;margin-bottom:2px;}.inspector > span {display:none;}.footer .handle {width:16px;min-width:16px;}.inspector {gap:4px;}.tools {gap:6px;}}
 @media (prefers-reduced-motion:no-preference) {.monitorRow {animation:appear .18s ease-out;}@keyframes appear {from {opacity:0;transform:translateY(8px);}to {opacity:1;transform:translateY(0);}}}

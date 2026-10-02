@@ -40,6 +40,10 @@ test('conversation edits use canonical revisions and receipts, preserving manual
   const insert = {...input, expectedRevision: 1, idempotencyKey: randomUUID(), edit: {kind: 'insert' as const, ref: {type: 'asset' as const, assetId: STUDIO_CONNECTED_ASSET_IDS.a, kind: 'video' as const}, startFrame: 90, durationFrames: 60}};
   const inserted = await module.editStudioConversationTimeline(actor, insert, deps);
   assert.equal(inserted.clipCount, 3);
+  const insertedRead = await readStudioWorkspace(actor,project.projectId,deps);
+  const insertedItem = (insertedRead.sequences[0].timelineState as any).timelineItems.find((item: any) => item.id === inserted.clip!.id);
+  const originalFit = state.timelineItems.find((item: any) => item.ref.assetId === STUDIO_CONNECTED_ASSET_IDS.a).transform.scale;
+  assert.equal(insertedItem.transform?.scale,originalFit,'Inserting the same measured source must fit the same program frame as the existing montage.');
   await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {...insert.edit, ref: {...insert.edit.ref, assetId: STUDIO_CONNECTED_ASSET_IDS.foreign}}}, deps), /MEDIA_NOT_AVAILABLE/);
   await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {...insert.edit, ref: {...insert.edit.ref, assetId: STUDIO_CONNECTED_ASSET_IDS.unmeasured}}}, deps), /MEDIA_METADATA_REQUIRED/);
   await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID()}, {...deps, afterMutation: () => {throw new Error('Lost receipt');}}), /Lost receipt/);

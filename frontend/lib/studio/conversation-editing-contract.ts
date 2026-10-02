@@ -19,4 +19,4 @@ export const STUDIO_EDITING_DIRECTOR_TOOLS = [
     ]},
   }},
 ] as const;
-export type StudioConversationTimeline = {projectId: string;sequenceId: string;revision: number;fps: number;clips: {id: string;title: string;kind: string;track: string;startFrame: number;durationFrames: number;sourceInFrame: number;ref?: import('@/lib/toolbox/contract').ToolAssetRef}[]};
+export type StudioConversationTimeline = {projectId: string;sequenceId: string;sequenceName: string;updatedAt: string;revision: number;fps: number;clips: {id: string;title: string;kind: string;track: string;startFrame: number;durationFrames: number;sourceInFrame: number;ref?: import('@/lib/toolbox/contract').ToolAssetRef}[]};

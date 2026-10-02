@@ -12,7 +12,7 @@ export async function readStudioConversationTimeline(actor: {userId: string;proj
   if (!sequence) throw new Error('STUDIO_SEQUENCE_CONFLICT');
   const state = sequence.timelineState as {timelineItems: WorkspaceTimelineItem[]};
   const settings = sequence.settings as WorkspaceProjectSettings;
-  const data: StudioConversationTimeline = {projectId: project.id,sequenceId: sequence.id,revision: project.revision!,fps: settings.fps,clips: state.timelineItems.map(item => ({id: item.id,title: item.title,kind: item.mediaKind ?? 'video',track: item.track,startFrame: secondsToTimelineFrame(item.startSec,settings.fps),durationFrames: secondsToTimelineFrame(item.durationSec,settings.fps),sourceInFrame: secondsToTimelineFrame(item.sourceStartSec ?? 0,settings.fps),...(item.ref ? {ref: item.ref} : {})}))};
+  const data: StudioConversationTimeline = {projectId: project.id,sequenceId: sequence.id,sequenceName: sequence.name,updatedAt: project.updatedAt,revision: project.revision!,fps: settings.fps,clips: state.timelineItems.map(item => ({id: item.id,title: item.title,kind: item.mediaKind ?? 'video',track: item.track,startFrame: secondsToTimelineFrame(item.startSec,settings.fps),durationFrames: secondsToTimelineFrame(item.durationSec,settings.fps),sourceInFrame: secondsToTimelineFrame(item.sourceStartSec ?? 0,settings.fps),...(item.ref ? {ref: item.ref} : {})}))};
   if (!preview) return {data,settings,items: [] as WorkspaceTimelineItem[]};
   const cache = new Map<string,Promise<{url: string;expires: string | null}>>();
   const items = await Promise.all(state.timelineItems.map(async item => {

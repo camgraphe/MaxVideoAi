@@ -47,8 +47,8 @@ test('unknown or malformed model actions cannot execute, and bounded loops retai
   await assert.rejects(director(context), {code: 'PARAMETER_INVALID'});
   assert.equal(executed, 0);
   const loop = module.createStudioConversationDirector({createResponse: async () => ({id: 'resp', model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', usage: null, output_text: '', output: [{type: 'function_call', name: 'catalog_read', call_id: 'call-' + executed, arguments: '{}'}]})});
-  await assert.rejects(loop(context), {code: 'RATE_LIMITED'});
-  assert.equal(executed, 4);
+  await assert.rejects(loop(context), {code: 'PARAMETER_INVALID'});
+  assert.equal(executed, 3,'Even an invalid tool call in the reply-only final slot cannot perform another action.');
 });
 
 test('action contracts reject foreign identities, unsupported media and confirmation requests', async () => {

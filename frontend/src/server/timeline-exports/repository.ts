@@ -60,6 +60,18 @@ export function timelineExportJobResponse(job: TimelineExportJobRecord): Timelin
   };
 }
 
+/** Read-only recovery across this owned Project's sequences; never initializes export tables. */
+export async function listStudioProjectTimelineExports(params: {userId: string;projectId: string},executor: QueryExecutor = {query}): Promise<TimelineExportJobResponse[]> {
+  const table = await executor.query<{name: string | null}>("SELECT to_regclass('public.app_timeline_exports') AS name");
+  if (!table[0]?.name) return [];
+  const jobs = await executor.query<TimelineExportJobRecord>(`SELECT e.* FROM app_timeline_exports e
+    JOIN studio_sequences s ON s.id=e.render_manifest->>'sequenceId' AND s.user_id=e.user_id
+    JOIN studio_projects p ON p.id=s.project_id AND p.user_id=s.user_id
+    WHERE p.id=$1 AND p.user_id=$2 AND p.deleted_at IS NULL AND s.deleted_at IS NULL
+    ORDER BY e.created_at DESC,e.id LIMIT 8`,[params.projectId,params.userId]);
+  return jobs.map(timelineExportJobResponse);
+}
+
 export function timelineExportIdFromIdempotencyKey(idempotencyKey: string, userId: string): string {
   assertTimelineExportIdempotencyKey(idempotencyKey);
   if (typeof userId !== 'string' || !userId.length) throw new Error('EXPORT_USER_REQUIRED');

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
+import {join} from 'node:path';
 import {expect} from '@playwright/test';
 import {startStudioIntegrationRuntime} from './helpers/studio-integration-runtime';
 import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
@@ -47,6 +48,7 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     await page.getByRole('button',{name: 'Play film',exact: true}).click();
     await expect.poll(() => video.evaluate(element => (element as HTMLVideoElement).currentTime)).toBeGreaterThan(2.1);
     await page.getByRole('button',{name: 'Pause film',exact: true}).click();
+    if (process.env.STUDIO_PROOF_DIRECTORY) {await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive: true});await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,'native-conversation-timeline-desktop.png')});}
     await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
     await expect(page.locator('video[data-playback-item-id]')).toHaveCount(0);
     await page.reload({waitUntil: 'domcontentloaded'});
@@ -66,6 +68,7 @@ test('native chat timeline collapses, trims real source frames and preserves mob
     assert.equal(geometry.width,geometry.viewport,'The mobile document does not overflow horizontally.');
     await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
+    if (process.env.STUDIO_PROOF_DIRECTORY) await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,'native-conversation-timeline-mobile.png')});
     assert.deepEqual(errors,[]);
     assert.ok(browser.readPrivateRequests().some(request => request.status === 200 || request.status === 206));
     await owned.close();

@@ -13,6 +13,8 @@ import styles from "./image-conversation.module.css";
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {ConversationMedia} from './_components/ConversationMedia.client';
 import {ConversationTimeline} from './_components/ConversationTimeline.client';
+import {useConversationExports} from './_hooks/useConversationExports';
+import {ConversationRenderCards} from './_components/ConversationRenderCards.client';
 export default function StudioImageConversation({
   projectId,
   accountKey,
@@ -20,6 +22,8 @@ export default function StudioImageConversation({
   localQa = false,
   mediaEnabled = false,
   editingEnabled = false,
+  exportsEnabled = false,
+  exportAvailable = false,
 }: {
   projectId: string;
   accountKey: string;
@@ -27,11 +31,14 @@ export default function StudioImageConversation({
   localQa?: boolean;
   mediaEnabled?: boolean;
   editingEnabled?: boolean;
+  exportsEnabled?: boolean;
+  exportAvailable?: boolean;
 }) {
   const {locale: appLocale} = useI18n();
   const locale = appLocale === 'fr' ? 'fr' : 'en';
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const studio = useImageConversation(projectId, accountKey, projectName);
+  const exports = useConversationExports(projectId,exportsEnabled);
   const [text, setText] = useState("");
   const [references, setReferences] = useState<ImageLibraryAsset[]>([]);
   const [library, setLibrary] = useState(false);
@@ -53,7 +60,7 @@ export default function StudioImageConversation({
   useEffect(() => {
     if (follow.current)
       bottom.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [studio.conversation, studio.busy]);
+  }, [studio.conversation, studio.busy,exports.jobs]);
   const images = studio.conversation.turns
     .flatMap((turn) =>
       turn.generation?.result?.surface === "image"
@@ -227,6 +234,8 @@ export default function StudioImageConversation({
               ) && (
                 <p className={styles.userMessage}>{studio.pending.message}</p>
               )}
+            {exportsEnabled && <ConversationRenderCards jobs={exports.jobs} locale={locale}/>}
+            {exports.error && <p className={styles.muted}>{t('Film results are temporarily unavailable. Your conversation is saved.','Les rendus sont temporairement indisponibles. Votre conversation est conservée.')}</p>}
             {studio.busy && (
               <p className={styles.thinking} role="status">
                 <span />
@@ -323,7 +332,7 @@ export default function StudioImageConversation({
             ))}
         </aside>
       </div>
-      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}}/>}
+      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} onExportChange={exports.refresh}/>}
       {library && (
         <ImageReferenceLibrary
           onClose={() => setLibrary(false)}

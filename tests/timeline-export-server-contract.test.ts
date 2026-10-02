@@ -176,7 +176,7 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
   assert.match(preflightSource, /isStorageConfigured/);
   assert.match(preflightSource, /CHROME_BIN/);
   assert.match(readFileSync(compositionPath, 'utf8'), /<Sequence/);
-  assert.match(readFileSync(compositionPath, 'utf8'), /<Video/);
+  assert.match(readFileSync(compositionPath, 'utf8'), /<OffthreadVideo/, 'server rendering must extract precise source frames instead of using the browser video compositor');
   assert.match(readFileSync(compositionPath, 'utf8'), /<Audio/);
   assert.match(readFileSync(compositionPath, 'utf8'), /clip\.composition/, 'Remotion should consume timeline clip composition geometry');
   assert.doesNotMatch(readFileSync(compositionPath, 'utf8'), /objectFit:\s*'cover'/, 'server renders should not silently stretch native source media to full sequence frame');

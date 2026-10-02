@@ -12,9 +12,10 @@ import {applyConversationTimelineEdit,type ConversationTimelineEdit} from '@/lib
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
+import {ConversationExport} from './ConversationExport.client';
 
 type Drag = {clip: WorkspaceTimelineItem;edge: 'start'|'end'|null;x: number;edit?: ConversationTimelineEdit};
-export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: () => void;insertion?: {key: string;asset: ImageLibraryAsset} | null}) {
+export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,onExportChange}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: () => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;onExportChange: () => void}) {
   const router = useRouter();
   const {dictionary,locale} = useI18n();
   const t = useCallback((en: string,fr: string) => locale === 'fr' ? fr : en,[locale]);
@@ -85,6 +86,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <button disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} onClick={onOpenLibrary}><Plus size={17}/></button>
       {!!items.length && <button aria-label={monitor ? t('Collapse monitor','Replier le moniteur') : t('Open monitor','Ouvrir le moniteur')} onClick={() => monitor ? closeMonitor() : setMonitor(true)}>{monitor ? <ChevronDown size={17}/> : <ChevronUp size={17}/>}</button>}
       {timeline.busy && <small role="status">{t('Saving…','Enregistrement…')}</small>}
+      {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} onChange={onExportChange}/>}
     </div>
     <div className={styles.scroll}>
       <div className={styles.tracks} style={{width}} onClick={event => {if (items.length) seek((event.clientX-event.currentTarget.getBoundingClientRect().left)/pixelsPerSecond);}}>

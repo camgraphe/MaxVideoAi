@@ -6,6 +6,8 @@ import type {WorkspaceAssetRecord, WorkspaceTimelineItem, WorkspaceTimelineTrack
 import {buildWorkspaceTimelineItemsForAsset, insertWorkspaceTimelineItems, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
 import {createWorkspaceSequenceRecord} from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
 import {timelineFrameToSeconds, secondsToTimelineFrame} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames';
+import {workspaceProjectDimensions} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
+import {buildWorkspaceClipComposition} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
 import {readStudioWorkspace, saveStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {resolveStudioMedia} from './media-resolver';
@@ -92,6 +94,9 @@ async function insertion(actor: {userId: string}, input: ConversationTimelineCom
   const drafts = buildWorkspaceTimelineItemsForAsset({assetNodeId: asset.id,title: asset.filename,asset,startSec: 0,idSeed: id});
   const draft = drafts[0];
   if (!draft) throw new Error('MEDIA_NOT_AVAILABLE');
-  const item: WorkspaceTimelineItem = {...draft,id: `clip-${id}`,ref: media.ref,mediaFacts: media.mediaFacts,linkedGroupId: null,linkedGroupKind: null,mediaAccessRequired: true,sourceStartSec: 0,sourceDurationSec: media.kind === 'image' ? durationSec : media.mediaFacts!.durationSec,durationSec, audioMix: {volume: 100,muted: false}};
+  const dimensions = workspaceProjectDimensions(settings);
+  const sourceWidth = media.mediaFacts?.width;const sourceHeight = media.mediaFacts?.height;
+  const transform = media.kind !== 'audio' && sourceWidth && sourceHeight ? {opacity: 1,rotation: 0,positionX: 0,positionY: 0,scale: buildWorkspaceClipComposition({sequenceWidth: dimensions.width,sequenceHeight: dimensions.height,sourceWidth,sourceHeight,transform: {opacity: 1,rotation: 0,scale: 1,x: 0,y: 0}}).fitScale} : draft.transform;
+  const item: WorkspaceTimelineItem = {...draft,transform,id: `clip-${id}`,ref: media.ref,mediaFacts: media.mediaFacts,linkedGroupId: null,linkedGroupKind: null,mediaAccessRequired: true,sourceStartSec: 0,sourceDurationSec: media.kind === 'image' ? durationSec : media.mediaFacts!.durationSec,durationSec, audioMix: {volume: 100,muted: false}};
   return {asset,items: [item]};
 }
