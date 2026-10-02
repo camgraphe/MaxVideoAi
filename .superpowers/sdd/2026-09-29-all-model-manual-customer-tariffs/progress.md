@@ -716,3 +716,33 @@ real fixture now preserves all other funding checks and historic rows across
 creation/replacement/replay. Migration60 explicitly accepts this old state.
 No remote DDL or tariff write. The first private report remains immutable and
 binds9770; recheck the corrected committed inventory before claiming its evidence.
+
+Corrected committed inventory `951e11353` rechecked at
+`2026-10-02T00:51:08.328Z`: remote/readOnly=true, mandatory missing
+tables/functions=[], trialRasterPredicate=created_by_migration_60, expected six
+new tables absent, activationReady=false. Schema hash:
+`1f9d03e1009e33b1eafdc06951276b39d2452acf40ec2687f0ab6cd5e1a54d0a`.
+Private immutable report: `/tmp/mva-pricing-cutover-schema-corrected-20261002.json`.
+14 focused tests pass, 0 fail, 0 skip; frontend TypeScript/lint/exposure pass.
+Environment-free optimized `951e11353` build passes 920 static pages with the
+existing Supabase Edge warning. The first full-suite git-archive run has
+6,725 pass, 2 fail, 3 skip: archival asset ancestor proof and IndexNow git ls-files
+require Git metadata absent in an archive. This run is not accepted as a green
+full-suite gate. Both files pass all 20 tests in a clean disposable local Git
+clone of `951e11353` with no private env. The complete standard suite rerun there
+passes 6,727 tests, 0 failures, 3 skips; all 11 isolated Studio HTTP/browser
+integration tests pass, 0 failures/skips. `pnpm test:validate` exits zero.
+Log: `/tmp/mva-pricing-cutover-951e11353-validation-git.log`. This whole-candidate
+qualification includes `35dda2840`'s workflow preflight fix; later docs commits
+do not relabel the source snapshot. Main and origin/main are aligned at
+`d10ad4587`, contained in `951e11353`; no rebase needed against that revision.
+Owned archive build/test directories and temporary direct reader env removed;
+source private env/admin/database remain intact. No production write, push or
+deployment.
+
+Local qualification and migration preparation complete. Keep the reviewed
+production operation at the separate release decision in Task 6: obtain current
+deployed commercial capture/parity, review the target-specific activation path,
+pass Quality CI and perform authorized app-owned storage/Studio Draft import
+acceptance. A local certificate cannot bind production. No new paid provider calls,
+external message, remote write or publication was authorized/performed here.

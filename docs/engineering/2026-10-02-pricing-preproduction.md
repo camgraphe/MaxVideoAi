@@ -242,3 +242,56 @@ The inventory itself rejects a read-write transaction, and PostgreSQL refuses
 DDL attempted inside its read-only transaction. The six initially absent tables
 appear after rehearsal, while `activationReady` remains false. The fixture does
 not stand in for production schema, prices or live storage acceptance.
+
+The fresh review of `e1a2b95e5..9770a3867` found no Critical finding and three
+Important findings in the inventory owner: duplicate TLS parameters, ambient
+PostgreSQL target/authentication settings, and uncaught backend disconnects.
+Commit `951e11353` fixes all three. RED-to-GREEN tests exercise actual `pg`
+connection parameters and a terminated PostgreSQL 17 backend; connection loss
+cannot produce a successful report. All 14 focused inventory, evidence, input
+and Draft PostgreSQL tests pass, with no skips. TypeScript, frontend lint,
+exposure lint and the environment-free optimized build pass; the build generates
+920 static pages and retains the existing Supabase Edge runtime warning.
+
+The corrected inventory's read-only production report, captured at
+`2026-10-02T00:51:08.328Z`, binds `951e11353` and schema hash
+`1f9d03e1009e33b1eafdc06951276b39d2452acf40ec2687f0ab6cd5e1a54d0a`.
+Mandatory prerequisite tables/functions are present. The six new pricing/Draft
+tables are absent, and the deployed trial guard is migration 31's older inline
+form. Migration 60 creates its absent raster predicate; the disposable rehearsal
+now exercises that exact old form while preserving all other funding guards and
+historical rows. `activationReady` remains false. No remote DDL, pricing change
+or customer/payment row read was performed by this inventory.
+
+Private report: `/tmp/mva-pricing-cutover-schema-corrected-20261002.json`.
+Focused checks: `/tmp/mva-pricing-cutover-fix-validation.log`.
+Build: `/tmp/mva-pricing-cutover-951e11353-build.log`.
+
+The first whole-suite attempt used a Git archive: 6,725 pass, two failures,
+three skips. The two failures were the archival asset ancestor proof and IndexNow
+dry run, which require repository metadata. The same two files pass all 20 tests
+in a clean disposable local Git clone of `951e11353` with no private environment
+files. The complete standard suite rerun in that clone passes 6,727 tests with
+zero failures and three skips. The failed archive attempt is retained in its
+log and is not used as the acceptance gate.
+
+All 11 isolated Studio HTTP/browser integration tests also pass, with no failures
+or skips; the whole `pnpm test:validate` process exits zero. This run qualifies
+the complete committed `951e11353` candidate, including the earlier workflow
+preflight correction. Its later documentation-only acceptance commit does not
+replace that source attribution. Log:
+`/tmp/mva-pricing-cutover-951e11353-validation-git.log`.
+
+Local `main` and `origin/main` are aligned at `d10ad4587` with zero divergence,
+and `951e11353` contains that commit. Both domains were observed on the same READY
+Git-main deployment `dpl_B1xi8TtrQ1viCBJ3XbEjWG6HCS4y`; the read-only alignment log
+is `/tmp/mva-pricing-cutover-9770a3867-deployment.log`. Repeat this operational
+check immediately before an authorized publication decision. No rebase is needed
+against that observed main revision.
+
+The local qualification and migration preparation are complete. Production's
+current quote capture/parity certificate, reviewed activation operation, Quality
+CI and the app-owned storage/Studio Draft import canary remain release gates in
+the [cutover runbook](../deployment/customer-tariff-cutover.md). The authored
+production tariff switch stays false. This continuation made no production
+change, publication, paid provider request or external message.
