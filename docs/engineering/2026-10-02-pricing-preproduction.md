@@ -59,11 +59,12 @@ Fresh `git fetch origin main` finds local main and origin/main at
 both maxvideoai.com and api.maxvideoai.com serve the same READY Git-main deployment
 `dpl_B1xi8TtrQ1viCBJ3XbEjWG6HCS4y` with that SHA. The candidate contains it.
 
-Read-only BytePlus Finance evidence still shows contract `CT20260925128931` as
-**In contract generation**, completion time absent, and the account discount list
-empty. Keep the signed terms in cost estimates as the user requested; effective
-account rates/invoice discounts are not certified. Do not silently relabel a LIST
-or contract estimate as an observed invoice.
+The earlier read-only BytePlus Finance check showed contract `CT20260925128931`
+as **In contract generation**, with no completion time or account discounts.
+On resuming October 2, Adrien reports that the contract is validated. Treat that
+as the current reported contract status and retain its signed cost estimates;
+effective invoice discounts are not newly observed by this continuation. Do not
+relabel a LIST or contract estimate as a settled invoice.
 
 ### Contract activation is not a release blocker for the current customer grid
 
@@ -289,9 +290,12 @@ is `/tmp/mva-pricing-cutover-9770a3867-deployment.log`. Repeat this operational
 check immediately before an authorized publication decision. No rebase is needed
 against that observed main revision.
 
-The local qualification and migration preparation are complete. Production's
-current quote capture/parity certificate, reviewed activation operation, Quality
-CI and the app-owned storage/Studio Draft import canary remain release gates in
+The local qualification and migration preparation are complete. The resumed
+[deployed comparison](2026-10-02-pricing-deployed-comparison.md) now records the
+read-only commercial capture and exact-source monetary reconstruction, disclosed
+model/tool corrections and local demonstration-data alignment. Publication-time
+freshness, the target-specific activation certificate/operation, Quality CI and
+the app-owned storage/Studio Draft import canary remain release gates in
 the [cutover runbook](../deployment/customer-tariff-cutover.md). The authored
 production tariff switch stays false. This continuation made no production
 change, publication, paid provider request or external message.

@@ -26,12 +26,19 @@ engine overrides, pricing rules, factual environment and candidate commit.
 Do not call the local active grid or a candidate's simulated legacy path proof
 of deployed prices. Keep the original capture immutable.
 
+The [October 2 deployed comparison](../engineering/2026-10-02-pricing-deployed-comparison.md)
+records the completed read-only source/configuration capture and offline
+monetary reconstruction. Refresh its operational inputs at publication time.
+Keep the reviewed upscale factor/source-estimation corrections separate from
+model tariff changes. Preserve existing production billing-product values:
+sandbox defaults are not a replacement for captured production records.
+
 Reproduce the whole candidate against that capture. Report the approved GPT
 one-cent floors and proportional Seedance input-duration corrections separately,
 including original/new cents and affected selectors. Preserve other prices,
 including Seedream's original one-source amount in additional-source variants.
 Require complete supported-domain coverage and exact parity outside those
-approved changes. Do not copy a local approval fingerprint onto production data.
+disclosed, reviewed changes. Do not copy a local approval fingerprint onto production data.
 
 Pending BytePlus discount activation is not a blocker for unchanged customer
 amounts checked above LIST. Keep signed estimates separate from observed invoice

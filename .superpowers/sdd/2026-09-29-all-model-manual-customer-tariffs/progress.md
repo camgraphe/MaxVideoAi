@@ -746,3 +746,71 @@ deployed commercial capture/parity, review the target-specific activation path,
 pass Quality CI and perform authorized app-owned storage/Studio Draft import
 acceptance. A local certificate cannot bind production. No new paid provider calls,
 external message, remote write or publication was authorized/performed here.
+
+## Resumed deployed commercial comparison — 2026-10-02
+
+Base464906cd1. User reports BytePlus contract validated; adopt that reported
+status, retain existing signed estimates and customer cells. No new invoice
+observation, provider task, support/Zen message or production mutation.
+Ruling: reproduce monetary quotes from exact deployed d10ad4587 source with actual
+read-only commercial rows, rather than candidate simulated legacy/defaults.
+Cost if wrong: mismatched deployment/configuration could hide a price change;
+bind deployment/source/database/environment facts and preserve captured inputs.
+Fresh fetch confirms main=origin/main=d10ad4587, zero divergence, included in
+candidate. Both production domains remain dpl_B1xi8TtrQ1viCBJ3XbEjWG6HCS4y.
+Production repeatable-read/read-only capture at2026-10-02T08:16:27.244Z:
+4rules,53settings,9overrides,16billingproducts; no bootstrap or customer/payment
+reads. Direct controlled reader uses target8c5b3a3228a5e3db8a4785b5da1590b2126d24b336a57bd190f5fffe95e231ad.
+Commercial hashd56aba99bc939aa1a14683b68ee03c13cec25c344342619b6c761c724d98d8d5;
+producthash35f5e91b10dc8ee781c30100495d19923b7d6210cade3687cfbbacdd8bcb07cf.
+Final read-only capture at08:33:57.278Z finds both unchanged. Interrupted earlier
+capture retained: only system-settings updated_at changed, no monetary data.
+
+Offline clean deployed-source clone uses its own pricing package alias, actual
+row mapper/system-default/configured projection/variant/canonical quote owners.
+No database/provider credentials or network in calculation. Six Luma monetary
+ENV dependencies absent in actual deployed environment; versioned defaults and
+registry/policy/config file hashes bound. Luma intrinsic algorithms legitimately
+have no pricingDetails: first diagnostic reports158 gaps; complete owner-based
+reproduction resolves them without invented pricing details or provider fetch.
+20122ordinary model cases:19825unchanged,24approvedGPT+1c,273approvedSeedance2.5
+input minima;0errors/unexplained.324new local-only Draft/final offers separately
+excluded from deployed-price parity.6372input stress cases:2913unchanged and
+3459reviewed proportional increases;0errors/unrelated differences, overlaps
+ordinary cases. This is exact-source monetary reconstruction, not HTTP/provider
+route availability or a writable production activation certificate.
+
+Product comparison found3sandbox default differences: QwenAngle7vs8c,
+CharacterDraft8vs15c,CharacterFinal15vs30c. Fourth difference is the preceding
+reviewed FlashVSR factor/source correction125→222c (10s720p30fps2x), coefficient4;
+retain it and disclose other affected factor variants from that reviewed work.
+Ruling: align private demonstration records to actual deployed fixed products;
+preserve the reviewed factor fix and current production records at cutover.
+Cost if wrong: sandbox seed amounts might silently replace live operator prices.
+Private before-state retained; actual configured local admin, pinned Unix socket,
+verified socket-only server/database and branded transaction. Existing product
+preview/fingerprint/confirm service commits all3updates+immutable events atomically.
+Initial guard correctly refused an assumed database name; actual sandbox database
+is postgres, now checked against the explicit selected URL (network guard retained).
+Other products and complete model state/hash remain unchanged at3523/18177cells.
+Fresh actual shared product quote inventory38/38,0warnings/missingreferences.
+Final deployed comparison38products:37unchanged,1disclosedFlashfix;0unexplained.
+16focused confirmation/factor tests pass,0fail/skip. No application code changes;
+prior whole-candidate qualification remains attributed to951e11353.
+
+Private bundle/tmp/mva-pricing-production-capture.kpam77r5 contains immutable
+captures, contexts, comparison implementation/report, monetary bindings, local
+alignment receipt/current products and verification. ManifestSHA256:
+58b76ef7164ab9f6740ce16f102b039816506da97a796d9370a21666350dc029.
+activationReady=false,productionWriteAuthorized=false. Dated record:
+docs/engineering/2026-10-02-pricing-deployed-comparison.md.
+Publication-time recapture/legacy-payment/Git/schema/config freshness, reviewed
+target-specific activation operation+exact migrations, Quality CI/preview and
+user production decision remain release boundaries. App-owned storage/Studio
+Draft import needs its separate authorized operational canary; Draft remains
+local-only. No new review of the already qualified application implementation.
+Owned temporary reader credentials/full environment responses and clean deployed
+source clone removed after evidence binding; immutable captures/reports/scripts
+retained privately. User admin/runtime/private database and source env retained.
+Evidence artifact hashes, document bindings/links, inactive authored production
+switch and git diff --check verified. No application implementation changed.

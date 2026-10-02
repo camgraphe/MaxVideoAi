@@ -15,6 +15,12 @@ and recovery. `pricing:cutover:schema` is an explicitly targeted read-only catal
 inventory with exact migration digests; it neither applies DDL nor certifies
 production quote parity or activation readiness.
 
+The [October 2 deployed comparison](2026-10-02-pricing-deployed-comparison.md)
+records a fresh read-only commercial snapshot and offline reconstruction using
+the actual deployed Git source, including disclosed model and tool corrections.
+Adrien reports the BytePlus contract validated. That comparison still requires
+publication-time freshness and a separately reviewed production activation path.
+
 Seedream's factual source count is shared by actual image charging, image
 estimates, MCP settlement and provider comparison. `lib/image/seedream.ts` includes
 the main edit source and every additional reference; Pro's ten allowed totals
