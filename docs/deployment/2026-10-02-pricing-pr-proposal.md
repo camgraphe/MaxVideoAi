@@ -138,6 +138,21 @@ isolée, sur la base de preview vérifiée, en 56,7 secondes. Aucun calcul, cont
 d'accès ou garde de production n'est modifié. La CI complète de cette correction
 reste le dernier contrôle avant la décision de publication.
 
+La [quatrième exécution](https://github.com/camgraphe/MaxVideoAi/actions/runs/37024904399)
+valide les 6 741 tests principaux et les sept contrôles du navigateur Studio,
+sans échec. Le smoke admin compte 25 parcours réussis, une exclusion existante
+et un échec : le test des produits facturés cherche encore une boîte nommée
+« update » et l'ancien texte de l'aperçu. Le test suit maintenant la revue
+commune des prix, vérifie la réponse réelle du serveur, le prix proposé de
++1 centime et l'annulation sans appel de confirmation. Son budget de test passe
+de 30 à 60 secondes pour inclure la compilation à froid et la réponse réelle de
+la base ; les budgets applicatifs sont inchangés. Le parcours ciblé passe en
+35,3 secondes. La qualification complète dans la copie isolée termine ensuite
+en 5,6 minutes : 26 parcours réussis, zéro échec et une exclusion existante liée
+à la configuration Supabase du répertoire des utilisateurs. Aucun calcul de
+tarif, contrôle d'accès ou garde de production n'est modifié par cette correction.
+La nouvelle CI complète du candidat reste à obtenir.
+
 Avant fusion/activation, suivre le [runbook](customer-tariff-cutover.md) : preuve
 récente des devis et de la configuration déployés, inventaire des paiements,
 sauvegarde, review des neuf migrations exactes, manifeste de la cible finale et

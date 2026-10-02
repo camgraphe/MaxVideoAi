@@ -385,7 +385,15 @@ test.describe('admin critical flows', () => {
   });
 
   test('billing products filter, preview, and cancel without applying', async ({ page }) => {
+    // Include the cold preview-route compilation and the real database response.
+    test.setTimeout(60_000);
     const errors = trackClientErrors(page);
+    const confirmRequests: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname === '/api/admin/billing-products/confirm') {
+        confirmRequests.push(request.url());
+      }
+    });
 
     await openAdminRoute(page, '/admin/billing-products');
     const productState = await waitForBillingProductState(page);
@@ -406,14 +414,28 @@ test.describe('admin critical flows', () => {
     const priceInput = page.getByLabel('Billing product unit price (cents)');
     const currentPrice = Number(await priceInput.inputValue());
     await priceInput.fill(String(currentPrice + 1));
+    const previewResponse = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/api/admin/billing-products/preview' && response.request().method() === 'POST');
     await page.getByRole('button', { name: 'Preview billing product change' }).click();
+    const response = await previewResponse;
+    expect(response.status()).toBe(200);
+    const data = await response.json();
+    expect(data.ok).toBe(true);
+    expect(data.preview.domain).toBe('billing_product');
+    expect(data.preview.targetId).toBe(productKey);
+    expect(data.preview.currentState.unitPriceCents).toBe(currentPrice);
+    expect(data.preview.proposedState.unitPriceCents).toBe(currentPrice + 1);
+    expect(data.preview.rows[0].deltaCents).toBe(1);
 
-    const dialog = page.getByRole('dialog', { name: /update/i });
+    const dialog = page.getByRole('dialog', { name: /^Price change ·/ });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
+    await expect(dialog.getByText('Review price change', { exact: true })).toBeVisible();
+    await expect(dialog.getByRole('columnheader', { name: 'Current', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('columnheader', { name: 'Proposed', exact: true })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Confirm and apply now' })).toBeVisible();
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toBeHidden();
+    expect(confirmRequests).toEqual([]);
 
     assertNoClientErrors(errors);
   });
