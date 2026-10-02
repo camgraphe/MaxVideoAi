@@ -10,6 +10,12 @@
 
 **Spec:** `docs/engineering/studio-conversation-integration.md`, `experiments/studio-conversation/design/interaction-notes.md` et demandes utilisateur de cette conversation. Ce document fixe l'ordre de livraison ; le film promo est le test final du parcours.
 
+## Avancement au 2 octobre 2026
+
+Le directeur réel reste **GPT-6.1 Sol**. Les actions, mémoire/reprise, vidéo/Audio, timeline canonique et UI d’export sont raccordées localement. Les tests utilisent PostgreSQL jetable et des fichiers mesurés ; un rendu MP4 local de 3 s vérifie les coupes et le son. Le [dossier de pilote](../../engineering/studio-conversation-pilot-readiness.md) distingue chaque preuve locale de la qualification externe restante.
+
+Task 2 est complète. Tasks 1/3 attendent les sorties providers dans la route native ; Task 4 attend le worker distant et la récupération de son original ; Task 5 attend le parcours naturel de 25 s et son coût complet. Les migrations/gates production et la politique commerciale des tokens restent des étapes explicites. La seule revue de branche a été réalisée ; ses cas de reprise sont corrigés par une passe ciblée, sans nouvelle salve généraliste.
+
 ## Global Constraints
 
 - Continuer dans la branche `codex/studio-conversation-exploration-20261001`, jamais sur main.
@@ -65,12 +71,12 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 
 **Interfaces:** conserver `createImageConversationService(actor: StudioGenerationActor, dependencies)`, `createStudioImageGenerationService` et les requêtes canoniques existantes. Le projet, le prix et les références restent vérifiés côté serveur.
 
-- [ ] Reproduire sans provider payant les différences préparation/confirmation t2i et i2i ; comparer snapshot de prix, référence, catalogue et origine avant tout correctif.
-- [ ] Ajouter la régression minimale sur la cause identifiée : confirmation d'un devis inchangé acceptée une seule fois ; changement de prix/référence ou compte étranger refusé sans réservation.
-- [ ] Corriger seulement le propriétaire établi ; conserver le contrôle de snapshot plutôt que l'affaiblir.
+- [x] Reproduire sans provider payant les différences préparation/confirmation t2i et i2i ; comparer snapshot de prix, référence, catalogue et origine avant tout correctif.
+- [x] Ajouter la régression minimale sur la cause identifiée : confirmation d'un devis inchangé acceptée une seule fois ; changement de prix/référence ou compte étranger refusé sans réservation.
+- [x] Corriger seulement le propriétaire établi ; conserver le contrôle de snapshot plutôt que l'affaiblir.
 - [ ] Configurer un runtime pilote raccordé aux services réels sous l'accès existant, sans mélanger le wallet QA local et le compte réel.
 - [ ] Vérifier une seule image réelle dans le chat natif après devis confirmé ; relire le même projet et le même job après rechargement.
-- [ ] Vérifier qu'un devis à renouveler réutilise le draft sauvegardé, sans nouvel appel Sol pour la même intention.
+- [x] Vérifier qu'un devis à renouveler réutilise le draft sauvegardé, sans nouvel appel Sol pour la même intention.
 
 **Vérification :** tests image/PostgreSQL ciblés, puis un contrôle navigateur naturel. PASS signifie une sortie réelle visible dans le projet, un unique job/débit et une reprise correcte. Une image produite séparément par Codex/MCP ne valide pas ce lot.
 
@@ -92,11 +98,11 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 - `StudioActionResult` : résultat discriminé par action, avec données canoniques ou erreur explicite ; un devis préparé n'est pas un média créé.
 - Journal : compte/projet, requestId, étapes, identités devis/jobs, sorties et révision observée. La reprise utilise ces identités avant de décider une nouvelle action.
 
-- [ ] Écrire les tests de séquence : brief vague, lecture des possibilités, choix/prompt du bot, préparation réelle ; aucune confirmation payante disponible comme outil du modèle.
-- [ ] Implémenter la boucle Responses et la mémoire durable du brief/décisions, au-delà des huit derniers tours du pilote image.
-- [ ] Brancher les actions sur les propriétaires canoniques ; partager les fonctions métier avec MCP sans faire du MCP public l'autorité de session.
-- [ ] Enregistrer chaque réponse/étape avant publication ; simuler un arrêt après acceptation du job et vérifier reprise sans doublon.
-- [ ] Exposer des erreurs compréhensibles et une suite possible, sans inventer prix/capacités ni transformer un échec en résultat réussi.
+- [x] Écrire les tests de séquence : brief vague, lecture des possibilités, choix/prompt du bot, préparation réelle ; aucune confirmation payante disponible comme outil du modèle.
+- [x] Implémenter la boucle Responses et la mémoire durable du brief/décisions, au-delà des huit derniers tours du pilote image.
+- [x] Brancher les actions sur les propriétaires canoniques ; partager les fonctions métier avec MCP sans faire du MCP public l'autorité de session.
+- [x] Enregistrer chaque réponse/étape avant publication ; simuler un arrêt après acceptation du job et vérifier reprise sans doublon.
+- [x] Exposer des erreurs compréhensibles et une suite possible, sans inventer prix/capacités ni transformer un échec en résultat réussi.
 
 **Vérification :** doubles de services et PostgreSQL jetable, aucun nouveau média payé. PASS signifie que les actions suivent l'état réel et que le scénario crash retrouve le job existant.
 
@@ -115,12 +121,12 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 
 **Interfaces:** étendre l'union du lot 2 avec préparation vidéo/Audio et récupération de sortie. Consommer les requêtes/devis/jobs canoniques existants ; les adaptateurs OAuth conservent leurs restrictions et les clients ne fabriquent pas d'acteur.
 
-- [ ] Écrire les tests de scopes image/vidéo/Audio et de confirmation session/OAuth ; une confirmation de mauvaise surface/origine ne réserve rien.
-- [ ] Raccorder d'abord une animation qualifiée et économique ; limiter les modèles de V1 aux variantes réellement vérifiées.
-- [ ] Raccorder une voix anglaise et une musique instrumentale via les services Audio existants ; récupérer originaux, durée et métadonnées mesurées.
-- [ ] Ajouter lecteurs vidéo/audio et états asynchrones dans le chat ; rattacher seulement les sorties prêtes et possédées.
-- [ ] Étendre bibliothèque/import aux références image/vidéo/audio compatibles avec l'action choisie, en conservant les originaux et les métadonnées vérifiées ; aucune promesse d'analyse d'un flux absent.
-- [ ] Vérifier avec sorties contrôlées échec/remboursement et retour dans le projet sans relance automatique.
+- [x] Écrire les tests de scopes image/vidéo/Audio et de confirmation session/OAuth ; une confirmation de mauvaise surface/origine ne réserve rien.
+- [x] Raccorder d'abord une animation qualifiée et économique ; limiter les modèles de V1 aux variantes réellement vérifiées.
+- [x] Raccorder une voix anglaise et une musique instrumentale via les services Audio existants ; récupérer originaux, durée et métadonnées mesurées.
+- [x] Ajouter lecteurs vidéo/audio et états asynchrones dans le chat ; rattacher seulement les sorties prêtes et possédées.
+- [x] Étendre bibliothèque/import aux références image/vidéo/audio compatibles avec l'action choisie, en conservant les originaux et les métadonnées vérifiées ; aucune promesse d'analyse d'un flux absent.
+- [x] Vérifier avec sorties contrôlées échec/remboursement et retour dans le projet sans relance automatique.
 - [ ] Qualifier une sortie réelle de chaque nouvelle capacité après devis approuvé ; conserver coût média et tokens distincts.
 
 **Vérification :** contrats/session/PG, puis contrôles provider bornés. PASS signifie vidéo, voix et musique jouables, même compte/projet, charges exactes et récupérations uniques.
@@ -140,10 +146,10 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 
 **Interfaces:** une seule séquence canonique par montage actif, commandes versionnées avec receipts. Étendre les actions du lot 2 avec les commandes existantes, jamais un deuxième modèle de timeline. Export d'un manifeste immuable issu de la révision confirmée.
 
-- [ ] Écrire une régression clip réel : coupe source, durée affichée, tête de lecture et moniteur décrivent le même instant.
-- [ ] Raccorder ordre/coupe/audio à la persistance canonique ; une action du bot suit le même chemin qu'un geste manuel.
-- [ ] Adapter la présentation du prototype : moniteur repliable au-dessus de la timeline, chat accessible sur mobile, absence de lecteur vide permanent.
-- [ ] Vérifier conflit après coupe manuelle : la réponse IA ne remplace pas silencieusement la modification.
+- [x] Écrire une régression clip réel : coupe source, durée affichée, tête de lecture et moniteur décrivent le même instant.
+- [x] Raccorder ordre/coupe/audio à la persistance canonique ; une action du bot suit le même chemin qu'un geste manuel.
+- [x] Adapter la présentation du prototype : moniteur repliable au-dessus de la timeline, chat accessible sur mobile, absence de lecteur vide permanent.
+- [x] Vérifier conflit après coupe manuelle : la réponse IA ne remplace pas silencieusement la modification.
 - [ ] Raccorder estimation/réservation/rendu existants ; le navigateur récupère le même artifact après fermeture/réouverture.
 - [ ] Vérifier desktop et mobile sur vrais médias ; garder résolution du fichier source distincte de celle du rendu final.
 
@@ -176,4 +182,4 @@ La couverture locale existante est le socle. Pendant les lots 1–4, exécuter l
 
 Le montage sémantique d'interviews/podcasts, la transcription, les effets avancés, l'élargissement du catalogue et une nouvelle refonte graphique ne font pas partie du prochain lot. Ils se décident après preuve du film court ; aucun de ces chantiers ne doit repousser son raccord.
 
-Le prochain travail est exclusivement Task 1. Aucun autre essai créatif payé n'est nécessaire pour rédiger/valider ce plan. Le projet promo actuel et ses médias restent conservés comme preuves techniques ; leur disponibilité ne prouve pas le parcours utilisateur complet.
+Le prochain jalon est le pilote natif borné décrit dans le dossier de qualification. Les cases providers, worker distant et film final restent ouvertes : le raccord local ne remplace pas ces preuves. Le projet promo actuel et ses médias sont conservés ; leur disponibilité ne prouve pas le parcours utilisateur complet.

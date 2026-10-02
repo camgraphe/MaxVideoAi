@@ -17,6 +17,8 @@ The local preview uses an isolated socket-only database. Its wallet/library are 
 
 ## One next milestone
 
+The whole-branch review is complete and its recovery findings have a focused correction pass. Export submission identity and original manifest/preset are saved before POST; a lost acknowledgement retries that identity or reconciles it from owned Project history. Quote renewals carry their immutable retry provenance across tabs. Private decoder URLs survive routine polling; each failing clip has one automatic renewal per monitor opening, then a stable error. Missing originals remain removable in the canonical timeline. Keyboard volume changes are persisted. Local tests reproduce the original failures before verifying the corrections.
+
 Run one bounded native pilot, then qualify the **single cheap 25 s film** from ordinary English messages. Do not start another general agent salve beforehand.
 
 1. Prepare one owned preproduction environment with actual provider, storage and canonical worker configuration. Check runtime availability before showing creation/export controls. Keep the director key server-side.
