@@ -10,6 +10,10 @@ grid verified above undiscounted LIST. Customer tariff cells remain independent
 of signed supplier discounts; effective cost/invoice reconciliation follows
 activation. Any later price reduction that relies on a discount needs effective
 supplier-cost verification before approval.
+The [cutover runbook](../deployment/customer-tariff-cutover.md) owns preparation
+and recovery. `pricing:cutover:schema` is an explicitly targeted read-only catalog
+inventory with exact migration digests; it neither applies DDL nor certifies
+production quote parity or activation readiness.
 
 Seedream's factual source count is shared by actual image charging, image
 estimates, MCP settlement and provider comparison. `lib/image/seedream.ts` includes
@@ -152,7 +156,7 @@ The [ByteDance baseline record](bytedance-pricing-baseline-2026-09-28.md) includ
 
 The public read-only `/api/pricing/quote` route accepts bounded, catalog-supported model scenarios and returns the current database-aware billing quote with a price-sensitive revision. It requires a successful pricing-rule database read, so an outage cannot relabel a versioned fallback as the current price. The Pricing video and image tables, model decision cards, visible model offer/Product JSON-LD, browser estimator/chip and the homepage Wan 3 price demo now consume that quote; scenarios that cannot be matched exactly omit the numeric price. This does not make the inactive manual tariff cells live. Bounded image-output counts reuse the image charging convention (`durationSec` is output count); `quantity` remains 1 and labels show images, not seconds. Unreviewed bundles and open/media-dependent scenarios remain outside the exact public route. Marketing pages still use ISR; the existing admin policy confirmation revalidates the affected paths.
 
-`frontend/server/pricing-admin/provider-cost-comparison.ts` prepares read-only comparison rows from independent supplier evidence and an already-computed canonical customer quote. `/admin/pricing` now lists representative scenarios for every app-published model, grouped into 15 registry families, and the same Pricing view navigates exact supported variants and previews a unit-price edit in place. It separates published list estimates, dated public promotions, verified account-effective costs, and observed invoice amounts; a missing figure stays unknown. An unavailable tariff database disables customer-tariff editing. The existing margin-rule editor remains live until a separately gated manual-tariff cutover. This branch change is not a production deployment. After contract activation, follow the [contract-rate verification gate](byteplus-contract-rate-verification.md) before any manual price-grid activation or deployment.
+`frontend/server/pricing-admin/provider-cost-comparison.ts` prepares read-only comparison rows from independent supplier evidence and an already-computed canonical customer quote. `/admin/pricing` now lists representative scenarios for every app-published model, grouped into 15 registry families, and the same Pricing view navigates exact supported variants and previews a unit-price edit in place. It separates published list estimates, dated public promotions, verified account-effective costs, and observed invoice amounts; a missing figure stays unknown. An unavailable tariff database disables customer-tariff editing. The existing margin-rule editor remains live until a separately gated manual-tariff cutover. This branch change is not a production deployment. Follow [supplier-rate reconciliation](byteplus-contract-rate-verification.md) for account costs and invoices. Pending account discount activation does not block unchanged customer tariffs validated above LIST; the separate production parity and delivery gates still apply.
 
 ### Admin decision arithmetic (2026-09-30)
 

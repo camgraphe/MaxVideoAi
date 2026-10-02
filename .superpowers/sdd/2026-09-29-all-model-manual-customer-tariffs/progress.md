@@ -681,3 +681,22 @@ that rely on the discount require effective-cost verification. No temporary
 activation code, customer tariff edit or new paid provider call. Other production
 capture/parity/migration/activation/operational gates remain. Documentation-only
 correction; no external message, production write, push, merge or deployment.
+
+2026-10-02 authorized local continuation, base e1a2b95e5.
+Ruling: prepare a reproducible read-only schema inventory and exact migration
+rehearsal now; keep the production activation operation at the separate release
+decision specified by Task6 — a local certificate does not bind live prices or
+grant remote writes. Cost if wrong: release needs a fresh target-specific review
+before commercial activation, rather than an unsafe copy of the sandbox command.
+Added pricing:cutover:schema with explicit private env/output, direct Neon/Unix
+socket validation, default read-only connection and repeatable-read inventory.
+Reports hash code/database/catalog/exact8SQL files without exporting credentials
+or customer rows. Always activationReady=false/schemaReviewRequired=true.
+Unit RED missing owner -> GREEN exact filenames/digests/connection rejection.
+PG17 real psql exact53-60 then replay preserves historical jobs/receipts/trial
+snapshots; state inactive/revision0/0cells, no inventory writes, no automatic
+release approval. Full migration31 prerequisites initialized explicitly in
+fixture, current/historical raster function both accepted, invalid cost rejected.
+Updated stale contract-only release blockers in the rate reconciliation guide.
+Runbook docs/deployment/customer-tariff-cutover.md records exact capture, migration,
+activation review, live acceptance and immutable compensating rollback boundaries.

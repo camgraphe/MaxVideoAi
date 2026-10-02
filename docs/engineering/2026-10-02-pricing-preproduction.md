@@ -104,6 +104,10 @@ or production-price parity certificate.
 
 ## Release sequence to execute only after the production decision
 
+The [cutover runbook](../deployment/customer-tariff-cutover.md) details source
+capture, the read-only schema command, exact migrations, activation review and
+recovery. Neither that runbook nor its schema inventory authorizes a remote write.
+
 1. Freeze the candidate and repeat Git/main/domain alignment and live legacy-payment
    inventory. Capture current production
    pricing rules, factual environment and effective scenario amounts read-only,
@@ -219,3 +223,22 @@ admin server, session, worktree and pricing database are retained.
 Screenshots: `/tmp/maxvideoai-draft-preproduction-20261002.jpg` and
 `/tmp/maxvideoai-draft-final-quote-preproduction-20261002.jpg`. These illustrate
 the real interface with disposable test data; they do not certify live storage.
+
+## Reproducible migration preparation
+
+`pnpm pricing:cutover:schema` replaces the one-off private schema probe with a
+tracked read-only owner. Its explicitly selected file supplies the connection;
+ambient URLs, pooling and host/options overrides cannot redirect the inventory.
+The private report binds code, database identity, catalog definitions and SHA-256
+digests of the eight exact pricing/Draft migration names. It deliberately never
+claims activation readiness or price parity from schema presence.
+
+A disposable PostgreSQL 17 rehearsal applies migrations 53–60 by exact filename
+through `psql --single-transaction -v ON_ERROR_STOP=1`, then replays every file.
+Historical jobs, charge receipts and old square/wide trial pricing snapshots
+remain unchanged; the corrected function accepts historical and current raster
+snapshots. Tariff state stays inactive at revision zero with no customer cells.
+The inventory itself rejects a read-write transaction, and PostgreSQL refuses
+DDL attempted inside its read-only transaction. The six initially absent tables
+appear after rehearsal, while `activationReady` remains false. The fixture does
+not stand in for production schema, prices or live storage acceptance.

@@ -1,6 +1,7 @@
 declare module 'pg' {
   export interface PoolConfig {
     connectionString?: string;
+    options?: string;
   }
 
   export interface QueryResult<T = unknown> {
