@@ -43,6 +43,7 @@ export default async function StudioConversationPage({
               accountKey={access.userId}
               projectName={project.name}
               localQa={localQa}
+              mediaEnabled={process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true' && process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true'}
             />
           ) : (
             <StudioPreviewAccess

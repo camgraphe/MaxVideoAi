@@ -9,13 +9,52 @@ import {createStudioActionExecutor} from './conversation-actions';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft, type ImageGenerationFactory} from './image-conversation-service';
+import {studioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
+import {draftSurface} from '@/lib/studio/image-conversation-contract';
+import {studioReferenceFingerprint} from '@/server/agent-api/generation-actor';
+import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
+import type {TransactionQueryExecutor} from '@/lib/db';
+import type {CanonicalAudioRequest} from '@/server/agent-api/audio-normalization';
+import type {CanonicalGenerationRequest} from '@/server/agent-api/generation-types';
+import type {McpGenerationQuote} from '@/server/agent-api/quote-repository';
+import {listImageTurns} from './image-conversation-repository';
+
+async function prepareMediaAction(options: {
+  actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
+  referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;
+}, action: StudioMediaIntent, callId: string) {
+  const {actor, turn, factories} = options;
+  if (!turn.draft_json) await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action}, options.referenceFingerprint);
+  const request = await studioMediaRequest(actor, action, options.input, factories, options.enabled);
+  const onQuotePrepared = async (quote: McpGenerationQuote<CanonicalGenerationRequest | CanonicalAudioRequest>, executor: TransactionQueryExecutor) => {
+    await attachImageQuote(actor, turn, quote.quoteId, executor);
+    await completeStudioAction(actor, turn, callId, {ok: true, action: action.action, data: {
+      quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash, summary: quote.request,
+      price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+    }} as StudioActionResult, executor);
+  };
+  if (request.surface === 'video') return factories.video(actor, {enabled: options.enabled, onQuotePrepared}).prepare(request);
+  return factories.audio(actor, {enabled: options.enabled, onQuotePrepared}).prepare(request);
+}
 
 export async function resumeStudioImageAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   referenceFingerprint: string; enabled: boolean; factory: ImageGenerationFactory;
+  factories?: StudioMediaFactories; mediaEnabled?: boolean;
 }) {
   const {actor, turn, factory} = options;
   const draft = turn.draft_json;
+  if (draft?.media) {
+    if (!options.mediaEnabled || !options.factories) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
+    const callId = 'resume-quote-' + turn.lease_id;
+    const prior = await beginStudioAction(actor, turn, callId, draft.media);
+    if (prior) return prior;
+    try {return await prepareMediaAction({...options, factories: options.factories}, draft.media, callId);}
+    catch (error) {
+      await completeStudioAction(actor, turn, callId, {...toAgentApiFailure(error instanceof AgentApiError ? error : new AgentApiError('INTERNAL_ERROR', 'Studio could not prepare this saved media.', true)), action: draft.media.action});
+      throw error;
+    }
+  }
   if (!draft?.image) throw new AgentApiError('PARAMETER_INVALID', 'No saved image direction is available.');
   const action: StudioActionRequest = {action: 'image.prepare', reply: draft.reply, prompt: draft.image.prompt, aspectRatio: draft.image.aspectRatio};
   const callId = 'resume-quote-' + turn.lease_id;
@@ -24,7 +63,7 @@ export async function resumeStudioImageAction(options: {
   try {
     const generation = factory(actor, {enabled: options.enabled});
     const request = imageRequestFromDraft(draft, options.input, await generation.catalog());
-    return await factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: options.referenceFingerprint,
+    return await factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: studioReferenceFingerprint(await generation.resolveReferences(request)),
       onQuotePrepared: async (quote, executor) => {
         await attachImageQuote(actor, turn, quote.quoteId, executor);
         await completeStudioAction(actor, turn, callId, {ok: true, action: 'image.prepare', data: {
@@ -46,18 +85,29 @@ export async function runStudioImageActions(options: {
   references: ResolvedReference[]; referenceFingerprint: string;
   history: {message: string; reply: string | null}[]; enabled: boolean;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
+  factories?: StudioMediaFactories; mediaEnabled?: boolean;
 }) {
   const {actor, turn, input, factory} = options;
   const generation = factory(actor, {enabled: options.enabled});
-  const director = createStudioConversationDirector({createResponse: options.createResponse});
+  const director = createStudioConversationDirector({createResponse: options.createResponse, mediaEnabled: options.mediaEnabled});
   let currentCallId: string;
-  const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation,
+  const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    prepareMedia: async action => {
+      if (!options.factories) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
+      return prepareMediaAction({...options, factories: options.factories}, action, currentCallId);
+    },
+    recover: async quoteId => {
+      const saved = (await listImageTurns(actor)).find(turn => turn.quote_id === quoteId);
+      if (!saved) throw new AgentApiError('QUOTE_EXPIRED', 'This generation is not available in this conversation.');
+      const surface = draftSurface(saved.draft_json);
+      return options.factories ? options.factories[surface](actor, {enabled: options.enabled}).recover(quoteId) : generation.recover(quoteId);
+    },
     prepareImage: async action => {
       const draft = {reply: action.reply, image: {prompt: action.prompt, aspectRatio: action.aspectRatio}};
       // Persist the selected prompt before preparation. A failed preparation resumes this same intent.
       await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
       const request = imageRequestFromDraft(draft, input, await generation.catalog());
-      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: options.referenceFingerprint,
+      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: studioReferenceFingerprint(options.references.filter(ref => ref.mediaKind === 'image')),
         onQuotePrepared: async (quote, executor) => {
           await attachImageQuote(actor, turn, quote.quoteId, executor);
           await completeStudioAction(actor, turn, currentCallId, {ok: true, action: 'image.prepare', data: {
@@ -93,10 +143,10 @@ export async function runStudioImageActions(options: {
       }
       const result = await execute(action);
       // Successful image preparation already checkpoints in the quote transaction.
-      if (action.action !== 'image.prepare' || !result.ok) await completeStudioAction(actor, turn, callId, result);
+      if (!action.action.endsWith('.prepare') || !result.ok) await completeStudioAction(actor, turn, callId, result);
       return result;
     },
   });
-  if (!draft.image) await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
+  if (!draft.image && !draft.media) await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
   return draft;
 }

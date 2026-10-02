@@ -15,7 +15,12 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
     LEFT JOIN studio_conversation_memory m ON m.project_id = p.id AND m.user_id = p.user_id
     WHERE p.id = $1 AND p.user_id = $2 AND p.deleted_at IS NULL`, [actor.projectId, actor.userId]))[0];
   if (!row) throw new AgentApiError('PARAMETER_INVALID', 'This Studio project is not available.');
-  return {name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []})};
+  const generations = await query<{quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null}>(`
+    SELECT q.quote_id AS "quoteId",q.request_json->>'surface' AS surface,q.state AS "quoteState",q.job_id AS "jobId",j.status
+    FROM studio_image_turns t JOIN mcp_generation_quotes q ON q.quote_id=t.quote_id AND q.user_id=t.user_id AND q.studio_project_id=t.project_id
+    LEFT JOIN app_jobs j ON j.job_id=q.job_id AND j.user_id=q.user_id
+    WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId]);
+  return {name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }
 
 export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory, executor?: TransactionQueryExecutor) {

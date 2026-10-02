@@ -5,6 +5,7 @@ export type ImageLibraryAsset = {
   url: string;
   thumbUrl?: string | null;
   name?: string;
+  kind?: 'image' | 'video' | 'audio';
 };
 export type RecentImage = {
   id: string;
@@ -18,6 +19,12 @@ export async function saveRecentImageReference(
   output: RecentImage,
   request: typeof fetch = fetch,
 ): Promise<ImageLibraryAsset> {
+  return saveRecentReference(output, 'image', request);
+}
+export async function saveRecentMediaReference(output: RecentImage, kind: 'image' | 'video' | 'audio', request: typeof fetch = fetch): Promise<ImageLibraryAsset> {
+  return {...await saveRecentReference(output, kind, request), kind};
+}
+async function saveRecentReference(output: RecentImage, kind: 'image' | 'video' | 'audio', request: typeof fetch): Promise<ImageLibraryAsset> {
   const saved = await request("/api/media-library/save-output", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -29,13 +36,13 @@ export async function saveRecentImageReference(
       "Impossible de retrouver cette création dans votre bibliothèque.",
     );
   const response = await request(
-    `/api/media-library/assets?kind=image&originUrl=${encodeURIComponent(result.asset.url)}`,
+    `/api/media-library/assets?kind=${kind}&originUrl=${encodeURIComponent(result.asset.url)}`,
     { cache: "no-store" },
   );
   const payload = await response.json();
   const asset = payload.assets?.find(
     (item: ImageLibraryAsset) =>
-      canonicalMediaAssetFields(item.assetId, "image").assetId,
+      canonicalMediaAssetFields(item.assetId, kind).assetId,
   );
   if (!response.ok || !payload.ok || !asset)
     throw new Error(

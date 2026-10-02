@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, type Ref } from "react";
 import { ArrowUp, Plus } from "lucide-react";
 import styles from "../image-conversation.module.css";
+import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 
 export function ImageConversationComposer({
   text,
@@ -11,6 +12,7 @@ export function ImageConversationComposer({
   blocked,
   onOpenLibrary,
   libraryTrigger,
+  locale = 'fr',
 }: {
   text: string;
   onTextChange: (text: string) => void;
@@ -18,7 +20,9 @@ export function ImageConversationComposer({
   blocked: boolean;
   onOpenLibrary: () => void;
   libraryTrigger: Ref<HTMLButtonElement>;
+  locale?: ConversationLocale;
 }) {
+  const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const textarea = useRef<HTMLTextAreaElement>(null);
   const resizeTextarea = useCallback(() => {
     const element = textarea.current;
@@ -46,7 +50,7 @@ export function ImageConversationComposer({
         type="button"
         disabled={blocked}
         ref={libraryTrigger}
-        aria-label="Ouvrir la bibliothèque"
+        aria-label={t('Open library', 'Ouvrir la bibliothèque')}
         onClick={onOpenLibrary}
       >
         <Plus size={21} />
@@ -54,10 +58,10 @@ export function ImageConversationComposer({
       <textarea
         ref={textarea}
         rows={1}
-        aria-label="Message à Studio"
+        aria-label={t('Message Studio', 'Message à Studio')}
         value={text}
         onChange={(event) => onTextChange(event.target.value)}
-        placeholder="Décrivez votre idée…"
+        placeholder={t('Describe your idea…', 'Décrivez votre idée…')}
         maxLength={4000}
         onKeyDown={(event) => {
           if (
@@ -75,7 +79,7 @@ export function ImageConversationComposer({
         className={styles.send}
         type="submit"
         disabled={!text.trim() || blocked}
-        aria-label="Envoyer à Studio"
+        aria-label={t('Send to Studio', 'Envoyer à Studio')}
       >
         <ArrowUp size={20} />
       </button>

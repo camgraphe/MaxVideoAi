@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, Sparkles, Sun, Moon } from "lucide-react";
+import { Sparkles, Sun, Moon } from "lucide-react";
 import { useImageConversation } from "./_hooks/useImageConversation";
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
 import { ImageConversationComposer } from "./_components/ImageConversationComposer.client";
@@ -10,17 +10,24 @@ import {
   type ImageLibraryAsset,
 } from "./_components/ImageReferenceLibrary.client";
 import styles from "./image-conversation.module.css";
+import {useI18n} from '@/lib/i18n/I18nProvider';
+import {ConversationMedia} from './_components/ConversationMedia.client';
 export default function StudioImageConversation({
   projectId,
   accountKey,
   projectName,
   localQa = false,
+  mediaEnabled = false,
 }: {
   projectId: string;
   accountKey: string;
   projectName: string;
   localQa?: boolean;
+  mediaEnabled?: boolean;
 }) {
+  const {locale: appLocale} = useI18n();
+  const locale = appLocale === 'fr' ? 'fr' : 'en';
+  const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const studio = useImageConversation(projectId, accountKey, projectName);
   const [text, setText] = useState("");
   const [references, setReferences] = useState<ImageLibraryAsset[]>([]);
@@ -62,7 +69,8 @@ export default function StudioImageConversation({
     const input = {
       requestId: crypto.randomUUID(),
       message: text,
-      references: references.map((ref) => ref.assetId),
+      references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
+      ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
     setText("");
     setReferences([]);
@@ -73,7 +81,7 @@ export default function StudioImageConversation({
     <section
       className={styles.studio}
       data-tone={tone}
-      aria-label="Studio conversationnel"
+      aria-label={t('Conversational Studio', 'Studio conversationnel')}
     >
       <header className={styles.header}>
         <div>
@@ -81,10 +89,10 @@ export default function StudioImageConversation({
           <span>{projectName}</span>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/app/studio/projects">Mes projets</Link>
+          <Link href="/app/studio/projects">{t('My projects', 'Mes projets')}</Link>
           <button
             aria-label={
-              tone === "charcoal" ? "Passer en Olive" : "Passer en Charbon"
+              tone === "charcoal" ? t('Switch to Olive', 'Passer en Olive') : t('Switch to Charcoal', 'Passer en Charbon')
             }
             onClick={() =>
               setTone((current) =>
@@ -113,7 +121,7 @@ export default function StudioImageConversation({
             ref={log}
             className={styles.log}
             role="log"
-            aria-label="Conversation avec Studio"
+            aria-label={t('Conversation with Studio', 'Conversation avec Studio')}
             aria-live="polite"
             onScroll={() => {
               const el = log.current;
@@ -125,23 +133,21 @@ export default function StudioImageConversation({
             {!studio.conversation.turns.length && !studio.pending && (
               <div className={styles.welcome}>
                 <Sparkles size={24} />
-                <h2>Votre idée prend forme.</h2>
+                <h2>{t('Your idea takes shape.', 'Votre idée prend forme.')}</h2>
                 <p>
-                  Parlez-moi de la première image.
+                  {mediaEnabled ? t('Tell me about your film.', 'Parlez-moi de votre film.') : t('Tell me about the first image.', 'Parlez-moi de la première image.')}
                   <br />
-                  Joignez vos références, je m’occupe de la direction.
+                  {t('Attach your references. I’ll find a direction.', 'Joignez vos références, je m’occupe de la direction.')}
                 </p>
-                <small>Premier essai connecté · création d’image</small>
+                <small>{mediaEnabled ? t('Images · video · voice · music', 'Images · vidéo · voix · musique') : t('Connected image pilot', 'Premier essai connecté · création d’image')}</small>
               </div>
             )}
             {studio.conversation.turns.map((turn) => (
               <article key={turn.requestId} className={styles.turn}>
                 <p className={styles.userMessage}>{turn.message}</p>
-                {!!turn.references.length && (
+                {!!(turn.references.length + (turn.attachments?.length ?? 0)) && (
                   <span className={styles.referenceNote}>
-                    {turn.references.length} référence
-                    {turn.references.length > 1 ? "s" : ""} jointe
-                    {turn.references.length > 1 ? "s" : ""}
+                    {turn.references.length + (turn.attachments?.length ?? 0)} {t('attached references', 'références jointes')}
                   </span>
                 )}
                 {turn.reply && (
@@ -161,7 +167,7 @@ export default function StudioImageConversation({
                   </div>
                 )}
                 {turn.state === "thinking" && (
-                  <p className={styles.muted}>Studio prépare une direction…</p>
+                  <p className={styles.muted}>{t('Studio is preparing a direction…', 'Studio prépare une direction…')}</p>
                 )}
                 {turn.state === "failed" && (
                   <button
@@ -171,16 +177,18 @@ export default function StudioImageConversation({
                         requestId: turn.requestId,
                         message: turn.message,
                         references: turn.references,
+                        ...(turn.attachments ? {attachments: turn.attachments} : {}),
                       })
                     }
                   >
-                    Reprendre cet échange
+                    {t('Resume this exchange', 'Reprendre cet échange')}
                   </button>
                 )}
                 <ImageQuoteCard
                   turn={turn}
                   busy={studio.busy}
                   localQa={localQa}
+                  locale={locale}
                   onRefresh={() => void studio.refresh()}
                   onConfirm={() =>
                     void studio.confirm(turn.requestId, turn.quote!.quoteId)
@@ -190,33 +198,16 @@ export default function StudioImageConversation({
                       requestId: crypto.randomUUID(),
                       message: turn.message,
                       references: turn.references,
+                      ...(turn.attachments ? {attachments: turn.attachments} : {}),
                       renewedFromRequestId: turn.requestId,
                     })
                   }
                 />
-                {turn.generation?.result?.surface === "image" && (
-                  <div className={styles.results}>
-                    {turn.generation.result.imageUrls.map((url) => (
-                      <figure key={url}>
-                        <img src={url} alt="Votre création" loading="lazy" />
-                        <figcaption>
-                          <span>Votre image</span>
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Ouvrir
-                          </a>
-                        </figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                )}
+                {turn.generation?.result && <ConversationMedia result={turn.generation.result} locale={locale} />}
                 {turn.generation &&
                   ["accepted", "running"].includes(turn.generation.status) && (
                     <p className={styles.muted} role="status">
-                      L’image se crée
+                      {t('Creating your media', 'Le média se crée')}
                       {turn.generation.progress === null
                         ? "…"
                         : ` · ${turn.generation.progress}%`}
@@ -233,7 +224,7 @@ export default function StudioImageConversation({
             {studio.busy && (
               <p className={styles.thinking} role="status">
                 <span />
-                Studio travaille…
+                {t('Studio is working…', 'Studio travaille…')}
               </p>
             )}
             <div ref={bottom} />
@@ -242,7 +233,7 @@ export default function StudioImageConversation({
             <div className={styles.error} role="alert">
               <p>
                 {studio.error ??
-                  "Un échange est resté en attente. Vous pouvez le reprendre ou le modifier."}
+                  t('An exchange is pending. Resume it or edit your request.', 'Un échange est resté en attente. Vous pouvez le reprendre ou le modifier.')}
               </p>
               {studio.pending ? (
                 <>
@@ -250,7 +241,7 @@ export default function StudioImageConversation({
                     disabled={studio.busy}
                     onClick={() => void studio.submit(studio.pending!)}
                   >
-                    Reprendre l’échange
+                    {t('Resume exchange', 'Reprendre l’échange')}
                   </button>
                   <button
                     disabled={studio.busy}
@@ -258,15 +249,15 @@ export default function StudioImageConversation({
                       const saved = studio.pending!;
                       setText(saved.message);
                       setReferences(
-                        saved.references.map((assetId) => ({
+                        [...saved.references.map((assetId) => ({
                           assetId,
                           url: "",
-                        })),
+                        })), ...(saved.attachments ?? []).flatMap(ref => ref.type === 'asset' ? [{assetId: ref.assetId, url: '', kind: ref.kind}] : [])],
                       );
                       studio.discardPending();
                     }}
                   >
-                    Modifier la demande
+                    {t('Edit request', 'Modifier la demande')}
                   </button>
                 </>
               ) : (
@@ -274,7 +265,7 @@ export default function StudioImageConversation({
                   disabled={studio.busy}
                   onClick={() => void studio.refresh()}
                 >
-                  {studio.needsFunds ? "Actualiser le solde" : "Vérifier le résultat"}
+                  {studio.needsFunds ? t('Refresh balance', 'Actualiser le solde') : t('Check result', 'Vérifier le résultat')}
                 </button>
               )}
             </div>
@@ -289,12 +280,12 @@ export default function StudioImageConversation({
                       current.filter((asset) => asset.assetId !== ref.assetId),
                     )
                   }
-                  aria-label="Retirer la référence"
+                  aria-label={t('Remove reference', 'Retirer la référence')}
                 >
-                  {ref.url ? (
+                  {ref.url && (!ref.kind || ref.kind === 'image' || ref.thumbUrl) ? (
                     <img src={ref.thumbUrl ?? ref.url} alt="Référence jointe" />
                   ) : (
-                    <Plus size={18} />
+                    <span>{ref.kind ?? 'image'}</span>
                   )}
                   <span>×</span>
                 </button>
@@ -308,9 +299,10 @@ export default function StudioImageConversation({
             blocked={studio.busy || !!studio.pending}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={() => setLibrary(true)}
+            locale={locale}
           />
           <p className={styles.footnote}>
-            Un devis avant chaque création. Vous gardez la main.
+            {t('A quote before each creation. You stay in control.', 'Un devis avant chaque création. Vous gardez la main.')}
           </p>
         </div>
         <aside className={styles.visuals} aria-label="Autres images du projet">
@@ -329,6 +321,8 @@ export default function StudioImageConversation({
         <ImageReferenceLibrary
           onClose={() => setLibrary(false)}
           onSelect={select}
+          mediaEnabled={mediaEnabled}
+          locale={locale}
         />
       )}
     </section>

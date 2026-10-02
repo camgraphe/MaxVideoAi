@@ -6,6 +6,7 @@ import {
   type ImageConversationTurn,
   type ImageTurnInput,
   type ImageDraft,
+  draftSurface, hasDraftCreation,
 } from "@/lib/studio/image-conversation-contract";
 import {
   studioReferenceFingerprint,
@@ -31,6 +32,9 @@ import {
   readImageConversationProject,
   type StoredImageTurn,
 } from "./image-conversation-repository";
+import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversation-media-generation';
+import {resolveStudioMedia} from './media-resolver';
+import type {ResolvedReference} from '@/server/agent-api/reference-types';
 
 export const imageConfirmationSchema = z
   .object({
@@ -106,11 +110,21 @@ export function createImageConversationService(
     generationFactory?: ImageGenerationFactory;
     actionsEnabled?: boolean;
     createActionResponse?: StudioResponseCreator;
+    mediaEnabled?: boolean;
+    videoGenerationFactory?: StudioMediaFactories['video'];
+    audioGenerationFactory?: StudioMediaFactories['audio'];
   },
 ) {
   const factory =
     dependencies.generationFactory ?? createStudioImageGenerationService;
   const generation = factory(actor, { enabled: dependencies.enabled });
+  const factories: StudioMediaFactories = {...defaultStudioMediaFactories, image: factory,
+    video: dependencies.videoGenerationFactory ?? defaultStudioMediaFactories.video,
+    audio: dependencies.audioGenerationFactory ?? defaultStudioMediaFactories.audio};
+  const serviceForDraft = (draft: ImageDraft | null) => {
+    const surface = draftSurface(draft);
+    return factories[surface](actor, {enabled: dependencies.enabled && (surface === 'image' || dependencies.mediaEnabled === true)});
+  };
   async function wallet() {
     try {
       const summary = await generation.walletSummary();
@@ -139,7 +153,7 @@ export function createImageConversationService(
       turn.state === "thinking" &&
       new Date(turn.lease_expires_at).getTime() <= Date.now();
     const quote = turn.quote_id
-      ? await generation.getQuote(turn.quote_id)
+      ? await serviceForDraft(turn.draft_json).getQuote(turn.quote_id)
       : null;
     if (turn.quote_id && !quote)
       throw new AgentApiError(
@@ -151,6 +165,7 @@ export function createImageConversationService(
       requestId: turn.request_id,
       message: turn.input_json.message,
       references: turn.input_json.references,
+      ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
       reply: turn.draft_json?.reply ?? null,
       state: expiredLease ? "failed" : turn.state,
       retryable: expiredLease || turn.state === "failed",
@@ -174,7 +189,7 @@ export function createImageConversationService(
               quote.request.engineId,
           }
         : null,
-      generation: quote?.jobId ? await generation.recover(quote.quoteId) : null,
+      generation: quote?.jobId ? await serviceForDraft(turn.draft_json).recover(quote.quoteId) : null,
       createdAt: new Date(turn.created_at).toISOString(),
     };
   }
@@ -196,6 +211,8 @@ export function createImageConversationService(
     async submit(value: unknown) {
       await project();
       const input = imageTurnInputSchema.parse(value);
+      if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
+        throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio attachments are unavailable in this image pilot.');
       const { turn, claimed } = await claimImageTurn(actor, input);
       if (!claimed) return projectTurn(turn);
       try {
@@ -213,6 +230,15 @@ export function createImageConversationService(
           })),
           outputCount: 1,
         });
+        for (const attachment of input.attachments ?? []) {
+          try {
+            const media = await resolveStudioMedia(actor.userId, attachment);
+            refs.push({assetId: attachment.type === 'asset' ? attachment.assetId : attachment.outputId,
+              role: 'reference', mediaKind: media.kind, storageUrl: media.url, mimeType: media.mime,
+              width: media.mediaFacts?.width ?? null, height: media.mediaFacts?.height ?? null, durationSec: media.mediaFacts?.durationSec ?? null,
+              originalName: media.originalName ?? null} satisfies ResolvedReference);
+          } catch {throw new AgentApiError('REFERENCE_INVALID', 'The attached media is no longer available.');}
+        }
         const referenceFingerprint = studioReferenceFingerprint(refs);
         if (
           turn.draft_json &&
@@ -235,6 +261,7 @@ export function createImageConversationService(
             actor, turn, input, references: refs, referenceFingerprint,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,
+            factories, mediaEnabled: dependencies.mediaEnabled,
           }) : await runMeteredImageDirector(
             actor,
             turn,
@@ -248,9 +275,9 @@ export function createImageConversationService(
           ));
         if (!turn.draft_json && !useActions)
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
-        if (draft.image && !useActions) {
+        if (hasDraftCreation(draft) && !useActions) {
           if (dependencies.actionsEnabled) {
-            await resumeStudioImageAction({actor, turn, input, referenceFingerprint, enabled: dependencies.enabled, factory});
+            await resumeStudioImageAction({actor, turn, input, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled});
           } else {
           const request = imageRequestFromDraft(
             draft,
@@ -290,7 +317,7 @@ export function createImageConversationService(
           "QUOTE_EXPIRED",
           "Review the image quote in this project before confirming.",
         );
-      return generation.confirm({ quoteId: input.quoteId, confirmed: true });
+      return serviceForDraft(turn.draft_json).confirm({ quoteId: input.quoteId, confirmed: true });
     },
   };
 }

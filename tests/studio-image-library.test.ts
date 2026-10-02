@@ -27,6 +27,20 @@ test("Recent selection saves the owned job/output and resolves its canonical pub
   });
   assert.match(calls[1].url, /originUrl=https%3A/);
 });
+
+test('recent video/audio selections resolve a reusable identity on the matching library surface', async () => {
+  const module = await import('../frontend/src/lib/studio/image-library');
+  assert.ok(module.saveRecentMediaReference);
+  for (const kind of ['video','audio'] as const) {
+    const urls: string[] = [];
+    const asset = {assetId: 'ma_' + 'b'.repeat(32), url: `https://cdn.maxvideoai.com/source.${kind === 'video' ? 'mp4' : 'mp3'}`};
+    const request = (async (url: string) => {urls.push(String(url)); return {ok: true, json: async () => urls.length === 1 ? {ok: true, asset} : {ok: true, assets: [asset]}};}) as typeof fetch;
+    const selected = await module.saveRecentMediaReference({...output, url: asset.url}, kind, request);
+    assert.equal(selected.kind, kind);
+    assert.match(urls[1], new RegExp('kind=' + kind));
+    assert.equal(selected.assetId, asset.assetId);
+  }
+});
 test("a saved internal UUID cannot masquerade as a reusable ma_ reference", async () => {
   let calls = 0;
   const request = (async () => ({

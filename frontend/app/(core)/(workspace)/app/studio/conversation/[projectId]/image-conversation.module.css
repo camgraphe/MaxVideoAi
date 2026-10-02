@@ -277,6 +277,8 @@
 .results a {
   color: var(--studio-accent);
 }
+.results video {width: 100%; max-height: 300px; border-radius: 14px; background: var(--studio-panel);}
+.results audio {width: 100%;}
 .visuals {
   display: flex;
   flex-direction: column;

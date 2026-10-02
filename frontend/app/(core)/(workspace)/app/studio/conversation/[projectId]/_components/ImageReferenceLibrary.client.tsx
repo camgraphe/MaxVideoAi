@@ -1,24 +1,32 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
-  saveRecentImageReference,
+  saveRecentMediaReference,
   type RecentImage,
   type ImageLibraryAsset,
 } from "@/lib/studio/image-library";
 import styles from "../image-conversation.module.css";
+import {AudioWaveform, Film} from 'lucide-react';
+import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 export type { ImageLibraryAsset } from "@/lib/studio/image-library";
 
 export function ImageReferenceLibrary({
   onClose,
   onSelect,
+  mediaEnabled = false,
+  locale = 'fr',
 }: {
   onClose: () => void;
   onSelect: (asset: ImageLibraryAsset) => void;
+  mediaEnabled?: boolean;
+  locale?: ConversationLocale;
 }) {
   const dialog = useRef<HTMLDialogElement>(null),
     input = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(""),
     [source, setSource] = useState<"assets" | "recent">("assets");
+  const [kind, setKind] = useState<'image' | 'video' | 'audio'>('image');
+  const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const [assets, setAssets] = useState<ImageLibraryAsset[]>([]),
     [recent, setRecent] = useState<RecentImage[]>([]);
   const [cursor, setCursor] = useState<string | null>(null),
@@ -26,7 +34,7 @@ export function ImageReferenceLibrary({
     [busy, setBusy] = useState(false);
   const alive = useRef(true),
     scope = useRef("");
-  scope.current = `${source}:${query}`;
+  scope.current = `${source}:${kind}:${query}`;
   useEffect(() => {
     alive.current = true;
     dialog.current?.showModal();
@@ -36,7 +44,7 @@ export function ImageReferenceLibrary({
   }, []);
   function endpoint(next?: string) {
     const params = new URLSearchParams({
-      kind: "image",
+      kind,
       limit: "30",
       q: query,
     });
@@ -93,7 +101,7 @@ export function ImageReferenceLibrary({
     };
     // Requests are scoped to the selected library tab and search.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, source]);
+  }, [query, source, kind]);
   async function more() {
     if (!cursor || busy) return;
     const currentScope = scope.current;
@@ -118,7 +126,7 @@ export function ImageReferenceLibrary({
     setBusy(true);
     setError(null);
     try {
-      const asset = await saveRecentImageReference(output);
+      const asset = await saveRecentMediaReference(output, kind);
       if (alive.current) onSelect(asset);
     } catch (failure) {
       if (alive.current)
@@ -135,14 +143,14 @@ export function ImageReferenceLibrary({
     try {
       const body = new FormData();
       body.set("file", file);
-      const response = await fetch("/api/uploads/image", {
+      const response = await fetch(`/api/uploads/${kind}`, {
         method: "POST",
         body,
       });
       const data = await response.json();
       if (!response.ok || !data.ok || !data.asset?.assetId)
         throw new Error("L’image n’a pas pu être importée.");
-      if (alive.current) onSelect(data.asset);
+      if (alive.current) onSelect({...data.asset, kind});
     } catch (failure) {
       if (alive.current)
         setError(
@@ -161,44 +169,47 @@ export function ImageReferenceLibrary({
       onClose={onClose}
     >
       <div className={styles.libraryTop}>
-        <h2 id="image-library-title">Bibliothèque MaxVideoAI</h2>
-        <button onClick={onClose} aria-label="Fermer la bibliothèque">
+        <h2 id="image-library-title">{t('MaxVideoAI library', 'Bibliothèque MaxVideoAI')}</h2>
+        <button onClick={onClose} aria-label={t('Close library', 'Fermer la bibliothèque')}>
           ×
         </button>
       </div>
       <p className={styles.muted}>
-        Choisissez une image pour guider la création.
+        {mediaEnabled ? t('Attach references or media for your film.', 'Joignez des références ou des médias pour votre film.') : t('Choose an image to guide the creation.', 'Choisissez une image pour guider la création.')}
       </p>
       <div className={styles.libraryTools}>
         <button
           aria-pressed={source === "assets"}
           onClick={() => setSource("assets")}
         >
-          Enregistrées
+          {t('Saved', 'Enregistrées')}
         </button>
         <button
           aria-pressed={source === "recent"}
           onClick={() => setSource("recent")}
         >
-          Créations récentes
+          {t('Recent creations', 'Créations récentes')}
         </button>
       </div>
+      {mediaEnabled && <div className={styles.libraryTools}>
+        {(['image','video','audio'] as const).map(value => <button key={value} aria-pressed={kind === value} onClick={() => setKind(value)}>{value === 'image' ? 'Images' : value === 'video' ? t('Videos', 'Vidéos') : 'Audio'}</button>)}
+      </div>}
       <div className={styles.libraryTools}>
         <input
-          aria-label="Rechercher des images"
+          aria-label={t('Search media', 'Rechercher des médias')}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Rechercher…"
+          placeholder={t('Search…', 'Rechercher…')}
         />
         <button disabled={busy} onClick={() => input.current?.click()}>
-          Importer une image
+          {t('Import', 'Importer')}
         </button>
       </div>
       <input
         hidden
         ref={input}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept={kind === 'image' ? 'image/png,image/jpeg,image/webp' : kind === 'video' ? 'video/mp4,video/quicktime' : 'audio/mpeg,audio/wav,audio/x-wav'}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) void upload(file);
@@ -211,14 +222,12 @@ export function ImageReferenceLibrary({
               <button
                 key={asset.assetId}
                 disabled={busy}
-                onClick={() => onSelect(asset)}
-                aria-label={`Choisir ${asset.name ?? "cette image"}`}
+                onClick={() => onSelect({...asset, kind})}
+                aria-label={`${t('Choose', 'Choisir')} ${asset.name ?? kind}`}
               >
-                <img
-                  src={asset.thumbUrl ?? asset.url}
-                  alt={asset.name ?? "Référence de votre bibliothèque"}
-                  loading="lazy"
-                />
+                {kind === 'image' || asset.thumbUrl ? <img src={asset.thumbUrl ?? asset.url} alt={asset.name ?? t('Library reference', 'Référence de votre bibliothèque')} loading="lazy" />
+                  : kind === 'video' ? <Film aria-label={t('Video', 'Vidéo')} /> : <AudioWaveform aria-label="Audio" />}
+                {kind !== 'image' && <span>{asset.name ?? kind}</span>}
               </button>
             ))
           : recent.map((output) => (
@@ -226,25 +235,22 @@ export function ImageReferenceLibrary({
                 key={output.id}
                 disabled={busy}
                 onClick={() => void selectRecent(output)}
-                aria-label="Utiliser cette création comme référence"
+                aria-label={t('Attach this creation', 'Joindre cette création')}
               >
-                <img
-                  src={output.thumbUrl ?? output.url}
-                  alt="Création récente"
-                  loading="lazy"
-                />
+                {kind === 'image' || output.thumbUrl ? <img src={output.thumbUrl ?? output.url} alt={t('Recent creation', 'Création récente')} loading="lazy" />
+                  : kind === 'video' ? <Film /> : <AudioWaveform />}
               </button>
             ))}
       </div>
       {!busy && !assets.length && !recent.length && !error && (
         <p className={styles.muted}>
-          Aucune image ici pour le moment. Vous pouvez en importer une.
+          {t('No media here yet. You can import some.', 'Aucun média ici pour le moment. Vous pouvez en importer.')}
         </p>
       )}
-      {busy && <p role="status">Chargement…</p>}
+      {busy && <p role="status">{t('Loading…', 'Chargement…')}</p>}
       {cursor && (
         <button disabled={busy} onClick={() => void more()}>
-          Voir la suite
+          {t('Load more', 'Voir la suite')}
         </button>
       )}
     </dialog>

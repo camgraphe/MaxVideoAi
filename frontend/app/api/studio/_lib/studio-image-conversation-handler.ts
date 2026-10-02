@@ -91,7 +91,8 @@ export async function handleStudioImageConversation(
     };
     const service = (
       overrides.serviceFactory ?? createImageConversationService
-    )(actor, { enabled, ...(process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === "true" ? {actionsEnabled: true} : {}) });
+    )(actor, { enabled, ...(process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === "true" ? {actionsEnabled: true,
+      mediaEnabled: process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true'} : {}) });
     const result =
       action === "read"
         ? await service.read()

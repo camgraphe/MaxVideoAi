@@ -12,6 +12,7 @@ import {
   imageDraftSchema,
   type ImageTurnInput,
   type ImageDraft,
+  hasDraftCreation,
 } from "@/lib/studio/image-conversation-contract";
 
 export type StoredImageTurn = {
@@ -116,9 +117,10 @@ export async function claimImageTurn(
         `SELECT ${IMAGE_TURN_COLUMNS} FROM studio_image_turns WHERE user_id = $1 AND project_id = $2 AND request_id = $3 FOR UPDATE`,
         [actor.userId, actor.projectId, parsed.renewedFromRequestId],
       ))[0];
-      if (!renewal?.draft_json?.image || !renewal.quote_id
+      if (!renewal || !hasDraftCreation(renewal.draft_json) || !renewal.quote_id
         || renewal.input_json.message !== parsed.message
-        || stableJson(renewal.input_json.references) !== stableJson(parsed.references))
+        || stableJson(renewal.input_json.references) !== stableJson(parsed.references)
+        || stableJson(renewal.input_json.attachments ?? []) !== stableJson(parsed.attachments ?? []))
         throw new AgentApiError("PARAMETER_INVALID", "Renew the saved request without changing its message or references.");
       const quote = (await executor.query<{ state: string; expires_at: Date; job_id: string | null }>(
         `SELECT state, expires_at, job_id FROM mcp_generation_quotes WHERE quote_id = $1 AND user_id = $2 AND auth_origin = 'studio-session' AND studio_project_id = $3 FOR UPDATE`,
@@ -168,7 +170,7 @@ export async function persistImageDraft(
       turn.request_id,
       turn.lease_id,
       JSON.stringify(parsed),
-      parsed.image ? "thinking" : "ready",
+      hasDraftCreation(parsed) ? "thinking" : "ready",
       referenceFingerprint,
     ],
   );
