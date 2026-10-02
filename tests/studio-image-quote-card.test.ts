@@ -62,10 +62,12 @@ async function mountCard({
   turn = makeTurn(),
   localQa = false,
   busy = false,
+  locale = "fr",
 }: {
   turn?: ImageConversationTurn;
   localQa?: boolean;
   busy?: boolean;
+  locale?: "en" | "fr";
 } = {}) {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions[".css"];
@@ -116,6 +118,7 @@ async function mountCard({
         turn,
         busy,
         localQa,
+        locale,
         onConfirm: () => confirms++,
         onRenew: () => renewals++,
         onRefresh: () => refreshes++,
@@ -158,6 +161,57 @@ test("a sufficient wallet shows an explicit create action", async () => {
   } finally {
     await view.close();
   }
+});
+
+test("a failed accepted attempt displays its confirmed wallet refund without reusing the quote", async () => {
+  const turn = makeTurn({ state: "accepted" });
+  turn.generation = {
+    jobId: "failed-job", surface: "video", status: "failed", progress: null,
+    message: "https://provider.invalid/private-input?secret=hidden",
+    priceCents: 600, currency: "USD", paymentStatus: "refunded_wallet",
+    result: null, retryAfterSeconds: null,
+  };
+  const view = await mountCard({ turn, locale: "en" });
+  try {
+    const doc = view.dom.window.document;
+    assert.match(doc.body.textContent ?? "", /Creation failed/);
+    assert.match(doc.body.textContent ?? "", /refunded to your wallet/);
+    assert.match(doc.body.textContent ?? "", /new quote/);
+    assert.doesNotMatch(doc.body.textContent ?? "", /provider\.invalid|secret=hidden/);
+    assert.equal(buttonMatching(doc, /Create|Renew|Retry/i), null);
+    assert.equal(view.confirms, 0);
+    assert.equal(view.renewals, 0);
+  } finally { await view.close(); }
+});
+
+test("a failed attempt with an unknown payment status does not promise a refund", async () => {
+  const turn = makeTurn({ state: "accepted" });
+  turn.generation = {
+    jobId: "failed-job", surface: "video", status: "failed", progress: null,
+    message: null, priceCents: 600, currency: "USD", paymentStatus: null,
+    result: null, retryAfterSeconds: null,
+  };
+  const view = await mountCard({ turn, locale: "en" });
+  try {
+    const text = view.dom.window.document.body.textContent ?? "";
+    assert.match(text, /Creation failed/);
+    assert.doesNotMatch(text, /refunded/);
+  } finally { await view.close(); }
+});
+
+test("confirmed wallet refunds have French copy", async () => {
+  const turn = makeTurn({ state: "accepted" });
+  turn.generation = {
+    jobId: "failed-job", surface: "image", status: "failed", progress: null,
+    message: null, priceCents: 600, currency: "USD", paymentStatus: "refunded_wallet",
+    result: null, retryAfterSeconds: null,
+  };
+  const view = await mountCard({ turn, locale: "fr" });
+  try {
+    const text = view.dom.window.document.body.textContent ?? "";
+    assert.match(text, /remboursé sur votre wallet/);
+    assert.match(text, /nouveau devis/);
+  } finally { await view.close(); }
 });
 
 test("an insufficient wallet offers the native billing page and refreshes this quote", async () => {

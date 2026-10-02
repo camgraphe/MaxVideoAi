@@ -79,6 +79,7 @@ test('submitFalGenerateTask returns generation results and persists request ids'
   const payload: GeneratePayload = { engineId: 'seedance-2-0', prompt: 'test', mode: 't2v' };
   const persisted: string[] = [];
   const result = await withMutedFalLogs(() => submitFalGenerateTask({
+    userId: 'owner',
     falPayload: payload,
     jobId: 'job_123',
     engineId: 'seedance-2-0',
@@ -121,6 +122,7 @@ test('submitFalGenerateTask defers timeout responses without refunding pending p
   const updates: Array<{ sql: string; params?: unknown[] }> = [];
   let rolledBack = false;
   const result = await withMutedFalLogs(() => submitFalGenerateTask({
+    userId: 'owner',
     falPayload: { engineId: 'seedance-2-0', prompt: 'test', mode: 't2v' },
     jobId: 'job_123',
     engineId: 'seedance-2-0',
@@ -163,6 +165,7 @@ test('submitFalGenerateTask defers before the Vercel runtime deadline', async ()
   let timeoutBudgetMs: number | null = null;
 
   const result = await withMutedFalLogs(() => submitFalGenerateTask({
+    userId: 'owner',
     falPayload: { engineId: 'seedance-2-0', prompt: 'test', mode: 't2v' },
     jobId: 'job_vercel_budget',
     engineId: 'seedance-2-0',

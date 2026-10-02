@@ -187,7 +187,8 @@ test('Alibaba submission falls back once for a retryable error before acceptance
         },
         getTask: async () => acceptedTask(),
       }),
-      submitFalGenerateTaskFn: async () => {
+      submitFalGenerateTaskFn: async falParams => {
+        assert.equal(falParams.userId, 'user_123');
         falCalls += 1;
         return { ok: true, generationResult: falResult };
       },

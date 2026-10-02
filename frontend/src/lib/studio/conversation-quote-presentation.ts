@@ -1,5 +1,16 @@
 import type {ImageConversationTurn} from './image-conversation-contract';
 export type ConversationLocale = 'en' | 'fr';
+export function conversationFailurePresentation(
+  generation: ImageConversationTurn['generation'],
+  locale: ConversationLocale,
+): string {
+  const failure = locale === 'fr' ? 'La création a échoué.' : 'Creation failed.';
+  const refund = generation?.paymentStatus === 'refunded_wallet'
+    ? locale === 'fr' ? ' Le paiement a été remboursé sur votre wallet.' : ' Your payment was refunded to your wallet.'
+    : '';
+  const next = locale === 'fr' ? ' Une nouvelle tentative nécessite un nouveau devis.' : ' A new attempt needs a new quote.';
+  return failure + refund + next;
+}
 export function conversationQuotePresentation(request: NonNullable<ImageConversationTurn['quote']>['summary'], locale: ConversationLocale) {
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   if (request.surface === 'audio') {

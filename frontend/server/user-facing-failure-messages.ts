@@ -14,7 +14,7 @@ const SEEDANCE_COPYRIGHT_FAILURE_MESSAGE =
   'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.';
 const SEEDANCE_COPYRIGHT_REFUND_REASON = 'Output was blocked for possible copyright-restricted content.';
 
-type FailureCategory = 'busy' | 'copyright' | 'no_output' | 'safety' | 'start' | 'storage' | 'timeout' | 'unsupported';
+type FailureCategory = 'busy' | 'copyright' | 'no_output' | 'reference' | 'safety' | 'start' | 'storage' | 'timeout' | 'unsupported';
 type SeedanceSpecificFailure = 'copyright' | 'reference_safety' | 'start' | 'task_output';
 
 const PROVIDER_OR_INTERNAL_PATTERN =
@@ -55,6 +55,14 @@ function classifyFailure(message: string | null): FailureCategory | null {
     ])
   ) {
     return 'safety';
+  }
+
+  // Fal's extracted input-download diagnostic no longer includes the input field or location.
+  if (
+    containsAny(lower, ['could not read the reference media', 'reference media could not be read']) ||
+    (lower.includes('failed to download the file') && lower.includes('check if the url is accessible'))
+  ) {
+    return 'reference';
   }
 
   if (
@@ -179,6 +187,8 @@ function messageForCategory(category: FailureCategory): string {
       return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
     case 'no_output':
       return 'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.';
+    case 'reference':
+      return 'MaxVideoAI could not read the reference media for this render. Select the reference again or upload a new file before trying again.';
     case 'safety':
       return 'This request was blocked by safety checks. Review the prompt and any reference images, video, or audio before trying again.';
     case 'start':
@@ -200,6 +210,8 @@ function refundReasonForCategory(category: FailureCategory): string {
       return SEEDANCE_COPYRIGHT_REFUND_REASON;
     case 'no_output':
       return 'Render finished without a usable output.';
+    case 'reference':
+      return 'Reference media could not be read.';
     case 'safety':
       return 'Request was blocked by safety checks.';
     case 'start':

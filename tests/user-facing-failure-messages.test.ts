@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { extractFalErrorMessage } from '../frontend/server/fal-webhook-errors';
 import {
   buildUserFacingRefundDescription,
   toUserFacingFailureMessage,
@@ -53,6 +54,47 @@ test('refund reasons classify storage preparation failures', () => {
 
   assert.equal(reason, 'Output could not be prepared for download.');
   assert.doesNotMatch(reason, forbidden);
+});
+
+test('Fal input download failures explain unreadable references without claiming output completion', () => {
+  const extracted = extractFalErrorMessage({
+    status: 'ERROR',
+    error: 'Unexpected status code: 422',
+  }, {
+    detail: [{
+      loc: ['body', 'input.start_image_url'],
+      type: 'file_download_error',
+      msg: 'Failed to download the file. Please check if the URL is accessible and try again.',
+      input: 'https://private.test/reference.png?token=secret',
+    }],
+  });
+
+  assert.equal(extracted, 'Failed to download the file. Please check if the URL is accessible and try again.');
+  const message = toUserFacingFailureMessage(extracted);
+  assert.match(message, /could not read the reference media/i);
+  assert.match(message, /select the reference again or upload a new file/i);
+  assert.doesNotMatch(message, /finished|completed|output|422|input\.start_image_url|https?:|token|secret/i);
+  assert.doesNotMatch(message, forbidden);
+
+  for (const reason of [extracted, message]) {
+    assert.equal(toUserFacingRefundReason(reason), 'Reference media could not be read.');
+    const description = buildUserFacingRefundDescription({ engineLabel: 'Wan 3', durationSec: 5, reason });
+    assert.equal(description, 'Refund Wan 3 - 5s - Reference media could not be read.');
+    assert.doesNotMatch(description, /finished|completed|output|422|input\.start_image_url|https?:|token|secret/i);
+    assert.doesNotMatch(description, forbidden);
+  }
+});
+
+test('output download and storage failures retain their existing preparation policy', () => {
+  for (const rawMessage of [
+    'The provider finished this render, but the video could not be copied to MaxVideoAI storage.',
+    'Failed to download the generated output video.',
+    'The render finished, but MaxVideoAI could not prepare the video for download. Please retry.',
+  ]) {
+    assert.equal(toUserFacingFailureMessage(rawMessage),
+      'The render finished, but MaxVideoAI could not prepare the output for download. Please retry.');
+    assert.equal(toUserFacingRefundReason(rawMessage), 'Output could not be prepared for download.');
+  }
 });
 
 test('Seedance recognizable-person failures explain reference-image limits', () => {

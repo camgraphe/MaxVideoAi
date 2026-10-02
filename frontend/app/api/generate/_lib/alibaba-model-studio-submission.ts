@@ -171,6 +171,7 @@ function falProviderJobId(result: FalGenerateSubmissionResult, getLastProviderJo
 }
 
 async function submitFalFallback(params: {
+  userId: string;
   directAttemptId: number;
   reason: string;
   errorCode: string | null;
@@ -219,6 +220,7 @@ async function submitFalFallback(params: {
     queryFn: params.queryFn,
   });
   const result = await params.submitFalGenerateTaskFn({
+    userId: params.userId,
     falPayload: params.falPayload,
     jobId: params.jobId,
     engineId: params.engineId,
@@ -432,6 +434,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
 
     if (fallbackEligible) {
       return submitFalFallback({
+        userId: params.userId,
         directAttemptId: attempt.id,
         reason: normalized.errorClass,
         errorCode: normalized.code,

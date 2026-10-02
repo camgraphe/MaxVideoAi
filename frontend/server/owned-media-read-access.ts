@@ -2,7 +2,7 @@ import { createSignedDownloadUrl, extractStorageKeyFromUrl, ownedMediaStorageKey
 
 /** Transient server read access; callers persist the original URL, never this grant. */
 export async function createOwnedMediaReadUrl(
-  input: { url: string; userId?: string | null; allowLegacyAnonymousPublicRead?: boolean },
+  input: { url: string; userId?: string | null; allowLegacyAnonymousPublicRead?: boolean; expiresInSeconds?: number },
   dependencies: { sign?: typeof createSignedDownloadUrl } = {},
 ): Promise<string> {
   const storageKey = extractStorageKeyFromUrl(input.url);
@@ -18,5 +18,7 @@ export async function createOwnedMediaReadUrl(
   }
   const key = input.userId ? ownedMediaStorageKeyForUrl({ url: input.url, userId: input.userId }) : null;
   if (!key) throw new Error('MEDIA_NOT_AVAILABLE');
-  return (dependencies.sign ?? createSignedDownloadUrl)(key, { expiresInSeconds: 300 });
+  const requestedTtl = input.expiresInSeconds ?? 300;
+  const expiresInSeconds = Number.isFinite(requestedTtl) ? Math.min(3600, Math.max(1, Math.trunc(requestedTtl))) : 300;
+  return (dependencies.sign ?? createSignedDownloadUrl)(key, { expiresInSeconds });
 }

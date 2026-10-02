@@ -148,7 +148,8 @@ test('Kling 3 Turbo records one rejected direct attempt then one accepted Fal at
           });
         },
       }) as never,
-      submitFalGenerateTaskFn: async () => {
+      submitFalGenerateTaskFn: async falParams => {
+        assert.equal(falParams.userId, 'user_staging');
         falCalls += 1;
         return { ok: true, generationResult: falResult };
       },

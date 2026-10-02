@@ -139,7 +139,8 @@ test('Luma Agents submission routes fal-compatible direct-unsupported payloads s
         },
         getGeneration: async () => acceptedTask(),
       }),
-      submitFalGenerateTaskFn: async () => {
+      submitFalGenerateTaskFn: async falParams => {
+        assert.equal(falParams.userId, 'user_123');
         falCalled = true;
         return { ok: true, generationResult: falResult };
       },

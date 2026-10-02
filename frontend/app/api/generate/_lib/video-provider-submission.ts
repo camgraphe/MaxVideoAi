@@ -279,6 +279,7 @@ export async function submitGenerateProviderTask(params: {
     inputSummary: params.falInputSummary,
   });
   const falSubmission = await submitFalGenerateTask({
+    userId: params.userId,
     falPayload: { ...params.falPayload, submissionMode: 'enqueue' },
     jobId: params.jobId,
     engineId: params.engineId,

@@ -6,7 +6,7 @@ import {
   imageQuoteWalletState,
 } from "@/lib/studio/image-quote-ui";
 import styles from "../image-conversation.module.css";
-import {conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
+import {conversationFailurePresentation, conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 export function ImageQuoteCard({
   turn,
   busy,
@@ -112,7 +112,7 @@ export function ImageQuoteCard({
             : turn.generation?.status === "completed"
               ? t('Creation ready', 'Création prête')
               : turn.generation?.status === "failed"
-                ? t('Generation failed. Check its status in the library.', 'La génération a échoué. Consultez son état dans la bibliothèque.')
+                ? conversationFailurePresentation(turn.generation, locale)
                 : t('Creation started.', 'La création a commencé.')}
         </span>
       )}

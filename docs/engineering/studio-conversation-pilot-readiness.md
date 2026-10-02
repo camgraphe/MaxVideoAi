@@ -8,7 +8,7 @@ The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: fal
 | --- | --- | --- |
 | Persistent director | Actual Sol browser exchanges, durable brief, action journal/checkpoints, usage observation | Long natural film journey and commercial token policy |
 | Image | Native Google session: one real Flare original, private browser access and same-job recovery, one charge in the isolated test ledger; PostgreSQL confirmation/reference parity | Production wallet qualification remains separate |
-| Video, voice, music | Shared canonical quotes/jobs; native owned-image Wan 3 quote and saved-draft recovery, no paid video attempt; voice configured | One ready output per capability; renewed music credentials and durable remote audio execution |
+| Video, voice, music | Shared canonical quotes/jobs; one native Wan 3 attempt failed on private input access and was refunded; shared transport correction passes owned-storage read proof; voice configured | Fresh approved video attempt and one ready output per capability; renewed music credentials and durable remote audio execution |
 | Editing | Shared manual/Sol commands, owned canonical Sequence, revisions/receipts, measured source facts, trim/order/gain/remove | Real generated outputs inserted in the same client journey |
 | Native UI | Chromium/Firefox/WebKit byte-backed playback, trim/move/gain/reload, bounded decoder recovery, responsive layout and persistent app-wide charcoal/olive | Physical Safari/iOS/Android smoke test with provider outputs |
 | Export | Existing exact estimator/reservation/worker adapter, owned recovery reader and local 3 s MP4 proof | Remote worker dispatch, original upload, completed artifact recovery in native chat |

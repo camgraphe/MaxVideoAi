@@ -820,6 +820,7 @@ const OWNED_MEDIA_STORAGE_PREFIXES = [
   'user-asset-thumbs',
   'media-assets',
   'user-assets',
+  'inline',
   'upscale',
   'angle',
   'renders',

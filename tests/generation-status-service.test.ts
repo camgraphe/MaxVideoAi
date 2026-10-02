@@ -339,6 +339,14 @@ test('agent failure messages map recognized categories to fixed public copy', ()
       raw: 'provider returned no video output',
       expected: `The render finished without a usable output. ${FAILED_ATTEMPT_BOUNDARY}`,
     },
+    {
+      raw: 'Failed to download the generated output video.',
+      expected: `The render finished, but MaxVideoAI could not prepare the output for download. ${FAILED_ATTEMPT_BOUNDARY}`,
+    },
+    {
+      raw: 'The provider finished this render, but the video could not be copied to MaxVideoAI storage.',
+      expected: `The render finished, but MaxVideoAI could not prepare the output for download. ${FAILED_ATTEMPT_BOUNDARY}`,
+    },
   ];
   for (const fixture of cases) {
     const result = mapGenerationStatusRecordToAgent(
@@ -346,6 +354,30 @@ test('agent failure messages map recognized categories to fixed public copy', ()
     );
     assert.equal(result?.message, fixture.expected);
     assert.notEqual(result?.message, fixture.raw);
+  }
+});
+
+test('agent reference-read failures preserve refund evidence and require a newly approved quote', () => {
+  for (const rawMessage of [
+    'Failed to download the file. Please check if the URL is accessible and try again.',
+    'MaxVideoAI could not read the reference media for this render. Select the reference again or upload a new file before trying again.',
+    'Reference media could not be read.',
+    'Failed to download the file. Please check if the URL is accessible and try again. input.start_image_url=https://private.test/reference.png?token=secret provider request_id=private-request',
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(generationRecord({
+      status: 'failed',
+      payment_status: 'refunded_wallet',
+      message: rawMessage,
+    }));
+
+    assert.equal(result?.message,
+      `MaxVideoAI could not read the reference media for this render. Select the reference again or upload a new file before preparing a new request. ${FAILED_ATTEMPT_BOUNDARY}`);
+    assert.equal(result?.status, 'failed');
+    assert.equal(result?.paymentStatus, 'refunded_wallet');
+    assert.equal(result?.result, null);
+    assert.equal(result?.retryAfterSeconds, null);
+    assert.doesNotMatch(JSON.stringify(result),
+      /render finished|render completed|output|input\.start_image_url|https?:|token=|secret|provider|request_id|private-request/i);
   }
 });
 

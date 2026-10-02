@@ -17,6 +17,8 @@ import {
 } from './fal-error-handling';
 import { projectProviderErrorResponse } from '@/server/provider-error-projection';
 import type { ProviderClientErrorPolicy } from '@/types/engines';
+import { createFalMediaTransport } from '@/server/fal-provider-media-access';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -114,6 +116,7 @@ export async function markJobAwaitingFal(params: {
 }
 
 export async function submitFalGenerateTask(params: {
+  userId: string;
   falPayload: GeneratePayload;
   jobId: string;
   engineId: string;
@@ -136,10 +139,15 @@ export async function submitFalGenerateTask(params: {
   const queryFn = params.deps?.queryFn ?? query;
   const rollbackPendingPaymentFn = params.deps?.rollbackPendingPaymentFn ?? rollbackPendingPayment;
   const markJobAwaitingFalFn = params.deps?.markJobAwaitingFalFn ?? markJobAwaitingFal;
+  let providerSubmissionStarted = false;
+  let sanitize = sanitizeProviderMediaDiagnostics;
 
   try {
+    const transport = await createFalMediaTransport({ payload: params.falPayload, userId: params.userId });
+    sanitize = transport.sanitize;
+    providerSubmissionStarted = true;
     const promise = generateVideoFn(
-      { ...params.falPayload },
+      transport.payload,
       {
         onRequestId: (requestId) => {
           console.info('[fal] request id received', {
@@ -163,6 +171,7 @@ export async function submitFalGenerateTask(params: {
     );
     return { ok: true, generationResult };
   } catch (error) {
+    const safeError = sanitize(error);
     const rawStatus =
       error && typeof error === 'object' && 'status' in error ? (error as { status?: number }).status : undefined;
     const metadataStatus =
@@ -171,15 +180,14 @@ export async function submitFalGenerateTask(params: {
         : undefined;
     const status = rawStatus ?? metadataStatus;
     const detail =
-      error && typeof error === 'object' && 'body' in error ? (error as { body?: unknown }).body ?? null : null;
+      error && typeof error === 'object' && 'body' in error ? sanitize((error as { body?: unknown }).body ?? null) : null;
     const providerMessageRaw =
       extractFalProviderMessage(detail) ??
-      (error instanceof FalGenerationError && error.body ? extractFalProviderMessage(error.body) : null) ??
+      (error instanceof FalGenerationError && error.body ? extractFalProviderMessage(sanitize(error.body)) : null) ??
       (error && typeof error === 'object' && 'response' in error
-        ? extractFalProviderMessage((error as { response?: unknown }).response)
+        ? extractFalProviderMessage(sanitize((error as { response?: unknown }).response))
         : null) ??
-      extractFalProviderMessage(error) ??
-      (error instanceof Error ? error.message : null);
+      extractFalProviderMessage(safeError);
     const providerMessage = condenseFalErrorMessage(providerMessageRaw);
     const effectiveProviderMessage =
       providerMessage && providerMessage.toLowerCase() === 'fal request failed' ? null : providerMessage;
@@ -236,7 +244,7 @@ export async function submitFalGenerateTask(params: {
         providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
         detail: detail ?? null,
       },
-      error
+      safeError
     );
 
     const deferable =
@@ -249,7 +257,7 @@ export async function submitFalGenerateTask(params: {
         providerJobId,
       });
 
-    const uncertainSubmission = params.falPayload.submissionMode === 'enqueue' &&
+    const uncertainSubmission = providerSubmissionStarted && params.falPayload.submissionMode === 'enqueue' &&
       (providerJobId || !status || status >= 500 || status === 408);
     if (isTimeoutError || uncertainSubmission) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
