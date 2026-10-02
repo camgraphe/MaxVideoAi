@@ -177,7 +177,11 @@ the deployed source comparison described above; merely changing a fixture's
 The writer uses an explicitly selected direct TLS Neon or isolated Unix-socket
 pool, independently of the application's ambient database. A branded transaction
 must also belong to this selected connection. Actual transport/database/user and
-the actor's current `user_roles` administrator record are checked. State,
+the actor's current administrator authority are checked with the application's
+precedence: a nonempty `user_roles` admin population is authoritative; otherwise
+the exact actor must be present in `app_admins`. These tables remain locked through
+the transaction, including the empty role population. No role is granted, and
+missing permission tables or failed queries refuse maintenance. State,
 cell/history and commercial tables are locked together. Hashes include pricing
 rules, settings, availability overrides and billing products. Settings timestamps
 alone are excluded; policy timestamps retain their selection semantics. Secrets

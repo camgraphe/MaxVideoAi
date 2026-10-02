@@ -55,6 +55,22 @@ export async function withPricingCutoverTransaction<T>(env: Record<string,string
   } finally { await pool.end().catch(() => undefined); }
 }
 
+export async function lockPricingCutoverAdministrator(executor: TransactionQueryExecutor, actorId: string) {
+  if (!isTransactionQueryExecutor(executor)) throw new Error('Cutover administrator check requires an active transaction.');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(actorId)) throw new Error('Invalid cutover actor.');
+  // Match the application's admin precedence, without caching or granting roles.
+  // Table locks freeze even an empty role population until this operation ends.
+  await executor.query('LOCK TABLE user_roles IN SHARE MODE');
+  const admins = await executor.query<{ user_id: string }>(`SELECT user_id FROM user_roles WHERE role='admin'`);
+  if (admins.length) {
+    if (!admins.some(row => row.user_id === actorId.toLowerCase())) throw new Error('Cutover actor is not an administrator.');
+    return;
+  }
+  await executor.query('LOCK TABLE app_admins IN SHARE MODE');
+  const legacy = await executor.query('SELECT user_id FROM app_admins WHERE user_id=$1::uuid',[actorId]);
+  if (legacy.length !== 1) throw new Error('Cutover actor is not an administrator.');
+}
+
 async function lockCutover(executor: TransactionQueryExecutor,input: { target: Target; actorId: string; mode: Mode }) {
   const selected = selectedTransactions.get(executor);
   if (!isTransactionQueryExecutor(executor) || !selected || selected.mode !== input.mode
@@ -69,8 +85,7 @@ async function lockCutover(executor: TransactionQueryExecutor,input: { target: T
       || !connection.sockets.split(',').map(s => s.trim()).includes(selected.target.config.host) : !connection.remote || !connection.ssl)) {
     throw new Error('Actual database transport or identity changed.');
   }
-  const admins = await executor.query(`SELECT user_id FROM user_roles WHERE user_id=$1::uuid AND role='admin' FOR SHARE`,[input.actorId]);
-  if (admins.length !== 1) throw new Error('Cutover actor is not an administrator.');
+  await lockPricingCutoverAdministrator(executor,input.actorId);
   const [state] = await executor.query<{ revision: string; active: boolean }>('SELECT revision,active FROM app_customer_tariff_state WHERE singleton=TRUE FOR UPDATE');
   if (!state) throw new Error('Explicit cutover migrations are missing.');
   await executor.query(`LOCK TABLE app_customer_tariff_cells,app_customer_tariff_cell_versions,app_customer_tariff_cutover_events,
