@@ -162,6 +162,7 @@ function projectGuidance(
     considerations: Object.freeze([...guidance.considerations]),
     evidenceUrls: Object.freeze(includeEvidence ? [...guidance.evidenceUrls] : []),
     reviewedAt: guidance.reviewedAt,
+    ...(guidance.sourceAssessments === undefined ? {} : {sourceAssessments: Object.freeze(guidance.sourceAssessments.map(assessment=>Object.freeze({...assessment})))}),
   });
 }
 
@@ -286,8 +287,9 @@ function projectSettings(
   }));
 }
 
-function projectMode(
-  candidate: AgentPublicCatalogEngine,
+// Callers own authorization and model/mode eligibility; this projects canonical facts only.
+export function projectAgentModelModeDetails(
+  candidate: Pick<AgentPublicCatalogEngine, 'engine' | 'surface' | 'modeCaps'>,
   mode: AgentGenerationMode,
 ): AgentModelModeDetails {
   const caps = candidate.modeCaps[mode];
@@ -437,7 +439,7 @@ export async function getAgentModelDetails(
     successor: successor ? Object.freeze({ id: successor.id, slug: successor.slug }) : null,
     recommendedByDefault: runtime?.lifecycle === undefined || runtime.lifecycle === 'current',
     prelaunch,
-    modes: Object.freeze(candidate.publicModes.map((mode) => projectMode(candidate, mode))),
+    modes: Object.freeze(candidate.publicModes.map((mode) => projectAgentModelModeDetails(candidate, mode))),
     guidance,
     promptingSources,
     links: Object.freeze({

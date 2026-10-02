@@ -8,7 +8,7 @@ import {createImageConversationService} from '../frontend/src/server/studio/imag
 import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {claimImageTurn} from '../frontend/src/server/studio/image-conversation-repository';
 import {createPaidGenerationTestSchema, startDisposablePostgres} from './helpers/disposable-postgres';
-import {addTopup, ProviderHarness} from './helpers/mcp-paid-e2e-harness';
+import {addTopup, ProviderHarness,createServices,principal} from './helpers/mcp-paid-e2e-harness';
 
 test('native tool runs preserve brief, every response, exact quote and accepted job across lost ACK', async (t) => {
   const repo = await import('../frontend/src/server/studio/conversation-run-repository').catch(() => null);
@@ -116,18 +116,30 @@ test('native tool runs preserve brief, every response, exact quote and accepted 
     return {...base, prepare: async value => {if (failPreparation) {failPreparation = false; throw new Error('Preparation unavailable once');} return base.prepare(value);}};
   };
   let prepareCalls = 0;
+  const chosenImage={prompt: 'Warm paper in sunlight',aspectRatio: '1:1',modelId: 'gpt-image-2',mode: 't2i' as const,
+    settings: [{name: 'resolution',value: '1024x1024'},{name: 'quality',value: 'medium'},{name: 'outputFormat',value: 'jpeg'}],references: [],outputCount: 1 as const};
   const preparationService = createImageConversationService(actor, {enabled: true, actionsEnabled: true, generationFactory: failingFactory,
     createActionResponse: async () => {prepareCalls++; return {id: 'preparation-response', model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', usage, output_text: '',
-      output: [{type: 'function_call', name: 'image_prepare', call_id: 'prepare-interrupted', arguments: JSON.stringify({reply: 'A warm cinematic direction, awaiting your confirmation.', prompt: 'Warm paper in sunlight', aspectRatio: '16:9'})}]};},
+      output: [{type: 'function_call', name: 'image_prepare', call_id: 'prepare-interrupted', arguments: JSON.stringify({reply: 'A warm cinematic direction, awaiting your confirmation.',...chosenImage})}]};},
   });
   const failedPreparationInput = {requestId: randomUUID(), message: 'Yes, create the first image.', references: []};
   await assert.rejects(preparationService.submit(failedPreparationInput), {code: 'INTERNAL_ERROR'});
+  const persisted=(await pg.pool.query('SELECT draft_json FROM studio_image_turns WHERE request_id=$1',[failedPreparationInput.requestId])).rows[0].draft_json;
+  assert.deepEqual(persisted.image,chosenImage,'All selected fields must survive failed preparation in real storage.');
   const recoveredQuote = await preparationService.submit(failedPreparationInput);
   assert.ok(recoveredQuote.quote);
+  assert.deepEqual(recoveredQuote.quote.summary,{schemaVersion: 1,surface: 'image',engineId: chosenImage.modelId,mode: 't2i',prompt: chosenImage.prompt,
+    settings: {aspectRatio: '1:1',resolution: '1024x1024',quality: 'medium',outputFormat: 'jpeg'},references: [],outputCount: 1});
   assert.equal(prepareCalls, 1);
   assert.equal((await pg.pool.query('SELECT * FROM studio_conversation_steps WHERE request_id=$1', [failedPreparationInput.requestId])).rows.length, 2,
     'The failed preparation and successful draft recovery must each retain their own action receipt');
   assert.equal(provider.captures.length, 1);
+  const mcp=createServices({publicEngines: catalog,submitPaidGeneration: provider.submit});
+  const matchingMcp=await mcp.prepareGeneration!(recoveredQuote.quote.summary as never,principal('owner'));
+  assert.deepEqual(matchingMcp.summary,recoveredQuote.quote.summary,'Equivalent supported requests use the same canonical representation.');
+  assert.deepEqual(matchingMcp.price,recoveredQuote.quote.price,'Studio and MCP use the same exact quote owner.');
+  assert.equal(provider.captures.length,1,'Both preparations remain non-spending.');
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS count FROM app_receipts WHERE type='charge'")).rows[0].count,1);
   // The first brief is no longer in the eight-turn dialogue window.
   for (let index = 0; index < 10; index++) await pg.pool.query(`INSERT INTO studio_image_turns
     (user_id,project_id,request_id,request_hash,input_json,draft_json,draft_reference_fingerprint,state,lease_id,lease_expires_at)

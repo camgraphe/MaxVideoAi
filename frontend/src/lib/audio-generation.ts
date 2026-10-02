@@ -61,6 +61,12 @@ export const DEFAULT_SEED_AUDIO_SAMPLE_RATE: AudioSeedAudioSampleRate = 24000;
 export const DEFAULT_SEED_AUDIO_SPEED = 1;
 export const DEFAULT_SEED_AUDIO_VOLUME = 1;
 export const DEFAULT_SEED_AUDIO_PITCH = 0;
+export const AUDIO_SEED_AUDIO_RANGE_CONSTRAINTS = {
+  seedAudioSpeed: {min: 0.5,max: 2},
+  seedAudioVolume: {min: 0.5,max: 2},
+  seedAudioPitch: {min: -12,max: 12,integer: true},
+} as const;
+export const AUDIO_SEED_AUDIO_DECIMAL_PRECISION=2;
 
 const AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO = 4;
 const AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO = 8;

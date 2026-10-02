@@ -8,6 +8,8 @@ import {
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
+  AUDIO_SEED_AUDIO_RANGE_CONSTRAINTS,
+  AUDIO_SEED_AUDIO_DECIMAL_PRECISION,
   AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC,
   AUDIO_LYRIA3_BPM_VALUES,
   DEFAULT_AUDIO_LYRIA3_BPM,
@@ -221,7 +223,7 @@ function normalizeSeedAudioRangeValue(params: {
       field: params.field,
     });
   }
-  return Number(resolved.toFixed(2));
+  return Number(resolved.toFixed(AUDIO_SEED_AUDIO_DECIMAL_PRECISION));
 }
 
 export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): ValidatedAudioGenerateRequest {
@@ -521,8 +523,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     ? normalizeSeedAudioRangeValue({
         value: body.seedAudioSpeed,
         fallback: DEFAULT_SEED_AUDIO_SPEED,
-        min: 0.5,
-        max: 2,
+        ...AUDIO_SEED_AUDIO_RANGE_CONSTRAINTS.seedAudioSpeed,
         field: 'seedAudioSpeed',
         code: 'seed_audio_speed_invalid',
         label: 'Seed Audio speed',
@@ -532,8 +533,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     ? normalizeSeedAudioRangeValue({
         value: body.seedAudioVolume,
         fallback: DEFAULT_SEED_AUDIO_VOLUME,
-        min: 0.5,
-        max: 2,
+        ...AUDIO_SEED_AUDIO_RANGE_CONSTRAINTS.seedAudioVolume,
         field: 'seedAudioVolume',
         code: 'seed_audio_volume_invalid',
         label: 'Seed Audio volume',
@@ -543,9 +543,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     ? normalizeSeedAudioRangeValue({
         value: body.seedAudioPitch,
         fallback: DEFAULT_SEED_AUDIO_PITCH,
-        min: -12,
-        max: 12,
-        integer: true,
+        ...AUDIO_SEED_AUDIO_RANGE_CONSTRAINTS.seedAudioPitch,
         field: 'seedAudioPitch',
         code: 'seed_audio_pitch_invalid',
         label: 'Seed Audio pitch',

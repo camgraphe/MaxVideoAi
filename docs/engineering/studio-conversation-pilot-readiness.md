@@ -4,6 +4,10 @@ The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: fal
 
 **Latest user direction:** stop the current 25 s film. It is a technical integration proof, not an accepted promotional film or an artistic acceptance gate. Prioritize executable tools and their capabilities rather than creative recipes. The later music/mixed-export qualification and current handoff are in [the resume brief](studio-conversation-resume-brief.md); the initial checkpoint below is historical. The [Higgsfield/Runway/Replicate benchmark](studio-mcp-tool-benchmark-2026-10-02.md) records verified patterns, local gaps and the next implementation batches for both adapters.
 
+**3 October tool checkpoint:** Batch 1 now implements project-scoped exact model inspection, configurable canonical preparations and full draft/retry persistence. Studio reuses the MCP visual facts and shared Audio variant facts; its one-output/eight-image-reference limits and missing video/audio reference resolvers remain explicit. Shared guidance carries attributed public Higgsfield/Runway descriptions/recommendations, not measured quality scores or imported prices. GPT-6.1 Sol chooses the creative approach; MCP adapters remain client-model independent. These are local contract/fixture changes, with no new real media generation or export. Batch 2 editing/export adapters, bounded multi-action completion and Audio/montage publication qualification remain next.
+
+Fresh verification: `qa:editor` **723 passed, 1 skipped**, typecheck and lint succeeded (seven pre-existing image warnings); **122 focused MCP tests passed**, including canonical capabilities, prepare/confirm, source attribution and Audio reservation. Disposable PostgreSQL 17 verifies complete selected media drafts, transaction interruption/reload and duplicate prevention. Independent review has no remaining important finding; exposure/whitespace checks passed. This source checkpoint has not replaced the running localhost snapshot or qualified additional provider/model combinations live.
+
 ## Delivered locally
 
 | Area | Current proof | Qualification still needed |

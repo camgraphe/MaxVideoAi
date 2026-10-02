@@ -32,19 +32,28 @@ import type { ResolvedReference } from "@/server/agent-api/reference-types";
 import { withDbTransaction, type TransactionQueryExecutor } from "@/lib/db";
 import { resolveStudioMedia } from "./media-resolver";
 import { getWalletSummary } from "@/server/wallet-summary";
+import {STUDIO_CONVERSATION_MODEL_IDS} from '@/config/studio-conversation-catalog';
+import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
+import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 
 function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'video') {
   return catalog
-    .filter((candidate) => candidate.surface === surface)
+    .filter((candidate) => candidate.surface === surface && STUDIO_CONVERSATION_MODEL_IDS[surface].includes(candidate.engine.id))
     .map((candidate) => ({
       ...candidate,
       publicModes: candidate.publicModes
-        .filter((mode) => surface === 'image' ? mode === "t2i" || mode === "i2i" : mode === 't2v' || mode === 'i2v')
+        .filter((mode) => Boolean(candidate.modeCaps[mode]))
+        .filter((mode) => surface === 'image' ? mode === "t2i" || mode === "i2i" : ['t2v','i2v','ref2v','fl2v'].includes(mode))
+        .filter(mode => {
+          const details=projectAgentModelModeDetails(candidate,mode);
+          return !details.settings.some(setting=>setting.required && setting.type==='multi_prompt')
+            && !details.references.some(ref=>ref.required && (ref.type!=='image' || (ref.min ?? 1)>STUDIO_CONVERSATION_MAX_REFERENCES));
+        })
         .filter((mode) =>
           isWorkspaceModelCertifiedForBlock({
             modelId: candidate.engine.id,
             presetId: surface === 'video' ? 'generate-video' : mode === "t2i" ? "generate-image" : "modify-image",
-            workflowType: mode === 't2v' ? 'text_to_video' : mode === 'i2v' ? 'image_to_video' : mode === "t2i" ? "text_to_image" : "image_to_image",
+            workflowType: mode === 't2v' ? 'text_to_video' : mode === 'i2v' || mode === 'fl2v' ? 'image_to_video' : mode === 'ref2v' ? 'storyboard_to_video' : mode === "t2i" ? "text_to_image" : "image_to_image",
           }),
         ),
     }))

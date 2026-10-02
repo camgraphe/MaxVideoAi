@@ -36,6 +36,11 @@ import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversa
 import {resolveStudioMedia} from './media-resolver';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
+import {conversationSelectionSettings,imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
+import {GenerationNormalizationError,normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
+import {GenerationCapabilityError,validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
+import {getDefaultResolution} from '@/lib/image/inputSchema';
 
 export const imageConfirmationSchema = z
   .object({
@@ -45,6 +50,16 @@ export const imageConfirmationSchema = z
   })
   .strict();
 export type ImageGenerationFactory = typeof createStudioImageGenerationService;
+/** Rebind selected canonical roles to the original reviewed facts, never to a fresh asset read. */
+export function imageReferenceFingerprintFromReview(request: Pick<CanonicalGenerationRequest,'references'>, reviewed: readonly ResolvedReference[]): string {
+  return studioReferenceFingerprint(request.references.map(reference => {
+    const original=reference.kind === 'asset' ? reviewed.find(ref => ref.assetId === reference.assetId && ref.mediaKind === 'image') : undefined;
+    if (!original) throw new AgentApiError('REFERENCE_INVALID','Studio has not reviewed this selected image.');
+    const facts={...original};
+    delete facts.slot;
+    return {...facts,role: reference.role,...(reference.slot === undefined ? {} : {slot: reference.slot})};
+  }));
+}
 export function imageRequestFromDraft(
   draft: ImageDraft,
   input: ImageTurnInput,
@@ -52,9 +67,18 @@ export function imageRequestFromDraft(
 ): CanonicalGenerationRequest {
   if (!draft.image)
     throw new AgentApiError("PARAMETER_INVALID", "No image was requested.");
-  const mode = input.references.length ? "i2i" : "t2i";
+  const selection = imageSelectionSchema.parse(draft.image);
+  const references: CanonicalGenerationRequest['references'] = selection.references == null
+    ? input.references.map(assetId => ({kind: 'asset',assetId,role: 'reference'}))
+    : selection.references.map(reference => {
+      if (reference.ref.type !== 'asset' || !input.references.includes(reference.ref.assetId))
+        throw new AgentApiError('REFERENCE_INVALID','Attach this library image before selecting it as a reference.');
+      return {kind: 'asset',assetId: reference.ref.assetId,role: reference.role,...(reference.slot == null ? {} : {slot: reference.slot})};
+    });
+  const mode = selection.mode ?? (references.length ? "i2i" : "t2i");
+  if (mode === 't2i' && references.length) throw new AgentApiError('REFERENCE_INVALID','Text-to-image does not use generation references.');
   const candidate =
-    catalog.find(
+    selection.modelId ? catalog.find(entry => entry.engine.id === selection.modelId && entry.publicModes.includes(mode)) : catalog.find(
       (entry) =>
         entry.engine.id === "gpt-image-2-5-flare" &&
         entry.publicModes.includes(mode),
@@ -68,22 +92,26 @@ export function imageRequestFromDraft(
       "ENGINE_UNAVAILABLE",
       "The Studio image model is unavailable.",
     );
-  const ratio = draft.image.aspectRatio;
-  const choices =
-    ratio === "1:1"
-      ? ["1024x1024", "square_hd"]
-      : ratio === "16:9"
-        ? ["landscape_16_9", "1920x1080"]
-        : ["portrait_16_9"];
+  const ratio = selection.aspectRatio;
+  const selected = conversationSelectionSettings(selection.settings);
+  if (selected.aspectRatio !== undefined && selected.aspectRatio !== ratio)
+    throw new AgentApiError('PARAMETER_INVALID','Choose one consistent image aspect ratio.');
+  const choices: Record<string,string[]>={
+    '1:1': ['1024x1024','square_hd'], '16:9': ['landscape_16_9','1920x1080'],
+    '9:16': ['portrait_16_9'], '4:3': ['landscape_4_3','1024x768'], '3:4': ['portrait_4_3'],
+    auto: [getDefaultResolution(candidate.engine,mode)],
+  };
   const allowed =
     candidate.modeCaps[mode]?.resolution ?? candidate.engine.resolutions;
-  const resolution = choices.find((value) => allowed.includes(value));
+  const details = projectAgentModelModeDetails(candidate,mode);
+  const resolution = selected.resolution ?? choices[ratio]?.find((value) => allowed.includes(value)) ?? details.resolutions[0];
   if (!resolution)
     throw new AgentApiError(
       "PARAMETER_INVALID",
       "This image format is unavailable.",
     );
-  return {
+  try {
+  const request = normalizeGenerationRequest({
     schemaVersion: 1,
     surface: "image",
     engineId: candidate.engine.id,
@@ -92,16 +120,22 @@ export function imageRequestFromDraft(
     settings: {
       aspectRatio: ratio,
       resolution,
-      quality: "high",
-      outputFormat: "png",
+      ...(details.settings.some(setting => setting.key === 'quality') ? {quality: 'high'} : {}),
+      ...(details.settings.some(setting => setting.key === 'outputFormat') ? {outputFormat: 'png'} : {}),
+      ...selected,
     },
-    references: input.references.map((assetId) => ({
-      kind: "asset",
-      assetId,
-      role: "reference",
-    })),
+    references,
     outputCount: 1,
-  };
+  });
+  validateCanonicalGenerationCapabilities(request,candidate);
+  return request;
+  } catch (error) {
+    if (error instanceof GenerationNormalizationError)
+      throw new AgentApiError(error.field.startsWith('references') ? 'REFERENCE_INVALID' : 'PARAMETER_INVALID',error.message);
+    if (error instanceof GenerationCapabilityError)
+      throw new AgentApiError(error.kind === 'reference_required' ? 'REFERENCE_REQUIRED' : error.kind === 'reference_invalid' ? 'REFERENCE_INVALID' : 'PARAMETER_INVALID',`${error.field} is not supported for the selected model and mode.`);
+    throw error;
+  }
 }
 export function createImageConversationService(
   actor: StudioGenerationActor,
@@ -280,7 +314,7 @@ export function createImageConversationService(
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
         if (hasDraftCreation(draft) && !useActions) {
           if (dependencies.actionsEnabled) {
-            await resumeStudioImageAction({actor, turn, input, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled});
+            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled});
           } else {
           const request = imageRequestFromDraft(
             draft,
@@ -289,7 +323,7 @@ export function createImageConversationService(
           );
           await factory(actor, {
             enabled: dependencies.enabled,
-            expectedReferenceFingerprint: referenceFingerprint,
+            expectedReferenceFingerprint: imageReferenceFingerprintFromReview(request,refs),
             onQuotePrepared: (quote, executor) =>
               attachImageQuote(actor, turn, quote.quoteId, executor),
           }).prepare(request);

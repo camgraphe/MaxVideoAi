@@ -79,7 +79,7 @@ test('action contracts reject foreign identities, unsupported media and confirma
   assert.ok(module?.studioActionRequestSchema);
   const schema = module.studioActionRequestSchema;
   assert.ok(schema.safeParse({action: 'project.read'}).success);
-  for (const request of [{action: 'generation.confirm', quoteId: 'x'}, {action: 'project.read', userId: 'foreign'}, {action: 'video.prepare', prompt: 'x'}, {action: 'image.prepare', prompt: 'x', reply: 'x', aspectRatio: '21:9'}])
+  for (const request of [{action: 'generation.confirm', quoteId: 'x'}, {action: 'project.read', userId: 'foreign'}, {action: 'video.prepare', prompt: 'x'}, {action: 'image.prepare', prompt: 'x', reply: 'x', aspectRatio: 'wide'}])
     assert.equal(schema.safeParse(request).success, false);
 });
 

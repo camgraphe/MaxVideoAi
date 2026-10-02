@@ -2,6 +2,20 @@
 
 État au 1 octobre 2026 : premier lot image implémenté et qualifié en local derrière un gate fermé, **pas une connexion production livrée**. Le prototype isolé dispose de Sol réel, actions communes avec son MCP local, médias locaux, montage et rendu. L’évaluation est dans `experiments/studio-conversation/design/sol-evaluation-2026-10-01.md`.
 
+## Capacités et choix — lot du 3 octobre 2026
+
+Le [comparatif des outils](studio-mcp-tool-benchmark-2026-10-02.md) a maintenant un premier lot implémenté sur la branche isolée. Les sections datées ci-dessous conservent les étapes historiques et leurs anciens presets.
+
+Sol dispose de `model_details` après découverte du catalogue. Les faits visuels réutilisent `projectAgentModelModeDetails`, le même propriétaire que le MCP, après autorisation du projet et intersection des modèles/modes exécutables et certifiés. Le pilote expose GPT Image 2.5 Flare/GPT Image 2 et Wan 3/Seedance 2.0 Mini/MiniMax H3 quand leur route est disponible. `studio-conversation-catalog.ts` borne la visibilité du pilote ; il ne remplace ni le registre de modèles, ni la certification, ni les contrôles runtime. La conversation limite à un résultat et huit références image ; elle n’annonce pas des modes nécessitant un résolveur vidéo/audio absent.
+
+Les outils de préparation acceptent le modèle, le mode, les réglages canoniques en paires nom/valeur et les rôles de références explicites. Une liste vide ne réutilise pas automatiquement les pièces jointes. `reference` guide une génération ; `first_frame`/`last_frame` sont des usages distincts. Les sorties image prêtes du projet peuvent être réutilisées pour la vidéo, via le propriétaire de sauvegarde existant. Les champs omis/null conservent les défauts compatibles des anciens drafts ; les choix explicites valides survivent au journal, à l’interruption de préparation et au reload. Les faits des images examinées restent liés à l’empreinte des références choisies.
+
+La voix et la musique décrivent chaque variante disponible avec ses noms de réglages canoniques, options, défauts et limites depuis le propriétaire Audio commun. MiniMax expose son format/fréquence compatibles ; Clip reste à 30 s et Pro garde sa plage canonique. Les références vidéo/échantillon vocal ne sont pas acceptées par ces deux outils de conversation. Cette projection ne change ni la révision du catalogue Audio de devis, ni ses prix.
+
+`agent-model-guidance.json` ajoute des recommandations/descriptions publiques attribuées à Higgsfield et Runway, avec URL, classification et date de lecture. Elles sont partagées par Studio et MCP. Aucun score numérique mesuré n’a été trouvé dans les sources inspectées pour les cinq modèles du pilote ; aucune note ou cotation externe n’a été inventée. Les paramètres exécutables et prix MaxVideoAI restent canoniques.
+
+GPT-6.1 Sol choisit direction, prompts, modèles et usage des outils. Les recommandations externes sont des indices ; aucune séquence « image puis animation » n’est imposée. Le serveur conserve identité, validation, devis, confirmation et reprise. Le MCP reste indépendant du modèle du client et peut profiter des futurs modèles sans recopier leur travail créatif dans une recette serveur. Ce lot n’ajoute pas d’outil d’export Sol ni d’édition MCP et ne change aucun gate de publication.
+
 ## Parcours client retenu
 
 Le client connecté ouvre Studio, joint ses références depuis le + et décrit sa création. Sol propose une direction et choisit des possibilités réellement disponibles. Une création complète ou par étapes se décide dans la conversation. Aucun sélecteur technique de modèle n’est imposé.

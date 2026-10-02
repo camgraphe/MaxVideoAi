@@ -11,6 +11,7 @@ import {readStudioProjectMedia, type StudioMediaFactories} from './conversation-
 import {readStudioConversationTimeline} from './conversation-timeline';
 import type {ConversationEditResult} from './conversation-edit-command';
 import type {StudioQuoteDiscardResult} from './conversation-quote-command';
+import {studioVisualCapabilityDetails,studioVisualCapabilitySummary,studioAudioCapabilityDetails} from './conversation-capabilities';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
@@ -42,14 +43,24 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           return {ok: true,action: request.action,data: await dependencies.editTimeline(request)};
         case 'project.remember': return {ok: true, action: request.action, data: await saveStudioConversationMemory(actor, {revision: request.revision, brief: request.brief, decisions: request.decisions})};
         case 'catalog.read': {
-          const image = (await generation.catalog()).map(entry => ({modelId: entry.engine.id, label: entry.engine.label, modes: entry.publicModes, formats: entry.engine.aspectRatios}));
+          const image = (await generation.catalog()).map(studioVisualCapabilitySummary);
           if (!dependencies.mediaEnabled || !dependencies.factories) return {ok: true, action: request.action, data: image};
-          const video = (await dependencies.factories.video(actor, {enabled: dependencies.enabled}).catalog()).filter(entry => entry.engine.id === 'wan-3')
-            .map(entry => ({modelId: entry.engine.id, label: entry.engine.label, modes: entry.publicModes, formats: entry.engine.aspectRatios}));
+          const video = (await dependencies.factories.video(actor, {enabled: dependencies.enabled}).catalog()).map(studioVisualCapabilitySummary);
           const audio = (await dependencies.factories.audio(actor, {enabled: dependencies.enabled}).catalog()).modes
-            .filter(entry => entry.variants.some(variant => variant.available && (entry.mode === 'voice_only' ? variant.settings.voiceModel === 'seed' : variant.settings.musicModel === 'clip')))
+            .filter(entry => entry.variants.some(variant => variant.available))
             .map(entry => ({modelId: entry.engineId, label: entry.label, modes: [entry.mode], formats: []}));
           return {ok: true, action: request.action, data: [...image, ...video, ...audio]};
+        }
+        case 'model.details': {
+          const image=(await generation.catalog()).find(candidate=>candidate.engine.id===request.modelId);
+          if (image) return {ok: true,action: request.action,data: studioVisualCapabilityDetails(image)};
+          if (dependencies.mediaEnabled && dependencies.factories) {
+            const video=(await dependencies.factories.video(actor,{enabled: dependencies.enabled}).catalog()).find(candidate=>candidate.engine.id===request.modelId);
+            if (video) return {ok: true,action: request.action,data: studioVisualCapabilityDetails(video)};
+            const audio=studioAudioCapabilityDetails(await dependencies.factories.audio(actor,{enabled: dependencies.enabled}).catalog(),request.modelId);
+            if (audio) return {ok: true,action: request.action,data: audio};
+          }
+          throw new AgentApiError('ENGINE_UNAVAILABLE','This model is not available in the current Studio catalog. Read catalog_read to choose an executable model.');
         }
         case 'image.prepare': return {ok: true, action: request.action, data: await dependencies.prepareImage(request)};
         case 'generation.read': return {ok: true, action: request.action, data: await (dependencies.recover ?? generation.recover)(request.quoteId)};

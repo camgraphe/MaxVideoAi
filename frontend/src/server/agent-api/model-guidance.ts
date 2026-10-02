@@ -20,6 +20,14 @@ export type AgentModelGuidance = Readonly<{
   considerations: readonly string[];
   evidenceUrls: readonly string[];
   reviewedAt: string;
+  sourceAssessments?: readonly AgentModelSourceAssessment[];
+}>;
+export type AgentModelSourceAssessment = Readonly<{
+  source: 'higgsfield' | 'runway';
+  sourceUrl: string;
+  summary: string;
+  classification: 'vendor_recommendation' | 'documented_capability';
+  reviewedAt: string;
 }>;
 
 const USE_CASES = new Set<AgentModelUseCase>([
@@ -34,7 +42,7 @@ const USE_CASES = new Set<AgentModelUseCase>([
   'native_audio',
   'high_resolution',
 ]);
-const ENTRY_FIELDS = new Set([
+const REQUIRED_FIELDS = new Set([
   'engineId',
   'strengths',
   'bestFor',
@@ -42,6 +50,7 @@ const ENTRY_FIELDS = new Set([
   'evidenceUrls',
   'reviewedAt',
 ]);
+const ENTRY_FIELDS = new Set([...REQUIRED_FIELDS,'sourceAssessments']);
 const MAX_TEXT_LENGTH = 280;
 
 function fail(message: string): never {
@@ -106,6 +115,25 @@ function requireReviewDate(value: unknown, path: string): string {
   return date;
 }
 
+const SOURCE_URLS = {
+  higgsfield: new Set(['https://raw.githubusercontent.com/higgsfield-ai/skills/main/higgsfield-generate/references/model-catalog.md','https://raw.githubusercontent.com/higgsfield-ai/cli/main/MODELS.md']),
+  runway: new Set(['https://docs.dev.runwayml.com/guides/models/']),
+};
+function requireSourceAssessments(value: unknown,path: string): readonly AgentModelSourceAssessment[] {
+  if (!Array.isArray(value) || !value.length || value.length > 4) fail(`${path} must contain between 1 and 4 assessments`);
+  const fields=new Set(['source','sourceUrl','summary','classification','reviewedAt']);
+  return Object.freeze(value.map((entry,index) => {
+    const itemPath=`${path}[${index}]`;
+    if (!isRecord(entry) || Object.keys(entry).length !== fields.size || Object.keys(entry).some(key=>!fields.has(key))) fail(`${itemPath} contains unknown or missing fields`);
+    if (entry.source !== 'higgsfield' && entry.source !== 'runway') fail(`${itemPath} must identify a reviewed primary source`);
+    const sourceUrl=requireText(entry.sourceUrl,`${itemPath}.sourceUrl`);
+    if (!SOURCE_URLS[entry.source].has(sourceUrl)) fail(`${itemPath} must use reviewed primary evidence`);
+    if (entry.classification !== 'vendor_recommendation' && entry.classification !== 'documented_capability') fail(`${itemPath} must classify the evidence`);
+    return Object.freeze({source: entry.source,sourceUrl,summary: requireText(entry.summary,`${itemPath}.summary`),classification: entry.classification,
+      reviewedAt: requireReviewDate(entry.reviewedAt,`${itemPath}.reviewedAt`)});
+  }));
+}
+
 export function parseAgentModelGuidance(
   value: unknown,
   knownEngineIds: ReadonlySet<string>,
@@ -119,7 +147,7 @@ export function parseAgentModelGuidance(
     for (const key of Object.keys(entry)) {
       if (!ENTRY_FIELDS.has(key)) fail(`${path} contains unknown field ${key}`);
     }
-    for (const key of ENTRY_FIELDS) {
+    for (const key of REQUIRED_FIELDS) {
       if (!(key in entry)) fail(`${path} is missing ${key}`);
     }
 
@@ -135,6 +163,7 @@ export function parseAgentModelGuidance(
       considerations: requireTextList(entry.considerations, `${path}.considerations`, 4),
       evidenceUrls: requireEvidenceUrls(entry.evidenceUrls, `${path}.evidenceUrls`),
       reviewedAt: requireReviewDate(entry.reviewedAt, `${path}.reviewedAt`),
+      ...(entry.sourceAssessments === undefined ? {} : {sourceAssessments: requireSourceAssessments(entry.sourceAssessments,`${path}.sourceAssessments`)}),
     });
   });
 

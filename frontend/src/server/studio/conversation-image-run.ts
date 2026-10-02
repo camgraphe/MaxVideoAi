@@ -8,10 +8,9 @@ import {createStudioConversationDirector, type StudioResponseCreator} from './co
 import {createStudioActionExecutor} from './conversation-actions';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
-import {imageRequestFromDraft, type ImageGenerationFactory} from './image-conversation-service';
+import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
 import {studioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
 import {draftSurface} from '@/lib/studio/image-conversation-contract';
-import {studioReferenceFingerprint} from '@/server/agent-api/generation-actor';
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
 import type {TransactionQueryExecutor} from '@/lib/db';
 import type {CanonicalAudioRequest} from '@/server/agent-api/audio-normalization';
@@ -22,6 +21,7 @@ import {editStudioConversationTimeline} from './conversation-edit-command';
 import {readStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
+import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
@@ -43,7 +43,7 @@ async function prepareMediaAction(options: {
 
 export async function resumeStudioImageAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
-  referenceFingerprint: string; enabled: boolean; factory: ImageGenerationFactory;
+  references: ResolvedReference[]; referenceFingerprint: string; enabled: boolean; factory: ImageGenerationFactory;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;
 }) {
   const {actor, turn, factory} = options;
@@ -60,14 +60,14 @@ export async function resumeStudioImageAction(options: {
     }
   }
   if (!draft?.image) throw new AgentApiError('PARAMETER_INVALID', 'No saved image direction is available.');
-  const action: StudioActionRequest = {action: 'image.prepare', reply: draft.reply, prompt: draft.image.prompt, aspectRatio: draft.image.aspectRatio};
+  const action: StudioActionRequest = {action: 'image.prepare', reply: draft.reply, ...draft.image};
   const callId = 'resume-quote-' + turn.lease_id;
   const prior = await beginStudioAction(actor, turn, callId, action);
   if (prior) return prior;
   try {
     const generation = factory(actor, {enabled: options.enabled});
     const request = imageRequestFromDraft(draft, options.input, await generation.catalog());
-    return await factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: studioReferenceFingerprint(await generation.resolveReferences(request)),
+    return await factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: imageReferenceFingerprintFromReview(request,options.references),
       onQuotePrepared: async (quote, executor) => {
         await attachImageQuote(actor, turn, quote.quoteId, executor);
         await completeStudioAction(actor, turn, callId, {ok: true, action: 'image.prepare', data: {
@@ -134,11 +134,11 @@ export async function runStudioImageActions(options: {
       return options.factories ? options.factories[surface](actor, {enabled: options.enabled}).recover(quoteId) : generation.recover(quoteId);
     },
     prepareImage: async action => {
-      const draft = {reply: action.reply, image: {prompt: action.prompt, aspectRatio: action.aspectRatio}};
+      const draft = {reply: action.reply,image: imageSelectionSchema.strip().parse(action)};
       // Persist the selected prompt before preparation. A failed preparation resumes this same intent.
       await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
       const request = imageRequestFromDraft(draft, input, await generation.catalog());
-      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: studioReferenceFingerprint(options.references.filter(ref => ref.mediaKind === 'image')),
+      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: imageReferenceFingerprintFromReview(request,options.references),
         onQuotePrepared: async (quote, executor) => {
           await attachImageQuote(actor, turn, quote.quoteId, executor);
           await completeStudioAction(actor, turn, currentCallId, {ok: true, action: 'image.prepare', data: {

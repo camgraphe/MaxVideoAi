@@ -8,6 +8,12 @@ import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
 import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
 import type {StudioQuoteDiscardResult} from '@/server/studio/conversation-quote-command';
+import {imageSelectionSchema,imageSelectionProperties} from './conversation-creation-contract';
+import type {AgentModelModeDetails} from '@/server/agent-api/types';
+import type {listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
+import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/agent-api/audio-capabilities';
+import type {AgentModelGuidance} from '@/server/agent-api/model-guidance';
+import type {AgentModelPromptingSource} from '@/server/agent-api/model-prompting-sources';
 
 export const studioMemorySchema = z.object({
   revision: z.number().int().nonnegative(),
@@ -24,9 +30,9 @@ export type StudioConversationProject = {
 export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('project.read')}).strict(),
   z.object({action: z.literal('catalog.read')}).strict(),
+  z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
   z.object({action: z.literal('project.remember'), ...studioMemorySchema.shape}).strict(),
-  z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400),
-    prompt: z.string().min(1).max(12000), aspectRatio: z.enum(['16:9', '9:16', '1:1'])}).strict(),
+  z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400), ...imageSelectionSchema.shape}).strict(),
   z.object({action: z.literal('generation.read'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('quote.discard'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('media.read')}).strict(),
@@ -34,12 +40,21 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioTimelineReadSchema,studioTimelineEditSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
-export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]};
+export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]; bestFor?: readonly string[]};
+type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;
+type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
+  variants: (AudioCapabilities['modes'][number]['variants'][number] & {parameters: AudioSettingDetails[];fixedOutput: ReturnType<typeof projectAudioVariantFixedOutput>})[];
+};
+type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
+export type StudioCapabilityDetails =
+  | {modelId: string; label: string; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_image_asset_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; promptingSources: readonly AgentModelPromptingSource[]}
+  | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: []; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
   | {ok: true; action: 'project.read'; data: StudioConversationProject}
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
+  | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
   | {ok: true; action: 'quote.discard'; data: StudioQuoteDiscardResult}
@@ -52,12 +67,13 @@ export type StudioActionResult =
 
 export const STUDIO_DIRECTOR_TOOLS = [
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision and durable brief.', properties: {}},
-  {action: 'catalog.read', name: 'catalog_read', description: 'Read the currently executable, certified image capabilities. No prices are guessed.', properties: {}},
+  {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
+  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
   {action: 'project.remember', name: 'project_remember', description: 'Replace the durable brief and decisions, preserving prior constraints. Use the memory revision just read.', properties: {
     revision: {type: 'integer', minimum: 0}, brief: {type: 'string'}, decisions: {type: 'array', items: {type: 'string'}},
   }},
-  {action: 'image.prepare', name: 'image_prepare', description: 'Write your own image prompt and prepare one exact quote. Does not generate or charge. This ends the turn; reply must explain that the client reviews the quote.', properties: {
-    reply: {type: 'string'}, prompt: {type: 'string'}, aspectRatio: {type: 'string', enum: ['16:9', '9:16', '1:1']},
+  {action: 'image.prepare', name: 'image_prepare', description: 'Write your own image prompt and prepare one exact quote with a model and supported settings from model_details. Settings are name/value pairs; references are explicitly selected attached library images with supported roles. Null selection fields use defaults; an empty reference list means text-only. Does not generate or charge. Ends the turn; explain that the client reviews the quote.', properties: {
+    reply: {type: 'string'}, ...imageSelectionProperties,
   }},
   {action: 'generation.read', name: 'generation_read', description: 'Recover a generation from an exact quote belonging to this project. Never starts another job.', properties: {quoteId: {type: 'string'}}},
   {action: 'quote.discard', name: 'quote_discard', description: 'Withdraw exactly one prepared quote when the client explicitly asks to cancel or discard it. Use an exact quoteId from project facts. Never use for a clarification or cost question. An already submitted generation cannot be cancelled by this tool. No charge.', properties: {quoteId: {type: 'string'}}},
