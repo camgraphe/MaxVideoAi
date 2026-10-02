@@ -16,7 +16,7 @@ test('native chat timeline collapses, trims real source frames and preserves mob
   }});
   let browser: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
   try {
-    const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0]);
+    const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId: 'studio-native-timeline-fixture'});
     const created = await postStudioMcpRequest(runtime,{jsonrpc: '2.0',id: 1,method: 'tools/call',params: {name: 'create_studio_montage',arguments: STUDIO_CONNECTED_MONTAGE_INPUT}},{token: session.access_token}).then(readStudioMcpResponse);
     assert.notEqual(created.result.isError,true,JSON.stringify(created.result));
     const project = created.result.structuredContent;

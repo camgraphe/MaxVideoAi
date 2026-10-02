@@ -20,6 +20,8 @@ test('conversation trim and monitor agree on the source frame at both ends of a 
   assert.equal(module.conversationSourceTime(cut, 100), 7);
   const restored = module.applyConversationTimelineEdit(result, {kind: 'trim', clipId: 'one', edge: 'start', durationFrames: 150}, 30, []);
   assert.equal(restored.find(item => item.id === 'one')?.sourceStartSec, 2);
+  assert.equal(restored.find(item => item.id === 'one')?.durationSec, 5);
+  assert.equal(restored.find(item => item.id === 'two')?.startSec, 5);
 });
 
 test('manual and bot edits retain linked audio, frame snapping, locked tracks and non-overlap', async () => {

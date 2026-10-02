@@ -62,6 +62,8 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
     'frontend/app/api/studio/marketing-entry/route.ts',
     'frontend/app/api/studio/projects/[projectId]/image-conversation/route.ts',
     'frontend/app/api/studio/projects/[projectId]/image-conversation/confirm/route.ts',
+    'frontend/app/api/studio/conversation-projects/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts',
   ]);
   const routes = routeFiles('frontend/app/api/studio');
   assert.ok(routes.length >= 13, 'every current and future Studio route should be included by discovery');
@@ -73,6 +75,11 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
   assert.match(imageHandler, /if \(!access.ok\)/);
   assert.match(read('frontend/app/api/studio/projects/[projectId]/image-conversation/route.ts'), /handleStudioImageConversation/);
   assert.match(read('frontend/app/api/studio/projects/[projectId]/image-conversation/confirm/route.ts'), /handleStudioImageConversation/);
+  const editingHandler = read('frontend/app/api/studio/_lib/studio-conversation-editing-handler.ts');
+  assert.match(editingHandler,/resolveStudioApiAccess/);
+  assert.match(editingHandler,/if \(!access.ok\)/);
+  assert.match(editingHandler,/studioConversationEditingEnabled/);
+  for (const path of ['frontend/app/api/studio/conversation-projects/route.ts','frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts']) assert.match(read(path),/handleStudioConversationEditing/);
   assert.match(read('frontend/app/api/studio/_lib/studio-chat-handler.ts'), /resolveStudioApiAccess/);
   assert.match(read('frontend/app/api/studio/marketing-entry/route.ts'), /handleStudioMarketingEntry/);
   assert.match(read('frontend/app/api/studio/marketing-entry/_lib/handle-studio-marketing-entry.ts'), /resolveStudioApiAccess/);
