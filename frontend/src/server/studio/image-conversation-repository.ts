@@ -53,6 +53,14 @@ export async function listImageTurns(
     [actor.userId, actor.projectId],
   );
 }
+
+async function expirePreparedCreationQuotes(actor: StudioGenerationActor, executor: TransactionQueryExecutor) {
+  await executor.query(
+    "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",
+    [actor.userId, actor.projectId],
+  );
+}
+
 export async function claimImageTurn(
   actor: StudioGenerationActor,
   input: ImageTurnInput,
@@ -129,10 +137,10 @@ export async function claimImageTurn(
       if (!quote || quote.job_id || !(quote.state === "expired" || (quote.state === "prepared" && quote.expires_at <= clock)))
         throw new AgentApiError("QUOTE_EXPIRED", "Only an expired, unconfirmed quote can be renewed. Review the existing generation first.");
     }
-    await executor.query(
-      "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",
-      [actor.userId, actor.projectId],
-    );
+    // A saved creation retry resumes that intent; a new message has no creation
+    // intent yet and may only ask for clarification about the current quote.
+    if (hasDraftCreation(existing?.draft_json ?? renewal?.draft_json ?? null))
+      await expirePreparedCreationQuotes(actor, executor);
     const lease = randomUUID();
     const rows = existing
       ? await executor.query<StoredImageTurn>(
@@ -162,23 +170,29 @@ export async function persistImageDraft(
   referenceFingerprint: string,
 ) {
   const parsed = imageDraftSchema.parse(draft);
-  const rows = await query(
-    `UPDATE studio_image_turns SET draft_json = $5::jsonb, state = $6, draft_reference_fingerprint = $7, updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 AND lease_id = $4 AND state = 'thinking' RETURNING request_id`,
-    [
-      actor.userId,
-      actor.projectId,
-      turn.request_id,
-      turn.lease_id,
-      JSON.stringify(parsed),
-      hasDraftCreation(parsed) ? "thinking" : "ready",
-      referenceFingerprint,
-    ],
-  );
-  if (!rows.length)
-    throw new AgentApiError(
-      "PARAMETER_INVALID",
-      "This message has been superseded.",
+  await withDbTransaction(async executor => {
+    await executor.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [`studio-image:${actor.userId}`]);
+    const rows = await executor.query(
+      `UPDATE studio_image_turns SET draft_json = $5::jsonb, state = $6, draft_reference_fingerprint = $7, updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 AND lease_id = $4 AND state = 'thinking' AND lease_expires_at > clock_timestamp() RETURNING request_id`,
+      [
+        actor.userId,
+        actor.projectId,
+        turn.request_id,
+        turn.lease_id,
+        JSON.stringify(parsed),
+        hasDraftCreation(parsed) ? "thinking" : "ready",
+        referenceFingerprint,
+      ],
     );
+    if (!rows.length)
+      throw new AgentApiError(
+        "PARAMETER_INVALID",
+        "This message has been superseded.",
+      );
+    // Draft persistence and expiry share a transaction: a stale writer must not
+    // discard valid quotes, and a changed creation must require fresh consent.
+    if (hasDraftCreation(parsed)) await expirePreparedCreationQuotes(actor, executor);
+  });
 }
 export async function attachImageQuote(
   actor: StudioGenerationActor,

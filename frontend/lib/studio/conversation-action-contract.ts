@@ -7,6 +7,7 @@ import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-gen
 import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
 import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
+import type {StudioQuoteDiscardResult} from '@/server/studio/conversation-quote-command';
 
 export const studioMemorySchema = z.object({
   revision: z.number().int().nonnegative(),
@@ -27,6 +28,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400),
     prompt: z.string().min(1).max(12000), aspectRatio: z.enum(['16:9', '9:16', '1:1'])}).strict(),
   z.object({action: z.literal('generation.read'), quoteId: z.string().uuid()}).strict(),
+  z.object({action: z.literal('quote.discard'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('media.read')}).strict(),
   studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,
   studioTimelineReadSchema,studioTimelineEditSchema,
@@ -40,6 +42,7 @@ export type StudioActionResult =
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
+  | {ok: true; action: 'quote.discard'; data: StudioQuoteDiscardResult}
   | {ok: true; action: 'media.read'; data: StudioProjectMedia}
   | {ok: true; action: 'timeline.read'; data: StudioConversationTimeline}
   | {ok: true; action: 'timeline.edit'; data: ConversationEditResult}
@@ -57,6 +60,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
     reply: {type: 'string'}, prompt: {type: 'string'}, aspectRatio: {type: 'string', enum: ['16:9', '9:16', '1:1']},
   }},
   {action: 'generation.read', name: 'generation_read', description: 'Recover a generation from an exact quote belonging to this project. Never starts another job.', properties: {quoteId: {type: 'string'}}},
+  {action: 'quote.discard', name: 'quote_discard', description: 'Withdraw exactly one prepared quote when the client explicitly asks to cancel or discard it. Use an exact quoteId from project facts. Never use for a clarification or cost question. An already submitted generation cannot be cancelled by this tool. No charge.', properties: {quoteId: {type: 'string'}}},
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {

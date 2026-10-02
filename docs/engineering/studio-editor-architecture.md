@@ -95,6 +95,7 @@ Use this map before adding new code. If a change does not fit one of these owner
 - `_lib/models/workspace-model-certification.ts`: fail-closed Studio readiness for exact model, block, and workflow tuples. Registry publication is necessary but not sufficient for Studio visibility.
 - `_lib/workspace-generation-facts.ts`: normalized mode, exact provider field assignments, media provenance, reference usage, and validation shared by pricing and submission.
 - `_lib/templates/*`: advanced graph-only Canvas templates plus compact guided project starter builders. Only guided project starter builders own canonical guide annotations.
+- `frontend/src/server/studio/conversation-quote-command.ts`: explicit withdrawal of one prepared Studio quote. It checks the account advisory lock, active turn lease and exact owner/project/session scope; accepted or claimed generations remain submitted. `conversation-image-run.ts` commits the withdrawal and action checkpoint together. Clarifications preserve quotes; cancellation uses the typed `quote.discard` tool instead of interpreting message text in persistence.
 
 When a feature crosses surfaces, split it by owner. For example, a generated video output used in the timeline should have canvas output metadata in node code, Project media card behavior in the media controller/sidebar, and insertion rules in timeline helpers.
 
@@ -266,6 +267,14 @@ Project media is the Viewer-mode bin. It contains root-level sequences, imported
 7. Add Playwright tests only after the pure rule is locked.
 
 Timeline UI should call named operations. It should not encode new editing rules directly in pointer handlers.
+
+Conversation library and director audio insertions use the shared pure
+`layerWorkspaceTimelineAudioItem` operation. It preserves the requested frame and
+all existing clips, selecting the first non-overlapping, unlocked, unmuted audio
+track within the sequence's eight-track limit. Capacity failure leaves the
+revision and command receipt unchanged. This layers music, voice and sound effects
+without changing the canvas's explicit insert/ripple behavior. The canonical
+command, preview and export retain those separate audio tracks.
 
 ### Timeline Invariants
 

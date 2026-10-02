@@ -21,6 +21,7 @@ import {listImageTurns} from './image-conversation-repository';
 import {editStudioConversationTimeline} from './conversation-edit-command';
 import {readStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
+import {discardStudioPreparedQuote} from './conversation-quote-command';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
@@ -96,6 +97,11 @@ export async function runStudioImageActions(options: {
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     editingEnabled: options.editingEnabled,
+    discardQuote: quoteId => withDbTransaction(async executor => {
+      const data = await discardStudioPreparedQuote(actor,turn,quoteId,executor);
+      await completeStudioAction(actor,turn,currentCallId,{ok: true,action: 'quote.discard',data},executor);
+      return data;
+    }),
     editTimeline: async action => {
       if (action.edit.kind === 'insert' && action.edit.ref.type === 'asset') {
         const ref = action.edit.ref;
@@ -168,7 +174,7 @@ export async function runStudioImageActions(options: {
       }
       const result = await execute(action);
       // Successful image preparation already checkpoints in the quote transaction.
-      if ((!action.action.endsWith('.prepare') && action.action !== 'timeline.edit') || !result.ok) await completeStudioAction(actor, turn, callId, result);
+      if ((!action.action.endsWith('.prepare') && action.action !== 'timeline.edit' && action.action !== 'quote.discard') || !result.ok) await completeStudioAction(actor, turn, callId, result);
       return result;
     },
   });

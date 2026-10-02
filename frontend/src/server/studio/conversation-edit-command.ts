@@ -3,8 +3,8 @@ import {withDbTransaction, type QueryExecutor} from '@/lib/db';
 import {applyConversationTimelineEdit, conversationTimelineCommandSchema} from '@/lib/studio/conversation-timeline-editing';
 import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeline-editing';
 import type {WorkspaceAssetRecord, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceProjectSettings} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import {buildWorkspaceTimelineItemsForAsset, insertWorkspaceTimelineItems, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
-import {createWorkspaceSequenceRecord} from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
+import {buildWorkspaceTimelineItemsForAsset, insertWorkspaceTimelineItems, layerWorkspaceTimelineAudioItem, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
+import {createWorkspaceSequenceRecord, MAX_TIMELINE_AUDIO_TRACKS} from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
 import {timelineFrameToSeconds, secondsToTimelineFrame} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames';
 import {workspaceProjectDimensions} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
 import {buildWorkspaceClipComposition} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
@@ -52,14 +52,16 @@ export async function editStudioConversationTimeline(actor: {userId: string}, ra
     const sequence = sequences.find(value => value.id === input.sequenceId);
     if (!sequence) throw new Error('STUDIO_SEQUENCE_CONFLICT');
     const settings = sequence.settings as WorkspaceProjectSettings;
-    const state = sequence.timelineState as {timelineItems: WorkspaceTimelineItem[]; lockedTimelineTracks?: WorkspaceTimelineTrack[]};
+    const state = sequence.timelineState as {timelineItems: WorkspaceTimelineItem[]; lockedTimelineTracks?: WorkspaceTimelineTrack[]; mutedAudioTracks?: WorkspaceTimelineTrack[]};
     const workspace = project.workspaceState as Record<string, unknown>;
     const existingAssets = Array.isArray(workspace.projectAssets) ? workspace.projectAssets as WorkspaceAssetRecord[] : [];
     let projectAssets = existingAssets;
     let items: WorkspaceTimelineItem[];
     if (input.edit.kind === 'insert') {
       const inserted = await insertion(actor,input,settings,executor);
-      items = insertWorkspaceTimelineItems({items: state.timelineItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(input.edit.startFrame,settings.fps), idSeed: requestHash.slice(0,20)});
+      items = inserted.asset.kind === 'audio'
+        ? layerWorkspaceTimelineAudioItem({items: state.timelineItems,item: inserted.items[0],startFrame: input.edit.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
+        : insertWorkspaceTimelineItems({items: state.timelineItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(input.edit.startFrame,settings.fps), idSeed: requestHash.slice(0,20)});
       if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
       if (!existingAssets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...existingAssets,inserted.asset];
     } else items = applyConversationTimelineEdit(state.timelineItems,input.edit,settings.fps,state.lockedTimelineTracks ?? []);

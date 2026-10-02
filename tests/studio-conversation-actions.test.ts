@@ -82,3 +82,10 @@ test('action contracts reject foreign identities, unsupported media and confirma
   for (const request of [{action: 'generation.confirm', quoteId: 'x'}, {action: 'project.read', userId: 'foreign'}, {action: 'video.prepare', prompt: 'x'}, {action: 'image.prepare', prompt: 'x', reply: 'x', aspectRatio: '21:9'}])
     assert.equal(schema.safeParse(request).success, false);
 });
+
+test('quote discard accepts only the quote identity and cannot impersonate another owner or project',async () => {
+  const {actionFromTool} = await import('../frontend/lib/studio/conversation-action-contract');
+  const quoteId = '12345678-1234-4123-8123-123456789abc';
+  assert.deepEqual(actionFromTool('quote_discard',{quoteId}),{action: 'quote.discard',quoteId});
+  for (const input of [{quoteId: 'invented'},{quoteId,userId: 'other-user'},{quoteId,projectId: 'other-project'},{quoteId,authMethod: 'oauth'}]) assert.throws(() => actionFromTool('quote_discard',input));
+});

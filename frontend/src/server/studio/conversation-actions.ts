@@ -10,6 +10,7 @@ import type {AgentGenerationStatus} from '@/server/generations/generation-status
 import {readStudioProjectMedia, type StudioMediaFactories} from './conversation-media-generation';
 import {readStudioConversationTimeline} from './conversation-timeline';
 import type {ConversationEditResult} from './conversation-edit-command';
+import type {StudioQuoteDiscardResult} from './conversation-quote-command';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
@@ -21,6 +22,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   recover?(quoteId: string): Promise<AgentGenerationStatus | null>;
   editingEnabled?: boolean;
   editTimeline?(request: Extract<StudioActionRequest,{action: 'timeline.edit'}>): Promise<ConversationEditResult>;
+  discardQuote?(quoteId: string): Promise<StudioQuoteDiscardResult>;
 }) {
   requireGenerationActor(actor);
   if (actor.authMethod !== 'studio-session') throw new AgentApiError('AUTH_REQUIRED', 'Studio session required.');
@@ -51,6 +53,9 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
         }
         case 'image.prepare': return {ok: true, action: request.action, data: await dependencies.prepareImage(request)};
         case 'generation.read': return {ok: true, action: request.action, data: await (dependencies.recover ?? generation.recover)(request.quoteId)};
+        case 'quote.discard':
+          if (!dependencies.discardQuote) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio quote actions are unavailable.');
+          return {ok: true,action: request.action,data: await dependencies.discardQuote(request.quoteId)};
         case 'media.read': {
           if (!dependencies.mediaEnabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
           return {ok: true, action: request.action, data: await readStudioProjectMedia(actor)};

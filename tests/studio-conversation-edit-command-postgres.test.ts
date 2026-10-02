@@ -7,6 +7,8 @@ import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {createStudioMontageProject} from '../frontend/src/server/studio/montage-command';
 import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-command';
 import type {QueryExecutor} from '../frontend/src/lib/db';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
 
 test('conversation edits use canonical revisions and receipts, preserving manual changes and unrelated editor state', async t => {
   const module = await import('../frontend/src/server/studio/conversation-edit-command').catch(() => null);
@@ -62,4 +64,66 @@ test('conversation edits use canonical revisions and receipts, preserving manual
   assert.deepEqual((empty.sequences[0].timelineState as any).timelineItems,[]);
   assert.equal(empty.project.revision,0);
   assert.equal((await readStudioWorkspace(actor,project.projectId,deps)).project.revision,3);
+});
+
+test('adding music layers it under the voice without moving existing clips and receipt replay adds no extra track', async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const pg = await startDisposablePostgres('stchat-audio-layer');
+  t.after(() => pg.cleanup());
+  await initializeStudioConnectedFixture(pg);
+  await pg.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/' || public_id || '.mp4'");
+  const actor = {userId: STUDIO_FIXTURE_OWNERS[0]};
+  const withTransaction = async <T>(callback: (executor: QueryExecutor) => Promise<T>) => {
+    const client = await pg.pool.connect();
+    try {await client.query('BEGIN'); const result = await callback({query: async (sql, values) => (await client.query(sql, values)).rows}); await client.query('COMMIT'); return result;}
+    catch (error) {await client.query('ROLLBACK'); throw error;} finally {client.release();}
+  };
+  const deps = {withTransaction,featureEnabled: true};
+  const voiceAssetId = `ma_${'5'.repeat(32)}`;
+  const musicAssetId = `ma_${'6'.repeat(32)}`;
+  for (const [assetId,name] of [[voiceAssetId,'Voice'],[musicAssetId,'Music']]) {
+    await pg.pool.query(`INSERT INTO media_assets (id,public_id,user_id,kind,url,mime_type,status,original_name,metadata)
+      VALUES ($1,$2,$3,'audio',$4,'audio/mpeg','ready',$5,$6::jsonb)`, [randomUUID(),assetId,actor.userId,`https://cdn.maxvideoai.com/${assetId}.mp3`,name,JSON.stringify({mediaFacts: {source: 'probe',durationSec: 12.408,hasAudio: true}})]);
+  }
+  const project = await createStudioMontageProject(actor,STUDIO_CONNECTED_MONTAGE_INPUT,deps);
+  const before = await readStudioWorkspace(actor,project.projectId,deps);
+  const videos = (before.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  const voiceInput = {projectId: project.projectId,sequenceId: project.sequenceId,expectedRevision: 0,idempotencyKey: randomUUID(),edit: {kind: 'insert' as const,ref: {type: 'asset' as const,assetId: voiceAssetId,kind: 'audio' as const},startFrame: 0,durationFrames: 60}};
+  const voice = await editStudioConversationTimeline(actor,voiceInput,deps);
+  const voiceRead = await readStudioWorkspace(actor,project.projectId,deps);
+  const previous = (voiceRead.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  const musicInput = {...voiceInput,expectedRevision: 1,idempotencyKey: randomUUID(),edit: {...voiceInput.edit,ref: {...voiceInput.edit.ref,assetId: musicAssetId},durationFrames: 90}};
+  const music = await editStudioConversationTimeline(actor,musicInput,deps);
+  const loaded = await readStudioWorkspace(actor,project.projectId,deps);
+  const state = loaded.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[];audioTrackCount: number};
+  const items = state.timelineItems;
+  assert.deepEqual(items.filter(item => item.mediaKind === 'video'),videos,'Adding a music bed must preserve the existing visual edit.');
+  assert.deepEqual(items.find(item => item.id === voice.clip!.id),previous.find(item => item.id === voice.clip!.id),'The voice remains at frame zero with its original source range and mix.');
+  assert.deepEqual(items.filter(item => item.mediaKind === 'audio').map(item => [item.track,item.startSec,item.durationSec,item.sourceStartSec]),[['audio',0,2,0],['audio-2',0,3,0]]);
+  assert.equal(state.audioTrackCount,2);
+  assert.equal(items.find(item => item.id === music.clip!.id)?.sourceDurationSec,12.408);
+  assert.deepEqual(await editStudioConversationTimeline(actor,musicInput,deps),music);
+  assert.deepEqual(await editStudioConversationTimeline(actor,voiceInput,deps),voice);
+  const replayed = await readStudioWorkspace(actor,project.projectId,deps);
+  assert.deepEqual(replayed.sequences[0].timelineState,state,'Receipt replay neither allocates another track nor duplicates clips.');
+  assert.equal(replayed.project.revision,2);
+  await assert.rejects(editStudioConversationTimeline(actor,{...musicInput,idempotencyKey: randomUUID()},deps),{code: 'STUDIO_REVISION_CONFLICT'});
+  const manifest = buildWorkspaceTimelineRenderManifest({items,nodes: [],projectName: project.title,sequenceId: project.sequenceId,sequenceName: 'Main sequence'});
+  assert.equal(manifest.status,'ready');
+  assert.deepEqual(manifest.tracks.filter(track => track.id.startsWith('audio')).map(track => [track.id,track.clips[0].startSec,track.clips[0].sourceStartSec,track.clips[0].durationSec]),[['audio',0,0,2],['audio-2',0,0,3]],'The render manifest carries simultaneous audio tracks.');
+  const nextInput = {...musicInput,expectedRevision: 2,idempotencyKey: randomUUID()};
+  await assert.rejects(editStudioConversationTimeline(actor,{...nextInput,edit: {...nextInput.edit,durationFrames: 373}},deps),/Invalid Studio timeline clip duration/,'Layering never extends beyond the measured 12.408-second original.');
+  await pg.pool.query(`UPDATE studio_sequences SET timeline_state=timeline_state || $2::jsonb WHERE id=$1`,[project.sequenceId,JSON.stringify({lockedTimelineTracks: ['audio','audio-2'],mutedAudioTracks: ['audio-3']})]);
+  const extra = await editStudioConversationTimeline(actor,nextInput,deps);
+  const allocated = await readStudioWorkspace(actor,project.projectId,deps);
+  const allocatedState = allocated.sequences[0].timelineState as typeof state;
+  assert.equal(allocatedState.timelineItems.find(item => item.id === extra.clip!.id)?.track,'audio-4','New sound uses an audible, unlocked lane.');
+  assert.equal(allocatedState.audioTrackCount,4,'Newly needed tracks survive canonical serialization.');
+  assert.deepEqual(allocatedState.timelineItems.filter(item => item.id !== extra.clip!.id),items);
+  const allAudioTracks = ['audio','audio-2','audio-3','audio-4','audio-5','audio-6','audio-7','audio-8'];
+  await pg.pool.query(`UPDATE studio_sequences SET timeline_state=timeline_state || $2::jsonb WHERE id=$1`,[project.sequenceId,JSON.stringify({audioTrackCount: 8,lockedTimelineTracks: allAudioTracks})]);
+  const fullBefore = await readStudioWorkspace(actor,project.projectId,deps);
+  await assert.rejects(editStudioConversationTimeline(actor,{...nextInput,expectedRevision: 3,idempotencyKey: randomUUID()},deps),/Timeline track capacity/);
+  assert.deepEqual(await readStudioWorkspace(actor,project.projectId,deps),fullBefore,'Capacity failure commits no revision, assets or timeline changes.');
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,3,'Rejected insertions have no command receipt.');
 });
