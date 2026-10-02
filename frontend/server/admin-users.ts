@@ -1,3 +1,4 @@
+import { CREDIT_REVERSAL_SQL } from '@/server/wallet-receipt-classification';
 import { query } from '@/lib/db';
 import { getWalletBalanceCents } from '@/lib/wallet';
 import { getSupabaseAdmin } from '@/server/supabase-admin';
@@ -145,10 +146,12 @@ async function fetchWallet(userId: string): Promise<AdminUserWallet | null> {
     const { balanceCents } = await getWalletBalanceCents(userId);
     const aggregates = await query<WalletAggregateRow>(
       `
-        SELECT type, COALESCE(SUM(amount_cents), 0)::bigint AS total
+        SELECT CASE WHEN type = 'charge' AND ${CREDIT_REVERSAL_SQL}
+          THEN 'credit_reversal' ELSE type END AS type,
+          COALESCE(SUM(amount_cents), 0)::bigint AS total
         FROM app_receipts
         WHERE user_id = $1
-        GROUP BY type
+        GROUP BY 1
       `,
       [userId]
     );

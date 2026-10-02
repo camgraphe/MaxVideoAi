@@ -1,3 +1,4 @@
+import { RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { manualAdminCreditExclusionClause } from '@/server/admin-metrics/admin-topup-filter';
@@ -99,8 +100,8 @@ export async function fetchAdminMetricsComparison(
       `
         SELECT
           date_trunc('day', created_at) AS bucket,
-          COUNT(*) FILTER (WHERE type = 'charge')::bigint AS charge_count,
-          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0)::bigint AS charge_cents,
+          COUNT(*) FILTER (WHERE ${RENDER_CHARGE_SQL})::bigint AS charge_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE ${RENDER_CHARGE_SQL}), 0)::bigint AS charge_cents,
           COUNT(*) FILTER (WHERE type = 'refund')::bigint AS refund_count,
           COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::bigint AS refund_cents
         FROM app_receipts
