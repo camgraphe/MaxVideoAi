@@ -800,7 +800,7 @@ export function TimelineProjectSidebar({
                 thumbnailUrl={thumbnailUrl}
                 title={node.data.title}
               />
-              {process.env.NODE_ENV === 'development' && node.data.output?.jobId ? <SeedanceDraftFinalAction jobId={node.data.output.jobId} onNavigate={onAppNavigate} /> : null}
+              {node.data.output?.jobId ? <SeedanceDraftFinalAction jobId={node.data.output.jobId} onNavigate={onAppNavigate} /> : null}
             </div>
           );
         })}

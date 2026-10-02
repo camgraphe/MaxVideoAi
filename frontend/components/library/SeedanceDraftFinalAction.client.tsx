@@ -4,14 +4,15 @@ import { useSeedanceWorkflowAccount, type SeedanceWorkflowAccount } from '@/hook
 import { useSeedanceWorkflowView } from '@/hooks/useSeedanceWorkflowView';
 import { useSeedanceFinalization } from '@/hooks/useSeedanceFinalization';
 
-export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppliedAccount, onNavigate }: {
-  jobId: string; locale?: string; account?: SeedanceWorkflowAccount | null; onNavigate?: (href: string) => void;
+export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppliedAccount, onNavigate, asAside = false }: {
+  jobId: string; locale?: string; account?: SeedanceWorkflowAccount | null; onNavigate?: (href: string) => void; asAside?: boolean;
 }) {
   const session = useSeedanceWorkflowAccount();
   const account = suppliedAccount === undefined ? session : suppliedAccount;
   const { data: view, mutate, error: readError } = useSeedanceWorkflowView(jobId, account);
   const action = useSeedanceFinalization({ view: view ?? null, account, onAccepted: () => { void mutate(); } });
-  if (!view) return readError ? <p role="status" className="text-xs text-text-muted">{locale.startsWith('fr') ? 'Statut Draft indisponible.' : 'Draft status unavailable.'}</p> : null;
+  const wrap = (content: React.ReactNode) => asAside ? <aside className="app-media-panel-actions">{content}</aside> : content;
+  if (!view) return readError ? wrap(<p role="status" className="text-xs text-text-muted">{locale.startsWith('fr') ? 'Statut Draft indisponible.' : 'Draft status unavailable.'}</p>) : null;
   const fr = locale.startsWith('fr');
   const navigate: React.MouseEventHandler<HTMLAnchorElement> = event => {
     if (!onNavigate || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -26,7 +27,7 @@ export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppli
     finalizing: fr ? 'Final 1080p en cours…' : 'Final 1080p rendering…', finalized: fr ? 'Final 1080p prêt · Draft conservé' : 'Final 1080p ready · Draft retained',
     failed: fr ? 'Le Draft a échoué.' : 'Draft failed.', unavailable: fr ? 'Finalisation indisponible ou en vérification.' : 'Finalization unavailable or under review.',
   };
-  return <section aria-label={fr ? 'Finalisation du Draft' : 'Draft finalization'} className="my-2 space-y-2 rounded-input border border-hairline p-3 text-xs" aria-live="polite">
+  return wrap(<section aria-label={fr ? 'Finalisation du Draft' : 'Draft finalization'} className="my-2 space-y-2 rounded-input border border-hairline p-3 text-xs" aria-live="polite">
     <p className="font-semibold text-text-primary">{labels[view.eligibility]}</p>
     {view.eligibility === 'ready' && view.expiresAt ? <p className="text-text-muted">{fr ? 'Finalisable jusqu’au' : 'Finalize before'} {new Date(view.expiresAt).toLocaleString(locale)}.</p> : null}
     {view.eligibility === 'ready' && !action.confirming ? <Button size="sm" disabled={action.pending || action.uncertain} onClick={() => void action.requestFinal()}>{fr ? 'Finaliser en 1080p · supplément' : 'Finalize in 1080p · extra charge'}</Button> : null}
@@ -46,5 +47,5 @@ export function SeedanceDraftFinalAction({ jobId, locale = 'en', account: suppli
       <a onClick={navigate} href={`/app?job=${encodeURIComponent(view.draft.jobId)}`}>{fr ? 'Revoir le Draft 480p' : 'View Draft 480p'}</a>
       {view.final ? <a onClick={navigate} href={`/app?job=${encodeURIComponent(view.final.jobId)}`}>{fr ? 'Voir le final 1080p' : 'View final 1080p'}</a> : null}
     </div>
-  </section>;
+  </section>);
 }

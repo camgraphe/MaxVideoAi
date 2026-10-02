@@ -24,6 +24,12 @@ model identity, the pricing registry, historical receipts or provider routing.
   single-winner final reservation and uncertain-submission protection remain
   required after enabling the flag.
 
+Media and Studio use the same authenticated finalization action in production.
+The server read determines whether the job belongs to an eligible workflow;
+ordinary media does not acquire an empty action sidebar. Composer controls and
+instructions appear only for compatible Draft scenarios, and an unchecked
+Draft option keeps the normal localized generation label.
+
 ## Acceptance before activation
 
 1. Verify current active Draft/final cells through the canonical quote owner.

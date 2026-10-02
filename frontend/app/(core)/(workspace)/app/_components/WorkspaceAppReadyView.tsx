@@ -253,7 +253,8 @@ export function WorkspaceAppReadyView({
   const draftWorkflow = useSeedanceDraftWorkflow({ enabled: seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
     onResolutionChange: handleResolutionChange, showNotice });
-  const draftControls = localSeedanceDraftPreview ? draftPreview : seedanceDraftWorkflowEnabled ? draftWorkflow : undefined;
+  const candidateDraftControls = localSeedanceDraftPreview ? draftPreview : seedanceDraftWorkflowEnabled ? draftWorkflow : undefined;
+  const draftControls = candidateDraftControls?.available ? candidateDraftControls : undefined;
   if (suspended || !selectedEngine || !form) return null;
 
   return (

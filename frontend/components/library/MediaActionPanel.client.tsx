@@ -63,10 +63,10 @@ function MediaContent({ asset, locale, children, details }: { asset: AssetBrowse
         {error ? <p role="alert">{labels[5]}</p> : null}
       </div> : null}
     </div>
-    {children || details || (process.env.NODE_ENV === 'development' && asset.kind === 'video' && asset.jobId) ? <aside className="app-media-panel-actions">
+    {children || details ? <aside className="app-media-panel-actions">
       {children}
-      {process.env.NODE_ENV === 'development' && asset.kind === 'video' && asset.jobId ? <SeedanceDraftFinalAction jobId={asset.jobId} locale={locale} /> : null}
+      {asset.kind === 'video' && asset.jobId ? <SeedanceDraftFinalAction jobId={asset.jobId} locale={locale} /> : null}
       {details ? <details className="app-media-details"><summary>{labels[4]}</summary><div>{details}</div></details> : null}
-    </aside> : null}
+    </aside> : asset.kind === 'video' && asset.jobId ? <SeedanceDraftFinalAction jobId={asset.jobId} locale={locale} asAside /> : null}
   </div>;
 }

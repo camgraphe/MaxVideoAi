@@ -7,6 +7,7 @@ import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsBu
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
+import { getSeedanceDraftCopy } from '../_lib/seedance-draft-copy';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
@@ -198,7 +199,7 @@ function isTruthyExtraInputValue(value: unknown): boolean {
 }
 
 export function WorkspaceComposerSurface({
-  localDraftPreview,
+  localDraftPreview: candidateDraftControls,
   selectedEngine,
   form,
   setForm,
@@ -278,6 +279,8 @@ export function WorkspaceComposerSurface({
   handleOpenKlingAssetLibrary,
   setViewMode,
 }: WorkspaceComposerSurfaceProps) {
+  const localDraftPreview = candidateDraftControls?.available ? candidateDraftControls : undefined;
+  const draftCopy = getSeedanceDraftCopy(uiLocale);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [storyboardModalOpen, setStoryboardModalOpen] = useState(false);
   const klingO3AssetState = useMemo(
@@ -477,7 +480,7 @@ export function WorkspaceComposerSurface({
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
         onGenerate={startRender}
-        generateLabel={localDraftPreview ? localDraftPreview.selected ? draftSettingsLocked ? 'Draft généré' : 'Draft 480p' : 'Générer la vidéo' : undefined}
+        generateLabel={localDraftPreview?.selected ? draftSettingsLocked ? draftCopy.generated : 'Draft 480p' : undefined}
         preflight={preflight}
         promptField={inputSchemaSummary.promptField}
         promptRequired={inputSchemaSummary.promptRequired}
@@ -626,20 +629,20 @@ export function WorkspaceComposerSurface({
         optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
         settingsNotice={localDraftPreview ? (
           <div className="mt-2 border-t border-hairline pt-2">
-            <SeedanceDraftLocalPreviewMode preview={localDraftPreview} />
+            <SeedanceDraftLocalPreviewMode preview={localDraftPreview} locale={uiLocale} />
             <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
               {localDraftPreview.selected
                 ? draftSettingsLocked
-                  ? 'Durée, format et audio conservés pour le final 1080p. « Nouveau Draft » permet de changer ces réglages.'
-                  : 'Draft : première version en 480p. Si elle vous convient, finalisez-la en 1080p avec un supplément. Deux générations distinctes.'
-                : 'Activez Draft pour préparer une version 480p à finaliser ensuite en 1080p. Une vidéo 480p classique ne permet pas cette finalisation.'}
+                  ? draftCopy.locked
+                  : draftCopy.selected
+                : draftCopy.inactive}
             </p>
-            <p className="mt-1 text-[10px] text-text-muted">{localDraftPreview.live ? 'Parcours local · tarifs Draft et final séparés dans l’admin.' : 'Prototype local · aucune génération ni facturation · prix classiques de référence, tarifs Draft et final à valider.'}</p>
+            {!localDraftPreview.live ? <p className="mt-1 text-[10px] text-text-muted">{draftCopy.prototype}</p> : null}
           </div>
         ) : undefined}
         settingsBar={
           <>
-            <fieldset disabled={draftSettingsLocked} className="contents [&>div]:contents" title={draftSettingsLocked ? 'Réglages conservés pour le final 1080p' : undefined}>
+            <fieldset disabled={draftSettingsLocked} className="contents [&>div]:contents" title={draftSettingsLocked ? draftCopy.lockTitle : undefined}>
               <CoreSettingsBar
                 density="workspace"
                 engine={selectedEngine}
