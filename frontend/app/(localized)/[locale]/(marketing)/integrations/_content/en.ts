@@ -55,20 +55,20 @@ function buildEnglishGuides(client: McpClientId): IntegrationHostGuide[] {
       {
         "hostId": "chatgptWeb",
         "title": "Connect MaxVideoAI in ChatGPT",
-        "intro": "Add the production MCP connection in ChatGPT, sign in to your existing MaxVideoAI account, then return to a new conversation. MaxVideoAI is not submitted to the OpenAI directory; use this direct setup path.",
+        "intro": "Add MaxVideoAI in ChatGPT, then connect the account you already use on the website.",
         installInstruction: getIntegrationInstallInstruction('en', 'chatgptWeb'),
         "steps": [
           {
             "title": "Open custom MCP setup",
-            "body": "If required, enable Developer mode in Settings → Security and login. Open Plugins and choose the add button, then create a custom MCP app. Labels can vary by account and workspace permissions."
+            "body": "In Plugins, add a custom MCP app. If needed, enable Developer mode in Settings → Security and login."
           },
           {
             "title": "Create MaxVideoAI and connect",
-            "body": "Use the name MaxVideoAI, the production server below and OAuth. Create the connection, choose Connect, then sign in on maxvideoai.com and review access. If you see MaxVideoAI Staging, stop and check the configured server."
+            "body": "Name: MaxVideoAI. Server: the address below. Authentication: OAuth. Choose Connect and approve access on maxvideoai.com. Avoid the Staging entry."
           },
           {
             "title": "Try it in a new chat",
-            "body": "Choose Try in chat or select MaxVideoAI from the tools menu in a new conversation. First ask for your account status and available models, without starting a generation."
+            "body": "Choose Try in chat, then check your account and available models before generating."
           }
         ],
         "commands": [],
@@ -78,8 +78,8 @@ function buildEnglishGuides(client: McpClientId): IntegrationHostGuide[] {
             "value": MCP_PRODUCTION_RESOURCE_URL
           }
         ],
-        "authTrigger": "OAuth can start during creation when you choose Connect. Sign in with your existing MaxVideoAI account. Create an account only if you do not already have one.",
-        "limitation": "Direct custom MCP setup depends on your ChatGPT plan, workspace permissions and available interface. It does not require a public directory listing. Installation and read-only account/model discovery were checked on 2026-10-01; paid generation and the full connection lifecycle were not tested in that checkpoint."
+        "authTrigger": "Use your existing MaxVideoAI account. Create one only if needed.",
+        "limitation": "Availability depends on your ChatGPT plan and workspace permissions. This direct connection does not require a public directory listing."
       }
     ];
   }
