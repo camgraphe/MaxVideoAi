@@ -1,4 +1,4 @@
-import {withDbTransaction} from '@/lib/db';
+import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
@@ -18,6 +18,9 @@ import type {CanonicalAudioRequest} from '@/server/agent-api/audio-normalization
 import type {CanonicalGenerationRequest} from '@/server/agent-api/generation-types';
 import type {McpGenerationQuote} from '@/server/agent-api/quote-repository';
 import {listImageTurns} from './image-conversation-repository';
+import {editStudioConversationTimeline} from './conversation-edit-command';
+import {readStudioWorkspace} from './workspace-command';
+import {StudioConnectedPersistenceError} from './montage-command';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
@@ -85,13 +88,35 @@ export async function runStudioImageActions(options: {
   references: ResolvedReference[]; referenceFingerprint: string;
   history: {message: string; reply: string | null}[]; enabled: boolean;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
-  factories?: StudioMediaFactories; mediaEnabled?: boolean;
+  factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;
 }) {
   const {actor, turn, input, factory} = options;
   const generation = factory(actor, {enabled: options.enabled});
-  const director = createStudioConversationDirector({createResponse: options.createResponse, mediaEnabled: options.mediaEnabled});
+  const director = createStudioConversationDirector({createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    editingEnabled: options.editingEnabled,
+    editTimeline: async action => {
+      if (action.edit.kind === 'insert' && action.edit.ref.type === 'asset') {
+        const ref = action.edit.ref;
+        const attached = ref.kind === 'image' ? input.references.includes(ref.assetId) : input.attachments?.some(item => item.type === 'asset' && item.assetId === ref.assetId && item.kind === ref.kind);
+        if (!attached) {
+          const existing = await readStudioWorkspace(actor,actor.projectId);
+          const assets = (existing.project.workspaceState as {projectAssets?: {ref?: unknown}[]}).projectAssets ?? [];
+          if (!assets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(ref))) throw new AgentApiError('REFERENCE_INVALID','Attach this library media before inserting it.');
+        }
+      }
+      try {
+        return await editStudioConversationTimeline(actor,{projectId: actor.projectId,sequenceId: action.sequenceId,expectedRevision: action.expectedRevision,edit: action.edit,idempotencyKey: turn.request_id + ':' + currentCallId.slice(0,80)}, {
+          featureEnabled: options.editingEnabled,
+          afterMutation: async (executor,data) => {if (!isTransactionQueryExecutor(executor)) throw new Error('A real transaction is required for the edit checkpoint.'); await completeStudioAction(actor,turn,currentCallId,{ok: true,action: 'timeline.edit',data},executor);},
+        });
+      } catch (error) {
+        if (error instanceof StudioConnectedPersistenceError) throw new AgentApiError('PARAMETER_INVALID',error.code === 'STUDIO_REVISION_CONFLICT' ? 'The timeline changed after you read it. Read it again and preserve the manual edit.' : error.code);
+        if (error instanceof Error && /MEDIA_|Invalid Studio|locked|duration|clip/i.test(error.message)) throw new AgentApiError('PARAMETER_INVALID',error.message);
+        throw error;
+      }
+    },
     prepareMedia: async action => {
       if (!options.factories) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
       return prepareMediaAction({...options, factories: options.factories}, action, currentCallId);
@@ -143,7 +168,7 @@ export async function runStudioImageActions(options: {
       }
       const result = await execute(action);
       // Successful image preparation already checkpoints in the quote transaction.
-      if (!action.action.endsWith('.prepare') || !result.ok) await completeStudioAction(actor, turn, callId, result);
+      if ((!action.action.endsWith('.prepare') && action.action !== 'timeline.edit') || !result.ok) await completeStudioAction(actor, turn, callId, result);
       return result;
     },
   });

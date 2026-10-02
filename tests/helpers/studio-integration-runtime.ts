@@ -52,6 +52,8 @@ export async function startStudioIntegrationRuntime(options: {
   mcp?: { studioMontageCreation?: boolean };
   /** Local SDK signing only. The browser fixture must intercept the exact fake bucket. */
   privateStorage?: boolean;
+  /** Native conversation/editing integration; no model or media provider credential. */
+  conversation?: boolean;
 }) {
   assert.equal(process.versions.node.split('.')[0], '22', 'Use the project Node 22 runtime.');
   const root = resolve('.');
@@ -138,6 +140,7 @@ export async function startStudioIntegrationRuntime(options: {
       NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS: 'false',
       NEXT_PUBLIC_ENV_LABEL: 'Disposable Studio integration',
       DATABASE_URL: database.databaseUrl,
+      ...(options.conversation ? {STUDIO_IMAGE_CONVERSATION_ENABLED: 'true',STUDIO_CONVERSATION_ACTIONS_ENABLED: 'true',STUDIO_CONVERSATION_MEDIA_ENABLED: 'true',STUDIO_CONVERSATION_EDITING_ENABLED: 'true'} : {}),
       ...(options.privateStorage === true ? { ...STUDIO_PRIVATE_STORAGE_ENV, AWS_EC2_METADATA_DISABLED: 'true' } : {}),
       ...(options.mcp ? {
         MCP_LOCAL_ENABLED: 'true', MCP_API_HOST: mcpHost, MCP_RESOURCE_URL: `http://${mcpHost}/mcp`,

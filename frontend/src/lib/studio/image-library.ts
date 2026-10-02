@@ -6,6 +6,7 @@ export type ImageLibraryAsset = {
   thumbUrl?: string | null;
   name?: string;
   kind?: 'image' | 'video' | 'audio';
+  durationSec?: number | null;
 };
 export type RecentImage = {
   id: string;

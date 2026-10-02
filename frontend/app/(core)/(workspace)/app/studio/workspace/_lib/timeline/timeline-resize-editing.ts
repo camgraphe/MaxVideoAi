@@ -10,6 +10,7 @@ import { primaryTimelineItemFor, syncLinkedAudioWithVideo } from './timeline-lin
 import { commitTimelineItemsWithoutOverlap } from './timeline-collisions';
 import {
   clampSourceStartForDuration,
+  maxResizeDurationForTimelineItem,
   resolveResizeTarget,
   sourceRightRoomForTimelineItem,
   sourceStartForTimelineItem,
@@ -88,11 +89,13 @@ function maxRippleExpansionDurationBeforeBlocker(
 ): number | null {
   const ignoredIds = new Set(groupItems.map((groupItem) => groupItem.id));
   return groupItems.reduce<number | null>((maxDurationSec, groupItem) => {
+    const attachedIds = contiguousTrackItemIdsAfter(items, groupItem.track, itemEndSec(groupItem), ignoredIds);
+    const chainEndSec = items.reduce((endSec, candidate) => attachedIds.has(candidate.id) ? Math.max(endSec, itemEndSec(candidate)) : endSec, itemEndSec(groupItem));
     const blocker = primaryTrackItems(items, groupItem.track).find(
-      (candidate) => !ignoredIds.has(candidate.id) && candidate.startSec >= primaryItem.startSec
+      (candidate) => !ignoredIds.has(candidate.id) && !attachedIds.has(candidate.id) && candidate.startSec >= chainEndSec
     );
     if (!blocker) return maxDurationSec;
-    const blockerDurationSec = snapTimelineValue(blocker.startSec - primaryItem.startSec);
+    const blockerDurationSec = snapTimelineValue(primaryItem.durationSec + blocker.startSec - chainEndSec);
     return maxDurationSec === null ? blockerDurationSec : Math.min(maxDurationSec, blockerDurationSec);
   }, null);
 }
@@ -171,17 +174,18 @@ export function resizeWorkspaceTimelineItem(params: {
   }
 
   if (trimMode === 'ripple') {
+    // A ripple keeps the clip on the sequence line. Its source in-point can
+    // expand backwards even at timeline zero; the normal trim boundary cannot.
+    safeDurationSec = snapTimelineValue(clampTimelineValue(params.nextDurationSec, MIN_CLIP_DURATION_SEC, maxResizeDurationForTimelineItem(primaryItem, params.edge)));
+    sourceDeltaSec = params.edge === 'start' ? primaryItem.durationSec - safeDurationSec : 0;
     let nextDurationSec = safeDurationSec;
     let durationDeltaSec = snapTimelineValue(nextDurationSec - primaryItem.durationSec);
     if (durationDeltaSec >= 0) {
       const blockerDurationSec = maxRippleExpansionDurationBeforeBlocker(params.items, groupItems, primaryItem);
       if (blockerDurationSec !== null && nextDurationSec > blockerDurationSec) {
         if (blockerDurationSec <= primaryItem.durationSec) return params.items;
-        ({ safeDurationSec, safeStartSec, sourceDeltaSec } = resolveResizeTarget({
-          item: primaryItem,
-          edge: params.edge,
-          nextDurationSec: blockerDurationSec,
-        }));
+        safeDurationSec = blockerDurationSec;
+        sourceDeltaSec = params.edge === 'start' ? primaryItem.durationSec - safeDurationSec : 0;
         nextDurationSec = safeDurationSec;
         durationDeltaSec = snapTimelineValue(nextDurationSec - primaryItem.durationSec);
       }
@@ -196,15 +200,7 @@ export function resizeWorkspaceTimelineItem(params: {
           : candidate.sourceStartSec,
     }));
     const ignoredIds = new Set(groupItems.map((groupItem) => groupItem.id));
-    const candidateItems = durationDeltaSec >= 0
-      ? resizedItems
-      : shiftAttachedTrackItemsAfter(
-          resizedItems,
-          primaryItem.track,
-          itemEndSec(primaryItem),
-          durationDeltaSec,
-          ignoredIds
-        );
+    const candidateItems = Array.from(new Set(groupItems.map(candidate => candidate.track))).reduce((current, track) => shiftAttachedTrackItemsAfter(current, track, itemEndSec(primaryItem), durationDeltaSec, ignoredIds), resizedItems);
     return commitTimelineItemsWithoutOverlap(params.items, candidateItems);
   }
 

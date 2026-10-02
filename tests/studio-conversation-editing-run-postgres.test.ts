@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {getDb} from '../frontend/src/lib/db';
+import {createImageConversationService} from '../frontend/src/server/studio/image-conversation-service';
+import {createStudioConversationProject} from '../frontend/src/server/studio/conversation-project-command';
+import {editStudioConversationTimeline} from '../frontend/src/server/studio/conversation-edit-command';
+import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-command';
+import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
+
+test('a native bot edit and run checkpoint commit together; a lost reply never repeats the cut',async t => {
+  const pg = await startDisposablePostgres('stchat-edit-run');
+  const before = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = pg.databaseUrl;
+  t.after(async () => {await getDb().end(); if (before === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = before; await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  for (const migration of ['26_studio_projects.sql','42_studio_connected_montages.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql']) await pg.pool.query(readFileSync('neon/migrations/'+migration,'utf8'));
+  const actor = {authMethod: 'studio-session' as const,userId: '00000000-0000-4000-8000-000000000095',clientId: null,projectId: ''};
+  const project = await createStudioConversationProject(actor,{name: 'Film',idempotencyKey: randomUUID()},{featureEnabled: true});
+  actor.projectId = project.projectId;
+  await pg.pool.query(`UPDATE studio_sequences SET timeline_state=jsonb_set(timeline_state,'{timelineItems}',$2::jsonb) WHERE id=$1`,[project.sequenceId,JSON.stringify([{id: 'opening',title: 'Opening',outputNodeId: 'out',track: 'video',mediaKind: 'video',startSec: 0,durationSec: 5,sourceStartSec: 0,sourceDurationSec: 6,mediaUrl: 'https://cdn.maxvideoai.com/opening.mp4',status: 'completed'}])]);
+  let calls = 0;
+  const service = createImageConversationService(actor,{enabled: true,actionsEnabled: true,editingEnabled: true,createActionResponse: async params => {
+    calls++;
+    if (calls === 2) throw new Error('Simulated lost final reply');
+    return {id: 'reply-'+calls,model: 'gpt-6.1-sol',status: 'completed',usage: null,service_tier: 'default',output_text: calls === 1 ? '' : '{"reply":"The opening is three seconds now."}',output: calls === 1 ? [{type: 'function_call',name: 'timeline_edit',call_id: 'cut',arguments: JSON.stringify({sequenceId: project.sequenceId,expectedRevision: 0,edit: {kind: 'trim',clipId: 'opening',edge: 'end',durationFrames: 90}})}] : []};
+  }});
+  const input = {requestId: randomUUID(),message: 'Make the opening a little shorter.',references: []};
+  await assert.rejects(service.submit(input),/Simulated lost final reply/);
+  assert.equal((await readStudioWorkspace(actor,actor.projectId)).project.revision,1);
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_conversation_steps WHERE state='completed' AND action_json->>'action'='timeline.edit'")).rows[0].n,1);
+  const finished = await service.submit(input);
+  assert.equal(finished.state,'ready');
+  assert.equal(finished.quote,null);
+  assert.equal(calls,3);
+  assert.equal((await readStudioWorkspace(actor,actor.projectId)).project.revision,1);
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,1);
+  await editStudioConversationTimeline(actor,{projectId: actor.projectId,sequenceId: project.sequenceId,expectedRevision: 1,idempotencyKey: randomUUID(),edit: {kind: 'move',clipId: 'opening',startFrame: 30}},{featureEnabled: true});
+  let conflictCalls = 0;
+  const stale = createImageConversationService(actor,{enabled: true,actionsEnabled: true,editingEnabled: true,createActionResponse: async params => {
+    conflictCalls++;
+    if (conflictCalls > 1) assert.match(JSON.stringify(params.input),/preserve the manual edit/);
+    return {id: 'conflict-'+conflictCalls,model: 'gpt-6.1-sol',status: 'completed',usage: null,service_tier: 'default',output_text: conflictCalls === 1 ? '' : '{"reply":"I kept your manual position. The timeline changed before my cut."}',output: conflictCalls === 1 ? [{type: 'function_call',name: 'timeline_edit',call_id: 'stale-cut',arguments: JSON.stringify({sequenceId: project.sequenceId,expectedRevision: 1,edit: {kind: 'trim',clipId: 'opening',edge: 'end',durationFrames: 30}})}] : []};
+  }});
+  const conflict = await stale.submit({requestId: randomUUID(),message: 'Make it shorter again.',references: []});
+  assert.match(conflict.reply!,/kept your manual position/);
+  const saved = await readStudioWorkspace(actor,actor.projectId);
+  assert.equal(saved.project.revision,2);
+  assert.equal((saved.sequences[0].timelineState as any).timelineItems[0].durationSec,3);
+  assert.equal((saved.sequences[0].timelineState as any).timelineItems[0].startSec,1);
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
+});

@@ -12,18 +12,21 @@ import {
 import styles from "./image-conversation.module.css";
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {ConversationMedia} from './_components/ConversationMedia.client';
+import {ConversationTimeline} from './_components/ConversationTimeline.client';
 export default function StudioImageConversation({
   projectId,
   accountKey,
   projectName,
   localQa = false,
   mediaEnabled = false,
+  editingEnabled = false,
 }: {
   projectId: string;
   accountKey: string;
   projectName: string;
   localQa?: boolean;
   mediaEnabled?: boolean;
+  editingEnabled?: boolean;
 }) {
   const {locale: appLocale} = useI18n();
   const locale = appLocale === 'fr' ? 'fr' : 'en';
@@ -32,6 +35,8 @@ export default function StudioImageConversation({
   const [text, setText] = useState("");
   const [references, setReferences] = useState<ImageLibraryAsset[]>([]);
   const [library, setLibrary] = useState(false);
+  const [libraryPurpose,setLibraryPurpose] = useState<'reference'|'timeline'>('reference');
+  const [timelineInsertion,setTimelineInsertion] = useState<{key: string;asset: ImageLibraryAsset} | null>(null);
   const [tone, setTone] = useState<"charcoal" | "olive">("charcoal");
   const libraryTrigger = useRef<HTMLButtonElement>(null);
   const libraryWasOpen = useRef(false);
@@ -57,6 +62,7 @@ export default function StudioImageConversation({
     )
     .slice(-6);
   function select(asset: ImageLibraryAsset) {
+    if (libraryPurpose === 'timeline') {setTimelineInsertion({key: crypto.randomUUID(),asset});setLibrary(false);return;}
     setReferences((current) =>
       current.some((ref) => ref.assetId === asset.assetId)
         ? current
@@ -298,7 +304,7 @@ export default function StudioImageConversation({
             onSend={() => void send()}
             blocked={studio.busy || !!studio.pending}
             libraryTrigger={libraryTrigger}
-            onOpenLibrary={() => setLibrary(true)}
+            onOpenLibrary={() => {setLibraryPurpose('reference');setLibrary(true);}}
             locale={locale}
           />
           <p className={styles.footnote}>
@@ -317,6 +323,7 @@ export default function StudioImageConversation({
             ))}
         </aside>
       </div>
+      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}}/>}
       {library && (
         <ImageReferenceLibrary
           onClose={() => setLibrary(false)}

@@ -5,6 +5,8 @@ import type { AgentApiFailure } from '@/server/agent-api/errors';
 import {studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema, STUDIO_MEDIA_DIRECTOR_TOOLS} from './conversation-media-contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import type {ToolAssetRef} from '@/lib/toolbox/contract';
+import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
+import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
 
 export const studioMemorySchema = z.object({
   revision: z.number().int().nonnegative(),
@@ -27,6 +29,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('generation.read'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('media.read')}).strict(),
   studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,
+  studioTimelineReadSchema,studioTimelineEditSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
 export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]};
@@ -38,6 +41,8 @@ export type StudioActionResult =
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
   | {ok: true; action: 'media.read'; data: StudioProjectMedia}
+  | {ok: true; action: 'timeline.read'; data: StudioConversationTimeline}
+  | {ok: true; action: 'timeline.edit'; data: ConversationEditResult}
   | {ok: true; action: 'video.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'voice.prepare' | 'music.prepare'; data: Omit<PreparedAudioGeneration, 'balance' | 'topupRequired'>}
   | (AgentApiFailure & {action: StudioActionRequest['action']});
@@ -55,7 +60,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {
-  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS].find(tool => tool.name === name);
+  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS].find(tool => tool.name === name);
   if (!tool || !value || typeof value !== 'object' || Array.isArray(value) || Object.hasOwn(value, 'action')) throw new Error('UNKNOWN_STUDIO_ACTION');
   // The discriminator is supplied by the server; model identity/scope arguments are rejected.
   return studioActionRequestSchema.parse({...value, action: tool.action});

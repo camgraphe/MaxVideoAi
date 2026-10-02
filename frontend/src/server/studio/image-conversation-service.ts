@@ -113,6 +113,7 @@ export function createImageConversationService(
     mediaEnabled?: boolean;
     videoGenerationFactory?: StudioMediaFactories['video'];
     audioGenerationFactory?: StudioMediaFactories['audio'];
+    editingEnabled?: boolean;
   },
 ) {
   const factory =
@@ -261,7 +262,7 @@ export function createImageConversationService(
             actor, turn, input, references: refs, referenceFingerprint,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,
-            factories, mediaEnabled: dependencies.mediaEnabled,
+            factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,
           }) : await runMeteredImageDirector(
             actor,
             turn,

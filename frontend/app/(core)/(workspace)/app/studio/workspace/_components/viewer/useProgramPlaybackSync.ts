@@ -15,6 +15,7 @@ import {
   workspaceTimelineVideoTrackIndex,
 } from '../../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../../_lib/workspace-timecode';
+import { workspaceTimelineSourceTime as sourceTimeForItem } from '../../_lib/timeline/timeline-frames';
 
 const PLAYBACK_SEEK_TOLERANCE_SEC = 0.22;
 const PRELOAD_NEXT_CLIP_WINDOW_SEC = 1.5;
@@ -93,7 +94,8 @@ function playableVideoUrlForItem(item: WorkspaceTimelineItem | null): string | n
 
 function playableImageUrlForItem(item: WorkspaceTimelineItem | null): string | null {
   if (!item || item.mediaKind !== 'image') return null;
-  const imageUrl = isPlayableImageUrl(item.mediaUrl) ? item.mediaUrl : isPlayableImageUrl(item.thumbnailUrl) ? item.thumbnailUrl : null;
+  const sourceUrl = item.mediaAccessRequired ? item.mediaAccessUrl : item.mediaUrl;
+  const imageUrl = isPlayableImageUrl(sourceUrl) ? sourceUrl : !item.mediaAccessRequired && isPlayableImageUrl(item.thumbnailUrl) ? item.thumbnailUrl : null;
   return imageUrl ?? null;
 }
 
@@ -121,10 +123,6 @@ function timelineVideoSort(left: WorkspaceTimelineItem, right: WorkspaceTimeline
 
 function timelineLayerSort(left: WorkspaceTimelineItem, right: WorkspaceTimelineItem): number {
   return workspaceTimelineVideoTrackIndex(left.track) - workspaceTimelineVideoTrackIndex(right.track) || left.startSec - right.startSec;
-}
-
-function sourceTimeForItem(item: WorkspaceTimelineItem, timelineSec: number): number {
-  return (item.sourceStartSec ?? 0) + clampSeconds(timelineSec - item.startSec, 0, item.durationSec);
 }
 
 function isAdjacentTimelineCut(left: WorkspaceTimelineItem, right: WorkspaceTimelineItem): boolean {

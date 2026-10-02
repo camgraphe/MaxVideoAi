@@ -8,6 +8,8 @@ import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-gen
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
 import type {AgentGenerationStatus} from '@/server/generations/generation-status';
 import {readStudioProjectMedia, type StudioMediaFactories} from './conversation-media-generation';
+import {readStudioConversationTimeline} from './conversation-timeline';
+import type {ConversationEditResult} from './conversation-edit-command';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
@@ -17,6 +19,8 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   factories?: StudioMediaFactories;
   prepareMedia?(request: StudioMediaIntent): Promise<PreparedGeneration | PreparedAudioGeneration>;
   recover?(quoteId: string): Promise<AgentGenerationStatus | null>;
+  editingEnabled?: boolean;
+  editTimeline?(request: Extract<StudioActionRequest,{action: 'timeline.edit'}>): Promise<ConversationEditResult>;
 }) {
   requireGenerationActor(actor);
   if (actor.authMethod !== 'studio-session') throw new AgentApiError('AUTH_REQUIRED', 'Studio session required.');
@@ -28,6 +32,12 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
       const project = await readStudioConversationProject(actor);
       switch (request.action) {
         case 'project.read': return {ok: true, action: request.action, data: project};
+        case 'timeline.read':
+          if (!dependencies.editingEnabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio editing tools are unavailable.');
+          return {ok: true,action: request.action,data: (await readStudioConversationTimeline(actor)).data};
+        case 'timeline.edit':
+          if (!dependencies.editingEnabled || !dependencies.editTimeline) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio editing tools are unavailable.');
+          return {ok: true,action: request.action,data: await dependencies.editTimeline(request)};
         case 'project.remember': return {ok: true, action: request.action, data: await saveStudioConversationMemory(actor, {revision: request.revision, brief: request.brief, decisions: request.decisions})};
         case 'catalog.read': {
           const image = (await generation.catalog()).map(entry => ({modelId: entry.engine.id, label: entry.engine.label, modes: entry.publicModes, formats: entry.engine.aspectRatios}));
