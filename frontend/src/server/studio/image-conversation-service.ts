@@ -35,6 +35,7 @@ import {
 import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversation-media-generation';
 import {resolveStudioMedia} from './media-resolver';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
+import {buildStudioGenerationMediaAccess} from './generation-media-access';
 
 export const imageConfirmationSchema = z
   .object({
@@ -191,7 +192,7 @@ export function createImageConversationService(
               quote.request.engineId,
           }
         : null,
-      generation: quote?.jobId ? await serviceForDraft(turn.draft_json).recover(quote.quoteId) : null,
+      generation: quote?.jobId ? await buildStudioGenerationMediaAccess(actor.userId, await serviceForDraft(turn.draft_json).recover(quote.quoteId)) : null,
       createdAt: new Date(turn.created_at).toISOString(),
     };
   }

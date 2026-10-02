@@ -30,7 +30,11 @@ test('the last bounded response explains completed actions instead of leaving a 
   const context = {message: 'Make it a little tighter.',references: [],history: [],project: {name: 'Film',revision: 0,memory: {revision: 0,brief: '',decisions: []}},checkpoint: async (_: number,create: () => Promise<any>) => create(),execute: async () => {actions++;return {ok: true,action: 'project.read',data: {}} as never;}};
   const createResponse = async (params: any) => {
     calls++;
-    if (calls === 4) assert.equal(params.tool_choice,'none','The final bounded call must reserve a client reply.');
+    if (calls === 4) {
+      assert.equal(params.tool_choice,'auto');
+      assert.deepEqual(params.tools.map((tool: any) => tool.name),['image_prepare'],
+        'The final call may reply or prepare an uncharged quote, never perform another edit.');
+    }
     return {id: 'bounded-'+calls,model: 'gpt-6.1-sol',status: 'completed' as const,usage: null,service_tier: 'default' as const,
       output_text: calls === 4 ? '{"reply":"Your changes are saved. We can continue with the next shot."}' : '',
       output: calls === 4 ? [] : [{type: 'function_call' as const,name: 'project_read',call_id: 'read-'+calls,arguments: '{}'}]};

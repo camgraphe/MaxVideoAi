@@ -75,7 +75,7 @@ Le dernier test débutant, dans `qa-studio-newcomer-film`, a laissé Sol choisir
 - [x] Ajouter la régression minimale sur la cause identifiée : confirmation d'un devis inchangé acceptée une seule fois ; changement de prix/référence ou compte étranger refusé sans réservation.
 - [x] Corriger seulement le propriétaire établi ; conserver le contrôle de snapshot plutôt que l'affaiblir.
 - [x] Configurer un runtime pilote raccordé aux services réels sous l'accès existant, sans mélanger le wallet QA local et le compte réel. Voir le reçu `studio-conversation-pilot-environment.md` : Neon, stockage privé, preview protégée et image worker qualifiée au démarrage ; wallet pilote distinct, aucun job média/rendu accepté.
-- [ ] Vérifier une seule image réelle dans le chat natif après devis confirmé ; relire le même projet et le même job après rechargement.
+- [x] Vérifier une seule image réelle dans le chat natif après devis confirmé ; relire le même projet et le même job après rechargement. Qualification du 2 octobre : un PNG 1088 × 608, un job et un débit de 5 cents sur crédits de test explicitement autorisés ; wallet production distinct. Accès signé des originaux privés corrigé et vérifié dans le navigateur, sans nouvelle génération.
 - [x] Vérifier qu'un devis à renouveler réutilise le draft sauvegardé, sans nouvel appel Sol pour la même intention.
 
 **Vérification :** tests image/PostgreSQL ciblés, puis un contrôle navigateur naturel. PASS signifie une sortie réelle visible dans le projet, un unique job/débit et une reprise correcte. Une image produite séparément par Codex/MCP ne valide pas ce lot.
