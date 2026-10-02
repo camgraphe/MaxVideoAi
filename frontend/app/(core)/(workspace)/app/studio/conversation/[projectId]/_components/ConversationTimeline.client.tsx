@@ -34,6 +34,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const starterKey = useRef<string | null>(null);
   const handledInsertion = useRef<string | null>(null);
   const renewalAttempts = useRef(new Set<string>());
+  const [mediaReloadKeys,setMediaReloadKeys] = useState<Record<string,number>>({});
   const items = useMemo(() => preview ?? view?.items ?? [],[preview,view]);
   const settings = timeline.view?.settings ?? {fps: 30 as const,aspectRatio: '16:9' as const,resolution: '720p' as const};
   const fps = settings.fps;
@@ -66,7 +67,12 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   function closeMonitor() {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
   function mediaFailure(item: WorkspaceTimelineItem) {
     playback.stopTimelinePlayback();
-    if (consumeConversationMediaRenewal(item,renewalAttempts.current)) {void timeline.refresh({renewMediaId: item.id});return;}
+    if (consumeConversationMediaRenewal(item,renewalAttempts.current)) {
+      void timeline.refresh({renewMediaId: item.id}).then(() => {
+        setMediaReloadKeys(current => ({...current,[item.id]: (current[item.id] ?? 0)+1}));
+      });
+      return;
+    }
     setMonitor(false);
     setLocalError(t('This clip could not be played. Reopen the monitor to retry, or remove it from the film.','Ce clip ne peut pas être lu. Rouvrez le moniteur pour réessayer, ou retirez-le du film.'));
   }
@@ -96,7 +102,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   return <footer className={styles.footer} data-revision={timeline.view?.data.revision} aria-label={t('Film timeline','Timeline du film')}>
     {monitor && items.length > 0 && <div className={styles.monitorRow}>
       <div className={styles.monitor} style={{aspectRatio: settings.aspectRatio.replace(':','/')}} aria-label={t('Film monitor','Moniteur du film')}>
-        <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} onMediaAccessError={mediaFailure} />
+        <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} mediaReloadKeys={mediaReloadKeys} onMediaAccessError={mediaFailure} />
       </div>
       <button className={styles.close} aria-label={t('Collapse monitor','Replier le moniteur')} onClick={closeMonitor}><X size={16}/></button>
     </div>}

@@ -20,6 +20,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await database.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
   }});
   let browser: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
+  let diagnose = async () => ({});
   try {
     const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId: 'studio-native-timeline-fixture'});
     const created = await postStudioMcpRequest(runtime,{jsonrpc: '2.0',id: 1,method: 'tools/call',params: {name: 'create_studio_montage',arguments: STUDIO_CONNECTED_MONTAGE_INPUT}},{token: session.access_token}).then(readStudioMcpResponse);
@@ -28,6 +29,20 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     browser = await startStudioConnectedBrowserFixture({runtime,browserName});
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
+    const mediaFailures: string[] = [];
+    page.on('response',response => {if (response.status() === 403) mediaFailures.push(new URL(response.url()).pathname);});
+    diagnose = async () => {
+      await proof('failure');
+      return {
+        mediaFailures,
+        monitor: await page.getByLabel('Film monitor',{exact: true}).count(),
+        alerts: await page.getByRole('alert').allTextContents(),
+        decoders: await page.locator('video').evaluateAll(elements => elements.map(element => {
+          const video = element as HTMLVideoElement;
+          return {id: video.dataset.playbackItemId,ready: video.readyState,time: video.currentTime,network: video.networkState,error: video.error?.code,source: video.currentSrc ? new URL(video.currentSrc).pathname : null};
+        })),
+      };
+    };
     const errors: string[] = [];
     page.on('pageerror',error => errors.push(error.message));
     page.on('console',message => {if (message.type() === 'error' && /hydration|Hydration|Each child|cannot be a descendant|Cannot update/i.test(message.text())) errors.push(message.text());});
@@ -158,6 +173,6 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     assert.deepEqual(errors,[]);
     assert.ok(browser.readPrivateRequests().some(request => request.status === 200 || request.status === 206));
     await owned.close();
-  } catch (error) {throw new Error(String(error)+'\n'+runtime.readLogs().slice(-4000),{cause: error});}
+  } catch (error) {throw new Error(String(error)+'\n'+JSON.stringify(await diagnose())+'\n'+runtime.readLogs().slice(-4000),{cause: error});}
   finally {await browser?.close();await runtime.close();}
 });
