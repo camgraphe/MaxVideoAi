@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "website-images-30-second-social-ad-chatgpt-work-maxvideoai": {
+    en: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
+    fr: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
+    es: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
+  },
   "voiceover-to-visual-capsule-ltx-2-5-pro": {
     en: "voiceover-to-visual-capsule-ltx-2-5-pro",
     fr: "voiceover-to-visual-capsule-ltx-2-5-pro",
