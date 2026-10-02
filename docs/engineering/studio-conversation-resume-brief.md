@@ -32,13 +32,25 @@ Le socle de tests compte une passe antérieure de **679 tests**, puis **22 contr
 
 ## Reprendre dans cet ordre
 
-1. **Débloquer la musique.** Le pilote n’a pas de clé Google renouvelée. L’onglet Google attend la reconnexion interactive de l’utilisateur. La clé précédemment signalée n’est pas réutilisée. Renouveler/coordonner ses consommateurs, installer la remplaçante dans le runtime privé, vérifier l’accès ; puis préparer un devis musical exact, sans confirmation automatique.
+1. **Débloquer la musique.** La reconnexion Google du navigateur intégré est faite. Une nouvelle clé JSON a été créée par l’utilisateur le 2 octobre, mais son fichier annoncé n’a pas été retrouvé dans les téléchargements accessibles ; aucune clé remplaçante n’est installée dans le pilote. À sa demande, la page des clés a été ouverte dans Chrome avec `admin@maxvideoai.com` ; Google y demande une vérification par mot de passe, indépendante de la session du navigateur intégré. Après connexion, refaire le téléchargement en choisissant explicitement Téléchargements. La clé précédemment signalée n’est pas réutilisée. Valider le fichier remplaçant, coordonner ses consommateurs, installer la remplaçante dans le runtime privé, vérifier l’accès ; puis préparer un devis musical exact, sans confirmation automatique.
 2. **Finir le film de 25 s.** Reprendre le projet existant avec quelques phrases client ordinaires en anglais. Laisser Sol choisir une amélioration artistique et le rythme. Ajouter/mixer une vraie musique, vérifier les plages et volumes, puis exporter avec le worker :4 après le devis applicable. Toute nouvelle génération reçoit une approbation spécifique ; les anciennes approbations sont consommées.
 3. **Améliorer le réalisateur à partir du résultat.** Intégrer quelques recettes de réalisation, une fiche de continuité/références, le choix entre vidéo native et montage, et des corrections localisées. Le pilote vidéo automatique est encore limité à Wan 3 / 5 s / 480p / silencieux ; élargir seulement les usages qualifiés.
 4. **Ajouter une amélioration visuelle ciblée.** L’audit Astra recommande d’abord de comparer deux montages des mêmes médias, puis des directions visuelles ; retouche d’un passage, univers réutilisables et déclinaisons de campagne viennent ensuite. Ces propositions/maquettes ne sont pas implémentées.
 5. **Préparer la bascule.** Réconcilier la branche Pricing via ses propriétaires canoniques (tâche distincte encore en validation au moment de ce brief), fixer prix/plafonds des conversations, qualifier les cas client ciblés et appareils réels, puis préparer preview/migrations/retour arrière. Aucun remplacement de Studio en production ni publication MCP n’a été effectué.
 
 Ne pas relancer une salve générale à chaque changement. Tests ciblés sur la prochaine capacité et revue globale avant la bascule. Ne pas ouvrir en parallèle interviews/podcasts sémantiques, effets avancés ou tout le catalogue pour repousser le jalon du petit film accepté.
+
+## Contrôle Google après reconnexion
+
+Contrôles du 2 octobre vers 19:30–19:55 UTC, sans génération ni modification du déploiement :
+
+- Le déploiement de production Vercel est `READY`, sur `d10ad458743aef68e6e9be12cad9c611f06077b8`. Les crons Google Veo/Omni figurent dans les réponses 200 des journaux récents. Un cron sans job actif ne vérifie pas l’accès au fournisseur.
+- La base configurée dans les fichiers locaux de l’application principale, distincte du pilote, contient un Omni direct terminé à 18:50 UTC et un Veo Fast direct terminé à 15:38 UTC ce jour. Aucun échec Google avec message d’authentification identifié dans les sept derniers jours. L’URL de base du déploiement n’a pas pu être relue : ces résultats restent des preuves de la base principale, pas une qualification complète de toutes les routes de production.
+- Les clusters d’erreurs Vercel des dernières 24 heures portent sur Fal/Kling : refus de contenu, ratio et timeout. Les requêtes de journaux détaillés ont expiré ; ne pas en déduire une absence exhaustive d’erreurs.
+- La console Google confirme que le compte de service est activé et que l’ancienne clé signalée est active. La nouvelle clé créée par l’utilisateur est également active ; son téléchargement reste à récupérer. Vercel masque la valeur de la clé et des flags avec `[SENSITIVE]`, donc leur empreinte exacte et leur valeur effective n’ont pas été qualifiées. Une valeur masquée n’est pas une clé invalide ou absente.
+- Veo, images Google et Lyria partagent la configuration Google ; Omni accepte un override puis retombe sur cette configuration. Le remplacement doit couvrir chaque environnement consommateur avant de retirer l’ancienne clé. Garder la bascule Pricing coordonnée avec la mise à jour des credentials, sans publier cette branche Studio pour renouveler une clé.
+
+Conclusion bornée : aucun indice de panne causée par la session de console expirée ; le renouvellement après l’incident demeure nécessaire. Le validateur privé refuse l’ancienne empreinte, un autre compte/projet, un endpoint OAuth inattendu et une clé de signature invalide. Huit cas synthétiques hors réseau sont passés. Aucun appel Google avec l’ancienne clé, aucune dépense média et aucune révocation ont été effectués pendant ce contrôle.
 
 ## Coûts observés
 
