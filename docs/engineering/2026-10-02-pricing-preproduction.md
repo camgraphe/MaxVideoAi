@@ -108,6 +108,10 @@ or production-price parity certificate.
 The [cutover runbook](../deployment/customer-tariff-cutover.md) details source
 capture, the read-only schema command, exact migrations, activation review and
 recovery. Neither that runbook nor its schema inventory authorizes a remote write.
+The subsequent [exact-grid rehearsal](2026-10-02-pricing-cutover-rehearsal.md)
+qualifies the complete exported grid, injected transaction failure, actual admin
+single-price recovery and a disposable full-grid deactivation simulation. It
+preserves the original admin and leaves the production activation owner pending.
 
 1. Freeze the candidate and repeat Git/main/domain alignment and live legacy-payment
    inventory. Capture current production

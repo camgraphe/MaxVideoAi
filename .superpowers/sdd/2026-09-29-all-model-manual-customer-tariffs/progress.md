@@ -814,3 +814,99 @@ source clone removed after evidence binding; immutable captures/reports/scripts
 retained privately. User admin/runtime/private database and source env retained.
 Evidence artifact hashes, document bindings/links, inactive authored production
 switch and git diff --check verified. No application implementation changed.
+
+
+## Offline exact-grid package and disposable recovery — 2026-10-02
+
+Base 9b9b6c30188dfa786b5269b5f17371244858eb48. Continue the approved Task 6
+preparation locally. No application implementation or code activation change.
+Pinned repeatable-read/read-only sandbox export retains revision 3523 and full
+qualified model-state hash; 18177 current cells, zero closed versions. Literal
+projection and separate local backup do not import local actor/history/revision
+as production history. Package includes captured production products, comparison,
+20446 scenario export, 6372 input-stress contexts and exact eight migration bytes.
+
+Private durable copy: .superpowers/sdd/2026-09-29-all-model-manual-customer-tariffs/
+cutover-package-20261002-9b9b6c301/. Directory 0700/files 0600, excluded from Git,
+no database/provider credentials. Package manifest hash
+cf3c8277518b096ed560a3393930a30258bfdaa60e7df136b739c9b9f94b39a0.
+Completed evidence hash
+f24fd8b5cec39b5293d737a0cb2dac076e3745587d6e135f69228383bf7c7006.
+Both activationReady=false and productionWriteAuthorized=false.
+
+Accepted private harness run 2026-10-02T09:23:18.883Z on fresh PostgreSQL 17.6,
+Unix socket/no TCP, fetch prohibited. Exact migrations applied/replayed twice;
+all 18177 cells bulk-loaded in one fixture transaction. Deliberate failure after
+cells/state/events fully rolls back to inactive revision 0, zero cells/events.
+20446 actual canonical quotes including 324 separately labeled local workflow
+offers plus 6372 stress inputs match previously accepted candidate cents; zero
+missing/nonmanual/discrepant quotes. Counts overlap and are not unique selectors.
+Actual existing admin Pika edit 26 -> 31c revision 2 then event rollback 26c
+revision 3, stale review refused; two immutable closed versions preserved.
+Full-grid state deactivation is explicitly a fixture simulation, appending a
+compensating event at revision 4 while retaining cells/versions. It does not
+implement or certify a production activation/rollback writer under target locks.
+Synthetic historical paid job/receipt/two trial snapshots unchanged byte for byte.
+Captured production billing-product values preserved in fixture. Original user's
+sandbox independently re-read afterward: complete model/product hashes unchanged,
+revision 3523/18177 cells. Owned rehearsal DB/socket removed in finally.
+Initial fixture diagnostics: unsupported one-hour MCP lifetime and incompatible
+scenario-hash formats rejected, corrected to existing ten-minute lifetime and
+exact export serialization; logs retained alongside accepted run. These were
+harness setup errors, not application fixes. Older deployed migration-31 shape
+compatibility stays attributed to its preceding dedicated qualification.
+
+Record: docs/engineering/2026-10-02-pricing-cutover-rehearsal.md, linked from
+acceptance and cutover runbook. Source attribution stays 9b9b6c301 for this data
+rehearsal; subsequent documentation commits do not relabel its source. Fresh
+independent review of this new private package/documentation requested once.
+Production-specific activation operation, publication-time capture freshness,
+Quality CI/preview, separately authorized real storage/Studio Draft canary and
+user's production decision remain release boundaries. No production/network
+writer, provider task, support message, push, PR, merge or deployment performed.
+
+
+### Fresh offline-package review and one correction pass
+
+Fresh reviewer: no Critical, one Important, two Minor. Important: private harness
+preselected one tariff cell before canonical pricing, so first report establishes
+per-cell arithmetic, not installed-grid reader parity. Fix verified RED: required
+actual reader count 26818, observed 0; GREEN: use default canonical quote loader,
+no tariff-state override, 26818 actual DB selector reads, all cents/manual modes
+match. Corrected accepted run2026-10-02T09:50:33.309Z from clean source9b9b6c301.
+No application implementation changes or second review.
+
+Final: Ruling: acceptance-claim accuracy and unconditional failure cleanup make
+the intermediate/stale-preview and startup-cleanup findings Important for this
+new evidence package — address in the same pass — cost if wrong: bounded extra
+fixture verification, no product behavior or production change.
+Actual canonical intermediate31c, formerly valid original preview rejected after
+revision2, canonical rollback26c verified. Cleanup probe RED reproduced one owned
+post-creation server leak and its runner removed only that owned path; GREEN
+removes the fixture before returning from deliberately injected early failure.
+Complete corrected harness passes 20446matrix/6372stress, full atomic-load failure,
+actual admin recovery, synthetic histories/product values and owned DB cleanup.
+Independent original-sandbox verification after corrected run again finds full
+model/product hashes unchanged, revision3523/18177cells.
+
+Final: Ruling: production operation/certificates/payment/provider/storage checks
+remain separately gated — package explicitly read-only/offline/local — cost if
+wrong: a fixture report could be mistaken for live release authorization.
+Final: Ruling: preceding outage/supplier/browser protocols retain their earlier
+qualification, not a claim of new exercise here — cost if wrong: missing live
+consumer behavior must still be checked at release.
+Final: Ruling: only synthetic settlement rows are rehearsed — no historical
+production/customer data copied — cost if wrong: actual target history needs its
+backup/review and immutable settlement checks at release.
+Final: Ruling: original admin model/product hashes are independently re-read;
+no runtime/session mutation or new live browser inspection — cost if wrong:
+runtime acceptance remains with preceding browser evidence/final smoke checks.
+
+Original private package/evidencef24fd8b5 retained unchanged as superseded per-cell
+scope. New durable copycutover-package-20261002-9b9b6c301-reader-verified, dirs0700/
+files0600. Corrected completed evidence manifest hash
+799484aa3c1a52fd0e98f6a6c6ba9353f7411652aebc31f30ed83c5e1a17db00;
+input package manifest remains cf3c8277518b096ed560a3393930a30258bfdaa60e7df136b739c9b9f94b39a0.
+Corrected result hashc46b01c7c54ee13b683c4e0d3686dbb20d1c08f6a992a103b336ba2b9f9a8f06.
+activationReady=false/productionWriteAuthorized=false. Source attribution remains
+9b9b6c301; docs-only final commit does not relabel executed source qualification.

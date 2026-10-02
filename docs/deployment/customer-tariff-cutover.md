@@ -121,6 +121,13 @@ The production-specific activation operation and commercial manifest must be
 reviewed at the release decision. The authored production switch remains false
 until the complete grid and its activation sequence are approved together.
 
+The [exact-grid rehearsal](../engineering/2026-10-02-pricing-cutover-rehearsal.md)
+adds a private review package with all 18,177 current cells, exact migration bytes,
+deployed comparison inputs and a PostgreSQL 17 failure/recovery rehearsal.
+Whole-grid installation/deactivation in that harness is a fixture simulation;
+it is not a production writer or certificate. Its separate local backup cannot
+replace a production backup. The user's existing local admin stays unchanged.
+
 ## Acceptance and recovery
 
 Repeat the live legacy direct-payment inventory immediately before cutover.
