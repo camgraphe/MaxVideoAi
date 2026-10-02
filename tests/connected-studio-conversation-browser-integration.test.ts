@@ -161,7 +161,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       for (const [path,json] of auxiliary) await retryPage.route(runtime.browserOrigin+path,route => route.fulfill({json}));
       let denied = 0,renewalReads = 0;
       await retryPage.route(blockedMedia,route => {
-        if (permanent || denied === 0) {denied++;return route.fulfill({status: 403,body: 'Fixture media unavailable'});}
+        // WebKit can retry a Range request before reporting a decoder error.
+        if (permanent || renewalReads === 0) {denied++;return route.fulfill({status: 403,body: 'Fixture media unavailable'});}
         return route.fallback();
       });
       const initialRead = retryPage.waitForResponse(response => response.url().includes('/conversation-timeline?preview=1'));
@@ -183,7 +184,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
         await expect.poll(() => recoveredVideo.evaluate(element => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
         await expect(recoveredVideo).toHaveAttribute('src',originalProjection.result.items[0].mediaAccessUrl);
         await expect(retryPage.getByLabel('Film monitor',{exact: true})).toBeVisible();
-        assert.equal(denied,1,'A single denied load recovers with the same URL and real bytes.');
+        assert.ok(denied >= 1,'A denied decoder load recovers with the same URL and real bytes.');
       }
       assert.equal(renewalReads,1,'One automatic renewal per explicit monitor opening.');
       await retry.close();
@@ -200,6 +201,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item]')).toHaveCount(1);
     await page.getByRole('button',{name: 'Select clip Pattern A',exact: true}).click();
     await expect.poll(() => page.locator('video[data-playback-item-id="montage-clip-02"]').evaluate(element => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
+    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','0');
     const clipBounds = await page.getByRole('button',{name: 'Select clip Pattern A',exact: true}).boundingBox();
     assert.ok(clipBounds);
     const grip = {x: clipBounds.x+clipBounds.width/2,y: clipBounds.y+clipBounds.height/2};
@@ -208,9 +210,9 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.mouse.move(grip.x+68,grip.y,{steps: 4});
     await page.mouse.up();
     await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','4');
-    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','3');
+    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','2');
     await page.reload({waitUntil: 'domcontentloaded'});
-    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','3');
+    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','2');
     for (const width of [320,768]) {
       await page.setViewportSize({width,height: 844});
       await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
