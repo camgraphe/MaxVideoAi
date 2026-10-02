@@ -2,6 +2,8 @@
 
 The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: false`, no SDK retry. It writes creative prompts and chooses from executable certified capabilities. Native Studio and MCP share generation, wallet, media, canonical sequence and export business owners; their session/OAuth adapters keep distinct authority.
 
+**Latest user direction:** stop the current 25 s film. It is a technical integration proof, not an accepted promotional film or an artistic acceptance gate. Prioritize executable tools and their capabilities rather than creative recipes. The later music/mixed-export qualification and current handoff are in [the resume brief](studio-conversation-resume-brief.md); the initial checkpoint below is historical. The [Higgsfield/Runway/Replicate benchmark](studio-mcp-tool-benchmark-2026-10-02.md) records verified patterns, local gaps and the next implementation batches for both adapters.
+
 ## Delivered locally
 
 | Area | Current proof | Qualification still needed |
@@ -10,10 +12,10 @@ The director is **GPT-6.1 Sol**, medium reasoning, OpenAI Responses, `store: fal
 | Image | Native Google session: one real Flare original, private browser access and same-job recovery, one charge in the isolated test ledger; PostgreSQL confirmation/reference parity | Production wallet qualification remains separate |
 | Video | Fresh explicitly approved native Wan 3 attempt completed once after private-reference transport correction; real 5 s, 854 × 480 silent MP4 decoded, inserted, trimmed and recovered with measured source facts; one 30-cent charge | Physical device and further provider variants remain separate qualifications |
 | Voice | One explicitly approved native Seed MP3, Sol-authored English script, one 5-cent charge; private chat decoding to end, saved library output and natural insertion with measured source facts | Durable remote audio execution and further provider variants |
-| Music | Shared canonical quotes/jobs and controlled recovery tests | Renewed music credentials, a separately approved real output and its mixing with voice |
-| Editing | Shared manual/Sol commands; generated video trimmed/restored and real voice inserted alongside it, gain 0→100 saved, revision 7 holds an owned image to 25 s; safe non-rippling audio placement and synthetic multi-track render qualification; concurrent video/audio decoding and collapsible monitor | Real music layering and finished promotional pacing remain separate |
+| Music | One approved real Lyria 3 Clip, 30 s; complete native playback, one 5-cent charge, mix at 20% with voice at 100% | Other provider variants; production credential rotation remains separate |
+| Editing | Shared manual/Sol commands, trim/move/gain/reload and revision safety; revision 10 saves separate voice/music tracks; concurrent decoding and collapsible monitor | Complete multi-action turns without falsely claiming a supported control is unavailable |
 | Native UI | Chromium/Firefox/WebKit byte-backed playback, trim/move/gain/reload, bounded decoder recovery, responsive layout and persistent app-wide charcoal/olive | Physical Safari/iOS/Android smoke test with provider outputs |
-| Export | One approved free native export dispatched to isolated ECS revision 3, completed/uploaded once, recovered during rendering and after completion; 25 s H.264 720p/30 fps + AAC original played to the end | Further device/provider variants and finished promo; no production rollout |
+| Export | Two free native exports completed once each on isolated ECS revisions 3 and 4; the second includes voice and music, plays to the end after reload, and projects canonical media identity and stored billing | Conversational export preparation is absent; physical devices and production rollout remain separate |
 
 The local preview uses an isolated socket-only database. Its wallet/library are QA data, even when Google signs in with a real account. It does not establish the production balance. Provider, storage and remote renderer credentials are deliberately absent there. Browser qualification does not establish paid generation availability; verify runtime availability before activating the pilot catalog. Existing conversations/projects are preserved; a fresh film creates a canonical empty Project/Sequence without converting old canvases.
 
@@ -51,19 +53,19 @@ Therefore the existing infrastructure is a useful base, not a qualified Studio t
 
 That initial audit made no cloud configuration change, image push, deployment, production migration or paid media/render request. The subsequently authorized isolated pilot completed a real remote export; see the current checkpoint below. The production worker remains unchanged.
 
-## Current native acceptance checkpoint
+## Initial native export checkpoint (historical)
 
 The user approved the displayed free export once. Job `tlx_0d7a699d2f6ad5738618965b1254dc99ef93d0997931537904877ab177327cbe` completed on 2 October at 16:58:13 UTC. The isolated worker exited 0. The original contains 750 video frames at 30 fps, 1280×720 H.264 and stereo 48 kHz AAC; the container is 25.002667 s. The real voice is present and the still holds through the silent ending. Reload while rendering and reopening after completion recovered the same job and a playable original, with no duplicate export.
 
 Wallet export cost is **$0**, consuming one free export. Existing net media charges stay **$0.40**; 40 Responses / 110,685 tokens stay **$0.1619952 estimated Sol API cost**. The measured Fargate task interval estimates about **$0.00568 CPU/RAM**, excluding storage, logs, network, database, build work and taxes; this is not an invoice. API funding/card state remains unverified.
 
-This qualifies the rough-cut export, not a finished promotional film. The worker is now rebuilt from `98345933c` and pinned as isolated revision 4, including the export-asset provenance correction. Offline entry-point/runtime checks passed; the already completed rough-cut export was rendered by revision 3, and no new remote export was launched to repeat it. The one existing pilot asset was repaired explicitly and its original remeasured without rerendering. Next is renewed music credentials and one separately approved music quote, then actual music/voice layering and tighter pacing before the final film acceptance. Keep physical-device qualification, commercial conversation pricing/caps and rollout review open. No additional general test salve is required before that focused work.
+This checkpoint qualifies the first rough-cut export. The worker was subsequently rebuilt from `98345933c` and pinned as isolated revision 4, including the export-asset provenance correction. Offline entry-point/runtime checks passed. The one existing pilot asset was repaired explicitly and its original remeasured without rerendering. Music, actual layering and a second mixed export on revision 4 were later qualified; [the resume brief](studio-conversation-resume-brief.md) records that evidence and the current costs. The current film is no longer an acceptance gate. Keep physical-device qualification, commercial conversation pricing/caps and rollout review open.
 
 ## Native pilot protocol
 
 The whole-branch review is complete and its recovery findings have a focused correction pass. Export submission identity and original manifest/preset are saved before POST; a lost acknowledgement retries that identity or reconciles it from owned Project history. Quote renewals carry their immutable retry provenance across tabs. Private decoder URLs survive routine polling; each failing clip has one automatic renewal per monitor opening, then a stable error. Missing originals remain removable in the canonical timeline. Keyboard volume changes are persisted. Local tests reproduce the original failures before verifying the corrections.
 
-Run one bounded native pilot, then qualify the **single cheap 25 s film** from ordinary English messages. Do not start another general agent salve beforehand.
+The bounded native media pilot is complete for its exercised capabilities. Do not continue the current film or launch another general agent salve. Qualify the next executable tool with a focused English scenario and exact spending approval only if a real paid provider call is necessary. The following steps document the original pilot protocol.
 
 1. Prepare one owned preproduction environment with actual provider, storage and canonical worker configuration. Check runtime availability before showing creation/export controls. Keep the director key server-side.
 2. Inspect the actual target schema. Apply explicit prerequisites and migrations in order: connected Studio migration 42, then session scope/turn/usage/run/media migrations 49–53. Migration 52 requires 42 and 49–51. Never bootstrap schema from a conversation read or fabricate legacy revision zero.
@@ -86,4 +88,4 @@ Run one bounded native pilot, then qualify the **single cheap 25 s film** from o
 
 All conversational gates default off. Disabling them stops new conversation actions without deleting Projects, accepted jobs or canonical timelines. Reconcile accepted jobs/charges before removing a worker or incompatible reader. Keep origin-aware shared readers deployed while Studio-session rows exist; do not destructively reverse data migrations.
 
-No production migration, publication, main-branch replacement or provider spend is implied by the local implementation. The pilot bundle must be reviewed before that operational step. The 25 s film is the final acceptance test, not a replacement for missing native integration.
+No production migration, publication, main-branch replacement or provider spend is implied by the local implementation. The pilot bundle must be reviewed before that operational step. Client readiness requires functional tools, correct account/billing policy, recovery and rollout qualification; improving the current film is no longer an acceptance requirement.

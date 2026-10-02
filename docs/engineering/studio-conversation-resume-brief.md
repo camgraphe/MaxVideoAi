@@ -4,6 +4,8 @@
 
 Le pilote natif sait passer d’un brief ordinaire en anglais à des médias réels, un montage canonique sauvegardé et un MP4 distant récupérable dans le chat. Le film actuel est une ébauche technique de 25 secondes : 5 secondes d’animation, puis 20 secondes d’image fixe ; voix anglaise sur environ 12,4 secondes et musique réelle sur les 25 secondes. La qualité artistique d’une promo terminée reste à obtenir. Le premier MP4 exporté précède l’ajout de musique ; le nouveau MP4 du mix se lit jusqu’à sa fin dans le chat, sans erreur de décodage.
 
+**Dernière décision utilisateur : arrêter ce film.** Il reste une preuve technique, pas une promo acceptée ni un jalon artistique à poursuivre. La priorité est de fournir des outils exécutables à l’IA pour qu’elle puisse réaliser un film, sans prescrire sa recette créative. Aucune nouvelle génération ou amélioration de ce film n’est à lancer.
+
 Changer le modèle de cette tâche Codex ne change pas le réalisateur dans le produit : **GPT-6.1 Sol, raisonnement medium, OpenAI Responses**. Il écrit direction, prompts et narration, lit les capacités disponibles et utilise des actions structurées. Le journal des actions, le brief et les décisions sont durables. Le modèle prépare les devis ; la confirmation financière reste humaine.
 
 ## Direction produit conservée
@@ -43,12 +45,14 @@ Cas reproduits rouges puis verts ; revue indépendante sans blocage restant. Der
 ## Reprendre dans cet ordre
 
 1. **Ne pas répéter les dépenses qualifiées.** La tentative musicale approuvée de **0,05 USD / 30 s / Lyria 3 Clip** est terminée ; une seule charge et exactement 5 cents de crédit synthétique pilote. La nouvelle clé Google est qualifiée pour cet appel Lyria réel. Le mix et le second MP4 sont qualifiés ; pas besoin de relancer ces générations ou exports. Garder la rotation des consommateurs production/preview séparée ; l’ancienne clé n’est pas retirée avant leur vérification.
-2. **Faire accepter le film de 25 s.** Le mix résout la fin silencieuse, mais les 20 dernières secondes restent une image fixe. Reprendre le projet avec quelques phrases client ordinaires en anglais et laisser Sol choisir une amélioration artistique et le rythme. Toute nouvelle génération reçoit une approbation spécifique ; les anciennes approbations sont consommées.
-3. **Améliorer le réalisateur à partir du résultat.** Intégrer quelques recettes de réalisation, une fiche de continuité/références, le choix entre vidéo native et montage, et des corrections localisées. Le pilote vidéo automatique est encore limité à Wan 3 / 5 s / 480p / silencieux ; élargir seulement les usages qualifiés.
-4. **Ajouter une amélioration visuelle ciblée.** L’audit Astra recommande d’abord de comparer deux montages des mêmes médias, puis des directions visuelles ; retouche d’un passage, univers réutilisables et déclinaisons de campagne viennent ensuite. Ces propositions/maquettes ne sont pas implémentées.
+2. **Élargir les outils vidéo depuis les propriétaires canoniques.** Le code filtre actuellement le catalogue sur Wan 3 et force 5 s / 480p / silencieux ; une image source devient uniquement `first_frame`. Exposer à Sol les modèles, modes, paramètres et rôles de références réellement disponibles et qualifiés, puis valider ces choix côté serveur. Une référence de génération et un média inséré au montage sont deux usages distincts. Ne pas imposer une recette de film ou assimiler toute référence à une image à animer.
+3. **Compléter le parcours d’actions.** Conserver les commandes communes de médias, montage et devis, corriger les tours d’édition qui s’arrêtent avant l’ajustement demandé et exposer la préparation d’export à la conversation avec confirmation humaine. Le rendu réel fonctionne aujourd’hui via l’interface, mais Sol ne possède pas d’outil d’export. Les pièces jointes audio/vidéo apportent identité et métadonnées ; elles ne prouvent pas une analyse de leur contenu. L’editing et l’audio ne sont pas publiés sur le MCP distant.
+4. **Qualifier les capacités, pas la qualité de ce film.** Faire une matrice courte par outil : entrée/référence, paramètres acceptés, devis, exécution, résultat réutilisable et reprise, plus les refus utiles. Anglais principal, adaptateurs session Studio et OAuth MCP vérifiés séparément. Aucun nouveau film payant ni salve générale requis pour cette qualification des contrats.
 5. **Préparer la bascule.** Réconcilier la branche Pricing via ses propriétaires canoniques (tâche distincte encore en validation au moment de ce brief), fixer prix/plafonds des conversations, qualifier les cas client ciblés et appareils réels, puis préparer preview/migrations/retour arrière. Aucun remplacement de Studio en production ni publication MCP n’a été effectué.
 
-Ne pas relancer une salve générale à chaque changement. Tests ciblés sur la prochaine capacité et revue globale avant la bascule. Ne pas ouvrir en parallèle interviews/podcasts sémantiques, effets avancés ou tout le catalogue pour repousser le jalon du petit film accepté.
+Ne pas relancer une salve générale à chaque changement. Tests ciblés sur la prochaine capacité et revue globale avant la bascule. Les propositions créatives de l’audit Astra restent des pistes distinctes ; elles ne remplacent pas les outils manquants et ne sont pas la priorité de ce lot fonctionnel.
+
+Le [comparatif des outils Higgsfield, Runway et Replicate](studio-mcp-tool-benchmark-2026-10-02.md) précise les sources publiques, les écarts vérifiés et trois lots ordonnés. Premier lot : détails de capacités, préparation paramétrable et persistance complète, sur un ensemble réellement exécutable et certifié. Deuxième lot : édition/export pour les deux adaptateurs, avec leurs autorités propres. Le comparatif et ce changement de direction sont documentés ; les nouveaux outils ne sont pas encore implémentés.
 
 ## Contrôle Google après reconnexion
 
@@ -74,7 +78,7 @@ Pilote natif après direction musicale, insertion et réglage du mix : **49 Resp
 
 - Worktree : `/Users/adrienmillot/.codex/worktrees/studio-conversation-exploration/MaxVideoAi V2`
 - Branche : `codex/studio-conversation-exploration-20261001`
-- Code frontend/worker : `98345933c` ; dernière documentation avant ce brief : `12a2c8835`.
+- Frontend : `7038a4b85`, incluant la reprise du prix d’export ; worker : `98345933c`. Le comparatif des outils audite le frontend à ce HEAD.
 - Projet : `http://localhost:3000/app/studio/conversation/project_4a87acc7-9f5f-498c-97d9-875034c8ad21`
 - Timeline : révision 10 ; compte/DB/storage pilote isolés. Serveur localhost vérifié actif au moment du brief.
 - IMPORTANT : ce dépôt partage une configuration Git `core.worktree`. Exécuter les commandes Git dans ce worktree avec `env GIT_WORK_TREE="$PWD"`. Ne pas modifier la configuration partagée ni le checkout Desktop/les changements Pricing.
